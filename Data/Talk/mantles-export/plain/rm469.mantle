@@ -1,0 +1,263 @@
+mantle rm469
+state ready
+dialect plain
+accent none
+tier standard
+written_for cty_odo_icewell
+title the three stools
+fits stage=adult|old
+prefers job=none honesty=frank
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk sits_on_three_imaginary_stools_to_judge_an_old_way
+likes mutton_stew stars old_maps summer_evenings
+dislikes waiting gulls
+fears a_sound_custom_lost_because_the_reason_went_first
+hopes a_fourth_generation_free_to_choose_its_own_stool
+topics work +0.6 memories +0.5 pastimes +0.3 family +0.2
+styles comfort=practical gossip=reserved refuse=plain tease=dry
+marks oath saying
+persona #self.first# tries a coppice custom from three imaginary stools before pronouncing on its merits.
+
+words
+oath! = Three rotten legs | By the last good stool
+saying! = Try the third seat | A stump has its reasons
+firstseat = the first stool | the old seat
+nextseat = the middle stool | the second seat
+myseat = the low stool | my present seat
+crookedmap = a map with a wandering lane | a misleading road
+stewpot = my mutton pot | the brown broth
+starspot = a gap for stars | the first clear patch
+scoldbird = a loud white thief | a clamorous gull
+coppicestool = the growing stump | a living stool
+rodbunch = a bundle of rods | the long straight cut
+oldremark = an inherited opinion | a well-seasoned judgement
+throatcord = a braided cord | the throat braid
+longlight = an evening that stretches | late summer light
+
+any
+opinion road mixed 0 : An old lane and a new shortcut can each be wrong about the destination my boots have in mind.
+opinion houses mixed 0 : I'd give the finest family seat exactly the same test for a short leg as the common sort.
+opinion city for 1 : A city wolf can keep trees on the hills and sleep under the roofs here. I've tested the arrangement.
+opinion merchants against 1 : A price with tradition behind it can still be an outrageous price for a handful of meat.
+opinion festivals against 1 : My idea of a comfortable crowd leaves room between three stools for a stewpot.
+opinion dole for 2 : When a bowl wants filling I rarely hear a better argument than its being empty.
+
+grown
+line greet : I've space for a fourth opinion. Hello. | Come and sit where the leg holds.
+line greet [pair.band=strangers] : A new face for an old discussion. | Welcome. I don't expect you to inherit my views.
+line greet [here.time=dawn] : Morning. Trees look particularly noncommittal at this hour. | A clean start before the first old opinion.
+line greet.return : Hello. I was consulting the previous occupants. | You have the attention of the present stool.
+line greet.return [pair.band=friends|family] : Good. A visitor who knows when I'm teasing. | An agreeable interruption to three old voices.
+line greet.return [here.time=night] : Evening. A last scrap of light for our judgement. | The stars have the floor after dark. We can share it.
+line again.open : Back in the same seat, I see. | Another opinion while the stool's still warm.
+line hail [pair.band=friends] : Come take a seat before the ancestors claim it! | Another vacancy in the imaginary council!
+line farewell : Sound legs beneath your next seat. | May the inherited shortcut actually save you some walking.
+line farewell.return : I'll stay and outvote myself. | Away before that turning loses its daylight.
+line react.news : Lay the matter before the youngest stool. | I'll reserve the ancestral verdict a moment.
+line react.news.new : That's fresh even by the middle stool's reckoning. | A new ring on the stump of my education.
+line react.news.known : I've heard that account on an earlier sitting. | The same notches appear on my reckoning.
+line react.news.doubt : That report appears to have one short leg. | I'd put my weight elsewhere pending another witness.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : The old seats would be quiet for a loss like yours. | I can leave my judgements unspoken and sit near.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : News worth an extra spoonful of mutton. | That would soften even the first stool's old opinion.
+line ask.how : Has any inherited wisdom been troubling you today? | How are your legs after that walk?
+line answer.how : Upright. By my count, a working majority. | Moderately stiff and in fairly civil disagreement with myself.
+line decline : I've already given the useful daylight to another job. | A promise just now would lack a leg to stand on.
+line accept_decline : Fair. I'll let the matter grow where it stands. | A sound refusal seats everybody comfortably.
+line preclose : I've a date with the daylight in the hills. | The living trees can have my attention back.
+line accept_preclose : Go before the old opinions form a queue. | Your business has had a proper hearing here.
+line thank : I appreciate the help from outside the family council. | You've saved my legs an unnecessary journey. Thanks.
+line deflect_thanks : No inconvenience. The middle stool was vacant. | I'd finished arguing that one out already.
+line sympathise : A quiet stool is available while the grief sits heavy. | I'll keep my opinions off your shoulders.
+line reassure : You can test the footing before committing any weight. | One good patch of ground will take the next quiet step.
+line ack : That opinion survives a sit upon. | I can find no short leg in your argument.
+line give.advice : Ask what the old method was meant to cure. | Stop walking when the lane argues with the map.
+
+scene council
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I'm the third to keep this trade. Two imaginary stools come to work with me each morning.
+b : Where do they sit? | Which one is yours?
+a : Out of the wet, naturally. Older opinions get all the comforts. | The low one in amongst the work itself. It has quite enough authority to get my boots muddy.
+
+scene wood
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I leave enough growing stool to see where the new rods will rise. That method earns its age.
+b : Would you try another? | What's earned about it?
+a : On a small patch with a good reason. An old error can produce as fine a tradition as a sound habit. | The trees repeat the argument every growing season. Hard to ask for better witnesses.
+
+scene region
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : #self.workplace#. A good broad patch to walk while deciding a narrow point of practice.
+b : What point needs that much walking? | Do you count the trees?
+a : Whether one patch can be cut as soon as the next. The wet hollow usually improves the discussion. | Stools, roughly. A dozen rods can be the work of a single patient root.
+
+scene grandmam
+when topic=family
+does give.opinion / react.self / assess
+a : Most grandmothers have one opinion worth borrowing and another best left sitting by the fire.
+b : Would you tell mine which is which? | How do you pick?
+a : I'd rather meet the opinion before offending the grandmother. Basic courtesy. | Try it on something ordinary. Advice that can't get a stew safely off the fire wants another look.
+
+scene mutton
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : Mutton stew improves while the argument about seasoning gets past its first generation.
+b : Would you add salt early? | Do generations take all afternoon?
+a : A modest pinch, then another opinion near the end. Easy to add ancestors. Hard to take one back out. | In the case of my imaginary stools we can manage it during a simmer.
+
+scene roads
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My oldest map gives a road a handsome sweep straight through a living stand of timber.
+b : What does the road itself do? | Why keep the map?
+a : Turns left with some consideration for the trees. I'd advise boots to follow its example. | It's a fine account of where somebody wished a road had gone.
+
+scene darkpast
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I recognise three bright stars without needing a single ancestor's approval.
+b : Did your elders name them? | Which three do you watch?
+a : Possibly. I've got on very well with 'that one there' and a pointing finger. | The first ones I can pick out from the summer light. A different arrangement suits a different hillside.
+
+scene sunend
+when topic=season self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : Long summer light lets me walk a wrong turning right out of my legs.
+b : Why take a wrong turning? | Is the right one pleasant?
+a : An old map and a moment's faith. I recover from both when the light holds. | Quite. The extra walk gives me grounds for expressing that opinion.
+
+scene wait
+when topic=day self.dislikes=waiting
+does tell.complaint / ask.detail / answer.detail
+a : If I'm waiting for another wolf I can feel all three stools acquiring moss.
+b : Why not sit down for real? | What if the delay's necessary?
+a : It only encourages my legs to present an independent grievance. | Then give me a job within hearing. A working wait has a rather different constitution.
+
+scene gulls
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : Gulls express themselves like grandmothers whose chairs have been stolen.
+b : Do you make that comparison aloud? | Is there anything you like about gulls?
+a : Only out of earshot of the better judges. Gulls generally forgive an insult before they forgive an unattended meal. | Their certainty. I'd admire it even more at a decent distance from lunch.
+
+scene oldlore
+when topic=lore
+does give.opinion / react.self / assess
+a : Knowing a custom's age tells me which stool it came from. I'd still like to know its job.
+b : What if the reason's forgotten? | Can an old mistake be pretty?
+a : Try a small test that can be undone. Often the old reason appears before the second attempt. | Beautiful. I've a map full of good-looking errors and a separate pair of boots for facts.
+
+scene faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The present generation uses its actual voice in prayer. There's little sense disguising myself before the Bright One.
+b : Do the old words trouble you? | What does the present voice say?
+a : No. I use them when they say what I mean. Otherwise I expect plain speech travels. | Generally thanks for standing timber and for a table at which a simple supper is sufficient.
+
+scene brothprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I can remember the weight of mutton a copper bought without pretending every old cut was tender.
+b : Does memory settle a price? | Would you buy the tough bit?
+a : It tells me when to examine my purse more closely. The seller gets a vote in the ending. | With enough time for the pot. A tough joint makes a reasonable request for patience.
+
+scene newhire
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A newcomer to the hills is entitled to ask what the marks on a stool actually mean.
+b : Could a busy keeper spare time? | Would you hand over the old rules?
+a : Better a minute spent answering than a whole season spent watching the wrong patch grow bare. | One rule at a time beside the tree it concerns. A book of unexplained nicks would be poor company.
+
+scene homebound
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : City roofs and hillside trees have a comfortable agreement. I sleep among one and work among the other.
+b : Which makes better neighbours? | Why not move up to the coppice?
+a : Trees stay where I put my opinion of them. Roofs ensure a hot pot and a chance to revise opinions of wolves. | A wolf with an outdoor job can take considerable pleasure in a dry floor after it.
+
+scene friendwork
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# the last word on which way a conversation ought to go. I rather hog the first three.
+b : Are those the stools talking? | What if your friend disagrees?
+a : Yes. The imaginary stools never mastered taking turns. | Then there are four opinions on hand and a reasonable chance of one new thought.
+
+scene winter
+when topic=season here.weather=snow
+does warn / react.self / assess
+a : Snow makes an old cut stool look like a fine smooth place to sit.
+b : Is there anything under it? | Would you sweep it first?
+a : Several rising shoots that deserve more respect than the back of my coat. | With my eyes first and a quiet touch second. I'd rather find ordinary ground for my own seat.
+
+scene fourth
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like the next keeper to choose a fourth stool without first asking the other three for leave.
+b : Does that include yours? | Would you teach the old method?
+a : Very particularly mine. It squeaks when crossed but the sound does nobody permanent injury. | Along with its reason and a decent patch on which to try something else.
+
+grown
+
+story mapstool [topic=travel|memories]
+  : I spread my old map on a sound stump to settle which branch of a path was older. A gust tucked one corner underneath.
+  : In the altered map both roads stopped at my own knee.
+  b : Did that resolve anything?
+  : My most accurate map for a seated wolf. I folded it and consulted the standing view.
+
+story brothseat [topic=food|memories]
+  : I set a bowl on a three-legged stool. The broth gathered on one side, suggesting a rather obvious fault in the workmanship.
+  : I turned the stool. Broth still ran toward the door.
+  b : Was the whole floor crooked?
+  : Yes. A thoughtful arrangement if the chief aim of a house is to empty a bowl without getting up.
+
+story braided [topic=work|memories]
+  : I braided a spare cord to the length an older method prescribed. Found it just short of going comfortably round my bundle.
+  : I had followed the length of a much smaller wolf's arm.
+  b : Did you abandon the method?
+  : Kept the method, substituted the arm actually going to work. The middle stool still regards me with suspicion.
+
+rule @council
+when concept=bark
+does aside
+cooldown 8h
+say Two in favour of keeping it. My vote depends on the wood. | A third seat doesn't always make a majority sensible.
+
+rule @rods
+when concept=bark self.job=none self.working=yes
+does aside
+cooldown 8h
+say A sound root can afford tomorrow's rods. | Leave that patch another season's argument.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say My grandmother would envy that bird's absolute assurance. | I hope the gull has consulted the stew before claiming it.
+
+rule @star
+when concept=bark self.likes=stars
+does aside
+cooldown 8h
+say There. First bright vote in the evening sky. | A star needs very little advice on where to stand.
+
+dlg resident.hub : I've three generations' opinions at hand. I can shorten the proceedings.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I see the fourth stool has filled itself again.
+dlg resident.hub [here.time=night] : Night gives even a stubborn old family opinion time to cool.
+dlg resident.hub [pair.disposition=wary|hostile] : Stand as far off as seems civil. A plain answer carries well enough.
+dlg resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. Three generations of practice, with occasional interruptions to see what the trees want.
+dlg resident.job : I admire a method that can tell you why it has lasted.
+dlg resident.bye : May the ground under your next stool prove level.
+
+graft resident.hub
+choice Which of your three stools gets the deciding vote? -> decidingstool
+node decidingstool
+say The one whose occupant must do the work. My two predecessors can argue a good case from the dry end of memory. I'm the one out there in the rain.
+free
+choice Have you ever let an older stool overrule you? -> overrulewood
+choice I'll take that seat under advisement. -> hub
+node overrulewood
+say A damp hollow keeps its shoots shorter. An old rule leaves it a season longer. I looked at the growth and found myself in entire ancestral agreement.
+choice I'll give the elders credit for that one. -> hub
+choice I'm off to try my own judgement. -> bye

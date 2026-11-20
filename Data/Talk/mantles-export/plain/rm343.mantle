@@ -1,0 +1,255 @@
+mantle rm343
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_gudrun_pitchridge
+title the bell between blows
+fits stage=adult|old
+prefers job=smith
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_the_chapel_notes_in_the_gaps_between_hammer_blows
+likes roast_pork dice tidy_house misty_dawns
+dislikes salt_wind smoke
+fears missing_a_word_that_cannot_be_struck_again
+hopes an_even_ring_from_edge_to_edge
+topics work +0.6 day +0.5 memories +0.3 pastimes +0.2
+styles comfort=plain gossip=curious refuse=brisk tease=none
+marks oath saying
+persona #self.first# counts chapel notes against hammer blows and keeps a scrap of letter paper clear of the flying scale.
+
+words
+oath! = Ring my tongs flat | Peen my last pip
+saying! = A quiet gap can carry a bell | Strike straight before counting the echoes
+tongs = a long-jawed pair of tongs | my snub pair
+scale = a flake of black scale | a curl of slag
+die = a bone die | a square die
+pipmark = a deep marked dot | a shallow pip
+lever = a flat lever | a little bar
+scrap = a blue-edged offcut | a cold scrap
+gong = a thin test strip | a bright iron strip
+inkfold = the neat fold | a soft paper crease
+porkfat = a white edge of fat | a sliver of rind
+bellgap = the gap before the next stroke | a narrow rest
+mistveil = a veil over the roofs | pearl-grey mist
+hook = a bent heel hook | a plain hook
+broom = a stiff yard broom | a birch broom
+
+any
+opinion merchants against 1 : I'll have as much metal as the seller said was in the bundle, even if every last bit needs weighing again.
+opinion houses mixed 1 : The House mark is large on iron that somebody else's shoulder helped to lift.
+opinion dole for 2 : A hard day's heat wants supper after it. So does a hard day without any pay.
+opinion city for 1 : The chapel sound gets through all the iron racket if you give it a decent chance.
+opinion road mixed 1 : A road good enough for a delivery of iron ought to give a little letter a dry passage.
+opinion sump for 1 : Nobody down low waits till work sounds pretty before setting a shoulder to it.
+
+grown
+line greet : Stand where the little sparks won't find your cuff. | There's a clear patch for your boots.
+line greet.return : And a solid answer to your greeting. | A welcome with a sound ring to it.
+line again.open : Back in the gap between two notes.
+line farewell : Mind your hem and keep your pace easy. | I hope the last bell finds you under cover.
+line farewell.return : A straight road and a clean cuff back to you. | I'll hear your good wishes past the racket.
+line react.news : Give me the whole sound of it. | I'll put down the imaginary hammer awhile.
+line react.news.new : A note I couldn't have counted yesterday.
+line react.news.known : I've struck the same account before.
+line react.news.doubt : The ring's a shade flat for my liking.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'd sooner hear a minute of quiet alongside a hurt like that.
+line react.news.glad [topic.kind=birth|marriage|work] : A bright note that won't need striking twice.
+line ask.how : Anything in your day rung properly true yet?
+line answer.how : Still enough temper in me for another shift.
+line sympathise : Take the weight off your arms before beginning.
+line reassure : A rough edge can wait on the bench until your grip comes back.
+line refuse : My time's already held in a different pair of tongs.
+line accept_decline : Then we'll leave the metal on the rack.
+line preclose : I've kept my own work cooling long enough.
+line accept_preclose : Off with you before the gap gets smaller.
+line ack : Yes. That's the ring I heard too.
+
+scene exchange1
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : I count chapel notes between the blows. | I slow a hammer blow for half a breath sometimes.
+b : Can you hear any? | To aim it?
+a : The long low one gets through a remarkable amount of iron. | To catch the end of a bell. The aim benefits too.
+
+scene exchange2
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I like the roast end with a little blister on the rind. | I lay the rind upwards on the plate.
+b : Looks scorched to me. | Afraid it'll soften?
+a : There's blistered and burnt. My tongue can tell at once. | I know it'll soften. An experiment needn't be repeated nightly.
+
+scene exchange3
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I set dice down softly before a throw. | I keep my dice well away from iron filings.
+b : Then why throw them? | Can a filing affect the score?
+a : I like hearing the difference between a choice and an accident. | It can affect my temper when it sticks in the groove.
+
+scene exchange4
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I hang the broom up before I wash. | My shelf has a place for a letter as well as the tongs.
+b : Wouldn't you sweep again after? | Do they lie side by side?
+a : No. I shut the yard outside when I've finished with it. | With a whole clean little board in between.
+
+scene exchange5
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : Morning mist brings the chapel note almost within reach. | Mist puts a pale coat over the Works.
+b : Can a paw feel it? | Doesn't much last?
+a : On the broad iron when the yard's quiet enough. | No, but I like seeing the roof ridges come back one at a time.
+
+scene exchange6
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind leaves a fine chewing edge on clean iron. | I cover a new hook before the sea air reaches it.
+b : How do you deal with that salt? | No need for a tough hook to be coddled?
+a : Wipe it. And wipe it again when the air thinks I'm done. | It earned a clean start at least.
+
+scene exchange7
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke blurs the edge I'm trying to inspect. | I get smoke in my cuffs long after the air's cleared.
+b : Can you feel it instead? | Can you shake it out?
+a : Only when cool. I don't argue that point with iron. | I have to turn them. The smell likes a good fold.
+
+scene exchange8
+when topic=work self.job=smith self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I hang the cold tongs apart from the rest. | I test the ring of a strip before bending it.
+b : Does a hot pair look different? | What do you learn?
+a : Not always. That's my entire argument for the hook. | Where it's thin and where it's got a shoulder to it.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could play a quiet round with #self.friend#. | I'd show a friend a crooked hook before I showed off a good one.
+b : Dice, quietly? | To ask for advice?
+a : Some wool placed beneath the cup helps even a loud opinion land gently. | To make sure the praise came after a proper inspection.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A letter sometimes reaches me with the smell of somebody else's weather in it. | I flatten the fold before I take in a letter.
+b : Does weather stick to ink? | Afraid of overlooking a word?
+a : I think of a far hillside when I read. That's smell enough. | One word can be the whole reason to open the next page.
+
+scene exchange11
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The Bright One gets some plain noisy remarks from the Works. | I like a chapel note that doesn't mind rough company.
+b : Can a noisy remark be prayer? | The hammers?
+a : If it's meant as thanks for sound eyes and two working paws. | It rings right through them without taking offence.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The story being struck about is #topic.subject# #topic.claim#. | A rumour can sound grand in a quiet room.
+b : Does it sound true to you? | And on the work floor?
+a : I don't know the iron it was made from. | About as substantial as the mere breath spent on the story.
+
+scene exchange13
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Lean times leave a lot of twice-bent metal on the rack. | A thinner order can still want a full morning's skill.
+b : Too worn for more work? | Does the pay know that?
+a : Not if I choose the joint properly. | The pay needs reminding more often than I like.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can recognise a district by which bell gets the last word. | I save the lighter end of a bundle for turning corners.
+b : What if there's no bell? | Any particular reason?
+a : Then I wait for the town to start speaking again. | Fewer bruises on both the walls and my hip.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to forge a strip that carries a clean note all day. | I want a letter shelf with room for answers beside the originals.
+b : Wouldn't the neighbours object? | Do you keep copies?
+a : I mean when called upon. Even my dreams have manners. | Some words deserve to stay within reach from either direction.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My ears carry on ringing after the yard goes quiet. | I flex my grip against an empty palm.
+b : Is that the chapel? | Is that practice?
+a : No. I know the difference and give the ears their rest. | Checking for the part of my hand I forgot to relax.
+
+scene exchange17
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I count the last bell by touching my fingertips. | I don't mind a quiet room after a rackety shift.
+b : Why count that one? | Don't you start looking for something to strike?
+a : It settles the working part of the day before I eat. | Only a deal with the supper pot.
+
+scene exchange18
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Works and the chapel share an unlikely bit of air. | I can see the city better in layers of mist.
+b : What have they agreed on? | Better when some of it's hidden?
+a : Plenty of room for a ring if we take turns. | Better at seeing which roof's in front. Smoke makes the whole row one thing.
+
+story tale1 [topic=work self.job=smith]
+  : I cut a test strip that rang higher at one end. I chalked a mark on that end and left it for morning.
+  : The morning note had changed. I went over the whole bench hunting a loose thing underneath.
+  b : Had the iron spoiled?
+  : I'd turned the strip over on a little leather scrap. It rang clear as anything when I gave it its own feet again.
+
+story tale2 [topic=pastimes self.likes=dice]
+  : I brought a die to the table in the same pocket as an iron nut. Both came out of the cup with a splendid noise.
+  : The die showed five. The nut merely displayed an honest hole.
+  b : Which one did you throw again?
+  : Both separately. The die across the table, the nut into the scrap bin. I accepted the five.
+
+story tale3 [topic=memories]
+  : I kept a page near my coat where it would be easy to find when my hands were clean. A flake of scale landed on the corner.
+  : It made a little dark shape in the margin like a distant hillside.
+  b : Did it burn the words?
+  : No. I copied that shape on the reply. It was the neatest picture of my own weather I'd ever drawn.
+
+rule @call1
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 8h
+say Listen to the thin end once before you bend. | Cold tongs go on the separate hook.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Mist first, iron after, if the sky's kind. | A lovely clean note for the roofs to wake up to.
+
+rule @call3
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 8h
+say That smoke owes me a clear look at my work. | Get the haze off the edge before inspecting.
+
+rule @call4
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say Soft cloth for a hard throw. | Watch the pips when the cup comes up.
+dlg resident.hub : There's a rest between blows if you'd like to use it.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your voice gets through my work racket nicely.
+dlg resident.hub [here.time=night] : You can hear the quieter end of my opinion now.
+dlg resident.hub [pair.disposition=wary|hostile] : Stand clear and speak level. I won't have my elbow knocked.
+dlg resident.job [self.job=smith] : I work iron at #self.workplace#. I trust my ears quite as readily as I trust my eyes for a bend.
+dlg resident.job : I'll take responsibility for the crooked bits as well as the sound ones.
+dlg resident.news [world.news] : This rang clear enough to reach me. #world.news#.
+dlg resident.gossip [here.gossip=yes] : What I heard was #topic.subject# #topic.claim#. I didn't see it struck.
+dlg resident.bye : I hope you catch a good note on the walk back.
+
+graft resident.hub
+choice How can you hear a bell over iron? -> hammer_bell
+node hammer_bell
+say A hammer comes down, rings out and wants lifting again. I keep count in that moment when my elbow's doing the quiet work.
+free
+choice What if the next blow comes too soon? -> hammer_bell_again
+choice Goodbye. -> bye
+node hammer_bell_again
+say Then I've two honest jobs, a stroke and a guess. I don't put the guess in with what I actually counted.
+choice Save an ear for the next one. -> hub
+choice Goodbye. -> bye

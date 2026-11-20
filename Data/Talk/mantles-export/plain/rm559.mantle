@@ -1,0 +1,397 @@
+mantle rm559
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_vidar_dripmarsh
+title the east watch's travelling breadbox
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk cuts_a_riddle_into_the_lid_of_a_breadbox
+likes warm_bread riddles fresh_straw thunder
+dislikes smoke stale_bread
+fears a_crust_without_a_neighbour an_unanswered_knock
+hopes a_dry_hollow_for_each_walker the_letter_at_last_delivered
+topics work +0.4 food +0.4 lore +0.3 pastimes +0.3
+styles comfort=warm gossip=plain refuse=gentle tease=kind
+marks oath saying
+persona #self.first# props a loaf in the lee of a small wooden lid, carving a new riddle whenever an old one has done enough good on the gate.
+
+words
+oath! = Forge and breaker | Anvil and tide
+saying! = Even a riddle has a crust | The loaf travels farther in slices
+boxlid = my carved lid | the old bread lid
+notched = a little cut star | the star notch
+button = a button-shaped knot | a round knot
+slice = a broad warm slice | the loaf's middle
+scarf = my folded scarf | a spare woollen wrap
+answerturn = the answer edge | the lid's underside
+crustend = the browned corner | a rough crust tip
+strawbed = a straw bolster | a clean straw roll
+rumble = a great low roll | a long thunder growl
+spar = an oak crosspiece | a dark bit of oak
+wrapnote = a paper envelope | the folded letter
+hingebit = the little pivot | a brass lid pin
+smut = a black smudge | a soot streak
+drybread = the hard heel | the stiff loaf end
+flame = a clear lamp flame | the sheltered flame
+smell = a warm crumb smell | the rising smell of bread
+
+any
+opinion @1 church for 1 : I owe the Bright One plenty of quiet company on a cold watch. Sharing my loaf feels like a fitting acknowledgment.
+opinion @2 dole for 2 : A town with ovens smoking ought to have a warm piece for the last arrival.
+opinion @3 city for 1 : I've heard the noise of waking under every sort of sky at this gate. It's my own noise now.
+opinion @4 watch for 1 : My watch fellows know how long a still night can feel to a stranger outside the wall.
+opinion @5 road for 1 : A rough road may still bring a tired wolf someplace with a meal and a welcome.
+opinion @6 houses mixed 0 : Every fine door has somebody waiting beyond its hinges. I judge a door by the wait.
+opinion @7 merchants mixed 0 : A bread seller can count a little patience in with the loaf. That I remember.
+opinion @8 strangers for 1 : A stranger comes up hungry exactly the way I do. That's our first acquaintance.
+opinion @9 drink mixed 0 : I've seen a hot drink steady a cold traveller. What goes into the second cup is another matter.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome to a warm word under the lintel.
+line @2 greet [here.time=dawn] : Morning. The crust smells better than the cold air.
+line @3 greet [here.weather=rain] : Step under this ledge, traveller. It'll shed a shower.
+line @4 greet [self.working=yes] : Welcome through in good order. I've an ear for you.
+line @5 greet.return : A friendly word fits the hollow at this gate.
+line @6 greet.return [pair.band=friends] : I know your voice before the old lid even opens.
+line @7 greet.return [here.time=night] : There's your voice in the lamp circle.
+line @8 farewell : Take some oven warmth along in your pocket.
+line @9 farewell.return : I'll listen after your steps until the wind takes them.
+line @10 again.open : The lid comes up on another visit.
+line @11 kin.open [pair.kin!=no] : Kin may have the corner from the fresh loaf.
+line @12 hail [pair.band=friends] : This way for a familiar voice and a bread joke!
+line @13 react.news : I'll take the plain round loaf of it before the crumbs.
+line @14 react.news.new : I've heard no traveller give that word till now.
+line @15 react.news.known : An earlier visitor left the same word warming here.
+line @16 react.news.doubt : That tale might need to rise a little longer.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Come in closer. I can spare the quiet that follows such news.
+line @18 react.news.glad [topic.kind=birth|marriage] : I'd cut an extra slice for a welcome like that.
+line @19 answer.how : Holding a little warmth in both my hands.
+line @20 decline : I'd be short with somebody at this gate if I promised that now.
+line @21 accept_decline : You can leave the favour resting safely with me.
+line @22 sympathise : Here's a shoulder and a dry spot under the lamp.
+line @23 thank : That kindness came as welcome as the hollow end of a hot loaf.
+line @24 deflect_thanks : I was keeping the warm part for company anyhow.
+line @25 preclose : My bread ought to be covered before the wind shifts.
+line @26 accept_preclose : Go with a kind word safely under your coat.
+line @27 farewell [here.time=night] : May a warmer lamp meet you farther on.
+line @28 answer.how [self.working=yes] : Standing my turn with a riddle in reserve.
+line @29 greet [pair.band=friends] : Good company for my unclaimed slice.
+line @30 preclose [here.time=dusk] : Lamp and loaf both need a small evening service.
+line @31 farewell.return [here.weather=rain] : Tuck the warm word under the driest fold.
+
+scene lidriddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail / assess
+a : I carve a question where #boxlid# folds back over the bread.
+b : Where do you put its answer?
+a : Under the loaf, on #answerturn#. An honest attempt comes before the second slice.
+b : It sounds as though a hungry wolf has every reason to think quickly.
+
+scene warmcrumb
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I hold #slice# under a scarf till the outer gate draught goes by.
+b : Won't you soften that fine crust?
+a : Just the thin side. #crustend# stays out in the air to keep its bite.
+
+scene straw
+when topic=smalltalk self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw in a bolster has a little song when you roll it.
+b : Does an old bolster run out of tune?
+a : It settles silent. I put fresh straw in before a sleeper feels the bench slats.
+
+scene thunder
+when topic=weather self.likes=thunder
+does tell.plan / ask.detail / answer.detail
+a : I'd like the first storm growl to make a full circuit of this wall.
+b : How does stone carry a thunderclap?
+a : Passes it along in pieces till #rumble# sounds like a big cart being kindly put to bed.
+
+scene smoke
+when topic=weather self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : My bread comes out grey when the gate lamp smokes.
+b : Can you move your supper out of the way?
+a : Yes, and trim the wick for everybody else. #smut# would otherwise be tomorrow's breakfast.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does give.opinion / disagree / concede
+a : I'd give a stale loaf a proper second cooking before I called it supper.
+b : A bowl of broth might bring the heel back by itself.
+a : That's the sort of cooking I had in mind. Give the broth time to get through #drybread#.
+
+scene post
+when topic=work self.job=guard self.workplace
+does tell.self / ask.detail / answer.detail
+a : My post looks toward the road in #self.workplace#. New arrivals bring their weather along.
+b : Can you tell what weather lies down the road?
+a : A clear sleeve hung over a wet pack usually means the shower was some way back.
+
+scene forgesea
+when topic=lore
+does tell.self / react.self / assess
+a : Forge and sea make a pair of good honest noises to swear by.
+b : What do the two have to say to a guard?
+a : Listen after a clang and listen after a wave. Another sound's often coming.
+
+scene letter
+when topic=work
+does tell.feeling / sympathise / assess
+a : I've an undelivered letter settled between #scarf# and my coat.
+b : Do you ever weary of finding the right hand away from home?
+a : Sometimes. A loaf can go to any hungry arrival. #wrapnote# has one particular home to reach.
+
+scene mercy
+when topic=gossip
+does give.opinion / disagree / concede
+a : A well-fed witness can usually spare a moment for a quieter account.
+b : Would a hungry witness necessarily give a worse report?
+a : No. I simply see no good reason to keep a wolf hungry while hearing one.
+
+scene friend
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'll give #self.friend# first try at the next puzzle on #boxlid#.
+b : What will you do if the answer comes right away?
+a : Be pleased and make a clean space for another one. A solved riddle has earned its rest.
+
+scene boss
+when topic=work self.boss self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I bring #self.boss# a short record when the road has been quiet.
+b : No grand account of the weather?
+a : A washed rut or a stalled load deserves a line. The thunder I enjoyed can stay in my own head.
+
+scene riddlefork
+when topic=pastimes
+does tease / tease.return / laugh
+a : What breaks cleanest when two hungry wolves agree to share it?
+b : Your loaf. Unless the answer's the sudden silence when we bite.
+a : I'd give you both answers. Take the thick side for thinking of the better one.
+
+scene prayer
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I once dreamed the Bright One had hung a lamp in the entrance of every lane.
+b : A gentle sort of city for a late walk.
+a : It did. I woke with the plain thought that I could look to my own wick first.
+
+scene traveller
+when topic=food
+does offer / accept / assess
+a : I've kept the soft centre under #boxlid#. Will a piece travel with you?
+b : I'd welcome something warm to carry for a while.
+a : Wrap it in this clean corner. You can warm your hands before you eat.
+
+scene price
+when topic=prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When trade pinches I cut the round part of the loaf in wedges.
+b : Does it make a larger supper?
+a : No. It makes the sharing plain. You can see every wolf gets some crust and some middle.
+
+scene cart
+when topic=travel world.wagons=late
+does tell.plan / ask.detail / answer.detail
+a : While the wagon's overdue I'll air #strawbed# beside the waiting bench.
+b : Is it for the driver who hasn't arrived?
+a : For whoever tires first. Waiting uses the legs without going a single yard.
+
+scene puzzle
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What would make #button# in the lid look like an ear?
+b : Cut a tiny question beside the knot and let the reader supply the listening.
+a : A neat answer. A fresh question can make even old wood attentive.
+
+scene lampwalk
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : The lamps in the gate lane give each waiting wolf a different shadow.
+b : Do you count the shadows on a long watch?
+a : I watch where a tired walker may put a foot when a shadow covers the lip of a stone.
+
+scene home
+when topic=family
+does tell.feeling / sympathise / assess
+a : A shared loaf can make a briefly occupied bench feel like home.
+b : Are you thinking of anybody in particular?
+a : Anybody who has been offered the soft end after trudging through daylong rain knows the sort of home I mean.
+
+scene crustmath
+when topic=prices
+does give.opinion / disagree / concede
+a : I don't favour charging extra for a riddle on a loaf box.
+b : The carving took your own time, all the same.
+a : I'd be paid well enough by a laugh when the lid goes up.
+
+scene nightheat
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I can tell how cold the night has got by the change in #smell# under the lid.
+b : You smell cold air itself?
+a : Warm bread gives up its smell more slowly once the crust cools. My nose knows the difference.
+
+scene clothcare
+when topic=work
+does tell.self / react.self / assess
+a : I oil #hingebit# with the bread well away from the box.
+b : A bread box doesn't fetch much official care, does it?
+a : It gets mine. A lid that closes without a squeal can travel past a sleeping bench.
+
+scene smokeoffer
+when topic=smalltalk
+does offer / accept / assess
+a : Take the clear side of my lamp while I trim the smoke off it.
+b : Will you still have light enough for your fingers?
+a : A little. #flame# tells me when the wick's short enough.
+
+scene call
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'll be knocking at a lord's door when the hand to receive a letter is finally there.
+b : Do you mind the extra turn after a watch?
+a : Less if a crust travels inside my coat. A warm stomach makes for a more patient knock.
+
+scene starlid
+when topic=season
+does tell.worry / reassure / assess
+a : Heavy summer air leaves me anxious about a loaf kept too long under cover.
+b : Can the box breathe?
+a : I prop my lid open on #spar#. Just enough room to lose steam without inviting the street dust.
+
+scene newrut
+when topic=land
+does ask.advice / give.advice / assess
+a : How would you describe a bad rut to somebody coming through at dusk?
+b : Give the fixed post beside it and say which wheel track dips.
+a : I'll add the safest waiting spot for a walker to let the cart pass.
+
+scene paperwrap
+when topic=work
+does tell.plan / ask.detail / answer.detail
+a : I should make a separate pocket for the lord's paper and its reply.
+b : Has a reply come yet?
+a : No. I'd just like a clean pocket ready on the day I finally need one.
+
+scene bright
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : At the last heel I speak my thanks aloud. There's comfort in saying the Bright One's name out here.
+b : Even if there's just yourself to hear it?
+a : Especially then. It reminds me to find somebody for the other half if I can.
+
+scene sleepguard
+when topic=dreams
+does tell.self / react.self / assess
+a : I dreamed the whole gate had a great carved lid instead of a lintel.
+b : Was there a riddle under the arch?
+a : One asking how every tired wolf might get home dry. I'd gladly stand that watch again.
+
+story threeears [topic=pastimes]
+  : I cut two ears into the knot of my box and then noticed a third in the grain.
+  : I tried to invent a creature that needed all three.
+  b : What did you finally give the creature?
+  : One ear for each answer and one for the wolf still asking. It makes a very patient riddle beast.
+
+story hollowloaf [topic=food]
+  : A loaf once came from its wrapper with a hollow right through the middle.
+  : I could look clean through my supper to the street.
+  b : Did the hole make a poor meal?
+  : It held a plug of cheese very neatly. There's a fitting for most little gaps in this world.
+
+story tamegrowl [topic=weather]
+  : I heard a growl under a clear sky and put my nose out to greet the storm.
+  : The noise repeated behind my coat.
+  b : Was your own belly behind the thunder?
+  : A very small storm, cured by a slice off the middle. The sky had a quiet watch.
+
+story smokefold [topic=work]
+  : I once wrapped my bread with the black side of the cloth folded in.
+  : One corner came out with a face on it.
+  b : Did the face look back at its maker?
+  : It had a very fine smoking moustache. I cleaned the cloth and ate round the artwork.
+
+story waitingpaper [topic=travel]
+  : I carried a folded note down a long street and home again with the knot still perfect.
+  : I had begun to regard the thing as a travelling companion.
+  b : Did your companion offer any conversation?
+  : A rustle when I sat down. Decent manners for a companion who had been invited somewhere else.
+
+rule @posted
+when concept=bark self.working=yes self.job=guard
+does aside
+cooldown 8h
+say An open ear at the arch. Come on at a walk.
+
+rule @lampround
+when concept=bark self.working=yes self.job=guard
+does aside
+cooldown 8h
+say Trim the wick. Let a face be clear for the next traveller.
+
+rule @warmloaf
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Still a pocket of oven heat deep in that crumb.
+
+rule @brightstraw
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Fresh roll for a tired back at the bench.
+
+rule @lowcloud
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say A great rolling answer from beyond the wall.
+
+rule @lidquestion
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say One question on top. Better keep the answer below.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #self.first#. A word and a warm edge of shelter are easy to spare.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my bread lid still has a puzzle carved underneath for you.
+dlg @3 resident.hub [here.time=night] : You'll see the bread better near this lamp.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can keep a civil bench between us and still hear the whole matter.
+dlg @5 resident.job [self.job=guard self.workplace] : I keep a roadward eye on #self.workplace#. Most visitors need an easy welcome and a clear sense of the way.
+dlg @6 resident.job : I like a duty with a good view of whoever comes next.
+dlg @7 resident.bye : May you reach your next roof before the crust cools.
+dlg @8 watch.hub [here.wanted=yes] : There's #here.fine# pennies to settle with the watch. I'll hear you plainly.
+dlg @9 watch.hub [on_watch=no] : My duty has passed to another pair of feet. I've a short moment left.
+dlg @10 watch.crime [here.witnessed=0] : Start where your own sight began and I'll follow the account.
+dlg @11 watch.fine [here.wanted=yes] : Your fine stands at #here.fine# pennies. It can be settled with the watch.
+dlg @12 watch.fine [here.wanted=no] : You have a clear account with this watch at present.
+dlg @13 watch.reported [topic.reported=yes] : Your account has reached the watch. I'm grateful you made the walk.
+dlg @14 watch.bye : Walk out with time for a decent supper.
+
+graft resident.hub
+choice Is the answer carved outside the lid? -> loafanswer
+node loafanswer
+say No, that's the question. See #notched# near the hinge? It marks the place to start reading before the steam rolls out.
+choice What is today's riddle? -> loafroad
+choice Leave me guessing. -> hub
+node loafroad
+say What comes through the arch with no foot to walk on? The smell of my lunch is one answer. A letter will do if you can find a willing bearer.
+choice We'll have another word. -> hub
+choice Keep the loaf warm. -> bye
+
+graft watch.hub
+choice Can I rest before I give my account? -> strawbench
+node strawbench
+say Certainly. #strawbed# is for exactly that sort of pause. I'll be in hearing when your legs stop doing the talking.
+choice May I have the quieter spot? -> quietbench
+choice I'm ready to speak. -> hub
+node quietbench
+say Beside the crosspiece the draught goes over your shoulder. You can see my lamp above the heads of passing wolves.
+choice I have business with the watch. -> hub
+choice Good rest to you in your turn. -> bye

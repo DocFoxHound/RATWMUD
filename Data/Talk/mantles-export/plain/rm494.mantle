@@ -1,0 +1,375 @@
+mantle rm494
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_dagny_ropeley
+title the hood library
+fits stage=adult|old
+prefers job=guard
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=content
+quirk sorts_small_paper_folds_inside_an_oilcloth_hood
+likes mutton_stew dancing full_larder warm_rain
+dislikes rats drizzle
+fears a_letter_soaked_an_ear_from_delivery an_empty_pantry_at_rainfall
+hopes an_envelope_delivered_whole a_dance_in_warm_rain
+topics work +0.5 weather +0.4 pastimes +0.3
+styles comfort=practical gossip=discreet refuse=firm tease=dry
+marks oath saying
+persona #self.first# carries a folded oilcloth hood even on a fine day and calls the space inside its doubled brim a little library.
+
+words
+oath! = Ink in the gutter | Rain under my hood
+saying! = Leave the seal to its reader | Give paper a roof
+hoodbook = my brim library | the travelling shelf
+turnededge = a double fold | the dry return
+waxfold = a letter with its wax entire | my closed paper
+drywing = the oilcloth overlap | my narrow covered ledge
+brothring = a dark circle of gravy | the stew mark
+woodrib = a little flat batten | the thin wooden stay
+rainseat = the step under cover | the spot inside the drip
+welldance = a small running step | a turn past the puddle
+dishguard = my wooden lid | the heavy pot cover
+breadpin = a smooth pantry peg | the larder latch
+sunhole = a bright pinprick | a flaw against the sky
+slatepad = my little dark tablet | a clean slate
+slatecloth = the grey rag | my wiping square
+wordroom = the clear part of the slate | room for another line
+
+any
+opinion city for 1 : There's space within these walls for a closed letter to be nobody else's entire concern. I value the courtesy.
+opinion road for 1 : A delivered letter's got two sound boots and a passable road to thank before anyone thanks the sender.
+opinion strangers against 1 : I leave a new caller standing where the lamp falls. Each of us can read the other's expression.
+opinion sump for 1 : A wet hood can drip outside my own door without anybody pretending water's a disgrace. I know where I belong.
+opinion times for 1 : There's stew in reach and a sound patch above it. Today those things weigh more with me than a list of grievances.
+opinion watch mixed 1 : A sergeant can hear two accounts carefully and still have only half the matter. I hold judgement there till something further comes.
+opinion houses mixed 1 : An important address gets its letter in the same state I took it. It doesn't get to command the weather too.
+opinion drink mixed 0 : A drink after work is a private decision until somebody has to carry the cup or the drinker home.
+
+grown
+line greet : I've a dry bit of ground to hear you from.
+line greet [pair.band=strangers] : Face the light. Now we'll know each other's faces.
+line greet [here.time=dawn] : The paper's come through a wet morning whole.
+line greet [here.time=dusk|night] : Come under the last of the eaves.
+line greet [self.working=yes] : I'd hear one clear account before taking the next.
+line kin.open [pair.kin!=no] : Family can share the shelter of this eave.
+line again.open : I haven't lost the place where you left off.
+line greet.return : My hood leaves one ear free.
+line greet.return [pair.band=friends|family] : No slate needed to recall your voice.
+line greet.return [self.working=yes] : I heard across the scratching of my slate.
+line greet.return [here.time=dusk|night] : You're plain to hear through this quiet rain.
+line farewell : Keep your paper under a good cover.
+line farewell.return : My hood can come the longer distance home with me.
+line farewell [here.time=dusk|night] : Step where the lamp gives some account of the stones.
+line react.news : Give me the beginning in the witness's own words.
+line react.news.new : A clean piece for the slate.
+line react.news.known : That's been through this fold once before.
+line react.news.doubt : Would the original teller recognise those words?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave a dry seat available in that house.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. One small clear matter amid all the damp.
+line answer.how : Got a sound hood and my full share of work.
+line answer.how [self.working=yes] : Holding one matter still while the next settles.
+line ask.how : Has anything worth keeping come through your hands today?
+line sympathise : There's no duty to make a neat account of your grief.
+line reassure : You can begin again. I've got more slate.
+line decline : I'd be giving your business a hurried hearing if I took it now.
+line accept_decline : I'll fold my request away until an easier occasion.
+line thank : Your patience kept a difficult account legible.
+line deflect_thanks : Pass on a sound scrap of paper someday.
+line preclose : My hood has stayed folded about long enough.
+line preclose [self.working=yes] : There's another caller due a clear slate.
+line accept_preclose : I'll close the brim over this bit of business.
+line ack : Understood plainly.
+
+scene hood
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I carry my hood in sunshine. An oilcloth hood folds down smaller than an excuse.
+b : Isn't it heavy? | What else fits in there?
+a : Hardly heavier than a damp letter. I know which weight I prefer. | A paper inside the doubled brim. There's my library in its entirety.
+
+scene work
+when topic=work self.job=guard self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A slate gives a caller a quiet moment between one sentence and the next.
+b : Are you writing every word? | What if the caller speaks fast?
+a : I mark the things that matter and read those back. | I ask for the last part again. Speed's a poor reason for keeping a mistake.
+
+scene letter
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I'm carrying a sealed paper that means to outlast the weather.
+b : Whose business is enclosed? | When can you deliver it?
+a : The reader's. I need the address, the seal and a willing hand at the destination. | When the addressee can take it whole. No advantage in leaving good paper to an empty step.
+
+scene tag
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I like an address written clear of the crease.
+b : Is a fold really that deep? | Would you open the letter?
+a : A little wear there will turn a name into two short puzzles. | No. I can ask the sender about the outside without asking about the inside.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : The best mutton in my bowl comes away from the bone under a spoon's edge.
+b : Do you want it very soft? | What about the broth?
+a : Soft enough for supper without needing the concentration of a shift. | Thick enough to stay a moment on the bread before dripping off.
+
+scene larder
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A full larder still needs a sweep under the bottom shelf.
+b : With everything still there? | Would you do it before supper?
+a : I move one sack across at a time. There's no sense emptying a little room into an even smaller passage. | If I see loose grain, yes. Rats won't wait for grace.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : There will be no supper left on a bare floor overnight in my care.
+b : Not even in a pot? | Where can a heavy sack go?
+a : A pot gets a lid and a stand. Washing up is a service to the following morning. | On a raised board with clear space around it. A little sawdust tells its own story there.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain makes a different tapping sound on the brim from a cold hard shower.
+b : Could you tell with closed eyes? | Why keep your hood on?
+a : I could tell with one ear uncovered. The skin below it makes a competent second witness. | I like a shower well enough. The paper folded above my ear has stricter tastes.
+
+scene weakrain
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle insinuates itself past a collar without a single honest knock.
+b : Does your hood stop it? | Would you complain of a downpour?
+a : If I've got the overlap right. I dislike having to diagnose it afterwards from a cold neck. | A downpour announces its terms plainly. I can choose a doorway and see the worst of it pass.
+
+scene dancing
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : A dance goes best if there's a peg for my hood in sight of the floor.
+b : Does it need guarding? | What step would you choose?
+a : No, I merely keep an eye on my folded papers. | A turning step with a clean landing. Nothing so grand that a missed beat costs the floor a whole set.
+
+scene brim
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I keep the lower edge of the hood away from my ears when I can.
+b : Does it rub? | Will a loose edge do?
+a : On a long walk a hard seam will demand more attention than the street. | A thumb's width outside the ear lets a voice in and keeps an ordinary drip out.
+
+scene sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : By my door in the Sump we've room to leave a pair of dripping boots outside a dry mat.
+b : Can many boots fit there? | Would you take a larger house?
+a : Precisely two boots and a heel of stone. I count it generous in wet weather. | I'd want to know what sort of neighbours came with the extra room.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd gladly lend #self.friend# the dry end of an eave.
+b : Which end would you take? | Would company spoil the quiet?
+a : The one sheltered by my own brim. I've already brought my own accommodation. | Only loud company. One familiar greeting can sit quietly for quite a while.
+
+scene priested
+when topic=faith self.priest
+does tell.self / ask.detail / answer.detail
+a : There's a matter about keeping confidence I'd take up with #self.priest#.
+b : What sort of matter? | Why ask another wolf?
+a : When keeping silent begins to protect the wrong person. It isn't settled by speaking louder. | I know how to keep a paper shut. A conscience is a less straightforward article.
+
+scene mark
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : On my slate a witness's words and my own question each get a separate mark.
+b : Which mark denotes your question? | Would the mark be enough later?
+a : My questions start with a little upward hook. I never put that hook in somebody else's mouth. | Only for today. A serious matter deserves a proper record while I still remember the voices.
+
+scene lamp
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I hold a page sideways to find a raised seal before bringing the light closer.
+b : Can you read wax that way? | Why take the trouble?
+a : I can see if the wax is present. Reading its mark asks a better light. | A flame beside oilcloth is an unpromising way to preserve a letter.
+
+scene count
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Good oilcloth should earn its price along the seam as well as across the broad face.
+b : Where would you test it? | What counts as a failure?
+a : At a sharp fold, with a single drop of clean water. | A wet mark below that drop. Eloquence about the finish won't dry a page.
+
+scene sunlight
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Against a bright sky I can inspect each little patch in my hood.
+b : What are you hoping to see? | Would a spot of light matter?
+a : Unbroken dark. The view I want is no view through it at all. | It would mark the place to mend while I had daylight and dry fingers.
+
+scene nap
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A folded hood makes a very poor pillow if you've stored a letter in it.
+b : Does it crackle? | Could you take the letter out?
+a : Every movement at the ear makes a paper sound. Most unsuited to forgetting one's day. | Certainly. That realisation generally arrives before a very deep sleep.
+
+scene slow
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I prefer the extra walk to a slippery shortcut when I've a delivery in hand.
+b : Would the paper get there later? | Who decides which way?
+a : A little later than a successful shortcut. Considerably earlier than a fall followed by a fresh letter. | My boots take the walk. I'll take responsibility for choosing it.
+
+scene errand
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to put a difficult letter directly into the hand meant to receive it.
+b : What would you say at the door? | Would a reply be expected?
+a : The minimum needed to make clear who should have it. The sender has supplied the rest. | For an acknowledgement, if one was asked. Beyond that my hood can take me home.
+
+scene tidy
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I brush the inside of the brim before putting a clean paper there.
+b : What could be inside a fold? | Why not use a pocket?
+a : One hard speck embosses a page rather more effectively than a signature. | If my coat gets wet the pocket will follow. The brim has earned its separate employment.
+
+scene neighbour
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new arrival can give a perfectly careful account while still getting our street names wrong.
+b : How do you sort that out? | Do you ask about home?
+a : I ask about doors and slopes. Those change less between one wolf's ears and another's. | Only if it matters to the account. A traveller needn't pay a personal story for directions.
+
+scene stacks
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I put the finished slates face down and the unfinished ones face up.
+b : Could you just mark each one? | What about a slate with two matters?
+a : A turn of the wrist saves one small mark I'd otherwise have to remember to erase. | Each matter gets its own space. I won't turn either away with a question still open.
+
+scene festival
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a busy dance I wait for the sudden hush after the tune when everybody remembers the floor.
+b : What's special about the floor? | Do you miss the tune?
+a : The heel that was about to descend can settle slowly. There's one quiet instant even in company. | I expect another. The fiddler's entitled to a drink before supplying it.
+
+scene hoodline
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : In younger days I used the brim as a bowl to catch rain.
+b : Would it hold much? | What stopped you doing that?
+a : Enough to give the next wearer a thoroughly convincing surprise. | Becoming the next wearer. The lesson proved admirably short.
+
+scene quiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can sit a while in silence without regarding every minute as an unreported event.
+b : Does it come easily? | Will you take the hood off there?
+a : After a small initial effort. The rest generally take care of themselves. | Under a sound roof, gladly. A bare ear can hear a quiet thought.
+
+story spiltink [topic=work self.job=guard]
+  : I shut a fresh slate against my sleeve and then went to get something to eat.
+  : At the table I found I'd transferred half a question to the wool, backwards.
+  b : Did you recover the words?
+  : I had to think them through again. I count that a better recovery than reading my own elbow.
+
+story hoodbowl [topic=weather]
+  : I once left my hood lying crown down beneath a roof with a little leak.
+  : On lifting it I found a tiny solitary leaf floating where one ear should have been.
+  b : How did the leaf come out?
+  : Floated it onto a saucer, dried the hood, and stored the saucer right side up.
+
+story dancepeg [topic=pastimes]
+  : I hung my hood on a peg before trying a turning dance.
+  : Every turn brought the same peg into view, which was how I knew the fiddler wasn't the one rushing.
+  b : Could you mend your timing?
+  : I gave my heel one beat to itself. The peg and I finished in perfectly respectable agreement.
+
+story bonekey [topic=food]
+  : A mutton bone slid down inside a heavy stew pot and propped the lid slightly open.
+  : A long thin whistle followed each puff of steam. I listened quite seriously before taking the lid off.
+  b : Did it make a tune?
+  : One unfinished note. I preferred the stew once I'd allowed the musician to retire.
+
+story creasesmall [topic=travel]
+  : I tried folding a blank sheet four different ways to find which crease would sit securely behind my ear.
+  : The smallest fold came out on its own like a little white wing when I turned my head.
+  b : Which one stayed?
+  : The broad flat one. Any letter that plans to fly can make better arrangements outside my hood.
+
+rule @slate
+when concept=bark self.job=guard self.working=yes
+does aside
+cooldown 8h
+say One matter on the slate at once. | Hold a moment while I read it back.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Tuck the paper past that seam. | Keep the open edge turned away.
+
+rule @stew
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say Lid on while the broth settles. | Spoon's enough for that bit of meat.
+
+rule @rat
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Sweep the grain out from under there. | Leave a gap round the bottom sack.
+
+rule @lamp
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Turn the seal sideways near the light. | That's far enough for oilcloth.
+
+rule @dance
+when concept=bark self.likes=dancing
+does aside
+cooldown 8h
+say The turning heel needs clear floor. | Give the fiddler time to breathe.
+dlg resident.hub : I've kept the slate clear for a fresh matter.
+dlg resident.hub [topic.meeting=known] : I remember your voice under the eaves, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep your paws in view and give the account at your own pace.
+dlg resident.hub [here.time=night] : In this light I shall listen first and write afterwards.
+dlg resident.job [self.job=guard] : #self.trade_words.capitalize#. I hear a witness through before I ask for the missing part.
+dlg resident.job : My best use is hearing the bit that got lost in a hurry.
+dlg resident.news [world.news] : I have one matter with a plain heading. #world.news#.
+dlg resident.news [world.event_words] : There's been talk of #world.event_words#. I keep the account short until there's a witness.
+dlg resident.gossip [here.gossip!=yes] : No private word is lying about for a passerby to read.
+dlg watch.hub [here.wanted=no] : I'm listening. Begin with what brought you here.
+dlg watch.hub [here.wanted=yes] : Your name has business with the Watch. The sum is #here.fine# pennies.
+dlg watch.crime [here.witnessed=0] : Start with what you personally recall. There's a little room on my slate.
+dlg watch.reported [topic.reported=yes] : There. Your witnessed account is on the record now.
+dlg watch.fine [here.wanted=no] : No outstanding sum stands against you here.
+dlg watch.bye : You'll find my direction clearer while the paving's dry.
+dlg resident.bye : The paper can go under its cover again.
+
+graft @hoodshelf resident.hub
+choice Does that hood really carry a library? -> hoodshelf
+node hoodshelf
+say One shelf, one paper. A turn of oilcloth keeps out the rain while a flat wooden stay keeps the seal from pressing against my ear.
+choice Would you let me see the letter? -> hoodshelf_more
+choice Set the blank scrap down. -> hub
+node hoodshelf_more
+say A blank scrap will demonstrate the pocket neatly. A sealed letter travels in the confidence of its addressee.
+choice Set the blank scrap down. -> hub
+choice Leave the hood folded. -> bye
+
+graft @slatehook resident.hub
+choice What does that hook on the slate mean? -> slatehook
+node slatehook
+say It marks a question of mine. Everything after it needs an answer, so I take care never to put the mark among a witness's own words.
+choice Can you rub the hook out? -> slatehook_more
+choice Set aside the wiping cloth. -> hub
+node slatehook_more
+say When I've had the answer and read it back. That way a little clean patch speaks as plainly as a line full of writing.
+choice Set aside the wiping cloth. -> hub
+choice Make room for the next caller. -> bye

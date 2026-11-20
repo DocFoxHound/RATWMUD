@@ -1,0 +1,285 @@
+mantle rm230
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_liv_cinderby
+title the blunt awl
+fits stage=adult|old
+prefers job=crafter temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk closes_one_eye_to_sight_a_straight_seam
+likes smoked_eel wrestling festival_bells frosty_mornings
+dislikes smoke wet_floors
+fears an_unnoticed_split
+hopes a_piece_that_wears_evenly
+topics work +0.6 weather +0.4 pastimes +0.2 gossip -0.2
+styles comfort=mend gossip=spare refuse=sharp tease=none
+marks oath saying
+persona #self.first# sights along seams from one end with an eye shut, and looks just as hard at a promise, a complaint or a careless apology.
+
+words
+oath! = Hide on backwards | Three blunt awls
+saying! = Judge a seam from both ends | Mark twice before making holes
+seam = the joined edges | a long straight seam
+awl = my short awl | the piercing tool
+split = a narrow split | a shallow tear
+welt = a little welt | the raised edge
+cord = a waxed length | a strand of cord
+hoop = a hoop of leather | a stiff ring
+scrap = a piece from the trimmings | a soft offcut
+edge = a shaved edge | the bevel
+strain = a steady pull | a sideways strain
+eel = a ribbon of smoky eel | the salty end
+frost = a white crust | a prickling of frost
+heel = the back of a boot | a rounded boot heel
+
+any
+opinion houses against 2 : A House seal takes half a second to press. Who had to stand about waiting for it to cool?
+opinion merchants against 2 : If I'm paying for stout goods I want the weak places pointed out first.
+opinion church for 1 : A torn coat doesn't have to prove deserving before somebody puts a stitch in it.
+opinion dole for 2 : Take the bread if you need it. Nobody's entitled to count the ribs under your coat.
+opinion festivals against 1 : Music I can stand. Slippery footing and an elbow in my ear spoil a fine tune.
+opinion sump for 1 : When a thing breaks in the low streets, somebody nearby knows what can be salvaged.
+opinion watch against 1 : Show me where blame joins proof. Too often there's a gap where the seam should be.
+grown
+line greet : Stand clear of the light across this edge. There, now I can see you. | A step to the side and we're both comfortable.
+line greet [pair.band=strangers] : I let a stranger take the measure of me square on. | You can speak plain here without dressing it up.
+line greet [here.time=dawn] : Good slant to the light this early. Looks honest. | Up already. That's one thing we've got in common.
+line greet.return : I did hear you. I wanted to finish looking first. | Caught your voice as you came abreast of me.
+line greet.return [pair.band=friends|family] : Your eye's as welcome as your face. Come look. | There's one wolf I can talk quite straight to.
+line greet.return [here.time=night] : Hello in return. I'll finish the fine work by daylight. | Too dark to do much more than talk, anyway.
+line greet.return [self.working=yes] : You can speak while I'm working. I don't need my ears for this join. | A greeting doesn't put me behind. Hello.
+line again.open : We keep coming level with each other. | You've only missed one bit of progress.
+line kin.open [pair.kin!=no] : A straight answer for kin. Come get it. | There you are. Stand by my better side.
+line hail [pair.band=friends] : Over here where the light runs along the edge. | If you've a minute I'd value your eye.
+line farewell : Go carefully where the footing changes. | Take your time with the uneven part.
+line farewell.return : And to you. I'll see this bit through. | Leave the light where I can use it.
+line react.news : Lead with whatever you witnessed personally. | Give it a clean edge for me.
+line react.news.known : That matches the first account near enough. | I'd heard it laid out almost exactly so.
+line react.news.new : First I've known of any such thing. | There's a join in the tale I hadn't seen.
+line react.news.doubt : That won't bear any weight till you've got more to go on. | I find a weak place in that story every time.
+line react.news.sorrow [topic.kind=death|theft|assault|arrest|crime|loss] : You can count on me for the practical part. | Damnably hard news. I'll give you my full attention.
+line react.news.glad [topic.kind=marriage|work|birth|apprentice] : Yes, that's something that'll hold up under a bit of wear. | A good strong piece of news for once.
+line ask.how : Where does the day sit badly on you? | Holding up under today's pull?
+line answer.how : My patience is wearing at the corners. Otherwise sound. | I'm as level as the work permits.
+line decline : I'd make a promise I couldn't carry through. I won't do it. | Ask for something smaller and I may have a different answer.
+line accept_decline : Clean refusal. Leaves me sure where I stand. | Better now than halfway through the job.
+line preclose : I'd like the light for a last inspection. | I'll go before fatigue makes a sloppy job of me.
+line accept_preclose : Go on. We came to a clean stopping place. | You've done your share of the listening.
+line thank : You showed me the weak point before I leaned on it. Thanks. | I know what that took. I'm obliged to you.
+line deflect_thanks : A straight join's worth the time it takes. | I'd have bothered if nobody was looking.
+line sympathise : I believe you about the part nobody can see. | It wears through underneath sometimes. That's still a hurt.
+line reassure : Let's see what's solid before we start counting splits. | One good patch buys the time for a better mend.
+line ack : Straight enough for me. | Yes, those ends meet.
+
+scene closing_eye
+when topic=work|pastimes
+does tell.self / ask.detail / answer.detail
+a : I shut one eye to look for a crooked join. | Turn the work end for end before you call it straight.
+b : Wouldn't two eyes see more? | The join won't change.
+a : More, yes. I want one answer to one question. | Your eye might. It gets fond of a line it drew itself.
+
+
+scene small_split
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : Holes set close together aren't always a kindness to the stuff between. | I won't drive an awl through till I know where it comes out.
+b : More stitches should hold better. | Surely it's the other side?
+a : Enough little holes make one fine long tear. | That's a side. I asked for a place. There's a difference.
+
+
+scene tight_cord
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / assess
+a : I leave a touch of play in this cord. | A beautiful tight stitch can be a miserable thing to wear.
+b : Afraid it'll snap? | You look proud of it all the same.
+a : Of the cord cutting the edge before it ever thinks of snapping. | I'm looking to see where I ought to loosen it.
+
+
+scene rain_margin
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Never mind the clouds. Look at the dark edge of that patch of paving. | The last drop to fall from an eave is the one I wait for.
+b : What will it tell you? | Why that one?
+a : If the wet edge stops moving, the water's easing up. | Because I forgot it once and went out with a clean collar.
+
+
+scene look_frost
+when topic=weather here.weather=clear here.season=winter
+does tell.self / react.self / assess
+a : Frost prints every scratch on a flat stone. | White crust on a rail shows where a warm paw rested.
+b : You can read scratches now? | Reading tracks on a railing?
+a : Only how deep they lie. The story's somebody else's affair. | No. Just pleased to see a little warmth made a mark.
+
+
+scene dark_supper
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I separate the flesh from an eel in a single strip if it'll let me. | Smoke on a slice of eel is one thing. Smoke up my nose is quite another.
+b : Does it always oblige? | Which end are you standing at?
+a : No, and the little pieces taste exactly as good. | The supper end, for preference. Leave the stinging eyes to somebody else.
+
+
+scene shoulder_hold
+when topic=pastimes self.likes=wrestling
+does tell.self / react.self / assess
+a : A good wrestler feels the slack before making a pull. | Nobody wins a fair hold by worrying the fur.
+b : Sounds like work. | Does pulling fur happen often?
+a : That bit does. The happy landing is what makes it a pastime. | Once is plenty. I make my feelings plain before there's a second.
+
+
+scene two_bells
+when topic=festival self.likes=festival_bells
+does tell.feeling / ask.detail / answer.detail
+a : I'll have the bells without the crush of the square, thank you. | Bells carry farther than the folk selling things under them.
+b : Where would you stand? | That's the attraction?
+a : Just off the main way. Same sound, better use of my ribs. | A tune I can enjoy without anyone trying to wrap it up and price it.
+
+
+scene headroom
+when topic=home self.quarter=sump
+does tell.self / react.self / assess
+a : A Sump stair can wear its edge down on just one side. | I can tell the busy half of a landing by the smooth boards.
+b : Same feet over and over? | Which half would you choose?
+a : Usually. Most of us have learned where the wall can lend a shoulder. | The rough. Better hold underfoot when a crowd comes through.
+
+
+scene honest_cut
+when topic=prices
+does give.opinion / ask.detail / answer.detail
+a : I'd give more for one square scrap than two you can't match. | Price the part you can use. The scraps aren't much of a bargain.
+b : Because it's prettier? | Not the time spent?
+a : Because I know exactly what I can get out of it. | Count the time. Just don't ask me to pay for the trimmings twice.
+
+
+scene heavy_shift
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : In a lean spell I see more patches sewn over other patches. | A bad week makes things wear through faster.
+b : Does the third one even hold? | Same amount of wear, surely.
+a : Only as well as what's still underneath. And that's the worry. | Yes. Fewer things to spread it over.
+
+
+scene needle_rumour
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I've heard talk with a point at both ends. Very little use for it. | Stories told sideways tend to stick.
+b : Why not? | Stick where?
+a : Whoever takes hold gets pricked. That seems a poor piece of work. | To the least deserving nose, usually. I'm keeping mine clear.
+
+
+scene fog_register
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Can't sight a straight line very far in this fog. | Fog makes a wall seem nearer if you're impatient.
+b : What do you use instead? | You've tried that, haven't you.
+a : My front paw. Slow business, but honest. | Nearly did. Pride would look poor with a flat nose.
+
+
+scene borrowed_corner
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : I'd show #self.friend# an unfinished piece. That's my measure of trust. | I value the quiet I can have beside #self.friend#.
+b : Worried somebody might steal the idea? | Nothing to say?
+a : No. A verdict on a single unfinished hem does the coat little justice. | Plenty. A friend doesn't require it all at once.
+
+
+scene loose_grain
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A scratch across an edge catches my eye even at a distance. | I will quite often go back to look at something twice.
+b : Hard to leave it alone? | Always find a fault?
+a : Looking is allowed. Touching somebody else's work is another question. | Sometimes I see how very well it was done. That's worth the walk back.
+
+
+scene bothends
+when topic=faith
+does give.opinion / ask.detail / answer.detail
+a : My kind of prayer begins with looking and ends with doing. | A blessing on a poor mend is a nice thought. I'd still like it mended.
+b : Looking for what? | You ask for quite a bit.
+a : Whoever needs the spare seat. No sense offering a chair to a door. | Just the whole job. Good wishes take up very little room beside it.
+
+
+scene night_eye
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : By lamplight I trust the pad of a finger first. | A shadow can put a kink into a perfectly straight line.
+b : Do you feel a flaw that small? | How do you check it?
+a : I can feel where I need to stop and look again in daylight. | Move the lamp. If the kink moves too we've saved a lot of needless poking.
+
+
+scene finished_test
+when topic=dreams
+does tell.plan / react.self / assess
+a : I'd like to make something that wears out evenly everywhere at once. | Imagine a pair of boots with no weak corner.
+b : Then nobody could patch it. | You'd still have to wear them out.
+a : No, but nobody would curse a single rotten seam either. | Happily. Every scuff would be fair wear. That's a decent aim.
+
+
+story crooked_belt [topic=memories|work self.job=crafter]
+  : I once laid a long piece along a rail to get the join ruler-straight. Very handsome thing when I took it off.
+  : The rail had been bowed in the middle. So had my handsome piece.
+  b : Was the whole piece wasted?
+  : Found something round that wanted binding. Let the rail have its one little victory.
+
+
+story wrestling_eyes [topic=pastimes|memories]
+  : I used to close one eye on a wrestling hold the way I would on a seam. Want to know what I overlooked?
+  : The whole other side of the wrestler. Hit the ground quite pleased at having spotted the mistake.
+  b : Did you get back up?
+  : With both eyes wide. Made an appreciable difference.
+
+
+story odd_scrap [topic=home|memories]
+  : I kept a trimming cut in the curl of a tail. Never could find anything that wanted such an extraordinary patch.
+  : One day a pot began rocking on the sill. Slid the tail under the low foot and there the thing stayed.
+  b : Does that count as a mend?
+  : Pot's still whole. Foot's still low. Call it an agreement.
+
+
+rule @wetfloor
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Short steps on that shine. It doesn't give much grip. | Dark at the join means wet underfoot.
+
+
+rule @craft
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say Leave me a sound margin beside that cut! | If the edges creep, stop and bring them back level.
+
+
+rule @eyes
+when concept=bark
+does aside
+cooldown 8h
+say Give me the view from the far end a minute. | I want that line where the light strikes along it.
+
+
+rule @meal
+when concept=bark self.likes=smoked_eel
+does aside
+cooldown 8h
+say Skin off, sweet strip in the middle. That's the bite I want. | Leave the narrow end. It has a good chew to it.
+
+dlg resident.hub : If it's a plain question there's no need to come at it sideways.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I recognise the way you stand just clear of the work.
+dlg resident.hub [here.time=night] : Waiting till daylight for a close look. I can give you an ear.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep your paws well clear while you ask that.
+dlg resident.job [self.job=crafter] : #self.trade_words.capitalize#. I want anything that leaves my bench to bear a decent pull.
+dlg resident.job : Useful work. Looking twice is part of finishing.
+dlg resident.bye : That'll hold us till we speak again.
+graft resident.hub
+choice Why look at a seam with one eye shut? -> seam_sight
+node seam_sight
+say I want the line against one fixed point. I walk my eye along it from both ends. A bad stitch is a little hill in otherwise level country.
+free
+choice What if you only find one bad stitch? -> badstitch
+choice I'll leave you the light. -> hub
+node badstitch
+say Pull on each side of it. If the neighbours take the strain, it can stay. I mind what holds up better than what looks perfect.
+choice That's a useful test. -> hub
+choice I'm off now. -> bye

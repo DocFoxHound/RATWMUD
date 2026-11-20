@@ -1,0 +1,263 @@
+mantle rm304
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_tage_slagworth
+title the humming measure
+fits stage=adult|old
+prefers temper=calm honesty=guarded
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk measures_a_wait_with_the_length_of_a_quiet_sea_air
+likes spiced_cider old_tales festival_bells first_snow
+dislikes drizzle night_noise
+fears a_jar_left_unstoppered a_rattle_behind_the_wall
+hopes a_counter_with_a_shutter_of_its_own
+topics work +0.5 pastimes +0.3 dreams +0.3 weather +0.2 gossip -0.4
+styles comfort=quiet gossip=closed refuse=firm tease=none
+marks oath saying
+persona #self.first# measures a pause by humming a short sea air, lets cider spices settle completely, and lets questions settle even longer.
+
+words
+oath! = Cloves in the bung | Sink the high note
+saying! = A measure can wait out a hurry | A jar remembers a careless lid
+longair = my slow four-bar air | a tune with one long return
+lowend = the low humming part | that final note
+corkring = a soft ring of cork | a worn bung cut thin
+scentcloth = a clean scrap of linen | a dry tasting cloth
+ciderjaw = a little clove heat | warmth at the hinge of the jaw
+lidspace = one small finger's width | a narrow gap
+mugmark = a pale half-circle | a line left by a mug
+stallshade = a shaded counter | a stall with a deep shutter
+snowrim = white along an upper rim | a thin seam of snow
+dripnoise = the slow ticking of drops | a clicking from a wet ledge
+talestring = a tale with a long return | a story that comes back on itself
+
+any
+opinion dole for 2 : Hungry wolves can't earn a dinner on an empty promise either. Give a dinner.
+opinion church for 1 : Nobody times a prayer in chapel. I value that.
+opinion houses against 2 : There's fine lettering on the closed side of too many doors.
+opinion strangers against 2 : Let a name settle in my memory before you ask me to open anything.
+opinion festivals mixed 0 : The first peal lifts me. The shouting that follows puts me down again.
+opinion merchants against 2 : I dislike sellers who tap a measure on the board until the buyer stops looking at it.
+opinion sump for 1 : From down in the Sump the city sounds different. You hear what keeps running after the doors shut.
+
+grown
+line greet : I'll lay the tune aside. Speak.
+line greet [pair.band=strangers] : We've room for the length of an introduction.
+line greet [here.time=dawn] : Morning. The first sound carries a fair way.
+line greet [here.time=dusk|night] : Evening. I heard your foot take the turn.
+line greet.return : That's my measure of quiet done, then.
+line greet.return [pair.band=friends|family] : There's room in the tune for a familiar voice.
+line greet.return [self.working=yes] : I'm mid-count. I'll listen between strokes.
+line greet.return [here.time=dusk|night] : A low word carries comfortably tonight.
+line kin.open [pair.kin!=no] : Kin may have the first word freely.
+line again.open : I remember where the measure broke off.
+line hail [pair.band=friends] : Over by the shutter, if you want me.
+line farewell : Keep the slow part for the walk back.
+line farewell.return : And a smooth ending to your own day.
+line react.news : Let the facts stand a breath once they're out.
+line react.news.new : That hadn't come within my hearing.
+line react.news.known : Heard it already. Same length, same notes.
+line react.news.doubt : That version runs longer than the facts I know.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Such a loss needs all the quiet it can get.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll mark that moment with the high note.
+line ask.how : Is anything pressing hard on you?
+line answer.how : I've got my breathing back to its usual time.
+line thank : A neat kindness. I will remember the measure of it.
+line deflect_thanks : Barely cost me two notes.
+line sympathise : I can keep the room quiet for a little.
+line reassure : Nothing here needs to be settled in one breath.
+line decline : I've promised the quiet part of my evening elsewhere.
+line accept_decline : Then keep your time and I'll keep mine.
+line preclose : My last note's about used up for today.
+line accept_preclose : You've given this a fair hearing. Go easily.
+
+scene air_measure
+when topic=pastimes|work
+does tell.self / ask.detail / answer.detail
+a : #longair.capitalize# takes the length of a decent pause. | I slow #lowend# until I can feel my own breath again.
+b : You always hum the same speed? | Have you gone short of air?
+a : Near enough. My ears tell me when my temper's cheating. | Only of patience. This gets me some back.
+
+scene jar_breath
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : There's a smell left where the lid's clean belly meets the air. | I lay #scentcloth# flat before a tasting.
+b : A good smell? | Why flat?
+a : If there's any doubt, I'd want another nose on it. | A fold can hold yesterday's flavour. I'd like today's answer.
+
+scene spiced_cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : A good clove warms you after the cup has gone down. | More spice doesn't always mean a better cup.
+b : Where do you feel it? | How do you judge it?
+a : There. Right at my jaw. That's enough. | Can I still taste the apple? If I can, we may be getting somewhere.
+
+scene festival_bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I like the little gap between the bells practising and the feast beginning. | Bells are public music. My own bit stays below my breath.
+b : Why the gap? | Don't they go together?
+a : The whole day has drawn breath and hasn't shouted yet. | On a good morning, yes. Nobody has to know except me.
+
+scene snow_first
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : #snowrim.capitalize# changes the look of every lid. | First snow is quiet clear through.
+b : Enough to cover a jar? | Clear? It's white.
+a : Only enough to tell me which side the weather's coming from. | I mean I can hear a seam of silence down every street.
+
+scene short_mist
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I'd sooner have honest rain than a fine damp clinging to my throat. | I can hear #dripnoise# long after the wind drops.
+b : Wouldn't you be wetter? | Is it the actual dripping?
+a : Probably. At least I'd know when it had stopped. | Sometimes. Sometimes the last drop gets stuck in my ears.
+
+scene old_story
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : Give me #talestring#. Let me forget the beginning for a minute. | A useful pause in a tale is one I don't have to fill.
+b : Why forget it? | What if you guess the end?
+a : Then the return feels as good as slipping into a coat that fits. | Then I enjoy waiting to hear how the teller gets there.
+
+scene shutter_plan
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd save for a stall with one wall that shuts all the way across. | My counter would catch morning light and leave my face in shade.
+b : Not for a bigger counter? | Shy of customers?
+a : A day's work ought to have an ending. I'd buy the ending first. | Shy of being studied more closely than the goods.
+
+scene late_tapping
+when topic=home here.time=night
+does tell.complaint / react.self / assess
+a : A loose shutter can repeat the same two notes clear through a night's rest. | The smallest noise at night gets steady while every other sound gives up.
+b : Why don't you fix it? | You should try humming.
+a : Happy to fix my own. I'm not traipsing through town in a nightshirt to fix the rest. | I do. I'd gladly give the shutter my part to sing.
+
+scene hard_coin
+when topic=times|prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I'd like a little more distance between a day's pay and a day's hunger. | The small coins sound very grand in an empty jar.
+b : Enough to get ahead? | Takes little to fill the air.
+a : Enough to choose tomorrow's breakfast tonight. | Yes. The sound is rich and inconveniently brief.
+
+scene tight_cork
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : An old #corkring# can tell you whether a lid was ever forced. | A lid should come away clean enough to put back.
+b : What does it say? | Even an empty jar?
+a : Smooth on one side, torn on the other. That's a hand in too much hurry. | Especially an empty jar. I may need the smell of clean glass again.
+
+scene closed_friends
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# hear my little tune end to end. | A quiet drink would suit me beside #self.friend#.
+b : Quite a privilege? | Quiet friendships last longer?
+a : I reckon it is. I usually stop at the sound of company. | I've no notion. Quiet evenings feel longer, and I like that.
+
+scene bay_air
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : When I'm looking across the Sound I let my sea tune go three beats farther. | A narrow street sends a hum back sharper than the bay does.
+b : Why three? | Which suits you?
+a : Enough to get somewhere between this shore and the next. | The bay. It lets me make a mistake privately.
+
+scene wait_wheels
+when topic=times|travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : All the waiting over late carts gets poured into a single shout when wheels show. | An empty stretch of road takes no time at all to inspect.
+b : Have the wheels shown yet? | So why stand here?
+a : No. Still room to keep one's ears out of the shouting. | The next look might bring a brimful cart. I haven't given up on it.
+
+scene shy_market
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I can wish a new arrival well without giving up my place in the queue. | I take a while to welcome anybody through a door.
+b : Just a place? | How long?
+a : That place cost part of a morning. | Long enough for a name to sound like a name and not a key trying a lock.
+
+scene private_cork
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : There's a good reason I keep a lid on that story. | The name on that rumour isn't mine to spend.
+b : Is it about a friend? | Is a name like coin?
+a : It's about somebody who may have friends. That's plenty to go on. | No. You can usually get another copper.
+
+scene public_words
+when topic=news world.news
+does tell.news / react.self / assess
+a : The account from #world.news_from# was #world.news#. I kept it short. | #world.news#. That bit carried from #world.news_from#.
+b : Where'd you shorten it? | Do you expect anything more?
+a : At the end of what I heard. I took my own guess clean out. | I expect to listen if more comes. A useful small difference.
+
+scene easy_cup
+when topic=food|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn a mug by the handle instead of pushing it round the board. | I'd rather a plain chipped cup than a tall one which wobbles.
+b : Why spare the board? | No fear of the chip?
+a : I'm sparing the next drink. Nothing tips if the hand stays low. | Small chip on the far rim makes a better handle than most fancy handles.
+
+story bung_skip [topic=memories]
+  : I pressed a little dry cork onto a saucer full of water.
+  : Cork leapt clean over the rim and stuck behind a button.
+  b : Were you able to find it?
+  : Only when my coat refused to close. Took me one wet saucer to teach a button to object.
+
+story air_return [topic=pastimes|memories]
+  : Once an echo sent my tune back so late I had already started the next one.
+  : For three whole notes I thought some stranger knew the harmony.
+  b : Were the notes any good?
+  : Two good ones. On the third I had to agree to differ with myself.
+
+story tall_cup [topic=food|memories]
+  : I poured cider into a cup with a painted line halfway up the side.
+  : Stopped at the line without thinking and put the jug away.
+  b : Was it meant to mark a measure?
+  : Part of a painted fence. A tall painted tree on my next cup bought me a far better helping.
+
+rule @lip_cork
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Dry round the shoulder. That one's properly shut.
+
+rule @quiet_close
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Let the silence get a good start on the next note.
+
+rule @peal_carry
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A bell off in the distance counts for a full bar here.
+
+rule @drizzle_gate
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Can't get rid of that little tick at the sill.
+
+dlg resident.hub : A plain word will carry well enough from there.
+dlg resident.hub [topic.meeting=known] : #topic.player#. Your voice fits where I remember it.
+dlg resident.hub [here.time=night] : Speak easily. Darkness leaves plenty of room for sound.
+dlg resident.hub [pair.disposition=hostile|wary] : My patience will reach that far. I prefer to stay here.
+dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Takes a good nose to know when to wait.
+dlg resident.job : I earn what I can and keep a careful measure of the time.
+dlg resident.news [world.news] : From #world.news_from# I've kept this much: #world.news#.
+dlg resident.gossip [here.gossip=yes] : You'd be asking me to loosen a lid I'd sooner keep tight.
+dlg resident.bye : Take the unhurried way if the day allows.
+
+graft resident.hub
+choice How long is the tune you're humming? -> air_length
+node air_length
+say Just long enough to take the edge off a hot mouthful. Learned that much of it before I ever had cause to remember the words.
+choice What are the words now? -> air_words
+choice I can hear the ending. -> hub
+node air_words
+say Still no words on my part. You could set anything to it. I'd hum softly so you could hear which way the tune meant to go.
+choice I can work with a tune like that. -> hub
+choice I'll carry the tune away. -> bye

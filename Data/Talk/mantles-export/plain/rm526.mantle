@@ -1,0 +1,372 @@
+mantle rm526
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_isolde_fell_
+title the graft that took
+fits stage=adult|old
+prefers job=noble
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk presses_a_thumb_to_the_graft_tie
+likes fried_fish digging fresh_straw warm_rain
+dislikes salt_wind drizzle
+fears a_root_drowned_in_salt
+hopes a_house_strong_enough_for_another_winter
+topics work +0.7 land +0.5 family +0.3 prices +0.3
+styles comfort=practical gossip=plain refuse=cold tease=none
+marks oath saying
+persona #self.first# tests a visitor's usefulness by offering a small definite task, cuts old graft ties loose with care, and keeps a salt-stiff fragment of cord beneath the garden weights.
+words
+oath! = Sour the rootstock | Salt in the furrow
+saying! = Show me where it took | A living branch pays in fruit
+scion = a short green scion | a young fruit shoot
+graftcord = a soft tying cord | a length of worn tape
+brinecord = a salt-stiff strand | a length of crusted line
+rowpeg = a plain row peg | a square garden peg
+budscale = a reddish bud scale | a dry little husk
+leafpress = a flat shale weight | a thin piece of slate
+fishturn = a browned fish edge | a crisp curl of fish
+patbutter = a little curl of butter | a shaving of pale butter
+wetearth = a clot of black soil | a damp earth crumb
+strawbase = a bed of sound straw | a strip of golden straw
+sourfruit = a hard little windfall | an unripe knot of fruit
+berryvat = an open fruit vat | a broad mash tub
+dibbled = a short planting stick | a plain wooden dibble
+stemline = a narrow join | a faint seam in the bark
+
+grown
+
+opinion houses for 2 : A House earns its holdings by sustaining them through a change of season. A grand name will not preserve even a cask.
+opinion merchants mixed 1 : I am civil to merchants with sound goods. The degree of my civility has never altered the weight I require.
+opinion dole against 1 : I would have a kitchen give me its exact number of portions before it asks for another vat of fruit.
+opinion city for 1 : There is soil above the streets where roots will live. I have my reasons for keeping my interests on land.
+opinion road for 1 : A cart of ripe fruit makes the value of a sound road plain within an hour.
+opinion newcomers mixed 1 : A stranger who handles a valuable shoot with care has already supplied one satisfactory introduction.
+opinion church mixed 1 : I value a place to give silence its due. A great many public occasions make no provision for it.
+opinion watch mixed 1 : What matters to me is whether a loaded wagon can arrive intact. Reassurance is easily obtained elsewhere.
+line greet : State what you bring and where it can be put to use.
+line greet [pair.band=strangers] : I'll allow time enough to unwrap a sound sample.
+line greet.return : I recall precisely which part remained to be tested.
+line greet [here.time=dawn] : Use the morning while the ground is still easy to read.
+line farewell : You may leave the sample and take your leave.
+line farewell.return : The next meeting can begin with the result.
+line ask.how : Has today provided anything worth setting by?
+line answer.how : My decisions will survive the weather intact.
+line thank : That was useful. I do not employ the word lightly.
+line deflect_thanks : A good return in due season will answer.
+line decline : I cannot grant terms which would be a burden on the root.
+line accept_decline : Good. A clear refusal can be entered and set aside.
+line sympathise : There is no deadline for what has no satisfactory answer.
+line reassure : Begin with the single thing your hand can actually reach.
+line react.news : Name the source and give me the sound portion.
+line react.news.new : I will have a separate place made for that cutting.
+line react.news.known : That information already has a date against it.
+line react.news.doubt : I'd test the join before committing a season to that stock.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : A sound result. Let the credit fall precisely where the work was done.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bring the living something needed. Leave the manner of grief to those concerned.
+line ack : The join holds under a modest pressure.
+line again.open : Resume with the part that required a second hearing.
+line preclose : We have reached the point where further talk needs a result.
+line accept_preclose : Go and see how the thing fares in actual soil.
+line tell.self : I retain a name most easily after someone has done a useful piece of work.
+line greet.return [pair.band=friends|family] : You need not present your credentials again. Sit here.
+line decline [pair.disposition=hostile] : You have used your time to confirm my original refusal.
+line ask.how [pair.band=friends|family] : What would you choose to salvage from this particular day?
+line farewell [here.time=dusk] : Leave the garden ties loose enough to survive the night.
+line answer.how [here.time=night] : There are still matters I would rather inspect by daylight.
+line reassure [here.time=dawn] : Even a bare branch can be given one full morning.
+
+scene work_1
+when topic=work self.job=noble
+does tell.self / ask.detail / answer.detail
+a : My duty is #self.trade_words#. Let me inspect the fruit before anyone brings the painted label.
+b : Even with a good vintage? | Why keep the label?
+a : Especially then. A distinguished year ought to bear examination. | To name the contents after I am satisfied. It can perform that service admirably.
+
+scene land_1
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : A graft can live under #graftcord# and still be slowly strangled by its own success.
+b : When do you remove the tie? | How can success strangle it?
+a : When the join looks firm and feel the tape beginning to bite. | A growing branch takes more room. A tie doesn't grow just because I chose it carefully in spring.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : There is a small locked place for uncollected debts. Every slip there carries a meaning I remember exactly.
+b : Does age diminish a debt? | Will an eloquent appeal help?
+a : It may diminish the paper. The undertaking has no such convenient frailty. | I would find an actual proposal more eloquent than an hour of excellent pleading.
+
+scene family_1
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I would show #self.child# the least promising row as well as the best cask.
+b : Why begin with a poor row? | Is it a lesson in thrift?
+a : An heir can admire a success without instruction. Knowing when to cease expenditure is harder. | It's a lesson in looking. The saving follows an accurate judgement of what's there.
+
+scene weather_1
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : A salt wind leaves a stiffness in cord that a warm shower won't immediately remove.
+b : Do you throw the cord out? | Does the smell trouble you?
+a : I put the stiff bit aside. I have one such strand I no longer use to bind anything living. | Yes. There are entire journeys a little salt can bring back without my consent.
+
+scene work_2
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : In #self.workplace# I like a visitor to take on a small definite task before recommending an expensive one.
+b : What sort of task? | Must the trial involve a garden?
+a : Sort the sound windfalls from the bruised ones and explain any doubtful choice. | No. Anything with a result I can examine without reference to the speaker's own opinion.
+
+scene food_1
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Fish in butter should reach me with the browned edge still making a faint noise.
+b : Would you stop the talk to eat? | What about a sauce?
+a : I would. The fish will deteriorate. The talk may improve from being given a minute's thought. | Let it have its own dish. Somebody has taken trouble over that crisp edge.
+
+scene pastimes_1
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : Digging makes no allowance for a title. The earth responds to actual pressure.
+b : Would you dig in good clothes? | How far down do you go?
+a : I change my shoes. I see no point in asking a costly pair to prove the principle twice. | Until I can examine the soil in which I expect the tree to live.
+
+scene home_1
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw underfoot reports what came in on the last pair of shoes.
+b : Is that straw's chief merit? | Why replace it if it is still dry?
+a : I also like the clean smell. I needn't find a use in business for every preference. | I would shake the sound lengths free. Waste is no mark of a well-kept house.
+
+scene weather_2
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Rain arriving warm after a dry interval is worth more to my fruit rows than any visiting compliment.
+b : Do you let it puddle? | At what point will it suffice?
+a : No. Roots require water and air. A compliment will at least leave them air. | I dig below the top crust. A moist surface can give an excellent impression of a wet bed.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep a shred of old cord beneath a slate. It has no remaining value to any business of mine.
+b : Why keep something worthless? | May I see it?
+a : I specified its business value. Even my ledgers admit the possibility of more than one column. | I prefer to leave that weight in place. There are other examples of salt damage in any yard.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can change my judgement of a visitor when I see a difficult thing done well.
+b : Do you announce the change? | What would the visitor notice?
+a : I ask a more important question and give the answer my entire attention. | A chair drawn closer and a piece of the actual work instead of a demonstration.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Earth beneath a nail gives an hour of uncomfortable evidence that I neglected my hands.
+b : Would a glove do? | Why use your fingers?
+a : A glove is useful, but I want the particular feel of the soil before I decide what it can carry. | A clod can look heavy and fall quite pleasantly to crumbs under very slight pressure.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I establish the expense of sending a barrel by land even when the sea passage appears cheaper.
+b : Is that distrust of the ships? | What cost is never quoted?
+a : It is knowledge of what a house can lose in one unlucky journey along a coast. | The one that keeps going after the goods have been written out of the stock account.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A wine barge can disappear and leave a reckoning that outlasts an entire cellar of wine.
+b : Have you seen that happen? | Can a reckoning be finished?
+a : I came into the weight of a House after such a loss. I decline to retell the circumstances for an audience. | Some can. A figure settled in the books needn't dispose of everything else.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When a season is hard I look first at the stock that still has growing time before it.
+b : Wouldn't ripe goods be worth more? | Do you save every weak shoot?
+a : They are worth attending to today. An empty row in the coming year concerns me equally. | No. A struggling but viable shoot merits a chance. A dead one should cease consuming the labour due to living things.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : What came to me was that #topic.subject# #topic.claim#. No mark of origin accompanied the account.
+b : Would you let it travel further? | Can an unmarked account be true?
+a : With its lack of origin made quite plain. I won't lend my mark to somebody else's assertion. | Of course. Truth and commercial presentation have never been identical things.
+
+scene news_1
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : The report for this sitting is #world.news#.
+b : Does that satisfy you? | Will the report be kept?
+a : It informs me. Satisfaction depends on the nature of the outcome and the use I can make of it. | With the date and the identity of the supplier, so far as the latter is known.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I am willing to recognise that a life can end in circumstances no competence could have prevented.
+b : Does that offer comfort? | How would you frame a prayer?
+a : Little. Recognition is still preferable to blaming the dead for the weather. | That I retain the strength to do the next necessary thing when no answer is forthcoming.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : An unfamiliar name above a cask presents no difficulty. The contents are open to ordinary examination.
+b : Would you give the grower a chance? | How long does a name take to earn value?
+a : A sound cask presented at the agreed time would be an excellent beginning. | Longer than is required to damage it by sending a poor lot under an attractive label.
+
+scene festival_1
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : For a feast I'd send fruit that can be eaten while standing.
+b : Why such an ordinary choice? | Would you send the best pieces?
+a : Consider a full street and then consider a dish requiring two hands and an elaborate spoon. | Fruit sufficiently ripe to give a good account of the tree. I see little value in a public sample nobody enjoys.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A promise made in a rich year can come due during a year of empty presses.
+b : Would you take a smaller return? | Why remember the rich year?
+a : Bring me a precise alternative. I will consider an offer and give it far more consideration than vague pleading. | Because it is when the borrower judged the promise easy. I have an inconvenient memory for both occasions.
+
+scene land_2
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I put #rowpeg# beside an uncertain plant before anyone is permitted to clear the row.
+b : Does a peg grant an extra season? | Who's the peg meant for?
+a : It grants another inspection. The plant must provide its own argument for the season. | Me, chiefly. A hurried hand can be every bit as destructive when it belongs to the owner.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : The first bird to take a ripe berry conducts an accurate test and presents no account of the result.
+b : Do you begrudge the berry? | How would you obtain the result?
+a : A berry, no. A flock attempting to set the terms of harvest is a rather different proposition. | Look for the empty stalk, then try the neighbouring fruit myself.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I do not object to silence while a proposal is being considered.
+b : Will you say if the proposal fails? | Could silence imply agreement?
+a : Plainly. I would not have a visitor invest labour on the strength of my courtesy. | It should imply that I am considering what I heard. My agreement is available in perfectly ordinary words.
+
+scene weather_3
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle can lay a handsome shine on a fruit and leave the roots quite dry.
+b : Would a heavier rain help? | Can you feel the difference?
+a : If it penetrates without washing the soil away. I ask rather more from rain than polished appearances. | Turn a little earth beside the row. The surface will cease trying to sell itself.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A pot of butter and a handful of cut fruit belong on different shelves.
+b : Is there a particular rule? | What if the fruit is covered?
+a : Only that I prefer supper to taste of what I requested. Cut fruit can lend a smell without permission. | Then the arrangement matters less, although I should still wish my shelves to be orderly.
+
+scene day_2
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : I leave a working garment where it can be distinguished from a good one without lighting a lamp.
+b : Can your fingers recognise the cloth? | Why bother about the dark?
+a : One cuff has caught on a pear branch more than once. I can find the roughness without looking. | I like getting into the garden early without requiring a household to rise and assist me.
+
+story join [topic=land]
+  : I tied a promising graft with a ribbon so handsome that I left it in place longer than the tree required.
+  : The scar was a perfect narrow ring.
+  b : Did the branch live?
+  : Yes, after I took the ribbon off. I keep no fine ribbon in the garden basket now.
+
+story skate [topic=food]
+  : I put my freshly fried fish on a dish with too generous a pool of butter and started across the room.
+  : The first step moved the fish some distance towards the edge.
+  b : Did it reach the floor?
+  : No. I steadied the dish and ate it where I stood. A dish can cease to travel without spoiling the meal.
+
+story saltstrand [topic=memories]
+  : I brought a length of ordinary garden cord to the coast and left it across a sill overnight.
+  : In the morning it held the bend of the wood even after I lifted it.
+  b : What made you remember that?
+  : A strand that has been to sea will often hold the shape of a loss.
+
+story redpigment [topic=work]
+  : A wine sample left a rich red ring on a clean plank. I brought a small cup of water to examine the spread of the stain.
+  : The water made a ring larger and paler than the first.
+  b : Did you learn the depth?
+  : Only after turning the plank on edge. Magnifying a mark is an unreliable way of learning how deep it runs.
+
+story strawjudge [topic=home]
+  : I asked for clean straw and received a bundle tied with a splendid knot. On the outside every stalk was bright.
+  : One solitary damp stalk had worked loose from the middle.
+  b : Did you accept the bundle?
+  : I untied the knot. A seller can be proud of the correct tightness and still owe me a bundle that is sound in the middle.
+
+rule @cord
+when concept=bark
+does aside
+cooldown 8h
+say Slack at the join. A shoot needs space to live. | Keep the old salt cord outside the basket.
+
+rule @soil
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say One thumb beneath the crust before judging the row. | Good soil breaks cleanly in a patient hand.
+
+rule @butter
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say Let the crisp edge reach the dish intact. | Butter should accompany the fish without floating it.
+
+rule @straw
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Shake out the sound straw before spending on a new bundle. | A dry length is still fit for service.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Set the work cuffs towards the door. | The morning garden owes no one an announcement.
+
+rule @rain
+when concept=bark self.likes=warm_rain
+does aside
+cooldown 8h
+say A warm rain can earn its welcome underground. | Test the root bed when it has passed.
+dlg resident.hub : A definite proposal will receive a definite hearing.
+dlg resident.job [self.job=noble] : I direct the affairs of #self.workplace#. The successful applicant will show what can be accomplished with the resources at hand.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your name requires no further explanation.
+dlg resident.news [world.news] : This report arrived for my consideration. #world.news#.
+dlg resident.gossip [here.gossip=yes] : There is a claim that #topic.subject# #topic.claim#. It carries no warranty from this table.
+dlg resident.quirk : I press a graft tie with my thumb before I trust my eyes as to the state of the join.
+dlg resident.how [tired=yes] : Weary enough to insist that the next visitor bring the short account.
+dlg resident.bye : When you return, bring the result you can verify.
+dlg resident.hub [pair.disposition=hostile] : I can recognise a grievance dressed up as a proposition. Put it plainly.
+dlg resident.hub [pair.band=friends|family] : You have earned a chair beside the useful work. Come nearer.
+dlg resident.bye [here.time=dusk] : I am keeping the final daylight for a brief inspection outside.
+dlg resident.hub [here.time=dawn] : The earth is still soft enough for a good test. What have you brought?
+
+graft resident.hub
+choice How do you decide if a visitor is useful? -> scion_sort
+node scion_sort
+say Give the visitor a small task where it is possible to do a little actual harm. Sorting fruit is a reasonable example. The fruit will keep the score.
+choice How would a fine answer impress you? -> scion_return
+choice I'll consider the doubtful pieces. -> hub
+node scion_return
+say I would inspect the two baskets. A useful answer draws attention to a doubtful piece I would have missed myself.
+choice I'll consider the doubtful pieces. -> hub
+
+graft resident.job
+choice Do you really remember every old obligation? -> scion_debt
+node scion_debt
+say The original circumstances, the thing promised and the date agreed. There is little merit in merely remembering that I was once displeased.
+choice Can an old debt ever cease to matter? -> scion_settled
+choice I understand the distinction. -> job
+node scion_settled
+say When it is paid it ceases to be a debt. That is a considerable change in its standing and one I take equal trouble to remember.
+choice I understand the distinction. -> job

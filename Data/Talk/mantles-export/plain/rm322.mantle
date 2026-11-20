@@ -1,0 +1,257 @@
+mantle rm322
+state ready
+dialect plain
+accent none
+tier standard
+written_for cty_mogens_mudstack
+title the borrowed kitchen rule
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk names_a_cut_by_an_imagined_grandmothers_kitchen_rule
+likes hard_cheese long_walks sharp_knife misty_dawns
+dislikes cold_tea stale_bread
+fears an_unanswered_letter_turning_brittle
+hopes to_learn_a_cut_that_needs_no_name
+topics work +0.4 friends +0.3 food +0.3 pastimes +0.2
+styles comfort=warm gossip=chatty refuse=soft tease=warm
+marks oath saying
+persona #self.first# gives every odd piece of wood a kitchen use and invents an elderly critic to judge the workmanship.
+
+words
+oath! = Shave my best spoon | By the crooked ladle
+saying! = A branch can have a second supper | Nobody stirs soup with a family tree
+spoon = a spoon in waiting | my half-cut ladle
+curl = a tight wood shaving | a pale curl of grain
+hook = a wooden pot hook | a branch with a good elbow
+sap = a spot of sap | a sticky tear of resin
+knife = my keen little knife | a blade with a walnut grip
+cheese = a corner of dense cheese | a knuckle of salt cheese
+letter = my folded letter | the paper in my inside pocket
+rack = a split-stick rack | a greenwood trivet
+road = a long outwards path | my walking road
+fog = a veil between stems | the morning mist
+cup = a squat tea bowl | a clay cup
+crumb = a stubborn crust | a dry hunk of bread
+
+any
+opinion dole for 1 : Plenty of spare hands for stirring a pot. Plenty of wolves who could use what comes up on the spoon too.
+opinion festivals for 2 : At a dance it's my pleasure to spend hours displaying what a spoon handle looks like on legs.
+opinion houses against 1 : I'd like one grand name to come stand beside a stump and see what the next year's warming really costs.
+opinion merchants against 1 : One copper more on cheese is a great squeeze on the poor last mouthful.
+opinion strangers for 1 : Show me somebody I've never fed and you've found the very wolf to share a cheese heel with.
+
+grown
+line greet [pair.band=strangers] : You're welcome at the short end of the ladle. | Room for a fresh pair of opinions.
+line greet [self.working=yes] : Come over my working shoulder. | Stand away from the flying curls and say your piece.
+line greet [here.time=dawn] : Day's barely peeled. Hello to you. | Morning with the bark still on it.
+line greet [here.time=dusk|night] : Evening. It's all spoon-coloured light. | Come see what the day's whittled down to.
+line kin.open [pair.kin!=no] : Family needn't apply for a spoon. | Sit in among the familiar elbows.
+line again.open : We cross handles again. | You've come back for my remaining half opinion.
+line greet.return : There's a voice above the shavings. | Good, I heard the greeting clean.
+line greet.return [pair.band=friends|family] : Come closer, you know my splinter side. | Your voice rubs smooth in my ear.
+line greet.return [self.working=yes] : Speak while the shaving's curling. | I'll put the keen edge down a moment.
+line greet.return [here.time=dusk|night] : Evening. I can see the grin from here. | Come up to where the light still works.
+line farewell : Good wood under every step. | Walk till something crooked makes you smile.
+line farewell.return : I'll keep the handle this end. | Fine grain along your road.
+line farewell.return [here.time=night] : Find yourself a lamp with a generous wick. | Easy night beyond the last tree shadow.
+line react.news : Let's hear the shape of it. | Put that chunk of news in my paw.
+line react.news.new : Well, that's a fresh cut. | Haven't seen that grain before.
+line react.news.known : I've had a shaving off that story already. | I know the curl on that account.
+line react.news.doubt : I'd give that knot another good look first. | There's more bend in that account than wood.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, that bites deeper than a sharp edge. | Let me carry something beside you.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good grain clean through that news. | I'd carve a smile to suit the occasion.
+line ask.how : How's the old spoon handle sitting today? | Did the day leave your knuckles whole?
+line answer.how : Still an elbow short of a perfect ladle. | Merrily taking the bark off my worries.
+line decline : I reckon I've enough curls to clear just here. | Let me save the keen edge for my own wood.
+line accept_decline : Your handle, your decision. | Good. I'll stop stirring.
+line thank : A kindness worth a spoonful of cheese. | That eases a tight bit of grain.
+line sympathise : Here's a broad shoulder for a crooked trouble. | Let me hold the weighty end awhile.
+line reassure : Even a knot can come out handsome. | There's a good handle left in that branch.
+line preclose : I'll go see which shavings have caught on me. | Time to fold my knife and move.
+
+scene gran
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : I run every branch past an imaginary kitchen judge.
+b : Whose kitchen? | Hard to please?
+a : My invented kitchen elder would look at a fine stick and see #hook#. | Oh yes. I invented the judge but seldom get an easy hearing.
+
+scene split
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : A branch with an elbow makes a better hook than a straight branch persuaded otherwise.
+b : Why keep the elbow? | For a heavy pot?
+a : The grain turned the corner before my knife ever touched it. | If the grain's sound. I test it low down before entrusting a supper to it.
+
+scene edge
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : My knife should take #curl# with no more than finger pressure.
+b : Why so fine? | How can you tell?
+a : Fine curls start a fire and save my wrist a quarrel. | The wood shines where the cut passed without tearing.
+
+scene cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I cut cheese into little roof tiles.
+b : Does it taste different? | For a cheese house?
+a : It lasts longer, which improves the last piece wonderfully. | The roof disappears tile by tile while I'm planning the walls.
+
+scene walk
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : The finest walk takes me far enough to forget whose errand I might have been on.
+b : You walk back too? | How far is that?
+a : Naturally. Supper can't be expected to follow my footprints. | A little past the point where my list of duties runs out of breath.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea has the colour of a fine wood stain and approximately the same charm in a cup.
+b : Would you stain a spoon? | Would you still drink it?
+a : An old handle maybe. I'd keep the tea off the business end. | Only if the pot was emptier than my patience.
+
+scene crumb
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I dislike a crust old enough to take a good polish.
+b : Can you soften it? | Has it any use?
+a : A hearty stew deals with bread better than a keen blade does. | I never saw a piece I couldn't put to work holding a bit of cheese.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : In mist a coppice starts by showing only the nearest elbows.
+b : Of the trees? | Is the path visible?
+a : Trees first, my own second. I'm careful with both. | Enough to enjoy discovering the next bit twice as I walk.
+
+scene forgot
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I have a letter so soft at the folds it scarcely makes a rustle.
+b : A good letter? | Will you read it again?
+a : Dear enough to keep. I won't invite the whole street to read it. | Possibly. Waiting for an answer doesn't need to be my only occupation.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could offer #self.friend# the very worst spoon I've cut.
+b : As a jest? | Would you sign it?
+a : As a promise the next one will actually carry broth. | Yes, and send a clean cloth for the table.
+
+scene home
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a peg whose elbow points the coat away from the wall.
+b : Why away? | You've put thought into a peg.
+a : Air can reach the fur while the coat rests. | Mostly the tree did. I just made the wise decision to stop cutting.
+
+scene coin
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'm suspicious when a price comes with more carving than the spoon.
+b : Too fine for supper? | What's the part worth buying?
+a : If I'm counting coins I'd like them to buy a bowl in the spoon. | A sound curve that won't leak the best of the gravy.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : My advice to a newcomer is to find the cheapest wood spoon on the street.
+b : For supper? | What does it show?
+a : In due course. First see how much care went into a thing nobody boasts about. | Whether the maker thought of the wolf holding the handle.
+
+scene sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In my sleep a cooking spoon once found my work wanting.
+b : Did it speak? | What complaint?
+a : It stood up in the bowl and wagged its handle till I woke. | It wanted a little more hollow where the soup ought to sit.
+
+scene song
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I dance best with a bit of elbow room and no tool in my belt.
+b : What kind of step? | Afraid to lose the tool?
+a : Less a step than an enthusiastic rearrangement of my feet. | Afraid of looking too official for a ridiculous dance.
+
+scene health
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I keep my thumb away from the line where a shaving wants to travel.
+b : Does it help? | Is a shaving dangerous?
+a : The thumb thinks so. It has never thanked me in writing. | No. The edge following behind is the less sociable part.
+
+scene mix
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A damp stick bends politely and dries in a temper.
+b : Can you count on it? | Temper in a stick?
+a : I count on the grain. The weather has its own interests. | It'll twist away from the shape you were so proud of yesterday.
+
+scene roadload
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon has a great many imaginary owners.
+b : How so? | Who owns it really?
+a : Every wolf waiting for a parcel feels personally entitled to move the wheels. | I wouldn't guess. I only know the owner can't pull it along by wishing.
+
+story ladle [topic=memories]
+  : I carved a spoon with a magnificent handle and entirely forgot to hollow out the bowl. It held about one generous drop.
+  : I tried it in stew. The onion pieces sat on it well enough, but the broth turned round and made for home.
+  b : Did you keep the spoon?
+  : I called it an onion lifter. After a week I had the good sense to hollow it properly.
+
+story stick [topic=travel]
+  : I brought home a stick so pleasingly bent that I carried it round the long way to give it a debut. It fitted my hand like a cup handle.
+  : At home I lifted it to the peg and found that my wrist wouldn't clear the little curl I liked so much.
+  b : What became of your fine curl?
+  : A handle for a small basket. The wood had a better idea than the walker.
+
+story letter [topic=memories]
+  : A drop of tea fell on the outside of a letter I'd kept safe a long time. I blotted it with a wood shaving before it could soak in.
+  : The paper stayed clean, but the shaving took such a good stain I began admiring it and let my drink get cold.
+  b : Was the letter all right?
+  : Perfectly dry. Whatever else that letter has cost me, it hasn't yet cost a legible word.
+
+rule @aside1
+when concept=bark self.working=yes self.job=woodcutter
+does aside
+cooldown 6h
+say Leave the strong elbow on that limb. | The ladle judge would like a deeper cut.
+
+rule @aside2
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 7h
+say One more roof tile for my supper. | Cut the heel across its short side.
+
+rule @aside3
+when concept=bark self.likes=long_walks
+does aside
+cooldown 8h
+say There's a turn I've never given a whole afternoon. | A little distance for the sake of my own soles.
+
+rule @aside4
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say Fine light to find the natural bend. | No case heard till the shavings wake up.
+
+dlg resident.hub : Come in on my unarmed side. The sharpest thing I have for visitors is generally an opinion.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I have another entirely uncalled-for opinion about ladles ready for you.
+dlg resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. There's more than firewood in a good crooked branch.
+dlg resident.news [world.news] : This report had a fairly straight grain. #world.news#
+dlg resident.bye : Look for a spoon in the next tree you pass.
+
+graft resident.hub
+choice Who's this kitchen judge of yours? -> spoon_judge
+node spoon_judge
+say Any imaginary old cook with a suspicious eye for a shallow ladle. I can invent a crowd of grandmothers and not a single one will flatter me about my work.
+free
+choice What do those cooks say about a straight stick? -> spoon_stick
+choice I'll try my luck with the ladle. -> hub
+node spoon_stick
+say Fine for a rolling pin. A terrible thing to waste on a bent spoon. You'll notice I allow the imaginary cook the better half of each argument.
+choice I'll keep a straight stick for pastry. -> hub
+choice I'd best leave the judges in peace. -> bye

@@ -1,0 +1,247 @@
+mantle rm448
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_frederick_ropeford
+title the sparrow's road map
+fits stage=adult|old
+prefers honesty=guarded talk=chatty
+traits temper=even talk=chatty warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk measures_a_sparrows_portion_while_watching_the_road
+likes blackberries swimming old_maps first_snow
+dislikes stale_bread wet_floors
+fears counting_the_wrong_footprints_home
+hopes a_safe_return_visible_from_the_gate
+topics animals +0.6 travel +0.5 pastimes +0.3 friends +0.2
+styles comfort=practical gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# lays out tiny measured portions for sparrows and watches the road past the birds without explaining every reason for keeping watch.
+words
+oath! = Nip my map edge | Scatter my last grain
+saying! = Count wings and wait for boots | Leave the road in sight
+birdshare = a pinch of rolled oats | a few soft grains
+routemap = a thin old plan | a folded weathered sheet
+winggap = one bird's width | a feather's breadth
+berryjuice = a purple droplet | a blot of berry skin
+wetrail = a slick low rail | a shiny gate bar
+bankstone = a stone under the bank | a grey shelf underwater
+grainbag = a small linen purse | a rolled cloth for grain
+iceedge = a clear white lip | a dusty snow edge
+bootcurve = a curved heel mark | a sloping toe print
+waterprint = a widening ring | a ripple under the alder
+yardend = a gap by the post | a clear strip of ground
+
+grown
+
+opinion road mixed 1 : A road means different things to the boots travelling along it and the nose that's watching for their return.
+opinion strangers mixed 1 : A stranger gets directions far enough to be useful. Nobody needs the exact position of every household gate.
+opinion church for 1 : If there's one extra mouthful to share, a kindness done quietly suits me better than a fine pronouncement.
+opinion merchants mixed 1 : A seller of maps ought to know which crossing hasn't stood above water since the paper was made.
+opinion dole for 2 : A winter meal should be ready before empty stomachs have to give the street a convincing account of themselves.
+opinion city mixed 1 : I appreciate a busy place that can still leave a bit of ledge for a small brown bird.
+line greet : Pass the little scattered grains on the clear side and stand here.
+line greet [pair.band=strangers] : You're within speaking distance. That's as close as we need to get yet.
+line greet.return : I've an ear to spare from the wings and the road.
+line farewell : Find your return while there's still some light on the marks.
+line farewell.return : I'll keep your boots out of my count of missing things.
+line ask.how : You haven't been kept somewhere past the time you were expected?
+line answer.how : Well, provided every bird doesn't want feeding all in the same instant.
+line react.news : Which way did those particular words travel to reach you?
+line react.news.known : Seen the marks of that story once already.
+line react.news.new : A fresh set of tracks leading in from elsewhere.
+line react.news.doubt : I'd look for a second print before naming what passed.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd go out from the gate to meet somebody carrying that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let me know whether a meal or a watchful pair of eyes would help.
+line decline : My reasons for watching that stretch can stay inside my own coat.
+line thank : You came back with the news instead of leaving me to guess.
+line deflect_thanks : I could watch the road and still count sparrows.
+line accept_decline : I'll leave that question off my map.
+line reassure : Even that deserted bend may bring a traveller home.
+line sympathise : I'll stay a little farther down the road with you.
+line ack : I can follow those marks without much trouble.
+line preclose : I've some small winged claimants waiting on my attention.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I leave #birdshare# in two places, one right out in the open and one beside the post.
+b : Which goes first? | Why risk feeding the bold one twice?
+a : The open grains go to the quick birds. Under the post there's often one that needs time to decide. | I can shift my wrist and drop another grain. I'd sooner take that risk than let a frightened bird go without.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : An old map is handy for the roads gone missing from the latest tidy account.
+b : Would you follow a missing road? | Who wants an out-of-date route?
+a : I'd trust the part visible under my feet. Any further confidence can stay folded up with the map. | Anybody watching for an overdue traveller. Old habits may know a route the new ink's forgotten.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My day's described as #self.trade_words#. I like a gate I can see well from either side.
+b : Does a clear view save you time? | Don't you trust a good latch?
+a : It saves another pair of feet from getting surprised halfway through. That's plenty to ask of a gate. | I trust a latch that I've actually closed. A view tells me what happened after my paw came off it.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I might show #self.spouse# the safest spot for waiting when the road's heavy.
+b : Wouldn't you rather be indoors together? | What makes a spot safe?
+a : I'd prefer knowing the way home was clear for both of us before closing a shutter on it. | A dry board behind, a clear approach in front, room to stand without looking too obviously afraid.
+
+scene food_1
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : Blackberries will improve my opinion of a hedge considerably.
+b : Do you share with the birds? | Which berries deserve picking?
+a : I collect the ones I can reach with all four paws steady. The top is somebody else's dining room. | The ones that come loose when I scarcely turn my thumb. An argument with the stalk seldom buys sweetness.
+
+scene pastimes_1
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I pick a swimming place with a marker that stays visible from the middle.
+b : Would a bird on a post do? | Do you dive towards it?
+a : The post, yes. A bird may exchange an important duty for the first beetle passing. | I turn round well before I need rescuing and use the mark to hold a comfortable direction.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : First snow can make an ordinary yard into a map drawn bit by bit.
+b : Which tracks do you learn first? | Would you walk across it?
+a : Sparrow hops. Tiny paired dents with a third little poke where a beak went after grain. | If someone's coming home I'd clear the whole approach. A readable record's less valuable than safe feet.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Wet floors ask a lot more of an ankle than an honest stretch of mud.
+b : Which boards look least trustworthy? | Would you complain to the keeper?
+a : I lower my eye till the shine shows. The dry stripe breaks it like a shallow ford breaks a stream. | Quietly and before somebody slips. I'd want the board seen to more than a long apology over it.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I know what a hard winter does to somebody who waits for a familiar set of steps.
+b : Does it make every wait painful? | Who were you looking for?
+a : No. Some waits end in muck on the rug and an ordinary complaint about wet boots. I treasure those. | Someone whose road I won't draw for a roomful of listeners. You may understand the waiting without the name.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I talk to sparrows more freely than to somebody who'd like to audit my intentions.
+b : What do the sparrows learn? | Do they answer?
+a : Where the extra grain landed. My account is exact and my audience wonderfully quick to check it. | They eat. There have been worse responses to equally useful remarks in the town.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd ask a friend to walk beside me without insisting I explain the entire route.
+b : Which question would you answer? | Why keep the reason back?
+a : Whether the friend's boots can manage the ground, how far we're going and when we'll turn home. | I'm offering company. A full account of an old hurt makes some very ordinary kindnesses difficult to accept.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Stale bread sold as fresh makes me rather less civil than a hungry sparrow.
+b : Couldn't you put it out for birds? | How do you test a loaf?
+a : Grain suits them better. My complaint's with the description, not with finding a more trusting customer. | Smell, the weight of the crust, a look at the cut end if one's available. I don't maul a loaf to prove I know its age.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Most of my prayers are thanks for ordinary safe returns. A few ask for an extraordinary one.
+b : Is an ordinary return so precious? | Do you mention every traveller?
+a : A familiar complaint from the doorstep has been a remarkably fine sound to find in an evening. | Not by name. There are roads reaching beyond my knowledge, thank goodness.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : If the purse goes thin I bring a smaller share of grain to the post.
+b : Wouldn't the birds go elsewhere? | Do you count what you give?
+a : Some. I'll keep the regular pinch so a shy one has a reason to look in its accustomed spot. | Yes. I can't afford to be careless either with the sparrows' food or with my own.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I watch the farthest bend while I wind my grain bag shut.
+b : Is there a deadline? | What if someone hails from behind?
+a : Only in my head. A gate has no wish to keep late arrivals in debt. | I'll look round once I've seen whether there's a familiar gait in the opening.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's a place I leave empty for wet boots right inside the door.
+b : Do you resent the tracks? | Why not leave the boots outside?
+a : I'd resent slipping in them. A rag handles the rest more easily than a household lecture. | Somebody's walked far enough to deserve getting dry without standing in another puddle.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a newcomer one open turn and one track that stops at private ground.
+b : Why show the second? | Would you mark somebody else's house?
+a : To save an hour's march to a gate nobody's got any obligation to open. | A public landmark is better. Roofs shouldn't suddenly acquire a crowd because I carry a pencil.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I've heard #topic.subject# #topic.claim#, and that's the distance my knowledge travels.
+b : Whose tracks brought it here? | Will you believe it?
+a : Several sets and no certain beginning. There's little to be gained drawing the wrong name at the start. | I can keep an ear on it without offering it the whole of my road.
+
+story birdmap [topic=memories]
+  : I unfolded a small map beside my grain and a sparrow landed on the corner.
+  : Its feet had just come from a puddle. Two perfect prints appeared beside the road.
+  b : Did it show a new way?
+  : A route to the bag and back, drawn by an authority with excellent local knowledge.
+
+story stain [topic=food]
+  : I put one blackberry inside a cloth with a folded scrap of map before scrambling over a gate.
+  : I found a purple lake on the pleasant site of a rising bank.
+  b : Did you wash the mark away?
+  : That would have cost me the road as well. I pencilled a warning that no swimming was available at this particular lake.
+
+story swim [topic=pastimes]
+  : I marked a swimming spot by a pale grain sack hung over a rail.
+  : On getting out I found every nearby rail wearing an equally pale piece of washing.
+  b : Could you pick out your belongings?
+  : Looked for the little heap of oats. My taste in company makes quite a distinctive signature.
+
+rule @grain
+when concept=bark
+does aside
+cooldown 8h
+say Two clear patches for one small handful. | The little wings don't all land brave.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say Keep the gate sweep clear of the white. | Tiny paired footprints have already read the first snow.
+
+rule @return
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say An empty bend can change in one blink. | Stay till the shape of the road goes dark.
+
+rule @floor
+when concept=bark
+does aside
+cooldown 8h
+say Look for the dull board before shifting weight. | A rag is cheaper than a turned ankle.
+dlg resident.hub : You can ask from here without cutting across the landing birds.
+dlg resident.job [self.trade_words] : Mine's the entry marked #self.trade_words#. A clear view through an opening matters more than some realise.
+dlg resident.news [world.news] : Here's the part that travelled here by road. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Roadside talk has #topic.subject# #topic.claim#. I wouldn't send a search party out on the word of a footprint.
+dlg resident.hub [pair.disposition=wary|hostile] : Put your question in front of me without the wrappings. I'll take my time with the answer.
+dlg resident.bye : Take the firm stretch past the birds and I'll look for you at the far bend.
+
+graft resident.hub
+choice Why put the grain down in two places? -> sparrow_second
+node sparrow_second
+say One bird pounces as soon as it sees my fingers uncurl. The other hangs back by the post till the whole business looks safe and ordinary.
+choice How can you tell who's eating? -> sparrow_tracks
+choice Let the birds have some room. -> hub
+node sparrow_tracks
+say The second patch is soft ground. Two little feet and a little dip in the middle tell me I've had another guest.
+choice Let the birds have some room. -> hub

@@ -1,0 +1,402 @@
+mantle rm325
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_corra_coalcot
+title the scale in the hood
+fits stage=adult|old
+prefers role=merchant job=fisher
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=sly piety=ordinary drive=steady
+quirk keeps_private_reckonings_inside_the_hem_of_an_oilcloth_hood
+likes smoked_eel evening_line full_larder first_snow
+dislikes stale_bread gulls
+fears a_dirty_thumb_on_an_honest_scale
+hopes a_stall_that_weighs_true_in_any_weather
+topics work +0.6 prices +0.5 food +0.4 pastimes +0.3
+styles comfort=practical gossip=slippery refuse=amused tease=nimble
+marks oath saying
+persona #self.first# shelters scales and folded reckonings under an oilcloth hood, ready with a bright quip before an unwelcome question can settle.
+
+words
+oath! = Scale my hat brim | Tickle a smoked eel
+saying! = A wet thumb weighs more than a dry promise | Even a closed hood has a listening end
+hood = a waxy oilcloth hood | a cape with a deep cowl
+hem = the doubled hem | a narrow inner seam
+scale = the shop balance | a bright pan
+weight = a smooth metal weight | a knuckled weight
+eel = a smoked eel | a bronze coil of eel
+twine = a twist of cord | a short tie
+float = the dusk float | a quill in the water
+fillet = a tapered fillet | a slim cut of fish
+basket = my broad fish basket | a shallow wicker tray
+brass = a brass hook | a loop of yellow metal
+blindside = the folded edge | the hood's blind side
+book = a little hidden ledger | a small book of marks
+cold = a nip of ice | a pinch of frost
+smoke = a ribbon of fish smoke | a salty drift
+eye = a bright clear eye | a round glassy eye
+skin = a stripe of silver | a silvery skin
+icechip = a chip of ice | a flat ice shard
+larder = a store of full crocks | a shelf of food
+counter = a sloping board | a lipped counter
+
+any
+opinion merchants mixed 2 : My best advertisement is a balance a stranger may inspect. A few sellers seem to advertise chiefly with noise.
+opinion watch against 2 : I can tell whether a weight has been slipped off a pan. A well-polished badge has no effect on my eyesight.
+opinion houses against 2 : Metal stamped with a grand mark still comes up short if somebody's filed the underside.
+opinion dole for 2 : Put the nourishing end of the fish into a hungry mouth. Save the argument for the bones.
+opinion city for 1 : A city built on slopes has learnt to hold a slippery dinner on a board. There's ingenuity in that.
+opinion festivals for 1 : A festival does splendid things for the appetite of an otherwise sensible purchaser.
+opinion strangers for 1 : I'll show a stranger the empty pan. The first clean look saves a deal of weary explanation.
+opinion sump for 1 : A lower street knows better than to reckon a fish by its shine alone.
+opinion drink mixed 1 : One cup can take a smoky taste off the tongue. The third is generally trying to take a price off my board.
+
+grown
+line greet : Here's the dry corner of my smile. | Stand where the hood won't drip.
+line greet.return : A fresh welcome off a thoroughly clean board. | Your greeting rings perfectly true in my pan.
+line again.open : Still the same hood on the same head.
+line farewell : Carry the weight by the handle, all the way home. | Take the wind on the covered side.
+line farewell.return : Smooth water under your own float too. | I'll keep that kind word dry under the brim.
+line react.news : Let the news wriggle out. I'll catch the shape of it. | I'll hear what portion of it came to you fresh.
+line react.news.new : An unfamiliar fin in these waters.
+line react.news.known : I know the outline without lifting the cloth.
+line react.news.doubt : That smells of the wrapper more than the fish.
+line react.news.sorrow [topic.kind=death|loss|assault] : No bright sales talk belongs beside a loss like that.
+line react.news.glad [topic.kind=birth|marriage|work] : I'd hang the good bit up where everybody could see it.
+line ask.how : How's the weight spread in your basket today?
+line answer.how : Comfortably under my own brim, thanks.
+line sympathise : I can turn the bright patter off while you need quiet.
+line reassure : A light basket is all the easier to carry towards the next chance.
+line refuse : I've an account halfway counted that won't keep for me.
+line accept_decline : One refusal needn't be weighed twice.
+line preclose : I ought to see after the damp end of my business.
+line accept_preclose : Get where you meant to land before the tide turns.
+line ack : Yes. I can see both ends of the reckoning.
+line greet [pair.band=strangers] : Fresh eyes are welcome to inspect.
+line greet [here.time=dawn] : A fresh start before the gulls have chosen their customers.
+line greet [here.time=night] : There are still soft words under this late brim.
+line greet.return [pair.band=friends] : For you I'd turn the dry half of the cape round.
+line hail [pair.band=friends] : Round by the bright board, you know my corner!
+line thank : I'd call that a very generous tilt in my favour.
+line deflect_thanks : It cost me only a moment and a perfectly good grin.
+line give.advice : Look underneath the first layer before you admire the arrangement.
+line answer.how.busy [self.working=yes] : I have a pan and a customer balancing rather nicely.
+line ask.how [pair.band=friends] : Anything in your basket worth bringing into the dry?
+
+scene exchange1
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : You can learn more from my empty pan than from the fish beside it. | I wipe both pans with the same dry cloth.
+b : What am I looking for? | So they match?
+a : A level beam. The fish won't straighten it for you. | So a buyer pays for fish and not the morning's wash.
+
+scene exchange2
+when topic=work self.role=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I show the eye before I name the price. | My board has a lip on the downhill side.
+b : Even if the buyer's squinting? | To catch the scales?
+a : A clear eye makes a clearer bargain. | To keep a possible supper from deciding its own address.
+
+scene exchange3
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : Smoked eel curls round a knife like a bracelet. | I choose the bronze side of a smoked eel.
+b : Do you wear it? | Does bronze taste better?
+a : Not past the first private mouthful. | It saves my delight in the silvery underside till later.
+
+scene exchange4
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I fish for my own supper slower than I fish for trade. | An evening float asks for very little conversation.
+b : A different hook? | Does it ever answer?
+a : A different willingness to come home empty. | With one decisive nod when my mouth's busy.
+
+scene exchange5
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I turn the fattest crock towards the light. | I leave an inch behind a row of full jars.
+b : Advertising at home too? | Room for a secret?
+a : Just giving my appetite a civil greeting. | For my fingertips. Secrets are thinner.
+
+scene exchange6
+when topic=season self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : First snow draws white edges on every dark fish basket. | Snow shows a gull's footprints beautifully.
+b : Can you see the fish? | Useful for catching it?
+a : I lift the cloth. A little ceremony never spoilt dinner. | Useful for inviting the owner of the prints to shop elsewhere.
+
+scene exchange7
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull tries to inspect my wares by tasting them. | My hood broadens my shoulders enough to put off a timid gull.
+b : Does it ever pay? | Any timid gulls round here?
+a : In complaints. I decline the exchange. | None so far. I keep hoping for a visitor.
+
+scene exchange8
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : Stale crust tastes improved by a great deal of good eel. | I recognise a hard loaf by the expression on the knife.
+b : Does that save the bread? | What expression?
+a : I consider it a sacrifice on the eel's part. | One of sudden charitable interest in a pot of broth.
+
+scene exchange9
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I turn my hood inside out before I hang it. | A hood hanging empty can still keep a confidence.
+b : What's hidden there? | Can it hear?
+a : Enough stitching to warrant a close look. No further particulars. | It has accompanied me to some interesting counters.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a price-free list stitched into my private lining. | A name in small writing can be a very large worry.
+b : What makes a list like that worth carrying? | Whose name?
+a : Because some transactions are interesting precisely for what goes unweighed. | You'll have to admire my fine penmanship from a distance.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : #self.friend# may look inside my basket. | I'd choose the best eel for a friend.
+b : Even at the bottom? | According to which scale?
+a : There's only fish there. The hood's another matter. | The one in my mouth. Very reliable, rarely exhibited.
+
+scene exchange12
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Don't tell me your coin till you've seen my weight. | I mark a price where the customer can wipe a drop off it.
+b : Think I won't have enough? | What if the chalk comes away?
+a : I want an honest start at my side first. | I remember the figure I first offered. It needn't grow in a shower.
+
+scene exchange13
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : My hood keeps a dry triangle over the scales. | Rain on oilcloth sounds like a brisk market crowd.
+b : Large enough for you too? | Can you hear your buyers?
+a : My nose has a separate weather arrangement. | I keep my better ear turned out of the performance.
+
+scene exchange14
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A fish board on this slope requires some judgement. | I know where the Works smell hands over to the wharf smell.
+b : How so? | A definite line?
+a : A round herring can go visiting if it's displayed across the grain. | Soot on one cuff and salt on the other. That's my boundary.
+
+scene exchange15
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. I haven't weighed that one. | I don't put every whisper on the public slate.
+b : Will the pan take a rumour? | Where do they go?
+a : Only if somebody brings more than breath to balance it. | Some straight back under the wrapping.
+
+scene exchange16
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Through a lean week each cut suits the pocket that pays. | Purses lie flatter through a lean season.
+b : Don't you prefer bigger sales? | Can your board help?
+a : I prefer a customer able to come back tomorrow. | I show the pieces for a pot as plainly as the finer fillets.
+
+scene exchange17
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I walk downhill with the basket on the uphill hip. | A dry route's not always the easiest carry.
+b : Does the fish object? | Steep streets?
+a : It's given up independent travel for the moment. | The ones that turn sharply. A basket wants to keep straight on.
+
+scene exchange18
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a pan so true I could weigh the steam off supper. | I imagine an oilcloth broad enough for every honest stall.
+b : What would you charge? | Who decides which gets under?
+a : Nothing. Steam's the sample. | Each wolf can see the neighbour's scale. I like the arrangement.
+
+scene exchange19
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I uncover my ears before giving thanks. | I say grace over the smoked end as well as the silver.
+b : Is the hood in the way? | Does the end need it?
+a : I like hearing the hush after a good meal. | I benefited from every inch. I may as well acknowledge that.
+
+scene exchange20
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : I score the skin shallow to stop it curling over a flame. | I save the bones for a little stock pot.
+b : Don't you like a good curl? | Too much fuss for a head?
+a : In smoke, yes. In a pan I prefer both sides meet the heat. | The head's got flavour nobody's charged me for twice.
+
+scene exchange21
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I set a shiny fish beside a plain one at the same price. | I wrap a wet parcel with the seam uppermost.
+b : Which goes first? | To keep it dry?
+a : Depends whether the buyer's looking at supper or telling a story. | To keep the customer's coat dry. The fish is accustomed.
+
+scene exchange22
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : A smoked eel can carry a taste right to the back teeth. | My last piece stays rolled inside its own skin.
+b : Does it linger? | Why keep so little?
+a : Quite decently beyond the bill. | A homeward mouthful deserves a plan.
+
+scene exchange23
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I let my line rest against my knuckle at dusk. | I use a different basket for an evening catch.
+b : Can you feel a bite there? | Why a smaller one?
+a : Before I can see my little float go. | So an empty space needn't look quite so grand.
+
+scene exchange24
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I have a high hook where no dripping hood can mark the loaf. | I hang my cape with the hem towards the wall.
+b : Did you learn that the wet way? | Does it dry properly?
+a : One corner of bread once learned it for me. | Perfectly, and a casual eye gets only the plain side.
+
+scene exchange25
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor can buy from me by pointing. | I ask where a stranger will cook the fish.
+b : No need to speak the price? | To learn about strangers?
+a : I set down the little weights. They'll show what words can't. | To choose a cut fit for a small pan or a whole hearth.
+
+scene exchange26
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rub my thumb after a long morning with the scales. | A hot supper eases the chill out of a damp elbow.
+b : Heavy work? | Does the elbow eat?
+a : Precise work. A little stiff thumb can ruin a neat lift. | Its owner makes provision for both of us.
+
+scene exchange27
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon is a poor excuse to promise a customer early goods. | I leave a clean stretch of counter when a load's delayed.
+b : What do you sell instead? | Why not fill it?
+a : What's on my actual board. It has the advantage of having arrived. | It's quicker to receive late goods without shifting the ones already paid for.
+
+scene exchange28
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I reserve some unworn oilcloth for the next cold turn. | A good season leaves marks along a basket's rim.
+b : A grand spare cloak? | What marks?
+a : A little patch. The spot behind one's neck is grand enough when it's leaking. | Where a full load's rubbed the wicker smooth.
+
+scene exchange29
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I compare two prices with both fish in sight. | I let the buyer feel the wrapped parcel before paying.
+b : No praising one that's gone? | A last inspection?
+a : A handsome fish in yesterday's basket won't feed today's buyer. | A last chance to say it feels too large without an audience.
+
+scene exchange30
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The first proper beam I ever saw stood level with no pan attached. | I've tested a crooked balance with a perfectly round onion.
+b : Worth much without the pans? | Why the onion?
+a : Worth knowing where straight begins. | It rolled off the slanted board before we even began inspecting the beam.
+
+story tale1 [topic=work self.job=fisher]
+  : I tried wearing the hood far forward to shade a particularly glossy fish. I could see the board clearly but no buyer above the wrist.
+  : For half the morning I conducted business by gloves alone.
+  b : Did the gloves bargain hard?
+  : The boldest pair came from a neighbour trying to attract my attention. I turned up my brim and resumed trading with faces.
+
+story tale2 [topic=food self.likes=smoked_eel]
+  : I once wrapped a long strip of smoky eel round a stick to keep its curl on a walk. When I arrived the stick had slipped out.
+  : In my bag sat a perfect little edible spring.
+  b : Did it spring from the plate?
+  : Straight into my mouth, though I admit my fork assisted.
+
+story tale3 [topic=pastimes self.likes=evening_line]
+  : My float disappeared so gently one evening I thought the dusk had taken it. I drew the line in a fraction at a time.
+  : A leaf had curled itself round the quill, red on top and green below.
+  b : Did it weigh anything?
+  : Exactly enough to hide the bit of the world I was paying attention to. I shook it free and appreciated the trick.
+
+story tale4 [topic=memories]
+  : I cut a false seam into my hood to see whether a folded note would sit there without showing. I lost the note entirely.
+  : I unpicked two honest seams before discovering the false one was in my other hood.
+  b : What did the note say?
+  : It said to mark which pocket I'd used. I still admire the forethought, if not the execution.
+
+story tale5 [topic=prices]
+  : I staged a competition between two fish I thought perfectly matched. I put a fish in each pan and waited for the needle to decide.
+  : My breakfast crumbs had chosen a side. One tiny crust appeared to carry the decision.
+  b : Did you sell the winner dearer?
+  : I swept both pans and returned the contestants to their original price. My appetite won a crumb.
+
+rule @call1
+when concept=bark working=yes self.job=fisher
+does aside
+cooldown 8h
+say Bright eyes under a dry brim. | Give the gills a look while the scale settles.
+
+rule @call2
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Weights where both buyer and seller can see. | There's a cut for a small pot here.
+
+rule @call3
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Fine light for taking the float out. | The last silver looks extra bright this hour.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Water outside the pan, if you please. | My inner seam stays quite admirably dry.
+
+rule @call5
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say No credit extended to feathered customers. | Stick to admiring the arrangement from above.
+
+rule @call6
+when concept=bark self.likes=smoked_eel
+does aside
+cooldown 8h
+say That bronze curl would suit a cold walk nicely. | A little smoke, a little silver underneath.
+dlg resident.hub : I can talk while the balance finds its middle.
+dlg resident.hub [topic.meeting=known] : #topic.player#, my memory gives your face a fair full weight.
+dlg resident.hub [here.time=night] : The late market trades chiefly in words. I've a few.
+dlg resident.hub [pair.disposition=wary|hostile] : You may watch my paws. The question's yours to set down.
+dlg resident.job [self.job=fisher] : I know fish from the line to the wrapper. The last cut ought to be as fair as the first.
+dlg resident.job : I work where a careful eye earns its keep.
+dlg resident.news [world.news] : The catch of news today is #world.news#.
+dlg resident.gossip [here.gossip=yes] : Here's what passed my board. #topic.subject# #topic.claim#. Inspect the wrapping yourself.
+dlg resident.bye : May your parcel ride snugly all the way.
+dlg shop.greet [here.shop=open] : A clean board and an empty pan to start with. Choose a cut that suits your pot.
+dlg shop.greet [here.shop=bare] : The slate's got more on it than the board. Best wait for another catch.
+dlg shop.greet [here.shop=asleep] : My weighing eye's shut. Trade can wait till it opens.
+dlg shop.prices : I'll show the figure and weigh it where your own eye can follow.
+dlg shop.bye [here.shop!=asleep] : Mind the lower corner of your wrapper. That's where the juice collects.
+dlg resident.business [business=steady] : The beam tips often enough. I'm content with its rhythm.
+dlg resident.business [business=thriving] : Even the odd little cuts find pots before the board gets warm.
+dlg resident.business [business=failing] : The ice is working harder than the scale. I'd prefer my scale to do the heavier work.
+
+graft resident.hub
+choice Is there a pocket inside that hood? -> hood_book
+node hood_book
+say There's a lining. A discreet lining is entitled to a little privacy about its internal arrangements.
+free
+choice What needs more privacy than your purse? -> hood_book_again
+choice Goodbye. -> bye
+node hood_book_again
+say The difference between what I've seen and what I'm ready to sell as knowledge. That transaction's closed to customers.
+choice Keep the brim at its angle. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice May I inspect the balance? [here.shop=open] -> see_pan
+node see_pan
+say Of course. Bare pans, clean beam, no tail hanging over the side. Look as closely as my own customers would.
+free
+choice How does a little water affect it? -> see_pan_again
+choice Goodbye. -> bye
+node see_pan_again
+say A little drop on the wrong side is an extra charge nobody agreed on. That's what my oilcloth is for.
+choice I'll look over the board. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,296 @@
+mantle rm224
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_josephine_wetmore
+title the rest between two bells
+fits stage=young|adolescent|adult|old
+prefers temper=short warmth=reserved
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk keeps_the_rests_between_chapel_strokes
+likes hard_cheese singing new_boots frosty_mornings
+dislikes salt_wind rats
+fears being_made_to_repeat_a_secret
+hopes to_hold_a_note_through_silence
+topics pastimes +0.6 memories +0.3 faith +0.2 food +0.2
+styles comfort=quiet gossip=cautious refuse=direct tease=none
+marks oath saying
+persona #self.first# keeps the rests as carefully as the notes and will cut a tune short when listeners pry.
+
+words
+oath! = Flatten my high note | Clap a lid on that clang
+saying! = A rest counts too | Leave the last stroke room
+pealbit = a round bronze note | a hollow bell voice
+restbit = a measure of quiet | the space after a peal
+ribbit = a little tick under my ribs | a beat under my coat
+pebble = a smooth black pebble | a round countersunk stone
+laces = two stiff laces | a pair of waxed strings
+rindbit = a heel of yellow cheese | a hard cheese shaving
+saltbit = a nip of brine | a sharp salt taste
+frostbit = a rim of white needles | a lacework of frost
+pocketbit = the deep pocket | my inside pocket
+humlow = a low held hum | a quiet steady note
+tonguebit = one tongue click | a tap behind my teeth
+pawbeat = the flat of my paw | two bent fingers
+
+any
+
+opinion church for 1 : A bell can reach somebody with no boots fit to take inside a chapel.
+opinion houses against 1 : A House with coin to spend can buy a great clang and still have nothing much to say.
+opinion dole for 2 : Empty bellies growl through the finest music. Feed everybody first.
+opinion festivals for 1 : A chorus you can feel underfoot is worth a little jostling.
+opinion city for 1 : Even in the low streets you can hear what time the hill thinks it is.
+opinion strangers mixed 1 : I'll share a tune sooner than I'll share anything spoken in confidence.
+line react.news : Let it settle for a beat. I heard you.
+line react.news.new : I was listening for something quite different.
+line react.news.known : Same news, carried in a different voice.
+line react.news.doubt : What a racket for one whisper to have made.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd ring that out gladly if anybody let me at the rope.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard hearing. Let's leave a little quiet around it.
+line reassure : The quiet part counts. Take all of yours.
+
+young
+
+line greet : Hullo. Come on this side. My ear's free here.
+line greet.return : I've stopped counting. Now I can hear you properly.
+line farewell : You'll know where I am if I start singing.
+line farewell.return : I'll keep count till you come round again.
+line decline : You can ask six times and still get silence.
+line answer.how : A little cross but in tune.
+line ask.how : Have you had any peace in your ears today?
+line thank : You let me get to the end without jumping in. Thanks.
+line accept_decline : That's fair. Nobody has to sing on command.
+line deflect_thanks : I did the quiet bit. You did the rest.
+scene i_m_singing_the
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I'm singing the note in my head with my mouth still shut. | I'm trying to start right on the note instead of climbing up to it.
+b : How does a true note feel?
+a : I can feel #ribbit# and then my voice lands smack on it. | If I have to wrinkle my nose I've started too high.
+
+scene i_count_the_chapel
+when topic=faith here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I count the chapel strokes on one paw till I run out of toes. | I know when a bell is finished and when it's only pretending.
+b : How do you know?
+a : I can feel the last one in my teeth after my toes are all counted. | If there's still a wobble in the air I leave another place for it.
+
+scene i_count_my_sums
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I count my sums in silence at #self.workplace#. | I like a slate big enough to put a space between the numbers.
+b : What happens if they get crowded?
+a : I start counting the breathing spaces and forget what the numbers are for. | A six can look like it belongs to a nine. Then I get blamed for a very big answer.
+
+scene i_don_t_pass
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I don't pass on the sound somebody makes trying not to cry. | I heard a hurt sort of breath once and that's all I'll ever say.
+b : Was it someone important?
+a : Important enough to deserve being left in peace. | I keep my own shaky breaths to myself too.
+
+scene i_hold_rindbit_behind
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I hold #rindbit# behind my teeth till it softens. | A thin shaving of cheese snaps so nicely under my teeth.
+b : Can I try some?
+a : If you let me keep quiet while I'm chewing it. | Take the thick piece. I want the sound from the skinny one.
+
+scene i_ve_been_trying
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : I've been trying to hear one snowflake land. | I bet I could hear the snow if all the city stopped talking.
+b : What sound do you imagine?
+a : Somebody setting a feather down and being terribly careful about it. | A very small shush. Smaller than mine.
+
+scene i_can_tell_rat
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I can tell rat scratching from a loose lace on a boot. | I hate little scratching sounds where I can't see the floor.
+b : Tempted to follow that scratching?
+a : I'd sooner lend you my eyes from a safe spot up here. | I can be brave about lots of things on a different day.
+
+scene new_soles_make_a
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : New soles make a slap and old soles make a flap. | I'm walking slowly so both my boots speak clearly.
+b : What's the difference?
+a : A slap ends when I lift my foot. A flap comes along for the ride. | With a flap I know I've worn a new hole and had better mention it.
+
+scene i_d_take_a
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I'd take a sharp clean frost over salt in my whiskers. | An excellent morning puts a white rim round every sill.
+b : What would you do first?
+a : Go find a rail and draw a wavy tune right through the white. | Put my nose outside and hope the air didn't taste of fish.
+
+story skips [topic=memories]
+  : I tried counting a bell in pebbles and skipped a stroke putting one down.
+  : At the end I couldn't tell if the heap was wrong or my ears were wrong.
+  b : Which did you trust next time?
+  : Kept the pebbles in my paw next time. None of them got a vote.
+
+rule @listen
+when concept=bark
+does aside
+cooldown 8h
+say Shh, the gap belongs there too. | I can finish the tune without opening my mouth.
+
+rule @frost
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A sharp note goes well with an early start. | Morning! That's my low voice till I wake properly.
+
+dlg resident.hub : You may have the bit between this breath and the next.
+dlg resident.job [self.job=child] : At lessons I like numbers that end on a good clear beat.
+dlg resident.bye : Go before I start the long verse.
+graft resident.hub
+choice Can you sing without making a sound? -> unsung_note
+node unsung_note
+say Look here. My mouth's shut and my foot is going. When the foot stops I'll sing one note. You see if you had the same one.
+choice I'll try it. -> unsung_after
+choice I'd rather listen. -> hub
+node unsung_after
+say Mm, there. If yours was different we were singing two perfectly good songs to the very same foot.
+choice I'll keep mine going. -> bye
+
+adolescent
+
+line greet : Come alongside. There's room in the quiet for another voice.
+line greet.return : I recognise the way your feet ended that silence.
+line decline : I've promised to leave that story quiet.
+scene the_hardest_part_in
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : The hardest part in a chorus is coming back after a rest. | I can hold a note across four silent beats now.
+b : What keeps you in time?
+a : I count down my ribs like little stairs nobody can see. | I pretend there's a thread running from my teeth to the last note.
+
+scene sometimes_a_friend_wants
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : Sometimes a friend wants me to stop checking the rhythm and just sing. | I'm learning to let another voice set the first note.
+b : What if it's a dreadful note?
+a : Then we'll both be dreadful and neither will have cause to laugh. | There's usually a second note that'll make sense of it.
+
+story lace [topic=memories]
+  : I walked into a chorus with a loose lace slapping in time.
+  : It kept excellent time all the way through the first verse.
+  b : And the second verse?
+  : I was on one knee. The lace had tied itself to my other boot.
+
+
+grown
+
+line greet : Settle in while my last note dies away.
+line greet.return : I have a quiet minute set aside especially for you.
+line farewell : Here's to an easy sound under your feet.
+line farewell.return : Let the fading notes carry you home.
+line decline : I've no wish to turn a private sound into public music.
+scene i_take_a_bell
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I take a bell as an invitation, even if I can't go inside. | A note heard from the street keeps me company a long way.
+b : Do you count them still?
+a : I've counted other things and never liked a single one as well. | Some days I just let the whole peal wash over me.
+
+scene a_room_needs_one
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A room needs one quiet corner with nothing in it to rattle. | I put cloth under a loose pot before I try to sleep.
+b : Can such a small sound keep you up?
+a : Once I've begun counting, every rattle has to have a successor. | It needn't be loud. It only has to be nearly regular.
+
+scene a_hard_cheese_gets
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A hard cheese gets more interesting towards the rind. | Shavings of sharp cheese are my favourite seasoning.
+b : Would you put them in a soup?
+a : At the last moment, so my tongue can find each edge. | Yes, and I'd leave a little on the board for afterwards.
+
+scene a_silence_between_friends
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A silence between friends feels different from one in a crowded room. | Trust means being able to leave a sentence quite unfinished.
+b : Does it ever feel awkward?
+a : Sometimes. That's when I remind my paws to stay off the table instead of tapping. | For a breath or two. A good friend can stand two breaths.
+
+scene i_know_a_town
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I know a town first by which noise travels farthest. | My ears draw a different map from my feet.
+b : What would the map show?
+a : A broad patch of bronze and one street the wind keeps empty. | The point on every hill where the cart noise drops away.
+
+scene i_ll_put_down
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'll put down a coin quietly if it means a meal for somebody else. | Money makes a bigger noise on an empty table than on a full one.
+b : Would you rather give food?
+a : I'd rather give a choice. A coin laid quietly does that. | Depends who's hungry. I can ask without reaching for a purse first.
+
+scene one_of_my_strongest
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : One of my strongest memories has no words in it. | If I see a wolf suddenly start weeping I won't preserve the particulars in a tale.
+b : How do you remember it then?
+a : As a minute when somebody needed a door closed gently. | By being kinder the next time someone has to stop speaking.
+
+scene thunder_steals_the_middle
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder steals the middle of a melody and leaves me holding both ends. | I can sing through a rattle but a big clap puts me clean off.
+b : Where do you pick up?
+a : I listen for what the rain's doing and come in just behind it. | I give the thunder a whole verse to itself. After that it's my turn.
+
+scene you_can_hear_a
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : You can hear a badly hung bell trying to turn its face away. | I listen for the beat underneath a note.
+b : Is it a pleasant sound?
+a : Interesting more than pleasant. I catch myself wanting to set it straight. | When the notes agree without getting in each other's way it is.
+
+scene i_rest_my_voice
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rest my voice the way a walker rests sore feet. | If I feel a scrape behind a note I let the next one go unsung.
+b : What do you do in the quiet?
+a : Drink something warm and practise listening outside myself. | Mend laces. One job my voice can take no credit for.
+
+scene a_lean_table_makes
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean table makes me wish a tune could fill a bowl. | I've watched generous hands get very clever with a cheese knife when times pinch.
+b : Can music help at all?
+a : After there's food in the bowl. First I'd go round with the ladle. | It can keep a meal from becoming nothing but a reckoning.
+
+scene i_keep_one_low
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I keep one low note all to myself. | There's a note I sing while finding the first note for everybody else.
+b : Would I recognise it?
+a : Perhaps in the pause before I begin in company. | I hope you'd recognise the tune that comes after. The rest is my business.
+
+story rim [topic=memories]
+  : Once I tried ringing a cracked cup with a wooden spoon.
+  : Every tap gave a little buzz where I wanted a clean note.
+  b : Did you keep the cracked one?
+  : I put it beside an uncracked cup. Two voices made a much better tune than one voice answering itself.
+
+rule @quiet
+when concept=bark
+does aside
+cooldown 8h
+say Room for one breath between those words. | Ah, there's the end of that echo.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Low notes now. Let the sleepers keep the high ones. | A soft step's a kindness after dark.
+
+dlg resident.hub : Let your words find their own pitch. I'm listening.
+dlg resident.news [world.news] : Here's what rang clear through the talk. #world.news#.
+dlg resident.bye : May the street make a pleasant sound on your way.

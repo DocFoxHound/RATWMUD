@@ -1,0 +1,259 @@
+mantle rm366
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_ragnar_brineford
+title the hood pocket riddle
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk slips_a_written_riddle_into_the_dry_fold_of_a_hood
+likes spiced_cider riddles market_bustle misty_dawns
+dislikes wet_floors deep_mud
+fears a_blurred_answer a_sack_down_in_deep_mud
+hopes a_riddle_in_every_pocket a_dry_walk_in_from_the_market
+topics pastimes +0.5 weather +0.4 prices +0.3
+styles comfort=practical gossip=frank refuse=plain tease=none
+marks oath saying
+persona #self.first# carries a question in the dry fold of an oilcloth hood and gives a straight answer whenever a price or a promise is at stake.
+
+words
+oath! = Mud in the fold | Blank back of a riddle
+saying! = Fold the answer under | Water on the outside, words within
+hoodfold = my dry inner fold | the hood's secret hem
+shortslip = a little riddle slip | a thumb of paper
+turnback = the folded answer | my turned-back ending
+necktab = the tab below my ear | a cloth fastening
+paperwax = a waxed bit of cover | my waterproof scrap
+scoopcup = the shallow cider cup | a cupped tin measure
+breathcloud = the blur on the oilcloth | my little patch of mist
+bootpull = a ridge of sticky mud | a heel-grabbing patch
+spicehair = a thin clove stalk | one dark stem
+sweepstrip = a clean run of boards | a dry way in
+
+any
+opinion city for 1 : Three market corners could give a wolf three different answers to one good question. That cheers a small city walk considerably.
+opinion merchants against 1 : If the price is dear say so. I've never cared to be sold a lofty speech instead of the promised weight.
+opinion newcomers for 1 : Somebody from another stretch of coast may turn a riddle clean over with one different word for a familiar thing.
+opinion strangers for 1 : A strange customer deserves a clean statement of what's in the bag. A familiar one would get no less.
+opinion festivals mixed 0 : I enjoy the crowd so long as I can get my feet and the goods I'm carrying home through it.
+
+grown
+line greet : Dry words under my hood brim. Welcome.
+line greet [pair.band=strangers] : An unfamiliar face, a perfectly fair welcome.
+line greet [here.time=dawn] : It's a soft morning for hearing voices through the cloth.
+line greet [here.time=dusk|night] : I'll lift my hood till I know your voice in this light.
+line greet [self.working=yes] : I'll make this parcel dry and give you a moment.
+line kin.open [pair.kin!=no] : Come up to the side the hood leaves open.
+line again.open : Same ears under the same hood. Welcome back.
+line greet.return : Your word found its way through the fold.
+line greet.return [pair.band=friends|family] : A friendly voice calls for my hood to come down.
+line greet.return [self.working=yes] : Your greeting carries quite nicely beyond my rustling wrapper.
+line greet.return [here.time=dusk|night] : Your greeting's reached the one ear I left awake.
+line farewell : Carry a dry answer home with you.
+line farewell.return : I'll fold my question back into its place.
+line react.news : I'd hear the matter with its answer unfolded.
+line react.news.new : I've an empty piece of paper for that.
+line react.news.known : The back of that question had the same answer last time.
+line react.news.doubt : Was the speaking witness actually there?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd offer something dry to sit on and let the poor house breathe.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A happy thing to find inside the wrapping.
+line ask.how : How's your footing with today's business?
+line answer.how : Sound. My feet and my answer are both dry.
+line sympathise : Mud's bad enough without a whole day pulling at your heels.
+line reassure : We'll put one foot somewhere firm before discussing the next.
+line decline : That would mean promising what I know I can't supply.
+line accept_decline : Fair enough. You decide what stays under cover.
+line thank : You kept the worst damp off a useful piece of paper.
+line deflect_thanks : Just be plain with the next paw you pass something to.
+line preclose : My hood tab wants some attention before I walk.
+line accept_preclose : I'll keep the way by the clean boards open.
+line ack : Answer holds.
+
+scene written
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I put a riddle down the back fold of the hood so I can feel the question travelling with me.
+b : Don't you itch for the answer? | Can rain get it?
+a : The question itches first. A known answer lies very flat against the neck. | Only if I bend my head entirely the wrong way. I've got a second wrapper against curiosity, too.
+
+scene jug
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A damp wrapper won't get dry by having a second wet one tied round it.
+b : What would you do before carrying it out? | Does a parcel mind a little wet?
+a : Move the goods to dry cloth and put the wet piece somewhere airy. The customer may have a fair way home. | Salt does, oats do, and paper is inclined to suffer in silence. I'd rather hand over what I sold.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I cool my cider till the steam hangs in a clear drop under my brim.
+b : Why not just blow on the cup? | Can you taste the spice in the bead?
+a : I do blow, once I've smelt the steam. I'd hate to chase all that work into somebody else's nose. | It mostly tastes of hood. I should stick to the cup.
+
+scene misty
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : A misty dawn is good practice for hearing with only one ear showing.
+b : Why hide the other ear? | Can you hear steps coming?
+a : Because my answer paper's behind it and I'd prefer the fold stayed dry. | From one side very plainly. I turn my head on the other before stepping into somebody's way.
+
+scene muddle
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Mud's the only customer I know who asks to keep the boot and return the foot.
+b : Do you oblige? | What's your defence?
+a : Only under protest. I've spent enough time putting the two together before leaving home. | A firm lace and enough sense to walk a little farther round a deep patch.
+
+scene wetentry
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I put the fold of my hood over one paw before I unfasten it.
+b : Why the extra movement? | Does the fold hold water?
+a : So I can carry it away without pouring a lapful of street onto a clean floor. | On a bad day, a surprisingly persuasive little pond.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I keep one neatly folded question ready to give #self.mother#.
+b : Which slip merits giving away? | Is it any question at all?
+a : It's the cleanest scrap in the fold. A gift shouldn't smell too strongly of having lived under my collar. | One that's good fun to work on. Ordinary questions come by often enough without packaging.
+
+scene seller
+when topic=prices self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A customer caught in a shower deserves a price that isn't running in streaks.
+b : Can you read the wet chalk? | How would you save the price?
+a : I can usually make it out. I'd state the whole sum again in a level voice. | Change the tilt of the board. Then check whether anything was blurred before giving the sum.
+
+scene learn
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'm learning which goods want a breath of air inside the wrapper.
+b : Wouldn't a tight wrapper keep out more damp? | Are you sure you have to make a gap?
+a : If the thing goes in steaming, the damp's already been invited. I'd rather let it cool first. | With bread fresh and warm, yes. I'd wait or leave it room, then take a look before selling it.
+
+scene market
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I enjoy trying to find the last word of a riddle in the stream of market talk.
+b : Have you found one there? | Doesn't shouting put you off?
+a : Quite often. I pick up the right word in an entirely wrong sentence and my own snaps together. | Only the shouting done in my ear. A little distance gives the phrases room to land.
+
+scene harbour
+when topic=land self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : On the Wharf my oilcloth hood lets me hear three kinds of drip.
+b : Three in a single shower? | Which one means the hood leaks?
+a : Yes. The knock on the crown, the slip down the brim and the soft splat of a drop missing my ear. | The one down the collar. I don't usually need my ears for that one.
+
+scene riddling
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Something wears a hood but looks quite bald from the back.
+b : Will you unfold the slip? | Do you mean a wolf?
+a : My own head, if the hood's just hanging across my nose. I'll work on a better ending. | I meant a candle in a little lamp. I confess the first hint still wants a little attention.
+
+scene mornprice
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Mist blurs the writing that faces the street first thing.
+b : Why not face it inwards? | How will a customer manage?
+a : Because the customer is usually coming from outside. I keep a dry chalk handy and take the weather as it comes. | By asking me the figure. I'll give it before the wolf brings both wet feet across the floor.
+
+scene warning
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I am prepared to say exactly what I heard, even if what I heard was very little.
+b : Could you take a useful guess? | Would you be embarrassed by a blank answer?
+a : I'd call it a guess and let the listener decide how useful it proved. | Less than I would by selling a guess as a fact. A blank is an honest sort of shape.
+
+scene miniroof
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt a hood would keep my whole street dry if I unfolded it wide enough.
+b : Where would the water go? | Would you wear this great hood?
+a : Off the ends. I took care nobody lived under those. Dreams are generous with building space. | I tried. In the dream I had a remarkable neck to go with my generous nature.
+
+scene mentor
+when topic=smalltalk self.boss
+does tell.self / ask.detail / answer.detail
+a : I'd like #self.boss# to have plain questions from me, not clever guesses about work.
+b : Even the easy questions? | Why keep guessing for riddles?
+a : Especially those. If an easy piece goes badly astray I'd need a great deal more explaining. | A riddle wants an answer tried on it for pleasure. A customer wants dry goods at the agreed price.
+
+scene hoodsense
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A dry strip below a hedge can outlast the middle of a path in a little rain.
+b : Would you lead the way there? | Doesn't the rain run off all the branches?
+a : After I'd looked underneath. There's no virtue in dry feet coming home with scratched ears. | Along the outer edge it does. Tight in to the stems there may be a passage for an unimportant wolf and a moderate hood.
+
+scene choprite
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A dry clove stem folded in paper has a great deal of smell for the room it takes.
+b : Would you trade spice for riddles? | Does the scent help you remember the answer?
+a : I'd swap a small riddle for a sample. I'll still keep the rest for a proper sale. | It might. If the answer's cider the paper can ask the whole question on its own.
+
+story sunpaper [topic=memories]
+  : I wrote a new question on a slip before the paper had dried from yesterday's shower.
+  : The first word ran into the last one. 'Who' and 'why' shared an extremely long tail.
+  b : Could you recover the missing part?
+  : I put it on a sunny board and wrote the question afresh. The old stain looks just like a wolf leaning into the rain.
+
+story spiceremedy [topic=food self.likes=spiced_cider]
+  : I shook the last of a spice bag over a cup and got more clove dust than cider.
+  : The steam rose in one brown fragrant breath. My own nose began to water.
+  b : How did you thin it down?
+  : Three plain cups. A bad measure for one became a pleasant drink for four, once I'd named the mistake.
+
+story missinganswer [topic=pastimes]
+  : I once wrote a riddle inside my hood and lost the little slip from its folded place.
+  : Walking home, I felt a word against my ear. There it was, plastered flat on the inner cloth.
+  b : Was the answer legible?
+  : Only in reverse. It took a still basin and one fairly prominent ear before I knew quite what it said.
+
+rule @hood
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Close the outside fold before stepping into wet. | Dry parcel here, clear path please.
+
+rule @mire
+when concept=bark self.dislikes=deep_mud
+does aside
+cooldown 8h
+say That dark patch means give the heel room! | Pick the board beyond the deep bit.
+
+rule @scent
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Let the steam clear before the first swallow. | Cover that spice bag, leave the cup free.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Put the question away while the chalk's light. | Save the dry edge for morning.
+dlg resident.hub : Speak into the dry ear on this side. It's yours awhile.
+dlg resident.hub [topic.meeting=known] : You've met the hood before, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : What I have to say is quite plain across a strip of dry floor.
+dlg resident.hub [here.time=night] : No sense making a riddle harder by whispering it in the dark.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look first at how the wrapping will stand the journey.
+dlg resident.job : I make it clear what's inside before passing a parcel over.
+dlg resident.news [world.news] : These are the words with the cover folded off them. #world.news#.
+dlg resident.bye : May the next drip find your shoulder cloth and leave your neck alone.
+
+graft @hoodslip resident.hub
+choice Where have you hidden the riddle this time? -> hoodslip
+node hoodslip
+say One sheet down inside the inner fold. The paper outside carries the question. If anybody wants the answer, the paper has to be turned and unfolded once more.
+choice Why bother with a second fold? -> hoodslip_more
+choice Fold the answer away. -> hub
+node hoodslip_more
+say Because a wet word may show through the paper. A riddle's not much of a pleasure if the rain gives away the answer before I've properly asked it.
+choice Fold the answer away. -> hub
+choice Step clear of the hanging hood. -> bye

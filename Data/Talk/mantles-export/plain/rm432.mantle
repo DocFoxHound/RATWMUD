@@ -1,0 +1,247 @@
+mantle rm432
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_imogen_tarcot
+title the listening smith
+fits stage=adult|old
+prefers job=smith
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk judges_the_progress_of_household_jobs_by_ear
+likes fried_fish digging full_larder thunder
+dislikes waiting night_noise
+fears spoiling_a_good_piece_by_hurrying
+hopes a_supper_timed_by_ear
+topics work +0.6 food +0.4 pastimes +0.3 weather +0.2
+styles comfort=practical gossip=plain refuse=direct tease=none
+marks oath saying
+persona #self.first# judges small household jobs by ear and has no patience for noise that does nothing useful.
+words
+oath! = Ring my empty pan | Scale in my apron
+saying! = Hear the change first | A pause can do a job
+panring = the hard ring of iron | a short bright note
+charpiece = a lump of folded black | a little coal corner
+oilvoice = a soft quick sizzle | a low frying murmur
+spadeface = a clean spade face | a broad iron blade
+linechip = a chip of dark scale | a black crescent
+jointtick = one awkward click | a little knock beneath the ring
+stepbrace = a solid landing rail | a plain iron upright
+jarspace = a crock-sized hollow | a neat stretch of shelf
+rainroll = a long low rumble | a deep rolling note
+panrest = a flat thick tile | a plain iron trivet
+shoebox = a little nail tin | a covered wooden tray
+
+grown
+
+opinion merchants mixed 1 : The first tap on a good pan says more about its value than an expensive tag attached to the handle.
+opinion houses mixed 1 : I'd hear the quality of the piece before examining the crest somebody wanted struck in it.
+opinion city for 1 : Different work makes different sounds here. On a quiet walk I can tell where I am without reading a single sign.
+opinion church for 1 : A little silence set aside on purpose makes a better offering than all the racket I can make with a willing hammer.
+opinion dole for 2 : A pantry deserves filling for the coming week, not one showy meal under everybody's noses.
+opinion strangers mixed 1 : I'll hear a stranger's question. The mark the stranger asks me to put on my work takes more consideration.
+line greet : Come closer while neither of us is making more noise than the other.
+line greet [pair.band=strangers] : You've found a clear place for a word. Use it.
+line greet.return : I hear the change in the air when a voice I know comes back.
+line farewell : Feel the tread settle before you trust the other boot to follow.
+line farewell.return : I wish you a quiet last landing.
+line ask.how : Anything rubbing or ringing wrong in your day?
+line answer.how : Mostly in tune with the work, barring a few unnecessary noises.
+line thank : You stopped when the sound changed. That's the help I needed.
+line deflect_thanks : I heard the loose bit before the rest came apart.
+line accept_decline : Then the work can be put aside in one piece.
+line decline : I won't say a piece is sound because somebody's polished one face.
+line react.news : Let me hear that right through to the last note.
+line react.news.new : That's a sound not previously in the mixture.
+line react.news.known : I know the note this part of the tale gives back.
+line react.news.doubt : There seems a dead spot halfway along that telling.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll lower my voice. That news shouldn't have to travel alone.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Good news ought to ring a little after the telling.
+line sympathise : I can do the noisy bit of your day somewhere well out of earshot.
+line reassure : A fault noticed now hasn't yet spoiled the whole piece.
+line ack : The two ends ring alike. I understand.
+line preclose : Another small thing wants my ear before I lose the note.
+
+scene work_1
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a false ring will stop me with my hand halfway to the next tool.
+b : Can you identify a crack by ear? | Do you tell the whole shop to stop?
+a : I can identify where to look. I don't sign my name to a suspicion. | I move the little piece aside. My ears needn't command the entire shift.
+
+scene food_1
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : The sound of frying fish changes before the fin goes a proper brown.
+b : Which noise are you after? | Would you trust the sound alone?
+a : The quick little spits turn to a steadier whisper. That's my cue to examine both edges. | No. My eyes are already in the kitchen and entirely capable of contributing.
+
+scene pastimes_1
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : A spade tells me when the ground has turned stony before I turn the clod over.
+b : With a jolt? | Can you work round a stone you can't see?
+a : Through the handle first, then a thin hard scrape. Quite different from a stubborn root. | I ease the blade round the edge. Force gives a quick answer and a long job straightening the blade.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd like to have supper ready for #self.spouse# on the first appearance of the good evening smell.
+b : Can smell set a time? | Does your spouse like fish?
+a : It can tell me I've spent quite enough time sharpening the knives and had better lay the bowls out. | I can find out what's wanted without putting my own favourite on the plate and calling it careful thought.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A double stride can be quieter than three short scuffing ones. | I can take the long stairs in pairs without banging the rail.
+b : Would you do it carrying something hot?
+a : Hot stays close and gets one firm step to itself. I'm quick where there's a reason. | I'd set the pace by what was in my hands. A spilled supper makes far more noise than a careful foot.
+
+scene weather_1
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : I like thunder's slow middle better than the starting clap.
+b : Can you hear anything underneath it? | Why the middle?
+a : My own breathing. Most of the usual small annoyances have been briefly excused. | I can feel the pitch going lower instead of merely having to jump when the sky makes a sharp remark.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I want a larder that answers with a soft thud, even when I knock low on the last jar.
+b : What if a jar rings hollow? | Do you test every jar?
+a : Then it's low enough to inspect and include in the next day's reckoning. | Not every day. I'd object severely if the entire pantry became my night's entertainment.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember charcoal settling in a heap with scarcely a whisper. | A quiet wood fire has a very particular way of letting a piece fall into place.
+b : Do you miss that?
+a : Sometimes. A workshop has fifty other sounds all making legitimate demands on the same two ears. | I miss hearing a little sound travel all the way to its actual end.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Night noises are worse when they stop just just shy of letting me forget the last one.
+b : Do you go looking? | Can you sleep through a steady sound?
+a : Only if it seems something's genuinely loose or somebody needs help. I'm not investigating every boot in town. | Generally. A regular tick hasn't taken it upon itself to keep me guessing.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I wouldn't buy a pan the seller won't let me lift empty.
+b : Should it have a certain heft? | Can you tell if it'll sit flat?
+a : I need the balance to make sense when the far edge is full of fish. Heavy isn't a compliment by itself. | Set it on the counter and give the handle one fingertip's worth of pressure. A rocking pan will answer.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'm at ease offering a short prayer said in the time a pan takes to settle.
+b : What is there to pray about? | Why wait till the pan is quiet?
+a : Having enough in it, and the sense to remember those whose pans have stayed quiet all week. | I want to give the words a proper moment alone. Otherwise I'm saying grace to get to the fish.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend will get an honest opinion on the patch and a separate opinion on the effort.
+b : Aren't they the same thing? | Which opinion comes first?
+a : A sound effort can make a poor patch. A friend deserves both truths and a chance to try the thing again. | I ask whether the patch must hold tonight. A useful answer takes precedence over a polished compliment.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rest my hearing by finding a place with just one noise in it.
+b : Doesn't a quiet place feel odd? | Which noise would you choose?
+a : A little, for the opening minute. Then I can hear the ear's own tiredness beginning to pass. | Earth breaking under a spade. It's got no rival trying to sound more important.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When weeks run lean I put the biggest jar at the back where it won't pretend to be dinner. | Hard times make me want a count of actual food before the larder door shuts.
+b : Isn't a big jar a comfort?
+a : If it's full. Empty it simply occupies the space where I might keep tomorrow's honest meal. | A small jar with two portions holds considerably more comfort than a stately urn full of air.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I can't endure waiting for somebody to make up a mind about a job that's ready to go.
+b : Would you start anyway? | Where can you use those idle hands?
+a : Only the part that won't prejudice the choice. Measuring never hurt a piece's options. | Check another tool. A purposeful wait is easier for me to conduct without commentary.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A mouse behind the jars makes a noise unlike any iron ring I know.
+b : Where would you start looking? | Would you put the jars outside?
+a : At the empty spaces, not where the jars are loudest. A little wall can carry a scratching sound surprisingly far. | Check the lids and make the cupboard less inviting. Moving supper into the street seems an overgenerous solution.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I could help an unfamiliar listener recognise the works from a safe distance.
+b : What would you point out first? | Do all the blows sound the same?
+a : The interval. A busy place can have a rhythm as distinct as its smoke against the houses. | No. One hollow note will make every trained ear turn, like a missed step in a familiar tune.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I've heard #topic.subject# #topic.claim#. The words reached me plainly enough.
+b : Does the report strike true? | Do you know who was there?
+a : Hearing one good ring makes me look at the piece. It doesn't finish the inspection. | No. An echo right under my ear might have travelled from a place I can't even see.
+
+story lift [topic=food]
+  : I tapped a frying pan to hear whether the handle had loosened and got a wonderfully mournful note.
+  : I braced the handle with my thumb and got exactly the same note again.
+  b : What was loose?
+  : The tile underneath. I'd given a perfectly sound pan a very thorough and quite unnecessary hearing.
+
+story spade [topic=pastimes]
+  : I dug one straight little trench and heard a clink at the far end.
+  : I knelt expecting a small stone and brought up a lost button with a rim of green round it.
+  b : Was it valuable?
+  : Not to the pantry. I attached it to my work coat and it has been paying rent by holding a cuff shut.
+
+story echo [topic=memories]
+  : I walked a stair at my best two-step pace and heard an extra tick after every other stride.
+  : I stopped expecting footsteps to catch up, but the tick stopped too.
+  b : What was making it?
+  : A bit of scale lodged in the left sole. I dismissed my imaginary follower and cleaned my boot.
+
+rule @pan
+when concept=bark
+does aside
+cooldown 8h
+say One clean ring saves a lengthy argument over the handle. | Let that note finish before the next blow.
+
+rule @step
+when concept=bark
+does aside
+cooldown 8h
+say Two treads clear and the third still there to be looked at. | Don't make the rail work harder than your legs.
+
+rule @smith
+when concept=bark self.job=smith
+does aside
+cooldown 8h
+say Listen at the pause and see where the metal really answers. | No mark of mine till the face and edge both pass.
+
+rule @late
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Keep the noisy jobs for somebody's waking hour. | That quiet's finally spread as far as the last roof.
+dlg resident.hub : Put the matter in reach without raising your voice.
+dlg resident.job [self.job=smith] : At #self.workplace# I notice a bad note, then use both eyes to establish what caused it.
+dlg resident.news [world.news] : This part rings distinctly. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The account I picked out says #topic.subject# #topic.claim#. That's the sound of a report, no more.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I can recognise you without having to strike a note.
+dlg resident.bye : May everything you must handle today ring true.
+
+graft resident.hub
+choice Can you hear when a pan is done cooking? -> pan_finish
+node pan_finish
+say I hear when the edges begin to dry. That tells me when to move closer, never that I can take my eyes elsewhere.
+choice Could I learn the change? -> pan_listen
+choice I'll pay attention to both. -> hub
+node pan_listen
+say Listen once before the fish is turned and once while the last pale bit goes brown. Your ear needs two answers to understand the question.
+choice I'll pay attention to both. -> hub

@@ -1,0 +1,254 @@
+mantle rm276
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_gerrit_tarmore
+title the stitch against forgetting
+fits stage=adult|old
+prefers job=crafter
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk sets_one_cross_stitch_against_each_small_obligation
+likes pickled_herring evening_line full_larder autumn_wind
+dislikes wet_floors gulls
+fears leaving_an_unreturned_kindness
+hopes a_letter_with_space_for_a_reply
+topics work +0.6 friends +0.4 food +0.3 weather +0.2
+styles comfort=specific gossip=exact refuse=direct tease=none
+marks oath saying
+persona #self.first# works small obligations into the edge of a cuff and unpicks each cross when even again.
+
+words
+oath! = Seam my pocket closed | Prick the last cross
+saying! = A returned favour frees the thread | Better one frank seam than two concealed tears
+cross = a red cross stitch | a small dark cross
+cuffedge = the edge of a cuff | a turned cuff
+herringjar = a wide jar of herring | a narrow brine pot
+float = a sliver of cork | a little split float
+letterfold = a corner turned twice | a hard paper crease
+winder = a bone thread winder | a fork of wood
+measure = a marked string | a narrow tape
+waxend = a nub of beeswax | a little wax button
+billmark = a square notch | a short scored line
+pantry = a row of squat jars | a shelf of crocks
+needleeye = a bright little eye | a glint in the steel
+patch = a scrap with sound edges | a square of fine cloth
+
+any
+opinion merchants against 2 : A tidy figure under a crooked price does nothing to straighten it.
+opinion houses against 1 : The Houses could settle what they owe helpers without needing a larger ledger.
+opinion sump for 2 : I can settle a small kindness down here with another of just the right size.
+opinion dole for 2 : There's no call to keep a wolf forever owing for one bowl.
+opinion road mixed 1 : A good letter makes the road seem short. A missing one can stretch it for weeks.
+opinion strangers for 1 : Fresh company begins with an empty account. That's a fair opening.
+
+grown
+line greet : I'll take my thumb off the seam. Welcome. | Stand where the light gets to us.
+line greet.return : Greeting received and returned in full. | A good word back for yours.
+line again.open : Still thread on my needle and you've come round again.
+line farewell : Leave with your cuffs fast and your pockets whole. | May your next doorstep take you in gladly.
+line farewell.return : That's a parting I can pay back gladly. | Good wishes of equal measure to you.
+line react.news : Give me the news down to its last stitch. | I'll hear it without adding anything.
+line react.news.new : Another cross to put in the margin.
+line react.news.known : I know the end of that thread.
+line react.news.doubt : That version runs a little short on evidence.
+line react.news.sorrow [topic.kind=death|loss|assault] : There's no returning what those wolves have lost.
+line react.news.glad [topic.kind=birth|marriage|work] : I'll mark that in the bright thread.
+line ask.how : Anything left hanging over from your morning?
+line answer.how : Upright. My small debts are nearly even.
+line sympathise : You can name the trouble without working out its cost.
+line reassure : A broken stitch needn't spoil both cuffs.
+line refuse : I've an older obligation waiting on my hands.
+line accept_decline : No debt incurred by declining a request.
+line preclose : Fine work wants the rest of this light. I ought to go.
+line accept_preclose : Go settle what's waiting. We're even here.
+line ack : Yes, measured to the very end.
+
+scene exchange1
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I baste the first cuff looser than the second. | I need a light thread on a dark scrap.
+b : Why leave one loose? | So you can see your stitches?
+a : To check the length before either's fixed. | So the next mender can see exactly what I changed.
+
+scene exchange2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I keep kindnesses as red crosses. | I unpick a cross when I've paid a favour.
+b : Where's the account? | Do you save the thread?
+a : Inside the fold of a cuff. | A new debt gets clean thread.
+
+scene exchange3
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A jar of herring can scent a whole shelf. | I measure herring in mouthfuls.
+b : Can you contain the smell? | What's a fair portion?
+a : I give the jar its own end of the board. | Enough that I can leave the last bite till I'm ready.
+
+scene exchange4
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : My evening float has a stitch of red round its waist. | I like the line after the shops close.
+b : A fish can see red? | More bites?
+a : I'm asking my own eyes to see it. | Fewer wolves asking what I've caught.
+
+scene exchange5
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I arrange the jars so I can read the spaces between them. | I turn the handles outside when the shelf's full.
+b : What do the spaces say? | Easier to lift?
+a : Which jar's nearly gone. I pull it forward. | Easier to see what's missing at supper.
+
+scene exchange6
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind takes a loose end straight out behind me. | The wind combs every fringe in one direction.
+b : Good weather for sewing? | Does that bother a neat worker?
+a : Good weather for discovering where I failed to fasten off. | No. For once the place sorts itself.
+
+scene exchange7
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : Gulls don't enter what they take in anybody's account. | I cover my bait before the gulls circle.
+b : A bit of fish gone? | Do they leave you in peace?
+a : The biggest piece. The thief has dreadful bookkeeping. | They send the bill in noise instead.
+
+scene exchange8
+when topic=day self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : Wet flags make me step like a wolf in new trousers. | I wipe the floor clear before I cut cloth.
+b : Very carefully? | Are you cutting down there?
+a : I'd rather meet a puddle with one old hem than two new knees. | No. But a long edge will find every drop that falls.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could leave my thread winder with #self.friend#. | I owe friends the truth even when the coin's short.
+b : Without a mark on the cuff? | Do you say so outright?
+a : Trust is knowing who could hold the whole cuff. | Cheaper to sting once than let the sum grow.
+
+scene exchange10
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep space for a letter on my table. | A crease worn thin means a letter's been read gladly.
+b : A special occasion? | Ever mend one?
+a : Any letter's an occasion when the road's that long. | On the fold, with the finest scrap I had.
+
+scene exchange11
+when topic=work self.job=crafter self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I save a good piece of selvage. | I keep samples sorted by wear, not colour.
+b : What can that mend? | How do you pick one?
+a : A pocket that gets dragged open ten times a morning. | Elbows need tough stuff even if the match is imperfect.
+
+scene exchange12
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : It's possible to be thankful and still ask what's owed. | I keep a quiet minute for a kindness freely given.
+b : Where do you draw that line? | Write that minute down?
+a : A blessing's a gift. Pay is pay. | No. Some sums are spoiled by making a bill.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account was #topic.subject# #topic.claim#. | Repeated words fray like thread drawn through too often.
+b : Has anybody signed for it? | Will you pass them on?
+a : Nobody I can point to, so it stays just talk. | Only with the worn spots showing.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Lean days find me mending even my patches. | Hard days make promises tempting currency.
+b : Does the seam hold? | Would you accept one?
+a : If the cloth beside it does. There's the real cost. | I can trust a wolf and still need supper tonight.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I give a letter room in a pocket without coins. | I can tell a handy road by the neatness of my hems.
+b : Do coins wear through it? | Why the hems?
+a : A sharp edge can saw the fold open by the second hill. | A poor road runs its mud right up the legs.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a letter with the whole back clear. | I've imagined a cuff with no crosses left.
+b : Room for a picture? | What will you put on it?
+a : Room for my answer before the feeling cools. | My wrist. An empty cuff would be its own pleasure.
+
+scene exchange17
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A cheap needle wants testing against the light. | I charge according to what a seam takes.
+b : What's a good needle going to show you? | Time or thread?
+a : An eye clear enough not to eat half a spool. | Both, even when the buyer can only see one.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I spread my fingers flat after each long seam. | The finest work takes a toll on the neck.
+b : Do they stiffen? | Can you change the way you sit?
+a : They remember the grip after I've let go. | I lift the work to meet my eyes halfway.
+
+story tale1 [topic=work self.job=crafter]
+  : I once put two cuffs on the same sleeve. Working late, both looked like a pair to me.
+  : Come morning I found a long arm due a considerable refund of cloth.
+  b : Could you put it right?
+  : I took down the upper cuff. The line it left made a good place for a serviceable patch pocket.
+
+story tale2 [topic=pastimes self.likes=evening_line]
+  : A red thread from my sleeve caught the cork while I was packing up. I felt a twitch and struck like a champion.
+  : Pulled hard enough to drag my own elbow across my lap.
+  b : Was the catch worth keeping?
+  : Considerable weight. Poor eating. I let my elbow go and repaired the sleeve.
+
+story tale3 [topic=memories]
+  : I once opened a letter so often the fold began to part through the best sentence.
+  : I copied that line onto a strip of lining before taking it apart.
+  b : Did the copy read the same?
+  : Better. It lay smooth, and my ear could hear the words without waiting for my paws to straighten the page.
+
+rule @call1
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say Square the grain before threading up. | That hem's got another winter in it.
+
+rule @call2
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Mind the water under the falling edge. | Dry floor first. Cloth can come down after.
+
+rule @call3
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say My cork has nearly earned another coat of red. | That red stitch shows beautifully against dark water.
+
+rule @call4
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say My eyes have finished the fine stitching for tonight. | Big stitches or bed now.
+dlg resident.hub : If you've got a loose end, hold it up against the light.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you're entered in the familiar part of my memory.
+dlg resident.hub [here.time=night] : This hour will do for talk, though it's poor for fine seams.
+dlg resident.hub [pair.disposition=wary|hostile] : I'd sooner see the whole bill than guess at it.
+dlg resident.job [self.job=crafter] : I help with the stitch work at #self.workplace#. A cuff ought to last longer than the praise for it.
+dlg resident.job : I like work I can finish with both edges level.
+dlg resident.news [world.news] : Here are the particulars I have. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I haven't entered it as settled fact.
+dlg resident.bye : You leave no loose ends at this elbow.
+
+graft resident.hub
+choice What's that cross inside your cuff? -> red_cross
+node red_cross
+say An obligation small enough to slip the mind, big enough to mark in red. I know whose it is when the stitch catches my wrist.
+free
+choice What reminds you when a favour's settled? -> red_cross_again
+choice Goodbye. -> bye
+node red_cross_again
+say The smooth patch. It feels very pleasant sliding past my skin.
+choice I'll leave your count straight. -> hub
+choice Goodbye. -> bye

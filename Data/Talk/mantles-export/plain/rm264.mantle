@@ -1,0 +1,254 @@
+mantle rm264
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_dorcas_brineley
+title the high note
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=restless
+quirk mutes_the_high_note_with_a_thumb_to_the_throat
+likes blackberries singing old_maps frosty_mornings
+dislikes gulls haggling
+fears a_public_cry_turning_to_a_jeer
+hopes a_song_with_nobody_being_sold_anything
+topics work +0.6 faith +0.5 pastimes +0.4 gossip -0.5
+styles comfort=steadfast gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# sets a thumb to the throat for the pitch of a cry and saves a private note for the Bright One.
+
+words
+oath! = Pinch my last note | Turn my tune inside out
+saying! = A mouth can sell the cloth and keep the tune | High notes won't mend a torn cuff
+call = a long clear cry | a two-note call
+berrymark = a purple thumbprint | a spot of berry stain
+mapfold = an old worn fold | a tucked paper corner
+hemband = a strip of selvedge | a narrow hem
+restgap = a space for breath | a pause between cries
+hoodtip = the folded tip | the hood's edge
+firstbar = the low opening note | the first two beats
+lastbar = a note going up | a slow falling note
+roofslope = the slope above market | the highest slates
+coldair = a breath of white air | a clear cold breath
+wingnoise = a racket of wings | the churning above the stalls
+handmark = a sign made with one paw | a sweep of the wrist
+
+any
+opinion houses against 3 : Some loads come home in full and some leave a space at supper. I remember who counts them.
+opinion church for 2 : A market voice can find a quiet use before the Bright One.
+opinion merchants mixed 1 : I can admire a good piece of cloth without thinking the wolf who wove it got a fair share.
+opinion festivals for 1 : It's a relief singing to a street where nobody expects a list of sizes.
+opinion sump for 2 : Every low roof has a different answer to my call. I'd miss that chorus.
+opinion dole for 2 : A wolf can be too hungry to shout and still have a perfectly good claim on supper.
+
+grown
+line greet : Ease your ears. This greeting's just for you. | I'm off my high note. Welcome.
+line greet.return : A private greeting coming right back. | Glad our voices met at this softer pitch.
+line again.open : Back before the echo quite died.
+line farewell : Go with a clear throat and an easy stride. | I'll save the next cry till you're clear.
+line farewell.return : And a fair wind behind your words. | My good wishes don't need shouting after you.
+line react.news : Speak close. I'd sooner hear than carry it. | Let that news use your own voice.
+line react.news.new : That's a tune freshly come to this street.
+line react.news.known : The second hearing carries just as far.
+line react.news.doubt : Somebody's reached above the comfortable notes.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'd lay my market voice aside for news so sore.
+line react.news.glad [topic.kind=birth|marriage|work] : That deserves all the lift my voice can give it.
+line ask.how : Has your own voice carried far today?
+line answer.how : A bit rubbed at the edges. I can still hum.
+line sympathise : You can whisper it if that's easier.
+line reassure : Nobody need find the high note straight away.
+line refuse : My voice is promised elsewhere before the light goes.
+line accept_decline : You needn't shout a refusal twice.
+line preclose : I have another bit of street to cover yet.
+line accept_preclose : I'll let you go without a final flourish.
+line ack : Yes, quite clear through the bustle.
+
+scene exchange1
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : I start my market cry below speaking pitch. | I give the colour first and the cloth after.
+b : Can anybody hear that? | Does it sell better that way?
+a : The second note rises clean out of it. | A red sleeve gets a look before linen gets an ear.
+
+scene exchange2
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I take my thumb off my throat to pray. | I pray after the busiest part of market.
+b : Why put it there otherwise? | Why wait?
+a : I measure my selling voice. A prayer can go as it is. | I can offer the Bright One my listening then too.
+
+scene exchange3
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull cuts in just above my highest note. | I won't compete with gulls for air.
+b : Do the buyers take any notice? | Do you close the stall?
+a : Some look up. A gull hasn't sold one sleeve yet. | I hold up a bright scrap and spare my poor throat.
+
+scene exchange4
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I save berries till after the last call. | I once read a berry stain like a bit of coastline.
+b : Will they hurt your voice? | Where did it take you?
+a : It's the purple muzzle I'm saving my customers from. | To the basin for a wash. It had got on both cuffs.
+
+scene exchange5
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : The little tune I keep has no price in it. | I like a melody with one note I can lean against.
+b : Do you sing it in public? | A long note?
+a : Only if I've no cloth in my paws. | Long enough for my shoulders to come down.
+
+scene exchange6
+when topic=land self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : An old map leaves room for a whole new lane. | My map shows a stall where a stair ought to stand.
+b : Where do you draw it? | Will you correct it?
+a : Fold out the margin. A lane oughtn't to have to mind the border. | I put a little ladder against the stall. Both get to stay.
+
+scene exchange7
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : In frost I can see how far my breath goes. | A frost line outlines my window like pale piping.
+b : As far as your call? | Come loose when you touch it?
+a : Barely past my nose. The rest goes on unseen. | A little oval goes clear. Just room for an eye.
+
+scene exchange8
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'll call the marked price till my mouth's dry. | Haggling has a tune without a proper end.
+b : Even to a hard bargainer? | How do you end it?
+a : Especially then. A seller ought to hold one note. | Put a finger on the figure and let my mouth rest.
+
+scene exchange9
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I can hear the market's last notes from my bed. | My favourite room has one small corner with no echo.
+b : Do you call back? | What fits in it?
+a : I tuck my chin down and leave the work outside. | My own voice when I want a moment alone.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A missing voice takes up room in a chorus. | Some wharf cries come home in my sleep.
+b : Can you sing across the gap? | Would you rather have silence?
+a : I can save the space. That's enough today. | I'd rather choose which voices I kept.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I can sing quietly around #self.friend#. | I'd give a friend my quiet corner at market.
+b : Too shy for a loud note? | Where would you stand?
+a : It's a pleasure not having to carry over a street. | Out where a loud voice earns its keep.
+
+scene exchange12
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : A wet cuff weighs down my sample cloth. | I sell the sound of a stripe first.
+b : Do buyers mind? | Stripes make noise now?
+a : I show the dry edge first and tell the truth about the rest. | Say 'bright red stripe' slowly. It has a snap to it.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard that #topic.subject# #topic.claim#. | A cry sounds truer from farther away.
+b : Will that go into the market cry? | Does distance improve a story?
+a : My voice earns pay for cloth. It can leave a rumour folded. | It hides the little tremor in the teller's breath.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times take all the bounce from a bright ribbon. | I sell fewer lengths when things pinch.
+b : Does the colour go? | What do people take?
+a : It's still a fine red. It just hangs there longer. | Little pieces. A cuff can look new without a whole new sleeve.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I judge a turning from what happens to my voice. | A street looks shorter on the way home.
+b : Does the sound split too? | Is that weariness?
+a : The right wall throws it back first. | It's knowing how many cries lie between me and my door.
+
+scene exchange16
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I can hum my way through a winter climb. | Midwinter needs a tune with breathing space.
+b : Isn't the air sharp? | What goes there?
+a : I warm it behind closed teeth. | A breath through a muffler. Then the song can carry on.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to sing against a hillside once. | I picture a day my mouth makes no money.
+b : What would be on sale? | Would that suit you for a day?
+a : That's the point. My tune would be out for its own pleasure. | If my belly were full and my song were mine, I would.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I rest my voice by saying colours without sound. | I keep water back for when the soft notes go.
+b : Can a wolf tell which ones? | Why the soft ones?
+a : Blue and brown look alike till the end. Red's unmistakable. | I can still shout when it's too late to speak gently.
+
+story tale1 [topic=memories]
+  : I used to walk past a shutter and hear another voice following mine.
+  : One day I stopped to let the second caller go by. A loose slat struck the stone in exactly my time.
+  b : Did you leave it loose?
+  : I wedged it with a cloth end. A wolf coming off a shift deserves quiet, even if the shutter doesn't.
+
+story tale2 [topic=pastimes self.likes=singing]
+  : I sang up a stair with a piece of bright cloth between my teeth. It turned all my words to hums.
+  : By the landing I had a tune I'd never meant to sing.
+  b : How did you remember it?
+  : I tied a knot in that cloth for each change of pitch. My tunebook fits round a wrist.
+
+story tale3 [topic=food]
+  : A berry burst on a length of waste cloth in my pocket. I meant to scrub the stain away.
+  : When I shook it out, there was a purple sea with five little pale islands.
+  b : Didn't it wash out?
+  : I never tried. That map knows exactly where my best afternoon went.
+
+rule @call1
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say A clear measure of cloth and one clear price! | Colour that still looks bright in rain!
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Cold air gives my first note a clean edge. | First breath out. Now for the longer one.
+
+rule @call3
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Wings off my samples, if you please. | That call still hasn't earned a copper.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The wet hem wants another peg. | Cloth under cover till the rain moves on.
+dlg resident.hub : My public voice is resting. This one works well enough.
+dlg resident.hub [topic.meeting=known] : #topic.player#, no need to call me over the bustle.
+dlg resident.hub [here.time=night] : The streets have stopped shouting at last.
+dlg resident.hub [pair.disposition=wary|hostile] : Say it without a sales pitch and I'll hear you.
+dlg resident.job [self.job=laborer] : I cry up wares till a scrap feels like a whole bright sleeve in the mind.
+dlg resident.job : I prefer ending the day knowing my pay was spoken plain.
+dlg resident.news [world.news] : Here's the quiet version. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I wouldn't give it a seller's guarantee.
+dlg resident.bye : May the last voice on your walk be a kind one.
+
+graft resident.hub
+choice Can a quiet voice sell anything? -> low_note
+node low_note
+say Try one low note beside a shout. A wolf will turn to hear where the low one came from.
+free
+choice And after the first look? -> low_note_again
+choice Goodbye. -> bye
+node low_note_again
+say Let the cloth tell the next bit. I've never met a buyer who wanted a mouthful of voice in place of a sound hem.
+choice I'll leave your sample folded. -> hub
+choice Goodbye. -> bye

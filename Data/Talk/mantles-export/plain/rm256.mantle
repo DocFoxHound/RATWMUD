@@ -1,0 +1,258 @@
+mantle rm256
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_gerrit_ropewick
+title the hollow tread
+fits stage=adult|old
+prefers job=laborer
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk taps_each_landing_to_hear_the_hollow
+likes roast_pork swimming tidy_house first_snow
+dislikes drizzle rats
+fears unseated_stones a_landing_giving_way
+hopes a_smooth_swimming_ledge geese_far_from_the_roast
+topics work +0.4 pastimes +0.5 land +0.3 home +0.2 gossip -0.3
+styles comfort=practical gossip=discreet refuse=dry tease=gentle
+marks oath saying
+persona #self.first# trots up a flight with apparent ease, taps the landing before putting weight on it, and keeps a dry remark ready for the breathless.
+
+words
+oath! = Soft mortar take it | Hollowest stone below
+saying! = Trust the landing after the knock | A step can lie quite level
+knock = a knuckle tap | a tap with my heel
+slab = the landing stone | the broad flag
+hollow = a drum note | a hollow knock
+rubble = odds of broken stone | a heap of sharp chips
+floatwood = my bit of driftwood | a bleached stick
+joint = the narrow joint | that seam in the flags
+dipper = a tin scoop | the little water scoop
+crispbit = the crackling end | a corner of crisp skin
+wake = the crease behind a swimmer | a line in quiet water
+broomtip = the blunt broom end | my short brush handle
+highrock = the dry rock | the flat bank stone
+neatrow = a row of tidy toes | shoes lined up in pairs
+
+any
+opinion houses against 2 : A House can afford stairs with a roof over them. Winter would too if somebody sent it the bill.
+opinion dole for 2 : A meal lent me strength once. I never found where to pay it back except into the very same pot.
+opinion merchants against 1 : I've yet to see the scales tipped by what's left in a buyer's purse.
+opinion sump for 2 : On a steep lane folk learn to pass a heavy thing along without being asked to love the carrier.
+opinion road mixed 1 : Good flags last longer than praise. I'd pay for the first and save my breath on the second.
+opinion church for 1 : A seat when you're tired is worth a whole sermon about rest.
+
+grown
+line greet : Come up level with me. No prize for arriving winded. | Here, a level bit to speak on.
+line greet [pair.band=strangers] : New tread. Welcome all the same.
+line greet [here.time=dawn] : Dawn's only halfway up the hill. We can wait for it.
+line greet.return : Hullo across the gap. | I heard your greeting over my footfall.
+line greet.return [here.time=dusk|night] : Evening. Step where you heard me, there's room.
+line kin.open [pair.kin!=no] : You're allowed to laugh if I miss a step. Blood privilege.
+line again.open : Our feet seem to have planned this without us.
+line hail [pair.band=friends] : Up on the level, over here!
+line farewell : A sound step under you. | Don't let the hill hurry you downward.
+line farewell.return : I'll hear you coming back, I expect.
+line react.news.new : That's come up the hill ahead of my ears for once.
+line react.news.known : Heard that account already. The echo's very fair.
+line react.news.doubt : I'd put a little weight on that before I trusted the story.
+line react.news.sorrow [topic.kind=loss|death|theft|assault|arrest|crime] : Miserable news. There's room to sit if it's taken your legs.
+line react.news.glad [topic.kind=birth|marriage|work] : Well, there's a landing worth stopping on.
+line answer.how : Sound at the corners, given a quiet tap.
+line ask.how : How much hill have you left in you today?
+line sympathise : It was a bad step. No sense pretending it didn't hurt.
+line decline : I'd sooner decline now than set you down halfway up.
+line accept_decline : Fair. My legs can carry my own errand.
+line thank : You've given my knees a reprieve.
+line deflect_thanks : Don't waste breath. There's still a bit of climb.
+line preclose : Best finish this flight before I stiffen.
+line accept_preclose : Away when you're ready. I can lean quite comfortably here.
+line ack : Ah. Solid enough.
+
+scene landing
+when topic=land|pastimes
+does tell.self / ask.detail / answer.detail
+a : That landing answers twice if you give it #knock#. | I try each flat step before I rest on it.
+b : Twice? I heard one sound. | Aren't the flat ones safest?
+a : One from the face, then the loose corner talks back. | Flat's what the top looks like. The bottom gets a vote.
+
+scene carry
+when topic=work self.working=yes self.job=laborer
+does offer / accept / assess
+a : Give me the lower end on the ascent. | Let me take that bundle beside the wall.
+b : Glad to. You'll have the weight. | That's a squeeze. Why that side?
+a : You'll have to walk backwards. I'd sooner take the weight. | So if I bump something it's a wall and hasn't got feelings.
+
+scene drizzle
+when topic=weather here.weather=rain
+does tell.complaint / give.advice / concede
+a : This little fine rain gets in behind each ear. | I could forgive the wet if it made up its mind to fall.
+b : Turn your collar up. | Have a run, then you'll know it's wet.
+a : Then both ears are deaf and damp. Still, one improvement. | A run costs breakfast. I'll settle for walking and complaining.
+
+scene swims
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I float a stick ahead before I go in. | I never swim directly towards the towel.
+b : To see how cold the water is? | Worried somebody's moved it?
+a : Stick wouldn't tell me cold. The stick does tell me where I'm going. | Because by the time I arrive where it was I'll be passing it.
+
+scene rind
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : The crisp edge goes last on my plate. | Hear that snap? That's the bit worth chewing slowly.
+b : Doesn't it get cold? | Which snap?
+a : Precisely. Hot fat would only hurry me. | The second. First was my jaw getting ready.
+
+scene wintersteps
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : I like an untouched fall, except where there's a stair underneath. | Snow makes a fine white line over the crack by a door.
+b : Can't you count the steps? | Why's that fine?
+a : Steps I can count. The bit somebody knocked out I can't. | Left to myself I'd never notice the draft that drew the line.
+
+scene broom
+when topic=home self.likes=tidy_house
+does give.opinion / challenge / concede
+a : A broom's best kept on a nail, clear of the floor. | I put shoes toe out after I sweep.
+b : You're fussy about a broom. | What about muddy toes?
+a : It's allowed one fault. Most of us have two. | Good point. Toe out on a sack is the civil arrangement.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat went about my loaf in a remarkably tidy manner. | I can endure rats until one starts looking comfortable.
+b : Crumbs all in a heap? | How would you know?
+a : Not a crumb. Just room where the loaf had been. | It turns its back while eating. Insult on top of expense.
+
+scene quiet
+when topic=gossip
+does confide / react.self / assess
+a : There are things seen through an open door that belong inside it. | I find I hear less gossip if I carry something heavy.
+b : You're good at closing doors, then. | Nobody likes to interrupt work?
+a : I'm better at finding something else to look at. | It's that I can't spare the breath to pass it on.
+
+scene shore
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The headland path gives you a view of the whole wall sideways. | From outside the walls the climbs look rather grand.
+b : Sideways is better? | And from inside?
+a : You see the thickness. From inside you see which footsore soul is climbing it. | From inside they're measures of breakfast spent.
+
+scene wages
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I could pay with blisters if anybody gave change for them. | When money runs close I count things that aren't coins.
+b : What sort of change? | What things?
+a : Soft socks, mostly. Rare currency on this hill. | Meals left, journeys owed, and the friendliest door on the route.
+
+scene my_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd take the long climb to spend ten quiet minutes with #self.friend#. | I could walk in silence quite happily beside #self.friend#.
+b : Is ten minutes worth all that labour? | But what makes you call it a good visit?
+a : A fine excuse to get my breath back. I'd stay twenty. | By how far I've gone without wondering when I might turn back.
+
+scene tool
+when topic=work self.working=yes self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : Never fill a hod up to the rim on your first lift. | Those little chips go under #slab# to stop a rock.
+b : Saving some for next time? | Any old chip?
+a : Saving my shoulders for the last lift. Same shoulders all day. | Try it first. A rocking chip only gives the slab a partner.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like a hymn I can keep pace to. | If I miss a word of prayer, I let the gap stay put.
+b : While climbing? | Doesn't that bother you?
+a : Coming down. Going up I leave the long notes to fitter wolves. | I doubt the Bright One's waiting with a slate to mark the stumble.
+
+scene walkback
+when topic=travel|day
+does tell.self / ask.detail / answer.detail
+a : When I hear someone running downhill I step aside first and look after. | Down a slope my two paws seem to have different ideas.
+b : You expect a collision? | One wants to go faster?
+a : I expect a runner. Collisions happen after expectations. | The left wants a low wall to sit on. The right's coming round to it.
+
+scene sleeper
+when topic=health
+does tell.feeling / sympathise / assess
+a : My knees sometimes make a noise I wish the stairs would own. | A long rest makes getting up rather public.
+b : Both knees at once? | The grunt gives you away.
+a : One calls and one answers. Good neighbours, if noisy. | I cough just beforehand. Leave the audience some uncertainty.
+
+scene bad_road
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : With the wagon overdue, I'll enjoy sitting on the lower landing. | No wagon yet. I can hear each loose wheel on each little barrow.
+b : Till it arrives, anyway. | How many loose wheels?
+a : That's the nature of a holiday. Use the narrow ones too. | Seven by sound, though one may be doing steady business going round.
+
+scene night_top
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : The dark makes a short stair one step longer in my head. | I like returning by a wall at night. It keeps the same side.
+b : How can you spot the real end? | Streets don't move either.
+a : I set one foot down carefully on a step that isn't there. Familiar little surprise. | No, but I do. A small correction never hurt a tired walker.
+
+story double_run [topic=memories self.age>=20]
+  : As a pup I tried to take a whole stair in three grand bounds.
+  : Two got me there. The third took me straight through somebody's basket of washing.
+  b : Did you catch it before it scattered?
+  : I brought the washing back up one careful step at a time. Learned two gaits that day.
+
+story riverstick [topic=pastimes self.likes=swimming]
+  : I threw a stick ahead on my first long swim and set my sights on overtaking it.
+  : It stuck in a clump of grass and I went sailing by, triumphant.
+  b : Hardly a race if the stick's stuck.
+  : My greatest triumph. I've been very selective about my rivals ever since.
+
+story missing_square [topic=home self.likes=tidy_house]
+  : I swept a tidy square for my boots and stood back to inspect it.
+  : There was a perfect print dead centre on the square.
+  b : Whose print?
+  : Mine. I had two excellent suspects right under my nose, but I inspected each sole in the room.
+
+rule @load
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say Give the bottom corner room to swing! | Mind those chips under the load.
+
+rule @stairs
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Let somebody coming down have the outside edge. | Weight well inside the landing edge!
+
+rule @frost
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say Clear the lip as well as the tread. | Snow hasn't made those steps any broader.
+
+rule @brush
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Boots in pairs by the low board! | Hang the brush where its toes can dry.
+
+dlg resident.hub : Take the flat spot beside me. We've no need to do this on a slope.
+dlg resident.hub [topic.meeting=known] : More climbing for you, #topic.player#? I'll lean here while you tell me.
+dlg resident.hub [here.time=night] : Dark enough to go by voice. What brings you up?
+dlg resident.hub [pair.disposition=wary|hostile] : Make the case from your own side of the tread.
+dlg resident.job [self.job=laborer] : At #self.workplace# I carry from the high stack to the low one, or the reverse when someone's measured wrong.
+dlg resident.job : My test of good work is whether a thing stays put after I've let go.
+dlg resident.news [world.news] : Up from below comes this word. #world.news#. See if it stands.
+dlg resident.bye : Go easily. The steps will keep their own count.
+
+graft resident.hub
+choice What were you tapping for? -> landing_echo
+node landing_echo
+say Two edges of a flag should give one note. If the corners disagree I put my weight elsewhere.
+choice Could you do it by foot? -> heel_echo
+choice Look at something else. -> hub
+node heel_echo
+say One heel, laid down easy. Jump on it and you'll learn the answer far quicker than you wanted.
+choice I'll mind the corners. -> hub
+choice Go on up. -> bye

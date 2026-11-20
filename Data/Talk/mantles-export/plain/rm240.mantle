@@ -1,0 +1,258 @@
+mantle rm240
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ivar_nailham
+title the landing in reserve
+fits stage=adult|old
+prefers job=carter
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk saves_the_last_stair_for_a_single_step
+likes mutton_stew roof_birds fresh_straw summer_evenings
+dislikes smoke waiting
+fears waiting_until_the_office_forgets_the_question
+hopes for_a_receipt_for_the_missing_petition
+topics travel +0.4 work +0.4 home +0.2 dreams +0.2 gossip -0.2
+styles comfort=practical gossip=curt refuse=soft tease=dry
+marks oath saying
+persona #self.first# takes a stairway in pairs, saves one single step for a dignified arrival and knows the week by a fruitless errand to an office.
+
+words
+oath! = By my spare stair | Take the long landing
+saying! = Two for the hill and one for the door | A wait's shorter if you know the way back
+pair = a double stride | two risers together
+single = a single stair | one short pace
+rest = the bit between flights | a landing with a rail
+boot = my worn left sole | a broad old shoe
+floor = a floor of fresh straw | a scattering of good straw
+stem = a hollow straw | one pale stalk
+leaf = the folded petition | my wandering sheet of paper
+kettle = a black stewpot | the heavy mutton pot
+draft = a ribbon of stove smoke | a thread of smoke
+stone = a raised paving stone | a proud cobble
+bird = a streak of grey feathers | a bird straight off a chimney
+notch = a shallow rut | a groove in the road
+
+any
+opinion road for 1 : I remember where the ruts fall. The road and I manage between us.
+opinion houses against 2 : The signatures are all in order up there. Odd how a smaller name can fall off a page.
+opinion newcomers against 1 : I'll give directions gladly enough. I do mind an extra pair of paws waiting for the same wage.
+opinion dole for 2 : A ladle came to my end of the queue when my pockets were positively echoes.
+opinion sump for 1 : I know which landing to stand on down here without blocking a whole house in.
+opinion watch against 1 : Hard to feel glad of a uniform that's usually hurrying somebody past.
+
+grown
+line greet : Just the one step left. There. Hello. | Give me the landing and I'll give you my ear.
+line greet [pair.band=strangers] : This stair hasn't brought us together before. Room to pass behind me. | Take the rail side. We can talk here.
+line greet.return : Welcome. You caught me between flights. | Well met on a level bit.
+line greet.return [self.working=yes] : Tell me while I've both feet down. | A short word will fit between loads.
+line greet.return [pair.band=friends|family] : That voice saves me the trouble of turning round. | Ah, you can have the rail side.
+line again.open : Back on this flight before me. | Haven't moved the landing since you left.
+line farewell : Easy going on the last stair. | Good footing round the bends.
+line farewell.return : I'll let you make the pace home. | Mind the high bit by the threshold.
+line ask.how : How much of the climb's been yours today? | Got up to anything worth the walk back?
+line answer.how : A flight or two behind where I meant to be. | Still enough wind for the single step at the top.
+line react.news : Give me the part that got here on its own legs. | I'll put a foot down and listen.
+line react.news.new : That's a turn I didn't know. | First time up this stair, for me.
+line react.news.known : I've walked over that bit of news. | Quite. Same rut as when I heard it first.
+line react.news.doubt : I reckon somebody's missed a step in that account. | Let's see it come back the other way first.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A bad jolt even to hear of it. | Ah. I'll walk beside you a way.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a pleasant weight off the axle. | I'd take two flights for another word like that.
+line decline : My own climb needs the breath I've got to spare. | I'll give that route a miss this time.
+line accept_decline : Sensible enough to know your distance. | Your word's good. I'll carry on.
+line preclose : That last stair's got my name down. | I'd better get to the other end before supper.
+line accept_preclose : Let the landing keep what's left. | Aye, we can pick up at the turn.
+line sympathise : Lean on my arm. I won't set the pace. | A pause halfway hurts nobody.
+line thank : That saves me some shoe leather. | I'll remember who took the weight there.
+line deflect_thanks : It was going my direction anyhow. | Two easy steps, that's all it cost.
+line ask.detail : Which turning was that on? | How far along had things gone then?
+line take_offence : Don't set your feet on me to reach the next rung. | There's a fair way to ask, and you went past it.
+line kin.open [pair.kin!=no] : Family get the place nearest the rail. | I'll match the family pace for a while.
+scene reserve
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I go up two at a clip, except at the last. | I save #single# for my entrance.
+b : Run out of breath? | Why?
+a : I'd sooner arrive looking like I meant to come in. | Hard to bow politely if you're still sailing forward.
+
+scene office
+when topic=work
+does tell.self / react.self / assess
+a : I've a regular walk to ask the whereabouts of #leaf#. | Once a week I take a question upstairs and bring it down again.
+b : Any word yet? | Nothing to show for that?
+a : A proper answer would send me looking for some other way to tell what week it is. | My soles are nicely polished where the waiting bench ends.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I prefer a stew with a bone long enough to find without looking. | I save a crust for the bottom of #kettle#.
+b : What good's the bone? | Doesn't it go soft?
+a : Plenty left round both ends if you work patiently. | That's the purpose. Crisp crust has duties elsewhere.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.feeling / react.self / assess
+a : New straw on a floor raises it an agreeable half inch. | I like waking up to the smell of a new floor.
+b : Costs less than building an extra stair. | A new wooden floor?
+a : And you get to start the morning a little taller. | Only straw. I can't afford to wake up to carpentry.
+
+scene birds
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I watch a roof bird take off with both feet together. | A bird on a ridgepole looks down at me running upstairs.
+b : Something you mean to try? | You think it watches back?
+a : I manage the first part. It's the second landing I have doubts about. | It must be trying to see where I've put my wings.
+
+scene waiting
+when topic=day self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : Nobody weighs out waiting time on a proper set of scales. | Give me an errand any day over waiting all afternoon at the far door.
+b : It would weigh heavy? | Even a long errand?
+a : A pound a minute once you can hear the business next door. | Feet do better with something solid to object to.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.complaint / ask.detail / answer.detail
+a : A stove with a bad draw doubles the width of my tears. | I won't have smoke seasoning my mutton.
+b : Can you see to mend it? | Would you eat it cold?
+a : I go out a minute first. No heroics round a stovepipe. | I'd carry the pot out rather than chew the chimney.
+
+scene team
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : When I drive I keep a patch of road in mind for each wheel. | My ears pick up the change when a wheel goes from mud to stone.
+b : You watch both tracks at once? | Can you tell with your eyes forward?
+a : I try to. One can be level while the other's fixing to give you a surprise. | There's a short clean note you don't get out of the soft going.
+
+scene smallroad
+when topic=travel self.job=carter
+does tell.self / react.self / assess
+a : The road looks quite different with an empty bed behind you. | A carter can count the paving by the seat of a wagon.
+b : You can go quicker? | Rough arithmetic.
+a : Often I go slower. No load to keep a wheel from dancing. | Accurate enough to tell me when to grip the rail.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.feeling / ask.detail / answer.detail
+a : A summer evening gives me time to come home twice. | The finest light for watching a ridgepole comes after supper.
+b : How'd you manage that? | Low sun, you mean?
+a : Once from work, once from a walk nobody paid for. | Just so. Each little bird stands out like a mark on paper.
+
+scene petition
+when topic=dreams
+does tell.plan / react.self / assess
+a : I have a small ambition involving a receipt for my petition. | I'd like to hold the receipt for something that isn't going my way.
+b : Does that count as ambition? | What good would it do?
+a : There's enough office stairs under it to make it quite lofty. | Save me having to prove I asked, at least.
+
+scene guest
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : I'd give #self.friend# the share of the pot that sticks a little. | An evening in with #self.friend# doesn't eat up my shoe leather.
+b : Because it's the best bit? | Do you count the pennies that close?
+a : Exactly. I'll wait for the spoon back, though. | When the company is good enough I forget to count anything.
+
+scene crowdedstep
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I can wait patiently if there's an end to wait towards. | I don't mind another pair of feet setting my pace up a stair.
+b : Most would just be patient. | You slow down then?
+a : Most haven't had to ask a bench how long it intends to keep them. | Unless I can climb through a wolf without giving offence.
+
+scene oldpost
+when topic=memories
+does tell.memory / ask.detail / answer.detail
+a : I once had a place where I thought I'd be till I got old. | Going back to wages wasn't part of my picture at first.
+b : Why'd you leave it? | What changed?
+a : Somebody better placed got there with a longer arm. That's where this tale ends for me. | The picture stayed the same. Somebody else got to stand in it.
+
+scene stairs
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : On the Sump stairs I can tell how high I've got by the smells. | There's one board down my way that shifts from end to end.
+b : What's on top? | What do you do?
+a : Whatever's cooking closest to the landing. I hope for mutton. | Step square on the middle. That lets both ends think they've won.
+
+scene route
+when topic=newcomer
+does give.advice / ask.detail / answer.detail
+a : Give a slow load the outside of a turning. | Wait for the wheel before you step into the road.
+b : Isn't that where I'd walk? | Even after the driver's passed?
+a : There's a whole load still coming round after the driver. Let it clear. | Especially then. It's surprising how much wagon there is behind one wolf.
+
+scene oldshoes
+when topic=prices
+does tell.worry / react.self / assess
+a : Worn shoes keep accounts on both sides. | I look at my heels before I look at anything in a shop.
+b : Both sides? | To remember what you need?
+a : Street's wearing through from below and my feet are determined to meet it. | To remember how much of my purse is spoken for.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I once dreamt the whole street was a staircase lying flat. | In my sleep my petition took to climbing stairs.
+b : Was the going easy? | Did you follow?
+a : Never did get to the top. Took just as much work as usual. | Plenty far enough to know it had more puff than I did.
+
+story odd [topic=memories]
+  : I once promised myself I'd reach a door in exactly twenty long strides. I set off in fine style, knees as high as I could get them.
+  : At the nineteenth stride I found the door right under my nose. It seemed a pity not to finish, so I took a good pace backwards.
+  b : Why backwards?
+  : There was a very solid door in front. My promises don't usually include repairs.
+
+story letter [topic=work]
+  : I practised what I'd say about my petition for the whole walk uphill one morning. At the door I had a polished speech as long as a wagon tongue.
+  : I took a double stride over the last two stairs and forgot all but the question I'd begun with. At least I got that out plainly.
+  b : Did they find your paper?
+  : Not then. I do the same walk now with a considerably shorter speech.
+
+story stalk [topic=home self.likes=fresh_straw]
+  : I got a piece of straw in my boot once. I stopped, took it off, shook it well and carried on. The same bit pricked again before the next landing.
+  : Second time I had the sense to look at the sock. A stalk had woven its way in and out of the wool like a careful little stitch.
+  b : Could you pull it out?
+  : Some went to dust. The rest made a very good whistle for roughly one breath.
+
+rule @oddstep
+when concept=bark self.working=no
+does aside
+cooldown 7h
+say Two and two and one for the handle. | Never spend the landing all at once.
+
+rule @cart
+when concept=bark self.job=carter self.working=yes
+does aside
+cooldown 8h
+say Leave the far wheel its share of the corner! | Easy down that groove. No use lifting us both.
+
+rule @summer
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 10h
+say There's light to spend on a second walk. | Haven't worn the evening through yet.
+
+rule @smoke
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 9h
+say Leave the chimney to eat its own supper. | Eyes are for seeing the top stair coming.
+
+dlg resident.hub : I'll give you a hearing here on the flat. No climb required.
+dlg resident.hub [topic.meeting=known] : Back on my bit of road, #topic.player#?
+dlg resident.hub [pair.disposition=hostile|wary] : Room enough on the landing for two civil voices.
+dlg resident.job [self.job=carter self.workplace] : My driving starts at #self.workplace#. Some of the road follows me halfway home on my boots.
+dlg resident.job : I find out how far a pair of soles will go for a wage.
+dlg resident.news [world.news] : I picked up this word on the way. #world.news#
+dlg resident.bye : Both feet clear of the landing now.
+graft resident.hub
+choice Why take the very last stair on its own? -> last_single
+node last_single
+say It gives me a choice. I can walk up to the door and knock, or turn very naturally and go away again. No choice when you're flying up by twos.
+mood pleased
+free
+choice Have you ever turned back? -> turn_again
+choice I'll try coming to a stop that way. -> hub
+node turn_again
+say Once when I was carrying a parcel. Took that last step, saw no parcel in my paws, and went back down a good deal faster.
+choice That was a well-used stair. -> hub
+choice I'll leave the rail to you. -> bye

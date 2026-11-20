@@ -1,0 +1,254 @@
+mantle rm415
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_philippa_rustton
+title the camp ember in town
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk looks_for_a_charcoal_camps_quiet_in_the_space_between_hooves
+likes warm_bread digging quiet_chapel autumn_wind
+dislikes crowds wet_floors
+fears losing_the_smell_of_the_hills
+hopes a_quiet_corner_warm_enough_to_share
+topics work +0.6 land +0.5 home +0.4 memories +0.3
+styles comfort=hearty gossip=sociable refuse=warm tease=none
+marks oath saying
+persona #self.first# brings a lingering smell of hill smoke to town and listens for camp quiet between the bustle of hooves.
+
+words
+oath! = Rake my last ember | Smoke the bellows pink
+saying! = A little hill quiet fits in a loud stable | Even an old ember can warm a first bite
+ember = a dim red speck | a half-hidden ember
+hoe = my narrow hoe | a worn digging blade
+hoof = a dark hoofprint | a neat crescent
+beam = a square stable beam | a low crosspiece
+rack = the near hayrack | a deep manger
+bread = a warm torn end | a piece of soft bread
+dirt = a brown clod | a crumb of earth
+ash = a grey pinch of ash | a soft grey dust
+hillsmell = old charcoal smoke | a smell of camp wood
+wind = a russet-smelling gust | a wind off the ridge
+mat = a plaited mat | a flat rush pad
+crowd = a pushing crowd | a crush of shoulders
+
+any
+opinion houses against 2 : There's always a comfortable explanation waiting for the wolf who gets the good post. The wolf walking home needs supper more than an explanation.
+opinion dole for 2 : Something warm in the stomach means the hill looks climbable again.
+opinion strangers for 1 : I know what it's like to smell of a different place when you first open a town door.
+opinion church for 1 : A chapel with a hush that lets me hear my coat settling earns my affection.
+opinion sump for 2 : You can share the warmth from a single coal in a little room down here.
+opinion merchants mixed 1 : A seller who knows where the loaf last came out warm has got my attention.
+
+grown
+line greet : Come stand where the noise settles between us. | You've found the warm edge of my day.
+line greet.return : That's a welcome I could carry over a stable yard.
+line again.open : We're back in talking reach before the ash cooled.
+line farewell : Take a little hill quiet down the road. | Get home with a warm bite still in mind.
+line farewell.return : May the going leave your shoulders easy too.
+line react.news : Let me hear what carried all this way. | I'll settle my voice down to listen.
+line react.news.new : That's a smell of news I can't place.
+line react.news.known : I've heard that pass between the hooves once.
+line react.news.doubt : I'd rake round the edges before calling it sound.
+line react.news.sorrow [topic.kind=death|loss|assault] : Give the grieving a warm corner and enough time for the first shock to ease.
+line react.news.glad [topic.kind=birth|marriage|work] : I'd call that good news loud enough for the far stall.
+line ask.how : Did you find some quiet amidst all your work today?
+line answer.how : A little smoky still. Glad of the company.
+line sympathise : Lean here a moment. My coat can hold a bit of worry.
+line reassure : A tired beast settles quicker when somebody else stands near.
+line refuse : I've a quiet promise to keep before my working hours slip off.
+line accept_decline : Then we'll leave it lying comfortably where it is.
+line preclose : I'll get back before the evening feed wants its noise.
+line accept_preclose : Go find the warm side of your own wall.
+line ack : Yes. I hear beyond the loud part.
+
+scene exchange1
+when topic=work self.job=herder self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I speak before I touch a flank. | I leave daylight between two loaded hay forks.
+b : Afraid of a kick? | Why waste the room?
+a : I'm fond of a greeting myself before somebody shifts me. | So one pair of shoulders can turn without upsetting a second.
+
+scene exchange2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Charcoal camp quiet has a smell I've carried downhill. | A blanket in town smells of the hills after I've had it round me.
+b : Which smell belongs to camp quiet? | Is that the smoke on your coat?
+a : Wood just on the edge of turning over in sleep. | That's the hill smell that's stubbornest about letting go.
+
+scene exchange3
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Warm bread opens like a soft patch in a cold day. | I take a torn end before a neatly cut slice.
+b : You make it sound like weather. | Why the rough part?
+a : It's the sort of weather I can carry under my coat. | Butter finds its way into all those funny little corners.
+
+scene exchange4
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I turn over a clod to see what's living under it. | I like digging where a tree used to stand.
+b : What if it's busy? | Won't the roots catch?
+a : I put the roof back after looking. | They tell almost the whole shape of what the air once held.
+
+scene exchange5
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : A chapel can be quieter than a charcoal camp. | My coat has to finish its small rustling before praying.
+b : What's the difference? | Does that take long?
+a : An ember sometimes makes an opinion known with a little pop. | Long enough to get the street out of my own voice.
+
+scene exchange6
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind shakes a hill scent right down into the Sump. | A good gust puffs my mane out like a banked fire.
+b : How can you pick it out? | Do you smell the smoke then?
+a : I remember the dry outside of a leaf before the rain gets it. | I suspect everybody gets a fair share before I notice.
+
+scene exchange7
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A packed lane makes my voice go louder for no good reason. | I'd sooner lead a whole line of beasts than squeeze through a market crowd.
+b : Competing with the shouts? | Why the distinction?
+a : I miss the way one voice can carry through a quiet camp. | Beasts give a fair bit of warning where the hooves will go.
+
+scene exchange8
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : Wet floors aren't kind to a tired returning foot. | I wipe a plank along its grain.
+b : Where's the dry patch? | Does it dry faster?
+a : Just beyond the threshold. I lay a mat where it counts. | I catch the water in the low lines before it runs under the bedding.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd save the warm middle of a loaf for #self.friend#. | I can be loud with friends and still let them have the quiet bits.
+b : Don't you prefer the crust? | Which bits are those?
+a : That's the happy balance which makes a friendship affordable. | Those small ones between one settled breath and the next.
+
+scene exchange10
+when topic=work self.job=herder
+does tell.self / ask.detail / answer.detail
+a : I judge a nervous beast by its ears before I look at its feet. | I sweep loose straw away from the wet end of the yard.
+b : Which end's the dangerous one? | To keep it clean?
+a : The front lets me know what the back might presently be doing. | To leave it useful. Clean straw and water both have work of their own.
+
+scene exchange11
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's a shelf where my bread cloth stays dark at one corner. | I keep a seat near the room's quietest wall.
+b : Burnt? | In case of visitors?
+a : Old camp smoke. I can wash it and still find my way to the hills with my nose. | The visitor missing a home smell may borrow mine for a bit.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Word in town is #topic.subject# #topic.claim#. I could have heard better from a hillside. | A rumour can come through thick as charcoal smoke.
+b : Too much noise here? | What do you do?
+a : Too many voices lifting the same claim without looking at it. | Wait for the air to clear before naming what's stood behind it.
+
+scene exchange13
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Poor times make a full hayrack a grand sight. | I can make two small bread ends warm in one cloth.
+b : Even when you're short yourself? | Why not one big bit?
+a : A hungry creature going quiet isn't my favourite kind of silence. | I might have company better served by a half than by a story about plenty.
+
+scene exchange14
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Town hills have steps where my old hill had roots. | A high street full of smoke catches at my throat sometimes.
+b : How does it change climbing? | Too much smoke?
+a : I know what to feel for, but I still find myself expecting bark. | Too little of the right kind. There ought to be trees in the smell.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a whole quiet hour in the stable yard. | I picture a little fire back on my hill.
+b : No animals there? | Will you go one day?
+a : Full mangers. Settled hooves. Content quiet's much better than empty quiet. | I hope to take a loaf up and bring the smell home fresh.
+
+scene exchange16
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A narrow road shows more country if I walk slowly. | I can carry clean straw without losing too much to the wind.
+b : More time to look? | Any trick?
+a : To smell what's changed above the ditch. Eyes miss the camp when it's over the hill. | Face the cut ends into the gust like a good close bundle of arrows.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A few turns with a spade ease my shoulders after leading beasts. | I wake stiff if I've kept quiet about a worry all day.
+b : Wouldn't resting do better? | What eases that?
+a : It's a different pull. My shoulders appreciate a change of mind. | A chair in good company and a word said once where it can settle.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I call quite loud in the morning yard. | I go home quiet after the last call.
+b : Do the beasts respond? | Lost the voice?
+a : They know the ordinary sound. I like giving ordinary a dependable start. | Saved a little of it for the company under my roof.
+
+story tale1 [topic=memories]
+  : I carried charcoal smoke downhill in a bundle of linen. For days I opened that bundle just to stand back on the hill for one breath.
+  : At last I used the cloth and washed it with all the rest.
+  b : Was the camp gone after that?
+  : I put the clean cloth on and carried it round the yard. By supper the smell had moved back in under its own power.
+
+story tale2 [topic=work self.job=herder]
+  : I set a pail down where the yard slanted and watched it begin a very quiet journey towards a sleeping hoof. I got hold of the pail before it touched the beast.
+  : The owner of the hoof opened one eye and considered the matter.
+  b : Did the beast move?
+  : An inch nearer the water. I'd gone to quite a lot of trouble to put the pail exactly where it was wanted.
+
+story tale3 [topic=pastimes self.likes=digging]
+  : I once dug out a weathered root shaped like two little arms round a stone. I meant to take it home as a hook for the bread cloth.
+  : I laid it down beside the hole and went back for a spadeful of earth.
+  b : Did it fit the wall?
+  : I left the root there holding the stone. It had a perfectly good job already. I found a plain peg for my cloth.
+
+rule @call1
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 8h
+say Let the quieter hoof take a moment to settle. | Clean straw up and damp straw out.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Fresh breath for the yard's first call. | I'd trade one city echo for a hillbird this hour.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wipe the plank where the last hoof turns. | My smoke smell's taken another soaking and come up cheerful.
+
+rule @call4
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say A good bread smell can turn a whole morning round. | Fold the cloth while the middle's still steaming.
+dlg resident.hub : I've a bit of the camp's quiet to share under this smoky coat.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I could pick out your voice in the bustle of feeding time.
+dlg resident.hub [here.time=night] : The town almost lets a wolf hear the hills at this hour.
+dlg resident.hub [pair.disposition=wary|hostile] : We can use plain voices and leave comfortable room between our shoulders.
+dlg resident.job [self.job=herder] : I keep the stock settled at #self.workplace#. Quiet ears sometimes do more than a loud call.
+dlg resident.job : I'm fond of work where something living comes easier for the care.
+dlg resident.news [world.news] : This is what the yard noise let through. #world.news#.
+dlg resident.gossip [here.gossip=yes] : There's talk that #topic.subject# #topic.claim#. I heard only the words. The beginning's still hidden.
+dlg resident.bye : Walk with a kind bit of wind at your shoulder.
+
+graft resident.hub
+choice How do you carry a hill's silence into town? -> camp_ember
+node camp_ember
+say I remember an ember breathing at first light, maybe one bird, maybe a paw turning on a blanket. I listen for quiet about that size.
+free
+choice Can a busy stable give you one? -> camp_ember_again
+choice Goodbye. -> bye
+node camp_ember_again
+say Very often. A whole row of beasts chewing happily leaves me a surprisingly quiet place inside my head.
+choice I hope you get a warm quiet evening. -> hub
+choice Goodbye. -> bye

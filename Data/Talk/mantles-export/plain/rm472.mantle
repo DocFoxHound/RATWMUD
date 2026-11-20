@@ -1,0 +1,257 @@
+mantle rm472
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_senna_beechleaf
+title the late teller's place
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk turns_a_storytellers_stool_to_watch_the_door
+likes crisp_apples old_tales new_boots summer_evenings
+dislikes wet_floors deep_mud
+fears a_late_arrival_missing_the_point_of_a_tale
+hopes to_tell_a_long_story_under_a_summer_lintel
+topics memories +0.5 pastimes +0.3 family +0.3 work +0.2
+styles comfort=practical gossip=quiet refuse=soft tease=none
+marks oath saying
+persona #self.first# turns a storytelling stool towards the door and keeps enough of the last sentence to bring a late listener into the tale.
+
+words
+oath! = Turn my stool three inches | By the unspent ending
+saying! = A door makes a fine bookmark | Give a late ear a share of the beginning
+stool = a three-legged stool | my low turning seat
+door = the latchward corner | the bright doorway
+apple = a firm strip of apple | a crisp apple quarter
+pips = the smooth brown pips | a little pile of seeds
+boot = the sound new boot | a stiff unworn boot
+clod = a heavy clod of mud | a black plug of earth
+chip = a curled sliver of beech | a bright wooden chip
+bark = a rough bit of bark | the dry outer rind
+tale = my unfinished tale | the story behind the hinge
+breath = the pause after the hinge | a single listening breath
+latch = a worn wood latch | the crosswise bar
+step = a careful half stride | one shorter step
+
+any
+opinion festivals for 2 : At my wedding I found a dance can carry a whole story without anybody having to remember the words. I've been partial to feasts since.
+opinion houses against 1 : Timber goes up the hill in the names of folk whose faces I can scarcely picture. A proper tale would at least introduce them.
+opinion merchants against 2 : A working paw ought to bring home bread sufficient to carry it through tomorrow's work. My purse and the loaf stall disagree.
+opinion dole for 2 : A bowl from a stranger stills the gurgling that spoils a fine story. I remember a lean week when it did considerably more than that.
+opinion times against 2 : Some weeks the price of living takes up more room at table than the supper.
+
+grown
+line greet [pair.band=strangers] : A new listener at the latch. Welcome. | Take the stool that gives a view of the turn.
+line greet [self.working=yes] : I've room to hear while I work. | Stand where the chips aren't going.
+line greet [here.time=dawn] : Morning. Plenty of beginning left in it. | The first word hasn't grown stale yet.
+line greet [here.time=dusk|night] : Evening. Here's a chair facing the opening. | A fine hour for leaving the door ajar.
+line kin.open [pair.kin!=no] : Kin have leave to interrupt the best part. | Come round where family can see my face.
+line again.open : Another entrance before the tale's done. | The same door brings you round again.
+line greet.return : Hello. The stool's already turned. | Your footfall didn't escape me.
+line greet.return [pair.band=friends|family] : I know your step under a lively story. | There you are in time for the good bit.
+line greet.return [self.working=yes] : I can break off without losing the line. | Let me steady this wood while I listen.
+line greet.return [here.time=dusk|night] : Evening. I can still make out a listener. | There's company in the change at the sill.
+line farewell : Find a good account beyond the next door. | Take the safe turning out.
+line farewell.return : I'll leave the ending for the walk back. | Mind the raised wood of the threshold.
+line farewell.return [here.time=night] : Find your own latch in a quiet patch of night. | A lamp ahead and an easy last stair.
+line react.news : Which part arrived with the first teller? | Set the account down before I finish it for myself.
+line react.news.new : That's an entrance I hadn't counted on. | A new beginning altogether, then.
+line react.news.known : I've heard the knock from that account. | The opening came to me earlier.
+line react.news.doubt : I'd find the missing middle before telling that round. | Somebody's put a very handsome ending on a doubtful beginning.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll hear the hard part in private. | An unhappy turn to bring through the door.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a welcome ending for our trouble. | Good word. Give it the best stool.
+line ask.how : Where has your footfall taken you today? | Any bit of the day worth hearing twice?
+line answer.how : I have the beginning and enough bread for supper. | Sitting square with the way home in view.
+line decline : I'd rather use these remaining hours quietly. | I need a sound hour to give the task I have.
+line accept_decline : Your own story to tell or leave. | Then we'll let the ending stand.
+line thank : You've given the tale a little more room. | I'll recall who opened that particular door.
+line sympathise : Set your stool beside mine awhile. | Take the bit of shelter that sees the way out.
+line reassure : We don't have to get the whole ending today. | Let the first bad minute go past before taking another step.
+line preclose : My seat must turn towards home shortly. | I've a loose end of my own to attend to.
+
+scene stool
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I face #stool# towards the door before I start a tale.
+b : So you can watch for danger? | Afraid of interruption?
+a : So I catch the look of a listener hearing only the middle. A little welcome and I'm under way again. | I expect one. It's easier to enjoy the interruption if I see it coming.
+
+scene axe
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : An axe can break a thought off in a very definite place.
+b : Do you tell stories while cutting? | Is the break welcome?
+a : Not while the blade's moving. I save the story for the walk with the finished wood. | It is if I remember to pick up the thought after setting the axe down safely.
+
+scene apples
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : A crisp apple gives me convenient intervals in a long telling.
+b : Between bites? | Isn't the sound distracting?
+a : Let the listener consider a turn while I eat a slice. We both have useful business. | I finish chewing before trying to tell the next bit. That's my contribution to the arts.
+
+scene boots
+when topic=home self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : Unworn shoes come through a doorway with a very distinct voice.
+b : Proud voice? | Do you like the squeak?
+a : A little opinionated, I'd say. The leather hasn't learnt how my feet phrase a step. | Only till I wear the shoes in. Some characters improve after a noisy entrance.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A summer evening gives a really long old tale a decent chance.
+b : Before supper? | Do you ever leave one unfinished?
+a : After, if I can. Hunger tries to bring the whole company to an unnecessarily brisk conclusion. | I can stop where a traveller comes into view. That wolf will bring the next part tomorrow.
+
+scene mud
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Deep mud can keep both ends of a good story standing about.
+b : Stuck storyteller? | What of the listener?
+a : A boot in a rut and the foot still in the boot. I've reason to remain precisely where the accident occurs. | Rather inclined to come back with suitable advice after washing up at home.
+
+scene slick
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : At a wet doorway I leave a rag on the side that sees the most traffic.
+b : Which way's that? | For the shoes?
+a : Coming in. Going out can put up with a little honest damp for a minute or two. | And for the elbow that may have met the mat before the shoes did.
+
+scene marry
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I like to tell #self.spouse# a little bit nobody else thought worth bringing home.
+b : Such as what? | Why not tell the big events?
+a : The pattern of a leaf caught in a boot welt. The odd voice of a split log as it shifted. | Those will reach home somehow. Small things deserve the courtesy of being carried.
+
+scene winter
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A good old tale rarely begins where the last teller began it.
+b : Isn't that changing it? | Where do you begin?
+a : It changes how the light enters a doorway, not necessarily what's inside the room. | With the first choice anybody could have made differently. I like a little room for imagining.
+
+scene owe
+when topic=smalltalk self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : I keep the name behind my debt to myself.
+b : For whose sake? | Won't anybody ask?
+a : For both ends of the arrangement. A sum doesn't become easier to pay if everybody knows who waits for it. | Anybody may ask. The name stays inside a closed door while the amount is still my responsibility.
+
+scene dear
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A loaf worth a day's woodcutting ought to have quite an impressive size.
+b : Does it? | Would a thicker crust do?
+a : It needn't find itself mentioned in the wonderful tales I tell after supper, no. | If the inside came accordingly large. I don't propose to eat an account of bread.
+
+scene traveller
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new arrival can have the middle of a story in one sentence.
+b : Can you do that every time? | Doesn't that hold things up?
+a : Only if I know what I'm telling. A teller ought to know who came in and why it mattered. | It saves a listener waiting twenty minutes to discover which creature is speaking.
+
+scene payday
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : A clean-felled length of wood still surprises the paws that roll it.
+b : Why surprise? | Is the surprise dangerous?
+a : The short end may be denser. All the important part of that information is hidden under the bark. | I turn it a little and see where the weight wants to go before committing my whole stride.
+
+scene window
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A seat facing the door lets me rest without feeling I've missed the day.
+b : Aren't you always looking? | Do you ever turn it round?
+a : I look at movement on the sill. The rest can occupy itself without my attention. | If somebody needs a private talk, yes. The room deserves care as well as the entrance.
+
+scene plate
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I dislike talking over the hand that's passing me supper.
+b : What's the difficulty? | Do you stop speaking?
+a : I may leave a hot dish hovering while I finish a particularly long sentence. | Long enough to receive it and thank the paw. A good line can survive that kind of delay.
+
+scene meet
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I would leave an old tale half told to walk beside #self.friend#.
+b : Would you come back to it? | Even near the best part?
+a : Nearly always. The listener is usually more patient than the person who needs a friend right then. | Especially there. I know the audience won't run off before I return.
+
+scene hill
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Clear air is fine for a tale coming over a slope.
+b : Does the voice carry? | Which slope?
+a : Surprisingly far, so I count the distance between my intended listeners and the windows above them. | Any slope with walls to send the voice back. A private word wants level ground and a low tone.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a door opened inside an apple's yellow core and I had to tell the pips a story.
+b : Could they hear? | Did any arrive late?
+a : They were perfectly attentive. A great relief after a working day on my feet. | The smallest seed arrived during my account of the first one's entrance.
+
+story stoolstory [topic=memories]
+  : I once turned my stool round to face a doorway and heard a squeak behind me. Every time I turned to look the noise travelled round with the stool.
+  : I spent several very thoughtful moments trying to work out who could be so quick. One loose leg gave the answer by dropping gently into my hand.
+  b : Did you lose your audience?
+  : I gained one small wooden leg whose attention I could keep as long as I had glue and a rag to spare.
+
+story applepips [topic=food]
+  : I placed apple pips on a plate to stand for the folk in a story I was telling to myself. I planned to move each pip into the middle when its turn came.
+  : I ate another apple quarter and added the seeds by mistake. The company grew startlingly large before the opening exchanges were complete.
+  b : Could you finish the tale?
+  : I made the newcomers a wedding party and sent them off to their own dancing. They took up much less room after that.
+
+story drywood [topic=work self.job=woodcutter]
+  : I stood a short dry log upright by a door once, thinking it would do as a seat. It provided just the right height for resting my elbows on my knees.
+  : I hadn't noticed the bottom was shaped like a wedge. When I leaned towards a passing voice, the log bowed gravely in the same direction.
+  b : Did you fall backwards?
+  : Just far enough to discover my own good reflexes. I cut the base flat before offering it to the next storyteller.
+
+rule @aside1
+when concept=bark self.job=woodcutter self.working=yes
+does aside
+cooldown 6h
+say Look for the heavy end before rolling. | Let the story wait till the edge is down.
+
+rule @aside2
+when concept=bark self.likes=old_tales
+does aside
+cooldown 7h
+say Keep the late arrival a share of the opening. | Face the hinge for a well-attended telling.
+
+rule @aside3
+when concept=bark self.dislikes=deep_mud
+does aside
+cooldown 8h
+say Both heels clear before the tale proceeds. | Give the sticky rut time to let me go.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say A little tale can fill the gap under the evening door. | Turn that low stool towards the latch.
+
+dlg resident.hub : Take the place across from me. A caller can see me clearly from there while I attend to any motion at the latch.
+dlg resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. There's more than one account in a day's wood once the cutting edge is laid by.
+dlg resident.news [world.news] : The beginning I heard distinctly was this. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, you've managed a timely entrance into the story again.
+dlg resident.bye : I hope your next entrance is every bit as well timed as this one.
+
+graft resident.hub
+choice How do you catch a late listener up without starting again? -> catch_listener
+node catch_listener
+say Tell the late pair of ears what the traveller wants and what is in the way. A missing boot and a flooded road are a sound beginning for any traveller.
+free
+choice What about all the rest of the beginning? -> missing_start
+choice I can see why the door stays in sight. -> hub
+node missing_start
+say You may hear that on our way home. I've no fear of telling the beginning last if it makes a listener glad to have stayed to the end.
+choice Then I'll stay for the traveller. -> hub
+choice I'll take the beginning away with me. -> bye

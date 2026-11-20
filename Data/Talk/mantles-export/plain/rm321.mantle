@@ -1,0 +1,255 @@
+mantle rm321
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_cedric_rook
+title the envelope under oilcloth
+fits stage=adult|old
+prefers job=none
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk keeps_an_undelivered_letter_drier_than_its_bearer
+likes roast_pork old_tales market_bustle autumn_wind
+dislikes stale_bread wet_floors
+fears a_dissolving_address
+hopes a_receipt_before_the_hood_wears_through
+topics work +0.6 travel +0.4 memories +0.3 prices +0.2
+styles comfort=precise gossip=frank refuse=courteous tease=light
+marks oath saying
+persona #self.first# wears a hood on clear days, entertains the folds with anecdotes and keeps an undelivered letter in the driest one.
+
+words
+oath! = Oil my docket | Seal my hood to the collar
+saying! = An unclaimed letter takes up more room than a coat | Address the door before saluting the knocker
+hood = my dependable oilcloth | a hood with a wide brim
+seal = an intact wax seal | a dark red seal
+address = the line above the fold | a carefully centred direction
+pouch = a dry inner pouch | a long oilcloth sleeve
+copy = a fair copy | a written duplicate
+docket = the docket end | a numbered slip
+doorplate = a broad brass plate | a little dark plate
+bellpull = a plaited pull | a black bell handle
+porkslice = a slice of lean roast | a curl of crackling
+talesheet = a page of recollection | a well-used leaf
+tailedge = the loose skirt of my coat | the lower flap
+stoneflag = a polished flag | a square of worn stone
+inkline = a clean black stroke | a crisp downstroke
+
+any
+opinion city for 2 : A city that can mislay an address and still deliver its roast dinners has not yet exhausted my affection.
+opinion houses mixed 1 : Rank confers many privileges. Being in two houses to receive one letter apparently remains beyond it.
+opinion merchants for 1 : At a busy counter one can watch concise communication practised under considerable pressure.
+opinion festivals for 1 : The only procession I endorse is one with time for every participant to finish an anecdote.
+opinion strangers for 1 : The price of hearing a new tale is generally the modest trouble of offering a stranger a chair.
+opinion road for 1 : A serviceable road makes a very long address considerably more bearable.
+
+grown
+line greet : I can shelter both our greetings under this brim. | Welcome. My paperwork can withstand the interruption.
+line greet.return : Your courtesy is acknowledged with an equal measure of my own. | A very cordial return from inside the hood.
+line again.open : A repeat appearance in today's margin.
+line farewell : May the next door recognise your errand. | Keep your route and your papers reasonably dry.
+line farewell.return : I'll return that farewell with the seal intact. | A kindly wish deserves delivery in both directions.
+line react.news : I'll take the oral account before reaching for ink. | Give me the particulars while the page is open.
+line react.news.new : My mental register gains an entry.
+line react.news.known : That item bears a familiar filing crease.
+line react.news.doubt : I should hesitate to sign the covering note.
+line react.news.sorrow [topic.kind=death|loss|assault] : Some losses deserve a great deal more than a neatly written condolence.
+line react.news.glad [topic.kind=birth|marriage|work] : A welcome addition to the happier correspondence.
+line ask.how : How fares your collection of unfinished business?
+line answer.how : I am present, suitably dry and still in possession of my errand.
+line sympathise : I can provide a chair without requesting a statement.
+line reassure : A second attempt is quite admissible under ordinary weather.
+line refuse : I have an older appointment already waiting at a closed door.
+line accept_decline : I take your decision as delivered in full.
+line preclose : My correspondence and I should resume our joint journey.
+line accept_preclose : I release you to your more pressing engagements.
+line ack : Clear on every material point.
+
+scene exchange1
+when topic=work self.working=yes self.job=none self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a crease can conceal an entire word. | My dry ink looks more authoritative than my wet ink.
+b : Ever lost a word that way? | Does the wording change?
+a : I unfold before answering. A natural precaution after one early embarrassment. | No, but nobody has to hold it by a corner.
+
+scene exchange2
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I have presented the same letter to a succession of doors. | A letter for an absent dignitary travels exceptionally well.
+b : Who took delivery? | How far has it got?
+a : So far every door has declined with perfect discretion. | A great many streets from here and precisely no farther than this pocket.
+
+scene exchange3
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Oilcloth turns a shower into percussion. | I wear my hood even when the day is bright.
+b : How do you take dictation in it? | Against what peril?
+a : I take shelter. The clouds have a most excessive vocabulary. | The embarrassment of predicting the weather in public.
+
+scene exchange4
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : Crackling interrupts a particularly good sentence. | I favour roast pork carved across the grain.
+b : Do you object? | On aesthetic grounds?
+a : Only if somebody else got the larger piece. | On the practical ground that my jaw may be required for further remarks.
+
+scene exchange5
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : An old tale should survive a change of hats. | I prefer a story containing one ridiculous detail.
+b : Whose hat changes? | Wouldn't that spoil a serious account?
+a : The teller's. A good tale still knows where it's going. | It often proves somebody was actually present.
+
+scene exchange6
+when topic=prices self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I enjoy the market's lack of a chair presiding over it. | Every stall has a splendidly short agenda.
+b : Too disorderly for minutes? | What is it?
+a : Delightfully. A cabbage receives its answer immediately. | Move the onions before the rain gets at them.
+
+scene exchange7
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind puts a brisk gloss on a long report. | A leaf found its way between my copies.
+b : Do the pages stay put? | Have you filed it?
+a : In my case they're under oilcloth and I am the one departing sideways. | Under autumn, near the explanation of my crooked signature.
+
+scene exchange8
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : Stale bread resists all but a formal summons. | A crust ought not to sound like a gavel.
+b : To what court? | Hard loaf?
+a : To breakfast, with a warm dish of gravy. | Hard enough to bring the table to order.
+
+scene exchange9
+when topic=day self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A wet flagstone requires more tact than a lord's door. | I hold my papers high over freshly washed floors.
+b : Does the door move underfoot? | Is the precaution necessary?
+a : Not unless I've arrived in extraordinary disarray. | The papers have had no occasion to complain.
+
+scene exchange10
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the envelope above the coat peg. | My best arrangement is one hook per unanswered errand.
+b : Why give it pride of place? | Have you hooks enough?
+a : It has spent longer waiting than most of my guests. | No. I should do well with a very small forest.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# with a complicated direction. | A good friend lets a teller admit a wrong turn.
+b : Written or spoken? | Is it part of the tale?
+a : Both. I should enjoy hearing my punctuation defended. | It is now. A frank narrator has considerable freedom.
+
+scene exchange12
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once bowed to a bell pull when the door failed to open. | There's a particular closed door I could sketch from memory.
+b : Did it acknowledge the courtesy? | Which detail first?
+a : It remained splendidly above provocation. | The knocker. We have spent a good many sociable intervals together.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The unsigned account says #topic.subject# #topic.claim#. | A rumour has no difficulty locating the intended ear.
+b : Is that the official wording? | Why envy it?
+a : No, merely the point at which hearsay ran into me. | My letter could profit enormously from that ability.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times make a formal invitation to dinner a weighty document. | A short purse still deserves a legible receipt.
+b : Because of the food? | Does it often get one?
+a : Because the host knows what the promise costs. | I can at least see to the papers in my own keeping.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city rises clause by clause up the hill. | I place the market at my imaginary map's centre.
+b : Are there many stops? | Is that accurate?
+a : A rather long parenthesis where I catch my breath. | It's where all my journeys seem to acquire an interesting amendment.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I should like one signed receipt and a completely empty inner pocket. | One night I dreamed a door delivered itself to my desk.
+b : What would you carry then? | Was the addressee home?
+a : A spare handkerchief. It would be an agreeable demotion. | The door declined to comment. Even dreams observe protocol.
+
+scene exchange17
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like a blessing that survives being spoken outdoors. | A good prayer needs no duplicate.
+b : Does the wind interfere? | No copy for the records?
+a : It takes the last word uphill, where it may be equally welcome. | I can entrust the filing to the Bright One.
+
+scene exchange18
+when topic=work self.job=none self.trade_words
+does tell.self / ask.detail / answer.detail
+a : I trim my pen before opening a new file. | I keep an extra spot of wax away from the working sheet.
+b : What if the case is closed? | For sealing mistakes?
+a : A straight stroke still makes a handsome ending. | For sealing the result after the mistakes have been corrected.
+
+story tale1 [topic=travel]
+  : I once knocked on a door with my hood turned back to look particularly civil. The entire stored contents of the brim poured down my collar.
+  : I maintained a remarkably upright posture until the footsteps on the other side had receded.
+  b : And the letter?
+  : Dry. I reserve my most competent performances for inanimate dependants.
+
+story tale2 [topic=pastimes self.likes=old_tales]
+  : I offered to record an entertaining tale exactly as told. My pen ran out during the best pause.
+  : The teller watched while I found ink. It was quite the longest pause in the history of that little adventure.
+  b : Did the story improve?
+  : Immensely. I recorded a blank space two fingers wide and left instructions to respect it.
+
+story tale3 [topic=memories]
+  : I once addressed a packet in a script so very handsome I neglected to include the number. Walked the entire row admiring the doors.
+  : I came back with seven excellent descriptions of domestic knockers.
+  b : Did that satisfy your office?
+  : It satisfied a footnote. I obtained the number and made the journey again with considerably less artistic feeling.
+
+rule @call1
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say No seal before the ink dries. | A proper margin spares a second piece of paper.
+
+rule @call2
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The hood accepts custody of another shower. | Oilcloth holding splendidly at the address end.
+
+rule @call3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The first light is just adequate for a downstroke. | An early errand and an as-yet-unruffled brim.
+
+rule @call4
+when concept=bark self.likes=market_bustle
+does aside
+cooldown 8h
+say I admire how promptly a basket makes its point. | Market business arrives at a gratifying volume.
+dlg resident.hub : My schedule contains a perfectly serviceable conversational interval.
+dlg resident.hub [topic.meeting=known] : #topic.player#, my recollection has retained the address of our last conversation.
+dlg resident.hub [here.time=night] : At this hour I allow an errand to rest and an anecdote to stretch.
+dlg resident.hub [pair.disposition=wary|hostile] : I can accept a plain statement without an accompanying seal.
+dlg resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. The portion involving closed doors is more extensive than the title suggests.
+dlg resident.job : I attend to the little details that would otherwise lodge crosswise in a grand undertaking.
+dlg resident.news [world.news] : The matter circulating at present is this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The account in circulation says #topic.subject# #topic.claim#. I should file it under hearsay.
+dlg resident.bye : A clear address and a receptive doorway to you.
+
+graft resident.hub
+choice Why the oilcloth even on a dry day? -> oiled_pocket
+node oiled_pocket
+say I have a letter with a very particular destination. Absent occupants may return unexpectedly. Ruined ink is less accommodating.
+free
+choice Has the letter travelled far? -> oiled_pocket_again
+choice Goodbye. -> bye
+node oiled_pocket_again
+say Its career in my pocket is substantial enough to warrant a travelling allowance. The address is still beautifully clear.
+choice May the door open eventually. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,399 @@
+mantle rm339
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_vidar_ashhand
+title the coal behind the clock
+fits stage=adult|old
+prefers job=servant
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk wraps_a_coal_in_felt_to_hear_whether_anything_else_rattles
+likes blackberries whittling tidy_house summer_evenings
+dislikes stale_bread drizzle
+fears a_stain_on_the_best_linen a_hallful_of_strange_steps
+hopes a_quiet_upper_room a_blackberry_dish_for_two
+topics work +0.5 family +0.4 pastimes +0.4 dreams +0.3 weather +0.2
+styles comfort=attentive gossip=discreet refuse=polite tease=none
+marks oath saying
+persona #self.first# cushions a lucky coal in felt, identifies household rattles by listening after the wrapping goes still and dreams of an upper room with absolutely level shelves.
+
+words
+oath! = Fray my felt | A cinder in the cream
+saying! = Silence your own pocket first | Set the dish down twice in your mind
+coal = the wrapped coal | my lucky cinder
+felt = a square of old felt | the soft black wrapper
+pad = a folded cloth pad | the soft offcut
+dish = a shallow berry dish | my broad little bowl
+berry = a black ripe berry | a plump dark berry
+curl = a slim wood curl | a shaving thin as peel
+hook = a smooth bent peg | the hook with the blunt tip
+crumb = the dry white crumb | a hard bread flake
+bell = the little calling bell | a clear household ring
+rail = a gleaming rail | the worn upper ledge
+tray = a level wooden tray | the broad carrying board
+shine = the last stripe of sun | a bar of evening gold
+board = a loose back board | the narrow sounding panel
+plug = a soft wood plug | the pared wedge
+tack = one round tack | the flat bright nail
+coat = the lined inner pocket | the deep coat pocket
+rain = a grey haze of drizzle | a film of summer damp
+square = my clean folded square | a fresh serving cloth
+
+any
+opinion @1 drink against 1 : A single cup too freely filled can set loose words a discreet household will spend days wishing it hadn't heard.
+opinion @2 merchants against 1 : A returning buyer should recognise a price on returning to a counter, as one recognises the same dish after washing.
+opinion @3 road against 1 : I like a road much better when I know whose door it meets and whether I may knock there after the lamps are lit.
+opinion @4 strangers against 1 : A visitor may certainly wait in reasonable comfort while the household learns the nature of the visit.
+opinion @5 houses for 1 : I value the standard of a house where even an unconsidered corner is properly swept. Maintenance deserves attention too.
+opinion @6 sump against 2 : A low sill and a soaked mattress have taught me the advantages of rooms above the reach of floodwater.
+opinion @7 city for 1 : Ridgemere has windows at every level of wanting a better view. I'd like to settle on a reasonably high one.
+opinion @8 festivals for 1 : At a considerate distance a festival sounds like a house in good company, with rather more bells.
+opinion @9 times against 1 : There is a little less fresh bread showing beneath the covers even when the dish looks handsomely full.
+
+grown
+line @1 greet [pair.band=strangers] : Please wait by the clear place. I shall attend to you. | Welcome. I can hear your purpose quite well from here.
+line @2 greet [here.time=dawn] : The room is ready to receive the morning. Welcome. | Early company. I have a clean place prepared.
+line @3 greet [here.weather=rain] : Allow the wet to fall clear of the board. Welcome inside. | There is room for a dripping sleeve at this end.
+line @4 greet [self.working=yes] : Welcome just beyond the edge of the carrying space. | I'll gladly spare a civil word with both hands occupied.
+line @5 greet.return : I trust you've found a comfortable entrance. | Your greeting has reached the proper ear.
+line @6 greet.return [pair.band=friends|family] : I can put the formal cover aside for you. | The nearer place has been kept clear for a familiar visitor.
+line @7 greet.return [here.time=dusk|night] : A welcome at the hour when the boards grow quiet. | I'll spare the evening a little more gentle company.
+line @8 farewell : May the latch come quietly into your hand. | A dry step and a room already in order.
+line @9 farewell.return : Everything is settled on this side. Go in comfort. | I'll see the place kept tidy behind you.
+line @10 again.open : A familiar footfall returning through the stillness. | The cover has scarcely been laid since we spoke.
+line @11 kin.open [pair.kin!=no] : Our own may come inside the space I keep clear. | The family dish needs no word of introduction.
+line @12 hail [pair.band=friends] : A standing place beside the polished rail! | Over here, by the quiet end!
+line @13 react.news : Allow the other sounds to settle. I'll hear the account properly. | I would hear exactly which part has been confirmed.
+line @14 react.news.new : Your words bring an unfamiliar entry to mind. | That is a fresh disturbance in an orderly afternoon.
+line @15 react.news.known : I had already put that matter carefully by. | The account returns with its original shape intact.
+line @16 react.news.doubt : There seems to be an additional rattle behind that account. | I'd attend to the source of the sound before naming what fell.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : There will be little enough comfort in an empty place. Here is a seat beside mine. | Please leave the ordinary duties lying. That grief comes first.
+line @18 react.news.glad [topic.kind=marriage|birth] : I should put the finest clean cloth out for such a word. | There is news worth setting a second dish beside.
+line @19 answer.how : Taking a little trouble to appear quite settled. | All the usual pieces still in their accustomed places.
+line @20 decline : I could hardly promise that without letting a nearer duty suffer. | I'm afraid that would set another careful arrangement quite askew.
+line @21 accept_decline : I understand where your obligation has to end. | We can lay the matter tidily aside.
+line @22 sympathise : Settle your hands. I'll look after the unsettled pieces. | Some worries need a quiet room before they'll show their proper size.
+line @23 thank : You saw the little thing before it could go wrong. | That consideration shall have a soft place in my memory.
+line @24 deflect_thanks : I was minding that corner of the arrangement already. | Just a felt pad in the right place.
+line @25 preclose : I should see that the last small sound has settled. | I have an appointment with a piece of unruly furniture.
+line @26 accept_preclose : Take your leave through the clear stretch of passage. | I can close the room quite well from here.
+line @27 farewell [here.weather=rain] : Have a dry fold ready when the mist creeps in. | May the rain stop short of your door.
+line @28 farewell [here.time=night] : Rest in a house with no uncertain noises. | An easy sleep after the lamps are put away.
+line @29 greet [pair.band=friends] : Good, a step whose intention I needn't wonder about. | Here is a welcome with the cover already turned back.
+line @30 answer.how [self.working=yes] : Steady as long as what's on the tray agrees. | Seeing to a number of small things with agreeable success.
+line @31 preclose [here.time=dusk] : There is some small advantage left in the slant of this light. | The room wants putting in evening order.
+
+scene felt
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I put #coal# in #felt# before attending to any mysterious tap. | My lucky cinder makes rather a poor companion to an attentive ear until it's wrapped.
+b : Why silence the lucky thing first? | Because it knocks on the fittings?
+a : I'd hate to disturb an entire room merely to investigate my own pocket. | Exactly. I could scarcely charge a table with my own rattle.
+
+scene berryplate
+when topic=food self.likes=blackberries
+does offer / accept / assess
+a : Please try #berry# from the near rim of #dish#. | I have laid the blackberries in a single row. Do help yourself.
+b : I'll lift that green-capped berry first. | You've made them seem almost too neat to eat.
+a : A sound choice. The little cap makes a convenient handle. | Then I shall remove one myself and cure the difficulty immediately.
+
+scene carving
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I pare #plug# to silence a board without bracing it too hard. | #curl# ought to fall in a neat open ring from this bit of wood.
+b : Wouldn't a nail do the work faster? | What sign tells you the paring's finished?
+a : I leave room for a stout board to shift when damp reaches it. | The ring starts to close and the wedge begins to bend. Either is a clear enough hint.
+
+scene tidy
+when topic=pastimes self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I can find #hook# by its distance from the end of #rail# without a lamp. | I leave a little empty space around every small household object.
+b : Is that useful after dark? | Is it the space you notice first?
+a : Yes. A wolf who's sure where the hook stands needn't wake a whole corridor with a lamp. | A misplaced object has to cross the space. It shows before the eye gets accustomed.
+
+scene summerlight
+when topic=season here.season=summer
+does tell.self / react.self / assess
+a : #shine# on a level shelf comes further into the room each summer evening. | A late summer sun examines a swept floor far more frankly than lamplight.
+b : Would you move a dish to follow it? | You needn't invite the sun to inspect anything private.
+a : Only a dish of berries. The light does them credit with no extra polish. | I shouldn't put private things on a floor. Dust is a matter of ordinary housekeeping.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : #crumb# sounds unpleasantly like grit against a polished plate. | Stale bread grates against the basket rim when it ought to settle softly.
+b : Would a little warm broth restore its manners? | Do you hear that with all the other sounds about?
+a : Yes, if the cook and the eater were inclined to help it. I'd serve the broth first. | I hear a hard little scrape after the basket has come to rest. Quite distinctive.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #rain# can lower a household's clean standards without leaving one proper drip to wipe. | Drizzle has crept up the outside of this cloth despite the care I've taken with the dry centre.
+b : Would you shut the sash for so little damp? | Couldn't you turn the cloth over?
+a : Yes. A small damp is still quite large enough for a page or a lamp wick. | That would present a clean-looking damp patch to the next set of fingers. I prefer a dry cloth.
+
+scene hall
+when topic=work self.job=servant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : In #self.workplace# I steady the empty corner of #tray# before lifting the laden one. | At #self.workplace# you can miss the reason for a whole room's noise by staring at what's shaking.
+b : What does an empty corner need from you? | What would you watch instead?
+a : It tells me the tilt before any dish has occasion to move. | The piece beside it that shifted first. A rattling dish may be entirely blameless.
+
+scene lesson
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A beginner lifts a plain board twice for me, once in the mind before taking it up. | A learner can make a quiet practice table talk with a single loose tack.
+b : What does the imagined lift tell you? | What is the learner to listen for?
+a : Whether there's room to turn without fetching up against somebody's chair. | The difference between the tack in its hole and the board rubbing underneath it.
+
+scene spouse
+when topic=family self.spouse
+does tell.plan / ask.detail / answer.detail
+a : I'd set the first of the blackberries in a fresh dish for #self.spouse#. | One summer evening I'd like to have every household matter put by before I sit down with #self.spouse#.
+b : Which part of a guest's welcome would you leave off? | How would your shared hour pass?
+a : The announcement. The dish could sit between us and say all that's needed. | Listen without keeping one ear turned to another door.
+
+scene household
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : A shared cupboard is a very good reason for having a fixed place for the little things. | I value the moment a room changes from ready for company to properly ours.
+b : Does it mean you both follow the same arrangement? | What marks the change in the room?
+a : It means I can find what I need at night without troubling another sleeper. | We can put our elbows on a table without anybody's comfort being my official concern.
+
+scene highroom
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd like to choose the view from my final window with the water far beneath it. | A high quiet room would settle one old argument with the wet.
+b : Would any clean upper room do? | Do you think you could ever stop attending to damp?
+a : I should like the view as well. The room is the practical part; the view is pure wishing. | I'd like the opportunity to learn how much attention clear air actually requires.
+
+scene estate
+when topic=land self.quarter=estate
+does tell.self / react.self / assess
+a : A court can be grand outside and quite dependent on a small reliable wedge inside. | Here on the Estate a discreet repair is sometimes mistaken for no repair being needed.
+b : Does that offend the wolf who made the repair? | Would you like the work announced instead?
+a : No. I'm interested in a quiet result while the wedge continues to hold. | Only to the wolf who needs to check it next. Private notes serve a sensible purpose.
+
+scene stairs
+when topic=travel here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I should like to compare the sound under a boot at all three levels of Ridgemere. | I have often imagined a route that climbs without once passing a flooded sill.
+b : Would you start from the lower street or the highest? | Could a route avoid every bit of water in a rain city?
+a : From below. A change to a drier sound would be a welcome sort of rise. | Only the sill matters. I am prepared to let the rest of the rain go about its business.
+
+scene giftfriend
+when topic=friends self.friend
+does offer / accept / assess
+a : I have a smooth little hook put aside for #self.friend#. There is another you may try. | I would keep a quiet corner free for #self.friend#. This place beside it is available.
+b : A coat-friendly hook would be very welcome. | I'd like to sit without anybody staring.
+a : Give it a turn in your palm. There isn't a corner left for the lining to catch. | Then sit facing the light, with the edge of the wall at your other shoulder.
+
+scene poorhome
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : In a hard week there is less fresh food to clear away and more care needed to make a meal look kind. | A thin supper need not be put down with a thin welcome besides it.
+b : How could a single dark berry improve a plate? | Would you cover a nearly empty dish?
+a : Set it bright in the middle where the next wolf can take it without asking. | Yes, to keep it warm. A cover is sometimes merely a cover.
+
+scene discretion
+when topic=gossip
+does give.opinion / disagree / concede
+a : I should prefer to leave an uncertain private account exactly where I heard it. | A household whisper does not become public business by having reached a busy passage.
+b : Would you say nothing if the account worried you? | Even if everybody on the passage heard?
+a : I'd ask the concerned wolf away from company. Concern isn't a reason for a wider audience. | The audience has increased. The nature of the errand has not altered in the least.
+
+scene formal
+when topic=newcomer
+does ask.advice / give.advice / assess
+a : How would you make an unfamiliar caller comfortable until the household can attend? | What would you say if two visitors arrived with conflicting directions?
+b : Provide a clean seat and ask which name to announce. | Repeat each direction privately before moving either bundle.
+a : Precisely. One can be properly welcoming and properly careful at the same time. | That would preserve both parcels and two sets of dignity. A very good beginning.
+
+scene nibble
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A blackberry seed against a dish has a very small but distinct voice. | I rub one stain from a crushed berry against #square# to see which side took it first.
+b : Are you going to ask whether it enjoyed dinner? | Wouldn't the colour go through straight away?
+a : Only whether every guest has finished. A dish with seeds still moving is occupied. | On fine linen, yes. A thicker square gives you a little time to save the second layer.
+
+scene newknife
+when topic=pastimes
+does tell.self / react.self / assess
+a : A knife left on its flat side seems quiet until a hard table begins to rock. | One sliver beneath a tool can make quite a show of a loose board.
+b : How do you lay it still safely? | Wouldn't you clear the board first?
+a : On #pad#, edge away. That settles both noise and politeness at once. | Yes. That's how I learnt the tool was rocking, not the furniture.
+
+scene ringsettle
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I wait to locate #bell# till the tiny return note has died. | A calling bell and a shaking tray begin with rather similar little strikes.
+b : Aren't you meant to hurry to a call? | How do you distinguish them?
+a : I can move at once. I listen for the end to learn which direction to take. | The bell keeps its note. Something on a tray is generally interrupted by another dish.
+
+scene mastercalm
+when topic=work self.master=yes
+does tell.feeling / sympathise / assess
+a : I don't expect a fresh learner to feel as composed as a finished room looks. | It cheers me when a worried learner discovers the noise has a perfectly plain cause.
+b : Do you admit to your own nerves? | Isn't the learner supposed to ask you first?
+a : Yes. It shows why steadying one's hands comes before steadying a tray. | I'd rather see a thoughtful inspection before a fearful guess.
+
+scene coalvalue
+when topic=prices
+does give.opinion / disagree / concede
+a : A plain wrapper is an excellent investment if its business is to prevent a far greater stain. | I could pay good coin for enough clean felt to turn a noisy pocket quiet.
+b : Even if the thing inside is almost valueless? | Why not empty the pocket?
+a : A bit of coal costs little. A soiled table cover costs a surprising deal more. | An empty pocket doesn't bring the little confidence the wrapped stone does.
+
+scene eveningsill
+when topic=dreams self.likes=summer_evenings
+does tell.plan / ask.detail / answer.detail
+a : I would set the chairs to catch the very last light on a summer evening. | I'd keep the high sill bare as a courtesy to the light coming through it.
+b : Would you line them up formally? | Even a little bowl of dark fruit?
+a : No. Turn them toward one another just slightly. A private evening is best arranged for conversation. | Well. A little colour set well to one side needn't disturb the effect.
+
+scene deepmud
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : I'm concerned about that run of dirty water across the entry. | A dry patch can be made smaller by every fresh foot coming in.
+b : A single piece of sacking would help. | How can you preserve that last dry strip?
+a : Yes. I like to catch a wet sole before the first polished board becomes involved. | Make a clean line with an old cloth and tell visitors courteously which side to use.
+
+scene scraplife
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I know an old story where a low servant saved a whole room with a scrap of felt. | There's a tale about an upper hall built with precisely one rattling board.
+b : What did the servant rescue it from? | Did the owner object to such an imperfection?
+a : A cracked jug on a shelf shaken every time the great door met its frame. | Yes, until the board's noise gave notice of a roof beam shifting. After that it had an honoured place.
+
+scene roadfear
+when topic=travel
+does give.opinion / disagree / concede
+a : I mind a journey less when I can picture the room at my destination. | A good road may reach a thoroughly unsuitable threshold.
+b : You can't inspect every room before setting off. | Would the threshold put you off the whole journey?
+a : True. That's why I value a clear letter of welcome with proper directions. | If there's no quiet place to ease a foot that's aching I'd think long about going.
+
+scene neatjam
+when topic=food
+does offer / accept / assess
+a : Would you like a spoonful from the jar where I've kept the whole blackberries? | Have the little end spoon. It fits under the soft fruit without bruising it.
+b : I'd be happy to taste one intact. | A careful way to go about eating something soft.
+a : Lift out from the side. That one near the rim will come away round. | It's pleasant to see a good arrangement fulfil its purpose.
+
+scene smallpledge
+when topic=work
+does tell.self / react.self / assess
+a : An orderly room can look as if nobody worked in it at all. | I can sometimes put a whole mistake right before the next caller has lifted a paw.
+b : Is that a compliment to the room? | Wouldn't the caller deserve to know?
+a : If the person who prepared it can sit awhile, yes. A room ought to be capable of a little gratitude. | If it affects the caller, certainly. A dry dish restored to its right shelf does not require a public history.
+
+scene hearhome
+when topic=family self.spouse
+does tell.feeling / sympathise / assess
+a : When I imagine coming home, there's one familiar voice beside the ordinary household sounds. I think of #self.spouse#. | I should like one supper with #self.spouse# where a berry stem touching a dish can be heard distinctly.
+b : Would you leave the coal outside? | Wouldn't such silence feel uncomfortable?
+a : I would wrap it decently and bring it home with me. That's what the felt is for. | No. Between two wolves who know one another the smallest sounds can be company.
+
+story false_clock [topic=lore]
+  : I once heard a tick in a room long after the clock had been taken out. It was quiet if I stood perfectly still and began when I moved near the wall.
+  : I checked the hooks and the wall boards, then put my hand round my pocket's little parcel.
+  b : Did the ticking stop?
+  : At once. A tack caught in the lining had been striking the coal. I mended my pocket and left the innocent room in peace.
+
+story basket_shift [topic=food]
+  : I took the berry basket up the stairs with a cloth laid neatly over them. At the top step something shifted under the cloth.
+  : I expected a purple flood. I had already pictured the entire corridor needing attention.
+  b : What had moved?
+  : A small dry leaf caught inside the fold. The berries were still quite round. I took a considerably calmer journey back downstairs.
+
+story wood_wedge [topic=pastimes]
+  : I pared a wedge for a sideboard and made it so neat that it was a shame to put it underneath. I put it on top to admire with the other little things.
+  : The board continued rocking. A dish struck the very wedge I'd made to silence it.
+  b : Did the wedge go underneath then?
+  : Quite promptly. It has made a better impression there without being visible at all.
+
+story summer_gap [topic=dreams]
+  : One summer a streak of light fell neatly between two bowls. I left them in place three evenings running to see the light return.
+  : On the fourth the stripe caught the rim and showed a little flaw in the glaze.
+  b : Did you move the bowls back into line?
+  : I put the damaged one aside. A quiet pleasure had managed to help the household without asking for a post.
+
+story small_lesson [topic=work]
+  : A board tilted as I reached across it to right a slightly crooked tray. I withdrew my hands and the tray straightened all by itself.
+  : I tried the movement again with a folded rag in place of the tray and heard a tiny scrape from the foot.
+  b : Was the foot loose?
+  : No. A crumb beneath it. Sometimes a large household problem is merely a very small breakfast escaping notice.
+
+rule @felt
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Soft side against the charcoal. | Let the pocket settle before listening.
+
+rule @duty
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say One clear space past the tray, please. | Steady the empty corner as well.
+
+rule @teach
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Set the shape of the lift in mind first. | A mistake caught quietly can still be discussed.
+
+rule @summer
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Last light just reaching the berry dish. | Another inch of gold on the wall.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say There's a thin wet line past the cover. | The dry cloth belongs at the inner edge.
+
+rule @home
+when concept=bark self.married=yes
+does aside
+cooldown 8h
+say Keep two clean places by the last light. | A shared dish leaves no need for ceremony.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I can attend to your errand here while the proper place is made ready.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'm glad to hear that familiar approach again.
+dlg @3 resident.hub [here.time=night] : It is late enough that the boards may hear us quite clearly.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I shall hear you across this clear space. There is no cause to close it.
+dlg @5 resident.job [self.job=servant self.workplace] : I serve in #self.workplace#. I try to have the work done before a guest needs to notice it.
+dlg @6 resident.job : I take care of details apt to become large ones in an untidy room.
+dlg @7 resident.bye : May your next room be ready when you reach it.
+dlg @8 master.learn [here.teaches=yes] : We can begin with a small unladen board and room enough to turn it.
+dlg @9 master.learn [here.teaches=no] : The teaching place is presently filled. I might explain some aspect of the work here.
+dlg @10 master.work : Notice the room first. Then handle each thing with regard for the other objects and the other wolves in it.
+dlg @11 master.wages : Learning provides no wages. Your own work may be sold, and you learn more quickly when we attend to a job together.
+dlg @12 master.takes [here.take_on=no] : #here.take_on_why# Those circumstances govern the space I can offer.
+dlg @13 master.refused : #topic.why# I prefer to leave no uncertainty over the reason.
+dlg @14 master.bye : Give the little lesson time to settle before trying to do it all at once.
+dlg @15 resident.hub [here.weather=rain] : Let the damp rest by the door. A folded cloth is ready in the drawer.
+
+graft resident.hub
+choice What is the little felt parcel for? -> quiet_luck
+node quiet_luck
+say A bit of coal I like to have with me. It needn't be on public exhibition, and certainly ought not to make a mark on somebody else's clean cover.
+choice Why the double wrapping? -> soft_second
+choice Leave the parcel in your pocket. -> hub
+node soft_second
+say So I can listen when a shelf seems to be rattling. An attentive wolf first makes sure the cause isn't travelling in a pocket.
+choice I'll try to listen the same way. -> hub
+choice May the parcel bring you luck. -> bye
+
+graft master.learn
+choice What shall I listen to in an empty room? -> quiet_board
+node quiet_board
+say An empty room has several voices. The door settles, wood contracts under a lamp and a tray may keep moving for a moment after you've put it down.
+choice Which sound should concern me? -> late_rattle
+choice Let us speak of the lesson again. -> learn
+node late_rattle
+say The one that continues after the cause has stopped. First search your own clothing, then see what is resting a little too close to something else.
+choice I'd hear more about this work. -> work
+choice I will listen on my way out. -> bye

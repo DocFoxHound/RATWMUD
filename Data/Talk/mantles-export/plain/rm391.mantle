@@ -1,0 +1,420 @@
+mantle rm391
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_thyra_plankridge
+title the returnable cloth
+fits stage=adult|old
+prefers role=merchant warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk holds_a_dry_cloth_over_a_customers_basket_to_test_the_rain
+likes roast_pork long_walks sharp_knife frosty_mornings
+dislikes gulls cold_tea
+fears a_dinner_soaked_between_counter_and_door
+hopes a_counter_that_outlasts_the_first_owner
+topics work +0.6 weather +0.5 food +0.4 travel +0.3
+styles comfort=cover gossip=forthright refuse=warm tease=none
+marks oath saying
+persona #self.first# keeps dry cloths to lend with laden baskets and measures a shower by the spots on the cloth that comes back from the door.
+
+words
+oath! = Rain through my best serge | Four dripping baskets
+saying! = Keep the supper dry first | A borrowed cloth comes home lighter
+cloth = a woven cover | the stout grey cloth
+patch = a dark water spot | one damp patch
+handle = the basket grip | the bent handle
+string = my plain binding | the broad string
+heap = the provisions pile | the neat little order
+shelter = the market awning | a covered walk
+roast = a serving of carved pork | the carved joint
+rind = the crackling end | a strip of crisp rind
+slice = a thin slice | the generous cut
+blade = a good kitchen edge | the sharp blade
+hook = a return hook | the drying peg
+ticket = the cloth token | a little wooden slip
+stack = a folded stack | the reserve of covers
+crust = a cut heel | the end crust
+roll = a tight cloth roll | the spare bundle
+gullspot = a grey wing | the watchful white shape
+corner = the downturned corner | the tucked flap
+tea = my freshly poured tea | the steaming cup
+
+any
+opinion merchants for 1 : A good sale sends the food out fit to eat. Counting the coin is only the first part.
+opinion houses mixed 0 : A grand name on a damp parcel won't restore the crackle to a crust.
+opinion dole for 1 : A hungry wolf deserves a sound basketful taken home with exactly the same care as paid goods.
+opinion city for 2 : The Market Hall gives a thousand ordinary dinners somewhere sheltered to begin.
+opinion strangers for 1 : A traveller can borrow cover for a meal before I know anything about the road behind.
+opinion road for 2 : Some walks are worth taking empty-handed, just to learn the way a laden customer will need.
+opinion watch mixed 0 : When the crowd is tight, directing folk to a dry exit makes better use of a strong voice than trying to frighten the lot.
+opinion festivals for 1 : A feast brings familiar faces buying for an extra place at table. I like choosing that additional portion.
+opinion newcomers for 1 : A clear explanation of a small custom saves a new arrival feeling foolish over a borrowed cloth.
+opinion church for 1 : Putting a roof between a stranger and a rough shower strikes me as a sound thing to pray about and to do.
+
+grown
+line greet : Welcome. There's a dry spot for anything you're carrying. | Hello. Set that down if it's cutting into your paw.
+line greet [pair.band=strangers] : First time this way, I believe. Make yourself easy. | Leave your basket close to your own feet and come speak.
+line greet [here.time=dawn] : Morning. Fresh covers folded and a day to fill. | A clear bit of morning between the parcels, welcome.
+line greet.return : I heard you. There's space at this end now. | Yes, hello. Come alongside where there's cover.
+line greet.return [pair.band=friends|family] : Your company doesn't need wrapping up in ceremony. | A dear voice under the awning. Come alongside.
+line greet.return [here.time=night] : Late greetings. There's time left for a quiet word. | Hello through the dark. The step's clear.
+line again.open : Here you are again with cloths still to fold. | Here's a welcome second helping of company.
+line hail [pair.band=friends] : Come share the sheltered side of this place. | Here, I've left a gap by the dry edge.
+line farewell : An easy walk with whatever you've got to carry. | Keep the cover tucked on the windy side.
+line farewell.return : Goodbye. May your dinner make the journey sound. | I'll fold the spare bit away after you.
+line react.news : Set the news where we can see it plain. | I've set aside the load to attend to the whole account.
+line react.news.new : That's the first piece of it to reach this counter. | That whole parcel of news was new to me.
+line react.news.known : Yes. I heard that much with the earlier delivery. | That account unfolds just the way I remember.
+line react.news.doubt : I'd turn back its handsome cover before believing it. | The wrapping's remarkably large for the facts in the middle.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Come under the shelter. Hard news deserves a quiet word. | That's hurtful to carry. I'll hold the ordinary parcels while you tell it.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd put a special plate out in honour of that news. | A generous piece of news to take home when work's over.
+line ask.how : How's the weight on your wrist today? | Anything the day has soaked I'd be able to help dry?
+line answer.how : I've plenty to do and a clean cloth for most of it. | Well enough. I can still carry the awkward half.
+line decline : I'd gladly oblige if one cover could travel twice, but it can't go home on two different baskets. | I can't give you a fair answer with another promise already waiting.
+line accept_decline : Then we won't count on that part. Thank you for being plain. | Fair enough. You've given me something definite to plan around.
+line preclose : I'll go before a parcel starts walking in search of me. | I'd best put the next lot under cover.
+line accept_preclose : May your load sit comfortably. | Your other business can have you back now.
+line thank : You minded the awkward corner for me. I'm obliged. | I value the care you put into bringing that back sound.
+line deflect_thanks : One clean cover was always meant for another pair of paws. | I'd have hung that cloth to dry in any case.
+line sympathise : Let's get the pressing little things out of your paws for a bit. | I'd offer a seat as readily as an answer right now.
+line reassure : We'll wrap what we can save and deal with the rest in place. | A little dry space gives the trouble somewhere to be examined.
+line ack : That fits the basket I had in mind. | Yes. The words make a very clear outline.
+line give.advice : Tuck the cover before lifting a heavy basket. | Pick a route that's still sensible with one arm occupied.
+line kin.open [pair.kin!=no] : Kin first for a bit of dry cover, though the best manners say share it about. | There's always a place beside my plate for family.
+line greet.return [self.working=yes] : I can greet you as soon as this knot's tight. Hello. | Welcome. A working paw doesn't prevent a listening ear.
+line farewell.return [here.time=night] : The lamp will catch the wet paving if you carry it low. | A safe late journey with your goods close.
+line ask.detail : Which part got wet first? | Was the basket covered while it waited?
+line answer.detail : The patch began right at the outer corner. | It was sheltered till the last few steps.
+line assess : A small drip, quite within the power of a dry cloth. | I would want a little more cover on the windy side.
+line react.self : Anyone carrying supper through that would appreciate a spare wrap. | That sounds like an awkward stretch of road for laden paws.
+line give.opinion : An honest measure deserves fair carrying home. | It is good business to make the returning journey possible.
+line tell.plan : I'll leave one cloth folded for a stranger in a hurry. | I mean to give the return hook a place all can reach.
+
+scene door_read
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I offer a clean cover for a moment at the door and read the rain spots when it comes back.
+b : What does the cloth show? | Do you need to get wet?
+a : A few separate spots mean a short walk might do. A spread dark patch means settle in. | Just the corner of a cover. More comfortable than using a customer's coat for the experiment.
+
+scene coverloan
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : The cloths I lend have a little loop of a different colour on each edge.
+b : For matching them to houses? | You'd charge for a missing cover?
+a : For hanging them different ways up to dry. I don't need a history of each doorstep. | I ask to see one again when it's convenient. Better a cloth out than somebody's supper spoiled.
+
+scene counteredge
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I leave room for an order to be set down all at once. | An empty patch of counter can do a very good day's work.
+b : Why not use it to show more goods? | What's it for between orders?
+a : A tired wrist wants to put the whole basket down without making an apology to the cheese. | I keep it empty. A space filled up in the interval isn't much help when the next load arrives.
+
+scene returnpeg
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I put the return hook low enough to reach with a bundle on the other arm.
+b : Won't the cloth trail? | For a pup too?
+a : I fold each one first. It hangs double and keeps well above the boards. | Of course. A small errand should be possible for a small body.
+
+scene freshcut
+when topic=work self.role=merchant self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp kitchen edge keeps a slice in the shape the customer chose.
+b : Does the shape change the taste? | Is that much bother for one slice?
+a : No. It changes whether the small pieces tumble out between the folds of the wrapping. | It takes less bother than gathering half the paid weight off the board.
+
+scene familycounter
+when topic=dreams self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I'd like a counter someone dear to me could keep on after I lay down the work.
+b : What would you leave besides the goods? | You mean the name over the door?
+a : Clear prices, hooks easy to reach, and customers who don't have to guess how the place runs. | A name matters quite a bit less than a dry welcome that survives the change of paws.
+
+scene handroom
+when topic=work self.role=merchant self.hand
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.hand# which cover is hardest to reach when the day's busy.
+b : Would you change the hooks? | Why ask if you fitted the hooks yourself?
+a : I'd see where the trouble lies and move one if that's what will help. | A different height of shoulder deserves a say in an arrangement meant for both of us.
+
+scene orderprice
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I price the pork by weight before adding anything to carry it in.
+b : The wrapping isn't weighed then? | Does a customer have to bring a dish?
+a : No. A wet day is poor grounds for charging meat price for cloth. | No. A loan of cover asks for a return visit when convenient, nothing else.
+
+scene roastrind
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I wrap crackling apart from the moist slices of pork whenever I can.
+b : Isn't it all coming to one plate? | What's the difference to a quick journey?
+a : Yes, but I'd like it to get there still in two different conditions. | A little steam begins softening the rind before you've reached the market door.
+
+scene teatiming
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : I can count the times a cup of tea has chilled while I watched a slow shower out.
+b : Why not drink it while looking? | Does watching do any good?
+a : An excellent suggestion unless there's an order to put under cover first. | For judging when to send a parcel out, yes. For keeping tea warm, plainly not.
+
+scene walkempty
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : After carrying things all day I like a walk in which my paws own nothing but air.
+b : No basket at all? | Not even something for supper?
+a : Not a wicker strand. I can swing an arm without striking a wall. | I'd take a small bite tucked away. Supper may accompany me without claiming both wrists.
+
+scene froststairs
+when topic=season self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost makes every dry patch beneath an awning clear as a plan.
+b : Which part is under cover? | Do you test the footing?
+a : The dark bit in the white. I keep in mind that a dark wet patch can look much the same. | Always before committing a laden basket. A fine clear mark doesn't take the place of a sound foot.
+
+scene gullshop
+when topic=animals self.dislikes=gulls
+does tell.complaint / ask.detail / answer.detail
+a : A gull can discover an uncovered roast between one turn of the counter and the next.
+b : Does a plain cloth spoil its interest? | How do you discourage it?
+a : Not its interest. Just its view. I prefer a disappointed gull to a disappointed customer. | A cover drawn snug without ceremony. I'd rather not make an enemy of a hungry bird.
+
+scene counterkin
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd reserve a walk for #self.spouse# and me however busy the day became. | A meal with #self.spouse# deserves a clean end to the day's trade.
+b : Does it ever stay clear? | Would you talk about work?
+a : With an effort. I put the spare covers up and move myself away from the counter. | If it came up easily. A meal together oughtn't to feel like a stock inspection.
+
+scene neighborreturn
+when topic=friends self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd find a dry wrap for #self.neighbour# whether or not there was anything to buy.
+b : Won't that leave you one short? | Just as a kindness?
+a : It leaves the cloth doing the precise job I had in mind. | That's reason enough. And I happen to enjoy seeing supper come through rain intact.
+
+scene gatewalk
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : My walk home through the Commons offers three different sorts of shelter from one shower.
+b : Where would you send a cart? | Which one do you favour?
+a : The wide way, even if less sheltered. A walker can duck under a very narrow roof. | The one along my route. A long wet detour rather defeats the purpose of a small dry patch.
+
+scene cloudcut
+when topic=weather here.weather=clear
+does tell.self / ask.detail / answer.detail
+a : When the sky clears I turn all the drying cloths the other way up.
+b : Won't they dry anyway? | How do you know they're ready?
+a : The folds can stay damp well past the faces. I want the next basket to start properly dry. | Press the hem between two fingers. A damp fold still feels cool when the face is quite warm.
+
+scene foggate
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : A fine mist can dampen cloth without ever making a single recognisable spot.
+b : You'd send the basket out covered? | How do you judge that?
+a : For a short walk, yes. For a long one I'd double the dry cover and tuck the edges inward. | I set a hand beneath it and feel if the whole cloth is beginning to take the chill.
+
+scene steproutes
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A route that's dry at shoulder height can still be hard on a basket carried low. | I walk a prospective route swinging an empty basket before recommending it in rain.
+b : What snags a low basket? | Why not simply look up?
+a : Projecting sills and the ends of folded stalls. A little wet brush can slip straight under a cover. | Because my customer isn't carrying supper on top of the head. The level of the load matters.
+
+scene latewag
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A delayed wagon means I keep the waiting shelf clear till I know what's actually arriving.
+b : Couldn't you use the space meanwhile? | Will you promise anything yet?
+a : I could fill it. Emptying it in a rush when the goods arrive makes extra work for everybody. | I'll promise a look at the real goods. I'd hate to sell a fine description and produce an empty bowl.
+
+scene wagarrive
+when topic=caravan world.wagons=in
+does tell.self / ask.detail / answer.detail
+a : A wagon arrived and a parcel fit to sell are separate stages of business.
+b : What happens in between? | Isn't a delivery always good news?
+a : I check the wrapping, see the condition and weigh the useful part. Then we can talk honestly of prices. | Usually. If the food got wet I want to discover it before anybody gets home with a surprise.
+
+scene poorportion
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A smaller helping still deserves dry wrapping and a friendly bit of attention.
+b : Does it cost you more time? | Would you make up the rest?
+a : The same time. That's a reasonable thing for a small order to share with a large one. | Where I can. Where I can't, at least the customer gets the full use of what was bought.
+
+scene newtown
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I point out the return peg to each new customer before asking for anything from it.
+b : Reason for that? | How would anybody know the custom?
+a : So a visitor knows the cloth is a loan and returning it will be simple. Nobody likes guessing at a debt. | They wouldn't. I take the small trouble of explaining how we keep everybody's goods dry.
+
+scene gossipfold
+when topic=gossip
+does give.opinion / react.self / assess
+a : A package can get a bad name from a single dark spot without anybody looking inside.
+b : Doesn't the spot matter? | You mean a bit of gossip, I gather.
+a : Yes, enough to look. Less than enough to say somebody sold bad goods. | I do. I wouldn't spoil a neighbour's good name over a stain on the outer cloth.
+
+scene churchsit
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A spare clean cover has a natural place on the bench by a chapel door.
+b : So folk won't wet the bench? | Is that what you pray for?
+a : So a tired traveller may sit without worrying over being a nuisance to the next one. | Sometimes I pray for the sense to see what's missing and the willingness to supply it.
+
+scene festbasket
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : Feast baskets want one wrapping for crumbs and a second for the wet trip home.
+b : A remarkable amount of cloth. | Would you really carry both?
+a : It rolls up small when dry and makes the whole meal go a little better. A welcome sort of abundance. | Gladly. I can turn one over a lap as a napkin when the weather obliges.
+
+scene sealedfold
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I know a fold of cloth that will keep a letter dry even after several trips to the same closed door.
+b : Could it travel with food? | Why keep making the trip?
+a : In a basket, yes. Beneath a covered dish, no. Steam runs a very inquisitive correspondence of its own. | If I'd promised to carry the letter, I'd want confirmation of delivery. The news inside is private.
+
+scene nightload
+when topic=day here.time=night
+does warn / react.self / assess
+a : A dark wet cover can hide the basket edge on a narrow unlit turn.
+b : Which grip is best then? | Do you lift the cover?
+a : Closer in, with a bit of pale cloth showing me where the corner lies. | Only enough to tuck the pale lower strip out. The meal still gets its shelter.
+
+scene barecounter
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : A bare shelf should have a frank explanation. It shouldn't be dressed to suggest a bargain hiding somewhere.
+b : You'd leave the gap on view? | How would you explain the empty shelf?
+a : Yes. The next load gets its proper place and the customer gets a clear account of the present one. | What's gone, what is actually expected, and what still needs checking. Those aren't all one thing.
+
+scene roofhalls
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Between Northgate and the Market Hall I take notice of every awning with room for a laden wolf.
+b : Every awning along there? | A collector of other people's roofs?
+a : Enough of them for my usual walks. I recheck when a stall changes hands. | Only of dry places offered to the public. Nobody's borrowed doorstep ought to be assumed.
+
+scene heatwrap
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A hot dish needs a small release for steam and a dry outside against the weather. | Two tight covers on a steaming meal can be one too many.
+b : How do you manage both? | Wouldn't rain get in?
+a : Set the outer wrap clear of the inner dish so the steam can move a little underneath. | The outer one hangs low on the exposed side. I don't need an opening facing directly into rain.
+
+grown
+
+story patchmap [topic=memories|weather]
+  : I once showed a customer a damp cover to explain how badly it was raining, then took it to the door where the sun was shining brightly.
+  : The patch had come off my own freshly washed apron.
+  b : Did you send the parcel out?
+  : With a much drier wrap and a cheerfully revised opinion about my weather sense.
+
+story sparehook [topic=work|memories self.role=merchant]
+  : I added a hook two hands lower than the old one thinking it would be handy for a small basket. By closing the lower hook had done almost all the work.
+  : It's a pleasant sort of mistake to solve by moving one high hook down.
+  b : Why move it from the original height?
+  : Nothing if you happened to be exactly my height with entirely empty paws. Fewer wolves meet those conditions than I'd supposed.
+
+story roastwalk [topic=food|memories]
+  : I took roast pork on a long walk and tied the rind into an entirely separate bit of cloth. Kept the crackle wonderfully.
+  : Only on opening my supper did I remember I'd left the little rind parcel drying on its hook.
+  b : Was it still good back home?
+  : Still crisp. I had the second course several miles after the first.
+
+story letterwrap [topic=memories|travel]
+  : I folded a dry scrap round a note and secured the ends so neatly I could hardly find a way in afterwards.
+  : The inside stayed beautifully dry. My pride was rather moistened by the time the knot came undone.
+  b : Did you change the knot?
+  : A loop for one finger at the very end now. It's courteous to make an honest parcel easy to open.
+
+story emptybasket [topic=pastimes|memories]
+  : I once brought back an empty basket and five different opinions on the easiest way to carry one. Had taken it out to test a route.
+  : One bystander recommended I give up and set it down altogether.
+  b : What advice did you keep?
+  : The set-it-down part, once I reached my own door. It was a fine afternoon for a walk without research.
+
+rule @fineedge
+when concept=bark
+does aside
+cooldown 8h
+say There's a clean corner if you'd like it over your basket. | Bring that damp one to the return hook when you come back.
+
+rule @work
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Leave a basket-sized space on the counter, please. | Paid weight in the dish, dry cover over the lot.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Dark spots have nearly joined up. Give it another minute. | A cover for that meal while the roof's running freely.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say The tea's still steaming. I'll claim my chance. | One sip while there's proper heat in it.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Down goes the cover before that beak casts a vote. | Gulls may look at the wrapping all afternoon.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say A pale end to the cover to keep that corner in view. | Low basket, slow step with the light gone.
+
+dlg resident.hub : I'll hear what you need while I make a little room for you to set things down.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I'm glad you found the dry way back here.
+dlg resident.hub [here.time=night] : Late questions are welcome if you mind the dark edge of the step.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll consider that question without either of us reaching across the other's parcels.
+dlg resident.job [self.role=merchant] : #self.trade_words.capitalize#. I care about the state of a meal on reaching a table as well as how it leaves my counter.
+dlg resident.job : A little care halfway through usually means a good finish to my working day.
+dlg resident.bye : May whatever you're carrying stay sound all the way home.
+dlg resident.gossip [here.gossip=no] : There's nothing I'd like to send out under the cover of somebody else's name.
+dlg resident.gossip [here.gossip=yes] : Word reaching this counter is that #topic.subject# #topic.claim#. I can only vouch for hearing it.
+dlg resident.news [world.news] : There's news carried from #world.news_from#. Here's the account I received. #world.news#.
+dlg shop.greet [here.shop=open] : Set your basket where it's comfortable. We can look at the goods and choose a dry wrapping afterwards.
+dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, what can I send home in good order for you this time?
+dlg shop.greet [here.shop=bare] : There's very little to choose from while the shelves are bare. I'll still examine goods you wish to sell.
+dlg shop.greet [here.shop=asleep] : The wraps are folded and I've shut the counter for sleep. Come when I've opened again.
+dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Choose what you need without disturbing another order, please.
+dlg shop.prices [here.shop=open] : I'll weigh the goods themselves and tell you the sum plainly before we add the cover.
+dlg shop.bye : Thank you for the visit. Let me tuck the windward corner before you step outside.
+dlg shop.bye [here.shop=asleep] : Time to rest now. The counter keeps till I've slept.
+
+graft resident.hub
+choice What do those rain spots tell you? -> raingaps
+node raingaps
+say Spots apart mean the cloth is mostly dry. When the damp circles join it's a steady wetting. A good sample of the next few steps outside.
+free
+choice Does the sample tell you when the shower will end? -> rainending
+choice I'll stay under cover for now. -> hub
+node rainending
+say Only how hard it is at this moment. If I knew the next dry half hour in advance I'd be in a rather different line of business.
+choice I'll take the sample for what it is. -> hub
+choice I'll try the road. -> bye
+
+graft shop.greet
+choice How do I borrow a basket cloth? -> loancloth
+node loancloth
+say Choose one that reaches over your goods and tucks under the handle. Use the return hook on your next visit. Wet ones go on the low peg to dry.
+free
+choice Must I come back as soon as the rain stops? -> returnvisit
+choice I'll choose a cover after shopping. -> greet
+node returnvisit
+say Come when you've business this way. I mean to spare you a wet walk, not impose an extra one. I've put plenty aside for the purpose.
+choice Back to the goods, please. -> greet
+choice I'll mind the cloth. -> bye

@@ -1,0 +1,260 @@
+mantle rm257
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_gwen_sootmore
+title the warming pocket
+fits stage=adult|old
+prefers job=healer
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk wraps_a_coal_chip_to_warm_a_pocket
+likes warm_bread digging quiet_chapel first_snow
+dislikes deep_mud rats
+fears empty_grates a_stopped_seed
+hopes a_sheltered_bed one_good_sprouting
+topics pastimes +0.5 faith +0.4 food +0.3 home +0.2 gossip -0.3
+styles comfort=warmth gossip=discreet refuse=wry tease=kind
+marks oath saying
+persona #self.first# keeps a piece of coal in a stitched pocket, saves the best heat for company and draws comfort from seeds slow to come up.
+
+words
+oath! = Rattling coal buttons | Bless these black seams
+saying! = Pocket the last warm minute | Fancy luck leaves a smudge too
+chip = my coal button | a lump of black luck
+wrap = the double cloth | my stitched pouch
+spade = a narrow digging iron | my short spade
+seed = a sleeping pip | a seed in its coat
+breadend = the steaming heel | a warm torn corner
+crumbbed = a loose crumb of earth | the soft bed
+gratebar = the warm bar | the iron at the hearth
+darkline = the smudge along the seam | a charcoal stripe
+strawcap = the straw covering | a thin cap of straw
+jarlip = the clean jar rim | a lip of thick glass
+bristle = a little stiff brush | the stub of a brush
+heelmud = a fat wedge of mud | a whole cake of muck
+
+any
+opinion church for 1 : A chapel gives a cold wolf time to stop shivering before the asking starts.
+opinion dole for 3 : If there's only one heel left, tear it twice. A quarter portion buys time till the next pot comes round.
+opinion houses against 1 : A coat with a crest takes no longer to warm than any other. Why the three best chairs around the fire?
+opinion drink against 1 : I've watched a bruise turn every colour a drinker forgot to see the night before.
+opinion strangers for 2 : No stranger needs an introduction to a warm roll. Start the talking from there.
+opinion watch against 1 : I want a watch that's as quick to find a lost pup as it is to rattle a locked door.
+
+grown
+line greet : Warm spot if you'd like it. Close enough for two.
+line greet [pair.band=strangers] : Unfamiliar face. Same sort of cold nose, I expect.
+line greet [here.time=dawn] : Morning. Let the day get its coat on properly.
+line greet.return : Nice to have my ears warmed up like that. | That's your welcome returned.
+line greet.return [here.time=dusk|night] : Evening's better with a voice to answer.
+line kin.open [pair.kin!=no] : You're within the family circle. There's not much circle, mind.
+line again.open : My luck's come past twice wearing the same shoes.
+line hail [pair.band=friends] : Friend there! I've got room under this elbow.
+line farewell : Keep your share of warmth with you. | Go with a little glow in the seams.
+line farewell.return : My warm wishes tuck in quite small.
+line react.news.new : Fresh out of the ground, that story. Go on.
+line react.news.known : Oh, that seed was up before you came.
+line react.news.doubt : I'd wait for green leaves before naming the plant.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Is there a door I could carry breakfast to?
+line react.news.glad [topic.kind=marriage|birth|work] : Glad news puts the glow right back under a cold crust.
+line answer.how : I've enough heat in the lining to go round once more.
+line ask.how : How does the day feel against your skin?
+line sympathise : No call to find a cheerful word for my sake.
+line reassure : Come closer while the worst of it goes by.
+line decline : Can't do that and keep my earlier word, I'm afraid.
+line accept_decline : You've kept your hands free with good reason.
+line thank : I'll remember the bit of warmth you lent me.
+line deflect_thanks : Here, spend some of that kindness elsewhere when you can.
+line preclose : Well, time I checked my pocket for holes again.
+line accept_preclose : Take the little bit of quiet with you.
+line ack : There it is, coming through.
+
+scene coalchip
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : I stitched #wrap# for one single chip of coal. | This black thumb comes of checking my luck too often.
+b : Won't that turn everything grey? | How do you check luck?
+a : That's what the second pocket's for. First caught the coal, second catches the first. | Slip a thumb in. If it comes out black I've still got it.
+
+scene newseed
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I left one corner of a bed quite alone last time I dug. | I leave growing room between strokes of the spade.
+b : Worn out? | Saving strength?
+a : Curious. I wanted to know what would come up without my say in it. | Saving worms. An inch to either side is a generous offer.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does confide / react.self / assess
+a : I go to chapel sometimes when I've nothing to say. | I like the time when all the knees have lifted and there's just the benches.
+b : Doesn't the Bright One rate a word? | Bare wood makes good company?
+a : Plenty. Sitting a while seems politer than reciting my list and rushing off. | It does. The wooden sort never asks what's wrong if I go quiet.
+
+scene heatbread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I use #breadend# to thaw my fingers before I eat it. | A warm loaf is a very short-lived sort of cushion.
+b : Aren't you delaying supper? | You'd sit on bread?
+a : I'm getting two meals out of it. One for cold paws, one for the belly. | It's for cradling a wrist. I try to be done with it before I get hungry.
+
+scene snowbed
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : Fresh snow on earth looks as if somebody's put the bed to rights. | Snow tells you where the warm bricks are.
+b : Till some wolf plants a foot in it. | By melting?
+a : Excellent. Then I know where my path wants to go. | Yes. I mark those spots in my head for a cold sit later.
+
+scene ratbox
+when topic=animals self.dislikes=rats
+does tell.complaint / offer / accept
+a : A rat looks particularly virtuous when it's standing next to an empty bin. | Everything goes in tins now. Even my patience.
+b : Want a tight lid for the bin? | I've a weight you could put on that lid.
+a : With gratitude. I'd rather admire a thwarted rat. | Bring it. The patience is trying to work its way out.
+
+scene mudsteps
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : This is the sort of wet that comes home and puts its feet up. | #heelmud.capitalize# has moved in on my sole.
+b : Where's its new home? | Is it paying rent?
+a : Outside. It can bring its own chair if it's keen to stay. | No, but it's offering me a free ride downhill.
+
+scene kit
+when topic=work self.job=healer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I set the stopper on clean cloth while the bottle stands open. | I like a label I can read while the bottle's still on the shelf.
+b : Why the cloth? | Big letters, then?
+a : It holds the place for the right stopper too. Two little jobs for one rag. | High up. Low letters get smudged by busy thumbs.
+
+scene gloves
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : It's funny how much more cross I get with just one cold paw. | If you offer me a wrap, don't wrap my elbows till I've had my drink.
+b : Wouldn't two cold ones be worse? | They're the coldest part, surely?
+a : They'd at least have each other to complain to. | Yes, but they need to bend properly too.
+
+scene pledge
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : If #self.friend# needed a room, I'd clear the warmest corner. | I'm saving a good joke for #self.friend#.
+b : Even if it meant shifting all your things? | Care to practise on me?
+a : A pot feels no slight in a cold corner. Company might. | Can't. I'd use up the only thing that's funny, which is me forgetting how it goes.
+
+scene homefire
+when topic=home
+does give.opinion / disagree / concede
+a : A big fire looks handsome for the first hour. Give me little and steady. | My hearth feels like a spare place at the table.
+b : If I've just come in wet I'd want the big one. | A bit hot for a guest, surely.
+a : For one hour, then. I'll take the last glow off your hands. | Move the chair back a pace. The idea was to keep the company unroasted.
+
+scene sentiment
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I keep a tiny button that matches absolutely nothing. | I've a pot whose lid disappeared ages ago.
+b : For luck as well? | With empty pockets still?
+a : For a future coat of exactly that impossible shade. I'm patient. | The button that matches absolutely nothing. There, a perfect couple.
+
+scene thin_times
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean week makes me look twice at the breadboard. | Hard times make company feel like a luxury.
+b : To count what's left? | Because you have to feed a visitor?
+a : To see whether somebody has left the last bit for somebody else. I'd cut it in two. | Because I can't afford to spend the whole evening fretting if someone comes in.
+
+scene foldletter
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : I can fold a sheet to keep the writing dry at the corners. | A damp coat isn't the end of a dry letter.
+b : Don't you need wax? | Which corner would suit it?
+a : Only if the secret matters. Two folds and a tucked flap keep most weather off. | Inside the second fold of the sleeve. That's where my luck lives on rainy errands.
+
+scene gossip
+when topic=gossip
+does give.opinion / challenge / assess
+a : I won't give gossip a hot meal in my house. | An ugly rumour could do with an hour in cold water.
+b : What if it's the truth? | What would that prove?
+a : Truth can tell me what it needs. Gossip only wants to be passed along. | Whether it shrinks. Plenty do when the heat's gone.
+
+scene hardsoil
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : My favourite time to dig is the day after a soaking. | I like a spade I can set my foot on square.
+b : When the earth's all paste? | For the weight?
+a : I did say the day after. Today I'd just be relocating soup. | For my pride. Sliding off sideways is for wolves with a paying audience.
+
+scene backroom
+when topic=work self.job=healer
+does tell.self / ask.detail / answer.detail
+a : A plain glass jar lets me see what handsome dark glass hides. | I like the jars which stand upside down without wobbling.
+b : Isn't dark better for some things? | To dry them?
+a : It is. I keep clear ones for judging whether I've cleaned them properly. | Yes. If it topples you have to start all that washing over.
+
+scene wrapgift
+when topic=smalltalk
+does offer / accept / assess
+a : Have a little turn with #wrap#. It sits nicely in a cold paw. | Take this cloth for the journey. Let it dry when you stop.
+b : You don't mind lending luck? | Will you want it back?
+a : Luck on a string would be a poor sort of luck. Use it. | If our paths cross. For now I'd sooner it did somebody a service.
+
+story redseeds [topic=pastimes self.likes=digging]
+  : I once planted three little red seeds and forgot what they were.
+  : I watered the spot all spring and made careful notes.
+  b : What came up from them?
+  : Three red beads. Rain washed them clean. I've had a more splendid necklace than harvest ever since.
+
+story coldbench [topic=memories self.age>=25]
+  : One winter I spent a penny heating a brick for my seat.
+  : On my return a feathered tenant just big enough to fill my paw had claimed the brick.
+  b : You let it have the heat?
+  : Yes. That sparrow had spent a very cold penny too, judging by its feet.
+
+story torn_wrap [topic=smalltalk]
+  : I carried a pinch of coal dust in a paper twist for luck before I'd made the pocket.
+  : The twist came loose all over my clean washing.
+  b : Lucky for whom?
+  : For anyone who likes grey stockings. I stitched two cloth wraps instead of one.
+
+rule @stopper
+when concept=bark working=yes self.job=healer
+does aside
+cooldown 8h
+say Stoppers on the dry square, if you please! | Rims wiped before lids go back.
+
+rule @earth
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Leave that little corner wild. | One spade deep, no deeper on this bed.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say First prints get the whole white sheet to write on! | Shake the white fringe at the step.
+
+rule @pocket
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A warm bit in reserve for the walk back! | Keep the cloth close and the chip inside.
+
+dlg resident.hub : Sit near enough for me to offer a sleeve if you want one.
+dlg resident.hub [topic.meeting=known] : I know those footsteps, #topic.player#. A very welcome sound.
+dlg resident.hub [here.time=night] : Last warmth of the day. What brings you out in it?
+dlg resident.hub [pair.disposition=wary|hostile] : Easy now. I'll keep my own patch of warmth.
+dlg resident.job [self.job=healer] : #self.trade_words.capitalize#. I can make a jar clean enough to see right through its bottom.
+dlg resident.job : What I can do to make a hard hour softer, that's my business.
+dlg resident.news [world.news] : The latest words to reach my pocket are these. #world.news#.
+dlg resident.bye : Go with a warm patch in your coat.
+
+graft resident.hub
+choice Why is your pocket double stitched? -> black_lining
+node black_lining
+say It houses one little coal. I rub it between my paws when I want to remember the feel of a hearth.
+mood warm
+choice But it must be quite cold. -> borrowed_heat
+choice Talk of other things. -> hub
+node borrowed_heat
+say Of course. The warmth comes out of my own paws. Luck doesn't have to do all the work.
+choice Let the pocket be. -> hub
+choice Goodbye for today. -> bye

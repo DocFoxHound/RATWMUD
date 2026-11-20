@@ -1,0 +1,375 @@
+mantle rm352
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_karin_ashgate
+title the outward-facing hood
+fits stage=adult|old
+prefers role=merchant job=innkeeper
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk hangs_an_oilcloth_hood_facing_the_door
+likes plum_tart evening_line tidy_house first_warm_day
+dislikes rats deep_mud
+fears finding_an_empty_place_at_counting_time
+hopes handing_on_a_well_kept_counter
+topics home +0.5 pastimes +0.4 prices +0.4 food +0.3
+styles comfort=practical gossip=frank refuse=plain tease=dry
+marks oath saying
+persona #self.first# hangs an oilcloth hood facing the door and distinguishes a genuine welcome from a long description of one.
+words
+oath! = Crease my clean brim | Plums in the peg hole
+saying! = Hang it ready to go | A clear board can speak
+hoodpeg = an outward-facing peg | a hook beside the door
+brimroll = a waxy curled brim | a short rolled edge
+crustboard = a freshly brushed board | a level wooden slab
+ratbar = a solid tin lid | a weighted cover
+linewinder = a slim line winder | a flat reel
+mudblade = a blunt mud scraper | a broad scraping stick
+tartlip = a purple pastry lip | a crimp dark with juice
+cupcircle = a damp circle | a paler ring
+linenbit = a dry serving cloth | a strip of linen
+benchslat = a smooth slat | a thick plank
+glassend = a little green tumbler | a squat brown cup
+beadedge = a line of round drops | a clear bead on the edge
+hoodtie = a neat double tie | a waxed lace
+fishquiet = the quiet hour | the evening lull
+floorgrain = a curling grain | a dark streak of wood
+panend = a spare pan lid | a flat pot cover
+greasejar = a little dressing pot | a covered grease dish
+
+grown
+
+opinion houses against 2 : A House with a wharf should be counting who came off it as carefully as what came in.
+opinion strangers for 1 : A stranger deserves to find a seat without performing gratitude for an audience.
+opinion merchants mixed 1 : I like a clearly marked price almost as much as a counter clear enough to read it.
+opinion dole for 2 : Feed the hungry one the same way you'd feed a guest with a heavy purse and a short temper.
+opinion drink mixed 1 : A cup should hold what's promised. It cannot also hold the solution to every bad day.
+opinion festivals mixed 1 : I enjoy the first quiet conversation once everyone's finished shouting what a fine festival it is.
+opinion city for 1 : A city with so many doors is bound to have one where a wet wolf feels welcome.
+opinion road mixed 1 : The road brings good visitors and more mud than I ordered with them.
+line greet : There's room under this roof for a few ordinary words.
+line greet [pair.band=strangers] : Welcome. You may set that down before we begin.
+line greet [here.time=dawn] : Morning. The day hasn't managed to clutter itself yet.
+line greet.return : I hear you across a perfectly satisfactory distance.
+line greet.return [self.working=yes] : One wipe of the board and you've got both eyes.
+line greet.return [pair.band=friends|family] : You know the unoccupied place without my pointing.
+line again.open : Back under the same bit of roof, I see.
+line hail [pair.band=friends] : Here by the peg that looks like my ears!
+line kin.open [pair.kin!=no] : I can find a place for kin without consulting any list.
+line farewell : I hope your hood does its fair part on your walk.
+line farewell.return : Carry yourself dry through the worst of it.
+line react.news : Let's put that down on a cleared patch.
+line react.news.new : Something I hadn't previously had to sweep round.
+line react.news.known : That news has left a ring here already.
+line react.news.doubt : I'd want more than the shape of the stain before naming what was in the cup.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That warrants the nice unbroken corner of the tart.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll find a private place for whoever must receive the news.
+line ask.how : Has the day left a dry corner for you yet?
+line answer.how : Upright and no longer stuck in any mud worth mentioning.
+line answer.how.busy [self.working=yes] : Busy enough to appreciate one question at a time.
+line thank : You saw what was in the way and moved it. Much obliged.
+line deflect_thanks : An empty place and somebody needing one add up simply enough.
+line decline : I won't call that fair just to make it go away.
+line accept_decline : Then we'll save the persuasion and the breath.
+line sympathise : My silence needn't stop me keeping your cup full.
+line reassure : An untidy hour can be cleared one small patch after another.
+line ack : That leaves a fairly plain mark.
+line preclose : Time to give the next small thing its proper place.
+line accept_preclose : Slip away before you acquire another errand.
+line offer : I could hold the dry corner till you've moved the heavy part.
+line give.advice : Look where the peg will drip before hanging anything below it.
+
+scene work_1
+when topic=work self.job=innkeeper
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my ears distinguish between a cup set down and one put away.
+b : What's the difference? | Which cup needs attention sooner?
+a : One might still be wanted. I never clear somebody's decision away before it's made. | The one teetering on the edge. A useful distinction even without my excellent ears.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The peg for my hood faces out so the brim already knows its way to the door.
+b : Can cloth really know a way? | Doesn't it drip on the floor?
+a : It saves me turning a whole wet hood round when my hands have got more sensible things to carry. | Into a little pot below. The whole arrangement is considerably tidier than the wearer.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : My evening line comes out when I've earned a little time without a cup in either hand.
+b : Do you need to catch a fish? | Would you take company?
+a : A float going nowhere slowly is an agreeable change from a queue going nowhere fast. | Someone who'd let a harmless lie about the size of a nibble pass, perhaps. I'd probably tell the truth anyway.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A plum tart can be cut too evenly. I want one corner that isn't anybody's until the end.
+b : Who gets the corner? | Why keep it back?
+a : The wolf who admits wanting it. Civilisation ought to reward the occasional frank statement. | There's always somebody who said no before the smell reached the table.
+
+scene animals_1
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : Rats turn an ordinary lid into a suggestion.
+b : What makes a lid convincing? | Have you tried arguing the point?
+a : A weight that sits over the centre above a rim that goes down a decent distance. | I prefer metal. A rat will usually give a metal argument more thought.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : My favourite spring day is the first one when my hood gets carried under an arm.
+b : So you do leave it behind sometimes? | Doesn't it get in the way?
+a : Under my arm is extremely close by the standards of a rain cloud. | A little. So does wearing a damp coat until my optimism has dried it.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Deep mud pulls with rather more conviction than I'd like to give it credit for.
+b : Would a shorter road tempt you? | Do you carry something to scrape it?
+a : Show me the bottom. An invisible shortcut's expensive in lost boots. | A blunt stick. My best knife has not volunteered for life in a ditch.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I give a friend fair warning when a story's becoming a performance.
+b : Do you mind an embroidered tale? | Would you interrupt?
+a : Not as long as the embroidery isn't being sold by weight as the original cloth. | I'd catch the eye first. A raised eyebrow's much cheaper than a public colour change.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I don't charge extra for the space a quiet customer leaves empty.
+b : Could you fit another seat there? | Does a crowd spend more?
+a : Probably. A loose elbow and an open route to the door are part of what a seat is worth. | In cups, perhaps. It can be extremely extravagant with crockery.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My hood stands by the door rather like an extremely patient relation.
+b : Does it approve of the company? | Do you talk to it?
+a : It keeps its opinions under the brim. An accomplishment I admire in a relation. | Only when it falls on me and then very plainly indeed.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There are sums kept by wharf owners that don't include every loss.
+b : What would you add? | Why won't you forgive a short account?
+a : A place at a family table which no pay packet ever managed to fill again. | Because forgiving on somebody else's behalf would make me a worse accountant than I care to be.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A sound door hinge earns my gratitude more often than the elaborate carving over the door does.
+b : Why a hinge? | Would you keep the carving?
+a : A tired wolf can lean on a good door. The ornament won't take any useful weight. | Certainly, if the door worked. I don't insist that everything useful be ugly.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like to put objects away according to the hand that will want them next.
+b : Isn't that just tidiness? | What about a thing nobody wants?
+a : With a small allowance for the fact that I'm less clever after dark than before supper. | That's the most troublesome of all. It can occupy the best shelf for years on the strength of being polite.
+
+scene work_2
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I clear the patch nearest a customer's sleeve before polishing the far end.
+b : Why the sleeve? | Does the polished bit matter?
+a : Because a sleeve will carry a ring of somebody else's drink home and quite rightly resent the favour. | Once there's nothing about to touch fur, yes. Nobody wants to sit among bright patches of tackiness.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Poor weeks teach me to put the plum where it shows and the good filling underneath as well.
+b : Wouldn't a top layer sell? | Cut smaller pieces?
+a : Once. I'd want that hopeful first bite to bring the customer back. | Honestly sized, yes. No spreading a mean filling across a showy surface.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A wet hood gets heavy before I notice my neck's doing the carrying.
+b : What takes the water out? | Do you ever take it off outside?
+a : Shake it clear before hanging. A hood can air quite efficiently without spinning everybody else's ears wet. | When I can wring the tie without repeating the mistake that soaked it.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Cold tart tells on the cook in a way hot tart doesn't. | Hot filling makes it rather easy to hide a poor crust.
+b : What gives the secret away?
+a : A cold slice should keep its edge long enough to reach a plate. | The second bite. My tongue usually resumes its investigative duties by then.
+
+scene travel_2
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : In town I'm quick to spot a busy doorway by the shallow hollow just clear of the sill.
+b : Why clear of it? | What else do the stones show?
+a : Wolves stop a pace away to decide if they'll go in. The threshold only gets the decisive traffic. | Where a leaking gutter has been discouraging half the queue for a considerable while.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A fishing line wound flat leaves enough pocket for a second, distinctly edible plan.
+b : What do you take? | A second hook?
+a : A scrap of tart, if there is one. I can feed my pride before deciding the fish have beaten me. | A first supper. I'd hate to give a single fish authority over my mood.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I ask which a friend needs more, company or just a roof.
+b : Do you ask directly? | Can a roof be company?
+a : Yes. I don't always know the answer even after a great many years of guessing. | It can sound like it in rain. I leave the choice with the one standing under it.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Folk will tell you a room is full while standing entirely alone beside a spare stool.
+b : Would you press the point? | Maybe the stool is spoken for?
+a : I'd ask if the stool had acquired a companion too shy to be visible. | Then we move the stool. An invisible guest will surely have no objection to a better position.
+
+scene animals_2
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I notice the scratch in the night and investigate when I can see properly.
+b : Aren't you afraid it will get away? | What if it sounds big?
+a : I'm afraid of putting an unshod foot into something with teeth in apparent self-defence. | I get a lamp. An enormous noise sometimes has a very small pair of claws.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain running off a brim tells exactly where you forgot to mend the binding.
+b : Does it find the one tiny hole? | Do you mend it on your head?
+a : Straight to the ear. I should like to employ one raindrop as an inspector and retire the rest. | On a peg, with a dry neck in reserve.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A family counter can be a promise open to anybody coming in from the damp.
+b : What does the family owe? | What if there are no young hands to take it?
+a : The next visitor the same square dealing as the first. A surname alone pays for very little. | Then leave a decent habit to whoever does come along. Even a stranger can inherit that.
+
+scene memories_2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The first counter I felt entitled to lean on made an alarming noise the moment I did.
+b : Was it rotten? | Did you stop leaning?
+a : A loose board. No need to make it a solemn comment on my prospects. | I put the board right first. A calling shouldn't wobble every time the caller turns up.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A price belongs beside the goods, clear of the part a sleeve can brush.
+b : Do you alter a price mid-sale? | Why not just tell the buyer?
+a : If I've written it wrong I point out the mistake and let the buyer choose about staying. | Because I might be answering a different question when a quiet customer needs to know.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : The best welcome for a newcomer leaves the way out visible too.
+b : You don't want folk to stay? | Wouldn't a door be obvious?
+a : I'd like a visit chosen twice. Once on the way in, once after the shoes have stopped dripping. | Not always from behind a tall-backed seat and a much taller stranger leaning on it.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : There's talk that #topic.subject# #topic.claim#. It came to me second-hand.
+b : How far second-hand? | Would you stand by it?
+a : The story's lost any receipt it might have come with. | I'll stand by having heard it. That's a rather narrower bit of floor.
+
+story hood [topic=memories]
+  : I hung my hood facing in once and lifted it over my head without turning it.
+  : I found myself looking at a very close and extremely featureless wall.
+  b : How did you find the door?
+  : I turned the hood round. A remarkable improvement in both visibility and the dignity of my departure.
+
+story crust [topic=food]
+  : I saved a particularly handsome plum crust under an upturned little dish.
+  : I then tidied the whole board without recalling why one dish wouldn't join the stack.
+  b : Who found it?
+  : My nose. Willpower isn't the only sense that improves when the washing up is done.
+
+story mud [topic=travel]
+  : I left one boot in deep mud and put the stockinged foot straight back into it.
+  : Unfortunately I had my toe pointing the other way.
+  b : Could you pull the boot free?
+  : From that angle I could. I walked the rest in the usual direction after giving the road a severe look.
+
+story dryline [topic=pastimes]
+  : I wound a fishing line round a twig so neatly that the whole thing looked worth putting away.
+  : I had put it away before remembering there was still a float in the water.
+  b : What held the float?
+  : A completely different line. I'd spent a most peaceful ten minutes tidying somebody's abandoned string.
+
+story ring [topic=work]
+  : I rubbed at a pale circle on a board till the rest of the wood shone with envy.
+  : At last I turned the board round in the light.
+  b : Did the mark come out?
+  : It was a knot in the grain. I recommend using one's eyes well before the second application of elbow grease.
+
+rule @hood
+when concept=bark
+does aside
+cooldown 8h
+say Turn the brim towards the door while the thought's fresh. | One peg, one very dependable bit of oilcloth.
+
+rule @board
+when concept=bark
+does aside
+cooldown 8h
+say Clear the near edge where the sleeves arrive. | Cup down level and nobody needs a new cuff.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A brim that drips once is preferable to an ear that drips all day. | That water's found the spot it wanted.
+
+rule @evening
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say An evening float might do nicely after this. | Good light for a line without much company.
+
+rule @lid
+when concept=bark
+does aside
+cooldown 8h
+say A lid that can wobble means unpaid board for a rat. | Tin on straight, weight in the middle.
+
+rule @warm
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say Ready to carry this hood instead of wearing it. | Spring does fine work on a steely set of shoulders.
+dlg resident.hub : Find the place where you can reach the board comfortably.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's still a clear edge to this conversation.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll be frank with you. I expect the same allowance back.
+dlg resident.job [self.job=innkeeper] : At #self.workplace# my counter work includes trying to give a quiet guest something better than a speech.
+dlg resident.news [world.news] : Here's the news left after the talk was cleared away. #world.news#.
+dlg resident.gossip [here.gossip=yes] : There's a version about that says #topic.subject# #topic.claim#. I wouldn't sell it as firsthand.
+dlg resident.bye : I hope the peg at home has something dry waiting.
+dlg inn.greet [here.inn_helper=yes] : I'll help you settle. The beds are in #here.innkeeper#'s hands.
+dlg inn.greet [here.inn_helper=no here.shop=open] : Step in. There's drink to be had and we can see about a place upstairs.
+dlg inn.rest [here.lodging=yes] : Sit till your feet forgive the road. You've a bed upstairs when you want more rest.
+dlg inn.refused : Here's what stands in the way. #topic.why#.
+dlg inn.bye [here.shop!=asleep] : Safe walk. The mud outside hasn't signed any agreement to behave itself.
+
+graft resident.hub
+choice Is that hood really worth carrying in sunshine? -> oil_sun
+node oil_sun
+say At present it's keeping the next rainfall entirely theoretical. I find that quite a good return on the trouble.
+choice What do you use it for indoors? -> oil_peg
+choice I'll hope the sky stays clear. -> hub
+node oil_peg
+say An honest reminder that I mean to go outside again. Work can use one of those reminders too, on a busy afternoon.
+choice I'll hope the sky stays clear. -> hub
+
+graft inn.greet
+choice Is there a place for a dripping hood? -> oil_guest
+node oil_guest
+say Yes, where the water can fall without finding anybody's tail. Turn the brim outwards and you'll be ready when it's time to move.
+choice Why face it out? -> oil_ready
+choice Back to the counter. -> greet
+node oil_ready
+say So the dry inside comes towards your face. Quite a small pleasure until you've put a wet edge across your nose instead.
+choice Back to the counter. -> greet

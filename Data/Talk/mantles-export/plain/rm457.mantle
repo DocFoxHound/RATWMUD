@@ -1,0 +1,257 @@
+mantle rm457
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_lotte_greyley
+title the wool peg weather vane
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk turns_a_carved_wool_peg_to_cover_a_damp_cough
+likes blackberries whittling old_maps frosty_mornings
+dislikes crowds salt_wind
+fears losing_a_fine_thread_in_a_burst_of_talking
+hopes to_carve_a_peg_that_holds_one_hair
+topics work +0.4 pastimes +0.4 weather +0.2 travel +0.2
+styles comfort=practical gossip=close refuse=soft tease=dry
+marks oath saying
+persona #self.first# turns a notched wool peg towards the air to occupy a difficult breath and finds more to observe than to announce.
+
+words
+oath! = Nick my last spindle | By the quiet little peg
+saying! = A fine thread holds its own weather | Turn the peg before turning the talk
+peg = my forked wool peg | a little wooden fork
+thread = one dark wool thread | a strand of clean wool
+slot = a slanted peg notch | the shallow groove
+knife = the short whittling knife | my smooth-handled blade
+twist = a twist of berry leaf | a purple berry stem
+fruit = one large blackberry | a black berry cluster
+chart = a torn old map | my road-worn map
+rime = a white frost line | fine frost on the peg
+coat = a folded wool shoulder | a piece of rough fleece
+side = the sheltered angle | a clear turn of air
+grain = a long straight fibre | the wood's pale line
+wisp = a wisp of teasing wool | the stray wool end
+
+any
+opinion houses against 1 : I can distinguish the wool on a grand cuff without seeing the face above it. I'd sometimes prefer an actual acquaintance.
+opinion merchants against 1 : An extra copper on a little item is easy for the seller to miss and hard for my purse to forgive.
+opinion strangers for 1 : A visitor knows whether a scarf's edge still sits flat after three windy miles. That's worth listening to.
+opinion festivals against 1 : I like a feast at the distance where the colours remain distinct and needn't keep clearing my throat.
+opinion watch against 1 : A question thrust into everybody's wool bag leaves a good deal of innocent fluff to be explained.
+
+grown
+line greet [pair.band=strangers] : Welcome by the winding end. | My peg can wait to be turned.
+line greet [self.working=yes] : My hands are presently busier than my ears. | Pass your word just here.
+line greet [here.time=dawn] : Morning. The wood's a shade cool. | Early enough for the thread to show clearly.
+line greet [here.time=dusk|night] : Evening. Good light on the pale strand still. | The narrow shade's my side.
+line kin.open [pair.kin!=no] : Kin can peek inside my wool bag. | A familiar foot across the old map.
+line again.open : Another turn of the little peg. | We've met again before the thread's unwound.
+line greet.return : Hello. I'm listening beneath the collar. | A greeting received quite cleanly.
+line greet.return [pair.band=friends|family] : That voice can penetrate quite thick wool. | The sheltered side is yours this time.
+line greet.return [self.working=yes] : Speak while the winding hand goes on. | There's room between two honest tasks.
+line greet.return [here.time=dusk|night] : Evening. Your voice reaches round the peg. | I've time where the air lies still.
+line farewell : A kind breeze off the map's edge. | Good footing where the thread runs out.
+line farewell.return : I'll coil the spare end after you. | Safe through the less agreeable wind.
+line farewell.return [here.time=night] : Go where the night air's easy on the chest. | A warm collar after the lamps end.
+line react.news : Give me the thread I can follow. | What came through the fleece clearly?
+line react.news.new : Fresh wool on an empty peg. | An unfamiliar winding there.
+line react.news.known : I've handled that particular twist. | The old account has found its way here again.
+line react.news.doubt : I'd ease that tangle before pulling any harder. | That story has a remarkably convenient loose end.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's a quiet turn of air for you here. | I'll not try to colour that news up.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Warm news for a cold bit of air. | That certainly unwinds more pleasantly.
+line ask.how : How has the day sat at your collar? | Any troublesome twists in your morning?
+line answer.how : My hands are steady if the air isn't. | A small rough bit now and again. Quite ordinary.
+line decline : I'd prefer the quiet edge of my present task today. | I have one careful winding left to finish.
+line accept_decline : Plain enough. I can leave the thread there. | That suits. There's no need to tug.
+line thank : A kind turn very neatly given. | I'll remember who set the strand right.
+line sympathise : Take the side without the draught. | A rough spell needs no embellished account.
+line reassure : Give the knot time to loosen of itself. | A careful breath goes further than a loud one.
+line preclose : I'd best get the peg back to its task. | Time for me to draw the thread close.
+
+scene fork
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I tie #thread# to #peg# and watch the loose end.
+b : For a draught? | A considerable outfit?
+a : For the least little change in the air. My throat doesn't always like what it tells me. | No more than I'd have in my pocket anyway. Cheap instrument, reasonable information.
+
+scene cough
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A wolf turning a peg can take a necessary breath without comment.
+b : Does the turning help? | Why avoid a comment?
+a : It keeps one paw busy till the tickle's gone. I'd rather my voice did its own work. | A cough feels longer with an audience.
+
+scene whittle
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I cut the wool groove at a slant.
+b : Why that angle? | Couldn't you make a hole?
+a : The wool holds when I pull one way and lifts neatly when I turn the peg back. | I prefer being able to remove the thread without passing a wet end through anything.
+
+scene berries
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : Blackberries leave marks no bigger than my peg grooves.
+b : Do you dye the wool? | Can you avoid berry juice?
+a : Not intentionally at supper. It's usually my fingers that take the first application. | Eat, wash, wind. A better order than wind, eat, wonder about the purple bit.
+
+scene map
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : A badly drawn map makes good winding paper for thread.
+b : Doesn't that hide the road? | Why a poor one?
+a : There's usually a little road showing between layers. Gives me somewhere to visit while unwinding. | I'd like to know I'm making some improvement to its usefulness.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost makes the loose wool look full of fine silver filings.
+b : How long will that last? | Doesn't the cold catch your throat?
+a : Till my thumb warms the peg. I don't mind an occasional private luxury of brief duration. | Better a clean frost than a damp inward breath full of somebody else's steam.
+
+scene crowd
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I like enough space to turn a fleece without covering a stranger's nose.
+b : Much chance at a feast? | What's enough space?
+a : At the window, yes. Which is precisely where I'd sooner enjoy the evening. | More than my own elbow, less than a private garden. It shouldn't be such an unusual demand.
+
+scene salt
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : A salt gust catches on every bit of loose wool.
+b : Does it stiffen the strand? | And you?
+a : Makes the softest bit prickly till it's been rinsed. I don't recommend the improvement. | My throat and the wool take a similar view, though the wool can avoid remarking on it.
+
+scene learn
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : When I learn a new handling trick I cut a reminder into the wood.
+b : Why not copy the whole movement? | In writing?
+a : A hand can remember a single turn first while my eyes watch the next. | A pair of nicks to keep the direction plain. My fingers read it easily.
+
+scene yard
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like to show the visitor the inside of a wool fold.
+b : Where the colour's strong? | To test the weight?
+a : Yes. It's also where rough finishing is less easily passed off as the weather. | The weight can speak for itself. I'm interested in whether the finish makes honest claims.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd offer #self.friend# the peg with the smallest fork.
+b : Why that one? | Does it hold less?
+a : The wood's taken its shape beautifully there. A small present ought to show care. | A short thread quite securely. Nothing obliges a gift to hold a bushel.
+
+scene dock
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The wind coming up from the wharf carries a memory I don't display with my wares.
+b : A bitter one? | Do you avoid the place?
+a : It sits better in silence. I take care where I let that wind in. | Only if I have a choice of two equally short roads.
+
+scene place
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a place I used to stand for wages that belongs to another wolf now.
+b : Do you miss it? | No argument about that?
+a : I miss knowing the wind round the nearest corner. I can learn my new one too. | An argument wouldn't make the post mine. A decent day's work is more likely to help.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : Estate paths give a remarkable number of opportunities for being observed going quietly about one's work.
+b : Do you mind? | From the windows?
+a : Only when quiet going gets mistaken for having nothing particular to do. | Sometimes just my own reflection. I'm quite capable of keeping an eye on myself.
+
+scene cheap
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : When buying measured wool I like to hold both ends of the measure.
+b : Wouldn't that upset the seller? | Why both?
+a : A seller fond of straight dealing might appreciate the attention. | It gets surprisingly short when one end runs underneath the counter.
+
+scene visitor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor who asks a short question gets a more considered answer from me.
+b : Because you're busy? | Could I ask another?
+a : Because I hear which part the wolf wants answered without sorting through the surrounding weather. | Certainly, when the first one is fully wound up.
+
+scene tone
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I like a quiet voice with one clean edge to it.
+b : Sharp words? | Can a soft one do that?
+a : Sharp sense. A reasonable voice doesn't need to prick anybody. | A soft thread can still have a very definite beginning and end.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : One night I dreamt my old map had grown a coat of wool.
+b : Could you still follow it? | Could you find a way back?
+a : The hills were all curled up. It was a spectacularly poor day for straight roads. | I wound a little of the road round my peg and followed its other end to the doorstep.
+
+story berryprint [topic=food]
+  : I carried some berries home once inside a clean wool scrap. They arrived with surprisingly neat grooves in their skins, exactly matching the weave.
+  : I set one down to draw it before eating. The fruit rolled to a corner at arm's length and printed the clearest possible little purple journey.
+  b : Did you draw the berry?
+  : I drew the journey. The fruit had its supper appointment and I didn't feel entitled to keep it.
+
+story maploop [topic=travel]
+  : I looped thread round an old map and found it went precisely through two towns I wanted to see. I began planning a particularly economical walk.
+  : Opening the last fold showed a third town and quite a broad stretch of water between. My economical walk needed a rather expensive boat.
+  b : Did you leave it wound?
+  : I unwound the wool. I can still afford to look at the three places on the same afternoon.
+
+story windnotch [topic=pastimes]
+  : I made a groove across a scrap that sent a fine strand reacting to a draught I couldn't feel. I was very pleased with the sensitivity of my work.
+  : Holding my breath brought the wool to a standstill. A very near and well-informed weather source had been providing the entire breeze.
+  b : Did you keep the offcut?
+  : Yes. A peg that discloses my own contribution is a rather good one to carry into an argument.
+
+rule @aside1
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 6h
+say Loose end up to the light. There. | Set the thread before considering the colour.
+
+rule @aside2
+when concept=bark self.apprentice=yes
+does aside
+cooldown 7h
+say One notch for the outward turn. | Give the fingers time to remember.
+
+rule @aside3
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Angle the cut where the loose wool sits. | A peg that takes a thread without a quarrel.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Fold the map inside the soft cloth. | Shallower shadows in this quiet corner.
+
+dlg resident.hub : Stand near the wound fleece. Then loose thread won't find its way into my answer.
+dlg resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. A close look at the fold generally answers more questions than a price alone.
+dlg resident.news [world.news] : The strand of information I've kept is this. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, you've found the end I'm listening from.
+dlg resident.bye : A soft collar and a map that takes you reasonably close to the intended destination.
+
+graft resident.hub
+choice What does a thread on that little fork tell you? -> peg_wind
+node peg_wind
+say A change of air. Look how the tip lifts if I turn my wrist. My hand feels almost nothing but the wool has another opinion, and generally a better one.
+free
+choice Are you trying to keep out of the damp? -> peg_damp
+choice I see the little twist lift. -> hub
+node peg_damp
+say Quite an interesting inference to draw about a piece of harmless wood. I do prefer an easy breath. Now, do you want to try holding the peg yourself?
+choice I'll try the sheltered angle. -> hub
+choice Your weather instrument can rest. -> bye

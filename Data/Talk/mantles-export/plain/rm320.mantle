@@ -1,0 +1,247 @@
+mantle rm320
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_wystan_mudcot
+title the keeper of apple quarters
+fits stage=adult|old
+prefers honesty=frank warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk quarters_an_apple_before_dealing_cards
+likes crisp_apples cards quiet_chapel misty_dawns
+dislikes haggling smoke
+fears confusing_a_glance_with_the_truth
+hopes having_four_equal_shares_to_offer
+topics friends +0.5 food +0.4 pastimes +0.3 weather +0.2
+styles comfort=practical gossip=discreet refuse=direct tease=none
+marks oath saying
+persona #self.first# quarters an apple before dealing a hand of cards and leaves private sorrows out of any account of the day.
+words
+oath! = Split my last pip | Scorch my green peel
+saying! = Deal the fruit first | Say what your eyes earned
+pipblack = a brown apple pip | a black seed
+greenpart = a fine green crescent | a green-backed quarter
+packbit = my worn cards | a packet tied in thread
+heelpart = a rubbed heel | a neat boot print
+beadwater = one fat bead of water | a string of little drops
+sqstone = a dressed stone | a clean square block
+threadtie = a plaited thread | a band of old linen
+knifepoint = a short fruit knife | a plain little blade
+dealgap = a gap between hands | a place clear of cards
+peelbit = a strip of green peel | a coiled green shaving
+cardback = a faded crown | a barred back
+
+grown
+
+opinion houses mixed 1 : I'd have a fine House answer for what it actually did, however handsome or ugly the rumour looks.
+opinion strangers for 1 : A cut apple makes introductions easier and costs each of us very little.
+opinion road for 1 : A walk lets me see both ends of a claim somebody made from a comfortable chair.
+opinion church for 1 : There's a particular kindness in being allowed to sit unexamined in a quiet chapel.
+opinion merchants mixed 1 : I can make up my mind about a straight price. Haggling leaves me buying an end to the noise.
+opinion city for 1 : From the Heights you can see where a rain shower has gone before it reaches the next roof.
+line greet : Come within sharing distance. There's a wedge for you.
+line greet [pair.band=strangers] : I like an introduction with both hands in plain view.
+line greet.return : Welcome again. You won't have to bargain for a hearing.
+line farewell : Go while that bit of apple still snaps under a tooth.
+line farewell.return : I'll save your place through the next deal.
+line react.news : Put down what you saw and we'll look at it together.
+line react.news.new : Fresh slice of the matter for me.
+line react.news.known : My earlier piece cut along much the same line.
+line react.news.doubt : That sounds too well polished to be a first impression.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd cut up a second apple to give that news company.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the guessing out and bring something to eat.
+line decline : No, I'd be putting another wolf's private hurt on view.
+line answer.how : Steady, though I'd happily trade smoke for a clean breeze.
+line ask.how : Is there much grit left from your day's walk?
+line thank : That was fairly and plainly done. I appreciate it.
+line deflect_thanks : There were four pieces however I sliced it.
+line accept_decline : I'll take you at the value of your word.
+line sympathise : My shoulder makes a better screen than my questions would.
+line reassure : Nothing you keep to yourself will cost you a welcome.
+line ack : That matches the bit I can see.
+line preclose : I'll move my feet before the day gets ahead of them.
+
+scene food_1
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I cut an apple four ways before I know who's staying.
+b : Four visitors expected? | Why not wait till someone asks?
+a : Three visitors would be my limit. I'd be sorry to miss my own share. | A ready quarter lets a shy wolf accept without a fuss over the knife.
+
+scene pastimes_1
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I put the core between us to mark whose turn it is to deal.
+b : What if somebody eats the marker? | Don't the cards get sticky?
+a : Then whoever took the last bite gets the job. Still a perfectly good system. | Cards in one paw, fruit in the other. I've had regrettable proof it's worth remembering.
+
+scene weather_1
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I'm watching the bead hanging off that ledge's tip.
+b : Waiting for the shower to stop? | Isn't it much like all the others?
+a : Waiting to see which little thread feeds it last. I'm not often patient with guesses. | The rest are hanging there. This one has committed itself to a much more interesting direction.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : The post is written down as #self.trade_words#. I'll let the writing speak for the name.
+b : And the work itself? | Do you like that description?
+a : Minding exactly where each boot lands and leaving the next wolf an honest account of what I saw. | A short description leaves out most of the day. That's why we've still got voices.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A walk up here will show you the front of one roof and the back of a dozen others.
+b : Which do you prefer? | Do you look into the windows?
+a : The back. You see where the water really goes and how much damage the paint is disguising. | I look at roof tiles. What's behind a window isn't part of my route.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once passed a private grief in a public place and kept walking.
+b : Wasn't that cold? | Would you say who it was?
+a : I slowed enough to stand between it and curious faces first. A kindness can look like ordinary walking. | No. Seeing a thing gives me a choice about my own conduct, no rights over another face.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : If I find a chapel empty I leave my pack of cards tied shut. | Quiet and a clean seat are blessings enough for a short visit.
+b : Worried a card game would offend? | Would you mind company there?
+a : I'm worried I'd pass a perfectly good silence dealing to myself. | I'd move along the bench. Quiet can be shared without cutting it into pieces.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : State the price once and I can work out whether I want it.
+b : Suppose it's too much? | Even for an apple with a bruise?
+a : I can step away and leave the seller's ears in peace. | Point out the bruise. Give me one price for the fruit I'm holding.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : My favourite dawn goes pale with mist before the high roofs come into focus.
+b : Which noise reaches you first? | Doesn't it hide the view?
+a : Boot soles on stone. They can sound remarkably distant just a few steps away. | A familiar view's better for losing the sharp part occasionally.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend can count on me to call a marked card by its name.
+b : Even a card that helps you win? | What if it spoils a pleasant game?
+a : Especially then. I'll take the apple core for my prize if pride needs feeding. | Replace it before anybody starts wondering who spotted it first.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If smoke gets in my eyes my palm finds a firm rail before walking.
+b : Can't you blink it clear? | Would you guide somebody else?
+a : I can, but a stone edge doesn't blink away while I do. | I'd offer an elbow once I could see. Two blind guesses won't improve the footing.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : There's a little ceremony in passing the untouched side of a cut apple towards a guest.
+b : Would the other side taste different? | What happens to your own portion?
+a : No. It tells you I've thought about whose thumb goes where. | I can live with my own thumbprint on my own wedge.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When the week squeezes I cut thinner wedges and keep the welcome the same.
+b : Do folk notice the smaller share? | Why not keep the apple whole?
+a : Anyone might. I'd sooner admit the week was tight than pretend my knife had shrunk. | Because a whole apple in one pocket can mean three empty paws beside it.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a window ledge deep enough for a pack and a dish.
+b : Why keep your cards out of a drawer? | Won't the dish get in the way?
+a : I want some warning when damp curls the backs before we start making accusations of fancy play. | The dishes remind me there's more to company than keeping score.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I wait between first hearing a noise and telling anybody what caused it.
+b : Aren't some sounds certain? | What if somebody's in danger?
+a : A fall of water can sound a good deal like a foot at a door when I'm expecting company. | I can go and look at once. Naming the cause can still wait for my eyes.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A bird pecks at an apple for reasons entirely independent of my plans for supper.
+b : Do you chase it off? | Would you give it your piece?
+a : I'd cover my share and put the core away from the pack. Feathers play havoc with a deal. | The seedy end. I'm hospitable but the bird hasn't been invited to play cards.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd tell a newcomer how far I've actually seen the road run and where my knowledge stops.
+b : Sounds like incomplete directions. | Wouldn't a guess be kinder?
+a : A whole account of half the route beats a complete piece of nonsense. | A named guess, possibly. I'd make sure a traveller knows which is which.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I've heard #topic.subject# #topic.claim#. I haven't seen the thing itself.
+b : Would you repeat the name? | What weight do you give the tale?
+a : Only with those last words attached. Even then I'd wonder who needed to hear it. | Less than an apple pip till I can see what's inside.
+
+story quarters [topic=memories]
+  : I cut an apple into four on a slope and the last two wedges began travelling.
+  : I caught the lower one and watched the upper go neatly between my heels.
+  b : Did you recover both?
+  : One had enough grit on it to disqualify me from giving it away. I ate the evidence after a good rinse.
+
+story card [topic=pastimes]
+  : One corner of my pack got wet under a leak. Four cards bent into the very same curl.
+  : I could identify four cards from the backs and no particular one among them.
+  b : Did you keep playing?
+  : We had a game of guessing which four. A spoiled pack did a thoroughly honest afternoon's service.
+
+story cloud [topic=weather]
+  : I stood under cover waiting for a shower to clear and counted the drops off a corner.
+  : The drops fell on and on in bright clear sunshine.
+  b : Was the roof that wet?
+  : A little cup had lodged in the gutter. I'd given a private drinking vessel credit for producing all the weather.
+
+rule @deal
+when concept=bark
+does aside
+cooldown 8h
+say Fruit laid out and deck tied till the paws are clean. | That's the edge of the card, not the apple.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Good hour for seeing which roofs emerge first. | Give the grey a moment to take shape.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say There's the drop that joins two puddles. | Watch where the last bead lets go.
+
+rule @food
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say Four shares in one fruit if the knife goes true. | A good apple sounds fresh before I've tasted it.
+dlg resident.hub : Let's set our cards down and talk with empty hands.
+dlg resident.job [self.trade_words] : The name entered for my post is #self.trade_words#. Good footing matters whatever the entry says.
+dlg resident.news [world.news] : The account I can pass along goes like this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Someone said #topic.subject# #topic.claim#. My own eyes haven't added anything to that.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there is room for an honest word and an apple wedge.
+dlg resident.bye : Choose the wedge showing you its clean face.
+
+graft resident.hub
+choice Why put down the core before the cards? -> quarter_deal
+node quarter_deal
+say It keeps the order straight. The pointed end looks at whoever will deal next. Nobody gets to have a wonderfully convenient lapse of memory.
+choice What if you turn the core round? -> quarter_turn
+choice Keep it pointing straight. -> hub
+node quarter_turn
+say Then I should be a remarkably poor host to three wolves with perfectly good eyes. Wouldn't gain me much but a reputation.
+choice Keep it pointing straight. -> hub

@@ -1,0 +1,262 @@
+mantle rm446
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_rosamund_ash
+title the walker's second copy
+fits stage=adult|old
+prefers honesty=guarded talk=quiet
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk keeps_a_second_fold_of_paper_behind_the_first
+likes hard_cheese long_walks festival_bells first_warm_day
+dislikes cold_tea bad_manners
+fears being_known_only_by_a_number a_landing_too_narrow_to_turn
+hopes a_full_walk_between_two_warm_cups
+topics travel +0.6 home +0.3 weather +0.3 memories +0.3 gossip -0.5
+styles comfort=practical gossip=closed refuse=quiet tease=none
+marks oath saying
+persona #self.first# chooses the long road and the short answer, keeps a second fold of paper inside a coat, and likes tea to be as hot on arrival as it was meant to be.
+
+words
+oath! = Crease the spare | Cold cup crooked step
+saying! = One fold for showing and one for keeping | Meet the stair at your own pace
+spare = my inside fold | a second square of paper
+outer = the folded outside sheet | a creased cover
+turnstone = the broad turning stone | the block at the return
+cheeseheel = a wedge of strong cheese | my solid little crust of cheese
+cupwarm = the heat through a cup | the warm curve of a mug
+steep = the quick rise | a steep bit of stair
+teaedge = the grey rim of cold tea | a cold smear on the cup
+quietroute = the lane behind the carts | a quiet return by the wall
+bellnote = the thin upper bell | the lowest ring of the peal
+seam = a well-stitched fold | the seam inside my coat
+sunbrick = the first warm brick | a little heat in the wall
+
+any
+opinion city for 1 : Plenty of ways home. A great convenience when company goes one way and I prefer another.
+opinion houses mixed 0 : A grand office can lose a small request just as thoroughly as a poor one.
+opinion dole mixed 0 : Give the bread. Keep the names out of the street afterwards.
+opinion watch for 1 : A quiet stretch of North Road speaks quite adequately for an uneventful patrol.
+opinion strangers against 1 : Strangers can keep their estimates of my mileage. The direction I'll give freely.
+opinion festivals for 1 : Let the bells have their hour. They can reach me without my joining the crowd.
+opinion times mixed 0 : I can judge a hard winter. City tempers take a finer instrument.
+
+grown
+line greet : Room by the turnstone.
+line greet [pair.band=strangers] : New face. We'll begin with a word.
+line greet [here.time=dawn] : There's a bite left in the morning.
+line greet [here.time=dusk|night] : Evening. Light still shows the pale upper edge of each step.
+line greet.return : Yes. I heard you come clear of the carts.
+line greet.return [pair.band=friends|family] : A familiar voice travels the easier road.
+line greet.return [self.working=yes] : I can hear you through an ordinary occupation.
+line greet.return [here.time=dusk|night] : Voices outlast faces in the dark.
+line kin.open [pair.kin!=no] : Come up on the inside, kin.
+line again.open : The second fold's still there if we need it.
+line hail [pair.band=friends] : Here, friend. No need to carry your voice farther.
+line farewell : Have a warm cup waiting where you finish.
+line farewell.return : And leave the cold cup sitting.
+line react.news : Say the part you're willing to stand by.
+line react.news.new : That's only just crossed my path.
+line react.news.known : Those same words walked by before you did.
+line react.news.doubt : I'd want the spare copy before I trusted that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wouldn't hurry anybody through such a loss.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives the bells a good reason to ring.
+line ask.how : Any comfort in the day's walking?
+line answer.how : I've kept enough wind for getting home.
+line thank : I count the quiet kindness you took time for.
+line deflect_thanks : It required very little explaining to do it.
+line sympathise : There's a place here to sit without being examined.
+line reassure : Give the day one more turning before deciding.
+line decline : I've kept a private appointment for that stretch of daylight.
+line accept_decline : You're entitled to let the answer end there.
+line preclose : I'll move on before the warmth leaves the bricks.
+line accept_preclose : The turn is yours to take when it suits you.
+
+scene inner_fold
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : An outside paper may get wet. #spare.capitalize# stays legible. | I double a sheet corner to corner.
+b : What goes inside that fold? | Why that way?
+a : Legible words. The purpose of the inside is some privacy. | A thumb finds its place without displaying the whole thing.
+
+scene walk_after
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I walk away from my door by one road and return by another. | #quietroute.capitalize# adds no useful errand to a morning.
+b : To lengthen the walk? | Why bother then?
+a : To let a familiar door look a little new when I reach it. | Precisely why I take it.
+
+scene old_riser
+when topic=health self.age>=60
+does tell.self / ask.detail / answer.detail
+a : I took two risers in a stride when my knees had less to say. | I wait on #turnstone# till my breath is properly my own.
+b : Do you miss that pace? | To get it back?
+a : Dry stone still tempts me to double up. I just choose which two more carefully. | To choose whether I want to spend it on the next flight.
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I wrap #cheeseheel# away from the paper I mean to keep. | Hard cheese is a food I can eat on a wall without managing a spoon.
+b : Two different parcels? | No plate either?
+a : Oil remembers where it lay. I've already enough reminders. | I came out to walk. A pantry would be a cumbersome companion.
+
+scene familiar_peal
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : There's one bell I listen for all through a festival peal. | I enjoy watching heads turn together when the bells start.
+b : The biggest? | Are you in the square?
+a : The one that finishes a fraction late. It gets a moment of its own. | Far enough away for the turning heads to look like water moving.
+
+scene first_warm
+when topic=season here.season=spring
+does tell.self / ask.detail / answer.detail
+a : When #sunbrick# stops taking heat from my palm, I call it spring. | The mild day I value most is the one when I unfasten a button without thinking.
+b : A whole new season on one brick? | Do you write the date?
+a : For my hand it is. The rest can choose another date. | A private pleasure keeps perfectly well unfiled.
+
+scene spoilt_tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I dislike being asked to drink tea that has waited longer than I have. | Feel #cupwarm# before you take your coat off to stay.
+b : Even a polite cup? | A test of welcome?
+a : Courtesy is more than the loan of a saucer. | Merely of tea. Never make a test prove more than it does.
+
+scene minding_words
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A second knock while the first is still sounding costs the caller my good opinion. | Let a wolf pass before you ask why there was a wait.
+b : Does each knock count? | Then you might never hear why.
+a : My good opinion takes very little room. There's no call for a tally. | With luck.
+
+scene gate_table
+when topic=home self.quarter=commons here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The gate hears more words than any street at the middle of town. | Stand a little off the North Road and a busy morning's quite bearable.
+b : Do you keep count? | A good watching place?
+a : No. I choose a quieter time to walk there. | Provided nobody insists upon explaining what I'm watching.
+
+scene holding_child
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I keep an empty place at my table for #self.child#, whenever it may be wanted. | What I'd give #self.child# is the choice to walk a different way home.
+b : You expect a visit? | Just a walk?
+a : I said whenever. The place needn't predict anything. | A choice. I did put the important word first.
+
+scene official_blank
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : An office ought to know what a second copy means. | I can spare an afternoon on behalf of a decent question.
+b : Another chance to look? | And if nobody answers?
+a : The first chance for somebody whose first copy went astray. | I can save another afternoon by keeping my own record of the first.
+
+scene bare_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A hard week brings the shelf edge into plain view. | I've known lean suppers that left more conversation than food.
+b : Nothing on it? | Is that any consolation?
+a : A few things. I can count them without moving any. | To some. I'd take another wedge of cheese.
+
+scene late_journey
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Delayed wagons make it worth keeping the gate clear. | No cart yet. A walk will keep the air about my ankles warmer than standing.
+b : To wait in? | Aren't you afraid of missing it?
+a : To pass in. Other folk still have an afternoon. | If I have to choose, I'll keep my ankles.
+
+scene new_boundary
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Ask about hot tea first and even a newcomer gets a decent route. | I'd point a new face along the quiet return.
+b : Everybody gives the same answer? | Even if it's your private route?
+a : You soon learn which sort of company you asked. | A road belongs to many feet. The reason I take it is private.
+
+scene news_fold
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news_from.capitalize# is the stated origin. #world.news#. | #world.news#. The word puts its starting place at #world.news_from#.
+b : Is that the only copy? | Do you give it credit?
+a : It's the one I'll read aloud. | Enough to repeat it in its own shape. No extra words.
+
+scene gossip_latch
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A door opening on a private account can be closed again. | I heard something, and idle ears don't thereby acquire a right.
+b : Have you done that? | Do you mean mine?
+a : I have now. We can speak of the day. | My own first. Same answer either way.
+
+scene chair_warm
+when topic=home|weather
+does tell.self / ask.detail / answer.detail
+a : A chair by a cold window will chill a fine cup faster than any walk. | I like a shelf wide enough for one cup and one folded slip.
+b : Why sit there? | Nothing else?
+a : Good reading light. The lane in plain view. I drink promptly. | Nothing that can overturn the cup.
+
+scene homeward_wish
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like an evening so quiet I could hear the last bell all the way home. | My idea of ease is a good return route with nobody keeping my arrival time.
+b : Is that far? | No welcome at the door?
+a : Far enough to be worth wishing. | A welcome and a timetable are not the same provision.
+
+story two_cups [topic=memories|food]
+  : I once ordered hot tea, moved from a drafty seat and put my hand round a cold cup.
+  : Spent a moment considering the insult before I looked back.
+  b : What was at the other seat?
+  : My hot tea, keeping a far better seat warm than I had chosen. I moved back.
+
+story long_copy [topic=memories]
+  : I made two copies of a short statement and folded them in separate pockets.
+  : At the desk I unfolded a shopping list instead.
+  b : Which pocket had you used?
+  : A third one I had congratulated myself on discovering. Two good pockets have served since.
+
+story stone_shine [topic=travel|memories]
+  : Once on an unfamiliar stair I chose the shiniest stone for my turn.
+  : Stood there admiring the view until the shine began to move from under my boot.
+  b : Was it ice?
+  : A little dish of rain on a loose slate. I finished enjoying the view from a slightly lower position.
+
+rule @gate_pause
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Turn aside and let the impatient feet do the polishing.
+
+rule @count_peal
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One ring late. That's the note I meant.
+
+rule @lid_tea
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Cover the cup while the door's open.
+
+rule @warm_side
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Sun on the rail. I'll borrow a little.
+
+dlg resident.hub : There's time for whatever one thing brought you here.
+dlg resident.hub [topic.meeting=known] : #topic.player#. Yes. I kept your name on the inside fold.
+dlg resident.hub [here.time=night] : Say it quietly. There's little else for it to carry over.
+dlg resident.hub [pair.disposition=hostile|wary] : From that distance I can listen with reasonable patience.
+dlg resident.job : I take care of the matters that can still be put right by attending to them.
+dlg resident.news [world.news] : The place against this entry is #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The talk passed by. I'd prefer to leave it past.
+dlg resident.bye : Leave yourself a moment to enjoy arriving.
+
+graft resident.hub
+choice Why carry a second copy? -> fold_twice
+node fold_twice
+say Hand a sheet to a clerk and the sheet acquires a day of its own. Its companion stays with me and keeps the words I actually brought.
+choice Did a clerk lose the first one? -> private_answer
+choice That is a reason to fold carefully. -> hub
+node private_answer
+say I'd let a particular clerk answer a particular question. My lesson in folding doesn't require a clerk's name.
+choice The crease will do. -> hub
+choice I'll take my own papers along. -> bye

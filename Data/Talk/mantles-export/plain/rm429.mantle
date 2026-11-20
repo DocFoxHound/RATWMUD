@@ -1,0 +1,260 @@
+mantle rm429
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_brenna_ropehand
+title the stair garden
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk moves_a_seed_pot_up_the_stair_to_follow_the_light
+likes hard_cheese digging fresh_straw summer_evenings
+dislikes waiting stale_bread
+fears a_blind_foot_on_a_young_plant a_pair_of_empty_bowls
+hopes one_sunny_step_after_another a_dry_cabin_with_a_window
+topics pastimes +0.5 home +0.4 food +0.3
+styles comfort=provisions gossip=plain refuse=quiet tease=dry
+marks oath saying
+persona #self.first# follows a shaft of sun up the stair with a small pot of earth and is more willing to wait for a slow seed than an idle promise.
+
+words
+oath! = Worm in the wool | Roots through my cuff
+saying! = Let the pot earn its patch | Two steps buy an inch of sun
+seedcup = my cracked growing cup | a pot with a worn lip
+rootflag = a pale root tip | a small thread of root
+darksoil = a crumb of deep earth | a dark grain of loam
+strawloop = a plait of fine straw | a slim straw loop
+suncut = the sharp sunny strip | my little patch of borrowed summer
+cheesenib = a nib of hard cheese | a corner of dry rind
+tinrest = a bent tin foot | a ring of tin
+stitchtie = a twist of odd wool | my little thread tie
+cabinpot = a cup for a cabin sill | my imaginary shipboard pot
+waterthumb = the mark from my wet thumb | a half-circle of wet
+
+any
+opinion dole for 2 : Bread got my family past some lean days when a pot of earth and a fine speech would have made a miserable meal.
+opinion merchants against 2 : Dear bread isn't helped by being offered with a grand generous smile. Give me a plainer face and a sounder weight.
+opinion strangers for 1 : A traveller may bring a better answer about growing a bean in a cup than a whole street of familiar scholars.
+opinion festivals against 1 : I'll take the bell drifting across a quiet stair. The crowd can have the privilege of standing in its own way.
+opinion houses against 1 : I've never seen a House come down to move a pot into the sun. Nothing's too small to have a rent put on it though.
+opinion church for 1 : A meal set before the question is half the answer. Plenty have had that answer from the chapel.
+
+grown
+line greet : Set your foot clear of the growing cup. Welcome.
+line greet [pair.band=strangers] : Company is welcome wherever the plant has left room.
+line greet [here.time=dawn] : There's a little light climbing already. Come close.
+line greet [here.time=dusk|night] : The pot's come in and I can spare an ear.
+line greet [self.working=yes] : I'll wind this last end down and hear you.
+line kin.open [pair.kin!=no] : Step in where the roots and our own folk are welcome.
+line again.open : The plant's moved about an inch since we spoke.
+line greet.return : Your voice found the sunny side of me.
+line greet.return [pair.band=friends|family] : Well met. Sit down where my gardening hasn't spread.
+line greet.return [self.working=yes] : Your greeting got past a good pile of wool.
+line greet.return [here.time=dusk|night] : The voice is easier to place than its footstep.
+line farewell : Leave a growing thing a little room on the way.
+line farewell.return : I'll take the pot up a tread when it's time.
+line react.news : Give me the bit that will stand up in ordinary light.
+line react.news.new : That's grown in an unexpected direction.
+line react.news.known : Same sprout. It had one less leaf last time.
+line react.news.doubt : Was it really rooted there or merely standing in a pot?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd take the house a meal with no arrangements to make before eating it.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a fine green tip coming through.
+line answer.how : My knees and my growing pot keep civil terms.
+line ask.how : Is your patch of the day getting much warmth?
+line sympathise : No sense ordering a hurt thing to hurry.
+line reassure : Sit where the warm strip is and leave the pot to me.
+line decline : I'd have to let several promises already made go thirsty.
+line accept_decline : Your little patch stays yours to plant.
+line thank : That left my hands free to hold the unsteady part.
+line deflect_thanks : You've given the plant quite a handsome audience.
+line preclose : There's a cup about to want its next step.
+line accept_preclose : Go while your patch of light is good.
+line ack : Firm roots.
+
+scene light
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I take #seedcup# upstairs after the moving light.
+b : Every step? | Why a cup?
+a : Only the useful ones. Plants are no great respecters of ceremony. | For the very good reason I can't carry a garden upstairs.
+
+scene earth
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I set a spoon into earth where a spade couldn't make a decent turn.
+b : Do you use your supper spoon? | How deep can it go?
+a : Not while there's still supper on it. I've put an old bent one to better employment. | As far as the cup requires. A small garden is considerate of its gardener.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw catches the drip under a pot before it reaches the step.
+b : Doesn't the straw get damp? | Why not put a saucer there?
+a : Yes. That's the service it performs in lieu of standing about boasting. | I use both. There's generally one drop with plans independent of the saucer.
+
+scene cheesebite
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : A little onion green will make a scrap of hard cheese go down very grandly.
+b : From the pot? | Does it take much onion?
+a : If the onion's grown enough to spare it. I'm short of plants, not of consideration. | Just enough for the cheese to have a little company. I don't require fireworks at luncheon.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I can't persuade an old heel to soften by calling it toast.
+b : Could you plant it? | What's its name when you've soaked it?
+a : A very unpromising beginning for a crop. Soup offers the better future. | Mine, and I eat it. No good letting the rescued crust go cold discussing names.
+
+scene latewait
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : A seed isn't late till the growing season's quite gone. A caller's rather easier to judge.
+b : Do you forgive a late caller? | Doesn't a seed keep you waiting too?
+a : With a word sent ahead. I'd like to know whether I may tend the pot or keep the kettle ready. | I can get on with a world of things while a seed makes up its mind. A caller tends to expect to be met.
+
+scene hillstep
+when topic=land self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : A Commons stair has its own little seasons of shade.
+b : Can a plant follow every one? | What if the upper landing is busy?
+a : Not every one. It need only do a little better than if I left it planted in a shadow. | I wait till the feet clear. A week's growing doesn't stand up to one absent-minded boot.
+
+scene marrypot
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd keep one bright leaf on the stem till there's time to share a look with #self.spouse#.
+b : Doesn't that take away from dinner? | Why choose the brightest?
+a : One toast may wait for its onion. A shared look costs the plant nothing. | Easy to spot when the light is nearly gone. Small kindnesses do well in the little gaps we have.
+
+scene rootgift
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : There's a spare cup I mean to offer #self.child# if the wish for a garden arises.
+b : With seed already planted? | Is it a great deal of work?
+a : An empty cup and a choice of seeds. If I've already picked out the result, it's my garden taking up somebody else's sill. | It could be. I'd begin with one thing easy to grow and one sunny patch worth noticing.
+
+scene shopwool
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I pick a loose thread clear of a parcel before wrapping it.
+b : Is the thread worth keeping? | Why not tuck it under?
+a : Long enough for a tie on a growing stem. Short pieces have short useful lives. | A very loose end may wind itself through the parcel. I'd like the customer to get a skein and not a puzzle.
+
+scene pricegarden
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I figure a potful of green as one bit of supper I won't have to price.
+b : Have you counted all the hours of growing? | What about the pot?
+a : My time at the sill was pleasant. I'd hate to send myself a bill for having enjoyed some of it. | Cracked before any seed got near it. I'd charged it to tea long ago.
+
+scene longgold
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer light takes one last unhurried step up my stair each evening.
+b : Can you plant anything especially for it? | How long is that last step?
+a : Anything in a small enough cup to move. That last hour has a rather fine effect on my patience. | Long enough to sit beside the pot and think about supper instead of work.
+
+scene drydeck
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : A sunny ship's cabin, free of damp, would tempt me away for a time.
+b : Would your pot travel? | Isn't a ship always in the wet?
+a : Only the better-behaved one. I couldn't take the whole stair garden into the captain's breakfast. | Outside, certainly. I've a particular preference about which side of a plank the wet should occupy.
+
+scene quietgossip
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I do my digging in earth. Neighbours' affairs offer very little in the way of supper.
+b : Even a tempting little story? | Is any story worth hearing?
+a : A sprout that isn't mine may be allowed to grow without my nail digging it out for inspection. | I'd listen if somebody needed a meal or a quiet visit. I'd hardly call that collecting gossip.
+
+scene lookback
+when topic=memories self.age>=35
+does tell.self / ask.detail / answer.detail
+a : The first seed I ever grew had a great deal more water than it wanted.
+b : Did it come up? | How could you tell afterward?
+a : Briefly, looking rather surprised to see air. I have improved my watering since. | A cup of water with an island of mud is really not what most kitchen plants expect.
+
+scene thinstrap
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I move a pot by taking the weight in both palms.
+b : Is it too heavy for one? | Do the roots mind the journey?
+a : My wrist will manage one cup. Two palms save the rim from a crack and my knee from a potful of earth. | Less than my joints. We're all growing at very different speeds.
+
+scene laterlight
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I bring the cup inside from its last landing.
+b : Has it got a place overnight? | Does one more bit of light matter?
+a : A bit of shelf where nobody will knock it over reaching for a blanket. | If I have to grow my own patience I can find some use for every remainder of light.
+
+scene friendship
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : If there's an extra seat on the sunny tread I can have company without moving the garden.
+b : Does it take a gardener to share it? | Where's the cup to go?
+a : Hardly. An eye and a willingness to let an onion grow at its ordinary rate will do. | In the space our two knees leave. It's a useful subject to have at hand when neither wants to say a great deal.
+
+story crackedcup [topic=memories]
+  : I planted a seed in an old cup and carefully marked the water level on the inside.
+  : The next day the level had dropped to the lower lip of that little crack and not another hair.
+  b : Did you keep that cup for growing?
+  : Yes. I laid a saucer under it and called the crack a rather inexpensive improvement to the drainage.
+
+story pocketgreen [topic=pastimes self.likes=digging]
+  : I put a sprig of young onion in my pocket to carry to the table later.
+  : By supper I'd forgotten it and spent ten minutes hunting for the source of a very pleasant smell.
+  b : Did it get into the cheese?
+  : All that wasn't folded into a woolly bow deep inside my pocket seam. I carry green food in a clean twist now.
+
+story treadtrick [topic=home]
+  : I set the pot where the upper stair was bright and came back after doing some work.
+  : The pot was in shadow and a piece of sunlight exactly its size stood on the empty tread above.
+  b : Which one did you move?
+  : I've greater influence over the pot. Up it went.
+
+rule @pot
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Save the dark crumbs for the growing cup. | Lift from both sides of that crack.
+
+rule @wool
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Loose end clear before you coil. | Keep the clean skein off the potting shelf.
+
+rule @sun
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Bring the last little patch of green indoors. | One more tread and then supper.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Saucer under the dripping rim. | Don't let a small garden flood a big stair.
+dlg resident.hub : My pot and I have almost finished our business. There's time for yours.
+dlg resident.hub [topic.meeting=known] : A fresh patch of sun for you, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Stay off the growing edge and we'll come to no grief.
+dlg resident.hub [here.time=night] : The cup and the green have gone indoors. I'm still listening.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I'd like a tidy turn on a loose end before I call anything finished.
+dlg resident.job : I look at what's ready to be useful and what can do with a little more time.
+dlg resident.news [world.news] : This piece has made its way up the stair. #world.news#.
+dlg resident.bye : Watch for the good light on your way home.
+
+graft @sunpot resident.hub
+choice Is your plant really walking up these steps? -> sunpot
+node sunpot
+say Only with my two legs providing the uninteresting part. See that strip of sunlight just beyond the rim? In a while we'll put the cup there instead.
+choice Wouldn't a fixed patch of garden do as well? -> sunpot_more
+choice Make room for the growing pot. -> hub
+node sunpot_more
+say A settled bit of earth would give an onion fine roots. Till I happen to have one I think it rather pleasant to offer mine a daily outing.
+choice Make room for the growing pot. -> hub
+choice Leave the sunlit step. -> bye

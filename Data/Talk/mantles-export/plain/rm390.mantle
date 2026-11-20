@@ -1,0 +1,374 @@
+mantle rm390
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_silas_sootworth
+title the upstairs cupboard by inches
+fits stage=adult|old
+prefers job=crafter
+traits temper=calm talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk measures_a_dream_cupboard_with_knotted_wick
+likes honey_cakes swimming full_larder thunder
+dislikes waiting wet_floors
+fears giving_up_on_better_ground
+hopes a_sunny_cupboard_above_the_low_streets
+topics home +0.6 work +0.4 travel +0.3 food +0.2
+styles comfort=practical gossip=careful refuse=soft tease=dry
+marks oath saying
+persona #self.first# measures dream cupboards with a bit of knotted wick and takes the stairs in pairs whenever the leg consents.
+words
+oath! = Shorten my measuring string | Smoke my honey glaze
+saying! = Leave room for the hinge | Climb what the knee allows
+measure = a knotted wick end | a length of marked thread
+doorarc = a sweep in chalk | a curved scratch
+dryboard = a smooth shelf | a board of quiet grain
+taperbutt = a stubby wax end | a short upright taper
+honeycurl = a sticky cake corner | a honeyed crust
+swimchip = a floating chip | a little shaving of cork
+climbstep = a single broad tread | a firm low step
+driprag = a small waxed square | a folded catch cloth
+jarshadow = a ring of pale dust | a round gap in the flour
+kneemark = a little twitch | a tightening above the knee
+latchloop = a loop of bent wire | a simple string latch
+stormcover = a dark shutter | a thick window board
+poolside = a strip of flat bank | a bare pebble shelf
+lowwall = a wall at elbow height | a handy level coping
+larderbox = a lidded food box | a plain covered crock
+hivecrumb = a golden crumb | a sticky speck
+
+grown
+
+opinion houses mixed 1 : A wealthy House can put in stairs wide enough for a sore leg turned sideways. I'd like some of that width further down the hill.
+opinion merchants mixed 1 : I give a true measure and prefer to buy by one. There's enough guesswork in my plans already.
+opinion church for 1 : A twist that burns steadily in a poor room has done its part of a blessing.
+opinion newcomers for 1 : A newcomer might have a neater trick for fitting a door than the one I've been practising for years.
+opinion city mixed 1 : The Heights get the sun earlier on some mornings. I don't see why I should never want a share.
+opinion road for 1 : A good road lets a weary foot approach an improvement one ordinary pace at a time.
+opinion festivals mixed 1 : I'd enjoy the procession more with a stool exactly where the crowd insists on backing up.
+opinion dole for 2 : Somebody with a full cupboard can find the measure of one more mouth easily enough.
+line greet : Come along the level stretch. Easier to talk there.
+line greet [pair.band=strangers] : Room at this end to turn about and make acquaintance.
+line greet [here.time=dawn] : Early light gives this old bit of string a shadow.
+line greet.return : Glad you waited while the second foot caught up.
+line greet.return [self.working=yes] : One knot placed and I'll be quite at leisure for a word.
+line greet.return [pair.band=friends|family] : You hardly need me to show you which hinge sticks.
+line again.open : We've climbed round to the same little landing.
+line hail [pair.band=friends] : Alongside my more companionable knee, if you please.
+line kin.open [pair.kin!=no] : There's elbow space kept for family whether or not the shelf is finished.
+line farewell : Take the stairs the way your own joints fancy.
+line farewell.return : May there be a firm place at your next landing.
+line react.news : I'll stretch a bit of thought along that measure.
+line react.news.new : That adds another inch to yesterday's reckoning.
+line react.news.known : I'd set a knot against that point already.
+line react.news.doubt : I wouldn't cut the timber to those figures without another look.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's news to get the better honey cake down for.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd keep a warm light showing for whoever needs to come through after that.
+line ask.how : Is there anything that seems a longer climb than it ought today?
+line answer.how : The knee and I have agreed on our present altitude.
+line answer.how.busy [self.working=yes] : A little occupied among knots, but they needn't have every bit of my attention.
+line thank : You held the measure where my fingers lost the end.
+line deflect_thanks : One more length of thread has never shortened a friendship.
+line decline : I can't promise a rise I haven't sounded with my foot.
+line accept_decline : We'll keep that particular measure on the reel.
+line sympathise : Sit here. Those other treads will keep till we want them.
+line reassure : An inch in the right direction will do us credit.
+line ack : Both ends of that line come together for me.
+line preclose : I'd better move before my knee decides this is home.
+line accept_preclose : Go at your own most reasonable pace.
+line offer : Want a steady hand while you take the first tread?
+line give.advice : Measure the doorway with the hinge open before buying the shelf.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I've marked the width of my imagined best cupboard on #measure#.
+b : What's the first knot for? | Would the cupboard fit where you sleep?
+a : A jar of honey, with space to get an entire paw round it. | Certainly not. For now the whole cupboard resides on this string.
+
+scene work_1
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I save a sound offcut to check the scale of my work.
+b : Is the scale always the same? | Why bother with an offcut?
+a : The measure should be. My eyes have been known to improve a measurement on the strength of liking it. | I can mark it and mend the mark without giving a customer my education to pay for.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I stride up each pair of treads on mornings my leg offers to come along.
+b : What if the offer's withdrawn halfway? | Isn't it hard on your knee?
+a : There's no shame in being a little overdrawn at the first landing. I'd settle up with a pause. | It's harder on my dignity to boast when the sensible choice is taking single treads.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My troublesome leg has its own rather detailed view of any change in weather.
+b : Do you trust its forecasts? | Does it keep you indoors?
+a : It is an excellent authority on that particular leg and a less reliable one on the whole sky. | I can walk around a room planning where a cupboard ought to go and travel quite as far as I choose.
+
+scene family_1
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I'd like #self.child# to see me improving my place without despising the one I started in.
+b : What improvement comes first? | Is the old place dear to you?
+a : A shelf where a meal could wait above the damp, beside space for a second portion. | It taught me which things I actually want. That's a decent inheritance even for somebody with ambitions.
+
+scene work_2
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I teach the error in a measurement by leaving the door unable to close.
+b : Is the bad fit deliberate? | Won't the pupil feel foolish?
+a : On a model with a removable shelf. Real doors are quite ready to provide unplanned examples. | The shelf is the part hoping to become smaller. I make that distinction very clear.
+
+scene food_1
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I prefer a honey cake with enough crust to keep the honey to itself for the first bite.
+b : And the second bite? | Wouldn't a saucer do?
+a : That's where my fingers come in, frequently to their lasting inconvenience. | Very well, if one has both hands and no urgent appointment on a stair.
+
+scene pastimes_1
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : Swimming gives my two legs a chance to disagree without making me limp in a circle.
+b : Do you go far? | Which stroke suits you?
+a : Along the shallows, turning where I can get out without a feat of climbing. | Anything easy enough to let me enjoy the water without drawing up a formal agreement with every joint.
+
+scene weather_1
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : I enjoy hearing thunder through a shutter that I know fits properly.
+b : Would you open it to watch? | Can a shutter keep the noise out?
+a : When the fiercest part has passed. Part of the pleasure is being able to choose. | It can keep out water. I actually invited the noise to remain outside with excellent acoustics.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I have no patience for an empty wait. Give me a crooked hinge and I can be patient all afternoon.
+b : What's the difference? | Would any little job do?
+a : I can do something for the hinge. An empty wait insists I be grateful merely for occupying it. | Something with a finish to it. A knot tied and trimmed will do when the day has nothing larger in mind.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : In my ideal larder the heavy pot lives exactly high enough to lift without bowing.
+b : What goes on top? | And if the pot's empty?
+a : Light cake tins, or my hopes until I can afford the tins. | Same shelf. Empty pots have a disconcerting way of becoming full just when I need to move them.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I know the width of a dear neighbourhood before anybody quotes the price of every house. | My dream cupboard's paid for in knots, the house itself in less obliging currency.
+b : Is it worth climbing for?
+a : I like the light and I'd like to shut a door on damp stone for good. | Some ambitions cost nothing per inch so long as you don't try to carry them home yet.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I measure a kindness by whether it fits the need, even if no one else sees it.
+b : Can something small be sufficient? | What if you give too much?
+a : A hand under an elbow at a bad landing may be the full measure wanted. | Then find out whether your splendid offering will close the cupboard door and mend your fit if necessary.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I share honey cakes unevenly if one friend is hungry and the other is merely greedy.
+b : Which one are you? | Do they ever object?
+a : I'm usually the one cutting them, with one thumb already stuck to the icing. | Ask first and use a clean knife. Inequality needs considerably better manners than arithmetic.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Wet floors make me lower my ambitions to the next safe plank.
+b : How do you spot a wet board? | Would you ask for an arm?
+a : Look at the shine from the side and slide one toe before promising it your weight. | Gladly if there's one offered level with my elbow. A haul by the shoulder will send both of us skidding.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember light coming under the door of a low room and thinking how much more there was outside.
+b : Did you rush out? | What did you want with it?
+a : I watched the shape move up the opposite wall first. A poor room could make a remarkably good clock. | A high window of my own to catch it, and a table somebody else might sit at beside me.
+
+scene travel_2
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Heights look a very manageable distance away when reduced to a little drawing.
+b : Which part is missing? | Could you draw a better route?
+a : The number of pauses my knee has lately introduced between one line and the next. | I'd put in every level spot with a fine view. The climb looks quite different measured in places to rest.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard times make a full jar seem heavier to leave untouched than to carry round the room.
+b : Would you open it early? | How do you count what's left?
+a : To share while it could make a good meal, yes. There's no use saving all the sweetness for a committee of mice. | A mark on a string tied round the belly. Then I can keep the lid on till I'm ready to eat.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Two small cakes keep their edges better in a box than one enormous cake with a crack in it.
+b : Wouldn't the crack make it easy to share? | Do you bake to fit the box?
+a : It decides the shares without listening. I'd sooner hear from the mouths first. | If I'm walking uphill, yes. A square box and a round cake settle differently at a brisk angle.
+
+scene work_3
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I put my measure down flat between jobs, even when the next one seems exactly alike.
+b : Afraid it will stretch? | Why not leave it ready in your hand?
+a : Afraid I'll carry the old answer along the new piece. A quick eye can be remarkably unobservant. | My fingers get fond of the old distance. The material has no obligation to agree with it.
+
+scene family_2
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I keep my hopes for #self.child# on a looser string than the ones I use for shelves.
+b : No plan at all? | What if your hopes differ?
+a : Room for a plan that wasn't mine in the first place. | The string's mine to let out. I've no intention of fastening anybody else inside a cupboard.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A well-made hinge sounds faintly bored when it closes, as if the outcome were never in doubt.
+b : Can you hear that from outside? | Is silence even better?
+a : Only in a quiet room and nobody present is making a speech about hinges. | Silence is excellent until I must rise to check whether I really did close it.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A cat would prefer my cupboard with the lower shelf quite bare. | A mouse would prefer an untidy pantry. I decline to consult that particular expert.
+b : Which opinion wins?
+a : My own. Nobody else has offered to carry the jars up the stairs. | A good lid on every dish will make the result plain without offending anybody's professional pride.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Dry and damp stair treads can look like twins from the upper landing.
+b : What gives the difference away? | Would you wait for it to dry?
+a : A little trembling light round the edge when I lower my head to look. | I've two choices. Wait for the dry turn or take the wet one in the unambitious fashion of a contented snail.
+
+scene memories_2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once kept a catalogue of every improvement I'd like to make to one room.
+b : Did you finish the list? | What was top of it?
+a : It became a second room entirely, with stairs, a view and no relation to the original rent. | Removing the piece of timber that hit my shoulder on entry. A very modest start to a palace.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If a friend goes on ahead up a stair, a door left slightly ajar keeps us in company.
+b : So you can catch up? | What if it's cold inside?
+a : So we both know the visit is still going our way even with a landing between us. | Then shut it. I'd far rather knock once than spoil a roomful of warm company.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll give a new arrival the hill directions in terms of effort as well as distance.
+b : Which is the more reliable? | Do you mention your own leg?
+a : Distance for a map. Effort for a body trying to decide whether to have supper before or after the climb. | I mention the landings. A stranger may find personal uses for good solid ground.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Someone's been measuring out a claim that #topic.subject# #topic.claim#.
+b : Will you cut to that measure? | Do you have a second account?
+a : It seems too early to put the scissors in. Leave a good allowance. | Only another telling, which might simply be the first one passed twice round a very narrow room.
+
+story cupboard [topic=home]
+  : I cut a paper pattern for my beautiful future cupboard and tried it against a small door.
+  : The pattern covered the door so completely I had a cupboard and no way into the room.
+  b : Did you make it smaller?
+  : I moved it up a stair on my imaginary plan. In a house bought wholly with paper I can afford improvements.
+
+story cake [topic=food]
+  : I took a honey cake upstairs in a box just a little too wide for it.
+  : At each second step the cake moved and left its own report in sticky crumbs.
+  b : Where did the crumbs end up?
+  : Pressed them into a second little cake and sat down. Two treats earned by a slightly untidy climb.
+
+story wick [topic=work]
+  : I marked a bit of old wick with two knots so I could measure the space beside a pantry door.
+  : One knot came loose in my pocket and met the other at the far end.
+  b : What size cupboard did you get?
+  : Enough width for one very thin hope. I tied the second knot more carefully after that.
+
+story thunder [topic=weather]
+  : I thought a new shelf had let go in the night and went to inspect the damage.
+  : Every jar sat exactly where it belonged and another deep crash rolled slowly overhead.
+  b : Did you go straight back to bed?
+  : After admiring my shelf. Quite flattering to have mistaken the sky for the sound of one's handiwork.
+
+story swim [topic=pastimes]
+  : I left my measuring string beside the bank and went for a swim clear across my little patch of water.
+  : When I got out it had wound itself round a reed and a small twig.
+  b : Did you lose the measure?
+  : The knots held. I simply acquired the exact dimensions of a reed I had no intention of furnishing.
+
+rule @measure
+when concept=bark
+does aside
+cooldown 8h
+say Leave the little space the hinge will want to use. | No shelf should depend on my optimism alone.
+
+rule @stair
+when concept=bark
+does aside
+cooldown 8h
+say One step today if two want a written petition. | A landing never minds a minute's company.
+
+rule @work
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Let the learner see which knot chose the wrong place. | Try it open before you call it fitted.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A wet tread needs the flatter part of a foot. | Wait for a grip before shifting the other heel.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A high window would keep some of that light beautifully. | Good hour to see the shape of an empty shelf.
+
+rule @food
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say A crumb that sticks is still part of my share. | Skinny slices travel badly in a steep pocket.
+dlg resident.hub : Set your question on the lower shelf. I can reach it from here.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I've already measured a comfortable space for your visit.
+dlg resident.hub [pair.disposition=wary|hostile] : Give me your plain measure of the trouble, then.
+dlg resident.hub [here.time=dusk] : There's a bit of light left to lay a thought against.
+dlg resident.job [self.job=crafter] : At #self.workplace# a small bit of stock often makes a better measure than a large opinion.
+dlg resident.job : I like the kind of job where the finished piece answers for how well it fits.
+dlg resident.news [world.news] : The words that bear a second look are these. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I've heard it reckoned that #topic.subject# #topic.claim#. I'd ask for another measure.
+dlg resident.bye : May you find the landing clear when you want it.
+dlg master.work : Try the piece where it will live before saying what a fine thing it is. Its work starts after ours.
+dlg master.wages : Learning pays no wage. Work at my side to learn three times faster. Your finished goods can bring you your own sale money.
+dlg master.bye : Take that extra inch of thought with you.
+
+graft resident.hub
+choice What have you measured on your string? -> cupboard_wick
+node cupboard_wick
+say That knot's the height at which I'd like a pot to sit in the home I'd like to grow old in. No more magnificent bowing and scraping before a jar of beans.
+choice And the other knot? -> cupboard_high
+choice May your shelves fit. -> hub
+node cupboard_high
+say The reach of a small visitor wanting a honey cake. I'm thinking of keeping the cakes just on the kinder side of it.
+choice May your shelves fit. -> hub
+
+graft master.learn
+choice Why leave a gap when the measure's exact? -> hinge_gap
+node hinge_gap
+say Because a thing that fits between two fixed boards will not necessarily swing between them. Open the door and watch its far corner travel.
+choice Has that caught you before? -> hinge_catch
+choice I'll watch the corner. -> learn
+node hinge_catch
+say Once was quite sufficient for the door. I've found several inventive ways to learn the same lesson elsewhere.
+choice I'll watch the corner. -> learn

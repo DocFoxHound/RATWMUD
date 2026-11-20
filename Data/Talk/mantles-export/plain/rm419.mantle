@@ -1,0 +1,300 @@
+mantle rm419
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_vigdis_millley
+title the soot print astronomer
+fits stage=young|adolescent|adult|old
+prefers job=child
+traits temper=calm talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=content
+quirk names_smudges_after_the_night_sky
+likes roast_pork stars tidy_house summer_evenings
+dislikes wet_floors bad_manners
+fears mistaking_a_greasy_mark_for_a_real_star
+hopes to_draw_a_whole_night_on_one_sheet
+topics pastimes +0.4 family +0.3 home +0.3 festival +0.2
+styles comfort=warm gossip=quiet refuse=soft tease=bright
+marks oath saying
+persona #self.first# presses a smoky thumb to scrap paper and discovers separate night skies in the resulting specks.
+
+words
+oath! = Smudge me sideways | By the crooked thumbprint
+saying! = Even a smut gets a bit of sky | A clean thumb starts a different night
+thumb = my smoke-grey thumb | my dark little thumb
+page = a pale scrap | a folded white page
+smut = a splash of soot | a black speck
+star = the tiniest star | one spare star
+curl = the curling edge | a tiny horn of paper
+pork = a golden crackling curl | a good pork corner
+cloth = my soft wiping rag | a soft-edged linen square
+rinse = a trickle of clean water | the last clear rinse
+floor = the shiny patch | a wet bit of floor
+bow = my civil nod | a neat little bow
+sky = a scrap of dark blue | the twilit square
+mark = the faintest fleck | my little grey dot
+
+any
+opinion festivals for 3 : My kind of feast is one where my feet do something besides trying to keep my coat away from the puddles.
+opinion dole for 2 : Soup's a very good idea when all a wolf can put in a bowl at home is a spoon.
+opinion church for 1 : A good warm meal makes a long bench feel much more like an invitation to sit.
+opinion houses for 1 : A shop full of bright metal gets a light of its own going. I'd miss that if the Houses shut the doors.
+opinion times for 1 : Good supper and a clean scrap to draw on leave very little to complain of.
+
+any
+line greet [pair.band=strangers] : Welcome across my clean paper. | Shake this paw. The smoky one's busy.
+line greet [self.working=yes] : One free corner for a greeting. | Speak round my inky thumb.
+line greet [here.time=dawn] : Morning. My sky page is mostly white. | First light, fresh marks ahead.
+line greet [here.time=dusk|night] : Evening's good for comparing the pictures. | Come see the first specks of light.
+line kin.open [pair.kin!=no] : Kin get to name the second star. | I'd know the family prints.
+line again.open : Another orbit brings you back. | We meet again with the smudge still here.
+line greet.return : Hello from the less smoky end. | I've a clean greeting if no clean cuff.
+line greet.return [pair.band=friends|family] : I could draw your greeting blind. | I'd give that voice a little constellation.
+line greet.return [self.working=yes] : I'll leave a finger-width for talk. | I can hear over the paper.
+line greet.return [here.time=dusk|night] : Evening. The grey spots are getting bright. | Welcome into the blue bit.
+line farewell : Good stars beyond your chimney. | Keep a clean finger for waving home.
+line farewell.return : I'll hold the corner till you're gone. | Go on with the neat paw waving.
+line farewell.return [here.time=night] : Mind your feet while you look at the sky. | A bright patch over your roof tonight.
+line react.news : Which of the specks is the important one? | Give me the shape it made.
+line react.news.new : That's a fresh mark entirely. | That account's new to my scrap.
+line react.news.known : Same smudge I saw last time. | Yes, the specks line up again.
+line react.news.doubt : I think that picture's picked up an extra mark. | I'd give it a second look before naming it.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's too sad for any silly picture. | I'll stay and keep my paws quiet.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news worth a whole clean sheet. | That lights the brightest bit of the picture.
+line ask.how : How's your little patch of night sky? | Did today leave you a clean corner?
+line answer.how : Mostly bright marks with a sooty bit. | Carrying a reasonable number of stars.
+line decline : I'd rather keep this scrap for my own picture. | I can't mark two pages with one thumb.
+line accept_decline : All right. Your own sheet, your own marks. | We can leave that corner white.
+line thank : You kept my best bit clean. | I'll put a good star beside that.
+line sympathise : Come sit where the marks aren't all muddled. | I can hush till you feel steadier.
+line reassure : A blotted bit still has clean edges. | We'll draw around the difficult spot.
+line preclose : I need to wipe this thumb soon. | Time to fold my little sky away.
+
+young
+
+scene y_stamp
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : There's a whole night sky on #page# if I put my thumb down lightly.
+b : In the black bit? | Where are the stars?
+a : In the white holes, silly. Black bits are the bits between them. | Where the soot missed a little. Even the clean bits are useful.
+
+scene y_scent
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I smell faintly of smoke even with my cleanest coat.
+b : From making pictures? | Does the coat mind?
+a : Mostly the pictures come from smelling that way already. A convenient arrangement. | The coat and I put up with one another extremely well.
+
+scene y_food
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : Pork rind makes very good small crunchy thunder.
+b : Thunder in your mouth? | Does it frighten you?
+a : My ears can hear it quite from the inside. No storm required. | Only if I've given the last strip to somebody else by mistake.
+
+scene y_mum
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I've left the naming of my thumbprint moon to #self.mother#.
+b : Why a moon? | Would you use the name forever?
+a : It's a round bit where my thumb slipped. Far too big to be a tidy star. | Until the next wash. A whole different moon can come out after soap.
+
+scene y_dad
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I've kept one blank piece for #self.father# to make a sky beside mine.
+b : What if the paws are clean? | How big's the paper?
+a : Then it would be an extraordinary bright summer sky. All white and no worries. | Enough for two thumbs and a gap for my name when I write it straight.
+
+scene y_tidy
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I like a clean shelf for my dirty pictures.
+b : Isn't that a funny arrangement? | What goes beneath the page?
+a : A dirty shelf gets its marks mixed with the sky. It would spoil the weather. | A scrap too grubby for stars and not yet grubby enough for the stove.
+
+scene y_stars
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : Two specks next to each other are generally best friends.
+b : Always? | How can you tell?
+a : Sometimes they're two fish racing. You'll know by the long fin streak behind them. | My picture, my say. You're allowed a different opinion on your half.
+
+scene y_wet
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I found a whole sky shining on a wet floor. A very disagreeable bit of astronomy.
+b : Too low down? | Was it slippery?
+a : Much too near my nose after I went peering into the reflection. | I set both feet on a mat before making any more observations.
+
+scene y_manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : If you want a star, ask before poking the picture.
+b : Does one poke hurt? | What's wrong with pointing?
+a : One wet paw can turn a very fine star into a plain blob. | Point from a little way off. Even the real stars keep their distance.
+
+scene y_summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A drawing can dry slowly while a summer evening decides about darkness.
+b : Why not fan it? | Where does it dry?
+a : I'd scatter soot over the clean crescent still left on my nose. | In a flat place with no hurry all round it.
+
+scene y_school
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my sums have a surprising number of little moons round them.
+b : Are the sums right? | Do you get ink on your paws?
+a : Some of the moons are noughts I'm keeping available for emergencies. | The ink and the soot have to come to a sensible arrangement up there.
+
+scene y_works
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : Most stars I find in the Works are hiding under somebody's cuff.
+b : Real stars? | Are they hot?
+a : Paper ones. Real ones are up quite a way. I know the difference. | A cuff can be warm. A print thereof is a polite sort of cold.
+
+story y_moon [topic=memories]
+  : I marched to a window once certain I'd found a new star on my thumb. I lined it up with the darkening sky. It moved when my hand moved, so that was all right.
+  : Then the mark on my thumb flew away. It was an exceptionally small beetle who had had enough of looking at astronomy.
+  b : Did you draw the beetle?
+  : I put wings on one of my stars and left it a little blank space to fly into.
+
+adolescent
+
+scene t_shadow
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I used to name every mark on a page as soon as I made it.
+b : Do you wait now? | Wasn't it fun?
+a : I wait until the print dries properly. A mark that looked like a star has time to become a proper outline. | Enormous fun. I still reserve the right to name a splodge after supper.
+
+scene t_trade
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A convincing ink mark takes a clean surrounding space.
+b : To stand out? | What about a crowded page?
+a : To let another observer tell where the mark actually ends. | One can keep the drawing interesting without letting every corner shout.
+
+scene t_feast
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a dancing feast I put my dark thumb inside the cuff.
+b : To be tidy? | Won't the cuff get filthy?
+a : To avoid giving somebody else's sleeve a constellation without permission. | It generally starts there. At home the washing comes with the art.
+
+story t_sleeves [topic=memories]
+  : I laid two blackened scraps together once and found I'd printed a perfect pale road between their marks. I couldn't have made a line that neat on purpose.
+  : I pulled them apart to show somebody. The road was only the bit of windowsill shining in the gap.
+  b : Was the paper arranged that way again?
+  : With a bit of white paper in between. I wanted to be able to carry the light away from the window.
+
+grown
+
+scene g_smoke
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to make little skies in the smoke on my hands.
+b : Still make them? | What did that teach you?
+a : Occasionally. I can make a perfectly good one behind a finished receipt. | To see a whole picture before worrying about the unlikely materials.
+
+scene g_pork
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : A well-cut pork rind looks like a map of neatly divided fields.
+b : Do you study it long? | Where's the road?
+a : Just long enough to choose the bit my fork had better reach first. | Down the whole centre. There's an uncommonly nice brown crust along it.
+
+scene g_tidy
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : At home I reserve a little disorder for an unfinished drawing.
+b : Only a little? | Why keep it untidy?
+a : A page and two thumb-widths around it. The rest can be restored without fear. | A discarded scrap can still tell me which dry mark I liked best.
+
+scene g_neighbour
+when topic=friends self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.neighbour# a drawing without insisting that we see the same sky.
+b : Not even the same moon? | Do the different skies interfere?
+a : My moon can perfectly well be a visitor's misplaced button. | It makes a good conversation out of the cheapest bit of paper I own.
+
+scene g_view
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'll cross a street for a decent gap between roofs.
+b : To see stars? | In daylight too?
+a : Sometimes. I also like to see the lines of two roofs against each other. | Particularly with cloud light behind them. Two ordinary outlines can be quite exact.
+
+scene g_habit
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I wipe the dust from my paws before I rub my eyes.
+b : Memories of a mistake? | Regular dust or ink?
+a : I gave myself a painfully close view of a black mark once. | Either. Anything I'm willing to put on paper can still stay outside the eyelids.
+
+scene g_voice
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A smudged account can look much more conclusive than a clean one.
+b : How do you mean? | Would you believe it?
+a : A dark blur hides where somebody changed a word. Clear the edges and see what's left. | I'd want one witness whose sleeve hadn't been brushed against another telling.
+
+scene g_wet
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : There's an agreeable busy sound when a sprinkle first finds the pavement.
+b : Does it put you in mind of anything? | Do you like the wet itself?
+a : Stippling a drawing with a brush that's barely damp. Same little sharp beginning. | I appreciate it more thoroughly from a firm piece of dry footing.
+
+story g_scrap [topic=pastimes]
+  : For a long time I saved a thumbprint drawing because it held the clearest little cluster I'd ever made. I kept it folded with the marked side out.
+  : One day I noticed the cluster was almost gone. I'd been slowly wearing it away with the very hand that had made it special.
+  b : Did you try copying the picture?
+  : I made a print from my hand as it was then. Two scraps beside each other tell a more interesting story than a poor copy would.
+
+any
+
+rule @aside1
+when concept=bark self.likes=stars here.time=night
+does aside
+cooldown 6h
+say Two clear pricks and a cloudy thumb moon. | Real sky, paper sky. Plentiful supply.
+
+rule @aside2
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 7h
+say No astronomy on the slippery bit. | Dry the ground before I consult the sky.
+
+rule @aside3
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Clean place beneath the messy pictures. | One shelf without a single accidental cloud.
+
+rule @aside4
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 9h
+say Light to dry a whole page this evening. | Little moon mark in a very large dusk.
+
+dlg resident.hub : Come beside the white bit. I keep it clear for anybody who wants to point at a star with a reasonably civil finger.
+dlg resident.job [self.job=child self.workplace] : At #self.workplace# I practise the words and the figures. There are respectable little pictures in the spare bits of paper.
+dlg resident.job : I keep a bit of sky available when I can and a clean scrap ready to receive it.
+dlg resident.news [world.news] : Here's the outline I could make out. #world.news#
+dlg resident.bye : Give any little smuts you find a chance to become a picture first.
+
+graft resident.hub
+choice Which bits of the thumbprint are stars? -> smudge_lights
+node smudge_lights
+say The clean holes. Push down hard and there's hardly room for starlight. Just a little touch leaves a patch of sky that's properly full of surprises.
+free
+choice How do you know which end is up? -> smudge_turn
+choice I can see a crooked moon. -> hub
+node smudge_turn
+say Whichever way you like. Real stars stay where the sky put them. These are mine and they'll turn right over when I tip the page.
+choice I'll try looking both ways. -> hub
+choice I'll leave the little sky to dry. -> bye

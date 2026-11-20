@@ -1,0 +1,375 @@
+mantle rm324
+state ready
+dialect plain
+accent light broad
+tier full
+written_for cty_beatha_slagby
+title the garden of names
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk plants_a_garden_of_remembered_names
+likes mutton_stew digging quiet_chapel first_snow
+dislikes stale_bread cold_tea
+fears mislaying_a_living_name
+hopes leaving_room_for_a_learner
+topics animals +0.5 pastimes +0.5 friends +0.4 faith +0.2
+styles comfort=quiet gossip=gentle refuse=plain tease=none
+marks oath saying
+persona #self.first# plants a private garden of remembered names and makes room between the rows for acquaintances still to come.
+words
+oath! = Turn my good sod over | Tangle my bean strings
+saying! = A name needs air | Leave space for a late seed
+rowstake = a split planted stick | a little willow peg
+soilcrumb = a grain of black earth | a crumb of loose soil
+beaneye = a speckled bean | a brown-eyed seed
+gatebar = a smooth gate rail | a worn crosspiece
+hoofmark = a crescent print | a deep cloven track
+teacover = a little saucer | a flat pot lid
+stewbone = a knuckle of mutton | a meaty end of neck
+mudspade = a narrow spade | a short digging iron
+seedcloth = a square of sacking | a rough seed cloth
+barnrope = a soft rope loop | a thick halter end
+firstwhite = a clean rim of snow | a drift of new white
+nameleaf = a folded green leaf | a beech leaf
+seedfurrow = a deep thumb groove | a shallow drawn line
+kettlehum = the kettle's first murmur | a low song of water
+plankseat = a sunny bench end | a planed plank
+twigtie = a soft rush tie | a ribbon of bark
+stonepot = a brown crock | an earthen stew pot
+
+grown
+
+opinion church for 2 : An empty chapel gives every remembered voice its own little piece of quiet.
+opinion newcomers for 2 : A newcomer deserves to hear a name said accurately at least once on the first day.
+opinion houses mixed 1 : A great House could open a promising door for a young wolf, if it remembered the wolf who entered.
+opinion merchants mixed 1 : I pay more willingly for seed when there's time to ask which soil will take it.
+opinion dole for 2 : A welcome should come with a hot bowl before anybody has to earn a place.
+opinion strangers for 1 : A strange name can be as pleasant in the mouth as a familiar one once I've heard it clearly.
+opinion road for 1 : The way home carries all sorts of scraps a busy voice has no room for.
+opinion festivals mixed 1 : I like meeting folk and would rather do the introductions beyond the drums.
+line greet : Come stand here, where I can hear your name properly.
+line greet [pair.band=strangers] : There's a whole bit of row I've left open for new company.
+line greet [here.time=dawn] : Morning to you. It's a kind hour for putting down a first thought.
+line greet.return : I had your sound in mind before you spoke again.
+line greet.return [pair.band=friends|family] : A known voice gives the ground a familiar shape.
+line greet.return [self.working=yes] : One hand can stay busy while both ears are yours.
+line again.open : Back in the same row for a few more words.
+line hail [pair.band=friends] : Here beside me, with room for an extra elbow.
+line kin.open [pair.kin!=no] : I'd know that familiar tread across any threshold.
+line farewell : May the next patch of ground receive you kindly.
+line farewell.return : I can keep the sound of your visit awhile.
+line react.news : I'll lay that piece where there's room around it.
+line react.news.new : A new shoot among the things I knew already.
+line react.news.known : I've heard that name beside that bit of news before.
+line react.news.doubt : A familiar name can make an untested tale sound very certain.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's another glad thing worth carrying round in memory.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put a warm bowl ready before asking what happened.
+line decline : I'd rather keep that corner of somebody's life under cover.
+line accept_decline : Some ground does quite nicely left alone.
+line answer.how : Quiet as good earth, with plenty working underneath.
+line ask.how : How have things been coming along where you stand?
+line answer.how.busy [self.working=yes] : Busy at hand level. There's space above that for company.
+line thank : You've handled a little thing with real care.
+line deflect_thanks : There's room to do another good turn when you need one.
+line sympathise : If you want the warmth without the conversation, I can manage that.
+line reassure : There's plenty of time for roots before anybody sees a leaf.
+line ack : Yes, I can find that row again now.
+line preclose : Something needs a patient hand. I'd best lend one.
+line accept_preclose : Go while the way ahead is easy underfoot.
+line offer : I could mind that here while you put your hands to the other part.
+line give.advice : Ask the name once more while the speaker's still beside you.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I keep a name by imagining where I'd plant it.
+b : Which names go near the gate? | What if two names sound alike?
+a : The names that ring sharply, like a latch being lifted. | Give one the damp side of a row and the other the sunny side. A voice tells me which.
+
+scene work_1
+when topic=work self.job=herder
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like the gate to close without a bang.
+b : Does noise trouble the herd? | What if the gate sticks?
+a : Even a quiet beast prefers knowing where a sound came from. So do my knees. | Lift it a touch at the free end. Pulling harder makes a very short lesson in hinges.
+
+scene animals_1
+when topic=animals self.job=herder
+does tell.self / ask.detail / answer.detail
+a : A whole herd can stop on account of one interesting tuft.
+b : Would you hurry the first one? | Which nose began the delay?
+a : I'd see whether the tuft was all the matter. A stuck hoof looks much like a thoughtful beast from behind. | From the direction of the noses. The tail end has merely been invited to wait.
+
+scene pastimes_1
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I like a dug patch before there's anything planted in it.
+b : Expecting a good crop? | Doesn't bare earth look empty?
+a : I'm expecting the chance of one. That's a different pleasure from counting beans in a pot. | It looks as though nobody has made up its mind on its behalf.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : My stew begins with the bone getting comfortable in the pot.
+b : Wouldn't a smaller bone do? | What does a comfortable bone look like?
+a : If it fits and has a bit of meat along the edge, certainly. Dinner needn't put on a grand coat. | I can get a spoon round it without lifting the lid with my elbow.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put a cover over my tea if a little job takes me out of the room.
+b : Does it keep its heat? | What if the little job gets bigger?
+a : For a little job, yes. I judge the size of the errand by how far the warmth has gone. | Then I make fresh tea. Coming back to cold leaves does nothing for my opinion of the job.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : First snow will make a lean field look wonderfully well fed.
+b : Would you disturb the white? | How will you find your rows?
+a : Only enough to see one deep footprint. I like the contrast almost as much as the white. | I leave my stakes standing like very small patient trees.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I remember a quiet chapel by which sounds first reach me from outside.
+b : Wouldn't silence be better? | Do you pray for the ones making the noise?
+a : The distant sound is what gives the quiet its depth. Otherwise I'd hear only my breathing. | Sometimes. A little trouble carried in a voice can come quite clearly through a wall.
+
+scene work_2
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : My first lesson starts with saying a beast's name before trying to hurry anything.
+b : Is every beast named? | What does saying it accomplish?
+a : A learner can choose some plain description till the proper call has been learnt. | The voice has to slow down. A slow voice leaves the hands time to choose where they go.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'd trade seed freely with somebody who remembered what I'd given before.
+b : Are you keeping accounts? | Would you trade with a stranger?
+a : Only of what grew well. A debt sits poorly in a seed sack. | I'd start with enough for one short row and ask afterwards what came up.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : Give me a slow introduction if you want me to keep the sound of it.
+b : Won't you remember anyway? | Do I have to say it twice?
+a : Probably. I prefer having a face attached as well as a set of syllables. | Only if my mouth gets a piece wrong. It's a kindness to correct me at the start.
+
+scene land_1
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I remember the land here by the places feet have to slow down.
+b : Where's that easiest to see? | Is it the same in town?
+a : At a wet gate where every print goes carefully round the same small stone. | Quite. A queue bends round a dripping eave just like a little herd.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I let the spade stand upright while I stretch the elbow that pushed it.
+b : Are you measuring the hole? | Why not lay it flat?
+a : I'm measuring my own willingness to dig the next one. A very variable length. | I'd have to bend and pick it up. We can both wait here at our proper height.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : The one thing I distrust about a magnificent memory is the pride of its owner.
+b : Ever greeted somebody by mistake? | Wouldn't pride help you remember?
+a : Often enough to practise repeating it softly till a friendly ear stops twitching. | Not as much as a genuine wish to greet the wolf under it.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a thin week I soak old bread under a ladle of thick stew.
+b : Isn't that just bread again? | Would you give it to company?
+a : Much kinder bread. It stops trying to scrape the roof of a mouth. | In a bowl and under good broth, gladly. Never hard and naked on the plate.
+
+scene animals_2
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I can read a print much more easily than I can read the intentions behind it.
+b : What does a heel tell you? | What if the tracks run off?
+a : Something came this way and leant to one side. Fear and a sore foot can leave the same story. | Then rather less is written there than I'd hoped. That's an answer worth respecting.
+
+scene family_1
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : I'd like a young wolf going into service to take a true name through a great door.
+b : Would you seek the post yourself? | What should a House learn first?
+a : I could speak a good word. The choice ought to fit the feet that have to go inside. | How to say the name of the one who comes to work, before giving that first order.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've known the smell of a place to restore a name I thought I'd lost.
+b : Which smell works best? | What if the memory is unhappy?
+a : Turned earth. It opens every row I've ever kept in my head. | Say the name kindly and let the difficult bit have some air.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : If I leave a kettle to its own devices it writes the day's next task in steam.
+b : Do you remember it in time? | What task is that?
+a : Usually. A cold cup is a persuasive reminder to pay closer attention tomorrow. | Sit long enough to drink a whole cup while it's still worth having.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like to come upon a house from the side where its gate has worn the ground.
+b : Wouldn't the front look finer? | What does worn ground tell you?
+a : A fine front gives me less idea where a visitor ought to put a muddy boot. | Somebody comes and goes often enough to keep the path open. I'll start my introductions there.
+
+scene friends_3
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I like to bring a small plant when I visit rather than a whole account of the weather.
+b : What if there's no garden? | What if it dies?
+a : A sprig in water will do for company while we talk. A whole garden's hardly required. | Then it has done no worse than most conversations about weather, and perhaps lasted longer.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I turn a stale heel into crumbs before giving it a whole evening to trouble a tooth.
+b : What do you use the crumbs for? | Wouldn't soaking it do?
+a : A crust on top of something succulent. It can spend its hardness on the outside. | For stew, certainly. I like having two answers to one disappointment.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I once mistook a loose gate rail for the deliberate tapping of a visitor. | I'd still go and look if I heard the same little knock.
+b : Were you disappointed to find wood? | Even after finding an empty gate?
+a : A little, but a rail needing attention can make agreeable company for ten minutes. | Yes. A second visitor oughtn't to suffer because the first one was a piece of timber.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Before asking for anything I try remembering three good things I've received by name.
+b : Why three? | Do small things count?
+a : Enough to make me think past the first obvious one without holding up supper. | A warm cup has come very close to the front of my reckoning on a chilly day.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain makes very neat finger marks in a row I've just smoothed.
+b : Do you smooth them out again? | Will it harm the seed?
+a : I leave them till water has finished taking an interest. I'd be at it all day otherwise. | A little helps. If it's pouring I look to where the water can spill away.
+
+scene work_3
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I like work that leaves me one complete thought when my hands are finished.
+b : What if you get interrupted? | Do you work alone better?
+a : I put a remembered name beside the thought. Sometimes it grows back round the interruption. | I like company that knows when to listen to what the hands are doing.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new wolf's name can sound strange in my own mouth the first time.
+b : Do you pretend you got it right? | Why bother trying it aloud?
+a : I ask for the sound again and own the mistake while it's still tiny. | Because hearing your name welcomed in a strange place is worth someone's small effort.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : What was carried to me is that #topic.subject# #topic.claim#.
+b : Will the name stick in your memory? | Do you trust the claim?
+a : Most likely. I'll keep the uncertainty there beside it just as carefully. | It has roots in somebody's telling. I'd like to see more than that before calling it true.
+
+story lines [topic=pastimes]
+  : I labelled three small rows with words written on scraps of bark.
+  : A shower soaked the words away but left each piece with its own peculiar bend.
+  b : Could you still tell the rows apart?
+  : I remembered which name bent towards me when I planted it. A line can survive losing every letter.
+
+story spoon [topic=food]
+  : I stirred a rich stew with a spoon so short my cuff nearly had a share.
+  : I rolled the cuff up, took a slower turn and found a piece I'd thought gone.
+  b : Was it worth the trouble?
+  : A lovely soft onion. I gave my clean cuff the credit for having rescued it in time.
+
+story names [topic=memories]
+  : I met two new faces at one gate and placed both names in the same imaginary row.
+  : By supper I'd grown uneasy about which one should stand nearer the path.
+  b : Did you guess?
+  : Next time I welcomed both and asked them to put me straight. A minute of embarrassment bought me two sure names.
+
+story tea [topic=home]
+  : I set a lid on my tea and went to look at a patch of freshly moved soil.
+  : One interesting little hole led me to another and a third.
+  b : Was the tea still warm?
+  : A fine drink for a thirsty root. I took the hint and put fresh water on for myself.
+
+story snow [topic=weather]
+  : I walked right round a patch of first snow to keep it quite untouched.
+  : When I came to my starting point there was a tail mark across my immaculate white.
+  b : Whose tail?
+  : My own, drooping over the edge on the turns. I rather liked the field better for the signature.
+
+rule @names
+when concept=bark
+does aside
+cooldown 8h
+say Say the last syllable as carefully as the first. | Room between those names for a new one.
+
+rule @row
+when concept=bark
+does aside
+cooldown 8h
+say A peg at each end and a little hope between. | Don't tread where a seed hasn't shown yet.
+
+rule @cold
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say That's a white place to put the first careful foot. | Snow makes the marks legible without naming the walker.
+
+rule @master
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Let a learner speak the name aloud before moving on. | A quiet demonstration will leave room for a question.
+
+rule @tea
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Time to drink something while the steam's still on it. | A cupful of dusk goes better warm.
+
+rule @herd
+when concept=bark self.job=herder
+does aside
+cooldown 8h
+say Give the slow one space at the turn. | The gate needn't announce itself to the whole herd.
+dlg resident.hub : Come settle beside the names I already know.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I've kept the sound of your name quite safely.
+dlg resident.hub [here.time=dawn] : New light and an unoccupied bit of bench. Welcome to both.
+dlg resident.hub [pair.disposition=hostile|wary] : We can each keep our own patch of ground and still speak gently.
+dlg resident.job [self.job=herder] : At #self.workplace# a gate hangs between a morning's quiet and a great many moving feet.
+dlg resident.job : My idea of work is to return at evening with one thing in better condition.
+dlg resident.news [world.news] : This is what has taken root today. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The talk was that #topic.subject# #topic.claim#. My memory can hold the doubt as well as the name.
+dlg resident.bye : I hope the ground by your own gate is kind to you.
+dlg master.work : Listen to the task for a moment before tackling it. A slow first minute can save the rest of an afternoon.
+dlg master.wages : Learning brings no wage. You learn at triple speed working with me, then sell your own finished work.
+dlg master.bye : Let what you've seen settle awhile before turning it over.
+
+graft resident.hub
+choice What grows in a garden of names? -> seed_names
+node seed_names
+say Whatever a sound puts in my mind. A long curling name gets a runner bean. A quick bright one goes among the little flowers by the gate.
+choice Will I get a plant too? -> seed_yours
+choice I'll leave room for roots. -> hub
+node seed_yours
+say If I learn your name I will imagine one. You can tell me if I've given you a place with entirely the wrong amount of sun.
+choice I'll leave room for roots. -> hub
+
+graft master.learn
+choice Why ask me what I noticed first? -> seed_notice
+node seed_notice
+say Because your first look will not be mine. If I tell you what to see, I may train a perfectly useful pair of eyes out of observing anything fresh.
+choice What if I see nothing? -> seed_wait
+choice I'll take a proper look. -> learn
+node seed_wait
+say Stand quietly and see whether nothing keeps still. Very little of the working world can manage that for long.
+choice I'll take a proper look. -> learn

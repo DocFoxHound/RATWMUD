@@ -1,0 +1,257 @@
+mantle rm261
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_una_brineridge
+title the silent bar
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk marks_the_missing_beats_of_a_tune_against_a_closed_paw
+likes crisp_apples singing sharp_knife summer_evenings
+dislikes drizzle crowds
+fears wool_trodden_into_street_slush a_chorus_with_no_space_for_breath
+hopes a_dry_berth a_quiet_window_for_an_evening_song
+topics pastimes +0.5 weather +0.3 travel +0.4 gossip -0.2
+styles comfort=quiet gossip=plain refuse=gentle tease=dry
+marks oath saying
+persona #self.first# marks the rests in sea songs against a closed paw and lets a noisy room finish before offering a quiet observation.
+
+words
+oath! = Wool in the windpipe | Core and pips
+saying! = Save a breath for the end | Count the quiet part as well
+restbeat = a little squeeze of the paw | a tap against my pad
+tailnote = the last trailing note | the small note at the end
+skeinloop = a soft loop of wool | a loose woollen loop
+applecut = a pale apple crescent | a wedge with the skin on
+pipstar = a star of brown pips | five little chambers for seeds
+sillcloth = a square of dry cloth | a clean bit of old sleeve
+lowtune = a tune pitched for one | a bit of quiet humming
+dryhem = an unspotted cuff | a good dry hem
+turncord = a narrow counter cord | a short woollen tally
+faintmark = a slight nick in the wood | a shallow notch
+spunend = the tuft at the end | the soft brush of fibre
+
+any
+opinion church for 1 : One pot at the chapel can make a whole room stop worrying about supper. I like hearing the spoons start together.
+opinion newcomers for 1 : A newcomer knows tunes that haven't been worn thin round here. Sometimes the tune comes with a paying customer.
+opinion dole for 2 : That first bowl gets the hollow note out of an empty stomach. The second lets a wolf sleep.
+opinion festivals against 1 : I'd pay a small fee for a festival that kept one street free of elbows.
+opinion houses against 1 : If a House owns the clean upper window it can own the rain running off it onto the sill below.
+opinion city for 1 : Half the songs I know fit the length of my walk home. Move me and I'd have to change the music.
+
+grown
+line greet : You caught me between verses. Welcome. | I can lower the tune a little for company.
+line greet [here.time=dusk] : A little evening light left for a caller.
+line greet.return : Your voice carries well enough at that pitch. | Welcome on my side too.
+line again.open : I left a breath between our visits.
+line kin.open [pair.kin!=no] : Come within the circle. We've room for one of our own.
+line hail [pair.band=friends] : One familiar face! There's space by me.
+line farewell : Leave a little music for the walk. | May your coat get a dry hour.
+line farewell.return : I'll carry your part of the tune awhile.
+line react.news : Give me the whole verse before I hum along.
+line react.news.new : That puts my eyebrows somewhere near my ears.
+line react.news.known : Same words, almost the same tune.
+line react.news.doubt : There's a missing beat somewhere in the telling.
+line react.news.sorrow [topic.kind=death|loss|crime|theft|assault] : Would sitting a while help? I can be quiet company.
+line react.news.glad [topic.kind=work|marriage|birth] : A little more room in my chest after hearing that.
+line ask.how : Any quiet corners in your day?
+line answer.how : Getting by at a very comfortable volume.
+line sympathise : Some days all the noise finds the one sore place.
+line reassure : I'd be glad to sit through the first bit with you.
+line decline : I need a few quiet bars for myself this time.
+line accept_decline : A rest it is, then.
+line thank : You gave me breathing space. I appreciate it.
+line deflect_thanks : A little extra room costs me very little.
+line preclose : I have a small tune waiting to be finished.
+line accept_preclose : Go before the crowd fills the gap.
+line ack : That sounds true all the way through.
+
+scene heldrest
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : My paw closes without a sound halfway through my song. | There's a whole beat nobody has to hear in my favourite tune.
+b : Does the song stop there? | How do you keep your place?
+a : For a moment. Inside my paw it carries on. | With #restbeat#. If I sing straight across the rest, the last note has to run for home.
+
+scene applecross
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : Try an apple cut across the middle once. | I like the cut that puts the picture right in your paw.
+b : Across the core? | What picture's in an apple?
+a : Yes. There's #pipstar# where a lengthwise cut only gives you a dark seam. | Cut straight across the belly and the pips sit in a little star. Peel and all for the frame.
+
+scene spinin
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I ease a tie round the loose end of a skein before it goes on the shelf. | A very firm knot can make a very awkward sale.
+b : Does the wool slip out? | Surely a parcel ought to hold.
+a : If I leave it bare, it can trail right underfoot. A tie spares a lot of picking. | Until somebody buys it. Then a good loop opens without pulling the wool apart.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I prefer my crowds framed inside a square of window. | From a doorway I can count festival hats.
+b : Can you hear the music from there? | How many have you counted?
+a : Often I can hear it better. Nobody has a sleeve pressed against my ear. | Ten one year, before I recognised one hat that had gone for a second turn.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : In drizzle a dry sleeve lasts exactly till you wipe your nose. | A shower has the good sense to sound wet.
+b : What becomes of your other sleeve? | And drizzle doesn't?
+a : Save it for wishing I'd brought a cloth. | Never says a word till your collar begins to creep down your back.
+
+scene dryberth
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My best travelling dream has a berth in it that stays dry all night. | If I went to sea I'd like to wake with one dry ear.
+b : What's the destination? | Only one?
+a : Haven't fixed that. I've put a lot of thought into the mattress. | I'd sleep on it. Start with a modest ambition.
+
+scene counterhum
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : Sometimes I hum right up till a customer opens a mouth. | I can wind wool and carry a tune without giving either my whole attention.
+b : Does the customer get to finish the song? | What happens when someone asks a price?
+a : If the price is right. Anybody can have the silence for nothing. | I stop the tune. It's never done much for the arithmetic.
+
+scene dryeve
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A summer evening leaves enough light to find the very last pip on a sill. | I can get a whole quiet song in between sunset and folding my cloth.
+b : Why hunt for one pip? | Which cloth do you mean?
+a : Because it turns up under my elbow if I don't. | The one I sat on. The tune's all mine till I have to stand up.
+
+scene knife
+when topic=food self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I like a knife that starts an apple without rolling it over. | A sharp edge sends the peel down in one long piece.
+b : Is a little roll such a great nuisance? | A long peel and a bare apple?
+a : Depends how close your apple is to a table edge. | Yes. I like to put the peel back round and see how nearly the apple fits its coat.
+
+scene friend
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I'd sing with #self.friend# if there were a quiet corner. | I save one part of a round for a friend.
+b : What does the corner do for a tune? | Couldn't you sing both?
+a : Keeps it private. A song between two wolves can be quite small and still fill the space. | I could try. There'd be an impressive shortage of breath in the second half.
+
+scene newcustomer
+when topic=travel self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I like hearing which cloth a newcomer asks for first. | An unfamiliar accent makes me listen twice as hard to a plain request.
+b : Does the cloth give away the customer's home? | Are the words very different?
+a : I'd rather ask. A liking for yellow can come from anywhere. | Sometimes just one note is different. I like hearing it properly before I answer.
+
+scene sumpstairs
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I count dry treads till my feet find the damp one. | I lay #sillcloth# down before I rest my elbow on the sill.
+b : You can tell by counting? | Is the wood that rough?
+a : No, by slipping. A count gives me somewhere to stop feeling foolish and start paying attention. | The wood's fine. I'm fond of going to bed with one dry cuff.
+
+scene summoney
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : My little pile of coins makes a nicer sound than its size would suggest. | I put my apple money in a fold of cloth.
+b : Does that help at the counter? | To keep somebody from hearing it?
+a : Till I stop rattling and start paying, yes. | To remind myself it has a job already. Empty cloth can't buy fruit.
+
+scene folding
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I sometimes fold a scrap of wool round a little tune. | I wind #turncord# round two fingers to keep count.
+b : How does that work? | Count what, the turns?
+a : One fold each verse. By the time I need the cloth I've usually remembered the words. | The rests. My voice knows the words. My paw keeps track of the bits a voice can't say.
+
+scene hush
+when topic=smalltalk
+does tell.feeling / sympathise / assess
+a : When talk fills a room to the rafters I feel about as big as an apple pip. | A wolf can have plenty to say and still be waiting for a quiet patch.
+b : A little air between voices helps. | I'm happy to wait here.
+a : Yes. Once it clears I grow back to my usual size without much trouble. | It's come now. I'd like to hear where that last song of yours came from.
+
+scene roomsong
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I sing one quiet note to see how my room sounds at night. | A bare wall sends the tune straight back to me.
+b : Is it a different room by day? | Has the wall a good voice?
+a : Just busier. At night I can tell where the blanket hangs from what comes back. | Entirely dependent on mine. I owe it a little kindness.
+
+scene apprentice
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'm learning how much room to leave a bundle when it swells in wet air. | A tidy fold and a useful fold aren't always the same.
+b : Does wool take up that much room? | Which do you learn first?
+a : Enough that a snug shelf this morning could be a fight by dusk. | The useful one. It opens in a customer's paws without putting the loose end on the floor.
+
+scene seaanswer
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I know the shore by all the different sounds it puts under the same song. | Sometimes I use the water knocking against wood to find my starting beat.
+b : What sounds change? | Does the water keep good time?
+a : A knock on a hollow hull, a slap under a step. You could follow the shore with your eyes closed if you stayed seated. | For a bar or two; then it goes off to play something else.
+
+story missedrest [topic=memories self.likes=singing]
+  : I tried singing an entire turning song without taking the usual breath.
+  : I got through two verses. The third came out just thin enough to thread a needle.
+  b : Did you have to break off?
+  : On the nicest word in the song. I take my breath in the boring places now.
+
+story applestar [topic=food self.likes=crisp_apples]
+  : I set a half apple on the table with the seeds showing and went to find a cloth.
+  : When I got back the little star inside the apple had gone brown, but the pips still shone.
+  b : Did you keep the seeds to put in the ground?
+  : I ate the fruit and kept the picture. There's already more in my pocket than wants planting.
+
+story windingsong [topic=work self.job=merchant]
+  : Once I wound a small bundle to the pace of a song I barely knew.
+  : Each time I forgot the words I put another turn on in silence. By the end the bundle was twice the size I meant.
+  b : How did you measure the extra?
+  : By unwinding it. I picked a song I knew for the return trip.
+
+rule @humming
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Leave a small gap for the low note. | There's a whole beat coming with nothing in it.
+
+rule @counter
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Loose end up where it can be seen. | Give that damp skein some room.
+
+rule @mizzle
+when concept=bark self.dislikes=drizzle
+does aside
+cooldown 8h
+say Sleeves in, the wet is creeping. | One dry cuff left. Luxury.
+
+rule @market
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say A little space lets everybody see the colour. | Step clear of the bundle on the ground.
+
+dlg resident.hub : I've stopped humming. You've got my ear till the tune comes back.
+dlg resident.hub [topic.meeting=known] : Here again, #topic.player#. I was just at the quiet part.
+dlg resident.hub [pair.disposition=wary|hostile] : Please leave room between us for the end of my sentence.
+dlg resident.hub [here.time=dusk] : One little scrap of light. Enough to see each other's faces.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I have a feel for when a bundle's wound tight enough.
+dlg resident.job : There's work in doing the small part at the proper time.
+dlg resident.news [world.news] : I've heard this part clear above the humming. #world.news#.
+dlg resident.bye : Keep the spare note. I'll manage the rest.
+
+graft resident.hub
+choice What happened to the middle of your song? -> missing_bar
+node missing_bar
+say Nothing happened. That's the point of those two beats. If you run all the words together, the poor boat in the song never gets a chance to turn.
+choice How do you count it without singing? -> closed_beat
+choice Enjoy the silence. -> hub
+node closed_beat
+say Fold up your paw on the first beat. On the second, open it. Now let your breath come back with the boat. There, you could carry the next verse.
+choice Try the tune quietly. -> hub
+choice Go with the song. -> bye

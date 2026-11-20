@@ -1,0 +1,257 @@
+mantle rm312
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_jasper_bilgeford
+title the duty on a tune
+fits stage=adult|old
+prefers quarter=office class=upper
+traits temper=calm talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk leaves_a_space_in_each_hummed_verse_for_an_unentered_cargo
+likes barley_soup whittling tidy_house autumn_wind
+dislikes gulls wet_floors
+fears a_tally_without_a_margin a_table_set_askew
+hopes a_clean_set_of_sums a_letter_in_a_quiet_hour
+topics work +0.4 food +0.3 pastimes +0.4 travel +0.3 gossip -0.3
+styles comfort=discreet gossip=guarded refuse=courteous tease=dry
+marks oath saying
+persona #self.first# hums a customs tune with one unoccupied beat for an unexpected parcel, whittles small head pegs and keeps a tidy place for a letter from inland.
+
+words
+oath! = Declare the gull | Seal up the chorus
+saying! = Leave a beat for late cargo | No tariff yet on humming
+bar = my spare beat | the silent bar
+tune = a quiet hauling air | my half-hummed tune
+peg = the little head peg | a rounded wooden pin
+charge = the entered charge | a neat duty mark
+flag = a rag of sailcloth | the small blue pennant
+grain = a barley pearl | one soft grain of barley
+bowl = a plain soup bowl | my wide-lipped bowl
+vine = a cut vine curl | a scrap of old vine
+hollow = the shallow notch | an idle groove
+roll = the short paper roll | my tally slip
+towel = a linen square | a clean wringing cloth
+case = a little wooden trough | the long narrow tray
+
+any
+opinion @1 watch for 1 : A quiet night is easier to appreciate when one sees how much unremarked attention is spent securing it.
+opinion @2 houses for 1 : Somebody must keep the great cranes in a state fit to lift more than the poetry of trade.
+opinion @3 strangers for 1 : A stranger who shares barley soup with me has advanced considerably further than mere introduction.
+opinion @4 city for 1 : Ridgemere has a whole chorus of occupations. I generally listen for the quieter instruments.
+opinion @5 road for 1 : Fresh news of inland weather does wonders for a mind grown a little too accustomed to salt.
+opinion @6 festivals for 1 : I like a song a whole square can sing without reference to a rate book.
+
+grown
+line @1 greet [pair.band=strangers] : Your arrival has been observed with pleasure. | Welcome to a quiet seat beside my long table.
+line @2 greet [here.time=dawn] : Morning. The sums have yet to reach a chorus. | A fine light for a first acquaintance.
+line @3 greet [here.weather=rain] : A wet arrival. Your company comes free of water charges. | Come within reach of a decent towel.
+line @4 greet.return : A civil opening duly received. | Your kind greeting finds a ready ear.
+line @5 greet.return [pair.band=friends|family] : A familiar note needs no declaration. | I have left a place in the tune for you.
+line @6 farewell : A clear entry at your next landing. | May your parcel arrive quite as it left.
+line @7 farewell.return : Your passage is free of further ceremony. | I'll leave you to travel on that agreeable note.
+line @8 again.open : The refrain has brought you round again. | A repeat entry with no additional charge.
+line @9 kin.open [pair.kin!=no] : Family may come through without reference to the register. | Closer. The family table needs no music to announce it.
+line @10 hail [pair.band=friends] : This way, by the unclaimed place! | I've a free note in the chorus here!
+line @11 react.news : I'll hear the particulars before I undertake the chorus. | Give me the quiet item under the loud report.
+line @12 react.news.new : An entry I should certainly have remembered seeing. | There's fresh ink for the day's account.
+line @13 react.news.known : The earlier entry reads much the same. | That tune has come through once under another flag.
+line @14 react.news.doubt : I should like to see what supports that unusually buoyant claim. | There seems to be more singing than shipping behind the account.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : There's a silence a sensible wolf leaves unfilled. | Please take the chair. There's no hurry over sad news.
+line @16 react.news.glad [topic.kind=birth|marriage] : A word fit for a handsome place in our chorus. | Delightful. That's an entry left happily underlined.
+line @17 answer.how : In reasonable harmony with the furniture. | On balance, a pleasant little surplus of patience.
+line @18 decline : I should be charging my time to two accounts if I agreed. | I fear my available column falls somewhat short of that undertaking.
+line @19 accept_decline : Perfectly orderly. I'll close the entry. | I take the reason as fully your own.
+line @20 sympathise : Let us put the noise of business quite aside for a moment. | There's a chair whose only duty is to hold you quietly.
+line @21 thank : Please count me properly obliged for that. | A kindness worth giving the full melody.
+line @22 deflect_thanks : There was room for it in the unoccupied bar. | No duty owing on that small assistance.
+line @23 preclose : I must attend to the small remainder of my day. | A quiet piece of business is clearing its throat.
+line @24 accept_preclose : Your release appears to be perfectly in order. | I shall hum my concluding bars in private.
+line @25 farewell [here.time=night] : Enjoy a night with no business knocking at the shutters. | May the quay fall suitably silent.
+
+scene unfilled
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I leave #bar# in every verse of #tune#. | My humming occasionally carries a space for unlisted goods.
+b : What goods could get in between two notes? | Could you identify a truly empty bar?
+a : A stray little parcel somebody's quite forgotten to reckon. Keeps the line honest. | Certainly. One can hear the gulls trying to submit a claim.
+
+scene soupgrain
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : A good #grain# will roll twice round #bowl# before settling. | I enjoy being able to see the individual grains in my lunch.
+b : Do you count them before you eat? | Is a thick broth disqualified?
+a : I retire from counting at the first spoonful. It is an entirely private office. | Only if it asks to be described as a drink.
+
+scene tidy
+when topic=pastimes self.likes=tidy_house
+does tell.self / react.self / assess
+a : I find a hook exactly level with its neighbour rather restful. | Everything on my table lives within a courteous distance of everything else.
+b : Wouldn't a tilted hook hold a hat just as well? | Even the jug and its cup?
+a : Yes. I should spend supper apologising to its neighbour, though. | Particularly those two. Rude encounters tend to leave a mark.
+
+scene pegcarve
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I cut #peg# until its head will sit comfortably against a collar. | A scrap of wood produces an admirable hat peg if approached discreetly.
+b : Do you try it on your own collar? | How does the wood express a preference?
+a : I keep it against my cuff for a minute. A rough bit makes itself known. | A knot in the head suggests a broader sort of hat.
+
+scene wind
+when topic=season here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : Autumn puts #flag# through a lively rehearsal. | I judge the autumn wind by what it proposes doing with my papers.
+b : A rehearsal for what occasion? | What has it proposed today?
+a : Its winter career as a thing best heard through shutters. | Filing them along the quay in the broadest possible arrangement.
+
+scene gulls
+when topic=smalltalk self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : Gulls would declare their entire cargo as appetite if given a form. | I consider the gull to be a singularly ill-organised choir.
+b : At least the declaration would be true. | Lacks a conductor, I suppose?
+a : Yes, but I doubt a single sheet would accommodate the claim. | Several dozen conductors. That's the difficulty.
+
+scene floor
+when topic=smalltalk self.dislikes=wet_floors
+does ask.advice / give.advice / assess
+a : How might one distinguish a freshly polished board from an unfortunately flooded one? | What's a tolerable remedy for the puddle one's too dignified to notice?
+b : Try an unused corner of your cuff. | Offer it a dry piece of cloth.
+a : #towel# will stand in for the cuff. I have plans for both sleeves. | A towel accepts the dignity of office remarkably well.
+
+scene customs
+when topic=work self.job=none self.working=yes self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words#. I hum to keep separate the goods I see and those somebody expects me to see. | #self.trade_words#. That is the nature of my business. I leave time to look below a clean covering.
+b : How can a tune distinguish cargo? | Wouldn't the description on top suffice?
+a : One note for a parcel present. #bar# for the doubtful one. | A description may float quite freely above the particulars beneath.
+
+scene wealth
+when topic=prices self.wealth=rich
+does give.opinion / disagree / concede
+a : I can afford the better paper. That doesn't entitle me to charge a poorer wolf for reading it. | An ample purse should purchase the time to listen to a small objection.
+b : Then what is the use of a handsome account book? | Suppose the objection prolongs your evening.
+a : To make the figure visible without having to purchase the identical explanation twice. | A warm supper will tolerate delay better than a cold wolf will.
+
+scene letters
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I should like news on paper that still smells faintly of the vineyard. | I reserve one corner of #case# for inland news.
+b : Would you read it before the customs list? | What would fit in so narrow a space?
+a : After. The anticipation rather improves the last few columns. | A kind word travels on very little timber.
+
+scene pal
+when topic=friends self.friend
+does offer / accept / assess
+a : I'd certainly set a second bowl out for #self.friend#. There's room for a tasting spoon besides. | The best place by my quiet shelf is reserved for #self.friend#. Sit here beside it.
+b : I could manage a taste of your barley. | I'll leave room for company.
+a : A good taste. No convincing duty on seconds has crossed my desk. | Just so. A well-arranged table believes in the possibility of new arrivals.
+
+scene office
+when topic=land self.quarter=office
+does tell.self / react.self / assess
+a : The Office has a remarkable collection of straight lines with wet pawprints between them. | Evening in the Office suits a quiet hum beneath one's breath.
+b : Which would you erase first? | Does an official key exist?
+a : The prints, with a cloth. One must earn one's straight lines. | Somewhere between an ink pot and the rumble of an overdue dinner.
+
+scene waterwalk
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : Seen from the wharf, Ridgemere looks like a set of goods stacked by weight in reverse. | Water beneath the city noises sounds like a low sung note.
+b : Isn't it all a little top-heavy? | Can you follow the note home?
+a : A trifle. I'm rather glad the hillside provides structural support. | For a good way. When it drops out, I know how the tune goes.
+
+scene times
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Another ladleful here if the week has taken too deep a cut. | I shall count a whole cup into the common pot if you have a hand free.
+b : Gladly. I can return the bowl quite clean. | I'll carry the cup over brimming.
+a : That will settle our accounts more than adequately. | Leave a lip of room. No need to invite the paving stones to dinner.
+
+scene vine
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : #vine# can survive between folded pages for a remarkably long passage. | I've seen pruning wood sent rolled into a scrap of paper.
+b : What use is a dry curl after all that time? | Was that a cargo worth declaring?
+a : A little inland sun remaining on a grey wet day seems use enough. | Only to the wolf to whom the letter was addressed.
+
+scene nightload
+when topic=travel world.wagons=late
+does tell.worry / reassure / assess
+a : A late wagon makes a low note as a long afternoon draws to a close. | There is one difficulty with letting a delayed load worry the entire office.
+b : Can you tell it from an ordinary wheel at that distance? | How would you share the worry otherwise?
+a : Only by the way every ear in attendance tilts toward the door. | Leave one clerk listening near the entry and let the others finish supper.
+
+scene smallwood
+when topic=pastimes
+does tell.plan / ask.detail / answer.detail
+a : I mean to fit #hollow# to the curve of this pen exactly. | I'll see whether this shaving can hold a sheet without leaving a bruise.
+b : For carrying ink inland? | How will you try the pressure?
+a : Merely so my pen can't try to accompany the next roll to sea. | On #roll# from yesterday. Today has suffered enough inspections.
+
+scene seaseat
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd like one afternoon to hear the tune from a deck with no figures attached. | A quiet supper by water seems about the right ambition for a working tune.
+b : Do you want a berth very far away? | Would you bring the whole song?
+a : One trip across a sunny patch would be adventure enough. | Everything but the accounts. I try to give the figures an evening off.
+
+story undeclared_song [topic=lore]
+  : A singer in an old tale crossed a harbour with nothing to declare except a song about a cargo of spice.
+  : The collector listened right through and presented a bill for six sacks of cinnamon.
+  b : What did the singer pay?
+  : Six carefully hummed coppers. On both sides the account bore an excellent resemblance to money.
+
+story wandering_spoon [topic=food]
+  : I laid my soup spoon across a bowl and began fitting a wooden peg. When I looked up the spoon had vanished.
+  : I listened in case it had struck the floor. A little barley bubble burst instead.
+  b : The spoon was under the broth?
+  : Precisely. The handles of things require rather better support than their sense of duty.
+
+story paper_vine [topic=travel]
+  : I unfolded an inland letter and a piece of dried vine came rolling out. It stood on the desk like a very small wolf with bowed ears.
+  : I carved a small wooden support for its reluctant hind legs.
+  b : Does it stand properly now?
+  : Quite. I've provided it with a scrap of paper pasture where no tariff can disturb it.
+
+rule @hum
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say An empty bar for the late item. | Quiet enough to hear the figure clearly.
+
+rule @bowl
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say The barley has cleared its inspection. | No assessment on the second spoonful.
+
+rule @floor
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The board has a rather liquid polish. | A little towelling is indicated here.
+
+rule @leaf
+when concept=bark here.season=autumn
+does aside
+cooldown 8h
+say Quite a brisk revision of the leaf order. | The wind's been at the filing again.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I am between entries. What might I enter for you?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can set the records aside for an agreeable interruption.
+dlg @3 resident.hub [here.time=night] : Business may speak softly at this hour. Its hearing is unimpaired.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : A clear statement, please. Volume does little for a doubtful account.
+dlg @5 resident.job [self.job=none self.trade_words] : #self.trade_words#. What I most require in a parcel is some resemblance to its written description.
+dlg @6 resident.job : I find quiet attention a considerable part of any occupation.
+dlg @7 resident.bye : Your departure will require no additional entry.
+
+graft resident.hub
+choice I missed a note in that tune. -> missing_tariff
+node missing_tariff
+say Quite deliberately. There is so often something the written description fails to mention that I have reserved part of a bar specifically for it.
+choice Could it ever carry something pleasant? -> kind_cargo
+choice I shall leave the music to you. -> hub
+node kind_cargo
+say It sometimes carries a letter from inland. There is a world of difference between an undeclared crate and an unexpected kindness.
+choice I appreciate the distinction. -> hub
+choice I wish you a pleasant delivery. -> bye

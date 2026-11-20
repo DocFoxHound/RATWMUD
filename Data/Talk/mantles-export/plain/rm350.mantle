@@ -1,0 +1,259 @@
+mantle rm350
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_erland_fogley
+title the candle bouts
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk times_a_wrestling_bout_by_a_notch_in_a_candle
+likes blackberries wrestling new_boots warm_rain
+dislikes gulls early_bells
+fears a_boot_turning_on_its_heel a_debt_called_in_before_breakfast
+hopes a_pair_of_even_boots a_full_evening_before_the_bell
+topics pastimes +0.5 day +0.4 food +0.3
+styles comfort=practical gossip=reserved refuse=plain tease=dry
+marks oath saying
+persona #self.first# measures wrestling bouts against a candle notch and regards waking before the bell as a small victory better enjoyed in silence.
+
+words
+oath! = Twisted taper | Wax on my tongue
+saying! = Let the wax judge the bout | A quiet fall earns its rest
+boutlight = my bout candle | the wrestlers' taper
+cutmark = a neat crosscut | one thumb nick
+matchcup = the tin candle foot | my shallow wax cup
+waxrun = one pale run of wax | a tallow curl
+goodboot = a firm new heel | a boot without a cant
+softfall = a fall on the flat | a rolling fall
+berrycup = my dark berry mug | a cup of staining berries
+drizzlecap = a folded hood | a round wool cap
+ashwick = the blackened wick | a smouldering twist
+ringedge = the outside chalk curl | a pale ring edge
+
+any
+opinion city for 1 : One lane gives me a living and another a place to fall over for pleasure. I'd call that a tolerable arrangement.
+opinion houses against 1 : A fine House lamp burns no brighter for naming the wolf who paid for the wick. There's a second wolf who tends it.
+opinion merchants against 1 : I've seen a price melt quicker than my taper, always just after I had paid.
+opinion sump against 1 : There's more elbowing for room in the narrow Sump yards than would suit me of an evening.
+opinion festivals mixed 0 : I like a proper bout with a clear edge. A crowd with no clear edge takes some of the pleasure off it.
+
+grown
+line greet : Stay on the lit side. Welcome.
+line greet [pair.band=strangers] : Plenty of standing room beyond the little tin.
+line greet [here.time=dawn] : I'll give you an early word in preference to an early bell.
+line greet [here.time=dusk|night] : The light's low enough for plain speaking.
+line greet [self.working=yes] : I've a twist of wick to finish. Welcome from here.
+line kin.open [pair.kin!=no] : There's a quiet seat kept for the familiar rump.
+line again.open : Back inside the space of one short candle.
+line greet.return : I heard you just beyond the wax cup.
+line greet.return [pair.band=friends|family] : That greeting came in on both feet.
+line greet.return [self.working=yes] : Your voice comes clear across a benchful of work.
+line greet.return [here.time=dusk|night] : Answering softly from beside the little glow.
+line farewell : Take your best heel home with you.
+line farewell.return : I'll see the last of this wax burn down.
+line react.news : Give me the part you'd bet your sound boot on.
+line react.news.new : That's a fresh notch on my measure.
+line react.news.known : I had the first fall of that story already.
+line react.news.doubt : Who stayed till the last bit burned away?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd take a silent shift alongside that wolf.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : An extra handful of berries would suit news like that.
+line answer.how : Steady on my feet. That's the half I generally need.
+line ask.how : Any quiet left in your day between duties?
+line sympathise : Some falls you feel the morning afterwards.
+line reassure : A little rest won't cost you the bout.
+line decline : I'd have to get up early to risk anything that foolish.
+line accept_decline : Yours to leave alone. I'll mind the wick.
+line thank : Thanks. I felt the strain come off my heel.
+line deflect_thanks : Spare the bows. You're welcome to it.
+line preclose : I've wax enough for one more little matter elsewhere.
+line accept_preclose : Out of the ring with both feet up, then.
+line ack : Firm heel.
+
+scene candle
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I nick a candle to measure how long a bout lasts.
+b : Do you watch the flame while you're wrestling? | What if the candle goes out?
+a : I leave an eye outside the ring to do that part. I have a closer pair of shoulders to attend to. | Then the dark gets the last fall and the wrestlers shake paws.
+
+scene newheel
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : I test fresh boot heels against a flat board before putting either on.
+b : Checking the heels? | Do you knock the toes together?
+a : One crooked heel makes two uneven legs. I'd like a fair chance to do my own stumbling. | Only to check the shoes aren't empty when I get down to counting myself ready.
+
+scene waxwork
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I draw the loose wick upright before I handle the wax.
+b : Does a crooked wick spoil a light? | Before the wax is soft?
+a : It can lean and burn a short way out the side. A candle ought to use its own full length. | Before I have both paws covered. Experience has given me some quite adhesive wisdom.
+
+scene berries
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : The ripest blackberry ought to leave a good dark mark on a clean cup.
+b : Do you mind the stain? | Would it do for marking the taper?
+a : It tells me supper had a fine beginning. The cup is not overly proud. | Briefly. Wax survives a tickle with a knife better than a dab of fruit.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : After warm rain I wait for the grass to stand up before a bout.
+b : Is it still slippery? | Doesn't a wet fall land softer?
+a : Yes. I'm there to take a fall honestly, not borrow one from the ground. | Sometimes. Then the next wolf has to wrestle the mud where I landed.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull finds a berry cup interesting till it discovers there isn't any fish underneath.
+b : Does it leave quietly? | Do you let it look?
+a : It leaves without paying, and with a good deal to say about the service. | From safely beyond the closed lid. No need for us to get more intimately acquainted.
+
+scene bells
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : I count the early bell strokes in anticipation of the one that stays silent.
+b : The one after the last? | Can that send you back into a doze?
+a : Yes. A beautifully peaceful stroke if you listen for it. | I like to lie and hear what that final echo finally gives up shouting about.
+
+scene houselane
+when topic=land self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : A long Estate passage lets a smell of candle wax make a fine slow journey.
+b : Does the scent go upstairs? | Can you tell a recently lit lamp?
+a : If the doors are open. Smells make fewer distinctions about who belongs where than some callers do. | By the little sharp edge to the air. A long-settled light has a sweeter smell.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I save the least smoky light for the evening with #self.spouse#.
+b : Would you keep it burning late? | Where do you set it?
+a : Long enough for a good look at a familiar face. Sleep's a fair use of the rest. | Within an easy reach of our chairs. A small light deserves a little forethought.
+
+scene friendbout
+when topic=pastimes self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd lend #self.friend# my candle cup for a quiet match.
+b : Is the cup lucky? | What would you count as a quiet match?
+a : Extremely. Never been on its back in the ring yet. | One where the loudest sound is two civil wolves trying to remember where the ground went.
+
+scene wearout
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn a boot over to see where the last walk went hardest.
+b : Can you read a street in the leather? | How does that help your feet?
+a : Mostly I read the way I walked it. One heel's often more impatient than the other. | It tells me which one to spare a little this evening. Feet have memories.
+
+scene market
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A new candle and a short old candle can look very alike in a tall cup.
+b : Would you pay the same? | Can you judge by weight?
+a : Only after I've seen the base. I prefer the part I purchase to the part somebody's already enjoyed. | With similar wax, yes. One small twist comes out of the cup as easily as the truth.
+
+scene fatstain
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put a chipped saucer under the wax cup.
+b : Why use two dishes? | Wouldn't a cloth catch the drips?
+a : The little cup catches the first run. The saucer admits the possibility of a second opinion. | It would. Then I'd have a waxed cloth where I wanted an unwaxed one.
+
+scene chalkrift
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember the outline of the first ring I drew better than anybody I faced in it.
+b : Was it round? | Could you win in such a ring?
+a : As round as tired string and one firm post could make it. One side was ambitious. | Certainly. You just had to remember which elbow was nearest the ambitious side.
+
+scene debts
+when topic=prices self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : A debt's a poor referee. It keeps declaring the bout unfinished.
+b : Would paying a little quiet it? | Does it ring an early bell?
+a : A little, if I have a dated receipt for the little I've paid. | It does its best. I like a clear account to keep noisy arithmetic out of my bed.
+
+scene duskturn
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk a flame throws wrestlers twice as tall onto a wall.
+b : Who wins up there? | Is it worth watching?
+a : The shadow gets there first. Generally it gets up again in better spirits. | Only from outside the ring. Looking at my shadow mid-bout would put me under it in short order.
+
+scene twist
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In my dreams a candle sometimes burns upwards.
+b : Where does the flame go? | Does the candle get longer?
+a : Starts at the tin and climbs the wick till it's reached the ceiling. Makes a good clean sweep of the corners. | Considerably. I'd have to bill the dreamer for the extra work.
+
+scene wickend
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : A clean-cut wick end is very satisfying to look at.
+b : How soon does the fine shape change? | Does a neat end help?
+a : Till somebody wants light. It's a modest sort of pride. | It keeps the first little flame where you meant it to be. After that the world gets its say.
+
+story earlywin [topic=memories]
+  : I got through a whole morning once without hearing the early bells. I fancied the city had done me a remarkable kindness.
+  : My hood came off to reveal two scraps of soft wool were sitting in my ears.
+  b : Did you keep them for the next morning?
+  : Into my pocket went the pair. I am all for a kindness a wolf can arrange without troubling the whole city.
+
+story lostbout [topic=pastimes self.likes=wrestling]
+  : I wrestled once beside a candle that burned crooked. We went a great deal longer than I'd bargained for.
+  : My legs started an argument about which should carry the other home.
+  b : What stopped the bout?
+  : The pool of wax finally reached the nick from the wrong side. We were both perfectly willing to accept its verdict.
+
+story berriesboot [topic=food self.likes=blackberries]
+  : I spilt three berries down a new boot and got two of the three straight out.
+  : The third stayed hidden until I'd reached a quiet hedge where I could take the thing off.
+  b : Was your foot sore?
+  : Very purple and not particularly sore. I'd have preferred the colour in a bowl.
+
+rule @wick
+when concept=bark self.job=laborer self.working=yes
+does aside
+cooldown 8h
+say One trim end before lighting up. | Keep the wax tray level.
+
+rule @boots
+when concept=bark self.likes=new_boots
+does aside
+cooldown 8h
+say Both heels on a board that sits true. | Give the sole a little room to flex.
+
+rule @sun
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One more echo and the day's our own. | Let the sleepers take the quiet stroke.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wet grass needs a wiser pair of feet. | Cover the wax in a shower!
+dlg resident.hub : Have a little patch of light and tell me the occasion.
+dlg resident.hub [topic.meeting=known] : Room inside my candle's reach for you, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : We can both keep our feet on the ground while you speak.
+dlg resident.hub [here.time=night] : It's a quiet enough hour to give our voices a rest between words.
+dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. A small steady flame suits the pace I set about things.
+dlg resident.job : I finish the quiet pieces that get forgotten at the loud end of the job.
+dlg resident.news [world.news] : Somebody waited out the noise to bring this. #world.news#.
+dlg resident.bye : Leave the wax with me and carry the warmth along.
+
+graft @boutnotch resident.hub
+choice How do you mark the length of a wrestling bout? -> boutnotch
+node boutnotch
+say I pick a short nick below the wick, depending how much wrestling two wolves have in mind. If either calls an end before the flame gets there that's enough.
+choice Does the candle settle a dispute? -> boutnotch_more
+choice Admire the pale notch. -> hub
+node boutnotch_more
+say It settles whether the time ran out. For nearly everything else I trust either wolf's good sense. The candle has little knowledge of a bruised knee.
+choice Admire the pale notch. -> hub
+choice Go while the candle burns. -> bye

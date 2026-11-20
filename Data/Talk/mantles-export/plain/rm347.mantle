@@ -1,0 +1,254 @@
+mantle rm347
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_pell_barleymead
+title the count after the churn
+fits stage=adult|old
+prefers job=none
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk counts_one_extra_turn_for_an_unheard_petition
+likes spiced_cider draughts old_maps first_snow
+dislikes rats smoke
+fears being_ruled_out_before_the_first_word
+hopes a_count_that_includes_the_lowest_voice
+topics work +0.6 food +0.4 pastimes +0.4 times +0.3
+styles comfort=frank gossip=expansive refuse=direct tease=none
+marks oath saying
+persona #self.first# counts the turns inside the churn under one breath and spends the next breath making sure even the last wolf in line is heard.
+
+words
+oath! = Churn my buttons | Skim the tally clean
+saying! = Butter can't be ordered out by a show of paws | The last stroke gets the same count as the first
+dash = a straight dash | a stout dasher
+cream = the thick cream | a pale churnful
+knock = a hollow knock | a double knock
+patter = a quick soft patter | a splashy beat
+print = a butter print | a carved block
+cup = a brown cider cup | a chipped mug
+mapscrap = a torn street plan | my folded map
+disk = a little wooden disk | a draughts piece
+flake = a broad white flake | a tuft of snow
+grip = the worn grip | a smooth handle
+lid = the churn lid | a wooden cover
+pip = a little mark | a deep count notch
+
+any
+opinion houses against 3 : I brought the Council a matter I could count on my fingers. It appears some benches use different arithmetic.
+opinion dole for 2 : A short portion hiding under the rim is still a portion short, no matter how cheerful the server.
+opinion sump for 1 : The low streets know what a long churn of a day costs the one holding the handle.
+opinion merchants mixed 1 : Weigh the butter after taking the stamp off. Both of us will know what changed paws.
+opinion watch mixed 1 : I like an account with as many names going out as came in.
+opinion festivals for 1 : A crowd can sing the last number of a count better than I can mutter it.
+
+grown
+line greet : Here you are. I can count my company aloud. | Step clear of my working elbow.
+line greet.return : Your greeting makes two good voices in this space. | A plain welcome back from me.
+line again.open : Another turn brings you round already.
+line farewell : Get home with enough strength left for supper. | Count yourself a dry seat at the other end.
+line farewell.return : And may your last mile be the shorter one. | I'll remember that kindness at the next count.
+line react.news : Speak up. I keep better count when I hear properly. | Lay the whole reckonable part before me.
+line react.news.new : Something new to put under my breath.
+line react.news.known : I remember the tally from the first hearing.
+line react.news.doubt : That count won't fill the vessel claimed for it.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'd trade every number I know for one less wolf hurt.
+line react.news.glad [topic.kind=birth|marriage|work] : A better sum than I was braced to hear.
+line ask.how : Any loose counts rattling in your head?
+line answer.how : Steady enough on the working stroke.
+line sympathise : Sit where you can talk without having to repeat it.
+line reassure : Start counting again after a rest if you need one.
+line refuse : My hands have another claim coming due this hour.
+line accept_decline : Fair decision. No second ballot called for.
+line preclose : I'm due back at my own end of the count.
+line accept_preclose : Go on. I'll mind the count till later.
+line ack : Loud and plain. I have it.
+
+scene exchange1
+when topic=work self.job=none self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I know the butter's turning by the handle. | I mutter each turn while the dash works.
+b : Gets heavier? | Does butter respect a count?
+a : It gives a little hop before it drags. | No. The counting keeps me from bullying it.
+
+scene exchange2
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I like cider with spice that hangs against the tongue. | I turn the mug round once before a draught.
+b : How many spices do you taste? | Another counting habit?
+a : Two before swallowing. The last turns up late. | It's cracked on the other lip.
+
+scene exchange3
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I move a draught with one finger. | I count the empty squares first.
+b : Any advantage doing that? | What about the pieces?
+a : It stops the rest of my paw giving away where I'm looking. | The empty ones are where my chance lies.
+
+scene exchange4
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Old maps are good for counting vanished turns. | The maps I like have a ragged edge below.
+b : What happens to those turns? | Why keep one like that?
+a : They keep working on the page after the road's straightened out. | Looks like more country lies just beyond it.
+
+scene exchange5
+when topic=season self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : I can count the first snowflakes. | Fresh snow gives my voice a softer wall to hit.
+b : Every last one? | Still counting?
+a : Up to about twelve. Then it's nothing but a pleasant white confusion. | Yes. Nobody more than a few steps away can hear the mistakes.
+
+scene exchange6
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat in the pantry counts the same bundle twice. | I put the churn lid down before looking round for rats.
+b : How so? | Why that order?
+a : A bite for supper and another hole for showing up tomorrow. | I'd rather find one outside the cream.
+
+scene exchange7
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke adds a nasty extra flavour to the first breath. | I can count through work noise easier than smoke.
+b : And the butter? | How does smoke affect counting?
+a : Especially that. I cover the churn before I cough. | The cough cuts a figure clean in two.
+
+scene exchange8
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I didn't go to the Council to practise losing an argument. | I can see the Council bench with my eyes closed.
+b : Did you lose it? | What did you hope to see there?
+a : I lost the petition. The argument's still here. | One face paying the last part of my request some attention.
+
+scene exchange9
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I dry my boots with the holes turned out. | I keep the map under the lid of a dry box.
+b : Got many holes? | Would you frame it?
+a : Only two. The honest sort that feet go through. | I'd rather take it out and fret the folds myself.
+
+scene exchange10
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : An honest pat of butter shows its worth on the bread. | I notice when prices go up by little steps.
+b : Only by tasting? | Hard to remember each one?
+a : Spread it to the edges. The corners count too. | Easy as counting strokes. Harder on my purse.
+
+scene exchange11
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : They say #topic.subject# #topic.claim#. I heard one voice carry it. | A claim goes into my head carrying a little question mark.
+b : And a second? | For truth?
+a : I won't count an echo as a witness. | For the number of ears it passed through before mine.
+
+scene exchange12
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times squeeze the pats thinner. | When work pays poorly I count every bit of buttermilk.
+b : Can you tell at a glance? | Worth keeping?
+a : I can tell at a spreading. | There's a second supper hiding in the bottom of that churn.
+
+scene exchange13
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I count the turns on a walk for a change. | I like directions with the steep bit named.
+b : From counting the churn? | So you can avoid it?
+a : A lane can turn left. My handle's never done that yet. | So I can take a breath before I set about it.
+
+scene exchange14
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : If I give thanks for dinner I include the stirring. | I can pray under my breath without confusing it with the count.
+b : And the cow? | How can you tell?
+a : From the first green blade if the meal's worth a full account. | I stop waiting for the next number.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Northgate air goes soft over the slope. | I judge a city street by the room left for a handcart.
+b : Do you feel it on your walk? | What about a pair of wolves?
+a : I hear familiar roofs stop throwing back the sound of my steps. | We can turn sideways. A churn on wheels is less obliging.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a hearing without the tall bench between us. | I should like a churn built for two different heights.
+b : What would you say then? | Would you share the work?
+a : The same words. I'd be able to see if they landed. | Yes, and the first good taste to come off the paddle.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I change hands before the shoulder starts grumbling. | I keep the wrists warm before work.
+b : Does either side mind? | In cold water?
+a : Only the one not in charge of supper. | Round the outside of the cider cup where it does two jobs at once.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I stop counting when I straighten my apron to leave. | At night the churn knocks on inside my head.
+b : Can you really stop? | Does that keep you awake?
+a : No, but I can refrain from counting aloud. | I let the knocks get farther apart in my head. Works well enough.
+
+story tale1 [topic=work self.job=none]
+  : I once carved a count mark every ten strokes on a little stick. Lost count of the marks while measuring my next ten strokes.
+  : The butter arrived before I had settled the question.
+  b : What did the stick finally record?
+  : How much wood I could ruin while a perfectly serviceable churn did its bit. I use my breath now.
+
+story tale2 [topic=pastimes self.likes=draughts]
+  : I found a round piece under the leg of my stool and pressed it straight into a draughts game.
+  : The board sat level and the stool began to rock with great enthusiasm.
+  b : Did you finish the game?
+  : Won it standing up. I put the piece back before anybody invited me to sit and celebrate.
+
+story tale3 [topic=memories]
+  : I practised a speech so loudly in a pail shed that the little hollow pails answered the final word. It sounded like quite a number of supporters.
+  : Then I stepped outside and found that last word had nowhere to ring.
+  b : Did you change the ending?
+  : I shortened it. If a word wants a roomful of tin to sound important, the speech has a problem.
+
+rule @call1
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Solid sound coming back through the handle. | Hold the lid down for the next long stroke.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First count belongs to the daylight. | No smoke between me and this clean breath.
+
+rule @call3
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Shut the meal bin before the visitors count themselves in. | Tidy lid, quiet night.
+
+rule @call4
+when concept=bark self.likes=first_snow
+does aside
+cooldown 8h
+say A couple of white flakes would cover all those wrong turns. | I'm waiting for the year's first clean sheet from the sky.
+dlg resident.hub : You get the aloud part of my attention. The count can stay quiet.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your name already has a tidy place in my reckoning.
+dlg resident.hub [here.time=night] : I've run the day down to its quietest strokes.
+dlg resident.hub [pair.disposition=wary|hostile] : No need to dress it up. I can add a plain statement.
+dlg resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. I keep at the handle till the sound changes.
+dlg resident.job : I like work that gives me one good honest thing to put down at the finish.
+dlg resident.news [world.news] : The part I counted on my own ears was #world.news#.
+dlg resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. I've counted no evidence beyond the telling.
+dlg resident.bye : Go with the right number of errands still in your pocket.
+
+graft resident.hub
+choice Does a fixed count make butter? -> churn_count
+node churn_count
+say I wish it did. I'd do the arithmetic over breakfast. Cream has its moods. The count is for the wolf on the handle.
+free
+choice What do you count once it turns? -> churn_count_again
+choice Goodbye. -> bye
+node churn_count_again
+say One more stroke to make certain. Then I count how many clean boards are ready to take it.
+choice I'll leave you to the last stroke. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,282 @@
+mantle rm231
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_signe_brineworth
+title the dry peg
+fits stage=adult|old
+prefers job=laborer honesty=frank
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk tests_a_sheltered_peg_at_the_end_of_a_shower
+likes pickled_herring dice full_larder autumn_wind
+dislikes waiting gulls
+fears a_week_spent_waiting
+hopes room_for_a_spare_shelf
+topics weather +0.6 food +0.4 work +0.3 gossip -0.4
+styles comfort=plain gossip=brisk refuse=flat tease=none
+marks oath saying
+persona #self.first# puts a peg within reach of a dripping eave and makes the time before the last drop pay for itself.
+
+words
+oath! = Split my best basket | Seven little gulls
+saying! = A dry peg earns its hook | Count the jars with the lids off
+peg = my spare peg | the little wooden clip
+shelf = the back shelf | the narrow ledge
+die = a square bone die | a cube of horn
+pips = the black dots | those little holes
+jar = the herring crock | a salt-stained jar
+cover = a folded cloth | the heavy lid
+gull = a pale thief | a white-winged nuisance
+autumn = a rough autumn blow | the first leaf-stripping gale
+larders = rows of jars | covered crocks
+rinse = clean rinse water | the last clear dip
+ticket = a bit of knotted string | a little tally of knots
+rest = the length of one good stretch | five quiet breaths
+
+any
+opinion houses against 1 : When a House raises rent on a place with a rotten sill I'd have the cost of the draught deducted.
+opinion merchants against 1 : Don't weigh me the crock and charge the whole lot as fish.
+opinion sump for 1 : There's somewhere down our way to rest a basket without getting ordered off the step.
+opinion dole for 1 : Some weeks there's more month than bread. A share from the dole covers the difference.
+opinion watch against 1 : Boots on the stairs at night. I'd like those to mean help more often.
+opinion festivals mixed 0 : I'll take the windfall of a day off. Folk can have my place in the procession.
+grown
+line greet : Right. You've got my attention and both my ears. | There's a minute going spare. Hello.
+line greet [pair.band=strangers] : You'll find me quite plain-spoken. | First time seeing you. I'll do you the courtesy of listening.
+line greet [here.time=dawn] : The morning has hardly been used yet. | Clean start today. Good morning.
+line greet.return : Yes, hello. I've put down what I was carrying. | Heard you first go. Glad to see you.
+line greet.return [pair.band=friends|family] : You don't add an ounce to the load, coming by. | Good. Somebody who understands a short visit.
+line greet.return [self.working=yes] : Allow me one twist of the wrist. There. Hello. | I can keep working with company.
+line greet.return [here.time=night] : There's still a greeting left in me this late. | Last hello for the day, most likely.
+line again.open : We've time to finish what we started. | Back before the peg's gone dry.
+line hail [pair.band=friends] : Come alongside for the length of this street. | A bit of your company would suit me.
+line farewell : Get the easiest part of the road if you can. | Off you go while the going's good.
+line farewell.return : Yes. Plenty to have been going on with. | That lets us both get on.
+line react.news : Straight through to what happened, please. | I'll take the plain account, whatever it is.
+line react.news.new : I'd been going about my day quite ignorant of that. | That's come across my sill for the first time.
+line react.news.known : Heard it already and don't grudge the second hearing. | Yes. All the same pieces as before.
+line react.news.doubt : Somebody's wrung that one a little too hard. | Doesn't feel like it's come to us straight.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice] : There's good hearing after a wearing stretch. | Fine news. I can feel my shoulders coming down.
+line react.news.sorrow [topic.kind=death|loss|crime|theft|assault] : That'll leave a hollow place in somebody. Come rest. | Poor souls. There's no short way through a bit of news like that.
+line ask.how : Been able to put the load down at all today? | How's the day used you so far?
+line answer.how : Quite worn and quite capable of one more thing. | I'll do well enough after a sit and a bite.
+line sympathise : A hard day, even said quickly. I heard you. | No wonder you're spent. Give that parcel here.
+line reassure : We've a little in reserve for a day like this. | The time to rest has come round. Take it.
+line decline : I'd sooner disappoint you now and save you the wait. | I can't get it done in the time you've got.
+line accept_decline : Then I'll cross it off and get on. | That's clear. Saves two journeys.
+line thank : You spared me a long idle spell. Much obliged. | That's one bit I can lay aside. I owe you.
+line deflect_thanks : It fitted into a gap in the day. | It only took two idle paws.
+line preclose : There's a little daylight I could still use. | I've got the next thing on my mind already.
+line accept_preclose : Take the minute before somebody else claims it. | Quite right. I'll pick up my own things.
+
+scene peg_sign
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I keep one peg where the eave drips on it. | I'm watching a slip of wood for a weather report.
+b : What can you tell by a wet peg? | Why watch that particular slip?
+a : When the top dries the eave's done dripping. I can stand under it then. | I can see dark wood turn pale from well inside a dry doorway.
+
+
+scene kind_of_wait
+when topic=smalltalk
+does tell.feeling / react.self / assess
+a : I can wait hours if I'm free to do something else. | It's being kept ready that wears me thin.
+b : Like standing with a basket on your hip? | Harder than it sounds.
+a : Exactly. You can carry it somewhere or put it down. Halfway is hard on the back. | Yes. Tell me a time, then I can use what's left.
+
+
+scene short_game
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I fancy a game I can finish in three throws. | I'll roll for the largest number in three.
+b : What do we put up? | What would a win get me?
+a : First choice of the seat out of the draught. | The pick of these seats. That's about as much as I'll stake.
+
+
+scene spots
+when topic=pastimes self.likes=dice
+does give.opinion / ask.detail / answer.detail
+a : Bone dice ought to have the spots sunk deep. | I like a die I could read in the dark.
+b : Planning to play without a lamp? | You read them by touch?
+a : I might. No use wasting oil if everybody can count by paw. | Scrape of a claw and you know your score. Harder to rub a spot off too.
+
+
+scene herring_break
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : For a short meal I'll have cold herring from my crock. | Nothing between my dinner and me but the lid of the herring jar.
+b : Straight from the brine? | No bread with that?
+a : Drain it first. A crust underneath soaks up what gets past my fork. | A heel of bread makes a good plate if you're short of both.
+
+
+scene floor_level
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I like my lowest shelf a good span above the floor. | A dry sack starts with a shelf up off the boards.
+b : Damp comes through that far? | Surely the goods are in jars?
+a : Not all days. Only takes one wet day to spoil a sack. | Fish in jars, meal in sacks. I like them all high and plainly visible.
+
+
+scene full_shelf
+when topic=dreams self.likes=full_larder
+does tell.plan / react.self / assess
+a : If I could add one thing at home it'd be a whole empty shelf. | I'd dearly like a bit more bare space in my larder.
+b : Thought you liked full shelves. | Why keep one empty?
+a : For moving the jars onto while I wipe the others. Full's fine, packed solid's a nuisance. | I set things there and count what's missing before I go out.
+
+
+scene basket_count
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : Each basket still to go gets one knot in my string. | #ticket.capitalize# keeps the count while I work.
+b : Do you tie a lot of knots? | Which end do you start from?
+a : Only at the start. Going home with a straight bit of string feels agreeable. | Nearest my paw. The point's to undo the lot before I set off.
+
+
+scene clean_water
+when topic=work self.job=laborer self.working=yes
+does tell.self / react.self / assess
+a : Clean work can make awfully dirty water. | You ever looked in a basin after the last rinse?
+b : All of that came off one bundle? | Looks like the bottom of the harbour.
+a : More than you'd think can hide in a fold. | At the start, yes. At the finish the bottom ought to show clear.
+
+
+scene gull_meal
+when topic=animals self.dislikes=gulls
+does tell.feeling / react.self / assess
+a : I'd sooner eat under a leaking roof than in sight of a gull. | Hate those clever eyes on my dinner.
+b : Does covering the dish work? | Must be good herring.
+a : Lid on, yes. Lid off to take a bite, you've an audience. | Probably. I should like a leisurely bite to judge for myself.
+
+
+scene autumn_wood
+when topic=weather self.likes=autumn_wind
+does tell.feeling / ask.detail / answer.detail
+a : A rough autumn wind gets into every corner of a stair. | At least a proper draught can accomplish something.
+b : Clears the cobwebs? | What job would you give it?
+a : Cobwebs, stale smells, puddles under a rail. A whole free morning's work. | Drying every sodden doorstep between here and my own door.
+
+
+scene feast_shelf
+when topic=festival
+does tell.plan / ask.detail / answer.detail
+a : I'd serve the first share of a feast on little plates. | Small helpings to start and more in the pot.
+b : Cutting the cost? | Would little plates make enough?
+a : Getting a hot taste to the last hungry wolf before the keen appetites come round again. | The plates don't make supper. They give the late folk a chance at some.
+
+
+scene one_stamp
+when topic=prices
+does give.opinion / react.self / assess
+a : When a jar costs extra I want the jar for keeps. | A seller who wants the crock back can take a deposit.
+b : Worth fussing over a crock? | What's a few coppers?
+a : A crock a week is about a shelf of money by winter. | Depends which side of the counter you're on. I'll have mine back.
+
+
+scene tired_truth
+when topic=gossip
+does give.opinion / ask.detail / answer.detail
+a : A tired wolf looks put out whatever's on the mind inside. | Don't build a quarrel out of a long face.
+b : Speaking from experience? | You know that for certain?
+a : I've mistaken a backache for a grudge and made a fool of myself. | About my own face, yes. Sometimes it means I need the weight off my feet.
+
+
+scene friend_pause
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd share a quiet doorstep with #self.friend#. | I've a whole class of visits reserved for #self.friend#.
+b : How long would a visit take? | Without a word between you?
+a : A bite of herring and a look at the weather. That would do me. | If we liked. I'd certainly offer the fish first.
+
+
+scene neighbour_window
+when topic=home self.neighbour
+does tell.plan / ask.detail / answer.detail
+a : I'd set a dry peg by for #self.neighbour# if the weather looked doubtful. | There'd be room under my eave for #self.neighbour#.
+b : Going to rain, is it? | What use is that in fair weather?
+a : It'll come in handy whenever the rain does come. | I'll take my chances on another shower in this city.
+
+
+scene church_door
+when topic=faith
+does give.opinion / ask.detail / answer.detail
+a : A seat out of the weather goes well with prayer. | I like a seat near the chapel door.
+b : Need to get out quick? | Is that for the breeze?
+a : To shift along quick when somebody comes in with aching feet. | That's one reason. Easier to make room for a late arrival too.
+
+
+scene vineyard_slip
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Words on paper showed me how a vineyard hill curves. | I've kept a little description of vines tied up in rows.
+b : Never seen the vines yourself? | Fine words, are they?
+a : Wouldn't know the hill on sight. I might know where to sit on it to eat. | Ordinary ones. That's why I can picture the mud on the writer's boots.
+
+
+story six_dice [topic=pastimes|memories]
+  : I once rolled three dice at the same time and managed to lose the lot. Had the tabletop all to myself too.
+  : I'd set it on a slant to drain the rinse water. Those dice went straight down my apron front.
+  b : What was the score?
+  : One bruise on my foot and three clean dice. I called that even.
+
+
+story crock_journey [topic=food|memories]
+  : I carried a covered herring crock home cradled against my ribs. Took such care not a drop went over the rim.
+  : It had a small crack underneath. My coat smelled of the sea for days.
+  b : Were there gulls?
+  : You'd have taken me for a travelling fish market when I finally fetched up at home.
+
+
+story hanging_wait [topic=weather|memories]
+  : Once I watched for rain to stop so long I got annoyed at the sound of every drop. Sky was bright, too.
+  : Went out and looked up. The drops were off a sodden sheet hung over the rail above me.
+  b : What did you do?
+  : Wrung the corner. Had my clear weather very promptly after that.
+
+
+rule @drops
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Belly of the peg's pale now. Almost done dripping. | Drop, pause, drop again. Plenty of time for a bite.
+
+
+rule @break
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say One throw apiece while there's a seat, anyone? | No stakes bar the driest seat in reach!
+
+
+rule @work
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say One more knot undone. That's progress. | Easy on the load while I get my hip under it.
+
+
+rule @swindler
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Get your beak away. Nobody ordered company with this meal. | My fish. Pick on somebody with fish to spare.
+
+dlg resident.hub : I'll hear what you came for. Might sit down while I do.
+dlg resident.hub [topic.meeting=known] : #topic.player#, caught me with a minute I hadn't promised to anyone.
+dlg resident.hub [pair.disposition=wary|hostile] : State what you want with a sensible distance between us.
+dlg resident.hub [here.time=dawn] : Still a bit of yesterday in my bones. I can listen.
+dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. My knee could tell you how heavy a basket is.
+dlg resident.job : I work steady till it's done, then lay it aside till I'm needed.
+dlg resident.bye : Leave while the doorstep's clear.
+graft resident.hub
+choice What makes that an especially good peg? -> pegmark
+node pegmark
+say It's dark on one side from all those times the eave dripped on it. I can tell the wet half by touch when the light's poor.
+free
+choice Have you ever lost it? -> lostwood
+choice I see the mark. -> hub
+node lostwood
+say Once. Borrowed another. Watched it through a whole meal before I saw somebody'd painted the thing brown on both sides.
+choice Back to something else. -> hub
+choice Good drying weather to you. -> bye

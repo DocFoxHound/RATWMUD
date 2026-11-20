@@ -1,0 +1,262 @@
+mantle rm513
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_grete_gullhand
+title the pocket fleet of shavings
+fits stage=adult|old
+prefers job=laborer honesty=frank
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk cuts_the_shapes_of_masts_into_wood_shavings_and_floats_them_in_a_basin
+likes warm_bread whittling tidy_house warm_rain
+dislikes crowds salt_wind
+fears a_full_basin_knocked_over a_winter_quarrel_with_no_way_through
+hopes a_basin_broad_enough_for_an_entire_little_fleet
+topics smalltalk +0.7 work +0.4 weather +0.3 home +0.4
+styles comfort=practical gossip=frank refuse=direct tease=playful
+marks oath saying
+persona #self.first# floats a fleet of curled shavings in a washbasin, admits at once which sail went under, and insists a fair race allows for a crooked table.
+
+words
+oath! = Sink my shaving | A fleet in the dishcloth
+saying! = The washbasin favours no flag | Curl first and christen later
+curlship = a deep-curled shaving | my little wooden ship
+flatship = a long flat chip | a low scrap of deal
+mastslit = a slit for a mast | a short mast notch
+basinrim = the lip of my basin | the smooth basin rim
+breadtop = the warm crown of a loaf | my bit of fresh crust
+warmdrops = rain warm enough to play in | a friendly warm shower
+saltgust = a salt-laden gust | a breath of wind off the Sound
+chipcase = my shallow shaving box | a box of clean chips
+woodwake = a tiny spreading wake | a rather grand little ripple
+brimline = my scratched waterline | a pencilled fill mark
+yarddust = a pocketful of yard dust | dust in a clean cuff
+
+any
+opinion houses against 1 : I fancy the big Houses will be elbowing for room before winter. That's a guess you can blame on me.
+opinion dole for 2 : Bread on a bare board beats a fine discussion of who left it bare.
+opinion city for 1 : I can see more fine rigs off this city than my biggest basin will hold.
+opinion festivals mixed 0 : I'll take the music home in my head. A crowd would step on my feet all the way there.
+opinion merchants mixed 0 : Offer me a price you can say while looking at the same piece of wood.
+opinion sump for 2 : A neighbour down my way can make a child's whole fleet out of what a well-off house sweeps up.
+opinion road mixed 0 : My tiny cargo needs a lid and a steady elbow on the steep parts.
+
+grown
+line greet : Look sharp. The little fleet's coming out.
+line greet [pair.band=strangers] : Here's a face my harbour hasn't seen.
+line greet [here.time=dawn] : Morning light makes the shavings look gilt.
+line greet [here.time=dusk|night] : Welcome aboard for the last of the daylight.
+line greet.return : Heard you clear past my left mast.
+line greet.return [pair.band=friends|family] : Well met. You can name the next launch.
+line greet.return [self.working=yes] : Wood curls just as well to the sound of my voice.
+line greet.return [here.time=dusk|night] : Night gives the basin a handsome black sea.
+line kin.open [pair.kin!=no] : Come beside the winner, kin.
+line again.open : Where we left it the little ship was still afloat.
+line hail [pair.band=friends] : Friend, we've a berth for one more opinion!
+line farewell : Take a dry chip for luck.
+line farewell.return : And don't sail it in your soup.
+line react.news : Tell me before the ripples die.
+line react.news.new : That's a fresh splash in my dock.
+line react.news.known : Heard it while my last ship was drying.
+line react.news.doubt : Which end of that account floats?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can put the games away for words like those.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Float the best sail for that bit of news.
+line ask.how : Has your day leaked much?
+line answer.how : I've kept the wet below my elbows.
+line thank : You saved a whole little fleet there. Thanks.
+line deflect_thanks : Hardly a dock due on lifting one chip.
+line sympathise : Come sit by still water till the words come easily.
+line reassure : Even a sunken chip can dry on the sill.
+line decline : I've no spare elbow for that today.
+line accept_decline : Fair. No need to launch a thing you won't back.
+line preclose : I'd better count my ships before somebody washes up.
+line accept_preclose : Sail clear of the soap.
+
+scene basin_launch
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #curlship.capitalize# leans over the way a laden wharf boat does. | #flatship.capitalize# hardly lifts a bow.
+b : What's in its hold? | Is that a fault?
+a : One respectable drop of water and considerable confidence. | It's my champion at getting under the soap dish.
+
+scene yard_hand
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : A yard hand carrying an awkward load learns all about angles by shoulder. | #yarddust.capitalize# follows me home as if I'd promised it supper.
+b : Which angle do you like? | Do you shake it out?
+a : One that ends with both boots on the ground. | At the door. I'm hospitable within limits.
+
+scene workplace_scrap
+when topic=work self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Around #self.workplace# I keep the clean scrap away from the stuff that splinters. | A bit of wood can do quite different duty after a shift at #self.workplace#.
+b : All for your boats? | No longer fit for a yard?
+a : Some to keep the splinters out of the regular load. I do work occasionally. | Given command of a small vessel. A considerable rise.
+
+scene whittle_mast
+when topic=smalltalk self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #mastslit.capitalize# will open wider when the shaving drinks. | I cut a short sail for a tall curl.
+b : Do you wedge the mast first? | Why not match them?
+a : I'd wait. A ship wants a mast, not a canopy in two halves. | When a sail goes in the water it becomes an anchor.
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : #breadtop.capitalize# is the only swell I'd rather eat than sail. | I let a loaf go just cool enough for cutting.
+b : What about the heel? | Very disciplined.
+a : A sound dry dock for butter. | Yes. I practise by eating every crumb the knife knocks off.
+
+scene tidy_port
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : #chipcase.capitalize# keeps the fleet out of the bedding. | I keep one box for ships and another for perfectly ordinary rubbish.
+b : Is that important? | Who decides which is which?
+a : Try resting on two masts and an experimental rudder. | The admiral, generally shortly before sweeping.
+
+scene warm_rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : #warmdrops.capitalize# will top up a basin without chilling my fingers. | Watch a fat raindrop catch a racing chip broadside.
+b : Why not use a jug? | Does it founder?
+a : A jug gives a remarkably poor weather report. | Briefly. The other ships begin to look ambitious.
+
+scene salt_wind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : #saltgust.capitalize# stings my eyes when the real ships are worth seeing. | I can do without salty wind blowing sawdust into my sleeves.
+b : What do you do? | Does the salt matter?
+a : Blink at speed and identify the rig in instalments. | The dust is irritating enough without being seasoned.
+
+scene crowd_edge
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I stay just beyond the festival elbows. | I hear a tune better when my ribs aren't sharing a stranger's breath.
+b : Afraid of missing a dance? | Won't you miss the dancers?
+a : Afraid of finding five while standing still. | I'll happily admire the tops of their heads.
+
+scene sump_sill
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A Sump sill can teach a chip all the weather it'll ever need. | I'd set my best basin beside a Sump window.
+b : Even with no water? | For a view of the real water?
+a : Some mornings finding it dry would be the lesson. | For passing neighbours to offer entirely unofficial advice.
+
+scene shipshape
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I tell vessels in the Sound by the shape between the masts. | Watch the sail that disappears first behind the quay.
+b : By the gap? | Can that identify a ship?
+a : Just so. You can pinch out the bit of sky they leave with two claws. | Give me the order the others go and I'll hazard my biscuit on it.
+
+scene houses_winter
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : My bet is the Houses will jostle before winter. | Put four chips in a small bowl and see which touches first.
+b : Have you seen a quarrel? | Are the Houses really like chips?
+a : I've put a guess on the table. It hasn't grown witnesses. | No. Chips give an answer I can actually prove.
+
+scene lean_bread
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When a week goes lean I keep the knife close to the loaf. | My little fleet costs less to feed than the one off the Sound.
+b : To cut thinner? | Any savings for supper?
+a : To split my piece fairly while it's still worth sharing. | Only the pleasure's free. Supper still wants paying for.
+
+scene new_launch
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : New to these streets? I'll draw a route alongside #basinrim#. | I'd tell a stranger where to stand for a good view of the rigging.
+b : Why go in a circle? | Is the view free?
+a : That's the return route. For going out I use the handle of my spoon. | Opinions cost the willingness to hear mine first.
+
+scene news_basin
+when topic=news world.news
+does tell.news / react.self / assess
+a : The word afloat from #world.news_from# is this. #world.news#. | #world.news#. First harbour mentioned is #world.news_from#.
+b : Will you bet a biscuit on it? | And where will it land?
+a : Only that it's the word afloat. | Depends who takes it up after us.
+
+scene basin_rumour
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Heard an account that gained a whole new mast on its way round a room. | I'd mark an unproved tale with a water-soluble flag.
+b : Was the first one any good? | Why?
+a : I couldn't get near enough to measure the original rig. | Let the next bit of weather decide how long to carry it.
+
+scene honest_sink
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I admit it when #woodwake# runs right over my own little deck. | My ships respect no promises once launched.
+b : Even in a race? | What do you respect?
+a : Especially then. The cheers are wasted if nobody knows who won. | An honest sinking, followed by a competent rescue with a spoon.
+
+scene long_basin
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like one basin broad enough for my whole fleet to turn abreast. | I'd set #brimline# where a wave just clears the table.
+b : Where would you wash? | Doesn't that make a mess?
+a : Plenty of room in the old basin once I've promoted the navy. | I'm still working out the diplomatic bit with the cloth.
+
+story biscuit_flag [topic=memories|food]
+  : I made a sail from a scrap of thin crust to see whether a boat could carry its own dinner.
+  : It sailed splendidly till the bread took on water.
+  b : Did the hull go down?
+  : No. I ate the sail before it could become a hazard to shipping.
+
+story crooked_table [topic=memories|smalltalk]
+  : I thought I'd cut a remarkably straight runner. It kept winning from whichever side I set it off.
+  : At last I put the basin down on the floor.
+  b : Did it win again?
+  : It lost its entire career in a minute. My table turned out to have the gift for racing.
+
+story missing_ship [topic=home|memories]
+  : One breakfast I came up a ship short three times running.
+  : Searched every sill before reaching up to rub my ear.
+  b : Had you tucked one there?
+  : Behind the ear, like a pencil. A splendidly appointed berth, but poorly placed for inspection.
+
+rule @launch_rim
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First chip over a new day's rim.
+
+rule @shut_case
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Harbour closed. Count the masts.
+
+rule @warm_wake
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say That wake's got a gold edge.
+
+rule @turn_chip
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Keep the chipped bow facing uphill.
+
+dlg resident.hub : Step up where you can see what the current champion's made of.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your berth on the rim is still open.
+dlg resident.hub [here.time=dusk] : Last sailing in the basin. Visitors welcome.
+dlg resident.hub [pair.disposition=hostile|wary] : Speak from that side, please. My ships bruise easily.
+dlg resident.job [self.workplace self.job=laborer] : I'm a hand at #self.workplace#. The ships in my pocket are private business.
+dlg resident.news [world.news] : Word has sailed across from #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I haven't measured the original mast on that tale.
+dlg resident.bye : May your own little craft come home with its mast.
+
+graft resident.hub
+choice Why does that ship have such a short mast? -> little_rig
+node little_rig
+say Put a tall mast in a deep curl and the first breath lays it sideways. My ships have to float well enough to survive honest cheering.
+choice What if I blow the other way? -> blow_race
+choice I can see the curve now. -> hub
+node blow_race
+say Then you're harbour weather. Stand at the finish line and give every ship the same chance at sinking.
+choice I'll try a fair breeze. -> hub
+choice I'll leave the harbour still. -> bye

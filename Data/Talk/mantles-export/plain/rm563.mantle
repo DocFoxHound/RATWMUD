@@ -1,0 +1,365 @@
+mantle rm563
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_arne_rainworth
+title the coal upstairs
+fits stage=young|adolescent|adult|old
+prefers job=child drive=ambitious
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk moves_a_lucky_coal_between_pockets_at_each_landing
+likes warm_bread dice new_boots frosty_mornings
+dislikes bad_manners crowds
+fears wet_boots_on_the_same_low_landing_forever
+hopes a_warm_room_with_a_high_view
+topics dreams +0.8 home +0.5 travel +0.4 pastimes +0.3
+styles comfort=steady gossip=plain refuse=direct tease=rare
+marks oath saying
+persona #self.first# moves a lucky coal between pockets for each new landing reached.
+
+words
+oath! = Split my bright lump | Soak my bottom stair
+saying! = A lump climbs as high as the pocket | One more stair gives a different window
+luck = my shiny bit of coal | a black lucky lump
+step = a stone tread | a worn stair
+boot = a stiff new boot | a dry leather toe
+grub = the loaf's warm heart | a soft hot heel
+cold = white on the rail | frost underfoot
+die = a pitted knucklebone | a little six-faced block
+roof = a dry high room | a room above splash height
+pocket = my safer pocket | a sound lining
+door = a painted door | a dry-bolted door
+coin = a small kept copper | a bright bare penny
+rest = a sheltered landing seat | a pause above the damp
+wind = high window air | a clean upstairs draught
+
+any
+opinion city mixed 1 : A city's meant to belong to the feet climbing it as much as the roofs already on top.
+opinion dole for 2 : I want bread hot enough to steam. Nobody ought to need a grand address to get some.
+opinion houses mixed 1 : A crest above a door looks plenty large enough from below it.
+opinion merchants mixed 1 : I'd like boots whose price leaves enough for the feet inside to eat.
+opinion road for 1 : A road that keeps climbing gives me something worth seeing round its next bend.
+opinion strangers mixed 1 : New boots can belong to a visitor with perfectly decent manners.
+
+any
+line greet : Come stand one tread higher. | I've a dry spot beside my boots.
+line greet.return : Your welcome made it up here clean.
+line again.open : Back at my landing before the mud's dried.
+line farewell : Climb safe beyond this bit.
+line farewell.return : I send good footing back your way.
+line react.news : Tell me what made it this far.
+line react.news.new : That's another mark for my good pocket.
+line react.news.known : Heard that coming up from below before.
+line react.news.doubt : Which step did that story come from?
+line react.news.sorrow [topic.kind=death|loss|assault] : That's heavy news to haul round in one chest.
+line react.news.glad [topic.kind=birth|marriage|work] : A fine bit of luck for a tired climb.
+line ask.how : Where have your feet got to today?
+line answer.how : Further than breakfast, short of where I'm going.
+line sympathise : You can sit down with that heavy bit.
+line reassure : My coal's small. It still gets up the stairs.
+line refuse : I want my next hour for a job of my own.
+line accept_decline : Fair. I'll leave the offer where it stands.
+line preclose : There's a climb I've still to finish today.
+line accept_preclose : Go steady where the stairs get dark.
+line ack : That's plain even from this low step.
+
+young
+line greet : There's room by my bright bit of coal.
+line farewell : Hope your soles don't let in any puddles.
+line react.news : Tell me before the bread cools off.
+
+adolescent
+line greet : Welcome by the cleanest rail on my route.
+line farewell : Save some strength tonight for tomorrow's stairs.
+line react.news : Give me the news in walking order.
+
+grown
+line greet : Welcome where the window catches some height.
+line farewell : May your walk end a little above the wet.
+line react.news : An account can climb at its own pace with me.
+
+young
+
+scene exchange2
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I draw my letters starting at the bottom stair. | The best lesson would be about roofs.
+b : On the stone? | Their shapes?
+a : On my slate. I want them to climb straight. | Which ones can stand on a very steep street.
+
+scene exchange3
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I mean to live above the last roof that hides the weather. | I'll move my coal upstairs with me.
+b : So you can shut the window? | Even if you're very rich?
+a : So opening it will be my choice. | It'll still fit the same pocket.
+
+scene exchange4
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I put hot bread between both palms. | I like a loaf with a high top.
+b : To share the heat? | For the shape?
+a : One hand's usually colder from holding my coal. | For the extra piece above the rim.
+
+scene exchange5
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I roll one die for each climb in my game. | My lucky coal doesn't work as a die.
+b : Who wins? | Why try it?
+a : Whoever gets a roof before the paper street floods. | It owns so many excellent crooked sides.
+
+scene exchange6
+when topic=pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : New boots feel too clean for the first tread. | I want a sole without a hole shaped like rain.
+b : Do you wear them anyway? | What shape is rain?
+a : Boots don't learn their work on a shelf. | Exactly the shape my chilliest toe makes.
+
+scene exchange7
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost makes the rubbish pail shine at the top. | I like a white rail before the first pawprint.
+b : Like a fine pot? | Will you touch it?
+a : Like something nobody has kicked this morning. | With one finger, to write a little stair.
+
+scene exchange8
+when topic=day self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A shove on a stair goes a long way. | I won't call down on somebody climbing slower.
+b : Do you shove back? | Even if you're late?
+a : I hold the rail and say whose turn it was. | I can say excuse me from the same step.
+
+scene exchange9
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : Crowds take up my bit of sky. | I choose the stair beside the wall when it's busy.
+b : Can you look up? | So nobody pushes?
+a : Only through a forest of elbows. | There's one whole side that isn't moving.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# hold my best coal for a climb. | A friend may pick the high house in my game.
+b : Why only one? | What will you pick?
+a : Then my friend gets the view and I get my luck back. | The road up to its door.
+
+scene exchange11
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The floor up home drips in odd places. | I can see a fine roof through a crack.
+b : Can you miss them? | Will you block it?
+a : If I bring my feet home in the usual order. | I'll block the rain and leave the view.
+
+scene exchange12
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Sump has more upstairs than folk admit. | I picture the Heights when my boots get wet.
+b : Does that help? | Is it always dry there?
+a : It gives me somewhere to start counting. | I bet there are better spots for drying things.
+
+scene exchange13
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A high cloud is where my room would look tiny. | I listen for rain on the lowest roof.
+b : Want to live that far? | Why the lowest?
+a : Only high enough to see over these chimneys. | That's the one that drips on our stair first.
+
+scene exchange14
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I wonder what one window would cost. | A coin spent on dry boots still climbs with me.
+b : The whole house too? | In your pocket?
+a : I'd like one price I can picture. | On both my feet.
+
+adolescent
+
+scene exchange16
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I take on jobs with a clear last step. | An uphill errand suits a plan of mine.
+b : For the pay? | Getting stronger?
+a : So I can see how I earned it. | Learning which street I could live on one day.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I picture a roof that stays mine in bad weather. | I keep a coal as far from the stove as possible.
+b : Why mention weather? | Why waste fuel?
+a : A high view's still worth having through rain. | It's the lump that makes me remember to keep moving.
+
+scene exchange18
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I let the dice choose my practice route. | A throw doesn't decide my future.
+b : Even downhill? | What does it decide?
+a : Downhill's part of learning how to get home. | Which turn I take before breakfast.
+
+scene exchange19
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer ought to see the ground before the Heights. | I ask visitors about the last stair they climbed.
+b : For comparison? | Looking for a shortcut?
+a : To know the city is being held up from below. | Looking for a better-made landing.
+
+scene exchange20
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I trust #self.friend# with my most unlikely plan. | A friend needn't say the climb is easy.
+b : Which one? | What would help?
+a : A door I can close above the smoke. | Walking another landing together.
+
+scene exchange21
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I mark the rent I can manage on a slate. | I turn my bed away from a draught.
+b : Even if it's small? | Can you stop it?
+a : A small figure gives a real plan its bottom step. | I can decide which foot gets cold first.
+
+grown
+
+scene exchange23
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : Work done low down ought to earn a look from high windows. | A promise of advancement wants a date.
+b : What sort of look? | What if it lacks one?
+a : Respect and a decent rate suffice. | I keep climbing under my own arrangements.
+
+scene exchange24
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I judge a room by its driest corner. | I'd rather one sound latch than two handsome ones.
+b : Before you inspect the view? | Which one counts?
+a : A dry bed frees my eyes for the window. | The latch I can shut from inside.
+
+scene exchange25
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I still want a window above the smoke. | I keep my first lucky coal on the shelf.
+b : What then? | Retired it?
+a : Another chair beside it for somebody else to see. | Promoted it. It can watch the climb from there.
+
+scene exchange26
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I warm my hands on the loaf before I cut it. | A high table gives bread a fine surface for cutting.
+b : Still good bread afterwards? | What if somebody's short?
+a : Better for having spread the heat twice. | Bring the loaf down within reach first.
+
+scene exchange27
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A staircase tells you a building's age through your soles. | I give an uphill traveller one manageable destination.
+b : By the hollow in each tread? | The summit?
+a : And the turns where one careful foot belongs. | The next landing with a decent seat.
+
+scene exchange28
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I still play my old climbing game. | A chipped die makes the game too easy.
+b : Who gets the highest room? | Because it favours you?
+a : The winner opens it to the other players. | Predictable luck has little to teach my feet.
+
+scene exchange29
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.friend# a room before agreeing to it. | A friend can remind me how far I've climbed.
+b : For judgement? | When the weather's clear?
+a : For company at the first proper look. | Especially when the upper windows disappear.
+
+scene exchange30
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks for stairs wide enough to share. | One quiet room suits my prayers.
+b : Why stairs? | High or low?
+a : Some blessings require us to make way for each other. | The height matters to my sleep more than my prayers.
+
+scene exchange31
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I stop when a boot rubs the same spot twice. | Two dry pairs of socks are a respectable investment.
+b : Does that slow you? | For the winter?
+a : Less than a sore heel will on tomorrow's climb. | For any season the gutters choose to invent.
+
+scene exchange32
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I put bread ahead of boot polish in a thin week. | When rent grows steep the streets feel flatter by comparison.
+b : What about the soles? | What do you do?
+a : Soles deserve their own place beside bread. | Keep the actual figures under my own eyes.
+
+scene exchange33
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A roof in the Sump looks different from the Rise. | I like the road joining the low water to the Heights.
+b : Smaller? | Which way best?
+a : Only from a distance. The lives beneath are full size. | Depends whose door I'm hoping to reach.
+
+scene exchange34
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can recall the height of a room by the sound of rain. | A little coal once came with me on every stair.
+b : From its roof? | Lucky thing?
+a : From the delay before the drip reached my pail. | It had an ambitious wolf to carry it.
+
+story tale1 [topic=pastimes self.likes=dice]
+  : I made a paper street for dice and drew the houses too close together.
+  : My counter could only reach its fine high roof by climbing over the bakery.
+  b : Did you redraw the street?
+  : I gave the bakery an outside stair. It seemed an improvement to the neighbourhood.
+
+story tale2 [topic=weather self.likes=frosty_mornings]
+  : I once pressed my lucky coal into new frost to leave a black mark.
+  : It came away wearing a bright white cap and looking a great deal grander than my pocket.
+  b : Did the cap stay on?
+  : Until breakfast. Luck has never minded getting a little wet.
+
+story tale3 [topic=home]
+  : I counted the stairs by moving crumbs from one pocket into the other.
+  : At the landing I found I'd dropped enough crumbs to make the return route perfectly clear.
+  b : Did you take bread next time?
+  : I took one whole slice for eating and counted the stairs on my toes.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say New light on the upper roofs. | Luck in the left pocket.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Keep the stair edge in sight. | One coal made it home.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wet boards earn slow feet. | Higher steps first today.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say The roofs have gone dark round the edges. | Last warm patch on the stair.
+dlg resident.hub : You can stop beside me while my coal changes pockets.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I know your step by now.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep your elbows to yourself and there'll be room for your question.
+dlg resident.job [self.job=child] : Lessons suit me best when each question leads a step higher.
+dlg resident.job : I'm trying to get above the drip line with a door I can shut for myself.
+dlg resident.news [world.news] : What I heard coming up the street is #world.news#.
+dlg resident.gossip [here.gossip=yes] : The claim was #topic.subject# #topic.claim#. It hasn't climbed far enough to count as proof.
+dlg resident.bye : May the highest bit of your walk have a dry doorstep.
+
+graft resident.hub
+choice What does a lump of coal know about climbing? -> coal_landing
+node coal_landing
+say Nothing before my pocket carried it. Now it's been up every stair I've tried and down a few I'd rather not have needed.
+free
+choice Will you keep it in the Heights? -> coal_landing_again
+choice Goodbye. -> bye
+node coal_landing_again
+say If I get my high room, that coal can have a bowl all to itself. I'll let it look out my window first.
+choice I'll look up as I go. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,397 @@
+mantle rm497
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_desmond_dripcot
+title the promised cup's notch
+fits stage=adult|old
+prefers job=guard
+traits temper=short talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk cuts_a_flat_notch_for_a_promise_still_to_keep
+likes mutton_stew whittling fresh_straw frosty_mornings
+dislikes drizzle waiting
+fears letting_a_locked_door_cancel_a_promise
+hopes to_shave_every_notch_smooth_before_rest
+topics work +0.5 pastimes +0.3 home +0.2 friends +0.2
+styles comfort=practical gossip=curt refuse=flat tease=none
+marks oath saying
+persona #self.first# cuts a square notch for a promised cup and shaves it smooth only when the empty vessel is back in hand.
+
+words
+oath! = Square the last notch | By my unshaved tally
+saying! = A door doesn't cancel a drink of water | Level wood means the promise is finished
+stick = my broad tally stick | a smooth slip of ash
+notch = a square cup mark | a flat-bottomed notch
+cup = a plain tin cup | a clean water cup
+edge = a narrow shaving edge | the straight little blade
+wood = a dry ash scrap | a pale willow strip
+key = the cold iron ring | a heavy ring of keys
+straw = a fresh fist of straw | the yellow clean straw
+stew = a mutton-and-root stew | a pot of good mutton
+lard = a drop of tallow | a tallow fleck
+coat = my brushed coat | the clean dark cuff
+frost = rime in the wood grain | a white rim of frost
+drip = the lean little drip | the falling grey drop
+wait = the uncounted minute | a dragging interval
+pot = the water pot | a squat clay jug
+floor = a bare stone flag | a clean block of stone
+nick = a narrow knife line | a faint starting mark
+
+any
+opinion houses against 1 : The landlord's duty has a clear beginning. Right where rain gets in through a roof that's being paid for.
+opinion festivals against 1 : Spilt drink makes poor footing for a watchful wolf and the din makes an honest word difficult to hear.
+opinion watch mixed 1 : A badge gives a wolf a duty. I judge the wearer by what comes back through the door after a promise.
+opinion sump for 1 : In the Sump a neighbour will pass a cup through a gap without first asking for the gap to be widened.
+opinion road for 1 : Give me a sound road over which a tired pair of feet can keep going. I'll attend to my business on it.
+opinion dole mixed 0 : We can dispute what dinner cost after the bowl has been washed. Before that I mind the serving.
+opinion merchants mixed 0 : A cup sold as full should reach the line at its rim. Honest sellers have no difficulty with that.
+opinion strangers mixed 0 : I listen for a plain request before deciding the answer a stranger ought to hear.
+
+grown
+line greet [pair.band=strangers] : New face. Speak where the cup board's clear. | Stand in the open. I'm listening.
+line greet [self.working=yes] : I've one working ear for your business. | Keep the handle free of your sleeve.
+line greet [here.time=dawn] : Morning. The jug's been rinsed. | Daybreak and a smooth place on the stick.
+line greet [here.time=dusk|night] : Evening. The marks are still visible. | Come to the light on the flat wood.
+line kin.open [pair.kin!=no] : Kin have the familiar place at the board. | There's a household face beyond the jug.
+line again.open : Another turn before the stick is smooth. | You've come across my line twice.
+line greet.return : I heard. Speak plainly now. | Good. I can put the cup down.
+line greet.return [pair.band=friends|family] : A known voice can keep its ordinary strength. | I've time for a direct word from you.
+line greet.return [self.working=yes] : Speak while the jug stands upright. | Room between two duties. Use it.
+line greet.return [here.time=dusk|night] : Evening. Close enough for ordinary talk. | The last lamp carries your outline clearly.
+line farewell : See your promise as far as the return. | Dry footing beyond the stone.
+line farewell.return : I'll mark you safely away. | A clean cup at the far end.
+line farewell.return [here.time=night] : Find the sound steps beyond the lamp tonight. | Late duties ought to come to a clear close.
+line react.news : How much of that is your own word? | Give me the account as straight as the grain.
+line react.news.new : New notch for this ear. | First hearing beside my cup board.
+line react.news.known : That one has a cut already. | I know its straight edge from earlier.
+line react.news.doubt : The notch doesn't fit the account you've given. | I'd wait for a firsthand word before carving that in.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad news. I've water to spare if your throat's dry. | Keep the painful bit private awhile.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a promise come home in good shape. | Glad. I'll remember which voice brought the news.
+line ask.how : How much are you still carrying? | Did the day keep its side of the bargain?
+line answer.how : My duty's clear. My patience less so. | Still rubbing one stubborn edge level.
+line decline : I ought to keep this hour free to honour a particular promise. | I'd rather finish what I can honestly answer for.
+line accept_decline : Straight answer. That's all I required. | Then we've no debt on that matter.
+line thank : You've brought that account back sound. | A good turn I shall mark properly.
+line sympathise : Have water before attempting the rest of the words. | I'll attend to what's within reach.
+line reassure : One clean cup is an honest beginning. | You've time to give just the plain account.
+line preclose : The stick's still got some rough work on it. | Time I finished what I said I'd do.
+line accept_preclose : Go with your part clearly understood. | I'll return to my own tally in a moment.
+line deflect_thanks : A word kept needs no celebration. | It was the cup I undertook to bring.
+line ack : Marked true. | Yes, square.
+line give.advice : Write down what you owe before what others owe you. | Put the promised thing within the promised paw's reach.
+line offer : I can bring the clean jug myself. | Let me carry the part I've undertaken.
+line praise : You made the account plain without any dressing-up. | That piece of work will do its honest share.
+
+scene cup
+when topic=work self.job=guard self.role=guard
+does tell.self / ask.detail / answer.detail
+a : When I promise a cup behind a locked door I make #notch# on #stick#.
+b : What clears it? | Is there one mark per cup?
+a : The emptied cup coming back. Merely filling it hasn't got the water where I promised. | One per outstanding promise. If a second cup's still needed I leave the mark alone.
+
+scene wood
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : Soft willow takes a promise easily but doesn't keep its edges.
+b : Is ash better? | Does that bother you?
+a : A dry slip of ash makes a plainer line. I use willow for practice or a very short job. | A mark worn flat can make a wolf think the work's already done. I object to that impression.
+
+scene duty
+when topic=work self.job=guard self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My work? #self.trade_words.capitalize#. A wolf in a cell still has a throat that goes dry.
+b : Would a prisoner have to ask twice? | Why the stick then?
+a : Not if I've heard and can get the jug there. I don't need the request dressed in respect. | A second duty can come through another door while I'm filling the cup. A notch won't talk me out of remembering.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I cut the mutton in my stew small enough for one honest spoonful.
+b : Why so particular? | Do you mind a big chunk?
+a : Makes the first bowl as fair as the last when several paws come to the pot. | Not if I'm eating alone. I prefer a decent distribution when I'm serving.
+
+scene bedding
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I like straw that's dry right down through the bundle.
+b : Can you tell at the top? | What proves the mark sound?
+a : The top can look like harvest gold with a nasty wet middle. Open it a little. | Put a bare paw into the centre. Cold can lie hidden better than a great bad smell.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : The best thing about a frosty morning is seeing exactly where the jug stood.
+b : An empty ring? | Why care?
+a : Yes. A clear circle on the sill, no argument about the position. | I like ordinary things to give a plain account of themselves before breakfast.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle turns a clean coat into a grey witness against itself.
+b : Is it really dirty? | Would a proper shower help?
+a : Only where the little drops have brought out old grime. That's enough to send me brushing. | At least that lays all the fur together. Drizzle selects a different strand every minute.
+
+scene delay
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : The worst waiting comes after somebody has said just a moment.
+b : What should one say? | How long do you permit?
+a : Wait while I finish filling the jug is a measurable thing. I'd rather hear that. | As long as the task requires if I'm told what the task actually is.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I would trust #self.friend# with the tally while I carried the jug.
+b : What needs trusting? | Why let another wolf hold it?
+a : Letting the rough parts remain rough however poorly my conduct shows up. | Both paws on a heavy full pot. I don't need a dramatic reason to trust a friend.
+
+scene cellstraw
+when topic=work self.role=guard self.job=guard
+does tell.self / ask.detail / answer.detail
+a : A clean floor in a cell is part of the job.
+b : Not a favour? | Why say it so plainly?
+a : Certainly not. I won't count as generosity what I'd expect for myself behind the same door. | Because a great many folk can find a fine-sounding reason to let a poor floor stay foul.
+
+scene rumour
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't collect names on the strength of talk passed over a locked door.
+b : What do you collect? | Not even a warning?
+a : Promises I myself can honour. That's enough for one working stick. | A warning can be heard and properly passed without decorating it with a culprit I never saw.
+
+scene plain
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'm likely to take offence at a beautifully worded loss of memory.
+b : Something forgotten? | Why the words in particular?
+a : If you forgot, say that. It gives me a clear place to begin setting the matter right. | A whole mouthful of excuses leaves the empty cup just as far from the thirsty wolf.
+
+scene sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A Sump cup can reach my door by half a dozen short turns.
+b : Without spilling it? | Which way's quickest?
+a : If it's got a lid. Otherwise I take the turn that lets me keep my elbows square. | The one that delivers the measure I set out with. I only call that swift if the cup's full.
+
+scene wages
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : If a wolf can't name the price of a scrap of wood I look for another scrap.
+b : Too poor to wait? | You won't bargain?
+a : Too keen on knowing what I've undertaken. My purse is my own concern. | I can discuss a figure. I can't discuss a shrug followed by an unexplained bill.
+
+scene town
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A low door in Ridgemere can carry a whole street's sound under it.
+b : What can you hear? | Private talk as well?
+a : Footsteps, a jug being set down, the sound of a latch that wants lifting rather than a shove. | If I hear an ordinary private word I give it no place on my account.
+
+scene eyes
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I brush my cuff before checking the grooves on my tally.
+b : For the clean coat? | Does dust get into the grooves?
+a : So I don't wipe a damp mark flat while congratulating myself on being tidy. | One grain of grit may catch at my finger and feel more important than a proper notch.
+
+scene bowl
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't put much of a speech with the water I carry.
+b : No blessing? | What would you say?
+a : A short one if asked. No prayer of mine should keep a mouth waiting for water. | Here's your water. The rest can come later when everybody has a voice to spare.
+
+scene shopdoor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer can ask me for directions without first giving an account of family history.
+b : Which detail comes first? | Will you escort a stranger?
+a : Which street and whether there's a reason to avoid a steep stair. I don't collect particulars for sport. | If my own duty goes that way and a tired foot would benefit, yes.
+
+scene sharpseat
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep the stick by one particular belt loop whenever I can.
+b : Why there? | Don't you reach for other things?
+a : So I can feel its surface without pulling it into view. A promise doesn't need an audience. | I like every tool to have its own proper place. Fumbling doesn't improve a long minute.
+
+scene daylight
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Dawn brings the lines in the wood up sharply before it brings any warmth.
+b : Do you work by a window? | Is that useful?
+a : I go to decent daylight before deciding whether my earliest notch was an old one. | Light shows me raised grain in the night. A quick rub sets that bit right.
+
+scene black
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : After dark I run my thumb past the tally without counting aloud.
+b : Why quietly? | Can you tell a shallow one?
+a : Some of the account's mine alone. A close listener needn't be given a second-hand list. | Yes. I leave a square floor beneath the cut. A passing scratch doesn't feel the same.
+
+scene stewpot
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I like a stew pot with a handle thick enough for cold fingers.
+b : Does it cost more? | Whose pot is it?
+a : Sometimes. A dropped supper costs far more than a proper handle. | Whoever drew the cooking duty. I don't need to claim the pan to take decent care of it.
+
+scene bark
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : When I cut a little bird from scrap wood I start with the feet.
+b : Why the feet? | Does it stand?
+a : So I know whether it'll have to sit at the end. I'd like to leave enough for the head without wasting the base. | Not always. A sitting bird is a perfectly respectable use for a short piece.
+
+scene fastfeet
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I dislike watching a line rush forward and then stop at exactly the same place.
+b : Better to wait further back? | What could change?
+a : Better to keep the space between feet honest. A push of bodies shortens nothing useful. | Give the next wolf somewhere to go before announcing the line is moving.
+
+scene apples
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : My favourite feast hour comes late, when tables get washed and carried away.
+b : Not the music? | Would you help?
+a : A little music goes a long way when it belongs to five different pipers at once. | With a clean bucket and a definite end to the work, gladly.
+
+scene lean
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean weeks leave a mark on the way folk hand back a cup.
+b : What mark? | Do you look at the face?
+a : They tip it another time and wait an extra moment before the handle finally comes towards me. | I look at the cup first. A thirsty wolf can take an extra minute without performing gratitude.
+
+scene wagons
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : When the wagons are late my ears fill with guesses about what somebody owes somebody else.
+b : Do you keep count? | Who should say?
+a : Only of the promises whose making I actually heard. Other wolves can manage their own accounts. | The parties to the promise. Noise from the roadside adds nothing to a late load.
+
+scene tileweather
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A wet stone shines where a dry stone just shows its grain.
+b : A good warning? | Does the whole flag shine?
+a : It can be. I check the angle of the lamp first. A polished stone can tell the same story without water. | Often only one edge. That's generally the edge somebody chooses for a hurried turn.
+
+scene sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed the marks on my stick filled up with little cups of water.
+b : Enough to drink? | Did they come back empty?
+a : For a very small wooden bird perhaps. A wolf would need the proper jug all the same. | The water soaked in before I could come round to collect it. I woke with a very precise objection to dreaming.
+
+scene tender
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I don't enjoy having an honest offer treated as a bargain for praise.
+b : Why does that offend you? | What do you want returned?
+a : If I meant to buy a kind word I'd be obliged to price the thing in advance. | An empty cup when it's finished. We can keep the rest quite simple.
+
+story split [topic=memories]
+  : I dried a wet tally by a stove. A split opened through a neat square notch and suddenly I seemed to owe two cups.
+  : I fetched the second cup before I remembered I'd filled the first only moments earlier. At least the mistake gave nobody less water.
+  b : What happened to the stick?
+  : I marked it unfit for tally work and carved a little bird out of the sound end. A bird can get along with a split tail.
+
+story handle [topic=work self.job=guard]
+  : A returned cup had its handle bent inwards until my finger couldn't enter the gap. I remembered plenty of room there before.
+  : I thought of making the first loud accusation that came to mind. Then I looked where I'd rested my own heavy jug against the handle.
+  b : Did you mention the damage?
+  : I reported my part in it. Metal can be put right. Carelessly handing the blame to a different wolf does a different kind of harm.
+
+story strew [topic=home]
+  : I emptied a bundle of clean straw and uncovered one brown leaf in the stalks. I picked it out intending to leave the floor perfect before sitting down.
+  : There was a little dry seed inside the leaf. It fell out under the stool, and carrying the stool aside shifted most of the straw I'd just laid.
+  b : Did you find it?
+  : Eventually. I left the next harmless leaf among the straw. A floor has to be fit for resting before a wolf calls it clean.
+
+story potgame [topic=food]
+  : I tried serving a pot of mutton in perfect equal spoonfuls once. Each time I thought the portions even, a great chunk slid from one ladleful into its neighbour.
+  : Finally I divided the broth first, then the pieces. It was more work than any supper ought to take, but the portions were all honestly given.
+  b : Another serving like that?
+  : I cut the mutton evenly before cooking nowadays. A careful beginning spares me considerable theatre over the finished pot.
+
+story quietbird [topic=pastimes]
+  : I carved a bird with a square hole through its back where the original tally had held a knot. I couldn't decide whether the hole ruined it or gave it character.
+  : I put a short straw through from side to side. The little fellow looked decidedly like it had gone in search of nesting material and got its wings muddled.
+  b : Did you leave the straw?
+  : Yes. That's the only creature in my room with bedding it can carry quite so neatly.
+
+rule @aside1
+when concept=bark self.job=guard self.working=yes
+does aside
+cooldown 6h
+say Full on delivery, empty on return. | No mark shaved before the cup comes back.
+
+rule @aside2
+when concept=bark self.likes=whittling
+does aside
+cooldown 7h
+say Cut the square bottom without splitting the strip. | Sound ash for a plain promise.
+
+rule @aside3
+when concept=bark self.dislikes=drizzle
+does aside
+cooldown 8h
+say Brush the left cuff before the drops settle in. | A feeble drip can still fill the collar.
+
+rule @aside4
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say Two edges of wood showing in the first light. | One clean jug for the morning duty.
+
+rule @aside5
+when concept=bark here.time=night
+does aside
+cooldown 10h
+say Use the thumb on the quiet tally. | Keep the return clatter away from resting ears.
+
+rule @aside6
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 11h
+say Open the bundle at its tightest point. | Clean underneath as carefully as the visible surface.
+
+dlg resident.hub : Stand just past the cup board. What you say goes in one ear and I'm minded to give the rest a proper hearing.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I've heard your voice and seen your face together before.
+dlg resident.hub [pair.disposition=hostile|wary] : Keep your request plain and I'll answer the business in it.
+dlg resident.hub [here.time=dawn] : Clean water, straight wood and the first clear light. Give your word.
+dlg resident.hub [here.time=night] : Talk quietly for anybody trying to rest beyond a shut door.
+dlg resident.job [self.role=guard self.job=guard self.trade_words] : #self.trade_words.capitalize#. A plain duty that includes a proper cup of water when one is promised.
+dlg resident.job : I mark only what requires doing and work till the whole promise is kept.
+dlg resident.news [world.news] : I can stand behind hearing these words. #world.news#
+dlg resident.bye : See your own business finished squarely before you call it settled.
+dlg resident.bye [here.time=night] : Safe under your roof before this lamp needs another trim.
+dlg resident.hub [self.working=yes] : You have my attention while the jug stands clear. Use a straightforward voice.
+dlg watch.bye [self.role=guard] : The account's closed for this visit. Take your time getting back onto the sound ground.
+dlg resident.hub [pair.band=friends|family] : You may stand by my good carving side. Mind the little chips underfoot.
+
+graft @cup resident.hub
+choice Why do you wait for the empty cup? -> cup_return
+node cup_return
+say A full cup outside a locked door hasn't reached its destination. I'd have done half the work and delivered precisely nothing to a thirsty wolf.
+free
+choice What happens to the notch when the cup comes back? -> cup_shave
+choice That puts the cup in the right place. -> hub
+node cup_shave
+say I shave the edge down to its floor. The stick gets thinner and the promise goes home whole. Eventually a little scrap is good for a fire.
+choice I'll remember the empty cup. -> hub
+choice I leave you to your rounds. -> bye
+graft @bird resident.hub
+choice Has every piece of wood got a tally in it? -> ash_grain
+node ash_grain
+say Any dry straight bit will hold one. A crooked piece will generally make a better bird or a spoon handle. No use asking the grain to behave against itself.
+free
+choice What do you do with the shavings? -> ash_curls
+choice I can see a beak in that end. -> hub
+node ash_curls
+say Save the long curls for catching a little fire and the small ones for packing. A tally ought to earn its space in a pocket twice if it can.
+choice I'll keep the curled ones. -> hub
+choice You've given the wood its due. -> bye

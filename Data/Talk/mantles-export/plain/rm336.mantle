@@ -1,0 +1,257 @@
+mantle rm336
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_edric_cindermarsh
+title the iron ear
+fits stage=adult|old
+prefers job=smith
+traits temper=nervy talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk tests_a_cool_iron_ring_by_humming_its_pitch
+likes mutton_stew wrestling fresh_straw frosty_mornings
+dislikes stale_bread smoke
+fears missing_the_last_clear_note_in_a_ring
+hopes to_make_a_hinge_that_opens_in_silence
+topics work +0.5 health +0.2 pastimes +0.3 weather +0.2
+styles comfort=practical gossip=guarded refuse=soft tease=none
+marks oath saying
+persona #self.first# hums the note of a cooling iron ring and talks over the last faint echo for fear of losing it.
+
+words
+oath! = Ring out my iron ear | Quench that echo
+saying! = Hear the crack before trusting the ring | The last note belongs to the metal
+ring = a cool iron ring | my sample hoop
+pin = a bright hinge pin | a little black spindle
+note = a short true note | a fading hum
+end = the last shiver | the dying vibration
+ear = my listening ear | an ear cocked sideways
+pot = a heavy stewpot | a cast pot
+straw = a twist of new straw | a tuft of dry straw
+joint = a smooth wrist hold | a safe elbow grip
+rime = a fern of white rime | thin white frost
+steam = a thread of steam | a low cloud above the pot
+smoke = a smear of black smoke | the bitter reek
+crust = a hard bread rind | a leathery crust
+
+any
+opinion festivals for 1 : At a festival there's room for a loud wolf and a doubting wolf. Sometimes I can be both in the same coat.
+opinion houses against 1 : I'd like a House name to ring as truly under a question as a sound hoop under the lightest tap.
+opinion merchants against 1 : A copper here and another there will wear a hole clean through an honest purse.
+opinion strangers against 1 : I'd sooner learn what follows a newcomer through the gate before I leave the yard standing wide.
+opinion sump against 1 : Down by the Sump too many sounds come back from the wrong direction. My ears get little peace there.
+
+grown
+line greet [pair.band=strangers] : You have my good ear. Welcome. | Stand where a word can reach me clean.
+line greet [self.working=yes] : I'm listening across my work. | Come within the fall of my voice.
+line greet [here.time=dawn] : Morning, before the first clang. | A clear ear at this hour.
+line greet [here.time=dusk|night] : Evening. The little sounds begin to carry. | Come in where the day's last note is fading.
+line kin.open [pair.kin!=no] : I've known that family sound a long while. | There's kin inside my hearing.
+line again.open : An echo back on two feet. | Here's the answering note already.
+line greet.return : I hear both consonants. Hello. | You've a good clear carry.
+line greet.return [pair.band=friends|family] : I'd pick that voice out over a struck hoop. | Stay by the listening shoulder.
+line greet.return [self.working=yes] : Let the last note settle first. | I'll put the ring down to hear you.
+line greet.return [here.time=dusk|night] : Evening. A voice can carry further now. | The eye's tiring. My ears manage.
+line farewell : May your own gate swing sweetly. | Take the quieter turning home.
+line farewell.return : I'll hold the echo here. | Good metal beneath your latch.
+line farewell.return [here.time=night] : Hear the latch behind you tonight. | Light steps beyond the late fires.
+line react.news : What sound did the account make? | Let's hear it from the clear side.
+line react.news.new : New pitch to my ear. | That's changed my listening.
+line react.news.known : That note's been struck before. | I've heard the full account already.
+line react.news.doubt : I'd tap that tale in a different place. | Its ring doesn't quite answer the way I expected.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's an ache in hearing that. | Take my quiet corner for a rest.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A fine note in the day's noise. | That's word worth carrying home warm.
+line ask.how : How's the world sounding to you? | Much noise in your head today?
+line answer.how : I've an ordinary hum in both ears. | Holding steady, perhaps a shade too loudly.
+line decline : I'd rather rest my ears before another task. | I ought to hold my attention for this one.
+line accept_decline : Fair note. I accept it. | Then I'll let that sound die.
+line thank : You've steadied the ring considerably. | That settles a worry at my end.
+line sympathise : I'll stay within a breath of you. | Take the sheltered side of my voice.
+line reassure : Some metal rings better after resting. | No call to answer over all the noise.
+line preclose : I'll put the sample hoop away. | Time to leave my ears a pause.
+
+scene cold
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : When iron's quite cold I tap #ring# and hum the note.
+b : Which sound matters most? | Why hum?
+a : A split clips the end short. I want the sound to die naturally. | My own note carries on after the ring stops. I can compare their lengths.
+
+scene hinge
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My wish is for a hinge I never hear working.
+b : Wouldn't that deprive you of a note? | For a grand door?
+a : The trial ring can sing. A finished hinge has better work to do. | For a bedroom. Sleep is worth the extra work.
+
+scene wrestle
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : A wrist hold teaches you a fair bit about metal.
+b : They're much alike? | Which part of a hold?
+a : Both resent a twist that ignores where the joint actually goes. | The release. An easy opening is the best test of what went in.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I listen at the stew before I lift its lid.
+b : What do you hear? | Why not look?
+a : A big lump of mutton makes the bubbles come up in separate places. | The steam has earned its keep. I leave it inside a while.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : New straw under my feet takes the metal note out of a floor.
+b : Can you tell through shoes? | Is that restful?
+a : More through my ears. A hollow board loses its click. | After a working day I'd sooner hear straw bending than iron singing.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost finds every scratch in a gate.
+b : Does it get in the hinge? | How can you tell?
+a : Along the edges if they're rough. I keep the moving face clean. | Two white lines where yesterday the eye saw solid black.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke takes my voice before it takes my working hands.
+b : Can't you still hum? | What do you do?
+a : I can, but it comes back rough and tells me nothing about the metal. | Get to clear air before trying to prove anything.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : If I knock a bread heel and hear it ring I've bought too late.
+b : Would you take it back? | What if it's just the crust?
+a : I'd soak it and remember the shelf next time. | Then the middle will forgive a dip in mutton broth.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.friend# to stand a few steps away when I sound a ring.
+b : For safety? | What would that tell you?
+a : For an ear that isn't already buzzing from my own voice. | How much reaches the other side of a room.
+
+scene secret
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't care to name a wolf because an ugly rumour resounds.
+b : Too doubtful? | Would you even listen?
+a : Especially when the telling gets louder each time. Noise can lend a weak thing weight. | For what was actually seen, yes. The rest stays out of my account.
+
+scene works
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : In the Works I can tell which way I'm facing without opening my eyes fully.
+b : From the sound? | Even on a quiet day?
+a : Listen for where the wall gives a hammer stroke back to its owner. | I need one sound to get me started. My own heel will do.
+
+scene edge
+when topic=work self.job=smith self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep one finished ring aside for comparison.
+b : Not to sell? | How long for?
+a : It's mine to question when my ears aren't certain what they've heard. | Until I begin doubting the sample as well. Then I get an independent ear.
+
+scene temper
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Sometimes I talk right over the quiet thing I'm trying to hear.
+b : How can you tell? | Does anybody mind?
+a : I stop and there's a note underneath, still going quite patiently. | I rather expect so. I try to catch myself before the best part goes.
+
+scene newcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I give a strange voice some time before I trust the weight behind it.
+b : How much time? | Doesn't that sound hard?
+a : I listen until there's no reason to impress anybody. | Perhaps it is. I can still be courteous while my ears decide.
+
+scene rain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A little fine rain makes iron go dark unevenly.
+b : Where first? | Is dark iron spoiled?
+a : In the scratches. A smooth rim keeps reflecting the sky awhile. | No. I dry it properly when I'm through looking, that's all.
+
+scene market
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I weigh an iron ring without making a customer admire the sound first.
+b : To be fair? | Is it a bad sound?
+a : A pleasing sound is liable to make a modest piece of work seem dearer. | Sometimes excellent. Let the metal earn praise after the price is plain.
+
+scene dreamnote
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a hinge was singing louder with every opening.
+b : Did you oil it? | Where was the door?
+a : I tried. It swallowed the oil like a singer drinking tea and carried on. | Right between two furrows. Even asleep I thought that rather excessive.
+
+scene old
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember hearing a sound linger in a hoop I had put down.
+b : Did it roll? | Could you see it move?
+a : No, it leaned on one edge against a board and sang through the grain. | Barely. That made the note more striking than any great show of movement.
+
+story potlid [topic=food]
+  : I once mended a pot lid that had a very piercing whistle. I flattened the bent rim with confident taps and put it back over the stew.
+  : It whistled a lower note. In trying to remove a whistle I'd tuned it instead. I had to sit through supper considering the difference.
+  b : What did you change afterwards?
+  : A single high spot in a series of very small shifts. The stew only murmurs now.
+
+story strawbed [topic=memories]
+  : I took my sample ring home and laid it on the newly strewn floor. I meant to hear whether a quiet room would give it a longer voice.
+  : The straw swallowed the first tap. There was scarcely enough sound to tell it was metal. I lifted it onto my thumb and it rang beautifully.
+  b : Was anything wrong with the ring?
+  : Only the listener's arrangement. I've tried to remember that before blaming a poor note on anybody else.
+
+story hold [topic=pastimes self.likes=wrestling]
+  : I once set out to practise a wrestler's footwork wearing my ordinary heavy shoes. The first heel came down exactly on the corner of a spare board.
+  : The board bounced. I heard a most interesting vibration and quite forgot to finish my impressive little sequence.
+  b : Did you fall?
+  : I ended up sitting. Good position for examining a board, if less admired in wrestling.
+
+rule @aside1
+when concept=bark self.job=smith self.working=yes
+does aside
+cooldown 6h
+say Hush now. Catch the last shiver. | Cool ring first, sample hoop second.
+
+rule @aside2
+when concept=bark self.likes=wrestling
+does aside
+cooldown 7h
+say Keep the elbow where it bends kindly. | Footwork first. Show later.
+
+rule @aside3
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Fresh straw takes the click out beautifully. | A quiet floor for a tired ear.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say There goes the little evening hum. | Put the hoop where it can't roll.
+
+dlg resident.hub : Stand off my shoulder a little. My voice carries quite well, particularly when I intend a particularly quiet point.
+dlg resident.job [self.job=smith self.workplace] : At #self.workplace# I work iron and listen to what the iron says afterwards.
+dlg resident.news [world.news] : The part that rang clear came to me like this. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, your voice has a familiar ring to it.
+dlg resident.bye : May the latch welcome you without waking the house.
+
+graft resident.hub
+choice Why hum back to a ring of iron? -> iron_answer
+node iron_answer
+say I can just hear the ring at the start, well enough to take up the note. When I stop humming I can tell whether the iron's still carrying on by itself.
+free
+choice And if the sound drops away? -> iron_stop
+choice I'll listen beyond the first tap. -> hub
+node iron_stop
+say First I find the metal's resting place. A perfectly sound ring pressed against a sleeve will answer as poorly as a cracked one.
+choice I'll give the iron room. -> hub
+choice I leave you the quieter ear. -> bye

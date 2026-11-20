@@ -1,0 +1,247 @@
+mantle rm462
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_wystan_coalmarsh
+title the low-sling roofline
+fits stage=adult|old
+prefers job=sailor
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk judges_a_future_windows_height_by_the_rooftop_birds
+likes plum_tart roof_birds market_bustle frosty_mornings
+dislikes night_noise stale_bread
+fears putting_down_the_hope_of_a_higher_room
+hopes a_window_level_with_the_roof_birds
+topics work +0.5 animals +0.4 faith +0.4 prices +0.2
+styles comfort=practical gossip=guarded refuse=direct tease=none
+marks oath saying
+persona #self.first# measures the height of a future window against the feet of roof birds and saves the longest complaints for the walk with no one listening.
+words
+oath! = Jam my right sheave | Shorten my honest lift
+saying! = Lift level and look up | A bird owes no roof rent
+slingline = a broad lifting strap | a well-laid sling
+rooftrace = a jagged line of slate | a line of sunlit ridges
+bootrail = a raised threshold | a short firm step
+purseend = my uphill penny | a little window money
+tartmark = a purple crust end | a piece of dark plum pastry
+frostiron = a white lip on iron | a line of crystals
+crowdbit = an open elbow's width | a narrow eddy in the crowd
+breadchip = a floury heel | a bit of hard crust
+birdheel = a pair of quick dark feet | two little claws
+payline = a square pay mark | a sum with an honest edge
+liftcloth = a folded shoulder rag | a soft strap pad
+
+grown
+
+opinion houses against 1 : A better connection can take a post. It cannot hoist the load still standing where the work was left.
+opinion road mixed 1 : A hill is lovely to look up at until you have to carry somebody else's expensive parcel all the way.
+opinion watch mixed 1 : I'd like as much protection for a working back as for the bale that's riding on it.
+opinion city mixed 1 : From a higher window I'd see another part of the city without first leaving home.
+opinion church for 2 : A second willing pair of hands deserves thanks before the first one lets the weight go.
+opinion festivals for 1 : I enjoy the market pushing and talking while there's still room for a carrier to set a load down safe.
+line greet : Step into view alongside my end of the work.
+line greet [pair.band=strangers] : Welcome. Give the road behind you a little clearance.
+line greet.return : I can hear you above the market, distinctly enough.
+line farewell : May your next climb be more for yourself than for a parcel.
+line farewell.return : Carry your sights high and set your feet where they belong.
+line ask.how : How heavily has the day been leaning on your better shoulder?
+line answer.how : Good for the work if I take my knee's advice on the turn.
+line react.news : I'll hear what that weighed when the cargo first set out.
+line react.news.known : Heard that one passing the first row of roofs.
+line react.news.new : A fresh shape above the old roofline, then.
+line react.news.doubt : That sounds weightier than the hands behind it can account for.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : A small celebration somewhere with a view would fit that news.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd set the load down and be there to take part of the strain.
+line decline : I won't complain to the whole market just because one account is crooked.
+line accept_decline : Your choice. The sling needn't go on every shoulder.
+line thank : You waited till both my feet had a grip before letting go.
+line deflect_thanks : There was work needing a willing end of a strap.
+line reassure : A climb doesn't lose its purpose because a knee calls one pause.
+line sympathise : Stand clear here a minute. I'll keep the traffic moving round us.
+line ack : I know which end you're carrying now.
+line preclose : I'd best move before a new heap grows round my soles.
+
+scene work_1
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : My working stretch round #self.workplace# can look very different depending on which end of a sling you hold.
+b : Which end's harder? | Who's in charge of the pace?
+a : The one with less room for a boot. I'll swap gladly if a second pair of hands is getting pinned against a post. | The slowest sound footing. Shouting doesn't put a plank under anybody's heel.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I take two risers when the knee agrees and one when the load claims the casting vote.
+b : Who's chairman of that arrangement? | Do you enjoy the climb?
+a : The board beneath my sole. It can take us all out of office in one short slide. | Going uphill towards my own hopes, yes. An errand for another purse takes rather longer to look romantic.
+
+scene animals_1
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I like the line the little roof birds make with their feet.
+b : Why feet and not wings? | Can you see them that far up?
+a : Wings can get anywhere. Feet tell me which precise part of the town is worth coming down for. | Two black pricks on a bright ridge are often enough. It's the height from my own feet that interests me.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I save the corner where the plum has got past the crust and scorched a little.
+b : Why save the burnt bit? | Wouldn't a fresh plum be cheaper?
+a : To my mouth that's the part with its own clean edge and a little smoke round the sweet. | A plum will do nicely. Sometimes I can afford somebody else's time folding the pastry.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'd like a window with room to see a roof bird during the last evening prayer.
+b : What would that add? | Is your present room too low for prayer?
+a : A reminder to come down to my own task when the prayer's done, as a bird eventually comes off a roof. | I'd be in a very poor way if a flight of stairs could put the Bright One out of hearing.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I count the height of the room I want in courses of brick, not in fine names.
+b : How many courses? | Would you leave the low streets altogether?
+a : Enough to see over the wall opposite. Some wants get surprisingly ordinary once they're measured. | I'd go back readily when I chose. I'd like the choice to belong to whoever lives in the room.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : On a frosty morning the highest roof catches a little line of white first.
+b : What does the nip tell you? | Do you care for the cold?
+a : Where the sun will reach me if the work takes me over to the open side of the street. | In the face, yes. Under a loaded boot I would prefer the stone thawed and plain.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A busy market can make me feel easier even on a day without coin to spend.
+b : Like being jostled? | What catches your eye in a market?
+a : I prefer to see a lot of different purposes in motion. I'll do without a basket shoved into my back. | A stallholder able to hand over one little parcel without keeping the next caller waiting for a great show.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : This knee sometimes reads approaching weather more faithfully than it reads my instructions.
+b : Will you let it set your pace? | Do you always feel it before rain?
+a : I have a lot more use for a whole knee tomorrow than for the boast of one extra load today. | No. I'd make an untrustworthy instrument for telling anybody when to bring the washing in.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I dislike an offer of pity while my hands are full of something I chose to carry.
+b : What help would you take? | Is pride making it harder?
+a : A gate held open without anybody announcing the decline of my limbs to the whole street. | A bit. I try to recognise that before the next perfectly civil offer comes along.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : No public complaint of mine will recover the place I lost to somebody better connected.
+b : Then why keep quiet? | Would you give the place another chance?
+a : I want whoever hears my case to be in a position to do something. The rest of the street is busy with its own loads. | For fair terms. Not because I'm prepared to swallow the old unfairness and call it seasonal weather.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I can keep a penny for a high window without thinking every warm meal is stealing the view.
+b : Where do you draw the line? | Do you tell anyone what you're saving?
+a : At going hungry. I want a living body at that nice window when the rent finally comes within reach. | Enough to make the saving real, no further. A good subscription of comments won't cover the rent.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember looking down from the top of a loaded cart and seeing a roof bird at eye height.
+b : What did you see in its face? | Didn't you feel unsteady?
+a : No concern whatever about the social distinction it had just erased. A very sensible bird. | I was standing still and holding the rail. My dream includes a floor with a smaller taste for rocking.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A hard week turns a good loaf stale while I'm stretching it towards the next.
+b : What happens to the heel? | Would you abandon the climb for now?
+a : It goes below a ladle of stew. Once soaked it's fit for a tired set of teeth again. | I might set less by. A penny counted towards a window hasn't committed me to starving underneath it.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Night noise is less tolerable to a back due early to the load.
+b : Do you ask kindly for quiet? | What if the sound's just a loose board?
+a : Once. If it needs another asking, I'd still like somebody to warn me once my own voice is getting too large. | Give me daylight and a spare nail. A plank has fewer excuses available than a wakeful crowd.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I could sit at a market's edge identifying which roofs the birds have deserted for crumbs.
+b : Wouldn't you miss the bargaining? | Are the birds shameless?
+a : I'd hear quite enough of it free of charge. The birds give me a better view for the same seat. | They're doing their own loading. I feel some professional sympathy for a bird carrying a very large crust.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd point out a clear space for a newcomer when the crowd closes up behind a moving load.
+b : Where's the safe place? | Would you ask for the hand's name?
+a : Off to one side, heels against a post until the swinging part has passed. A look is worth more than guessing. | After the load's down. A good name won't stop a foot being caught.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account being carried is that #topic.subject# #topic.claim#.
+b : Was it a heavy load of evidence? | Would you go to claim it as true?
+a : Words only. I've seen an empty crate get the respect due a full one on account of a strenuous-looking carrier. | Not till there's something more substantial to put my shoulder under.
+
+story bird [topic=animals]
+  : A bird planted one claw on a roof tile and the other on a hanging rope and thought it was measuring a great building.
+  : The rope shifted, the foot lifted and my learned surveyor discovered a piece of crust on the tile.
+  b : Did the survey end?
+  : It had reached the only figure that interested a hungry bird. I rather approved of the result.
+
+story tart [topic=food]
+  : I laid a tart on a level board and set my shoulder against the load that stood underneath.
+  : When the board rose one end of the pastry made a bold little departure.
+  b : Did you catch it?
+  : With the clean inside of my wrist. I got my dinner and a purple stripe where no stripe had previously been needed.
+
+story tread [topic=memories]
+  : I tried a shallow stair with the high striding pace of a much steeper climb. My last step went entirely into air.
+  : I tried to give the unspent step a dignified conclusion.
+  b : Did anyone believe it was intentional?
+  : One small admirer applauded gallantly. I hope I never have to repeat the performance for a paid audience.
+
+rule @shore
+when concept=bark
+does aside
+cooldown 8h
+say Room on the firm board for the trailing heel. | Look past the shoulders for the empty bit of route.
+
+rule @work
+when concept=bark self.job=sailor
+does aside
+cooldown 8h
+say Listen to the foot at the far end before lifting. | The load won't tell us which carrier needs another breath.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say White line up high and a new bit of day coming. | A high view makes the low work feel like a beginning.
+
+rule @tart
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say Keep the plum streak clear of the lifting strap. | Crisp edge first if it's going up a steep road.
+dlg resident.hub : Stand where the load won't come round on you while we talk.
+dlg resident.job [self.job=sailor] : I work around #self.workplace#. No sling's properly balanced till the feet at both ends can move.
+dlg resident.news [world.news] : This made it past the crowded part of the day. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Market talk has #topic.subject# #topic.claim#. I'm repeating words. Ask elsewhere for a witness prepared to carry that account into court.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I recognised you above the market before you got near the sling.
+dlg resident.bye : Good footing for the climb and a clear look from the top.
+
+graft resident.hub
+choice Would one high window make that much difference? -> roof_window
+node roof_window
+say At present I see the undersides of birds. I wish to open my eyes on a bird standing still with the roof level beneath us both.
+choice Would anything else have to change? -> roof_settle
+choice I'll look up when I pass. -> hub
+node roof_settle
+say Only what it takes to pay for the room and come through its door with enough light left to notice. I'm working at both ends.
+choice I'll look up when I pass. -> hub

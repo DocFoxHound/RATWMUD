@@ -1,0 +1,247 @@
+mantle rm507
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_emmerich_greyridge
+title the empty place setting
+fits stage=adult|old
+prefers job=servant
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk practises_laying_a_table_for_the_guest_who_never_arrives
+likes mutton_stew cards tidy_house autumn_wind
+dislikes drizzle haggling
+fears a_chipped_cup_on_the_best_cloth cold_stew_after_a_long_shift
+hopes a_supper_set_without_measuring a_quiet_evening_to_remember
+topics work +0.5 family +0.3 home +0.4
+styles comfort=quiet gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# can lay a table square using a playing card for a measure and leaves one place clear of anything that might need polishing.
+
+words
+oath! = Gravy on the minutes | Soot on a clean cuff
+saying! = The spoon needs no written invitation | An empty plate can wait its turn
+measure = my old court card | a card with a worn red back
+tablespan = the narrow edge | a card's width of cloth
+spoonrest = the folded square | the crease to the right
+chairgap = my unoccupied place | a clear chair space
+steamskin = a thin gravy shine | the top of the stew
+smudge = my travelling smoke mark | a grey cuff
+stiffcloth = a well-ironed fold | the cloth's upright edge
+shortwind = a brisk autumn gust | a stirring at the linen
+glassmark = a tired pale ring | the faint cup circle
+compass = my straight fork | a fork laid true
+
+any
+opinion city for 1 : A cup can travel up three stairs and across two offices here without leaving the knowledge of anyone who has to wash it. It's home.
+opinion merchants against 1 : A new price written across yesterday's figure remains an increase, even in particularly good handwriting.
+opinion houses mixed 1 : The initials embroidered on a napkin don't explain who washed it this morning. They also don't stop it serving a guest perfectly well.
+opinion drink mixed 0 : A cup of something pleasant is welcome if I am free to clear my own empty cup.
+opinion times mixed 0 : A full bowl generally improves my view of the afternoon. I'd defer a grander judgement until after the washing up.
+
+grown
+line greet : My empty setting admits another caller.
+line greet [pair.band=strangers] : Welcome. There's no form to fill for a chair.
+line greet [here.time=dawn] : Morning light requires a fresh inspection of my cuffs.
+line greet [here.time=dusk|night] : There's a little light left on the polished edge.
+line greet [self.working=yes] : Leave me the aisle that a laden plate requires.
+line kin.open [pair.kin!=no] : I've set a genuinely easy chair for family.
+line again.open : Another visit duly noticed and quite willingly received.
+line greet.return : Your greeting reached me before any formal notice.
+line greet.return [pair.band=friends|family] : Yours is a voice I'd make time for between courses.
+line farewell : Take your leave without accounting for the spoons.
+line farewell.return : I'll see to whatever the table has retained.
+line react.news : What part should go in the account before the remarks?
+line react.news.new : An item newly arrived on my afternoon docket.
+line react.news.known : An existing matter in a handsomer hand.
+line react.news.doubt : Was anybody present who could sign for that assertion?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Empty chairs should be allowed to mean different things to each household.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a better cup than the ordinary one.
+line answer.how : Adequate to the work. The clean plates have offered no objection.
+line ask.how : What part of your day would you mark complete?
+line sympathise : I'd reserve your chair if that would ease the evening.
+line reassure : A bowl and a chair require very little explanation.
+line decline : I've still a formal engagement with the plates already standing beside me.
+line accept_decline : My small request has been put away with its proper papers.
+line preclose : I've one unused setting to lift before the cloth comes off.
+line ack : Entered.
+
+scene setting
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I've worn a playing card smooth measuring the space between a plate and the edge.
+b : Why that distance? | Is counting really necessary?
+a : Far enough inside to spare a sleeve, near enough to reach without pulling the dish forward. | No. But I've yet to find a guest who objected to the result of the experiment.
+
+scene card
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I play with a clean deck. The single card I measure by would give the whole game away.
+b : How could you recognise it? | Why keep a card for measuring?
+a : One corner has acquired the shine of an extensively handled spoon. | It's flat, it's ready, and it has never yet asked for a reference.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : In a sound bowl the gravy finds a proper level before the tray leaves my palms.
+b : Is thick gravy better? | Do you examine your own supper that way?
+a : For a journey upstairs it certainly travels with greater decorum. | My own supper generally enters a shorter and more direct procedure.
+
+scene order
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : To my mind a tidy room still has one place where a guest may put something down.
+b : Doesn't a spare place invite clutter? | What belongs in your own spare space?
+a : It invites an actual use. I see a small distinction worth preserving. | A letter awaiting an answer, provided the answer wasn't to be put off for a fortnight.
+
+scene wind
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : A gust through an autumn window will find the one napkin I have yet to fold.
+b : Do you chase it? | Would you close the window?
+a : I wait where the table slopes slightly. Most napkins have a poor understanding of escape. | After giving the place some fresh air. The gust's performed a service and needn't stay for dinner.
+
+scene haggling
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'd like a price with enough confidence in itself to remain on the label.
+b : Would you ask for less? | Can a label be wrong?
+a : I'd buy a lesser article if I could afford no better. I dislike the business of coaxing numbers about. | Certainly. That's why I read it before I part with anything.
+
+scene drip
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : A drizzle will add a grey margin to clean cuffs while the sky claims it's doing nothing.
+b : Would you change your cuffs? | What keeps a spattered cuff useful?
+a : If there's an important plate to carry. An ordinary errand may have my ordinary sleeves. | Turn it in briefly, then wash it as soon as work permits. It doesn't merit a written defence.
+
+scene smoke
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I find a faint smoky scent follows my coat quite independently of its laundry arrangements.
+b : Does it trouble the guests? | Have you tried airing it?
+a : I keep it well clear of the food. A smell in a coat is less intrusive on a hook. | The result was a very well aired smell of smoke.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd gladly set an uncomplicated supper for #self.spouse#.
+b : Would you measure that setting too? | What counts as uncomplicated?
+a : Habit might lead my fingers to the card. I'll exercise restraint and occupy the spare chair myself. | One pot, two bowls, and a table whose arrangement can be understood without a clerk.
+
+scene office
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : In the Office quarter a leaf caught in the passage can look surprisingly like a lost petition.
+b : Would you pick it up? | How can a leaf resemble paper?
+a : I do. A leaf is an easy matter to conclude, and a petition may be somebody's whole morning. | Flat, pale and generally moving in whatever direction the clerk would least prefer.
+
+scene learn
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I practise with an empty plate before I attempt a difficult turn carrying a full one.
+b : What's there to learn with no weight? | Do you report a dropped plate?
+a : Where my elbow will go when somebody moves a chair. The gravy can join the experiment later. | Yes, with the pieces accounted for. A missing chip can cause a guest more difficulty than a missing plate.
+
+scene loss
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A spare chair at supper carries enough of its own meaning without a public inscription.
+b : Would you have somebody sit there? | Is it always set out?
+a : Good company is welcome to choose. I don't require an explanation from a guest or an empty seat. | Some evenings. I allow the household a little liberty about its private arrangements.
+
+scene coins
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A bargain spoon with a crack at the neck is a modest charge for an awkward supper.
+b : Would you return it? | Can a crack be seen?
+a : With its price token if I had one. The seller and I should be able to discuss the actual article. | Lay it in full light, then tilt the handle. I also notice when the handle flexes.
+
+scene boss
+when topic=work self.job=servant self.boss
+does tell.self / ask.detail / answer.detail
+a : An instruction from #self.boss# is easier to carry out when I repeat the number of settings before leaving.
+b : Does that sound formal? | What if a guest is late?
+a : Briefly. Considerably less formal than explaining a whole tray of additional dishes. | I set a place and keep the food warm separately. The guest can arrive without encountering a chilled welcome.
+
+scene dark
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : In weak light I know my measuring card by the clipped corner.
+b : Have you ever laid it out with dinner? | Which corner is clipped?
+a : Once it came very near a bread plate. Happily no guest had ordered a hand of cards. | The corner my thumb reaches first. A servant's apparatus can be simple if it's consistent.
+
+scene sleep
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : After a day carrying dishes I like to set my arms flat along a table for a minute.
+b : Does that ease the shoulders? | Won't the table need polishing?
+a : It gives them a moment without a matter to convey. That's a measurable improvement. | My personal table has kindly excused itself from formal inspection.
+
+scene facts
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I'd split a dinner account into what was ordered and what actually reached the table.
+b : Where do you put a rumour? | Would you put a guest's complaint on it?
+a : Below the line, in pencil. A kitchen deserves its facts in a more durable hand. | If I heard it myself. Complaints improve very little in transit.
+
+story whitelinen [topic=work self.job=servant]
+  : I laid a white cloth to a measured border and found one corner apparently an inch too long.
+  : The opposite chair had caught the hem under one wooden arm. The cloth was perfectly blameless.
+  b : Did you correct the chair?
+  : I released the hem without entering a complaint against the furniture.
+
+story cardstew [topic=food]
+  : A small drop of gravy landed in the centre of my measuring card just below the queen's chin.
+  : I wiped it promptly and left a shadow like a small official collar about that distinguished neck.
+  b : Does the collar remain?
+  : It does. I've promoted the card to measuring napkins and entrusted the spoons to another court.
+
+story windowleaf [topic=season]
+  : An autumn leaf blew through a high window and came to rest on a vacant dinner plate.
+  : I carried it outside with the same care I'd ordinarily grant the intended dish.
+  b : Was there a reason for the ceremony?
+  : I didn't want wet leaf juice on the cloth. One can arrive at excellent manners by thoroughly practical means.
+
+rule @tray
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 8h
+say Clear hand under the broadest plate. | Leave a card's width at the near edge.
+
+rule @card
+when concept=bark self.likes=cards
+does aside
+cooldown 8h
+say The clipped queen's on measuring duty. | A sound deck if we're actually playing.
+
+rule @drizzle
+when concept=bark self.dislikes=drizzle
+does aside
+cooldown 8h
+say Change that cuff before the next course. | The little wet spots do count.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Keep a lamp by the folded border. | Last of the light on clean silver.
+dlg resident.hub : The spare setting can be moved quite easily. Sit here.
+dlg resident.hub [topic.meeting=known] : Your place won't require a fresh introduction, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : State the purpose plainly and let the table keep its distance.
+dlg resident.hub [here.time=night] : Enough lamplight for a civil word and one unchipped cup.
+dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. Dishes, messages and the occasional extraordinary request pass through my hands.
+dlg resident.job : I try to send the guest away remembering supper and forgetting how much work it took.
+dlg resident.news [world.news] : Here's an item I can enter in plain handwriting. #world.news#.
+dlg resident.bye : Leave your cup on the table. I'll take it with the rest.
+
+graft @clippedqueen resident.hub
+choice Why is a playing card lying by the fork? -> clippedqueen
+node clippedqueen
+say The clipped queen gives me a convenient width to measure by. Without drawing a mark I can give each setting an equal share of the edge.
+choice Does the queen come to dinner? -> clippedqueen_more
+choice Look over the table. -> hub
+node clippedqueen_more
+say Only to the preparation. I retire the card before the first dish arrives. The queen has never raised a formal objection.
+choice Look over the table. -> hub
+choice Leave the measurements alone. -> bye

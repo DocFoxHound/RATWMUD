@@ -1,0 +1,260 @@
+mantle rm388
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_septimus_slagby
+title the tale beneath the chair
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk stores_story_prompts_under_a_door_chair
+likes blackberries old_tales quiet_chapel frosty_mornings
+dislikes stale_bread flies
+fears a_door_catching_a_callers_heel a_stale_heel_stuck_in_the_throat
+hopes a_view_of_the_high_roofs a_chair_with_room_for_another_tale
+topics lore +0.5 smalltalk +0.4 faith +0.3
+styles comfort=company gossip=warm refuse=plain tease=dry
+marks oath saying
+persona #self.first# keeps the starts of stories underneath a chair, smells of old smoke, and can give a new caller the best seat without moving a single chair leg.
+
+words
+oath! = Ash on the seat | Berry in the keyhole
+saying! = The best tale sits underneath | Leave the hinge room to think
+chairrail = the lower chair rail | the rung under my knees
+storytag = a scrap of stiff card | a little wooden tag
+hooknotch = the notch under the seat | a thumb hollow underneath
+oldsmell = cold smoke in wool | a smell of old fires
+burgundy = a crushed blackberry | a tidy violet stain
+safeheel = a bread heel in broth | a thoroughly softened crust
+flycurtain = the fine door cloth | a narrow bit of netting
+icecorn = the silver edge on a rail | a tiny frost blade
+kneehold = the seat before the turn | one firm chair bottom
+talestart = a line for setting out | my first six words
+
+any
+opinion newcomers for 1 : A new listener means all my oldest tales can have one more nice clean start.
+opinion strangers for 2 : An unknown caller generally stops being a stranger once I've found us seats. I've time enough to bear that particular hardship.
+opinion road against 1 : It promises a journey, then charges a wolf in tired bones all the way home. I'm particular about which promises I walk out to meet.
+opinion dole for 1 : Bread will do fine work without a speech in front of it. A bowl fetched to somebody left sitting is often worth a second loaf.
+opinion church for 1 : A place that gives a quiet seat and lets a tale wait has done its worshipper a solid service.
+opinion city for 1 : I've worn a chair smooth hearing this city's ordinary voices. Buying a new chair elsewhere would seem wasteful.
+
+grown
+line greet : My chair's warm on the near side. Come close.
+line greet [pair.band=strangers] : Well met. My best tale hasn't met you either.
+line greet [here.time=dawn] : Room for a caller at the frosty end of morning.
+line greet [here.time=dusk|night] : You may borrow the warm patch in the dark.
+line greet [self.working=yes] : I'll hold the door just there. Come by.
+line kin.open [pair.kin!=no] : Take whichever corner suits the old bones between us.
+line again.open : I've a different beginning under this chair since last time.
+line greet.return : Here's a welcome without my making a great show of standing.
+line greet.return [pair.band=friends|family] : I know that voice better than I know my best joke.
+line greet.return [self.working=yes] : Greeting received. Now let that door settle gently.
+line greet.return [here.time=dusk|night] : I hear you with the ear nearest the fire.
+line farewell : Leave the tired half of the walk under my chair.
+line farewell.return : I'll watch the hinge till your heels are clear.
+line react.news : Pull up the part of this account where a wolf might sit.
+line react.news.new : That wants a fresh tag under the rail.
+line react.news.known : Aye, my chair's had that tale across its knees before.
+line react.news.doubt : Was there a listener seated within earshot throughout?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave a warm space for the visitor who has to bring that house a meal.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a tale worthy of the best chair.
+line answer.how : Holding the seat down against all attempts to steal it from the floor.
+line ask.how : How's the walk been treating your knees?
+line sympathise : An empty chair speaks rather loudly the first days.
+line reassure : Sit here while your feet and your thoughts get acquainted again.
+line decline : I'd hate to make a promise I had to get up and run after.
+line accept_decline : The old chair knows how to hold a quiet word.
+line thank : My knees voted firmly in favour of what you just did.
+line deflect_thanks : Give my chair the credit. It carried most of my weight.
+line preclose : I'd like to feel for the next bit of story before I forget it.
+line accept_preclose : Don't let a chair with more tales than sense detain you.
+line ack : Sound hinge.
+
+scene cards
+when topic=lore self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I keep six first words on each tag underneath my chair.
+b : What happens after six? | Which tag gets chosen?
+a : I must earn my reputation by remembering a seventh. | By touch. The most worn tag is one I've told a little too often for anybody's good.
+
+scene smokedcoat
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My coat has made friends with so many fires it can't part from the smell.
+b : Even after washing? | Does it bother a caller?
+a : Particularly after washing. Wet wool has an astonishing memory. | A chair by the open door serves the sensitive nose and offers conversation well within range.
+
+scene blackberries
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I turn a blackberry carefully before it disappears.
+b : Checking for a worm? | Is there a better side?
+a : I give any fellow diner a chance to get off. Decent manners from both sides. | The darker side's generally the one that's had the sun to itself.
+
+scene talesbones
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : A good old tale will bear being told with a whole piece mislaid.
+b : Who supplies the missing piece? | Does it stay the same tale?
+a : Sometimes the newest ear on the bench. It's a pleasure to give some of the telling away. | It often gets a new leg to stand on. The face and the old voice don't change.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I take a seat within hearing of the chapel door come gently home behind me.
+b : What's pleasant about the sound? | Wouldn't you prefer a seat near the front?
+a : It's the last piece of street noise. I like the first chapel silence that follows it. | I'd rather leave the front free for somebody thirsty for the spoken part. I'm after the quiet.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost has drawn far finer lines on my chair rail than any pen I ever paid for.
+b : Doesn't the seat feel cold? | Are you going to rub the frost off?
+a : Yes. I admire the work first and lay a folded coat over it after. | Not till the light's got round to the other side. Then the frost can rub itself off.
+
+scene hardbread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : A stale crust would make a good story tag if it weren't such a disappointing supper.
+b : Could you make a meal of the crust? | Why not scratch the title into it?
+a : Gladly after its pride's been soaked out in broth. Until then I'm too fond of my teeth. | A mouse might find my best beginning. I prefer a critic who waits for the ending.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I let the door cloth fall between my tale and the flies.
+b : Don't they come underneath? | Are flies that bad an audience?
+a : Occasionally. I can admire a fly's persistence across a square of netting for half an afternoon. | They never sit still for the good part and they're always after the blackberries.
+
+scene doorcheck
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I give the door just enough room to swing clear of a laden elbow.
+b : Could the caller push it? | Why not open it right out?
+a : Sometimes. I'd rather spare the caller the choice of dropping the bundle or banging my knee. | A gust can send a wide door on a long journey. I'd be obliged to follow and invite it home.
+
+scene works
+when topic=land self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : From a Works doorstep I can hear a long shift settle into a sort of tune.
+b : Do you count the hammer notes? | What's the quiet part like?
+a : When I've no story in hand. If I counted for a whole morning I'd be carrying home a heavy sum. | Often it's a few breaths before a different job begins. There's the sound of one wolf thinking with both arms at rest.
+
+scene child
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I haven't told #self.child# every tale under my chair.
+b : Are you saving a special one? | Would a glance under the rail show all your stories?
+a : I like to think there's another afternoon for discovering one together. | The tags only give a start. I'd still have some of the business of being a parent left to do.
+
+scene dearseat
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : If I moved up the hill I'd bring this same chair to see the higher roofs.
+b : Would it be grand enough? | Why move a heavy old thing uphill?
+a : The pavement's got no titles to sell a chair. It'll sit down like all the rest. | For the pleasure of letting an old comfortable thing into a new view.
+
+scene sunline
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : When it's too dark to see the tags I tell whichever tale comes first under my thumb.
+b : Doesn't that keep repeating a favourite? | Why not light a lamp?
+a : Exactly. An excellent excuse for any listener who particularly wanted the old one twice. | The dark lets a quiet tale settle quietly into its own shape. Also I'm sitting very comfortably as things are.
+
+scene storynews
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A story painted in strong colours needn't be sold as a report of the street.
+b : Which label would suit each? | Is it wrong to add colour?
+a : Tell it from under the chair, not over the counter. I let a listener know which pleasure is being offered. | Wrong to make a great stain on a living wolf and claim it came naturally. A story character may have all the purple you like.
+
+scene younghelper
+when topic=smalltalk self.age>=60
+does tell.self / ask.detail / answer.detail
+a : I used to get up halfway through a tale to show what a running messenger looked like.
+b : Do you show it now? | Isn't that part of the fun?
+a : I do a splendid pair of running paws along this chair rail. The knees have withdrawn from the performance. | There's equal fun in a tired messenger sitting down. I've got particularly good at showing that part.
+
+scene counters
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I put good value on a shop that can spare a seat for a tired caller.
+b : Would you charge for the use of it? | Even if there was no sale?
+a : I'd charge the dust for keeping a customer away and let the customer sit free. | A wolf who goes home rested may return with a coin. I'd sooner have the rested wolf either way.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could show #self.friend# which rail has my very oldest tags.
+b : Would you allow one to be taken? | Are the tags valuable?
+a : One on loan. A chair with a missing tale will want a visitor in the near future. | Each costs a splinter of wood and an afternoon of memory. I know which half I'd hate to replace.
+
+scene healthy
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I keep one good hand on the chair arm till I feel the floor holding me again.
+b : Does standing take a while? | What if somebody's waiting?
+a : Precisely the while it takes. The floor's patient and we're developing quite a civil understanding. | A word of welcome can reach the door before either foot gets there. I find that arrangement saves my feet a fair distance.
+
+story ashprint [topic=memories]
+  : I once rubbed the first words of a tale into a new tag with a bit of hearth ash.
+  : Put it under my chair, told a fine long story and discovered the first words printed backwards on my coat cuff.
+  b : Could you read it that way?
+  : Had to take my coat off and hold the cuff to a bit of glass. Cost a whole performance before I'd even started the tale properly.
+
+story doorberry [topic=food self.likes=blackberries]
+  : I left three blackberries on the chair arm while I held a door open.
+  : The arm dipped a little. The first berry made a short journey and stopped under my heel.
+  b : Was the carpet purple?
+  : No carpet. The stone had a fine new stain and I learnt to leave the two surviving berries in a bowl.
+
+story rivalchair [topic=lore]
+  : I had a guest once who preferred standing to sitting and looking at me while I told a tale.
+  : I turned my chair so that my listener could see straight down the street instead.
+  b : Did that settle the visitor?
+  : After a while the chair and I had a listener leaning on one arm, which is near enough to a proper sit for any generous host.
+
+rule @hinge
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Room for the bundle before the elbow. | Let the latch come in without a fuss.
+
+rule @flies
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Door cloth down over the berry bowl. | Make the winged audience wait outside.
+
+rule @frost
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say Clean print on the arm this morning. | Coat between the knees and the frost!
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Last little tale before the tags go dark. | Leave a hand's width near the chair.
+dlg resident.hub : Standing is allowed. Sitting puts you on equal terms with the management.
+dlg resident.hub [topic.meeting=known] : That chair end's learnt your shape, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : There's room to speak comfortably from two separate chairs.
+dlg resident.hub [here.time=night] : Come where the little strip of light falls across the rail.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. Nice to give the hinge somebody to talk to.
+dlg resident.job : I see a caller in and let the chair take care of the welcome.
+dlg resident.news [world.news] : This one's come to the door under its own steam. #world.news#.
+dlg resident.bye : Give that walk the benefit of an occasional seat.
+
+graft @underchair resident.hub
+choice What's written on the tags beneath your chair? -> underchair
+node underchair
+say The words that start the tale. The rest sits between the ears above the chair. I try to take both parts with me when I'm going to entertain a caller.
+choice May I choose a tag for the next tale? -> underchair_more
+choice Leave the tag on the rail. -> hub
+node underchair_more
+say Run a paw underneath the rail. If it's one of the smooth ones I shall remember it beautifully. If it's rough you may have to help me invent the missing part.
+choice Leave the tag on the rail. -> hub
+choice Stand clear of the opening door. -> bye

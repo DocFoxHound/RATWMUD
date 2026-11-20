@@ -1,0 +1,263 @@
+mantle rm566
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_cressida_mallory
+title the petition loaf
+fits stage=adult|old
+prefers job=merchant humour=merry
+traits temper=calm talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk names_careful_square_letters_for_the_loaves_that_taught_her
+likes plum_tart draughts festival_bells autumn_wind
+dislikes drizzle bad_manners
+fears a_fair_request_lost_under_a_mountain_of_receipts
+hopes one_clear_answer_on_a_weekly_visit
+topics work +0.6 food +0.5 prices +0.4 pastimes +0.3
+styles comfort=practical gossip=curious refuse=gentle tease=merry
+marks oath saying
+persona #self.first# writes a square hand remembered from hurried batches of bread, carrying the same carefully folded question on each weekly enquiry.
+
+words
+oath! = By my squarest loaf | An oven full of receipts
+saying! = Let the margin rise | Weigh the answer before wrapping it
+crustscript = a bread-shaped letter | my crust script
+squareo = the square round letter | my boxy little vowel
+petitionfold = a fourfold question | the weekly paper
+cornercrumb = a brown corner | the crust end
+scalebed = the empty pan | my level dish
+turnmark = a thumb-width margin | the turn of the paper
+tartpoint = a purple point | the plum corner
+redking = a capped draught | the second red piece
+bellrise = a double beat | the first high stroke
+windpage = a fluttering form | a loose white wing
+drizzlespot = a wet full stop | the expanding speck
+civilsum = a courteous figure | the plain request
+
+any
+opinion merchants mixed 0 : I'd like a price a wolf can put beside a known weight and read without needing the seller's flattering interpretation.
+opinion city for 1 : A city office may mislay a request. I still value being able to go back and ask for the entry again.
+opinion houses mixed 0 : Even a handsome seal has to leave room for the words explaining the actual decision.
+opinion dole for 2 : I've learnt in a hungry season that a hurried plain loaf does much better work than a beautiful unfilled form.
+opinion festivals for 1 : A festival bell makes an excellent starting signal for a walk that requires neither paper nor scales.
+opinion newcomers for 1 : A first arrival at a customs desk should find a legible figure and a voice willing to explain it.
+
+grown
+line greet : Hello. I've room beside my little loaf of a letter. | Come near. The scale's resting between figures.
+line greet [pair.band=strangers] : A fresh face to go with a blank margin. | Welcome. You can start in your own words here.
+line greet [here.time=dawn] : Morning. First line straight, rest permitted some crumbs. | Early light makes my square letters look almost airy.
+line greet.return : Yes, hello. I've put my pen down before it rises any farther. | My pen's poised neatly between strokes.
+line greet.return [pair.band=friends|family] : A familiar face deserves a particularly generous margin. | No form needs filling before I hear your voice.
+line greet.return [here.time=night] : Late hello. I'm down to the smallest crust of paperwork. | Evening. The ink can take a quiet rest.
+line again.open : Another enquiry at the same well-weighted counter. | Back before my square vowels have gone cold.
+line hail [pair.band=friends] : Come see two coppers balanced against pure paperwork! | Stand by me and admire this remarkably square letter!
+line farewell : An alert reader for whatever you ask next. | An easy stair and a good plum corner to you.
+line farewell.return : I'll put the loose papers back in their tin. | Take the steps in whatever size suits your errand.
+line react.news : Lay the account out where we can see its proper weight. | I can give a long report a respectable margin.
+line react.news.new : That's a fresh line in my particular baking book. | New dough for my little loaf of information.
+line react.news.known : That story has the shape of an earlier entry. | I've read those particular corners before.
+line react.news.doubt : An ounce of fact seems to have acquired a heavy wrapper. | I'd take the weight of the paper off that claim.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : My pen can sit quietly while you speak of the loss. | There's no call to make grief write a neat receipt.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Glad tidings. I'd put a purple plum beside the entry. | That's a line worth writing with my freshest nib.
+line ask.how : Has the day risen nicely or gone flat on you? | Getting a fair return for today's climbing?
+line answer.how : Cheerful within margins a clerk could sign. | Fine. My two legs are keeping my paperwork moving.
+line decline : That would spend the quiet hour I've promised to another enquiry. | I'd only give you a weight I hadn't properly checked.
+line accept_decline : Then I won't enter you against an unwanted task. | A civil refusal closes the form quite neatly.
+line preclose : Time I got this particular loaf out of the paperwork. | I have another set of figures waiting to be read straight.
+line accept_preclose : Your errand has its proper claim on your legs. | Go while the next office still has somebody listening.
+line thank : You made a square line out of a wandering one. Thank you. | That kindness took real weight off my next journey.
+line deflect_thanks : It scarcely took a copper's worth of ink. | I had room for one more clear figure.
+line sympathise : Sit where you needn't produce a written account of your hurt. | I'll hear you through the lumps and gaps in the telling.
+line reassure : Start with a small plain line before tackling the whole page. | There's more than one clear stair to a decent answer.
+line ack : Yes. That balances without a finger on the rim. | I'd sign that figure in a very steady hand.
+line give.advice : Weigh the empty wrapper before arguing over the goods. | Copy a request while the original still knows where you put it.
+
+scene loafscript
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : My letters have square sides because I learnt their shape from loaves set close together. Look at that vowel, positively well baked.
+b : Could you write it round? | Can you still bake ordinary bread?
+a : Certainly. An ordinary round letter would deprive my exceptionally square figures of their distinction. | Much better than my early efforts. A pen can forgive a lumpy corner that a hungry mouth notices immediately.
+
+scene custpan
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the empty pan comes first. It's the lightest thing I weigh and occasionally the most important.
+b : How much can an empty pan tell you? | Can a pan really be empty?
+a : Whether I've started with a level scale. Put a cargo on a bad beginning and it becomes an expensively exact error. | Only after I've brushed the last packing crumb off. A clerk who baked ought to know a crumb when it affects the sum.
+
+scene marketmemory
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I learnt baking in a hurry when markets needed food. My early loaves were edible in a rather determined way.
+b : What improved first? | Did the hurry spoil them?
+a : The inside. I stopped admiring a browned crust as sufficient evidence of a finished loaf. | Hurry made me leave too little room. Once I set the dough farther apart it could do its own work while I did mine.
+
+scene newdesk
+when topic=work
+does tell.feeling / react.self / assess
+a : A desk became free and I exchanged a hot board for an inky one. I still expect the corners of a fresh page to smell of bread.
+b : Was the change welcome? | What did you bring with you?
+a : Very. I liked seeing the result of careful work both places. Numbers cool much more quickly than loaves. | My square hand, my respect for ordinary appetites, and an inability to keep a perfectly clean cuff at any occupation.
+
+scene weeklypetition
+when topic=day
+does tell.plan / ask.detail / answer.detail
+a : Every seventh day I enquire after my missing petition. I give its date, the subject, and the same polite opportunity for a new answer.
+b : What counts as a new answer? | Do you lose patience?
+a : A location somebody has actually checked, or a name for the desk responsible. I'm accumulating quite enough elegant uncertainties. | My patience is like well-worked dough. A determined stretch every week seems to have improved it.
+
+scene stairs
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Two rises per stride when ascending, single treads on the way down with my paper. An economical little reading habit.
+b : Why read on a stair? | Does it speed up an answer?
+a : Reading takes place on the level landing. My eyebrows can go over the wording without asking my feet to climb blind. | It speeds up the journey. The answer keeps a calendar belonging to an entirely different branch of government.
+
+scene plum
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A plum slice raises the question of whether pastry or fruit decides a portion's value. I volunteer to examine the evidence.
+b : Which do you weigh first? | Is the examination destructive?
+a : The fruit with my eyes and the pastry with my fingertips. The official scale has stricter business to conduct. | Very thoroughly. I can report a satisfactory balance even when there is no sample left to submit.
+
+scene draughts
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : On a draughts board I give every captured piece an imaginary receipt. It's an excellent occupation for an opponent considering a move.
+b : Do kings need two receipts? | Does the loser get a copy?
+a : One for the piece and one for the disappointment. Double entry has its uses. | Only at request. There's no sense burdening the grief of defeat with unsolicited paperwork.
+
+scene bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : The first festival bell makes me want to take the whole stair in two strides. I retain enough sense to count the treads first.
+b : Do you carry a paper then? | What about the second bell?
+a : Only if it's wrapped round something good to eat. A festival deserves documents of a practical character. | That's for slowing at the landing to hear where the actual music is coming from.
+
+scene autumn
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : On a blustery day my loose petitions look astonishingly keen to find an office without my help.
+b : Do you let one fly? | How do you escort them?
+a : I have considered whether the wind might obtain a swifter answer. I keep my only signed copy under a firm thumb. | Fold the written face inward and give them a dry pocket. A runaway rumour is quite enough without runaway forms.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / ask.detail / answer.detail
+a : Drizzle makes its own punctuation on a page. It favours large round stops precisely where a sum should continue.
+b : Would a little blotting help? | Can you carry a cover?
+a : Before it reaches the ink, yes. Afterwards you have an exceptionally mysterious blot over an otherwise respectable charge. | I do. Drizzle's particular talent is getting that first little dot in while I'm deciding to open the flap.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / react.self / assess
+a : I don't require a beautiful bow at the scale. Keeping one's thumb off the pan makes an admirable opening courtesy.
+b : Has a thumb much weight? | What counts as a courteous reply?
+a : Enough to deserve its own customs entry if it chooses to present itself as cargo. | A clear figure, given once and explained again if the customer needs it. Perfectly civil on either side.
+
+scene letterfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A neat line addressed to the Bright One would scarcely say all I'm thankful for. I usually give up the pen and speak plainly.
+b : What gets left off the page? | Do prayers need margins?
+a : The good smell of bread breaking and the relief in a visitor's shoulders when the figure comes right. I'd need quite a large sheet. | For a little quiet, yes. Once the writing stops I can generally hear somebody else who needs something.
+
+scene quarterhome
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : A Commons errand has a way of acquiring purchases all up the stair. Go out with one petition and return with a whole small market.
+b : Are the purchases necessary? | Do you make a list?
+a : Some are. I maintain the private status of the plum tart in my own account of the outing. | Across a discarded practice sheet. My official request deserves better than returning with cheese priced down its margin.
+
+scene bagprice
+when topic=prices
+does give.opinion / react.self / assess
+a : I expect a weight stated plainly enough to copy once. Numbers that need coaxing into view rarely improve over a second telling.
+b : Would you accept a rough measure? | Is every pinch important?
+a : For family cookery, rather often. At a customs counter I'd give an actual figure and say what I weighed. | When the sum rests on it, yes. For a pie crust I allow flour considerably more artistic freedom.
+
+scene newface
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A new visitor shouldn't need to know the arrangement of the whole office merely to ask which pan to use.
+b : How would you begin? | Wouldn't that hold up the queue?
+a : Indicate the clear pan, ask what the goods are, then give the first figure without making a ceremony of my position. | It generally saves the second enquiry and several anxious journeys between desks.
+
+scene reportnews
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : This report is labelled #world.news_from#. #world.news#. I couldn't include the source more plainly on a good square page.
+b : Do you trust the label? | What if someone leaves that out?
+a : I can state where the words arrived from. Weighing their truth may need a witness who was actually present. | Then I'd restore the missing line before thinking about putting my own name alongside the account.
+
+scene inkfuture
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : When my petition finally turns up, I'd like to know exactly which innocent-looking stack had the pleasure of its company.
+b : Would you celebrate the answer? | Have you a suspected shelf?
+a : I'll buy a slice with a decent plum. Whatever the decision, a clear answer ought at least to have a proper crust. | I decline to accuse furniture without a fair hearing. Besides, each week's visit discovers a whole new family of shelves.
+
+grown
+
+story roundedletter [topic=work|memories]
+  : A notice asked for a round number. I bent over my pen and produced the most beautifully curved figure I'd ever written.
+  : Then I reread the request and understood my admirable handwriting hadn't settled the arithmetic at all.
+  b : Did you leave the curve?
+  : Certainly. My first number round twice over deserved the employment.
+
+story plumweight [topic=food|memories]
+  : I put a tart on one plate and a similar plate on the other to see what the filling weighed. The empty side surprised me by sinking fast.
+  : I'd forgotten a fork under the napkin. The fork was insisting on its share of the pastry.
+  b : Did you weigh it again?
+  : After lunch, the result proved beautifully even. Nobody need enquire where the evidence went.
+
+story inkparcel [topic=memories|work]
+  : I carried a folded practice page in the pocket that once held my bread heel. When I got hungry I took it out without looking.
+  : The neat little packet was precisely the size of a small roll.
+  b : Could it pass for lunch?
+  : Only very dry reading. I found a real roll and kept the practice sheet to record the purchase.
+
+rule @letter
+when concept=bark
+does aside
+cooldown 8h
+say Give the little vowel square shoulders. That's my hand. | A narrow margin and a good honest crust to this figure.
+
+rule @work
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say A bare pan first and the actual goods after. | The wrapper pays no duty on a finger resting against it.
+
+rule @bell
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say That bell gives even the ink a holiday air. | Two bright strokes and my shoes remember the dance.
+
+rule @drizzle
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Keep those unhelpful wet full stops off the entry. | Paper in its pocket before the quiet drizzle notices.
+
+dlg resident.hub : There's room on this square little page for a question. A short one will even leave space for the answer.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I hope you've had a more conclusive answer than my last weekly enquiry.
+dlg resident.hub [here.time=night] : Even lamplight can find its way round my square letters. I've one clear margin left.
+dlg resident.hub [pair.disposition=wary|hostile] : You can see the pan and I can see both hands. Those positions give us a civil distance for discussion.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I began with bread before I had a desk, and a decent measure matters to both customers.
+dlg resident.job : I enjoy work where it's possible to show in a clear hand exactly what was done.
+dlg resident.bye : Here's wishing your next small errand a legible and prompt conclusion.
+
+graft resident.hub
+choice Why call that square letter a little loaf? -> letterloaf
+node letterloaf
+say I learnt to bake fast, with the loaves fairly close on the board. They rose in straight-sided rows. My nib remembered the shape when I came to a desk.
+free
+choice Did learning both jobs change the bread? -> loafreturn
+choice I can read the square vowel now. -> hub
+node loafreturn
+say I measure more carefully now and give the rising dough more room. A clerk leaves a margin and a baker leaves room for the crust. My loaves benefit from both.
+choice That sounds worth a second slice. -> hub
+choice I'll leave the margin clear. -> bye

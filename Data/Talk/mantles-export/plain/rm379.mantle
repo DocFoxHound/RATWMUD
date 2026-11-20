@@ -1,0 +1,263 @@
+mantle rm379
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_finn_dripwick
+title the dry stool
+fits stage=adult|old
+prefers job=sailor humour=dry
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk reads_yesterdays_flood_from_the_stool_rungs
+likes plum_tart long_walks market_bustle frosty_mornings
+dislikes waiting salt_wind
+fears a_queue_that_never_moves sweet_food_soaked_in_brine
+hopes to_walk_the_whole_waterfront_with_dry_feet
+topics weather +0.5 travel +0.4 food +0.3 work +0.3 gossip -0.2
+styles comfort=seat gossip=guarded refuse=blunt tease=dry
+marks oath saying
+persona #self.first# reads flood heights from the rungs of stools, carries a plum tart with elaborate care, and makes a poor show of waiting patiently for anybody else to catch up.
+
+words
+oath! = Four feet afloat | Rungs in the tide
+saying! = A stool has four witnesses | Keep the tart higher than the tide
+rung = the lower crosspiece | a stool rung
+tideline = a little line of grit | a brown watermark
+dryseat = a high stool | the taller seat
+plumtop = the sugared top | the dark plum filling
+drypaper = a scrap of stiff paper | two folded bits of wrapping
+saltrim = a crust of salt | a pale salty rim
+walkbeat = a good walking pace | my impatient stride
+waitingfoot = the foot I keep tapping | my fidgety boot
+marketcry = the bark of a stallholder | a cry over the barrows
+earlyfrost = a thin white fringe | sugar-fine frost
+looplace = a heel loop | a knot in the lacing
+
+any
+opinion houses against 2 : A high window gives anybody a tolerable opinion of low water. I'd want the owner to come down and examine a stool rung.
+opinion city for 1 : You can walk to find a crowd or walk to lose one in this city. Both take good legs.
+opinion strangers mixed 0 : I'll shift a chair for a stranger. I'm slower about shifting my opinion.
+opinion newcomers mixed 0 : A newcomer who can wait without blocking the door has made an excellent beginning.
+opinion watch against 1 : A uniform takes up as much dry floor as any other coat. I'd like its wearer to remember it.
+opinion festivals for 1 : The bustle's worth the walk as long as the best stalls are open by the time you get there.
+opinion sump for 1 : The Sump knows every inch between a lost shoe and a lost supper.
+
+grown
+line greet : There's a high seat free over there.
+line greet [pair.band=strangers] : We've a patch of common ground. It's mostly dry.
+line greet [here.time=dawn] : Morning. Frost's got to the stools before me.
+line greet [here.time=dusk|night] : Evening. Dry feet still count after dark.
+line greet.return : Fine, a voice that didn't come with a splash.
+line greet.return [pair.band=friends|family] : I know your tread off a bare board.
+line greet.return [self.working=yes] : Say it while I've got my head above the business.
+line greet.return [here.time=dusk|night] : Your voice has come through clearer than the lamps.
+line kin.open [pair.kin!=no] : Kin can take the one good rung.
+line again.open : I kept my place. There's more talk here yet.
+line hail [pair.band=friends] : Here! The face above the dry stool!
+line farewell : May the muck be shallow wherever you turn.
+line farewell.return : And stop before your luck gets both boots wet.
+line react.news : Fit the news to a moment while I've one free.
+line react.news.new : I must have walked past before that bit of news arrived.
+line react.news.known : That's been in under the door once already.
+line react.news.doubt : Something in that account won't sit level.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Rotten news. Sit up here away from the damp.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a fine bit of sound for a wet street.
+line ask.how : Are you still making decent time on your feet?
+line answer.how : Good enough to give a slow clock some competition.
+line thank : You saved me a fair stretch of standing round.
+line deflect_thanks : I shifted a stool. No great ceremony in it.
+line sympathise : Sit if you want to. I'll see that nobody hurries you.
+line reassure : Get one dry foot sorted and see about the other.
+line decline : I can't give that the time it wants today.
+line accept_decline : Don't keep me waiting for a better excuse. That'll do.
+line preclose : I'd like to get walking while my toes still know each other.
+line accept_preclose : Then get a clear start. I know the value of one.
+
+scene four_witnesses
+when topic=home|smalltalk
+does tell.self / ask.detail / answer.detail
+a : A stool can remember how high the water came better than a boastful wolf. | Four marks at four heights.
+b : Which one do you believe? | How many floods is that?
+a : Lowest unmarked rung. Even the stool can tell a tall one if somebody moved it. | One crooked floor. Don't convict the tide on bad evidence.
+
+scene rest_work
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : A coat from a wet quay can drip for an extraordinary length of time. | Most of my idea of seawork is still under a safe roof.
+b : Where do you hang it? | Thinking of a voyage?
+a : Clear of any seat I may be forced to occupy later. | Thinking a dry room can use some of the same sense about loose gear.
+
+scene patient_lessons
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : They say I ought to acquire patience while I learn. | Learning a task twice costs a longer wait than listening properly the first time.
+b : Is it coming along? | Something you discovered yourself?
+a : Slowly. I should like to complain about that. | Yes. On my third attempt, unfortunately.
+
+scene tart_level
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A good tart travels best on the palm. | #plumtop.capitalize# can outlast the pastry if you've been foolish with the first bite.
+b : Low enough to steal? | An excess of filling?
+a : At the height of my mouth. I plan to remove the temptation quickly. | A temporary engineering problem, mostly solved with a tongue.
+
+scene watch_frost
+when topic=season here.season=winter here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Frost on the dry rungs shows up before frost on the wet ones. | A frosty walk brings the street into sharp lines.
+b : What's the use in knowing? | Do you ever stop to sketch them?
+a : My first seat of the day doesn't freeze itself to my coat. | That would defeat two excellent purposes of a frosty walk.
+
+scene market_pass
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I appreciate crowds that remember why they're in the market. | #marketcry.capitalize# sounds better to me than the gulls can manage.
+b : What attracts you there? | Very different offerings.
+a : Besides passing judgment? A plum tart. | That's why I go where the stalls are.
+
+scene walk_far
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : A walk stops being an errand when I miss the turn and don't mind. | I let the first mile take my temper along.
+b : Where do your feet take you then? | Does it bring it back improved?
+a : Far enough to forget what I'd have fetched. | I sincerely hope some of it fails to find the way home.
+
+scene salt_gust
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : There's a distinct line on a dark sleeve where the sea air quits. | I can enjoy the wind from the inside of a sound window.
+b : Whereabouts? | Will any window do?
+a : Just where the cuff goes into the pocket. Nothing worth tasting along that line. | I'd prefer one which remembers to shut.
+
+scene checking_hurry
+when topic=smalltalk
+does tell.complaint / react.self / assess
+a : A queue has a head and tail and not a single working leg. | I dislike arriving before the wolf who asked me to come.
+b : Wish the front could hear you. | Too early this time?
+a : It probably can. I've been tapping my foot since the stalls opened. | Right on time. That's usually the error.
+
+scene inside_sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Down our way a clean stool can do duty as a very small island. | You can't always judge a doorway by the wet on the outside.
+b : Will it take passengers? | What's inside that changes it?
+a : One reasonable passenger, or an unreasonable number of loaves. | The one step down nobody mentioned.
+
+scene spare_walk
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd wait for #self.friend# at a turning. That's an offer I use sparingly. | A dry seat for #self.friend# would leave me standing.
+b : How long? | I thought you hated that.
+a : Long enough to make sure I'd chosen the right turning. | Waiting, yes. Standing can be my own idea.
+
+scene coin_shallow
+when topic=prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A bad week leaves a mark on a pocket too. | I can price a tart by counting how many errands I'd have to take before going in.
+b : You can see it? | More today?
+a : Feel it. Cloth comes flat against cloth. | Enough to walk up a whole fresh appetite.
+
+scene cart_still
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Wheels due ages ago have excellent manners about keeping quiet. | Waiting for a late cart makes every passing handbarrow look generous.
+b : Still no word? | It came all the way, at least.
+a : Unless silence has acquired a second meaning. | Precisely. I'd send it a little wreath if the wreath wagon would come.
+
+scene voice_only
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : One account floating about concerns #topic.subject#: #topic.claim#. | Word is #topic.subject# #topic.claim#. I didn't stand by to see.
+b : Do you give it any weight? | No little proof to offer?
+a : Only what floats. I wouldn't set a full pot on it. | Proof doesn't come in the same wrapping as a rumour.
+
+scene firm_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : From #world.news_from# the news ran #world.news#. That's the stretch I can account for. | #world.news# is the notice from #world.news_from#.
+b : Nothing about here? | Will that change the street?
+a : I gave you the bit that came my way. The rest can make its own trip. | The notice came first. Give the street a chance to answer.
+
+scene wet_bench
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain will find the dip in a perfectly decent bench. | The first good drop of a shower hit my nose squarely.
+b : Is that a useful service? | And the second?
+a : Only if you found the dip with your eyes rather than your seat. | I had a more sensible arrangement under a roof by then.
+
+scene apprentice_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to get somewhere before the floor has decided to turn into a canal. | I'd like a whole morning clear for a walk with no impatient wolf attached.
+b : Have a place in mind? | That rules you out.
+a : Any place where the water comes in proper glasses. | I'll make myself an exception if I promise not to tap.
+
+scene brisk_houses
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From down here a fine House looks well out of the weather. | A city built on hills ought to have a department just for the poor little corners lying lowest.
+b : Does it ever flood uphill? | Any plans for the notice outside?
+a : I haven't personally inspected the furniture. I'd advise starting with the stools. | Something high enough to read in a flood.
+
+story high_bun [topic=food|memories]
+  : I once tried balancing a plum tart on my head to keep both hands free.
+  : Made three respectable steps before meeting a low door.
+  b : Where did the tart end up?
+  : Against the lintel. Had to go back for my supper with a spoon. A short walk but a memorable one.
+
+story quiet_rung [topic=memories]
+  : Sat all evening on a stool that ticked like a clock every time I moved.
+  : Decided in the end to stop shifting about and let the clock run late.
+  b : Did it ever catch up?
+  : Next time I moved it gave me all the lost ticks in a single tremendous crack.
+
+story frosty_track [topic=travel|memories]
+  : One frosty morning a trail of solitary boot prints led me all the way across a yard.
+  : The opposite foot seemed to have stayed completely at home.
+  b : Had the walker been hopping?
+  : The other boot was dry. Never let the easier explanation spoil the first half of a pleasant walk.
+
+rule @ring_dry
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say There's another watermark can be read without a light.
+
+rule @foot_tap
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say If this foot taps much longer it'll wear its own shortcut.
+
+rule @morning_first
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Who put white piping round all those dark rungs?
+
+rule @bag_up
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Up goes the sweet parcel. A wet coat I can manage.
+
+dlg resident.hub : That seat is fairly dry. The conversation can start there.
+dlg resident.hub [topic.meeting=known] : #topic.player#. I can save us the delay of introductions.
+dlg resident.hub [here.time=night] : Speak quickly enough to keep the cold off, if you can.
+dlg resident.hub [pair.disposition=hostile|wary] : You'll carry that far without stepping into my bit of floor.
+dlg resident.job [self.job=sailor self.working=yes] : #self.trade_words.capitalize#. Not every sailor has water under both boots today.
+dlg resident.job : I like having a definite job with a clear finishing place.
+dlg resident.news [world.news] : What arrived under #world.news_from# was #world.news#.
+dlg resident.gossip [here.gossip=yes] : The account on its feet is #topic.subject# #topic.claim#. No testimony from my stool.
+dlg resident.bye : A shallow puddle and a short queue to you.
+
+graft resident.hub
+choice Which stool should a traveller take? -> inspect_rungs
+node inspect_rungs
+say First make sure it has all its feet. Then look for the one with the lowest watermark. As a last precaution I sometimes sit on it.
+choice And if it creaks? -> creak_reply
+choice I'd better check the feet. -> hub
+node creak_reply
+say Try creaking back. That won't fix a bad stool, but with any luck somebody will offer you a decent one before you land on the floor.
+choice A dry seat will do nicely. -> hub
+choice I'll keep walking for now. -> bye

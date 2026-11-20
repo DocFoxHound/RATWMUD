@@ -1,0 +1,252 @@
+mantle rm486
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_cedric_ashcot
+title the folding hill
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk folds_old_maps_into_steps_to_show_the_slope
+likes honey_cakes old_tales old_maps first_warm_day
+dislikes rats crowds
+fears a_map_without_a_key a_queue_at_a_narrow_door
+hopes a_walk_whose_map_is_exact a_letter_full_of_vineyard_weather
+topics travel +0.5 newcomer +0.4 lore +0.3
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# folds a street plan into steps and freely points out every mistake in the drawing, especially the errors of the most recent revision.
+
+words
+oath! = Ink on a honey cake | A fold across the compass
+saying! = A flat street on paper can still take your breath | Turn the sheet before you turn a walker
+longrise = two strides of stair | my uphill double step
+shortfall = a single inward fold | the false valley
+roofmark = a tiny black angle | an ink roof
+softbend = the old soft crease | the line of least resistance
+goodeye = my uppermost lookout | a space on the high landing
+caketooth = the sugary corner | that honeyed edge
+trailspot = a spot of sticky yellow | a honey mark
+vinehand = a hand from the vineyards | the slanting country script
+signhook = a square of bent iron | my door bracket
+doorstop = the wedge under the leaf | a firm oak toe
+
+any
+opinion city for 1 : There's a different town visible from each high landing, and each view answers to the same honest address.
+opinion festivals for 1 : Put the music within earshot of an uncrowded step. I'd happily pay the fiddler afterwards.
+opinion merchants against 1 : A seller who would conceal a broken hinge is a poor ornament to a shop of any description. I prefer my hinges visible.
+opinion newcomers for 1 : A wolf who asks why the lanes curve deserves the best account of the hill I can unfold.
+opinion strangers for 1 : The unfamiliar face in a doorway may have a perfectly familiar reason for coming inside.
+opinion sump against 1 : I find the low market rather too close about my shoulders. Up here I can usually see my next ten paces.
+
+grown
+line greet : Welcome to the high margin of my little plan.
+line greet [pair.band=strangers] : You're new to my map. Come and locate yourself.
+line greet [here.time=dawn] : The first light's found my highest fold already.
+line greet [here.time=dusk|night] : There remains a bright landing for your feet.
+line greet [self.working=yes] : Hold the map by its blank corner for me.
+line kin.open [pair.kin!=no] : Come and occupy a respectable place on my hill.
+line again.open : Familiar feet on a fresh fold.
+line greet.return : A clear greeting came uphill from you.
+line greet.return [pair.band=friends|family] : I've room on this landing for a familiar voice.
+line farewell : May the ink agree with the hill you actually climb.
+line farewell.return : I'll leave your road unfolded for a while.
+line react.news : Whereabouts would you put that account on a street plan?
+line react.news.new : That deserves a fresh scrap of paper.
+line react.news.known : There's already a mark for that occurrence.
+line react.news.doubt : Were the distances measured from an actual doorstep?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd take quiet company and a cake to the household.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's something I could whistle up two flights of stairs.
+line answer.how : Comfortable, and curious about a turn I haven't drawn yet.
+line ask.how : What view did the day present from your stair?
+line sympathise : I'd leave a seat vacant for the load you brought along.
+line decline : I owe my attention to this doorway before I take another turn.
+line accept_decline : I'll find a separate occasion for that request of mine.
+line thank : My papers have acquired a considerably better direction.
+line preclose : I've one crease still wanting my thumb.
+line ack : Quite legible.
+
+scene hill
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Three folds can give this hill a tolerably convincing slope.
+b : Why bother with a slope in paper? | Can a real turn be folded?
+a : A visitor feels the cost of a shortcut in boot leather. A short steep climb is a significant sort of distance. | I ink the turn after folding. Otherwise some perfectly useful corner will run across a roof.
+
+scene door
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A shop door should give a caller some idea how far it will open.
+b : What could make that doubtful? | Can you make it more welcoming?
+a : A large display set just inside the sweep. I try the full arc before declaring the entrance quite ready. | A space to pause saves a caller the embarrassment of stepping directly into someone else's purchase.
+
+scene stairs
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I climb the long flights in pairs of treads.
+b : How do you finish an odd flight? | Would you descend in pairs?
+a : I save the single tread for last. It gives my breathing a little time to acquire better manners. | Certainly not. Coming down I find a modest single tread entirely sufficient.
+
+scene maps
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My favourite plan gives a road to a patch of empty hillside.
+b : Doesn't a fictitious road spoil it? | Would you mend the mistake?
+a : It improves the conversation considerably. I wouldn't give the sheet to a traveller without first describing its curious ambition. | In a different colour, with room for the reader to appreciate the artist's original optimism.
+
+scene honey
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I lick my sticky fingertips clean before unfolding any valuable sheet.
+b : Wouldn't a cloth do? | Is the paper really valuable?
+a : It could. The cloth would then enjoy an advantage which belongs by right to the purchaser of the cake. | Some of it only to me. That's precisely the sort of value a seller has trouble adequately accounting for.
+
+scene letter
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : Vineyard correspondence has room for the week's weather in four crooked lines.
+b : Do you want a long letter? | What makes the lines crooked?
+a : A plain detail is enough. A wet boot sitting beside a vine tells me rather more than an entire page of formal regards. | The slope of the writing, I hope. I'd be grieved to think a relation had been carrying ink up my paper hill.
+
+scene tales
+when topic=memories self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : An old tale deserves to get its original turns, even when everybody can see the finish.
+b : Would you correct a teller? | What makes a turn worth the wait?
+a : Only by invitation. On my own hearth I admit to giving the missing bit after the teller's had a cake. | A door described early which opens upon the last page. I want to discover where the teller has left its hinges.
+
+scene spring
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : I can tell the first warm day by how long I linger over an unnecessary stair.
+b : Are there truly unnecessary stairs? | How long do you linger?
+a : For getting directly along my assigned way, yes. For seeing the roofs take the light, none whatsoever. | Until a second detail becomes visible where before I'd seen only a patch of brown tiles.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A gnawed corner of a plan may make two formerly distant streets appear uncommonly close.
+b : A rat did that? | Would you keep the sheet?
+a : I'd hesitate to authenticate the artist. There were tooth marks and a suspicious absence of interest in the inked section. | With a replacement corner of different paper. The damage is part of its travels now.
+
+scene crowd
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A festival seen from one landing up has the advantage of some breathing space between tunes.
+b : Can you see the players? | Won't you miss joining in?
+a : Their bows mostly. An excellent machine, a bow rising and falling above all those occupied ears. | I can join in by putting a copper in the collection. My singing would hardly be a contribution of the same order.
+
+scene heights
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : A walker below sees our high walls. I see eight completely different ways of hanging a gate.
+b : Which pleases you most? | Eight on one walk?
+a : The one which opens without pushing a caller off a step. I'm content with grace in the metal after that's been attended to. | On a sufficiently slow walk. It is entirely possible to climb quickly and then look for a considerable interval.
+
+scene forge
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a door can frame a great deal of interesting iron.
+b : What catches your eye? | Would you sell me a hinge?
+a : The curves where a smith thought about a moving joint before putting an ornament on it. I shall examine which idea came first. | Ask me for its price at the proper time. I'd want the weight of your gate before pronouncing upon its hinge.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I should like to set a sheet before #self.friend# and see which place gets drawn first.
+b : What would your own first mark be? | Would you correct it?
+a : My next stair, probably. A friend might begin with a quite different stone and get just as good a town. | I should ask about it. I'm drawing the view from a friend's doorstep, which will hardly resemble mine.
+
+scene price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I will say plainly when a handsome object won't do a caller's job.
+b : Even if it costs you a sale? | What will you show instead?
+a : A bad purchase tends to become my business again. I might as well start by showing a more suitable article. | Something chosen after hearing what has to turn, swing or hold still. All three have demanding opinions on fit.
+
+scene rain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A wet crease can turn a copied street into a fine black stream.
+b : Would you rub it dry? | What becomes of the stream?
+a : Never. A little time laid open in moving air costs less than a sound copy. | I ink a correction in its margin. Nobody should mistake an afternoon shower for a change to our harbour.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor once asked for the quickest route and then showed me a boot with a loose sole.
+b : Did you change your directions? | What mark shows the flatter road?
+a : Immediately. The flatter road is considerably quicker when half your boot has its own ideas about which way to turn. | Two little bars for the steep part, and a single sweeping arrow for the longer way that boot could reasonably attempt.
+
+scene quiet
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : A map in poor light is mostly an account of old creases.
+b : Can you use it like that? | Is the ink actually disappearing?
+a : Only my own. I remember enough to supply the streets a candle's elected to leave out. | Nowhere, happily. By morning it's willing to give evidence again without putting up its price.
+
+story hingeline [topic=work self.job=merchant]
+  : I opened a folded plan across a shop threshold and tried to put a dot where I stood.
+  : My finger followed the swing of the door instead and drew most of a black circle.
+  b : Did it ruin the place?
+  : I wrote a note on the arc. It became the only street plan I have ever owned which showed a door opening to welcome its reader.
+
+story cakebend [topic=food]
+  : A speck of honey once kept two folds of my plan firmly joined for a week.
+  : I was quite unreasonably cross at how small the town had become before the reason presented itself.
+  b : How did you part them?
+  : Very slowly indeed. Both streets came out whole and for a few days the hill smelled much better than usual.
+
+story twostairs [topic=travel]
+  : I climbed an unfamiliar flight in double steps with a sheet tucked into my collar.
+  : At the landing I discovered a small chalk arrow drawn level with my kneecap.
+  b : Where did it lead?
+  : Downwards to a lower view I'd missed entirely by being so splendidly efficient about going up.
+
+rule @door
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Allow the door its full quarter turn. | New iron on the inside display.
+
+rule @cake
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say A clean finger for a clean plan. | Save that honeyed corner till the ink is dry.
+
+rule @stairs
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One stride for two old treads. | First light on the folded summit.
+
+rule @crowd
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 8h
+say There's air up on that landing. | The bows are visible above the heads.
+dlg resident.hub : Choose a fold and we can discuss the hill it claims to represent.
+dlg resident.hub [topic.meeting=known] : I recognise that approach, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : I will keep my paper open with the marks in plain view.
+dlg resident.hub [here.time=night] : A candle will show one fold at a time. We have just enough light for that.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I'd have each caller see how far the door will swing before buying the hinge.
+dlg resident.job : I'm usually near an entrance with an answer about the climb.
+dlg resident.news [world.news] : There's a new mark on the street plan. #world.news#.
+dlg shop.greet [here.shop!=bare] : The doorway's clear for a caller to look over the iron offered today.
+dlg shop.greet [here.shop=bare] : An empty display behind me today. I can still answer a question about a fitting.
+dlg shop.prices : Tell me which iron piece has caught your eye and I'll give its price plainly.
+dlg shop.bye : I hope the fitting does exactly what the door requires.
+dlg resident.bye : Give the long route its due if your boot is loose.
+
+graft @mapfold resident.hub
+choice Why does that map stand up? -> mapfold
+node mapfold
+say Each crease adds a little of the height a flat draughtsman left out. See how short that road looks until I lift the paper beneath it.
+choice How would you show my own walk? -> mapfold_more
+choice Lay the hill open. -> hub
+node mapfold_more
+say Put a finger where your journey began. I will raise the intervening folds, and your knees may be able to supply the rest of the information.
+choice Lay the hill open. -> hub
+choice Leave by the level street. -> bye

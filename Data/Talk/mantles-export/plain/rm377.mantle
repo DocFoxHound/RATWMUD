@@ -1,0 +1,257 @@
+mantle rm377
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_oda_kelpworth
+title the smoke-mapped mane
+fits stage=adult|old
+prefers job=herder
+traits temper=nervy talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk sketches_a_walk_in_smoky_dust_on_a_grooming_board
+likes plum_tart long_walks old_maps frosty_mornings
+dislikes early_bells stale_bread
+fears a_tired_beast_missing_a_turn
+hopes to_map_a_long_gentle_walk
+topics animals +0.5 travel +0.3 family +0.3 weather +0.2
+styles comfort=practical gossip=close refuse=soft tease=dry
+marks oath saying
+persona #self.first# traces routes in the dust on a grooming board and rubs each map away before putting the brushes by.
+
+words
+oath! = Brush my compass sideways | By the long currycomb
+saying! = A map can travel on a brush back | Leave the steep way to the eager feet
+board = a dusty brush board | my wooden grooming tray
+comb = the blunt currycomb | a little horn comb
+dust = a smoke-grey drift | a soft layer of dust
+lane = my finger-wide lane | a road drawn in dust
+turn = a faint hooked turn | the curve on my map
+plum = a dark plum half | a wedge of purple fruit
+tart = my pie corner | a warm tart slice
+frost = a white saddle of rime | a crust of hoarfrost
+strap = the worn head strap | a broad webbing strap
+hoof = a broad hoof mark | a clear half moon
+rag = my bridle rag | a short dry cloth
+bell = the first unwanted clang | a rude waking bell
+
+any
+opinion festivals for 3 : A good dance costs about as much room as grooming a horse and does wonders for one's opinion of both feet.
+opinion houses against 1 : I'd like the paws that own the fine stables to come and see where the long walk starts.
+opinion merchants against 1 : A little dust drawn over the old price doesn't keep me from remembering yesterday's figure.
+opinion strangers against 1 : I watch an unfamiliar wolf round the beasts for a while. A smooth voice alone doesn't settle a skittish head.
+opinion road mixed 0 : A road looks different to a beast on sore feet. I won't judge the whole journey from a dry seat.
+
+grown
+line greet [pair.band=strangers] : You've come along a new turning. Welcome. | Mind the brushes. My greetings are cleaner.
+line greet [self.working=yes] : I can free the dustier paw for you. | Stand where both my eyes can find you.
+line greet [here.time=dawn] : Morning. The map's still a blank board. | Clean frost or clean dust, I'm ready for company.
+line greet [here.time=dusk|night] : Evening. The lines look soft now. | Step into the last pale margin.
+line kin.open [pair.kin!=no] : Kin travel right across my borders. | A familiar set of feet on my road.
+line again.open : Round my little map a second time. | The turning's brought you back to me.
+line greet.return : Heard and marked clearly. | Allow me a quick brush of the cuff.
+line greet.return [pair.band=friends|family] : I can trace that footstep without looking. | Your face gets a comfortable place on my map.
+line greet.return [self.working=yes] : One ear's on the brushes. One's on you. | Let me lay the comb flat first.
+line greet.return [here.time=dusk|night] : Evening. Your stride's quite distinct. | My ears navigate better after dark.
+line farewell : Good ground all four corners of the way. | Take the turn with the gentler slope.
+line farewell.return : I'll keep my thumb on the route. | May the dust settle kindly behind you.
+line farewell.return [here.time=night] : Easy hoof marks under lamplight. | Look for the quiet gate home.
+line react.news : Draw me the outline of it. | Where does the account turn?
+line react.news.new : An unmarked road for me. | Fresh dust on my map.
+line react.news.known : I've traced that particular route already. | A familiar bend in the tale.
+line react.news.doubt : I'd see whether the second turning really joins the first. | That account covers a surprising distance on very few footsteps.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a hard mile you've brought in. | Hush awhile. I'll keep my hand steady.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A fine open way ahead, by that account. | I'm pleased to find a bright turning.
+line ask.how : How has the going been underfoot? | Which part of your day's rubbed sore?
+line answer.how : Mostly on the gentle track today. | Got dust enough left for another little road.
+line decline : I'd sooner take a quieter path this time. | I must save a little walking strength for another duty.
+line accept_decline : Your feet can choose their turning. | Fair. Neither of us needs the extra miles.
+line thank : That saves me some hard going. | I'll mark that kindness on the clean side.
+line sympathise : Share the sheltered part of my road. | Walk by me with the sore foot inboard.
+line reassure : One short stretch and a pause is plenty. | No use drawing the whole mile just yet.
+line preclose : I'll clear the board for the next errand. | Time to put the combs by.
+
+scene map
+when topic=work self.job=herder
+does tell.self / ask.detail / answer.detail
+a : I draw routes on #board# with the tip of the comb.
+b : For a beast to read? | How long do they last?
+a : For me to remember where a tired beast doesn't want to turn. | One good wipe. By then I ought to have the route between my ears.
+
+scene smoke
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My coat keeps a faint smell of smoke even with a clean brush.
+b : A smoky brush? | Does it bother the beasts?
+a : Smoke's on me. The brush is more willing to be improved. | Not if I stop a little way off and let a nose examine the subject first.
+
+scene tart
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A plum tart stains the tip of the finger I draw maps with.
+b : A purple road? | Is that any use?
+a : Beautifully definite. Much too delicious to be permanent. | If there's a lost spot of jam I can consult my own finger for directions.
+
+scene walk
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : A long walk agrees with me better if there's one entirely unnecessary bend.
+b : Why unnecessary? | Don't you get tired?
+a : A necessary one belongs to the errand. I want a turn of my own. | I pick a bend round level ground. I'm fanciful with some discretion.
+
+scene oldmap
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I like a map old enough to leave a gate where a wall stands now.
+b : Of what use? | Would you mend it?
+a : It tells me where tired feet once expected an opening. | In dust, yes. In ink I'd keep both versions of that street.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Rime on a stable latch shows exactly which paw was there first.
+b : Does it hurt to open? | Useful information?
+a : I wrap my cuff round it. Only my sleeve complains afterwards. | Enough to know I haven't left a beast waiting for a first look.
+
+scene bell
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : I object to early bells on behalf of all creatures with ears.
+b : The whole lot? | Do you sleep through any?
+a : Let each protest in the customary voice. I can manage the wolf's part. | Not once the bell has opened formal proceedings against sleep.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I soak old bread before I can be tempted to call it a biscuit.
+b : Will that save it? | What do you soak it in?
+a : It'll save my jaw. The bread wasn't choosing the matter. | A spoon of warm milk when I have it. Water works without the compliment.
+
+scene spouse
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I could draw the route home to #self.spouse# with my eyes closed.
+b : Is that a promise? | How would you know the last turn?
+a : It's a pleasure. Nobody's asking me to do it blind in the street. | A hand knows where to turn when there's a welcome at the far end.
+
+scene memory
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A wharf whistle can make me wish every route had a gentler turning.
+b : Someone you miss? | Do you go down there much?
+a : There's a place my memory walks to of its own accord. I'll keep it private. | When I need to. I don't spend my leisure looking for a hard mile.
+
+scene horses
+when topic=work self.job=herder self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I put a hand near a nose before so much as lifting the strap.
+b : One sniff enough? | Why your hand first?
+a : A sniff and a little time to look. I don't like my own surprises forced on me either. | Because a strap hasn't much of an introduction in it.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : The Estate keeps an admirable quantity of gate in the way of a simple walk.
+b : Who's allowed through? | How do you manage?
+a : That can take longer to discover than the walk itself. | Learn the polite open turns. There are still a few.
+
+scene marketprices
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I judge the price of a brush by the hairs left behind after one pass.
+b : Fewer is better? | Could you test that at a stall?
+a : If they belong to the brush, certainly. Dirt ought to be more easily parted from its home. | On my own sleeve. It's generally dusty enough for commerce.
+
+scene known
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd rather introduce a newcomer to the head end first.
+b : Of a horse? | What about introductions to wolves?
+a : Yes. The back end has a limited choice of greetings. | Same principle. Let both parties see whom they're dealing with.
+
+scene mood
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : If #self.friend# wanted quiet I'd draw a whole walk in dust without a word.
+b : Do you need a compass? | Would the walk be a long one?
+a : The only north that matters is where the person opposite wants to look. | Just long enough to get us both thinking of something pleasant.
+
+scene muck
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : The road under a hoof can look dry and feel quite wrong.
+b : Can you tell before stepping? | What's your usual clue?
+a : Sometimes. I test a doubtful bit with the hard tip of my shoe. | A little shine along the rut where water's sitting below the crust.
+
+scene feast
+when topic=festival self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'm partial to festivals on account of a particular wedding dance.
+b : Your own? | How long ago?
+a : My feet were certainly present. I recall them making very grand claims on the floor. | Long enough to remember the tune and forget every unsteady step.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed my map turned into a mane that needed combing from both ends.
+b : Which end did you choose? | How did you find home?
+a : The tail end of the road. The beginning was too badly tangled. | My finger followed a clear parting straight up to the gate.
+
+story plummap [topic=food]
+  : I drew a map in plum juice once. There was a perfectly dignified road round the rim of the plate and a large red crossroads near the centre.
+  : I turned the plate to make the directions clear. The crossroads moved downhill to meet the road and the entire district became a puddle.
+  b : Could you save the route?
+  : Of course. I ate the rest of the tart and took the long way home.
+
+story saddle [topic=work self.job=herder]
+  : Once I cleaned a saddle strap so thoroughly that one short length gleamed like water. I could see the stable lamp reflected in it as I worked.
+  : I kept rubbing at a spot in the reflection, thinking the strap was still dirty. Then I moved my head and the spot moved too.
+  b : A mark on your face?
+  : A smut by my nose. After that I gave some attention to cleaning the groom as well as the gear.
+
+story drawnwalk [topic=travel]
+  : I used a quick map to show myself a new route. It began on the grooming board and continued up the wooden handle of a brush where I ran out of space.
+  : I picked up the brush to follow the route with a finger. The important turning was now in my palm and half my road drifted to the floor.
+  b : Did you find the place?
+  : Next day. I left the brush down the second time and wrote the tricky turn inside my own cuff.
+
+rule @aside1
+when concept=bark self.job=herder self.working=yes
+does aside
+cooldown 6h
+say Let the nose have first acquaintance with the brush. | Draw the wide turning before the narrow gate.
+
+rule @aside2
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 7h
+say Purple finger. Fine weather for drawing a road. | Save the clean crust for the walk.
+
+rule @aside3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Rime on the latch, dry cuff on my hand. | Tea before the bell gets a second opinion.
+
+rule @aside4
+when concept=bark self.dislikes=stale_bread
+does aside
+cooldown 9h
+say Give that heel a little softening. | Old crust needs a gentle approach too.
+
+dlg resident.hub : Choose a corner that affords a view of the board. I've just room to draw whatever turning's troubling you.
+dlg resident.job [self.job=herder self.workplace] : I look after the beasts at #self.workplace#. They have clear opinions about the difference between a road and a proper walk.
+dlg resident.news [world.news] : This is where the present account leads. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, I've a familiar footfall to add to my dust map.
+dlg resident.bye : Find yourself an unnecessary turning worth walking for.
+
+graft resident.hub
+choice Show me the kind way round on your map. -> kind_route
+node kind_route
+say This line runs straight up a steep bank. Draw your thumb along it and there's a knot under the dust. My other line goes round. A tired hoof would choose it.
+free
+choice Why keep the steep one at all? -> steep_saved
+choice I can feel the slope in the board. -> hub
+node steep_saved
+say For the young feet that enjoy climbing. A kind road doesn't have to be the same shape for every traveller.
+choice I'll take the short climb today. -> hub
+choice I'm finding the level route. -> bye

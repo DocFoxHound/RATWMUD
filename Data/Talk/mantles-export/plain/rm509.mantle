@@ -1,0 +1,262 @@
+mantle rm509
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_frederick_foghand
+title the docker's blank tally
+fits stage=adult|old
+prefers job=sailor warmth=warm
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk leaves_a_blank_against_any_load_not_seen_landed
+likes spiced_cider riddles sharp_knife first_warm_day
+dislikes bad_manners flies
+fears a_bystander_beneath_a_swinging_load ink_on_an_unseen_cargo
+hopes a_tally_so_clear_a_stranger_can_read_it
+topics work +0.7 travel +0.4 smalltalk +0.4
+styles comfort=practical gossip=closed refuse=plain tease=dry
+marks oath saying
+persona #self.first# leaves a space wherever a load passed out of sight, shares the dry side of a rope coil, and likes a riddle that can survive an honest answer.
+
+words
+oath! = Hammer and harbour | Heave the empty barrel
+saying! = The hook counts for nothing till it rests | Cargo first and chalk afterwards
+blank = a blank against the weight | an unmarked space
+sling = the wet cargo sling | the slings round a crate
+settle = the last little settle of a load | the second dip
+chalk = my stub of white chalk | a piece of soft chalk
+blade = a keen narrow blade | my well-honed blade
+peel = a curl of cider peel | the last spice in the cup
+flyspeck = a little black speck | a fly on the slate
+drycoil = a sound coil laid flat | a rope coil fit to sit on
+firstheat = the new spring warmth | the first mild air
+ridgemark = the narrow tally ridge | the raised edge of a board
+tallycloth = a dry wiping cloth | a tatter for the slate
+
+any
+opinion watch mixed 0 : I leave room on paper for what I haven't seen. I'd ask a sworn witness to do likewise.
+opinion houses mixed 0 : No House mark on a crate relieves a docker of the need to know what's under it.
+opinion road for 1 : A good road gives the next laden carrier a better chance than the last pair had.
+opinion merchants mixed 0 : I'll hear a fair allowance for leakage. The sea has never shown much respect for merchants' figures.
+opinion city for 1 : An uphill turn clears the tar from my nose nicely before supper.
+opinion dole for 1 : A loaf shared on a coil of rope is two lighter loads going home.
+opinion strangers for 1 : Strangers can see a tipped crate quite as readily as old hands. Give the warning a hearing.
+
+grown
+line greet : Dry coil here. Come sit.
+line greet [pair.band=strangers] : Fresh face. I've a clear space to hear you.
+line greet [here.time=dawn] : Morning's laid a fine edge on the water.
+line greet [here.time=dusk|night] : At this hour the chalk shows longer than the ink.
+line greet.return : Yes, I caught your voice over the blocks.
+line greet.return [pair.band=friends|family] : Company I've missed can take the dry coil first.
+line greet.return [self.working=yes] : My eye stays with the load but my ear's yours.
+line greet.return [here.time=dusk|night] : Late word carries easily. Save your voice.
+line kin.open [pair.kin!=no] : A cup within reach for kin.
+line again.open : One clean mark left for where we broke off.
+line hail [pair.band=friends] : Friend, put the burden down before the story.
+line farewell : Mind the swing as you leave.
+line farewell.return : Good landing for whatever you carry.
+line react.news : Start where the news actually touched ground.
+line react.news.new : New cargo to my ear.
+line react.news.known : That came ashore in an earlier telling.
+line react.news.doubt : I'd leave a blank beside that weight.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let somebody share the heavy end of that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a load I'd willingly carry uphill.
+line ask.how : Are both shoulders wearing evenly?
+line answer.how : I've still got one shoulder left for my own affairs.
+line thank : That deserved a mark in the good column.
+line deflect_thanks : I could easily reach it from my sling.
+line sympathise : Come off the line a while. You can sit without explaining.
+line reassure : A swinging load comes still if nobody keeps nudging it.
+line decline : I'll leave that hook for another hand.
+line accept_decline : Then we know what stays on the pier.
+line preclose : I'll finish up where my figures are still clear.
+line accept_preclose : Land safely, then.
+
+scene empty_mark
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #blank.capitalize# means I didn't see the cargo land. | I put #chalk# down when a crate passes out of my sight.
+b : Is it missing? | Even if you can hear it?
+a : That's a much longer statement than a blank can make. | Water and wood can both make a very convincing thump.
+
+scene double_set
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : Wait for #settle# before easing #sling#. | I prefer a low heave with everybody pulling to a high one done for applause.
+b : What follows the first dip? | Less spectacular?
+a : A shift of the contents sometimes. I like my toes in their current order. | Particularly at the landing. Yes.
+
+scene district_hand
+when topic=work self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Round #self.workplace# one of my eyes follows the load's intended path. | Every sound round #self.workplace# has a place in my reckoning.
+b : Where's the other? | Every sound?
+a : Checking that nobody's gone to stand there. | Except advice from behind a swinging barrel.
+
+scene knife_use
+when topic=smalltalk self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : #blade.capitalize# deserves a clean folded cloth after a day's work. | I test an edge on a loose end of cord.
+b : Wrap it wet? | What about cutting a loaded sling?
+a : Only once. Rust teaches effectively and charges by the inch. | Nobody would be asking me for a second demonstration.
+
+scene cider_peel
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : #peel.capitalize# clings longest to the bottom of a mug. | Spiced cider warms my fingers before it reaches the rest of me.
+b : Do you fish for it? | Which side needs it first?
+a : Politely. With any luck the company will think I'm contemplating. | The fingers have to keep their grip for the arrangement to succeed.
+
+scene crate_riddle
+when topic=smalltalk self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What gets a weight against its name by staying perfectly still? | What empty thing marks a full cargo slate?
+b : A pier? | A blank?
+a : The crate once it's landed. The pier has been carrying the whole account for years. | Exactly. Otherwise you can't see where one entry ends and the next begins.
+
+scene spring_coat
+when topic=weather self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : #firstheat.capitalize# makes a heavy tar coat smell glad to have the day off. | My first mild day starts when I can hold a chalk stub without choosing which glove to lose.
+b : Do you leave it home? | How's the writing then?
+a : I let it dangle within reach. Spring can change the arrangement. | Still mine, regrettably.
+
+scene fly_ink
+when topic=smalltalk self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : #flyspeck.capitalize# moves a figure from six to eight when I'm looking elsewhere. | A fly on a warm slate appears to take great interest in tonnage.
+b : An expensive fly? | Do you let it finish?
+a : Not if I wait for the legs to unfold. | It hasn't yet entered a useful figure.
+
+scene courtesy
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : Somebody who steps over a loaded line owes every hand there a civil word. | Look at the back under the load before asking how much longer.
+b : Which word? | What can it tell me?
+a : 'Moving', accompanied by the practice. | Whether there's a more helpful use for your paws.
+
+scene estate_walk
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : The Estate steps are a long way up from a hook swinging by salt water. | I'm fond of a clean path through the Estate.
+b : Do you mind? | After the docks?
+a : I can put the day's tally away a figure at a time. | Clean boots need no explanation at the door.
+
+scene private_slate
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I've opinions about which accounts get inspected. | I'd leave a space where suspicion wanted to write somebody's name.
+b : Do you name names? | Why not mark it lightly?
+a : Only the one signing my own observations. | Chalk gets passed around without any instructions about how lightly it went on.
+
+scene lean_crates
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A short week makes the weight of an empty basket worth noting. | I weigh a share against what can be cooked when the times pinch.
+b : An empty basket matters? | No allowance for the wrapping?
+a : Less food than the figures suggest is a difference folk feel. | Wrapping makes a thin stew.
+
+scene dry_visitor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Start a newcomer on #drycoil#. It puts the swing where a newcomer can see it. | New on the wharf? Pick out the clear patch where nobody puts down a sack.
+b : Must I watch long? | For resting?
+a : Until your feet choose a safe direction without waiting for me to shout. | For passing with a sack. Rest beside it.
+
+scene rough_home
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A side wind does a waltz with an empty sling. | A pier at low water sounds hollow under a heel.
+b : How many partners? | Can you hear the tide coming back?
+a : More than I can afford with one good hat on. | Not with a load arriving and half the quay advising it.
+
+scene report_weight
+when topic=news world.news
+does tell.news / react.self / assess
+a : Mark the source as #world.news_from#. #world.news#. | #world.news#. It travelled out of #world.news_from#.
+b : Anything to go in the other column? | Do we weigh the teller?
+a : Only that it's reached us. | I'd weigh the words. The teller can stand easy.
+
+scene private_name
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A loose account has arrived with names attached. | A whisper isn't much weight for all the space it takes.
+b : Are you unloading it? | Room on your list?
+a : I haven't seen the contents. My rule for the slate stands. | Plenty of blank. Let it stay that way.
+
+scene bend_knee
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Some days my first few steps need a little negotiation. | I set things at a height that suits a stiff morning.
+b : Who has the final word? | Doesn't it vary?
+a : Whichever knee I started with. | I live in hope of a particularly obliging shelf.
+
+scene clear_slate
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to entrust my day's tally to a stranger without needing to explain a crooked mark. | My perfect slate has a place for 'still don't know'.
+b : What about the blanks? | How big?
+a : I'd put an explanation at the top. Just once. | Depends who's doing the counting.
+
+story ringing_box [topic=work|memories]
+  : An empty crate once rang as if something fine and heavy were still inside.
+  : I held it sideways and heard the note again.
+  b : Was it under the boards?
+  : In my own coat. I'd leaned the crate against a little tin cup in my pocket.
+
+story wrong_zero [topic=memories|smalltalk]
+  : I copied a neat round zero off an old slate and thought I'd improved my writing.
+  : The mark moved across my new figure before I took the next weight.
+  b : What sort of zero walks?
+  : A very small beetle. The circle I drew after it was better than my usual regardless.
+
+story loop_cup [topic=memories|food]
+  : I once hung a cup from a short loop on a crate to keep the cup off the boards.
+  : Reached for it a moment later just as the crate lifted clear.
+  b : Did you get it down?
+  : When the load landed. My cider made a remarkably uneventful first voyage.
+
+rule @quiet_hook
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Hook's quiet. Land the first mark.
+
+rule @wipe_mark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Keep one dry corner for the last figure.
+
+rule @spring_glove
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say A chalk day without a glove.
+
+rule @stand_clear
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Mind the loop beside your heel.
+
+dlg resident.hub : Put down anything heavy before settling into a word.
+dlg resident.hub [topic.meeting=known] : #topic.player#, my coil still has a dry patch for you.
+dlg resident.hub [here.time=dusk] : Last of the daylight on the chalk. Your voice reaches easily.
+dlg resident.hub [pair.disposition=hostile|wary] : Give both of us the width of a laid-down load.
+dlg resident.job [self.job=sailor self.trade_words] : Mine is #self.trade_words#. My mark goes on after the landing.
+dlg resident.news [world.news] : The tally gives #world.news_from# as the origin. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I'd keep that rumour in the blank column yet.
+dlg resident.bye : Give the empty hook its turning space.
+
+graft resident.hub
+choice Why leave any marks blank? -> blank_weight
+node blank_weight
+say My chalk stops when my view stops. A crate sent over the side of a vessel and a crate sitting dry on the pier are two different entries.
+choice Does anyone object to a blank? -> blank_reply
+choice I'll watch for the landing. -> hub
+node blank_reply
+say A visitor has just asked. That's a fine use for a blank. Nobody tends to ask a figure where its confidence came from.
+choice I'll look harder at the figures too. -> hub
+choice Good luck with what's coming ashore. -> bye

@@ -1,0 +1,402 @@
+mantle rm353
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_philippa_dripworth
+title the coal that walks
+fits stage=adult|old
+prefers role=merchant job=fisher
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=restless
+quirk walks_out_a_storm_with_one_lucky_coal_in_each_pocket
+likes spiced_cider long_walks old_maps thunder
+dislikes haggling early_bells
+fears a_quarrel_that_stops_the_winter_fish
+hopes a_map_with_a_walk_still_left_on_it
+topics travel +0.6 work +0.5 weather +0.4 prices +0.3
+styles comfort=direct gossip=exact refuse=firm tease=none
+marks oath saying
+persona #self.first# balances a lucky coal on each hip and would sooner walk the length of a storm than sell a fish under a false description.
+
+words
+oath! = Split my thunder coal | Blacken the map border
+saying! = A long walk won't freshen a bad fish | Coal travels cheaply in a determined pocket
+chip = a thumb-smoothed coal | a split black chip
+pouch = my left pocket | the little hip pouch
+chart = a map stained at the corners | a worn coastal map
+fold = a hill fold | a double-backed road
+thunder = a roof-shaking roll | a hollow drum overhead
+cider = a spicy apple draught | a steaming cider cup
+pan = the low pan | the counter scale
+hook = a short steel hook | a carrying hook
+board = a scrubbed cutting board | a white fish board
+rag = a thick fish rag | a folded salt cloth
+belly = a pale belly cut | a fine belly strip
+head = the meaty head | a head for broth
+tail = a narrow tail cut | a tapered tail
+shine = a blue-silver shine | a glaze of silver
+cap = a lid of wicker | a split-cane lid
+route = the high dry route | the ridge way
+slope = the long slope | a mild descent
+trunk = a lidded fish chest | a shallow chest
+brine = a wash of brine | a pinch of coarse salt
+
+any
+opinion merchants mixed 2 : A price written in chalk amounts to a promise. Fish may decline in the course of a day. The truth about them mustn't.
+opinion houses against 2 : Come winter we shall need all the landings. I wouldn't have one closed merely to improve somebody's argument.
+opinion watch mixed 1 : Look in my basket with clean paws and a stated reason. I can go on serving quite civilly.
+opinion dole for 2 : A fish head makes a much better bowl of broth than it makes a performance of charity.
+opinion church mixed 1 : Quiet followed by a useful kindness suit my idea of a decent service.
+opinion strangers for 1 : Strangers have walked the parts of my map my own legs haven't tested.
+opinion festivals mixed 1 : I enjoy a festival walk once the persuasive selling is finished.
+opinion road for 2 : I stand by a stretch of ground that gives my restlessness somewhere solid to go.
+opinion times against 2 [world.times=lean|hard] : The smaller portions sell first these days, and I'm hearing less talk of next week's supper.
+
+grown
+line greet : I'll put my basket down a moment. Welcome. | Take a place on the walking side.
+line greet.return : My greeting's got good legs on it too. | Glad we were standing within reach of that welcome.
+line again.open : You've come round faster than my boots.
+line farewell : Go on sound feet with a little dry space in reserve. | Find a good long stretch without having to bargain for it.
+line farewell.return : Your own path be clear to the last stone. | I'll carry that good wish in the clean pocket.
+line react.news : Give me the news with its head and tail both on. | I'll hear the account without filleting it first.
+line react.news.new : Something new for my route home.
+line react.news.known : I know the ground that account covers.
+line react.news.doubt : That tale smells older than the date on the wrapping.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'd leave supper on the sill for the hurting wolf to find in peace.
+line react.news.glad [topic.kind=birth|marriage|work] : A bright bit worth walking round to share.
+line ask.how : How heavy's the road been under you?
+line answer.how : Feet itching some, arms steady.
+line sympathise : Sit for a minute. I've carried worse than a silence.
+line reassure : There's another turning when the rest looks too straight and hard.
+line refuse : I promised my two feet to an earlier errand.
+line accept_decline : All right. No bargaining over an honest answer.
+line preclose : My road's been waiting quite a stretch already.
+line accept_preclose : Go claim the rest of the daylight for your feet.
+line ack : I reckon I've measured it down to the last inch.
+line greet [here.time=dawn] : Welcome before the Works have finished rubbing sleep from their eyes.
+line greet [pair.band=strangers] : A clean board for a newcomer. Step near enough to speak easily.
+line greet.return [pair.band=friends] : There's an elbow's width saved for a voice I know.
+line hail [pair.band=friends] : Come round to the dry corner beside me!
+line thank : That'll be a kindness to take along a good long road.
+line deflect_thanks : It cost less strength than a carry up the hill.
+line give.advice : Ask for the lean side and inspect the fat side as well.
+line answer.how.busy [self.working=yes] : I'm weighing with one eye and keeping the way clear with the other.
+line ask.how [pair.band=friends] : Anything setting your feet itching as mine do?
+line greet [here.time=night] : There's still a patch of lamplight for the two of us.
+
+scene exchange1
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : I show the gill when a buyer asks about freshness. | I keep the wet cloth off the display.
+b : Why not say it's fine? | Shouldn't fish stay damp?
+a : An open gill gives a customer something besides my word. | I mean the one I use for my fingers. I keep the two sorts straight.
+
+scene exchange2
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I put a coal in each pocket on a walk. | I can carry a question clear round the hill.
+b : Balance the weight? | Does it get answered?
+a : Balance the luck. Weight's a very small matter. | It gets rid of every word I didn't need to ask.
+
+scene exchange3
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : A map gets my thumb on the roads that vanish. | I can walk to a crooked ink line all afternoon.
+b : To follow the old way? | Then what?
+a : To find exactly where the ground decided otherwise. | Look for the old hedge still following it.
+
+scene exchange4
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder moves the coals against my hips. | I prefer thunder with a long tail.
+b : Is the ground really shaking? | Can you tell the storm's going?
+a : I start walking when I hear it. Same result. | It's easier to hear how far the last bit travelled.
+
+scene exchange5
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I put both pockets clear before I drink cider. | A good cup leaves the spice till after the apple.
+b : What's in them? | And a poor cup?
+a : Coal. Luck goes poorly in a hot mug. | Makes a great show of heat to hide a thin beginning.
+
+scene exchange6
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : Early bells put my feet to work ahead of my head. | An early bell doesn't ask whether my head was up late.
+b : Do you manage to ignore the racket? | Do you hold it against the bell?
+a : No. I argue with them from the pillow instead. | I hide my ears beneath the blanket.
+
+scene exchange7
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : Try the weight before you try the price. | I dislike pricing fish by the customer's patience.
+b : And if I can't afford it? | Do you ever bargain?
+a : Say that. I'll cut a portion to meet what you've got. | I'd rather offer a smaller piece and keep my arithmetic honest.
+
+scene exchange8
+when topic=home self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I save a stretch of my best walk for #self.spouse#. | I've a little piece of coal I'd lend #self.spouse#.
+b : How can you save a walk? | Only lend?
+a : Leave a fine turning until I've company for it. | I like keeping promises about a return. It means there's another meeting coming.
+
+scene exchange9
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't ask a blessing to make fish out of water. | My lucky coal leaves black on the fingers I fold in prayer.
+b : What do you ask? | Does it trouble you?
+a : Sense enough to spend the hours when fish are there. | A little clean water sorts out which is coal and which is worry.
+
+scene exchange10
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : They say #topic.subject# #topic.claim#. That's what came to the board. | A rumour grows a fine shiny new skin as it travels.
+b : Did you see it land? | Will you sell it?
+a : The words, yes. Anything else I'd be guessing. | I sell what I can open to inspection.
+
+scene exchange11
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : These lean days I cut smaller pieces earlier. | The head pot sees a lot of custom in hard weeks.
+b : Less fish to sell? | Is the broth good?
+a : Less certainty about whose purse can take a large parcel. | I make sure a wolf coming for economy gets flavour thrown in.
+
+scene exchange12
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I fear the Houses may fall into quarrelling before winter. | I'd prize a map whose margin outspans the drawn country.
+b : Has a dispute begun? | What would you add?
+a : It's my fear, not market news. I want the landings kept open. | A record of the places I haven't thought to walk to yet.
+
+scene exchange13
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Sump to the Heights makes a good long measure for a day. | Over the basket rims I read black smoke rising from the Works.
+b : Do you climb for custom? | Is it a weather sign?
+a : For the view of all the streets I've just passed through. | A reminder which way down is homeward.
+
+scene exchange14
+when topic=work self.role=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I display the small offcuts as plainly as the best fillets. | I face my scale towards the open side.
+b : To tempt a cook? | For the light?
+a : To spare a hungry buyer asking what the cheap end costs. | For the eyes over the counter. My eyes already know my trade.
+
+scene exchange15
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A long tramp eases a shoulder that has spent all day over scales. | I take the light basket when I've a stitch in my side.
+b : Doesn't it tire your feet? | A very small load?
+a : I give the worries to a different pair of joints. | An empty basket. I can respect an honest warning.
+
+scene exchange16
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Turning the pockets out is my last chore. | I put one coal away before I sweep the other up.
+b : Do you set the coals in the hearth? | Why the order?
+a : My walking coals have earned their own dry saucer. | The good luck shouldn't go out with the sweepings.
+
+scene exchange17
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon can't be cut into tonight's portions. | If a load's late I leave the chalk down.
+b : Do customers keep asking? | No prices at all?
+a : I tell them what actually arrived, then show my board. | None for goods I can't yet weigh.
+
+scene exchange18
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A fish tail cooks quicker than the shoulder. | I leave the skin across the tender white flesh.
+b : How do you arrange supper? | Why let it hide?
+a : Thick piece in first. Company can wait together at the plate. | In the pan, for protection. I'll show a buyer both sides beforehand.
+
+scene exchange19
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I ask a stranger how far supper has to travel. | I point out the slope with the basket hand empty.
+b : A nosy question? | Why change hands?
+a : A wrapper for two doors differs from one for two hills. | So a visitor sees the actual turn and not a parcel waving in the wind.
+
+scene exchange20
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : A fish bone has a different slant on each side of the backbone. | I can test a blade on the scrap at the edge.
+b : How do you find it? | Safer than your thumb?
+a : Let the blade follow instead of forcing it straight. | A great deal less personal if the result's poor.
+
+scene exchange21
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I set the wrapped weight and the bare weight apart. | The cheapest piece may take the longest cooking.
+b : What does the buyer pay? | Do you tell a customer?
+a : For the fish. Paper's a convenience, not a surprise portion. | A fair price ought to reckon fuel too.
+
+scene exchange22
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My first lucky chip had a bright little stripe in it. | I used to keep my coal loose with the coppers.
+b : Is there still a stripe? | Did you pay with luck?
+a : Smoothed clear off. I know the chip by the gap it left. | Nearly. I started giving the two different lodgings.
+
+scene exchange23
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My old map sends a street straight into water. | I trace an unknown turn with a washed claw tip.
+b : Old ferry crossing? | Why not use coal?
+a : Or merely an optimist with a pen. I'll walk out and see. | Old ink deserves leaving as I found it.
+
+scene exchange24
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : There's a count to keep after lightning and before its roar. | A storm coming off the Sound has a broad voice.
+b : To work out the distance? | Does it drown out the sellers?
+a : To see if this time I have leisure to get my cloth down. | For once even the most persuasive buyer goes quiet.
+
+scene exchange25
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The hook for my map is above the one for my market coat. | I turn the pocket seam outward over a basin.
+b : Have many maps washed out? | Catching last week's luck?
+a : One was an excellent education. | Coal grit. I don't want it seasoning supper.
+
+scene exchange26
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : I trim a cut so it can sit flat. | Salt belongs on the fish the buyer intends to salt.
+b : In the scale pan? | What about drying it?
+a : In the frying pan. That's where the sale finishes. | First I make sure it's meant to keep, rather than go straight to supper.
+
+scene exchange27
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd spare #self.friend# the salesman part of my voice. | I go a little slower with a friend who stops to look at things.
+b : What part is left? | Do you begrudge the time?
+a : The bit that likes a long walk in company. | No. A longer walk is generally what I wanted.
+
+scene exchange28
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Winter boards have less give beneath a foot. | A colder morning makes a clean scale seem almost sharp.
+b : Do you walk differently? | Does that slow the weighing?
+a : I keep the stride shorter and the head up for what's ahead. | Speed comes second to finding my fingers unhurt.
+
+scene exchange29
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember my first proper long walk by the spice I smelled on returning. | I went looking for a lane which used to turn towards a kiln.
+b : A homecoming cup? | Was the kiln gone?
+a : A stranger's open shutter. It counted all the same. | Long gone, but the road still bowed politely to its old doorstep.
+
+scene exchange30
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I don't always retrace an outward walk. | I find an odd coin in a walk's old pocket sometimes.
+b : Afraid of wearing a groove? | Would you wish for more?
+a : Interested in the other sides of the same houses. | Enough for hot cider. Too much in a pocket gives the coat an inconvenient list.
+
+story tale1 [topic=work self.job=fisher]
+  : I once set two lovely fish tails out with their tips almost touching. I made a serious effort to keep the arrangement neat as little orders went by.
+  : Late in the day a buyer asked for the bit in the middle. It was an almost invisible piece of empty board.
+  b : What did you put in the parcel?
+  : A decent middle cut from under the cloth. I let the tails go back to the useful work of becoming suppers.
+
+story tale2 [topic=travel]
+  : My old pocket wore through where the coal sat, dropped into the lining and made the coat hang crooked for a week.
+  : When I shook it free an old copper fell out too.
+  b : Did you thank the coal?
+  : I spent the copper on spice and mended the lining. The coal still travels with me.
+
+story tale3 [topic=pastimes self.likes=old_maps]
+  : I found a road drawn twice on an old map, a fine straight route with another waving gently alongside. I took the straight one out.
+  : The way actually curved round every little hillock. The straight line was the edge of an ancient fold.
+  b : Did you mark the mistake?
+  : I marked my own route on separate paper. The map had never promised to be flat.
+
+story tale4 [topic=weather self.likes=thunder]
+  : One full roll of thunder sent the spoons in my drying rack rattling from left to right. I lined them up by size for the next roll.
+  : The smallest one gave a little flick and sent its neighbour off the end.
+  b : Where did the spoon land?
+  : In my boot. A dry thunderstorm had found a truly remarkable way of interrupting my walk.
+
+story tale5 [topic=food self.likes=spiced_cider]
+  : I carried a small cup of warm cider up a long slope to save it for a better view. I turned at the summit with all the ceremony of a grand toast.
+  : The steam had risen away and the spice had settled to the bottom.
+  b : Did the view improve the cup?
+  : I stirred with a clean twig end and drank. Next time I'll bring the cup to my mouth while I'm still looking forward to the view.
+
+rule @call1
+when concept=bark working=yes self.job=fisher
+does aside
+cooldown 8h
+say Bright and firm across this cut. | Take a look beneath the shiny skin.
+
+rule @call2
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Price plain enough for a wet morning. | No extra for the outside of the parcel.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Tuck the old map round the dry side. | Rain can have the coat and leave my coals alone.
+
+rule @call4
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Bells have borrowed a good half of my dream. | Feet first, ears can catch up.
+
+rule @call5
+when concept=bark self.likes=long_walks
+does aside
+cooldown 8h
+say A long stretch would shake this restlessness out. | My boots have another hill's worth left.
+
+rule @call6
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Something hot with a spice twist would do just now. | A warm mug beats a noisy bargain.
+dlg resident.hub : I've walked the impatience out of myself for the moment. Speak freely.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's nobody between you and a straight answer here.
+dlg resident.hub [here.time=night] : I can spare a bit of the late walk for talking.
+dlg resident.hub [pair.disposition=wary|hostile] : Watch my hands, watch the board. I keep the words just as plain.
+dlg resident.job [self.job=fisher] : I know what's been cut, what's been salted and what belongs in a pot. My trade's right here on the board.
+dlg resident.job : I want both of us clear about what changed hands when a deal's done.
+dlg resident.news [world.news] : The news has travelled this length of street. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. A report isn't the same as a fish in my paw.
+dlg resident.bye : May you get both a dry route and a bit of weather to look at.
+dlg shop.greet [here.shop=open] : Look underneath any cut before you choose. I've chalked the honest price in an easy spot to see.
+dlg shop.greet [here.shop=bare] : Nothing to wrap just now. There's no sense weighing the bare board.
+dlg shop.greet [here.shop=asleep] : Even the fish boards are shut. Come on a waking visit.
+dlg shop.prices : The figure you see belongs to the fish you see. Inspect before you pay.
+dlg shop.bye [here.shop!=asleep] : Keep the thick side of the parcel underneath.
+dlg resident.business [business=failing] : Too many fine-looking fish and too few suppers calling for them.
+dlg resident.business [business=steady] : The usual customers keep my pots washed and my board moving.
+dlg resident.business [business=thriving] : There's a warm pot waiting for almost every piece before I finish wrapping it.
+
+graft resident.hub
+choice Why carry two pieces of coal? -> walk_coals
+node walk_coals
+say One goes on every journey. Its partner wants an equally grand journey. I turn for home when my feet begin to feel the argument.
+free
+choice Do you ever lend one? -> walk_coals_again
+choice Goodbye. -> bye
+node walk_coals_again
+say If somebody has a longer way ahead than I do. A private bit of luck can manage a night away.
+choice Keep the lining mended. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can this cut stand a long walk? [here.shop=open] -> fish_way
+node fish_way
+say I can wrap it for a journey, but distance isn't the only thing that counts. Tell me how soon the pan will get hot.
+free
+choice Why ask about the pan? -> fish_way_again
+choice Goodbye. -> bye
+node fish_way_again
+say I'd sooner sell something that keeps properly than promise a fresh supper that can't arrive so. I'll explain any difference in price first.
+choice I'll look at the other cuts. -> greet
+choice Goodbye. -> bye

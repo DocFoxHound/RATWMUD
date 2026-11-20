@@ -1,0 +1,248 @@
+mantle rm263
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_mathis_plankham
+title the porter's spare straps
+fits stage=adult|old
+prefers talk=plain honesty=guarded
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk checks_beneath_a_load_before_using_the_spare_straps
+likes mutton_stew riddles sharp_knife autumn_wind
+dislikes smoke drizzle
+fears accepting_an_unseen_load
+hopes buying_a_berth_outbound
+topics travel +0.6 pastimes +0.4 food +0.3 weather +0.2
+styles comfort=practical gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# hangs two spare straps from a shoulder and refuses to lift anything without first seeing underneath.
+words
+oath! = Forge hiss and sea spray | Anvil and ebb
+saying! = Look beneath before you lift | An empty strap costs little
+strapcoil = a coiled belt | a loop of stout leather
+hookend = a curved iron end | a blunt hook
+whetbit = a flat sliver of stone | a gritty offcut
+steambowl = a brown mutton broth | a steaming dish of neck meat
+shipberth = a place below a hatch | a plank where I could sleep
+hazebit = low hanging smoke | a greasy haze
+stairbit = a dished tread | a loose step
+riddlebit = a question with crooked legs | a riddle in a plain coat
+oilrag = a folded oil rag | a soft oily square
+splashbit = fine spray | a peppering of drizzle
+cargobit = a well-bound crate | a bale with a square bottom
+neapbit = a strip of bare sand | a spit of gravel
+
+grown
+
+opinion houses against 2 : A House would weigh my shoulders and look surprised if I asked to weigh the contract.
+opinion strangers against 1 : I'll stand beside a stranger in the open. My door keeps its own counsel.
+opinion sump for 1 : I know which stones in the low streets will bear my heel under a bad load.
+opinion road mixed 1 : Going out feels like a promise till you remember the return fare.
+opinion merchants against 1 : A light scale in a shop feels heavy in my purse.
+opinion dole for 2 : A bowl of stew can carry a back that wouldn't lift itself that morning.
+line greet : I've set my strap down. Speak at your ease.
+line greet [pair.band=strangers] : There's space to stand where we can both see each other.
+line greet.return : Your voice carries over this creaky belt.
+line greet.return [here.time=night] : Low voices now. My ears work after dark.
+line farewell : May your loads come honestly labelled.
+line farewell.return : There's still walking left in our soles.
+line again.open : Our straps have crossed a second time.
+line ask.how : Shoulders feeling the pull today?
+line answer.how : Nothing chafing that I can't shift round.
+line react.news : Lay the whole thing out where I can inspect it.
+line react.news.new : First weight I've felt from that direction.
+line react.news.known : I've carried those words a stretch already.
+line react.news.doubt : The hook's showing through the wrapping on that tale.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a hard load to bring through any door.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Welcome news can ride on my back without charge.
+line decline : I won't put my shoulder under a covered bargain.
+line thank : You took the strain where it mattered.
+line accept_decline : A strap left lying borrows no trouble.
+line reassure : Try setting it down before deciding it's too heavy.
+line sympathise : I can stay till you find your feet.
+line ack : I know where the weight falls now.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'm saving a space in my head for #shipberth#. | If I sail it'll be towards a country with no drizzle.
+b : And what would you take with you?
+a : Two straps. One to earn my supper and one to replace the first.
+
+scene pastimes_1
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What gets lighter when you add a second one? | Two of something can weigh less on me than one. Guess.
+b : Is it one of those questions about air?
+a : No, a second strap on a badly hung box. Try lifting both ways.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : The neck's the patient part of a sheep. | I'd choose the stew with a knuckle sticking up.
+b : Too tough to chew, surely?
+a : Only for an impatient eater. Get the pot hot before you start feeling hungry.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Drizzle wears through my patience faster than a downpour. | A little blowing spray has never convinced me I'm nearly dry.
+b : What's different about a good shower?
+a : Nobody calls you idle for getting out of a shower. Drizzle makes you argue for the privilege.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang my two straps apart so I can feel which one's gone stiff. | I'd let a caller wait while I hung wet leather up properly.
+b : Is good leather so dear?
+a : Second best's cheap till it splits beneath your ear.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : Today's words are #self.trade_words#. That ought to tell you where the pull is. | I know the work as #self.trade_words#. I look underneath before anything else.
+b : Why underneath?
+a : That's where somebody hides a broken slat and hopes the next pair of hands will pay.
+
+scene prices_1
+when topic=prices
+does give.opinion / ask.detail / answer.detail
+a : I want the size of the load before the size of the coin. | A cheap carry can be a very dear favour.
+b : If it's a friend's parcel?
+a : Then it's a favour from the start and nobody needs to pretend about the price.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I give a strap mark time to lose its colour before I go again. | A red patch at one shoulder means I'm walking crooked.
+b : Do you ever just swap sides?
+a : If I'm out on the road. At home I'd sooner see which bit rubs.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I watch a gull lift a heavy shell and wonder what I could learn. | A bird doesn't bother making a tidy parcel of its load.
+b : Would that work for you?
+a : Only if somebody wanted a parcel dropped from a height and split on the stones.
+
+scene land_1
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I could recognise these steps with a cloth over my eyes. | Give me the curve of one worn tread and I can guess the street.
+b : What makes one flight different?
+a : Where the boots bear down hardest. Every climb favours one side a little.
+
+scene friends_1
+when topic=friends
+does offer / ask.detail / answer.detail
+a : I'll lend a friend #strapcoil# without requiring a full account. | A friend can borrow my good belt. A stranger may look at the buckle.
+b : Supposing the belt goes missing?
+a : Then I'll know what that bit of learning cost. Leather's cheaper than trust.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My sharp knife earns its keep cutting tangles nobody has time to tease apart. | I put a blade away as soon as the last stubborn knot comes free.
+b : Even if there's likely to be another knot?
+a : Especially then. The next pull could bring a finger straight across it.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Forge and sea both send me home smelling of work. | I swear by heat and salt when words won't bear the strain.
+b : Is that a prayer?
+a : That's my temper talking. In prayer my voice runs deeper.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times put a little more weight inside every bundle. | These poor weeks I've heard light loads called heavy favours.
+b : Do you turn away work?
+a : Once I've to take it on faith as well as on my shoulders, yes.
+
+scene weather_2
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : Smoke and fog can look alike till I draw a breath. | Mist doesn't get under a lid the way smoke will.
+b : How do you escape the smoky bit?
+a : Find the wind and go where it's coming from. I can swear much better with both eyes open.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Here's #riddlebit#. Which road never takes anybody home? | Here's one for a traveller. What route will carry a load but no traveller?
+b : A road drawn on paper?
+a : That fits. I meant a line in a cargo ledger, but yours fits and costs less ink.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a strap so soft it was nearly cloth. | The kindest-looking bit of leather I ever met left a purple mark.
+b : Did you give up on that strap?
+a : I sewed a pad inside the binding. The bruise faded soon after.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I can point a newcomer downhill for nothing. | I don't charge a lost arrival for directions.
+b : What about showing the way?
+a : If I'm going there. A pointing finger has less trouble with the hills than my knees.
+
+story apple [topic=memories]
+  : I once used an apple to prop up a corner while I ran a strap underneath.
+  : It held till I'd got the whole thing just off the floor.
+  b : What happened to the apple?
+  : We had sauce. The crate was quite unharmed and my fingers smelt pleasantly sharp.
+
+story buckle [topic=work]
+  : I polished a buckle till the inside shone as bright as the outside.
+  : Then I put it on upside down and couldn't tell which end I'd fed through.
+  b : Did anybody help sort it?
+  : I shut my eyes. My fingers knew the rough places that I'd been so pleased to make invisible.
+
+story voyage [topic=travel]
+  : I sketched a schooner across a wrapping scrap and folded it round my dinner.
+  : By noon a grease stain had swallowed half the hull.
+  b : Did the ship go under?
+  : I redrew the stain as my imaginary coast. Had more coastline than I'd known what to do with.
+
+rule @straps
+when concept=bark
+does aside
+cooldown 8h
+say Look underneath while it's still somebody else's choice. | A hanging strap can wait its turn.
+
+rule @wind
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Let the gust go through before you lift. | Good wind for clearing the nose.
+
+rule @day
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Whole day's worth of stairs ahead. | Set the belt flat at the start.
+
+rule @riddle
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say I've a fresh riddle, if nobody wants it answered immediately. | A question weighs less going out.
+dlg resident.hub : Stand this side, clear of my loose belt.
+dlg resident.job [self.trade_words] : I call it #self.trade_words#. The work feels much heavier than the words.
+dlg resident.news [world.news] : The words that landed here were these. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody reckons #topic.subject# #topic.claim#. I'd look under the tale first.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep both handles in plain sight.
+dlg resident.bye : Lift with an easy mind when you can.
+
+graft resident.hub
+choice Why two straps? -> strap_pair
+node strap_pair
+say One can go about the load. The other can go under the part I don't trust.
+choice Which part is that? -> strap_base
+choice I'll mind my fingers. -> hub
+node strap_base
+say The bottom, till I've seen it clear of the floor. A label always goes on top where eyes are cheap.
+choice I'll mind my fingers. -> hub

@@ -1,0 +1,257 @@
+mantle rm546
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_roald_wickstack
+title the gutter-mark star
+fits stage=adult|old
+prefers job=servant
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk inks_a_star_beside_the_first_flooded_turn
+likes spiced_cider stars fresh_straw first_snow
+dislikes crowds smoke
+fears sending_a_loaded_cart_to_a_drowned_turning
+hopes for_a_market_stand_above_high_water
+topics weather +0.5 work +0.4 faith +0.4 prices +0.2
+styles comfort=steady gossip=plain refuse=firm tease=none
+marks oath saying
+persona #self.first# inks a star beside the first flooded turning and keeps the small street sketch folded inside a cuff.
+
+words
+oath! = By the inked star | High sill and dry straw
+saying! = Mark where the water turns first | One star for the street that goes under
+map = my cuff map | a small sketched turning
+star = the five-pointed mark | the black ink star
+straw = a dry straw wisp | a short golden stalk
+ink = my stained forepaw | an ink-dark fingertip
+sill = the high sill | a clean stone doorstep
+cider = a little spiced cider | a fragrant warm draught
+clove = the bruised clove | a bit of fragrant spice
+snow = the year's first dusting | an early white covering
+till = my stall purse | a little roll of coppers
+smoke = an ugly smoke smear | a dirty patch of air
+cart = the laden handcart | a low market truck
+rill = a narrow runnel | a busy strip of gutter water
+
+any
+opinion church for 2 : A dry turning under my neighbour's load deserves a grateful prayer. I can mark it on paper as well as giving thanks.
+opinion dole for 1 : Carry a meal round the high way before deciding a flooded street is reason enough to leave it cold.
+opinion festivals against 1 : In a crush I can't even see the water at my own feet. The bells may travel here without the crowd.
+opinion merchants against 1 : A narrow gutter doesn't double the journey. I'm apt to question a price that says otherwise.
+opinion drink against 1 : Spice is what I like in a winter cup. I've seen good company washed away by what's poured afterwards.
+
+grown
+line greet [pair.band=strangers] : Come up by the high step. | Welcome past the trickle.
+line greet [self.working=yes] : You've caught me beside the dry bundles. | Mind the folded map under my cuff.
+line greet [here.time=dawn] : Morning keeps a clear edge on the gutter. | A fresh sky above the paving.
+line greet [here.time=dusk|night] : Evening. I can still see our footing. | Come in under a star or two.
+line kin.open [pair.kin!=no] : Household company gets the drier chair. | Good to see a home face past the puddles.
+line again.open : Here we are on the high part again. | There's another turn in our talk.
+line greet.return : Welcome back to a dry crossing. | Your feet found a sound way here.
+line greet.return [pair.band=friends|family] : I'd mark your doorstep with a welcome star. | Friendly faces brighten this high ground.
+line greet.return [self.working=yes] : My hands are stained but free. | This dry end of the passage will do.
+line greet.return [here.time=dusk|night] : Welcome by the lamp above the flood mark. | A familiar step after the stars come out.
+line farewell : Keep above the first wet turning. | Dry cuffs when your last gate opens.
+line farewell.return : I'll remember the crossing for you. | Find a sound route for your next errand.
+line farewell.return [here.time=night] : Bright stars above a safe homeward path. | May your last doorstep stand clear.
+line react.news : Which turn has that report taken? | Tell me the part worth writing beside a star.
+line react.news.new : My map had no mark for that yet. | A new report under these eaves.
+line react.news.known : That came by the high road yesterday. | I've already a mark beside that word.
+line react.news.doubt : I'd walk to the turning before marking a flood quite that deep. | Some tales run downhill faster than the water itself.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : An ugly turning. I'll wait here with you. | Bring your burden over onto this dry bit.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a star to put in good ink. | A heartening arrival by any road.
+line ask.how : What sort of crossing did you get today? | Have you had a dry hour for yourself?
+line answer.how : My cuffs are dry and my prayers are said. | Some ink on my paws, enough hope in my pocket.
+line decline : I'd sooner keep the light for the other route I promised to check. | I must leave my spare hour open for a household errand.
+line accept_decline : No black star beside that answer. | The matter stands where you left it.
+line thank : You kept a troublesome bit of work dry. | That help will go in my evening thanks.
+line sympathise : Take a steady breath by this high sill. | I'll stay where you can see a friendly face.
+line reassure : A little higher ground can change the whole view. | We can set out when the water falls.
+line preclose : I'd best take one more look at that gutter. | There is a folding sum waiting in my cuff.
+
+scene star
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : #map.capitalize# gets #star# at the first turn a shower takes for its own.
+b : One star only? | Why that turn?
+a : Another for the next heavy rain if it begins somewhere else. I keep the dates small. | A cart sent the wrong way loses its whole load before any grand flood is declared.
+
+scene wisp
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I lay #straw# by a threshold when there's water coming down the lane.
+b : A test? | Does it always work?
+a : If it swims indoors the sill needs attention before I carry in another dry bundle. | It gives a plain warning. I still have to look at what actually comes under the door.
+
+scene fingers
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : There's a little black ink in the fur between my toes where I steadied the street sketch.
+b : Can't it wash out? | Do you mind?
+a : Eventually. I usually need to amend the map before the last mark has entirely faded. | More if it lands on household linen. I keep a proper cloth round my drawing hand.
+
+scene faith
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I put down a star with ink after a prayer for sure footing.
+b : Why both? | Is the prayer enough?
+a : Because I happen to have ink as well as time to pray. A traveller can use the mark immediately. | Enough for my heart. The traveller may need an actual dry street.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I keep #clove# in #cider# till its little shadow stops turning.
+b : Then drink? | Why the shadow?
+a : A comfortable sip. Too hot at first and too pleasant to forget entirely. | Spice turns sharply in a moving cup. I've a fondness for reading currents in small things.
+
+scene stars
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : The first star after rain sometimes has a second small self in the gutter.
+b : Which do you watch? | Do you draw both?
+a : The high one if I'm thinking, the low one if I've a bucket to carry. | Just the star beside the flooded road. My sketch already has enough things that aren't visible by day.
+
+scene winter
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : #snow.capitalize# shows the first warm water track before a street has quite decided to flood.
+b : You can see that? | Is the snow spoiled?
+a : A dark thread goes across new white. You needn't be a surveyor to take the hint. | At one crossing. Above it there's plenty white enough to cheer my morning.
+
+scene crowds
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : In a crowded street I can't see the step that takes water first.
+b : Do you wait? | Why worry on a dry day?
+a : I walk round. Time outdoors is cheaper than a full bucket overturned at the last moment. | I want room to find my own footing in any weather.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : #smoke.capitalize# hides the stars and makes the lights below spread out against the wet stones.
+b : Which way then? | Do you stay in?
+a : The familiar route with a sound kerb. A shining street isn't necessarily a dry one. | If the errands allow. A clear breath goes well with keeping the map up to date.
+
+scene coins
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I put another copper in #till# whenever my household wage allows it.
+b : For what pitch? | A large stall?
+a : For one that stays dry throughout a market day. I've a few corners under consideration. | Anything that will hold my goods and a stool above ankle water would make a strong beginning.
+
+scene home
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : #self.street# has a different shape in my head before rain and after it.
+b : Two maps? | What stays the same?
+a : One page. A star and two tiny strokes will do more than a second whole drawing. | The way the highest lintel stands out against the evening sky. I can aim for that in almost any weather.
+
+scene workplace
+when topic=work self.workplace self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I take dry straw to #self.workplace# by a route that looks needlessly long in clear weather.
+b : Why that way today? | Does anyone ask?
+a : I've learned the safe corners for carrying a full arm. I value the habit more than the minute it costs me. | If there's a question I show the sketch. They can see what happened the last time it rained.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# a copy of the two stars that matter on a market errand.
+b : Why only two? | Would you charge?
+a : Too many little directions make a map hard to consult with wet fingers. | For a friend's safe footing? Ink doesn't cost me that much.
+
+scene neighbour
+when topic=home self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I could ask #self.neighbour# which doorway was last to dry out.
+b : Would you take that as proof? | What if accounts differ?
+a : As a reason to walk over myself. A doorstep can differ from the crossing below it. | Then two good questions have come out of one drawing. I like a map that can still be corrected.
+
+scene anger
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : When a delivery gets sent down a flooded lane I find my temper rising faster than the water.
+b : What do you say? | How do you cool down?
+a : Which way to come back with the load. Other remarks can wait for those bundles to dry. | Spread the map out. Angry paws can still point clearly at the next dry turn.
+
+scene newcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I show a stranger one high doorway before beginning an account of the whole quarter.
+b : Why a doorway? | What comes next?
+a : It's something to aim at while bringing an armful of belongings into an unfamiliar street. | Which turning keeps shoes out of water. Names and house histories can wait.
+
+scene supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A dry chair under a hot meal is a luxury I've learned to count separately.
+b : How many luxuries altogether? | Which would you lend?
+a : A chair, a bowl, a dry floor and a companion with a decent appetite. Four things to be thankful for. | A neighbour who needed one could have my stool while I took the sill.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed the whole sky was a street map with rain running from star to star.
+b : Where did it drain? | Useful for errands?
+a : Into the handle of my cider cup. I had to keep moving the cup to save the houses. | I woke with the route to breakfast very clear indeed. I wouldn't trust the rest without walking it.
+
+story starstory [topic=memories]
+  : My first ink star was supposed to be a dot. I put a paw into the wet mark and dragged five little points across the turn where the paving slopes.
+  : In the rain I found the mistake easier to see than all my carefully rounded dots. It became the only sign I didn't have to explain to myself twice.
+  b : Did you leave the paw mark?
+  : I trimmed the longest point. The star still bears an honest relation to a careless morning.
+
+story cupstory [topic=food]
+  : I carried a warm spiced cup across a freshly swept floor while watching a dark line outside the sill. A clove went round and round in the cider.
+  : From outside came a little straw going round the same way. I put the cup down and barred the lower door before either current could spill indoors.
+  b : Did the drink go cold?
+  : Just cool enough for the first real taste. My timings are seldom so fortunate.
+
+story pitchstory [topic=prices]
+  : I looked at a market pitch in sunshine once and very nearly spent my little savings to hold it. My eye kept catching on a dark band below its boards.
+  : I came the next morning when the lane was wet. The band sat precisely along the upper margin of a muddy pool. I counted my coppers and put them all back.
+  b : Have you chosen a better spot?
+  : I've chosen a better hour to do my looking. A stall needs its first inspection after a good hard rain.
+
+rule @aside1
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 6h
+say Straw above the sill, first bundle dry. | Fold the route before lifting the bucket.
+
+rule @aside2
+when concept=bark self.likes=stars
+does aside
+cooldown 7h
+say There's its twin in the gutter. | A dry sky in a very wet street.
+
+rule @aside3
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say The clove's almost come to rest. | A fine dark swirl of spice there.
+
+rule @aside4
+when concept=bark self.piety=devout
+does aside
+cooldown 9h
+say A thankful word for these dry steps. | Ink for the map after a word of prayer.
+
+dlg resident.hub : Come onto the raised paving with me. I'll hear you while the little runnel finds its direction.
+dlg resident.job [self.job=servant self.workplace] : I'm in household service at #self.workplace#. Dry bundles take a good deal of thought in this city.
+dlg resident.news [world.news] : This travelled clear of the flooded turns. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, room on the high step for a familiar caller.
+dlg resident.bye : Dry ground by the Bright One's favour all along your journey.
+
+graft resident.hub
+choice What does the star on your cuff map mean? -> cuff_star
+node cuff_star
+say It's the first street to take water in a hard rain. I draw the star big enough to find when the paper's wet and I've only one free thumb.
+free
+choice Why would a household servant keep that map? -> cuff_goods
+choice I'll mind the marked turning. -> hub
+node cuff_goods
+say Ask a wet bundle of clean straw what the short route cost. Some day I mean to have my own market stand, and I'll know where to keep its feet dry.
+choice I'd look at a pitch after rain too. -> hub
+choice May the stand find sound ground. -> bye

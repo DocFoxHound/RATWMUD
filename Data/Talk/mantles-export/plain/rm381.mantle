@@ -1,0 +1,254 @@
+mantle rm381
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_roald_toft
+title the dipping-cup boat
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk whittles_small_hulls_to_try_in_a_dipping_cup
+likes pickled_herring whittling festival_bells first_warm_day
+dislikes salt_wind wet_floors
+fears confusing_a_whisper_with_a_witness
+hopes one_little_boat_that_sails_straight
+topics work +0.5 pastimes +0.5 gossip -0.5 weather +0.3
+styles comfort=quiet gossip=withheld refuse=frank tease=none
+marks oath saying
+persona #self.first# hums a sea air to thumb-sized boats and keeps a dry, folded list beyond reach of the steam.
+
+words
+oath! = Scald my hull | Sink my shallow ladle
+saying! = A dipping cup makes an honest sound | A secret floats best without a sail
+bed = a berth on dry cloth | a good length of blanket
+wind = salt on the breath | a biting sea breeze
+work = a proper turn at it | the day's decent part
+quiet = a hush after splashing | a still moment
+tale = a sea air with words | a tune turned into a tale
+hull = a hollowed chip | a smooth little hull
+cup = a deep dipping cup | a little bath of tin
+bottom = a flat bottom | a rounded keel
+towel = a thick cloth | a fold of fresh linen
+herring = a thin pickled strip | a curl of herring
+chip = a pale shaving | a twist of wood
+lip = a raised rim | a worn brim
+
+any
+opinion watch against 1 : Clean water goes cloudy with surprisingly little stirred up from below. I reserve judgement about clean uniforms too.
+opinion houses mixed 1 : Fine doors can shut away more than steam. I like particulars before I speak.
+opinion dole for 1 : Warmth and food both get into a wolf more easily through an open door.
+opinion strangers for 1 : A dry towel can be offered before learning somebody's whole history.
+opinion city for 1 : A city that makes room for washing and for dreaming is tolerably well arranged.
+opinion merchants mixed 1 : Respectable work doesn't absolve a seller from giving the actual measure.
+
+grown
+line greet : There's a dry corner by my humming. | Welcome in a lower voice.
+line greet.return : And a little warmth round your greeting.
+line again.open : Come round the cup again already.
+line farewell : A dry landing when your next journey ends. | Keep the wind off your wet sleeve.
+line farewell.return : I'll return your wish with the towel still warm.
+line react.news : Tell it in air clear of steam. | I'll let the tune fall quiet.
+line react.news.new : I hadn't heard that beneath the tune.
+line react.news.known : I know the waterline on that account.
+line react.news.doubt : Something in that telling won't float straight.
+line react.news.sorrow [topic.kind=death|loss|assault] : I'll keep the little boats still for news of a loss.
+line react.news.glad [topic.kind=birth|marriage|work] : That's a light piece of news to carry.
+line ask.how : Did the day leave a moment for your own thoughts?
+line answer.how : I'm afloat with a quiet bit of room.
+line sympathise : You can sit without having to whistle up a reason.
+line reassure : A small vessel can right itself once the water settles.
+line refuse : I've something in my keeping that needs attention first.
+line accept_decline : Quite understood. Your time hasn't been taken on hire.
+line preclose : I'd best attend to my bit of dry business.
+line accept_preclose : Go while you can still walk at your own speed.
+line ack : Yes. Quite clear below the surface.
+
+scene exchange1
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I watch for the steam to thin. | I leave the dry things within reach of the warm things.
+b : To shut the door? | Won't they grow damp?
+a : To judge whether to fetch a fresh towel. | A short reach. A very deliberate space between.
+
+scene exchange2
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : This hull fits a dipping cup. | I carve the inside first.
+b : Does it float? | Isn't the outside easier?
+a : It shows me where the next shaving should come off. | It's tempting to finish a beautiful boat with nowhere to sit.
+
+scene exchange3
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A herring curled up in vinegar reminds me of a small harbour. | I like pickled fish after steam.
+b : Does your boat go there? | A sharper taste?
+a : Only if a bit of crust can sail. | A very clear one. The tongue wakes first.
+
+scene exchange4
+when topic=pastimes self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I keep a festival bell behind my hum. | A bell outlasts its own sound.
+b : How can you do that? | In the ear?
+a : Hold its last note in mind and fit the tune beneath it. | In the way my paw goes on carving to that time.
+
+scene exchange5
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : Spring's first soft afternoon makes the bath steam almost invisible. | I take a little boat into the light when spring warms.
+b : Too warm outside? | To sail it outdoors?
+a : Just warm enough to make the water look wonderfully still. | To see which scratches winter concealed.
+
+scene exchange6
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind puts a rough edge on the lip of a cup. | I let the tune have the sea and keep the wind away.
+b : Can you taste it? | Wish it were still?
+a : Even after wiping. I take the cup inside. | Still enough to see what the little hull does by itself.
+
+scene exchange7
+when topic=day self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A wet floor's a poor place to come dreaming ashore. | I dry a track just wider than my towel.
+b : Have you slipped? | Why so narrow?
+a : I learned the careful step the quick way. | Better one wholly dry path than a handsome damp room.
+
+scene exchange8
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I keep a private list of certain arrangements. | My plainest paper has the most careful fold.
+b : What arrangements? | May I see it?
+a : Things I think worth remembering until I know more. | Plainly speaking, no.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put my best little hull in #self.friend#'s keeping. | A friend needn't hear every note I'm humming.
+b : Do you want it back? | Which ones stay quiet?
+a : I'd rather see it tried on another stretch of water. | Usually the ones I haven't decided how to end.
+
+scene exchange10
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A respectable post entails an extraordinary number of damp corners. | I'd rather make a dry place properly than name it grandly.
+b : What makes it worth the trouble? | Do customers notice?
+a : Fresh cloth going into cold paws. | Cold toes notice the difference straight away.
+
+scene exchange11
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The report was #topic.subject# #topic.claim#. I heard it over the splashing. | A whisper lingers in steam longer than a song.
+b : Can you certify the account? | Does it improve with age?
+a : Only for the words reaching me. | It improves most by thinning to nothing.
+
+scene exchange12
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Even warm water gets carefully measured in a lean week. | A lean purse still deserves proper leisure to wash.
+b : Does comfort shrink with the bucket? | Would you hurry a visitor?
+a : Not if one takes care with the cloth too. | I can spend the same courtesy on different purses.
+
+scene exchange13
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep my knife and my paper on different shelves. | My little fleet sleeps on folded linen.
+b : Afraid of a slip? | Will it sail in dreams?
+a : Afraid of oil spread over a perfectly legible note. | I own the dreams readily. The fleet remains discreet.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I hum the rowing part on uphill walks. | I like a town street with a distant water sound.
+b : Does it pull you along? | Homesick for the Sound?
+a : It settles my feet into a shared pace. | For its rhythm. Salt in my ears is quite another thing.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to launch one hull and watch it go straight. | I'd build a perfect toy ship from a plain stick.
+b : No sails? | What makes it perfect?
+a : Then the wood could claim all the credit. | A wake exactly the width it ought to leave.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I ease my carving thumb in a cup of warm water. | A hum gets rough if I don't pause between verses.
+b : Does the wood hurt? | Do you mind a pause?
+a : I hold it harder than necessary when I start dreaming. | The sounds of the room return in that gap.
+
+scene exchange17
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A quiet thanks after washing comes easily. | I can be grateful for a safe door without admiring everything behind it.
+b : Grateful for the water? | A difficult distinction?
+a : And for having somewhere to sit while I dry. | A necessary one in this city.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I flatten the towel before starting a tune. | I stop carving as soon as the light blurs the grain.
+b : Why the order? | Afraid of your blade?
+a : I lose the corners when my ears wander. | Fond of my thumb, which is much the same precaution.
+
+story tale1 [topic=pastimes self.likes=whittling]
+  : My first little hull rolled over as soon as it touched water. I took it out and gave the upturned base a long inspection.
+  : It resembled a quite handsome seal, floating with its nose up.
+  b : Did you cut a new keel?
+  : I gave it eyes and carved a second boat. The seal's kept a remarkably steady course ever since.
+
+story tale2 [topic=memories]
+  : I folded a blank scrap round a particularly private page. Steam reached the outside and printed the inner ink faintly backwards.
+  : I turned the damp leaves to the lamp. It looked like a list written for fish under a pond.
+  b : Could a passer-by read it?
+  : I couldn't, and I knew the order. I dried both leaves and improved my choice of shelf.
+
+story tale3 [topic=food]
+  : I ate pickled herring beside one of my little ships and learnt the danger of admiring two curved things at once.
+  : My paw was carrying salt towards the ship when the grain caught my eye.
+  b : Did you varnish the herring instead?
+  : I ate it promptly and cleared a sensible distance between my workshop and my plate.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Dry cloth where the warm walk finishes. | Stow the spill bucket clear of the heel.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A low note before the water gets noisy. | The first cupful deserves a clean rim.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Keep a dry outer fold on that page. | Weather enough outside without bringing it under the towel.
+
+rule @call4
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Another thin shaving off the stubborn side. | Beautiful grain for a very modest voyage.
+dlg resident.hub : I've brought my thoughts back to the landing to hear you.
+dlg resident.hub [topic.meeting=known] : #topic.player#, a known voice above the sound of the cup.
+dlg resident.hub [here.time=night] : My knife is put away, so there's time for talk.
+dlg resident.hub [pair.disposition=wary|hostile] : I can be plain without putting my private pages out for inspection.
+dlg resident.job [self.job=merchant] : I work at #self.workplace#. Warm water, ready cloth and decent footing all take attention.
+dlg resident.job : I prefer work where my hands and my intentions are equally clean.
+dlg resident.news [world.news] : The words I heard through the steam were #world.news#.
+dlg resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. That's the whole extent of what I'm prepared to pass.
+dlg resident.bye : A sheltered, level bit of pavement home to you.
+
+graft resident.hub
+choice How do you test a pocket ship? -> small_hull
+node small_hull
+say A dipping cup and a shallow breath. It tells me quite plainly if I've left one side heavier.
+free
+choice What if it sails in a circle? -> small_hull_again
+choice Goodbye. -> bye
+node small_hull_again
+say I can launch it again without getting up. Not every error is inconvenient.
+choice I'll wait for the fleet to grow. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,260 @@
+mantle rm384
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_edda_gullford
+title the smoked-glass rehearsal
+fits stage=adult|old
+prefers job=laborer
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk rehearses_a_verse_in_the_dark_patch_on_a_lamp_glass
+likes honey_cakes singing quiet_chapel summer_evenings
+dislikes crowds flies
+fears a_wick_burning_unseen a_voice_among_strange_elbows
+hopes a_pitch_with_one_stool a_song_sung_after_the_shutters_close
+topics pastimes +0.4 work +0.4 faith +0.3 gossip -0.5
+styles comfort=quiet gossip=withheld refuse=firm tease=none
+marks oath saying
+persona #self.first# rehearses songs to the dark patches in a lamp glass, looks for a clear path before stepping into a crowd, and keeps the quiet verses for familiar ears.
+
+words
+oath! = Tallow and tidewash | Smoke in my teeth
+saying! = Let the soot hear the rehearsal | One lamp for the walk, one song for myself
+sootmask = a dark crescent on the glass | a smudge like a listening ear
+songcloth = my folded lamp rag | a blackened square
+glasseye = the little clear patch | a bare oval of glass
+stallpot = my metal savings pot | a pot with a narrow mouth
+pitchseat = one short stool | a seat beside the shutter
+wickshear = my snipping shears | a little pair of wick nippers
+honeyfold = a waxed cake leaf | the honey wrapping
+grimegrain = a soot grain | a small oily speck
+sealine = the clean edge below the black | a narrow line of light
+shutnote = the verse under my breath | a closed-mouth measure
+
+any
+opinion strangers against 2 : A caller can ask about the goods. My purse and my tunes aren't on the same stall.
+opinion houses against 2 : I'd like the price of a licence to include a place where the roof doesn't empty itself between my collar and my pelt.
+opinion sump for 1 : My own patch of Sump will leave a tired voice alone. I wouldn't sell that courtesy cheaply.
+opinion dole for 2 : Bread available without a fine introduction gives one hungry door a quiet evening. Quiet is a fairly costly thing down here.
+opinion watch against 1 : One set of loud boots can turn a dozen conversations into shut mouths. I'd like a better use for leather.
+opinion church for 1 : The chapel gets food into a pot and lets a quiet wolf sit by it. I value both pieces of work.
+
+grown
+line greet : There's enough light to recognise a caller. Welcome.
+line greet [pair.band=strangers] : I hear you. Ordinary dealings first.
+line greet [here.time=dawn] : Still a bit of night caught in my cloth. Welcome.
+line greet [here.time=dusk|night] : Keep within the patch that shows your face.
+line greet [self.working=yes] : One lamp needs my full reach. I'll hear you over here.
+line kin.open [pair.kin!=no] : Draw your stool up to this end.
+line again.open : Same face, freshly lit. I remember.
+line greet.return : A greeting heard through the last quiet bar.
+line greet.return [pair.band=friends|family] : I know that voice in company or out.
+line greet.return [self.working=yes] : Your words reached past the nippers.
+line greet.return [here.time=dusk|night] : You have my answer from the lighter patch.
+line farewell : Keep one light ahead of your footsteps.
+line farewell.return : I'll do the closing verse alone.
+line react.news : I'd like a clearer patch on that account.
+line react.news.new : That one's arrived without a mark I recognise.
+line react.news.known : I've rubbed this piece over once already.
+line react.news.doubt : Who was in good light when it happened?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Quiet at the hurt door first. An errand after.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth opening up a little more light for that.
+line answer.how : I've a clean rag end left. Enough to go on with.
+line ask.how : Much crowding round your business today?
+line sympathise : Hurts worse when every ear turns to hear about it.
+line reassure : We can speak through the gap when the crowd goes by.
+line decline : I'd keep my private verse clear of all those mouths.
+line accept_decline : Closed glass. I can recognise it.
+line thank : You've given a quiet task some room.
+line deflect_thanks : Leave a lamp in good order for the next tired face.
+line preclose : That little dark crescent wants wiping now.
+line accept_preclose : I've a rag full of my own business.
+line ack : Clear patch.
+
+scene mask
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : The ear-shaped smudge is my last bit to wipe off any glass.
+b : Couldn't you clean it all together? | Why an ear?
+a : Certainly. I just like an audience for my last bit of song before I wipe it off. | That's where the smoke's caught on a curve. I haven't asked the lamp to grow me a nose.
+
+scene cloth
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I put a different verse into each fold of my cloth.
+b : Can a cloth remember words? | Must you fold it exactly right?
+a : I do the remembering. Another fold, another chance to put the price of oil out of mind. | It helps. On a busy afternoon the song has been known to start over in the middle.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I'd save a good quiet chapel for a verse I don't sing in the street.
+b : Is the verse especially holy? | Would you sing louder inside?
+a : No. It's just dear to me and I'd like its last word clear without a cart going through it. | Smaller voice, actually. A quiet room lets me take it down where I like it.
+
+scene warmhoney
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : A lamp cloth and a cake wrapper stay in different pockets on my coat.
+b : To spare the cloth? | Would you really notice a little soot?
+a : For the sake of whoever has to look through honey streaks on a window. The cake has an interest in the matter too. | Yes. I've paid for a honey cake. I want my last mouthful sweet.
+
+scene summertune
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer leaves enough light for my entire evening verse while there's still a little sky to look at.
+b : Is that when you sing for company? | Do you save the last verse for dusk?
+a : Company I choose. A window full of strangers would send the words back into my pocket. | I don't save. I keep going till the light or my voice decides for me.
+
+scene buzz
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly on a sticky lamp rag can make a mind up to be elsewhere quite loudly.
+b : Do you help it loose? | Why have you anything sticky there?
+a : With a straw. I have no use for a noisy prisoner in my pocket. | The rim of an old lamp can be greasy. Once is plenty for a fly.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I choose where my elbows will go before I take a parcel into a crowd.
+b : Do you mind a little jostle? | Is there a safe corner to choose?
+a : Not for myself so much as the glass. You can only break a lamp once and it'll still be your wages gone. | Near a wall with room to pass. A dead end can fill to the back before you notice.
+
+scene coins
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a market pitch with room for one stool, and an empty corner for the song to go into.
+b : Wouldn't you want two stools? | What will you sell?
+a : Two make an invitation. One's for my legs after a long morning. Company can come by choice. | Something dry and clean and wanted. First comes the dull part of putting the money together.
+
+scene lampheight
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A low Sump light can do more than a grand high one in the wrong spot.
+b : What makes the spot right? | Wouldn't the light go farther up high?
+a : If you see a dangerous step before landing on it, that's plenty of height. | Perhaps. A wolf stepping in an unseen hole might have a strong opinion about distance.
+
+scene freshwork
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : I try a new task quietly before asking anybody how it should be done.
+b : Why not ask first? | Suppose the trick defeats you?
+a : I can ask about the actual rough bit instead of standing there saying I'm at a loss. | Then I have a plain question, and enough practice at it to recognise a real answer.
+
+scene stayprivate
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A face seen in lamp glass stays in the lamp glass so far as I'm concerned.
+b : Even if it's somebody familiar? | Isn't a reflection public?
+a : Especially then. A quiet sighting is no invitation to give an account of another wolf's night. | The light's public. My tongue belongs to me.
+
+scene smalloffer
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : My stall coppers go into a pot too slender for idle fingers.
+b : Is that safe enough? | How will you get it out again?
+a : Safe from my own paw on a hungry morning. For the rest I'll use my own judgement. | Tip the pot over a cloth. Anybody can take one coin. It takes a settled intention to tip them all out.
+
+scene nearfly
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At dusk I test a glass against the bit of sky between two roofs.
+b : Aren't you testing whether it shines? | What can you see against the sky?
+a : I'm testing what the shine has to get through. I can get that sky for nothing. A second wick costs money. | Every smudge the lamplight would turn gold and let me fancy was clean.
+
+scene familiarfriend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : A song I meant for #self.friend# would be a quiet song.
+b : How would it reach? | Does the tune get smaller too?
+a : I'd wait till there was only the width of a table between us. No point scattering it over the square. | No. A whole tune can sit very comfortably inside a small sound.
+
+scene funded
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : If a clean cloth costs a copper I cut it to get two edges of use out of it.
+b : Would you sell one edge? | Does the second half stay cleaner?
+a : I'd rather save a later copper by having two useful bits of rag. A stall needs both coppers and rags. | If I keep it folded inward. That's the clean edge for a job a customer can see.
+
+scene smells
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember a verse from the scent that went with its first singing.
+b : Does everything smell of oil after a while? | What smell helps most?
+a : Everything in the same pocket does. I keep the very old tunes further away from it. | Plain dry wood after water has gone off the surface. It brings a whole evening back.
+
+scene longroad
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I mark out a walk by how often I'll be able to leave the middle of the stream of feet.
+b : Do you always need to stop? | Does a quiet lane draw you in?
+a : No. It pleases me to know I can choose my pace and still have the glass home in one piece. | If I can see that it's got a way out, yes. I'd like a little choice at the far end, too.
+
+scene shortpray
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I sit quietly till the hour suggests a prayer or a song.
+b : What distinguishes the two? | What if the silence is enough?
+a : Sometimes I don't. The words find the voice that's fit for them. | Then I'll count the quiet as a gift and get up when I'm ready.
+
+story clearear [topic=work self.job=laborer]
+  : A lamp had a smoky place that looked so much like an ear I sang part of my song towards it.
+  : The glass made no comment. When I finally wiped the patch off the rag carried a perfect black impression.
+  b : Did that make a better listener?
+  : A travelling one. It rode in my pocket till washing day.
+
+story stoolcoin [topic=dreams]
+  : I once tried sitting precisely where I'd put a stool if my own stall appeared overnight.
+  : That part of the ground fell away sharply towards a drain. My shoulders went one way and my knees the other.
+  b : Would a shorter leg fix the stool?
+  : A better patch of ground would save both the leg and the trouble. That's one decision made before buying wood.
+
+story stickyfly [topic=food self.likes=honey_cakes]
+  : I wrapped a good honey cake and tied it close round three sides.
+  : An ambitious fly went looking at the fourth side just as I folded it shut.
+  b : Did supper gain a fly?
+  : No. The noise gave away the passenger. I opened a corner and sent the only uninvited guest out again.
+
+rule @working
+when concept=bark self.job=laborer self.working=yes
+does aside
+cooldown 8h
+say Last wipe across the moving shadow. | Hold the lamp by the cold side.
+
+rule @crowd
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 8h
+say Room round the glass, please. | A clear step costs less than a broken lamp.
+
+rule @honey
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say Fold the cake clear of the wick cloth. | Don't lay the sweet side down there.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Leave the glass facing the low step. | Keep the dark rag out of the flame.
+dlg resident.hub : I can lend an ear while the glass cools.
+dlg resident.hub [topic.meeting=known] : That isn't lamp smoke; it's your face again, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep your paws within the lit bit and I'll hear you.
+dlg resident.hub [here.time=night] : Light on the step, quiet on both sides. Speak.
+dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. I leave enough light for a wolf to make the last step in comfort.
+dlg resident.job : I'm good for an unhurried paw where a careless one costs glass.
+dlg resident.news [world.news] : This piece came through unsmudged. #world.news#.
+dlg resident.bye : May the low steps show clear going home.
+
+graft @ear_glass resident.hub
+choice Are you really singing to that smudge? -> ear_glass
+node ear_glass
+say Only till I reach it with the rag. The black curve looks like an ear from this side, and there's no danger it'll take my song out and sell it in the market.
+choice What happens when the glass is quite clean? -> ear_glass_more
+choice Give the glass its last wipe. -> hub
+node ear_glass_more
+say I take the last bit of tune home to finish. A good listener doesn't have to be left standing dirty just to keep me company.
+choice Give the glass its last wipe. -> hub
+choice Step back from the lamp. -> bye

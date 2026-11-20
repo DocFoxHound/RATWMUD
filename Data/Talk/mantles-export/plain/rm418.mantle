@@ -1,0 +1,259 @@
+mantle rm418
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_signe_ashstack
+title the hot cup timer
+fits stage=adult|old
+prefers job=servant
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk sets_a_small_copper_on_a_warm_saucer_to_time_the_walk
+likes fried_fish riddles new_boots summer_evenings
+dislikes smoke cold_tea
+fears a_cup_returned_untouched a_smoky_table_for_company
+hopes a_stall_with_a_hot_kettle two_boots_that_take_the_same_stride
+topics work +0.4 food +0.3 dreams +0.4
+styles comfort=provisions gossip=discreet refuse=courteous tease=none
+marks oath saying
+persona #self.first# puts a small copper on an empty warm saucer to gauge a serving walk and wants a stall where every cup arrives worth drinking.
+
+words
+oath! = Chill in the copper | Suds down my cuff
+saying! = Pay the heat its proper journey | A warm saucer keeps its counsel
+copperclock = my little heat penny | a broad warm copper
+ivorydish = the plain cream saucer | a saucer without a rim chip
+foldrag = a doubled serving cloth | a fold of soft linen
+potstool = a short kettle stand | my imagined stall stool
+warmring = the warm ring round the base | a small circle of warmth
+fishedge = the browned outer fin | a crisp fried edge
+squareslip = my little count of cups | a slip marked in squares
+newsole = an unworn firm sole | a new heel with sound edges
+smokewisp = a breath of old smoke | a grey curl in the light
+teatime = the pleasant warmth at the rim | the first sip's heat
+
+any
+opinion dole for 1 : A meal handed over warm carries consideration as well as nourishment. The poorest bowl ought to receive its due in both.
+opinion drink against 1 : There are words spilled after drink that a cloth won't gather into a cup again. I prefer a settled mouth.
+opinion houses for 1 : My board has been set and my boots kept dry on a House wage. It's an ordinary mercy of which I am well aware.
+opinion road against 1 : The least pleasant cup I've carried was one that crossed an uneven bit of road. Long journeys aren't made more inviting by multiplying the uneven bits.
+opinion sump against 2 : When a stair has space for haste or a tray but scarcely both, I'd rather deliver what I came with and go gently home.
+
+grown
+line greet : You've caught an ordinary quiet moment here.
+line greet [pair.band=strangers] : Welcome. Come only as far as you feel at ease.
+line greet [here.time=dawn] : A little warmth in the saucer this early is welcome company.
+line greet [here.time=dusk|night] : Enough light to see one another politely in.
+line greet [self.working=yes] : I'll settle the saucer and give you my attention.
+line kin.open [pair.kin!=no] : Our own folk may turn the handle where it best suits the paw.
+line again.open : I've kept your place pleasantly warm between our meetings.
+line greet.return : A civil word like yours will carry clear round the furthest chairs.
+line greet.return [pair.band=friends|family] : A familiar voice takes a little worry out of the morning's work.
+line greet.return [self.working=yes] : Your greeting crossed the rim without spilling anything.
+line greet.return [here.time=dusk|night] : That reached me very gently from the shadows.
+line farewell : May your next cup arrive agreeably hot.
+line farewell.return : I'll pick up the cloth once you're well past.
+line react.news : I'll try to hear that account without setting my own hopes on top of it.
+line react.news.new : That's a different piece of business to place on my tray.
+line react.news.known : Yes. A rather thinner version has come to my ear before.
+line react.news.doubt : Was anybody there to check that particular detail?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd happily see a warm pot to that door and take the empty one home again.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such agreeable news merits my handsomest cups.
+line answer.how : A minor rasp in my throat and plenty of willingness left in my arms.
+line ask.how : Had a chance to take a quiet sip today?
+line sympathise : An unwelcome wait has a way of making every little discomfort grow.
+line reassure : Rest your paws on this dry cloth for a minute.
+line decline : I couldn't undertake another errand and still do justice to the first.
+line accept_decline : That's a choice you are quite entitled to make.
+line thank : The difference a steadying paw makes is quite remarkable.
+line deflect_thanks : Enjoy the little comfort it provided. That's a pleasant enough return.
+line preclose : There's a cup beginning to cool in my thoughts.
+line accept_preclose : I'll keep the passage still while you go.
+line ack : Quite settled.
+
+scene copper
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I lay a copper on a warmed empty saucer and give myself the length of the serving walk.
+b : What can the coin tell you? | You don't put it beside the tea?
+a : Whether it kept enough heat for a guest's first sip to be pleasant. I needn't hurry my lessons with an empty cup. | On a separate practice saucer. You don't improve the flavour of a guest's tea with spending money.
+
+scene fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I set a fried piece on its narrow edge to drain for a few breaths.
+b : Why not lay the good side flat? | Do the edges stay crisp?
+a : Then the underside becomes almost as wet as the fish was before it met the pan. | If it comes to the plate promptly. I particularly like a fin brown enough to make one tiny crack.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I'd give a cup, a copper and a cold room as a riddle.
+b : What am I guessing? | Is the answer money?
+a : What's spent without being paid. Heat's my answer, though patience deserves consideration. | Not unless a rather costly cup is dropped. The coin is there to lead you down the wrong passage.
+
+scene boots
+when topic=home self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : A fresh sole in a long passage tells me which boards aren't quite level.
+b : How can it tell you? | Does the shoe need breaking in?
+a : The heel comes down very frankly before it learns the shape of my old route. | Yes. I take the tray empty for the first good turn. Boots deserve instruction as much as an eager pair of feet.
+
+scene summerdream
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A long summer evening would be my favourite time to sit behind my very own counter.
+b : Would you stay serving late? | Where does the heat come from after sunset?
+a : Till the last guest has finished, then I'd sit on for the pleasure of looking at an empty clean board. | A small covered kettle's part of the dream. I've considered it with great care.
+
+scene coldcup
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea always feels like an invitation delivered after the door was shut.
+b : Would you refuse it? | How would you keep it warm longer?
+a : I'd let the maker know I can wait quite happily for a fresh pot. | Warm the cup beforehand. A cold heavy cup can have the best of the kettle before the guest has a chance.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I can carry a tray more steadily with a clean line of air between my eyes and the far door.
+b : Is it hard to see through smoke? | Would you put the tray down?
+a : It's hard to see while the eyes make every effort in the world to wash themselves. | Gladly. I'd rather admit to a cough than introduce a whole tray to the floor.
+
+scene quarter
+when topic=land self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : An Estate passage can be rather longer than it looks from the threshold.
+b : Is it the floor pattern? | Does it matter for a guest?
+a : Several similar doors persuade an eye it's nearly there when a half dozen steps still wait ahead. | It matters rather a lot to the cup of tea travelling to a guest's waiting hand. That's my interest in distances.
+
+scene dryvoice
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : There is a peculiarly polite little cough I use when damp has got into my throat.
+b : Is that easier than a large one? | Can you carry on talking then?
+a : Easier on the guests if not on me. I generally slip round a corner for the honest one. | If I take a small drink and a quiet moment. I'd hope nobody feels a duty to watch the entire operation.
+
+scene stallvalue
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I could price a plank across a stall more readily than I'd value a fine cup.
+b : Have you put much aside? | Why think of boards before china?
+a : Enough to enjoy the prospect. I'll leave the precise amount in the comfort of its box. | Because crockery on the wet cobbles would leave my stall at something of a disadvantage.
+
+scene neighbour
+when topic=smalltalk self.neighbour
+does tell.self / ask.detail / answer.detail
+a : If I offered a cup to #self.neighbour# it would arrive with the handle turned to be easy to take.
+b : Which side would you put it? | Why so exact?
+a : I'd wait to see which paw was free. Consideration sometimes consists of a moment's observation. | It's a very small alteration to spare another wolf a rather awkward twist.
+
+scene guestheat
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : A very hot saucer under a cool cup can disguise a dismal drink.
+b : Would you test the drink? | Does a warm guest notice?
+a : I'd check the pot and cup before the pour. I don't vanish round a corner to sip something meant for somebody else. | It's the first mouthful that notices, whatever the saucer tells the paws.
+
+scene truthroom
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't keep overheard remarks warm to serve colder elsewhere.
+b : Would you carry a deliberate message? | Is there harm in an ordinary remark?
+a : With the words agreed and the proper ear waiting, yes. A rumour seldom comes with either guarantee. | After two doors and three additions it may no longer sound ordinary at all.
+
+scene properhold
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I like a puzzle that has a practical piece you can turn over.
+b : Can a saucer be a puzzle? | Is there more to find underneath?
+a : Set it down on three different patchy surfaces. Only one will hold steady as somebody reaches for the handle. I'm fond of finding the steady one. | A ring worn flat in places. That will tell you which side wants a steadying cloth first.
+
+scene firefaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can be of some small comfort by attending to the meal while a wolf is trying to find words.
+b : Do you speak first then? | Won't the guest need to thank you?
+a : I let the cup go first. Sometimes words come with the warmth and sometimes both can stay quiet. | I'm quite content to take an empty cup back. It tells me something went right.
+
+scene mistyglass
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain on a window makes quite a persuasive picture of a cup going cold.
+b : Why would a wet window remind you of hot tea? | Wouldn't a fire be nicer to look at?
+a : Steam at the table leaves a circle on the cold pane; after a while the circle and the rain look much the same. | A clean little glow, yes. Smoke is the difficulty that generally follows that suggestion indoors.
+
+scene nightcap
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I turn the copper in the lamplight after the last return from the far door.
+b : Is there a mark from the heat? | Is the reading exact?
+a : There's a faint rim where the damp on it dried. I like seeing the time a journey took leave an actual ring. | Only as exact as my fingers. I've no plans to start giving orders to the town clock.
+
+scene quickwish
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My dream counter has extraordinary cups. Each comes home under its own power.
+b : What would occupy you then? | Wouldn't the cups get confused?
+a : I should have time to see the wolf who actually drank the tea. I've seldom regretted a little more time for that. | They would if I hadn't dreamt each one a distinct little handle. It's my dream, so I may give myself that advantage.
+
+story handleturn [topic=memories]
+  : Once I set a cup square on its cloth, but the cloth itself was on a slant like an open fan.
+  : The guest end of the handle was pointing absolutely nowhere useful.
+  b : Did you turn the cup or the cloth?
+  : I put my paw where the guest's would go and let that decide. A much better test than asking the corners of a table.
+
+story copperwalk [topic=work self.job=servant]
+  : I took my empty warm saucer along a new route with the copper riding in the middle. At the first sharp turn it slipped over to the rim.
+  : I finished at a splendid pace with the copper quite cold against the thinner china.
+  b : How did you time the return?
+  : Far more slowly. The coin stayed in the middle and arrived warmer. I was glad the lesson didn't cost crockery.
+
+story crumb [topic=food self.likes=fried_fish]
+  : I tried a very small crisp fish tail in an enormous clean serving dish.
+  : The plate appeared to be carrying a burnt leaf until I put a little wedge of bread beside it.
+  b : Did the bread make all the difference?
+  : It supplied a scale. But I chose a much smaller plate before eating, out of kindness to the fish.
+
+rule @warm
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 8h
+say Leave room for the handle to turn. | Hot china here, mind the near elbow.
+
+rule @smoke
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 8h
+say Open a little clear air over the tea. | No smoke past the serving cloth, please.
+
+rule @boot
+when concept=bark self.likes=new_boots
+does aside
+cooldown 8h
+say Test the heel on this turn first. | There's time to settle both soles.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say The last warm cup needs a clear passage. | Give the light one more notch before pouring.
+dlg resident.hub : You're welcome here. What would make waiting a little easier?
+dlg resident.hub [topic.meeting=known] : A familiar face and a clear place beside me, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : Stand clear of my fragile tray, please. I can hear you quite comfortably there.
+dlg resident.hub [here.time=night] : I'd like to leave any sleeper's rest undisturbed. Speak gently.
+dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. My business is to leave a guest no need to ask why the tea has cooled.
+dlg resident.job : I take notice of the small arrangements that a comfortable wolf need never mention.
+dlg resident.news [world.news] : The account that's reached my corner runs this way. #world.news#.
+dlg resident.bye : May there still be a warm cup waiting at the other end.
+
+graft @saucertimer resident.hub
+choice What is that small copper doing on an empty saucer? -> saucertimer
+node saucertimer
+say I'm trying a serving walk. I warm the penny beforehand and feel it against my pad at the end. If it's gone quite cold, a guest's tea could fare better.
+choice Do you walk as fast as you can? -> saucertimer_more
+choice Leave the copper on the china. -> hub
+node saucertimer_more
+say Not with a saucer in my paw. Two steady paces on a level board get more tea across a room than a quick turn that spills half the cup.
+choice Leave the copper on the china. -> hub
+choice Give the saucer a clear passage. -> bye

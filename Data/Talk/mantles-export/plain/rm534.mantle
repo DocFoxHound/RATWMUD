@@ -1,0 +1,332 @@
+mantle rm534
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_lavinia_ashford
+title the borrowed moon
+fits stage=young|adolescent|adult|old
+prefers job=child warmth=warm
+traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk marks_a_black_debts_moon_with_a_sliver_of_white_chalk
+likes blackberries roof_birds market_bustle frosty_mornings
+dislikes smoke cold_tea
+fears a_due_day_arriving_without_a_kind_witness
+hopes a_whole_moon_with_nothing_owing
+topics family +0.6 dreams +0.5 pastimes +0.4 prices +0.3
+styles comfort=share gossip=careful refuse=gentle tease=shy
+marks oath saying
+persona #self.first# keeps a crescent of chalk on a pocket coal, rubbing it smaller while planning how to settle a debt.
+
+words
+oath! = My smudged moon | Three cloudy pockets
+saying! = Give worry a little edge | Leave some white showing
+coalmoon = a moon coal | my pocket night
+whiteslice = a chalk shaving | a pale crescent
+nightcloth = the dark handkerchief | my sky cloth
+berrysky = a purple sky | a berry mark
+roofwing = a slate-wing bird | my roof visitor
+frostsill = a white window lip | the cold bright sill
+pricehand = a waiting palm | the empty hand
+markbook = a folded tally | the little account
+dayedge = a narrow promise | the day's pale bit
+teaswirl = a dull swirl | a cold surface
+sootskin = a coating of smoke | the dark dust
+winggap = a bird-sized space | the roof gap
+
+any
+opinion houses mixed 0 : A factor knows the day a sum falls due. A House ought to remember how a small debtor spends the nights before it.
+opinion dole for 2 : I'd give a hungry pup a meal first and speak of arithmetic when the bowl was clean.
+opinion city for 1 : The market's crowded enough to make an anxious little wolf feel among company.
+opinion church for 1 : Somewhere quiet to ask for courage can be worth a very long walk.
+opinion merchants mixed 0 : A friendly price lets me count on my fingers without needing another paw to cover a surprise.
+opinion newcomers for 1 : I'd show somebody new the best patch of roof for spotting the first bird.
+
+young
+line greet : Hello. I have a very small sky today. | Come see if my little moon's still bright.
+line greet [pair.band=strangers] : Stand here. The white edge shows best. | Welcome. I'm keeping one corner for a new friend.
+line greet [here.time=dawn] : Morning. Frost has made the sill all moon-coloured. | First light means I can put my chalk away.
+line greet.return : Yes, hello. I'm trying not to smudge my thumb. | There. Now I can wave without losing a crescent.
+line greet.return [pair.band=friends|family] : You know which pocket has the night in it. | My worried face can come out with you.
+line greet.return [here.time=night] : Evening. My pocket moon's ready if the sky isn't. | Hello. There's one pale edge left before bedtime.
+line again.open : Back before the moon lost another bit. | The little sky's still here for us.
+line hail [pair.band=friends] : Come see the moon I got on my thumb! | Stand where my small bit of white catches the sun!
+line farewell : A bright patch for your way home. | Keep enough white for the last corner.
+line farewell.return : I'll wrap my night up nicely. | I'll wave with the hand without any chalk.
+line react.news : Tell whichever bit came through clearest. | I'll put a small mark beside the real part.
+line react.news.new : That's a fresh moon in my little book. | I hadn't any mark made for that.
+line react.news.known : I know that story's funny-shaped edge. | It's on my old page too.
+line react.news.doubt : That story has more chalk than moon. | I'd want a better look through that cloudy part.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can borrow my little pale bit awhile. | I'll sit here till the scary part feels less big.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Oh good. I'll chalk that moon all round! | Happy news makes a much bigger patch of light.
+line ask.how : Has anything made your day feel small? | Have you seen anything good above the roofs?
+line answer.how : A bit worried, but there's white showing yet. | Fair. I've got my moon in the right pocket.
+line decline : I'd be promising a bit I've already given to someone. | I've only enough time to do my own sum carefully.
+line accept_decline : That's fair. I'll wipe off the spare mark. | Then nobody has to feel bad about saying no.
+line preclose : I ought to put my little numbers back in order. | Time I checked how much chalk I've got left.
+line accept_preclose : I'll shut my book till another visit. | Go on. The little moon doesn't mind waiting.
+line thank : You made the worry a nice bit smaller. Thanks. | That deserves my best clean chalk mark.
+line deflect_thanks : There was enough white to go round. | It only cost me a tiny rub with my thumb.
+line sympathise : If you want, I'll keep my moon near yours. | I can listen without knowing the right sum to say.
+line reassure : A little bright bit is still there. See? | We can work out one small piece together first.
+line ack : Yes. My moon shows that part clearly. | I think our numbers meet in the middle.
+line give.advice : Write the day down before the worry makes it bigger. | Keep the chalk apart from your berry pocket.
+
+young
+
+scene pocketnight
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I make a moon by chalking the edge of a coal. Look through one eye and it's up in the sky already.
+b : Why one eye closed? | Could you make a full one?
+a : So my fingers disappear a bit. My sky would look odd with a giant thumb in it. | I could. I keep the round kind for a day with no money worrying me.
+
+scene moonbill
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Some money's due when my moon goes dark. So I drew the sum small enough to look at without feeling all tiny myself.
+b : Will drawing pay it? | Who asked for the money?
+a : No. It helps me see what's owing so I can ask how to pay what I can. | A House factor. I want to get the sum straight, not set a whole street talking about a name.
+
+scene lessons
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my sums get a big clear space to show where my figures came from.
+b : Even the ones you get wrong? | Is it the answer you mind?
+a : Especially those. It's easier to mend one wrong move than a whole page I can't remember. | I mind not knowing why I'm wrong. A number can be quite friendly if I watch it grow.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I can show #self.mother# a worrying figure while I'm still hunting for words.
+b : Does showing it help? | What if you smudged it?
+a : Yes. It's two pairs of eyes on one troublesome number and the figure stays the same size. | Then I can say it once before losing my nerve. The mark's to help me start.
+
+scene father
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : For #self.father# I want to practise giving my whole errand without hiding the last little bit.
+b : Is the last bit hard? | Do you practise?
+a : That's usually the bit that says I need help. I can put it first next time. | To my pocket coal sometimes. It hears a whole speech without interrupting my sums.
+
+scene birds
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I count the roof birds from one chimney to the next. If one flies back I let it start a new game.
+b : Isn't that counting it twice? | Which bird gets to win?
+a : It's a game about journeys. One bird can make heaps of trips on the same two feet. | The one who makes me look up again just as I was going to fold my sky away.
+
+scene bustle
+when topic=home self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : Market noise makes my worry less loud. I can still hear myself enough to get home.
+b : What's the nicest noise? | Doesn't the crowd trouble you?
+a : A loaded basket landing with a quiet rattle of good things inside. | Only when it pushes. I stand beside a row's last table to keep my escape route in sight.
+
+scene berries
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : Blackberries turn my fingers a sky colour I've never actually seen above the roof.
+b : What sky would go with it? | Can I have a berry?
+a : One with about a dozen very fat moons. I'd like to look out at that once. | If I've got two, yes. The last one has to make a purple sunset on my tongue.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost makes a whole bright margin around my real window without using any chalk.
+b : Does the margin shrink? | Would you draw on it?
+a : From the inside first if I breathe too near it. That's a good lesson for moon makers. | One little bird at the edge. The rest looks too fine to improve with a thumb.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : Cold tea's just a brown moon I can't do anything with. I'd rather it was steaming.
+b : Could you paint the sky with it? | Why not drink it cold?
+a : Maybe on old paper. I'd want a grown wolf to agree before I tried the table. | I do when I must. My mouth expects something warm and keeps being surprised.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does warn / react.self / assess
+a : Smoke makes my eyes water right across my moon. I put the chalk up before it runs.
+b : Does coal make you cough? | What about your fingers?
+a : Not the little clean piece in my pocket. I mean the smoke coming through the air. | I wipe them on the cloth round the coal. Ink and smoke do quite enough on their own.
+
+scene gift
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd make #self.friend# a second sky so I could give away half a worry and keep the moons whole.
+b : Wouldn't there be two worries? | Would the moons look the same?
+a : Only if I invented an extra bill. There'd be two creatures ready to help with the one I've actually got. | I'd make one with a crooked crescent so nobody had to argue whose pocket it belonged in.
+
+adolescent
+line greet : Welcome. I keep my little accounts somewhat straighter these days. | Come see the last moon mark before I clear it.
+line farewell : An easy sum and a bright patch of sky to you. | Keep your chalk dry through the next turn.
+
+scene reckon
+when topic=prices
+does tell.plan / ask.detail / answer.detail
+a : I put the due date beside a debt now and leave the sky to keep its own weather.
+b : What happened to the coal? | Does a date make a difference?
+a : I still carry it. It's a useful reminder to breathe before reading small figures. | Yes. A due date can be discussed. A whole worried night sky is harder to bring to a counter.
+
+scene newmoon
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once decided the moon rubbed itself thin especially to make me settle my account.
+b : What changed your mind? | Did the worry go away?
+a : Discovering the sky carried on with the same perfectly regular business after my narrow column was paid off. | Not all at once. I got better at choosing which part of it actually needed my attention.
+
+grown
+line greet : Welcome. One clear interval for us before the figures come back. | The light's good for reading a small account today.
+line greet.return : Hello. My chalk can rest on the table now. | I've finished tracing the edge and my ear is yours now.
+line farewell : May the next date in your account arrive comfortably. | A clear sky on the last part of your walk.
+line farewell.return : I'll close this entry on a pleasant word. | Go with room for a little quiet after the settling up.
+line react.news : Let the witness have a clear line in my account. | I'll hear the account exactly without enlarging it.
+
+scene oldmoon
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I left a crescent on an old piece of coal through several summers. The white lingered much longer than the original worry.
+b : Do you remember the sum? | Why keep the mark?
+a : Hardly. I do remember how much courage it took to show it to another wolf. | It reminds me to take seriously an amount that looks very modest from this end of a life.
+
+scene supersmall
+when topic=prices
+does give.opinion / react.self / assess
+a : A small debt can occupy a frighteningly large proportion of a small household. I ask about the date before I judge the sum.
+b : Would you extend the time? | Why ask about a date?
+a : I'd first hear what can properly be promised. An impossible extension is only a delayed fright. | Because a certain sum after wages means a different thing from the same sum just before them.
+
+scene nightbirds
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : Roof birds have the pleasing habit of going about business entirely unrelated to my account book.
+b : What are they after? | How do you watch in a crowd?
+a : Seeds and scraps, by appearances. The independence is what I particularly enjoy. | I choose a gap between calls and lift my eyes to the open space beside a chimney.
+
+scene helpme
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I still think of #self.mother# when somebody timidly shows me figures instead of speaking a request.
+b : Do you ask for words? | Why remember a parent then?
+a : Only the ones needed to understand what help is being asked. A written amount is an excellent beginning. | Because I can remember how a short pause can stretch from the asking side.
+
+scene winter
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A frosted sill gives the impression of a very fine blank page laid across the room.
+b : Do you still draw on it? | What would you enter?
+a : A little bird if I'm alone. It never harmed the old accounts. | The possibilities of an ordinary clear morning. Little use trying to preserve that entry after noon.
+
+scene berriesgrown
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : When I buy berries I allow the first few to go straight from hand to mouth.
+b : Why make an allowance? | Any purple skies lately?
+a : An account that expects every berry to reach the pot has overlooked the person carrying them. | I do occasionally. A perfectly practical purse leaves room for an impossible colour.
+
+scene marketgrown
+when topic=home self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : When a week goes poorly I like market sounds heard beyond the crowd's pushing elbows.
+b : Which sound carries best? | Does the company help?
+a : A loaded basket going onto a wooden counter. I can hear whether someone's hand was careful. | Without asking me to put my troubles on display. That's a rare and valuable arrangement.
+
+scene friendpoint
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd willingly go with #self.friend# to ask for a difficult account to be explained twice.
+b : Would you speak first? | What do you bring to that?
+a : If asked. There's a difference between lending a calm voice and taking over another wolf's business. | A clear ear and a childhood memory of what numbers can do to one's nerve.
+
+scene factors
+when topic=prices
+does give.opinion / react.self / assess
+a : I expect a factor to explain a figure in words the smallest debtor can understand.
+b : Should the debtor need a witness? | Is that extra work?
+a : Nobody should have to bring one. Everybody should be welcome to do so. | A little. Preparing a clear account is part of the work the creditor undertook.
+
+scene facts
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : #world.news_from# is the source attached to this. #world.news#. I'd leave that line intact.
+b : Do you know anything more? | Would it stand in writing?
+a : Only what's in the account. I don't increase its weight by investment of my opinions. | As a received report. I'd make the distinction visible to whoever turned over the page.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I asked for enough courage to open my pocket at a counter. The Bright One heard a small debtor's prayer. A very small act with a considerable cost.
+b : Did prayer settle the sum? | Would you ask the same again?
+a : Courage to show the figures made a beginning possible. The money still needed its own accounting. | If somebody needed courage for the same small beginning, certainly.
+
+scene loosehope
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd keep a little fund for the expense nobody dares to name until all the easy days for paying it are gone.
+b : How would a wolf ask? | Does your fund need a name?
+a : Privately, and with room to set down the figure in chalk before saying it aloud. | Something very ordinary. I should dislike a great sign explaining a visitor's trouble to a busy street.
+
+young
+
+story chalkberry [topic=food|memories]
+  : I hid a berry beside my little moon. When I opened my hand, the moon had a purple edge and the berry had a white nose.
+  : My two skies had been rubbing together while I walked.
+  b : Which did you keep?
+  : I washed the berry. Kept the coal as a moon having an unusually interesting evening.
+
+story rooftale [topic=pastimes|memories]
+  : I counted the same little bird three times on three different chimney pots. Then my last chimney suddenly sprouted four tails.
+  : All my other birds had been crouching down there out of sight.
+  b : Did you start counting again?
+  : I gave the last chimney a whole flock and put my fingers back in my pockets.
+
+story coldmark [topic=weather|memories]
+  : I put a chalk speck on a frosty sill to see which would disappear first. Leaned near enough to get a really close look.
+  : My breath settled the competition and made a great hole in the frost.
+  b : Did the chalk last longer?
+  : Yes. I wrote 'unfair' beside it and left the sill alone.
+
+rule @moon
+when concept=bark
+does aside
+cooldown 8h
+say Small moon, bright side up. That's it. | A clean little edge for tomorrow as well.
+
+rule @lessons
+when concept=bark self.job=child
+does aside
+cooldown 8h
+say Give each step of the sum its own line. | A worried number looks kinder on a clear bit of page.
+
+rule @berries
+when concept=bark self.likes=blackberries
+does aside
+cooldown 8h
+say Keep the berry sky away from the chalk sky. | A dark one for my mouth, a bright one for my pocket.
+
+rule @frost
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say Frost has saved me a whole morning's white chalk. | Cold sill, warm hand, one little bird mark.
+
+dlg resident.hub : I can show this pocket moon and still keep my private sums tucked away.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you can see the white crescent from your old place.
+dlg resident.hub [here.time=night] : My pocket moon's easier to hold still than the one above the roof.
+dlg resident.hub [pair.disposition=wary|hostile] : You can look from there. I'd rather keep my sums close just now.
+dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I try to give every figure enough room for a second look.
+dlg resident.job : I like having something definite to do with a number after I've written it.
+dlg resident.bye : Keep a tiny bright edge of today for yourself.
+
+graft resident.hub
+choice Why is there a white edge on your coal? -> moonedge
+node moonedge
+say It's a moon I can hold. I made it when the next new moon started to worry me. A bit of chalk and my thumb are enough to make night a sensible size.
+free
+choice Does wiping it change when money is due? -> datequiet
+choice I like the shape of that little moon. -> hub
+node datequiet
+say No. I know that. It gives me one small job I can finish while I think how to ask somebody to listen to my figure.
+choice I can stay while you think. -> hub
+choice I'll leave you a quiet sky. -> bye

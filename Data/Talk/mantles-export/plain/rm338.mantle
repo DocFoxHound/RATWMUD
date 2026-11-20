@@ -1,0 +1,255 @@
+mantle rm338
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_silas_wickford
+title the flooded threshold
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=content
+quirk keeps_a_private_flood_almanac_on_the_inside_of_the_door
+likes plum_tart dice full_larder thunder
+dislikes crowds haggling
+fears an_important_letter_soaking_through
+hopes a_dry_delivery_at_last
+topics weather +0.6 land +0.5 prices +0.3 travel +0.3
+styles comfort=measured gossip=cautious refuse=polite tease=none
+marks oath saying
+persona #self.first# reads the damp on elegant thresholds and keeps a sealed letter above the highest remembered mark.
+
+words
+oath! = Plumb my doormat | Float my brass latch
+saying! = Every doorstep has a private tide | A dry errand is worth a long detour
+threshold = the high sill | a worn stone lip
+notch = a small flood notch | the pale water line
+mat = a closely woven mat | a deep rush square
+fold = a stiff dry fold | a double crease
+wax = the round wax eye | a dark wax thumb
+dicerim = a low dice rim | a square dice tray
+tart = a wedge of baked plums | a pastry corner
+jar = a lidded jar | a crock with a broad lip
+gutter = a narrow gutter | the flagged runnel
+cloudbell = distant thunder | a low roll aloft
+sheet = a clean wrapper | a sheet of oiled paper
+kerb = a dry edge | a finger of stone
+sash = a high sash | a polished sill
+
+any
+opinion houses mixed 1 : A grand address may have a particularly substantial threshold. It cannot receive correspondence in the occupant's absence.
+opinion watch mixed 1 : A measured eye on a doorway spares everyone a considerable disturbance.
+opinion merchants for 1 : A dry counter and an unaltered price are modest courtesies worth preserving.
+opinion road mixed 1 : I prefer to discuss a route with somebody who has actually seen it in rain.
+opinion strangers mixed 1 : New arrivals need the dry turning. They need not know the extent of my private affairs.
+opinion festivals against 1 : Far too many bodies for the available breadth of pavement, even in fine weather.
+
+grown
+line greet : There's a dry width beside the threshold. | Stand clear of the lower runnel. Welcome.
+line greet.return : I shall return that greeting from the sheltered side. | A perfectly civil arrival from both directions.
+line again.open : We meet again above the waterline.
+line farewell : The higher paving should serve you well. | Take the dry approach to your next engagement.
+line farewell.return : And a sound threshold wherever you arrive. | Your good wishes have crossed quite dry.
+line react.news : Let me ascertain how far the information has travelled. | Present it from the beginning, if convenient.
+line react.news.new : That has not previously reached this threshold.
+line react.news.known : I've already seen the mark that account leaves.
+line react.news.doubt : I would keep that claim above the line of doubt awhile.
+line react.news.sorrow [topic.kind=death|loss|assault] : A private sorrow needs a door that closes gently.
+line react.news.glad [topic.kind=birth|marriage|work] : An agreeable turn worth preserving under a clean fold.
+line ask.how : Have the day's arrangements kept satisfactorily dry?
+line answer.how : Quite composed behind my sheltered sill.
+line sympathise : One can stand quietly beside a difficulty before naming it.
+line reassure : There is generally a higher approach if the first seems impassable.
+line refuse : I owe the next stretch of time to an undelivered errand.
+line accept_decline : As you please. No pressure from this doorway.
+line preclose : I'll attend now to the protected portion of my errands.
+line accept_preclose : Go before the paving loses its clear outlines.
+line ack : I have the height of your meaning.
+
+scene exchange1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I know which little lanes first acquire a tide. | I mark a flood without writing its date.
+b : Can you judge by their slope? | How then do you remember it?
+a : By their drains. The grandest incline is helpless behind a blocked mouth. | The height is more useful than the anniversary.
+
+scene exchange2
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I attend to the threshold. | My position allows me to observe both the jamb and the street.
+b : Do you keep it polished? | A particularly fine view?
+a : Above all I keep the passage legible to a wet pair of feet. | A particularly early view of a troublesome puddle.
+
+scene exchange3
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I set plum tart on a plate with a sound rim. | I prefer the end with the folded pastry.
+b : Expecting a flood indoors? | For the crispness?
+a : Juice has ambitions much like the weather. | For the remarkably discreet way it contains a plum.
+
+scene exchange4
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : Dice should be rolled on the level. | I rather enjoy a throw that finishes on an edge.
+b : What if the score's poor? | Does it count?
+a : Then I have something substantially fair to deplore. | Certainly not. I enjoy the suspense of the replacement.
+
+scene exchange5
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I favour high shelves for jars I treasure. | A pantry's capacity is measured from the floor up.
+b : How high is high enough? | And its quality?
+a : Above my own longest flood recollection. | By the space remaining deliberately unoccupied at the bottom.
+
+scene exchange6
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder makes a courteous announcement of its approach. | I enjoy thunder from just inside a doorway.
+b : It sounds rather abrupt to me. | Why that exact spot?
+a : Even that first abrupt sound buys time to move a letter uphill. | Half the magnificence with none of the damp cuff.
+
+scene exchange7
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : The best threshold looks narrower beneath a crowd. | I count elbows when a passage fills.
+b : What keeps the doorway clear? | Do you require an exact figure?
+a : Move one step back before inviting anyone forward. | Only until I know how many are liable to meet my ribs.
+
+scene exchange8
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : Bargaining over a plainly marked price strikes me as damp work. | I dislike a number that changes when looked at.
+b : What has damp to do with it? | Even when it grows smaller?
+a : One keeps pressing and gains very little dry ground. | I wonder what it looked like before I entered.
+
+scene exchange9
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I carry a sealed letter which has seen several dry approaches. | A letter may travel daily and arrive nowhere.
+b : No delivery so far? | Where does it sleep?
+a : The recipient's door is exceptionally well acquainted with me. | Higher than the pantry and a safe distance from outside damp.
+
+scene exchange10
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Heights look steep to someone climbing from below. | I can map a street by the colour of its lower walls.
+b : Do you find the climb difficult? | Green means trouble?
+a : I regard each rise as another useful foot above the drains. | Green suggests somebody should have made an earlier enquiry.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could share my dry route with #self.friend#. | A friend will accept a pause on reaching a high landing.
+b : Is it a secret passage? | Waiting for rain to ease?
+a : No. It is a collection of quite public turns taken in a fortunate order. | Sometimes simply waiting for peace and quiet.
+
+scene exchange12
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the flood almanac where only the door can read it. | A door that has swollen tells me several things.
+b : On the hinge side? | Such as its age?
+a : Inside the frame. It needn't become conversation with every caller. | Mostly that the bottom ought to be lifted sooner rather than later.
+
+scene exchange13
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean season can bring unusually careful housekeeping. | When money pinches I note every clean verge.
+b : What do you move first? | Does the detour pay?
+a : The spare wrapping. A dry letter shouldn't require a second sheet. | In boot leather that makes a second winter.
+
+scene exchange14
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : It has reached my hearing that #topic.subject# #topic.claim#. | Talk swells like damp wood along a door's lower edge.
+b : A whisper through a doorway? | Do you trim it back?
+a : A report with no more certainty than its original bearer supplied. | I generally let it dry quite away before acting.
+
+scene exchange15
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I notice which parcels come in damp on one corner. | I leave a courteous distance behind a visitor.
+b : Does it matter at the door? | Even in poor weather?
+a : It tells me to warn the next caller about a turning. | The distance can extend sideways under the same eave.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I should like to hand over a familiar packet perfectly dry. | An empty pocket has its attractions.
+b : Would a receipt be necessary? | What would you keep there instead?
+a : I should be very pleased to see a paw waiting for it at all. | For one whole afternoon, the agreeable sensation of nothing.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I keep both heels planted when the thunder comes close. | I stand with one knee loose at a quiet door.
+b : To steady your nerves? | Does that improve the view?
+a : To enjoy the difference between the sound above and the quiver below. | It makes the view sustainable for a rather better length of time.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I check a wet hem before crossing a dry threshold. | I listen for a drain on my last walk home.
+b : Whose hem? | What do you need to hear?
+a : My own. Advice is best practised facing inward first. | The modest gurgle of a street properly emptying.
+
+story tale1 [topic=weather]
+  : A chalk mark inside a door once rose overnight despite an entirely dry street. I observed the jamb and checked the mat before reaching a conclusion.
+  : The door had been lifted on its hinge. My tidemark now floated above its original height.
+  b : Did the flood enter your almanac?
+  : The adjustment did. A stationary record may require a surprisingly mobile explanation.
+
+story tale2 [topic=food self.likes=plum_tart]
+  : A small plum tart leaked onto the clean paper wrapped around it. The shape that emerged looked exactly like three lanes meeting.
+  : I folded the paper up to see where the imaginary flood would go next.
+  b : Where did it arrive?
+  : Precisely at my cuff. My grasp of imaginary drainage improved at some cost to the laundry.
+
+story tale3 [topic=travel]
+  : I chose a magnificent detour to avoid a very ordinary puddle, and met another wolf returning by the same elaborate route.
+  : We stood aside with such exquisite care that both of us ended up looking over the little wall beside the path.
+  b : Was the puddle still there?
+  : It had drained entirely. I enjoyed a dry walk back, having already paid for the scenery.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Leave a dry approach by this jamb. | A wet parcel may stand on the raised board.
+
+rule @call2
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Observe that gutter mouth as the rain collects. | The lower lane will be making its own arrangements.
+
+rule @call3
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A little light remains on the higher flags. | The letter comes indoors before the evening damp.
+
+rule @call4
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say A fine measured roll above the roofline. | That note travelled in considerable comfort.
+dlg resident.hub : The threshold permits a conversation of reasonable length.
+dlg resident.hub [topic.meeting=known] : #topic.player#, the drier approach suits you quite well.
+dlg resident.hub [here.time=night] : A late errand is entitled to a civil hearing at the sill.
+dlg resident.hub [pair.disposition=wary|hostile] : I will take the business from the shelter of my own jamb.
+dlg resident.job [self.job=merchant] : I mind the door at #self.workplace# and observe how the street changes.
+dlg resident.job : My occupation requires attention to matters just outside the ordinary field of view.
+dlg resident.news [world.news] : The latest particulars to reach the street are #world.news#.
+dlg resident.gossip [here.gossip=yes] : It is being said that #topic.subject# #topic.claim#. I attach no additional warranty.
+dlg resident.bye : I hope your destination is receiving visitors.
+
+graft resident.hub
+choice How do you read a flood line? -> door_almanac
+node door_almanac
+say Look inside the jamb. A clean edge opposite a grey smudge show where the water paused, even when the street has forgotten it.
+free
+choice Can you predict the next one? -> door_almanac_again
+choice Goodbye. -> bye
+node door_almanac_again
+say I can choose where to stand while making the prediction. That has kept my correspondence in very sound condition.
+choice I'll use the higher stones. -> hub
+choice Goodbye. -> bye

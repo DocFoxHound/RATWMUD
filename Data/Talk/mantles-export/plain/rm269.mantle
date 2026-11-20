@@ -1,0 +1,247 @@
+mantle rm269
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_lotte_bilgeton
+title the jury of draughtsmen
+fits stage=adult|old
+prefers warmth=warm talk=quiet
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk sets_captured_draughtsmen_in_a_quiet_jury
+likes blackberries draughts quiet_chapel warm_rain
+dislikes gulls waiting
+fears losing_the_only_copy
+hopes finding_a_hearing_for_a_small_request
+topics pastimes +0.6 work +0.3 faith +0.3 friends +0.2
+styles comfort=quiet gossip=careful refuse=soft tease=dry
+marks oath saying
+persona #self.first# makes a quiet jury of captured draughtsmen and keeps the wording of a much-delayed petition folded in a cuff.
+words
+oath! = Crown my last black man | Ink and berry skins
+saying! = Keep a copy of the king | A quiet move stays moved
+draught = a flat red counter | a polished dark disc
+reward = the captured men | a row of retired counters
+fold = a narrow paper strip | a folded scrap
+juice = a purple stain | a spot of berry juice
+dab = a dab of paste | a drop of gum
+hidebit = a scrap of soft leather | a hide offcut
+edgebit = a curved edge | a ragged lip
+watermark = a pale oval | a pattern of light
+squarebit = an unoccupied square | a clear dark square
+chapelseat = a back bench | a small bare stool
+berry = a plump berry | a blackberry with a bent stalk
+
+grown
+
+opinion city mixed 1 : Somewhere in all those rooms there's a shelf my request would fit on. I'd like the shelf to admit it.
+opinion houses against 1 : On a draughtboard a grand crest takes one square. I'd have it so off the board too.
+opinion church for 1 : A quiet bench gives me time to think what favour I meant to ask.
+opinion sump for 1 : My neighbours can keep a game going on three buttons and a flattened cork.
+opinion strangers mixed 1 : I'll offer a seat across the board. My private papers can stay up my sleeve.
+opinion dole for 2 : Even a hungry player ought to get a turn without waiting to win a crust.
+line greet : Sit by the unoccupied squares. Plenty of them at present.
+line greet [pair.band=friends] : Glad of a familiar face among my solemn little counters.
+line greet.return : I lifted my head. That means you've got the floor.
+line farewell : Mind you don't leave a good piece behind.
+line farewell.return : May you find the right desk first try.
+line again.open : We've reached the same square again, I see.
+line react.news : I'll keep that beside the earlier account.
+line react.news.new : There's a move I hadn't allowed for.
+line react.news.known : Heard that on an earlier visit to the board.
+line react.news.doubt : I'd want to examine the little bit that fell between those words.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A place on my bench is going spare if somebody needs it.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That earns a double crown in my book.
+line decline : I'd prefer to keep that paper folded a little longer.
+line ask.how : Is the day playing a decent game with you?
+line answer.how : Several moves behind my hopes. Still playing.
+line thank : That saved me a whole journey round the board.
+line accept_decline : I shall return your piece to its square.
+line sympathise : You can have this sheltered bench end.
+line reassure : A slow answer might still be a kind one.
+line preclose : Time I collected the little fellows before a sleeve does it for me.
+line ack : I follow that move easily enough.
+
+scene pastimes_1
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I stand the captured pieces upright on edge. | When I'm losing I seem to acquire a very large audience.
+b : What are all those little faces watching?
+a : My decline, with every appearance of approval.
+
+scene work_1
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I put a useful offcut away before I sweep. | I keep #hidebit# for testing a new edge.
+b : Wouldn't an old scrap mislead you?
+a : An offcut from the very thing I'm working on can hardly plead ignorance.
+
+scene work_2
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : An apprentice may ask a very small question twice. | Learning a trade means finding out how small the important questions are.
+b : Which do you ask?
+a : Which side the mark goes on. The difference lasts longer than my embarrassment.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A sheet of paper doesn't cost much until it's the only copy. | The dear part of a petition is all the feet it wears out.
+b : Is there a spare copy?
+a : Close enough for a thumb to find the fold without attracting attention.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'll back a friend whose case I know from beginning to end. | Loyalty can mean asking for the untidy half of a story.
+b : Suppose the untidy part's a mistake?
+a : Better my friend hears it quietly here than shouted clear across a hearing.
+
+scene weather_1
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Warm drops lift the smell out of dry leather. | A warm shower makes even my draughtsmen look freshly polished.
+b : Do you keep playing?
+a : Only until the reds get hard to tell from the darks. Then I call the weather a draw.
+
+scene food_1
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : The sweetest berry seems to know which cuff I'm keeping clean. | I like blackberries enough to forgive the evidence round my muzzle.
+b : Could you use that juice for ink?
+a : Certainly. I'd submit a petition that somebody might be tempted to lick clean.
+
+scene faith_1
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I take my troublesome questions to a chapel bench. | Silence helps me decide whether a request deserves a second visit.
+b : Does the answer come straight away?
+a : Usually it's my own fuss that goes first. That leaves room to hear.
+
+scene animals_1
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : Gulls would make dreadful clerks. | A gull seems certain every question is an invitation to shout.
+b : What post would you give one?
+a : Announcing the dinner break. Nobody would miss a syllable.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Waiting turns my fingers into little drummers. | Nothing in a waiting room looks as interesting as my own idle thumbs.
+b : What settles those restless thumbs?
+a : Give them #draught#. I can turn it without disturbing a single solemn face.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'll trust a rival colour on the draughtboard further than I trust one on a ribbon. | A House badge catches the light just when I'd like to study its owner.
+b : Does it cost anything to listen?
+a : Listening's free. Moving my last piece on that advice is another matter.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember every turn in the passage to a certain desk. | The more often I take the same question out, the smaller I can fold it.
+b : Is that an advantage?
+a : For the sleeve, considerably. For the question, we've yet to find out.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A little tray prevents whole armies going under the dresser. | I keep the extra bits from different games in their own small cups.
+b : Would mixing them hurt?
+a : Not till I tried to crown a king with half an acorn and a fish bone.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A sleeve chafes if the fold inside it is too thick. | I move my paper from one cuff to the other after a long wait.
+b : Wouldn't a pocket do?
+a : It would. I'm anxious enough to want to feel where it is.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I know which middle streets get a visit to the offices over quickest. | When I'm going uphill on business I look for the least shiny stones.
+b : Why those?
+a : Fewer boots have polished them. I'll take firm footing to a slippery shortcut.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean supper makes my little jury of counters look suspiciously like slices of carrot. | Hard times haven't managed to levy a tax on a quiet game.
+b : Would you play for food?
+a : I'd share food first. Nobody should have to win to deserve eating.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : They've a story going that #topic.subject# #topic.claim#. | It's being said that #topic.subject# #topic.claim#.
+b : Is it worth passing on?
+a : I'd keep a space on the board for the other account.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I rather like a game that ends at a standstill. | Drawing against a clever opponent feels better than winning against an empty seat.
+b : And those captured pieces?
+a : Give the whole jury its marching orders and ask if there's time for one more.
+
+story cuff [topic=memories]
+  : I slipped two scraps into one cuff and flourished the wrong one at a counter.
+  : The scrap displayed a carefully drawn position from a game I'd lost.
+  b : Did it get a hearing?
+  : A very quiet one. I'd written the real request on the reverse and kept my thumb on the king.
+
+story black [topic=food]
+  : I stained a game piece with berry juice to mark it out as a king.
+  : I next took it up to make a capture and the king came away on my thumb.
+  b : Who won the game?
+  : The thumb held its ground. My poor piece was forced to abdicate.
+
+story jury [topic=pastimes]
+  : I stood seven captured men in a row and propped the eighth against a salt pot.
+  : My sleeve caught the first and the whole grand company fell down.
+  b : What became of the last one?
+  : Stood there leaning on the salt as if the rest had always looked unreliable.
+
+rule @quiet
+when concept=bark
+does aside
+cooldown 8h
+say Leave the lost pieces in sight of my good eye. | That square's still undecided.
+
+rule @learn
+when concept=bark self.apprentice=yes
+does aside
+cooldown 8h
+say A scrap to practise on can save a whole day's material. | Look twice before the first cut.
+
+rule @drops
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Let a little warm rain have the street. | Better keep the spare paper inside a cuff.
+
+rule @evening
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Room for a final game before those colours merge. | The red pieces are going dark round the edges.
+dlg resident.hub : You've found me between moves. A convenient time to talk.
+dlg resident.hub [topic.meeting=known] : #topic.player#, my solemn jury recognises you.
+dlg resident.job [self.job=crafter] : I help at #self.workplace#. I keep the offcuts till I've learnt all they'll show me.
+dlg resident.news [world.news] : This seems to have got past the waiting bench. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody's account is that #topic.subject# #topic.claim#. The other side has yet to play.
+dlg resident.bye : Keep a copy if it matters.
+
+graft resident.hub
+choice Do your captured pieces have a say? -> jury_hearing
+node jury_hearing
+say They've listened to my petition from beginning to end without once asking which office sent me.
+choice What was the verdict? -> jury_verdict
+choice Give the jury my regards. -> hub
+node jury_verdict
+say A draw. They recommend a second game and a fresh copy for my sleeve.
+choice Give the jury my regards. -> hub

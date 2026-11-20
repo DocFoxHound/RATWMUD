@@ -1,0 +1,263 @@
+mantle rm234
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_rika_gullwell
+title the square of blue
+fits stage=adult|old
+prefers temper=short drive=ambitious
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk keeps_one_blue_patch_to_test_how_the_light_takes_a_colour
+likes plum_tart singing new_boots first_warm_day
+dislikes rats drizzle
+fears steam_without_a_window stall_rent_rising
+hopes a_counter_under_a_blue_awning
+topics work +0.5 dreams +0.4 weather +0.3 food +0.2 gossip -0.3
+styles comfort=plain gossip=closed refuse=sharp tease=none
+marks oath saying
+persona #self.first# holds a square of blue against the light before judging a colour, sings the breath back after a cough, and measures market fronts in lengths of cloth.
+
+words
+oath! = Soap on silk | Fray the blue
+saying! = Test a corner before the lot | Blue in a shadow buys nothing
+square = my blue test piece | a thumb-square of blue
+plum = the sharp skin | a plum skin curled in pastry
+ropepeg = a blunt wooden peg | a peg darkened by use
+steam = a lick of grey steam | a cloud warm as breath
+rinse = the second rinse | water clear down to a pin
+coinbag = a knotted scrap | my leather corners
+crossstitch = a blue cross | two blue stitches
+tuneend = my lowest note | the held end of a verse
+hem = a strong hem | the lip of a cotton strip
+splinter = a pale splinter | the tip of a wood shaving
+shopline = a length of red twine | the cord from my pocket
+
+any
+opinion dole for 2 : I've made a free bowl last through a long afternoon. Let folk have a bowl without a lecture.
+opinion city for 2 : Ridgemere can give the same bit of cloth six colours in one street. I'd miss that changing light.
+opinion houses against 3 : A fine crest needs washing like any plain front. That should tell the Houses something.
+opinion merchants against 2 : A loaf costs more each time I reach for my dry purse.
+opinion festivals against 2 : All that bunting to bring in wet afterwards. I can think of happier uses for a song.
+opinion sump for 1 : There's room for another peg on our lines if folk hang things straight.
+opinion newcomers against 1 : I wish the city put fresh jobs out with the welcome.
+
+grown
+line greet : Your face shows clear against these bricks.
+line greet [pair.band=strangers] : Clean space by the wall if you want it.
+line greet [here.time=dawn] : Morning. The blue's still grey.
+line greet [here.time=dusk|night] : Evening suits a plain dark shade.
+line greet.return : Ah, your face has come into the light.
+line greet.return [pair.band=friends|family] : Come near. I'd recognise your tread in thick fog.
+line greet.return [self.working=yes] : Mind my elbows. You've got my ears.
+line greet.return [here.time=dusk|night] : By lamplight I recognise voices sooner.
+line kin.open [pair.kin!=no] : Move close enough to share a family word.
+line again.open : Found a minute the steam hasn't swallowed yet.
+line hail [pair.band=friends] : There! Keep the blue square in sight.
+line farewell : Give your coat a shake going out.
+line farewell.return : And let your sleeves dry before you fold them.
+line react.news : Which bit reached your ears plainest?
+line react.news.new : That hasn't hung on any line I've passed.
+line react.news.known : The same account reached my ears before the cloth dried.
+line react.news.doubt : Hold it up against another account first.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Grief can wring every bit of strength away.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : The whole street looks a shade brighter for that.
+line ask.how : How's your wind holding up today?
+line answer.how : Taut as a line, but holding.
+line thank : You eased a knot I couldn't reach.
+line deflect_thanks : The dry end was handy in my paw.
+line sympathise : Sit by a little warmth. I'll see to the noise.
+line reassure : There's a breath left for the next bit.
+line decline : I'll keep my strength for the work I've taken on.
+line accept_decline : Keep your reason. Your word will do.
+line preclose : I want the good light for my next errand.
+line accept_preclose : I'll take my end of the talk in now too.
+
+scene cheap_dye
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : Put blue beside a cheap black. | I've been carrying #square# so long the fold is white.
+b : What happens to the black? | Does that spoil the test?
+a : Turns brown before your eyes. You can spend your money elsewhere. | Gives me a second test. I know how white ought to look too.
+
+scene level_with_eye
+when topic=work self.working=yes self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : I've had cloth look clean below my waist and grey at eye level. | Hold the bundle away from your apron.
+b : Which height do you trust? | To keep the apron dry?
+a : The one where a customer will see it. | To keep the apron from lending its colour to the bundle.
+
+scene stall_front
+when topic=dreams
+does confide / react.self / assess
+a : My counter will stand just high enough to lean on, someday. | One striped awning would suit my stall.
+b : You've measured it already. | That sounds costly.
+a : With my elbow against half the ledges in town. | I'll buy it plain and stitch those stripes on in the evenings.
+
+scene throat_song
+when topic=health|pastimes
+does tell.self / ask.detail / answer.detail
+a : The low end of a song fits a scratch in the throat. | I've a verse that starts right down by my boot soles.
+b : Why keep singing? | Can you reach the note?
+a : If my throat's set on making a noise, let it carry my tune. | On a damp day I practically live there.
+
+scene tart_end
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : My favourite taste is #plum# with a little flour along one edge. | A plum tart travels badly in a pocket.
+b : Burnt flour? | How do you carry yours?
+a : Just caught. It puts the sweetness in its place. | With a bite missing every ten steps.
+
+scene boots_step
+when topic=pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : I like a boot with enough voice to answer the cobbles. | New boots change the height of every sill.
+b : A squeak? | By that much?
+a : A sharp little knock. I paid for those soles. | If you're airing the toes on one, half an inch matters.
+
+scene soft_spring
+when topic=season here.season=spring
+does tell.feeling / react.self / assess
+a : I wait till the little hollows behind my knees feel warm. | Fresh air between an open coat and a dry shirt. That's spring enough.
+b : That's an odd place to feel spring. | You wear simple pleasures well.
+a : The wind reaches everywhere else first. | I worked for the dry shirt.
+
+scene thin_drizzle
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain that never quite falls is my least favourite trick. | A shower gives you a good excuse to stop. This just settles in the stitches.
+b : How do you tell it's there? | Surely you can shelter?
+a : The back of my paw goes dark. Nothing to shake off. | I'd spend all day starting and stopping.
+
+scene rat_lid
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A pot lid against the flour bin makes a fine rat alarm. | I take pains with the lowest shelf of any cupboard.
+b : A bell won't do? | Why there first?
+a : I'm not giving a rat an instrument. | A rat can climb, but it would rather walk in.
+
+scene narrow_light
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Light makes a very short visit to our lower windows. | I like a patch of wall that stays white even in the Sump shade.
+b : Enough to read by? | What keeps it white?
+a : Enough to thread a blue needle if you lay things ready. | An hour of my elbow now and again.
+
+scene stingy_spool
+when topic=prices|times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Pinching a penny feels different when there's scarcely a penny there. | I keep my saving cord tied round an empty scrap some weeks.
+b : What can you spare? | Why keep the cord?
+a : Thread ends. A sound knot still joins two. | Makes it quicker to start again.
+
+scene private_dye
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Something's being passed about. I reckon talk can stain. | I heard a name I care to keep out of the wash.
+b : Even a true word? | Yours?
+a : A true stain is still a stain. | Any name at all would deserve the same.
+
+scene open_work
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# to see my blueprints before I had a nail bought. | I'd put a seat by for #self.friend# at the first counter of my own.
+b : Blueprints for a stall? | Even on a busy day?
+a : Paper and charcoal. All the blue's in my head. | Especially then. I'd want one familiar face in view.
+
+scene late_cart
+when topic=times|work world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon's hard to argue with. | News of a late cart makes me count my stores twice.
+b : Who do you blame? | Does the count change?
+a : I'd stop short of blaming the whole road. | No. But I don't spend the evening counting again.
+
+scene heard_work
+when topic=news world.news
+does tell.news / react.self / assess
+a : The part I heard clear out of #world.news_from# was this: #world.news#. | #world.news#. That's what reached me from #world.news_from#.
+b : Can you vouch for it? | Any more to go with it?
+a : For those words as I heard them. | I'd spoil the colour by adding another coat.
+
+scene not_welcome
+when topic=newcomer
+does tell.feeling / react.self / assess
+a : A city with two jobs empty always needs three backs. | I've got patience for a strange face until somebody calls our wages generous.
+b : A hard welcome. | That would smart.
+a : I'd give up half my bread sooner than half my day's work. | Come try a week's living on them.
+
+scene loose_thread
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A loose thread has only two futures. | Look at #hem#. That's how I like my promises finished.
+b : Cut or pulled? | Flat and firm?
+a : There's a third if you're clever. Tuck it in a seam. | With enough turned under for a second chance.
+
+scene song_steam
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I like a tune with some steps in the middle. | I'd sooner sing into a yard than a big hall.
+b : Steps for dancing? | What about the echo?
+a : For the voice. A little climb works wonders on the last note. | In a yard I get my own voice back from several windows.
+
+story unravelled_mark [topic=memories]
+  : I sewed a secret saving mark inside my skirt.
+  : Worked out I'd used better thread for the mark than for the pocket.
+  b : Did the coins escape?
+  : Only one. There's a second saving mark now, and it's a proper seam.
+
+story sheet_sky [topic=weather|memories]
+  : Once a gust lifted a sheet so high the whole sky looked square.
+  : The lower corners floated off like a pair of waving paws.
+  b : Where did it land?
+  : Right over the sheet I was shaking. I packed two up with one great hug.
+
+story knife_plums [topic=food|memories]
+  : I cut a tart into portions with a length of clean thread.
+  : The first piece came away straight as a rule.
+  b : And the other pieces?
+  : I never saw another. I had to show everybody how to cut the first one.
+
+rule @air_corner
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Just enough water in the air to weigh down a loose hem.
+
+rule @breathe
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say One note, one breath, then set to.
+
+rule @warm_shoes
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Dry boot tops are worth getting up for.
+
+rule @wall_glow
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say There's a light on that wall worth borrowing.
+
+dlg resident.hub : Just come where the light reaches the bricks.
+dlg resident.hub [topic.meeting=known] : #topic.player#. I'd know your outline even against the sun.
+dlg resident.hub [here.time=night] : Night plays tricks with the colours. My ears work as well as ever.
+dlg resident.hub [pair.disposition=hostile|wary] : Keep a clear yard between our elbows.
+dlg resident.job [self.working=yes self.job=laborer] : #self.trade_words.capitalize#. It pays for the next length of cloth.
+dlg resident.job : I keep a part of each day's strength towards my first counter.
+dlg resident.news [world.news] : This crossed my hearing from #world.news_from#: #world.news#.
+dlg resident.gossip [here.gossip=yes] : If you want a name, ask someone keen to leave finger marks.
+dlg resident.bye : I'll let you go while that light holds good.
+
+graft resident.hub
+choice May I see the blue square? -> open_square
+node open_square
+say Have a look. A dark scrap in a dim place tells you next to nothing. Lay that square beside it and there's the colour plain.
+choice Why is a corner missing? -> lost_triangle
+choice It looks brighter already. -> hub
+node lost_triangle
+say I wanted it for marking my best pocket. A square with three good corners still earns a living.
+choice I'll remember the trick. -> hub
+choice Farewell for now. -> bye

@@ -1,0 +1,248 @@
+mantle rm501
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_edda_mudmore
+title the lid match
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk plays_draughts_across_the_back_of_an_old_larder_lid
+likes warm_bread draughts full_larder summer_evenings
+dislikes flies stale_bread
+fears a_checkered_lid_warping a_supper_full_of_flies
+hopes a_full_shelf_of_bread a_match_that_lasts_till_dusk
+topics pastimes +0.5 food +0.4 work +0.3
+styles comfort=practical gossip=discreet refuse=plain tease=merry
+marks oath saying
+persona #self.first# plays draughts on a wooden lid and judges a stretch of quiet by the number of moves it allows.
+
+words
+oath! = Crumbs in my king row | Flies on a double jump
+saying! = Lift the game before lifting supper | Save the last square for a surprise
+lidboard = the chequered underside | my round wooden field
+shoves = my little pale counters | the nicks of birch
+darkmen = the black buttons | those charred discs
+crownbit = a bit of white shell | the little king marker
+longmove = my back stair jump | a jump across two crumbs
+loafend = a crust with backbone | my curved bread handle
+cratefoot = the crate's low runner | the scraped wooden shoe
+flyveil = a loose square of gauze | my bread net
+brasspeg = a yellow nail head | the bright corner stud
+smokethread = a curl of grey | a thread from a banked fire
+
+any
+opinion dole for 2 : Give a wolf enough to eat before asking for a long explanation. Hunger's rotten at explaining itself.
+opinion merchants against 3 : Had a price climb quicker than a draughts king into the back row. No extra bread to show for all that clever movement.
+opinion festivals for 2 : For a tune and a clear scrap of floor I'll go up more steps than I'd climb for most reasons.
+opinion houses against 2 : Don't expect me to fill a board and then step aside so a house can claim the victory.
+opinion sump for 1 : There's room on this sill for another elbow when the shelves aren't full. That's what I remember about home.
+opinion drink for 1 : A cup tastes better with enough coin for tomorrow's crust still rubbing my pocket.
+opinion newcomers against 1 : A new arrival can wait one minute before turning a settled supper into a dozen questions.
+
+grown
+line greet : Take the pale counters. I went first last time.
+line greet [pair.band=strangers] : New face. The board won't demand references.
+line greet [here.time=dusk|night] : Low light gives the dark counters ideas above their station.
+line greet [self.working=yes] : Keep an elbow out of the crate's long shadow.
+line again.open : My favourite opponent is an opponent who comes back.
+line greet.return : Heard that above my last winning shout.
+line greet.return [pair.band=friends|family] : I'd recognise that note even over a spill of draughts.
+line farewell : Keep the shell crown by the pale counters.
+line farewell.return : I'll mind your row until you get clear.
+line react.news : Whose move set all that going?
+line react.news.new : Fresh square for that story to land on.
+line react.news.known : I've nudged that same account across another board.
+line react.news.doubt : Tell me which bit you actually had your paws beside.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm loaf won't mend that. I'd bring one anyway.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news can take a whole clean corner of my board.
+line answer.how : Bit smoked round the edges. No worse in the middle.
+line ask.how : Has anything made you laugh as far as your whiskers today?
+line sympathise : I'd share the quiet half of a meal with you.
+line reassure : One piece at a time works on most sorts of day.
+line decline : I've barely got both elbows free to do the job already waiting.
+line accept_decline : Then my errand can take a long seat by the larder.
+line thank : That's one jump I won't have to make alone.
+line preclose : My bread's been under a game quite long enough.
+line ack : Your move.
+
+scene board
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I marked a board under my bread lid. Now I can lose a game and still uncover supper.
+b : What about the crumbs? | How do you crown a piece?
+a : They're neutral until one starts moving. Then it's a fly and everybody gets a fresh start. | A shell turns even my scruffiest dark button into royalty.
+
+scene load
+when topic=work self.job=sailor self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A crate can be set down gently even after spending a voyage inventing ways to bang my shins.
+b : Do you forgive the crate? | How gentle is gentle?
+a : Once it's landed. We keep a proper working distance till then. | No more noise than would wake the owner of whatever's tucked in the corner.
+
+scene warm
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : A loaf fresh from the oven smells like being called indoors by name.
+b : Could you keep a slice for later? | Does the smell cling?
+a : Only by getting the slice out of sight before my second helping. | Better to a sleeve than any perfume I've ever had money to consider.
+
+scene shelf
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : Full shelves make a grand audience for a draughts match.
+b : Does it clap? | Would you stake the food?
+a : Only if a jar's too near the edge. That's criticism I take seriously. | Never for anybody's supper. We can wager who sweeps the board.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly that lands on my king hasn't earned the promotion.
+b : Will it stay there? | Can you keep it off the bread?
+a : Usually till I need that square. I've seen very few more inconsiderate sports. | Put a net over the loaf and let the fly take its complaint elsewhere.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I'd sooner have a thin fresh slice than a heel I could play a whole match with.
+b : Could the heel go in soup? | How about using a crust for a counter?
+a : Yes. Give it a soak and I'll withdraw my complaint with the empty bowl. | Possibly. If I have to file it round it's past its best as bread.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Long summer light suits the matches with all the stubborn pieces left.
+b : Do you always finish? | Which piece is stubbornest?
+a : Till one player gets hungry. That's the signal to set the board right side up. | Mine, if it's losing. It can stand in one corner and think of all sorts of astonishing excuses.
+
+scene smoky
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My coat seems to have taken a permanent lease on a little smell of smoke.
+b : Does washing help? | Is it in your hair too?
+a : With the dirt. The smoke waits politely till my coat dries and comes straight back. | If I flap an ear I can almost hear a log crackle.
+
+scene rough
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : On a high landing in the Sump my lid gets a whole window's worth of sky.
+b : Will both players fit? | Have any pieces gone missing?
+a : Two elbows if both mean well. The rest of a wolf can stand. | I use buttons from a jar. A missing button is just another reason to keep a jar.
+
+scene supper
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : When coins are thin I borrow the sharpest knife for dividing a loaf.
+b : Does a knife stretch bread? | Would you weigh each piece?
+a : No. It does keep a bit more loaf out of the crumbs that drop through the boards. | I look at both halves honestly. Hunger's got an eye for a load that isn't even.
+
+scene sound
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Water makes a fine long road for cargo until the last few feet, when it asks for my shoulders.
+b : Is the last bit worth the journey? | Would you go farther yourself?
+a : Ask the wolf waiting to bake with the flour. I can supply my vote after supper. | With a good loaf packed. Long roads and empty bags make such a dull pair.
+
+scene pal
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put my cheerful face on before inviting #self.friend# to an afternoon match.
+b : Are you a poor loser? | Could a friend see through it?
+a : A lively one. I make complaints entertaining enough to justify my quantity of grievances. | I hope so. Imagine being beaten at draughts and mistaken for a statue besides.
+
+scene quiet
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : A patch of real quiet would soothe me more than a day with no chores.
+b : Could you work in silence? | How quiet is real quiet?
+a : Happily. I can move counters and sweep crumbs without narrating, if the occasion's serious. | I could hear my last bit of crust crack between my teeth.
+
+scene paywork
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : A day's unloading is easy to count in the evening. My shoulders remember every piece.
+b : Do you count the little ones too? | Would you trade that memory?
+a : Oh, yes. The small crate often gets carried furthest because everybody calls it easy. | For proper wages and an armful of fresh bread. I'm very reasonable on such terms.
+
+scene lastday
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : My pale draughtsmen stand out longer in poor light than the black buttons.
+b : Does that give white an advantage? | How do you settle a doubtful move?
+a : Only till I lay a light cloth behind the board. I prefer to win by my own dreadful cunning. | Call it a supper break. Two wolves look much more charitably on a dispute with warm food.
+
+scene wind
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : My bread cloth can catch a gust like a little sail.
+b : Could you steer it? | What holds your lunch cloth down?
+a : Into the nearest puddle, I expect. I prefer my lunch docked at the sill. | Tuck the two spare corners under the loaf and give the wind some other occupation.
+
+scene rumour
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A report I haven't seen yet gets no crown on my board.
+b : Would you throw it off? | What earns a crown?
+a : No, it may play its own square while I hear the rest. | A sober second account from somebody who stood in sight of it. Two loud repetitions don't count.
+
+story doubled [topic=pastimes]
+  : I laid a shell on a black button to crown my first king and the shell slid straight off the lid.
+  : It landed in my empty mug with a fine bright clink. I raised the mug in honour of the noise.
+  b : Did the king keep the crown?
+  : Got a flatter one from the jar. I wasn't drinking to that wretched button twice in one game.
+
+story breadnet [topic=food]
+  : I pulled the cover off a good loaf so smartly three crumbs went sailing through the air.
+  : One stuck to my nose and one bounced into my sleeve. The third one fell back on the plate.
+  b : Did you recover them?
+  : All present and eaten. A very short and profitable voyage by each brave little traveller.
+
+story corner [topic=work self.job=sailor]
+  : I leaned a lid beside a crate and came back after unloading to find its squares darkened with spray.
+  : The damp was drying in neat little ranks as the sun crossed the boards.
+  b : Did you stop to watch it?
+  : For one minute. I've seen worse games played by two wolves who'd both paid good money to enter.
+
+rule @crate
+when concept=bark self.job=sailor self.working=yes
+does aside
+cooldown 8h
+say Feet out from under that low runner. | Mine when the far corner stops swinging.
+
+rule @game
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say A shell for the newly crowned rascal. | That double jump was perfectly respectable.
+
+rule @bread
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Crust and warm crumb for the winner. | Put the net over tomorrow's portion.
+
+rule @fly
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Off that board, uninvited player. | No flies at the king's table.
+dlg resident.hub : I've a lid balanced square and enough buttons for company.
+dlg resident.hub [topic.meeting=known] : The pale row remembers you, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : My lid stays on the bread while I hear that account.
+dlg resident.hub [here.time=night] : Step into the lamplight to tell buttons from crusts.
+dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. The sea does most of the distance and leaves the heavy bit at my end.
+dlg resident.job : An honest load and a level board suit my pair of paws.
+dlg resident.news [world.news] : A piece has moved since supper. #world.news#.
+dlg resident.bye : Mind the edge as you step past my match.
+
+graft @lidmatch resident.hub
+choice Is that a game on your bread lid? -> lidmatch
+node lidmatch
+say Turn it over before I put the loaf away. Dark buttons against pale birch, with a shell on whichever piece gets made king first.
+choice What if somebody wants supper halfway through? -> lidmatch_more
+choice Look back at the board. -> hub
+node lidmatch_more
+say We slide the pieces clear. A game can wait in a jar for another day. Fresh bread has just the one chance to be warm.
+choice Look back at the board. -> hub
+choice Leave the game to its owner. -> bye

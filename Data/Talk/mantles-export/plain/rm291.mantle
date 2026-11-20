@@ -1,0 +1,258 @@
+mantle rm291
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_runa_ashridge
+title the thumbnail stall
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk cuts_a_tiny_market_stall_from_the_wood_under_a_rainspout
+likes plum_tart whittling market_bustle warm_rain
+dislikes smoke bad_manners
+fears a_warped_signboard smoke_over_fresh_ink
+hopes a_commons_stall a_canopy_built_from_savings
+topics dreams +0.6 pastimes +0.4 food +0.2 work +0.4 weather +0.3
+styles comfort=gentle gossip=careful refuse=plain tease=none
+marks oath saying
+persona #self.first# whittles a market stall small enough to shelter under a thumb, measures puddles against its tiny legs and puts every spare copper toward the full-sized thing.
+
+words
+oath! = Warp my level board | Blister the ink
+saying! = Plan the awning on a wet day | The stall starts with its first leg
+stall = the thumbnail stall | my pocket booth
+peg = a splinter leg | a tiny post
+gutter = the notch in the roof | my carved rain groove
+penny = one spared copper | the copper left over
+tart = my neat plum wedge | the purple corner slice
+crumb = a butter crumb | a fleck of sugared crust
+drip = a warm bead | one slow drop
+scraper = my whittling blade | the little paring knife
+offcut = a wedge of pale wood | my clean offcut
+shelf = the thumb-wide shelf | a little display board
+smudge = a fingerprint in ink | a dark thumb whorl
+edge = a folded paper edge | the corner of a proof
+
+any
+opinion @1 city for 2 : The city has made space enough for a hundred things I admire in the market. I mean to add something small.
+opinion @2 merchants against 1 : I can't have a stall quick enough to start charging a price my own neighbours could bear.
+opinion @3 dole for 2 : I'd find a broad level board for a pot serving folks who come up short on a wet day.
+opinion @4 houses against 2 : Give me a level bench and I'll do the work. Give it to a well-placed name instead and the work still needs doing.
+opinion @5 sump for 1 : What I make in the Sump ought to look every bit as handsome on a Commons counter as any fine goods.
+opinion @6 strangers for 1 : A first visitor looks at a shelf with new eyes. I like to ask what stands out.
+opinion @7 times against 2 : When prices climb faster than the little pile I'm saving, I can feel the legs of my stall drawing apart.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome. Clear corner here for your things. | First visit, fresh eyes. I'm glad of those.
+line @2 greet [here.time=dawn] : Morning. The grain shows nicely in this light. | A quiet start before the benches fill.
+line @3 greet [here.weather=rain] : Welcome under the little overhang. | Come see what the gentle rain's doing.
+line @4 greet.return : Your voice is welcome across my little length of counter. | A kind word received squarely.
+line @5 greet.return [pair.band=friends|family] : My best shelf's clear for you. | I'd know that friendly turn of the ear blindfolded.
+line @6 farewell : Go with your pockets dry where it matters. | May the next stop have a steady board.
+line @7 farewell.return : I'll keep a little of our talk for later carving. | Good luck with every little purchase.
+line @8 again.open : Back before the last curl of wood fell. | You've made a second impression already.
+line @9 kin.open [pair.kin!=no] : Show me that good family face a little closer. | My humble awning's large enough for family.
+line @10 hail [pair.band=friends] : See my little board shining over here! | Eyes this way for a brand-new piece!
+line @11 react.news : Hang on while I set those edges flush. | I like a little space to take an account in.
+line @12 react.news.new : That's an impression I hadn't seen before. | New to my ear and sharp at the edges.
+line @13 react.news.known : Yes. The shape of the account stayed with me. | That proof's gone across my board before.
+line @14 react.news.doubt : I'd like to hold that bit to a clearer light. | The two sides of that account don't quite match up.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Oh. My paws can lay this by while I give you both ears. | Hard to say words fine enough for a hurt like that.
+line @16 react.news.glad [topic.kind=birth|marriage] : I'd carve something especially nice to mark that. | There's a bit of colour for a grey week.
+line @17 answer.how : Getting a small honest piece done. | My next plan's an inch closer.
+line @18 decline : I'd do a poor job of it with what time I have. | I haven't the timber or the time to see that through.
+line @19 accept_decline : Your time has its own proper use. | We know where that joint ends, then.
+line @20 sympathise : There's a dry space on this side. Keep it till your breath steadies. | I wish I could pare a little off that worry.
+line @21 thank : You've helped a small plan stand on its legs. | A thoughtful thing to leave on my board.
+line @22 deflect_thanks : It only wanted the last little shaving off. | We'll count it as practice on my part.
+line @23 preclose : There's a tiny roof waiting for a groove. | I owe a little attention to a bit of wood.
+line @24 accept_preclose : You'll know which piece needs you next. | Take your business along in good order.
+line @25 farewell [here.time=night] : Turn the printed side in against the damp. | Keep a clear bit of light for your door.
+
+scene tinyroof
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I cut #gutter# in #stall# deep enough for a single drop. | I set #peg# a little further out than looks right.
+b : Where does the water run off? | Why spoil the shape?
+a : Away from where a buyer's paws would be. Wet paws smear paper. | Seen from the top it's crooked. At a buyer's height it shelters properly.
+
+scene warmtest
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : #drip# is the right size to try out my little awning. | I wait for warm rain to see what the wood will drink.
+b : Couldn't you pour from a jug? | Why choose a warm drop?
+a : One jug would drown a whole row of stalls this size. | I like to stand still to watch. A cold one makes me hurry.
+
+scene plum
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I'd set #tart# on a plain plate for sale. | A plum has all the colour a tart needs up front.
+b : Wouldn't a border make the thing look dearer? | How do you put the colour where it shows?
+a : I'm after worth eating, myself. A bare rim lets you see the crust. | A round hole in the top. Let one good bit of plum speak up.
+
+scene store
+when topic=dreams here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I'm saving toward a proper pitch among the Commons market stalls. | I mean to bring #stall# to the Commons and see where its shadow falls.
+b : Have you chosen the side you'd stand on? | On what sort of day?
+a : By the edge. Buyers can linger without blocking their neighbours. | One with a breeze and a little wet. I'll build for how it is.
+
+scene crowds
+when topic=pastimes self.likes=market_bustle
+does tell.self / react.self / assess
+a : At market I like the sounds you can't put on a price card. | A whole market rustles like pages nobody can turn fast enough.
+b : What would go on the card if you tried? | Does one noise come through all those others?
+a : Paper folding over a warm tart. That says it better than a figure. | A coin laid flat. A dropped one sounds quite another note.
+
+scene smoke
+when topic=weather self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : Smoke's found the roof groove before any water got there. | Soot comes down beautifully on an edge I've just pared clean.
+b : Can't you brush it clear? | Beautiful isn't quite the word I'd have chosen.
+a : With a shaving. Cloth leaves a little fur for ink to creep along. | Nobody asked it for a demonstration. I'll take a clean rag to it.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / disagree / concede
+a : A buyer ought to ask before testing a new surface with a claw. | Being in a hurry needn't make a wolf's elbows twice the size.
+b : You'd want a buyer to handle the goods, surely. | It gets close in a crowd.
+a : Yes. Let me show which edge can bear the pressure first. | All the more room to mind where a paw comes down.
+
+scene press
+when topic=work self.job=official self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a turned corner can spoil the whole pile. | I look for #smudge# on the spare margin at #self.workplace#.
+b : How does one bent corner trouble the rest? | Why look there if the sheet's only a proof?
+a : Gives the next sheet a little lift where it should lie flat. | Catch the whorl out in the margin than the buyer find a twin in the middle.
+
+scene lossplace
+when topic=work self.job=official
+does tell.feeling / sympathise / assess
+a : I know how a bench looks on the day it's given to a better-placed wolf. | A lost place teaches you all the things you'd build into a new one.
+b : Do you ever want that bench back? | Anything you'd leave out deliberately?
+a : I'd like one I had some say in keeping. Mine can be smaller. | The obligation to bow every time a promising name goes by.
+
+scene thinmoney
+when topic=prices self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : #penny# is the price of imagining one more corner post. | My store grows slowly enough I can remember every bit in it.
+b : Isn't that a long wait for four legs? | Wouldn't you rather forget the cost?
+a : I'll have them square when I get them. The waiting doesn't scare me. | No. Means I know what I can give away without cheating the rest.
+
+scene friendsign
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd like #self.friend# to see my first little market sign. | I've kept a clean piece of wood to show #self.friend#.
+b : What would the carved sign show? | Clear enough for a message?
+a : A carved plum first. A readable price underneath if I ever sell tarts. | Room for one tiny front door. A surprise for friendly eyes.
+
+scene badhour
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : These prices put a long bit of street between me and my market counter. | My little stall looks large beside the coin I've got put away.
+b : At least the design keeps growing. | Could you cut the size of the stall down?
+a : That part's paid for. A pencil line doesn't ask for bread. | I did. It's small enough already to carry in a cuff.
+
+scene dole
+when topic=food
+does offer / accept / assess
+a : Catch #crumb# before I split the crust. There's a better piece coming. | I've tart to divide and a sound board to divide it on.
+b : I'll hold my paper under yours. | I like the corner piece with the purple edge.
+a : Good. Small sweetness counts evenly if we keep the bits. | That leaves a middle with extra plum for me. Fair division.
+
+scene sumpwindow
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : In the Sump my little booth's tall enough to look properly sheltered beside a stair post. | I can hear the Sump through the holes in my miniature windows.
+b : Have you made it a sign for passing feet? | Wouldn't a real shutter make more sense?
+a : A sign as tall as my thumb. Folly to put a bigger one on such small premises. | Later. I'd enjoy company calling where I plan to work.
+
+scene edge
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What's a secure hold for a scrap this light under the blade? | I need #shelf# level on this poor offcut. Any thoughts?
+b : Put the blade down and turn the stock against a block. | Give one leg a turn of paper underfoot.
+a : That'll save me a nick and the board a scar. | Good for the trial. I'll shave the long leg when I know which one.
+
+scene cloudcount
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I watch three drops on a rail. If a fourth lands I keep on watching. | A break in the shower has a different sound from the shower easing.
+b : Do they tell you when it's going to clear? | Which sound makes you lift your eyes?
+a : Only that there's time to pare another shaving before I move. | The sudden clap of a whole roof emptying its edge into the gutter.
+
+scene shutters
+when topic=gossip
+does give.opinion / disagree / concede
+a : I don't put hearsay on a board folks expect to read for sense. | You can fold up a sheet of gossip without having to print another one.
+b : What if folks won't let the question go? | Don't they want to know the latest word?
+a : I'll put a plain blank strip where the answer can't be verified. | Yes. That's a reason to choose a word that's worth keeping.
+
+scene handskill
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Someday my paws will do the same thing over a wide market board that they do with #offcut#. | I want an awning our whole little row of sellers can see under at once.
+b : How will you know how deep to cut? | Won't that take a handsome bit of timber?
+a : Let the grain give me a fresh lesson. It's earned a say in the matter. | A bit. But I can start with one sheltered corner for whoever's waiting.
+
+story plum_sign [topic=food]
+  : I carved a plum for a stall sign. Oiled it with a bit of tart crust because I liked the colour the butter brought out.
+  : A hungry pup stared at that sign without blinking.
+  b : Did you find the pup anything real?
+  : Half my tart. I hadn't set out to run a stall with nothing good to put behind the sign.
+
+story drip_legs [topic=pastimes]
+  : I set my model on a sill to watch where the first drop would fall. Cloud broke, sun came through and the model rocked.
+  : One leg stood in a patch of drying mud. I thought I'd cut it short.
+  b : Did you trim the other legs?
+  : Lifted the model first. Fixed the sill with a cloth and saved the booth a whole new set of feet.
+
+story small_change [topic=dreams]
+  : A copper rolled under a rack and I spent half an hour looking for it. I wasn't going home without the next coin for my stall.
+  : When I reached under I brought back a dry stick and my copper tied together in cobweb.
+  b : Which did you put away first?
+  : The stick. Just the width I needed for a sloping canopy. Never made two such different gains on one investment.
+
+rule @chip
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Room for one fine shaving yet. | Let the grain stand up where you can read it.
+
+rule @weather
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Down that groove. Past the buyer's cuffs. | One drop's quite enough of a test.
+
+rule @press
+when concept=bark working=yes self.job=official
+does aside
+cooldown 8h
+say Easy on the fresh proof. | Thumb to the bare margin.
+
+rule @coin
+when concept=bark self.wealth=poor|destitute
+does aside
+cooldown 8h
+say That's the cost of one sound peg put by. | The little pile holds its own.
+
+dlg @1 resident.hub [topic.meeting=stranger] : New eyes on the little stall. What's drawn you so near.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can put the knife by for a friendly word.
+dlg @3 resident.hub [here.time=night] : Our voices won't need much space in the dark.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Put the hard feelings down beside the board, if you can.
+dlg @5 resident.job [self.job=official self.workplace] : I help print at #self.workplace#. Even one letter deserves a square footing.
+dlg @6 resident.job : I like a task I can turn to the light and check for myself.
+dlg @7 resident.bye : Look out for a free dry corner along your way.
+
+graft resident.hub
+choice Can that little stall really keep anything dry? -> little_roof
+node little_roof
+say My thumb, at present. That's a decent start. One extra shaving would make the roof run water right onto a customer's cuffs, so I've left it proud.
+choice What would the other paw hold? -> square_coin
+choice Set the model down for a bit. -> hub
+node square_coin
+say A copper for my real stall. I try to imagine whether I'd like to spend it there before I add another bit of timber to the model.
+choice Your customer has a good view. -> hub
+choice I hope you get the real thing. -> bye

@@ -1,0 +1,423 @@
+mantle rm196
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_godfrey_dripmore
+title the stair gauge
+fits stage=adult|old
+prefers role=merchant job=crafter
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk stacks_shards_to_measure_water_on_the_steps
+likes fried_fish dancing market_bustle autumn_wind
+dislikes haggling bad_manners
+fears a_slick_step_beneath_a_loaded_tray
+hopes dry_land_beyond_the_sound
+topics work +0.6 land +0.4 pastimes +0.3 travel +0.3 gossip -0.2
+styles comfort=practical gossip=exact refuse=blunt tease=none
+marks oath saying
+persona #self.first# keeps broken crocks for measuring high water on the city steps, speaks frankly about a bad bargain and finds a dance partner by clearing space to turn.
+
+words
+oath! = Crocks afloat | A dry thumb on the sky
+saying! = Stack a chip before you guess | A vessel tells on its maker
+shard = a thumb of broken crock | a chip of glazed ware
+blue = the blue chip | a shard blue as a beetle
+rim = a flared lip | a generous rim
+glaze = a pale glaze | a skin of green glaze
+tray = my laden tray | the board I carry
+ring = the clean note | a ringing sound
+crack = a dull click | a sound like a shut drawer
+tread = the worn tread | a hollow in the stair
+gauge = a stack of chips | my little stair gauge
+fry = a crisp fin | the crunchy bit beside the tail
+beat = the second beat | a little lift in the tune
+heel = my clumsy heel | the heel that always catches
+windfall = a loose leaf | a curled leaf
+burden = an awkward load | a tray that needs both paws
+cloth = a damp rag | soft linen with a rubbed fringe
+berth = a snug berth | a bunk no wider than a bench
+runnel = the little watercourse | a groove between flags
+
+any
+opinion city for 2 : A hill tells you where your water went. That's one good feature of our town and welcome to it.
+opinion dole for 2 : Fill the bowl. You can ask whose bowl it is after the poor wolf's eaten.
+opinion merchants for 1 [self.role=merchant] : I mark every fault I know about and charge accordingly. Plenty of traders do as much.
+opinion houses mixed 1 : I'd like a House to mend something small enough for an ordinary walker to notice.
+opinion road against 1 [world.wagons=late] : My complaint is simple. A road that holds up the wagons needs work before it needs praise.
+opinion strangers for 1 : If a stranger takes the other handle of a tray, I'll take the risk of asking a name.
+opinion newcomers for 1 : Give a newcomer a corner to work in. A good corner can feed a whole family.
+opinion watch for 1 : A steady paw directing carts does more good than three bright badges.
+opinion festivals mixed 1 : Clear the floor and I'll dance. Fill it with speeches and I'll go looking for supper.
+
+grown
+line greet : Here beside me. There's firm footing here.
+line greet [pair.band=strangers] : Welcome. I've room enough to turn round with a stranger.
+line greet [self.working=yes] : I'm listening even with my back bent over this.
+line greet [here.time=dawn] : The light's thin yet. Step nearer while my eyes adjust.
+line greet [here.time=dusk|night] : Evening. Nobody should have to feel for that last step.
+line greet.return : Heard every syllable of that greeting. Glad to. | A good clear greeting carries.
+line greet.return [pair.band=friends|family] : Pull level with me and we'll have a proper word.
+line greet.return [self.working=yes] : One moment while I steady this. There.
+line greet.return [here.time=dusk|night] : Evening back. The edges of things vanish early.
+line kin.open [pair.kin!=no] : A steady paw for the far handle. You're welcome here.
+line again.open : Back where our paths cross, I see.
+line hail [pair.band=friends] : This side! More elbow room for my favourite company.
+line farewell : Watch the turn on your way back down.
+line farewell.return : Go carefully where stone's been polished smooth.
+line react.news : Give me the words as near as you remember.
+line react.news.new : That's the first chip of that story to reach me.
+line react.news.known : Yes. The account I heard agrees so far.
+line react.news.doubt : I'd set that one aside till another witness came along.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard hearing. I wish I had something useful to carry over.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's worth clearing a place at the table for.
+line answer.how : Both feet under me and supper ahead.
+line answer.how.busy [self.working=yes] : Steady work. I'd welcome another pair of paws.
+line ask.how : You've had a long enough pull today, by the look. How goes it?
+line sympathise : You can set your load beside mine a while.
+line reassure : Give it a minute to settle before you decide it's lost.
+line thank : You got a grip where I couldn't. Much obliged.
+line deflect_thanks : We had enough paws between us. That's all.
+line decline : Excuse me from that. I promised to be somewhere else.
+line accept_decline : That settles it, then. I'll make other arrangements.
+line preclose [self.working=yes] : I'd best attend to the part that won't wait.
+line preclose : I'll give you back the rest of your day.
+line accept_preclose : Go along with an easy mind, then.
+line ack : I follow the measure of it.
+line give.advice : Check the footing before you put a second load on it.
+
+scene chip_measure
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I've stood three pot chips on edge down that runnel. | Rain's climbed halfway up #blue#. Didn't reach it on the last wet day.
+b : To dam it? | What will you do when it does?
+a : To see which one goes under first. Don't shift the blue. | Pick a higher step to carry things down, and let the next carrier know.
+
+
+scene lowest_step
+when topic=land here.region=ridgemere
+does give.advice / ask.detail / answer.detail
+a : Test a slick step with your empty paw before you trust it with a full tray. | That hollow in the stone catches water first, ahead of every other stair.
+b : Both paws are on the tray. | Deep enough to matter?
+a : Exactly. That's why I go down once with nothing. | Deep enough to hide a loose edge. I'd sooner take the outside.
+
+
+scene lid_seat
+when topic=work self.working=yes self.job=crafter
+does tell.self / react.self / assess
+a : I can feel a crooked lid with my eyes shut. | If a lid sticks I look first for a grain of grit.
+b : What gives it away? | Rather than forcing it?
+a : It rocks against one claw. A good one settles without asking. | I've made enough fresh shards out of good pots by being impatient.
+
+
+scene jug_lip
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : A jug gets its last test over my own boots. | I like a jug you can set down without a final drip.
+b : You pour with your eyes closed? | Does that take a special shape?
+a : I pour slowly. If my boot gets wet the lip needs work. | A clean edge below the spout. The water lets go there.
+
+
+scene pottery_note
+when topic=work self.job=crafter
+does offer / react.self / assess
+a : Tap that cup lightly. Hear #ring#? | I'd put this one out for buttons and that one out for broth.
+b : Like a little bell. | They look alike to me.
+a : Good. A hidden split swallows that note. | Listen to #crack#. Buttons won't seep out through a hairline.
+
+
+scene dry_harbour
+when topic=dreams|travel
+does tell.feeling / ask.detail / answer.detail
+a : I'd take #berth# to see a place where chalk stays put a season. | My dream of travelling has one flaw. I want to cross the sea and arrive dry.
+b : Could you sleep at sea? | Take spare stockings?
+a : I expect I'd practise by rolling off my bench a few nights first. | A whole chest, if the dream has room.
+
+
+scene dance
+when topic=pastimes self.likes=dancing
+does invite / ask.detail / answer.detail
+a : I'll dance one turn with you if you'll leave space for #heel#. | I keep missing #beat# when I watch the fiddler.
+b : How much space? | Why watch at all?
+a : The breadth of one toe. I learned the measure the hard way. | I'm wondering how so much of my trouble comes out of one elbow.
+
+
+scene market
+when topic=smalltalk here.place=market
+does tell.feeling / react.self / assess
+a : Hear the square when two prices are called together. Almost a harmony. | In a busy market the hardest part's keeping a lane open.
+b : Almost? | For all the carts?
+a : Nobody on the lower note will shift. | For the little wolf with a bowl held out in front. Look low.
+
+
+scene frying
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I leave #fry# to the end. Best proof the pan was hot. | A tang of hot butter will draw me away from a tune.
+b : Better than the middle? | Before the dance is done?
+a : Not better. Louder. | Between the dance and the bow. I do have manners.
+
+
+scene haggling
+when topic=prices self.role=merchant
+does tell.complaint / react.complaint / assess
+a : I'd rather hear a straight refusal than three guesses at my price. | One good question about a fault is worth a morning's haggling.
+b : What if the price is too high? | Does a fault come off the price?
+a : Then say so and let me reckon whether I can do better. | Certainly. Looking sorry doesn't.
+
+
+scene saltwind
+when topic=season here.season=autumn
+does tell.feeling / react.self / assess
+a : An autumn wind turns dry leaves into little sounders. | Look at #windfall# upright between two stones. Looks about to sail.
+b : Sounders? | Where would it go?
+a : They rattle on the shallow stones and stick where the holes are wet. | Downhill, if it's sense enough to follow the wagons.
+
+
+scene rain_clear
+when topic=weather here.weather=clear
+does tell.self / ask.detail / answer.detail
+a : Fine clear spell. I can see the silt line on #tread#. | I'll put #blue# back in my pocket while the sky's clear.
+b : High this time? | You'll lose your mark.
+a : High enough that I'd have come up the other way. | There's a pale patch where it sat. The sun keeps my place for half a day.
+
+
+scene family
+when topic=family self.married=yes
+does tell.feeling / ask.detail / answer.detail
+a : For #self.spouse# I'd save a cup that sits nicely in the paw. | My idea of an evening with #self.spouse# has room in it for silence.
+b : Prettiest one? | No dancing?
+a : I said nicely. An ugly one might be the very thing. | You don't have to talk to keep time together.
+
+
+scene crooked_cup
+when topic=pastimes
+does give.opinion / ask.detail / answer.detail
+a : I like an odd cup on a table of matching ones. | There ought to be one chipped dish kept in every house.
+b : So you can see which is yours? | What's it good for?
+a : So the odd guest can see there's room. | The task that would make you anxious with a fine dish.
+
+
+scene news
+when topic=gossip here.gossip=yes
+does tell.gossip / ask.detail / answer.detail
+a : The account I've heard is that #topic.subject# #topic.claim#. | I hear #topic.subject# #topic.claim#.
+b : Do you put any faith in it? | Is that the whole account?
+a : Enough to listen twice. I'd need more to say it's true. | That's the only piece I can lay my paw on.
+
+
+scene wagons
+when topic=caravan world.wagons=raided
+does tell.worry / react.self / assess
+a : Raided wagons mean a lot more waiting. I pity those waiting for ordinary things. | I won't make a tale of the raid. There's a tale enough in an empty yard.
+b : What ordinary things? | What can one do?
+a : A shoe to fit. A handle for a door. A crock that keeps broth where it belongs. | Lend what one has till another load comes in.
+
+
+scene lean
+when topic=times world.times=hard|lean
+does give.opinion / ask.detail / answer.detail
+a : Hard times teach you what the chipped things are good for. | Lean season. I like a pot that can do two jobs now.
+b : Even the ones with holes? | Which two jobs?
+a : An herb pot wants a drain. Even a broken base can earn its keep. | Carry a meal to a neighbour and bring something useful back.
+
+
+scene hall_sound
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The steps through the Commons each give a footfall a different sound. | A shout from above sounds quite different from one down by the market.
+b : Could you find the way by ear? | Which travels further?
+a : Part of it. I'd still want a lookout for wagon wheels. | The one that says to get clear. We all lend it an ear.
+
+
+scene raised_bowl
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I'm trying a bowl on a foot high enough to leave room for a cloth. | A pot doesn't need feet as long as its maker's, but it does need balance.
+b : So the table stays dry? | How do you judge?
+a : So a pup can slip a paw under and lift without spilling. | Put it on a board with a pea under one corner. See if it sulks.
+
+
+scene rough_lug
+when topic=work self.job=crafter
+does tell.self / react.self / assess
+a : I put a thumb hollow into the clay of a soft handle. | I leave the handle rougher than the belly.
+b : To show who made it? | A rough pot's not much use.
+a : To tell a tired paw where to rest. | A rough handle's different. It gives wet claws somewhere to catch.
+
+
+scene festival
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a festival I look for the dancers who have lost the tune. | A good tune makes even an empty bowl worth having.
+b : To put them right? | For catching coins?
+a : To dance alongside and pick it up together. | For beating the time softly with a knuckle.
+
+
+scene wayside
+when topic=newcomer
+does give.advice / react.self / assess
+a : To a newcomer I'd show the handrails first. | Somebody should mark reliable steps with a dab of colour.
+b : Before the inns? | So strangers can find them?
+a : Yes. You have to reach the inn in one piece. | So anybody carrying too much can follow without asking.
+
+
+scene honest
+when topic=friends
+does tell.feeling / ask.detail / answer.detail
+a : I trust a friend who'll point out a wobble on the table. | You know who's good company when a carrying handle snaps.
+b : Even at supper? | The one who catches the load?
+a : Especially with a full dish coming down. | Or stays to gather the pieces. Anybody can shout.
+
+
+scene clay_sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt the whole hill was spinning and I had to hold it steady. | I dreamt of a field with all the rain lying next door.
+b : Did you manage? | What was the boundary?
+a : One paw on the top. In the morning I'd wrapped the blanket round a bedpost. | A row of lids, each one tipped just so.
+
+
+scene rainword
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Mist rounds off every edge I use to find my way. | You can see wet on the ground before you see the thing that dripped.
+b : What guides you through it? | What's above us?
+a : The kerb against my toes. Goes on being a kerb in any weather. | Stand back a pace. There's the end of a gutter in the murk.
+
+
+scene elbowroom
+when topic=home
+does tell.feeling / react.self / assess
+a : A table suits me when I can walk all round it. | I measure a good doorstep in paw-widths.
+b : To carry dishes away? | A generous doorstep, then?
+a : To draw up one more seat where nobody expected room. | Generous enough to put the parcel down and still open the door.
+
+
+scene two_sides
+when topic=faith
+does give.opinion / ask.detail / answer.detail
+a : I remember the Bright One best when a simple thing gives years of service. | A quiet hour's a decent offering.
+b : Do you ask a blessing first? | Who gets the benefit?
+a : Sometimes. I still check for leaks. | Try to hear which of my neighbours could use it more.
+
+
+scene sparing_water
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I'll pour a little water to see which way the ground lies. | If you want to find the low corner, send a drop first.
+b : Can't you tell by looking? | Just one?
+a : I can guess. Water gives an answer without guessing. | Less mopping to do if the low corner's under your bed.
+
+
+story dry_sketch [topic=memories|travel self.age>=30]
+  : I once drew a view of a dry coast beneath the rim of a saucer.
+  : I packed it very carefully and then put the saucer down and forgot which it was.
+  b : How did you find your coast again?
+  : By finishing my supper and doing the washing up. Shortest sea journey I've made.
+
+
+story fish_tune [topic=memories|food]
+  : A fiddler once played for a cook who'd promised a plate of fried fish.
+  : Each time the tune ended the cook turned the fish. Each time the fish turned the fiddler started again.
+  b : Who gave in first?
+  : The fish. The skin fell off into the pan and they both stopped to eat it.
+
+
+story stair_line [topic=memories here.region=ridgemere]
+  : Once I stacked white chips on the low stair where the drains run together.
+  : By the time I came back the water was gone and a pup had built a palace with the chips.
+  b : Did you take it apart?
+  : No. I put the water mark on the palace wall. Better than my heap by far.
+
+
+story first_bowl [topic=memories|work self.job=crafter]
+  : My first bowl had one side much lower than the other.
+  : I kept it hidden until an old gardener asked for a dish a fledgling could drink from.
+  b : The low edge came in useful?
+  : Just the height of a small beak. I wish I'd had the sense to make it so on purpose.
+
+
+story dropped_tray [topic=memories self.age>=25]
+  : I slipped once with a tray full of cups. Got the tray level on the way down.
+  : Not a cup tipped. I'd just begun to feel proud when my rump hit the cobbles.
+  b : That finished the trick?
+  : The whole tray bounced. I learned to carry less from one place to the next.
+
+
+rule @water
+when concept=bark here.weather=rain here.region=ridgemere
+does aside
+cooldown 8h
+say Mind the stair with the white chip! | Upper edge is sound. Take a short stride.
+
+
+rule @pot
+when concept=bark self.job=crafter working=yes
+does aside
+cooldown 8h
+say Turn the handle towards the rim. There. | Listen to the hollow note in that one.
+
+
+rule @dancer
+when concept=bark self.likes=dancing
+does aside
+cooldown 8h
+say Leave one board bare for the dancers! | I can hear the beat in that shuffle of feet.
+
+
+rule @fish
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say Keep that crisp edge for me! | Smells like the pan's hot enough at last.
+
+
+rule @market
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say Set the heavy bundle over here till the lane opens! | Let a little daylight through for the caller at the back.
+
+
+rule @season
+when concept=bark here.season=autumn
+does aside
+cooldown 8h
+say Wind has swept every leaf into the hollow. | That gust gives the high branches a good airing.
+
+dlg resident.hub : Come level with me. I like to hear a question straight.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I see you've found my usual perch.
+dlg resident.hub [pair.disposition=hostile|wary] : We'll manage a civil word with a bit of space between us.
+dlg resident.hub [here.time=night] : Keep the lamp between us so I can see what you mean.
+dlg resident.job [self.job=crafter] : #self.trade_words.capitalize#. Any pot I send out ought to earn its shelf space.
+dlg resident.job : I'm happiest at work that gives me something solid to show at the end.
+dlg resident.business [business=steady] : Things sit level at present. I'm content to have it that way.
+dlg resident.news [world.news] : #world.news#. I had it by way of #world.news_from#.
+dlg resident.gossip [here.gossip=yes] : I've been told #topic.subject# #topic.claim#. Go carefully with it.
+dlg resident.bye : Take the route that gives you the surest footing.
+dlg shop.greet [here.shop!=bare] : Come within reach. It's easier to judge with your own paws.
+dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#, you know I give straight answers about stock.
+dlg shop.prices : I'll show you what the extra work went into. Decide for yourself if it's worth the price.
+dlg shop.bye : Carry anything delicate up against your chest.
+
+graft resident.hub
+choice Why stack chips on a step? -> stair_stack
+node stair_stack
+say Water takes the lower ones first. If the top one goes under, I tell anyone with a heavy load to walk round another way.
+mood keen
+choice Why choose chips? -> cheap_mark
+choice I'll watch the upper chip. -> hub
+node cheap_mark
+say A broken cup still has work to do. I like a measure I can afford to lose.
+choice Good use for it. -> bye
+
+graft shop.greet
+choice Could I try the weight? -> weight_hand
+node weight_hand
+say Certainly. Turn your paw as if you were tipping something out. You feel the weight move.
+choice Why does that matter? -> tip_test
+choice I've felt enough. -> greet
+node tip_test
+say What feels light on a shelf can drag when you have it at an angle. I'd sooner have you learn it here than after you paid.
+choice I'll bear that in mind. -> greet

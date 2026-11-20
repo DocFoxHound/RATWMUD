@@ -1,0 +1,263 @@
+mantle rm311
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_osric_plankford
+title the odd stair
+fits stage=adult|old
+prefers job=merchant piety=devout
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk pairs_steps_with_dice_and_leaves_the_odd_one_for_prayer
+likes honey_cakes dice sharp_knife first_snow
+dislikes flies waiting
+fears mistaking_a_guess_for_proof
+hopes a_calm_crossing_of_the_last_step
+topics faith +0.5 pastimes +0.4 travel +0.3 work +0.2
+styles comfort=patient gossip=careful refuse=courteous tease=none
+marks oath saying
+persona #self.first# pairs stair treads with spots on a die, quietly dedicating the last unpaired step to a prayer for anyone still climbing.
+
+words
+oath! = Five white pips | My unpaired heel
+saying! = Let the odd step rest | A count may pause without failing
+die = a pale bone cube | my worn die
+pip = a dark pip | one inked hollow
+odd = the unpaired tread | a single stair
+seam = the top joint | a narrow join
+cake = a honey round | the sticky cake
+wrap = a paper fold | a clean wrapper
+flight = a long flight | the straight ascent
+palm = a closed paw | my open palm
+rail = a walnut rail | the plain rail
+nick = a nail scratch | a little nick
+snowmark = a heel impression | a snow print
+gatebolt = the lower bolt | a stiff catch
+
+any
+opinion church for 2 : The Bright One may hear even a prayer breathed between thoughts.
+opinion houses mixed 0 : A tall doorway calls for the same courtesy to a visitor as a low one.
+opinion road for 1 : What I appreciate in a public road is room to hesitate without causing a collision.
+opinion watch mixed 0 : I like a record with room to distinguish a certainty from a suspicion.
+opinion newcomers for 1 : A newcomer deserves the correct turning the first time, particularly on a long flight.
+opinion festivals mixed 0 : I'll attend for the small cakes and slip out before the crush reaches the stairs.
+
+grown
+line greet : Welcome. We're on an even footing here. | Hello from the level part.
+line greet [pair.band=strangers] : Our first meeting deserves a quiet moment. | Yours is a face new to me. Welcome.
+line greet [here.time=dawn] : Morning. My first flight lies behind me. | A clean beginning and a sound tread to you.
+line greet.return : Yes, hello. I've finished my count. | I heard you across the last two steps.
+line greet.return [pair.band=friends|family] : Familiar company settles my feet. | There's a reassuring voice on the stair.
+line greet.return [here.time=night] : Late hello. The stars seem steadier than my lamp. | Welcome through the darkness.
+line again.open : We meet within a few paces of our last conversation. | Another familiar landing, it seems.
+line hail [pair.band=friends] : Stand where there's a little room beside me. | Here by the clear length of rail.
+line farewell : May the Bright One watch your next few steps. | A quiet ascent wherever you go.
+line farewell.return : I'll pray your last step goes easily. | Another level place is waiting for you.
+line react.news : Say the part you can swear to seeing. | I've a quiet minute for the whole account.
+line react.news.new : I knew none of that before this meeting. | That's a mark on a previously blank side.
+line react.news.known : Yes. The points coincide with what I'd heard. | That count has come my way already.
+line react.news.doubt : I think one of the points is painted on. | I'd examine the missing bit before trusting either end.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : My prayers will remember those left with that hurt. | We have time to be quiet with a loss like that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's a kindness to my ears and to my prayers. | I'll remember that bright piece in chapel.
+line ask.how : Are you managing the awkward treads today? | How much waiting has the day put on you?
+line answer.how : I'm steady once the first uncertain step is behind me. | Not wholly at ease, but quite able to continue.
+line decline : I'd sooner keep my word small enough to honour it. | I couldn't manage that without failing a prior duty.
+line accept_decline : Then our duties are clear to each of us. | I'll take the answer without adding pressure.
+line preclose : I should move before the way grows crowded. | My errand's been quite patient with me.
+line accept_preclose : Please go while your footing feels sure. | You've spared a generous slice of your time.
+line thank : I'm grateful you let me find my step. | That was a remarkably considerate pause. Thanks.
+line deflect_thanks : I had an interval available at the landing. | It helped me to have a reason to stop.
+line sympathise : You may have the rail till your breathing settles. | Whatever you can say will be enough.
+line reassure : We can take that last one singly. | A small pause needn't become a long delay.
+line ack : That's quite distinct to me now. | Yes. The two counts agree.
+line give.advice : Give the landing a glance before committing to the last pair. | Put a folded wrapper under a die for a quiet game.
+
+scene pairdots
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I count a steep flight in pairs and check against the pips. | The odd tread gets special treatment on my walks.
+b : What treatment? | What's wrong with odd numbers?
+a : A quiet prayer said standing quite still. | Nothing. The spare step leaves room for something besides counting.
+
+scene turncube
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I turn a die over in my paw without looking at the spots. | I try to feel the number before opening my paw.
+b : Can you read the hollows? | Does that help you play?
+a : Some. My thumb can mistake a worn six for four. | Not at winning. At keeping my mind from running ahead, yes.
+
+scene fairshake
+when topic=prices
+does give.opinion / react.self / assess
+a : I wouldn't wager a meal on a die with indistinct spots. | Look at the faces before staking even a crumb.
+b : Fear a crooked game? | What's a crumb worth?
+a : A misunderstanding's enough to spoil an honest game. | Little enough. A quarrel over it would be grossly overpriced.
+
+scene caketray
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : A honey cake can glue two game pieces together quite firmly. | I keep the dice away from the cake paper.
+b : Speaking from experience? | Why keep them separate?
+a : My best roll once came up in a quite inseparable pair. | One pair of sticky pieces in my pocket cured me of combining the two.
+
+scene wickprayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I reserve a short prayer for whoever has yet to reach the landing. | A pause in company can hold a whole private prayer.
+b : Even a stranger? | Would you say it aloud?
+a : A stranger may need a little ease as much as a dear friend. | No. I can offer the thought without interrupting anybody's climb.
+
+scene doorwork
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A courteous door greeting leaves room to decide whether to enter. | I try to give a visitor the whole threshold.
+b : Why step so far aside? | What if the visitor hesitates?
+a : So the decision really belongs to the visitor. | Then I've succeeded in leaving space enough for hesitation.
+
+scene cleanedge
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I like the cut edge of a paper wrapper quite straight. | A clean edge makes a nice fit when folding a little die box.
+b : Does it matter to the dice? | Couldn't you tear it?
+a : No. Matters to me when I put the lid on square. | Certainly. I'd still prefer one clean edge to measure the fold against.
+
+scene freshwhite
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : The first snow fills the pip marks in a fallen die. | Snow makes even a well-known flight briefly unfamiliar.
+b : Can you see the numbers now? | What disappears first?
+a : Only after I clear the white out with a careful breath. | The sharp edges. I take the whole flight one tread at a time then.
+
+scene longwait
+when topic=day self.dislikes=waiting
+does tell.complaint / ask.detail / answer.detail
+a : I manage a wait better once I've permission to sit down. | Waiting in a doorway leaves me hovering over a decision.
+b : Why does a seat help? | Whose decision is it?
+a : It tells my legs they needn't be ready every instant. | Usually somebody else's. That's the considerable difficulty.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.complaint / ask.detail / answer.detail
+a : A fly on a die has altered my count before now. | I dislike anything with wings that settles on a sticky pip.
+b : Did the score improve? | Would you throw again?
+a : Considerably, until the extra spot departed. | I'd ask for the score to be read once everything with legs had left.
+
+scene privatebook
+when topic=gossip
+does give.opinion / react.self / assess
+a : A private note needn't become a public accusation. | A doubt recorded in ink remains a doubt.
+b : Where might that note lead? | Does writing change anything?
+a : Look for something better to go on and keep quiet in the meantime. | It might remind me to check. It confers no authority whatsoever.
+
+scene meetfriend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# to allow me a moment on the unpaired tread. | I could show #self.friend# my little counting habit without much self-consciousness.
+b : Are you embarrassed by it? | What do you count for?
+a : Only when a stranger mistakes a pause for a performance. | Composure mostly. I value a friend who doesn't demand a longer explanation.
+
+scene uphillhome
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : In the Heights a politely gradual climb can conceal a great deal of hill. | A fine paved approach may only postpone the steepest part.
+b : What measure applies here? | At the entrance, you mean?
+a : By the catch in my breath when I arrive at the door. | Often. An elegant last flight still wants a steady pair of legs.
+
+scene weatherstrip
+when topic=weather here.weather=rain
+does warn / react.self / assess
+a : Take the outer drops off the die box before opening it. | Rain gives smooth wood an ornamental and very slippery finish.
+b : Does a wet box spoil the game? | Would a cloth help?
+a : If the die goes down the drain, absolutely. | Yes. I'd forego the shine in favour of a sound grip.
+
+scene steadywalk
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Someday I'd like to reach a high landing without checking the last step twice. | I'd be content to take one long walk entirely at ease.
+b : What would that feel like? | Would you leave the die behind?
+a : Wonderful, I imagine. A little thinking room for the view. | Possibly. I'd carry a honey cake instead and count nothing but the crumbs.
+
+scene civicformal
+when topic=smalltalk
+does give.opinion / react.self / assess
+a : An introduction ought to be audible without being an announcement to the whole square. | I like a clear greeting at an ordinary volume.
+b : Hard to hear above carts. | Afraid of attracting notice?
+a : Then draw a little nearer instead of shouting from across the road. | I enjoy selecting my company when possible.
+
+scene lean_games
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a lean stretch we can roll for turns instead of coins. | A game without money still has an outcome.
+b : What does the winner receive? | Why keep a score then?
+a : The next turn and everyone's continued good temper. | For the small pleasure of an exact number after an uncertain day.
+
+scene latecart
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon gives me too much time to imagine explanations. | I try to limit my thoughts about a late load to what I know.
+b : Which is what? | Any news so far?
+a : That it's late. The rest is an exercise with a most unreliable set of dice. | Only that the appointed time has passed. I mustn't promote a guess into a fact.
+
+grown
+
+story honeyroll [topic=pastimes|memories]
+  : I rolled a die on a cake wrapper. It came down on an edge and stayed there.
+  : I'd been saving the sticky side of the paper quite unintentionally.
+  b : How did you score the throw?
+  : Two faces and no honest result. The cake disappeared before I supplied fresh paper.
+
+story countstair [topic=travel|memories]
+  : I once counted the same flight in pairs in both directions and arrived at two totals.
+  : Anxious afternoon. I walked it again with little pencil strokes.
+  b : Where was the extra step?
+  : In my pocket, as it were. I'd counted the pause to take my die out.
+
+story darkpip [topic=memories|faith]
+  : I took a die along on a quiet walk and failed to notice one spot had filled up with wax.
+  : Spent an entire prayerful interval trying to account for two four-sided faces.
+  b : Did the extra face stay?
+  : A little warmth loosened the wax. The time spent quietly did no harm either.
+
+rule @pip
+when concept=bark
+does aside
+cooldown 8h
+say Only the last step single. Then a pause. | Three pairs and one quiet thought.
+
+rule @work
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Give the next arrival space to stand comfortably at the threshold. | I'll wait behind the door's swing.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say The edges hide beneath the new white. Step carefully. | A clear print makes the last tread visible.
+
+rule @dice
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say Clean paw for the dice, please. | Take the wrapper off the gaming surface first.
+
+dlg resident.hub : I've come to a level place in my thoughts. Your question can have its turn.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your approach is fortunately easy to distinguish from ordinary passing feet.
+dlg resident.hub [here.time=night] : It's quiet under cover here. We can take our time over a word.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll remain within the doorway while you speak.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I try to leave visitors space for an unhurried choice.
+dlg resident.job : A watchful eye and plain courtesy carry me through most duties.
+dlg resident.bye : I hope you come to your last step comfortably.
+
+graft resident.hub
+choice Why leave a step for a prayer? -> pairedprayer
+node pairedprayer
+say It's a decision I can make before the climb begins. If there's one tread over, I no longer have to be vexed by it. I have already given it a purpose.
+free
+choice What if the flight ends evenly? -> evenprayer
+choice I'll remember the spare tread. -> hub
+node evenprayer
+say I can pray standing on a landing. There's no requirement in my faith for odd architecture. The little habit simply helps me remember.
+choice That settles the arithmetic. -> hub
+choice Goodbye, and a quiet climb. -> bye

@@ -1,0 +1,258 @@
+mantle rm349
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_arne_ashton
+title the singing coal
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=ambitious
+quirk inks_a_song_on_the_inside_of_an_apple_wrapper_with_a_coal
+likes crisp_apples singing festival_bells frosty_mornings
+dislikes drizzle flies
+fears a_voice_gone_quiet a_letter_with_the_corner_burned
+hopes a_chorus_of_my_own a_warm_room_for_rehearsal
+topics pastimes +0.6 food +0.4 season +0.3 dreams +0.4 work +0.2
+styles comfort=warm gossip=plain refuse=gentle tease=none
+marks oath saying
+persona #self.first# keeps a piece of charcoal pointed for writing choruses inside apple wrappers, sings toward the high windows and wants the next voice to ring out just as clearly.
+
+words
+oath! = Singe the chorus | Blacken my best quaver
+saying! = Leave the last note for company | A coal can sing on paper
+coal = my pointed coal | the writing cinder
+sheet = a pale apple wrapper | the folded song scrap
+stave = three dark lines | my thumb's black rails
+apple = the red cheek | a crisp apple quarter
+spark = a little bright note | a single clear tone
+flake = the rind of frost | a white crisp rim
+pot = the unsealed jar | a round song jar
+lid = the flat lid | my spare jar cover
+buzz = a thin fly's note | the kitchen buzz
+blot = my thumb's dark patch | a broad coal smudge
+vine = a twisted bit of vine | a dry pruning curl
+edge = the unblackened margin | my clean scrap edge
+
+any
+opinion @1 dole for 3 : Send soup down a line of hungry singers and hear what comes out of the last throat. I remember being in that line.
+opinion @2 houses against 2 : A high window takes my voice in clean enough. I'd like a real answer from whoever's warm behind it.
+opinion @3 merchants against 2 : Some scales make the same copper sound a good deal smaller in my palm than it sounded on the counter.
+opinion @4 city for 2 : This city has roofs enough to give one tune a dozen different answers.
+opinion @5 strangers for 2 : A traveller might know the verse I haven't found. I'll make space to hear it.
+opinion @6 sump for 1 : There's a singing voice in the Sump that'll carry past any quantity of polished railing.
+opinion @7 times against 2 : I have to get more song from the same bowl on days when the bowl looks thinner.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome to the circle. You can listen till you like us. | Fresh voice, warm seat there.
+line @2 greet [here.time=dawn] : Morning. The first verse is still to make. | Fine time to tune a sleepy voice.
+line @3 greet [here.weather=rain] : Get under cover from the wet and the flying black dust. | Welcome under the edge of this scant cover.
+line @4 greet.return : I can hear the smile in that greeting. | My listening ear's turned your way.
+line @5 greet.return [pair.band=friends|family] : That's a voice I've kept a chorus for. | Ah, no calling for the tune with you.
+line @6 farewell : Save a decent deep breath for the uphill stretch. | Sing home if the road gets lonely.
+line @7 farewell.return : I'll hear the echo while you go. | Some of the tune goes with you.
+line @8 again.open : Here's the verse finding its feet again. | Round comes a face worth a second look.
+line @9 kin.open [pair.kin!=no] : Family can join before the tune's quite settled. | Home voices right up by my elbow, please.
+line @10 hail [pair.band=friends] : Here beside the dark thumb marks! | There's space for your high note!
+line @11 react.news : Speak clear across the circle. I'll listen hard. | I want to catch what hangs below the loud bit.
+line @12 react.news.new : That's new colour on my wrapping paper. | My ear hadn't caught that part at all.
+line @13 react.news.known : I've heard the line with the same ending before. | That verse has already been round my table.
+line @14 react.news.doubt : I think that word's picked up a spare note somewhere. | There's an ending there the start didn't quite earn.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Nobody needs to lift a voice alone over that. | I'll let the tune lie quiet in company with the sorrow.
+line @16 react.news.glad [topic.kind=birth|marriage] : New joy. That goes in the high part. | I'd give my cleanest scrap to keep a word like that.
+line @17 answer.how : A bit smoky. Plenty of voice left. | There's still an apple I'd fancy biting.
+line @18 decline : I haven't got the reach to promise that particular part. | I'd let the rest sing short if I tried to cover it.
+line @19 accept_decline : Find your own pitch. That's fair. | No worry. We'll let the verse take another turn.
+line @20 sympathise : I can sit near enough to hear without making any noise. | Put the worry beside mine and have a decent bite.
+line @21 thank : That kindness rings clear and I'll remember it. | That's worth a whole dark line in my best book.
+line @22 deflect_thanks : I only supplied the breath for it. | You've given me company to make a thing for.
+line @23 preclose : I've to catch a bit of tune before it flees. | My fingers want another turn with the coal.
+line @24 accept_preclose : Go along while the last note's good. | I'll keep a scrap open till next time.
+line @25 farewell [here.time=night] : A quiet step for the sleepers and a soft song for yourself. | Get to a good warm room tonight.
+
+scene point
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : #coal# is sharp enough for a song and too soft to last the whole thing. | I like #sheet# opened flat under my thumb before a tune arrives.
+b : What happens when the coal breaks? | Why take such pains over wrapping paper?
+a : The broad end makes a chorus. A foot can stamp along to a smudge. | I've lost good words untangling a fold with an apple rolling off my knee.
+
+scene applechord
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I can get a note out of #apple# before I can get the taste. | Crisp fruit snaps close to the sound I'm after in a chorus.
+b : Are you going to sing into it? | Which part of a song's fit for biting?
+a : One bite's the whole performance. Listen for the sharp crack. | The bit everybody comes in on together. Teeth either meet the apple or they don't.
+
+scene bellchorus
+when topic=pastimes self.likes=festival_bells
+does tell.self / react.self / assess
+a : A festival peal gives the poorest chorus an absolutely fine introduction. | I try humming #spark# inside the broad sound of the bells.
+b : Doesn't it drown out the first word? | Can anybody tell that you're singing?
+a : I hold my opening word in reserve till the last stroke takes a breath. | I can. When the bells stop the hum is already steady.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #flake# on a lid can make a picture almost as good as coal. | Frost makes a good copy of a tune with lots of little branches.
+b : You couldn't keep the picture indoors. | Which branch do you try singing first?
+a : I keep the tune instead. It hangs on after my sleeve gets wet. | The smallest. It comes down by such a long fine curl to the middle.
+
+scene drip
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : Drizzle rubs my writing down to a grey hum. | A little quiet wet does the chorus more harm than a whole loud shower.
+b : Can't you trace over the marks? | What's wrong with writing under an eave?
+a : Only while I remember where the words went. Leave the wrapper inside, that's better. | I do when the wet declares itself. Drizzle gets to the last line before I notice.
+
+scene flies
+when topic=smalltalk self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #buzz# has decided to audition for the high part. | A fly can land right in #blot# and carry my song off on six legs.
+b : Is the fly any good at singing? | Is the fly's handwriting as neat as yours?
+a : Splendid at a single note. Wouldn't take direction worth a seed. | Near enough on bad paper. A travelling verse ought to ask leave first.
+
+scene store
+when topic=work self.job=merchant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I turn a lump to find whether it's good for marking or burning. | There's a sound to a sack settling at #self.workplace# that I can't quite sing.
+b : How do you tell the marking kind? | What's the closest thing to it?
+a : Pale end, fine soft face. Give it a clean scrap to talk against. | A hundred little sticks trying to find the same tune without a conductor.
+
+scene hope
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd make a chorus a working wolf could join halfway through supper. | I want to hear my own tune coming down from an open window one day.
+b : Wouldn't the late singer miss the beginning? | How would you know your bit had travelled?
+a : One note held through the whole first line. Join wherever you get your breath. | I'd hear a stranger improve the bad bit I hadn't quite solved.
+
+scene vineword
+when topic=lore
+does tell.self / react.self / assess
+a : A letter from inland sometimes carries an entirely different sort of smoke smell. | #vine# makes a grand shape beside a charcoal sketch of a chimney.
+b : Which part of the news would you read first? | Would you burn the curl for luck?
+a : What a pruning fire sounds like against a hillside with no bells interrupting. | No. I'd copy its turn into a song line and send a scrap back.
+
+scene sumpstreet
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : The Sump can make a big song out of a little bit of air between walls. | I can sing from an upstairs Sump stair without worrying about a fine ceiling.
+b : Does it always come out right? | Suppose somebody's sleeping below you.
+a : Any wall can throw a note back wrong. I can alter my pitch, though. | The soft part travels through boards too. I do respect a sleeping ear.
+
+scene price
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : An apple can be dear enough to split a song group into quarters. | A copper doesn't grow any more branches because a fruit seller wants it to.
+b : You could just buy smaller fruit. | Would singing bring the figure down?
+a : I buy what's sound. Divide the good bit and make the welcome yourself. | Possibly. I'd sooner exchange a decent hour of work for a decent piece of fruit.
+
+scene sharing
+when topic=food
+does offer / accept / assess
+a : I'll share this crisp quarter. Hold #edge# beneath it. | Take the sweet part and I'll make my song out of the core.
+b : I'm likely to get juice on the words. | I wouldn't leave you eating pips.
+a : You'll have left a note of your own. I can read the rest. | I kept two quarters under the fold. I'm ambitious but not foolish.
+
+scene pal
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd keep an easy starting pitch for #self.friend#. | I'd share the apple before the chorus with #self.friend#.
+b : Does a friend need something easy? | Wouldn't the bite spoil the singing?
+a : An easy start takes two voices splendid places later on. | Chew while I do the verse. There's room for both afterwards.
+
+scene crowd
+when topic=newcomer
+does tell.self / react.self / assess
+a : Let me catch a newcomer humming before I ask where the tune came from. | A face from another town can bring me a whole new ending on a breath.
+b : Why not ask right away? | What if you like the old ending more?
+a : You put a question in too soon and you stop a perfectly good bit of singing. | Keep the pair and see which fits the next room.
+
+scene thinweek
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : There's broth to go round if we set the cups under this shelf. | I'd share the sound middle of my loaf with a voice that's gone hungry.
+b : My ear's after the steam before the song. | Would you keep your part warm?
+a : Steam it is. We'll leave the singing for when the spoons have finished. | I should be close enough to the pot for that. Eat in comfort.
+
+scene jarnote
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How would you catch the hum of #pot# without whistling down into it? | Can you think of a decent use for #lid# when the jar's already cracked?
+b : Rest a finger at the side and sing past the rim. | Try beating time softly on the lid by itself.
+a : There. The sides tickle when I've found the note. I'll remember that. | A good round knock. A cracked jar can have one more chorus.
+
+scene clearstep
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : I'd walk up the main steps to see where my deepest note quits following me. | I want a place where a quiet chorus can reach the top without anyone straining.
+b : How will you tell you've left the note behind? | Are you looking for company or for a wall?
+a : I'll count the empty places where a returning hum ought to be. Then breathe and go higher. | Company first. The right wall can make a small warm group sound as large as it feels.
+
+scene blackpaper
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I dust #stave# lightly once the tune's all written. | The cleaner side of an apple paper works better for words that travel.
+b : Doesn't the song disappear in your cuff? | What puts the travel in a wrapper?
+a : No, loose coal goes away and the mark that matters stays. Fold it once carefully. | A tune in your pocket is a perfectly good reason to knock on a new door.
+
+story false_note [topic=pastimes]
+  : I set a jar to ringing on a table and tried all morning to match the note. It kept a little shiver beneath my voice.
+  : When I lifted the jar there was an apple seed caught under its rim.
+  b : Did the note come right when you cleared it?
+  : No, it went quite ordinary. I put the seed back to hear what I'd been trying to sing.
+
+story long_bite [topic=food]
+  : The last apple in the parcel had a deep crease down one side. I turned it and saw two faces, one worried and one surprised.
+  : I cut between the faces to see what had made the crease.
+  b : And what shape had the white part taken?
+  : Plain white and sweet. We gave the worried side to a wolf who wanted cheering and kept the surprise for me.
+
+story paper_song [topic=dreams]
+  : A tune of mine went round a room on a strip of wrapper. When the wrapper returned the last four words had vanished under greasy thumbprints.
+  : Every singer wanted a slightly different ending.
+  b : Did you have a vote on it?
+  : We sang all four. Mine was the one I couldn't make fit without stealing a breath.
+
+rule @write
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say A point for the verses. Broad coal for a chorus. | Hold a breath of space over the head of that line.
+
+rule @black
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Listen for the sound of dry lump. | Clean paper for the customer.
+
+rule @frost
+when concept=bark here.season=winter
+does aside
+cooldown 8h
+say Frost's got quite a fine singing edge. | A bite of bright air to begin on.
+
+rule @apple
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say The skin's got something to say today. | Mind the good scrap round the apple.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Come within hearing of my quiet voice. I've a whole other one if the street gets busy.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can always find a spare beat for your errand.
+dlg @3 resident.hub [here.time=night] : Night calls for the lower verse. I'll hear you at an easy pitch.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep a clear step between us. A word will carry it.
+dlg @5 resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. Even a little dust there earns its keep inside a bit of apple paper.
+dlg @6 resident.job : I can usually make a dry scrap do a second job before supper.
+dlg @7 resident.bye : May the long note carry you up the hill.
+
+graft resident.hub
+choice Is that a song on the inside of the paper? -> inner_song
+node inner_song
+say Yes. An apple comes with one good eating and a clean side to its wrapper. I can get two verses out of the inside if my point stays sharp.
+choice Who gets the third verse? -> next_voice
+choice Let's leave the paper open. -> hub
+node next_voice
+say Somebody with a scrap to spare and a note I haven't tried. I'd sooner have a chorus reaching through several windows than a neat page kept in a drawer.
+choice I'd like to hear those windows. -> hub
+choice I'll leave you a little singing room. -> bye

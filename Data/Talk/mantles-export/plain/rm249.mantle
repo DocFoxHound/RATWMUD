@@ -1,0 +1,260 @@
+mantle rm249
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_kjell_wickmore
+title the chipped lip
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk sets_a_chipped_cup_aside_for_whoever_needs_it
+likes mutton_stew old_tales new_boots first_warm_day
+dislikes bad_manners deep_mud
+fears a_pitying_crowd a_bowl_stuck_fast
+hopes a_dry_berth a_cupboard_of_solid_seconds
+topics food +0.4 travel +0.2 lore +0.4 prices +0.3 gossip -0.4
+styles comfort=material gossip=guarded refuse=cool tease=none
+marks oath saying
+persona #self.first# eyes a stranger's manners over the rim of a cup, keeps flawed crockery for passing along quietly and can smell a false ending three turns before a tale reaches it.
+
+words
+oath! = Brine in the furnace | Swell and sparks
+saying! = A missing handle leaves a bowl | Give the good side to the lip
+chipcup = my nicked cup | the cup with a bite gone
+lipmark = a glazed white scar | a fleck of naked clay
+tendon = a good chewy bit | the last morsel worth working for
+heelbone = the bare soup bone | a spent knuckle
+blanket = a blanket rolled tight | the roll under the bunk
+heel = a clean leather heel | my least scuffed heel
+packet = a little twist of cloth | the pouch in my palm
+handle = the broad loop | a loop big enough for cold paws
+plot = the crooked end of a yarn | the turn that makes the tale
+rack = a board at elbow height | a waist-high shelf
+warmspot = the sunward patch | a scrap of warm stone
+
+any
+opinion @1 church for 1 : A meal handed over in a quiet passage does more for my opinion of a chapel than a carved lintel.
+opinion @2 dole for 2 : You ask what use a small bowl is. Hand it across and ask again when it's empty.
+opinion @3 houses against 2 : Faces built into stone above a door don't count as looking out for the folk below.
+opinion @4 merchants against 2 : I don't begrudge anybody a decent margin. I begrudge a supper getting narrower from two directions.
+opinion @5 strangers against 1 : A stranger's bowl goes on the far corner to start. The stew reaches just as far.
+opinion @6 sump for 2 : My part of the Sump will lend you a second bowl without getting your circumstances recited over it.
+opinion @7 times against 1 : Count the bits left on the bone. That's my reckoning of how things stand.
+
+grown
+line @1 greet [pair.band=strangers] : A civil pair of paws is welcome by this bit of warmth. | Welcome as far as this edge of the bench.
+line @2 greet [self.working=yes] : Stand on the sound boards, please. Less chance of breakage. | Give that crock a little clearance coming through.
+line @3 greet [here.time=dawn] : First stirring. Good to see somebody on decent business. | Early yet. Draw close if you want company.
+line @4 greet.return : You've manners, at least. Welcome. | That's a civil start between us.
+line @5 greet.return [pair.band=friends|family] : Your bowl's as near as mine. | Good. A face that lets my shoulders down.
+line @6 greet.return [here.time=dusk|night] : Evening to the late end of the bench. | A decent hour for drawing breath together.
+line @7 farewell : Eat somewhere with a sound floor under you. | Get home with your pockets still buttoned.
+line @8 farewell.return : That's our business settled for today. | I'll keep any loose ends by me.
+line @9 again.open : You turn up like the twist in a tale. | Our paths have folded back considerably.
+line @10 kin.open [pair.kin!=no] : There's a better bowl at this end. | Come near, no trading courtesies with family.
+line @11 hail [pair.band=friends] : There's a little left over here! | Room beside me, if you step lively!
+line @12 react.news : Don't hang ribbons off the account. I'll take it bare. | Pour out exactly what you heard.
+line @13 react.news.new : That's arrived here clean out of the blue. | I hadn't met those particulars yet.
+line @14 react.news.known : Heard the sound part. The handle was different last time. | That's been once round this bench.
+line @15 react.news.doubt : I wonder who gains by telling it quite like that. | There's a scrape in that tale I can't polish out.
+line @16 react.news.sorrow [topic.kind=death|loss|assault] : Well. Somebody will be needing a supper sent over. | No use making a spectacle of such hurt.
+line @17 react.news.glad [topic.kind=marriage|birth] : There's cause for the best crockery to come out of hiding. | Might even part with my last spoonful for that.
+line @18 answer.how : Managing my own rim and what spills over it. | I've sufficient for the question, anyway.
+line @19 decline : I keep the last bit in case a nearer need turns up. | That's more of a promise than I can cover.
+line @20 accept_decline : Then we both know the measure. | Fair enough, your reasons can stay yours.
+line @21 sympathise : I'd fetch you something hot without asking the size of the trouble. | Lean where the boards are sound. I'll wait.
+line @22 thank : An uncommon kindness. I'll mind who gave it. | You gave without weighing me first.
+line @23 deflect_thanks : Put the bowl back when you're done. That's thanks enough. | Nothing I need announced abroad.
+line @24 preclose : I'll go see to a little parcel. | Enough talk across this rim for me.
+line @25 accept_preclose : Off with your errand, then. | An ending can come when a wolf chooses.
+line @26 ack : That bears weight. | I'll grant the point.
+
+scene chip
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn #chipcup# till the sound side's nearest my visitor. | See #lipmark#? That's exactly where you needn't drink.
+b : Worried the chip will show? | Why keep the damaged cup?
+a : It ought to show. I want it where the mouth won't go. | Soup sits in the deep part. No chip there.
+
+scene second_bowl
+when topic=food
+does tell.self / react.self / assess
+a : I've made one bowl of supper last two wolves without adding water. | Don't scrape the last morsel out till you know who's staying.
+b : What share did you keep? | Somebody else coming?
+a : Poured it into two smaller cups. Neither of us had to make a speech. | I'm not certain. That's the usefulness of a little patience.
+
+scene forge_tide
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A forge and a tide make a queer pair to swear by. | Listen to a pan sizzle and a wave break. There's kinship there.
+b : Which do you mean most? | Heat and cold?
+a : The forge for a small annoyance. A tide when I want the thing gone altogether. | Both die away as if they hadn't just made a tremendous fuss.
+
+scene boot_sole
+when topic=travel self.likes=new_boots
+does tell.self / react.self / assess
+a : New leather makes me walk like I've been granted a little land. | When #heel# first goes crooked I know which way I've been leaning.
+b : What land's that? | Does it tell your future?
+a : Sole's width of dry country for each foot. More than I had. | Past is plenty. I'll decide the future as I go.
+
+scene mud_stop
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Mud's an excellent thief. Never took a boot off without leaving a perfect picture of it. | I'd like to send these muddy lanes the washing bill.
+b : Have you lost one? | Who'd collect?
+a : Nearly. Had to fish for my foot's own address. | A brave wolf in somebody else's boots.
+
+scene warm_brick
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : In spring #warmspot# tells me whether the air's making promises it can keep. | I feel for warmth in the brick before my coat goes away.
+b : What if the stones are cold? | To tell if it's wet?
+a : Then so am I, however pretty the light looks. | To see whether the day has left anything behind.
+
+scene unpaid_manners
+when topic=smalltalk
+does give.opinion / disagree / concede
+a : Manners aren't to do with which fork you carry. | Rude company can sour a whole pot without touching it.
+b : Some folk insist on the proper one. | Can you skim that off?
+a : Empty paws can pass a bowl civilly enough. | Yes. Eat with different company tomorrow.
+
+scene stew_time
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : For me the important bit of stew is #tendon#. | I can tell a rushed pot with my eyes shut.
+b : Why not the tender meat? | By the smell?
+a : Keeps you company a little longer. Don't knock company that costs nothing extra. | By the first mouthful. There's a difference between hot and together.
+
+scene dry_bunk
+when topic=dreams|travel
+does tell.plan / ask.detail / answer.detail
+a : Someday I mean to take a berth solely for #blanket#. | In my dream there's a bunk with a dry lip on every board.
+b : Even if the boat never left? | Where would the boat be bound?
+a : A steady deck and a bone-dry bed. I'll take that view gladly. | If I had the bed, I'd have no bloody reason to ask.
+
+scene sure_friend
+when topic=friends self.friend
+does tell.feeling / sympathise / assess
+a : I'd offer #self.friend# a good bowl without a word to go round with it. | If I needed the good end of a story I'd tell #self.friend# the bad end first.
+b : You don't enjoy being thanked? | Is that trust?
+a : I don't like to make a wolf pay twice for the same food. | No smaller word for it comes to mind.
+
+scene wharf_watch
+when topic=land here.region=ridgemere self.quarter=sump
+does tell.self / react.self / assess
+a : Round the Sump a wolf learns to reckon rain by the step it reaches. | Our bottom stair could tell a better tale than the top landing.
+b : Is the lowest step yours? | What's the difference?
+a : It's everybody's. Even folk high up have to come in that way. | Top one knows the boots that make it. Bottom one knows every attempt.
+
+scene true_end
+when topic=lore self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : A tale about a crock needs somebody to drop it sooner or later. | I mistrust #plot# that shines brighter than the rest.
+b : Wouldn't that spoil a nice crock? | How can a twist be too bright?
+a : Maybe nobody drops it. But let me worry for it first. | If all I remember is the clever ending, I've been sold half a tale.
+
+scene small_coin
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : Keep your big estimate. I want to know the cost of this particular mouthful. | A smaller helping should have a name of its own.
+b : Can't you divide the whole price? | Why bother?
+a : Can, if you tell me which part of a bone I'm expected to eat. | So a wolf can order it without having to apologise for a purse.
+
+scene work_wrap
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I've a way of wrapping a cup that leaves #handle# sticking out. | I never pull a wrap too tight over the open end of a jug.
+b : Wouldn't hiding the handle protect it? | Is that the weak spot?
+a : Makes folk hold the parcel properly when they see what they're carrying. | It's where a thumb lands when the parcel shifts. I'd leave a little give.
+
+scene lean_dish
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : In lean times the cleanest bowls sometimes belong to the hungriest. | Lean weather for the cupboards. I hate hearing a bare spoon scrape.
+b : No food left in them? | What would you do?
+a : Aye. Never mistake an empty dish for a satisfied wolf. | Pass something quietly down the bench.
+
+scene unfed_gossip
+when topic=gossip
+does give.opinion / disagree / concede
+a : Nothing spoils a good secret like having to feed it to an audience. | Ask me who's been at my door and you'll get a very poor list.
+b : Not even one telling? | Bad memory?
+a : No. Once you're a teller you owe every listener the same discretion you wanted. | Excellent hinges and a short tongue. That's by choice.
+
+scene new_guest
+when topic=newcomer|smalltalk
+does offer / accept / assess
+a : You can borrow #packet# for the loose things you're carrying. | Set your wet parcel on that little board beside me.
+b : No curiosity about what I wrapped up? | You'll let me leave it?
+a : No. My cloth isn't curious either. | While you're in sight. A kindness needn't be a blind bargain.
+
+scene last_scrap
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What's worth doing with a jug that weeps out of one seam? | If a little dish won't hold water what could it still earn?
+b : Raise a plant in it. | Keep dry seeds, maybe.
+a : There's an answer. The leak can be the hired gardener. | Good. Better than asking an old thing to stop being useful.
+
+story rotten_plank [topic=memories self.age>=25]
+  : Once paid for a night on a deck and woke with my blanket soaked right through underneath.
+  : Dry as chalk overhead. I sat up to find a coil of wet line under my bedroll.
+  b : Did you get your coin back?
+  : No. Did get a fine round pattern on my coat. Looked rich as a carpet for a day.
+
+story handle_story [topic=lore]
+  : An old potter used to keep a jar of handles with no cups attached. Called it the cupboard of unfinished promises.
+  : One day a beggar came in with a sound cup and nowhere to hold it.
+  b : Did the promise fit?
+  : Tied a handle on with cord. Not worth showing off, but the cup got to a mouth.
+
+story dry_scrap [topic=food]
+  : I once saved a hard corner of bread for a bit of stew, and the stew got eaten cold without me.
+  : I carried the crust till a pup asked why it was poking a hole in my parcel.
+  ask : How would you have explained a crust escaping?
+  b : That bread likes air when it's kept too long.
+  : I said it was after supper of its own. We dunked it in a cup together.
+
+rule @wrap
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Mind the loop coming through the cloth. | Crocks don't bounce, whatever the salesman says.
+
+rule @road
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Mud there wants a boot for dinner. | Take the dry lip of the paving.
+
+rule @leftover
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say That last brown mouthful's reserved. | Leave a little in case a late wolf wants feeding.
+
+rule @lowwater
+when concept=bark self.quarter=sump
+does aside
+cooldown 8h
+say Nobody gets to skip the bottom step. | Lift that hem out of the stairwell water.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I'll listen from here. What are you carrying, word or errand?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've earned a nearer seat than that one.
+dlg @3 resident.hub [here.time=night] : A small voice carries all the way across these few boards.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stay there. We can talk without touching sleeves.
+dlg @5 resident.job [self.job=merchant self.workplace] : I'm a hand at #self.workplace#. You learn which parcels need a second knot.
+dlg @6 resident.job : I keep things that still have half a life in them.
+dlg @7 resident.news [world.news] : There's no handle to grab but this one: #world.news#.
+dlg @8 resident.bye : May your boots see you home dry.
+
+graft resident.hub
+choice Is there a use for a cup like that? -> chipped_use
+node chipped_use
+say An excellent one. Hold the chip away from the drinker and you have a sound cup that nobody's going to insist on being paid for.
+choice Why keep it wrapped then? -> wrapped_rim
+choice Let's talk elsewhere. -> hub
+node wrapped_rim
+say So nobody cuts a paw searching for it. Charity ought to be careful with its edges.
+choice I see the use now. -> hub
+choice I'll be going. -> bye

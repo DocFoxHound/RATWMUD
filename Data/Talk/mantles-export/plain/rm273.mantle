@@ -1,0 +1,257 @@
+mantle rm273
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_magnus_millley
+title the witness at the seam
+fits stage=adult|old
+prefers role=civilian
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk asks_where_two_accounts_join
+likes hard_cheese long_walks festival_bells autumn_wind
+dislikes flies cold_tea
+fears signing_a_paper_from_the_wrong_side
+hopes to_hear_the_same_answer_twice
+topics work +0.3 travel +0.4 dreams +0.2 gossip -0.3
+styles comfort=practical gossip=curt refuse=flat tease=none
+marks oath saying
+persona #self.first# seeks the join between two accounts and worries at a crooked seam long after the day's walking ends.
+
+words
+oath! = Sound my seams | By both edges
+saying! = A fair join shows both boards | Truth has no painted face
+seam = a line of pitch | the narrow join
+brace = a diagonal brace | a scrap of cross timber
+rind = my cheese rind | a strip of hard rind
+sole = the inner sole | my worn shoe lining
+walk = a long unclaimed walk | my spare miles
+bell = the first clear stroke | a full-throated bell
+fly = a fat blue fly | a fly with shiny wings
+mug = my thick-rimmed mug | a cup gone brown
+paper = a folded petition | my worn copy
+pin = my little wood peg | a pointed sliver
+breeze = a gust from behind | a dry autumn gust
+tick = the mark I made | my pencilled tick
+
+any
+opinion houses against 1 : A House badge covers a fair bit of coat. I'd sooner inspect the coat beneath.
+opinion road against 1 : Give me miles under my own lamplights. The roads beyond the gates can keep their secrets.
+opinion strangers against 1 : I'll be civil from a little distance until our accounts meet.
+opinion drink against 1 : If I mean to sign my word tomorrow I want a clear memory of tonight.
+opinion dole for 2 : I've eaten with a purse that wouldn't open for want of anything inside. That's a service worth remembering.
+
+grown
+line greet [pair.band=strangers] : We've still to be introduced. Welcome. | My good ear's this side.
+line greet [self.working=yes] : My ears are free. | I'll leave a little room at this elbow.
+line greet [here.time=dawn] : Morning, before the noise grows. | Daylight sharpens the edges.
+line greet [here.time=dusk|night] : Evening. I'm over here. | Come into earshot before it gets darker.
+line kin.open [pair.kin!=no] : A familiar face in the join. | Good to have kin within call.
+line again.open : There's the other end of our last talk. | Already passed you once. Glad to meet again.
+line greet.return : I heard both words. | Hello. You have my attention now.
+line greet.return [pair.band=friends|family] : Your voice comes through clearly. | I needn't look twice to know you.
+line greet.return [self.working=yes] : I'll listen and fit this piece. | Speak up above my hands.
+line greet.return [here.time=dusk|night] : Evening. I'll know you by ear. | Still light enough to nod.
+line farewell : Straight walking from here. | May your road run true.
+line farewell.return : We'll close the joint on that. | You'll find the gate straight on.
+line farewell.return [here.time=night] : Walk on the lamplit side. | Steady footing beyond the lamplight.
+line react.news : Give me the account complete. | I'd hear where the ends join.
+line react.news.new : First I've had from that direction. | That's fresh testimony.
+line react.news.known : That agrees with the earlier word. | I've heard that particular timber creak.
+line react.news.doubt : I'd want another account before I settled that. | The edges of that telling don't quite meet.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard news. I'll hold steady with you. | Steep weight to put on a heart.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news fits without forcing. | Glad to have that word clear.
+line ask.how : Have you had an easy stretch? | How much walking has today taken?
+line answer.how : I'm firm on one edge anyhow. | Still checking the loose end.
+line decline : I'd rather stay and settle what's here. | I don't feel easy with that arrangement.
+line accept_decline : Plainly said. I can accept that. | Your answer sits square.
+line thank : That straightens my mind a bit. | I won't forget who stood witness.
+line sympathise : No call for you to sign anything now. | Lean this way. The board's firm.
+line reassure : You're entitled to your own account. | I can keep quiet while you think.
+line preclose : Best get along while my mind sits easy. | Time to take my attention elsewhere.
+
+scene join
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Two boards meet inside my head all day long.
+b : On a hull? | And if one twists?
+a : Aye. Pitch won't forgive a gap you could see beforehand. | Better discover it in daylight than out on deep water.
+
+scene truth
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I ask a second witness where a tale began.
+b : Too suspicious? | Would one good answer do?
+a : Maybe. But I only ask when it matters. | If I saw the beginning myself I'd need none.
+
+scene house
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A fine badge doesn't make me easy with a stranger.
+b : The badge worries you? | What would put you at ease?
+a : I can't tell whose business is behind it. | A plain name and a question with no trick to it.
+
+scene copy
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A copy of my petition wears thin at the creases.
+b : Waiting for word? | Why keep carrying it?
+a : A regular walk for a regular silence. | To see that I ask the same thing each visit.
+
+scene miles
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : A walk on my own business has a good free stride.
+b : Have you a favourite route? | How far?
+a : Anywhere where the way home can differ a little. | Until the shoes have made up their own minds.
+
+scene rind
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I'll take the hard edge of a cheese over its middle.
+b : More flavour? | Hard on the teeth?
+a : There's a salt tang you get nowhere else. | I take my time with it. It's good company on foot.
+
+scene bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : My favourite feast bell sounds from two streets off.
+b : Why at a distance? | Can you still count the strokes?
+a : Then I hear the whole sound opening out. | I stop counting once the note comes smooth.
+
+scene wind
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : An autumn gust shows up every shirt with a bad seam.
+b : One of yours? | Where does the wind get in?
+a : I've a neat cold line under one elbow when it blows. | Finds an opening smaller than my needle.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A blue fly gets loudest the moment I have to concentrate.
+b : How do you stand it? | Ever swat at it?
+a : I shift the mug it likes away from my ears. | I'd be bound to miss the fly and knock my cup flying.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I can tell cold tea by the silence when I lift my cup.
+b : Silence? | Surely you can feel it?
+a : No need to blow across it. That's when I know I've waited too long. | Not through thick clay. It holds the memory of heat.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd have #self.friend# take the opposite end of my new board.
+b : Why that particular wolf? | Does it take two?
+a : I want to be sure the board will come back when I let go. | Two sets of eyes to tell which way it bows.
+
+scene windrest
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A long walk settles my hands before I have to write.
+b : Why the hands? | Wouldn't you get tired?
+a : They shake when I stay still worrying. | Tired fingers can hold still enough to sign one name.
+
+scene sealgap
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a price said clear over the counter.
+b : No bargaining then? | What if nobody hears?
+a : An honest argument beats a whisper. | I ask for the figure on a bit of paper.
+
+scene wish
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I keep dreaming the edges of a map won't meet.
+b : Does it come in halves? | Can you see the road?
+a : Folded in two. Each half shows a different river. | Yes, but it goes over a bridge drawn on the wrong half.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll leave a stranger a chair beside the open door.
+b : So the stranger can leave? | Why leave it open?
+a : Either of us. That makes it fair. | Till we've spoken, neither of us knows the other's business.
+
+scene boot
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's something pleasant in taking the inside soles out at home.
+b : To dry? | Every day?
+a : To feel the boards under both feet after the street. | Any day the road's tried to come home inside them.
+
+scene change
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I didn't expect to go looking for new wages again.
+b : What happened? | How did you start over?
+a : A better-placed wolf found my old place desirable. | One fair day's work, then I asked for another.
+
+scene shop
+when topic=work self.job=none self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I know the difference between timber singing and complaining.
+b : What's the difference? | Can it tell you much?
+a : One's a long sound under a plane. The other's a splinter ahead of the cut. | Enough to make me stop and look before I spoil a sound board.
+
+story pepper [topic=food]
+  : Once a blue fly settled on my hard cheese. I turned the piece over and ate round two other black specks before I thought to look.
+  : The other specks were pepper. I had gone hungry for a whole peppercorn's worth of cheese.
+  b : Did you get the fly?
+  : No. I got the pepper and gave the fly a longer start.
+
+story copyfold [topic=memories]
+  : I took my petition out on a walk and studied the folds more than the words. The ends never matched when I folded it back.
+  : I'd made a little pocket with two layers on one side. There was a copper in it that I'd counted lost.
+  b : Did you have an answer inside too?
+  : Only to the question of what to have for supper.
+
+story echo [topic=travel]
+  : On a solitary walk I heard a bell sound twice at the same instant. I retraced three corners to have another listen.
+  : One note travelled straight along the street and the other came bouncing off a dark wall.
+  b : Did the notes ever meet?
+  : At one paving stone, exactly. I can still step there and remember the sound.
+
+rule @aside1
+when concept=bark self.working=yes
+does aside
+cooldown 6h
+say Sight along it before I give my word. | Firm at this end. Try the far one.
+
+rule @aside2
+when concept=bark self.likes=long_walks
+does aside
+cooldown 7h
+say A little shoe leather for my own business. | Spare miles don't walk themselves.
+
+rule @aside3
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Keep your wings off my cheese rind! | That fly's got a taste for pepper.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Enough light to examine the edges. | Fold that paper before the light runs out.
+
+dlg resident.hub : Speak plainly. I'll do you the same courtesy.
+dlg resident.hub [topic.meeting=known] : I know that voice, #topic.player#. Step where we can hear one another.
+dlg resident.job [self.job=none self.working=yes self.workplace] : #self.workplace#. If two boards sit wrong I'd check them before they ever touch water.
+dlg resident.news [world.news] : Here's what reached my good ear. #world.news#
+dlg resident.bye : I hope the road comes level under your soles.
+
+graft resident.hub
+choice Why put two accounts side by side? -> seam_two
+node seam_two
+say Lay two boards edge to edge in daylight. Even a little gap shows bright. Lay word beside word and you can do something like it without calling anyone a liar.
+free
+choice What if there's daylight between them? -> seam_daylight
+choice I'll try listening that way. -> hub
+node seam_daylight
+say Ask where each wolf stood. Two honest eyes on opposite sides of a door aren't bound to see the same thing.
+choice I'll ask about the door. -> hub
+choice I've no more to put beside that. -> bye

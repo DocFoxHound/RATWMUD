@@ -1,0 +1,255 @@
+mantle rm292
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_mab_fogham
+title the stair in the keel
+fits stage=adult|old
+prefers quarter=sump
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=restless
+quirk whittles_a_private_window_into_scraps_of_keel_wood
+likes pickled_herring whittling old_maps summer_evenings
+dislikes cold_tea salt_wind
+fears wearing_out_before_the_climb
+hopes a_room_above_the_salt_wind
+topics dreams +0.6 work +0.4 home +0.4 gossip -0.5
+styles comfort=brief gossip=reticent refuse=measured tease=none
+marks oath saying
+persona #self.first# cuts a secret upper window into scraps of timber and lets a low sea air cover the sound of the knife.
+
+words
+oath! = Shiver my window peg | Salt my last dry sill
+saying! = A little window can look a long way up | Put the knot on the blind side
+sliver = a sliver of pine | a pale offcut
+shutter = a thumb-wide shutter | a little slat
+edge = a blade kept keen | a worn knife edge
+map = a grease-marked map | an old street plan
+flap = the paper's loose corner | a lifted page
+seat = my narrow window seat | a wooden ledge
+herring = a pickled tail | a curl of herring
+haze = salt haze | low white mist
+curve = a slow inward sweep | a widening bend
+sheer = the rise at the bow | the upward sweep
+notch = a knife nick | a narrow groove
+scrap = a sound scrap | a piece without a split
+panel = a small inset panel | a hollow in the grain
+
+any
+opinion houses against 2 : I'm careful which side of a House gate I spend my better ideas on.
+opinion sump mixed 1 : I know exactly how to shut salt wind out down here. I'd like to learn a different window.
+opinion merchants against 2 : Pay for a yard of sound wood and the knot travels free.
+opinion dole for 2 : Nobody carves a future with a kitchen knife kept busy scraping an empty pot.
+opinion strangers against 1 : My first answer to a stranger is usually the width of one finger. There's time to open farther.
+opinion times against 2 [world.times=lean|hard] : A lean season shaves the same side of my savings twice.
+
+grown
+line greet : My tune drops a note to make room for company. | Stand in the lee if you like.
+line greet.return : I heard the welcome under my humming. | And a quiet greeting from this corner.
+line again.open : My shutter opens again already.
+line farewell : Take a road the wind hasn't salted. | Keep some dry wood for your own fire.
+line farewell.return : Good wishes back, under my breath. | I'll send your farewell along quietly.
+line react.news : I'll hear the first grain of it before I judge. | Take it slowly across the knotty part.
+line react.news.new : No grooves worn in that account yet.
+line react.news.known : I've heard that one hum against the boards before.
+line react.news.doubt : A little too polished for fresh news.
+line react.news.sorrow [topic.kind=death|loss|assault] : Leave some privacy around the hurt.
+line react.news.glad [topic.kind=birth|marriage|work] : I'd open my little shutter to let that in.
+line ask.how : Much salt coming in under your door?
+line answer.how : Still making my own small openings.
+line sympathise : There's a place out of everybody's sight just here.
+line reassure : Take off a sliver. See how the next layer looks.
+line refuse : There's a job only my own hands can finish first.
+line accept_decline : Keep your good time for your own use.
+line preclose : I'd better be moving while the grain shows clear.
+line accept_preclose : Go on. My spare questions can keep.
+line ack : I hear where your meaning runs.
+
+scene exchange1
+when topic=work self.job=none self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I'm careful with short scraps. | I keep a quiet tune while timber's being moved.
+b : Worth anything? | To set the pace?
+a : One end can be rotten and the other perfectly serviceable. | To tell when I need a step out of the noise.
+
+scene exchange2
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I cut windows into spare wood. | My knife leaves a nick under the sill.
+b : Do they open? | A mistake?
+a : If they did I'd have to show you the inside. | A thumbhold. The little house is mine to lift.
+
+scene exchange3
+when topic=dreams here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I'd like a room in the Heights with a northward view. | I haven't picked the street I'd like uphill.
+b : Why northward? | Any one will do?
+a : Because I've never been free to choose a view at all. | No. The picking is part of getting there.
+
+scene exchange4
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : A map keeps an old staircase where the street has changed. | I lay an old map over a strip of wood.
+b : Follow the map or your feet? | What are you cutting?
+a : My feet for going. The ink for remembering. | The line I hope to walk once my pay's a bit better.
+
+scene exchange5
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I eat the silver off the herring first. | I keep the briny bite on one side of my mouth.
+b : Isn't the skin tough? | Why only one?
+a : A thin strip with a good bite wakes me up. | A little goes far if it hasn't anywhere else to go.
+
+scene exchange6
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Long evenings leave the upper windows shining. | I can make one more clean cut in summer light.
+b : Have you numbered every window? | Always just one?
+a : I sometimes choose one. I keep the choice to myself. | After that I can choose to start another.
+
+scene exchange7
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind leaves a white seam on everything I own. | I turn my good ear away from those salt gusts.
+b : Even the knife? | Does salt spoil hearing?
+a : Wipe the blade and look at the cloth. | I'd sooner hear a proper tune than a rail humming itself hoarse.
+
+scene exchange8
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea and hot sawdust spoil different parts of my day. | I leave no tea in a cup I've put down.
+b : Which is worse? | Afraid of losing it?
+a : At least sawdust can start a fire. | Afraid I'll find it cold and drink it out of stubbornness.
+
+scene exchange9
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I can shut out wind and still leave a sight line. | My model has a landing on the sheltered side.
+b : How wide a gap? | What did you put on it?
+a : Wide as a passing thought. Plenty for a window this size. | A plain bench. It's the one spot I didn't crowd.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I don't give long accounts of losing a place. | I keep some hard memories without carving a mark for them.
+b : Was it the work you miss? | No need to remember?
+a : It's the choosing where I go next that matters. | No need to stare all morning at what I already carry.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# to leave my unfinished carving turned over. | I can share a bench without sharing the whole tale.
+b : You keep it hidden? | Is that friendship?
+a : Till it's got a shape I'd own in daylight. | It's one sort I'm particularly fond of.
+
+scene exchange12
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I hum higher walking up a slope. | The walk I want to make hasn't got a return leg.
+b : Short of breath? | Off across the Sound?
+a : I keep the longer bass notes for level roads. | Just up far enough to call the higher place home.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The thing I heard was #topic.subject# #topic.claim#. | My low tune keeps other talk from catching on my sleeve.
+b : Would you carve that in wood? | Does that work every time?
+a : I wouldn't even scratch it in soap. | Well enough to let a couple of names drop from memory.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard times make my sill seem a long way uphill. | Every poor week puts a nick in my good scrap.
+b : Is it getting smaller? | Will it still make a house?
+a : The sill's as broad as I pictured. My steps are smaller. | I'm saving the sound core for that.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city's built like shavings on a bent board. | I can see farthest from where the climb bends.
+b : All those curling streets? | If you stop there?
+a : And every house with its good side turned a different way. | If I stop and turn my head. Hard on a wolf who wants to keep going.
+
+scene exchange16
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I like tools returned dry to their hooks. | I learn more watching the offcuts than the grand piece.
+b : Something against wet work? | What's to learn?
+a : Enough work in one shift without fetching rust home. | Where a careful hand thought it was worth changing direction.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Humming eases the set of my jaw. | I put the knife away when my thumb shakes.
+b : Why's it set? | Cold?
+a : That's the sort of question the humming is for. | Tired. There's no shame in leaving a small cut for tomorrow.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A day with good wood in it leaves a particular smell behind. | I've a song I save for closing my shutters.
+b : Even after washing? | Any words?
+a : Especially after. The rest goes down the drain. | Only after they've closed.
+
+story tale1 [topic=pastimes self.likes=whittling]
+  : I cut a shutter so thin a lamp shone straight through it. For all my care the result was a glowing sheet of wood.
+  : I held it farther off and the grain showed up like roads on a hill.
+  b : Did you put it in the window?
+  : I hung it beside the lamp. A room can have one picture without telling everybody what the room's for.
+
+story tale2 [topic=memories]
+  : I once carried a length of cord up a steep street, paying it out to measure how far I'd got. It followed me nicely.
+  : At the highest bend I found I'd let the far end go almost at the start.
+  b : What did it measure, then?
+  : The bit of road I could reach from where I was standing. Better starting point than the one I'd lost.
+
+story tale3 [topic=food]
+  : I drew a curtain round a little dish of fish to keep the salt wind off my meal. A piece of clear cloth, pegged down with slivers.
+  : It filled out like a sail and pushed the dish half across the board.
+  b : Did you lose your dinner?
+  : Caught the dish and ate in plain sight. I still put the shutter on the lee side of any model.
+
+rule @call1
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Sound slivers on this end of the bench. | I'll take the clean scrap when you're done.
+
+rule @call2
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say There's a whole lane under that thumbprint. | Ink says level. My feet remember a hill.
+
+rule @call3
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Just enough light to hollow out a window. | Thin light for a thin-bladed knife.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The window cut wants shelter now. | Damp raises the rough side of my board.
+dlg resident.hub : I can turn the carving face down while we talk.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I've heard those feet approach my bench before.
+dlg resident.hub [here.time=night] : This late my hands rest and my ears may work.
+dlg resident.hub [pair.disposition=wary|hostile] : Keep a little way from the bench. I'm listening.
+dlg resident.job [self.job=none self.working=yes self.trade_words] : #self.trade_words.capitalize#. I've a quiet way of using the scraps.
+dlg resident.job : I like work with some part of a day left over to call my own.
+dlg resident.news [world.news] : I heard this clear of the wind. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Here's the grain of it. #topic.subject# #topic.claim#. Guesswork runs through the remainder.
+dlg resident.bye : Find a sheltered turn homeward.
+
+graft resident.hub
+choice Why carve just the window? -> high_room
+node high_room
+say It's where a room and the world make terms. I don't need four walls round a model to decide what I'd like to see.
+free
+choice What do you want to see? -> high_room_again
+choice Goodbye. -> bye
+node high_room_again
+say Roofs going away downhill. A decent long reach of them, as far down as the tide.
+choice Keep the view for yourself. -> hub
+choice Goodbye. -> bye

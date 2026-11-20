@@ -1,0 +1,506 @@
+# rm194, the backwards reader (doc 84 P14, batch city-a3): written for rm_rune_fogworth (Rune Fogworth: printer at The Council Press, Ridgemere-born). Name-free. Window lines on the news, gossip, business and shop nodes say their case; a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+mantle rm194
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_rune_fogworth
+title the backwards reader
+fits stage=adult|old
+prefers role=merchant job=official talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=content
+quirk reads_every_shop_sign_backwards_from_years_at_the_type_case
+likes warm_bread wrestling new_boots thunder
+dislikes rats crowds
+fears rats_in_the_paper_store a_wrong_word_pasted_on_every_wall
+hopes a_quiet_year_at_the_press a_window_where_the_thunder_sounds_clean
+topics work +0.4 weather +0.4 pastimes +0.3 family +0.2 food +0.2 dreams +0.2 gossip -0.5 festival -0.3
+styles comfort=practical gossip=reluctant refuse=short tease=none
+marks oath saying
+persona #self.first# says little and means it, reads every sign in the street the wrong way round from long years at the type case, likes a storm and a wrestling bout from the back of the crowd, and keeps any thought about the Houses well out of the ink.
+
+words
+oath! = Backwards and blind | Mirror me | Upside down and inside out
+saying! = Ink keeps what talk forgets | Set it once and set it straight | A wall remembers longer than a tongue
+press = the press | the old press
+type = the type | the letters in the case
+case = the type case | the case
+sheets = the sheets | the wet sheets
+lines = the drying lines | the lines under the rafters
+ink = the ink | the black
+notices = the Council's notices | the notices
+proof = the proof | the first pull
+damp = the damp | the wet in the walls
+green = the green | the wrestling green
+thunder = the thunder | thunder rolling end to end of the Sound
+loaf = a warm loaf | a loaf that burns the paws
+boots = the new boots | boots that still creak
+rats = the rats | the rats behind the reams
+crush = a crush of folk | the press of bodies
+bales = the paper bales | the bales off the cart
+margin = the margin | the white down the side
+
+any
+opinion city for 1 : Wet stairs and loud lanes, and half its walls wear my work. I'll stay where my work is.
+opinion houses mixed 0 : I print what the Houses pay for. What I think of them stays out of #type#.
+opinion houses against 1 [here.region=ridgemere] : The wharf takes wolves and pays out wages for them. There. That's my lot on the Houses.
+opinion merchants for 1 : Anyone behind a counter knows the cart's bill before the customer's. Go easy on them.
+opinion road against 1 : Every late load means small print for a week. And the loads get later with every season.
+opinion road against 2 [world.wagons=raided] : Stripped carts mean no paper, and no paper means a clerk from the Council rapping on my shutter.
+opinion strangers against 1 : Unknown paws near good stock make me uneasy. It's no slight on anyone. It's the paper.
+opinion watch for 1 : A Watch lantern has a steady swing. I breathe easier when I catch sight of one.
+opinion festivals against 1 : I print the bills for them and stay home for them. That's my share.
+opinion times for 1 : Bread most days and only one damp patch overhead. No grumbling from this corner.
+opinion drink mixed 0 : A cup on Restday. More than that and the letters start to swim, and they swim enough as it is.
+
+grown
+line greet [pair.band=strangers] : #greet#. You'll want someone with more to say, but I'll do. | #greet#. That step dips. Everyone trips on it once.
+line greet [self.working=yes self.job=official self.role=merchant] : #greet#. My paws are in the case, but my ears aren't. | #greet#. Half a line set. Give me a breath.
+line greet [here.time=dawn] : Morning. Early for talk. | Morning. No bread in me yet, so go gently.
+line greet [here.time=dusk|night] : Evening. The street's gone quiet, at last. | Evening. Late to be about.
+line greet [pair.band=friends] : There you are. Sit. | #greet#. I knew that tread on the step.
+line greet [here.weather=rain] : #greet#. A wet one. Drip on the mat, not the stock. | #greet#. Rain on the slates again.
+line greet : #greet#. Say what's wanted. | #greet#. A grey, still sort of day, this.
+line kin.open [pair.kin!=no] : There you are. Kettle's warm. | Come in. Take the dry chair.
+line again.open : You again. That's no hardship. | Twice today. That's a lot of talking, for me.
+line greet.return : And to you. | #greet#. The same.
+line greet.return [pair.band=friends|family] : There you are, then. | Good. I was wanting a word.
+line greet.return [self.working=yes] : And you. Mind the ink. | Same. My paws are full, mind.
+line greet.return [here.time=dusk|night] : Evening. Yes. | Evening. A long one, today.
+line farewell : #farewell#. | Right. That'll do me for now.
+line farewell [here.time=dusk|night] : Night. Stay where it's lit, going down. | Night. Mind the gutters by the corner.
+line farewell.return : And you. | #farewell#. Go careful.
+line farewell.return [here.time=dusk|night] : Night. | Good night, then.
+line react.news : Go on. | Say it slowly. I'll keep it.
+line react.news.new : First I've heard. | Not on any wall yet, then.
+line react.news.known : I'd heard. Not from anyone I'd trust. | Old to me. Somebody told it at the door.
+line react.news.known [self.job=official self.role=merchant] : I set that in type yesterday. | Old news. It's drying on #lines#.
+line react.news.doubt : Talk's cheap. Paste it on a wall and I'll read it. | Whose words? I like a name under a notice.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard. That's hard to hear. | Bad news. I'll keep it quiet.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | That warms me. It does.
+line answer.how : Well enough. A bit low. | I'm here. That's most of it.
+line answer.how.busy [self.working=yes] : Busy. Ask me after the light goes. | Too busy for a proper answer.
+line answer.how.poorly : Wheezy. It goes when the wet does. | Low. Leave it there.
+line ask.how : You? All well? | And yourself, then?
+line sympathise : Sit. Talk, or don't. Either does. | That's heavy. I've no words, but I've a chair.
+line reassure : Slow, but it'll mend. Things here generally do. | Give it a week. Worse has mended.
+line decline : Not this one. The work's stacked up and it won't shift itself. | I'd rather not. I keep out of that sort of thing, always.
+line accept_decline : Fair. Another time. | That's all right. I'll not push.
+line thank : #thanks#. I'll remember it. | Kindly done. Thank you.
+line deflect_thanks : It was nothing. | No need. Truly none.
+line preclose [self.working=yes] : I'd best get back. This won't finish itself. | The sheets want turning. I'll go.
+line preclose : I've talked more than I meant. | That'll do me for a while.
+line accept_preclose : Go on, then. | Right you are.
+line ack : #bc_right# | Mm.
+line give.advice : Don't say anything you'd not want pasted on a wall. | Keep your paper dry and your mouth shut, and you'll do.
+line warn [world.bandits=near] : Nobody walks past the walls alone this week. Not you either. | The road's bad. Wait for company, or wait.
+line congratulate : Well done. Truly. | Good. You've earned it.
+line answer.how [here.weather=rain] : There's a wheeze in me. I'm ignoring it. | Wet. Same as everyone.
+
+scene sign_backwards
+when topic=work|smalltalk self.job=official self.role=merchant self.age>=35
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : I read the chapel board backwards this morning. Long years at #case# do that. | There's a word over the baker's door I can only read the wrong way round now. | Caught myself squinting at a shop sign again, head on one side like a gull.
+b : Backwards? Why would you? | Which word? | What were you doing to it?
+a : The letters sit mirrored in #case#. After long enough the eye forgets which way is proper. | "Mercy". From my side it reads like a sneeze. | Reading it the way it would sit in the case. Habit, nothing more.
+b : Strange thing to carry about. | Ha. It does, at that. | Odd habit.
+a : It costs nothing. I only mind when I say one aloud. | #bc_it_does# I'll not tell the baker. | Odd, and harmless. I'll keep it.
+
+scene sheets_wont_dry
+when topic=weather|work here.weather=rain self.job=official self.role=merchant
+does tell.complaint / ask.detail / answer.detail / react.self / assess
+a : Rain again. #sheets.capitalize# won't dry, and the ink sits up on them like a bruise. | Third wet day running. Half of yesterday's notices are still hanging.
+b : Can't you light a fire under them? | Will they be late, then?
+a : Not near paper. I'd sooner wait than watch it go up. | A day late. The Council can wait a day. It makes me wait often enough.
+b : Fair enough. | They'll live through it.
+a : #bc_fair# Wet paper's better than ash. | They will. So will I.
+
+scene not_a_cough
+when topic=health|weather here.weather=rain|fog
+does tell.self / challenge / insist / give.advice / concede
+a : That wasn't a cough. That was the door. | Stop squinting at me. It's the wet, not me. | It's #damp#, and it goes when the damp does.
+b : The door doesn't cough twice. | The wet's got into your chest, it sounds like. | You said that last winter.
+a : It does in this weather. | Then it'll dry out when the street does. | I did. And it went, didn't it.
+b : Have something hot, at least. | Honey and something, then. | Stubborn as a hinge, you are.
+a : I'll have bread. Warm bread mends most things. | Later. #bc_maybe# | A hinge does its job. So do I.
+
+scene thunder_watch
+when topic=weather here.weather=storm here.region=ridgemere
+does tell.feeling / ask.detail / answer.detail / react.self / assess
+a : Hear that? Nothing this city makes comes near it. | I leant out of the shutter and watched the Sound go white. | Thunder. I'd stop all work for it if I could.
+b : You like it? Most folk hide. | Weren't you afraid of the lightning? | Why stop?
+a : I like it. For once something's louder than my own head. | Some. Never enough to come away. | So I could hear it properly, end to end.
+b : Each to their own. | You're a strange one. | I see that.
+a : #bc_true_enough# | Maybe. It was worth the wet fur. | It'll roll off out to sea soon. I'll listen till it does.
+
+scene from_the_back
+when topic=pastimes self.likes=wrestling here.region=ridgemere
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : There's bouts on #green# come Restday. I'll be behind the last row, saying nothing. | Saw a good bout yesterday. The small one won by waiting. | I don't wrestle. I watch, and I know who'll win before they grip.
+b : You never cheer? | By waiting? | Go on, then. How?
+a : Not aloud. I clench my paws a bit. | Let the big one spend it all, then took the legs out. | Feet. Watch the feet, never the shoulders.
+b : That's a kind of cheering, I suppose. | Clever. | I'll remember that.
+a : It's the most I do. | Patience wins more than you'd think. | Most don't. They watch the shoulders.
+
+scene first_batch
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : The bakehouse on the corner pulls its first batch at dawn. I'm at the shutter before it's up. | #loaf.capitalize#, torn, not cut. I want nothing else from a morning.
+b : Every morning? | Nothing at all?
+a : Most. It's my one extravagance. | Nothing. A second piece, maybe.
+b : Not a bad one to have. | Simple tastes, then.
+a : It's cheaper than drink and it doesn't talk back. | Simple suits me. It always has.
+
+scene paper_store_rats
+when topic=animals|home self.dislikes=rats
+does tell.complaint / give.advice / answer.detail / react.self / assess
+a : There's a nest behind the stock. They'd chewed clean through a good stack. | #rats.capitalize# again. Scratching in the wall all through supper.
+b : Get a cat. | They'll be back, you know.
+a : I've had three. The rats outlasted all three. | They always are. I've stood everything up on bricks.
+b : Then you want a better cat. | Bricks won't stop them long.
+a : I want a better wall. #oath#. | Long enough to sleep a night. I'll take that.
+
+scene spouse_at_the_press
+when topic=family|work self.married=yes self.job=official self.role=merchant
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : If my #self.spouse_word# ever wanted to pull the press, I'd gladly do the inking. | I'd set a private line for #self.spouse#. Wild horses couldn't drag the words out of me.
+b : You'd give up your usual place? | Why not?
+a : The handle's polished to fit my grip, but I'd shift over easy enough. | Because that line's for one pair of eyes.
+b : Would the inking suit you? | One copy, then?
+a : Take pride in a clean black page. | One. I'd put the letters back myself.
+
+scene pup_reads_signs
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : I'd teach #self.child# the letters on shop signs. Big enough to see from across the street. | I'd read every last notice to #self.child# for the asking.
+b : Big letters make a good beginning. | And do you tell?
+a : And the right way round. Mine usually face the wall. | Every one. Even the dull ones about drains.
+b : You'll have a printer in the house yet. | That's patience.
+a : Or a reader. A reader would do me. | It's only drains. I've read worse.
+
+scene nobody_reads_them
+when topic=work|lore self.job=official self.role=merchant here.region=ridgemere
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Printed the Council's sitting days this week. Two hundred sheets, all saying the same thing. | Most of what's pasted round Records Square came off my press. I don't read it once it's up.
+b : Does anyone read them? | Why not?
+a : The clerks do. Nobody else stops in the rain. | I've read it backwards already, setting it. Once is plenty.
+b : Somebody must. | Fair.
+a : Somebody does, sometimes. That pays for the ink. | It is. The wall can have it after that.
+
+scene two_n_council
+when topic=work self.job=official self.role=merchant
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : Pulled #proof# and found "council" with two n's in it. My own paws did that. | I'd a notice all set and the stick slipped. The whole line on the boards.
+b : Did anyone notice? | All of it?
+a : I noticed. That was enough. | Every letter. I collected them letter by letter.
+b : Small thing to fret on. | That must've taken you an hour.
+a : Small things are the whole trade. | Two. My jaw never moved.
+
+scene creaking_boots
+when topic=pastimes|smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : New boots. They creak on the stairs, and I like it. | I bought boots last month and I've worn them twice. Saving them.
+b : Creak? That'll wear off. | Saving them for what?
+a : I know. I'll miss it when it does. | I don't know yet. Something worth the leather.
+b : Odd thing to miss. | You'll wait forever.
+a : Maybe. It's a new sound in an old house. | Then they'll be new forever. That's not so bad.
+
+scene market_back_lanes
+when topic=day|smalltalk self.dislikes=crowds here.day=market
+does tell.complaint / react.complaint / answer.detail / react.self / assess
+a : Market day. I took the chapel lanes to miss the square. | All those folk in the square. I came back with half my errands done.
+b : It's not so bad once you're in. | What did you miss?
+a : For you, maybe. I go in and can't hear my own head. | Thread and candles. Nothing that won't keep.
+b : Some like the noise. | Leave it till tomorrow, then.
+a : Some do. They're welcome to it, every bellow. | I will. The square will still be there, and emptier.
+
+scene fog_door
+when topic=weather here.weather=fog
+does tell.feeling / react.self / answer.detail / react.self / assess
+a : Fog's that thick the shop across the way's gone. | I like a fog. Nobody comes to the door.
+b : Hard to work in, I'd think. | That sounds lonesome.
+a : Eyes aren't needed. My paws know every shelf. | Not lonesome. Quiet. They're different.
+b : Still, I'd want a lamp. | If you say so.
+a : I've one. I don't light it. | I do. I've had a long time to tell them apart.
+
+scene gossip_kept
+when topic=gossip topic.subject here.region=ridgemere
+does tell.gossip / insist / answer.detail / react.self / assess
+a : I heard something about #topic.subject#. It ends here, with me. | There's talk about #topic.subject#. I've stepped round it.
+b : Oh, go on. | Why not?
+a : No. True talk ends up on a wall soon enough, and the rest is best forgotten. | I've seen what a wrong word does once it's pasted up.
+b : You're no fun. | That's fair.
+a : I've been told so. | It is. #saying.capitalize#.
+
+scene gossip_between_us
+when topic=gossip topic.subject pair.band=friends|family|spouses
+does tell.gossip / react.news / answer.detail / react.self / assess
+a : Between us: they say #topic.subject# #topic.claim#. Don't spread it. | Once only, mind. #topic.subject.capitalize# #topic.claim#, so they say.
+b : I won't. | Do you believe it?
+a : Good. I only told you because you'd hear it worse elsewhere. | I don't believe anything till it's in ink.
+b : Kind of you. | Fair rule.
+a : Not kind. Careful. | It's saved my skin more than once.
+
+scene paper_cart_late
+when topic=caravan world.wagons=late self.job=official self.role=merchant
+does tell.worry / reassure / answer.detail / react.self / assess
+a : No paper cart yet. Two days' stock left, and a Council wanting a week's worth. | That northern convoy is overdue, and my ink rides with them.
+b : It'll come. | Is there nowhere else to get it?
+a : It will. Late. I'll print small till it does. | Not ink that takes the type right. I'll wait.
+b : Small print, then. | That's a long wait.
+a : Small print, and a narrow #margin#. Nobody reads the margin. | I'm good at those. Better than most.
+
+scene bales_in
+when topic=caravan world.wagons=in self.job=official self.role=merchant
+does tell.news / react.news / answer.detail / react.self / assess
+a : Paper's in. Six bales, dry, every one. | A cart arrived at first light. Fresh ink at last.
+b : That's a relief. | Good timing.
+a : It is. I counted them twice. | Just. I was down to the last pot.
+b : Twice? | Lucky.
+a : Once for the bales, once for the damp. | Lucky. #bc_for_once#
+
+scene lean_months
+when topic=times world.times=hard|lean
+does tell.worry / reassure / answer.detail / react.self / assess
+a : Fewer folk buying anything this month. Half the shutters stay down past noon. | Lean times. The queue at the abbey door's longer than it was.
+b : It'll turn. | Does it worry you?
+a : It always has before. | Some. We've a roof. Others haven't.
+b : Let's hope so. | That's something, at least.
+a : #bc_hope_so# | It's a great deal, these days.
+
+scene busy_weeks
+when topic=times world.times=good|boom self.job=official self.role=merchant
+does tell.self / congratulate / answer.detail / react.self / assess
+a : Every shopkeeper from here to the Rise wants handbills. I've not stopped. | Good weeks. Folk come in for cards and bills I'd have begged for last year.
+b : Good for you. | That's nice to see.
+a : Good for the press. I'm tired. | It is. There's a coin or two tucked away. Don't tell anyone.
+b : Tired's a fair price. | I won't.
+a : I'll sleep when it rains. It always rains. | #bc_good# Nobody ever asks me anything anyway.
+
+scene festival_bills
+when topic=festival world.festival=soon|today
+does tell.plan / ask.detail / answer.detail / react.self / assess
+a : Every wall on the hill has a festival bill on it. I'll stay in and listen through the window. | Festival's coming. I'll show my face late, once it's thinned.
+b : Not even for a little while? | Why the end?
+a : For an hour, maybe. Before it gets loud. | When it thins out. I like a festival with the folk taken out.
+b : An hour's something. | That's a start.
+a : An hour's plenty. | Late's the best I can do.
+
+scene newcomer_nod
+when topic=newcomer
+does tell.news / give.advice / answer.detail / react.self / assess
+a : Someone new took the rooms down the lane. I've seen the newcomer twice and nodded. | New face at the corner. Wanted Records Square, and asked me of all wolves.
+b : You might say hello. | Did you tell?
+a : I nodded. That's hello, from me. | I pointed. It's up, mostly.
+b : Ha. Fair. | Up's about right.
+a : It's taken folk years to know that about me. | Everything in this city is up.
+
+scene old_keep_letters
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : There's lettering over a door in the Old Keep that's half gone. I've stood under it an hour. | The oldest notice in this city is cut in stone, not printed. I visit it when I'm low.
+b : What does it say? | Where's that?
+a : Nobody knows. I've tried. Even backwards it won't come. | Under the Old Keep's arch. Worn near smooth.
+b : Pity. | Can you read any of it?
+a : I'll keep looking. One day it'll give. | Three letters. I like not knowing the rest.
+
+scene house_by_the_sound
+when topic=dreams
+does tell.plan / ask.detail / answer.detail / react.self / assess
+a : I'd like a little house looking over the water, and nobody's door next to mine. | Some nights I think of setting a book. A whole one. Not notices.
+b : Out of the city? | What sort of book?
+a : Not far out. Just far enough to hear #thunder# clean. | I don't know. One that's worth the type.
+b : Sounds peaceful. | You'd do it well.
+a : It does. It won't happen. I like thinking it. | Maybe. Someday. I'm in no hurry.
+
+scene empty_chapel
+when topic=faith
+does tell.self / react.self / assess
+a : Some weekdays I find a pew with nobody in it. Not praying, mostly. Sitting. | The abbey bells I can stand. It's the crowd at the door after.
+b : Sitting's a kind of praying. | You and your crowds.
+a : Maybe. The Bright One's welcome to my sitting. | Me and my crowds. We go on like this, the two of us.
+
+scene over_the_shop
+when topic=home self.job=official self.role=merchant
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : We live over the press. The floor shakes when it runs. | I sleep above the shop. I can smell the ink in the pillow.
+b : Doesn't it keep you awake? | Is that bad?
+a : The quiet does, when it stops. | I'd miss it. It smells like work done.
+b : Funny, that. | I can see that.
+a : It's how it is. I'd want no other. | So it is. Clean pillows are for other folk.
+
+scene winter_paper
+when topic=season|work here.season=winter|autumn self.job=official self.role=merchant
+does tell.complaint / ask.detail / answer.detail / react.self / assess
+a : Cold months are the worst for paper. It drinks #damp# and curls at the corners. | The ink thickens when it's cold. I warm the pot on the stove like it's supper.
+b : Is there no keeping it dry? | Like a supper?
+a : I keep it high and wrapped, and I still lose some. | Near enough. I don't eat it.
+b : That's a hard trade. | I'd hope not.
+a : A good trade with a hard season. | I'm careful, not daft.
+
+scene after_the_light
+when topic=day here.time=dusk|night
+does tell.feeling / ask.detail / answer.detail / react.self / assess
+a : I like the hour after the work stops. The street goes grey and nobody wants anything. | Late. I've washed the black off my paws, and that's the day done.
+b : Nobody at all? | Feels good, does it?
+a : Nobody. Not even the Council. | It does. Mostly I just sit.
+b : Sounds about right. | Sit, then.
+a : #bc_it_is# | I mean to. I've a chair waiting.
+
+scene lost_in_a_breath
+when topic=memories self.age>=30
+does tell.memory / ask.detail / answer.detail / react.self / assess
+a : I wrestled once, in my first coat. Lost in a breath and never tried again. | An old neighbour took me to the green at an age I barely remember. I perched on the low wall all day.
+b : Just the once? | Did you like it?
+a : Once was plenty. I learned I'd rather watch. | I loved it. I still stand near the same spot.
+b : Watching's safer. | That's a fond one.
+a : And I've all my teeth. | It is. I don't share it much.
+
+scene reading_the_wall
+when topic=player
+does tell.self / ask.detail / answer.detail / react.self / assess
+a : There's a traveller by the gate full of questions. | That traveller's been reading the notices. The whole wall, start to end.
+b : Know who it is? | The whole wall?
+a : No. I'll not ask. | Every word. Nobody does that.
+b : Probably just new here. | Odd, that.
+a : Probably. My shutter stays down till I'm sure. | Odd, or careful. I can't tell which yet.
+
+scene quiet_company
+when topic=smalltalk
+does tell.self / react.self / answer.detail / react.self / assess
+a : You needn't fill the quiet. I don't mind it. | Talking's not my trade. Listening, I can manage.
+b : Some folk mind it. | Good to know.
+a : Some do. I'd rather hear the rain. | So you can go on, or not. Either suits.
+b : All right, then. | Then I'll stay a bit.
+a : #bc_good# | Stay, then.
+
+scene crowd_in_the_shop
+when topic=work self.dislikes=crowds self.role=merchant
+does tell.complaint / react.complaint / answer.detail / react.self / assess
+a : Six in the shop at once this morning, all wanting the same notice. | When it's busy I stand behind the counter and say next to nothing.
+b : That's good trade, though. | Does that work?
+a : It is. Singly, I'd like it more. | Mostly. They natter amongst themselves and leave me be.
+b : Can't have it both ways. | Clever.
+a : No. The coin first, complaints afterwards. | Not clever. Quiet. It works on most.
+
+story upside_down_line [topic=work self.age>=30 self.job=official self.role=merchant]
+  : My first week at a press, I set a notice upside down. The whole line.
+  : The old printer let it run, and fifty sheets went up round the market that way.
+  ask : Would you have stopped the press, if it were yours?
+  b : At the first sheet. Did anyone notice?
+  : One clerk. Read it upside down and nodded. I've liked clerks ever since.
+
+story storm_chimney [topic=weather|memories self.age>=25]
+  : One storm, small as I was then, I climbed out to the roof to watch it.
+  : I was found soaked to the bone, laughing at the sky.
+  ask : Did storms frighten you, as a pup?
+  b : Terrified. I crawled underneath our bench. You climbed out in it?
+  : Right up by the chimney. No seat since has beaten it.
+
+story longest_bout [topic=pastimes self.age>=25 self.likes=wrestling]
+  : Best bout I ever saw went on so long the lamplighter came round mid-grip.
+  : The small one won it in the end, when the big one stopped to yawn.
+  ask : Who would you have backed, at the start?
+  b : The big one, I suppose. Most would.
+  : Most did. Most went home lighter.
+
+story broom_night [topic=animals|work self.dislikes=rats]
+  : One winter a whole order went to the rats. Every sheet chewed at the corner.
+  : I printed it again, then sat up in the store with a broom, waiting.
+  ask : How many nights do you think I lasted?
+  b : One, I'd say, and you slept through half of it.
+  : Two. Then the broom and I both gave up.
+
+story mirrored_letter [topic=memories|family self.age>=30]
+  : Young and daft, I wrote a letter to someone I was sweet on. All of it backwards, without thinking.
+  : The lamp ran dry before I'd copied it out again, the right way.
+  ask : Do you think it would have mattered, sent as it was?
+  b : Anyone worth writing to would have held it to a glass.
+  : Maybe. I copied it anyway. I'm careful, I told you.
+
+rule @press_bark
+when concept=bark self.working=yes self.job=official self.role=merchant
+does aside
+cooldown 7h
+say Another sheet. Another sheet. | Mind #lines#, they're full.
+
+rule @rain_bark
+when concept=bark here.weather=rain
+does aside
+cooldown 9h
+say Rain. Of course it is. | Wet again. Nobody's surprised.
+
+rule @storm_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say There it goes. Good. | Roll on, then. I'm listening.
+
+rule @rats_bark
+when concept=bark self.dislikes=rats
+does aside
+cooldown 12h
+say Something in the walls again. | Scratch away. I'm listening.
+
+rule @crowd_bark
+when concept=bark here.day=market|festival self.dislikes=crowds
+does aside
+cooldown 10h
+say Too many folk. Back lanes, then. | Half the city, on one square.
+
+rule @dawn_bark
+when concept=bark here.time=dawn self.likes=warm_bread
+does aside
+cooldown 12h
+say Bread first. Then the rest. | The ovens are open. That smell carries.
+
+dlg resident.hub : #greet#. Say it plain. Talk's not my strong suit. | #greet#. What is it?
+dlg resident.hub [topic.meeting=known] : #topic.player#. Back again. | #greet#, #topic.player#. Shut the door, will you.
+dlg resident.hub [here.time=night] : Late. Make it quick, please. | It's late for callers. Go on.
+dlg resident.hub [pair.disposition=hostile|wary] : From there's close enough, thank you. | Speak from that flagstone, then leave.
+dlg resident.job [self.job=official self.role=merchant] : #self.trade_words.capitalize#. Notices, bills, handbills. The Council's, mostly. | I set type and pull sheets. Every notice you've passed, near enough.
+dlg resident.job : Work. Same as yesterday. | Same as ever. There's not much to tell.
+dlg resident.business [business=thriving] : Busy. More sheets than lines to hang them on. | More work than paper. I'll not complain.
+dlg resident.business [business=steady] : Steady. The Council pays slow, but it pays. | Steady enough.
+dlg resident.business [business=failing] : Poorly. Folk don't buy bills when they can't buy bread. | Thin. I'm printing for the wall more than the till.
+dlg resident.news [world.news] : Word from #world.news_from#: #world.news#. I know nothing past it. | A customer carried it in. From #world.news_from#, #world.news#.
+dlg resident.news [world.event_words] : Even the margins might as well read #world.event_words# today. | Everyone's on about #world.event_words#.
+dlg resident.news [world.wagons=raided] : A wagon was robbed bare, they say. Travel in company.
+dlg resident.news [world.death=recent] : A burial, this week. Folk are hushed.
+dlg resident.news [world.wedding=recent] : There's been a wedding. Somebody's pleased, and that's good news.
+dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing on the walls I'd call news. | Quiet. That suits me.
+dlg resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's the lot. | #topic.subject.capitalize# #topic.claim#, so I'm told. Not from me.
+dlg resident.gossip [here.gossip!=yes] : I don't carry talk. | Nothing I'd repeat.
+dlg shop.greet [here.shop!=bare] : #greet#. Bills, notices, a ream if you need one. Ask. | #greet#. Have a look. Paws off anything still tacky.
+dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Same as before? | #greet#, #topic.player#. Have a look.
+dlg shop.greet [here.shop=bare] : #shop_bare# The paper's not come up the road. | Very little left. The shelves fill when the carts do.
+dlg shop.prices : #shop_dear# The carts set the price of paper, not me. | I add the ink and my time. No more.
+dlg shop.bye : #shop_bye# | #farewell#. Keep it out of the rain.
+dlg resident.bye : #farewell#. | Right. Mind the step.
+dlg resident.bye [here.time=night] : Night. Lamps are your friends, going home. | Night. Latch it after you.
+
+graft resident.hub
+choice Why do you squint at the signs? [self.job=official self.role=merchant] -> backwards
+node backwards
+say Years at the type case. The letters sit the wrong way round in there, and now the right way looks odd to me.
+mood calm
+free
+choice Read me something backwards, then. -> read
+choice Back to it. -> hub
+node read
+say Your boots say nothing. My sign says "sserp". There. That's your lot.
+choice Fair enough. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What do you print? [self.job=official self.role=merchant] -> printing
+node printing
+say Notices for the Council, bills for the shops, and a wedding card when someone asks nicely.
+mood calm
+free
+choice Could you print something for me? -> mine
+choice Back to the counter. -> greet
+node mine
+say Bring me the words, written clear. I'll set them as written. I'll not change a letter.
+choice I'll think about it. -> greet
+choice Goodbye. -> bye

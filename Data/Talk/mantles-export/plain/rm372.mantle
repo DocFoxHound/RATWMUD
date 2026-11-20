@@ -1,0 +1,247 @@
+mantle rm372
+state ready
+dialect plain
+accent none
+tier standard
+written_for cty_ridge_larkridge
+title the gate in view
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=devout drive=steady
+quirk chooses_a_bench_with_the_gate_in_view
+likes oatcakes evening_line market_bustle summer_evenings
+dislikes salt_wind haggling
+fears missing_the_gate_opening
+hopes seeing_a_young_wolf_welcomed_into_service
+topics animals +0.6 faith +0.4 pastimes +0.3 prices -0.3
+styles comfort=practical gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# chooses a bench with the gate in view and leaves the conversation open just wide enough for one civil question.
+words
+oath! = Slip my gatepin | Turn my solid bench round
+saying! = Know what the latch heard | A view costs no bread
+latchhook = a crooked latch hook | a dark hook of iron
+lowseat = a low bench | a stool with four stout legs
+cakepiece = a broad oatcake quarter | a plain brown wedge
+brinebit = a fleck of bitter salt | a sting on the lip
+linecork = a green-tipped float | a black cork
+hingeline = a dark hinge line | a slit of shadow
+herdloop = a length of plain rope | a soft cord
+gatechip = a pale shaving | a splinter of oak
+rincup = a small tin cup | a thick brown mug
+stickmarker = a bit of bent willow | a pegged hazel
+summershade = a patch of late shade | the cool side of a post
+
+grown
+
+opinion houses mixed 1 : A post in a great household might suit young shoulders, if the wolf can walk out through the same gate freely.
+opinion merchants mixed 1 : Mark a price once and stick by it. My ear is no market stall where figures ought to be jostling.
+opinion strangers mixed 1 : I'll greet an unfamiliar face when I see the approach the same as any other.
+opinion festivals mixed 1 : A busy market suits me admirably given a seat and a sound wall behind it.
+opinion church for 2 : A short prayer reaches the Bright One without my turning away from a gate entrusted to me.
+opinion dole for 2 : An oatcake divided will feed two watchers better than a feast promised after both go hungry.
+line greet : From this bench we'll both see the doorway clearly.
+line greet [pair.band=strangers] : Welcome. Stand where both our faces catch the light.
+line greet.return : Heard you. My eye can mind the latch by itself.
+line farewell : Close what you opened and travel safely.
+line farewell.return : May you see what's coming up the path.
+line ask.how : Found a quiet side to put your back against?
+line answer.how : Steady on my feet and sure where the hinges are.
+line react.news : I'll let those words pass the threshold at its own speed.
+line react.news.new : I hadn't seen that particular shape approaching.
+line react.news.known : That came in by an earlier opening.
+line react.news.doubt : A latch lifted somewhere doesn't tell me what walked through.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Glad tidings deserve a whole oatcake and time to sit.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd mind the door for somebody needing privacy with that.
+line decline : That asks more of my trust than we've settled between us.
+line accept_decline : I'll leave the latch as I found it.
+line sympathise : I can watch the way in while you sit with the hurt.
+line reassure : No need to turn around at every noise. I'll look.
+line thank : You kept clear of the bit of work I needed to see.
+line deflect_thanks : I had a view of the gate anyhow.
+line ack : Yes. That's the part I can vouch for too.
+line accept_preclose : Go along with both hands free of this now.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Turn a chair before you sit so the hard side is the one guarding your back.
+b : Are you expecting trouble? | Would you turn a fine chair at dinner?
+a : I'm expecting company eventually. I like to see which sort as it comes in. | I'd ask. A fine dinner won't taste better eaten with my ears screwed backwards.
+
+scene work_1
+when topic=work self.job=herder
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# an open gate and an unlatched gate are two different worries.
+b : Which is the worse? | What gives the loose bar away?
+a : An open gate advertises the work wanting done. The other one can wait till I've grown confident. | I press it with an open palm after closing. A click can be an accomplished liar.
+
+scene animals_1
+when topic=animals self.job=herder
+does tell.self / ask.detail / answer.detail
+a : I count the last beast through an opening before thinking about supper.
+b : Doesn't supper remind you of itself? | Would you know if one went through twice?
+a : Often. I tell it gently that being hungry isn't proof a gate can count itself. | By the direction of the nose and what the ones behind it are trying to do.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I like to fish looking downstream with my feet on an open patch of bank.
+b : Is there a gate down there too? | Do you often get a bite?
+a : There isn't one. That's part of why fishing feels different from working hours. | Enough to keep the cork honest. I'm there as much for the last light as the catch.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The most restful bargain is the one where the buyer knows the price before opening the mouth.
+b : Would you ever haggle? | What if the marked price is wrong?
+a : I'd rather leave the thing on its shelf. A penny saved by souring both tempers is a dear penny. | Point it out quietly, give the seller time to mend it and then decide whether to stay.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A prayer over a steady herd has very few words in it.
+b : Why not give full thanks? | Does the herd settle for it?
+a : Fullness isn't a matter of length. I can mean a great deal by keeping good watch. | Sometimes my own temper clears. That's the part I've proper charge of.
+
+scene food_1
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I keep one oatcake in a separate cloth out of reach of the first hunger.
+b : A ration for later? | What if somebody asks for it?
+a : I like to go home with the choice of giving one away, rather than wishing I'd stopped at the earlier bite. | Then I've put it away for a very good reason. A spare is supposed to come out sometime.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Busy markets are pleasant as long as I don't have to stand in the middle explaining my business.
+b : What reaches an eye at the edge? | Don't you want to join in?
+a : Which way a crowd parts before the cart is even visible. I like that sort of notice. | When I've something to buy. I needn't become part of the noise just to enjoy its company.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Salt wind leaves my lips feeling as though I've quarrelled with a pickle.
+b : What clears the salt away? | Would you keep to the indoors?
+a : A rinse and a little patience. A dry sleeve just pushes the taste up towards the nose. | I'd sooner find the lee of a solid post. A wall needn't be a whole room.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : At summer dusk I've more time than I know how to spend for the first few minutes.
+b : Then what do you choose? | Why only a few?
+a : A quiet line or a spot within earshot of the market packing up one stall at a time. | My head's very capable of inventing a fresh list. I try to stay ahead of it by sitting down.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If a friend sits on my blind side I know the regard is already well settled.
+b : Would you turn towards the friend? | Is suspicion a good habit?
+a : Certainly. I'd still keep a little of the door visible over a shoulder. Affection needn't rearrange all the furniture. | Knowing when to put it to rest is the better habit. Some friends make that lesson very easy.
+
+scene family_1
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : I'd wish a young wolf a decent post with a House before I'd wish a fine coat with no work in it.
+b : Any sort of post? | What makes House service decent?
+a : One with enough pay to go on by choice. I wouldn't call a locked gate a fine opportunity. | A named duty, a stated wage and liberty enough to say a thing is wrong.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : The best spot to rest is just beyond a turning, where the path approaches in full view.
+b : Why not stop before the bend? | Do you mind a traveller catching up?
+a : Because I like to finish turning before giving my knees permission to stop negotiating. | Less if I see the approach. It gives a greeting enough time to come out civil.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a gate chiefly by the angle at which the latch became reliable.
+b : Don't they all drop straight? | What about the sound?
+a : In a well-made world, perhaps. Here, one wants a lift and another the smallest inward tug. | Sound helps. I still don't let my hands go till I know it's held.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I stretch my neck after keeping one view for too long.
+b : Even while watching a gate? | Would a different seat help?
+a : Shift half a step sideways. A straight neck can still keep a latch in sight. | Only if it allows exactly what my present one does. I'm particular about that.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A week with thin pickings slows my spending but hardly more willing to haggle.
+b : How do you afford things? | What gets left out?
+a : Choose fewer purchases and settle the price before setting off. I can bargain fiercely with myself in private. | Any grand addition to a perfectly honest oatcake till there's money going spare.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd give a newcomer somewhere to sit where no arrival can take either of us by surprise.
+b : Do you choose that seat for everybody? | Why would a stranger care about the door?
+a : I'd offer it. Somebody with a taste for mysteries may prefer a seat along the far wall. | A strange room can feel small. Seeing the way back out tends to give it some size.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The words that came past were #topic.subject# #topic.claim#.
+b : Whose voice brought the claim? | Do you consider the claim sound?
+a : A known voice can bring an unknown story through a familiar door. | I know it passed my ear, and wouldn't put it any higher while my eyes haven't seen the thing.
+
+story stool [topic=memories]
+  : I turned a little stool round in a room with two opposite doors.
+  : After I'd chosen my angle with considerable care a shutter creaked open at my elbow.
+  b : Did you turn again?
+  : I stood up. Sometimes the only way to arrange a satisfactory room is to look at it from the threshold.
+
+story cork [topic=pastimes]
+  : I painted a dark stripe on my fishing cork to help me spot a small dip.
+  : While I was admiring the stripe a leaf floated between me and the whole arrangement.
+  b : Did you miss a bite?
+  : I couldn't swear a fish was ever there. I did learn which way round the bank to sit with the low sun.
+
+story bar [topic=work self.job=herder]
+  : A gate bar came clean out in my hands and left me standing with a most respectable stick.
+  : The beast on the far side stood there looking just as undecided as I was.
+  b : How useful was that stick?
+  : Laid it in the brackets by hand and stayed till the hinge could be mended. Good manners held the first minute.
+
+rule @gate
+when concept=bark
+does aside
+cooldown 8h
+say Press the bar after it gives you the click. | Room to see both posts from here.
+
+rule @edge
+when concept=bark
+does aside
+cooldown 8h
+say A clean wall to my back and I'll hear you easily. | Keep the way in clear of baskets.
+
+rule @herd
+when concept=bark self.job=herder
+does aside
+cooldown 8h
+say Count the tail clear before moving the gate. | There's usually one nose still considering the grass.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Line can go out while the last light's on the cork. | A quiet ending asks very little of my tongue.
+dlg resident.hub : This angle suits me. We can see when we're interrupted.
+dlg resident.hub [pair.disposition=wary|hostile] : No need to come in behind me. The matter can be put from there.
+dlg resident.job [self.job=herder] : At #self.workplace# I'm concerned with the distance between the last beast and the latch.
+dlg resident.news [world.news] : These words have come through fairly clearly. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I heard the claim that #topic.subject# #topic.claim#. I make a distinction between hearing and witnessing.
+dlg resident.bye : Shut the gate with a steady palm where one wants shutting.
+
+graft resident.hub
+choice Will you always turn a chair to face the door? -> latch_angle
+node latch_angle
+say If the chair's mine I put it that way first. If it belongs to a host I ask. A wary wolf can still have manners.
+choice Would you swap with someone frightened? -> latch_guest
+choice I can see well enough. -> hub
+node latch_guest
+say I'd move the chair sideways till we could both see. No reason my own habit can't be put to a better use than hoarding the view.
+choice I can see well enough. -> hub

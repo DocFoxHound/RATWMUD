@@ -1,0 +1,295 @@
+mantle rm380
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_mab_plankridge
+title the riddle-wrapped apple
+fits stage=young|adolescent|adult|old
+prefers temper=calm warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk folds_a_written_riddle_round_each_crisp_apple
+likes crisp_apples riddles tidy_house first_snow
+dislikes waiting stale_bread
+fears making_somebody_wait_for_kindness
+hopes leaving_a_small_surprise_at_each_place
+topics pastimes +0.6 friends +0.4 food +0.4 faith +0.2
+styles comfort=gentle gossip=careful refuse=plain tease=gentle
+marks oath saying
+persona #self.first# folds written riddles round crisp apples and counts chapel bells in the space a slower guesser needs.
+words
+oath! = Twist my apple stem | Crinkle my paper
+saying! = Everybody gets the apple | Let a guess have air
+foldriddle = a folded clue | a paper twist
+redskin = a rosy stripe of peel | a dark apple cheek
+pipcup = a little hollow | a dip beside the stalk
+shelfcorner = a cleared shelf end | a corner of clean board
+stalkbit = a forked stalk | a short brown stem
+answerdot = a single coal dot | a soft grey spot
+coalbag = a little paper purse | a twist of cloth for charcoal
+snowmeal = a sprinkle of white | a rim of powder
+bellrest = the space after a stroke | a long soft interval
+crusthard = a hard bread end | a stiff heel
+slicechip = a bright apple chip | a thin sweet paring
+
+any
+
+opinion strangers for 1 : A stranger can enjoy a puzzle without having to pay for the apple with a private answer.
+opinion dole for 2 : I won't set a single riddle between a hungry mouth and a plate.
+opinion church for 1 : A chapel bell can give a whole crowded street a moment to think about the same thing.
+opinion sump for 1 : There's a little kindness here in passing the best fruit under the loudest voices to the quietest one.
+opinion merchants mixed 1 : A small apple with a fair price clearly marked can be a pleasanter purchase than a feast of promises.
+opinion festivals mixed 1 : I'd like a corner at a busy festival where there was room to consider a quiet question.
+line react.news : I'll unfold that slowly to keep the first bit in view.
+line react.news.new : That's a fresh shape to fit among my guesses.
+line react.news.known : I'd seen the corner of that story before.
+line react.news.doubt : I may have the right clue wrapped round the wrong answer.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd wrap the nicest apple here especially for that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The riddle can wait. I'd like to do something kind first.
+line reassure : There isn't a wrong way to take a moment.
+
+young
+
+line greet : Hullo. I've got a secret in this bit of paper.
+line greet.return : Back in time. I haven't eaten the answer yet.
+line farewell : Mind the stalk if you keep that in a pocket.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Guess what wears a coat and has a star inside.
+b : An apple? | Is it a very bright wolf?
+a : Cut it across the middle and the seeds make a star inside. | I like that answer. Mine's an apple and mine has a star I can show you.
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I can make a red apple into two red boats.
+b : Do they float? | Is one for me?
+a : They'll float till my teeth have business with the crew. | One each. You may name yours before biting any holes in it.
+
+adolescent
+
+line greet : Welcome. There's a question folded here if you'd like one.
+line greet.return : Good. I won't have to solve my own clue aloud.
+line farewell : Keep the good bit even if the riddle gets lost.
+line farewell.return : I hope the answer comes to you somewhere pleasant.
+line ask.how : Have you made space for anything you wanted today?
+line answer.how : Quiet in the head at last, with a little sweetness to spare.
+line decline : I'd sooner leave a private answer folded where it is.
+line thank : You gave the slower guess room to get finished.
+line sympathise : I'll make this little while free of difficult questions.
+line deflect_thanks : It's your apple whichever way round you read the clue.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I write my riddles small enough for a slate's narrow border.
+b : Does that leave room for the answer? | Do they get mixed up with sums?
+a : I leave that part blank. Somebody may see a better answer than mine. | A number can be a fine clue. A missing sum, of course, takes a little explaining.
+
+scene pastimes_1
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : Try this. Which pocket gets emptier the more it's filled with bites?
+b : The pocket with a hole in it? | The one where your apple is?
+a : Even better, the one with an apple I'm eating. My bites come out of the pocket, see. | That's it. Your reward for knowing is the same as your reward for keeping me company.
+
+scene faith_1
+when topic=faith here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Each chapel stroke gets a count from me when someone needs longer than I do to guess.
+b : Do you count against the guesser? | What about the last stroke?
+a : I count against my own tongue. A hint given too soon is a theft in a very kind coat. | I start softly from one again. There's no rule saying a thought must stop when the bells do.
+
+scene food_1
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : Mine's the crisp apple with a clue rolled round its stem.
+b : Does the apple have to fit the clue? | Why not write right on the skin?
+a : No. Sometimes the entire clue is about a spoon and you still get fruit at the end. | Because I'd like the words and the best bit of peel to reach two different places.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The silence beside a charcoal burn stays with me better than the things anybody said beside it.
+b : Was it really so quiet? | Do you miss it here?
+a : The soft crack was the loudest part. You could hear a thought getting towards its end. | I can find a little of it inside a folded riddle. It's the moment before a friend opens the paper.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I don't much care for games where the first clever answer takes away everybody else's turn.
+b : How do you keep one wolf from guessing aloud? | Would you give no prizes?
+a : Ask for the answer folded up, then open the lot and praise two different good ideas. | I'd give fruit before asking. I want the guesses to be hungry for the riddle, not for supper.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A tidy shelf gives an unfinished riddle decent room to wait.
+b : Wouldn't you rather finish it? | How can a shelf help?
+a : I would. Then I think of an easier clue while putting everything else away. | I know exactly where to find the paper in the morning. My cleverness isn't usually up very early.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I'd like the first snow to come in letters I could read off the sill.
+b : What would it spell? | Couldn't you write in it yourself?
+a : A question very short and clear. I'd have to guess before the whole sill filled up. | I might put one small line at the side. Snow's own writing deserves the bigger piece.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Waiting tires me more if I can see somebody busy standing still. | I've no patience to spare for a queue kept waiting for no reason.
+b : What occupies you while you're waiting?
+a : Try to see whether there's some small help nobody's asked for. | See if the next wolf would like a question that isn't about how much longer.
+
+story folded [topic=memories]
+  : I tucked a clue into an apple's hollow and gave it to a hurried passer-by.
+  : The apple vanished into a pocket and a white corner of paper stayed sticking out.
+  b : Did the riddle get solved?
+  : By the time the pocket came back I'd thought of three answers. Its owner had thought of a fourth. We ate the evidence.
+
+rule @clue
+when concept=bark
+does aside
+cooldown 8h
+say Apple first and guessing when you're ready. | Don't squeeze the stalk trying to unfold the paper.
+
+rule @bell
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Evening's got room between its notes. | Plenty of time for one soft answer.
+dlg resident.hub : Read the little paper or take the apple and leave it folded.
+dlg resident.job [self.job=child] : At lessons I like a question whose answer gives somebody else a chance to follow with a fresh question.
+dlg resident.bye : If your pocket smells sweet you'll remember what's in it.
+
+graft resident.hub
+choice What if I can't guess? -> apple_guess
+node apple_guess
+say Then you eat your apple and I'll keep your question safe till you want it back. Nothing about being puzzled makes a wolf less hungry.
+choice What if I guess something else? -> apple_other
+choice I'll consider it awhile. -> hub
+node apple_other
+say Then I've had two good answers for the trouble of writing one riddle. I ought to be wrapping you another apple.
+choice I'll consider it awhile. -> hub
+
+grown
+
+line greet : There's a clean place on the board where we can open a thought.
+line greet.return : I recognised the quiet before your voice.
+line farewell : May the answer find you with something crisp at hand.
+line farewell.return : The fold stays yours whether or not you open it.
+line decline : A good question gives the other wolf the right to keep quiet.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I wrap fruit for a friend without putting an obligation inside.
+b : Is there still a clue? | What if a friend won't take presents?
+a : If the fruit is welcome. A puzzle that comes with a debt to amuse me isn't much of a gift. | Two clean slices and a request for company can be easier to accept than a parcel.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A riddle with only one possible answer feels a little lonely to me.
+b : Won't you say which is right? | How many answers would you allow?
+a : I'll say what I had in mind and listen if another answer fits better. | All the ones that give every clue honest work.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Bells take their own time and no shame attaches to a lingering note.
+b : Are you comparing a note to a wolf? | Does a prayer have a fixed length?
+a : I try to allow a slow friend what I readily allow a piece of ringing metal. | No. I've had one answered before I'd finished finding the words.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I take a pause for my jaw when I've been chewing over a troublesome idea too hard.
+b : Would you eat an apple then? | Does it bother you physically?
+a : Thin slices. I like having a real reason to chew for a change. | A little ache below the ear. My body is remarkably frank about idle fretting.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A clear price tag spares both sides a lot of guessing.
+b : Wouldn't a riddle make shopping more interesting? | Suppose the figure's unusually dear?
+a : On a separate paper, after the agreement. Food shouldn't vanish behind a clever question. | I can leave it. What I can't choose about is the figure somebody whispers after a parcel's wrapped.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A basket of apples gets sorted more kindly if I turn each one in my palm.
+b : Looking for bruises? | Would you keep the smallest?
+a : Yes, so a marked apple can be eaten before the hurt goes deeper. | A little one fits a little appetite. I'd sooner keep it than split a grand one for show.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Charcoal makes a kind of quiet grey that I associate with a very particular silence.
+b : What does the grey bring back? | Isn't a coal mark dirty?
+a : Room enough beside a fire to finish a thought without announcing it to anyone. | On a clean cuff, certainly. On the right paper it's the beginning of a memory.
+
+scene weather_1
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : Snow puts soft wrapping round the city's harder riddles.
+b : Does that make them easier? | Which riddle shows clearest?
+a : It lets me see where the edges were. With a difficult matter that's often quite enough to begin. | Who has been out early. A set of fresh tracks is an answer with boots on.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I put a warm rag over a stale heel rather than offer a guest a hard bite in silence.
+b : Why keep the hard heel? | Would you say it's yesterday's?
+a : For a broth or a bake. Old bread often has more good in it than goes willingly onto a plate. | Yes. I'm trying to soften bread, not the truth about when it left the oven.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like one question for a walk and one clean answer for the way back.
+b : What if no answer comes? | Wouldn't company do as well?
+a : I've still had the walk. That's more useful than sitting crossly over a folded page. | Company can make the jumbled question feel quite pleasantly small.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a thin week the neatest trick is making a little fruit go round without anybody apologising.
+b : Do you cut thinner slices? | Where's the riddle then?
+a : I do, and I take a thin one first so no guest need look surprised at the portion. | How a table remembers a whole sweet apple even if each of us got just a piece.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I keep one easy question for a traveller who looks tired of giving an account.
+b : Wouldn't a traveller want rest? | Which question do you ask?
+a : Yes. I'd ask whether to leave the folded paper for later before presuming to keep anybody talking. | Which side of an apple has no skin? The inside. A smile's ample answer too.
+
+story smudge [topic=memories]
+  : I once smudged a coal-written clue so badly the final word disappeared.
+  : I set down three words that might have stood there and tried them out in turn.
+  b : Which was the lost word?
+  : I couldn't tell. Three perfectly sound riddles came out of my grubby left thumb.
+
+story basket [topic=food]
+  : I wrapped an apple in a question and a question in a larger empty wrapper.
+  : The baskets got shaken and I had no idea which held supper.
+  b : Did you have to open both?
+  : I balanced them on my palms. A sound apple still knows more about the answer than a sheet of paper.
+
+rule @patience
+when concept=bark
+does aside
+cooldown 8h
+say A quiet answer deserves a little elbow room. | Give the fold time to come open on its own.
+
+rule @cold
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say The first white scrap's come with no writing on it. | Good light to read small charcoal marks beside a window.
+dlg resident.hub : We can leave a little space round your question before answering.
+dlg resident.news [world.news] : This part came clearly out of its wrapping. #world.news#.
+dlg resident.bye : Keep the thought that tastes best to you.

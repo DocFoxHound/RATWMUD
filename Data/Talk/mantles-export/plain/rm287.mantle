@@ -1,0 +1,256 @@
+mantle rm287
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_florence_gullworth
+title the whittled landing
+fits stage=adult|old
+prefers quarter=sump
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk carves_a_stair_for_each_landing_worth_resting_on
+likes roast_pork whittling fresh_straw first_warm_day
+dislikes drizzle stale_bread
+fears the_wharf_taking_even_the_good_memories
+hopes a_little_wooden_stair_that_climbs_into_sun
+topics memories +0.5 pastimes +0.5 home +0.4 faith +0.2
+styles comfort=playful gossip=curious refuse=dry tease=light
+marks oath saying
+persona #self.first# skips a tread on the real stairs and shaves a broad seat into each landing of a pocket-sized wooden stair.
+
+words
+oath! = Splinter my best landing | Turn my shavings uphill
+saying! = A short stair can have a long view | Every second tread saves a bit of sole
+shaver = a keen little knife | a thumb-worn blade
+curl = a shaving like a ring | a pale wood curl
+step = a thin tread | a wooden step
+landing = a shelf for sitting | a broad landing
+peg = a tiny peg | a sliver of dowel
+porkedge = a crisp edge of rind | a curl of crackling
+strawstem = a new straw stem | a bright length of straw
+breadheel = a hard bread heel | a crust with sharp corners
+suncut = a slant of sun | a wedge of light
+railtop = the polished rail | a smooth length of banister
+tick = a shallow cut | a little nick
+split = a split up the grain | a long pale crack
+
+any
+opinion houses against 3 : You can count freight and still leave out the wolf who didn't come home. I keep a different reckoning.
+opinion sump for 2 : A bad step gets a name and a worse step gets a joke. That's how we make it upstairs.
+opinion dole for 2 : A hot dish belongs at the top as much as the bottom. Someone ought to carry it all the way.
+opinion festivals for 1 : I like seeing the heads come by underneath my window, particularly the ones with foolish hats.
+opinion merchants against 1 : Rind oughtn't cost as much as the pork it once kept warm.
+opinion road mixed 1 : A path going uphill will at least fetch you a view. The rest have to earn their keep otherwise.
+
+grown
+line greet : There's a seat for two if you take the sunny half. | Welcome to the level bit.
+line greet.return : There's your welcome coming up two steps together. | I was hoping that greeting would reach my landing.
+line again.open : Round again. I thought I knew those feet.
+line farewell : Go steady where the third tread sticks out. | Save a good resting place for the way back.
+line farewell.return : And a polished rail for your downward trip. | You've sent me off smiling at my feet.
+line react.news : Let's hear how it sounds from up here. | Tell it while the shavings settle.
+line react.news.new : That's a fresh notch entirely.
+line react.news.known : I know which stair that account squeaks on.
+line react.news.doubt : Something's shaved too nearly smooth in that version.
+line react.news.sorrow [topic.kind=death|loss|assault] : Some names ought to be kept even when the boats are gone.
+line react.news.glad [topic.kind=birth|marriage|work] : Now there's a tune for coming up the last flight.
+line ask.how : Which part of your day needs a seat?
+line answer.how : About two steps ahead of the slow thoughts.
+line sympathise : Sit wide and let the poor old boards carry this one.
+line reassure : A staircase takes you up one honest inch at a time.
+line refuse : I've promised my knife a little careful attention first.
+line accept_decline : Fair. Nobody can climb another wolf's legs for a favour.
+line preclose : Time to count my own stairs homeward.
+line accept_preclose : Go on with a light hip and an easy knee.
+line ack : Yes. Every little notch of it.
+
+scene exchange1
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I make the landing first on a little wooden stair. | A stair in my pocket can have any number of steps.
+b : Why start halfway up? | How many this time?
+a : A good seat deserves to decide what leads to it. | One fewer than I want to climb after supper.
+
+scene exchange2
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I like pork rind crisp enough to startle a sleeper. | I turn my plate to save the corner with the crackle.
+b : Do you eat quietly otherwise? | Can you leave it till last?
+a : Never got a complaint from the roast. | I can turn the plate. Patience is another trick.
+
+scene exchange3
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : New straw catches every pale shaving. | I slip a stalk under the foot of a wobbly stool.
+b : Isn't that a nuisance? | Does that hold it?
+a : Not if you sweep the two together. | It names the bad foot. A proper chip will follow.
+
+scene exchange4
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : A first mild day lets me quit leaning against warm walls. | In spring I like a stair that's warm on the way down.
+b : Where do you sit instead? | Why down?
+a : Where heat can get round both elbows. | I had to climb the cold side earlier to find out.
+
+scene exchange5
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle spots my polished wood with little shocked faces. | This rain has no proper stride.
+b : Will it swell? | Is it raining at all?
+a : It'll swell bigger if I let my scowl join in. | Enough to take two steps back for my cloak.
+
+scene exchange6
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I tried whittling a stale crust. | Bread that knocks on the plate needs broth.
+b : Did you ruin the knife? | A great deal?
+a : No, the crust was too proud to notice. | Enough to make a knocking noise from inside a cup instead.
+
+scene exchange7
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I sit where the stair turns halfway. | I shave the outer edge of a toy tread round.
+b : What can you see there? | To keep little ankles safe?
+a : The faces coming up and the shoulders going down. | Some things deserve to be comfortable on principle.
+
+scene exchange8
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I can do a good day's watching from one square of sun. | I keep my hands busy while the world files by.
+b : Anything in particular you're observing? | Do you miss much?
+a : A better square when this one moves. | Only the bits that don't bear a second glance.
+
+scene exchange9
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city has more landings than anybody's drawn. | I judge a hillside by the resting places going up.
+b : What counts as a landing? | Which one's best?
+a : Flat enough to set your supper on without holding the dish. | The one with another resting place still in sight.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : One old hurt makes the wharf a difficult view. | A house mark can carry weight far past the wood it's stamped on.
+b : Want the shutter closed? | Too much weight?
+a : No. I want my good view back in small pieces. | For me, sometimes. I still know what's mine to remember.
+
+scene exchange11
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : #topic.subject# #topic.claim#. That's the shape of the story downstairs. | A story's feet go faster than a witness's feet.
+b : What shape has it up here? | Can you catch either?
+a : Much the same with the sharp bits worn smooth. | I prefer sitting down with the witness.
+
+scene exchange12
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Hard weather for purses. I'm saving clean offcuts. | When the cupboard gets pinched I number my remaining comforts.
+b : For the fire? | Is it a long list?
+a : For all the little presents a purse can't buy. | Long enough to begin with a chair and some light.
+
+scene exchange13
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I take the scenic way between two floors. | My legs have an opinion on a very steep lane.
+b : That's still stairs, isn't it? | What do they say?
+a : The scenery's at every window. | Look busy at the next doorway and let us rest.
+
+scene exchange14
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a bench above the damp and a low bar under my heels. | A perfect wooden staircase would finish nowhere at all.
+b : Need much more? | Who'd climb it?
+a : An unhurried bit of afternoon to put on it. | A wolf after a good view and no errand at the other end.
+
+old
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Old knees don't mind two treads if the rail's honest. | At my age I inspect a stool before trusting it.
+b : Wouldn't one be easier? | For splinters?
+a : I'd rather choose when I start being sensible. | For signs a younger backside has tested it recently.
+
+scene exchange17
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember when the rail seemed higher than my head. | I can make a long afternoon out of an old wooden button.
+b : Has it worn lower? | By remembering the coat?
+a : It's got lower both ways. I grew and the rail wore down. | By remembering the climb when the coat wouldn't do up.
+
+scene exchange18
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : My little carving knife has outlasted its first handle. | I once wanted a knife so sharp it shaved a thought in half.
+b : Is it still the same knife? | And now?
+a : My paws have changed shape too. We still recognise each other. | Just sharp enough to leave my thoughts and thumb attached.
+
+scene exchange19
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : There's room at my window for a friend with tired ankles. | Company lifts my landing about a foot.
+b : What about lively ankles? | Does the building really rise?
+a : They can fetch the second stool. | I stop feeling the last few stairs I had to climb.
+
+story tale1 [topic=memories]
+  : I whittled a tiny flight with such pride in its straight treads I forgot to cut the bottom flat.
+  : Put the thing down and it rocked from end to end like a boat that wanted launching.
+  b : Did you flatten it?
+  : I carved a seat. It's a rocking stair now, which is an invention no sensible wolf had asked for.
+
+story tale2 [topic=food self.likes=roast_pork]
+  : I saved a glorious bit of crackling under a wooden lid. It sounded like a drum whenever my elbow hit the table.
+  : At supper I removed the lid with great ceremony.
+  b : Was your prize still crisp?
+  : Soft as a boot tongue. I crisped it again and ate it before any other clever notions came my way.
+
+story tale3 [topic=home]
+  : One cold day a pale wood shaving sailed out of my pocket as I went upstairs. It rose past my nose on a draught.
+  : I chased it two steps at a time and found it waiting on the topmost sill.
+  b : Did its excursion finish there?
+  : I gave it the view. No sense begrudging the winner a decent place to sit.
+
+rule @call1
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say A little more sunshine and I'd hardly need my eyes for carving. | That shaving curled uphill all by itself.
+
+rule @call2
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Soft wood for landings, sound wood for rails. | Leave me one good chip for the seat.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Drizzle looking for somewhere to sit as well. | No polishing a wet rail today.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Last good light goes on my knife edge. | That's enough little stairs for one evening.
+dlg resident.hub : Welcome to a staircase small enough for your pocket.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you've climbed back into view.
+dlg resident.hub [here.time=night] : Too late for a sharp knife. Quite early enough for a tale.
+dlg resident.hub [pair.disposition=wary|hostile] : We'll leave a whole tread between our elbows.
+dlg resident.job [self.job=none] : I give the world a good steady looking at. There's plenty it would slip by me otherwise.
+dlg resident.job : I'm partial to work with a good sitting place midway through.
+dlg resident.news [world.news] : News took the stairs up. #world.news#.
+dlg resident.gossip [here.gossip=yes] : This came off the lower landing. #topic.subject# #topic.claim#. Count the steps it climbed first.
+dlg resident.bye : Two steps or one, whatever brings you home easy.
+
+graft resident.hub
+choice Who climbs a staircase that small? -> toy_stair
+node toy_stair
+say So far, a beetle, and it went up the side. I put a great deal of precise work into treads the creature didn't trouble to use.
+free
+choice Will you change them? -> toy_stair_again
+choice Goodbye. -> bye
+node toy_stair_again
+say I'll carve in a little rail. If the next beetle uses that for a road I'll have pleased somebody twice.
+choice Enjoy the next climber. -> hub
+choice Goodbye. -> bye

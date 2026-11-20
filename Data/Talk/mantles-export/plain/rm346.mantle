@@ -1,0 +1,246 @@
+mantle rm346
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_isolde_gullwick
+title the blue detour
+fits stage=adult|old
+prefers job=herder
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk marks_the_longer_open_road_in_blue
+likes fried_fish evening_line old_maps first_warm_day
+dislikes night_noise drizzle
+fears losing_the_sky_among_trees
+hopes making_a_map_that_leaves_time_to_breathe
+topics travel +0.6 animals +0.5 pastimes +0.4 weather +0.2
+styles comfort=quiet gossip=careful refuse=plain tease=none
+marks oath saying
+persona #self.first# marks the longer open way in blue and leaves an empty space on the map wherever a path disappears under branches.
+words
+oath! = Blot my blue line | Snag my clean cuff
+saying! = Leave sky above the route | Allow for one more gate
+bluedot = a dab of blue | a fleck of blue chalk
+paperhill = a rubbed contour | an inked brow of hill
+weakfold = a pale crease | a worn paper hinge
+catchmeal = a crisp fish tail | a hot browned fillet
+floatmark = the black tip of a float | a neat speck of cork
+fieldbar = a lifted latch | a short gate bar
+darkedge = a line of close trunks | a stretch of heavy shade
+seedwrap = a folded seed bag | a square of old sacking
+clocktuft = a shifting tuft of grass | a lifted grass plume
+roadbend = a slender blue turn | a hooked line
+hardpad = a square of slate | a smooth writing board
+
+grown
+
+opinion road mixed 1 : A short road has no special claim on me if its trees blot out all the sky.
+opinion merchants mixed 1 : An honest map seller should say how many of those fine lines have been walked.
+opinion strangers for 1 : I'll mark a safe long way for a stranger and own what I don't know about the short one.
+opinion city mixed 1 : Fine streets keep time by a bell that hasn't ever had to close a field gate.
+opinion dole for 2 : A late arrival may have spent the whole day trying. Keep a hot portion back.
+opinion newcomers for 1 : A first journey deserves directions that allow a few minutes for weary feet.
+line greet : You've found me somewhere beyond the time I meant to arrive.
+line greet.return : Here after all, with both ears open.
+line greet [here.time=dawn] : Early light still. There's hope for my punctuality.
+line farewell : Choose the track with breathing space on either side.
+line farewell.return : I'll follow on at my ordinary thoughtful distance.
+line ask.how : Has the ground taken much out of your legs today?
+line answer.how : I'd be a little less tired if my plans weren't so far ahead.
+line thank : You gave the long way a chance to justify itself.
+line decline : I won't promise a time my own boots can't honour.
+line accept_decline : I'll leave your part of the map in pencil.
+line reassure : A turning missed can still be found from level ground.
+line sympathise : Let the path stretch itself out while your knees rest here.
+line react.news : I'll set that beside the older marks.
+line react.news.new : That puts a blue dot where there wasn't one.
+line react.news.known : I've been along that report once before.
+line react.news.doubt : That's a tidy line for a route nobody's shown me yet.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Worth crossing a whole field to bring word like that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : My other errands are welcome to wait for somebody hurting.
+line again.open : Our two crooked routes have met again.
+line ack : I can trace that in my head.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I've drawn the quick way through the trees and coloured the longer one blue.
+b : Which do you actually walk? | Why draw the quick way at all?
+a : The blue. I'd sooner explain being late than stand in deep shade without seeing an end. | Somebody else may like a leafy roof. A map needs more opinions than mine.
+
+scene work_1
+when topic=work self.job=herder
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I allow one pause per gate and then a little more.
+b : What eats up the little more? | Do the beasts know the timetable?
+a : An ear turning back to hear a sound. I'd rather know what it heard than gain half a minute. | Nobody has persuaded a cow to read my map yet.
+
+scene animals_1
+when topic=animals self.job=herder
+does tell.self / ask.detail / answer.detail
+a : I watch the last pair of ears before getting ready to shut a gate.
+b : Why not count noses? | What if the ears point backwards?
+a : Most of the noses are bent to the ground. The ears give me a better account of where the minds are. | I look behind. There might be one slow head the rest of us had forgotten.
+
+scene food_1
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I like a fried fish best at the tail if I've arrived while it's crisp.
+b : Late for dinner too? | What about the thick middle?
+a : With miserable regularity. Fish is one of my stronger arguments for reform. | For a hungry friend. A little sharp crunch is worth a mouthful in quantity.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I set my evening float along the edge of the sky's reflection.
+b : To see it better? | What if a cloud crosses it?
+a : Yes, a black point against blue is easier on tired eyes than a dark point among weeds. | I can wait with a cloud quite peaceably. Neither of us is expected anywhere just then.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : With the first real warmth of spring I picture a map with all the roofs rubbed out.
+b : Even the roof over your bed? | Where would the roads end?
+a : I'll keep my roof drawn on a separate scrap in case the warmth changes its mind. | Wherever the grass looked fit for sitting. That's a pleasant destination for once.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I know precisely where one old map has a crease wide enough to lose a whole path.
+b : Have you repaired it? | Does losing a path bother you?
+a : I've drawn a second little path on the margin. The crease can keep the first. | I mind more when an unknown line is marked as trustworthy. A white gap's perfectly honest.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend knows it means something when I say I'll be early.
+b : Would you really manage it? | What do you do differently?
+a : I could come the night before and use the waiting time to good effect with my fishing line. | Leave before I've finished putting the journey straight in my head.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Folk take fear for a measure of how well a place is known.
+b : Can't a familiar path be frightening? | Do you tell them which place scares you?
+a : Familiar trees are still capable of hiding a great deal of sky. | When I need a little company to cross it. I'd rather admit the fear than lead us both astray.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A little tiredness makes me welcome a bench with its back against something solid.
+b : Why face out? | Prefer to sit entirely alone?
+a : I like to keep the open ground in view even when I'm perfectly safe. | I'd like company that lets a little quiet go on sitting between us.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A clean patch of blue chalk is worth more than an elaborate title on a map.
+b : Why blue? | Would charcoal do?
+a : I can see blue from half an arm away when the paper's tired and brown. | For a first sketch. I'd keep the long open ways in a colour of their own.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle has an expensive taste for the sort of blue that washes out.
+b : Where's safe for your map? | Can't you walk the way from memory?
+a : Inside the driest fold of my coat. The field can carry on being where it is without a witness. | Yes, and then I forget the tiny correction I came out meaning to make.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I plan with a livelier pair of feet than the ones I usually take out.
+b : Would a shorter plan help? | Do your feet object?
+a : A slower scale on my map would be a start. Two gates per breathless apology is too many. | On the uphill stretch they make a very clear request for a minute without purposes.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can give more sincere thanks in the open than under a roof of branches.
+b : What about a chapel roof? | Does the place matter that much?
+a : I know where its door is. Trees have a habit of looking like more trees when I want the way out. | To me, yes. I'm not asking anybody else to bring a map along to pray.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A thin week can make a fried fish look like a vessel of solid gold.
+b : Would an evening cast bring in supper? | Would you sell the catch?
+a : It could try. An ambitious hook still needs a willing fish. | If it brought enough to feed another mouth. I wouldn't sell it just to buy it back on a plate.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Night noise sets my thoughts walking paths that daylight never troubled to invent.
+b : What quiets them? | Would a lamp help?
+a : Tracing one known route with a fingertip. My hand remembers the way ahead of my restless thoughts. | Enough light to see the door, yes. No point in turning the whole night into morning.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I don't ask every companion to make the same long detour.
+b : How do you choose who to ask? | Would you cross the trees for a friend?
+a : I say where I'm going, put the map down and let the other finger choose its line. | If the need were real. A road is frightening, but it can't make an obligation disappear.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd tell a traveller my blue route takes longer before recommending it.
+b : How much longer? | What would you promise about the short one?
+a : Count two more gate stops than you expect and a good view to pay for the waiting. | Only where the trees begin. I wouldn't trust myself to describe their middle in a confident voice.
+
+story maplight [topic=memories]
+  : I held an old map before a bright window and saw what looked like a fine new track.
+  : I laid it flat. The track vanished completely.
+  b : Was it a crease?
+  : A long grass stem behind the paper. It had given me an excellent route to the edge of my own boot.
+
+story latefish [topic=pastimes]
+  : I promised myself one last cast and made a mark on a stone so I'd remember.
+  : The float dipped as I finished the mark. I watched it and clean forgot why I'd bent down.
+  b : Did you land a fish?
+  : A weed, and an excellent illustration of how my last casts get so long.
+
+story pasture [topic=animals self.job=herder]
+  : I made a little plan to save time at three gates and tried it on my own feet first.
+  : I arrived exactly when I'd meant to and was quite delighted with myself.
+  b : Did the herd go as promptly?
+  : The first beast took an interest in the only interesting bush I'd omitted from the map.
+
+rule @blue
+when concept=bark
+does aside
+cooldown 8h
+say Long path, sky in view. I'll take that one. | A little blue mark can save a lot of convincing.
+
+rule @work
+when concept=bark self.job=herder
+does aside
+cooldown 8h
+say Count the ears coming clear of the gate. | Leave a slow nose a yard of room.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say An early intention's my best chance to be punctual. | One more gate before the shadow moves.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The blue belongs inside my coat till that fine wet passes. | Fine drops find the smallest crease.
+dlg resident.hub : Walk at my speed for a moment. I can spare the company more easily than the breath.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your turning's already marked in my memory.
+dlg resident.job [self.job=herder] : At #self.workplace# I've learnt that a herd chooses its own length of minute.
+dlg resident.news [world.news] : Here's what made the journey this far. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Somebody's route to the story has #topic.subject# #topic.claim#. I've not walked that ground.
+dlg resident.bye : Give the long way its due if the short one troubles you.
+
+graft resident.hub
+choice Why go all the way round the wood? -> blue_long
+node blue_long
+say Because I can estimate its cost in daylight and feel easier paying that than trying to guess what one dark mile will cost me.
+choice Do you always mark the wood blank? -> blue_blank
+choice I'll walk the blue route. -> hub
+node blue_blank
+say I put a border where I know the edge. Someone who likes being among trunks can fill in the ground beyond it.
+choice I'll walk the blue route. -> hub

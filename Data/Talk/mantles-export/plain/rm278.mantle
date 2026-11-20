@@ -1,0 +1,257 @@
+mantle rm278
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_bartholomew_sootmore
+title the washer of maps
+fits stage=adult|old
+prefers job=laborer
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk presses_a_flat_palm_to_a_wrinkled_coastline
+likes crisp_apples cards old_maps thunder
+dislikes salt_wind wet_floors
+fears rubbing_a_favourite_road_away
+hopes to_lay_out_a_map_without_weights
+topics pastimes +0.4 work +0.3 weather +0.2 home +0.2
+styles comfort=steady gossip=curt refuse=soft tease=none
+marks oath saying
+persona #self.first# rests a warm flat palm on a wrinkled coastline and gives a stubborn crease all the time a good hand deserves.
+
+words
+oath! = By the iron and its steam | Roll me out flat
+saying! = A crease knows which way it bent | No map gets smooth by scolding
+sheet = a linen sheet | the wrung cloth
+board = a sloped washing board | a rubbed plank
+map = my wrinkled map | the old coastline
+weight = a flat river stone | my smooth weight
+suit = a suit of cards | a painted suit
+ace = a much-thumbed ace | the top card
+peel = a red ribbon of peeling | a crisp red peeling
+line = a thin inked shore | the printed coast
+fold = a mountain fold | the deep centre crease
+soap = a little soap end | my yellow sliver
+water = cold rinse water | the last clean rinse
+storm = thunder above the roof | a roll of far thunder
+
+any
+opinion merchants against 3 : I can wash linen till my knuckles shine yet the wages buy precious little loaf.
+opinion dole for 2 : A full ladle saves a wolf from having to wring the last drop out of an empty day.
+opinion houses against 2 : Great names get stitched on the fine linen. I'd like the eyes behind those names to see the washing water.
+opinion church for 1 : A meal handed across a chapel threshold once kept hunger outside mine.
+opinion sump for 1 : The Sump's my crease on the map. I could pick it out by touch.
+
+grown
+line greet [pair.band=strangers] : Fresh face. Settle where the boards are firm. | There's space on the flat here.
+line greet [self.working=yes] : Welcome at my working elbow. | You needn't hurry to speak.
+line greet [here.time=dawn] : Morning. A clean fold to start on. | The light's coming up even.
+line greet [here.time=dusk|night] : Evening, with the day's wrinkles showing. | A little company before folding up.
+line kin.open [pair.kin!=no] : Family fit whichever way the page lies. | Here, kin have room.
+line again.open : We've opened this map already. | Back across my coastline, I see.
+line greet.return : Hello. I'll hear you out. | My ears aren't folded shut.
+line greet.return [pair.band=friends|family] : You'd know my voice through a wall of steam. | My corner's easy round you.
+line greet.return [self.working=yes] : Go on while I lay this flat. | I've time to listen on the next pass.
+line greet.return [here.time=dusk|night] : Come closer in the dim light. | Evening. I know your outline.
+line farewell : A smooth stretch of street to you. | Leave with both corners square.
+line farewell.return : I'll keep your corner clear. | Walk in your own good time.
+line farewell.return [here.time=night] : Gentle night on the other side. | Find the dry edge after dark.
+line react.news : Lay the word flat for me. | Let's see both borders of it.
+line react.news.new : New ink on my map. | That coast wasn't marked before.
+line react.news.known : I've felt that crease already. | It came across my board earlier.
+line react.news.doubt : I'd let that account lie before trusting the print. | I can see a wrinkle still in that telling.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy thing to lay out. | Stay with me while it settles.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd press that news smooth and keep it. | Glad word. That's worth preserving.
+line ask.how : How badly has the day creased you? | Are you keeping a level hand?
+line answer.how : I'm coming flat by degrees. | Steady as my old table.
+line decline : I'd sooner give my hands a slower task. | That would leave today's work only half wrung.
+line accept_decline : No strain on either edge then. | Good. We've settled the shape.
+line thank : I'll keep that good turn pressed safe. | Worth more than a fresh card.
+line sympathise : Lean your heavy side against mine. | I'll take the slippery edge.
+line reassure : A wrinkle doesn't spoil the cloth. | There's dry board under it still.
+line preclose : I'll go put my maps away. | My hands want the quiet of a last rinse.
+
+scene crease
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I rest my palm where a fold crosses the sea.
+b : Does that press it flat? | What happens to the coast?
+a : Give warmth a minute. Paper remembers the lift of a hand. | I can see a whole inlet that was hiding.
+
+scene wring
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I stop twisting as soon as water comes out in beads.
+b : Why then? | Surely more comes out?
+a : The last water's cheaper than a torn shirt. | It will. I'd rather give it air than stretch the threads.
+
+scene iron
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I put iron and water in the same oath.
+b : A forge oath? | Why water too?
+a : Iron for the part that won't budge. | Water's what I ask to carry my temper off.
+
+scene cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I deal from the smooth corner of a pack.
+b : Are the other corners marked? | Does that improve your luck?
+a : Marked by honest thumb work. I turn the pack after each hand. | Only my dealing. Luck wouldn't recognise a smooth corner.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I eat an apple over my map with the page shut.
+b : Why shut the page? | Do you save the skin?
+a : One crisp bite can send juice clear across a county. | A crisp peel's the best bite. I save the seeds to weight the paper.
+
+scene salt
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : A wind off the salt makes my coat dry all wrong.
+b : How wrong? | Can a comb put it right?
+a : Little stiff bits where a paw ought to slip through. | A rinse first. No sense combing half the Sound into a brush.
+
+scene floor
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A slick board at home puts me straight back at work.
+b : Can you tell it's wet? | How do you begin?
+a : My toes find the cold quicker than my eyes find the shine. | Dry one place to stand. A wolf needs steady ground to wipe anything else.
+
+scene thunder
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder sounds best through a stout roof.
+b : Too loud outdoors? | What does the roof add?
+a : Out there I'm busy wondering where to put the map. | The pleasant fact that it's sheltering my own head.
+
+scene foldtown
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : My map has been folded round the Sump so long there's a ridge.
+b : As high as the real stairs? | Can you read the names?
+a : High enough to send my apple seed rolling. | I don't need the names on that part any more.
+
+scene wager
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I won't put bread money on a bright card.
+b : What would you wager? | Even with a fine hand?
+a : The trouble of doing the next shuffle. | A good hand's much pleasanter when supper's safe.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# the first choice of sides at cards.
+b : Even the warm seat? | Does it change the game?
+a : Especially that. A game ought to be a welcome. | Not one pip. It changes how the players feel.
+
+scene days
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A folded day takes less room in my head.
+b : What does that mean? | How do you fold one?
+a : Finish one small thing properly and put it away. | I put my tools by in the order I'll want them tomorrow.
+
+scene sore
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I soak my hands in plain water after a long day.
+b : Warm water? | No soap?
+a : Only skin warm. Anything hotter makes the knuckles smart. | My hands have had about enough of soap by then.
+
+scene hill
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember the smell of wood smoke beyond the streets.
+b : From a visit? | Do you miss it?
+a : I needn't remember the road to remember the air. | I miss the quiet round it. Smoke we've plenty of here.
+
+scene worn
+when topic=work self.job=laborer self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I look for a weak seam before a stain.
+b : Why that way round? | What gives the seam away?
+a : A stain can wait. A split travels under your hands. | A little ladder of light when you hold the cloth up.
+
+scene print
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A printed map never shows where a low rail's most welcome.
+b : Would you draw one in? | What else is missing?
+a : I'd mark it with a firm little bar, about hip high. | The landing broad enough for tired paws to unfold a sheet without a breeze.
+
+scene soup
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I like a clean dishcloth under a hot dish.
+b : For the table? | Why clean underneath?
+a : Two purposes. Saves the board and catches the drip. | Something always drips onto an edge I mean to use later.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt a whole country shrank in my wash.
+b : What happened to its hills? | Could you still see home?
+a : They came out very pronounced under the iron. | Yes. All the surrounding streets just seemed uncommonly close.
+
+story rededge [topic=memories]
+  : I washed an old kerchief and found a little red line along one hem. It curled so much like a shoreline that I went to fetch my map.
+  : Set side by side, one was a perfect match for the other. My damp kerchief had picked up the print through my pocket.
+  b : Did the map lose its coast?
+  : Just some colour. Ever since I've carried them in separate pockets.
+
+story pip [topic=pastimes self.likes=cards]
+  : I once sat down to play and found my ace had acquired another pip. It had a stem and smelled of apple.
+  : I'd dealt myself a seed. A rather good seed with a shiny back, but no use at all as an ace.
+  b : Did you keep it?
+  : Till the close of that hand. I lost the trick quite fairly.
+
+story roof [topic=weather]
+  : A rolling noise woke me once. I lay still enjoying a thunderstorm until the same noise went right past my door.
+  : A round wood weight had fallen off my shelf. It was following the slope of the floor through the house.
+  b : Where did it stop?
+  : Against my boot. I still use that boot to tell whether the boards have shifted.
+
+rule @aside1
+when concept=bark self.job=laborer self.working=yes
+does aside
+cooldown 6h
+say Knuckles steady across the weak bit. | Soap last on the print.
+
+rule @aside2
+when concept=bark self.likes=old_maps
+does aside
+cooldown 7h
+say Flat hand at the river mouth. | Give that little inlet time to open.
+
+rule @aside3
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Dry footing before the next bowl. | Wipe the boards where the light misses.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Weights off, map folded inland. | Leave one clean rag for morning.
+
+dlg resident.hub : Rest yourself on the solid board. There's no call to rush through your business here.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I remember how our conversation folded up.
+dlg resident.job [self.job=laborer self.workplace] : I wash at #self.workplace#. Weak threads get a kinder hand than stubborn stains.
+dlg resident.news [world.news] : I've heard this much distinctly. #world.news#
+dlg resident.bye : Leave an easy fold in the day behind you.
+
+graft resident.hub
+choice Does your map ever lie flat? -> press_map
+node press_map
+say Mostly. There's one little wrinkle where one bay reaches inland that I rather like. If the page went perfectly flat I might never find that bay again.
+free
+choice Why keep that wrinkle? -> press_bay
+choice I see the bay now. -> hub
+node press_bay
+say When I was smoothing it out I found a tiny island drawn under the crease. Now I can point it out for somebody who's got a moment to spare.
+choice There's an island worth visiting. -> hub
+choice I'll leave the coast in your care. -> bye

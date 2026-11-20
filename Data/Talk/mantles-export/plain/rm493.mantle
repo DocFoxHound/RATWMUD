@@ -1,0 +1,257 @@
+mantle rm493
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_dagfinn_brineley
+title the mile owed in pastry
+fits stage=adult|old
+prefers role=civilian
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk assigns_a_return_walk_to_each_small_favour
+likes plum_tart long_walks market_bustle frosty_mornings
+dislikes early_bells smoke
+fears taking_a_favour_for_granted
+hopes to_be_trusted_with_a_longer_walk
+topics travel +0.5 friends +0.3 work +0.3 prices +0.2
+styles comfort=practical gossip=measured refuse=soft tease=none
+marks oath saying
+persona #self.first# measures each small favour in the return walk it might spare and leaves a particular place in the account for a slice of plum tart.
+
+words
+oath! = Spare my second mile | By the purple remainder
+saying! = A favour has a walking distance | Think of the return before counting supper
+mile = the returning mile | my unpaid stretch
+turn = a small spare turning | the corner I can save
+tart = the plum end of a tart | a dark slice under pastry
+stone = a plum stone | the smooth pit
+crust = a short buttery edge | a flaking pastry lip
+bustle = the rush between stalls | a river of baskets
+frost = a white rim on stone | frost on the worn paving
+ear = the soot by my ear | one marked ear
+burr = a burr in my ruff | a dark little hook of seed
+paper = my inside reckoning | a folded distance slip
+length = a double stretch | a measured distance
+bell = the uninvited early bell | a blunt brass clang
+
+any
+opinion houses against 1 : I could walk every mile on my own feet and still need a House to acknowledge the last few yards. I'd like a better measure of merit.
+opinion festivals for 1 : A feast lets me hear the accounts from both ends of the market in a single walk.
+opinion church against 1 : An excellent sermon will occupy the interval before supper. It doesn't supply the supper itself.
+opinion city for 2 : I can walk a day entirely inside the city and still turn a new corner on the way home. That's a considerable attachment.
+opinion sump against 1 : Below the Ropewalk I find fewer of the quiet, clear return routes I prefer. I keep my spare walking higher up.
+
+grown
+line greet [pair.band=strangers] : Come into the short return stretch. | A new face to place along my walk.
+line greet [self.working=yes] : I can spare a little walking time. | Talk where we both have clear footing.
+line greet [here.time=dawn] : Morning. The page of miles is blank. | Early light lands squarely on the turning.
+line greet [here.time=dusk|night] : Evening. I keep the gentler miles for now. | Welcome on the homeward piece.
+line kin.open [pair.kin!=no] : Kin make a welcome detour. | Glad to set the family distance aside.
+line again.open : My return walk brings you round again. | Another greeting from these well-travelled soles.
+line greet.return : Hello. I can stop here comfortably. | A word reaches me without an extra step.
+line greet.return [pair.band=friends|family] : Your voice is never a wasted turning. | An old acquaintance shortens the way.
+line greet.return [self.working=yes] : I can round off this task as I listen. | There's a moment between useful errands.
+line greet.return [here.time=dusk|night] : Evening. Near enough for a clear return word. | The last lamp leaves us in earshot.
+line farewell : Keep one easy mile in reserve. | A pleasant distance between your doors.
+line farewell.return : I'll stretch my own legs after you. | The shorter return wherever it suits.
+line farewell.return [here.time=night] : Go by the best-lit turning tonight. | No extra miles through the dark for you.
+line react.news : How far did this word walk? | Which end of the account arrived first?
+line react.news.new : A new distance to put on paper. | That's word I hadn't carried before.
+line react.news.known : I've already walked this account home. | Same measure as on the earlier visit.
+line react.news.doubt : I'd check where that story actually began its travels. | A twice-told mile can lengthen very considerably.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can walk the hard bit beside you. | Let me spare you a little of the return.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Glad news puts a spring in the homeward mile. | That's an errand I'd do for nothing.
+line ask.how : Have you had a stretch of road to yourself? | Did the return errands leave you much daylight?
+line answer.how : I'm collecting useful turnings as I go. | A good distance with a little ambition left over.
+line decline : I'd rather keep my next stretch open for a useful return. | I'd best save what daylight remains to repay an old kindness.
+line accept_decline : Your own route to choose. | I can strike that turning off the account.
+line thank : You've saved me a measurable piece of walking. | That kindness deserves the return journey.
+line sympathise : Let me fetch something you need while you rest. | No need to stand through the whole telling.
+line reassure : One spare step can wait until tomorrow. | We can find the shorter road together.
+line preclose : I'd best take my open miles in hand. | Time to close my private distance account.
+
+scene favour
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I remember a favour by the bit of road it saved me.
+b : Does every favour save a walk? | Do you repay in miles?
+a : Some save a visit I'd have been sorry to make. They're the longest miles in my private reckoning. | Sometimes I can collect a parcel on my return route. It's a practical sort of thank you.
+
+scene tart
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I like a tart sliced straight through one plum.
+b : For the pretty colour? | Doesn't the juice run?
+a : For a little indication of what fruit the baker has actually used. A pleasing examination. | I fold a corner of crust towards the low side and receive the juice there.
+
+scene walk
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I can spend the afternoon on an errand with absolutely no business attached.
+b : Do you invent one? | What's the point of that?
+a : Eventually I notice some small courtesy I can manage on my way home. It needn't be compulsory. | To find the roads I miss when I'm trying to shorten an already busy walk.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost turns each footprint into a perfectly legible little expense.
+b : Whose expense? | Can you read them?
+a : Of warmth, for the walker, and of white crust for the road. They settle the sum between them. | Enough to see that one set was moving briskly while another kept circling one spot.
+
+scene market
+when topic=day self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : In a busy market I can judge a quarter's appetite without touching a coin.
+b : By the sellers? | Would you write it down?
+a : By the baskets coming out. Everyone goes in with pretty nearly the same empty handle. | No. I watch because such a busy place can still keep a single plain idea in view.
+
+scene bell
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : I object when a bell makes the first decision of my day for me.
+b : Isn't being up a useful start? | What decision?
+a : Useful after I've had a proper night's sleep. A clamour adds no hours to it. | Whether to turn over once and finish a thought before getting dressed.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : A smoky lane can make a short walk unnecessarily dear.
+b : Does it stop you? | Dear in what?
+a : I take the longer streets and arrive with a voice fit for offering a civil greeting. | A watering pair of eyes and the loss of the smell of a perfectly good plum tart.
+
+scene learn
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I would like to be trusted with the part of the job that requires a longer view.
+b : What do you practise first? | Trusted by whom?
+a : Finishing the short piece without asking anybody to make the return visit for me. | Whoever is instructing me. A promise of improvement travels less well than an accurate piece of work.
+
+scene nojob
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I look for things that need doing again tomorrow before I boast of being busy today.
+b : Why tomorrow? | Does that make a trade?
+a : Something done well leaves an opening for a second useful task. | Eventually, perhaps. For now it makes me somewhat more useful company.
+
+scene crest
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : In the Heights it is perfectly easy to mistake a long view for a good knowledge of the lower streets.
+b : How do you avoid that? | You like the view?
+a : By walking down till a roofline becomes a row of actual doors and feet. | Very much. I like knowing who has to walk uphill to bring anything into that view.
+
+scene coal
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There is a wood smell under freshly cold air that I would willingly walk some way for.
+b : Like a hearth? | Even though you dislike smoke?
+a : Like timber before the smoke takes possession. The two have quite different claims on my nose. | Precisely. A quiet stick of wood offers a more agreeable opinion than a smoking chimney.
+
+scene price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I count the return walk towards the real cost of a bargain.
+b : Wouldn't that make nearby goods dear? | Any exceptions?
+a : The opposite. A distant discount can quite easily consume itself on the way home. | If I wanted the walk anyway, yes. I don't bill the plum seller for my pleasure.
+
+scene newface
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer may know a better use for the spare end of a journey than I do.
+b : Would you ask? | Don't local feet know best?
+a : Certainly. A visitor can see two related errands we have kept separate out of habit. | Local feet can wear a groove so deep it looks like an instruction.
+
+scene promise
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I mark a promise in terms of what it would cost me to go the promised distance.
+b : Is that stingy? | In coin?
+a : I intend to deliver. A generous promise made without a thought for its cost isn't entirely generous. | In time, more often. A half hour can be promised to only one wolf at once.
+
+scene gatebound
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I've found some distances are shorter if I don't begin by telling anybody I'm in a hurry.
+b : How can that help? | What does hurrying cost?
+a : I then look where I'm going instead of announcing my intended speed. | Often a second trip to get the thing I rushed away without collecting.
+
+scene gatefriend
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : An excellent friend lets a favour remain small after doing it.
+b : Would you forget it, then? | How small?
+a : I try not to enlarge the obligation into something too grand to enjoy returning. | A slice of pastry moderately thicker than strict equality. I'd welcome the chance to cut the next slice.
+
+scene summer
+when topic=season here.season=summer
+does tell.self / ask.detail / answer.detail
+a : In summer I save a long errand for the returning cool.
+b : Don't you spend the outward bit in heat? | Is that an advantage?
+a : I take it slowly enough to arrive civilly. The faster stretch can wait for evening. | I arrive home thinking rather more fondly of the job than I might with a hot coat.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed every favour had a street sign giving its exact distance.
+b : Any surprises? | Was it a well-planned town?
+a : One forgotten piece of tart came to three long streets. I've awoken with serious doubts about that particular charge. | The kindest deeds were all along a lane that had no sign at all.
+
+story pitsum [topic=food]
+  : I once saved plum stones from a tart to see precisely how much fruit had gone into my slice. I set three out on a clean little sheet.
+  : One rolled from the paper and brought two more out from the fold where I'd kept yesterday's stones. I'd begun charging today's baker for yesterday's fruit.
+  b : Did your tally survive supper?
+  : I abandoned it and had another small slice with entirely satisfactory confidence.
+
+story icywalk [topic=memories]
+  : I once turned around on a frosty road to see my own steps coming up behind me. They followed me exactly, until a pair of them went off to the left.
+  : I turned and found a short duplicate trail from an earlier errand. I had set out on a long circular walk and come home without noticing the last turning.
+  b : Were you disappointed?
+  : Delighted. I had half an hour still to spend and a doorstep conveniently to hand.
+
+story burrcount [topic=travel]
+  : I set three burrs on my cuff to remind me of three errands. I brushed a hedge and acquired several additional responsibilities.
+  : There were seven burrs by the gate, only three real errands, and no reasonable way to tell which was which.
+  b : Did you forget one?
+  : I wrote all three on paper once indoors again. A hand could keep a list perfectly well without persuading a hedge to help.
+
+rule @aside1
+when concept=bark self.apprentice=yes
+does aside
+cooldown 6h
+say Give the short task a sound finish before asking for more. | No extra trip on another wolf's time.
+
+rule @aside2
+when concept=bark self.likes=long_walks
+does aside
+cooldown 7h
+say One spare mile for discovering a different door. | Let the road run a little past its errand.
+
+rule @aside3
+when concept=bark self.dislikes=early_bells
+does aside
+cooldown 8h
+say My feet haven't taken the first vote yet. | A quieter beginning would still be morning.
+
+rule @aside4
+when concept=bark here.season=winter
+does aside
+cooldown 9h
+say Look at the white steps before the sun spends them. | One pair out, one pair in. A well-balanced road.
+
+dlg resident.hub : I've time to stop while the road is comparatively free. An errand can still improve when somebody interrupts it with sense.
+dlg resident.job [self.apprentice=yes] : I'm learning to finish the task I'm trusted with and recognise which one might be worth asking about next.
+dlg resident.job : I take an interest in work that brings a useful result all the way home.
+dlg resident.news [world.news] : This account met me on my return errand. #world.news#
+dlg resident.bye : Allow a spare stretch of the return walk for something you actually enjoy.
+
+graft resident.hub
+choice How far would a slice of plum tart oblige you to walk? -> tart_mile
+node tart_mile
+say That depends on who had the other slice. If I received the larger piece by a kindness, I'd go rather further than if I simply paid for the fruit.
+free
+choice How would you repay the larger piece? -> return_slice
+choice The fair distance seems a useful question. -> hub
+node return_slice
+say Come back carrying a little extra of something my host wanted, before being asked to go out again. Both walks then have an excellent reason.
+choice I'll remember to ask about the return errand. -> hub
+choice I shall take my piece on the road. -> bye

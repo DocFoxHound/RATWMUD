@@ -1,0 +1,254 @@
+mantle rm282
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hanne_sootham
+title the pocket constellation
+fits stage=adult|old
+prefers job=sailor
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk rubs_charcoal_dots_into_a_private_constellation
+likes pickled_herring riddles quiet_chapel summer_evenings
+dislikes deep_mud drizzle
+fears a_winter_rope_pulled_in_four_directions
+hopes one_clear_evening_with_everything_ashore
+topics work +0.5 pastimes +0.4 faith +0.3 season +0.3
+styles comfort=deliberate gossip=inquisitive refuse=mild tease=none
+marks oath saying
+persona #self.first# carries a pocket of coal, counts the sooty fingerprints after a good lift and lets a question ripen before asking.
+
+words
+oath! = Speckle my supper | Black my last clean corner
+saying! = Coal keeps the shape of a warm hand | Count a good landing after the rope goes slack
+coalchip = a knobbly coal chip | a flat coal shard
+print = a smudgy thumb mark | a sooty oval
+herring = a silver curl of herring | a pale strip of fish
+brine = a bright drop of brine | a clear salty bead
+sling = a doubled sling | a loop under the load
+plankgap = the dark bit between boards | a strip of tide
+window = a square of green glass | a patch of coloured light
+riddle = a deliberately crooked question | a puzzle with a bend
+sill = the bare sill | a worn little ledge
+pouch = my dark-lined pouch | a deep side pocket
+rag = a white wiping rag | a pale cloth end
+ember = a low orange glimmer | a single red point
+
+any
+opinion church for 1 : A quiet seat costs no more because I've arrived with black on my paws.
+opinion dole for 2 : Fish and meal make a sensible answer to a hungry question.
+opinion houses against 2 : Each House may hold one end, but it's the wolf under the swinging crate I worry for.
+opinion sump for 1 : I can come home black up to my wrists without raising an eyebrow at the door.
+opinion merchants against 1 : I like weights level enough that a dock paw doesn't need to steady the buyer's side.
+opinion strangers mixed 1 : A stranger may have a new riddle or a long bill. I wait to hear which.
+
+grown
+line greet : A clean end of the rail for you. | Come within easy talking distance.
+line greet.return : Kindly received. Mind the coal smudge beside me. | A steady welcome in return.
+line again.open : We haven't even rubbed the old prints off yet.
+line farewell : A gentle landing at your next stop. | May your pocket carry whatever comforts you.
+line farewell.return : My wishes for a fine unloading at day's end. | I'll keep the good part of that farewell.
+line react.news : Turn the account over once where I can see both faces. | I'm ready for the little particulars.
+line react.news.new : That makes a new spot on the page.
+line react.news.known : I've touched that account before.
+line react.news.doubt : I wouldn't put my clean thumb under it.
+line react.news.sorrow [topic.kind=death|loss|assault] : I wish I could take some weight out of that news.
+line react.news.glad [topic.kind=birth|marriage|work] : A bright mark to close out a long day.
+line ask.how : What weight have you set down today?
+line answer.how : I've a steady grip and enough time for a word.
+line sympathise : You can rest your end. No need to explain first.
+line reassure : Sometimes the sling holds after the awful creak.
+line refuse : I promised these shoulders another little job first.
+line accept_decline : Leave it down then. There's no hurry over it.
+line preclose : I'll be taking my own weight on again shortly.
+line accept_preclose : Go while the going still feels easy.
+line ack : I've got the gist and the weight of it.
+
+scene exchange1
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : A sling feels different a moment before taking the load. | I leave my coal in the other pocket when I'm lifting.
+b : What do you feel? | Does luck know left from right?
+a : A small check running from the rope into my elbow. | My hip knows when a lump gets pinched.
+
+scene exchange2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Coal makes a little sky on my lining. | I can sort my coals without looking.
+b : What shines in a black pocket? | By the edges?
+a : The clean dots where my claws have picked pieces out. | The lucky ones have gone quite smooth from rubbing.
+
+scene exchange3
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I like herring cut in narrow silver curls. | Brine glitters just the way coal does wet.
+b : Does it keep better? | You don't mix the two?
+a : I can make each curl a separate pleasure. | No, and I wash between subjects.
+
+scene exchange4
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I'll set a riddle with its answer in my paw. | My favourite puzzle can have a black or a white ending.
+b : A copper? | A mark on cloth?
+a : A coal. You can see the answer round the edges of my claws. | Depending which bit you look at. Well seen.
+
+scene exchange5
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : Inside the chapel my steps arrive separately. | I sit where the coloured glass reaches my paws.
+b : No cargo behind you? | Does it hide the coal dust?
+a : Not even a call to keep time with. A rare luxury. | Turns it violet. I can live with violet.
+
+scene exchange6
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A summer evening makes a second day after work. | Long evenings give me time to count a whole pocket.
+b : What's the work of the second day? | Do you need the number?
+a : Sitting through it till the light goes soft. | No. Counting something I needn't account for feels good.
+
+scene exchange7
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Mud does a poor impression of sound dock boards. | I leave very round prints in deep mud.
+b : Looks solid on top? | On purpose?
+a : Then it takes the whole weight with disgraceful enthusiasm. | I turn to look behind me and mud never lets the heels go first.
+
+scene exchange8
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle makes my pocket marks spread. | These tiny drops are freckling my sleeve.
+b : Does the luck spread too? | Better than a soaking?
+a : I'll claim it does. No point giving damp the last word. | A proper downpour would let me call the whole sleeve grey.
+
+scene exchange9
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A pale doorstep will tell me if I've emptied my pockets. | I fold the coal pouch inside out to clean it.
+b : One black mark means you haven't? | Do you ever get it white?
+a : One for each time I thought to check. | It began life grey. I've modest ambitions for the thing.
+
+scene exchange10
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I worry the Houses may pull at cross purposes before the cold. | By winter I'd like a few fences left unshaken.
+b : Any sign of it yet? | By weather?
+a : Just a worry. My shoulders rehearse bad lifts in advance. | By the great folk leaning over to see what their neighbours own.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : #self.friend# would get a choice of my two smoothest coals. | I give a friend time over a puzzle.
+b : Which one would you keep? | No clues at all?
+a : The other. I'd know the pair was divided kindly. | A choice of wanting a clue. That's only civil.
+
+scene exchange12
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I leave a crate a whole palm's space between it and the next. | I listen when the prop knocks wood.
+b : For the ropes? | What does that knock mean?
+a : For the paws getting the ropes back out. | Whether it's seated right or just pretending.
+
+scene exchange13
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I prefer ending a long walk near a wash trough. | A turning with a pale stone stays in my head.
+b : To cool your feet? | You mark the stone with coal?
+a : To see the little dark clouds come off my paws. | Only on paper. The street's its own clean business.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A full pocket's no grand boast these times. | Tight times mean more visits to the brine pot.
+b : It's coal, is it? | Still fish in it?
+a : The coal would still burn. There's that comfort. | Enough flavour for a second meal if I add a potato.
+
+scene exchange15
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : One account has it that #topic.subject# #topic.claim#. | A rumour leaves prints without asking leave.
+b : What's under that account? | Will it mark you too?
+a : I don't know. I'd like to look before I lift it. | Hearing is one mark. Passing it on leaves another.
+
+scene exchange16
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Where the docks end the boards give way to gritty stone. | I watch the shadow in a plank gap.
+b : Which do your feet like? | Why look down there?
+a : Stone, when I'm trying to catch a riddle's final words. | The water goes on moving when the whole street seems stuck.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I stretch my hand after carrying something weighty. | I take shorter steps after a hard lift.
+b : A cramp in it? | Still sore?
+a : I just like feeling five separate claws again. | I'm giving my shoulders a little warning at each turn.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Emptying my pocket's the final chore of my shift. | I take my first clean bite very slowly.
+b : Do you leave the coal behind? | Because you're hungry?
+a : Just the powder. I begin again with the lumps. | Because I've just washed and I'd like the evidence to last.
+
+story tale1 [topic=memories]
+  : I had a coal shaped like a tiny seat. I set it on a window board and turned it to the light.
+  : By evening I'd been past ten times to see whether its little legs had shifted.
+  b : Did it move?
+  : One short leg was a flake. I saved the seat and got a whole new lucky chip.
+
+story tale2 [topic=work self.job=sailor]
+  : I once spent a shift trying to keep a borrowed rag clean. Tied it under one sleeve, used the other for every smudge.
+  : At the end my coat had one grey arm and one quite black one.
+  b : How was the rag?
+  : It was black on the inside from being next to my skin. I washed the lot together and owned up to my clever scheme.
+
+story tale3 [topic=faith self.likes=quiet_chapel]
+  : I sat watching a little patch of coloured light creep towards the toes of my boots.
+  : I held both feet still until the colour had passed like a warm tide.
+  b : Was it worth waiting for?
+  : My shoulders had come down a whole inch while I watched. I left lighter than I arrived.
+
+rule @call1
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Wait for the sling to hang free. | Dry plank under that corner first.
+
+rule @call2
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Good light for turning out a pocket. | Even the rough coal shines in this light.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Black streak coming through my cuff again. | Drip quietly. I'm trying to count.
+
+rule @call4
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say A little vinegar would wake that bowl right up. | There's a fine silver shine in the pickle.
+dlg resident.hub : There's a puzzle in my pocket and time left over for company.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you're welcome at my clean elbow.
+dlg resident.hub [here.time=night] : Dark enough that the coal won't show even if I drop it.
+dlg resident.hub [pair.disposition=wary|hostile] : You can see both my paws. Out with your errand.
+dlg resident.job [self.job=sailor] : I unload the ships. A steady pause before lifting saves trouble later.
+dlg resident.job : I'm happiest when I can see a thing settled properly on the ground.
+dlg resident.news [world.news] : The news has landed here too. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I caught this. #topic.subject# #topic.claim#. It has somebody else's prints all over it.
+dlg resident.bye : Carry a chip of today's good luck away with you.
+
+graft resident.hub
+choice Can you tell a lucky coal by its shape? -> coal_print
+node coal_print
+say The first day they're all rough and ready to snag a lining. Rub one long enough and it begins to fit the place between your claws.
+free
+choice So the luck takes time? -> coal_print_again
+choice Goodbye. -> bye
+node coal_print_again
+say My patience certainly does. The coal and I bring each other along.
+choice Keep the smooth piece handy. -> hub
+choice Goodbye. -> bye

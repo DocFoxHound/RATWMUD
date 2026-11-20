@@ -1,0 +1,258 @@
+mantle rm464
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_septimus_ives
+title the copyist's beet alphabet
+fits stage=adult|old
+prefers job=scholar
+traits temper=even talk=chatty warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk letters_the_seed_rows_with_ships_initials
+likes pickled_herring digging full_larder first_warm_day
+dislikes crowds drizzle
+fears a_tattered_ledger_end a_bed_without_labels
+hopes a_private_index a_row_of_clean_red_roots
+topics work +0.5 pastimes +0.4 gossip +0.3 land +0.2
+styles comfort=practical gossip=sly refuse=guarded tease=dry
+marks oath saying
+persona #self.first# keeps the public copy legible, the private index folded and the garden under a curious alphabet of ships.
+
+words
+oath! = Ink my beetroot | Blot the port list
+saying! = A margin belongs to the writer | Put the title where the rain won't get it
+initial = the ship's initial | a private letter
+edgebook = my folded index | the narrow index
+stake = a split seed stake | the pointed label
+crowd = a press of elbows | a clot of shoulders
+drip = a run of grey drops | that fine cold mist
+basin = a vinegar bowl | my little glazed dish
+fork = a small digging fork | the short fork
+tip = a cut nib | my narrow point
+margin = the plain margin | an inch of clear paper
+beet = a seal-shaped little beet | a good dark root
+print = a red ring | a purplish thumbprint
+shelf = the jar shelf | my upper plank
+flag = a narrow flag at the stern | a patched square of sail
+
+any
+opinion @1 church against 1 : Where an offering lands interests me. The plate is out of reach before I can read the tally.
+opinion @2 city for 1 : Our city has a hill for every sort of writing hand and a wharf for one that's tired of ink.
+opinion @3 festivals for 1 : Festival talk comes up in batches. I find an outside stair and hear the lot.
+opinion @4 watch against 1 : A public watch ought to keep an account a member of the public can read.
+opinion @5 houses mixed 0 : I can fit a House name into a short column. Its dealings take more room.
+opinion @6 merchants mixed 0 : Some state the brine apart from the fish. Some sell the bowl as if it too had fins.
+
+grown
+line @1 greet [pair.band=strangers] : Here's a broad enough margin to take you in.
+line @2 greet [here.time=dawn] : Fresh sheet in the dawn light. Step up.
+line @3 greet [here.weather=rain] : Away from the spots on the page, if you please.
+line @4 greet.return : I've your word down quite legibly.
+line @5 greet.return [pair.band=friends] : Your own familiar flourish. I'd know it small.
+line @6 farewell : Keep your thumb off the last wet stroke.
+line @7 farewell.return : That's a closing mark I can read.
+line @8 again.open : The next entry looks remarkably like the last visitor.
+line @9 kin.open [pair.kin!=no] : A family entry doesn't need the public index.
+line @10 hail [pair.band=friends] : My friend just beyond the inkwell!
+line @11 react.news : Loud enough for the heading. Now for the small hand.
+line @12 react.news.new : There's a line my pen hasn't touched.
+line @13 react.news.known : Already drying down in the earlier column.
+line @14 react.news.doubt : A fine black heading can stand over a very blank page.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I'll put the nib down. I'll hear whatever you care to say.
+line @16 react.news.glad [topic.kind=birth|marriage] : A bit of colour worth putting in beside the date.
+line @17 answer.how : Readable at a decent distance, thank you.
+line @18 decline : I'll keep my name off that particular undertaking.
+line @19 accept_decline : I can leave your place in the column empty.
+line @20 sympathise : Some hurts are bad company for a bench full of talk. Here's a quiet edge.
+line @21 thank : I'll put that kindness in my own hand.
+line @22 deflect_thanks : No receipt for a small kindness, if you please.
+line @23 preclose : I've a private line that daylight might just let me finish.
+line @24 accept_preclose : Your closing bracket falls in a sensible place.
+
+scene beetletter
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I put #initial# on #stake# before sowing each row.
+b : Why put ships to work in the garden?
+a : I can name any hull the Sound sends in. I'd never remember a plain third row of beets.
+
+scene herring
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail / assess
+a : My herring sits in #basin# outside arm's reach of the ink.
+b : Was there once a mix-up?
+a : The vinegar made a beautiful pale hole in a numeral. I ate my dinner and copied the whole line again.
+b : A long reach for supper seems a small price after that.
+
+scene larder
+when topic=food self.likes=full_larder
+does tell.self / react.self / assess
+a : I like #shelf# best when no daylight comes between the jars.
+b : Which shadows show a jar running low?
+a : The fullest cast the longest shadows when I bring a candle level with the shelf.
+
+scene warmday
+when topic=weather self.likes=first_warm_day
+does tell.plan / ask.detail / answer.detail
+a : First warm morning I walk the beds with an uncovered wrist.
+b : What does bare skin tell you?
+a : If it feels the sun between two gusts I'll take #fork# out and test the earth.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #drip# raises the grain on a sheet till the nib catches.
+b : Can the worst of it be pressed down?
+a : Pressing only flattens it. Give me some unspoilt paper for those figures.
+
+scene press
+when topic=smalltalk self.dislikes=crowds
+does give.opinion / disagree / concede
+a : I say a jostled witness makes a poor witness.
+b : A crowd sometimes sees more than one wolf can.
+a : More eyes, yes. I'd ask for the accounts separately before comparing.
+
+scene hand
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I make a little trial loop before copying anything that costs coin.
+b : Why a loop?
+a : A clogged point will write a straight stroke and fool you. It can't turn round inside a loop.
+
+scene desk
+when topic=memories
+does tell.feeling / sympathise / assess
+a : I knew enough figures as a pup to want the whole desk the figures went with.
+b : Took some waiting to get to sit at one, I suppose.
+a : Quite a wait. I learnt to copy standing in the meantime.
+
+scene purse
+when topic=gossip
+does tell.worry / reassure / assess
+a : I keep two sorts of entry about payments. Only one book is fit for public fingers.
+b : Nobody here needs to unfold your notes.
+a : #edgebook# can say where a public column falls silent. I can leave it at that.
+
+scene guard
+when topic=lore
+does give.opinion / disagree / concede
+a : An unrecorded courtesy at a gate might cost the street money.
+b : A nod to a neighbour doesn't always hide a payment.
+a : Which is precisely why I'd enter sums, not nods. Ink is cheap enough for the distinction.
+
+scene ship
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd name a vessel for you just from #flag# above a roof.
+b : Won't a replacement sail upset the whole system?
+a : I've #initial# down beside the stern shape too. It takes two changes to lose me.
+
+scene gift
+when topic=food
+does offer / accept / assess
+a : Would you take a spare beet to put beside your fish?
+b : I'd be glad of something to cut the vinegar.
+a : I'll choose you #beet#. There's sweetness left even close to the skin.
+
+scene lean
+when topic=prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : My shopping list grows a wider margin in lean weeks.
+b : Have the prices crowded out the food?
+a : The margin is for smaller measures. I keep the old cost there for a comparison.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# a key to my garden sooner than a key to my desk.
+b : Is the garden less private?
+a : You can only lift a root once. A copied page comes home with you and stays with me.
+
+scene stair
+when topic=season
+does tell.plan / ask.detail / answer.detail
+a : Come festival day I'll take a step just above #crowd#.
+b : Isn't the view better from higher up?
+a : I'm after the sound. Three steps up I can still hear an ordinary remark.
+
+scene sleep
+when topic=dreams
+does tell.self / react.self / assess
+a : I dreamed the whole Sound went past in alphabetic order.
+b : Must have been terrible for a ship with a late letter.
+a : It waited on my page all night. I woke up and put the garden back in any order I liked.
+
+scene fork
+when topic=land
+does ask.advice / give.advice / assess
+a : How would you turn a root without spattering the white of your cuff?
+b : Put the fork in from the path and turn its back toward you.
+a : A sensible answer. #print# near my wrist has caused some odd enquiries.
+
+scene seal
+when topic=smalltalk
+does tease / tease.return / laugh
+a : Your thumb would make a fine official seal for beetroot.
+b : Only if you pay me by the impression.
+a : I'll put the rate in red. There's no shortage of the right ink.
+
+story alphabetberth [topic=pastimes]
+  : One spring I marked my onion sets by the names of boats with high sterns.
+  : In summer I'd forgotten the order of planting but remembered every hull.
+  b : Did that help with the onions?
+  : Enough to pull the early ones first. A ship with a high stern never deserts its own gardener.
+
+story inkcup [topic=work]
+  : I once tried a spare egg cup for ink and saw two pointed ears in the reflection.
+  : I tilted the cup to improve the likeness.
+  b : Did the ears survive?
+  : One got away clean. The other finished in a great black streak across my cuff.
+
+story fullcolumn [topic=food]
+  : I made a handsome inventory of a larder and used the last onion while adding the figures.
+  : It occurred to me the fair copy was now false.
+  b : Did you scrape the figure out?
+  : I entered the onion as my fee. The account balanced and dinner was paid for.
+
+rule @nib
+when concept=bark self.working=yes self.job=scholar
+does aside
+cooldown 8h
+say That loop looks pinched. Another nib before the fair copy.
+
+rule @earth
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Loose round the shoulder. Lift clear under the root.
+
+rule @jars
+when concept=bark self.likes=full_larder
+does aside
+cooldown 8h
+say No daylight behind that vinegar crock.
+
+rule @shoulder
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 8h
+say An elbow makes a wretched pen rest.
+
+dlg @1 resident.hub [topic.meeting=stranger] : A visitor for the broad margin. #self.first# is the hand on this side.
+dlg @2 resident.hub [topic.meeting=known] : I've a corner free for you, #topic.player#. Keep the paper dry.
+dlg @3 resident.hub [here.time=night] : Come into range of the candle and I'll make you out.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can read over the table without reaching over it.
+dlg @5 resident.job [self.job=scholar self.workplace] : I make fair copies at #self.workplace#. Some marks cost more to put right than others.
+dlg @6 resident.job : I put marks where another wolf can find the sense later.
+dlg @7 resident.bye : Leave me a clear inch for the closing stroke.
+
+graft resident.hub
+choice Why is there a root beside the paper? -> beetseal
+node beetseal
+say #beet# had a split that looked like the mark of a vessel's owner. I wanted the two marks side by side before dinner.
+choice How close was the likeness? -> rootledger
+choice I'll keep my hands clean. -> hub
+node rootledger
+say Close enough to please the gardener. The copyist would want a date and a witness.
+choice How is the rest of your day? -> hub
+choice Enjoy your dinner. -> bye

@@ -1,0 +1,255 @@
+mantle rm517
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hilde_bilgegate
+title the folded hall cloth
+fits stage=adult|old
+prefers job=servant
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk shelters_a_letter_with_the_corner_of_a_hall_cloth
+likes pickled_herring dancing fresh_straw summer_evenings
+dislikes flies crowds
+fears other_hands_unfolding_family_news
+hopes a_supper_without_eavesdroppers
+topics work +0.6 friends +0.4 food +0.3 weather +0.3
+styles comfort=quiet gossip=guarded refuse=polite tease=rare
+marks oath saying
+persona #self.first# covers a letter with the corner of a hall cloth whenever the doorway fills.
+
+words
+oath! = Crush my clean rushes | Scorch my neat corner
+saying! = An open dish needn't mean an open letter | Fold small matters towards yourself
+wrap = a fresh linen fold | a spotless square
+wax = red sealing wax | a bead of hard wax
+grub = something soused | a cold morsel in vinegar
+weathertea = a long mild dusk | an evening without chill
+cloth = a striped serving cloth | a square hall napkin
+basket = a willow cradle | a covered basket
+plate = a shallow trencher | an oval dish
+step = a sideways pace | a light turning step
+cover = a rush lid | a little woven cover
+ink = a thread of grey ink | a dry pen stroke
+twine = a clean bit of flax | a fine length of thread
+rest = an evening on the back step | a seat behind the door
+
+any
+opinion houses against 1 : A borrowed House badge earns exactly as much confidence as a borrowed tablecloth.
+opinion festivals mixed 1 : I dance once the dancers have stopped counting who is watching.
+opinion merchants against 1 : I look beneath the binding before I accept any hamper by weight.
+opinion road mixed 1 : A crooked cart road can still bring a letter straight to one particular wolf.
+opinion strangers against 1 : I offer water to new arrivals. The private shelf is another matter.
+opinion drink against 1 : Spilled wine will wash away. A confidence spilled at table seldom does.
+
+grown
+line greet : Here's a place beyond the serving sweep. | Come just inside the door's reach.
+line greet.return : Welcome back. These dishes can wait a breath.
+line again.open : Back while the cloth still holds its crease.
+line farewell : Take care where the paving dips. | Go well beyond all this clatter.
+line farewell.return : I'll keep your greeting tucked safely away.
+line react.news : Give me the part that's fit for hall ears.
+line react.news.new : That hasn't arrived folded among my news.
+line react.news.known : I've heard a parcel of words much like that.
+line react.news.doubt : Who actually carried this account here?
+line react.news.sorrow [topic.kind=death|loss|assault] : May that sorrow have some shelter from curious eyes.
+line react.news.glad [topic.kind=birth|marriage|work] : A lovely piece of news to unwrap.
+line ask.how : Has the bustle allowed you an easy hour?
+line answer.how : A little stirred up, though my dishes are level.
+line sympathise : Here, let the others pass before you speak.
+line reassure : We can leave the fold closed while you think.
+line refuse : I've other arrangements under this cloth.
+line accept_decline : I'll leave your answer exactly as folded.
+line preclose : These dishes have waited on my conversation long enough.
+line accept_preclose : Slip away while the entrance is clear.
+line ack : Yes, that sits quite level.
+line thank : You made room precisely where I needed it.
+line greet [here.time=night] : At this hour the quiet end belongs to us.
+
+scene exchange1
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I turn the handles in before lifting a tray. | The last dish often arrives quite loudly.
+b : Against spills? | Can you quiet it?
+a : Against sleeves. A passing cuff is an ambitious thing. | A linen corner beneath it makes my entrance gentler.
+
+scene exchange2
+when topic=work self.job=servant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I serve from the unbroken edge. | My hall cloth has two jobs.
+b : Which edge is that? | Wiping and polishing?
+a : The side without a guest's elbow over it. | Covering bread and signalling that the bread stays covered.
+
+scene exchange3
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : Herring travels nicely under a tight lid. | I like herring with something plain beside it.
+b : Even across a busy hall? | More fish?
+a : Especially there. Vinegar discourages a curious nose. | Bread to soak up that sharp liquid.
+
+scene exchange4
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : My favourite turn needs barely a board's width. | I count a dance by footfalls behind me.
+b : Do you dance alone? | Why behind?
+a : The first turn. Then I see who keeps the measure. | Ahead I can see perfectly well.
+
+scene exchange5
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Clean straw makes an entirely different whisper. | I lay the last handful across the first.
+b : What does old straw say? | For a pattern?
+a : That everybody has been in and nobody swept. | It holds better under a turning heel.
+
+scene exchange6
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer lets one sit outside after the dishes are done. | I read my private scraps in the late light.
+b : Doing anything special? | Why outdoors?
+a : Watching a bright window become an ordinary pane. | A long dusk requires neither candle nor explanation.
+
+scene exchange7
+when topic=day self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I give flies an empty corner to investigate. | A cover ought to descend quite softly.
+b : What's there for them? | Why softly?
+a : A trace of brine well away from our dinner. | Slapping the dish sends the flies towards my face.
+
+scene exchange8
+when topic=newcomer self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A crowd can block an empty hall with questions alone. | When several faces turn I watch my footing.
+b : How do your elbows manage? | Do they put you out?
+a : Carry something which plainly won't benefit from delay. | I like my shoes where I put them.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd save #self.friend# a place near my exit. | A trusted friend can sit beside my unopened letter.
+b : Why at the edge? | Without asking?
+a : Because I can join my friend for a few breaths between journeys. | That is precisely the qualification.
+
+scene exchange10
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : One account has #topic.subject# #topic.claim#. | A whisper may be quite audible through linen.
+b : Will you pass it further? | Do you repeat it?
+a : My duties concern the serving of meals. | I replace the cloth and let supper proceed.
+
+scene exchange11
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I inspect a seal before I deliver a parcel. | A strange badge earns a civil answer.
+b : For the right colours? | And the back stairs?
+a : For a crack across the impression. Colours alone tell little. | Those are a separate question entirely.
+
+scene exchange12
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : Letters from among the vines sometimes carry a stain. | A line from family can be short enough for one glance.
+b : What colour? | Worth keeping?
+a : Pale as old leaves, by the time the fold reaches me. | For weeks, inside a square of linen.
+
+scene exchange13
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I take a quiet moment before a full service begins. | The Bright One sees past table covers, I suppose.
+b : Do you say anything? | Does that concern you?
+a : A few words for travellers carrying fragile things. | It relieves me of explaining everything aloud.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A basket should have one handle that fits your grip. | A hill is easier with the light goods on top.
+b : Why only one? | Do they slide?
+a : Two bad grips won't improve one another. | I fold the loose cloth inwards and they stay.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : In the estate quarter an upper window can hear the court. | I measure the slope by what shifts on a tray.
+b : Even softly spoken words? | Which part first?
+a : Particularly those. I never practise a confidence in the courtyard. | The spoon no guest quite dried.
+
+scene exchange16
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a price written on the outside wrapping. | A cheap cover can save a costly dish.
+b : So you needn't ask? | From rough hands?
+a : So the answer reaches us before we break the seal. | From flies much smaller than any hand.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd welcome an evening dancing without counting exits. | I imagine a private drawer that shuts soundlessly.
+b : Would you stay longer? | Would a lock improve it?
+a : I'd stay until the tune came round to its beginning. | A quiet drawer draws fewer questions.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A heavy platter tilts if I grip it too fiercely. | I steal a seated minute before the last hour.
+b : How do you steady it? | Where do you sit?
+a : By letting both wrists share the load. | On the lowest stair where nobody needs another chair.
+
+story tale1 [topic=family]
+  : A folded scrap once smelt so strongly of fruit that I stood it beside an empty bowl.
+  : A fly settled on the seal and stayed there, convinced of an impending feast.
+  b : Did the ink survive?
+  : Perfectly. I read it outside, while my disappointed guest inspected the empty bowl.
+
+story tale2 [topic=pastimes self.likes=dancing]
+  : I practised a turn with a folded cloth balanced on my wrist.
+  : The cloth landed neatly across the loaf I had meant to cover anyway.
+  b : Did you claim that was deliberate?
+  : Only to myself. For an instructor I can be surprisingly lenient.
+
+story tale3 [topic=work self.job=servant]
+  : I brought a pile of covers to a table and heard a faint tap under the last one.
+  : A spoon had caught in the hem. Every time I walked it made one tiny announcement.
+  b : Where did that spoon belong?
+  : Set it beside the bowl and enjoyed the extraordinary silence of the return journey.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First cloth, straight corners. | Morning has room for a quiet fold.
+
+rule @call2
+when concept=bark self.working=yes self.job=servant
+does aside
+cooldown 8h
+say Mind the swing of this tray. | Clean covers coming through.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Fold the dry edge under. | Don't set the linen against that wall.
+
+rule @call4
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say The last rim is wiped. | There's still a little dusk behind the shutter.
+dlg resident.hub : Speak from beside my neat pile of covers.
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's an interval we can share before the next trip.
+dlg resident.hub [pair.disposition=wary|hostile] : Questions about another household may be taken to its own door.
+dlg resident.job [self.job=servant self.workplace] : I serve the tables at #self.workplace#. Plates and privacy both need looking after.
+dlg resident.job : My work is easier to see when something has gone slightly awry.
+dlg resident.news [world.news] : The news brought here was #world.news#.
+dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. You would need to ask the source about accuracy.
+dlg resident.bye : May your seat at supper be far from the door draught.
+
+graft resident.hub
+choice What is the little flap in your cloth for? -> linen_fold
+node linen_fold
+say A private note can rest under it without advertising its presence to a whole hall.
+free
+choice Doesn't the note get damp? -> linen_fold_again
+choice Goodbye. -> bye
+node linen_fold_again
+say The dry flap faces my wrist. I learnt that much from a rather purple afternoon.
+choice I shall leave the fold alone. -> hub
+choice Goodbye. -> bye

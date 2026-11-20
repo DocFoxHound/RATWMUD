@@ -1,0 +1,255 @@
+mantle rm576
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_tilde_slagwell
+title the promised portion
+fits stage=adult|old
+prefers job=none
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=ambitious
+quirk sets_a_jar_aside_before_counting_the_larder
+likes warm_bread long_walks full_larder first_snow
+dislikes cold_tea salt_wind
+fears a_winter_shelf_full_of_empty_promises
+hopes enough_to_send_a_jar_uphill_as_well
+topics home +0.7 food +0.5 travel +0.4 work +0.3
+styles comfort=generous gossip=careful refuse=plain tease=gentle
+marks oath saying
+persona #self.first# sets a jar aside before counting the larder and remembers quiet charcoal smoke in the hills.
+
+words
+oath! = Crack my spare crock | Freeze my last crust
+saying! = Count the shelf after sharing | Good lids beat grand labels
+shelf = a stout upper plank | a level kitchen shelf
+jar = a small stone jar | a squat preserving crock
+grub = a warm loaf end | a slice fresh from the oven
+seal = a clean wax lip | a tight plain lid
+smoke = an uphill thread of smoke | a thin camp plume
+walk = a good long circuit | a stretch beyond the dray road
+snow = new snow on dark bark | a first white dusting
+wind = a salt-heavy gust | a bite off the Sound
+tea = a cup still steaming | a swallow at drinking heat
+label = a dry paper strip | a scratched wooden tag
+rest = a spell beside the hill path | a seat above the last cart
+portion = a share already wrapped | a jar for another table
+
+any
+opinion dole for 2 : Count me willing to share a jar even if the other shelf hasn't a penny on it.
+opinion houses against 1 : A different House may bring a bright label. I'd look at the seal with my own eyes.
+opinion road for 1 : A long walk takes all sorts of noise out of one's ears before supper.
+opinion strangers mixed 1 : An unknown traveller gets bread without access to my store key.
+opinion times against 1 [world.times=lean|hard] : A tight winter measures a cupboard by the mouths it actually feeds.
+opinion city mixed 1 : The Sump has food worth making and streets where a hillside would be very welcome.
+
+grown
+line greet : I've kept a clean spot beside my shelf-end crock. | Come up beyond that salty draught.
+line greet.return : Your greeting's as welcome as a loaf fresh out.
+line again.open : Back before I tied the spare jar.
+line farewell : May your supper stretch to company.
+line farewell.return : I'll keep those wishes for the road uphill.
+line react.news : Let's hear what's come into town with the carts.
+line react.news.new : That hasn't earned a mark on my shelf before.
+line react.news.known : That account came round with an earlier lot.
+line react.news.doubt : I'd turn that jar to the light again.
+line react.news.sorrow [topic.kind=death|loss|assault] : I wish that hurt a shelter from cold tongues.
+line react.news.glad [topic.kind=birth|marriage|work] : That news deserves the lid off something good.
+line ask.how : Have today's errands sharpened your appetite?
+line answer.how : Quiet enough. I'd go a little further if I could.
+line sympathise : Stay and share something while your thoughts settle.
+line reassure : You needn't fill every empty space at once.
+line refuse : I've already promised the free part of my day.
+line accept_decline : I'll wrap up the offer without another word.
+line preclose : There is a thing still waiting under cloth for me.
+line accept_preclose : Go while the path still has its pale edge.
+line ack : Aye, that bears looking at.
+line thank : You carried the end that would have tipped.
+line greet [here.time=dusk] : Welcome as the day's last labels go on.
+
+scene exchange1
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the sealed rim gets my attention before the label. | I leave room between heavy crocks.
+b : What is there to see? | For fingers?
+a : A gap smaller than a fingernail can waste a week's work. | For a safe grip when the shelf's grown crowded.
+
+scene exchange2
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Warm bread does my first tasting for me. | I break a hot loaf across the wide bit.
+b : Bread has a tongue? | Who gets the soft heart?
+a : A plain slice reveals the flavour I've preserved. | I split that between the wolves waiting beside it.
+
+scene exchange3
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I take the longest walk my supper hour allows. | On a walk I count the pauses between carts.
+b : How long's that? | To know the time?
+a : Out until the noise falls back and home while the light lasts. | To hear when my head has quieted down.
+
+scene exchange4
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : My count starts after I've set one portion aside. | I store the plainest food nearest my hand.
+b : What if your own shelf looks thin? | For everyday eating?
+a : Then I know the true length of it. | For a useful share when a hungry visitor comes.
+
+scene exchange5
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : Fresh snow looks finer against dark charcoal. | I like fresh flakes still untouched by cart wheels.
+b : Why charcoal? | Unspoilt road?
+a : It draws every soft white edge as plain as writing. | A chance to hear my own boots travel.
+
+scene exchange6
+when topic=day self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I cover my tea when a jar wants attention. | I refuse to count cold tea as a drink.
+b : Does it keep hot? | What is it then?
+a : Longer than my memory usually lasts. | A perfectly clear signal to put the kettle on.
+
+scene exchange7
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind gets through a cloth cover. | I turn my open jar away from the Sound.
+b : Can you taste it? | Afraid of the gulls?
+a : Particularly when I've spent good time keeping a batch sweet. | Mostly a breeze that seasons without asking.
+
+scene exchange8
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.friend# the jar with no label. | I can walk beside a friend without filling every pause.
+b : Why that one? | Does that cheer you?
+a : A friend knows my best share isn't always the smartest dressed. | There's space then for the quiet I came seeking.
+
+scene exchange9
+when topic=work self.boss
+does tell.self / ask.detail / answer.detail
+a : I show #self.boss# a bad seal before the tally goes up. | I like an order that says how many usable jars.
+b : Even a single one? | Isn't that plain?
+a : It's a whole jar to whoever might receive it. | Counting full containers and counting sound food are different matters.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I miss how quiet a charcoal stack can be. | A dark patch on snow puts me back in the hills.
+b : Quiet with all that burning? | A bad memory?
+a : A good slow burn has less to say than one market cart. | It's a place I still carry with some tenderness.
+
+scene exchange11
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard the claim #topic.subject# #topic.claim#. | No House seal turns a confidence into common stock.
+b : How firm a claim? | Would you repeat it?
+a : A label delivered without the jar itself. | Only the part I've proper cause to know.
+
+scene exchange12
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : I start a lean week by counting the edible stock. | A poor supper's better when the bread is warm.
+b : What else might count? | Does heat cost much?
+a : Empty crocks take just as much room on a shelf. | Less if two meals share an oven.
+
+scene exchange13
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The sound of the Sump changes when the wind turns uphill. | The view over a low roof can still hold a hill.
+b : What do you hear? | Which bit do you see?
+a : The carts more clearly and the water a little less. | A narrow dark line worth lifting my eyes for.
+
+scene exchange14
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I offer a new arrival bread before asking for news. | A stranger can have the spare portion.
+b : Why feed first? | May the jar go too?
+a : My welcome shouldn't have a price in stories. | An ordinary jar, yes. I'd like the shelf seen from that side.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd welcome a shelf still full after I've given something away. | I'd take a jar of fruit up to the old camp.
+b : How full? | A present?
+a : Enough to carry on sharing through a turn in the weather. | An errand that lets me enjoy the hill in both directions.
+
+scene exchange16
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A lid that held through winter calls for gratitude. | A blessing spoken over bread should reach the last slice.
+b : Is that a large matter? | How can it reach so far?
+a : Ask a hungry stomach how large it feels. | Pass the bread along while it still tastes fresh.
+
+scene exchange17
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I look at the weight after the crock's empty. | A fine label can double a seller's asking price.
+b : Why afterwards? | Does it improve the fruit?
+a : So next time I know how much dinner the price actually buys. | It would have to be made of remarkable paper.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I lift a full jar against my apron. | Walking uphill steadies me after a low day.
+b : Why so close? | Even in snow?
+a : My back has a sensible objection to long arguments with gravity. | Fresh snow gives my feet an extra reason to go carefully.
+
+story tale1 [topic=memories]
+  : At a charcoal camp I learnt that a nearly silent stack could still be at work.
+  : Later I stood listening to a shelf of cooling jars and recognised the same slow patience.
+  b : Do the jars make a sound?
+  : A little click when a lid draws down. The quiet afterwards is what I like.
+
+story tale2 [topic=home self.likes=full_larder]
+  : I once wrote the name of a share I'd given away on a label for its empty shelf space.
+  : It looked oddly full each time my eye reached the label.
+  b : Did you put another crock there?
+  : As soon as I could. The label came off with it and made a decent wrapping tie.
+
+story tale3 [topic=pastimes self.likes=long_walks]
+  : I turned uphill with a warm loaf wrapped against my side.
+  : By the last steep turn I'd eaten one end and could feel the other still giving heat.
+  b : Did you get back before it cooled?
+  : I gave the last piece away warm. That seemed quite as good a finish to the walk.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say First lid gets a clean wipe. | Morning light along the shelf.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Let the crocks cool in peace. | Room left for tomorrow's portion.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Dry your hands on the lifting side. | Mind the wet shelf edge.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Wrap the spare before the light goes. | Tea first, labels afterwards.
+dlg resident.hub : Our voices can travel here without jarring all the crocks.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I recognise you even across a crowded shelf.
+dlg resident.hub [pair.disposition=wary|hostile] : A House mark doesn't grant a look inside a private cupboard. Give me your question plainly.
+dlg resident.job [self.workplace] : My hours at #self.workplace# go into keeping stock sound. A good seal ought to mean the same thing on a rich table as on a poor one.
+dlg resident.job : I attend to whatever stock's in reach and leave something for the next meal.
+dlg resident.news [world.news] : The public word that reached this shelf was #world.news#.
+dlg resident.gossip [here.gossip=yes] : The label on the story reads #topic.subject# #topic.claim#. The rest is still under wrap.
+dlg resident.bye : Have a warm bite before the next wind off the water.
+
+graft resident.hub
+choice Why count the shelf after taking a jar off it? -> outgoing_jar
+node outgoing_jar
+say Because the one I've undertaken to give away is no longer part of my supper. It deserves to be counted where it can actually feed somebody.
+free
+choice What if a stranger needs the next one? -> outgoing_jar_again
+choice Goodbye. -> bye
+node outgoing_jar_again
+say I'll have a plain look at my cupboard and answer honestly. Nobody needs to wear my House colours to come away with a share.
+choice I hope it reaches a hungry table. -> hub
+choice Goodbye. -> bye

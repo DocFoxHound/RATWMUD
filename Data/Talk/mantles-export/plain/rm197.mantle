@@ -1,0 +1,483 @@
+# rm197, the star on the first loaf (doc 84 P14, batch city-a3): written for rm_liv_pitchhand (Liv Pitchhand: baker at The Sugar Loaf, Ridgemere-born). Name-free.
+mantle rm197
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_liv_pitchhand
+title the first loaf's star
+fits stage=adult|old
+prefers role=merchant job=baker humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=devout drive=steady
+quirk scores_a_star_on_the_first_loaf_of_every_bake
+likes barley_soup long_walks quiet_chapel thunder
+dislikes stale_bread rats
+fears rats_in_the_flour a_cold_oven_on_a_feast_day
+hopes a_window_on_the_rise to_be_buried_from_the_quiet_chapel
+topics faith +0.5 work +0.4 food +0.4 pastimes +0.3 gossip +0.3 news +0.2 weather +0.2 family +0.2 animals -0.2
+styles comfort=feeding gossip=keen refuse=soft tease=merry
+marks oath saying laugh
+persona #self.first# bakes sweet loaves near the north gate and lives over the ovens: quick to tease and quicker to bless, scores a star on the first loaf of every bake for the Bright One, loves an empty chapel, a long aimless walk and a thunderstorm from under a good roof, can't abide rats or stale bread, and means to end up on the Rise.
+
+words
+oath! = Sugar and starlight | Stars on the crust
+saying! = Bless the dough and it blesses you back | A star on the first and the rest follow
+laugh! = Oh, my stars | Ha, crumbs and all
+star = the star | a little star cut in the crust
+firstloaf = the first loaf | the first loaf out of the oven
+peel = the peel | my long oven peel
+buns = the sugar buns | a tray of sticky buns
+seedcake = a seed cake | a slab of caraway cake
+crust = the crust | a crust you can knock on
+stale = yesterday's loaf | bread fit to sole a shoe
+soup = barley soup | barley broth rich with marrow
+chapel = the chapel | the weekday hush at chapel
+wander = a walk with no errand | a long walk to nowhere much
+storm = a storm overhead | thunder over a sound roof
+rats = the rats | a flour-dusted rat
+rise = the Rise | the houses up the Rise
+flourloft = the flour loft | the loft where the sacks sit
+ovens = the ovens | my two brick ovens
+dough = the dough | a trough of dough
+
+any
+opinion church for 2 : I reckon there's a stair or two I climbed entirely on the Bright One's strength. I'll be in the chapel while I can still duck under the lintel.
+opinion dole for 2 : A loaf given freely must please the Bright One. Nobody leaves my back step with an empty bread cloth.
+opinion festivals for 2 : After a reel even the aches in my knees have a tune. I bake till dawn for it and dance till dusk.
+opinion houses mixed 1 : The Houses are like yeast. A pinch lifts the city; too much and the whole batch goes sour.
+opinion merchants for 1 [self.role=merchant] : Everybody knows what bread ought to cost till it's time to buy flour. They should try buying a sack of flour off a cart that came in three days late.
+opinion road against 1 : Every load late on the road is a morning I'm short of flour. The roads get no shorter and the carts no quicker.
+opinion watch for 1 : I'm fond of a patrol that bothers to look down the dark little alleys. That's where I'd want a light carried.
+opinion city for 1 : I've climbed half this city's stairs and mean to climb the rest. Smoke, rain, gulls and all, it's mine.
+opinion drink mixed 1 : A cup at a wedding, yes. A cup at dawn, never; I'd score the star crooked.
+opinion newcomers mixed 0 : New faces buy bread like anyone. Whether they bow in the chapel, I'll see in time.
+
+grown
+line greet [pair.band=strangers] : #greet#! Push that latch till it catches. Lovely to see a fresh face. | #greet#, #address#. Never seen you before, and you've a sweet-tooth look about you.
+line greet [self.working=yes self.job=baker] : #greet#. Flour on my paws, don't mind it. | #greet#! Mind the peel, it swings wide.
+line greet [here.time=dawn] : #greet#. Ovens are hot and the star's on the first loaf already. | #greet#! Up at a baker's hour, too. The Bright One loves an early riser.
+line greet [here.time=dusk|night] : #greet#. Ovens are banked; you've caught me sweeping. | #greet#, #address#. Late for buns, but not for talk.
+line greet [pair.band=friends|family] : There's a face that wants feeding. Come here. | #laugh#! You again. I'd begun to think you'd given up bread.
+line greet : #greet#! Bless you for stopping. | #greet#, #address#. A good day for it, whatever it is.
+line kin.open [pair.kin!=no] : Sit down, there's soup on. Bless you, sit. | You look thin. I'll fix that before you go.
+line again.open : Our paths keep crossing. I'll count that as a second blessing. | Back so quick. Either it's the buns or it's me.
+line hail [pair.band=friends] : Yoo-hoo! Over here, by the cart! | Oi, wait for me, I've a bun I'd pulled aside for you.
+line greet.return : #greet#. You brought a little sweetness in. | #greet#. And to you, twice over.
+line greet.return [pair.band=friends|family] : #laugh#! I heard a step and hoped for company. It's you! | I've a piece of seed cake under a cloth, and guess whose it is.
+line greet.return [self.working=yes] : #greet#. Talk on; I can knead and listen both. | #greet#. Stand clear of the oven door and say your piece.
+line greet.return [here.time=dusk|night] : #greet#. I'm half asleep; talk loud. | Evening, evening. The last brick's giving up its heat.
+line farewell : #farewell#, and the Bright One walk with you. | Off you go, then. #saying#.
+line farewell [here.time=dusk|night] : Good night, and bless your pillow. | #farewell#. Mind the cobbles, they're greasy after dark.
+line farewell.return : #farewell#. Save a kind word for the next door too. | And you. Don't be strangers with the bread.
+line farewell.return [pair.band=friends|family] : Go on, before I find you work. | Off with you. Sugar buns tomorrow, if you're quick.
+line react.news : Tell it straight through, crumbs and all. I've dough to knead and ears free. | Go on. I'll stop if it's bad and laugh if it's good.
+line react.news.new : #oath#! I hadn't heard a whisper. | Well, I never. And the north gate usually tells me first.
+line react.news.known : That came through the gate yesterday, bless you, but go on. | Heard it off the first cart, although your telling might have more spice.
+line react.news.doubt : Let the chapel bell confirm it first. | Hm. Who's the mouth behind that? Some mouths butter things.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That'll make a long walk home. | Oh, that's grim. I'll carry that sorrow with me to chapel.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Bless them! I'll be baking for that, mark me. | #laugh#! That's the best news through the gate all week.
+line answer.how : Floury and blessed, same as ever. | Fair, thank you. The ovens are hot and my knees are speaking to me.
+line answer.how.busy [self.working=yes] : Run ragged and rising, like the dough. | Busy. Three batches in and two to go.
+line answer.how.poorly : Creaky. Somewhere between my knees and the Bright One's ear a request got lost. | Low, but I'll come up. Dough always does.
+line ask.how : And you? Eating properly? | How's yourself, then? Truthfully, now.
+line sympathise : Oh, sit. Here's hot tea and a bun. Stay till the tea's stone cold if it helps. | That's a cruel weight. Put some of it down here a while.
+line reassure : It'll come right. I've prayed over worse and seen it rise. | Let tomorrow have a turn first. Things look better with a full belly.
+line decline : I'd say yes, but the ovens don't mind themselves, and I'm the only fool who'll mind them. | Not this week, I'm sorry. The feast orders have me by the tail.
+line accept_decline : Fair, fair. I'll not twist your arm. Much. | Another time, then. I'll remind you, mind.
+line thank : Bless you for that. | Oh, that's kindly done. Thank you.
+line deflect_thanks : Get on, it was nothing. Eat the bun. | Save a little of that gratitude for the Bright One. My share was the baking.
+line preclose [self.working=yes] : Right, the next batch is shouting. | I'd love to stand and gab, but that dough won't wait for gossip.
+line preclose : Well, my tongue's risen twice as much as the dough. | Off with you while my tongue takes a breath.
+line accept_preclose : Take my blessing along. | Right you are. Mind the step.
+line tease [pair.band=friends] : You've crumbs in your whiskers already and you've not even bought anything. | Look at you, sniffing the air like a pup at a pie cart.
+line tease.return : Says you, with flour up to the eyebrows. | Hark who's talking. I've seen you eat three buns standing.
+line laugh : #laugh#! Get away with you. | Ha! You'll have me dropping the peel.
+line ack : #bc_true# | Bless it.
+line give.advice : Get a hot crust inside you before you set out. | Leave room for a prayer when you turn in. Costs nothing.
+line give.advice [self.job=baker] : Knock the bottom of the loaf. If it sings, it's baked. | Never cut it hot; it goes to dough under the knife.
+line warn [world.bandits=near] : Stay inside the gate while the road's rough. The North Road's no place to be. | Must you travel? Pick good company for the road.
+line congratulate : Well done, you! Bless you. | Oh, that's grand. I'll bake on it.
+
+scene first_loaf_star
+when topic=work here.time=dawn self.job=baker
+does tell.self / ask.detail / answer.detail / assess
+a : First loaf out, and the star's on it. Always the first, never the second. | I scored the star on the first loaf this morning and burnt my knuckle doing it. | Every bake, the first loaf gets a star cut in the crust before it goes in.
+b : Why only the first? | Was it worth the knuckle? | What's the star for?
+a : The first is the Bright One's. The rest are mine to sell. | Worth it. A star cut careless is worse than no star at all. | Thanks, and asking, both in one. The Bright One knows which loaf it is.
+b : That's a good habit. | You're a stubborn baker. | #bc_wise#
+
+scene star_for_the_poor
+when topic=faith|work self.job=baker
+does tell.self / react.self / assess
+a : The star loaf never goes on the shelf. A hungry caller has first claim on it. | I gave the star loaf to a hungry traveller under the arch today, and got a blessing back. | Folk think the star loaf's for luck. It's for giving.
+b[stage=young|adolescent] #pup : Can I have it, then? | Did they eat it all? | Why give away the best one?
+b : That's a kind thing. | A fair swap. | For giving to whom?
+a@pup : If you're the hungriest wolf at my door, you can. Are you? Look me in the eye. | Every crumb, and licked the paper. | Because the best one's the one that counts, little one.
+a : It's not kind. It's owed. The Bright One got me up the stairs. | A fair swap and then some. I'll take a blessing over a penny. | Whoever's standing at the back step looking thin. There's always someone.
+
+scene empty_chapel
+when topic=faith here.region=ridgemere
+does tell.feeling / react.self / assess
+a : Give me a weekday bench with the others empty. Just me and the candle smoke. | I slipped into the chapel after the bake today. Not a soul. Lovely. | There's a silence inside that chapel I can't find anywhere else.
+b : Not for the singing, then? | How do you spend the time? | It is quiet, I'll give you that.
+a : The singing's grand. But you can't hear yourself pray over it. | Sit, mostly. Say thank you. Rest my feet. I can feel grateful sitting down. | Quiet enough to hear your own heart. Most folk never do.
+
+scene restday_bells
+when topic=faith|day here.day=rest
+does tell.self / react.self / assess
+a : Restday. Ovens cold, chapel full, and my feet up after. | No bake on a Restday. I lie awake at three anyway, out of habit. | Restday bells. I sing loud and badly and the Bright One puts up with it.
+b : Do you miss the ovens? | Do you get up? | I've heard you sing.
+a : By noon I'm itching. Then I remember I'm allowed to sit. | I get up, light a candle, and go back to bed. Bliss. | #laugh#! Then you know. Badly but gladly.
+
+scene thunder_roof
+when topic=weather here.weather=storm
+does tell.feeling / react.self / assess
+a : Listen to that thunder! I could stand at the window all night. | There's something about hail on slates when you're snug by the bricks. Nothing better. | Every clap of it rattles the trays, and I love it.
+b : It frightens me. | Only snug behind these thick shutters. | The trays will go over one day.
+a : Stand by me, then. That boom can't reach through and topple us. | Out in it? Never. Under a roof, it's the finest music going. | Let them. I'll bake more trays. I'll not get another storm like this one.
+
+scene rain_doorway
+when topic=weather here.weather=rain self.role=merchant
+does tell.self / react.self / assess
+a : Rain like this and half the street stands in my doorway, smelling the bread. | Wet day. They come in for shelter and leave with a bun. The Bright One's arranging things. | Every drip off the awning's another customer, if I'm cheerful about it.
+b : Do they buy anything? | A fair advertisement for a loaf. | Are you always cheerful?
+a : Most do. The smell of a hot crust does my selling for me. | The best way. Let the weather walk them in. | Not always. But cheerful sells, and sour doesn't.
+
+scene fog_oven_glow
+when topic=weather here.weather=fog here.time=dawn|day
+does tell.self / react.self / assess
+a : See how the oven glow comes through that fog? Folk follow it in like moths. | The arch has melted away in this murk. Just grey, and the smell of bread. | Fog in the street, flour in the air. Even the gulls look dusted for the oven.
+b : A good sign to have. | It's thick. | Ha. I can taste both.
+a : The best. Better than any painted board. | Thick as porridge. Nobody's in a hurry in a fog. | Flour tastes better. I'll swear to it in chapel.
+
+scene winter_lingering
+when topic=season here.season=winter self.job=baker
+does tell.self / react.self / assess
+a : Winter, and folk stand by the ovens as long as I'll let them. I let them a good while. | Cold snap. Everybody wants their bread hot and their hands round it. | White doorstep, red-hot bricks. I'm the warmest wolf on the street.
+b : Doesn't it slow you down? | Who can blame them? | Lucky you.
+a : A bit. But a cold wolf in my shop is a cold wolf I'm not leaving out there. | Not me. I'd stand there too. | Lucky in winter. Ask me again in high summer.
+
+scene summer_ovens
+when topic=season|weather here.season=summer self.job=baker
+does tell.complaint / react.complaint / assess
+a : Summer at the ovens. I sweat like a cheese in a sack. | Hot day, hot ovens, hot baker. Somebody fan me. | In this heat the dough rises before I've finished turning round.
+b : Can't you bake at night? | I'd melt. | Is that bad?
+a : I do. Still hot. The Bright One made summers long for a reason, and I've a query about the length. | I nearly have. Twice. | It's bad if you're slow. I'm not slow, but I'm sixty.
+
+scene barley_soup
+when topic=food
+does tell.self / react.self / assess
+a : A knucklebone simmered in barley till the broth shines. That's my supper, and I'll hear no better. | My barley's been murmuring behind the oven. It's been there since dawn. | Bread's my trade, but soup's my love. Barley, onion, a bit of bone.
+b : Not bread with it? | It'll be thick by now. | Sounds a good supper.
+a : Bread with it, of course. I'm a baker, not a fool. | A spoon through it leaves a furrow. Proper broth. | The best. Bring a bowl round. I'll fill it twice.
+
+scene stale_bread
+when topic=food|work self.job=baker
+does tell.complaint / react.complaint / assess
+a : I'll not sell #stale#. I'd sooner let sparrows peck it, and I don't even like the birds. | Somebody tried to sell me day-old as new at the market. Day-old! To a baker! | Bread's at its best the hour it's cut. After that it's a slow sad walk to the pigs.
+b : Some folk can't pay for new. | Did you tell them? | That's a sad end.
+a : I'll give away fresh at the kitchen hatch. Stale's a shame on the house. | I did. Loud enough to send the pigeons flapping. | It is. Hence all the little batches, and pray over every batch.
+
+scene sugar_buns
+when topic=food self.job=baker
+does tell.self / react.self / assess
+a : Sugar buns today, sticky on top and soft in the middle. Come noon, only the sticky paper will be left. | I've a seed cake cooling that'd make an abbot dance. | The sweet trays sell first, every day. Folk say they want bread and buy buns.
+b[stage=young|adolescent] #pup : Can I have a sticky one? | What's an abbot? | Can I buy just one?
+b : I'll have one before noon, then. | That good? | Can't blame them.
+a@pup : If you've a penny and clean paws. Show me the paws. | A very serious wolf from the abbey who doesn't dance. One bite would explain why. | One, two, a dozen. A penny each and a blessing free.
+a : Be quick. They don't last, and nor does my patience with the ones who wait. | Better. I put a pinch more caraway in. The Bright One forgive me. | I don't. I'd buy buns too.
+
+scene sea_wall_walk
+when topic=pastimes here.region=ridgemere
+does tell.self / react.self / assess
+a : Restday I walk the sea wall end to end, no errand, nowhere to be. | I walked up past the abbey yesterday just to see where the lane went. Nowhere. Lovely. | I like my walks long and my basket empty. Best thing for a baker's back.
+b : All that way for nothing? | Did you find anything? | Doesn't it tire you?
+a : Not for nothing. For the walking. The Bright One's in the walking. | A black cat balancing on stone and a gull with one foot. Worth every step. | It tires my legs and rests everything else.
+
+scene autumn_wander
+when topic=pastimes|season here.season=autumn
+does tell.self / react.self / assess
+a : Autumn's the best time for walking. The leaves smell like new bread, near enough. | I went out with no errand this afternoon and came back with a pocket of chestnuts. | Wind in my ears and no oven to mind. An autumn walk is a prayer you do with your legs.
+b : Like bread? Leaves? | Where'd you find those? | You make it sound inviting.
+a : To me, everything smells like bread. That's the trade's curse. | Can't tell you. I wasn't paying attention, and that's the point. | I can put it nicer. I'm a baker, not a priest.
+
+scene rat_in_flour
+when topic=animals|work self.job=baker
+does tell.complaint / react.complaint / assess
+a : A rat in #flourloft# scratched until the first carts rolled by. Scritch, scritch, scritch. | Whiskers in a sack! One whisker near the flour and I'm up with the peel. | There's a fat rat living under the step, I'd swear it. Laughing at me.
+b : Get a cat. | Did you catch it? | Rats don't laugh.
+a : There's a cat upstairs cowering from that same rat. | Missed. I hit the sack instead and floured the whole loft. | This one does. I've heard it. The Dark One sends them.
+
+scene step_cat
+when topic=animals here.region=ridgemere
+does tell.self / react.self / assess
+a : There's a ginger cat sleeps on my step every morning because the stones are warm from the ovens. | The street cats know which door's the warm one. Mine. | I give the cats the crumbs and they give me nothing. Very holy of me.
+b : Is it yours? | Clever creatures. | You're soft.
+a : It's nobody's. It's the step's. I just bake under it. | Clever and lazy. I admire both, in a cat. | Soft as a sugar bun. Don't spread it about.
+
+scene child_proud
+when topic=family self.parent=yes self.child
+does tell.feeling / react.self / assess
+a : #self.child# is the one thing I've made that came out better than the recipe. | I pray for #self.child# every morning before the star goes on. First thing, every day. | Folk ask what I'm proudest of. Not the bread. #self.child#.
+b : Better than a baker's finest loaf? | Every day? | As it should be.
+a : True, too. Don't tell the young one I said so. | Every dawn. It must sound like the chapel clock up there by now. | As it should. Bread's gone by noon. A pup's for life.
+
+scene alone_raising
+when topic=family self.parent=yes self.married=no
+does tell.self / react.self / assess
+a : I raised mine with a peel in one paw and a pup in the other. | No mate to share the night bakes with. Praying kept me company while the bread rose. | People said I'd never manage it alone. I baked through every word of it.
+b : That's hard work. | Did it help? | And you did.
+a : Hard and good. The best things are both. | More than you'd think. The Bright One's a good listener at three in the morning. | I did. Every word, and every loaf.
+
+scene hand_scoring
+when topic=work self.hand self.job=baker
+does tell.self / react.self / assess
+a : I wish I'd saved my first star loaf to show #self.hand#. More like a squashed spider. | I'd give #self.hand# the blade for the first loaf. It'd be hard to let go. | I'm fond of #self.hand#. There's room by this oven for two.
+b : Spiders? | Afraid the cut would go wrong? | Room for two?
+a : Flat ones with too many legs. Still tasted lovely. | Afraid I'd take the blade back before the cut was made. | Always. One to score and one to watch the crust brown.
+
+scene friend_trust
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : If I fell ill, I'd let #self.friend# bank my ovens. That's trust, in a bakery. | Me and #self.friend# can laugh at nothing for an hour. Good for the soul. | I'd trust #self.friend# with the star loaf. There's nothing I'd trust higher.
+b : That's a big thing to trust. | Nothing at all? | That's high praise.
+a : The biggest. An oven left to a fool is a fire. | Nothing at all. The best laughs are about nothing. | Highest I give. Ask anyone.
+
+scene rise_dream
+when topic=dreams here.region=ridgemere
+does confide / react.self / assess
+a : I mean to own a high window on the Rise. You'll see. I'll wear out my elbow waving to the lower streets. | I'd grow old up there, with a garden and nobody's bread to bake but mine. | Every stair I've climbed has been a step nearer the Rise. I've a few more to go.
+b : Up with the toffs? | A garden? You? | How many more?
+a : Up with the toffs, and I'll bake them better bread than they've ever had. | A little one. Roses, and a pear tree, and a bench for praying on. | The Bright One knows. I'll keep climbing till somebody counts.
+
+scene up_the_stairs
+when topic=dreams|smalltalk self.quarter=commons
+does tell.self / react.self / assess
+a : I came up this city a stair at a time, and the Commons is halfway. Halfway's not bad. | We keep a tidy counter in Northgate. Next stop, the Rise. | My ovens are halfway up the hill. That's where I'll stay till I'm carried higher.
+b : Halfway's good going. | Next stop? Truly? | Carried higher?
+a : Good going for a wolf with my start. I make sure my prayers mention the climb. | Truly. Stubborn feet rarely mind the climb. | To the chapel yard on the slope. There's a view. I've checked.
+
+scene gate_news
+when topic=news|gossip world.news here.region=ridgemere
+does tell.news / react.news / assess
+a : A bit of news from #world.news_from#: #world.news#. I've been chewing it over. | This part stuck with me: #world.news#. It came from #world.news_from#. | #world.news_from.capitalize# is where the news came from. #world.news#.
+b : Have you settled on an opinion? | You're sure of the place? | Was there more?
+a : I'd give it another day before serving up an opinion. | Sure of the place. I held onto that when the rest went round. | Nothing I'd swear to. I pass on what's said, no butter on it.
+
+scene gossip_passed
+when topic=gossip topic.subject topic.claim_kind=other|newcomer|promise_kept
+does tell.gossip / react.self / assess
+a : This came round with my change: #topic.subject# #topic.claim#. | Here's a crumb for you: #topic.subject# #topic.claim#. Those were the words that reached me. | Word in the shop is #topic.subject# #topic.claim#.
+b : Along with your change? | Is that so. | Who's saying it?
+a : Coin and news in the same paw. Guess which one I kept. | That's how it came through my door, and that's how it goes out. | Everyone who buys a bun. That's a fair crowd by noon.
+
+scene wedding_word
+when topic=gossip topic.claim_kind=marriage
+does tell.gossip / react.self / assess
+a : A wedding! They say #topic.subject# #topic.claim#. I'll be baking for it, mark me. | Bless the pair, word has it #topic.subject# #topic.claim#. | Here's a sweet one: #topic.subject# #topic.claim#. My ovens are already warm for it.
+b : You'll make the cake? | A blessing on the pair. | You're quick off the mark.
+a : I'd like a proper invitation. Though I might send a cake before anybody asks. | A wedding's the Bright One's favourite day, I've always thought. | Quick as a hot oven. I've a cake tin with a wedding in it, waiting.
+
+scene gossip_grim
+when topic=gossip topic.subject topic.claim_kind=death|violence|theft
+does tell.gossip / sympathise / assess
+tone serious / serious / even
+a : It's grim, this one. They say #topic.subject# #topic.claim#. | I'll not laugh about this: #topic.subject# #topic.claim#, they're saying. | Bright One keep us. Word is #topic.subject# #topic.claim#.
+b : That's terrible. | No laughing at that. | Bright One keep us all.
+a : It is. I've lit a candle already, and I'll light another. | None. Some things you just bake through and pray over. | All of us. Especially #topic.subject#.
+
+scene flour_cart_late
+when topic=caravan world.wagons=late self.job=baker
+does tell.worry / react.self / reassure / assess
+a : Flour cart's late again. A feast order to fill, and only two sacks in the loft. | Still no sound of the flour wheels on those cobbles. I've been praying since dawn. | The flour's late. I'm baking small loaves and calling them dainty.
+b : Will two sacks do? | Will praying bring it? | Dainty, are they?
+a : For today. Tomorrow's flour will have to come with tomorrow. | It's never hurt. The Bright One's slow, but never late, unlike the carts. | Dainty and dear. Nobody's fooled, but everyone's polite.
+b : It'll come. | #bc_hope_so# | #bc_ha#
+
+scene wagons_in
+when topic=caravan world.wagons=in self.role=merchant
+does tell.news / react.self / assess
+a : Listen to those wagons. Flour enough to dust the roof. Bless the drivers. | I heard the axles squeal at last. I can bake big loaves again. | The wagons came in and I nearly kissed a carter.
+b : Rafters? | Big ones? | Nearly?
+a : Near enough. I'll be sneezing white for a week. | Big as cartwheels. Well, big as plates. | Nearly. He backed away. Wise wolf.
+
+scene lean_loaves
+when topic=times world.times=hard|lean self.job=baker
+does tell.worry / react.self / assess
+a : Lean times. I've made the loaves a little smaller and the star a little bigger. | Folk are buying half a loaf where they bought a whole. I cut them gladly. | Hard times, and the back door's busier than the front.
+b : Does a bigger star help? | Half a loaf's still bread. | Can you afford that?
+a : It helps me. And maybe the Bright One notices. | Still bread, and still blessed. That's what matters. | Can't afford not to. The Bright One can visit a kitchen stair too.
+
+scene good_times
+when topic=times world.times=good|boom self.role=merchant
+does tell.self / react.self / assess
+a : Coin's about, and folk are buying the seed cake again. Seed cake means good times. | My little hoard for the Rise has grown fat in its jar under the bed. | The shop's full every morning. I give thanks at chapel and a bun to the drivers.
+b : Seed cake's a sign? | Under the bed? | Long may it last.
+a : The surest one. Nobody buys cake when they're frightened. | Don't tell anyone. Keep it between us and the Bright One. | Long may it, and may it come down the hill too.
+
+scene festival_buns
+when topic=festival world.festival=today|soon
+does tell.plan / react.self / assess
+a : Festival's coming. I'll bake all night and dance all day, and sleep the day after. | I've a tray of festival buns planned with a sugar star on every one. | The whole city out dancing. I'll dance right through the middle, flour and all.
+b : All night and all day? | Every one? | Flour and all?
+a : Of course. I save a dance for myself. The Bright One gives me the legs for it, one day a year. | Every last one. A festival's when the stars come down for everybody. | Flour and all. Nobody minds a floury dancer.
+
+scene new_face
+when topic=newcomer topic.subject
+does tell.news / react.self / assess
+a : Put #topic.subject# on the bread list; word is there's a new arrival. I'll be sending round a loaf. | #topic.subject#, newly come, I hear. Might we meet at chapel? | A welcome, please, for #topic.subject#. Fresh bread's the best welcome.
+b : A whole loaf? | Does it matter? | It is a good one.
+a : A whole one, with a star. First impressions. | Not for the bread. Everybody gets bread. I only wonder. | The best. You can't quarrel with somebody who's fed you.
+
+scene dawn_bake
+when topic=day|work here.time=dawn self.job=baker
+does tell.self / react.self / assess
+a : Up at three, ovens lit by four, star on the first loaf by five. That's my morning. | The street's dark and I'm already floury to the elbows. | Dawn's when the bread smells best, before anyone's awake to smell it but me.
+b : Every day? | Don't you get tired? | You and the cats.
+a : Six dawns out of seven. The Bright One rested once, so I do too. | Tired as sin. But a warm loaf makes my worn feet worth it. | Me and the cats. They've got better noses and worse manners.
+
+scene dusk_giveaway
+when topic=day|work here.time=dusk self.role=merchant
+does tell.self / react.self / assess
+a : The back step has the last pick of the trays. I'll not keep it to go hard. | End of the day. I've three buns and a broken loaf, and I know who wants them. | Ovens banked, counter wiped, and my arches are asking for a chair.
+b : You give it away? | Who wants them? | Sit down, then.
+a : Every evening. Bread ought to go warm into somebody's mouth. | The lamplighter, the old stick at the gate, and whoever's thin. | I will, once I've said my thanks. Then I'll sit like a sack.
+
+scene health_knees
+when topic=health self.age>=60 self.job=baker
+does tell.complaint / react.complaint / assess
+a : That squeak wasn't the oven hinge. It was me bending down. | My back could tally my birthdays without a calendar. | Flour gives me a tickle that comes and goes. The Bright One sends it with the bread.
+b : Have you tried a salve? | That many birthdays? | Flour cough?
+a : I have. It's rubbed in every night, with a prayer for good measure. | Enough to feel each one when I get up at three. | Every baker has one. It's a badge, of sorts.
+
+scene accent_gate
+when topic=accent self.quarter=commons
+does tell.self / react.self / assess
+a : We talk quick by the north gate. You've got to, or the carts drown you out. | Put wheels on my talk and it'd rattle downhill. Fast and rattling. | Northgate's in my mouth. Can't get it out, wouldn't try.
+b : I can barely keep up. | That's a good one. | I like it.
+a : Then listen faster, bless you. | I'll take it. A cart going downhill gets there first. | Good. It's the best talk in the city, and the quickest.
+
+story first_star [topic=faith|memories self.job=baker self.age>=25]
+  : The first time I used those brick ovens, one loaf came out with a crack across the top shaped just like a star.
+  : I took it for a sign. I gave that loaf away to a beggar at the gate and the rest sold out by noon.
+  ask : Could you bring yourself to eat a sign?
+  b : I think I'd have eaten it, sign or no sign.
+  : #laugh#! So would most. But I cut a star on the first loaf every bake since, and I've never had a day go hungry.
+
+story leaky_room [topic=memories|home self.age>=40]
+  : In my first rented room the rain dotted my pillow in a straight line.
+  : I used to lie there with a pot on my chest and pray for a dry ceiling. Just that. A dry ceiling.
+  ask : Guess what keeps that pillow dry now?
+  b : A dry ceiling, I hope.
+  : A dry ceiling and two warm ovens. The Bright One answered, slow, but answered. Next prayer's a window on the Rise.
+
+story storm_shelter [topic=weather|memories here.region=ridgemere self.age>=30]
+  : Once the wind drove a whole street's worth of neighbours in among my trays. Twenty wolves round the ovens.
+  : Thunder shaking the trays, rain coming down the chimney, with twenty mouths and my bun tray between them.
+  ask : Do you think anybody paid?
+  b : Not a penny, I'd guess.
+  : Not one penny. Best night I ever had in the trade. We sang till the thunder gave up.
+
+story rat_versus_peel [topic=animals|work self.job=baker self.age>=25]
+  : One night I found a flour-dusted rat bin, bold as a lord, eating like it paid rent.
+  : I went at it with the long peel. It went over the peel, up my arm and out the window.
+  ask : Would you have backed me or the rat?
+  b : On that showing? The rat.
+  : The rat. Bold creature. I still inspect the bin at closing, with the peel in the other paw.
+
+story north_headland_walk [topic=pastimes|memories here.region=ridgemere]
+  : I set out one Restday for a short walk and kept going, and kept going, beyond the walls, skirting the bay.
+  : By dusk I was on the north headland among the smokehouses, with sore feet and no idea how I'd got there.
+  ask : How would you get back with your feet that sore?
+  b : Found someone to give me a lift back, I suppose.
+  : I bought a kipper and sang myself home beneath the stars. Best walk of my life.
+
+rule @cry_bread
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 6h
+say Hot loaves! Sugar buns! Bless your noses, come in! | Seed cake and soft rolls, warm as a hug!
+
+rule @star_bark
+when concept=bark working=yes self.job=baker here.time=dawn
+does aside
+cooldown 8h
+say There. #star.capitalize#, on the first one. Bless it. | First loaf, first star. Go on, then.
+
+rule @rat_bark
+when concept=bark self.job=baker
+does aside
+cooldown 10h
+say Was that a scratch in the loft? If that's a rat, the Dark One can have it back. | I heard whiskers. I swear I heard whiskers.
+
+rule @thunder_bark
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Hark at that! Lovely. Rattle away, sky. | #laugh#! That one shook the trays.
+
+rule @restday_bark
+when concept=bark here.day=rest
+does aside
+cooldown 12h
+say Bless the Restday. No ovens, no peel, no flour up the nose. | Bells, prayers, soup. That's a Restday done right.
+
+rule @stale_bark
+when concept=bark working=yes self.role=merchant here.time=dusk
+does aside
+cooldown 10h
+say Last of the buns going cheap before they turn! | Nothing in this shop sees tomorrow. Come and take it.
+
+dlg resident.hub : #greet#! There's room here by me. Latch it, dear. What's wanted? | #greet#, #address#. Come here, dear. You've got my good ear.
+dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. Bless you, back again. | #topic.player#! I've been saving a bun for whoever came first, and it's you.
+dlg resident.hub [here.time=night] : Late to be knocking. Ovens are banked, but I'm still up. | #greet#. I rise at three, so be quick, but be welcome.
+dlg resident.hub [pair.disposition=hostile|wary] : I'll be civil, and the Bright One's watching us both. Go on. | You've a sour look for a bakery. Say what it is.
+dlg resident.job [self.job=baker] : I bake. Loaves, buns, seed cake, and a star on the first loaf every morning. | Ovens before dawn, counter till noon, back door till dusk. That's baking.
+dlg resident.job : #self.trade_words.capitalize#. Long days, and blessed ones. | I work hard and I pray harder. Between the two, the bills get paid.
+dlg resident.job [self.working=yes self.job=baker] : Dough up both arms, and in comes company. Talk on. | Mind the trays. Talk while I work.
+dlg resident.news [world.news] : Fresh word has reached us from #world.news_from#: #world.news#. | The early carter called across: #world.news#. From #world.news_from#, they said.
+dlg resident.news [world.event_words] : It's all #world.event_words# in the shop today. Every bun comes with it. | Listen to the gatefolk carrying on about #world.event_words#.
+dlg resident.news [world.wagons=raided] : The carters are talking about a raid. I'd keep a little flour back. Stay in, I would. | Someone has robbed a road wagon. Say your prayers if you're travelling.
+dlg resident.news [world.death=recent] : Somebody nearby is grieving. I'd send bread before I'd ask questions. | There's been a death nearby. Folk are quiet. I've lit a candle.
+dlg resident.news [world.wedding=recent] : A marriage! I'd put the best sugar by for a day like that. | There's been a wedding. My blessing on the pair of them.
+dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# The first cart tomorrow will have something, it always does. | The road's brought me no news, would you believe. Ask me at dawn.
+dlg resident.gossip [here.gossip=yes] : Well, between us: #topic.subject# #topic.claim#. That's how it came through the shop. | They say #topic.subject# #topic.claim#. I'm giving you the plain crust of it.
+dlg resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Keep your purse close. They're saying #topic.subject# #topic.claim#. | Bright One keep us. #topic.subject# #topic.claim#, they say.
+dlg resident.gossip [here.gossip!=yes] : Nothing I'd repeat at the chapel door, so nothing I'd repeat here. | #gossip_none# Ask me after the first cart.
+dlg resident.business [business=thriving] : Sold out by noon. Blessings go to chapel. Broken buns go to the carters. | Couldn't be better. My ovens hardly cool.
+dlg resident.business [business=steady] : Steady, bless it. Bread's always wanted. | Steady enough. The ovens are hot and the rent's paid.
+dlg resident.business [business=failing] : Badly, and I'll not lie to you. Flour's dear and purses are thin. | Poorly. I'm praying hard and baking small.
+dlg resident.bye : #farewell#. My blessing goes along. | Off you go. #saying#.
+dlg resident.bye [here.time=night] : Good night. Rest easy under the Bright One's eye. | Off to bed with the both of us. Bless you.
+dlg shop.greet [here.shop!=bare self.job=baker] : #greet#! Loaves, buns and seed cake, warm as you like. | #greet#, #address#. Bread's on the left, sweet things on the right, and the star loaf's not for sale.
+dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! Shall I wrap up the usual temptation? | #greet#, #topic.player#. I've kept the stickiest bun for you.
+dlg shop.greet [here.shop!=bare] : #greet#. Have a look, take a sniff, buy what makes you smile. | #greet#, #address#. #shop_offer#
+dlg shop.greet [here.shop=bare] : #greet#. Not a crumb left, bless you. Come at dawn. | Empty shelves. The Bright One gave and the customers took. I'll still buy, mind.
+dlg shop.prices : Flour's dear this week, so bread is too. I've kept the buns where they were. | It's chalked up honest. #shop_dear#
+dlg shop.bye : #farewell#. Eat it warm. | #shop_bye# And bless your supper.
+
+graft resident.hub
+choice Why the star on the loaf? [self.job=baker] -> star
+node star
+say Of all my loaves I leave the first for the Bright One. I score a star so the one who's hungry knows which loaf to take.
+mood warm
+free
+choice Who gets it today? -> star_who
+choice Back to it. -> hub
+node star_who
+say Whoever's at the back step looking thin when it comes out. There's always somebody. If it's you, knock.
+choice I'll remember that. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice What's sweetest today? [self.job=baker] -> sweet
+node sweet
+say The sticky buns, no question. Sugar on top, soft as a pillow inside. And the seed cake, if you like caraway.
+mood pleased
+free
+choice What if I don't like caraway? -> caraway
+choice Let me see the bread. -> greet
+node caraway
+say Then the Bright One made you wrong, but I'll still sell you a bun. Nobody leaves my shop without something sweet.
+choice Let me see the bread. -> greet
+choice Goodbye. -> bye

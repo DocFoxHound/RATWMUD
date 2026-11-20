@@ -1,0 +1,427 @@
+mantle rm416
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_ragnar_millmarsh
+title the pocket provisions
+fits stage=adult|old
+prefers role=merchant humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk whittles_tiny_provisions_for_a_shop_with_no_crests
+likes oatcakes whittling festival_bells first_warm_day
+dislikes night_noise waiting
+fears a_grand_label_on_a_short_sack
+hopes a_complete_little_shop_in_a_drawer
+topics work +0.6 pastimes +0.5 food +0.3 prices +0.3
+styles comfort=quiet gossip=discreet refuse=dry tease=soft
+marks oath saying
+persona #self.first# whittles provisions for a shop small enough to fit inside a drawer and lets the contents of a sack speak before attending to the mark of the owner.
+
+words
+oath! = Three undersized sacks | My wooden oatcakes
+saying! = A small sack holds no airs | Test the goods below the label
+sackling = a carved sack | the little wooden sack
+drawer = the shallow shop drawer | my pocket shop
+grain = a pale wood speck | a wooden grain
+round = a tiny oat round | a wooden oatcake
+chip = a clean offcut | the spare chip
+awning = the linen flap | a scrap awning
+mark = the smallest notch | my fine nick
+barrel = a thumb-high barrel | the carved tub
+lid = the plain wooden lid | a flat cover
+stockbit = a stock token | one counted piece
+wrap = a folded wrapper | the little paper fold
+crumb = a real crumb | an oat speck
+weight = a grain weight | my smallest weight
+basket = a curled basket | the miniature hamper
+pin = the shelf pin | a slim peg
+shelf = a finger-wide shelf | the thin board
+silkcord = a thread handle | a loose tie
+slip = the short account slip | my little docket
+
+any
+opinion merchants for 1 : A seller ought to know a sack from a handsome description of a sack. Most who do enjoy repeat business.
+opinion houses against 1 : A House crest stamped on an empty sack weighs remarkably little on my steady scales.
+opinion dole for 2 : Real dinners require real goods. I prefer the loaf to a beautifully written certificate of deserving one.
+opinion road mixed 0 : Useful for bringing stock in. Quite pleasant to watch for a while after the particular stock is safely in.
+opinion church for 1 : I appreciate any place where a small voice need not compete with the owner of an especially large hat.
+opinion newcomers for 1 : A first visit to a shop ought to be cheap enough to afford even without a purchase.
+opinion festivals for 1 : The bells oblige all the rival counters to hear precisely the same tune. A handsome arrangement.
+opinion city for 1 : A city can fit in a little drawer if you're willing to leave out its more complicated inhabitants.
+opinion watch mixed 0 : A tested measure makes a pleasant common language to bring whenever there is a dispute.
+opinion times mixed 0 : I should like to count the stock to its last sack before calling the season ruined or splendid.
+
+grown
+line greet : Welcome. The big counter is available to ordinary-sized visitors. | Hello. I'll shut the small shop and attend to you.
+line greet [pair.band=strangers] : A first meeting requires no introduction from anybody's crest. | Yours is an unfamiliar face. The welcome's real enough.
+line greet [here.time=dawn] : Morning. The stock and its shadows finally agree about size. | Early light flatters my smallest merchandise.
+line greet.return : I heard. There is no bell on the little counter. | Hello returned in the proper dimensions.
+line greet.return [pair.band=friends|family] : Good. A familiar face over the actual counter. | You'll understand why the littlest shop has taken a rest.
+line greet.return [here.time=night] : Late greetings. The full-sized stock looks rather like its carvings in this light. | I can hear you very well through the dark.
+line again.open : Here again while things have shifted merely an inch. | We've only lost about one small sack's worth of time between visits.
+line hail [pair.band=friends] : Come inspect a very small delivery. | Here, a new piece has come out rather well.
+line farewell : May your parcels turn out to contain the promised goods. | Leave with as little unnecessary weight as possible.
+line farewell.return : Off you go. I'll shut the small drawer too. | The quiet counter remains at your service on another occasion.
+line react.news : Place the account where I can see what's in it. | I'll separate the news from the grand wrapping myself.
+line react.news.new : Fresh stock to my ears, certainly. | I haven't a token for that in my memory yet.
+line react.news.known : That much is already among my recorded odds and ends. | Heard it at much the same size on the last delivery.
+line react.news.doubt : It sounds a large sack for a very small amount of grain. | I'd feel for the contents before buying the account.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's room to put that much hurt down without an immediate answer. | Sit here while the ordinary business goes on without us.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's a substantial good thing in a modest piece of news. | I'd give that a place at the front of my little display.
+line ask.how : How's the balance between work and a quiet minute? | Much real weight in your day's basket?
+line answer.how : Content enough with a scrap of wood in reach. | Quite solvent in time for a short conversation.
+line decline : I'd be selling you a larger promise than I have goods for. | That would take space that's already accounted for on my shelf.
+line accept_decline : Quite clear. No charge for declining to buy. | I'll take the offer back in good condition.
+line preclose : I'd best open the drawer belonging to my work again. | There's a small heap awaiting my undivided attention.
+line accept_preclose : Go on then. We can set this to one side. | You've used no more shelf space than I could spare.
+line thank : You brought a useful detail out from behind the goods. Thanks. | That was a pleasantly unadvertised kindness.
+line deflect_thanks : The offcut was too good for the sweepings anyway. | A small transaction in plain goodwill.
+line sympathise : You needn't offer an account of everything to get a seat here. | I'll leave that difficulty its proper space.
+line reassure : We can lay the pieces out before choosing what to shift. | Start with what's actually on the counter and within reach.
+line ack : Yes, the weight matches the appearance. | That fits the space I had in mind for it.
+line give.advice : Look at the actual contents before admiring the sign. | A smaller drawer makes quite an agreeable limit on ambition.
+line kin.open [pair.kin!=no] : Kin may inspect the little drawer without an appointment. | A family audience for the diminutive business.
+line greet.return [self.working=yes] : Hello across the stock. I can spare some time. | Your greeting falls between two quite manageable counts.
+line farewell.return [here.time=night] : The little shop shuts up earlier than its owner. Goodbye. | May the real shop signs show clearly enough in the dark.
+line ask.detail : What was inside the outer wrapping? | Was the bag as heavy as it looked?
+line answer.detail : A sound bit in the middle and plenty of padding round it. | The label was quite the most substantial part.
+line give.opinion : An ordinary sample has very good manners. It shows what it has. | A shop has some duty towards an empty-handed visitor.
+line react.self : That could make an interesting object to whittle. | I'd enjoy discovering how little wood would describe it.
+line assess : A good likeness, allowing for the considerable difference in size. | Substantial enough to count as something on the real shelf.
+line tell.plan : I'll make the next barrel just wide enough for its own lid. | I mean to finish the little cupboard before acquiring any more stock.
+
+scene tinyshop
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I have a provisions shop that pays no rent. It occupies one drawer.
+b : What do you sell in a drawer? | Where do the customers stand?
+a : Wooden goods. I cannot recommend the flour for eating, but it doesn't spoil. | Outside it. Any smaller and I'd have to whittle the customers too.
+
+scene minisack
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : Hardest bit of carving a sack is making wood look resigned to its contents.
+b : The wrinkles, you mean? | Couldn't you make it square?
+a : Yes. A plump full sack settles differently from a slightly cheated one. | Only if the goods went in as bricks. Wheat has its own notions of geometry.
+
+scene fullsize
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I count my real sacks before allowing the wooden ones to occupy a thought.
+b : Do you keep the same number in both shops? | Wouldn't little models help count?
+a : No. My wooden self deals in pleasant possibilities. The real one has customers to feed. | Possibly. At present I prefer a tally fastened to the goods and a hobby allowed to be idle.
+
+scene unlabelled
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : My first business is the sample. Only then do I open the part of the invoice carrying the House mark.
+b : Don't you know which wagon delivered it? | Why put the name aside?
+a : Usually. I'm removing an excuse for judging the wheat on the excellence of the wagon. | I'd like every supplier to stand on the same board for the brief duration of a weighing.
+
+scene sloworder
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A small order has priority when it came in before an imposing one. | The original order of baskets by the counter is important to me.
+b : Even a very small basket? | Wouldn't the large order pay better?
+a : The size of the wait belongs to the wolf carrying it. The wolf's been waiting all the same. | Probably. I intend both wolves to want to come back after I've served them.
+
+scene rightmark
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : My mark shows the sack I counted. It makes no claim on goods I haven't opened. | Two labels on one parcel may be telling perfectly different truths.
+b : Such as? | What if the weight's wrong?
+a : Where it was made and how it arrived. Those are distinct questions to my mind. | I record what was actually weighed. The maker may explain the difference in due course.
+
+scene quietwork
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I enjoy hearing the quiet at a counter after the big morning rush has passed.
+b : Is silence good for business? | Would you prefer no customers?
+a : A little of it lets me hear the next request without inventing half the order. | I should prefer to listen to one at a time. The quieter interval is welcome between them.
+
+scene holder
+when topic=work self.role=merchant self.hand
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.hand# to try reaching the new shelf before fixing it for good.
+b : You can't tell from here? | What if you like it higher?
+a : I can tell where my paw reaches. That settles only one half of a shared counter. | The shelf isn't exclusively my shelf. A useful position interests me more than winning an argument with a bracket.
+
+scene plainfees
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I can give a plain price for a wooden sack. Time, wood, and very little prospect of dining on it.
+b : Wouldn't a child play with it? | Do you charge by the quantity carved?
+a : Happily. Play is what it can actually provide and I'd mark the price on those terms. | The final sack weighs less than the offcut. The missing shavings shouldn't lower its value to nothing.
+
+scene tabs
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : An unsettled account gets a discreet line, not a fine bright label for every passerby.
+b : You can keep them straight that way? | Wouldn't a bright label get action?
+a : Yes. I'm supposed to know the state of my own counter without a public proclamation. | Public embarrassment is a fairly expensive means of collecting a modest sum.
+
+scene crumbmodel
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I have made several nearly perfect oatcakes in wood. Butter improves precisely none of them.
+b : How do they differ from the real ones? | Ever mixed them up?
+a : Mainly in the reception they get at lunchtime. I put the real thing in a proper wrapper. | I keep the wooden ones in the drawer. An orderly arrangement founded on practical experience.
+
+scene butterwell
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : A shallow dent in a hot oatcake will hold rather more butter than one might responsibly predict.
+b : Would you put that on a label? | What's a responsible amount?
+a : I'd let the customer make the interesting discovery privately. | Enough to soften the middle, not so much it runs into the clean account book.
+
+scene vinecork
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A description of vineyard baskets gave me the idea for the little hoop on my wooden hamper.
+b : A whole basket from a few words? | Does the hamper hold anything?
+a : Words enough for the general shape. My thumb settled the distance from side to side. | One plum stone if it is exceptionally well behaved.
+
+scene bellround
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I'd make a little bell for the drawer if I could make wood ring honestly. | The miniature shop loses a good deal of festival atmosphere for want of proper bells.
+b : Would a metal bead do? | Can't it borrow the sound from outside?
+a : Perhaps. I'd like the little thing to ring when wanted instead of continually seeking attention in my pocket. | It does. Most economical part of the entire enterprise.
+
+scene warmstep
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : Spring's first warmth lets me carve outside without continually retrieving feeling from my fingers.
+b : Which piece gets the first outing? | Is it better in daylight?
+a : Something rounded. The sitting outside matters more than the particular outcome. | Very much. And the little curls can be swept up without flour getting ideas about joining them.
+
+scene coldnoise
+when topic=day here.time=night self.dislikes=night_noise
+does tell.complaint / ask.detail / answer.detail
+a : A loose drawer rattling after dark seems more industrious than its owner has authorised.
+b : Can you silence the rattle? | Wouldn't a bigger shop be louder?
+a : A thin wedge against the runner. The tiny shop can sleep through the night with me. | Yes, which is a virtue of keeping this particular branch entirely pocket-sized.
+
+scene waitline
+when topic=smalltalk self.dislikes=waiting
+does tell.complaint / ask.detail / answer.detail
+a : If a customer has to wait I'd like to say what the wait is for.
+b : Wouldn't that just delay things further? | Do you mind waiting yourself?
+a : Six plain words can save considerably more than six fretful questions. | In silence with no idea why, very much. With a reason I can at least choose whether to stay.
+
+scene marketreturn
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : Walking in the Commons replenishes my drawer with a fresh stock of shapes. | There's a barrel near home whose likeness I'd quite enjoy attempting.
+b : What draws your eye? | A particularly handsome barrel?
+a : The way a bundle sags or a lid sits a little proud. Useful untidy details. | No. It has settled into a thoroughly unheroic lean. That's a great deal harder to copy than symmetry.
+
+scene stocksmom
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I might offer #self.mother# the very first choice of a miniature household provision.
+b : Which one would you recommend? | Would that need cupboard space?
+a : The little hamper. It has room inside for the entire remaining choice. | A shelf would do. Its principal advantage over a real hamper is the remarkable space saved.
+
+scene fathercredit
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.father# a little barrel even before the lid quite fitted. | I could let #self.father# see the untidier side of my small shop.
+b : Why not mend it first? | Wouldn't you sweep the shavings away?
+a : An unfinished good idea sometimes wants company more than it wants another push of the blade. | The loose bits yes, but I'd leave enough to show how the shape was reached.
+
+scene offhours
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : A friend like #self.friend# may reasonably expect to see something besides the working counter. | I'd show #self.friend# one quiet drawer of impractical goods.
+b : Isn't the drawer another counter? | Do you give away the goods?
+a : A counter for which nobody owes rent and no stock forms need completing. Quite distinct. | Sometimes. A little thing acquires a much grander house that way.
+
+scene highwater
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : The actual rain is quite large enough to flood my smaller business altogether.
+b : Do you really leave it open near the window? | A single drop would do?
+a : Only in dry weather. I'd rather the wooden floor learnt about a flood from a cautious distance. | A few. The wicker hamper would be sailing before I had time to finish the tally.
+
+scene clearview
+when topic=weather here.weather=clear
+does tell.self / ask.detail / answer.detail
+a : Fine weather gives my wooden stock a chance to visit the great outdoors.
+b : What changes in sunshine? | Airing your stock?
+a : Every ridge casts its own shadow. I notice half the sacks look more like little rocks. | More studying my errors. They're greatly enhanced by a bright afternoon.
+
+scene civicdoor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor can look at my miniature goods before asking for directions without owing me a copper.
+b : What if a crowd comes in to look? | Do you really show everybody?
+a : I could sell tickets to my own queue. I don't imagine the problem will reach those dimensions. | Only anybody who's interested. A welcome shouldn't require an interest in tiny barrels.
+
+scene smallpacket
+when topic=caravan world.wagons=in
+does tell.self / ask.detail / answer.detail
+a : A wagon newly arrived can be simultaneously full of goods and empty of anything I ordered. | I like to read the delivery mark before putting the new wagons into my totals.
+b : Mistaken delivery? | Wouldn't you recognise the sacks?
+a : Not necessarily. A wagon may belong entirely to a neighbouring counter. My books ought to know that. | The sacks all recognise gravity. Beyond that I'd rather check the slip.
+
+scene shortcaravan
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : When a load is late I don't send its little wooden representative out in its place.
+b : Would anyone notice the difference? | Could you hold a place with it?
+a : Very shortly after the first bite. I'd tell the customer now and spare both sets of teeth. | In the drawer, yes. On the working shelf I leave a gap and give a plain explanation.
+
+scene smalllean
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean time obliges a seller to look twice at the smallest measures. | There's no excuse for making the smallest customer's good portion a little short.
+b : A short scoop goes further. | What would you do about the price?
+a : Yes, which means somebody got less than was agreed. I'd alter the stated measure and be honest about it. | Display the sum within easy view before lugging a sack off the floor.
+
+scene rumoursack
+when topic=gossip
+does give.opinion / react.self / assess
+a : I won't repeat a debt story because an empty sack happens to be standing by a door. | An unpaid account is hardly a piece of street entertainment.
+b : What could an empty sack mean? | Would you gossip if the debt were real?
+a : That somebody used the flour. I see no room in those facts for a complete financial history. | I should find a private moment with the buyer. A crowded market is ill suited to a quiet settlement.
+
+scene peacebench
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I enjoy a quiet bench in a place where nothing needs buying. | A prayer takes considerably less room than most of my wooden goods.
+b : Do you offer anything in particular? | Less work to prepare?
+a : Thanks for small things, and the hope of not overlooking the large need beside them. | Occasionally considerably more. It's quite easy to carve a little bag and avoid thinking about the empty one.
+
+scene sleepydream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My aim's a complete tiny grocery with one deliberately empty shelf. | My small shop has one fixture I don't intend to fill.
+b : What use an empty shelf? | Expecting another delivery?
+a : Room for whatever I haven't thought to carve yet. Even a model shop needn't pretend the world is complete. | Eventually. In the meantime the space is offering excellent storage for a daydream.
+
+scene townwalk
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I sometimes go for a walk looking for the smallest thing worth making a model of. | A market walk and a carving lesson can occasionally be the exact same outing.
+b : What qualifies as small enough? | Where do you find examples?
+a : Something my thumb could hide that an ordinary meal would actually miss. A salt spoon, say. | Wherever goods are set down and taken up. One crushed corner can give a square parcel real character.
+
+scene hingetest
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I made a wooden shop door that moves exactly enough to let a daydream in. | A hinge on a tiny drawer shop is an unreasonable amount of entertainment.
+b : What gets in besides a daydream? | Does it really open?
+a : Dust at present. I am considering whether to introduce a miniature broom. | Quite far enough to show why real doors need more than a single loop of thread.
+
+grown
+
+story lunchchip [topic=food|memories]
+  : I took my lunch and a little carved oatcake to the counter wrapped in separate pieces of identical paper. Found myself buttering a small chunk of beech.
+  : It had an admirably smooth surface. I ought to have taken the hint there.
+  b : Was the butter recoverable?
+  : Scraped it into the real oatcake. Wiped the wooden one till it shone. Both sides of the business did well.
+
+story drawerflour [topic=work|memories self.role=merchant]
+  : A tiny pinch of flour fell into my toy shop. I began hunting a brush suitably small to sweep the floor.
+  : The smallest thing I owned knocked over the entire barrel rack on its first pass.
+  b : Did you rebuild?
+  : Took the stock out and turned the shop upside down. I doubt the method scales up to the real counter.
+
+story quietbell [topic=festival|memories]
+  : I put a hollow seed in the tiny bell frame thinking it might rattle when the drawer opened. It made no sound at all.
+  : Much later I heard the faintest tap while the actual festival bells were still.
+  b : Was that your little bell?
+  : A weevil inside the seed. I had made a surprisingly comfortable room for a remarkably poor musician.
+
+story barrellean [topic=pastimes|memories]
+  : I carved a little barrel from a crooked bit of branch. It looked so convincingly heavy on one side that I couldn't bear to straighten it.
+  : I cut a little support to hold it as an actual barrel might be held.
+  b : And did it stop leaning?
+  : No. It now leans with a splendid appearance of sensible management.
+
+story wrongdelivery [topic=memories|travel]
+  : I put a minuscule folded order into an empty match-sized box and found it forgotten in my pocket several weeks later.
+  : It asked me to remember to make the drawer a shelf.
+  b : Had you already made it?
+  : Yes. The order arrived just in time to confirm what a very dependable supplier I am in miniature.
+
+rule @drawers
+when concept=bark
+does aside
+cooldown 8h
+say Real sacks above, the merely decorative sort below. | An oatcake carved from wood stays ours considerably longer.
+
+rule @seller
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Check the goods beneath the crest, please. | The little order was first at the counter.
+
+rule @warm
+when concept=bark self.likes=first_warm_day
+does aside
+cooldown 8h
+say Sun on the fingers makes a better carving afternoon. | A warm ledge and one useful offcut. Most agreeable.
+
+rule @barkshelf
+when concept=bark
+does aside
+cooldown 8h
+say Allow one empty spot for an article not yet invented. | There. A whole little market with a finger-width of room left.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Slide quietly. A drawer doesn't have to announce closing to the street. | Even the little barrels have stopped rolling at this hour.
+
+rule @bell
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 8h
+say The outside bells are providing music to both shops. | An excellent peal and no charge to my miniature counter.
+
+dlg resident.hub : I can attend in the normal dimensions now. What's wanted?
+dlg resident.hub [topic.meeting=known] : #topic.player#, you'll find the smaller branch little changed since your last visit.
+dlg resident.hub [here.time=night] : The working counter can be rather quiet at this hour. Suits the little one admirably.
+dlg resident.hub [pair.disposition=wary|hostile] : Leave the drawer closed and tell me plainly what you need.
+dlg resident.job [self.role=merchant] : #self.trade_words.capitalize#. I keep the real sacks counted and the wooden ones strictly outside the account.
+dlg resident.job : I like work that can be checked in full and left in a fairly orderly state at the day's end.
+dlg resident.bye : May your own shelves contain whatever the label has led you to expect.
+dlg resident.gossip [here.gossip=no] : The gossip drawer's empty. An economical state to keep it in.
+dlg resident.gossip [here.gossip=yes] : The account at this counter runs thus. #topic.subject# #topic.claim#. That's the report, with no useful increase in certainty from passing my counter.
+dlg resident.news [world.news] : Word out of #world.news_from#. The account I have runs thus. #world.news#.
+dlg shop.greet [here.shop=open] : Real provisions at the working counter. The very little ones aren't particularly nourishing.
+dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, have a look at what's here and we'll settle the actual size of your order.
+dlg shop.greet [here.shop=bare] : Bare at present, barring some very small woodwork. I'd still buy something fit to sell on.
+dlg shop.greet [here.shop=asleep] : Both branches are shut and the proprietor is trying to sleep.
+dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Inspect the actual goods, please. The till doesn't require an independent examination.
+dlg shop.prices [here.shop=open] : I'll give you a plainly stated price for the amount you actually want to carry away.
+dlg shop.bye : Thank you. Check the weight of your parcel before setting off.
+dlg shop.bye [here.shop=asleep] : No more trade till I've had a decent rest.
+
+graft resident.hub
+choice Could I look into the little shop drawer? -> drawerwares
+node drawerwares
+say Open it gently. The barrels stand up without glue and the smallest sack has a tendency to emigrate. The empty shelf is quite deliberate.
+free
+choice What belongs on the empty shelf? -> yettocarve
+choice I'll keep the barrels upright. -> hub
+node yettocarve
+say At present, an idea. The shelf's meant for whatever I see next that I hadn't thought of putting into the small shop at all.
+choice I'll watch for a suitable idea. -> hub
+choice I'll leave the drawer shut. -> bye
+
+graft shop.greet
+choice Are the wooden sacks for buying or for counting? -> woodsale
+node woodsale
+say Neither, usually. I whittle them for my pleasure. I occasionally give one away, but I use a tested measure for the goods on this counter.
+free
+choice Could a small one ever be a real measure? -> cupcut
+choice Show me the real goods instead. -> greet
+node cupcut
+say If I hollowed it out and checked its capacity. I'd rather keep the present one as a solid joke that won't accidentally cheat anybody.
+choice Back to the counter. -> greet
+choice A sound little joke. Goodbye. -> bye

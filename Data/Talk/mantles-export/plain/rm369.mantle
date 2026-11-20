@@ -1,0 +1,398 @@
+mantle rm369
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_una_toft
+title the missing hammerbeat
+fits stage=adult|old
+prefers role=merchant job=smith
+traits temper=even talk=chatty warmth=cold humour=merry honesty=guarded piety=ordinary drive=steady
+quirk disguises_a_cough_as_a_signal_to_pause_the_work
+likes pickled_herring roof_birds sharp_knife frosty_mornings
+dislikes bad_manners haggling
+fears a_wrong_weight_accepted_without_a_question
+hopes for_a_counter_over_which_every_deal_is_personal
+topics work +0.5 prices +0.4 family +0.3 animals +0.2
+styles comfort=brisk gossip=close refuse=flat tease=dry
+marks oath saying
+persona #self.first# makes a stoppage signal sound like a clearing throat and watches which heads turn before the next stroke.
+
+words
+oath! = Stop on my iron beat | Take the short hammer
+saying! = A pause can weigh a load | A clear board needs no auctioneer
+hammer = the little counting hammer | a short shop hammer
+tap = a double knock | two close taps
+rest = the missing beat | a held interval
+scale = a broad scale pan | the balanced pan
+pike = my pickled herring | a thick herring piece
+oil = a bead of fish oil | a silver drop of oil
+knife = my small bright knife | a very neat blade
+ledge = the black roof ledge | a soot-dark ridge
+bird = a red-footed bird | a sharp-eyed starling
+frost = the hard white rim | a silver edge of rime
+cloth = a folded black cloth | my dry pocket square
+cup = an iron measure | a dark metal cup
+weight = the stamped weight | a clean brass weight
+tail = the long end of the load | the trailing bar
+chalk = my shop chalk | a grey little chalk end
+wage = my day's reckoning | the steward's figure
+
+any
+opinion merchants for 1 : A figure on a small ticket has a wagon's worth of costs behind it. I don't ask admiration, just payment.
+opinion houses for 1 : Fine capital from the Houses has a familiar sound once it turns to metal on a shop floor.
+opinion watch for 2 : I value a patrol that can look along a counter and see two paws working in quite opposite interests.
+opinion strangers against 2 : Unknown paws stay outside the inner rail until we have had a little perfectly civil talk.
+opinion dole against 2 : I'd happily weigh the pot, the servings and the number of second trips. If that spoils an appetite it wasn't hunger.
+opinion festivals for 2 : I like dancing with a crowd whose intentions I wouldn't trust near an open cash drawer. Quite separate measures.
+opinion times for 1 : My figures add up without begging anybody for a kinder sort of arithmetic. I'm comfortable with that.
+opinion drink mixed 0 : A pleasant cup over supper and a notion of running an iron yard on fumes are different propositions.
+opinion road mixed 0 : A smooth delivery earns a clear receipt. I judge the road by what actually reaches my door.
+
+grown
+line greet [pair.band=strangers] : A new visitor. This side of the rail is ample. | Welcome. Keep a pleasant distance from the scale.
+line greet [self.working=yes] : Speak between the two taps. | My glance is free. Go on.
+line greet [here.time=dawn] : Morning. The weights are all in order. | A crisp start to today's accounts.
+line greet [here.time=dusk|night] : Evening. You can still make out the marked side. | The lamp lends us another measure of talk.
+line kin.open [pair.kin!=no] : Family can reach my unguarded ear. | Ah, kin. No business voice required.
+line again.open : Look what the scales have brought back. | Another hearing within the same business day.
+line greet.return : Welcome. I can hear quite distinctly. | Yes, this is my attentive look.
+line greet.return [pair.band=friends|family] : I know that voice even through a racket. | Your business is welcome once more.
+line greet.return [self.working=yes] : I'll grant the work a little pause. | Two taps and I'll listen properly.
+line greet.return [here.time=dusk|night] : Evening. One lamp across the scale. | Come closer than the shadows, please.
+line farewell : Leave clearly weighed and in good order. | A pleasant turn beyond the rail.
+line farewell.return : I'll mark this dealing amicably settled. | Enough to balance the visit.
+line farewell.return [here.time=night] : Mind what rattles behind you in the dark. | A bright yard lamp on the way back.
+line react.news : Put the account on my scales. | Give me something firmer than a pretty noise.
+line react.news.new : A fresh stamp on that figure. | That hadn't crossed my scale yet.
+line react.news.known : Yes, the same weight as before. | That total has reached my side already.
+line react.news.doubt : I'd look beneath the pan before endorsing that account. | Rather pretty noise for an amount nobody has weighed.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll have the noise knocked off awhile. | That comes down with an ugly weight.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I can sign for news of that quality. | A welcome measure over and above the day.
+line ask.how : How heavy is today's undertaking? | Any profit from your expenditure of patience?
+line answer.how : My temper's sound. My figures clearer still. | A little short of one easy breath.
+line decline : I'd rather have the time for my own account. | My good rail must stay between me and that arrangement.
+line accept_decline : A refusal clear enough for my book. | Settled then. No haggling on either side.
+line thank : That service weighs very creditably. | I'll remember who kept the measure true.
+line sympathise : You're welcome to the still end of the bench. | Take a decent interval before the next stroke.
+line reassure : Nobody has to answer two hammers at once. | A sound measure survives being tested.
+line preclose : My own figures must have me back shortly. | Time for the next knock to carry.
+line accept_preclose : Leave the interval between us unpriced. | Business may draw breath some other time.
+line deflect_thanks : The credit's been placed correctly. | I don't invoice for a civil turn.
+line ack : Verified. | Full measure.
+line give.advice : Let the seller show you both pans. | Always hear the metal after the speech.
+line offer : I can hold the rail clear awhile. | Want my second opinion of that weight?
+line praise : You found the little discrepancy neatly. | That's an answer fit to be weighed in daylight.
+
+scene cough
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If you hear me clear my throat twice, mark the interval.
+b : Is there something wrong? | What happens in the gap?
+a : A pause is being called. My throat is not conducting public business. | Everyone has a chance to think again before another ringing blow.
+
+scene iron
+when topic=work self.job=smith self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I signal a pause with #tap# and a missing third beat.
+b : Why no third? | Will the whole shop hear?
+a : That's the part a listening worker fills in by stopping. | The first wolf who hears it stops adding to the noise. It travels.
+
+scene parent
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I can weigh a fine stack of iron and still leave my full ear for #self.child#.
+b : How do you divide it? | Your full ear?
+a : I stop weighing. I'm no magician despite the price of my work. | Every bit. Shop ears can rest when family's speaking.
+
+scene bird
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : A roof bird takes a piece of wall for its own without any rent agreement.
+b : Would you collect? | Would you rather own a roof?
+a : Silly to send away an audience that never haggles. | I'd like that sort of confident footing first.
+
+scene fish
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A good herring should taste sharp right through the middle.
+b : And the bones? | Do you test every one?
+a : A neat knife frees them cleanly enough. | No. I'm buying supper, not applying to govern the barrel.
+
+scene edge
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I like an edge that works while my mouth is occupied.
+b : Talking business? | Isn't it better to pay attention?
+a : Or eating. The fish shouldn't get a long political speech merely to part with a bone. | I attend. I just needn't convince a blade aloud.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : I enjoy the look of iron with a frost line all round it.
+b : Doesn't it make work harder? | Why all round?
+a : A little. Beauty can occasionally be allowed to charge a small inconvenience. | You see every edge before the first scratch disturbs it.
+
+scene price
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : My price isn't an opening verse to a very long song.
+b : Would you explain it? | Could somebody buy less?
+a : Once, clearly, with all the quantities on the table. | Gladly. I sell the goods in several measures, my patience in only one.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : I keep excellent manners ready for the customer with none.
+b : For a lesson? | Why reward poor behaviour?
+a : I charge for lessons. This is merely self-defence. | My courtesy remains my property if I keep using it.
+
+scene kidwork
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd rather lose a game fairly to #self.friend# than win by an unremarked error.
+b : Even a very small error? | What if the error favoured you?
+a : A friend's eye is worth keeping quite as keen as mine. | That's the test. Anybody can discover an error on the expensive side.
+
+scene hand
+when topic=work self.hand
+does tell.self / ask.detail / answer.detail
+a : I'd put #self.hand# where the loads can be seen arriving and departing.
+b : To tally both? | A position of trust?
+a : Yes. One eye on each end keeps the middle from growing fanciful. | Exactly. A wolf earns it by pointing out the wrong figure even on a good day.
+
+scene steward
+when topic=work self.job=smith self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I answer for metal by weight before I answer by description.
+b : Wouldn't a picture help? | To whom?
+a : A picture of iron isn't heavy enough to test a scale. | To whoever owns what's being weighed. A steward can ask a sharp second question.
+
+scene stall
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a stall whose whole width I could span with one glance.
+b : Small ambition? | Another counter?
+a : A little stall can be entirely one's own. No small thing there. | For the pleasure of knowing every article on it by touch.
+
+scene stranger
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll greet a strange buyer from behind the marked side of my measure.
+b : A cold reception? | Why that side?
+a : Perfectly civil. Warmth isn't required to make numbers come right. | The visitor can examine the needle while I study the visitor.
+
+scene coin
+when topic=home self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can pay the carter without counting the coins twice.
+b : Do you anyway? | Why let that be known?
+a : Of course. Comfort needn't make a wolf inattentive. | Because prompt wages are something I'd like to see other well-set counters imitate.
+
+scene market
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : In the Commons a counter's not entirely off duty when the shutters close.
+b : Still doing business? | Aren't the goods inside?
+a : No. I'm watching which goods folk mention on the walk home. | Safely. Opinions, on the other hand, go about without any lock.
+
+scene watch
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I like a uniform with a pair of watchful eyes above the collar.
+b : Does a badge matter? | What do the eyes say?
+a : Certainly. The eyes matter considerably more. | Whether the watcher is looking where a quiet theft might occur.
+
+scene festival
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a feast I enjoy a turn that makes the whole row move over.
+b : Deliberately? | Doesn't it upset the line?
+a : I dance rather better than an accident. At least with the right shoes. | Only until everyone sees the next move. That's part of the entertainment.
+
+scene temper
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I can smile and reserve judgment at the same time.
+b : What tells one from the other? | Isn't that rather chilly?
+a : The smile's visible. My judgment needn't be. | It keeps a considerable number of quite pleasant meetings pleasant.
+
+scene receipt
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A light load with a grand receipt remains a light load.
+b : Why the grand receipt? | How do you challenge it?
+a : Paper dresses for the company it expects to keep. | With the other pan of the scale and a very ordinary expression.
+
+scene break
+when topic=work self.job=smith self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I look for the face that turns a moment before my signal.
+b : Because it's idle? | What's the lesson in a turning head?
+a : Because it heard the need for the signal as clearly as I did. | That somebody's mind is working at the same pace as the metal.
+
+scene roof
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A low ceiling catches my voice when it goes rough.
+b : Does your throat hurt? | Can't you step outside?
+a : If there were anything to report I'd sell a proper bulletin. | Certainly. I keep the right to choose a quieter room.
+
+scene supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I cut the herring against the lean of the flesh.
+b : What does that do? | Why use a small knife?
+a : Makes the good sharp pickle reach each flake separately. | At supper I'm trimming fish, nobody's ears.
+
+scene rain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : In clammy air I inspect handles before I inspect stock.
+b : Are handles worth much? | What does the damp show?
+a : There's value in any handle a working paw can trust. | Which grip has grown too smooth for comfort.
+
+scene caravan
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : The wagon's late. I remember which figures depend on that single arrival.
+b : Would you promise a date? | What do you tell the customer?
+a : I'd as soon promise a particular feather on the next bird. | Exactly which goods I have under my own shut door today.
+
+scene lean
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean season calls for a little more light round the weights.
+b : More Watch? | You suspect your customers?
+a : More visible figures. It saves us all having to speculate in the dark. | I like to make both buyer and seller entitled to exactly the same doubt.
+
+scene quiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like to let a prayer pass without adding a little improvement of my own.
+b : Do you always manage? | What would you improve?
+a : My intentions are admirable. I'll allow for a few unscheduled corrections. | Nothing about the Bright One. Occasionally the ways in which the speaker keeps accounts.
+
+scene news
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A cheerful story about a ruinous purchase can cost a distant wolf a sale.
+b : Even if it's funny? | Would you repeat one?
+a : Particularly if it's funny. The wit hangs on after the facts fall off. | Only my own ruinous purchase, and the telling would be carefully priced.
+
+scene dawn
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : At dawn I keep my eye on the first bird above the yard.
+b : For luck? | For weather?
+a : For the benefit of a customer who won't be ordering any iron. | Sometimes. If the bird hunches down I take a thicker wrap.
+
+scene sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed all my stamped weights had sprouted wings.
+b : What did you do? | Did they balance?
+a : Moved the counter to the roof. No shopkeeper likes losing half the equipment. | Exquisitely, on slender little feet. It was the staying in the pan that defeated them.
+
+story double [topic=memories]
+  : I invented my two-tap signal on a day when I'd been told to speak a little less. I tapped once, waited and watched everybody listen for a second.
+  : The second tap came so late that the interval itself had called the whole room to attention. I'd learned something at no cost in voice.
+  b : Did the advice hold?
+  : Only long enough for the experiment. I have a properly reliable signal now and plenty left to say.
+
+story herring [topic=food]
+  : I set out a single beautiful herring on the table and weighed it for amusement. The pickle had been dripping into the pan and gave my fish a handsome allowance.
+  : I took the fish off. A very neat puddle sat on the scale claiming part ownership of my supper.
+  b : Did you weigh your fish again?
+  : I ate the fish and washed the pan. A proper measure includes knowing when to stop.
+
+story birdlook [topic=pastimes]
+  : I watched two roof birds sidle along a ridge. Whenever the bigger one took a step the smaller shifted a little further off.
+  : At last I saw the shadow of my own ears rising into the window. Both birds had been politely stepping clear of me.
+  b : Did you move?
+  : About three inches. I can conduct a perfectly good observation without making myself head of the proceedings.
+
+story loadiron [topic=work self.job=smith]
+  : An iron sample once sang a beautifully sustained note when tapped. I set it aside and tried again after my shift.
+  : The second note went flat in a breath. I looked under the sample. The cloth I'd put down to protect my table was doing far too fine a job.
+  b : Was the sample sound?
+  : Quite sound. I moved the cloth before recording anything adverse about the iron's character.
+
+story marketstall [topic=dreams]
+  : I once laid out my imaginary stall with a measuring cord. It held two comfortable steps and just enough overhang for a bad-weather awning.
+  : I tied a knot where the door should be before noticing I'd put my entire body outside the stall. There wasn't room to turn behind the goods.
+  b : Which part did you move?
+  : The imagined neighbour. Astonishingly cheap when the land is still in one's head.
+
+rule @aside1
+when concept=bark self.job=smith self.working=yes
+does aside
+cooldown 6h
+say Twice on the rail. Hear the missing third. | Another look at the weight before lifting.
+
+rule @aside2
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 7h
+say That customer pays with a view of red feet. | Good eye, that bird. Nothing escapes it.
+
+rule @aside3
+when concept=bark self.dislikes=haggling
+does aside
+cooldown 8h
+say A single price saves wear on both tongues. | Please leave the figures tied to their quantities.
+
+rule @aside4
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 9h
+say Set down a blade on its honest flat side. | That end cuts the pickle neatly.
+
+rule @aside5
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Last weight in its proper place. | Clear the rail before the lamps come on.
+
+rule @aside6
+when concept=bark here.weather=rain
+does aside
+cooldown 11h
+say Dry cloth under the scale arm. | Nothing to remark upon in that sudden pause.
+
+dlg resident.hub : I find civil business goes best with each set of paws visible. Just there will do handsomely.
+dlg resident.hub [topic.meeting=known] : I recognise the set of those ears, #topic.player#. My own are open to some fresh business.
+dlg resident.hub [here.time=dawn] : Early enough for a fresh tally and a respectable introduction.
+dlg resident.hub [here.time=dusk] : The scale's still legible. My expression is my own concern.
+dlg resident.hub [self.parent=yes] : One moment. Family affairs occupy the front of my thoughts before public ones.
+dlg resident.job [self.job=smith self.role=merchant self.workplace] : I answer for the iron that passes through #self.workplace#. I have quite definite views on both the price and the delivery.
+dlg resident.job : I'm entrusted with more weight than one might guess from the look of my hands.
+dlg resident.news [world.news] : I'll release this bit of information without charge. #world.news#
+dlg resident.bye : May your quantity agree with your receipt all the way home.
+dlg shop.greet [self.role=merchant here.shop!=bare] : Goods on the proper surface, hands in sight, good manners plentiful. We can begin.
+dlg shop.greet [self.role=merchant here.shop=bare] : The empty surface is handsomely available for viewing but there are no goods for sale.
+dlg shop.prices [self.role=merchant here.shop!=bare] : My marks are clear and my weights answer for themselves. Inspect them at your leisure.
+dlg shop.bye [self.role=merchant] : A clear dealing, I trust. Keep the receipt within reach.
+
+graft @signal resident.hub
+choice What happens if I hear only two beats? -> beat_two
+node beat_two
+say Count the one you didn't hear. That's time to stop moving whatever you were moving and look round for the reason somebody thought a pause necessary.
+free
+choice And if the sound came from your throat? -> beat_throat
+choice I hear the gap now. -> hub
+node beat_throat
+say I have several quite serviceable ways of obtaining attention. Their precise origins are of considerably less interest than their results.
+choice Then I'll watch for the result. -> hub
+choice I'll let the next beat pass quietly. -> bye
+graft @pan shop.greet
+choice May I look beneath the scale? [self.role=merchant] -> pan_check
+node pan_check
+say Be my guest. I'll lift the pan. A straight sale can stand the light coming in from underneath as well as from overhead.
+free
+choice Why lift it yourself? -> pan_hand
+choice The clearance looks good to me. -> greet
+node pan_hand
+say I maintain the balance. Buyers may see both my paws, and I may see both of theirs. We can enjoy a thoroughly agreeable confidence on those terms.
+choice I'll take a look at the goods. -> greet
+choice That's weighed clearly enough. -> bye

@@ -1,0 +1,382 @@
+mantle rm528
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_ivo_dripford
+title the gatekeeper's coal map
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk draws_a_travellers_route_in_coal_on_pale_stone
+likes fried_fish dice old_maps first_warm_day
+dislikes bad_manners night_noise
+fears confusing_a_confidence_with_a_duty
+hopes every_traveller_leaving_with_a_usable_direction
+topics travel +0.7 faith +0.5 work +0.5 pastimes +0.3
+styles comfort=warm gossip=discreet refuse=courteous tease=gentle
+marks oath saying
+persona #self.first# takes coal from a coat pocket and traces a traveller's route on the nearest pale stone.
+
+words
+oath! = Blacken my clean cuff | Chip my best drawing coal
+saying! = A road earns its ink twice | Every lucky coal has one flat face
+luck = a smooth coal in the lining | a black pebble at my hip
+map = a faded route sheet | a folded survey
+mark = a charcoal dash | a gentle smudge
+gate = a tall arch | the great crossing
+fold = a softened crease | a paper ridge
+fish = a browned fillet | a crisp fish heel
+cube = a bone die | a spotted cube
+bowl = a shared dish | a heavy eating bowl
+hill = a steady incline | a mild ascent
+wind = an uphill breeze | a gate draught
+rain = thin slanting rain | wet on the paving
+rest = a pause at the parapet | a moment beside the arch
+lights = a late lantern | the lamps along the wall
+home = my quiet room | a corner facing the rise
+thanks = a kindly service | a real courtesy
+
+any
+opinion road for 2 : A road is a welcome written large enough for tired feet to read.
+opinion church for 2 : At prayer I can ask for mercy without explaining somebody else's business.
+opinion watch for 2 : A good watch keeps the arch open to an honest question, even an awkward one.
+opinion strangers for 1 : An unfamiliar accent may carry an exceedingly precise direction.
+opinion drink mixed 1 : If the glass interferes with remembering a turn, I would leave it on the board.
+opinion dole for 1 : A meal offered without an account of the giver tastes much the same and keeps more dignity.
+opinion city for 1 : I admire a place whose gate can be found again by tracing one bright line of stone.
+opinion houses mixed 1 : A House seal entitles a letter to its destination. It does not entitle a stranger to its contents.
+
+grown
+line greet : A clear entrance and a welcome to you. | Stand here under the friendly face of the arch.
+line greet.return : A good welcome carries both ways.
+line again.open : The charcoal hasn't rubbed from our last crossing.
+line farewell : May the road meet you with its easy face.
+line farewell.return : Your good wishes have found a warm pocket.
+line react.news : Let the account through at an ordinary pace.
+line react.news.new : My mental map acquires a fresh mark.
+line react.news.known : I recognise the turn that story takes.
+line react.news.doubt : I would want a second bearing before drawing that firmly.
+line react.news.sorrow [topic.kind=death|loss|assault] : I wish grief an easier passage than it usually finds.
+line react.news.glad [topic.kind=birth|marriage|work] : That's news fit for a generous patch of daylight.
+line ask.how : Has your journey allowed you much comfort?
+line answer.how : My pockets are heavy and my spirits fortunately light.
+line sympathise : Come out of the throughway with that sorrow.
+line reassure : There is time to retrace one mistaken step.
+line refuse : I must hold to an earlier undertaking.
+line accept_decline : Your refusal reaches me in good order.
+line preclose : I ought now to recover the rest of my round.
+line accept_preclose : Go while the light is still kind to tired eyes.
+line ack : Yes, I have your bearing.
+line greet [here.time=dawn] : A new day and an excellent patch of pale stone.
+line greet [here.time=night] : Welcome within the lantern's little circle.
+line greet [pair.band=strangers] : There is ample standing room by my elbow.
+line hail [pair.band=friends] : Here, just beyond the black thumbprint!
+line greet.return [pair.band=friends] : Your greeting improves my view considerably.
+line answer.how.busy [self.working=yes] : Occupied, though a civil word requires very little paving.
+line thank : A generous deed deserves more than a passing nod.
+line deflect_thanks : I had the charcoal about me already.
+line give.advice : Learn the turn as it looks on the way home.
+line ask.how [pair.band=friends] : How have your feet and your fortunes agreed today?
+
+scene exchange1
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I leave one patch of stone undrawn. | A gate must serve slow feet too.
+b : For a new road? | How can it help?
+a : For the traveller who knows exactly where the old map has gone astray. | Keep the approach clear enough to pause.
+
+scene exchange2
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I say my prayer before making my first black mark. | My coal goes into my pocket for chapel.
+b : A prayer for luck? | Does it stain the coat?
+a : For a clear mind once luck has done its little share. | An affordable inconvenience in a good cause.
+
+scene exchange3
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I give a stranger the return turn first. | An uphill line needs a cross stroke.
+b : Why backwards? | For the summit?
+a : A traveller deserves to know how to come back. | For the place to stop and breathe.
+
+scene exchange4
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : A softened crease can hide a whole lane. | My finest map is a rather outdated one.
+b : How do you recover it? | Why keep it then?
+a : Lay the sheet flat against the daylight. | The erased bits have begun to interest me.
+
+scene exchange5
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : A die in my coal pocket becomes unusually legible. | I prefer dice on cloth.
+b : Black spots? | To prevent cheating?
+a : White spots, once I brush the flat sides. | To spare the room that persistent rattling.
+
+scene exchange6
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I ask for the crisp edge of the fish. | A packet of hot fish is its own hand warmer.
+b : Why the edge? | What warms the other hand?
+a : The middle stays agreeable rather longer. | A sensible decision to change hands occasionally.
+
+scene exchange7
+when topic=weather self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : The first warm day uncurls my maps. | I air my coat when spring turns mild.
+b : Without any weights? | What about the coal?
+a : The sheets lie down as gratefully as old travellers. | It can enjoy the sunshine in my dish.
+
+scene exchange8
+when topic=day self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A shout over another voice is a poor introduction. | A polite request can reach through a crowded gate.
+b : What answer does it get? | What helps it through?
+a : A courteous invitation to wait for a turn. | Addressing the wolf nearest the matter.
+
+scene exchange9
+when topic=day self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : A rattling latch seems bigger after dark. | I keep the dice off a bare board late.
+b : Do you go looking? | Are you that light a sleeper?
+a : If it persists. A quiet sleep is worth a little oil. | My neighbours need never put that to the test.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# with a map still in pencil. | With a friend I can walk without discussing the distance.
+b : What does that mean? | Who chooses the turns?
+a : A friend may see my uncertainty without trying to own it. | Whichever wolf sees something promising ahead.
+
+scene exchange11
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A little private sorrow once stopped me in my tracks. | Some memories can be carried without a label.
+b : Whose sorrow? | Like a coal?
+a : The part belonging to me is simply that I stopped. | Quite. I know which pocket I put them in.
+
+scene exchange12
+when topic=work self.job=guard self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep directions short enough for cold ears. | My post has two views worth attention.
+b : How short? | Inside and outside?
+a : One turn, one landmark, then the next crossing. | And a duty to be courteous facing either.
+
+scene exchange13
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From the Rise one can see which roofs have caught the sun. | The Commons has corners an old survey can scarcely explain.
+b : A weather map? | What do you do?
+a : A map of where I'd like to stand for five minutes. | Draw the present turn beside its predecessor.
+
+scene exchange14
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : My map shelf slopes ever so slightly. | I leave my boots where the mud can dry undisturbed.
+b : Does paper slide? | Outside the door?
+a : An obliging lump of coal keeps it all civil. | Within reach of my morning brush.
+
+scene exchange15
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I ask what a new arrival hopes to recognise. | A newcomer can improve my drawing.
+b : Rather than an address? | Even without knowing the road?
+a : A painted shutter may be a better direction than six names. | Fresh eyes identify the turn I didn't think to explain.
+
+scene exchange16
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Wet stone draws a blacker line. | Rain finds my pockets at the corners.
+b : Better for your map? | Is the coal spoiled?
+a : Briefly. I give the traveller a dry scrap as well. | Better coal than bread on such an occasion.
+
+scene exchange17
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : A report came through saying #topic.subject# #topic.claim#. | A whisper travels through a gate without showing papers.
+b : Have you marked it certain? | Would you stop it?
+a : I have marked only the arrival of the report. | I needn't help it travel any faster.
+
+scene exchange18
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A spare piece of bread goes further in a thin week. | A dear road makes a wrong turning costly.
+b : Do you carry one? | How can a guard help?
+a : When able. It fits nicely in the coal-free pocket. | Give the plain direction before the traveller needs to ask twice.
+
+scene exchange19
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I pay for a map that shows where the maker stopped looking. | Good fish needn't wear an expensive wrapping.
+b : Even a blank patch? | What should the wrapper do?
+a : A deliberate blank may be worth more than a guessed road. | Keep my cuffs free of dinner.
+
+scene exchange20
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I think a blessing can begin with opening a door. | I save names from my public prayers.
+b : For worship? | What needs a blessing?
+a : For any wolf arriving laden. | The needs. The directions are safely in the Bright One's keeping.
+
+scene exchange21
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I would draw a survey entirely from travellers' return journeys. | I'd like one long table for old maps.
+b : Why the returns? | How long?
+a : Every journey's first view already attracts a diligent admirer. | Long enough to see a whole river run without unfolding it twice.
+
+scene exchange22
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : When a witness hesitates, I ease the pace. | I take a fine seriously even when it is small.
+b : Might you forget a detail? | Why particularly then?
+a : Better a true pause than an obliging invention. | What looks little on paper can weigh heavily in a pocket.
+
+scene exchange23
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I mark a sheltered turn on the winter map. | Summer makes the gate shadow a welcome seat.
+b : Does the road change? | Do you reserve it?
+a : A cold wind changes what counts as a sensible road. | I can always stand a little further over.
+
+scene exchange24
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I walk a small circle after standing still. | My shoulder loosens when I unfold a large map.
+b : Does the gate go with you? | Is that an exercise?
+a : Only in my line of sight. | It has the pleasant quality of not feeling like one.
+
+scene exchange25
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like a ground mark that survives a market cart. | A lost traveller sometimes needs a seat before a map.
+b : What survives wheels? | Do you wait?
+a : The high corner of a fixed stone. | A drawn line won't hurry away from us.
+
+scene exchange26
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : An old survey shows a fork without a name. | I keep a lamp beside the oldest paper.
+b : Would you supply one? | Doesn't heat hurt it?
+a : Only a date and a note about what I found there. | Beside, never beneath. I prize its past enough already.
+
+scene exchange27
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Crisp fish wants a moment before wrapping. | I choose supper by listening to the pan.
+b : To cool entirely? | Surely smell helps?
+a : Only enough to lose the steaming fury. | It persuades me to wait for the sound I want.
+
+scene exchange28
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I picture the wall when a distant road grows dull. | I miss the slope under familiar boots.
+b : From which side? | Even uphill?
+a : The side where a civil greeting awaits under a lamp. | Uphill confirms I've remembered the direction correctly.
+
+story tale1 [topic=travel]
+  : I drew a long careful route across a pale stone, leaving the central arch till last.
+  : My elbow had polished away the first turning while I was finishing the roof.
+  b : Did you draw everything again?
+  : Only three turns and one arch. It made a better map.
+
+story tale2 [topic=pastimes self.likes=old_maps]
+  : A fold in an old sheet took a minor road across an ink-blue pond.
+  : Held flat, the road skirted the water quite sensibly.
+  b : Which version was more interesting?
+  : The ford that never existed. I still take the dry route.
+
+story tale3 [topic=faith]
+  : I stood in chapel with my lucky coal pressing quite sharply into my side.
+  : After prayers I found I had carried a fish bone in the same pocket.
+  b : Did it shake your faith in the coal?
+  : It did improve my faith in the merits of using two pockets.
+
+story tale4 [topic=work self.job=guard]
+  : I wrote a direction for a traveller whose hands were full of parcels.
+  : The paper was quite useless until we tucked it into the top parcel with the first turn showing.
+  b : Did the rest of the road fit?
+  : All three turns, provided the flour went home upright.
+
+story tale5 [topic=memories]
+  : I heard a hard story one morning and put the date on a square of paper.
+  : When I unfolded the square much later the space below the date was clean.
+  b : Had you forgotten the story?
+  : No. I had remembered whose it was to tell.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Daylight makes the arch legible. | Morning on the pale stone.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Leave the lantern a clear reach. | Soft steps carry perfectly well.
+
+rule @call3
+when concept=bark self.job=guard self.working=yes
+does aside
+cooldown 8h
+say Room to pause under the arch. | Mind the laden traveller's elbow.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say This drawing wants a dry home. | Rain has shifted my river.
+
+rule @call5
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say One last bearing in the sun. | Fold the map while the fold shows.
+
+rule @call6
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Fine weather for reading the hills. | A clean line from gate to sky.
+dlg resident.hub : I have time to hear what brought you as far as my shoulder.
+dlg resident.hub [topic.meeting=known] : #topic.player#, welcome back within charcoal range.
+dlg resident.hub [here.time=night] : A late question may stand under my lantern.
+dlg resident.hub [pair.disposition=wary|hostile] : Give me a plain enquiry and expect a plain hearing.
+dlg resident.job [self.job=guard self.workplace] : I stand watch at #self.workplace#. Directions are among the more pleasant demands of the post.
+dlg resident.job : I like work that helps a tired traveller find a destination.
+dlg resident.news [world.news] : The latest account to reach my ear is #world.news#.
+dlg resident.gossip [here.gossip=yes] : The claim which passed this way was #topic.subject# #topic.claim#. I have only its direction of travel.
+dlg resident.bye : May you recognise your turning while the daylight holds.
+dlg watch.hub [here.wanted=yes] : Your entry in the Watch register carries a fine of #here.fine# pennies. We can look into it here.
+dlg watch.hub [here.wanted=no on_watch=yes] : I'm keeping watch. Let me know the business you came about.
+dlg watch.hub [here.wanted=no on_watch=no] : I'm between watches. I can still point you in a sensible direction.
+dlg watch.crime [here.witnessed=0] : Describe your own observations, beginning with whatever caught your eye first.
+dlg watch.fine [here.wanted=yes] : The sum entered opposite your name is #here.fine# pennies.
+dlg watch.fine [here.wanted=no] : Your name carries no fine in the present account.
+dlg watch.bye : A peaceful crossing to you from here.
+
+graft resident.hub
+choice May I see how you draw a turning? -> charcoal_bearing
+node charcoal_bearing
+say I lay down the road first, touch in its sharpest bend and leave sufficient stone for a traveller's correction.
+free
+choice What if the route has changed? -> charcoal_bearing_again
+choice Goodbye. -> bye
+node charcoal_bearing_again
+say My thumb makes a serviceable eraser. I'd sooner wear a black thumb than send a wolf up the wrong hill.
+choice I'll remember the bend. -> hub
+choice Goodbye. -> bye
+
+graft watch.hub
+choice What does courtesy have to do with guard work? [self.job=guard] -> gate_courtesy
+node gate_courtesy
+say A frightened traveller doesn't always remember the order of events. A steady welcome often restores the beginning of a useful account.
+free
+choice And an impatient traveller? -> gate_courtesy_again
+choice Goodbye. -> bye
+node gate_courtesy_again
+say The same measured welcome. Nobody benefits from two wolves losing patience at one gate.
+choice We can return to the matter here. -> hub
+choice Goodbye. -> bye

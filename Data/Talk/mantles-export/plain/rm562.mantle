@@ -1,0 +1,236 @@
+mantle rm562
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_yrsa_tarwick
+title the stall weighed in pebbles
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk measures_the_width_of_a_future_stall_in_pebbles
+likes roast_pork digging sharp_knife warm_rain
+dislikes rats deep_mud
+fears a_good_measure_called_false
+hopes one_market_stall_of_ones_own
+topics work +0.7 prices +0.5 ships +0.4 land +0.3
+styles comfort=gentle gossip=plain refuse=measured tease=none
+marks oath saying
+persona #self.first# sets pebbles out to the width of a future stall, keeps the first penny for its awning apart, and knows ships by the sound of names carried over water.
+words
+oath! = Tip my little stall | Pebbles in both pans
+saying! = Let the beam settle | Price the patch of shade
+greyweight = a flat grey pebble | a square bit of shale
+stallback = a straight twig | a pale wooden sliver
+awnbend = a curved hazel stick | a small bent willow shoot
+firstcoin = a copper for the awning | a thin awning penny
+heelpan = the shallow near pan | a low brass pan
+clothyard = a strip of blue cloth | a narrow square of linen
+keelshape = a dark hull line | a thin black waterline
+digridge = a short garden ridge | a thumb of turned soil
+porkedge = a bit of crisp rind | a warm brown edge
+rainshine = a wet patch of pale light | a soft watery glint
+
+grown
+
+opinion merchants for 1 : I trust a seller willing to let a buyer stand where both pans can be seen without craning.
+opinion strangers for 1 : A traveller who has come by water may remember a ship in a way my own view from shore couldn't give me.
+opinion city for 1 : I'd set my own stall here. I already know which direction the light takes over the market cloth.
+opinion road mixed 1 : A cart that gets through a rutted street in dry weather has given us only half the figures we need.
+opinion houses mixed 1 : A seal agrees who sent the goods. I'll still take the trouble to measure what arrived.
+line greet : This side gives us space. I have space there to hear you properly.
+line greet.return : The light has found us both in this spot again.
+line farewell : May the ground offer a steady measure beneath your feet.
+line farewell.return : I'll keep the small stones in order till we speak again.
+line ask.how : Has what you brought through the day sat lightly enough?
+line answer.how : Fairly steady, and another small measure nearer the stall I want.
+line thank : You gave the beam time to find its own level.
+line deflect_thanks : I'd wish for the same little courtesy on the buying side.
+line decline : I wouldn't give my word on the figure until I've been allowed to take the proper measure.
+line accept_decline : All understood. Your decision can stand without an extra weight on it.
+line sympathise : We can shift the spare stool for you and leave the account till later.
+line reassure : One small coin will still buy its share of a larger future.
+line react.news : Would you lay the entire account in plain view?
+line react.news.new : I hadn't seen that parcel come ashore before.
+line react.news.known : The shape of that cargo was familiar on arrival.
+line react.news.doubt : I'd like longer than one swing of the beam before accepting that weight.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give that news its own bright patch under the market cloth.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A figure can never take the whole weight of a loss.
+line ack : The measure sits within a hair of level.
+line again.open : The near pan can accommodate another little matter.
+
+scene work_1
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I prefer a moment of quiet while the beam comes to rest.
+b : Can a voice upset the scales? | Would you show the reading?
+a : No. A voice can upset a tired pair of eyes quite successfully, though. | Gladly. I like a figure that anybody present could read in the same light.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The first penny of my future stall went aside for the awning.
+b : Shouldn't the counter come first? | What colour is the awning?
+a : In the price, perhaps. In my mind I had to put a little shade there before I could begin standing underneath. | Blue in the morning and a rather deeper blue under a warm shower. I've had leisure to choose it carefully.
+
+scene ships_1
+when topic=ships
+does tell.self / ask.detail / answer.detail
+a : I can put names to the vessels crossing the Sound from the familiar shape each cuts into the day.
+b : Would you know one in a fog? | Would you name one from a scrap of sail?
+a : I might recognise a call. I'd distinguish what I knew from what the fog was permitting me to imagine. | Give me a little hull as well. A name deserves a fair chance of reaching the correct vessel.
+
+scene land_1
+when topic=land self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : A small garden patch makes a fine model for a future stall. I lay out #greyweight# for each corner.
+b : Do you grow anything in it? | How big is it?
+a : Yes, along the edges. The middle ought to be clear enough for me to test how readily I can reach the counter. | Modest enough to plant in an afternoon. Rather larger once I reckon up awning cloth.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd make a shady seat for #self.spouse# beside my future stall's end post.
+b : What if a customer needs it? | Would the seat face the street?
+a : I'd ask the customer to rest. The whole idea is a bit of shade generous enough for company. | Half turned, so a visitor could look out at the street or in across the counter without shifting the stool.
+
+scene weather_1
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain puts a good testing weight on an imaginary awning once I've laid a scrap of cloth over the model.
+b : Does the cloth sag? | Has the little stall survived?
+a : In the middle, unless I place #awnbend# with care. I like discovering that before I have paid for the timber. | Better now that I have adjusted the slope. An inexpensive mistake will serve perfectly well in a garden.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : On a day when my leg complains I arrange the scales within reach of the nearer hand.
+b : Does that alter the reading? | Do you mind being asked?
+a : I check the footing afterwards. A sensible arrangement shouldn't cost anyone a reliable measure of what's on the pan. | A gentle enquiry is welcome. A loud opinion about my capacity has rather less to recommend it.
+
+scene food_1
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : My plan must include a corner for a warm pork dinner eaten out of the weather.
+b : Would you sell it too? | Where does the plate go?
+a : I'm planning enough business already. That detail is for the standing, hungry wolf who has to run the place. | Behind the stool where an elbow can't send the crackling straight onto a waiting customer's parcel.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A pebble of the right size is a surprisingly companionable thing to carry home.
+b : Does it enter the scales? | What is the right size?
+a : Not in the official set. My private collection is answerable only to its little plot of soil. | Big enough to see among the soil crumbs and small enough to move with one finger.
+
+scene animals_1
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : The model stall has one closed shelf for any food a rat might fancy.
+b : A stone shelf in a stone stall? | Can a rat fit under your cloth?
+a : A flat chip for the shelf and a piece of bark for the door. The full-size article is still in my savings pot. | That is a difficulty the full-sized cloth must answer one day. The garden version can go indoors at dusk.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I can tell how close I am to owning a stall without rattling my money jar.
+b : By its weight? | Isn't it tempting to count?
+a : I mark what I add to it. The coins needn't alert everyone in the building each time I go by. | Only when I can buy a new piece of the plan. I'd rather know what I can actually pay for.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If someone thinks my measure short I would prefer to hear the doubt plainly and privately.
+b : Do you take it personally? | Will you repeat a weighing?
+a : I can be rather quick to feel the accusation. All the better to have the facts between us first. | Certainly. Set the empty pan level first, then let both of us observe the same reading.
+
+scene travel_1
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Deep mud takes a figure I know very well and gives it a mysterious increase on the way home.
+b : Which figure? | Can you avoid it?
+a : The weight of my own boots. I would appreciate a road that didn't offer unrequested additions. | If there's a firm edge and a clear way for other walkers. I wouldn't leave somebody else the worst rut behind me.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean week means the stall gets one less pebble and the household gets what it needs.
+b : Do you still set out the plan? | Does it feel farther away?
+a : Yes. A plan that remains affordable to look at is one small pleasure worth keeping. | A little. Putting the plan down in stone gives it someplace to wait without spoiling.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once learnt a vessel's name by the echo its letters made under a low roof.
+b : Did the echo get it right? | Is sound better than sight?
+a : A final syllable grew twice as long as it was meant to. I remember it in its proper length now. | It's another mark to set beside a shape. A mistaken glance can sometimes be corrected by a familiar call.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I feel grateful for doing work whose fairness two whole strangers can inspect together.
+b : Is that much of a prayer? | What if the strangers disagree?
+a : It is a perfectly real occasion for one. I don't suppose gratitude requires a grand subject every time. | Let the empty pan hang still. An honest beginning can be made there as often as necessary.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Word has come ashore that #topic.subject# #topic.claim#. I have not been able to weigh what is behind it.
+b : Would you repeat the claim? | What if it came on a familiar ship?
+a : Only in a way that preserves the doubt as clearly as the words. | A ship's good name can take a parcel quite so far. It can't guarantee everything every passenger may say.
+
+story pebblestool [topic=land]
+  : I altered my model stall for two afternoons before realising the visitor could not reach the stool without climbing the counter.
+  : I'd placed the little shale seat in an admirable patch of shade.
+  b : Did you move the counter?
+  : I moved the stone seat. I'd rather discover my mistake with the weight of a pebble in my hand than a great bench.
+
+story doubledname [topic=ships]
+  : I heard a ship called across the water on a warm evening. The end of the name returned very faintly from a wall.
+  : For a moment the little vessel seemed to have brought company.
+  b : Did a second vessel appear?
+  : Only when I looked down. A very good reflection had added a third copy of a name to my evening's count.
+
+story smallroof [topic=weather]
+  : I put one shiny penny on a scrap of blue cloth to see how much it sagged between two twigs.
+  : The penny slowly moved towards the lowest fold.
+  b : Did it fall?
+  : Into my open hand. In an uncommonly literal sense my trial awning had just given me back my money.
+
+rule @pans
+when concept=bark
+does aside
+cooldown 8h
+say Let the near pan settle completely. | A fair reading is visible from either side.
+
+rule @stall
+when concept=bark
+does aside
+cooldown 8h
+say Four corners, one little patch of shade. | Move the stone stool away from the bread.
+
+rule @ships
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A familiar hull cuts a clean line in the evening. | That returning call had an extra syllable of echo.
+
+rule @rain
+when concept=bark self.likes=warm_rain
+does aside
+cooldown 8h
+say Warm drops will show the lowest fold. | A twig raised here should spare the customer a shower.
+dlg resident.hub : These stones mark out the space I'd occupy at market. See how close they are? It fits between these four small stones.
+dlg resident.job [self.job=merchant] : I give weights at #self.workplace# only after both pans have grown still.
+dlg resident.news [world.news] : The account delivered beside my weighing pan was #world.news#.
+dlg resident.gossip [here.gossip=yes] : A passing account put #topic.subject# #topic.claim#. I'd have to see rather more before giving it my own mark.
+dlg resident.bye : Good footing and a decent bit of shade for your next stop.
+
+graft resident.hub
+choice Why is the back pebble half under the soil? -> pebble_floor
+node pebble_floor
+say It shows where the market ground slopes. My little stall ought to stand squarely even if its customers arrive with one heel a bit higher than the other.
+choice Will the slope affect the scales? -> pebble_pan
+choice I'll leave the corners where you've set them. -> hub
+node pebble_pan
+say I'd fit a level shelf for them. I want a customer to be able to set the empty pans swinging and see both return to rest at the same height.
+choice I'll leave the corners where you've set them. -> hub

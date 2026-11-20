@@ -1,0 +1,373 @@
+mantle rm530
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_julian_greatly
+title the unentered voyage
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk keeps_a_tiny_unpriced_ship_in_the_margin_of_a_private_account
+likes oatcakes stars fresh_straw misty_dawns
+dislikes haggling flies
+fears a_book_that_accounts_for_everything_but_the_day a_berth_passed_by
+hopes to_see_a_star_from_beyond_the_headland a_ship_worthy_of_its_drawing
+topics travel +0.5 work +0.4 dreams +0.4
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# adds a tiny sail to a private book after a clear evening and values the sea rather more than its usefulness as an account heading.
+
+words
+oath! = A reef through the sum | Straw in the inkwell
+saying! = An even column can still want a sail | Let the voyage have its blank margin
+pocketfleet = my little paper navy | my boats without a price
+starhole = a prick of clear sky | a star in the sail space
+emptysum = the unused column | my private white margin
+richink = the dark clean stroke | a line of sound black ink
+smallberth = one unpriced bunk | the margin berth
+bowletter = my raised initial | a little ink prow
+tallowmoon = my candle's low disc | a ring about the wick
+buttercoin = a round pat of butter | a pale butter seal
+strawclean = the new golden straw | the fresh swept floor
+pinwing = a fly's inked footprint | my spurious star
+stonecount = the tally of good stone | the count at the yard edge
+wetbeam = the rain-swollen length | a dark line of timber
+sightslit = an opening beyond the roof | my view through two rafters
+paperwind = a slight curl of the page | an ink-favouring breeze
+
+any
+opinion city for 1 : All the goods in my books have somewhere to go within reach of these walls. I like knowing the use of the figures.
+opinion dole against 1 : I'd sooner finance work that continues after the first purse is spent. One meal has a very short accounting period.
+opinion houses for 1 : The yard can accept responsibility over a season because a house stands behind the work. I give that arrangement its due.
+opinion newcomers for 1 : Fresh eyes on an old yard may ask precisely why we've kept an inconvenient habit.
+opinion strangers for 1 : My door need not know a caller's grandparent before I can offer a chair and hear the proposal.
+opinion sump against 2 : I find the damp reaches the books before I've properly settled to a page down there. I favour higher quarters.
+opinion times for 1 : I can afford sound paper and leisure to put a useless little ship on it. The present has treated me decently.
+opinion watch for 1 : A witnessed delivery should be a matter one can take to the Watch and get a patient hearing.
+
+grown
+line greet : There's an open margin here for a visitor.
+line greet [pair.band=strangers] : Your name may follow your business, if you please.
+line greet [here.time=dawn] : First light has almost found the sail on my page.
+line greet [here.time=dusk|night] : The desk is quiet enough to entertain another voice.
+line greet [self.working=yes] : Allow me to finish this small upright stroke.
+line kin.open [pair.kin!=no] : For family I reserve a longer interval without an entry.
+line again.open : You've come round to a familiar page.
+line greet.return : A clear hail over the white margin.
+line greet.return [pair.band=friends|family] : There's a voice that won't require a memorandum.
+line greet.return [self.working=yes] : I heard while I was bringing the column down.
+line greet.return [here.time=dusk|night] : I have the light and the leisure to listen.
+line farewell : May the day keep a little space unassigned for you.
+line farewell.return : I'll put that visit among my better expenditures.
+line farewell [here.time=dusk|night] : Good light to your feet until your door.
+line react.news : What part of the account has been directly observed?
+line react.news.new : That's a detail I've yet to bring into the book.
+line react.news.known : I can find that entry on an earlier leaf.
+line react.news.doubt : Would that total survive inspection of the original notes?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would suspend business with the household for a respectful interval.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd spare some of my best paper for such an entry.
+line answer.how : A little restless about matters absent from the day's account.
+line answer.how [self.working=yes] : Thoroughly occupied by things which can be counted.
+line ask.how : What have you enjoyed today beyond the ordinary figures?
+line sympathise : No entry has sufficient room for every sort of loss.
+line reassure : Take whatever part of the evening the matter asks.
+line decline : I'd have to break a proper undertaking at the yard to accept yours.
+line accept_decline : I shall leave my proposal in an unentered state.
+line thank : You have saved me a great many unnecessary figures.
+line deflect_thanks : Return the consideration to another patient reader.
+line preclose : My little ship is still waiting for a mast.
+line preclose [self.working=yes] : The yard requires the better part of this remaining light.
+line accept_preclose : Let's close the cover while there's a clear stopping place.
+line ack : Accounted.
+
+scene ship
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In a private book I draw one tiny ship for each evening I spend longing for a berth.
+b : Are there many? | Do you give them all names?
+a : A fleet by now, and very economical to maintain. | Only the ones whose sails look capable of carrying the vessel past the binding.
+
+scene yard
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A yard account has room for pieces received, pieces used and pieces still needing explanation.
+b : What sort of explanation? | Which figure do you enter first?
+a : A sound block can become two smaller blocks between counting and laying. Arithmetic should allow the mason an occupation. | The one I've actually seen. The other two must wait their proper evidence.
+
+scene stars
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I leave a narrow strip of sky above each ship in case the evening supplies a star.
+b : What colour is the star? | Can it navigate?
+a : The white of the paper. I surround it with a little wash and leave its centre untouched. | On the page the ship will go wherever the star is set. I'd rather like to test the opposite arrangement.
+
+scene cakes
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : An oatcake with a little butter is the least distracting meal I've found for a working day.
+b : What if the butter gets on a page? | Do you eat at the desk?
+a : It ceases to be an undistracting meal. I keep the saucer on the opposite side from the fresh paper. | At a short remove. Even a few paces can separate a respectable dinner from buttered accounts.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw has a different rustle from a floor merely swept over.
+b : Is the sound clear from outside? | Do you like the rustle?
+a : In a reasonably still room. A full gathering can drown out such a small economic fact. | I associate it with a place made ready before the first guest has had occasion to notice.
+
+scene dawn
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : A misty dawn lets the world take its shape a timber at a time.
+b : Would you count in that light? | What appears first?
+a : Only what's sufficiently near. A blurred number doesn't acquire authority by being entered early. | Usually a corner against clear sky. The grain follows later if I'm patient enough to stay.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly once lent my private chart what looked like a small constellation.
+b : Could you tell the stars apart? | Did you keep its contribution?
+a : Under the glass six little prints proved remarkably symmetrical. | In the margin, with its authorship plainly indicated. The fly deserves whatever credit that brings.
+
+scene haggle
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'd prefer a price that can be explained to one which can be exhausted by argument.
+b : Isn't that costly? | What makes a price explainable?
+a : Waste half a working afternoon obtaining a discount and see what the discount's earned. | Material, labour and a plainly stated allowance. It needn't impersonate a miracle.
+
+scene house
+when topic=home self.house
+does tell.self / ask.detail / answer.detail
+a : I can claim a house connection without claiming that I personally cut the stone the house supplied.
+b : How would you describe your part? | Is the distinction important?
+a : I enter the stone honestly and see that its use agrees with the book. | To the cutter with sore wrists, very much so. My columns don't blunt a chisel.
+
+scene father
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.father# the little sail in my margin before explaining why it's there.
+b : Is it meant as a request? | Would you leave the book open?
+a : As an opening to a conversation that outweighs a dinner engagement in my preferences. | I should stay to hear the answer. An unguarded sketch shouldn't be made to do all my speaking.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd take a clean copy of the best drawn ship to #self.mother#.
+b : What would the gift say? | Would you include the price?
+a : I'd hope the care given to the sail would speak adequately about the draughtsman. | None. That would defeat the entire purpose of keeping a private margin.
+
+scene yardgate
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a receipt must distinguish between the stone commissioned and the stone delivered to the actual yard.
+b : Might they really differ? | Whose word counts?
+a : A flaw may be found before delivery. I should like my book to represent the sound stone actually available. | I begin with the receiving count and let the commission explain why a difference matters.
+
+scene shore
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd like to go past a headland without having to enter its apparent size in any book.
+b : Wouldn't you sketch it? | Where would you stand?
+a : I probably would, later. First I should like the plain pleasure of seeing it dwindle. | Somewhere the crew didn't need space for a coil or a working foot. A berth doesn't confer expertise.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : A blank page and an evening with #self.friend# might be a more profitable appointment than most of my formal calls.
+b : Profit in what currency? | Why a blank page?
+a : In being allowed to speak rather carelessly for once without anybody posting the results in a ledger. | If the conversation wanders, a private sketch can wander with it.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : An estate dinner sometimes requires an extraordinary amount of scholarship concerning the order of a few plates.
+b : Do you enjoy the ceremony? | Where would you rather be?
+a : I enjoy the consideration if it makes the company easier. The plates themselves have limited social ambitions. | Just for one evening, near the water with my elbows arranged as I please.
+
+scene road
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A cargo acquires a surprising number of names between the quarry and a finished wall.
+b : What names? | Which name's the proper one?
+a : An order, a delivery, a receipt, a dressed stone. Only the last one can actually keep a roof up. | Each in its own column. The trick is remembering how many names one piece has earned.
+
+scene coins
+when topic=prices self.wealth=rich|comfortable
+does tell.self / ask.detail / answer.detail
+a : I can afford an excellent binding but a sound binding won't rescue a foolish account.
+b : Would you keep it plain? | Why spend on it at all?
+a : Durable and plain. Embossing can wait until my book has something worth keeping inside it. | Because a useful page deserves to survive the life of a cheap hinge.
+
+scene dreamline
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I sometimes try the first sentence of a letter written from a ship instead of from my desk.
+b : What does it say? | Have you sent such a letter?
+a : I should begin with a physical detail of the deck. No point travelling all that distance to report that I remain in good health. | Not yet. The address of the writer would be a slight obstacle at present.
+
+scene newsink
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A report from the water gets more interesting when its source describes what was visible from the deck.
+b : Why ask about the view? | Would you trust a shore account?
+a : I'm concerned with what was actually visible to the teller. | On a shore matter, very likely. Distance has a way of inserting a few attractive inaccuracies.
+
+scene letterink
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A cost carried over twice can give two perfectly neat pages and a remarkably untidy conclusion.
+b : How do you discover it? | Would you start again?
+a : I follow one actual delivery across the joins until I've counted where each entry went. | With the smallest line first. Recopying the entire day may give the error a second fine set of clothes.
+
+scene starpath
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk the first star usually takes me by surprise when I lift my eyes from the page.
+b : Can you predict the place? | Why does it surprise you?
+a : Roughly. I still prefer to give the sky the courtesy of an inspection. | Because a black stroke made on paper asks for all the light I have, and a star requires me to let my eyes rest.
+
+scene dust
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Stone dust has its own little ceremony before I touch a bound book.
+b : What ceremony? | Why the binding especially?
+a : Brush the coat outside, wash my palms, then see whether there's still chalk round the nails. | A loose leaf can be cleaned separately. Grit lodged in a hinge will do its work in private.
+
+scene bell
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I leave one moment without an assignment when I hear a chapel bell between two yard errands.
+b : Do you stop completely? | Is a moment sufficient?
+a : If the errand allows. Otherwise I can listen without turning the sound into another item to be collected. | For being reminded of the things my books leave out, yes.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A traveller who has sailed past our headland has already brought me a subject for dinner.
+b : Would you ask about trade? | How many questions would you ask?
+a : After hearing about the sea itself. I've a desk full of information on the commercial face of water. | Fewer than my curiosity might suggest. A guest deserves a mouthful of oatcake between adventures.
+
+scene shapes
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : A line drawn for a horizon must be straighter than a line drawn to add my figures.
+b : Is the sea straight? | What if your hand wavers?
+a : At a great distance it seems to me to possess an enviably steady edge. | A distant wave has arrived on my private sheet. I shall exercise mercy towards my draughtsman.
+
+scene paperwind
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : When a breeze lifts a corner of my paper I am tempted to give it a mast.
+b : Would the paper sail? | What holds the paper down?
+a : Beautifully across the desk and quite poorly on the water. Ink has limited sea legs. | A squared sample of stone. It earns its keep more effectively here than afloat.
+
+scene innminute
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I am too easily persuaded to linger where sailors sit after an evening's work.
+b : Do you ever exchange a word? | Is the appeal the drink?
+a : If they have time for a listener with precise questions and singularly little practice at sea. | The conversation. One moderate cup can last me the whole of a well-told passage.
+
+story standing [topic=work self.job=merchant]
+  : I found a short length of timber entered as a full beam and went to see how much had gone astray.
+  : Two shorter lengths laid together matched the original beam's dimensions almost exactly.
+  b : Was the account wrong?
+  : The quantity was honest and the description required amendment. A roof has particular opinions about a join midway across a room.
+
+story flysky [topic=pastimes]
+  : A fly landed on my little ship while the ink was damp and walked across the empty sky.
+  : I followed its footprints with a glass and found four almost convincing stars in a neat row.
+  b : Did you draw the fifth?
+  : No. Nature had put in a day's work without a commission, and I resolved to preserve its individual style.
+
+story butterboat [topic=food]
+  : I cut a pat of butter so thinly it curled up like a sail on the warm oatcake.
+  : It was the best little rig I'd made all week until the bottom began to melt away.
+  b : Did the voyage finish?
+  : Across the plate and no further. It was a short but unusually satisfactory passage.
+
+story strawdeck [topic=dreams]
+  : I laid some lengths of fresh straw across a private account to see what a ship's deck would look like in miniature.
+  : The long stems hid the sums and left the whole margin visible, which I found a rather attractive arrangement.
+  b : Did you keep the deck?
+  : I sketched its proportions and restored the sums. A yard still has to get paid on my imaginary sailing days.
+
+story mistedge [topic=weather]
+  : At dawn I mistook a corner of roof rising through the mist for the bow of a vessel.
+  : A moment's extra light gave it a chimney, two gutters and some very permanent stone supports.
+  b : Were you disappointed?
+  : Only until I had drawn the original mistaken outline. A little inaccuracy can make an excellent private ship.
+
+rule @tally
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Delivered pieces in the near column, please. | Mind the distinction between orders and receipts.
+
+rule @stars
+when concept=bark self.likes=stars
+does aside
+cooldown 8h
+say A fresh star for the private fleet. | Keep that corner of the margin blank.
+
+rule @cakes
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Butter well away from the new paper. | A thin curl for the second oatcake.
+
+rule @mist
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Even the yard gate looks afloat at present. | Wait for the roof to recover its edges.
+
+rule @flies
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say The fly has no account to enter here. | Cover the wet star chart.
+
+rule @wind
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A stone weight for the foot of the page. | My paper ship is trying the air.
+dlg resident.hub : I have a private margin with a little room for an unexpected conversation.
+dlg resident.hub [topic.meeting=known] : You've seen the little vessel in the margin, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : The public account is available. My other pages will stay closed.
+dlg resident.hub [here.time=night] : The lamp gives us a circle of paper and the window supplies a patch of sky.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I reconcile the entries with materials somebody can actually build with.
+dlg resident.job : I know what a sheet can tell us about a load and where the sheet must yield to the load itself.
+dlg resident.news [world.news] : One entry newly reached my desk. #world.news#.
+dlg resident.news [world.event_words] : The subject of #world.event_words# may affect today's returns.
+dlg resident.gossip [here.gossip!=yes] : Nothing on that subject has been made public in my hearing.
+dlg shop.greet [here.shop!=bare] : There are articles available to inspect. I'll give the figures for the particular piece that interests you.
+dlg shop.greet [here.shop=bare] : No stock to offer today. A sensible enquiry may still earn a sensible answer.
+dlg shop.prices : I'd look at numbers and goods together before discussing terms.
+dlg shop.bye : May your purchase give as honest an account of itself in use.
+dlg resident.bye : Leave the day's last corner open to a view past the roofs.
+
+graft @fleetmargin resident.hub
+choice What's the little sail beside the figures? -> fleetmargin
+node fleetmargin
+say A private entry. It records an evening when I'd sooner have been standing on a real deck than adding up materials for something built on land.
+choice Does it carry any cargo? -> fleetmargin_more
+choice Close the private page. -> hub
+node fleetmargin_more
+say A single white star and the prospect of going further next time. That's plenty of freight for a vessel my smallest finger could cover.
+choice Close the private page. -> hub
+choice Return to the yard. -> bye
+
+graft @unpriced resident.hub
+choice Is this the only unpriced thing on your desk? -> unpriced
+node unpriced
+say The sail has company. My view through the window and a conversation freely offered have likewise escaped a written valuation.
+choice Would you put a price on a real berth? -> unpriced_more
+choice Look back at the page. -> hub
+node unpriced_more
+say Gladly, if the terms included a chance to earn my place aboard. A paid view is a different matter from a voyage I helped to finish.
+choice Look back at the page. -> hub
+choice Leave the window clear. -> bye

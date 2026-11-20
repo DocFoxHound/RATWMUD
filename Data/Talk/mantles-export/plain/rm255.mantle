@@ -1,0 +1,262 @@
+mantle rm255
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_sigrun_wickham
+title the chorus in the stair
+fits stage=adult|old
+prefers humour=merry talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk leaves_a_gap_in_a_sea_chorus_for_the_stair_to_answer
+likes mutton_stew riddles fresh_straw first_warm_day
+dislikes night_noise bad_manners
+fears the_rattle_after_dusk the_loss_of_a_tune
+hopes a_street_where_every_door_has_a_verse
+topics pastimes +0.6 home +0.4 food +0.3 memories +0.3 travel -0.2
+styles comfort=company gossip=reticent refuse=playful tease=gentle
+marks oath saying
+persona #self.first# hums the hauling part of a sea song and leaves a beat for a loose hinge to answer, turns riddles over at leisure, and chooses company in small doses.
+
+words
+oath! = Barnacles in the bass | Split the chorus
+saying! = Leave a beat for the boards | A good refrain can climb alone
+bassstep = the deep note | that low carrying hum
+creaknote = the squeal in the hinge | a long wooden creak
+quickstep = two little taps | the short double knock
+strawtip = a pale straw tip | a little bent straw
+blank = one empty beat | the place I leave open
+spoonrest = a notch worn by a spoon | my little spoon notch
+potcorner = the brown bit at the edge | a good brown corner of stew
+seatboard = a wide flat board | a comfortable bit of timber
+gustline = a whistle under a door | a thin note of wind
+lidrum = a tin lid | the lid of a small tin pot
+hush = a soft rest | a pause wide as a breath
+
+any
+opinion dole for 2 : A free bowl might be the reason there's a voice left to join the chorus.
+opinion houses against 2 : Wooden boards answer me better than the houses of the mighty ever have.
+opinion sump for 1 : Nobody sings alone in a building with boards as thin as ours.
+opinion road against 1 : A stirring walking tune won't make a long dark road any safer.
+opinion watch against 2 : A good steady tread is a comfort, until it stops outside the wrong door.
+opinion newcomers against 1 : Give me a minute to get used to another measure on the stair.
+opinion merchants against 1 : Prices climb another octave between one dip in my purse and the next.
+
+grown
+line greet : I was humming. Words will do just as well.
+line greet [pair.band=strangers] : A new voice is welcome to a few quiet measures.
+line greet [here.time=dawn] : Morning's trying out a thin high note.
+line greet [here.time=dusk|night] : Evening. Even the far windows have settled to a hum.
+line greet.return : That's the answer my tune was waiting for.
+line greet.return [pair.band=friends|family] : Oh good. A familiar pair of ears.
+line greet.return [self.working=yes] : I heard you through the clattering.
+line greet.return [here.time=dusk|night] : The greeting carries. You needn't strain.
+line kin.open [pair.kin!=no] : Kin can join in halfway through a bar.
+line again.open : Back in time for the second verse, I see.
+line hail [pair.band=friends] : My dear familiar footfall! Over this way.
+line farewell : Take a decent tune home with you.
+line farewell.return : And don't let a squeaking gate give you the last word.
+line react.news : Tell it once at your own pace.
+line react.news.new : There wasn't a note of that in my hearing.
+line react.news.known : Yes, that's been sung round here once already.
+line react.news.doubt : That chorus seems a trifle out of time.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave a good long silence for that.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I could hum the glad part twice for news like that.
+line ask.how : What tune would fit your morning?
+line answer.how : I'm somewhere between a jig and a sit down.
+line thank : You found the note I couldn't reach.
+line deflect_thanks : An answering voice does its own share.
+line sympathise : You can leave the words out. I'll sit with the quiet.
+line reassure : Draw a breath and borrow half of mine.
+line decline : I'd better save my wind for the trip home.
+line accept_decline : Leave the verse empty. Nobody has to fill it.
+line preclose : I'll take what voice I've got left home with me.
+line accept_preclose : A talk can have a little rest between verses.
+
+scene hinge_answer
+when topic=home|pastimes
+does tell.self / ask.detail / answer.detail
+a : A bad hinge makes a fine chorus. | I once tried humming both parts.
+b : Does it know when to come in? | A duet all by yourself?
+a : Better than I do. Open the door on the fourth beat. | An argument, mostly. The stair's a better partner.
+
+scene next_room
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In our bit of the Sump you can hear a pot thinking about boiling. | Some walls let every tune through except the pretty ones.
+b : Thinking, you say? | Can't you move the chair?
+a : The lid starts whispering long before it has to shout. | Tried that. The wall had a much larger chair.
+
+scene thin_company
+when topic=friends
+does tell.feeling / react.self / assess
+a : I find one visitor cheering and six visitors six visits too long. | I'd have company in spoonfuls.
+b : Where does the second one go? | Sugar or medicine?
+a : Into the account for next week. | Stew, of course. I'd never refuse a spoon of that.
+
+scene straw_scratch
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Listen to fresh straw when you lay your cheek down. | #strawtip.capitalize# makes a very light baton.
+b : Is there a tune in bedding too? | What would you conduct?
+a : No, a small argument. Everybody wants to lie the other way up. | A few contented snores, if the night goes well.
+
+scene warm_day
+when topic=season here.season=spring
+does tell.self / ask.detail / answer.detail
+a : The first warmth makes the stair rail pleasant to touch. | A mild breeze makes the door sing half a note lower.
+b : That's your sign of spring? | Is that enough to notice?
+a : My hand meets the rail a deal more often than it meets a flower. | To me. Been carrying the winter part in my throat for ages.
+
+scene stew_supper
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : Leave me #potcorner# if you're serving mutton. | I'd trade three thin meals for one stew that held a spoon upright.
+b : That's the bit that catches. | How would you eat it?
+a : That's the bit with something to say for itself. | Sideways, laughing.
+
+scene loose_riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What can go downstairs without leaving its seat? | I prefer the answer that turns up too late.
+b : Your humming, I suppose. | Too late for what?
+a : A squeak from my chair as well. That's a riddle with room to spare. | For winning. Then you get to enjoy it for nothing.
+
+scene hush_hours
+when topic=smalltalk here.time=night
+does tell.complaint / sympathise / assess
+a : A pot left rolling on a floor at night takes all night to fall flat. | Look at all this quiet I've been saving. One slam and it's spent.
+b : Sounds dreadful to lie through. | I'll go gently.
+a : Especially when my head's already begun supplying the words. | If it does slam we'll call it a single drumbeat and be done.
+
+scene courtesy
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A wolf who knocks and doesn't wait has wasted a perfectly good knock. | I've no use for elbows that introduce themselves first.
+b : What ought the caller to wait for? | Even at market?
+a : An answer or a respectable lack of one. | A crowded place is when a mouth ought to get there ahead.
+
+scene dust_lungs
+when topic=health self.age>=60
+does tell.feeling / react.self / assess
+a : My knees have picked up a harmony I never taught them. | I'm old enough to stop halfway and enjoy how far I've been.
+b : Does it hurt to hear it? | A fine privilege.
+a : There's pain and there's noise. I take a little pleasure telling those apart. | Yes. Took a quite unreasonable time to acquire it.
+
+scene away_shore
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A song about the sea can give the whole Sound a travelling stage. | I like the wharf better in a tune than in a shoving crowd.
+b : How do you put a bay on a stage? | Even the smell of tar?
+a : One long hum, with the gulls doing short business over it. | My version comes with the smell turned down.
+
+scene neighbour_seat
+when topic=home self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd save #self.neighbour# the chair farthest from the squeak. | It would please me to share a quiet spoon of stew with #self.neighbour#.
+b : Where does that leave you? | You could bring a song for afterwards.
+a : Where I can work the squeak into our conversation. | I'd bring a lid to keep the song under, just in case.
+
+scene plain_supper
+when topic=prices|times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean stew has very good acoustics. | A short purse can put a long pause between meals.
+b : Much room in the pot? | You do sound tired.
+a : Plenty of echoes and not much mutton. | The pause is longer than my joke about it, certainly.
+
+scene cart_rhythm
+when topic=travel|times world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A missing cart wheel puts the town song out of time. | With the wagons behind time you'd expect a quieter street.
+b : You hear a missing wheel? | Isn't it?
+a : Hear where the noise ought to be. That's late wagons for you. | Too many voices wondering what's keeping the wagons.
+
+scene soft_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard something I'd rather hum than speak. | Plenty of names would fit in the chorus I leave out.
+b : Can I guess from the tune? | Would mine fit?
+a : I'll change key if you try. | Yours and mine can have the pleasure of staying out together.
+
+scene news_word
+when topic=news world.news
+does tell.news / react.self / assess
+a : The words I caught from #world.news_from# go like this: #world.news#. | #world.news#. Put #world.news_from# beside that in your recollection.
+b : Is the tune important? | That's all you can place?
+a : No tune at all. News travels oddly enough in plain words. | That's all I'll give a firm note to.
+
+scene bolted_tune
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : On my first proper try at a sea tune I swallowed half the words. | I can't remember the first verse I learned.
+b : Did you catch your breath? | Does it bother you?
+a : Yes, and acquired a taste for half the words. | No. There's a lovely wide space at the beginning.
+
+scene winter_rain
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Every gutter keeps a different time. | Rain on thin tin can spoil a singer's concentration.
+b : Which do you follow? | Too loud?
+a : The slow reluctant one. I can breathe between its drops. | Too good. I keep stopping to admire it.
+
+story lost_note [topic=memories|pastimes]
+  : I once pitched a tune so low the chair began to shake.
+  : Stopped singing and the chair went on trembling.
+  b : Had the tune got loose?
+  : A wagon was going by. I took a bow anyway since nobody was looking.
+
+story stew_bell [topic=memories|food]
+  : Tried to lift a stew lid with a spoon and sent the lid rolling round the room.
+  : It went three times round a stool before it dropped.
+  b : Was the stew all right?
+  : Cold by the time I finished making up a decent verse to the lid.
+
+story straw_letter [topic=home|memories]
+  : A pair of long straws once crossed each other like the first letter of my name.
+  : I felt obliged to write the rest with pieces to match.
+  b : Could anybody read it?
+  : Possibly the cat. It settled on my signature with entire satisfaction.
+
+rule @gap_rail
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Two taps and a pause. Anybody care to do the high bit?
+
+rule @pot_hum
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say I can hear my appetite rehearsing the supper verse.
+
+rule @nod_off
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say A quiet lid would make a lovely lullaby.
+
+rule @warm_room
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Rain with a bass part. That's an ambitious little gutter.
+
+dlg resident.hub : There's half a verse free for you in this conversation.
+dlg resident.hub [topic.meeting=known] : #topic.player#. Your name comes into the tune very nicely.
+dlg resident.hub [here.time=night] : Quietly now. We might get to enjoy ourselves without an audience.
+dlg resident.hub [pair.disposition=hostile|wary] : I won't try harmony today. Say your bit from there.
+dlg resident.job : Watching takes less wind than singing. I make time to do both.
+dlg resident.news [world.news] : #world.news#. Heard that account from #world.news_from# without any chorus attached.
+dlg resident.gossip [here.gossip=yes] : Some wolf or other ought to drop the tune. I can be that wolf.
+dlg resident.bye : Don't take the squeak personally on your way out.
+
+graft resident.hub
+choice When does the stair come into the song? -> fourth_tread
+node fourth_tread
+say After the long low note. The third board used to chime in too, but it wore out or grew shy. Can't say I blame it.
+choice Do the boards know many tunes? -> timber_tunes
+choice I'll listen on my way out. -> hub
+node timber_tunes
+say Just one answer between the lot of them. Quite enough to carry a conversation if everybody says it at the right moment.
+choice A good moment to change the subject. -> hub
+choice I'll leave a silence behind me. -> bye

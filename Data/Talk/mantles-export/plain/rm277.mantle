@@ -1,0 +1,263 @@
+mantle rm277
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ottilie_nailmarsh
+title the unpainted handle
+fits stage=adult|old
+prefers job=none honesty=guarded
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=devout drive=steady
+quirk turns_a_marked_handle_to_the_unpainted_side
+likes roast_pork singing old_maps warm_rain
+dislikes night_noise bad_manners
+fears a_handhold_weakened_under_paint
+hopes an_honest_mark_for_every_load
+topics work +0.5 faith +0.6 travel +0.2 gossip -0.5
+styles comfort=steady gossip=closed refuse=quiet tease=none
+marks oath saying
+persona #self.first# turns carrying handles over to see beneath the paint and sets more store by the bare grain than by any owner's mark.
+
+words
+oath! = Splintered handles | All that peeling blue
+saying! = Turn the colour under | Bare wood takes the strain
+bar = the shoulder bar | a stout carrying pole
+grain = a pale streak | the narrow grain
+paint = a blue dab | a lick of red
+strap = my wide strap | the cloth binding
+blister = a rough patch | a little blister
+shadow = the thin shade | a dry shadow
+rind = the edge of crackling | a crisp corner
+map = a curled scrap map | the faded street plan
+candle = a low candle | the small wick
+shard = a splinter of wood | a narrow sliver
+crook = my elbow joint | a bent elbow
+tune = a held note | the low part
+
+any
+opinion houses against 2 : A fine colour on a cracked carrying pole doesn't pay the injured wolf's rent.
+opinion church for 2 : I can carry a weight right to the chapel threshold and set it down inside me there.
+opinion sump for 1 : No shame down our end in carrying somebody else's goods for the price of your own dinner.
+opinion dole for 2 : An injured shoulder can't earn bread by trying harder. The dole keeps that shoulder fed.
+opinion watch against 1 : I'd rather see somebody looking at the rotten stairs before a fall than writing names down afterwards.
+opinion strangers mixed 0 : I can work beside an unknown wolf. I'll still try the grip myself.
+
+grown
+line greet : Hello. Careful where the paint's fresh. | You've come on my easy side.
+line greet [pair.band=strangers] : Room there for a voice I haven't heard. | We can stand on level terms to start with.
+line greet [here.time=dawn] : Clear light makes the bare grain show. Morning. | A new day. My shoulders are ready enough.
+line greet.return : Heard you. I've a quiet answer for you. | Yes, hello across the load.
+line greet.return [pair.band=friends|family] : There's a welcome sound through all this knocking wood. | I can lower my guard a little with you.
+line greet.return [here.time=night] : Late hello. I'll feel the railing as I go. | You found me through the dark then.
+line again.open : We've had time to change shoulders since we spoke. | Back at this bit of road together.
+line hail [pair.band=friends] : Stand alongside me and see this grain. | Here, where the paint's worn through.
+line farewell : An easy shoulder to your journey. | Walk where you know the boards are sound.
+line farewell.return : I'll keep the near end here. Goodbye. | I pray your feet stay planted.
+line react.news : You can set the account down plain. | Speak. I've got both ears free.
+line react.news.new : I hadn't heard a syllable of it. | That's new grain showing through.
+line react.news.known : I'd heard it in much the same colouring. | That piece was known to me.
+line react.news.doubt : I hear a bit of paint over a soft place. | I'd turn that over before trusting it.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There is room for your hurt here. Say as little as you need. | I'll pray for those left carrying that loss.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A good bit of hearing after heavy going. | My prayer will have a little more gratitude in it tonight.
+line ask.how : Are your shoulders taking the day soundly? | Found a soft spot to rest against?
+line answer.how : I've some weight on me. It's sitting square. | A little worn where the straps lie.
+line decline : I'd leave that to somebody better placed to carry it. | I can't answer that without breaking another confidence.
+line accept_decline : I'll leave that corner in your keeping. | You have a right to set your limits.
+line preclose : Time I was taking this weight along. | I've given my shoulder quite long enough.
+line accept_preclose : Then I'll leave your way clear ahead. | Go easily over the uneven bits.
+line thank : A real lift. You have my thanks. | My shoulders know the difference you made.
+line deflect_thanks : I had a free arm just there. | Somebody needed to hold that end steady.
+line sympathise : Lean the sore side away from the rail. | I can wait while you gather what's left.
+line reassure : We can turn it over before choosing a grip. | Try the sound side first. I'm with you.
+line ack : Yes. I can put weight on that. | The bare facts sit straight enough.
+line give.advice : Look for wood where the paint wears thin. | Give a quiet answer time to travel.
+
+scene grain
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I always turn a carrying bar upside down first. | I'd inspect the place the brush couldn't reach.
+b : Checking whose mark it bears? | Worried it might stain your coat?
+a : Checking if there's grain enough to take my share. | A stained coat washes. A split bar drops the whole load.
+
+scene respect
+when topic=work self.job=none self.working=yes
+does give.opinion / react.self / assess
+a : Say where a parcel's to go before putting it on my shoulder. | Directions sound best when both my ears are level.
+b : Can't a route change? | You'd hear me anyway.
+a : Aye. I'd still like a good beginning to the journey. | I'd also like the chance to price the climb.
+
+scene bleached_line
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A pole left out in salt air turns silver first on the exposed side. | Wood can tell which way it lay without a word of ink.
+b : You'd know which side was down? | Can you always read it?
+a : The dry pale face points to the sky it knew. | Only the part light reached. Underneath is the private half.
+
+scene colour
+when topic=prices
+does give.opinion / react.self / assess
+a : Don't ask extra for bright paint on a poor length of wood. | I might pay more for an unpainted handle.
+b : Someone had to paint it. | Wouldn't that be unfinished?
+a : Somebody could have checked the grain while doing it. That's worth paying for. | No. It would be ready to inspect.
+
+scene rain_rest
+when topic=weather here.weather=rain
+does tell.feeling / react.self / assess
+a : Warm rain loosens a salt-stiff strap without asking. | I don't hurry out of mild rain with a stiff shoulder.
+b : Is the water a cure? | Wouldn't dry cloth feel better?
+a : More a reminder to unbrace my neck. That's plenty. | Afterwards. While the rain's gentle I'm comfortable.
+
+scene lostquiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : My quiet prayer is for names missing from a line of working folk. | There's a space I keep open when I pray.
+b : Who belongs there? | Would you tell me the name?
+a : I'd leave the Bright One to hear that much. | The name stays with me. A place can remain open without a label.
+
+scene map_steps
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Old maps show the hill without the bruise it leaves. | I draw a darker line for a climb that sets the shoulders aching.
+b : Your own sort of height mark? | What if somebody's stronger?
+a : My own sort of warning. No use handing a flat sheet to a tired carrier without one. | The line's still there. A strong wolf may take it lightly.
+
+scene table_rind
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : Crackling carries best wrapped apart from the hot meat. | I like my crackling still sounding like supper when I get home.
+b : Would it spoil together? | How can supper make a sound?
+a : Steam in the wrapping softens it. An extra fold keeps it crisp. | A small crack between the teeth. Steam steals that.
+
+scene night_wall
+when topic=day here.time=night self.dislikes=night_noise
+does tell.complaint / ask.detail / answer.detail
+a : After dark every dropped parcel sounds three times its actual size. | A quiet wall would be a luxury tonight.
+b : Why not ask for quiet? | That noise bothers you?
+a : I do, in daylight. Shouting at night adds another voice to the harm. | Yes. A long working day leaves little patience for counting other folk's footsteps.
+
+scene quiet_song
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : A good carrying song leaves air between the lines. | I sing the low part so a breath can fit between words.
+b : Hard to sing with a load? | Any particular tune that suits?
+a : A little easier if the tune expects the load to come too. | One that waits for me to breathe. Most tunes can learn.
+
+scene level_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# to see where a strap has rubbed me raw. | I save a bit of honest tiredness for #self.friend#.
+b : What would you show anyone else? | Do you usually hide a hurt?
+a : The parcel delivered in decent order. The rest is mine. | Not from a healer. From idle eyes, yes.
+
+scene narrow_home
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : On a narrow Sump landing I set the short end down first. | At home a broad load may reach the wall before I do.
+b : Can you turn it there? | Is there space left for you?
+a : With the short end down. I've learned to ask little of a small landing. | I get myself out from behind the parcel before asking it to turn.
+
+scene faintmark
+when topic=gossip
+does give.opinion / react.self / assess
+a : A painted mark identifies an owner. Doesn't tell me what happened. | I won't carry a tale merely because it comes dressed in fine colours.
+b : What proof would you take? | Wouldn't you recognise the mark?
+a : The mark proves what's on the surface. I want the account from the paws involved. | I might. That's no reason to believe the story painted round it.
+
+scene brightprocess
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I'd like a quiet place to hear the festival singing together. | My ears prefer the last few rows of a procession.
+b : Isn't it quieter still at home? | What do you hear from there?
+a : Aye. I want the singing, though. Just not the shoving that goes with it. | The tune above all the competing feet. That's what I came for.
+
+scene lean_paint
+when topic=times world.times=lean|hard
+does tell.complaint / ask.detail / answer.detail
+a : A patched strap gives way on lean days just as on easy ones. | Hard going makes me wary of a newly painted load bar.
+b : You suspect a patch? | What would you check?
+a : I'd like a patch to show plainly. Hidden trouble is hard to put right. | The underside where the brush couldn't reach. I can plan for a sound visible mend.
+
+scene headland_path
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I can stand on a headland and hear the city lose its edges. | A little way outside the wall the sea takes over the noise.
+b : Do you like losing it? | Even the bells?
+a : I like noticing quiet thoughts come clear between sounds. | A bell carries, yes. The rumble beneath it drops out.
+
+scene store_rack
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a rack of plain handles with their weight marked honestly. | No painted crests in my ideal carrying shed.
+b : How would folk tell the sizes apart? | Plain as that?
+a : By lifting one. By reading the marked weight. Both useful things to learn. | One honest mark and room to test the piece. Nobody needs a crest to work.
+
+scene politehand
+when topic=smalltalk self.dislikes=bad_manners
+does warn / react.self / assess
+a : Don't clap a loaded wolf on the sore shoulder for a greeting. | Give space to a parcel that's looking for somewhere to land.
+b : Even a friendly slap? | How should I greet a carrier?
+a : A friendly voice does just as well and leaves the skin whole. | At speaking distance. Lend a paw once it's wanted.
+
+grown
+
+story bare_edge [topic=memories|work self.job=none self.working=yes]
+  : I'd once carried a painted bar the whole way with my chin tipped up so the wet colour wouldn't rub.
+  : The moment it landed I saw the underside was white as bone. It hadn't been wet in a year.
+  b : What had you been keeping off your chin?
+  : A reflection from a wet roof. I gave my stiff neck a bit of quiet after that.
+
+story foldsong [topic=pastimes|memories]
+  : I made a little song to carry a route in my head. One sung line to a street.
+  : Found myself home a whole verse earlier than I ought to be.
+  b : Had you skipped a street?
+  : One turning occurred twice in the song. It pleased me enough to leave both verses in.
+
+story windmeal [topic=food|memories]
+  : I set a wrapped meal down in a cove to rest my shoulders. The paper made a little beating sound in the wind.
+  : For a minute I wondered if I'd carried something living all the way down there.
+  b : Did you look inside?
+  : Did, and ate the evidence. Crackling can make quite a flutter without any feathers.
+
+rule @bar
+when concept=bark
+does aside
+cooldown 8h
+say Let me feel the wood exposed under that colour. | If the handle moves in the wrapping set it down.
+
+rule @work
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Wait while I settle the strap across my shoulder. | Where shall this end go down, exactly?
+
+rule @prayer
+when concept=bark
+does aside
+cooldown 8h
+say A little room left in my prayer tonight. | May weary shoulders find rest with the Bright One.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Strap's softer where the rain has found it. | A wet bar wants a firm steady grip.
+
+dlg resident.hub : Settle your breathing. I'm in no rush for your words.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you can speak to my unbruised side.
+dlg resident.hub [here.time=night] : Dark enough to feel a handle before reaching out for the load.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll take your question from the clear side of the landing.
+dlg resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. The painted marks are the least important part of a load to me.
+dlg resident.job : I check what will bear before promising to carry it.
+dlg resident.bye : Take good care of the parts that bear the weight.
+
+graft resident.hub
+choice What do you look for under the paint? -> sidegrain
+node sidegrain
+say The long lines ought to follow the handle to its tip. Sometimes a line runs straight out through the side. That's where I'll look first for a break.
+free
+choice Would you set a cracked piece aside? -> crackuse
+choice I see the lines now. -> hub
+node crackuse
+say For carrying, yes. A short bit past the crack might still prop a window. There's no shame in a lighter use.
+choice I'll look underneath next time. -> hub
+choice I'll be going along. -> bye

@@ -1,0 +1,247 @@
+mantle rm367
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_yrsa_nailwell
+title the dance in the hem
+fits stage=adult|old
+prefers temper=short talk=chatty
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk marks_dance_steps_in_a_spare_hem
+likes fried_fish dancing sharp_knife first_warm_day
+dislikes salt_wind early_bells
+fears being_told_a_sore_leg_sets_the_whole_measure
+hopes remembering_every_turn_of_a_good_dance
+topics pastimes +0.6 work +0.4 food +0.3 weather +0.2
+styles comfort=practical gossip=curious refuse=direct tease=none
+marks oath saying
+persona #self.first# rubs the charcoal off a thumb before marking a dance step in a spare hem and asks extremely particular questions about the rhythm.
+words
+oath! = Catch my turning heel | Soot in my best seam
+saying! = Count the turn again | Let the sore heel choose
+hemstrip = a clean spare hem | a length of old binding
+beatmark = a tiny black stroke | a fine charcoal dash
+heelbeat = a sliding stamp | a light brush of heel
+steamrush = a hiss of steam | a little hot cloud
+finbite = a crisp brown fin | a sharp bit of fried tail
+snipedge = a neatly trimmed edge | a straight clean cut
+brinesplash = a nibble of salt | a little spray on the nose
+ashwrap = a twist of grey paper | a folded charcoal rag
+lipstone = a narrow step | a patch of raised paving
+dancewed = a black half circle | a bend of dark stitching
+thumbbar = a scrubbed wristband | a square of linen
+
+grown
+
+opinion houses against 1 : The grand end of a family may dress in white but its cuffs come dirty to the same water.
+opinion festivals for 1 : I'd happily endure the crowd for one new turning step worth taking home.
+opinion merchants against 1 : A fine edge that needs buying twice because it was badly ground's no kind of bargain.
+opinion strangers mixed 1 : I'll answer a stranger who has the manners to ask why I'm limping before deciding what's wrong with me.
+opinion sump for 1 : Down here somebody will show you the awkward part of a dance if you ask the question properly.
+opinion dole for 2 : A tired wolf needn't perform a merry little shuffle to deserve hot food.
+line greet : Stand where my ears won't lose the middle of your sentence.
+line greet.return : I've got the measure of your voice again.
+line greet [here.time=dawn] : Morning, since the bells insist we're all agreed about it.
+line farewell : Here's hoping the ground gives your heels a kind answer.
+line farewell.return : I'll mark the spot where our talk turned off.
+line react.news : Tell me which part came after the first turn.
+line react.news.new : That changes the measure I was counting.
+line react.news.known : I've danced round that bit of knowledge once before.
+line react.news.doubt : A missing beat would explain the lurch in that account.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's news worth trying a little turn on the good foot for.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can sit without dancing and listen properly to that.
+line answer.how : Moving well enough in the direction I picked myself.
+line ask.how : Is the day giving your feet any quarter?
+line thank : You let me find the turn instead of pushing me through it.
+line decline : I won't have someone else decide which step I can take for myself.
+line accept_decline : Your feet, your answer. We'll leave the figure there.
+line reassure : There are easier ways through a turn than the showy one.
+line sympathise : I can leave us a little quiet even if I've two questions ready.
+line ack : Now I've got the turn under my heel.
+line again.open : You came round again before the mark wore off.
+line deflect_thanks : It's only a hem. There was room to mark another step.
+
+scene pastimes_1
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I put my dance notes on #hemstrip#, two strokes for a turn and one for a pause.
+b : Can anyone read them? | Wouldn't stitches last longer?
+a : A wolf who can dance might guess. The wolf who can't is welcome to ask before laughing. | I've stitched the wrong turn in before. I'd rather make a charcoal mistake and have it wash off.
+
+scene work_1
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I know when both hands are moving in different time. | A piece of cloth can twist badly if one hand gets eager before the other.
+b : How can you tell?
+a : My shoulders rise unevenly and the whole day starts walking off to one side. | Look along the hem. One corner's tied itself in a mood all its own.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Some days my leg objects halfway through a figure.
+b : Do you sit out? | How do you finish the dance?
+a : If I choose. Don't take my place away till I've had a look myself. | I trade a stamp for a brush of the toe. The music only asks me to keep the beat.
+
+scene food_1
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : A fish sings through the pan before the edges are quite ready.
+b : Are you counting those beats too? | How crisp do you like it?
+a : No need. I listen for the sizzle changing register and then pay very close attention. | Crisp enough for a fin to break on the tongue without making a battle of it.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : You're welcome to ask about these smoky cuffs. If you decide I'm dirty before asking I'll mind it.
+b : Can clean cloth smell smoky? | Does the smell take long to leave?
+a : If a clean cuff hangs in woodsmoke it doesn't go back to being yesterday's dirty cuff. Use both eyes. | I find the memory sticks longer. I like the quiet a low charcoal fire can bring.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I want spring's first kind day to last one whole dance longer than the daylight.
+b : What tune would you pick? | Would you stay out late?
+a : One with all the slow bits in the second half. I'd spend my fresh feet first. | I'd bring a wrap for when the warmth decides it has already obliged me enough.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : The friend who keeps asking whether I'm comfortable can spoil a perfectly comfortable minute.
+b : What should a friend ask instead? | Couldn't it be kindness?
+a : Which tune I'd like. That's a question I've never been too sore to answer. | Certainly. Kindness can choose its moment as well as anybody else.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep charcoal in twisted wrapping paper and paper inside a clean scrap.
+b : Does any soot still escape? | Isn't that a lot of packing?
+a : Look at my thumb and tell me whether I've invented a perfect system. | Only until a scrap of black gets on the sleeve I've just finished caring for.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A knife that has to be pushed hard through loose threads isn't worth the shine on the handle.
+b : What would you test it on? | Why not use your teeth?
+a : A spare loose end, with both hands out of the path of the edge. I like my fingers their present length. | I don't want my supper tasting of wet seams.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Salt wind puts a nasty little rasp into the lining of my hood.
+b : What keeps that brine out? | Don't you like the coast?
+a : Turn the softer bit towards my cheek and rinse the rest when there's clean water to spare. | I like plenty about the shore. Brine on the edge of a sore nostril isn't on the list.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : An early bell arrives with far too much voice for the amount of daylight behind it.
+b : Would you ring it later? | Could you sleep through one?
+a : I'd like the bell to try getting a whole street up with half the force occasionally. | I could sleep through the first one. It's my temper waking up at the second that prevents the experiment.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A prayer can fit very comfortably into the pause between two figures.
+b : In a lively dance? | What would you pray for there?
+a : Particularly there. A whole ring keeping the same time deserves a quiet thank-you. | The good sense to stop before the sore leg has to cast the deciding vote.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember the smell of quiet round a covered heap of charcoal.
+b : Smell quiet? | Would you take that life again?
+a : Woodsmoke without a lot of rushing flame. It brings back the part of a day before everybody spoke at once. | I'd take the quiet for an evening. I'd bring my own tune to hum on the walk.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean weeks make a strip of sound hem worth saving twice.
+b : How do you save it twice? | What if it's too narrow to mend with?
+a : First as a mend, after that as a little tie for something that has no need to look grand. | Then it's just the width for a dance note. A hard week needn't dictate every tune.
+
+scene work_2
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Watch the hand doing the quieter half of a job if you want to understand the whole movement.
+b : The hand standing still? | What if both are working just as hard?
+a : The hand steadying the edge. You'd notice rather promptly if it went on holiday. | Then look at the elbow. A steady pull has to end up somewhere.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Somebody tried to show me a dance by saying it went round, round and a bit more round.
+b : Did you learn it? | Would you teach it differently?
+a : I learnt to ask whether the last round crossed the first foot. Words can have actual use when properly encouraged. | I'd mark the start facing the door and end facing the window. The room can lend its directions.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I might put the best little turning step I know on a scrap for somebody new in town.
+b : What if that wolf can't dance? | Is that how everybody's welcomed?
+a : Then it's a map to a place where people will put an arm out without making a speech first. | Absolutely not. You can have directions to a quiet corner if I catch you looking for one.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The word I caught was #topic.subject# #topic.claim#.
+b : Aren't you curious how it finishes? | Do you believe it?
+a : Almost painfully. Curiosity's no excuse for going around scratching other wolves' doors. | I can repeat what I heard or say what I'm sure of. That's two separate steps.
+
+story hem [topic=pastimes]
+  : I showed a marked hem to a partner and we both took the first step with great confidence.
+  : We ended on opposite sides of the same stool.
+  b : What went wrong?
+  : The hem was upside down. We'd invented a remarkably efficient dance for getting neat around the furniture.
+
+story fry [topic=food]
+  : I set down two pieces of fish and one was exactly the bent shape of my heel mark.
+  : I admired the shape till the pan began to have quite another opinion.
+  b : Did you burn it?
+  : I caught it on the edge of crisp. Ate the diagram before I could confuse it with an instruction.
+
+story soot [topic=memories]
+  : I once wrapped a little coal so carefully I couldn't afterwards tell it from a piece of wrapped soap.
+  : I opened one parcel over a basin and hoped I'd chosen correctly.
+  b : Which did you have?
+  : The coal. A very black spot in the water persuaded me to label the next arrangement.
+
+rule @mark
+when concept=bark
+does aside
+cooldown 8h
+say Two strokes for the turn that travels. | This hem can afford one more mistake.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Let the bell wake its own feet first. | There's a mighty noise calling a very small bit of daylight.
+
+rule @work
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Both hands together or the seam twists. | Find where the pull goes round the wrist.
+
+rule @food
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say When the edge stops singing I'd like the first bite. | Save the brown fin for somebody who wants it.
+dlg resident.hub : You can have the next question provided I get a turn afterwards.
+dlg resident.job [self.job=laborer] : At #self.workplace# I listen to the movement as much as I look. Cloth can be made to pull the wrong way remarkably fast.
+dlg resident.news [world.news] : The part of the account I heard clearly was this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : Talk as it went past me said #topic.subject# #topic.claim#. I didn't see the first step.
+dlg resident.hub [pair.disposition=wary|hostile] : Put the matter in your own words and give me the courtesy of my own answer.
+dlg resident.bye : Take the next turn in a way that suits your own feet.
+
+graft resident.hub
+choice Can you put a whole dance on a strip of cloth? -> hem_dance
+node hem_dance
+say Only the bits my feet don't already remember. This bent stroke means I cross the sore foot behind the other instead of landing hard on it.
+choice Would it work for me? -> hem_other
+choice I'll start with the slow turn. -> hub
+node hem_other
+say Try it slowly. If your legs want a different mark, turn the cloth over. Plenty of room for another way to dance.
+choice I'll start with the slow turn. -> hub

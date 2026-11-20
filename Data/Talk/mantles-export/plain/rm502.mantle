@@ -1,0 +1,236 @@
+mantle rm502
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_edric_kelpham
+title the procession of spoons
+fits stage=adult|old
+prefers job=servant
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk conducts_spoons_in_a_silent_procession
+likes plum_tart long_walks market_bustle warm_rain
+dislikes drizzle crowds
+fears the_house_account_paying_a_private_penny
+hopes a_long_walk_after_service
+topics work +0.5 pastimes +0.5 food +0.3 weather +0.3
+styles comfort=courteous gossip=plain refuse=polite tease=merry
+marks oath saying
+persona #self.first# conducts spoons in silent procession, follows showers down the window glass, and keeps the private purse firmly buttoned away from the household keys.
+words
+oath! = Polish my procession | Spoons upside down
+saying! = A spoon knows whom it serves | March the gravy home
+spoontail = the last little spoon | the smallest spoon in line
+roundbowls = round-bellied spoons | broad shining bowls
+plumstone = a polished plum stone | a dark pointed stone
+starchfold = a starched fold | a neat stiff ridge
+rainglass = a pane in a shower | wet greenish glass
+placecloth = a long tablecloth | a broad white cloth
+keybutton = a sober brass button | a square horn button
+scoopedend = a hollow of silver | a cupped spoon end
+saucetrail = a glossy brown stripe | a streak of gravy
+walkgate = a narrow garden gate | a little side gate
+
+grown
+
+opinion houses mixed 1 : A great table looks dignified partly because somebody below stairs has already laughed at the arrangement that didn't work.
+opinion merchants against 1 : A well-turned compliment over the scales has never made me less disposed to watch the weight.
+opinion festivals for 2 : Let me hear the musicians tuning up from the edge and still leave my feet free to follow a private measure.
+opinion drink for 1 : One cup between friends after the spoons are counted can put a very tolerable finish on a long dinner.
+opinion city for 1 : I can walk until the hill changes the sound of the market without quite carrying me out of hearing of home.
+line greet : Enter the procession wherever you please. I'll find you a place.
+line greet.return : Here again, like my spoon that always travels back with the pudding.
+line farewell : An unhurried walk to a good dinner for you.
+line farewell.return : I shall put your place aside in the conversation.
+line ask.how : Has your morning advanced as far as the pudding yet?
+line answer.how : At present I'm fit to conduct a dinner of modest dimensions.
+line thank : You have restored the order of march quite beautifully.
+line decline : I must decline to put my own promise on a household tray.
+line accept_decline : I'll instruct the procession to proceed without that spoon.
+line sympathise : You can stay beside me quietly until the company goes through.
+line reassure : One spoon laid crooked is a reason to shift it half an inch.
+line react.news : Shall we let the first course of that arrive?
+line react.news.new : Now that's a dish I hadn't seen coming through.
+line react.news.known : I recognise the pattern on the handle of that account.
+line react.news.doubt : Such a polished tale could do with showing its ordinary underside.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd set an extra spoon at every place for news that sweet.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let us close the serving door and give that news some privacy.
+line ack : I see where that belongs in the order.
+line deflect_thanks : I had two hands and only one spoon requiring my immediate attention.
+line again.open : We've met between courses once more, it appears.
+
+scene work_1
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I set the spoons out like a procession. The little fellow at the back is always late.
+b : How does a spoon contrive to be late? | Does it have to bow?
+a : It starts the evening in the dish where I left it to test the jam. | Only to the pudding. It is mercifully untroubled by further obligations of service.
+
+scene weather_1
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : A warm shower on the long pane looks like a gathering breaking up after dinner.
+b : Which drop goes home first? | Have drops much to say?
+a : The big one with six companions. There's a formal route until it meets the first streak of dust. | You should see the fuss two quiet trickles make when their ways cross.
+
+scene pastimes_1
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : After service I like a long walk with no door at the far end expecting me to knock.
+b : Do you retrace your steps? | How do you decide when to turn?
+a : If the rain has changed the look of them. A familiar hedge can provide entirely fresh company that way. | My appetite is a quite dependable little bell, and audible to nobody else.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I once made a plum stone the guest of honour at a dinner of empty spoons.
+b : Who sat beside it? | What did it eat?
+a : Two modest little teaspoons, in recognition of a relationship established at countless pudding courses. | Nothing. I value a distinguished visitor with the grace to leave the cook a slice.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : When I'm asked to judge the straightness of a tablecloth I imagine it raining gravy.
+b : Which way would it run? | How much gravy are we talking about?
+a : Towards the lowest-looking fold. A small adjustment can save quite a distinguished sleeve in my private forecasts. | As much as an imaginary afternoon requires. Outside my own head I observe the household allowance.
+
+scene work_2
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My duties include #self.trade_words#. The household purse and my own don't so much as visit each other's pockets.
+b : Isn't that awkward when you owe money? | Does the household need so many keys?
+a : A little awkwardness is very cheap compared with one wrong penny. My private reckoning comes due at the new moon. | Enough keys that the weight of them makes a useful reminder which pocket is which.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I have a private payment due to a factor. I've been measuring certain personal pleasures in slices of prospective plum tart.
+b : How many tarts make a payment? | Have you given up the walks?
+a : Rather too many for me to feel the least enthusiasm for the calculation. | Walking agrees splendidly with my current accounts. Even the rain puts in its appearance without a fee.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A trusted companion can interrupt my grand description with a quite ordinary question about the spoons.
+b : Which question? | Do you welcome interruption?
+a : Have you counted them? A room may ring with my excellent conversation while the last little spoon goes missing. | When it saves me having to ask what happened to the last setting at the end of an elaborate speech.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I fold a cloth to leave a corner easy to catch in haste.
+b : Doesn't the corner look untidy? | What is the haste for?
+a : My fold is neat enough to survive that tiny act of mercy towards whoever needs the cloth next. | A spill will seldom offer a steward the courtesy of a minute's notice in writing.
+
+scene weather_2
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : A drizzle seems always on the verge of apologising and deciding to stay for the week.
+b : Would you send it away? | Do you go on watching?
+a : I'd extend a straightforward invitation to rain properly and have the thing settled. | Without fail. I consider myself in negotiations with the pane.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : At market I enjoy the bustle from beside the stall, with one ear free for the price.
+b : Why not stand in the middle? | Does the bustle improve the goods?
+a : I like my elbows attached to me when I come home. The edge is quite sufficiently festive. | It improves my spirits. I wouldn't let that persuade the purse to join in the dance.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A walk after a long dinner service feels like pulling a thread out of a starched fold.
+b : Where does the thread lead? | Does the fold come undone?
+a : Past whichever doorway last required my best formal expression. Beyond that I accept suggestions from the weather. | In my shoulders, yes. The cloth at home is perfectly safe.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I sometimes test my weariness by trying to remember which spoon I polished last.
+b : What if you can't remember? | Isn't that just a test of memory?
+a : I inspect the spoons. A tired steward needn't rely on the testimony of a tired steward's memory. | It also tests my willingness to get up and look at the offending object.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a lean stretch an elegant dinner may be a plain dish served properly hot.
+b : Can plain fare look elegant? | What goes first?
+a : A clean spoon reflects a cabbage as faithfully as it reflects any richer commission. | The unneeded journeys between the pot and the place. Heat has a regrettably short patience with ceremony.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I try to address the Bright One before my head fills up with little household arrangements.
+b : What do you ask? | Do the arrangements intrude?
+a : The sense to tell necessary work from work I invented to hear myself give an order. | In quite a procession. I start again when the pudding has marched past.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : It would interest me to put a sparrow in charge of clearing a table of crumbs.
+b : Would the work be satisfactory? | And who is to polish after it?
+a : The floor would be a little less tidy than the table. I have occasionally achieved that result without a sparrow. | That is where my otherwise excellent arrangement encounters a difficulty.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account going from place to place is that #topic.subject# #topic.claim#.
+b : Will you serve that at dinner? | Did you taste it first?
+a : I would hesitate to lay out even a little spoon for a claim without a source. | It has the very recognisable flavour of something that has travelled through several rooms.
+
+story plumspoon [topic=food]
+  : A spoon I had left in a dish of plums came out with its reflection deeply purple.
+  : I polished the handle so industriously I could see a magnificent dark plum in it.
+  b : Had you got it clean?
+  : Perfectly clean. I was holding the spoon directly above the dish and polishing the reflection of my lunch.
+
+story driprace [topic=weather]
+  : I marked two running drops on a pane with the positions of a fork and a spoon.
+  : The spoon was evidently winning until the two streams joined.
+  b : How did you score that?
+  : I promoted them both to the washing up and went out for my walk while it still rained.
+
+story lastplace [topic=work]
+  : I gave every spoon a name drawn from the dishes to come and managed to omit one whole place.
+  : All the dishes had received a name. Why did I still have a guest without a spoon?
+  b : Was there a dish you meant to share?
+  : The sauce. I had counted the sauce spoon as a guest and had to offer it a quiet apology.
+
+rule @spoons
+when concept=bark
+does aside
+cooldown 8h
+say Leave the smallest marcher room at the rear. | The sauce has sufficient company of its own.
+
+rule @pane
+when concept=bark self.likes=warm_rain
+does aside
+cooldown 8h
+say That fat drop appears to be bringing guests. | Two streaks joining make a splendid procession.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Time for the household keys to begin their homeward journey. | One walk left before the evening folds itself.
+
+rule @tart
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say A plum stone has exceptionally tidy manners. | The guest of honour will take no second helping.
+dlg resident.hub : Make yourself a small comfortable gap in the order of service.
+dlg resident.job [self.job=servant] : At #self.workplace# I see that even a plain dinner has the right spoon at the right moment.
+dlg resident.news [world.news] : The message delivered between courses was this. #world.news#.
+dlg resident.gossip [here.gossip=yes] : What was passed down the table had #topic.subject# #topic.claim#. A story on a tray can travel absurdly far.
+dlg resident.bye : Let your next course arrive exactly when your appetite desires it.
+
+graft resident.hub
+choice Can a procession of spoons really be late? -> spoon_tail
+node spoon_tail
+say One takes an excursion in a half-empty dish. Another has a little matter of private business with a jar of jam. Yes, lateness is common.
+choice How do you summon them all? -> spoon_count
+choice I'll let the jam spoon conclude its business. -> hub
+node spoon_count
+say With a clear spot on the cloth where the last ought to stand. It gives even an absent-minded conductor a pretty fair idea what's missing.
+choice I'll let the jam spoon conclude its business. -> hub

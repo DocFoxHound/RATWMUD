@@ -1,0 +1,372 @@
+mantle rm516
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_hester_bilgeham
+title the hum under the gate
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk hums_the_pitch_of_a_remembered_thank_you
+likes roast_pork singing full_larder misty_dawns
+dislikes wet_floors haggling
+fears a_kind_turn_forgotten
+hopes a_chorus_wide_enough_for_every_voice
+topics friends +0.6 work +0.5 food +0.4 weather +0.2
+styles comfort=warm gossip=guarded refuse=quiet tease=none
+marks oath saying
+persona #self.first# remembers favours by humming the note on which a thank-you was spoken, and leaves the deepest part of a chorus open for a late arrival.
+words
+oath! = Rattle my lowest note | Mist in my music
+saying! = Leave room for the bass | A return needn't be loud
+lowhum = a chest-deep hum | a low friendly note
+brooknote = a running little tune | a wavering high air
+chantend = the last held note | the tail of the song
+blackrind = a crisp brown rind | a blister of good crackling
+bowlcloth = a thick pot cloth | a dry folded rag
+mistbeads = pale beads of damp | little drops on the lintel
+drystrip = a dry plank's width | a strip of bare dry board
+sumcord = a length of soft cord | a short twisted string
+quietjar = a small lidded jar | a squat brown pot
+songstep = a lingering beat | a measured footfall
+lidrise = the lifted edge of a lid | a little opening above the pot
+porkplate = a heavy wooden plate | a shallow trencher
+dewlint = a grey thread of moisture | a whisker of morning mist
+kitchenhum = a humming kettle | a softly singing pot
+
+grown
+
+opinion watch for 2 : I value a turn of duty on which an anxious arrival leaves with shoulders rather lower than they came.
+opinion road for 1 : A well-kept approach lets a traveller spare some breath for saying what brings the journey to its end.
+opinion houses mixed 1 : I remember a House by how it asks to be repaid. A quiet demand may be as heavy as a shouted one.
+opinion newcomers for 1 : A chorus makes room for somebody who knows only the ending. The rest comes with a little listening.
+opinion merchants mixed 1 : Name the price in a voice you could use at breakfast. A figure which requires a whole performance wearies me.
+opinion dole for 1 : A hot dish makes an easier beginning than a list of circumstances. Serve first and we'll hear the explanation in comfort.
+opinion festivals for 2 : A dozen ordinary voices can keep a tune going after the finest voice in the group has gone home.
+opinion city for 1 : I can remember the approach to the city in mist by humming its turns under my breath.
+line greet : Come where the air between us will carry a low voice.
+line greet.return : I remember the sound of our last exchange.
+line greet [here.time=dawn] : Good morning. Come through the pale air at your own speed.
+line greet [pair.band=friends|family] : There's a warm low note been waiting for your company.
+line farewell : Carry the tune as far as the turn suits you.
+line farewell.return : My thanks will travel quietly after you.
+line ask.how : What sort of note would suit your morning?
+line answer.how : My voice can keep a low part steady without assistance.
+line thank : Your kindness will be easy to recognise when I hear that note again.
+line deflect_thanks : You can return it in an ordinary voice some other day.
+line decline : I won't add my word to a promise I might have to sing over.
+line accept_decline : I hear the answer clearly. I'll let the note die away.
+line sympathise : If words are too much today, a seat beside me is enough.
+line reassure : Someone else can sustain the tune during the pause for breath.
+line react.news : Spare me the flourishes and let the words speak plainly.
+line react.news.new : A new note to fit into the account.
+line react.news.known : I remember hearing the earlier voice on that one.
+line react.news.doubt : That account keeps changing pitch whenever it reaches the doubtful part.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Those words have earned the longest, warmest note my chest will carry.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A low voice will do. Sorrow already knows how to make itself heard.
+line ack : Yes. The words and the note agree.
+line again.open : Our two parts have come together again.
+line preclose : The tune has reached a comfortable resting place.
+line accept_preclose : I can carry the unfinished part quietly.
+line greet.return [here.time=night] : An evening voice travels farther than you may suppose.
+line decline [pair.disposition=wary] : I'd keep that matter outside the reach of even a friendly promise.
+line ask.how [pair.band=friends|family] : Have you had a moment to hear yourself hum lately?
+line reassure [here.time=night] : I'll be a little quiet company until the air feels easier.
+line farewell [here.time=dusk] : Let the cooling stones give your step a pleasant sound.
+line tell.self : I collect more old notes in my head than actual tunes.
+line answer.how [here.time=dawn] : Misty mornings suit me almost as well as singing company.
+
+scene work_1
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : My stretch of duty is #self.trade_words#. A traveller's voice often tells me when to offer a dry seat.
+b : Before asking any questions? | What in the voice tells you?
+a : The seat doesn't interfere with an answer. Sometimes a wolf can remember the business better for sitting down. | A little gasp between name and business. I've heard it after many a long uphill approach.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : The pitch of my thanks helps me remember a favour.
+b : Can you remember a whole tune that way? | What if you whispered?
+a : A few bars, perhaps. Some of the notes sit rather awkwardly beside one another, but the kindness is plain. | Even a whisper takes a shape in the throat. I'd remember my effort to make it carry.
+
+scene food_1
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : The first crackle of a pork rind makes a very serviceable starting note for supper.
+b : Do you tune the singing to it? | What comes after that?
+a : Silently. A mouth filled with crisp pork oughtn't be volunteering for anything ambitious. | A grateful stretch of quiet while the plate goes round.
+
+scene pastimes_1
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : When friends sing I choose a part low enough to leave the words clear overhead.
+b : Is the tune still recognisable? | Can a low part lead?
+a : You'll hear it when the upper voices run out of breath. I keep the shape of their tune underneath. | Yes, by beginning gently enough that everybody else can find the first word.
+
+scene weather_1
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : In dawn mist the lintel gathers #mistbeads# long before the paving looks wet.
+b : Do you watch the lintel? | Can you feel the drops?
+a : A glance upwards lets me choose a dry strip below. I dislike finding a wet board with a tired heel. | One now and then inside my collar. A rather personal reminder to look up.
+
+scene prices_1
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'd give a penny for the peace of a price honestly named the first time.
+b : Wouldn't that make it dearer? | Suppose it costs too much?
+a : Figuratively, I hope. Otherwise a merchant might present me with two charges for making one sale. | I leave the article where it sits. It can wait for another admirer in complete quiet.
+
+scene home_1
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A shelf lined with filled jars holds a very calming sort of silence.
+b : Do the jars sound different? | How do you know what's in each?
+a : Full ones don't chatter like empty ones when the boards shake. I prefer a well-fed quiet. | A little mark on the lid. I'd rather not invite the whole house to assist me in identifying supper by smell.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : For a remembered kindness I can offer a brief prayer followed by some actual work.
+b : What does a practical return sound like? | Must it be to the same wolf?
+a : Like a pot set down near somebody hungry, if the day has brought me an opportunity. | Ideally. But many a traveller has gone too far by the time the way of paying back comes clear.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A private sum falls due with the new moon. I have been quietly setting part of each week's money aside.
+b : Will a song pay any of it? | Will you miss the money?
+a : That would take a more musical factor than I have yet encountered. I keep the sum in pennies. | Yes. A real obligation makes itself heard at both ends.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A traveller can hear a welcome quite clearly without my raising a shout through the mist.
+b : What if the traveller is far off? | Which words travel best?
+a : Then the welcome will keep until our faces are in speaking range. Distance needn't be filled with noise. | The few which make an invitation quite plain. One more unnecessary direction can undo an easy welcome.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can keep a note steady longer if somebody else comes in just as I'm drawing breath.
+b : How do you show the moment? | Doesn't that hide your part?
+a : A little nod before the sound begins to thin. It's company, so I don't mind being seen to need the help. | Quite the reverse. If we do it well a third wolf can hear the tune going on.
+
+scene health_1
+when topic=health self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I dry the middle boards first so there's a sound place for a weary foot.
+b : Why not dry the corner? | Is a little water enough to matter?
+a : A corner can stay wet without doing much harm while I clear the way people actually use. | A spoonful on smooth wood can demand considerably more attention than the same spoonful in a cup.
+
+scene family_1
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : Supper for a whole household has its own tune in separate parts.
+b : Who gets the difficult part? | Does everybody have to sing?
+a : Often the one who takes the smaller piece before anyone else notices. I'd give that wolf first choice tomorrow. | I'd be delighted with a table that simply found the dish agreeable.
+
+scene work_2
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I can take a name softly and still hear how to pronounce it in return.
+b : Would you ask for it twice? | Do you always repeat it?
+a : If the first hearing wasn't good enough. Better a courteous second question than a confidently altered name. | When a traveller has taken particular care over the sound. It seems right to give the effort back.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A mist that never quite becomes rain gives a roof drip time to find its particular pitch.
+b : Is it musical? | Can you hear it over talk?
+a : There is a hollow pock when it falls into a deep jar. Very satisfactory at a slow interval. | Only in the spaces, which is generally when I most appreciate it.
+
+scene day_2
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : I don't rehearse a whole tune at night. One quiet ending is quite enough to keep it in mind.
+b : Wouldn't the beginning be easier? | Why not mutter the words?
+a : I know plenty of ways to start. Bringing a whole room to a gentle close is harder. | A muttered song can sound a little too much like a private complaint.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A debt is easier to remember if both ends use the same words for what was lent.
+b : Even a pot of salt? | Who would you trust to remember it?
+a : Especially something small. One wolf may hear a favour and another hear a loan. | Myself for my part. The other party deserves the chance to agree before a memory hardens into an account.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A mouse in a larder can leave nearly everything in place and take the quiet clean out of the room.
+b : How would you know? | Does the scratching bother you?
+a : A faint scratch below a row of absolutely motionless pots. That sets my ears to work. | I mind having to ask what else visited the supper before I did.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean pantry has room for the jars and not always for what belongs in the jars.
+b : Will you keep them all out? | What can you put on the shelf?
+a : A sound empty jar is a promise of use. I don't want to mistake the promise for a helping. | What I can spare in one small pot, with the contents named plainly for the next hungry person.
+
+scene news_1
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : This is the plain note that reached me. #world.news#.
+b : May I repeat it? | Is the full account longer?
+a : Keep the words in their own order. Adding a flourish can change who appears to be speaking. | The part I know is the part you've heard. I'll leave the other voices to their owners.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Somebody was saying #topic.subject# #topic.claim#. I couldn't trace the very first voice.
+b : Does that make the tune false? | Can you sing back the exact words?
+a : It makes it unwise to stake anybody's supper on its accuracy. | Near enough to remember the claim, not near enough to be a witness.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A traveller arriving in mist may have gone quite a stretch without seeing a friendly face.
+b : Would you call a greeting first? | What if there's no answer?
+a : If the sound can reach at a natural pitch. An unseen shout tends to make a welcome sound like a summons. | I'd let a tired visitor have a little time. Not everybody has breath to spare on an introduction.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The first time I held a low note with a table full of voices I felt the tune through the cup in my hands.
+b : Was it the singers? | Did you put the cup down?
+a : Partly the voices and partly my own chest. It was pleasant enough without conducting an enquiry into the shares. | I put it down afterwards and found the feeling still there in the fingers.
+
+scene festival_1
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A good chorus at a feast leaves the final word open long enough for a shy voice to join.
+b : Does that delay the next verse? | Suppose somebody sings different words?
+a : For a breath, yes. The feast can afford the time if it can afford to have a song at all. | Then there's an interesting second version for a moment. The room will generally settle which it prefers.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'd rather repay one piece of kindness than recite a long account of how grateful I am.
+b : Does the thanks still matter? | Who chooses the repayment?
+a : Very much. It identifies the kindness before the ordinary business of the day can hide it. | The need, if I have the wit to listen. A hot jar brought to a wolf needing a moment's peace is a poor arrangement.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The best lid on a pot can be raised with a cloth and one hand still free.
+b : For carrying a plate? | To keep the steam in?
+a : For the friend who's bringing something in at an awkward angle. A useful home permits the odd surprise. | It does that nicely as well. I don't require an elaborate catch to guard supper against its own household.
+
+scene day_3
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At the end of duty a tune I scarcely noticed in the morning will sometimes come back whole.
+b : Do you sing it out then? | Do the words come too?
+a : On the walk home if the road can stand a little company. I spare the sleeping windows. | Frequently only the last two. That is a difficulty I have met with a good steady hum.
+
+scene friends_2
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# choose the opening note for a song between us.
+b : Do you know the likely note? | Would you rather follow the tune?
+a : I know where my voice can follow it. The other voice ought to have the pleasure of its own decision. | I'm fond of a tune that begins outside my own head.
+
+story pantrychorus [topic=food]
+  : I laid a warm plate against three lidded jars. A little ringing answered from the back when I touched the front one.
+  : I thought the tune was travelling through the whole row.
+  b : What carried the sound?
+  : My spoon lay across two rims. Into the stew went the spoon and the jars returned to a sensible quiet.
+
+story mistpause [topic=weather]
+  : One mist-bound morning I mistook a quiet note in the distance for a familiar opening phrase.
+  : I hummed the next part softly. There was a long pause, then precisely the original note.
+  b : Did you have a singing companion?
+  : A damp hinge swinging on and off the same point. I should have chosen a simpler duet.
+
+story borrowedcloth [topic=memories]
+  : I once set aside the exact price of a cloth I'd been lent, having worn a hole through it.
+  : The coins would have bought a much finer cloth by the time I went to return the favour.
+  b : Which did you bring back?
+  : A good plain cloth of the original size and the offer of a little mending work. The favour had saved me time as well.
+
+story bottomnote [topic=pastimes]
+  : I tried singing the deepest note of a chorus alone over a warm cupful of water.
+  : A tiny ring trembled out to the lip, then another.
+  b : Did the pitch change them?
+  : My sleeve did. It was resting against the table, patiently translating the movement of my elbow into music.
+
+story singlerind [topic=food]
+  : I left a last piece of crackling on a plate as a return for somebody sharing a meal with me.
+  : In the peace afterwards I could hear just when my gift was eaten.
+  b : Did that repay the whole meal?
+  : It gave me a pleasant sound by which to remember I still owed somebody a supper.
+
+rule @hum
+when concept=bark
+does aside
+cooldown 8h
+say Leave the low note steady underneath. | No need for every voice to arrive on the same breath.
+
+rule @dry
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Give the next pair of heels some dry boards. | That little shine is where a foot will go.
+
+rule @mist
+when concept=bark self.likes=misty_dawns
+does aside
+cooldown 8h
+say A quiet greeting can cross this much mist. | The lintel has collected a whole row of beads.
+
+rule @chorus
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Let a shy voice have the long ending. | I'll carry the tune while somebody breathes.
+
+rule @meal
+when concept=bark self.likes=full_larder
+does aside
+cooldown 8h
+say Filled pots make a nice heavy silence. | A good shelf knows the sound of enough.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say The last note comes home at this hour. | It may be a humming sort of evening.
+dlg resident.hub : Stand close enough for a gently spoken greeting.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I have the sound of the name again.
+dlg resident.job [self.job=guard] : My post is #self.trade_words#. Giving a tired arrival time to get a breath is part of the duty as I understand it.
+dlg resident.quirk : I remember a debt by the pitch of the voice that first acknowledged the kindness.
+dlg resident.news [world.news] : The words I heard clearly were these. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The claim on my stretch of road has #topic.subject# #topic.claim#. I've no first voice to attach to it.
+dlg resident.bye : An easy note to carry out with you.
+dlg watch.hub [on_watch=no] : I'm off duty and can spare a little ordinary conversation.
+dlg watch.crime [here.witnessed!=0] : I'll hear what you witnessed. Use your own speaking voice and begin where you were standing.
+dlg watch.unpaid : An unpaid fine means waiting in the cells until the sum is met.
+dlg watch.bye : Your business is concluded here. Mind the damp on the way.
+dlg watch.refused : The difficulty is this. #topic.why#.
+
+graft resident.hub
+choice Could you remember a favour without a tune? -> note_favour
+node note_favour
+say Quite well. It's remembering the pleasure of the kindness that I use the note for. Some of the smallest favours have stayed very clear.
+choice Which note comes most readily? -> note_low
+choice I can picture the dish now. -> hub
+node note_low
+say A very quiet note of relief. Somebody held the opposite rim of my heavy dish when I had supposed I would have to manage alone.
+choice I can picture the dish now. -> hub
+
+graft watch.hub
+choice How do you greet travellers you can scarcely see? -> mist_voice
+node mist_voice
+say I wait until an ordinary speaking voice can reach. A disembodied shout is an unpleasant welcome after a long quiet road.
+choice What do you say first? -> mist_word
+choice I'll take that breath. -> hub
+node mist_word
+say Enough to show the way is attended, then a pause. A traveller should have one full breath between feeling expected and having to answer.
+choice I'll take that breath. -> hub

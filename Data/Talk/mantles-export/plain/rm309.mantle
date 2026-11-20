@@ -1,0 +1,261 @@
+mantle rm309
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_soren_kelpcot
+title the dancing margins
+fits stage=adult|old
+prefers job=scholar
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk marks_the_steps_of_a_dance_in_scrap_paper_margins
+likes spiced_cider dancing market_bustle misty_dawns
+dislikes haggling wet_floors
+fears an_erased_signature a_wet_floor_during_a_turn
+hopes an_archive_of_dances a_cabin_free_of_salt_damp
+topics pastimes +0.5 work +0.4 festival +0.3
+styles comfort=company gossip=precise refuse=firm tease=none
+marks oath saying
+persona #self.first# draws dancing feet in the margins of scrap paper, keeps a civil welcome for a new arrival, and demands an exact price before bargaining can begin.
+
+words
+oath! = Split quill and scuffed heel | Cider on the clean copy
+saying! = Give each step its margin | One price leaves two feet free
+stepleaf = my dancing margin | a register of steps
+heelstamp = a fat dot of ink | a broad oval mark
+toeline = a narrow dash | a sloped toe mark
+pairrule = a line two fingers wide | a double-ruled margin
+cupwarmth = the heat through my cup | the first fragrant steam
+pegclip = a little wooden clip | a fork of springy wood
+watercurl = a damp paper curl | a wrinkled edge
+airfold = a loose open fold | a fold for airing
+greycloth = a square of blotting cloth | a scrap of clean sleeve
+marketnote = a note from a caller | a folded price slip
+thintrack = two faint strokes | a pair of ghost marks
+
+any
+opinion city for 1 : No other place has given me quite so many names for the turning of a lane, all settled by walking it together.
+opinion newcomers for 1 : Every new arrival gives a blank line in the register a reason to exist. A blank line makes thin reading.
+opinion houses for 1 : The roof over the records must be paid for by someone with more than a clerk's salary. I give the Houses credit for keeping old writing dry.
+opinion watch for 1 : When there's an argument over a boundary I'd like someone to keep the doorway clear while the paper's read.
+opinion strangers for 1 : Lost callers don't stay strange once you've shown them the right turn and heard a little about the road before it.
+opinion times for 1 : I have clean paper for the work and cider when my feet are tired. Things stand tolerably well in my particular column.
+
+grown
+line greet : Come take the unmarked space beside me.
+line greet [pair.band=strangers] : Your name can wait, if you'd like to warm up first.
+line greet [here.time=dawn] : The light's coming through the mist in ruled lines. Welcome.
+line greet [here.time=dusk|night] : At this hour a greeting may come quietly off the page.
+line greet [self.working=yes] : Welcome. I'll put a weight on the open sheet.
+line kin.open [pair.kin!=no] : Close enough for me to recognise your step alone.
+line again.open : Another line on the same page between us.
+line greet.return : Your words have come through legibly enough.
+line greet.return [pair.band=friends|family] : I heard a step I'd have entered in my margin.
+line greet.return [self.working=yes] : I've marked where I stopped. You have my ear.
+line greet.return [here.time=dusk|night] : There's the voice I couldn't make out in the shadows.
+line farewell : A clear turn and a firm floor wherever you go.
+line farewell.return : I'll hold my place. Enjoy your stretch of road.
+line react.news : I'd like to hear the account in its proper order.
+line react.news.new : That's going into a previously blank margin.
+line react.news.known : Yes. The details fit the first account I had.
+line react.news.doubt : Was that the word on the original sheet?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd gladly take on the small business such a house hasn't time to do.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something to put an extra spring in a returning step.
+line answer.how : I can still reckon with both my papers and my feet.
+line ask.how : Is there a comfortable measure to your day?
+line sympathise : A loss can leave more room than a wolf knows how to fill.
+line reassure : I'll take the first step beside you. The pace can be yours.
+line decline : I'd have to disclose a page that isn't mine to open.
+line accept_decline : We'll keep that entry folded out of sight.
+line thank : You've given a knotty entry its plain meaning.
+line deflect_thanks : It cost very little to draw the right line.
+line preclose : A blank margin has begun to nag at my memory.
+line accept_preclose : I'll let you turn back to your business.
+line ack : Duly understood.
+
+scene drawdance
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : These little marks record a dance my feet might otherwise forget. | See #heelstamp# beside #toeline#?
+b : Is that a heel there? | Is that one step or two?
+a : Yes. The narrow end of the mark says which way the dancer had to turn. | One foot is resting and the other goes forward. Put two dark marks down and we'd stand still all night.
+
+scene sheets
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A leaf with a damp corner must lie flat until you can lift it cleanly. | I'd put a scrap under the corner of an old entry before turning it.
+b : Won't it dry faster held up? | Does the scrap carry the weight?
+a : It might tear faster too. I'd start by giving the ink a little air. | Just that of the corner. Then the whole leaf comes up on my palm.
+
+scene price
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I ask a price just once if I'm buying cider. | If looking into my purse alters the price I'll close the purse.
+b : Even if it seems dear? | Mightn't the seller come down?
+a : If it's dear I can leave the cup standing. No damage to the cider or my temper. | I might stay long enough to point out that I'd wanted the first price stated fairly.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : In a misty morning an old street looks like a sentence rubbed half out. | I like seeing a roof emerge one clear line at a time.
+b : Which bit comes back first? | Would you dance in that mist?
+a : The bit one's nose is likeliest to strike. I save the poetry for after the walk. | If I could see the boards. The feet are entitled to an equally clear view.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : A strip of orange peel can hold a whole mouthful's worth of spice. | I drink the cider in small measures and leave the peel in plain sight.
+b : Do you eat the peel? | Why see it?
+a : The soft bit at the tip. That's the part that's been in the cup the longest. | To know whether it's still giving colour. It's a kind of warm, readable ink.
+
+scene dryfoot
+when topic=health self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I keep my foot flat and short on any floor that's been washed. | A wet heel makes a very complete signature on a dark board.
+b : Isn't it slower? | Do you recognise the signature?
+a : To the far wall, yes. To a warm bed instead of a broken leg, considerably faster. | Mine. The outside corner wears faster since I learnt a particular turning step.
+
+scene market
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I'd watch the feet of wolves at a busy market quite happily. | A line that moves around a puddle at market has a rhythm.
+b : Not the goods? | Would you set it on paper?
+a : On occasion. That crowded lane shows me turns nobody thought to put in a dance yet. | I have. The trick is to keep the hesitation when there's no actual puddle.
+
+scene homewife
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : There's a curve in one dancing figure I've saved to show #self.spouse#. | I'd lay a place for #self.spouse# at whichever end I've kept spotless.
+b : Will it take two to make the figure? | What goes on the other side?
+a : Two and room to turn. Drawing a solo figure makes those steps look rather lonesome. | Papers, cup marks, my little private litter. A shared meal deserves one clear start.
+
+scene office
+when topic=land self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : The Office looks quieter from outside than it sounds to a clerk. | There's music in doors opening up the Office corridor.
+b : Is paper so loud? | Are the hinges singing?
+a : It's the hush when three readers stop to find the same line. The paper makes a great rustle after that. | Mostly the footsteps on the way out. A matter settled makes a quick light tread.
+
+scene unfiled
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't file a guess under another wolf's name. | A witness who only remembers an initial hasn't given me enough to go by.
+b : Where would you file it then? | No helpful guess at all?
+a : Among questions, until the answer can stand up in ink. | I could offer several. That's an excellent reason to offer none.
+
+scene twolines
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Two wolves sitting quietly can give each other a great deal of room to think. | I sometimes repeat a prayer in the time of a walking song.
+b : Is the quiet the important part? | Does the tune get in the way?
+a : The company. Quiet without company has an entirely different weight. | Only if I let it hurry the words. I make the time fit what I mean to say.
+
+scene freeberth
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : A ship figures in my sleep, with one cabin perfectly free of damp. | I fancy hearing a sea song without the boards standing still under me.
+b : Have you given yourself a grand cabin? | Would you be any use aboard?
+a : Much too small for grandeur. Just space for dry paper and a narrow turn. | If somebody needs a steady record of just how much the deck is moving, certainly.
+
+scene wineink
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I don't test the point of a new pen with my name. | There's a turning step at the top of each practice sheet.
+b : What comes first? | Is it the same step?
+a : An inked heel and two small strokes about it. If those are clean, the letters can have a turn. | It varies with the pen. A broad nib invites a step with rather more dignity.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put #self.friend# near the front if there were a dance and I were handing out places. | I've a little square of clean margin for #self.friend# alone.
+b : To lead the dancing? | What shall go in it?
+a : To see clearly, if there's a wish to see. A front place offers a fine view. | Any tune that comes my way in good company. I needn't write the company down.
+
+scene rich
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can afford a whole sheet for a little thought. | A clerk with comfortable shoes has a choice in how far to walk with a caller.
+b : Why use a scrap then? | Would you go beyond the office door?
+a : Because sometimes I have only a scrap's worth to say. Wasting a page doesn't enlarge it. | If the proper office is hard to find, yes. No great hardship with sound soles and time.
+
+scene borrowedwork
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : An erasure and a correction need different marks. | I leave the wrong turn showing when I correct a little map.
+b : What should the reader see? | Why leave it visible?
+a : That somebody has owned a mistake. Blotting it dark doesn't make the right answer clearer. | So the next reader can see exactly where a turn goes astray, and take the other.
+
+scene fastbeat
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : A hurried tune tends to put the inkmarks close together. | I keep a blank strip down the side of every dance drawing.
+b : Do the feet seem to crowd too? | What fills that strip?
+a : So close they're likely to exchange complaints. I practise the turn slowly before taking the proper time. | My thumb. I can hold the sheet without covering the very step I wanted.
+
+scene evenlamp
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : A lamp brings a fine gold edge onto a damp line of ink. | Even after I've darkened the lamp I can still draw that dance perfectly well.
+b : Is it ready to put away? | On paper you can't see?
+a : Exactly the reverse. I leave it until the edge is dull. | On the floor, with my feet. They don't need a pen to remember their business.
+
+story wrongmargin [topic=memories]
+  : I once mistook my own note about a dance for a direction to the next shelf.
+  : I went left twice, right once, made a very elegant turn and met precisely the shelf I'd started from.
+  b : Did you find the paper you wanted?
+  : Under my elbow. My feet had been the only things looking in the wrong place.
+
+story ciderfoot [topic=food self.likes=spiced_cider]
+  : I made a drawing with cider after my ink had dried in the well.
+  : The pale picture vanished almost to nothing as I watched.
+  b : Could you see it when the light changed?
+  : Not well enough to dance it. The sheet smelt delightful, which I freely admit is unusual in a record.
+
+story clearway [topic=travel]
+  : On a particularly misty walk I reckoned the paces between each pair of familiar windows.
+  : A loose stone made me take a much longer step, and the whole distance seemed to change.
+  b : How did you set yourself straight?
+  : Looked up. Somebody had left the last window open and the frame stood out plainly against the pale air.
+
+rule @work
+when concept=bark self.job=scholar self.working=yes
+does aside
+cooldown 8h
+say Keep damp ink clear of the next leaf! | One blotting cloth for each fresh page.
+
+rule @floor
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Go flat-footed on the glossy board. | Leave a dry strip for the next caller.
+
+rule @drink
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Keep the peel in for another breath. | No inkstand beside an open cup!
+
+rule @lamps
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Give the turning dancer an extra elbow. | Keep the lamp beyond the moving sleeve.
+dlg resident.hub : There's a moment between entries. What brings you?
+dlg resident.hub [topic.meeting=known] : Welcome to the next line, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : I can hear a civil statement perfectly well from that distance.
+dlg resident.hub [here.time=night] : Draw closer to the legible side of the lamplight.
+dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I try to send a caller away with the right leaf, in readable condition.
+dlg resident.job : I sort what has been confused and mark the place where one may pick it up again.
+dlg resident.news [world.news] : The account I've been given reads as follows. #world.news#.
+dlg resident.bye : An easy turning step on your way.
+
+graft @dance_margin resident.hub
+choice May I try the steps in your margin? -> dance_margin
+node dance_margin
+say First put your heel on the fat mark. Turn your toes out and bring the other foot alongside. You've just covered the first line without moving much at all.
+choice Where does the dancing begin? -> dance_margin_more
+choice Rest the page beside the pen. -> hub
+node dance_margin_more
+say On the next beat. The first line persuades two wolves to face the same way. After that they can do something handsomer with the agreement.
+choice Rest the page beside the pen. -> hub
+choice Step back into the street. -> bye

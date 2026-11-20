@@ -1,0 +1,265 @@
+mantle rm307
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_brand_mudridge
+title the pale inventory tag
+fits stage=adult|old
+prefers job=merchant honesty=frank
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk rubs_a_pale_wooden_tag_to_find_smoke_dust
+likes spiced_cider whittling full_larder warm_rain
+dislikes smoke rats
+fears a_clean_tag_over_a_missing_item
+hopes a_complete_return_without_dispute
+topics work +0.6 pastimes +0.4 food +0.3 gossip -0.3
+styles comfort=plain gossip=factual refuse=measured tease=none
+marks oath saying
+persona #self.first# cuts pale wooden inventory tags and judges the day's smoke by passing one clean thumb over the surface.
+
+words
+oath! = Blank on both faces | Ten misplaced pegs
+saying! = Count the space as well | A white tag remembers smoke
+tag = a pale wooden tag | my spare tally chip
+slip = the spare chit | a thin wood slip
+notch = a little nick | the end notch
+smudge = a grey thumb streak | the sooty smear
+hole = the cord hole | a small round opening
+edge = the bevelled edge | a smooth corner
+rack = the long rack | one open shelf
+air = the clean draught | cool air
+cup = my cider cup | a small mug
+spice = the bitter spice | a curled shred of bark
+lid = a fitting lid | the close cover
+drawer = a shallow drawer | the narrow tray
+
+any
+opinion watch mixed 0 : A good count protects the wolf receiving a parcel as much as the wolf delivering one.
+opinion church for 1 : A chapel lets me keep silence without filing notice.
+opinion city for 1 : The city has rooms merely for preserving what the living might otherwise forget. That merits some care.
+opinion merchants mixed 0 : I'd read the delivery chit and look in the box before remarking on the price.
+opinion dole for 1 : A measure stamped and checked should be as reliable for a poor supper as for a rich one.
+opinion houses against 1 : One House name on a cupboard obscures a remarkable number of ordinary working paws.
+
+grown
+line greet : Welcome. There's a clean spot for you here. | Hello. My count came to a convenient end.
+line greet [pair.band=strangers] : A first acquaintance. I'll remember the face. | I don't think I've entered your name in my memory yet.
+line greet [here.time=dawn] : Morning. Good light to pick out a grey mark. | The day's first page lies flat enough.
+line greet.return : I heard your greeting quite distinctly. | Yes, hello. I've put the tally aside.
+line greet.return [pair.band=friends|family] : You belong among the faces I recognise at a glance. | A good voice to hear over a morning's count.
+line greet.return [here.time=night] : Hello after hours. The dim light makes no difference to my ears. | I can take a late greeting without a lamp.
+line again.open : A second entry on the same page, as it were. | I'm glad you've come into view again.
+line hail [pair.band=friends] : Come see what a clean thumb brought to light. | Here, where I've laid out the pale pieces.
+line farewell : Leave with your account in order. | May you find each parcel where it belongs.
+line farewell.return : That closes the visit neatly. Goodbye. | I'll enter no further demands against your day.
+line react.news : State the part you'd trust to ink. | I can give the report a proper hearing.
+line react.news.new : There was a blank where that belonged. | New information from first mark to last.
+line react.news.known : That tallies with what I already had down. | Yes. I know the principal entries.
+line react.news.doubt : One of those details appears on neither side of the account. | I'd like an independent count of that story.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's more sorrow in that than a record can convey. | I'll set down the work and hear you properly.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A welcome addition to any day's reckoning. | There's a good return on an ordinary day.
+line ask.how : Has the day left your affairs in decent order? | How much of your list is still hanging about?
+line answer.how : Reasonably clear in the head. A little grey about the cuffs. | In order apart from the usual small discrepancies.
+line decline : I'd be affirming a matter beyond my personal knowledge. | I can't take responsibility for a figure I haven't checked.
+line accept_decline : That answer leaves my own position quite clear. | I shall mark it as declined and move on.
+line preclose : There are a few unchecked spaces waiting for me. | I'd prefer daylight to make out my last few marks.
+line accept_preclose : Very well. We'll keep this account to a reasonable length. | You can close your part here.
+line thank : You've cleared up a difference that mattered. Thank you. | I appreciate a return made in such good order.
+line deflect_thanks : It took one mark on a piece of ordinary wood. | A straightforward check serves both of us.
+line sympathise : I'll take over something small while you collect yourself. | No form of words can alter what you've had to bear.
+line reassure : An empty space tells us where to start looking. | We can check the sound parts before worrying about the rest.
+line ack : That corresponds with my observation. | Yes, both entries agree on that.
+line give.advice : Hold a pale surface beside a doubtful mark. | Count again from the other end if the figures differ.
+
+scene pale_work
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail / react.self
+a : I like a fresh pale tag hanging beyond the last rack hook. | One bit of unmarked wood belongs in every count.
+b : Why leave one empty? | Doesn't that waste a tag?
+a : It shows what colour all the others started. Useful when I'm checking for smoke.
+b : It does a job without writing. I rub one thumb across and inspect the difference.
+
+scene spacereturn
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I count the spaces even when every slot appears occupied. | A full rack needn't be a correct rack.
+b : What can a space tell you? | You mean two things put down together?
+a : Whether the contents shifted while the tally stayed where it was. Then I look closer. | Precisely. A loose tag can bridge two positions. I want each return visible.
+
+scene plainwhittle
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : It's harder to make a batch of plain tags alike than one handsome oddity. | I like a little carving whose success shows up when you stack it.
+b : How many would you stack? | No carving on the face?
+a : Just five. A single corner out of square then makes a very obvious staircase. | None. The level tops are the decoration I was after.
+
+scene thumbsmudge
+when topic=weather
+does tell.self / ask.detail / answer.detail / react.self
+a : I don't need a view of a chimney to recognise a smoky day. | Fine soot has a way of signing its name on light wood.
+b : You keep a tag in the open? | Could you mistake dust for smoke?
+a : Sometimes. I rub it once where the grain runs straight and compare the clean space.
+b : Certainly. That's why I'd check the air before blaming any particular chimney.
+
+scene smoke_eye
+when topic=health self.dislikes=smoke
+does tell.complaint / ask.detail / answer.detail
+a : A wolf smelling faintly of smoke doesn't necessarily enjoy breathing the stuff. | My cuffs and my eyes have quite separate opinions of smoke.
+b : Would airing the coat help? | Which one objects?
+a : The coat, yes. The air near my face needs its own improvement. | My eyes make a more noticeable complaint. The cuffs simply lose their colour.
+
+scene cider_spice
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : Spiced cider should smell of apples even at the last mouthful. | I let a piece of spice sit briefly, then lift it out.
+b : Why be so particular? | Shouldn't it get stronger?
+a : I want cider scented with spice. I'd specify hot bark water if that was my intention. | A little stronger than plain juice, yes. Stronger than the apples, no.
+
+scene pantrytag
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A full larder still wants a list of what to eat first. | I give the oldest jar a tag with a rounded corner.
+b : Why round just one? | Wouldn't a glance settle it?
+a : So I can find it with my paw even behind a taller crock. | By dust, possibly. I'd rather avoid dust becoming the principal system.
+
+scene warmrain
+when topic=weather here.weather=rain
+does tell.feeling / react.self / assess
+a : I like the way a mild rain draws one clean stripe down a smoky sill. | A shower is quite an effective clerk when it comes to removing soot.
+b : Leave the whole sill to the weather? | How do you read that stripe?
+a : No. The rain keeps uncertain hours. I'll finish the job indoors. | As a sample of the colour underneath. The rest wants a rag.
+
+scene mouseroom
+when topic=animals self.dislikes=rats
+does tell.complaint / ask.detail / answer.detail
+a : Rats make dreadful little entries in a sound stores list. | A lid pushed a finger out of place deserves looking under.
+b : What if the count is right? | Do you suspect a rat?
+a : A spoiled parcel is still a loss even if it's physically present. | I'd look for a chewed corner before deciding what had moved it.
+
+scene spouse_record
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : A tag made for #self.spouse# needn't have a formal number. | I'd give #self.spouse# one of my smoothest little chips.
+b : What would you put on it? | For a home inventory?
+a : A mark only the two of us need recognise. My records can take an evening off. | Something considerably less solemn. I can carve a small leaf quite passably.
+
+scene officehome
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : In the Office a neatly written slip may have acquired a long journey before it reaches my street. | I feel at home among many small written directions.
+b : Would one suffice? | Doesn't the paper mount up?
+a : One good one. The trick is identifying it among all the previous instructions. | Of course. That's part of the reason I like a small reusable piece of wood.
+
+scene afford_room
+when topic=prices self.wealth=rich
+does give.opinion / react.self / assess
+a : It's easier to buy enough for a full shelf when coin is no immediate difficulty. | My means let me put spare good stock by. I count that as an advantage.
+b : What's hard about it then? | Would you call that good management?
+a : Remembering that an empty shelf can be a matter of means instead of carelessness. | A little management and considerably more good fortune than many can count on.
+
+scene leanportion
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A bearing on a scale wants checking all the more in lean times. | A short measure offends me particularly when the buyer's coin barely stretches.
+b : Where would you begin a check? | Would a small difference matter?
+a : With the empty scale at rest. An error before any goods arrive will follow every customer home. | A repeated small difference could account for a whole hungry meal by week's end.
+
+scene walkrack
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# a blank chip to mark in whatever fashion suited. | I'm curious what #self.friend# would make of a little clean scrap.
+b : Expecting another tally? | What's there to make?
+a : I should hope for something different. I can produce quite enough tallies myself. | Room for a carving, a drawing, a mark to recall a meeting. I'd leave it open.
+
+scene newsmeasure
+when topic=gossip
+does give.opinion / react.self / assess
+a : A delivered report is one thing. Whatever prompted it is a separate matter. | A fine seal will verify the sender. It can't verify all the contents.
+b : You wouldn't repeat the news? | What's the difference when you tell it?
+a : I'd identify it as a report. That's one little word and a necessary one. | Whether I claim to have seen something. I prefer speaking within my knowledge.
+
+scene chinook
+when topic=faith
+does tell.feeling / react.self / assess
+a : I like to give thanks without first attempting to calculate the return. | My best prayer probably comes while I've a blank piece of wood in reach.
+b : You write it down? | Does that mean no accounts in chapel?
+a : No. I let it remain blank. It's a useful interval in a working habit. | That's my intention when I go in. A list of obligations isn't always a prayer.
+
+scene whitegoods
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like to finish a return with every tag present and no wolf waiting to settle a dispute. | I know precisely what my ideal inventory looks like.
+b : Just a complete row? | You'd have nothing left to do.
+a : A row whose account is agreed from both ends. The agreement's the satisfying part. | I'd be able to close the drawer and walk home thinking of other matters. Exactly.
+
+scene dropfog
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : Fog makes a clean pale tag hard to read against a pale wall. | On a misty day I hold #tag# over a dark cuff.
+b : You can see the notches better? | Isn't the cuff meant to be clean?
+a : Exactly. A dark edge makes the little cuts distinct. | I own dark cloth as well as grey dust. Fortunately they're easy to distinguish.
+
+grown
+
+story fivesix [topic=pastimes|memories]
+  : I cut five tags and stacked them so neatly they looked like one solid block. Made a note of the total before going to supper.
+  : Next day I counted six. Had absentmindedly used the first try for the foot beneath the stack.
+  b : Did the record change?
+  : Yes. It now accounts for five finished tags and one particularly convincing foot.
+
+story ciderchip [topic=food|memories]
+  : Dropped a blank chip into my mug of fragrant cider and retrieved it a fine warm brown. Decided to keep it for a different account.
+  : A week later I couldn't remember the account but I could still identify the spice.
+  b : What did you enter it as?
+  : A satisfactory scrap and a questionable method of filing cider.
+
+story threetags [topic=work|memories self.job=merchant]
+  : I once took considerable pains to explain three apparently identical tags to myself after a particularly tiring shift.
+  : Turned the string over. I'd already labelled all three on the underside.
+  b : Why was the writing facing down?
+  : I'd twisted the string while making room for a cup. A quite modest mystery with an extensive written solution.
+
+rule @thumb
+when concept=bark
+does aside
+cooldown 8h
+say One pale strip there. That's what the whole face ought to look like. | Pass a clean thumb along the grain once.
+
+rule @work
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Leave that empty position clearly visible, please. | I'll count the returned fittings after the tags are level.
+
+rule @cider
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Enough spice now. I can still smell the apples. | A clean cup for the first little taste.
+
+rule @rag
+when concept=bark
+does aside
+cooldown 8h
+say Grey transferred to the rag. The chip is sound. | That dark spot was only on the surface.
+
+dlg resident.hub : Your question has my attention. I've reached a place I can mark and return to.
+dlg resident.hub [topic.meeting=known] : #topic.player#, your last visit is within easy reach of my memory.
+dlg resident.hub [here.time=night] : Figures can wait for daylight. A voice carries its own distinctions.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll listen. There's room between us for all the necessary facts.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. My concern is an accurate account of what goes out and comes back.
+dlg resident.job : An exact return, thoroughly checked, leaves me quite content with a day's work.
+dlg resident.bye : May the rest of your business prove easy to account for.
+
+graft resident.hub
+choice May I try that thumb test? -> palerub
+node palerub
+say Use the pad, not the claw. A claw cuts into fresh wood and gives a false impression of cleanliness. You want to see what was resting on top.
+free
+choice Why does that distinction matter? -> cutgroove
+choice I'll leave the surface uncut. -> hub
+node cutgroove
+say Because a groove will collect tomorrow's dirt where there was none today. I'd have altered my own record in the act of consulting it.
+choice That accounts for it. -> hub
+choice I'll let you finish counting. -> bye

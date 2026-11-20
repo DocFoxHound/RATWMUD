@@ -1,0 +1,396 @@
+mantle rm555
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_tove_wetgate
+title the rose-knot pause
+fits stage=adult|old
+prefers job=carter
+traits temper=even talk=chatty warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk ties_a_decorative_rosette_while_a_damp_cough_passes
+likes barley_soup knots tidy_house warm_rain
+dislikes stale_bread drizzle
+fears losing_the_dry_berth_to_a_wet_morning
+hopes to_take_a_working_passage_to_a_drier_shore
+topics work +0.6 pastimes +0.5 weather +0.4 home +0.2
+styles comfort=plain gossip=curious refuse=frank tease=none
+marks oath saying
+persona #self.first# works a rose of spare cord between loads, taking an extra turn whenever damp catches in the throat.
+
+words
+oath! = Rose and shoulder strap | A dry berth for my bones
+saying! = Give the loose end one good purpose | Leave a loop for your breath
+rose = a four-loop cord rose | a little rope flower
+cord = my loose cord end | a bit of waste lashing
+strap = a broad shoulder strap | my worn carrying band
+barrow = a market handbarrow | the low two-handled cart
+soup = thick barley broth | a peppery barley bowl
+berth = a dry ship's bunk | a narrow berth under cover
+crumb = a hard loaf corner | a stubborn wedge of heel
+rhythm = my carrying breath | a porter's breathing space
+drizzle = the woven drizzle | a long wet mist
+sun = a slice of dry sky | a pale high clearing
+peg = the brass strap peg | my little hanging hook
+bundle = a pair of market bundles | two bound parcels
+limp = a short step today | the weather in my stride
+cloth = a dry collar cloth | a small square for my neck
+room = a well-swept room | my orderly corner
+rain = a warm lifting shower | a shower soft as soup steam
+
+any
+opinion houses mixed 1 : A House with ships to spare could make me a very fair offer if a dry coast appears on the sailing list.
+opinion merchants mixed 1 : Tie the parcels soundly and name the whole weight. That will put me in a trading mood.
+opinion newcomers for 1 : A newcomer should see the far handle before having to guess how this market likes a load carried.
+opinion road for 1 : A road across the city has a drier end somewhere. I've a professional interest in reaching it.
+opinion festivals mixed 1 : I can carry a festival and still wish there were one fewer drum between my ear and the next porter.
+opinion city for 1 : I know my native city by the way bundles of the same weight pull differently on its hills.
+opinion dole for 1 : Broth that's warm now ought to travel on the next pair of shoulders.
+opinion strangers mixed 1 : I'll listen to an unfamiliar customer. A covered parcel has to answer a little more plainly than a face.
+
+grown
+line greet [pair.band=strangers] : Here's a free handle and a civil welcome. | Good to see someone taller than my cargo.
+line greet [self.working=yes] : Give my strap a hand's breadth and come through. | Welcome alongside these unsociable parcels.
+line greet [here.time=dawn] : Morning. Market's put its shoulders on. | Fresh lifting light. Come under it.
+line greet [here.time=dusk|night] : Evening. Cord rose nearly finished. | Come catch the clearance after market.
+line kin.open [pair.kin!=no] : Family can set a burden down with me. | Household business earns the broad handle.
+line again.open : Back with both handles showing. | We're on the return carry now.
+line greet.return : Another welcome worth setting a bundle down for. | There's your face beyond the lashing.
+line greet.return [pair.band=friends|family] : Good to have a face I trust beside the parcel. | You know where my breathing space is.
+line greet.return [self.working=yes] : Let me seat this strap. I'm listening. | My loose end can keep my fingers occupied.
+line greet.return [here.time=dusk|night] : Late company stays visible longer than cargo. | Evening. The last loop's yours to look at.
+line farewell : Dry sky over your travelling strap. | Don't give the short handle all the work.
+line farewell.return : We'll find the paired handles again. | Save your strength for the home carry.
+line farewell.return [here.time=night] : Rest without a weight across your shoulder. | May your bunk stay out of the weather.
+line react.news : Lay out what the wrapping concealed. | What's come in with the market loads?
+line react.news.new : A new shape of parcel to me. | Nobody's brought those words down my lane before.
+line react.news.known : Yes. That's crossed my shoulder earlier. | The cord round that account looks familiar.
+line react.news.doubt : I'd ask the porter who lifted it before settling the question of weight. | A fine ribbon tells me regrettably little about the parcel inside.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A cruel weight for one back. | I'll keep my end steady if you want to speak.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's a welcome load brought home. | Good enough to tie an extra petal for.
+line ask.how : How heavily was your strap sitting this morning? | What sort of cargo was today for you?
+line answer.how : My stride's a little short today. My tongue's fine. | I've nearly worked my breath into a flower.
+line decline : I need to leave this shoulder free for a parcel already promised. | I'd better save what strength remains for the return carry.
+line accept_decline : Then the parcel stays this side. I hear you. | Good. A clear refusal lifts easily.
+line thank : Your hand on the burden counted. | I'll recall which shoulder spared me the pull.
+line sympathise : Let me keep the awkward end awhile. | You can take a breath between two loops.
+line reassure : The load may wait while your paws settle. | We've nobody's pace to keep for this moment.
+line preclose : My shoulder wants its working strap again. | I'm near the last loop before going.
+line accept_preclose : This stretch of paving can take the bundle. | We'll tie that end another day.
+line deflect_thanks : A friendly hand hardly needs a label. | No coin for a well-placed grip.
+line ack : I hear precisely which end is heavy. | That puts the weight where I expected.
+line give.advice : Try the weight before admiring the pretty string. | Give both carriers sight of the next turning.
+line offer : There's room on my barrow for a troublesome corner. | I could lend you a little dry cord.
+line praise : A tidy landing for a top-heavy business. | You lifted with a particularly sensible pause.
+
+scene rose
+when topic=pastimes self.likes=knots
+does tell.self / ask.detail / answer.detail
+a : I can make #rose# from #cord# while a customer argues with a parcel.
+b : Why a flower? | How many loops?
+a : A flower gives idle cord an honest occupation. It won't hold any actual cargo for me. | Four in fine weather. A damp morning sometimes earns a fifth.
+
+scene cough
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : People hear a little hitch in my breath and think the strap's too tight.
+b : Is it the strap? | Would you sit down?
+a : The weather's in my throat. I find another turn for the cord till it passes. | When the load's on level ground. A minute to sit costs less than a birthday's worth of pride.
+
+scene shoulder
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : #strap.capitalize# belongs across the shoulder, never against a bundle's showiest ribbon.
+b : Worried about tearing it? | Where does the weight show?
+a : Worried about the bundle expecting a bit of pretty silk to hold it clear of puddles. | Lift one corner a finger high. A heavy surprise ought to introduce itself politely.
+
+scene market
+when topic=work self.workplace self.job=carter
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a parcel with no clear destination can give me a marvellous tour on unpaid time.
+b : Do you ask twice? | What if it's nearby?
+a : For the door and the hand that will take it. Both are needed at the far end. | A nearby wrong door is still a journey with a return load.
+
+scene teach
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : For the first lesson I show the knot that looks handsome and the knot that will hold, on separate pieces.
+b : Why separate? | What comes next?
+a : One should never be given a shoulder's weight simply because the other looks attractive. | A turn round an empty box first. The road is an expensive place to discover a misunderstanding.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : #drizzle.capitalize# gets inside a collar like a customer with six small amendments to an order.
+b : Does a shower bother you? | What do you do?
+a : A warm shower makes a sensible entrance and then goes somewhere. Drizzle takes up residence. | Turn the collar up, keep my footing and give the cord a few extra loops.
+
+scene soup
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I want #soup# with barley I can find even when the bowl's still steaming.
+b : Is it your whole supper? | How thick?
+a : After a full market day I generally require the bowl to make a serious proposal. | Thick enough for a spoon to bring up a little streetful at a time.
+
+scene order
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : #room.capitalize# gets me past my own door without counting another parcel.
+b : Everything on pegs? | Where do the knots go?
+a : Anything with a loop. A wet strap doesn't improve by spreading itself along the supper bench. | In one shallow bowl by the peg. The decorative business has its own address.
+
+scene limp
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I shorten one step when the stones stay wet for days together.
+b : Do you change routes? | Does it slow the barrow?
+a : I choose a level resting place a few doors sooner. The rest still gets carried. | Sometimes. A cart doesn't suffer from pride about an extra moment at the corner.
+
+scene berth
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd take #berth# aboard a vessel sailing towards a coast with a little more dry land in its air.
+b : Would you work passage? | Give up the market?
+a : With a sound carrying strap and a clear account of my share of the hauling. | For a journey. I can miss one roof while being extremely curious about another.
+
+scene spouse
+when topic=family self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd describe my imagined dry bunk to #self.spouse# with room for a proper answer.
+b : Is the passage settled? | What would you ask?
+a : It's a lump of cord and some pleasant imagining so far. There is plenty of time to listen. | What matters at home while a ship is away. The cargo doesn't get to do all the talking.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : My ideal judge is #self.friend# for deciding which cord rose gets the best seat by my supper bowl.
+b : A competition? | What would count?
+a : With the very excellent advantage that no customer can dispute the weighing. | A loop that looks ready to open into another petal. The neatest one needn't win.
+
+scene boss
+when topic=work self.boss
+does tell.self / ask.detail / answer.detail
+a : I'd take a question about an unlabelled parcel to #self.boss# while both straps were still dry.
+b : Why the hurry? | What do you ask?
+a : The moment it starts raining, everybody remembers six destinations and no clear number. | The weight, the door and the expected hand. Good answers save two backs.
+
+scene bread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #crumb.capitalize# can be a poor inducement for a porter to put down a bowl of barley.
+b : Never eat it? | How could a hard heel earn supper?
+a : Soaked, if it's decent bread to begin with. I object to my teeth being given a second day's work. | Drop it in the broth and see if it consents to become supper.
+
+scene shower
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : #rain.capitalize# leaves the carrying stones smelling newly washed.
+b : A safe way to walk? | Does the cough mind?
+a : I pay the paving a little respect first. A clean shine can still put a porter on the ground. | Less in warm moving air. Steady drizzle gets far more time to offer an opinion.
+
+scene gate
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd give a market newcomer a handle to look for before giving half a dozen street names.
+b : Which handle? | Will anyone recognise it?
+a : The brass one above the broad service door. Easy to spot with a bulky parcel at eye height. | Any porter who's had to lift a load through there. It's polished by company.
+
+scene coin
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A carriage fee measured by size alone overlooks the sins concealed inside a small box.
+b : Such as? | Do you open it?
+a : A whole parcel of metal buttons makes a very different neighbour for my ribs than a parcel of ribbons. | I ask what it weighs. The rest is between the customer and the buttonhole.
+
+scene gossip
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I can tell what shape a parcel has without naming the business packed inside.
+b : Do you ever guess? | What if it talks?
+a : I have enough business on the outside. A loose binding is my affair, a letter under it isn't. | Then we've a passenger. That calls for a quite different conversation before anyone starts lifting.
+
+scene stair
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : I find the way to #self.street# with my carrying shoulder about two inches lower on the way home.
+b : Tired? | Lighter?
+a : Free. It takes a few doors for the muscles to believe no box is coming over that hill with me. | Lighter until I've reached my strap peg. Then I'm off duty down to my collar.
+
+scene berthcost
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Offered half wages for a passage, I'd inspect the bunk before agreeing to sail.
+b : Just for damp? | What else?
+a : Damp is a quite serious term of a contract when a wolf takes this particular throat aboard. | Room to sit up, somewhere for the cord and an honest destination beyond that considerable reach of water.
+
+scene paper
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A pretty paper label goes soft in rain just when the address matters most.
+b : How do you save the address? | Whose mistake is it?
+a : Say the turning aloud while the words still hold their shape. I can carry a few words with a box. | No time to discuss blame with wet paper. I keep a dry scrap under my strap.
+
+scene bells
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A festival bell can set the handles humming under my paws.
+b : Does that help? | Is it too noisy?
+a : Helps me know where the music stands in relation to the delivery. I steer a little wider. | I like to hear my partner's breath when we're taking a heavy corner. The tune can come afterwards.
+
+scene colour
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A rose tied in cord of two colours shows exactly where my fingers stopped for breath.
+b : Can anybody see? | Does it look wrong?
+a : I can. Most folk see only a change in the blue line. That's fine by me. | It gives the flower an uneven petal. There's none quite like it in the entire bowl.
+
+scene stew
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : Soup travels remarkably badly when a loaded barrow points uphill.
+b : How do you carry it? | Do you count spills?
+a : Warm pot between the handles, dry cloth under it, plenty of room for the lid. Then I mind my pace. | I count the bowls still hot on arrival. That's a better advertisement than discussing the paving.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I've more patience for a prayer that can fit between two lifts than telling a long story about my endurance.
+b : What do you pray? | At work?
+a : For feet that hold and good sense at a blind corner. Modest requests with considerable practical reach. | Any place I can spare a thankful breath. Even a busy cart leaves a little space for prayer.
+
+scene strapmark
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A deep strap mark in a coat makes the weather collect just inside the collar.
+b : Did you change coats? | Why remember the mark?
+a : I changed the angle of the strap first. A coat ought not to finance every carrying mistake. | It pointed right at the patch where the damp started my cough. A useful bit of detective work by an ordinary seam.
+
+scene seat
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I'd take a moment on an upturned crate before I'd take advice shouted across a wet square.
+b : What sort of advice? | Why a crate?
+a : That a porter should walk two different speeds and put a load in three different doorways at once. | It stands up to plain dealing and rarely offers a fourth suggestion.
+
+scene dayend
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : At day's end I put #peg# where my free paw reaches without disturbing the hanging strap.
+b : Always the same place? | What if it's occupied?
+a : My tidy corner is quite a small kingdom. Its laws are easy to remember and cost nobody a penny. | I move the idle thing occupying it. Pegs in a porter's house earn their keep.
+
+scene view
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I sometimes look for a ship's mast behind the heap of market awnings.
+b : Can you see one? | What do you imagine?
+a : From the right rise I can see something tall and thin. I save the rest for better weather. | A bit of deck with cord stowed tidily under a dry cover. I can dream a quite particular dream.
+
+scene dreamcargo
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed my fancy knots had blossomed all over #barrow# until I couldn't find the handles.
+b : Did you lift it? | What woke you?
+a : I tried to select one of the blossoms for each paw. Flowers make uncertain cargo fittings. | My fingers tightening on the blanket. The handles were still safely by the door.
+
+story rosefirst [topic=memories]
+  : I began my first cord flower on a wet morning while insisting I was perfectly ready for another lift. A loose loop kept falling over my knuckles.
+  : By the time my breathing had settled the falling loop had become the nicest petal. That little bit of delay had found a decent shape of its own.
+  b : Did you keep the flower?
+  : On the strap peg. I still tie an extra loose turn when the air's been sitting on my chest.
+
+story barrow [topic=work self.job=carter]
+  : I balanced an empty barrel beside a very small box on my barrow once. The box went down and the barrel very nearly rose high enough to advertise the shop.
+  : I'd arranged the load by what my eyes called large and small. My shoulder gave a much livelier account of the goods inside.
+  b : What was in the small box?
+  : Metal fittings by the handful. I ask about the weight before admiring the wrapping these days.
+
+story soupday [topic=food]
+  : A generous barley supper landed before me the instant I got a particularly contrary strap off my shoulder. I set it straight down and untied the strap first.
+  : Otherwise I'd have gone looking for the end all through supper. I know the precise way an unfinished knot haunts a good spoonful.
+  b : Did the broth keep warm?
+  : The barley had thickened a little. It was the first bowl that ever rewarded me for finishing my work slowly.
+
+story wetlabel [topic=weather]
+  : A damp label came off a box whole and stuck to my cuff. I arrived at a perfectly correct doorway with an apparently nameless parcel and a well-addressed wrist.
+  : I had to present both together. I've tied the destination with a length of dry twine since then if the sky looks determined.
+  b : Did the right parcel get through?
+  : Indeed. My wrist was politely allowed to return to the market without a receipt.
+
+story berthdream [topic=dreams]
+  : I once dreamed of a ship with a bunk so dry the cord roses above it stood open like flowers in sunshine. I settled down to sleep very content.
+  : Then I heard a market barrow squeaking just under the berth. My fine faraway ship had turned out to be a large cupboard on market wheels.
+  b : Did that spoil the journey?
+  : I woke inclined to oil the wheels and ask for a proper sea passage. It's quite pleasant to know which dream one wants.
+
+rule @aside1
+when concept=bark self.job=carter self.working=yes
+does aside
+cooldown 6h
+say Broad carrying strap for a serious weight. | There's a door hidden behind this bundle.
+
+rule @aside2
+when concept=bark self.master=yes
+does aside
+cooldown 7h
+say The pretty loop's for after the carrying. | Name the destination while the label is dry.
+
+rule @aside3
+when concept=bark self.likes=knots
+does aside
+cooldown 8h
+say Loose turn for an extra petal. | Four cord petals and a small surprise.
+
+rule @aside4
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 9h
+say Give me barley enough to carry the spoon. | Steam curling over a good broad bowl.
+
+rule @aside5
+when concept=bark self.dislikes=drizzle
+does aside
+cooldown 10h
+say Persistent weather for a little grey sky. | Dry scrap inside the collar.
+
+rule @aside6
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say Peg for the strap and bowl for the rose. | A lighter shoulder going home.
+
+dlg resident.hub : If it's freight I'll want its weight. For ordinary talk I've both ears free and a spare cord end to keep the fingers happy.
+dlg resident.hub [topic.meeting=known] : #topic.player#, back on the market side of the handle with me.
+dlg resident.job [self.job=carter self.trade_words] : I earn my keep #self.trade_words#. The last handle is seldom as light as the first looked.
+dlg resident.news [world.news] : Here's a report that came across the carrying square. #world.news#
+dlg resident.bye : A dry collar and a well-set strap on your next carry.
+dlg resident.hub [here.time=dawn] : Early yet. You can see every handle without climbing over a customer.
+dlg resident.hub [here.time=dusk] : Come meet the porter standing just behind the final bundle.
+dlg resident.hub [self.working=yes] : Leave the turning space clear and we'll talk pleasantly enough.
+dlg resident.hub [pair.disposition=wary|hostile] : Let's hear what actually wants carrying before we begin dressing it up.
+dlg resident.job [self.master=yes] : I have a teaching knot that looks very fine and shouldn't take an ounce of goods. A learner gets to see the difference on an empty box.
+dlg resident.hub [self.likes=knots] : There's a new loop on the rose today. You can look while I listen.
+dlg resident.bye [here.time=night] : Good sleep under a roof no damp can get under.
+
+graft @rose resident.hub
+choice What's the extra petal on the porter knot? -> porter_rose
+node porter_rose
+say That was a breathing space on a damp morning. The cord happened to take a nice turn while my lungs were considering the weather.
+free
+choice Could that knot hold a heavy parcel? -> porter_load
+choice A fine place for a spare breath. -> hub
+node porter_load
+say I'd give you the actual lashing for that. The rose advertises my fingers' patience. It has never advertised what a box weighs.
+choice I'd try it on an empty box first. -> hub
+choice Good carrying weather to you. -> bye
+graft @bunk resident.hub
+choice What sort of berth would tempt a market porter? -> porter_bunk
+node porter_bunk
+say One with a dry shelf over my head, a real destination and some plain work to earn the passage. A ship has parcels enough for a porter.
+free
+choice What would you carry aboard for yourself? -> porter_pack
+choice Perhaps the next ship has room. -> hub
+node porter_pack
+say My strap and a coil of good cord. A small dry keepsake from home, if one was offered. I mean to visit a new shore with my own life still about me.
+choice I hope you get that quiet shelf. -> hub
+choice I'll attend to my own parcels. -> bye

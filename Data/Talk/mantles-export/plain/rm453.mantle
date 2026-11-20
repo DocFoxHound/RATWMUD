@@ -1,0 +1,257 @@
+mantle rm453
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_edmund_sootcot
+title the clerk of paired cuts
+fits stage=adult|old
+prefers job=official
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk matches_two_cuts_in_a_receipt_before_opening_a_file
+likes barley_soup dancing sharp_knife first_warm_day
+dislikes wet_floors rats
+fears granting_entry_on_a_borrowed_badge
+hopes to_trace_every_request_to_its_owner
+topics work +0.5 lore +0.3 family +0.2 prices +0.2
+styles comfort=practical gossip=curt refuse=flat tease=none
+marks oath saying
+persona #self.first# cuts two receipt edges together and admits no badge as proof where the notches fail to match.
+
+words
+oath! = Notch my second copy | Match the cut edge
+saying! = A badge casts too broad a shadow | Two cuts can speak for one account
+half = my counterfoil | the short torn half
+nick = a narrow v-shaped nick | my double cut
+blade = my clean penknife | a knife with a clipped point
+paper = a sheet of heavy paper | a stiff receipt
+box = the slotted box | my small black tray
+lid = the sliding cover | a snug wooden lid
+soup = a deep barley broth | a pot of soft barley
+tile = a sound floor tile | a square of dark tile
+rat = a grey store rat | a rat with a torn ear
+rise = the opening dance step | a deliberate rise on the heel
+warn = a clipped instruction | one measured word
+stamp = a plain dark seal | the cold wax mark
+
+any
+opinion houses for 1 : A House is answerable for the paper its own seal releases. That is why I look first at who carries the seal.
+opinion dole against 2 : I would count bowls before refilling a single one. Those who supply the pot are entitled to figures.
+opinion strangers against 2 : A stranger gets a civil hearing across a safely closed drawer.
+opinion festivals against 1 : I enjoy a measured dance. An undisciplined evening in the street has little to do with it.
+opinion times for 1 : I have what I need under a properly maintained roof. I needn't fabricate a grievance to make conversation.
+
+grown
+line greet [pair.band=strangers] : Give your name at this side of the table. | Welcome within speaking distance.
+line greet [self.working=yes] : Stay clear of the uncut papers. | Stand by the visitor's edge and proceed.
+line greet [here.time=dawn] : Morning. Clean sheet, undisturbed tray. | First business of a new day.
+line greet [here.time=dusk|night] : Evening. The last receipts are within reach. | Welcome while there's still examining light.
+line kin.open [pair.kin!=no] : Family have a seat beside the inner drawer. | The domestic audience is open.
+line again.open : A second appearance on the same paper. | Another crossing of our two records.
+line greet.return : You have my ear. Proceed. | Acknowledged. I am attending.
+line greet.return [pair.band=friends|family] : I know the voice behind this request. | This greeting needs no additional seal.
+line greet.return [self.working=yes] : Speak while the page is flat. | You can have the interval between entries.
+line greet.return [here.time=dusk|night] : Evening. No need to strain your voice. | Your words carry adequately after dark.
+line farewell : Keep your half of the matter secure. | Close the document before departure.
+line farewell.return : I'll retain the corresponding edge. | Return with the same clear account.
+line farewell.return [here.time=night] : A dry road and an intelligible address tonight. | Secure the flap against the dark.
+line react.news : Which details can be matched independently? | Give me the account without the flourish.
+line react.news.new : No matching entry has reached me. | Fresh matter for the closed file.
+line react.news.known : I recognise the second edge. | That item has already been compared.
+line react.news.doubt : A prominent badge is a poor substitute for proof. | I'd want two details to coincide without pressure.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A difficult account. Sit while you deliver it. | Keep the necessary silence. I will wait.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a favourable entry clearly earned. | A pleasing outcome in proper form.
+line ask.how : Has your business been conducted to your satisfaction? | What has the day exacted from you?
+line answer.how : My affairs remain within their covers. | I have seen the right edges meet.
+line decline : I decline to connect my name to that undertaking. | My own business takes priority over that request.
+line accept_decline : I have recorded a properly declared refusal. | Then there is no agreement to attest.
+line thank : You have spared a second examination. | I record that courtesy favourably.
+line sympathise : Take the chair away from the waiting eyes. | Some accounts deserve privacy first.
+line reassure : An interval to recover will be allowed. | You can speak afresh after the pause.
+line preclose : I have two papers to reconcile. | This hearing approaches its proper close.
+
+scene cuts
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I put #nick# across the receipt and #half# together.
+b : What if somebody copies it? | Why two cuts?
+a : Bring the edge to the light. Coarse fibres are not so obliging as a seal. | To stop a careless clerk fitting either piece upside down.
+
+scene house
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A House badge tells me which account to consult.
+b : Doesn't it secure entry? | Wouldn't a name do?
+a : It assists the inquiry. It guarantees nothing about the present bearer. | A name narrows the possibilities little better than a coat colour.
+
+scene spouse
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : A quiet evening with #self.spouse# deserves its own closing hour for outside business.
+b : Would you leave an applicant waiting? | Even an important matter?
+a : Any applicant who comes for private attention after the public day had better have a reason. | A genuine emergency can always be distinguished from an inconvenient delay.
+
+scene soup
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I expect the grains in my soup still to have edges.
+b : For appearance? | Does that matter greatly?
+a : For texture. I ordered barley, not paste. | Little things make a meal agreeable. It takes hardly more trouble to do them correctly.
+
+scene toe
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : Give me a dance with a clearly marked first step.
+b : So you can take the lead? | What of a missed beat?
+a : So the last pair on the floor knows precisely what is expected. | Recover at the next definite turn. Don't make a performance of recovering.
+
+scene edge
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I use the clean heel of my knife to cut paper.
+b : Why the heel? | How frequently does it need an edge?
+a : It gives a controlled start. The point alone will run across a loose fibre. | Whenever a receipt acquires a ragged edge inconsistent with my mark.
+
+scene warm
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : The year's first warm day frees my hands from a cumbersome cuff.
+b : An occasion for a walk? | Just for that?
+a : I open the window first. One warm interval does not yet justify an entire change of coat. | A free wrist makes a noticeable improvement in small handwriting.
+
+scene floor
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I would have an entry mat large enough for a visitor to stand on with both feet.
+b : To spare the floor? | And the dripping coat?
+a : To spare a second visitor the indignity of going down on one knee. | Stand until it ceases dripping. A minute's restraint saves several feet of wet passage.
+
+scene rat
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat can take a full day's business in its teeth without knowing a letter.
+b : Shred the whole page? | Does it get near the files?
+a : Only the part that establishes the date. That's sufficient destruction. | Not in my arrangement. The food and the papers occupy different furniture.
+
+scene office
+when topic=work self.job=official self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I check where a file came from before listening to its urgency.
+b : Always? | Couldn't it be pressing?
+a : An urgent wrong file will waste as much time as an ordinary one. | Certainly. Hence my willingness to examine the origin promptly.
+
+scene watchword
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A list of supposed irregular dealings isn't evidence merely because the writing's small.
+b : Would you take it seriously? | Even a long list?
+a : Seriously enough to ask how the entries were established. | Length is no particular sign of reliability. Paper takes any quantity of ink.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I would let #self.friend# see which papers I carry home closed.
+b : Would you break the seal? | A sign of trust?
+a : Not if another wolf's private affair lay inside. That's an easy rule to understand at home. | A friend's confidence requires a good deal less display than a public badge.
+
+scene wealth
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can afford a good lock. The key receives closer scrutiny.
+b : Why the key? | With a duplicate key?
+a : It has an alarming habit of travelling without the cupboard. | One under definite custody. A spare of uncertain whereabouts is rather a liability.
+
+scene door
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : Within the Office quarter my preference is for a door with a glazed upper panel.
+b : So folk can look in? | What of privacy?
+a : To see the waiting coat before lifting the latch. I obscure my desk, not my approach. | I conduct private business well clear of a visitor's view.
+
+scene cook
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : At supper I put the cutlery parallel when the account is finished.
+b : Manners? | Which account?
+a : A clear indication that a second serving isn't required. | The day's work. I do not dine over unfiled papers.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : An unfamiliar caller may be courteous and still be asked to wait outside the partition.
+b : Why wait? | Would you do the same yourself?
+a : To prevent a private name being heard before the previous applicant has finished. | I would expect to. Order loses little by being applied in both directions.
+
+scene damp
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Damp paper can make two honest edges disagree.
+b : Would you reject it? | How would you establish a match?
+a : I lay both halves flat until they have dried. A hasty rejection can be as costly as a careless admission. | By the fibre, contour and writing together. A single stretched edge isn't the case.
+
+scene sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a seal walked about claiming ownership of every document it touched.
+b : Did anybody believe it? | Could you stop it?
+a : Provisionally. Its impression was exceptional while the wax stayed warm. | I gave it blank paper. The exercise soon disclosed its limited talent.
+
+story under [topic=memories]
+  : I opened a drawer once and found two matching halves of a receipt together under the tray. It looked an excellent way of saving a walk.
+  : I questioned that convenience and discovered I'd put the wrong date on the slip. The applicant had never taken either piece away.
+  b : Did you issue it then?
+  : I cancelled the date and waited for a fresh request. Two matching halves inside my own drawer proved very little by themselves.
+
+story tile [topic=home]
+  : A new floor tile near my door gave a hollow sound. I had the mat lifted and tested the tile again. The same noise came back.
+  : The tile was sound. The end of my own cane had a little cap that rattled when it struck hard stone.
+  b : Did you apologise to the tile?
+  : I settled the cap and left a perfectly competent tile at its work.
+
+story step [topic=pastimes]
+  : In an unfamiliar dance I once missed the opening step but found myself standing precisely where the next turn required me. I had a perfectly pleasant measure.
+  : The apparent recovery was so successful that I took it for knowledge. At the next turn my neighbour was obliged to accommodate my errant elbow.
+  b : How did you recover?
+  : I stood clear for one full figure and learnt the opening properly. Being in the right place is insufficient evidence of having earned it.
+
+rule @aside1
+when concept=bark self.job=official self.working=yes
+does aside
+cooldown 6h
+say Lay the counterfoil edge to edge. | Let the badge wait while the writing's examined.
+
+rule @aside2
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 7h
+say Knife heel flat before the little cut. | Clean the point before the next receipt.
+
+rule @aside3
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Both soles on the entry mat. | Dry pavement ends at the sill.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Retain the smaller half under cover. | Final comparison before closing the drawer.
+
+dlg resident.hub : Remain on the plain side of the table and give me your business in the order it occurred.
+dlg resident.job [self.job=official self.workplace] : I attend to the direction of business at #self.workplace#. I expect an accountable beginning and a documented end.
+dlg resident.news [world.news] : I can release this account in these terms. #world.news#
+dlg resident.hub [topic.meeting=known] : Your previous appearance is recorded, #topic.player#. State the present matter.
+dlg resident.bye : Retain whatever receipt belongs to you until the business has been completed.
+
+graft resident.hub
+choice What do matching cuts prove? -> match_cut
+node match_cut
+say Hold the halves near the light. A clean little valley on one side fits the point on the other. It shows that two scraps began as a single sheet.
+free
+choice Does that prove who holds the receipt? -> match_holder
+choice Those edges meet neatly. -> hub
+node match_holder
+say An excellent further question. It establishes the paper's identity. I hear the claimant separately. Similar coats have been known to contain different wolves.
+choice Then I'll bring my own account. -> hub
+choice I'll secure my half. -> bye

@@ -1,0 +1,409 @@
+mantle rm215
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_jorunn_tarham
+title the erased account
+fits stage=adult|old
+prefers role=merchant job=baker
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk rubs_paid_debts_smooth_with_a_thumb
+likes smoked_eel evening_line sharp_knife first_snow
+dislikes gulls crowds
+fears a_twice_collected_debt gritty_flour
+hopes a_clean_slate a_quiet_evening_cast
+topics prices +0.4 food +0.5 work +0.4 memories +0.2 gossip -0.2
+styles comfort=specific gossip=reserved refuse=firm tease=none
+marks oath saying
+persona #self.first# keeps a thumbnail clean for rubbing out settled scores, weighs an obligation from both ends, and allows nobody to go on thanking after a debt is paid.
+
+words
+oath! = Flour in the hinge again | Scald that chalk
+saying! = Paid means rubbed clean | Nothing owing weighs the least
+slate = my pocket slate | the palm slate
+rubber = the worn suede pad | a soft leather scrap
+heelpiece = the crust end | the stubby heel
+cutmark = a clean scoring stroke | a knife mark
+crumbcoat = the flour dust | a coat of white meal
+brownbite = a dark edge | a bit of deep crust
+loafpan = a tin with round corners | a shallow loaf pan
+steam = a damp puff | a little cloud from the loaf
+stringtag = a string tally | the tally on a cord
+smokefood = a sliver of smoky eel | the tail of a smoked eel
+linefloat = a quill float | my red and white float
+soak = a basin of soaking grain | some grain swelling in water
+sifter = the horsehair sieve | a fine flour screen
+crowdline = a patient row | one row to serve in turn
+hookpoint = the fine end of the hook | the buried barb
+ledgerfold = a turned page corner | a narrow paper fold
+peelboard = the oven paddle | a dusted bread board
+
+any
+opinion merchants for 2 : Include the cartage in the price and show it plainly. Flour isn't delivered by wishing.
+opinion watch for 1 : A watch on the square means I can turn to speak to someone without clasping my purse.
+opinion road against 1 : Mend the track before gilding the milestone. A marker doesn't save a cart wheel.
+opinion sump for 1 : A small coin from below the wall buys just as much crust as one from the hill.
+opinion church mixed 1 : I'd accept a blessing over breakfast. I'd still want the breakfast.
+opinion dole for 2 : Hungry folk can count their ribs. I don't need a written proof besides.
+opinion newcomers for 1 : Tell new faces where the order starts. There's no fairness in a line you can't find.
+opinion festivals mixed 1 : A merry square is splendid from its edge. Three deep at the front I hear less music.
+opinion times mixed 1 : I only reckon the week once every last bill is in.
+
+grown
+line greet : Leave a little space between us. Plenty of time. | Welcome. I've a clean ear for you.
+line greet [pair.band=strangers] : New voice. Speak up and I'll give it a fair hearing. | Not seen at this end before. Pull up beside me.
+line greet [here.time=dawn] : Up with the pale edge of the roof, are we. | Dawn looks thin yet. Give it a moment to rise.
+line greet [here.time=dusk|night] : Good evening. I've put the day's sums away. | Late enough to have tidied the chalk away.
+line greet.return : Greetings fairly traded. | That was a civil hail.
+line greet.return [self.working=yes self.job=baker] : Here you are. I'll speak while the crust sets. | I can turn an ear without turning the paddle.
+line greet.return [here.time=dusk|night] : Evening. I can just see you nod. | Evening to you from this dark corner.
+line kin.open [pair.kin!=no] : Come in close. Family can hear me the first time. | All the ceremony's used up. There's just us now.
+line again.open : Our paths have crossed twice and neither of us owes a toll. | Another meeting to add on, free of charge.
+line hail [pair.band=friends] : Look this way. Here's a familiar muzzle. | You there, familiar face by the edge! Over here!
+line farewell : Go with a clear account. | Good walking and no grit in the boots.
+line farewell.return : Clear weather for the leaving, I hope. | Then we'll call this a good breaking place.
+line react.news : Begin with whoever could actually see it.
+line react.news.new : I hadn't a single mark for that on my slate. | That's worth putting the chalk down to hear.
+line react.news.known : I've already set that piece of news in its place. | The sum's familiar even if the figures come out in a new order.
+line react.news.doubt : I'd wait for another witness before I charged anybody with that. | A story with that many neat edges often turns out short in the middle.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard enough without the whole square pressing in. | That's a weight I'd have spared anybody.
+line react.news.glad [topic.kind=birth|marriage|work] : Something fit to set a good table for. | There's occasion for bringing the good dishes down.
+line answer.how : Steady weight, even measure. I'm content with that. | Everything I need is within my reach.
+line answer.how.busy [self.working=yes] : I've both paws full and one more thing to reckon. | Today's list runs from my wrist to my elbow.
+line ask.how : What would make your day easier to finish? | What would it cost to put a little ease into your day?
+line sympathise : Take a moment. Let the crush go on around us. | Come clear of all these shoulders first. There. Speak.
+line reassure : Owing a favour doesn't make you smaller in my sight. | Nobody expects you to settle every small thing at once.
+line decline : I can't put my name to that. I haven't seen the measure. | I'd take on twice the trouble I could pay back.
+line accept_decline : Then the score between us stays as it stood. | An answer's enough. You owe me no reasons.
+line thank : That kindness has a place of its own in my memory. | That kindness has weight enough to hold.
+line deflect_thanks : Paid in the saying. You can stop now. | Don't charge yourself interest on a favour.
+line preclose : My day's got a loose end that needs taking in. | I'd like to leave while my thoughts still add up.
+line accept_preclose : A good point to leave it there. | One last chalk mark, then we're square.
+line ack : That's the missing grain. | Account balances now.
+line give.advice : Keep the proof till both sides have seen the sum come off. | Don't reckon a favour in money. Too easy to mistake the units.
+line warn [world.bandits=near] : Let the next cart take company along that stretch. | Ask who's taking the road ahead of you. This isn't a week to walk it alone.
+
+scene paid_line
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I like the part of #slate# that hasn't got a mark on it. | When a score's settled I rub it out in front of the other wolf.
+b : Surely the marked part's worth more? | Worried about being asked twice?
+a : The blank bit's worth peace. Nobody owes anybody else a crumb there. | Worried about doing the asking twice. I've a good memory for sums and a worse one for dust.
+
+scene second_price
+when topic=prices self.role=merchant
+does give.opinion / challenge / concede
+a : A price ought to fit in one breath. | I want the change counted where both buyers can see.
+b : What if the cost takes explaining? | Why would two buyers need to watch?
+a : Explain after the figure. Give a wolf a chance to say no first. | True, one buyer and one seller. That's two pairs of eyes.
+
+scene dust
+when topic=work self.job=baker self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I dust #peelboard# with a pinch, never a fistful. | My thumb makes a track through flour before a loaf goes on.
+b : Won't the dough stick? | What do you learn from a stripe?
+a : Give the paddle one little shake before you commit it to the heat. | If the bare stripe closes up, I've heaped too much on.
+
+scene pan_sound
+when topic=food|work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : A bent pan has a different voice from a sound one. | I tap a hot tin with wood, never iron.
+b[job=baker] #turn : Is that how you tell a bent rim from a blister? | Where do you listen for the echo?
+b : You can hear a dent? | Afraid of hurting the tin?
+a@turn : Exactly. A rocking pan gives itself away if you steady the corners in turn. | By the bad corner. Sound tins sing all round.
+a : A dent rocks on the slab. Two taps where I gave it one. | Of covering the sound I wanted under my own clanging.
+
+scene hook
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I rest #linefloat# on my finger before I cast. | My hook box has a lump of cork in the lid.
+b : Testing for weight? | To keep it floating?
+a : For a split. A float that fills up brings you home imagining bites. | For #hookpoint#. A loose hook chooses who finds it.
+
+scene smoke
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I save #smokefood# for the last mouthful. | Smell this scrap of paper before you throw it out.
+b[job=cook] #turn : Would a bit of sweet onion help it go further? | Remind you of fish curing?
+b : Too rich for a first bite? | Faintly of smoke?
+a@turn : Splendid idea. I'll save the onion for the bite just before the last. | Of the meal more than the work. I'm off duty when I unwrap that.
+a : If it's first I spend the whole meal waiting for more. | Yes. I had eel in it. My lunch stays with me a while.
+
+scene quiet_lesson
+when topic=work self.master=yes self.job=baker
+does offer / ask.detail / answer.detail
+a : I'll show a learner how to cut a loaf without burying the point. | To teach a light touch I'd give you a cooled crust first.
+b : Does the knife go flat? | What's a cold loaf got to teach?
+a : Near enough. The pull cuts. You needn't shove. | The sound of too much pressure. There's the crackle.
+
+scene damp_flour
+when topic=weather|work here.weather=rain self.job=baker
+does tell.self / ask.detail / answer.detail
+a : In wet weather I squeeze the meal before I weigh the water. | There's a trick to keeping a scoop sweet on damp days.
+b : Meal holds rain? | Turn it over?
+a : It holds what hangs in the air. I can feel the difference in a handful. | Yes, and hang it clear of the sack. Give the wood both sides to dry.
+
+scene own_change
+when topic=prices|pastimes
+does tell.self / ask.detail / answer.detail
+a : I practise counting change by touch. | I can sort a pouch without turning it over.
+b : Through the cloth? | With one paw?
+a : No. Shut eyes, bare pads, and a clean table to catch mistakes. | Two. One tells the edges apart and one does the keeping.
+
+scene soft_heel
+when topic=food self.job=baker
+does tell.self / ask.detail / answer.detail
+a : I judge a new loaf by #heelpiece#. | Look at the tear where two loaves baked close together.
+b : Why the end instead of the middle? | Is that a flaw?
+a : The end shows what the heat did first. I'll get to the middle in good time. | A useful window. Tells me something without my cutting into a loaf for sale.
+
+scene stools
+when topic=home
+does give.opinion / disagree / concede
+a : I like a three-legged stool beside a table. | A chair with arms takes up an awful lot of supper space.
+b : Four feels safer to me. | Easier to get up, though.
+a : On a level floor, yes. Take my chair and leave me the little stool. | Fair point. We'll put it at the end where there's elbow room.
+
+scene parent
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I've always wanted #self.child# to find out who foots the bill. | I wouldn't choose a trade for #self.child#.
+b[old] #turn : Even when the asking might give offence? | Would you offer a tool unasked?
+b : Even a present? | What would you choose?
+a@turn : A present can stand a gentle question, if only to find out who to thank. | I'd offer the choice first. It needn't cost a copper to say no.
+a : Especially a present. Sometimes the answer really is nothing. | A first tool, perhaps. Even then I'd keep the receipt.
+
+scene crowds
+when topic=day self.dislikes=crowds
+does tell.feeling / give.advice / assess
+a : I don't care to trade elbows for a view of music. | I get cross in a jostle and it's nobody's fault.
+b : Go early and sit at the side. | Take the back street with me.
+a : I could see the players tune up. That might suit me very well. | A longer walk is a cheap price for better temper.
+
+scene wrong_weight
+when topic=memories self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I once had a weight with the figure nearly rubbed away. | I keep suspect weights in a separate pouch.
+b : Did you draw the figure back? | So you can take them to be tested?
+a : Not till I'd weighed the thing against another. Ink doesn't change metal. | Exactly. Knotted string round the neck means don't sell by these.
+
+scene breadshare
+when topic=food self.job=baker
+does offer / accept / assess
+a : I'll trade you this dark crust for a minute of company. | Would you take the part of a loaf that split?
+b : You've my minute. | Happily, if the rest's sound.
+a : And there's your crust. A clean exchange before either of us gets lonely. | Sound all through. What's missing is the smooth top to look at.
+
+scene sleet
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : Snow lets the tallest stone in a lane show first. | I like the first footprints best in a new fall.
+b : What's so fine about one stone? | Big ones or small?
+a : It's the first one you know for sure you can put a foot on. | Ones that double back for a running start. You know a pup's found a slide.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull can stand still and still look as though it's stealing. | Gulls take exception to my turning a basket upside down.
+b : What's it doing with its beak? | Does that hide the contents?
+a : Keeping it pointed straight at lunch. | No contents at all. It's the thought of what might have been underneath.
+
+scene late_load
+when topic=caravan world.wagons=late self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : Every late load costs two places to store it. | I set aside a space for a wagon that's running behind.
+b : How can one load need two? | Why leave the shelf empty?
+a : Its old place on the cart and its empty place at this end. | I dislike moving everything twice more than I dislike a blank shelf.
+
+scene free_hand
+when topic=health|home
+does confide / react.self / assess
+a : My shoulders rise an inch when I count money. | I catch myself holding my breath while I reckon.
+b : You could count lying down. | Would a tune help?
+a : Then I'd lose the small coins down my collar. I'll try lowering my elbows. | Only if the tune comes in tens. I'll try it after supper.
+
+scene lamplight
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : I like this hour because the tall shadows make room look plentiful. | Dusk brings out every cut in a wooden table.
+b : Is that why a bare wall looks pleasant now? | Even the old ones?
+a : Yes. A peg throws a long enough shadow to furnish the whole thing. | Especially those. Smooth at the bottom, sharp at the lip.
+
+scene stamp
+when topic=lore|pastimes
+does tell.self / ask.detail / answer.detail
+a : I've seen bread stamped with a comb. | If I had to mark one loaf in twenty I'd pinch the heel twice.
+b : To make little windows in the crust? | Wouldn't the two pinches disappear?
+a : To know whose dough went to the common oven. The shape survives the heat. | Leave space between. Crowded marks grow into each other.
+
+scene quarrel
+when topic=quarrel
+does give.opinion / disagree / concede
+a : Write the disagreement down before fetching referees. | I don't like an agreement requiring a witness at every breath.
+b : Somebody still has to hold the chalk. | A witness can be a comfort.
+a : Give one side the words and the other the reading back. | True, if both of us chose the same witness.
+
+scene hard_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a lean spell every empty sack gets turned twice. | A narrow week makes the little fees look enormous.
+b : Looking for the last dust? | Which fees do you notice first?
+a : Looking for sound cloth. Patch a coat with it. | The fee you pay to have a parcel kept till evening.
+
+scene memory
+when topic=memories self.age>=35
+does tell.self / ask.detail / answer.detail
+a : I remember the first sum I washed away that hurt to lose. | Long ago I lent somebody a warm cloak for good.
+b : Did you wash the sum off too soon? | How d'you lend a thing for good?
+a : No. Too late. The money was gone and I'd carried its weight for months. | By lending it once and crossing the word 'return' out in your head.
+
+scene prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A prayer with a favour at the far end makes me uneasy. | I once put a candle up without asking for anything.
+b : Doesn't everybody ask for something? | Was the silence awkward?
+a : Yes. It's offering payment beforehand that troubles me. | For a moment. Then it felt like finishing a meal before asking for more.
+
+scene tale_kept
+when topic=gossip self.friend
+does tell.self / ask.detail / answer.detail
+a : I wouldn't pass on a tale about #self.friend# for all the bread in the square. | My rule for gossip about #self.friend# fits on one fingernail.
+b : Not even to put it right? | Which rule's that?
+a : I'd put a stop to it. The next mouth needn't hear the whole thing. | Shut. One word and there's still room.
+
+scene wanted_draw
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt my slate came clean when I breathed on it. | A bill landed on my scale in a dream.
+b : A wonderful invention? | What balanced it?
+a : Until I sneezed halfway through a week's accounts. | The meal it bought. I woke sorry it doesn't work that way.
+
+scene flour_sieve
+when topic=work self.job=baker self.working=yes
+does tell.self / ask.detail / answer.detail
+a : You hold #sifter# low for a clean table. | I turn the sieve round after the final pass.
+b : Can't the flour fall straight? | Does round flour taste better?
+a : It does till your sleeve comes through the cloud. | Lets me see the places a bad mesh left untouched.
+
+scene welcome_new
+when topic=newcomer self.quarter=commons
+does offer / accept / assess
+a : If you're finding your way in the Commons, I can mark the turnings in flour. | Here's a dry corner to sort your parcels.
+b : Only the first two, please. | I'll just untangle this handle.
+a : Two forks and you're where you wanted. Wipe the map away when you've got it. | Make the loop twice as long. Then it won't pinch.
+
+scene soft_news
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : This is the word I've heard: #topic.subject# #topic.claim#. | They're passing something round: #topic.subject# #topic.claim#.
+b : Would you sign such an account? | Does it gain anything on the way?
+a : To hearing it, yes. To seeing it, no. | If everyone adds a pinch, a rumour can grow quite fat.
+
+story the_other_side [topic=memories self.age>=30]
+  : A traveller once gave me a tally with a notch down each edge.
+  : All I'd ever noticed on tallies were the sums owing to the keeper.
+  b : What went on the other side?
+  : The keeper's own debts. I kept that part of the lesson.
+
+story browned_corner [topic=work self.job=baker]
+  : My first good loaf came out with one corner black.
+  : I set it towards the wall. My teacher turned the plate till everyone could see the mark.
+  b : Did it taste burnt?
+  : One bite did. Cutting that bite out first would have done everybody more good than my turning the plate.
+
+story slipper [topic=animals self.dislikes=gulls]
+  : I left a slipper on the wall to dry. A gull landed on it.
+  : The sole tipped up and the bird slid down to the toe as neatly as if I'd measured it.
+  b : Did you get your slipper back?
+  : Yes. Clean on the inside and very much in need of another wash outside.
+
+story quiet_water [topic=pastimes self.likes=evening_line]
+  : I once stayed by my line till dusk swallowed the float.
+  : A tiny plop told me a fish had risen. I couldn't see whether it was my bait.
+  b : Did you pull?
+  : No. That evening I'd come for the sitting. I sat.
+
+story returned_pan [topic=memories self.job=baker]
+  : I once sent a little cake home in a pan with my own initials under it.
+  : A year went by before it came back, carrying a cake too.
+  b : What was in the bottom?
+  : My initials still, and a second pair beside them. As good a visiting card as I've ever had.
+
+rule @turnloaf
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 8h
+say Let the crust breathe on the rack. | Bottoms up for the little round loaves!
+
+rule @change
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Count the change with your own eyes. | Look while the chalk mark comes off.
+
+rule @heel
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 8h
+say Crust ends over at this edge! | I can split that loaf if you want half.
+
+rule @float
+when concept=bark self.likes=evening_line here.time=dusk
+does aside
+cooldown 8h
+say There's a fine hour here for one last cast. | My float can catch the last glint yet!
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say Shake the white off before you open a sack. | Don't put the basket down in a footprint.
+
+rule @crowd
+when concept=bark self.dislikes=crowds here.place=market
+does aside
+cooldown 8h
+say Make one row. Leave space for elbows. | Keep room for the ones coming through!
+
+dlg resident.hub : Put your request in plain words. You needn't dress it up.
+dlg resident.hub [topic.meeting=known] : I remember you well enough, #topic.player#. What's wanted?
+dlg resident.hub [here.time=night] : A late caller. I'll shake off sleep long enough to hear you.
+dlg resident.hub [pair.disposition=wary|hostile] : A clear account, please, and from where you stand.
+dlg resident.job [self.job=baker] : I run the blade along the dough so the loaf opens where I intend.
+dlg resident.job : A measure of work for a measure of pay. That's my rule.
+dlg resident.bye : We'll leave a clean edge on this meeting.
+dlg resident.gossip [here.gossip!=yes] : My reckoning runs to things I can weigh. Nothing doing in whispers.
+dlg resident.news [world.news] : The account as it reached me goes like this. #world.news#.
+dlg shop.greet [here.shop=open] : Take your time choosing. I'll weigh it where you can see.
+dlg shop.greet [here.shop=bare] : Nothing left for me to weigh out. I'll look at what you're offering.
+dlg shop.prices : #shop_dear# I can count the change into your paw twice if you wish.
+dlg shop.bye : Your parcel sits level if you take both ends.
+dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize# takes a steady eye. You can ask me how I learned.
+dlg master.learn [here.teaches=no] : My teaching place is spoken for already. A question takes less room.
+dlg master.wages : What you make belongs to you to sell. Learning alongside me goes quicker, though it draws no wage.
+dlg master.takes [here.take_on=no] : I won't make an undertaking I can't keep. #here.take_on_why#.
+dlg master.refused : The reckonings aren't in order for that. #topic.why#.
+
+graft resident.hub
+choice Why carry a scrap of soft leather? -> thumb_clean
+node thumb_clean
+say To wipe out a settled score. Chalk on my thumb tells the other wolf I've done it.
+mood formal
+choice What if somebody wants proof later? -> clean_witness
+choice That'll do for me. -> hub
+node clean_witness
+say Two copies when the sum is large. We each see the other rub out the figure. Less work than a quarrel afterwards.
+choice Talk about something else. -> hub
+choice Leave the slate clean. -> bye
+
+graft shop.greet
+choice How do I tell whether the loaf is done? [self.job=baker] -> crust_note
+node crust_note
+say Hold it with a folded cloth. Knock where the bottom meets the side. I want a hollow noise, right up to the heel.
+choice What's a bad sound? -> flat_note
+choice Choose from the counter. -> greet
+node flat_note
+say A dull pat about as lively as a slap on wet clay. Give it more time and test a little farther along.
+choice Back to the goods. -> greet
+choice Take leave. -> bye

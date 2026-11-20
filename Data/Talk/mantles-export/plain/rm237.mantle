@@ -1,0 +1,269 @@
+mantle rm237
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_brenna_greyworth
+title the stall in a string
+fits stage=adult|old
+prefers job=crafter
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk carries_a_string_measured_to_a_market_stall
+likes spiced_cider roof_birds sharp_knife summer_evenings
+dislikes haggling cold_tea
+fears borrowing_somebody_elses_counter
+hopes a_stall_barely_wide_enough_for_two
+topics work +0.5 dreams +0.4 animals +0.2 prices +0.3 gossip -0.2
+styles comfort=practical gossip=curt refuse=flat tease=none
+marks oath saying
+persona #self.first# measures unlikely spaces for a future stall, restless at a slow bargain and content to watch a bird choose a perch.
+
+words
+oath! = Cross my cord twice | Chalk strike me level
+saying! = Nobody can charge rent on string | Room first and wares after
+cord = my stall cord | the knotted string
+knuckle = a thumb of spare space | a narrow thumb's width
+hook = a bent iron peg | a short hook
+bag = a worn tool roll | my wrapped tools
+stone = a small wet stone | the honing pebble
+hem = the hem of the awning | a folded canvas edge
+cup = a hot cider cup | a little crock of cider
+spice = a fleck of spice | a red speck on the rim
+perch = a ridge of slate | a chimney ledge
+purse = a stitched coin flap | my inside pocket
+change = a loose bit of change | a thin saved copper
+wax = a curl of wax | soft comb wax
+mark = my width mark | the centre knot
+
+any
+opinion houses against 2 : Whoever takes money for a roof can find time to climb under the bit that leaks.
+opinion merchants against 1 : Pay me for the time I spent making it. You can talk the ear off a post for free.
+opinion road for 1 : A decent road leaves room for me to carry a bundle without being told to tuck my elbows in.
+opinion festivals against 1 : Dance all you like. I object to having the end of somebody's dance land in my cider.
+opinion dole for 2 : Soup tastes better served before the questions. Ask them after the bowl comes back.
+opinion sump for 2 : Down here a wolf shows you the bad board on the landing. Fancy folk pretend theirs are quite sound.
+
+grown
+line greet : Move that elbow a shade. There, we're both in. | Welcome. Don't get the knots underfoot.
+line greet [pair.band=strangers] : Room enough for a first word. | A fresh face. Don't let me measure you by mistake.
+line greet [here.time=dawn] : Early enough to spread my things. | Day's got an empty edge yet.
+line greet.return : Heard you before you stepped across my string. | Welcome, within reason and reach.
+line greet.return [self.working=yes] : Say on while the wax settles. | A word fits between jobs. Go on.
+line greet.return [pair.band=friends|family] : Plenty of room for your sort of interruption. | Good. You know which bit to leave clear.
+line greet.return [here.time=dusk|night] : There's daylight enough left for talk. | Evening. Leave the string where it lies, please.
+line again.open : Second visit. You'll be owing me stall rent. | Back inside my measure again.
+line kin.open [pair.kin!=no] : Sit here, family get the wide end. | I can let my temper out round you.
+line farewell : Go on while there's space for passing. | Take your elbow and your good news with you.
+line farewell.return : Straight string and a clear way out. | I'll tuck my things in behind you.
+line react.news : Give it me by the useful end. | Skip the decoration. I want the happening.
+line react.news.new : That's fresh off the reel. | I couldn't have measured for that one.
+line react.news.known : Had the length of that already, thanks. | Nothing new between the knots there.
+line react.news.doubt : It sounds wider in the telling than it ever stood. | I'd measure that account against another ear.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. That's sore news to rub against. | Put my temper aside a minute. That's bad.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Some things deserve the whole counter. | That's a bright little copper in a grubby day.
+line ask.how : Has anybody left you room to breathe today? | How tight's the day tied you?
+line answer.how : Still scratching out a corner for myself. | I've done enough today to soften one knot.
+line decline : No, I'd lose my afternoon to that bargain. | Leave me out. I need the time more.
+line accept_decline : Saves a stretch of useless bargaining. | Clear answer. I respect that.
+line thank : You've freed up a whole paw for me. | I'll count that with the savings.
+line deflect_thanks : Fine. Don't spend all afternoon paying for it. | Already done. Leave off reckoning.
+line sympathise : Hard to stand straight with so little space left. | Here, put the weight down on my roll.
+line preclose : I've got a knot to set before I forget. | I'd best coil this conversation up now.
+line accept_preclose : Go settle your business. Mine can wait a minute. | Fine. Take the wide way out.
+line ack : Just to the mark. | That width exactly.
+scene width
+when topic=dreams|work
+does tell.plan / ask.detail / answer.detail
+a : This knot's where my future counter ends. | I've nearly got a stall. Only the timber and roof and stock still wanting.
+b : Where does it begin? | What's already bought?
+a : At the other knot. I can carry the whole place in my pocket. | The length of it. Nobody can argue with the string.
+
+scene two_paws
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I've stopped carrying everything in one roll. | Put a stone next to wax and the wax remembers it.
+b : Why two rolls? | With a scratch?
+a : One takes the things that bend. One takes the things that make them bend. | With a very expensive dent in a very small piece of work.
+
+scene wick_test
+when topic=work self.job=crafter self.working=yes
+does tell.self / react.self / assess
+a : The trouble with a long wick is where to put the end you're not holding. | I twist the thread till both ends want to meet.
+b : Could you wear it round your neck? | Then what?
+a : Could I? Yes. Will I sell a wick full of red fur? No. | Let them meet. A good cord helps make itself.
+
+scene wax_warm
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : #wax.capitalize# wants just the warmth of a closed paw. | I don't want wax either hard or running.
+b : What if you overdo it? | A narrow preference.
+a : Then I get to scrape my own fingerprints off the work. | A narrow piece of work, as it happens. It deserves one.
+
+scene roof_truce
+when topic=animals self.likes=roof_birds
+does tell.feeling / ask.detail / answer.detail
+a : I'd allow a bird one free perch above my future stall. | A bird weighs up a new ledge in a blink.
+b : Only one? | Quicker than you?
+a : One free at a time. A whole flock would spoil the goods. | Quicker and without string. Irritatingly talented.
+
+scene cider_spice
+when topic=food self.likes=spiced_cider
+does tell.self / react.self / assess
+a : I save the last swallow till #spice# has settled. | My cider tastes its loudest right at the bottom.
+b : I stir mine. | Loud?
+a : Then you get the same ordinary mouthful all the way down. | Hot spice behind the teeth. Hard to hear anything else.
+
+scene cold_tea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess
+a : A drawn-out bargain could chill a cup in a furnace. | Wasted my tea talking over a trifle once.
+b : Wouldn't it be worth it for a sale? | Did you get the trifle?
+a : Only if the buyer paid for the tea as well. | Kept it. It didn't soften the tea any.
+
+scene whetstone
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I keep #stone# in its own wrap. It wears holes in a pocket. | A honing pebble wears down even when the blade looks much the same.
+b : Learned that by losing it? | Would you trade for a fresh one?
+a : Learned it when a thigh started complaining, actually. | No. This one's learned my grip into both sides.
+
+scene two_coins
+when topic=prices
+does tell.plan / react.self / assess
+a : The next copper I save buys one imaginary peg for the awning. | I price a dream in little bits. It's less cheeky that way.
+b : An imaginary peg is free. | Which bit comes first?
+a : Not when it's holding the corner I'm working toward. | The bit I can still afford after supper.
+
+scene bad_offer
+when topic=smalltalk|work
+does tell.self / ask.detail / answer.detail
+a : I count to three before answering a silly offer. | A low offer doesn't improve with being repeated louder.
+b : What happens on four? | What keeps it steady?
+a : I'm usually coiling the string to go elsewhere. | Let the last offer lie there looking embarrassed.
+
+scene dry_roof
+when topic=weather here.weather=rain
+does tell.plan / react.self / assess
+a : I'd set the awning sloped so the wet runs away from my feet. | Hear the rain strike one patch and skip the next?
+b : Onto whose feet then? | A hole?
+a : Nobody's, if I measure the gutter first. I'm restless, not heartless. | A high bit. That's the patch I want over my counter.
+
+scene doorsteps
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump I've measured market space on a landing for want of better. | Down home my neighbours could tell you my width from all the measuring.
+b : Did it fit? | Full width?
+a : Half a stall and a very annoyed imaginary customer. | Full dreaming width. Reality might fold in at one side.
+
+scene close_market
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Across the city there's a space that looks ideal until the delivery carts come. | A corner in the Commons is worth visiting at three different hours.
+b : Too tight for the wheels? | Why three visits?
+a : Just right for wheels. Makes a hopeless stall though. | To see who else thinks it's unoccupied.
+
+scene spring_mark
+when topic=season here.season=summer here.time=dusk
+does tell.feeling / react.self / assess
+a : A summer evening leaves time to measure everything again. | Another hour of light and my imagined stall grows a shelf.
+b : Doesn't the string stay the same? | A real shelf?
+a : The streets don't. They keep filling with other people's ideas. | In my head. A very level one.
+
+scene lean_dream
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : Hard times can't take away the width of my string. | I let the market dream run a little short when food's dear.
+b : They might wear the string out. | Make a smaller stall?
+a : Then I'll remember where its last two knots stood. | Spend less time on it. Supper's a dream with a deadline.
+
+scene private_news
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I can keep a secret better than I keep my temper. | I shut my ears when an account gets too personal.
+b : What's the trick? | Can you really?
+a : A temper gets under my skin. Somebody else's secret belongs under theirs. | Set a little shopping list running inside my skull. Never fails.
+
+scene friendly_loan
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd let #self.friend# sit out a borrowing on my best tool. | I've room in my future plans for a word from #self.friend#.
+b : Without a return date? | What sort of word?
+a : A loose date. That's quite a stretch for me. | Honest, especially when I've drawn the awning much too grand.
+
+scene visitor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : New here? I'll show you a spot outside a cart's reach. | A new trader shouldn't have to discover every bad corner by falling off one.
+b : Which patch is safe? | Wouldn't you want the best corner yourself?
+a : The patch the carter can actually see, as a rule. | Yes. But I don't want a rival flattened for my convenience.
+
+scene birds_learn
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail / assess
+a : I could learn something about haggling from rooftop birds. | Look how a bird vacates a perch without signing anything.
+b : Do they offer less seed? | No long argument?
+a : They stop paying attention as soon as the bargain looks dull. | One hop. The next one can choose its own direction.
+b : You could use that trick yourself. | I'll take a lesson in hopping, then.
+
+story string_shrunk [topic=memories|weather]
+  : I washed my first stall cord to make it presentable. Pegged it out to dry, took it off, laid it in its usual place.
+  : I'd lost almost a paw's width on the counter and hadn't even got a counter yet.
+  b : Did it stretch out again?
+  : Not for me. I wound the mean little thing round a parcel and started over.
+
+story empty_hooks [topic=dreams]
+  : Once I sat under an empty awning after a sale. All the hooks were bare. I counted what each one might hold.
+  : By the time I left I'd stocked an entire stall and quarrelled in my head with two customers.
+  b : Did either of them buy?
+  : Both. No sense inventing a whole afternoon of losing money.
+
+story bird_coin [topic=memories|animals]
+  : A bird once settled beside a copper I had set down. I made a grab, thinking it would fly off with my savings.
+  : It was after a crumb under the copper. My grab sent the coin skittering three boards along.
+  b : Then who had to look for supper?
+  : Me. The bird swallowed the crumb while I was on my knees.
+
+rule @length
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Don't snip before I've laid the cord flat! | One knot free, both ends in plain view.
+
+rule @wrap
+when concept=bark self.job=crafter self.working=yes
+does aside
+cooldown 9h
+say Soft work gets its own roll. | Keep that corner clear of the wax!
+
+rule @roofbird
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 10h
+say Plenty of ledge for a light caller. | Little perch, large opinion up there.
+
+rule @heat
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 7h
+say Drink it before the price discussion starts! | Lukewarm bargain, cold supper. Enough.
+
+dlg resident.hub : Step inside my length of string. I've time for whatever's brought you here.
+dlg resident.hub [topic.meeting=known] : #topic.player#, right on the edge of my calculations.
+dlg resident.hub [here.time=night] : After hours is no time to haggle. We can still talk.
+dlg resident.hub [pair.disposition=hostile|wary] : Say it without leaning across my space.
+dlg resident.job [self.job=crafter self.workplace] : #self.workplace#. Wax, cord, the work in front of my paws, then my own dreams after.
+dlg resident.job : I make enough space to see what I'm doing.
+dlg resident.news [world.news] : This has come along: #world.news#. There's the useful length of it.
+dlg resident.bye : Lift your foot over the string on the way.
+graft resident.hub
+choice What are those two knots measuring? -> knot_stall
+node knot_stall
+say A stall wide enough for my goods and one customer who can make a decision. I've measured the customer generously.
+mood keen
+free
+choice What about a customer who can't decide? -> knot_undecided
+choice I'll leave you to your reckoning. -> hub
+node knot_undecided
+say There's a whole city outside the far knot for thinking things over. Come back under the awning when you've done.
+choice I'll bear the far knot in mind. -> hub
+choice I know where I stand. -> bye

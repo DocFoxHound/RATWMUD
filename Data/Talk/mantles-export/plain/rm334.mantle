@@ -1,0 +1,257 @@
+mantle rm334
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_dagfinn_wainwright
+title the plumb-line stone
+fits stage=adult|old
+prefers role=civilian
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk hangs_a_whetstone_to_judge_a_swing
+likes barley_soup evening_line tidy_house frosty_mornings
+dislikes stale_bread wet_floors
+fears a_load_that_keeps_on_swinging
+hopes to_set_a_small_counter_level
+topics work +0.4 prices +0.4 pastimes +0.3 home +0.2
+styles comfort=practical gossip=curt refuse=flat tease=none
+marks oath saying
+persona #self.first# hangs a whetstone on a cord to judge a sideways swing and eyes spare surfaces as possible shop counters.
+
+words
+oath! = Hang my grit plumb | Swing me level
+saying! = Wait till the stone agrees | A swinging weight settles on its own terms
+weight = my pocket hone | a black whetstone
+string = the plumb cord | my knotted thread
+swing = a little sideways creep | the lingering swing
+grain = a coarse grey stripe | the cutting grain
+knife = my short blade | a tin-handled knife
+soup = hot barley broth | a bowl packed with barley
+line = my evening line | a slender fishing line
+cup = a chipped soup mug | the thick cup
+shelf = my cleared shelf | a bare level shelf
+floor = a dry plank | the strip by the threshold
+rime = a skin of rime | a film of frost
+crust = a dusty end crust | a crust gone hard
+
+any
+opinion houses against 1 : A good beam carries a load whatever the name painted across it. I wish the hiring queue worked that way.
+opinion merchants against 2 : Watch the scales settle before agreeing a price. I haven't got a copper to waste on a swinging pan.
+opinion dole for 2 : Barley soup has weight when a purse hasn't. I've reason enough to remember that.
+opinion festivals against 1 : A crush in the street makes it hard to keep anything precious hanging clear.
+opinion church for 1 : On a hard day a meal without terms outweighed an entire deskful of figures.
+
+grown
+line greet [pair.band=strangers] : Stand beyond the swing. Hello. | New company. I've room if you're steady.
+line greet [self.working=yes] : There's space outside the load. | I'll hear without shifting my feet.
+line greet [here.time=dawn] : Morning. Stone's hanging straight. | Fresh light down the cord.
+line greet [here.time=dusk|night] : Evening, while the last load settles. | Step into the quiet swing.
+line kin.open [pair.kin!=no] : Kin can stand near my shoulder. | Room inside the family circle.
+line again.open : We've swung round again. | Back within my reach already.
+line greet.return : Hello. I'll take your word now. | Good. You're clear of the weight.
+line greet.return [pair.band=friends|family] : I recognise the boards under your tread. | Stand where the cord won't catch you.
+line greet.return [self.working=yes] : Let the hook settle. Then speak. | One ear free at work.
+line greet.return [here.time=dusk|night] : Evening. There's light along my cord. | Your voice finds me in the dim.
+line farewell : Walk clear of hanging weights. | May the load come home steady.
+line farewell.return : Keep the tether from your ankles. | I'll mind my end of the swing.
+line farewell.return [here.time=night] : Quiet feet on the late boards. | Lamp ahead. Weight behind.
+line react.news : How does that hang exactly? | Give me the weight of it.
+line react.news.new : That's a new weight entirely. | Unfamiliar pull on the cord.
+line react.news.known : I've felt that swing already. | That word reached my hook before.
+line react.news.doubt : I'd watch where that story hangs at rest. | Something's drawing that account off to one side.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a cruel weight to carry. | Wait with me until you're steady.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A lift in the right direction. | Good. I can breathe easier.
+line ask.how : Still steady under your share? | What's pulling at your shoulders today?
+line answer.how : A little drawn sideways by things. | My cord's nearly still again.
+line decline : I'd rather save my strength for one good lift. | Leave me a minute to steady my own footing.
+line accept_decline : Fair warning. I'll ease away. | Your ground to stand on.
+line thank : That took the drag off. | I'll remember whose grip held.
+line sympathise : Give me the cord a minute. | Lean away from the heavy side.
+line reassure : Wait for the last swing to die. | You've time to place your feet.
+line preclose : I've a loose end to coil. | Time my stone went into my pocket.
+
+scene cord
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I hang #weight# from my cuff before a lift.
+b : To test the wind? | What do you see?
+a : Sometimes. Mostly I'm checking whether my own hands are still. | The little kick that means I ought to shift my stance.
+
+scene edge
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My stone does double work.
+b : Blade and what? | Wears it out?
+a : Plumb weight for a level counter. Can't price wares on a slope. | Hanging wears out the cord. Honing wears out the stone.
+
+scene line
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : Fishing lets me hang a weight beyond my own sight.
+b : Does that settle you? | How know where it is?
+a : Fish have no urgent business with my temper. I find that restful. | The tug in my finger supplies the missing distance.
+
+scene barley
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I want the barley to brush the spoon.
+b : Thick soup? | Does thin broth count?
+a : Enough grains in it to tell the bowl's doing me some good. | It counts as a hot welcome. After that I still want supper.
+
+scene neat
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : At home every hook gets its own clear piece of wall.
+b : Even little hooks? | What if you've no room?
+a : Little hooks catch your sleeve while you're looking past them. | I take down the one I don't use. Space is dear.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost shows a bad board before your foot does.
+b : How? | Better than bare wood?
+a : A dark streak under white edges. Damp's coming through there. | Better as a warning. I still prefer the sound board.
+
+scene crust
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : A stale crust gives my teeth work I didn't agree to.
+b : Throw it away? | How do you eat it?
+a : It's cost me coin. I'd make it work for supper too. | Turn it into crumbs over hot barley.
+
+scene wet
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A wet floor can send a whole plan sideways.
+b : Mop it first? | How can you tell in poor light?
+a : Dry an island for your paws and work outwards. | Run a bit of string across the board. It comes back dark.
+
+scene poor
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I put my stall money in a pocket the stone never goes in.
+b : To keep it dry? | How much have you saved?
+a : To keep the weight from fooling my hand about how much I've got. | Enough for a hook. Another few weeks might buy the bit behind it.
+
+scene oldjob
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Somebody better placed got the job I used to do.
+b : Still sore? | Would you hope to go back?
+a : Only when folk tell me all a wolf needs is willingness. | I'd rather own the bit of counter I next call mine.
+
+scene works
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : In the Works my ears keep working after my feet stop.
+b : What for? | Can you sleep?
+a : For the last rattle. A settled load sounds entirely different. | If my room's tidy my ears settle sooner.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# check my first counter for level.
+b : Trust the eye? | What would that take?
+a : Trust an honest answer. My own eye wants the thing too badly. | Hang this stone and wait till neither of us is touching the wood.
+
+scene temper
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I don't enjoy being told to stand still.
+b : Isn't that your own advice? | Why does that bother you?
+a : My advice concerns the stone. I'm free to walk about it. | It sounds different coming from the wolf that owns the beam.
+
+scene weight
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I like a crane load that shows its leaning side while the boards still bear it.
+b : Will the rope show it? | Can you change it?
+a : Look at the near corner. That's where the first light shows underneath. | Easier on the boards than in midair. I wait another breath.
+
+scene profit
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream of a stall where the counter doesn't shift under my elbows.
+b : What would you sell? | Is steady wood enough?
+a : Something with a keen edge and an honest price attached. | For the first day I'd be content just to lean there.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : If you want a quiet place on a busy wharf look clear of the long shadows.
+b : From the cranes? | Why shadows?
+a : Mainly. Stand where a moving arm won't put its load over you. | You can see the long one's reach before you go crowding near the base.
+
+scene times
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a lean week each copper comes into my pocket through narrow jaws.
+b : What jaws? | Does it ever stay?
+a : The ones that want bread before I can put anything aside. | Small money can be very quick on its feet.
+
+scene salt
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I wash the stone before I touch my eye.
+b : Got grit in it once? | Every time?
+a : Near enough once. Dust on my fingertip drew a long hot line. | Better to spend clean water than a whole afternoon blinking.
+
+story swing [topic=memories]
+  : I used my hone to check a shelf and thought the wall was leaning out over me. I looked twice. The cord said exactly the same thing.
+  : My elbow was pressed against the counter and my weight had tilted the very shelf I meant to test.
+  b : Did it need fixing?
+  : It wanted a brace. More urgently, it wanted my elbow somewhere else.
+
+story soup [topic=food]
+  : I took a cup of barley soup to a patch of open ground and set it down on a crooked board. The grains banked up along one side.
+  : I turned the cup and counted six floating round to join the others. I had time to watch because the broth was too hot.
+  b : What did the count tell you?
+  : Where to start eating if I wanted a spoonful worth the wait.
+
+story hook [topic=pastimes self.likes=evening_line]
+  : I once sat most of a dusk watching my float and felt one very decided tug. I lifted the line slowly and brought up a splinter with my own thread on it.
+  : The loose end had caught behind me. I'd been tugging my own sleeve while waiting for a fish.
+  b : Still worth the evening?
+  : The sleeve came home sound and my temper came home easy. I've done worse with a full creel.
+
+rule @aside1
+when concept=bark self.working=yes self.job=none
+does aside
+cooldown 6h
+say Ease the weight till it hangs honestly. | Nobody under the crossing arm.
+
+rule @aside2
+when concept=bark self.likes=evening_line
+does aside
+cooldown 7h
+say A little slack before the next pull. | Give the line its quiet time.
+
+rule @aside3
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say Dry an island for my feet. | Black strip there. Wipe it clear.
+
+rule @aside4
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say Fingers steady round the first knot. | Put the stone where the light can reach it.
+
+dlg resident.hub : Stand to this side. I've a heavy bit of stone on a cord and don't care to rap your elbow with it.
+dlg resident.job [self.job=none self.working=yes self.trade_words] : #self.trade_words.capitalize#. A load still on the ground will take a useful adjustment.
+dlg resident.news [world.news] : I heard this side of the account. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, I reckon you know my swinging distance.
+dlg resident.bye : If you see a level counter going cheap keep my face in mind.
+
+graft resident.hub
+choice What's a sharpening stone doing on a string? -> hone_cord
+node hone_cord
+say It hangs true. Set the string against the corner of a stall post, hold still, then look for daylight. That matters before paying a stall keeper.
+free
+choice Does it still sharpen a knife? -> hone_steel
+choice I'll wait till the stone settles. -> hub
+node hone_steel
+say That's where the coin went in the first place. I've found a second trade for the same bit of grit. I wouldn't mind doing as well myself.
+choice Two honest jobs for one stone. -> hub
+choice I'll keep clear of its swing. -> bye

@@ -1,0 +1,247 @@
+mantle rm443
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_harriet_pennock
+title summer light on account
+fits stage=adult|old
+prefers talk=chatty humour=merry
+traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk pencils_the_last_reach_of_summer_light_beside_the_daybook_entry
+likes roast_pork swimming sharp_knife summer_evenings
+dislikes haggling stale_bread
+fears having_a_figure_altered_behind_the_page
+hopes a_high_window_with_time_to_swim
+topics work +0.6 pastimes +0.4 weather +0.3 prices +0.2
+styles comfort=practical gossip=exact refuse=plain tease=merry
+marks oath saying
+persona #self.first# pencils the reach of summer light beside the day's last entry and gives a damp cough a succession of implausibly official descriptions.
+words
+oath! = Soak my last column | Put a blot on the sunset
+saying! = Light doesn't file itself | Ink it once it's dry
+lighttick = a pale pencil mark | a tiny cross by the rule
+rindchip = a shard of crackling | a brown roast edge
+rulededge = a clean margin | a narrow ruled strip
+nibcase = a folded pen sleeve | a little cloth case
+splinter = a thin reed paring | a curled shaving
+windowbox = a patch of sun | a square of evening light
+throatcup = a warm water cup | a small covered cup
+paperturn = a folded paper corner | a neat tab
+waterstroke = a long easy pull | a gentle stroke
+breadsoak = a damp crumb | a heel softened with broth
+lineend = a last inked figure | a double stroke
+
+grown
+
+opinion city mixed 1 : I should like a room high enough to see how the city looks when I've finished copying the city's opinion of itself.
+opinion houses mixed 1 : A House's name can take a grand space in a heading without adding one honest figure to the column beneath.
+opinion merchants mixed 1 : A clearly written price saves the buyer a performance. Haggling uses up a great many improvable words.
+opinion church for 1 : Even an exacting account can leave a clean margin of thanks for a pleasant evening.
+opinion strangers for 1 : Some stranger will read whatever we put down. That ought to keep me making the little numbers legible.
+opinion dole for 2 : Seeing another bowl go out full is more interesting than balancing any number of empty ones on paper.
+line greet : Convenient timing. The light's still on the unoccupied part of my page.
+line greet.return : Ah, another entry in a hand I recognise.
+line greet [pair.band=strangers] : Welcome to the day's unruled margin.
+line farewell : May your evening outlast the official business.
+line farewell.return : I'll leave one nice open space after your name.
+line react.news : Let us see which part is an entry and which part is a flourish.
+line react.news.known : I'd already made a little mark by that account.
+line react.news.new : A line I have not had the honour of misfiling yet.
+line react.news.doubt : Could we see an earlier copy before making that our permanent record?
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : An unexpectedly handsome entry on the credit side of the day.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put down the pen and spare a whole evening for whoever needs one.
+line ask.how : Have you been cheated of your quiet half hour today?
+line answer.how : I am in possession of one very serviceable working voice, with occasional amendments.
+line thank : You found the right line without running a finger through my wet ink.
+line decline : I won't sign something that needs a round of haggling just to find the meaning.
+line accept_decline : I'll mark the matter closed without charging for the ink.
+line accept_preclose : Away before the light has returned to its owner.
+line sympathise : I have an unentered minute here. You may have the whole of it.
+line reassure : Errors noticed before the ink is dry are still exceedingly affordable.
+line ack : I have the figure squarely in the column.
+line preclose : There is work awaiting my attention with characteristic impatience.
+
+scene work_1
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I draw a small line where the last bit of evening light crosses the page.
+b : Does the line belong in the records? | What are you measuring?
+a : Certainly not. I keep a private scrap for the facts the authorities have neglected to solicit. | Whether I've allowed a whole summer evening to escape while cataloguing the existence of paper.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : That sound was an administrative interruption in the region of my throat.
+b : A cough, in plain speech? | Would a warm cup do?
+a : The short form is perfectly accurate and considerably less distinguished. | I'd accept one in the interests of restoring efficient operation. I can say thank you quite simply afterwards.
+
+scene pastimes_1
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I swim in the evening for the agreeable feeling of putting both arms to a task no pen could do.
+b : Do you count the strokes? | Would you race another swimmer?
+a : Not when my reform of character is proceeding properly. Some evenings I'm forced to begin the reform anew. | I swim for a temporary suspension of competition. We may compare enjoyment at the end if required.
+
+scene food_1
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : Roast pork needs an exact accounting of which guest has received the crispest bit.
+b : Who signs for the best piece? | Would you really divide the crackling equally?
+a : If it comes my way I'm prepared to acknowledge the obligation in a very firm hand. | I'd divide by appetite. Some wolves prefer the soft part, which leaves an agreeable task for all the crackling enthusiasts.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a straightforward price on an object, written in a manner that a buyer needn't argue into alignment.
+b : What if you can't afford it? | Don't you enjoy a clever bargain?
+a : Then the figure and I can part on entirely satisfactory terms without putting on a little play. | I enjoy negotiating a tricky sentence. I'd just as soon buy my onions without an oral examination.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I want a window high enough for the summer light to arrive unintroduced by somebody else's washing.
+b : Which way should it face? | Would the height be worth all the stairs?
+a : Towards the longest evening. I've spent enough time designing my habits round an early desk. | I would find a profession for every landing between the low streets and that window.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A summer evening should be understood as an entirely separate appointment from a summer day.
+b : Whom do you meet? | What goes on the invitation?
+a : My own arms out of their sleeves and some water cool enough to welcome them. | No pen required. No excuse accepted involving the alphabet.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Stale bread has taken a quite unjustified view of my willingness to work for supper.
+b : Can you persuade it? | What if it's all the bread there is?
+a : A little hot gravy can conduct the negotiation. My teeth are retiring from that particular office. | I take the gravy seriously. A stale heel soaks up a very respectable amount of flavour.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep the point of my knife for a clean cut on a nib rather than endless nibbling at the reed.
+b : What does a bad cut do? | Could you sharpen a nib without the knife?
+a : Produces a thin scratch followed by a most unauthorised blob. A record better prevented than explained. | Under perfectly good daylight with a rough stone and a great surplus of patience, perhaps. I prefer a sound edge.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Learning letters felt like finding a latch just where I could stretch a paw.
+b : Was it easy? | What door did you mean to open?
+a : Some letters had to be persuaded several times. Numbers on the whole kept more regular hours. | A desk where I could earn what I needed without depending on somebody to read my request for me.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : When I look up from the lower streets the Heights seem to be occupying a different hour of the day.
+b : Planning to move up? | Is it the light you're after?
+a : Planning quite formally with small sums. It may take a while before the plan requires an actual cart. | Light, a dry room and an end to the list of reasons I've heard for being content where I began.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I put gratitude ahead of my rather extensive explanation of why I've deserved a thing.
+b : Does that take practice? | What merits thanks today?
+a : Extensive practice. My natural argument for deserving a nice evening is already several pages long. | Enough light to use my hands well and enough breath to enjoy discussing it.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If I correct a friend's arithmetic I move my chair nearer before giving the bad news.
+b : To point at the answer? | Would you mind being corrected?
+a : To deliver the correction to one wolf instead of announcing it to the entire room. The ink can be inspected privately. | I would mind greatly for half a minute and then, I hope, make the necessary improvement.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Damp weather puts a small disagreement between my throat and the next sentence.
+b : Should we wait? | Have you named it for the record?
+a : A mouthful of water will suffice. My throat's reply is generally of limited intellectual value. | An unscheduled note from the water department. A cough, if this is a very brief form.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean week makes my imaginary high window a little smaller in the drawings.
+b : Would you give up the view? | What's the very smallest size you'll take?
+a : I might dispense with the impressive surround. A strip of light costs less than a demonstration of rank. | Enough for two eyes and one elbow. The other arm may take up swimming to compensate.
+
+scene work_2
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I like a figure to be traceable to the actual hand that first set it down.
+b : Do you always trust a signature? | What if the trail ends?
+a : It identifies the place to start asking. It doesn't turn a bad four into a good seven. | Then I write that the trail ends. My authority does not extend to manufacturing an attractive ancestor for a figure.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a newcomer how to read the little marks round an entry before pointing at the impressive heading.
+b : Why start in the margin? | Would that work on a street as well?
+a : Because a heading tells you the ambition. The little marks tell you what actually got done. | Yes. Boots trying to find a door need the number as well as the glorious name of the building.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Current talk would enter it that #topic.subject# #topic.claim#.
+b : Do you certify the copy? | Which heading does it get?
+a : A copy of the talk, readily. I am not signing for the truth of the business underneath. | Unconfirmed. A word with an excellent capacity for keeping its feet on the ground.
+
+story nib [topic=work]
+  : I made such an admirably fine cut on a nib that the first stroke was nearly invisible.
+  : I bent close enough to read it and acquired a very definite spot on my nose.
+  b : Which mark survived the day?
+  : Both. I copied the word before washing my face and remain firmly opposed to taking minutes by direct facial impression.
+
+story summer [topic=memories]
+  : I put down a little pencil line for the farewell of the summer light and discovered a second line well beyond it.
+  : I concluded there must be something badly wrong with my calculations.
+  b : Had the desk moved?
+  : The other line was a pale thread of roast pork from my sleeve. Seasons remain in satisfactory working order.
+
+story swim [topic=pastimes]
+  : I took a little flat scrap to the bank intending to write a thought down before swimming.
+  : When I got out I could see the scrap and not a single thing that needed writing.
+  b : Forgot the thought?
+  : Remembered it perfectly. It had ceased to seem urgent after twenty minutes in good water.
+
+rule @sun
+when concept=bark
+does aside
+cooldown 8h
+say Enter one beam here and carry the remaining evening elsewhere. | That's quite enough paperwork between me and the sunset.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say An involuntary footnote, nothing more. Let me get some water. | My throat's filed its usual objection to damp.
+
+rule @nib
+when concept=bark self.job=scholar
+does aside
+cooldown 8h
+say A sharp nib owes less to the blotter. | Prove the figure before flourishing the pen.
+
+rule @food
+when concept=bark self.likes=roast_pork
+does aside
+cooldown 8h
+say I volunteer to verify the quantity of crackling in person. | Four edges of which at least one ought to be mine.
+dlg resident.hub : I'm prepared to enter a civil conversation without charging the paper to anybody.
+dlg resident.job [self.job=scholar] : At #self.workplace# I keep letters and figures in their proper lines and the day's last light on a scrap of my own.
+dlg resident.news [world.news] : This would be the legible version. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The report says #topic.subject# #topic.claim#. The word to underline is report.
+dlg resident.hub [topic.meeting=known] : #topic.player#, recognisable without further documentary assistance.
+dlg resident.bye : Take the summer-light share of whatever day is going.
+
+graft resident.hub
+choice Does light require a written entry? -> sun_record
+node sun_record
+say There is no regulation requiring one, you'll be relieved to hear. I like to see how much evening I could still have used after closing my books.
+choice Do you close them earlier now? -> sun_swim
+choice Leave me off the attendance list. -> hub
+node sun_swim
+say Once my last entry's dry, yes. A swim entered against a real stretch of daylight is far more satisfactory than one copied over to tomorrow indefinitely.
+choice Leave me off the attendance list. -> hub

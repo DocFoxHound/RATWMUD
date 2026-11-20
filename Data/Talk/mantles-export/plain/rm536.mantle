@@ -1,0 +1,257 @@
+mantle rm536
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_millicent_rustwell
+title the steward's ashwood wedge
+fits stage=adult|old
+prefers job=servant
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk whittles_a_door_wedge_for_each_damp_room
+likes warm_bread whittling sharp_knife frosty_mornings
+dislikes haggling early_bells
+fears a_wet_hinge a_wharf_rope_gone_slack
+hopes quiet_breakfast a_single_dry_landing
+topics work +0.5 pastimes +0.4 memories +0.3 food +0.2
+styles comfort=practical gossip=reserved refuse=blunt tease=none
+marks oath saying
+persona #self.first# carves useful wedges out of sound ash and makes every damp corridor responsible for the occasional interruption in a sentence.
+
+words
+oath! = Split my wedge | Rust that hinge
+saying! = Dry wood knows a wet door | Nobody haggles with a hinge
+wedge = a long ash wedge | a tapered offcut
+notch = a thumb notch | the shallow nick
+edgewood = the pale inner grain | a fresh strip of ash
+knifeback = the broad blade back | my flat knife back
+hinge = the lower hinge | a rusted joint
+heelbread = a torn crust | a fresh loaf heel
+frostlace = a hard white fringe | a little frozen rim
+wrap = my neck cloth | a clean folded scarf
+latch = the tight latch | a bent latch tongue
+shave = a stiff curl | an ash shaving
+endgrain = the dark end grain | the cut end
+driptray = a tin drip tray | a shallow pan
+
+any
+opinion @1 city for 1 : Ridgemere gives a steady hand plenty to put right, even on a day it doesn't rain.
+opinion @2 festivals against 1 : Somebody collects all that sticky linen when the last noisy guest gets tired.
+opinion @3 houses mixed 1 : A House claiming the work can answer for the wet boards under its workers as well.
+opinion @4 watch mixed 0 : A patrol can watch my door while I deal with the hinge.
+opinion @5 road mixed 0 : A cartload of ash is welcome when it gets here. The excuses for a soaking aren't much use.
+opinion @6 dole mixed 0 : Count the sound loaves first and put the broken crusts where they can still be eaten.
+
+grown
+line @1 greet [pair.band=strangers] : The door sticks a little. Come through.
+line @2 greet [here.time=dawn] : Morning. A little more quiet before the iron starts.
+line @3 greet [here.weather=rain] : Shake off at the sill and save the dry floor.
+line @4 greet.return : I heard you. No need to try the latch twice.
+line @5 greet.return [pair.band=friends] : Good. A voice that doesn't pry at the joints.
+line @6 farewell : Set the door easy behind you.
+line @7 farewell.return : Off you go before another bell starts.
+line @8 again.open : You know where this latch catches by now.
+line @9 kin.open [pair.kin!=no] : Home voices can come past the hinge.
+line @10 hail [pair.band=friends] : Here, near the pale ash curl!
+line @11 react.news : Give me the grain of it without the twiddly edge.
+line @12 react.news.new : I haven't put a nick against that business yet.
+line @13 react.news.known : Same bit of timber I've handled already.
+line @14 react.news.doubt : Too much hinge squeak and very little door.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I know how a hallway feels after the footfalls stop. Come in.
+line @16 react.news.glad [topic.kind=birth|marriage] : I'll open the best room for glad news like that.
+line @17 answer.how : The air's damp. My hands still work.
+line @18 decline : I've no spare margin for doing that job badly today.
+line @19 accept_decline : You've said enough. I'll try another door.
+line @20 sympathise : You can keep your sore part private here.
+line @21 thank : That's another burden off this poor old hinge.
+line @22 deflect_thanks : I had the knife out for a job already.
+line @23 preclose : I've a door to see to while the wood is dry.
+line @24 accept_preclose : Don't let me be what keeps you standing.
+
+scene wedge
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I leave #notch# on the fat side of #wedge#.
+b : Why lose sound ash from the block there?
+a : So I can get my thumb under the thing when a wet door sits down on it.
+
+scene blade
+when topic=smalltalk self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp blade lets me listen to the ash without raising my voice.
+b : What does a clean cut sound like?
+a : Short. A blunt knife makes the whole piece complain before it gives a shaving.
+
+scene loaf
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail / assess
+a : I hold #heelbread# in my hands till the first warmth comes through.
+b : Don't you want to bite into the steaming edge?
+a : Yes. My fingers deserve the first taste. They've served cold plates all morning.
+b : I'd save them a good thick heel in that case.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.plan / ask.detail / answer.detail
+a : Frost sends me round by the outer doors first.
+b : Is the ice a danger to the fitting?
+a : #frostlace# shows where the air comes through. I can read the gap before the cook fires start.
+
+scene bell
+when topic=season self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : A bell before breakfast can get right into the grain of a quiet job.
+b : Would it spoil a cut?
+a : If I startled, yes. I'll set the knife down when the first swing begins.
+
+scene deal
+when topic=prices self.dislikes=haggling
+does give.opinion / disagree / concede
+a : I want the price of ash before I sharpen my knife.
+b : A bit of talk might buy you a longer piece.
+a : A straight price leaves me more time for the wood. That's what I'll spend on.
+
+scene hall
+when topic=work self.job=servant self.workplace
+does tell.self / ask.detail / answer.detail
+a : I set the roughest wedge at the service door in #self.workplace#.
+b : Doesn't the service door deserve the best?
+a : It deserves the strongest. Save the glossy fine one for the polished room.
+
+scene cough
+when topic=weather
+does tell.feeling / sympathise / assess
+a : I've stopped a word halfway. That's a damp draught coming through #hinge#.
+b : I can wait for you to get your breath back.
+a : Wait for the draught to pass, if you please. The rest is my concern.
+
+scene harbour
+when topic=memories
+does tell.worry / reassure / assess
+a : I've no liking for a quay where one bit of poor timber can cost a household a voice.
+b : Do you want to say more about the household?
+a : I miss a brother. As for which fine wharf owners I'd trust, you can draw your own conclusion.
+
+scene cloth
+when topic=smalltalk
+does offer / accept / assess
+a : Take #wrap# for your neck if that corridor's chilled you.
+b : You'll want it yourself in the outer rooms.
+a : I've a second dry end. Hand me that and neither of us goes cold.
+
+scene friend
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd put #shave# beside a gift for #self.friend#, just to give it my scent.
+b : Won't a shaving get crushed?
+a : It's for the smell when the parcel's opened. It can go to kindling after.
+
+scene dock
+when topic=lore
+does give.opinion / disagree / concede
+a : The names on the warehouses are big enough. The hands' names deserve their place.
+b : What could a public name do for a wharf hand?
+a : Keep a family from having to ask which owner held the dangerous boards.
+
+scene weatherline
+when topic=land
+does tell.self / react.self / assess
+a : On the estate some doors swell inward and some outward in the same wet month.
+b : Different wood in the two facing doors?
+a : Different wind. I try #wedge# at the bottom before taking the hinges off.
+
+scene cart
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : I'd take one dry ash blank over a delayed wagon of soaked offcuts.
+b : Can a soaked block be kept for another season?
+a : Set the ends clear of the ground. I can work with the waste while a sound piece dries.
+
+scene lean
+when topic=food world.times=hard|lean
+does offer / accept / assess
+a : I'll cut a warm loaf where it's thickest and make two equal suppers.
+b : You'd share the crust as well?
+a : Cut along the ridge and we each get a piece of the best bit.
+
+scene night
+when topic=dreams
+does tell.self / react.self / assess
+a : I dream that all the latches in the house give way at a touch.
+b : Must be a fine night's sleep for a steward.
+a : Until it strikes me that there are no doors left to shut.
+
+scene edge
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Would you rub oil into a new wedge before using it?
+b : Only along the side you want to pull free.
+a : I'll leave #endgrain# bare. I want to feel how much water it has taken.
+
+scene quiet
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I set #driptray# on some scrap linen before catching a leak.
+b : Does that make the water land softer?
+a : No. It keeps the tin from drumming and letting the whole hall into my business.
+
+story wedgesupper [topic=food]
+  : I once carried a fresh heel and an ash wedge in the same apron.
+  : I took out the wedge and offered it to the butter dish.
+  b : Didn't your fingers feel the difference?
+  : They did once I stopped answering three doors at once. I've never buttered a wedge yet.
+
+story littlehinge [topic=work]
+  : I polished a hinge somebody had blamed for a week's squeaking.
+  : The sound carried right on with the door standing still.
+  b : Where was the noise coming from?
+  : My own tray had a bent foot. A steward's ears can lead the rest of the wolf a tidy distance.
+
+story frostcurl [topic=pastimes]
+  : I left an ash curl out on a cold ledge and found it dressed in white.
+  : I carried it in on a knife back.
+  b : Did the frost keep its shape?
+  : As long as the walk to the warm room. The little wet line was the exact shape of my shaving.
+
+rule @floorwedge
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 8h
+say Toe under the fat end. Now try the latch.
+
+rule @knifebite
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 8h
+say A clean bite without leaning my whole wrist on it.
+
+rule @whittlebit
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Leave a thumb space in the thick wood.
+
+rule @brightfrost
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say That white line gives the gap away.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #self.first#. Stand on the dry board and be heard.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the door's free. Use it while it is.
+dlg @3 resident.hub [here.time=night] : A low voice will serve in this wing after dark.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : The threshold will carry your voice nicely.
+dlg @5 resident.job [self.job=servant self.workplace] : I steward #self.workplace#. A good day leaves every latch better than it was at breakfast.
+dlg @6 resident.job : I attend to the part of a house nobody notices until it sticks.
+dlg @7 resident.bye : No banging. The joint's just been put right.
+
+graft resident.hub
+choice May I see the new wedge? -> ashheel
+node ashheel
+say Feel #notch# and that rough end. I work smooth wood for a show door and keep rough wood for one that takes a beating.
+choice What makes a show door stick? -> showhinge
+choice I'll leave your wood alone. -> hub
+node showhinge
+say Exactly the same damp as in a service passage. It hasn't been impressed by the polish yet.
+choice There was another matter. -> hub
+choice Keep warm. -> bye

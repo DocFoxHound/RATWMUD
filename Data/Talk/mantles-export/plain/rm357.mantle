@@ -1,0 +1,307 @@
+mantle rm357
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_tobias_dunley
+title the island between steps
+fits stage=young|adolescent|adult|old
+prefers job=child
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk counts_the_missed_treads_as_islands
+likes fried_fish long_walks festival_bells misty_dawns
+dislikes deep_mud salt_wind
+fears a_stair_with_no_room_to_rest
+hopes to_reach_the_farthest_landing_on_foot
+topics travel +0.4 dreams +0.3 pastimes +0.2 weather +0.2
+styles comfort=gentle gossip=curt refuse=soft tease=none
+marks oath saying
+persona #self.first# gives names to the stair treads skipped in a jump and returns by quieter routes to find out what was missed.
+
+words
+oath! = Hop my little island | By the next dry tread
+saying! = An island can fit under a toe | A second walk finds the missing steps
+isle = a little stair island | my missing tread
+chalk = my chalk crumb | a soft white chip
+fish = a crisp fish tail | a corner of fried fish
+mud = a brown sucking puddle | a clod of black mire
+salt = the sting of salt | a crust of salt
+bell = the big low clang | a round brass note
+mist = a bit of cloud at knee height | a pale twist of mist
+step = a narrow tread | the ledge at a turn
+bridge = a two-foot bridge | my longest stride
+wall = the wall's rough side | the stone beside the stairs
+bag = a cloth satchel | my little shoulder bag
+corner = the quiet turn | a square of landing
+
+any
+opinion dole for 2 : A bowl you don't have to buy means you can walk all the way up without hungry shakes.
+opinion church for 1 : I value any door opening for supper when there's nothing on your shelf.
+opinion festivals for 1 : One sweet lasts exactly the distance between two good bells, if you don't bite it early.
+opinion merchants against 2 : My hunger wants the whole fish. The coin doesn't seem to know about that.
+opinion times against 1 : Lately the walk to fetch things seems to bring less back for just as many stairs.
+
+any
+line greet [pair.band=strangers] : Hello from this little landing. | There's room for a paw beside mine.
+line greet [self.working=yes] : I can hear over my steps. | Hold a place by the rail.
+line greet [here.time=dawn] : Morning. First island's clear. | Good early light on the stair edge.
+line greet [here.time=dusk|night] : Evening. I count by shadows now. | There's a last bit of light to share.
+line kin.open [pair.kin!=no] : Kin may land on my best island. | Family get the wide tread.
+line again.open : Round to the same island again. | I've counted your step twice today.
+line greet.return : Heard you on the landing. | Hello. My feet have stopped.
+line greet.return [pair.band=friends|family] : You could find my island without directions. | There's the familiar step.
+line greet.return [self.working=yes] : I can listen once my bag's steady. | Tell me in the little gap.
+line greet.return [here.time=dusk|night] : Evening. My ears work past the light. | I heard the step I couldn't see.
+line farewell : An island for your next foot. | Take the dry treads home.
+line farewell.return : I'll keep the landing in sight. | Mind where the last jump ends.
+line farewell.return [here.time=night] : One safe tread after the lamp. | Find the rail before the dark bit.
+line react.news : Tell me from the very first footfall. | I won't jump past the important part.
+line react.news.new : That's a new island to me. | Never came across that before.
+line react.news.known : I remember that particular jump. | That reached my last landing.
+line react.news.doubt : I think there's a step missing from that story. | I'd count the steps again before passing that on.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. My feet can go slowly with yours. | I'll keep a landing free beside me.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That feels like reaching a wide top step. | Good. I can jump easy again.
+line ask.how : How many hard steps so far? | Any easy landings today?
+line answer.how : Doing well when each edge shows clearly. | Still leaving small islands behind.
+line decline : I'd rather go by the dry treads today. | I want to keep some strength for coming back.
+line accept_decline : You get to pick your own step. | Fair. I'll leave the turning open.
+line thank : That brought the next step closer. | I'll save you a good island.
+line sympathise : My rail side has room. | Sit with me and rest both feet.
+line reassure : One ordinary tread is plenty for now. | We can find the next landing slowly.
+line preclose : I'll go and count the way back. | Time to pick my next dry spot.
+
+young
+
+scene y_name
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : When my feet take stairs in pairs the missed step is an island.
+b : Who lives there? | Does it have water?
+a : Nobody unless I come back down and put a toe on it. | If the stair's wet all round it, yes. Mostly the water's pretend.
+
+scene y_chalk
+when topic=day self.job=child
+does tell.self / ask.detail / answer.detail
+a : I've enough chalk for three tiny maps in my lesson book.
+b : Are they real? | Only three?
+a : #isle.capitalize# is real enough to hit a knee on. | I write small and use the corners nobody else looks at.
+
+scene y_fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : The tail's the crunchiest flag on a plate of fish.
+b : A flag? | What flies underneath?
+a : I hold it by one end and it stands up. | Fish. I'd rather eat that than carry a flag all day.
+
+scene y_fog
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : In morning mist the top step might go anywhere.
+b : Where would you like it to go? | Do you jump to find out?
+a : A landing just big enough for me and a warm breakfast. | I feel for the wall first. A surprise oughtn't to cost my knees.
+
+scene y_mud
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Mud pulls harder if I jump straight up.
+b : Who wins? | What do you do?
+a : It got a shoe once. I got the shoe back with two hands. | I lean onto the firm toe and turn the other foot sideways.
+
+scene y_salt
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt on my lip spoils pretending I'm miles inland.
+b : Could you pretend harder? | How far inland?
+a : Not and lick my nose at the same time. | To a big dry hill with no wind blown off the water.
+
+scene y_bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : When the feast bell starts I pick the nearest island to stand on.
+b : Can you stand still that long? | What for?
+a : If I take a breath for each ring. The little quick ones don't count. | To feel the sound through my feet as well as inside my ears.
+
+scene y_road
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I can go a long way with nowhere particular at the end.
+b : How do you know you got there? | Does it get lonely?
+a : I get hungry and turn round. That's a decent end. | Not when I keep noticing different corners.
+
+scene y_study
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I picture the spaces between numbers as steps.
+b : What about a big number? | Does it help?
+a : I take it in twos and give the odd one a whole landing. | Till somebody asks where the chalk island came from.
+
+scene y_shoulder
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If I tuck one shoulder in my bag stops bouncing.
+b : Doesn't it slip off? | Can you jump like that?
+a : The strap sits against the base of my neck. That's firm. | I can. Sometimes my chalk doesn't care for the landing.
+
+scene y_quarrel
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I worry the big Houses might stop speaking across the hill.
+b : Did you hear a quarrel? | What if they did?
+a : No. That's the worrying part, how readily my head invents one. | I'd need an island that didn't make me pick a side.
+
+scene y_feed
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's a spot for a fish parcel on the flat of my knees.
+b : Doesn't the butter run? | What if you stand up?
+a : Hold the paper corners up. Tiny pond for my supper, all for me. | I finish the parcel first. That's hardly a difficult job.
+
+story y_smudge [topic=memories]
+  : I drew a chalk island on a scrap and tucked it beside my fish copper.
+  : When the coin came out its edge had printed a little harbour all round my island.
+  b : Did you spend the harbour?
+  : I spent the fish money. The harbour stayed on the paper and I got both.
+
+adolescent
+
+scene t_jump
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I used to miss the middle of every flight on purpose.
+b : Do you go slowly now? | Did the steps have names?
+a : When somebody's beside me. A companion might have shorter legs. | Only the skipped ones. I still remember a surprising number.
+
+scene t_calm
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can keep two paces going by listening instead of talking.
+b : Yours and whose? | What does it change?
+a : Mine and whoever's walking with me. We find a comfortable third one. | I used to hear only whether I was ahead. Now I hear if someone's tired.
+
+scene t_errand
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A long errand gives me time to inspect old chalk marks.
+b : Yours? | Can you tell how old?
+a : If there's a little island in the margin of a step, probably mine. | Only that rain's had several goes at them. I like the faint ones best.
+
+story t_mist [topic=memories]
+  : I once went up a flight in mist and expected a very grand view once I made the top landing.
+  : Instead I stood level with a gutter full of little beads of water. Every bead had its own tiny upside-down house.
+  b : Had you gone far enough?
+  : For that view, yes. Another stair would have lost me the whole street.
+
+grown
+
+scene g_guide
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I give directions by the liveliest tread at a turn.
+b : Liveliest how? | Is that sensible?
+a : The one that makes you look up and see both ways home. | More memorable than a long string of lefts and rights.
+
+scene g_cheap
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : A crisp tail can make a small portion feel leisurely.
+b : How? | What about a hurried supper?
+a : It needs a little attention to eat without sharing bits with my coat. | Then I'll save the best bite until I've a seat.
+
+scene g_weather
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A little mist makes a street look as if it has room for another landing.
+b : Would you build one? | To rest on?
+a : I'd put in a bench and give the walker an excuse to pause. | To rest the eyes as well as the feet. The horizon's very close in mist.
+
+scene g_kin
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a door where the last step is unmistakable.
+b : Even when it's dark? | Wide and flat?
+a : I can find my own threshold by the way the air stops around a toe. | And set far enough from the hinge to allow another wolf's two feet.
+
+scene g_gift
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I think the best company lets me finish a walk at my own pace.
+b : Even a very slow walk? | Without a word?
+a : Especially when the knees are giving the orders. | A word when there's something to say. The feet supply the rest.
+
+scene g_value
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A cheap pair of soles costs me more islands than a good one.
+b : Islands of what? | Would you pay extra?
+a : The little dry patches a walker crosses without noticing until a shoe leaks. | For a tight seam, gladly. A shine I can supply myself.
+
+scene g_home
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Ridgemere gives a walker miles of uphill practice without crossing a gate.
+b : Do you count them? | What keeps you going?
+a : By the places a tired walker can stop without holding up traffic. | The prospect of coming down by an entirely different flight.
+
+scene g_faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A prayer can be the stretch between one footfall and the next.
+b : Enough for a whole prayer? | What would you say?
+a : If there isn't time for words, there's still time to be grateful. | Thanks for the bit of ground that took the last step soundly.
+
+scene g_hear
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I distrust any account that asks me to leap its middle.
+b : Even a short tale? | What do you ask first?
+a : All the more. A missing word can shift the whole landing. | Where the teller stood when the thing happened.
+
+story g_rail [topic=memories]
+  : I remembered a stairway as a grand gap to be jumped. Coming back with longer legs I found a narrow ordinary tread.
+  : I walked over it, then went back to look at the worn stone. The distance I used to cover was still marked by a little hollow.
+  b : Did you try the jump again?
+  : I stood inside the hollow instead. There's more than one way to visit an old island.
+
+any
+
+rule @aside1
+when concept=bark self.likes=long_walks
+does aside
+cooldown 6h
+say One crossing for the quiet feet. | Keep a tread back for the return.
+
+rule @aside2
+when concept=bark self.likes=festival_bells
+does aside
+cooldown 7h
+say One clang per island! | Let the last ring settle in the sole.
+
+rule @aside3
+when concept=bark self.dislikes=deep_mud
+does aside
+cooldown 8h
+say Turn the toe free. Now the heel. | Good island just clear of the mire.
+
+rule @aside4
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say Pale stair has a darker edge. | A little fog for the make-believe shore.
+
+dlg resident.hub : Stand here where the stone is broad. There are a few little islands I can show you from this landing.
+dlg resident.job [self.job=child self.workplace] : #self.workplace#. I learn quicker when I can picture a sum under my feet.
+dlg resident.job : I keep track of safe places for a walker to put a foot.
+dlg resident.news [world.news] : This reached me across the steps. #world.news#
+dlg resident.bye : See if you can find an island of your own on the return.
+
+graft resident.hub
+choice Where do you keep the stair islands? -> stair_isles
+node stair_isles
+say In the middle. Two steps in a single stride leaves one patch of stone untouched. That's an island, at least until some large foot comes along.
+free
+choice How can I tell one from an ordinary tread? -> stair_toe
+choice I'll leave the middle one free. -> hub
+node stair_toe
+say Stand where you mean to start and lift your foot. The bit you can reach is a step. The bit you can just get beyond is your island.
+choice I see where mine would be. -> hub
+choice I'm off to look for another shore. -> bye

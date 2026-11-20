@@ -1,0 +1,247 @@
+mantle rm314
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_erland_ashworth
+title the roofline on the blotter
+fits stage=adult|old
+prefers temper=short drive=content
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk sketches_the_spaces_between_rooftop_birds
+likes oatcakes roof_birds new_boots frosty_mornings
+dislikes flies wet_floors
+fears judging_by_a_single_glimpse
+hopes hearing_the_whole_case_in_quiet
+topics animals +0.6 faith +0.3 work +0.3 family +0.2
+styles comfort=quiet gossip=exact refuse=direct tease=none
+marks oath saying
+persona #self.first# sketches the gaps between rooftop birds and insists that a pause need never count against a speaker.
+words
+oath! = Blot my left margin | Scatter my roofbirds
+saying! = Count the gap as well | Silence isn't a signature
+birdperch = a chipped ridge tile | a crooked chimney lip
+roofdot = a spot of ink | a charcoal speck
+inkrest = a square of soft blotter | an ink-dark rag
+oatheel = a wedge of oatcake | a little oat round
+bootline = a new leather welt | a clean line of stitching
+flywing = a grey speck | a short black dash
+slipboard = a smooth plank | a floorboard shiny as a plate
+markspace = a clear space | an empty rule
+letterfold = a narrow crease | a doubled edge
+vineleaf = a pressed leaf | a leaf with crooked veins
+bellcount = a bronze pulse | a distant hollow knock
+
+grown
+
+opinion watch mixed 1 : A loud question leaves a witness less room to discover the exact answer.
+opinion houses mixed 1 : A well-appointed seat in a hearing oughtn't to add a grain to anybody's account.
+opinion church for 1 : A chapel bell takes as long to fade for the last listener as for the first.
+opinion strangers for 1 : I'd grant a stranger the length of one complete sentence before drawing a conclusion.
+opinion merchants mixed 1 : Good boots deserve their price when both stitch lines run straight.
+opinion city for 1 : I can sit in town and watch a hundred lives above the level of a written petition.
+line greet : Welcome. There is room before the next interruption.
+line greet [pair.band=strangers] : You've come where you may be heard at your ordinary pitch.
+line greet.return : I've lifted my attention from the roof for you.
+line farewell : Leave with nothing you meant to say still caught in your mouth.
+line farewell.return : An untroubled footing home to you.
+line react.news : I shall leave a margin round that account.
+line react.news.known : That bears a familiar outline against the light.
+line react.news.new : That has landed in a previously empty space.
+line react.news.doubt : One silhouette seems rather slight ground for a judgment.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put the paper face down and listen a little longer.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : One would gladly give such news a full hearing.
+line ask.how : Any unclaimed perch in the day's business?
+line answer.how : I am sufficiently well to notice the birds again.
+line thank : You gave that thought time to settle properly.
+line decline : I won't put a judgment where an observation is called for.
+line sympathise : Let the interval last as long as you require.
+line reassure : Whatever the first impression, the account may yet be amended.
+line accept_decline : Your answer stands without my pressing upon it.
+line accept_preclose : Then we can leave our places without a scrape of chairs.
+line again.open : A familiar outline appears at a different hour.
+line ack : I have the distinction in view.
+
+scene animals_1
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : Two little birds left a space as long as a third between them.
+b : Was there a third bird once? | How do you draw empty air?
+a : One might have flown. I'm trying to resist inventing evidence for the pleasure of a tidy row. | A dot at either end and enough self-command to leave the middle white.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : In #self.trade_words# I attend to the pauses as closely as the assertions.
+b : Do they count as evidence? | What if somebody hesitates for a long time?
+a : They count as time the speaker has not yet finished using. | I'd see that the pause wasn't filled by a listener with a quicker tongue.
+
+scene faith_1
+when topic=faith here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I tally each chapel stroke without taking my eyes off the ridge tiles.
+b : Can you keep both counts? | Which matters more?
+a : The bells manage their order. Birds have occasionally complicated the comparison. | The last stroke if I'm due somewhere, the last bird if what's ahead can wait.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I could happily share a morning's quiet with #self.spouse# and call it a conversation.
+b : Would you bring your sketch? | Wouldn't you say a word?
+a : If my spouse wished a look. Otherwise the paper takes up room two elbows might enjoy. | Only a word good enough to deserve the interruption.
+
+scene food_1
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I divide an oatcake into quarters with two firm breaks.
+b : Are they exactly equal? | Do you save one for the roofbirds?
+a : Close enough to expose the foolishness of trying to do better with crumbling oats. | A plain crumb perhaps. The buttered edge and I have a private understanding.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I want an uncluttered place from which to see the neighbouring eaves.
+b : Does a fine view cost much? | Why look above the street?
+a : One can spend a surprising sum obstructing it with expensive curtains. | A face glimpsed through glass has more claim on privacy than a rook on a chimney.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I like the way frost leaves a white rule along a roof.
+b : Does the rule always run straight? | What do the birds make of it?
+a : Never quite. A sag that tired eyes miss in summer shows up handsomely in white. | Largely footprints. The most honest annotations I've ever seen.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I pay for new boots first at the stitch and only later at the shine.
+b : Why examine under the instep? | Can you tell how long they'll last?
+a : That is the stretch the bright dressing is least likely to have disguised. | I'm content to see whether the first walk will improve them or tell against them.
+
+scene animals_2
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly on a page has led me into some rather silly conclusions.
+b : Did you read one as a dot? | Can you defend the ink?
+a : I saw it walk out of the figure and had to reduce the number of birds by one. | I lay a clean sheet over the wet line. Indignation has very poor aim.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a letter I'd read as much for its creases as for its sentences.
+b : Do the creases mean something? | Wouldn't smooth paper be easier?
+a : A long journey can write itself on a fold without explaining anybody's business. | Easier, certainly. Less likely to send my thoughts travelling through a vineyard.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : If a floor shines too well I consider its recent treatment before I step.
+b : Expecting water? | Would you call it badly kept?
+a : I'm allowing the possibility. A well-polished boot and a wet plank make an imprudent pair. | Only if nobody warned any approaching walker.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I take offence most quickly at a witness being rushed. | A friend may remind me to lower my own voice when that happens.
+b : And if the reminder offends you too?
+a : I will endeavour to hear all the words before taking offence at the opening word. | A quiet reminder is admissible. I'd prefer one without a full public audience.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I look to the farthest tile whenever the ink swims a little.
+b : Does that sharpen the writing? | What if the light's gone?
+a : It sharpens the eye that has to read the writing. The ink can wait undisturbed. | Then the bird count must come inside the lids and the page can be closed.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When purses draw tight I notice how few crumbs are left near a bench.
+b : Can the birds tell? | Would you put more down?
+a : They make a much longer inspection of the same small stretch of stone. | I'd see first whether someone might need the oatcake whole.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A bird gets the straight route between all these inconvenient roofs.
+b : Would you take it? | Do you envy the wings?
+a : I'd prefer to keep my new soles on a well-made stair, given the choice. | The view rather more than the descent. Landing on a ridge tile requires confidence.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I prefer a true account of one bird to an impressive story about a flock.
+b : What makes it true? | What if the bird escapes?
+a : Say what colour showed and which way it faced. Leave the rest room to surprise you. | Then describe the place it left. Absence can be observed very exactly.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account presently circulating is that #topic.subject# #topic.claim#.
+b : How certain is it? | Do you know the source?
+a : Circulation measures distance and does nothing whatever for accuracy. | I know what reached my ear. The first mouth is outside my view.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've been drawing the bird that a roof would hold if one chose to land.
+b : Is it an imaginary bird? | Are you expecting one in particular?
+a : Entirely. It's a means of recording the perch without pretending it was occupied. | I'd rather a stranger landed. My drawing could stand to be contradicted occasionally.
+
+story fly [topic=memories]
+  : I signed a small drawing while a fly stood over the final downstroke.
+  : It rose in the air and my carefully balanced signature developed an abrupt limp.
+  b : Did you finish the stroke?
+  : No. I left the gap as a timely example of the danger of unconscious collaboration.
+
+story bell [topic=faith]
+  : I counted a distant bell while watching three wings rise behind a ridge.
+  : By the fourth stroke I had given the birds a bell of their own in my reckoning.
+  b : Which number did you trust?
+  : I started again with what remained visible. The chapel has never asked me to audit its work.
+
+story crumb [topic=food]
+  : I broke an oatcake across a folded paper and shook the crumbs neatly into my paw.
+  : When I opened the paper one small grain ran right down a drawn gutter.
+  b : Did it reach the end?
+  : It stopped against a real crease. For once my imagined roofs had quite convincing drainage.
+
+rule @perch
+when concept=bark
+does aside
+cooldown 8h
+say A clear little gap between those dark shapes. | Hold the pen still till the wing has settled.
+
+rule @feet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Mind where the shine begins under the eaves. | Wet planks deserve an unhurried step.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The rooftops are legible before the writing desk. | Room for an early wing on that ridge.
+
+rule @meal
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say A crumb may look like evidence from a little distance. | Best keep the ink and the butter apart.
+dlg resident.hub : You've drawn me down to ground level. The roofline can conduct itself awhile.
+dlg resident.job [self.trade_words] : My work is #self.trade_words#. A hearing includes every silence between words.
+dlg resident.news [world.news] : This much can be entered without amendment. #world.news#.
+dlg resident.gossip [here.gossip=yes] : The current account has #topic.subject# #topic.claim#. I have heard no further particulars verified.
+dlg resident.hub [topic.meeting=known] : #topic.player#, you have found a clear space in my proceedings.
+dlg resident.bye : May the day give your words an unhurried hearing.
+
+graft resident.hub
+choice Which bird did you draw in that gap? -> ridge_gap
+node ridge_gap
+say None. There are very few ways of recording a clear space and a great many ways of spoiling it with an imaginary occupant.
+choice Suppose another lands? -> ridge_new
+choice I'll let you watch. -> hub
+node ridge_new
+say I'll start a fresh sketch. Both records may be true without agreeing in a single particular.
+choice I'll let you watch. -> hub

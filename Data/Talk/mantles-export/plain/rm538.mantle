@@ -1,0 +1,289 @@
+mantle rm538
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_orla_ropeworth
+title the tide in the margins
+fits stage=young|adolescent|adult|old
+prefers drive=restless honesty=sly
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=restless
+quirk keeps_private_flood_marks_in_the_margins_of_sums
+likes smoked_eel evening_line full_larder first_snow
+dislikes early_bells gulls
+fears a_guess_entered_as_an_accusation
+hopes a_map_the_rain_can_correct
+topics travel +0.6 pastimes +0.5 weather +0.4 work +0.2
+styles comfort=practical gossip=guarded refuse=oblique tease=dry
+marks oath saying
+persona #self.first# draws flood levels in the margin of sums and keeps a second set of marks whose meaning no casual reader is entitled to know.
+words
+oath! = Blot my contour | Soak the high margin
+saying! = The margin has two banks | Wait for the brown line
+copyedge = a narrow margin | a spare finger of paper
+eelbit = a curl of smoky eel | a silver-edged shaving
+darkline = a sloping inkstroke | a crooked blue stroke
+floatstem = a little reed float | a slender rush joint
+bankmark = a brown tide stripe | a dark water scar
+paperstep = a paper stair | a pleated sheet
+blotmist = a cloud of ink dots | a blue spatter
+snowgrid = a white grid of roofs | a pale patchwork of roofs
+drydot = a little hollow circle | a dot with a white heart
+shelfkey = a private little key | a folded scrap of signs
+
+any
+
+opinion houses mixed 1 : I'd like to trace the favours passing between those with authority. A suspicion can stay in the margin until I can support it.
+opinion watch mixed 1 : A uniform tells me whose account to ask for. I should still like to see the account.
+opinion church against 1 : I prefer a little uninterrupted quiet before the collection starts.
+opinion city for 2 : You can read our hills in the line left on a doorstep after a hard rain.
+opinion merchants mixed 1 : A level basket makes an excellent beginning. I'll also inspect the side concealed by the handle.
+line greet : Take the side where my marks won't rub off on your cuff.
+line greet.return : The high margin brought you back again.
+line farewell : Keep out of the low part just beyond the turn.
+line farewell.return : I'll leave one mark where we stopped.
+line ask.how : Where has today been rising round your ankles?
+line answer.how : My calculations have so far left my socks reasonably dry.
+line decline : That bit of the margin wasn't put there for public reading.
+line accept_decline : I'll mark the space unexamined and move along.
+line thank : That saves me an unnecessary wade down the other side.
+line sympathise : There's a high place where nobody has to explain a wet face.
+line reassure : A doubtful mark needn't stay on the final map.
+line react.news : Tell me how high the water really came.
+line react.news.new : A new mark to fit between two older ones.
+line react.news.known : The first line I drew already runs that way.
+line react.news.doubt : I wouldn't ink in a claim just because of a solitary wet print.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That deserves a bright patch left clean among all the darker lines.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put my questions away till the person hurt wants them.
+line ack : That gives my mark a place to stand.
+
+young
+
+line greet [pair.band=strangers] : These folded stairs are open for inspection. The marks are mine.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I poured a spoon of water on #paperstep# and the bottom step drank most of it.
+b : Did the top one stay dry? | Was the stair real?
+a : A little damp at the corner. I picked the whole stair up before it could turn to breakfast mush. | Real paper. I've got very small feet drawn on it so my own feet may stay dry.
+
+scene food_1
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I can roll a bit of eel up like a little wet street.
+b : Who's going to walk along it? | Is it still lunch?
+a : My finger, till the first turn. After that my mouth is a very quick way home. | Lunch after two little steps along the street.
+
+adolescent
+
+line greet [here.time=dusk] : Come to the dry edge. The float shows better against this light.
+line answer.how : Restless enough to be pleased when the street is undecided about being passable.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I use the spare edge of a sum to draw a street in flood.
+b : Do you get the sum right? | Is that a permitted use of the edge?
+a : I have a powerful reason for getting it right. A correction tends to land exactly on my best crossing. | If the sum stands up to inspection I'm prepared to argue for the independence of the margin.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My key has a hollow dot for the door where the flood stops just short of the sill.
+b : Why leave the dot hollow? | What if the flood goes higher?
+a : So I can darken it if the next rain gets in. A prediction should allow for a later correction. | Then I get a full dot and a new reason to carry a spare pair of stockings.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : A reed float can show a current that doesn't disturb the reflection at all.
+b : Aren't you meant to be fishing? | Does the float go round in circles?
+a : I like both occupations. A fish may interrupt my observations at any reasonable hour. | Sometimes an eddy brings it back to a door I'd marked dry. That's worth looking at from a fresh angle.
+
+scene weather_1
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : First snow lays a white lid over every street. Underneath, some are steadily turning to brown soup.
+b : Which streets go soft underneath? | Do you draw the snow too?
+a : Slope, gutter and the odd dark streak near a step. I prefer to guess from the high side. | I leave the sheet white and draw only what has started changing. Saves a lot of expensive white ink.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : Some of my signs are for water and some are about things best kept private.
+b : How could a friend tell them apart? | Are your other signs accusations?
+a : A good friend would recognise the corner I have asked to keep folded. | Questions. I'm unwilling to let a doubtful mark speak for an absent wolf.
+
+scene home_1
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A full cupboard would be an excellent place to wait out a flooded street.
+b : Inside it? | What provisions would you choose?
+a : Beside it. I'd dislike having to explain my muddy feet to several tall jars of respectable flour. | Something smoked, a clean plate, and enough room behind the door to open my map.
+
+scene animals_1
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull will watch a smoky lunch much more steadily than it watches the weather.
+b : Would you use it to forecast rain? | Why not cover the fish?
+a : I'd use it to forecast the disappearance of eel. Beyond that the evidence gets doubtful. | That is precisely what this conveniently uninteresting folded sheet is doing.
+
+scene day_1
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : An early bell can interrupt a perfectly good dream about reaching dry paving beyond a flood.
+b : Did your dream end there? | What do you do after the bell?
+a : I never found out. It sounded just as I was working out where to put my foot. | I put down the turn I remember. Half a dream can furnish a quite serviceable puzzle.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like a quiet place in which a thought doesn't have to show its contents to a passing stranger.
+b : Even a chapel? | What thoughts would you take inside?
+a : A chapel when the plate has finished its rounds suits me well enough. | The things I have no business pronouncing upon until I know considerably more.
+
+story inksteps [topic=work]
+  : I folded a half-finished exercise into a staircase. Every sum stood upright except the one down by my thumb.
+  : I thought I'd found an error in the figures.
+  b : Did you rework the sum?
+  : I shifted my thumb. Arithmetic improved immediately and the bottom tread lay flat.
+
+rule @margin
+when concept=bark
+does aside
+cooldown 8h
+say White in the centre means still dry. | Keep the other folded corner under the thumb.
+
+rule @fish
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say A rush joint can take the measure of a whole bend. | Fish may enquire during the usual evening hours.
+dlg resident.hub : You can inspect any uncreased part of the sheet. The crease marks the edge of my hospitality.
+dlg resident.job [self.job=child] : I'm #self.trade_words#. I can fit a remarkably useful map round the edge of a perfectly correct answer.
+dlg resident.bye : Watch the next turning if its gutter is talking.
+
+graft resident.hub
+choice Why are the little circles hollow? -> tide_dots
+node tide_dots
+say Each means the step was dry the last time the water came up. A hollow dot leaves somewhere to record the next flood.
+choice What goes where the dry step used to be? -> tide_fill
+choice I'll keep to that higher line. -> hub
+node tide_fill
+say A solid dot. When all the routes are solid I draw another line along the higher road. Or I wait till the eel has finished smoking.
+choice I'll keep to that higher line. -> hub
+
+story float [topic=pastimes]
+  : I watched my float move towards a low arch even when the ripples appeared to run away from it.
+  : I made an elaborate entry about two contrary currents.
+  b : Was that the answer?
+  : A pale thread from my fraying cuff had caught the float. I kept the entry and crossed out the conclusion.
+
+grown
+
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I keep the habit of inspecting a threshold from above before choosing a flooded route.
+b : Can the high side deceive you? | What makes you turn back?
+a : A loose stone can. A dry patch floating near a puddle's centre may belong to nothing dependable. | Water crossing the whole width faster than I can judge its depth. My paper will take an alternative line.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The damp edge of a parcel matters less than whether the wet has reached its contents.
+b : Would you pay for the lost wrapping? | Would you open it there?
+a : If I'd ordered a dry parcel I would expect to receive one. The state of the goods is a separate question. | With the seller present. There are some misunderstandings I would rather save for an entirely imaginary map.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to hide questions in the corner of an exercise. I learnt which ones were worth asking aloud.
+b : Which ones would you keep quiet? | Do you still use signs?
+a : The ones resting entirely on someone else's guess. I can remember a doubt without lending it my voice. | A small mark still serves where an elaborate sentence might mislead a hurried reader.
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Smoked eel, sliced thin, makes a decent supper after a long wet walk.
+b : Does it need warming? | Is any eel saved for later?
+a : I like the first bite as it comes. The next may share the heat of a bit of fresh bread. | I'd wrap a small end for anyone still walking the road that brought my own appetite home.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Snow conceals the line I use to tell where the paving begins to fall away.
+b : Is there any audible difference? | Doesn't that spoil your map?
+a : Sometimes a trickle sounds hollow under the white lip. I won't put a full weight on a guess. | It creates a reason to keep learning. A permanently finished map wouldn't suit a town with our weather.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I am content to spend an evening watching the little drift of a float, even when I bring nothing home.
+b : How does that repay the hour? | Do you ever lose patience?
+a : The hour itself returns in better condition than when I brought it down to fish. | Certainly. Then I bring the float in and leave the river to amuse itself for the night.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I give the lower shelves to things which will survive an unexpected damp floor.
+b : What's kept up high? | Do you suppose a flood will come indoors?
+a : Dry flour and those pieces of paper which would be the most tiresome to replace. | I like living where the answer can remain a purely interesting question.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Knowing where to rest on a long slope has become as interesting to me as knowing where the water goes.
+b : What counts as a good rest? | Would you mark a seat on the map?
+a : A steady ledge that leaves enough clearance for another wolf carrying a load. | Only if its use is actually welcome. A line in public ink can turn somebody's sill into a thoroughfare.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd rather a friend question a conclusion than quietly build a bad judgement on my account.
+b : Even an embarrassing correction? | How would you prefer it made?
+a : Especially when a misplaced mark concerns the good name of a wolf who isn't present. | Fold the sheet open between us. We don't require an audience to move a dot.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A dry route in a lean season saves the cost of spoilt provisions.
+b : Would you sell the directions? | What goes bad earliest?
+a : I'd offer any hungry neighbour the dry directions without attaching another small charge to supper. | Flour in a torn sack, swiftly followed by the temper of whoever had charge of it.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep a little ink for things I'm sure of and a much larger space for the rest.
+b : Doesn't that leave an empty-looking page? | Who is it meant to persuade?
+a : A clean patch is cheaper to revise than an elaborate falsehood. | Myself, chiefly. A clear question is more persuasive company than a fine-looking error.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : There's talk that #topic.subject# #topic.claim#. I put that kind of thing down lightly.
+b : Who's seen your notes? | Why record it at all?
+a : Only somebody with good reason to examine a particular statement. A private sheet should stay private. | So I recognise a claim coming round a second time. Repetition can otherwise look remarkably like confirmation.
+
+story drydot [topic=travel]
+  : I followed an old line of mine and discovered the dry crossing had shifted an entire doorstep uphill.
+  : The mark itself was in sound condition and the street looked familiar.
+  b : What had changed?
+  : Somebody had relaid the gutter. A good map ought to be delighted when actual work gives it cause to change.
+
+rule @dryroad
+when concept=bark
+does aside
+cooldown 8h
+say Inspect the pale seam before committing the whole boot. | A walking map needs a line for coming home.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The bell has supplied an hour and no directions. | A good route deserves to be found in daylight.
+dlg resident.hub : We can discuss the evidence in the open part and leave the private marks under their fold.
+dlg resident.news [world.news] : The words that came through the rain intact were these. #world.news#.
+dlg resident.bye : A dry contour should carry you well past the corner.

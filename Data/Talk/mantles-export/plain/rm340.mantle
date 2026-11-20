@@ -1,0 +1,384 @@
+mantle rm340
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_frida_brineford
+title the swimming cork
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk floats_a_marked_cork_to_see_where_the_current_goes
+likes hard_cheese swimming quiet_chapel first_snow
+dislikes smoke salt_wind
+fears a_cork_lost_under_a_landing a_larder_that_smells_of_smoke
+hopes a_written_reply_ahead_of_the_next_tide a_quiet_swim_in_clear_water
+topics pastimes +0.5 work +0.4 land +0.3 faith +0.2
+styles comfort=provisions gossip=measured refuse=plain tease=dry
+marks oath saying
+persona #self.first# lets a cork swim first, hums a quiet bar while waiting for its return, and takes as much pleasure in a well-provisioned shelf as in a clear patch of water.
+
+words
+oath! = Cork in the butter | Brine on my sleeves
+saying! = Let the cork take the first cold dip | Stow for a second mouth
+swimmer = my trial cork | my brave little plug
+darkmark = a burnt black crescent | a dark face mark
+floatline = a single waxed thread | a thin return cord
+bluecrate = the marked provision box | my lidded store box
+rindchip = a sharp cheese chip | a dry bit of rind
+barepatch = my clear counter end | a scrap of vacant counter
+taplid = a tight board cover | a flat wooden lid
+cupbreath = a hummed half verse | a tune through closed lips
+waxbag = a dry waxed fold | a little waterproof case
+wharfpost = the lower landing post | the worn edge post
+stillslip = an empty paper slip | an unmarked sheet
+stairend = a dry length of rope | the last bit of the handline
+waterglint = a quick silver flicker | a smooth streak of light
+priceface = my chalked price board | the face of the little slate
+windcheese = a curled cheese shaving | a thin roll of cheese
+
+any
+opinion city for 1 : Whatever the weather chooses, the city needs breakfast. It's agreeable to live where my shelves have a purpose.
+opinion festivals against 1 : I take the music at a distance where I can also hear the lid go back on a cheese box.
+opinion houses for 1 : A single House order may mean decent paid work for the whole morning. I give credit for a clean order promptly met.
+opinion merchants for 1 : A good merchant puts the dry goods underneath a dry roof. There's work done before a price ever reaches a slate.
+opinion newcomers for 1 : A stranger's first meal is an excellent chance for a shop to become familiar.
+opinion road against 1 : A delivery due from the road can spend a long while being due. I'd like to buy and sell something firmer than an expectation.
+opinion strangers for 1 : I've been paid in a copper and a small correction to my understanding of the coast. Both spent very well.
+opinion watch for 1 : The sight of a badge can save a shopkeeper two hours of watching the same pair of paws.
+
+grown
+line greet : Come over to the quiet side. My tune's nearly done.
+line greet [pair.band=strangers] : Welcome. I take a new face at its own price.
+line greet [here.time=dawn] : First light's drawn a clean line across the counter.
+line greet [here.time=dusk|night] : Welcome to a minute the noise has left alone.
+line greet [self.working=yes] : I'm closing this lid. You might have to speak twice if it sticks.
+line kin.open [pair.kin!=no] : Bring your bowl inside our circle.
+line again.open : You're back sooner than my cork on a calm day.
+line greet.return : Your word came up clear on its own.
+line greet.return [pair.band=friends|family] : That voice can have the quiet end to itself.
+line greet.return [self.working=yes] : I heard you between two boxes shutting.
+line greet.return [here.time=dusk|night] : I know now where the shadow's voice belongs.
+line farewell : A dry return for whatever you carry.
+line farewell.return : I'll keep my cork and my own company awhile.
+line farewell [here.time=dusk|night] : Take the firm step home through the gloom.
+line react.news : Let the news float a little before I reach for it.
+line react.news.new : That hasn't come in with any parcel I opened.
+line react.news.known : Yes, that piece rode in on an earlier tide.
+line react.news.doubt : Did a witness go near enough to make out the mark?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A quiet basket at that door may get a better welcome than further words.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll move the best cheese forward for an occasion like that.
+line ask.how : Anything missing from the day's little shelf?
+line answer.how : I have enough dry space and no quarrel with my appetite.
+line answer.how [self.working=yes] : I've still a patch of counter left on which to rest an elbow.
+line sympathise : Bereavement comes back when all the kind callers have gone home.
+line reassure : We can wait on dry boards till the worst pull slackens.
+line decline : I can't set a price on a matter that belongs behind another door.
+line accept_decline : I'll give that closed lid a respectful distance.
+line thank : You've brought the good end of that business within reach.
+line deflect_thanks : Keep it dry and give it fair use.
+line preclose : There'll be a cork knocking round loose if I stand much longer.
+line preclose [self.working=yes] : I've a parcel that deserves a less leisurely return.
+line accept_preclose : Go along. We needn't turn your departure into a job.
+line hail [pair.band=friends] : There's space by the cork box, friend.
+line ack : Runs true.
+
+scene cork
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I send #swimmer# out for a dip before I consider one myself. | My cork shows a dark face when it rolls over.
+b : Is the cork brave? | Is a roll bad news?
+a : Unusually so. It has no dry clothes at home to compare with a cold bath. | Means there's more movement than the top of the water showed. I'll keep my own face dry for a bit.
+
+scene rind
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I'd take the narrow heel of a hard cheese over a soft puff of middle. | I shave cheese along the long side.
+b : Because it's cheaper? | To make the piece look larger?
+a : Because it keeps a good flavour to the very last tooth mark. A friendly price does no harm. | To roll the shaving round my tongue. Long side, long pleasure.
+
+scene lids
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : When I shut a box I listen for the sort of thump it gives. | One lid on my shelf needs its weight well forward.
+b : What should a proper thump say? | Why not turn the box?
+a : That all four corners came home. A double click means a grain under one side. | Because the dry end faces indoors. A weight's easier to move than a box full of supper.
+
+scene smokenose
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I lid the good flour as soon as I catch a whiff of smoke. | Smoke has a stronger claim to a shelf than I care to allow.
+b : Does the scent go through a cloth? | What can a little smoke claim?
+a : Given all afternoon, yes. I prefer to be first with a close cover. | Whatever's open, for a start. I didn't buy cheese to make it taste like an old chimney.
+
+scene snow
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : I let first snow sit on a cork to see how slowly it melts. | The first snow covers a black cork mark beautifully.
+b : Does cork keep it longer? | Then how do you see the cork?
+a : Longer than a warm palm. I give the flake a fair start on the ambitious business of being weather. | The mark's on only one side. A bit of brightness and then a dark wink when it turns over.
+
+scene saltwind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : I've settled matters between my cork and the wind. | I turn the shop slate indoors when salt begins to dry on the chalk.
+b : What agreement? | Does salt wipe the price?
+a : I shelter my eyes. The cork takes whatever wind comes, clear to the length of my thread. | It blurs a figure. An unclear price raises more wind than I'd care to usher back outside.
+
+scene quietfaith
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : An empty chapel gives a little hum an astonishing distance to travel. | I don't always sing the words in a chapel seat.
+b : What do you sing? | Can't you remember them?
+a : Just enough of a tune to hear where the room begins to hold it. Then I like the still part better. | I can. There's no hurry to name all my concerns. Sitting in quiet gratitude feels quite sufficient.
+
+scene child
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I will keep a dry packet ready for #self.child#. | I've a saying about good cheese I'd like #self.child# to remember.
+b : What's in the packet? | What saying?
+a : A little piece that can be eaten on the run, if need be. Life seldom supplies a chair at every meal. | Take some for yourself before you cut the gift. That way the sharing's a kindness on both sides.
+
+scene hand
+when topic=work self.master=yes self.hand
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.hand# the unmarked box and a clean piece of chalk to start with. | I keep a short length of cord handy for #self.hand#.
+b : Why not label it yourself? | Is a cord useful on a shelf?
+a : I'd rather teach how to make the right mark than have all the right marks carry my own writing. | A small sample sent out tied to it can be drawn back without fishing under a stack.
+
+scene wharf
+when topic=land self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : From the Wharf a cork's progress can look very like a wolf's daily round. | I know one view of the water at ankle level better than any high view.
+b : Always circling home? | Why so low down?
+a : Starting with a plan, catching an unexpected pull, and finishing near a post I never thought to visit. | I crouch to put the cork in. From down there every little run of water is plain.
+
+scene priceboard
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I keep my prices on the side the customer can read from outside my shadow. | I won't put a small price in very large writing.
+b : Do you block much light? | Would it overstate the bargain?
+a : Enough, in a low window. I'd like the price known before a customer needs to shoo me out of the way. | It would use all the slate. I've other things for sale that would like to be heard.
+
+scene foodturn
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A shelf that used to take a different trade can earn quite a good living holding food. | Stores want the dry shelf however long the shop's had its name.
+b : Is the old work still in your thoughts? | Does changing trade take a great while?
+a : I've a memory for it, and plenty to do now. A full box doesn't leave much room for regrets. | The shelf learns quite quickly. The wolf learning what to put on it takes rather longer.
+
+scene waitpaper
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I want an answer I can point to before the paper wears through in the middle. | An unanswered petition can take a fair bit of exercise.
+b : Walking it round again? | How much walking does a folded page do?
+a : Enough to have earned its own pair of shoes. I leave it at home some days to save the heel. | From counter to pocket and back. I'd settle for a short walk towards an ear willing to listen.
+
+scene humwork
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I hum through shut lips when I'm counting boxes. | One quiet bar is generally long enough to decide whether I've forgotten an item.
+b : Can a tune help with a tally? | What if you still can't remember?
+a : If I start saying numbers to the tune the boxes begin to multiply. I keep the tune outside the count. | I open the lid and look. This is why I like practical music.
+
+scene storespup
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can make a game of guiding a cork between two floating sticks. | A little cork wants to be where it isn't.
+b : What if it hits a stick? | Is it restless?
+a : It wins the right to try again. A cork's winnings consist mostly of more damp. | It's in a current. Naturally it will appear discontented with every place it comes to.
+
+scene easymorn
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : In early light a dry lid shows every wet thumb mark very civilly. | My first job is to make a little space for what the day might bring.
+b : Doesn't that annoy you? | How much space?
+a : Only until I've a cloth within reach. Then it's a short and entirely fair argument. | One basket's width. If more than a basket arrives I shall gladly make another plan.
+
+scene drywinter
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I bring a cork inside before cold presses it fast to its little tin basin. | A cork with ice round its belly can't tell me much about a current.
+b : Would you warm it at the fire? | Does it still ride upright?
+a : Room warmth will manage the thaw with no burnt cork smell to cling to my coat. | Very upright, with all its water standing perfectly still. It seems an empty achievement.
+
+scene youngsters
+when topic=memories self.age>=35
+does tell.self / ask.detail / answer.detail
+a : Once I thought I could choose today's swimming spot without bending my knees. | I thought straight lines an excellent way of reading water once.
+b : Did you have sharper sight then? | And now?
+a : I had greater confidence in whatever sight there was. Bending the knees gives a better view and hurts my pride less these days. | I permit the cork to disagree. Water has a remarkable contempt for a straight line drawn from the shore.
+
+scene sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In one dream the entire provision shelf floats by my window. | I once dreamt our whole roof was cork.
+b : What do you catch first? | Did you enjoy the thought?
+a : The cloth covering the cheese. The rest can find its own landing so long as the food stays dry. | Until I wondered what might happen if the rain rose high enough to put it to the test.
+
+scene newwares
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer asking for an unfamiliar provision is an agreeable puzzle. | I'd give a new customer a little time to recognise the smell of an old favourite.
+b : What would you want described first? | Is smell enough to choose a supper?
+a : Whether the thing keeps. If it's meant to be eaten fresh I can save us both a long look at my dry shelves. | Enough to find a starting point. A price and a proper look ought to follow naturally.
+
+scene homeplank
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I have a sitting board just wide enough to let two paws hang over. | I leave my cork in the same little saucer overnight.
+b : Do you sit there to think? | Does it need more water after swimming?
+a : Frequently. The feet seem grateful for the time to collect some thoughts of their own. | Dry saucer. I'm fond of my cork but there's no call to provide an indoor harbour.
+
+scene unheardgossip
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A closed box may rattle without holding what's written on its old label. | I give a quiet tale exactly the same attention as one that's half shouted.
+b : Would you repeat the label? | Does either one convince you?
+a : As the label, yes. I'd like to open the lid before speaking for the contents. | Evidence does. The loud telling merely saves itself the trouble of coming any nearer.
+
+scene secretplace
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I've a little store of silence saved up from visits to the chapel. | Some rooms leave a pause with you for the journey home.
+b : Can you use it when it's noisy? | Is a pause like that a prayer?
+a : I can remember the space, which is something, though it doesn't shut a lively door for me. | I count it as a kindness. I'll leave the naming to wiser ears.
+
+scene trayhands
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I show a beginner how to get one box down without waking the others. | Two full shelves need enough space between for a closed paw.
+b : Is that really a matter of quiet? | Why clenched?
+a : It's a matter of balance. A whole row clattering to the floor suggests room for improvement. | There's no sense measuring a gap with an empty paw and expecting to get the goods out in a full one.
+
+scene pricegrant
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I'll sell a small piece to a wolf with a small coin without making a story of it. | A gatekeeper of provisions ought to notice who can reach the counter.
+b : What if the cut is very awkward? | Would you change the height?
+a : Let me spend a little skill on a fair cut. I sell my skill with the cheese along with the cheese itself. | An open end serves a short customer nicely. Raising voices never made a high shelf any lower.
+
+scene haulin
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : If a cart's jostled hard I lift a pack and listen before I break the cord. | I dislike waiting for something that hasn't made its way through the gate yet.
+b : What sound would worry you? | Is it the waiting or the uncertainty?
+a : Loose pieces. I'd like a bowl underneath before I open a parcel that may have turned entirely into little pieces. | The empty room on the shelf. I've a practical soul and no good recipe for stewing hope.
+
+scene goodquiet
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I gradually hear fewer boxes and more water. | I can put the shelf to bed with a soft hum.
+b : Do boxes make that much noise? | All of it?
+a : Only when wolves need things from them. That's chiefly how I know the day has gone by. | All but the obstinate lid in the far corner. A sleepy babe could take lessons from that one's temper.
+
+scene favour
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd welcome a reading of my new label from #self.friend#. | I put my slate aside when I think of a quiet visit with #self.friend#.
+b : Why a familiar eye? | Does chalk make much sound?
+a : Because I know enough to listen when a letter is found wanting. An unknown critic would have a harder afternoon. | A surprisingly shrill squeak compared with somebody saying nothing at all.
+
+story wrongplug [topic=pastimes self.likes=swimming]
+  : I once let a fairly handsome cork swim out on the apparent end of a long white string.
+  : It got very small very fast. I was holding a loose white thread from my own cuff.
+  b : Did you follow the cork?
+  : I stayed ashore. After a time the water brought the cork back looking much better pleased with the arrangement than I was.
+
+story cheesereturn [topic=work self.job=merchant]
+  : I wrapped two ends of cheese separately so I'd remember to make one into broth.
+  : The tied packets looked precisely alike. I set the two beside a pot and thought very hard.
+  b : How did you tell which was for the broth?
+  : I opened the more awkward knot first. The little hard heel was underneath it, just where a wolf ought to have expected trouble.
+
+story quietcrowd [topic=faith]
+  : I once sought a perfectly silent corner in a chapel and settled my coat very gently.
+  : There was a small persistent knocking beneath me. My cork had come to rest between the seat and its upright.
+  b : Did you have to move to find quiet?
+  : Only by the width of a cork. It was a mercifully short pilgrimage for both of us.
+
+story snowface [topic=weather self.likes=first_snow]
+  : I carried my cork out in the snow, set it on a fence and went to bring the tin.
+  : It vanished into a little hollow in the white. My own footprints went halfway along the wrong stretch before turning back.
+  b : What brought you back to the buried cork?
+  : By rubbing my coat across the top board. The cork stuck in the sleeve and travelled home looking very well provided for.
+
+story loadmark [topic=memories self.age>=30]
+  : I'd written a great bold label for a provision box and tied it to the lid with two cords.
+  : The lid was taken off to air. When I went to put it back there were three perfectly identical open boxes below.
+  b : Did all three smell alike?
+  : No. I filled my nose twice and the right lid got home. Now I mark a box as well as its lid.
+
+rule @swim
+when concept=bark self.likes=swimming
+does aside
+cooldown 8h
+say Let the cork go clear of your paw. | Wait for the second turn in the water.
+
+rule @counter
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Dry face of the box inwards, now. | Leave a free corner for the caller's bag.
+
+rule @salt
+when concept=bark self.dislikes=salt_wind
+does aside
+cooldown 8h
+say Bring the chalk away from the brine! | Good paper goes under the lid.
+
+rule @smoke
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 8h
+say Cover the flour till the air's clean. | Smoke's a poor seasoning for my shelf.
+
+rule @late
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say A soft word for a closing room. | Keep the last stroke of chalk light.
+
+rule @market
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say There's room to see the price from the side. | Each lid with its matching box.
+dlg resident.hub : I've got an ear free and no obligation to make a great noise with it. Welcome.
+dlg resident.hub [topic.meeting=known] : My quiet corner's yours for a moment, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : There's a full counter between our paws; let's see how the words fare.
+dlg resident.hub [here.time=night] : At this hour we can let the street do most of the talking.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. There's pleasure in providing a dry supper just when somebody's gone looking for one.
+dlg resident.job : I make sure there's a place to put the next thing a wolf brings in.
+dlg resident.news [world.news] : This bit has come up clear of the wrappings. #world.news#.
+dlg resident.news [world.event_words] : The sound of #world.event_words# has reached me over my shelves.
+dlg resident.gossip [here.gossip!=yes] : You've caught an empty cupboard as far as gossip goes.
+dlg resident.business [business=thriving] : More room on the shelves and a little less on the tally. I'll take a day like that.
+dlg resident.business [business=steady] : As much carried in as it takes to keep food going out by the front.
+dlg shop.greet [here.shop!=bare] : Let me know what must keep and what may go straight to the supper pot.
+dlg shop.greet [here.shop=bare] : The shelves have earned a rest in spite of me. I've still an ear for what you need.
+dlg shop.prices : The slate faces you; there's the chalk figure. I'll give you the plain figure for the piece you want.
+dlg shop.bye : Wrap the good side in, keep the damp side out.
+dlg resident.bye : May you get your feet back on dry boards.
+
+graft @swimtrial resident.hub
+choice Will the little cork tell you whether to swim? -> swimtrial
+node swimtrial
+say It'll show one small patch of water, no more. See the dark crescent turn away? That patch is moving towards the post, which is quite far enough for a trial.
+choice What if the string goes tight? -> swimtrial_more
+choice Bring the cork back in. -> hub
+node swimtrial_more
+say I give it slack and see where it goes. If a cork's having a more exciting day than I care for I'll find my exercise walking home.
+choice Bring the cork back in. -> hub
+choice Leave the water to itself. -> bye
+
+graft @twomarks resident.hub
+choice Why are the boxes marked top and side? -> twomarks
+node twomarks
+say Because a lid can go walking in somebody's paws. If it's got the only label on it, the rest of the provisions have lost their names for the afternoon.
+choice Could you find them again by smell? -> twomarks_more
+choice Set the lid square. -> hub
+node twomarks_more
+say Yes, in some cases. I'd rather use the chalk and keep the grand education of my nose for the quiet pleasure of smelling supper.
+choice Set the lid square. -> hub
+choice Go with your parcel. -> bye

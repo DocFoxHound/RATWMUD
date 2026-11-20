@@ -1,0 +1,441 @@
+mantle rm205
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_cressida_millstack
+title the stopper carver
+fits stage=adult|old
+prefers role=merchant job=healer
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk carves_a_different_notch_for_each_scent
+likes roast_pork whittling festival_bells warm_rain
+dislikes salt_wind early_bells
+fears a_shelf_without_distinctions
+hopes a_scent_that_needs_no_label
+topics pastimes +0.5 work +0.5 food +0.2 festival +0.3 travel -0.2
+styles comfort=unhurried gossip=amused refuse=measured tease=gentle
+marks oath saying
+persona #self.first# identifies bottles by the notches cut into wooden stoppers and spins an amiable yarn while considering even the smallest purchase.
+
+words
+oath! = Singed cork and silk | Black luck in a clean cuff
+saying! = Leave the faintest thing a turn | Cork remembers the twist
+notch = a little forked notch | a thumbnail hollow
+plug = a tapered stopper | a carved wooden plug
+coal = the lucky black chip | my pocket cinder
+cuff = the inside of my cuff | my clean left sleeve
+curl = a pale shaving | a little curl of wood
+knife = the short carving blade | my thumb knife
+phial = a narrow bottle | a long-necked phial
+ribbon = a strip of linen | a clean little ribbon
+stop = a blunt end | a rounded stop
+grease = the rich brown dripping | the savoury fat
+bellnote = a high answer | a round ringing sound
+porch = the bit under the eaves | a sheltered patch
+sample = a single dab | a touch of scent
+case = a tray of little hollows | the partitioned case
+turn = a slow twist | a half turn
+woodgrain = the slanting grain | that faint line in the wood
+groove = the deep cut | the groove for a claw
+wick = a twist of cotton | a slender wick
+
+any
+opinion festivals for 2 : A crowd in good humour smells of half the kitchens in town. I'd bottle the hour before the dance.
+opinion merchants for 1 : A careful seller wants to see you twice. Easy enough to please a nose for one afternoon.
+opinion road against 1 : A rattling road is a most expensive way of mixing scents.
+opinion watch for 1 : A little space to count one's takings is a kindness the Watch seldom gets thanked for.
+opinion city for 2 : Shut your eyes in this city and you'll still know when you've turned the corner. I love that.
+opinion drink mixed 1 : One cup loosens the tongue. The next can drown a delicate flavour for the rest of supper.
+opinion newcomers mixed 1 : I'll listen to a new arrival. Sometimes the familiar things have better names somewhere else.
+opinion houses mixed 1 : I'd happily try the view from the high windows. I'd want a sample of the company before committing myself.
+opinion times mixed 1 : How folk weigh a tiny comfort tells you quite a lot about the size of their worries.
+grown
+line greet : Give me half a twist of this wood and I'm yours to talk to. | Lovely, a voice at last. I've been conversing with a stopper.
+line greet [pair.band=strangers] : A fresh face. I can put the old stories back into service. | Just a moment while I brush these curls aside. Welcome.
+line greet [here.time=dawn] : A clean morning nose deserves a gentle welcome. | The early hour has left my usual speech quite short. Hello.
+line greet [here.time=night] : Mind the little things by my elbow in this light. | Come within speaking range. There's wood dust between us.
+line greet.return : The greeting goes both ways, with a little extra from me. | Your voice found me in mid-carve.
+line greet.return [pair.band=friends|family] : Lovely. I can start halfway through the interesting bit. | Back to lend me a familiar ear.
+line greet.return [self.working=yes self.role=merchant] : I've a free ear above the busy paws. | Welcome. The little pile of shavings can wait.
+line greet.return [here.time=dusk|night] : I've a welcome left although the light's nearly spent. | Late hours suit a voice like yours.
+line kin.open [pair.kin!=no] : It's family. I can let the elaborate welcome go. | Come close. You've heard my fine manners too many times.
+line again.open : We could make a matched pair of today's meetings. | The second visit generally improves on the first.
+line hail [pair.band=friends] : Over at the end with all the wood curls! | Come listen! I've nearly found the right comparison.
+line farewell : Carry a pleasant trace of our little meeting. | Off with you before I remember something else to explain.
+line farewell.return : I'll let that pleasant last word linger. | Safe travelling. The short farewell's a rare luxury from me.
+line react.news : Unstopper it carefully. I want the whole account. | Take the tale from where you first caught wind of it.
+line react.news.new : That deserves a fresh notch altogether. | Well, that's put an unfamiliar curl in the day.
+line react.news.known : The outline's familiar. I could trace it blind. | I believe we've opened this particular bottle before.
+line react.news.doubt : There's an odd top note to that account. I wish I could place it. | I'd let it sit before I trusted the first impression.
+line react.news.sorrow [topic.kind=death|loss|arrest|crime|assault|theft] : That's a sharp sorrow. Set your burden here for a little. | I think we can give that news a moment without commentary.
+line react.news.glad [topic.kind=marriage|birth|work|apprentice] : Such news! I'd keep a drop of this feeling for tomorrow. | A good thing opens out so pleasantly in the telling.
+line ask.how : What's the first thing you'd keep from your day? | Feeling a little worn round the edges today?
+line answer.how : Pleasantly occupied and just a trifle worn thin. | A bit frayed at the cuff. The middle still holds together.
+line answer.how.busy [self.working=yes] : Three little tasks going and only the one clever nose. | Busy enough to put a notch in the hour.
+line sympathise : A small hurt can last longer than anybody thinks. | You needn't sweeten the story for my benefit.
+line reassure : Rest your senses a little. The same thing can feel quite different afterwards. | We can undo one turn of this at a time.
+line decline : I'm husbanding what strength I have for an earlier promise. | I'd make a poor job of helping while I'm this tired.
+line accept_decline : Then we'll keep the cork in that idea. | I appreciate a clear answer. It saves so much guessing.
+line thank : You've made a delicate business decidedly easier. | I like a kindness that leaves a little sweetness afterwards.
+line deflect_thanks : Consider it a sample of my better nature. | I enjoyed doing it. We can divide the credit.
+line preclose : I'm losing the thread, which generally means I need a rest. | I'll pocket this little knife and be on my way.
+line accept_preclose : I'll let you leave on the pleasant note. | Quite so. Nothing gained by shaking out the very last drop.
+line tease [pair.band=friends] : You could sell silence and still talk through the entire transaction. | What a convincing face you have for an unconvincing excuse.
+line tease.return : If I'd wanted an honest appraisal I'd have brought a mirror. | Careful now. I'm saving that smile of yours for evidence.
+line ack : Mmm, that fits the impression. | I can quite picture the shape.
+line give.advice : If everything starts seeming alike, go outside for ten breaths. | Do the delicate thing first while the paws are fresh.
+
+scene notch_begin
+when topic=pastimes|work self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : My thumb remembers a notch better than my eyes remember ink. | A forked cut means one thing to me and a half-moon quite another.
+b : Would the notch feel different by lamplight? | What's the half-moon?
+a : Easier still with the lamps out. I can't be distracted by a handsome label. | Something round in the nose. That's my shorthand. You'd have to invent your own.
+
+
+scene luckchip
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : I carry #coal# for luck. Clean pockets are for the reckless. | This black smudge is the price of good fortune.
+b : Has it ever been unlucky? | Do you buy the luck by weight?
+a : Only on washing day. Even then I know where to find another pocket. | No. Once bought, it would be ordinary coal trying to impress me.
+
+
+scene pearwood
+when topic=pastimes self.likes=whittling
+does tell.self / react.self / assess
+a : A good shaving comes off with its own little flourish. | For this cut I went crosswise over the grain deliberately.
+b : Pretty enough to keep. | That sounds awkward.
+a : For a minute. After that it's mostly something stuck in my fur. | I want the roughness. The claw will know this plug by touch.
+
+
+scene two_scents
+when topic=work self.job=healer self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : Two open bottles can persuade a customer there's a third scent here. | I offer one dab, then give the nose a rest.
+b : What's in the third? | Don't folk ask to try the lot?
+a : Air between the first two. It's impossible to wrap as a present. | Yes, and by the sixth they're buying whatever colour they like.
+
+
+scene blank_linen
+when topic=work self.job=healer self.role=merchant
+does tell.self / react.self / assess
+a : I keep one strip of linen quite plain for comparing things. | There's more yesterday than today left on that ribbon.
+b : Seems a waste of a fine ribbon. | Even after it's aired?
+a : I sell what's missing from it. It has a full day's work to do. | Give it one warm breath. Yesterday's purchase says hello again.
+
+
+scene sticky_plug
+when topic=work self.job=healer self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : If a stopper sticks, ask it sideways before pulling up. | A badly fitted plug wastes a good smell by the hour.
+b : Ask it politely? | Can you find a leaky one by nose?
+a : A little sideways pressure is a kind of politeness with wood. | I pass each neck under my nose with the bottle shut.
+
+
+scene shelf_order
+when topic=work self.working=yes self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I arrange the quiet scents at one end. | A strongly scented parcel gets its own wrapping.
+b : You can hear a smell now? | Doesn't everything get wrapped?
+a : It's a turn of phrase. Though a badly balanced tray does make itself heard. | Not everything tries to send a calling card through two layers of cloth.
+
+
+scene plain_gift
+when topic=friends
+does tell.self / react.self / assess
+a : I'd give a dear friend something faint enough to keep private. | Plenty of gifts announce the giver all over again.
+b : What if the friend wants it louder? | And yours wouldn't?
+a : Then the pleasure is in being told so. Friends have that privilege. | Ideally nobody would notice unless invited in close.
+
+
+scene spring_pork
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : The smell of roasting pork has no patience with subtlety. | I'll take the patch of skin by the corner.
+b : Does that offend a delicate nose? | Not a middle slice?
+a : On the contrary. For once both my nose and my appetite agree immediately. | No, I like the crisp bit that cracks into two unequal pieces.
+
+
+scene festival_ring
+when topic=festival|pastimes self.likes=festival_bells
+does tell.self / react.self / assess
+a : I like a bell that answers the little bell a moment late. | A festival sounds crowded before the first boot gets outside.
+b : Are they meant to be together? | You hear people coming?
+a : Probably. It's that little stumble I look forward to. | I hear the bells making space for them. Then comes the joyful shoving.
+
+
+scene early_quiet
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : My finest idea was still half asleep when the bells started. | Could the early bell practise in a cupboard for once?
+b : Can you remember the idea? | Big cupboard.
+a : Only that it was excellent. Very hard to prove now. | I could carve a stopper for the keyhole. Thoroughness matters.
+
+
+scene damp_stone
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain brings a smell out of old stone I'd never find by scraping it. | I stay under the eaves for the first few drops just to breathe.
+b : Is it pleasant? | Wouldn't you breathe inside?
+a : If you like the smell of a cool room opened after a summer away, yes. | You underestimate the pleasure of being theatrical about a small comfort.
+
+
+scene wind_salt
+when topic=weather here.region=ridgemere self.dislikes=salt_wind
+does tell.self / react.self / assess
+a : I have a grudge against salt in the wind. It blunts my pleasure in delicate scents. | Given a choice I'd season my supper and leave my whiskers plain.
+b : Nothing wrong with a little salt. | I take it you don't love the sea air.
+a : Plenty right with it in its appointed dish. | Happy to visit it. I'd rather it didn't follow me under the door.
+
+
+scene neighbour_test
+when topic=friends self.neighbour
+does tell.feeling / react.self / assess
+a : I like being close enough to #self.neighbour# to exchange a quiet greeting. | I'd trust #self.neighbour# with my little carving knife.
+b : Quiet even for you? | Even your best little blade?
+a : Especially for me. A great effort which I reserve for the deserving. | Yes. The knife I'd lend. The lucky coal stays here.
+
+
+scene dear_pair
+when topic=family self.married=yes
+does tell.feeling / ask.detail / answer.detail
+a : What I treasure beside #self.spouse# is being able to fall silent halfway through. | A supper with #self.spouse# deserves time set aside.
+b : Does a thought get lost? | More than an ordinary supper?
+a : I can pick it up later. That's the luxury. | No. The ordinary ones deserve it too. That's how I mean to live.
+
+
+scene climb_view
+when topic=dreams|land here.region=ridgemere
+does tell.feeling / ask.detail / answer.detail
+a : I'd like a high window overlooking all these roofs. | Living a few streets farther uphill would be lovely except for one small detail.
+b : For the view alone? | The expense?
+a : For the choice. Some days I'd turn my chair inward, gloriously wasteful. | Oh, that's a large detail. I was thinking of the climb home.
+
+
+scene shop_worry
+when topic=prices self.role=merchant
+does tell.self / react.self / assess
+a : The wrapping of a cheap thing can cost me more thought than the thing itself. | Some goods are hard to put a fair figure on.
+b : Surely a scrap of paper would do. | What's your way of settling it?
+a : Until it's your cupboard that smells of the last parcel in it. | I imagine the buyer returning to complain. Helps keep me honest.
+
+
+scene crates_late
+when topic=caravan world.wagons=late|raided
+does tell.worry / ask.detail / answer.detail
+a : Delayed wagons put a strange value on the bottom inch of a spool. | A late cart makes the things already here seem rather precious.
+b : Have you a way to stretch it? | Even a frayed bit of string?
+a : Tie a smaller bow. There's a great deal of unnecessary pride in bows. | Especially string. Try going a week without tying one thing to another.
+
+
+scene good_time
+when topic=times world.times=good|boom
+does tell.feeling / react.self / assess
+a : It's pleasant when a small luxury can come home with the necessities. | These good times suit a little extravagance.
+b : Such as what? | Treating yourself?
+a : An extra ribbon. One that doesn't have to prove it kept the parcel shut. | I'm considering a second pocket for the coal. The first could do with a rest.
+
+
+scene rumour_sleeve
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I test a rumour like a scent. Set it aside and see what's left. | Sometimes I quite enjoy an unbelievable tale for the twist in its middle.
+b : And if nothing's left? | Would you repeat the twist?
+a : Then I've been spared the trouble of repeating it. | Just the shape. I'd leave the names where I found them.
+
+
+scene festival_stall
+when topic=festival self.role=merchant
+does tell.plan / ask.detail / answer.detail
+a : At a fair I'd put the samples downwind of the pies. | If I ever have a festival stall I want an awning I can raise with one paw.
+b : Wouldn't their smell carry over? | What about your other paw?
+a : It would. But nobody's going to buy my scents while I smell better than supper. | Holding the tray. I know which paw brings home the bread.
+
+
+scene hearth_splinter
+when topic=home|pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I've a use for the smallest chip of clean wood. | My carving pile grows in exactly the wrong direction.
+b : Surely too small to hold? | Up instead of down?
+a : For carving, yes. For marking a place in a book, excellent. | Outwards. I keep discovering good wood under perfectly respectable furniture.
+
+
+scene road_guest
+when topic=travel|newcomer
+does give.opinion / ask.detail / answer.detail
+a : Give a traveller time to lose the road smell before you ask about the journey. | There's a question I'd like to ask everyone who arrives.
+b : Why wait? | About what's happening elsewhere?
+a : Because for that first minute the answer's going to be something about tired feet. | About what first smelled different. Every place has something.
+
+
+scene dream_coal
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : Last night I dreamt my bit of luck sprouted green leaves. | I had a dream about buying a pocket that was already full of luck.
+b : How does one look after a leafy coal? | How much did the pocket hold?
+a : Potted it. That's the proper home for a growing bit of fortune. | A small black smudge. I'm beginning to think it was my ordinary pocket.
+
+
+scene foot_rest
+when topic=health
+does tell.feeling / react.self / assess
+a : When my senses feel blunt I put everything nicely away. | Today my bones would like a word about working hours.
+b : How long till they're sharp again? | Do they get a say?
+a : Till I get curious about something. Then I know they're back. | They get the chair. I conduct the negotiations seated.
+
+
+scene hand_craft
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : I've made #notch# shaped like an owl with its eyes shut. | A careless cut gave me a little face in the wood.
+b : Did you plan the owl? | Who is it?
+a : No. I just have the sense to recognise a lucky mistake. | Nobody yet. If I give it another eyebrow it'll be quite a severe stranger.
+
+
+scene high_scent
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : The city's breezes sort smells into layers on the hills. | I've walked uphill after an intriguing whiff and arrived nose-first at blank brick.
+b : What layer are we in? | Found out what it was?
+a : My honest judgement? Somebody's dinner. A very good layer. | Yes. My own sleeve had been in the herb drawer before I left.
+
+
+scene pocket_faith
+when topic=faith
+does give.opinion / ask.detail / answer.detail
+a : Gratitude belongs in a prayer. The coal just gets my pocket. | I can be fond of a small charm without asking it to run the world.
+b : You keep the two separate? | Has anybody asked it?
+a : Certainly. A bit of coal would make a very poor listener to prayers. | Me, on occasions. It proved every bit as qualified as you'd think.
+
+
+scene last_night
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : In poor light I trust my thumb more than a pretty label. | The day's nearly done. My nose wants to put its feet up.
+b : What else can it read? | Does a nose have feet now?
+a : Where I last cut too deep. The thumb and the wood both remember. | It does after a day of being run off them.
+
+
+scene cook_cut
+when topic=food self.likes=roast_pork
+does tell.self / react.self / assess
+a : I once tried carving a stopper the shape of a roast. | The first cut of a roast releases a smell the whole dish has been keeping secret.
+b : You'll make the bottles hungry. | You make supper sound like news.
+a : I stopped when my own stomach started offering advice. | It's the news I most hope will reach me while it's still hot.
+
+
+story lucky_lining [topic=memories|smalltalk]
+  : I sewed a pocket just big enough for one bit of coal. The coal chipped, and both little pieces rattled out.
+  : Next day I sewed a pocket half the size. Ended up with a black thumb and enough determination to make a chimney blush.
+  b : Was it worth the luck?
+  : Quite. I learned to line the pocket first. Fortune likes a little flannel.
+
+
+story pinepeel [topic=work|memories self.role=merchant self.job=healer]
+  : I once opened the wrong phial and delivered a lovely speech about the scent of cedar.
+  : When I paused for breath I realised I was smelling the box. The phial was empty.
+  b : Did anybody buy the box?
+  : No, but I kept it. Nobody bought the cedar either, but for a moment I nearly sold some to myself.
+
+
+story feastknife [topic=festival|memories self.age>=25]
+  : At a feast I borrowed a decorated knife to cut a bit of roast and couldn't work out which edge was sharp.
+  : There was a little blade hidden inside the big fancy handle. Splendid little thing once it came out.
+  b : Did the carving go well?
+  : Perfectly. By then the roast was cold enough to hold still without a fork.
+
+
+story duet_wood [topic=pastimes|memories self.likes=whittling]
+  : I tried to carve a whistle. No sound came out, though I pared it till the walls were thin as a leaf.
+  : Disgusted, I wedged it against a rolling bottle. Fit the neck exactly.
+  b : Did it ever whistle?
+  : No. Turned out I'd made a stopper with a very high opinion of its musical gifts.
+
+
+story rain_sheet [topic=weather|memories]
+  : I once wrapped a parcel so well against wet that I couldn't find the opening myself.
+  : I was standing under an awning, perfectly dry, sawing through the cord with the side of a key.
+  b : What were you in such a hurry to get at?
+  : The spare key. There followed a little thoughtful silence.
+
+
+rule @carvecry
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Catch that curling shaving before it lodges in somebody's cuff! | There. One cut that a thumb will recognise.
+
+
+rule @samplescry
+when concept=bark self.role=merchant self.job=healer working=yes
+does aside
+cooldown 8h
+say Sample a single ribbon and let the rest wait their turns! | Lid back on after the first breath, if you please.
+
+
+rule @wrappingcry
+when concept=bark self.role=merchant working=yes
+does aside
+cooldown 8h
+say Let me tuck the cloth under that loose neck! | Don't swing a narrow parcel by the twist!
+
+
+rule @faircry
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say The little bell answered twice! Well rung down there! | Save a tune for the hour the stalls come down!
+
+
+rule @coalcry
+when concept=bark
+does aside
+cooldown 8h
+say Black on the left cuff again. Luck's travelling today! | There's my bit of good fortune, trying to roll away.
+
+
+rule @mealcry
+when concept=bark self.likes=roast_pork
+does aside
+cooldown 8h
+say There's a corner of crackling that's got my full attention! | Don't wrap the crisp bit till it's cooled!
+
+dlg resident.hub : I've enough time for the question and a little more than enough advice.
+dlg resident.hub [topic.meeting=known] : #topic.player#, how pleasant. I remember the shape of our last conversation.
+dlg resident.hub [here.time=night] : Come nearer. I prefer to see the face that goes with a late voice.
+dlg resident.hub [pair.disposition=hostile|wary] : I'll listen. I should like the courtesy returned in due course.
+dlg resident.job [self.role=merchant self.job=healer] : I blend scents at #self.workplace#. Each stopper carries a thumb-readable little mark.
+dlg resident.job : #self.trade_words.capitalize#. The carving's a little occupation of my own.
+dlg resident.news [world.news] : The news I can actually vouch for is this. #world.news#.
+dlg resident.gossip [here.gossip!=yes] : I've little to scent out in other wolves' affairs today.
+dlg resident.business [business=steady] : A steady little stream. I can pay proper attention to each parcel.
+dlg resident.bye : Keep the pleasant part of our conversation. I'll do likewise.
+dlg shop.greet [here.shop!=bare] : Take your time about choosing. First impressions have a habit of evaporating.
+dlg shop.greet [here.shop!=bare topic.meeting=known] : Welcome again, #topic.player#. Where shall we begin this time?
+dlg shop.greet [here.shop=bare] : Empty shelves give me ample room to gesture at what I hope to get in.
+dlg shop.prices : The bottle's only a small part of the cost. The rest went into what you'll remember of it.
+dlg shop.bye : Carry that upright now. I like a purchase to last past the doorstep.
+graft resident.hub
+choice Why the black mark on your cuff? -> cuffluck
+node cuffluck
+say A little coal comes about with me. It was sharp when it went in the pocket. I've rounded every edge off it wishing for small things.
+mood pleased
+free
+choice What does a small wish look like? -> cuffwish
+choice I won't keep you from your wishes. -> hub
+node cuffwish
+say Somebody bringing me a question that takes me by surprise. This one has obliged me beautifully.
+choice I shall look for another one. -> hub
+choice Farewell for now. -> bye
+graft shop.greet
+choice How do you read those stoppers? [self.job=healer] -> plugread
+node plugread
+say My thumb goes over the top. A fork, a crescent or a pair of cuts tells me where to start looking. I check before I wrap a purchase.
+choice Why check a second time? -> plugcheck
+choice Let's look at the shelf. -> greet
+node plugcheck
+say My thumb's a decent reader. A customer deserves the courtesy of a second opinion from my nose.
+choice Show me the bottles again. -> greet
+choice I have to be going. -> bye

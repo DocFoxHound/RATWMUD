@@ -1,0 +1,263 @@
+mantle rm428
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_berit_wickton
+title the spoon star
+fits stage=adult|old
+prefers job=servant warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk takes_the_last_steps_in_pairs_to_catch_a_star_in_a_spoon
+likes smoked_eel stars tidy_house first_snow
+dislikes waiting salt_wind
+fears a_quiet_kindness_taken_for_an_obligation
+hopes a_clear_upper_window_at_the_end_of_work
+topics pastimes +0.5 work +0.5 home +0.4 weather +0.2
+styles comfort=welcome gossip=reticent refuse=gentle tease=none
+marks oath saying
+persona #self.first# takes the final stair in two eager strides to catch a first star in the curve of a clean spoon and treats a late meal with the same care as a grand dinner.
+
+words
+oath! = Six clouded spoons | A whole tray of moons
+saying! = Keep a corner of the sky | The last bowl deserves a shine
+spoon = a polished spoon | the little bright spoon
+bowlcurve = the silver hollow | a shallow curve
+rim = the fine rim | the curved edge
+star = one steady pin of light | a pale low star
+upperpane = the high pane | the upper corner
+traycloth = a folded tray cloth | my soft cloth
+eel = a twist of smoked fish | the dark eel strip
+stairpair = the last two risers | a pair of steps
+drape = a loose curtain | the fine hanging
+sootdot = a little grey fleck | the dark speck
+tuck = a turned hem | an inward corner
+snowlight = the white glow | a pale wash
+
+any
+opinion houses mixed 0 : A fine hall is at its most gracious when a late supper gets the same clean spoon as the first fine course.
+opinion church for 1 : A little quiet reflection is a gift within reach of any ordinary kitchen.
+opinion festivals for 1 : I'll enjoy a feast through its many ordinary details, including the meal that reaches the last guest.
+opinion merchants mixed 0 : One sound spoon well polished is quite enough. I would examine the actual edge before paying for finery.
+opinion road for 1 : The quiet road out towards the hills is worth taking while there is still a patch of evening overhead.
+opinion city for 1 : A single star rising over the city can lend a blank kitchen wall the prettiest light.
+
+grown
+line greet : Welcome. I can leave the polishing by me. | Hello. There's a clear place where the tray won't be in the way.
+line greet [pair.band=strangers] : Your first visit to my little patch of shine. Welcome. | A first greeting needn't be a grand one.
+line greet [here.time=dawn] : Morning. A clean spoon shows the daylight already. | Early light at the high pane. Good morning.
+line greet.return : Hello in return. I've folded the cloth quite away. | I heard you before the little reflection left the rim.
+line greet.return [pair.band=friends|family] : A dear face just above the polished edge. | I can set a little bright place for you without ceremony.
+line greet.return [here.time=night] : An excellent hour to look up as well as speak softly. | Hello. We've some evening sky left to enjoy.
+line again.open : Back before the polish has quite lost its warmth. | Our ways have come together a second time very gently.
+line hail [pair.band=friends] : Come see a star I can hold within reach. | Here at the side of me. The light shows from this angle.
+line farewell : May your last steps take you to a bright window. | May you have clear sky above your road.
+line farewell.return : I'll put my spoon away and let you through. | A kindly evening or a kindly road, whichever comes first.
+line react.news : I'll set the shining thing down and attend to your words. | Bring the account into the light at whatever pace suits you.
+line react.news.new : I'd seen no faint reflection of that before now. | That's new enough to make me put the work aside.
+line react.news.known : Yes. I remember that piece quite distinctly. | The earlier telling caught much the same light.
+line react.news.doubt : I'd turn the words a little and see if the light goes with them. | Something in there looks more like an echo than an event.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll put a meal by and stay beside you through the telling. | Sad words have a right to be heard at their proper pace.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : There is a quite lovely glimmer in that account. | I'd treasure good news of that sort through the rest of a shift.
+line ask.how : Have you found a little clear spot in your day? | How has the work sat upon your shoulders?
+line answer.how : A little tired, enjoying what small bright things I can see. | Fairly even, with a warm corner of feeling left for company.
+line decline : I'd be failing an earlier promise if I offered my time as well. | I should like to help, but the little space I have is already claimed.
+line accept_decline : I understand. One may keep one's quiet interval. | Then I'll put that request away with no ill will.
+line preclose : There's a little stretch of light I should get to before the work resumes. | I'd best finish what was nearly bright when I set it aside.
+line accept_preclose : You can go sweetly on to your next call. | Certainly. There's no virtue in keeping you waiting.
+line thank : You kept me a little of the light. Thank you. | I appreciate a kindness done with that much care.
+line deflect_thanks : It only needed one spare corner of cloth. | There was room on the tray for another small kindness.
+line sympathise : You may sit here and let the bright chatter go past awhile. | My company is yours without requiring a cheerful expression.
+line reassure : Small bright things survive a surprisingly grey evening. | Let's put the immediate load down and find a place to sit.
+line ack : Yes, I see the light quite plainly there. | That has the shape you described.
+line give.advice : Try changing your angle before polishing a perfectly clean thing. | Make a place for the last guest before serving the first.
+
+scene catchstar
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I can bring a star indoors on a spoon for a little while.
+b : Does it need a very large spoon? | Which part holds the star?
+a : Only a bright curve and a few degrees of patient tipping at the window. | At the inner rim. My wrist changes the view and the star keeps its own excellent place.
+
+scene stairpair
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : When my tray is empty I take the last two steps together to catch the view above the rail.
+b : Why the hurry? | Always the last two?
+a : A light seen across a stair well may last a surprisingly short while. I enjoy finding it in time. | Only with the landing well in view and empty. No star's worth a startled guest.
+
+scene lateplace
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I'd like the late place set with a really bright spoon, not the one still waiting for the cloth.
+b : Who would notice? | Would you polish one specially?
+a : A wolf arriving tired and ready to feel an afterthought might notice. I should like to prevent that. | Yes. A few quiet turns of a cloth make an ordinary welcome feel properly meant.
+
+scene trayturn
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : A shallow spoon weighs very little until it begins slipping under the rest of the tray.
+b : Can you hear it move? | Can you keep it still?
+a : One fine click, generally. A very small noise, worth attending to promptly. | I lay a strip of cloth where the handles come together. Less excitement and a kinder sound.
+
+scene tidydrape
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy window gives me rather more sky for no enlargement of the room. | I draw one curtain entirely clear of its little pane when my work ends.
+b : Isn't that inviting a draught? | Do you value the room or the view?
+a : The pane remains shut when it's cold. I was only inviting a little light to look in. | I like the sense of one being rather more generous on account of the other.
+
+scene eelcurl
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I turn a strip of smoky eel into a loose curl on the plate.
+b : Is the curl a piece of grandeur? | Does it taste different?
+a : Only a convenient way to pick up a good firm strip. It happens to look rather handsome too. | No. But the edge comes readily to the fork and I'm free to enjoy the smoke instead of chasing supper.
+
+scene snowshine
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : Fresh snow lends a spoon a startlingly pale face compared with yesterday's grey light. | A new dusting seems to polish everything indoors by reflection.
+b : You'd stop cleaning then? | Even an old spoon looks bright?
+a : I still know the difference between clean and merely well lit. Quite nice to enjoy both at once. | Yes. A faint old scratch can almost lose itself in all that white.
+
+scene saltpane
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / ask.detail / answer.detail
+a : A sea wind salts the pane till the evening sky looks full of false stars. | A sharp salt breeze feels personally intent on putting every newly wiped thing back to work.
+b : Do they still show when you move? | Is it the wind or the salt you mind?
+a : No. Turn my head and those little marks stay on the glass. A real star shifts against the frame. | Both together. The wind alone is welcome to pass without leaving a gritty account of itself.
+
+scene restnow
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I'd rather be told to take a real interval than stand waiting on the point of being summoned. | Waiting at a half-open door makes the minutes feel rather poorly arranged.
+b : How would ten minutes be used? | Does a firm time help?
+a : Climb right up to the highest pane and look out. A known short pause can be quite generous. | Immensely. I can put the tray on a surface more suitable than a hovering wrist.
+
+scene gentlehome
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : A meal on the Estate may travel several quiet turns before it reaches its place. | Some Estate corridors are at their most elegant when they allow a laden wolf space to pass.
+b : How do you find your way? | Elegant floors or elegant manners?
+a : By the last patch of light on each turn. And by remembering the guest ought to receive hot food. | Both give me pleasure. The manners are the part I actually need when my paws are occupied.
+
+scene sharedsky
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd save a turn at the high pane for #self.spouse# whenever the sky clears. | I'd put a warm plate aside for #self.spouse# while I waited for the first star.
+b : Is there room for two? | Which do you serve first?
+a : If we stand close. A perfectly reasonable arrangement for a married pair. | Supper if it's ready. A bright star will usually stay a little longer than a hot piece of fish.
+
+scene quietfriend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.friend# a spoon with one star in the bowl and no better entertainment planned.
+b : That little would do? | Could you put a second star there?
+a : For a friend, quite. An ordinary pleasant thing doesn't always need a story round it. | If the angle were right. Sometimes the pleasure is in looking together and failing very gently.
+
+scene campstar
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There was a hillside where the sky seemed nearly inside the door after dark. | A few flecks of charcoal can put a quiet high country evening back in my thoughts.
+b : How near were the stars? | Did the little black pieces do that?
+a : No nearer at all. The dark round them went on much further than any wall I knew. | The colour did. A black slope and one tiny point above it. A whole quiet night in a small impression.
+
+scene clearpraise
+when topic=gossip
+does give.opinion / react.self / assess
+a : Sometimes an ordinary helpful act gets retold as if it had been a great public performance. | I prefer leaving an unspoken kindness in the room where it was given.
+b : Can praise be welcome? | Whose choice is it?
+a : Not a sincere word. I mind an audience being invited where one wasn't sought. | I'd let the wolf who received it choose. The rest can go on with a sound clean silence.
+
+scene quietfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks for an evening star even on days the high pane has no view of it. | It's a comfort to me that a bright thing may be quite real beyond a patch of cloud.
+b : Does the spoon have a part in prayer? | You don't need to see the star?
+a : It reminds me to stop a moment. My prayer hardly depends upon polished cutlery. | I'd welcome the sight, certainly. I don't require the sky to make an arrangement for me every evening.
+
+scene steelprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : An old good spoon can be worth rather more than a new showy one with a thin bent handle.
+b : How can you judge a spoon? | By the reflection?
+a : How it rests empty across the fingers tells a good deal about what it will be like full. | For a pleasant experiment, yes. For supper I'd chiefly choose one that won't tip its contents into a fold.
+
+scene shortsoft
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A modest supper may still arrive with its one best spoon turned neatly toward the guest. | There's no advantage to serving a small portion in a careless fashion.
+b : Does that disguise the size? | Would you pretend it was a feast?
+a : Not an attempt at disguise. I want the guest to know the care is still there. | No. I would let it be exactly as warm and pleasant as it truly can be.
+
+scene starwish
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd enjoy a quiet seat high enough to see one star on the earliest clear evening of each season. | If I could add a little window anywhere it would be on a landing nobody hurries past laden.
+b : For a star calendar? | Why a landing?
+a : Merely to notice how things change. A new season shouldn't have to come with paperwork. | A glimpse can belong to every wolf on the stairs there. I'm rather fond of a view one can share.
+
+grown
+
+story wrongstar [topic=pastimes|memories]
+  : I tried to show a bright little star on my spoon before supper and couldn't make it follow the curve properly. It remained squarely in the middle.
+  : At last I realised it was a grain of salt from the preparation board.
+  b : Did you wipe your star away?
+  : Yes. I ought to have recognised a star that refused every known law of reflection.
+
+story pairstep [topic=work|memories self.job=servant]
+  : I came briskly up the last two risers with an empty tray and caught the setting sun low in its face. The whole landing took a little red glow.
+  : I stopped so suddenly the cloth slid off my shoulder.
+  b : Did anybody see the light?
+  : I hope at least the wall enjoyed it. I finished by going back down one step for my cloth.
+
+story snowdish [topic=weather|memories]
+  : I put an empty dark dish outside once to see how quickly the first snow would cover the bottom. Tiny white stars came down all over it.
+  : When I brought the dish inside it was full of a very little plain water.
+  b : Was that a disappointment?
+  : Not a bit. I knew what the small wet circle had looked like on the way in.
+
+rule @pane
+when concept=bark
+does aside
+cooldown 8h
+say One moment's light on the inside rim of the spoon. | Turn it a hair more. There is the star.
+
+rule @service
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say A fresh spoon for the late place, please. | Set the handles towards the open edge facing the guest.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say Even the little scratched bowl borrows that snow light. | A pale sky caught on every clean surface.
+
+rule @quiet
+when concept=bark
+does aside
+cooldown 8h
+say The cloth can slide without a sound if the corners lie flat. | Keep one corner of the sill free for the view.
+
+dlg resident.hub : You needn't wait for me to finish polishing. There's a quiet interval now.
+dlg resident.hub [topic.meeting=known] : #topic.player#, the little prospect in the spoon has been particularly fine of late.
+dlg resident.hub [here.time=night] : A very good hour for looking upward after the last bowl has been set down.
+dlg resident.hub [pair.disposition=wary|hostile] : A civil question carries quite adequately from your side of the table.
+dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. I remember the least conspicuous places as well as the grand chair at dinner.
+dlg resident.job : I try to leave a place looking as if the wolf who next uses it were actually expected.
+dlg resident.bye : I hope you look up once on your way home and find something worth the moment.
+
+graft resident.hub
+choice Can you show me the star on the spoon? -> turnspoon
+node turnspoon
+say Hold the bowl a little below your eye and let the bright side face the pane. Turn slowly. The star will come in at one edge when it happens to be visible.
+free
+choice And on a cloudy night? -> cloudspoon
+choice I'll try the other angle. -> hub
+node cloudspoon
+say On a cloudy night we can have a clean spoon and a comfortable supper. There's no obligation on a small pleasure to perform every evening.
+choice That sounds pleasant too. -> hub
+choice Goodbye, and a clear sky. -> bye

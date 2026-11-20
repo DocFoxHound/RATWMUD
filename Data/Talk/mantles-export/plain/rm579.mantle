@@ -1,0 +1,262 @@
+mantle rm579
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_wenna_sootham
+title the cancelled-receipt pack
+fits stage=adult|old
+prefers job=merchant talk=quiet
+traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk trims_cancelled_receipts_to_playing_card_size_and_draws_a_suit_on_the_blank_back
+likes blackberries cards quiet_chapel autumn_wind
+dislikes deep_mud stale_bread
+fears a_private_moment_set_down_as_public_business a_good_entry_blotted_by_a_damp_cuff
+hopes a_complete_pack_made_from_accounts_paid_in_full
+topics work +0.6 pastimes +0.5 food +0.3 faith +0.3
+styles comfort=quiet gossip=closed refuse=gentle tease=dry
+marks oath saying
+persona #self.first# trims settled receipts to the size of playing cards, uses the blank backs for a private game and never plays with a paper that someone still needs.
+
+words
+oath! = Trump my receipt | Berry juice in the daybook
+saying! = Settle the account before dealing it | A quiet hand can hold a noisy sum
+cardback = the blank card back | a clean patch of paper
+receipt = my cancelled receipt | an old settled slip
+corner = the rounded corner | an even-cut corner
+pack = my home-cut pack | a pack of clipped slips
+berry = a blackberry from the sunny side | a plump blackberry
+ashtray = a shallow tray for trimmings | a little scrap tray
+warmcloth = a soft folded handkerchief | my hand-warmed cloth
+draught = the sharp autumn draught | a gust smelling of leaves
+cloakpin = my broad cloak pin | a pin with a low head
+mudshelf = a shelf of clinging mud | a heavy band of wet earth
+loafheel = the hard end of a loaf | a worn bread heel
+
+any
+opinion merchants for 1 : A firm can speak with a particularly clear voice by settling every account on the agreed day.
+opinion church for 1 : Silence has a place on the chapel bench even when there isn't room for an extra coat.
+opinion city for 1 : I like windows that show a busy street and still let a wolf close the shutter.
+opinion strangers mixed 0 : I'll show a visitor how to reach the right door. What happened behind it belongs elsewhere.
+opinion dole for 1 : Give bread fresh enough that its receiver needn't do another meal's work on it.
+opinion road mixed 0 : The driest route often has fewer papers blowing along it than the grandest.
+opinion times mixed 0 : Ask me the number of loads received. My talent for telling next winter's count is less considerable.
+
+grown
+line greet : Come round the side where the cards are blank.
+line greet [pair.band=strangers] : A fresh hand. I'll hear it as it lies.
+line greet [here.time=dawn] : Morning has left a clean rectangle of light on the desk.
+line greet [here.time=dusk|night] : Welcome under the last bright pane.
+line greet.return : I'm here. The cards can wait in their little stack.
+line greet.return [pair.band=friends|family] : No shutter could make me mistake your voice.
+line greet.return [self.working=yes] : I've a free ear beside a busy nib.
+line greet.return [here.time=dusk|night] : At night I hear the paper move before the voice.
+line kin.open [pair.kin!=no] : Come close, kin. There isn't a fee for the chair.
+line again.open : I left our place in the pack.
+line hail [pair.band=friends] : Friend, the next clean slip is yours.
+line farewell : Good walking before the autumn paper chase begins.
+line farewell.return : May the receipt state exactly what you paid.
+line react.news : Let me hear the wording as you received it.
+line react.news.new : That hasn't found its way onto my desk till now.
+line react.news.known : That entry has a familiar turn at its corner.
+line react.news.doubt : I'd turn it over before marking the suit.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The book can stay closed for this conversation.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I could make a pleasant card out of news like that.
+line ask.how : How have the corners of your day held up?
+line answer.how : One corner bent a little. Still a playable hand.
+line thank : You left it clear enough to read. My thanks.
+line deflect_thanks : The spare face wasn't doing anybody much good in the drawer.
+line sympathise : I'll sit by you without requiring an account.
+line reassure : Take the quiet part first. The figures can follow.
+line decline : My hand's quite full enough for the present deal.
+line accept_decline : Very well. I can put that card by.
+line preclose : I ought to stack the loose pieces before a gust arrives.
+line accept_preclose : Safe home with your corners still on.
+
+scene blank_side
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : #receipt.capitalize# gets its second use only once the first is settled. | On #cardback# I draw a suit free of all charges.
+b : Why a playing card? | Does the figure on the other face matter?
+a : Something that spent a week being added up deserves a little uncertainty. | It buys precisely nothing at my table.
+
+scene square_hand
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I make a square figure so a second reader needn't take a running jump at its meaning. | A bale entered twice doesn't get any heavier.
+b : Can you manage a round zero? | It weighs on the clerk?
+a : With four polite changes of direction. | Very heavily indeed when the load is called for.
+
+scene workload
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep the old slips apart from the new. | Some days at #self.workplace# the desk gets busier after the cart has gone.
+b : To keep them clean? | More work coming in?
+a : To avoid mistaking a settled account for another bale due on the floor. | The paper end of what has already come in.
+
+scene tidy_cards
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put the offcuts in #ashtray# and keep #corner# for the card. | I use #cloakpin# to hold a slip down on a blustery desk.
+b : Why round it? | Doesn't it leave a hole?
+a : Square corners hook in the pack. That's useful in the figures, less so when dealing. | Laid flat. I've nothing against the receipt that calls for pinning it like a beetle.
+
+scene fruit_suit
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : #berry.capitalize# is a fine colour for an imaginary suit. | My berry hand stays away from #pack#.
+b : Would you use the juice? | Would the berry marks show?
+a : Only if the card's first duty is to attract flies. | The cards with purple thumbs would spoil even a friendly game.
+
+scene card_players
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I'd deal four equal hands off the backs of very unequal accounts. | Nobody can look at my newest card and guess what it cost to make.
+b : Who gets the better deal? | Surely it cost nothing?
+a : To the accounts, possibly. The players fare quite well. | I did give it a corner and an evening of consideration.
+
+scene quiet_chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : An empty chapel is a place I can visit without taking a single number in with me. | I sit where the window gives a plain light and a still patch of floor.
+b : Can you leave them behind? | For a prayer?
+a : They can make their own arrangements for a quarter of an hour. | Sometimes. Other times just for the company of the quiet.
+
+scene autumn_turn
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : #draught.capitalize# makes an excellent test of whether my papers are put away. | I like a wind strong enough to turn a coat round my knees.
+b : Does it grade you kindly? | With cards in hand?
+a : No. Results come back along three separate streets. | With both hands shut round the pack, certainly.
+
+scene mud_boot
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : #mudshelf.capitalize# is very nearly strong enough to bring the street home on my boot. | I'd walk round the dry edge at the cost of a little daylight.
+b : Do you knock it off? | Is mud that deep?
+a : At the first stone available. The street already has an address. | Mud doesn't need to be deep to lodge under a tired heel.
+
+scene stale_edge
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #loafheel.capitalize# can be too hard for any teeth I care to keep using. | I dislike being told a stale loaf is excellent practice for the jaw.
+b : What use would you make of it? | Why?
+a : A quiet soak in broth before attempting an introduction. | I asked for supper. I can practise with the conversation.
+
+scene folded_cloth
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : #warmcloth.capitalize# will take the noise out of a small cough. | I wait for my breath to settle before saying the total aloud.
+b : What does the damp do? | Would it alter the number?
+a : Encourages it to get through another performance. | It might persuade a distant listener to add an extra ten.
+
+scene home_play
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.spouse# first choice of the cleanest cards. | I can put the pack away in one movement when #self.spouse# wants the table for supper.
+b : Isn't a game meant to be fair? | Even when you're winning?
+a : A clean back won't buy a better hand. The courtesy is in offering first. | Especially then. A fine memory to take into the meal.
+
+scene commons_lane
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : I know where the wind turns the corner in the Commons. | A Commons windowsill can make a lovely little desk for reading a card in good light.
+b : By how it takes your coat? | Will the card stay put?
+a : By the places where missing scraps of paper all turn up together. | Only if the window is firmly shut.
+
+scene private_witness
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Seeing a private moment from a public doorway doesn't turn it into a public account. | My neatest book has many sound reasons for what it doesn't record.
+b : Would you leave it out? | A blank page full of secrets?
+a : I'd leave the wolf concerned in charge of telling it. | A private life has no need to take up a page in the first place.
+
+scene slow_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I'd cut a particularly small slip for a hard week's small payment. | In lean weather playing for dried beans can fill an evening well enough.
+b : To make it seem large? | Do you keep the winnings?
+a : To avoid putting an overdue charge on the same page by mistake. | Put the beans back before supper. That is my favourite house rule.
+
+scene word_suit
+when topic=news world.news
+does tell.news / react.self / assess
+a : A slip marked #world.news_from# carries this. #world.news#. | #world.news#. Mark the place as #world.news_from#.
+b : Which suit will it get? | Is there writing on the back?
+a : None till the account's settled. That's how I choose my paper. | Only what the next listener decides to add. I'd keep that surface clean.
+
+scene gossip_stack
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A thin story's been passed round with every corner thumbed. | I'd leave the names off a card dealt for private amusement.
+b : Was it yours to begin with? | Whose amusement?
+a : I never put it into play. | That's the expense which nobody wants attributed.
+
+scene last_suit
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want a full pack where every single account on the reverse has been paid. | My ideal desk has just enough room for the book by day and four quiet hands after supper.
+b : Which card do you lack? | What if the book won't close?
+a : A last little stubborn one I intend to wait for. | The game will be better when it does.
+
+story plum_card [topic=food|memories]
+  : I drew a berry on a card to mark the suit and tried to keep the ink quite round.
+  : It dried looking exactly like a little plum with a bent tail.
+  b : Did it count in the game?
+  : It did. We called it the suit of fruit requiring further identification.
+
+story clipped_word [topic=memories|work]
+  : I clipped four corners very neatly from a settled slip.
+  : When I turned it over I found I'd removed the last letter from every line.
+  b : Did the clipped account make sense?
+  : Perfectly. Rather made me wonder what a full afternoon's worth of last letters had been contributing.
+
+story wind_game [topic=memories|weather]
+  : A draught lifted the top card from a deal and carried it towards the door.
+  : I caught it against my coat and found myself looking straight at a remarkably good card.
+  b : Did you keep it?
+  : I dealt again with the shutters closed. The wind had already had an unfair look at my hand.
+
+rule @sort_slips
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Settled ones in the short stack.
+
+rule @clip_corner
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say One smooth corner before lamplight.
+
+rule @hold_wind
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say A pin laid flat against a loose slip.
+
+rule @ink_light
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Every faded suit legible today.
+
+dlg resident.hub : A blank piece of paper leaves a small discussion room to grow.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I kept the last hand in order for you.
+dlg resident.hub [here.time=night] : The accounts are away. There's room for ordinary words now.
+dlg resident.hub [pair.disposition=hostile|wary] : Put the point beside your own elbow and let me look across at it.
+dlg resident.job [self.job=merchant self.workplace] : My part at #self.workplace# is getting a tally to agree with the goods actually on hand.
+dlg resident.news [world.news] : The account reads #world.news_from# for its starting point. #world.news#.
+dlg resident.gossip [here.gossip=yes] : I'd have to spoil a good blank card to give that much talk a place.
+dlg resident.bye : Safe going. I'll put the pack away before the next gust.
+
+graft resident.hub
+choice Are those playing cards made out of accounts? -> cancelled_pack
+node cancelled_pack
+say Only the cancelled ones. If you owe a wolf money, seeing the bill turn up as a winning card at supper might give quite a mistaken idea of how to settle it.
+choice What makes a good card? -> smooth_back
+choice I'll look for the mark of payment. -> hub
+node smooth_back
+say A paper firm in the hand but soft at a clipped corner. Its new value owes very little to the cost of the original account.
+choice I'll play the value on the face. -> hub
+choice May you find your last card soon. -> bye

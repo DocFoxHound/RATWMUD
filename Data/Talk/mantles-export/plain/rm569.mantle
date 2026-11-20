@@ -1,0 +1,257 @@
+mantle rm569
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_kari_wickworth
+title the higher larder shelf
+fits stage=adult|old
+prefers job=sailor
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk draws_future_larder_shelves_on_discarded_cargo_labels
+likes pickled_herring riddles full_larder frosty_mornings
+dislikes salt_wind waiting
+fears letting_another_crest_decide_what_fits_the_purse
+hopes to_stock_a_larder_above_the_sump
+topics work +0.5 home +0.4 prices +0.4 pastimes +0.2
+styles comfort=plain gossip=close refuse=steady tease=none
+marks oath saying
+persona #self.first# sketches a higher home's larder on the clean reverse of useless freight labels.
+
+words
+oath! = Barrel stave and pantry board | By my topmost shelf
+saying! = Cargo gone, a label can still feed a thought | Draw one shelf higher
+label = a spent freight label | a ragged cargo tag
+shelf = my high pantry shelf | the larder board
+jar = a herring crock | a blue pickle pot
+herring = a pickled herring | a firm slice of herring
+cleat = the scarred pier cleat | a blackened mooring cleat
+rim = the rim of a barrel | a broad cask lip
+rope = the wet warp | a bristly length of rope
+riddle = a small dockside puzzle | a riddle with a clean answer
+frost = the pale berth frost | a white quay edge
+scale = a dried silver scale | a single bright scale
+latch = the pantry latch | a wooden cupboard catch
+wind = the wind across the pier | the salt draught from the bay
+
+any
+opinion houses against 1 : A House crest got between my hands and a former wage. I examine an ordinary load fairly and keep the crest out of my reckoning.
+opinion merchants mixed 1 : A proper price can be told with an open barrel and a dry measure. Titles make poor measures.
+opinion dole for 1 : A full pantry someday will let me spare a decent meal before setting off for the piers.
+opinion city mixed 1 : The ridges look handsome from the wet planks. I mean someday to look down from higher up while deciding what to cook.
+opinion times mixed 1 : I take the work on the boards today. Tomorrow's shelf needn't have today's bare shape.
+
+grown
+line greet [pair.band=strangers] : There's a clean side to this greeting. | Come stand where the tag can stay dry.
+line greet [self.working=yes] : Give the barrel a little turning room. | Welcome past the high cask.
+line greet [here.time=dawn] : Morning over the white quay edge. | Cold start and a civil word.
+line greet [here.time=dusk|night] : Evening. The last mark's on the tag. | Come above the damp line.
+line kin.open [pair.kin!=no] : Household ears may hear my shelf plans. | There's room at the home side.
+line again.open : Another pass by the labels. | Back on the clean reverse.
+line greet.return : Hello again, under a lighter load. | Your tread's survived the pier turn.
+line greet.return [pair.band=friends|family] : Welcome where my private drawings sit. | I'd share the top-shelf space with you.
+line greet.return [self.working=yes] : I'm free while the next load settles. | My shoulder may pause for a word.
+line greet.return [here.time=dusk|night] : A familiar visitor after the casks are quiet. | Come away from the dark water.
+line farewell : A full jar at the home end. | May your shelf stand level.
+line farewell.return : I'll keep a dry bit of label for next time. | Good footing where the boards run out.
+line farewell.return [here.time=night] : Keep your latch towards warm light. | A whole night's quiet above the quay.
+line react.news : What was written on that parcel? | Give me the count before the crest.
+line react.news.new : That's new cargo to my hearing. | My label had no such mark yet.
+line react.news.known : I've seen that on a former tally. | The same news went out last tide.
+line react.news.doubt : I'd ask whose paw weighed that claim before taking it aboard. | The fine name on a label can belong to an empty barrel.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a bare shelf to look at. | I'll keep company without asking for the worst detail.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good addition to a lean day's stores. | That's put something solid on my shelf.
+line ask.how : Did today yield much for your pantry? | How heavy was your latest carry?
+line answer.how : I've a sound shoulder and a rather empty jar. | My drawing's fuller than my larder. Both are coming along.
+line decline : I ought to keep my spare strength for a return haul already waiting. | I'd need to finish the present load before another could fairly take its place.
+line accept_decline : We'll leave that patch of paper plain. | I heard the answer and can live with it.
+line thank : You spared my back a needless turn. | I'll remember what came free of the charge.
+line sympathise : Sit beyond the cask and let the wind pass. | An empty hour can hold decent company.
+line reassure : One jar can be put back before the whole shelf is full. | A blank corner in my sketch can hold a fresh beginning.
+line preclose : My rough label wants a final line. | The pier will need my shoulder shortly.
+
+scene shelf
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I draw #shelf# on the reverse of #label# once its freight has come ashore.
+b : Always a shelf? | Why higher?
+a : A cupboard occasionally. I've a firmer picture of its latch than of my future doorstep. | I mean to live somewhere drier and farther uphill. The drawing's allowed to get there before me.
+
+scene dock
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : #rim.capitalize# bites quite differently on a wet day than a dry one.
+b : What do you notice? | Does a crest make a difference?
+a : The shift under my palm before the weight settles. Fresh chalk can make a cask feel steadier than it is. | It doesn't give the barrel a bottom. I'd look underneath just the same.
+
+scene job
+when topic=work self.workplace self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I read what's on the freight and turn my paper over when the load is clear.
+b : You keep every tag? | What's on the back?
+a : Only discarded ones. An unclaimed barrel and a decorated receipt aren't any contribution to a good day's work. | Plans to eat better. Very little ink can buy an imaginary pantry.
+
+scene jar
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : #jar.capitalize# with a good lid can keep a plain shelf interesting for days.
+b : What's the first bite like? | What if it's nearly empty?
+a : Its sharpness would wake the sleepiest muzzle. The second bite tastes much more like supper. | A scrap of firm fish with bread still makes a meal. The drawing can wait till afterwards.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I know #riddle# about the one bit of cargo that gets lighter the more useful things you put on it.
+b : A riddle about paper? | What's the answer?
+a : A drawing of a shelf on a label. Every full crock in ink takes an empty place off my mind. | My little shelf sketch. It's a peculiar riddle because a different dock worker might give a different answer.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #frost.capitalize# shows me the places another pair of soles has tried already.
+b : Do you follow? | Why like it?
+a : After looking at how far the last shoe slipped. I'm fond of clear information on a cold plank. | Everything doubtful shines or leaves a plain mark. Warm damp can be remarkably discreet.
+
+scene wind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : #wind.capitalize# gets right inside my grey muzzle fur and makes the skin pull.
+b : Any shelter? | Hard to work?
+a : Behind a high stack of casks for a short break. The load eventually goes and takes my wall away. | I manage. I still have the time and inclination to dislike it.
+
+scene wait
+when topic=work self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : A tide or a ship can keep a dock worker waiting without any intention of paying.
+b : Do you fill the time? | Why stay near?
+a : I draw in little shelf brackets. A good imagined pantry shouldn't sag under honest herring. | A lost lift is a lost bit of supper. Waiting gets more expensive once the work moves on.
+
+scene crest
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A former place of mine went to better connections. I don't try to reproduce all the fine words that came with it.
+b : Still angry? | Would you take that work back?
+a : Careful. A quiet temper can preserve a good long memory without a great public performance. | I'd look at the offered wage and who's empowered to keep it. A crest alone gets no second vote.
+
+scene homeblock
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : I carry my spare tags up #self.street# in a dry fold of my cuff.
+b : Do they fit the room? | Will you hang them up?
+a : The drawings are larger than the larder. Both still fit in the same room for now. | One near the shelf I actually have. It's an honest comparison at supper.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.friend# the drawer I've added beneath the pantry board.
+b : For silver? | Where would it go?
+a : For salt and two dry cloths. It seems sensible to imagine the ordinary parts properly first. | Under the shelf within reach when my free paw is carrying a crock.
+
+scene prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A short prayer before an opening barrel often concerns the safety of my toes.
+b : Is that too small? | What about the cargo?
+a : My toes matter to my work. The Bright One can judge their proper weight in a prayer. | Its owner's generally thought about it already. I'd still give thanks to get the whole thing safely ashore.
+
+scene buy
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a shopkeeper who can say how much of the price is for an actual fish.
+b : What else gets charged? | Do you argue?
+a : The fancy label and the recommendation of a very fine name neither of us expects at supper. | I put my coin back if the account and the fish have drifted too far apart.
+
+scene newcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : If a stranger wants dock work directions I start by pointing out where the next load will land.
+b : Before the office? | Does it move fast?
+a : An unfamiliar face stands a better chance of reaching the tally without a barrel rolling through the introduction. | A wet round thing can be quite surprisingly ambitious compared with the wolf unloading it.
+
+scene heights
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : Give me a room that lets me look down on a ship instead of always looking up at the sling.
+b : Why the Heights? | Must it be grand?
+a : A different first sight in the morning. I'd like the choice at least once in my life. | A stocked cupboard, a latch that holds and a roof the wind hasn't claimed. Those are grand conditions to me.
+
+scene fishscale
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I keep #scale# on a pantry sketch some nights so the crock shines like a real one.
+b : Where from? | Superstitious?
+a : A piece of herring I actually bought. I like my imagined future to contain some trace of today's honest supper. | Only careful about being entirely carried away by paper goods.
+
+scene count
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : When I call a weight across the pier I want it heard clearly on the first calling.
+b : How do you manage? | What if nobody hears?
+a : Wait for a gap between loads. A quiet figure at the proper time goes a considerable distance. | I stay put till it's acknowledged. Otherwise a tidy account could leave somebody under a surprising weight.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed all the barrels in the bay came to rest as jars on the shelf I'd drawn.
+b : Did the board hold? | What woke you?
+a : The brackets began to squeak. I'd drawn them for a larder, not the contents of the harbour. | The thought of my ink cupboard losing half a city's supper. At breakfast I added another board underneath.
+
+story labelstory [topic=memories]
+  : I once drew my pantry straight across a cargo label without letting the old ink dry. My new high shelf soon acquired the address of a warehouse.
+  : For an idle minute I pictured a whole warehouse where my supper belonged. Then I turned the scrap and drew a small crock instead.
+  b : Was the small one enough?
+  : I could imagine filling it for myself. A manageable ambition has quite a good flavour with bread.
+
+story crockstory [topic=food]
+  : The glaze chipped off a blue herring crock and left a clean white crescent. It began to look to me like a moon over the pantry boards.
+  : It was only when the fish ran low that I could see a second chip inside. I took the two little moons as a plain reminder to save for another crock.
+  b : Did you buy it?
+  : I kept the fish in a smaller pot and put one coin aside. That's a real beginning, whatever colour the new moon will be.
+
+story froststory [topic=weather]
+  : A cargo tag rested on an icy cleat one morning. Lifted clear, its blank side had a beautiful white shelf pattern already laid out by the frost.
+  : I tried to sketch round the lines. My warm paw arrived considerably faster than my pen, and most of the plan went back into water.
+  b : Did anything stay?
+  : One short bracket. I've copied it onto every decent pantry since, with a full crock above it if the day's gone well.
+
+rule @aside1
+when concept=bark self.working=yes self.job=sailor
+does aside
+cooldown 6h
+say Roll it clear before saving the tag. | Watch the wet grain under that rim.
+
+rule @aside2
+when concept=bark self.likes=full_larder
+does aside
+cooldown 7h
+say Two firm brackets for a very full crock. | Draw the latch where a paw can reach.
+
+rule @aside3
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say There's a puzzle hiding behind that label. | One answer if the board stays level.
+
+rule @aside4
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 9h
+say A clear print on the white edge. | Look where the last sole went sideways.
+
+dlg resident.hub : That's a spent cargo tag turned to its cleaner face. I've space left for a cupboard and a little while to hear your business.
+dlg resident.job [self.job=sailor self.trade_words] : I'm #self.trade_words#. A landed barrel leaves a good deal less trouble than one with half its weight still swinging.
+dlg resident.news [world.news] : A fresh account off the carrying boards. #world.news#
+dlg resident.hub [topic.meeting=known] : #topic.player#, there's a new shelf on the drawing since you last passed the casks.
+dlg resident.bye : Something worth putting away on your top shelf.
+
+graft resident.hub
+choice What do you draw on the back of the freight label? -> label_pantry
+node label_pantry
+say My next larder. It'll be farther uphill than the shelf that held my supper last night. I can get a respectable row of pickle jars onto a small scrap.
+free
+choice What's the first thing you'd put on a real shelf? -> label_crock
+choice Fine brackets under that drawing. -> hub
+node label_crock
+say One full crock of herring. Plans are pleasant, but I'd like the first supper in a higher room to taste of something I could carry there myself.
+choice I'd keep room for a second crock. -> hub
+choice Good lifting at the pier. -> bye

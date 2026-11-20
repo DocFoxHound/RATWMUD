@@ -1,0 +1,372 @@
+mantle rm554
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_tobias_grayrock_
+title the iron thumb
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk adjusts_a_small_iron_book_clasp_until_it_opens_with_one_finger
+likes mutton_stew stars old_maps misty_dawns
+dislikes crowds gulls
+fears a_clasp_that_tears_the_page a_promise_made_from_pride
+hopes to_make_a_hinge_that_outlives_its_door to_hold_a_house_as_steadily_as_a_tool
+topics work +0.5 lore +0.3 dreams +0.4
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# understands the temper of a little iron spring and finds an obstinate book clasp considerably easier to approach than an important caller.
+
+words
+oath! = Scale in the clasp | Iron filings down a clean spine
+saying! = A sound hinge makes room for the opening | Keep a light hand on a reluctant spring
+ironthumb = my small sprung finger | the bent book clasp
+thumbpit = the polished hollow | the print in my iron
+bookrest = the sloped board | a rest with a low lip
+prongnose = the turned tip | a lip of bright iron
+softleather = the leather hinge guard | my strip beneath the iron
+paperstop = the wide blank leaf | a clean guarding sheet
+curvature = my little measured bow | the spring's high part
+mapbend = the worn paper peninsula | a misleading promontory
+stariron = my black sky ring | the iron sighting circle
+morningline = the first solid outline | a rail through the mist
+muttonheat = the steady bowl warmth | the last steam from supper
+quietdoor = a nearly silent entrance | that properly hung door
+scalemote = a rust grain | a fleck on the rubbing cloth
+windowfar = the distant dark speck | a star seen through my ring
+
+any
+opinion city for 1 : One city has use for shipwrights, clerks and the maker of a book clasp. I am relieved to live where none of those occupations requires an explanation.
+opinion houses for 1 : A house ought to keep its word long enough for a yard to finish its work. The privilege accompanies that obligation.
+opinion dole against 1 : I would rather subscribe to a funded place at a bench than give a few coins without knowing what tomorrow requires.
+opinion sump against 2 : Damp and iron make an arrangement I distrust, and the lower rooms offer too much opportunity for it.
+opinion times for 1 : I've been given tools, instruction and quite enough food. It would be a poor return simply to complain of the schedule.
+opinion watch for 1 : I'd rather let a dispute about a delivery be heard in good order than settled by the loudest voice at the pier.
+opinion road mixed 0 : A road has done its work when the goods arrive with their seals readable. I am interested in what goes towards that result.
+opinion merchants mixed 0 : The object, the stated terms and the amount paid should all agree. My opinion of the seller depends on that much.
+
+grown
+line greet : The clasp is open. My attention's available.
+line greet [pair.band=strangers] : You're welcome to look at the working side.
+line greet [here.time=dawn] : The first clear light suits this small piece of iron.
+line greet [here.time=dusk|night] : A quieter hour makes a folded voice easier to hear.
+line greet [self.working=yes] : Allow me one moment to secure the warehouse entry.
+line kin.open [pair.kin!=no] : There's a patient place beside this desk for family.
+line again.open : You've found me at the same stubborn hinge.
+line greet.return : Your greeting brought my head up from the clasp.
+line greet.return [pair.band=friends|family] : I find a familiar voice much easier than a formal opening.
+line greet.return [self.working=yes] : I've heard you past the rattle of these clasps.
+line greet.return [here.time=dusk|night] : Evening carries your voice along this board.
+line farewell : May your door yield to a light touch.
+line farewell.return : I'll set the iron down beside the finished sheet.
+line farewell [here.time=dusk|night] : Choose the firm footing while there's light to choose it.
+line react.news : Which part of that account stood beside the actual consignment?
+line react.news.new : A new piece for my considered attention.
+line react.news.known : I recognise the wear on that particular account.
+line react.news.doubt : I'd inspect the joint between the evidence and that conclusion.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would wish the household quiet and leave any errand within easy reach.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome thing to preserve between sound covers.
+line answer.how : More at ease discussing a piece of iron than discussing my ease.
+line answer.how [self.working=yes] : Engaged with figures that should presently consent to balance.
+line ask.how : Did a single detail in your day work exactly as you hoped?
+line sympathise : It can be difficult to find the right pressure for a thing that hurts.
+line reassure : We can give the matter longer than its first hearing.
+line decline : My existing promise is holding down a whole book of obligations today.
+line accept_decline : My enquiry can remain closed until circumstances offer a better opening.
+line thank : You have taken a considerable strain off a small working part.
+line deflect_thanks : Offer a similarly careful hand to a piece that needs it.
+line preclose : The printed sheet is beginning to lift under my elbow.
+line preclose [self.working=yes] : I need to get the last receipts inside their cover.
+line accept_preclose : Our conversation can rest here without forcing it shut.
+line ack : Soundly joined.
+
+scene clasp
+when topic=work self.job=sailor self.working=yes
+does tell.self / ask.detail / answer.detail
+a : My account book has a little iron thumb which holds the current pages flat.
+b : Is it really shaped like a thumb? | Does it mark the paper?
+a : The bent tip has worn bright where my own thumb meets it. There's a family resemblance. | A strip of soft leather keeps the pressure spread across the edge.
+
+scene iron
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I'd choose an evening with a badly fitted hinge over a dinner full of unintroduced callers.
+b : What's more agreeable about the hinge? | Wouldn't a good hinge be better?
+a : It can tell me precisely where the trouble lies if I move it slowly. | To own, certainly. To spend an interesting half hour with, I prefer one that still wants thought.
+
+scene warehouse
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I compare what the delivery note allowed with what came across the sill.
+b : What happens to a difference? | Do you count everything yourself?
+a : I enter it on a separate line while the delivery can still be inspected. | I compare the receiver's count to the written order. I account for the agreement or the difference.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : Mutton stew in a broad bowl is a remarkably stable thing to contemplate after a morning's figures.
+b : Is there nothing to calculate? | Where do you set the bowl?
+a : Only how slowly to proceed while the broth is still dangerously hot. | Clear of the papers, on a firm table. I do occasionally observe my own good advice.
+
+scene ring
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I look at the night sky through a small iron ring to study one patch at a time.
+b : Does it make a star larger? | Why choose a ring?
+a : No. It makes the space round the star smaller in my attention. | I can hold it steady with two fingers. The eye rarely requires elaborate ironwork.
+
+scene map
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My oldest map shows a peninsula long enough to brush halfway across the bay.
+b : Is it really that long? | Why keep a mistaken map?
+a : Only in that draughtsman's imagination. I'd advise against relying on it for lunch ashore. | It makes me consider which marks were actually measured. An elegant guess can travel for centuries.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : A rail emerging from mist looks a little like a fresh line of dark iron cooling in front of me.
+b : Can you judge its distance? | Does the mist bother you?
+a : Very poorly. Mist is better at supplying interesting lines than reliable dimensions. | In a doorway, no. I prefer plenty of visibility when I'm counting actual cargo.
+
+scene crowds
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : Several requests spoken at once can turn an ordinary doorway into a place I'd rather escape.
+b : Which request do you answer? | Can you step aside?
+a : I ask for the earliest one again. The others are entitled to a turn they can recognise. | If there's a clear spot. One pace to the side can make a council of ears into a single conversation.
+
+scene gulls
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull looking over a warehouse sill has an extremely convincing air of being expected.
+b : Do you let it in? | What has it come for?
+a : I consider the authority for its visit rather slight. A closed lid is the most civil way to say so. | A gull puts its appetite ahead of all documentary questions. I keep my lunch close.
+
+scene apprentice
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I practise a new bend in scrap before I attempt it on a piece that must hold.
+b : Why use the same thickness? | Can the scrap teach the whole lesson?
+a : A thinner strip will show the shape without telling my fingers the actual resistance. | It can put one good question into my hand. I still need an experienced eye on the finished piece.
+
+scene familyhouse
+when topic=home self.house
+does tell.self / ask.detail / answer.detail
+a : I may be called on to attend to a house as well as the particular pieces of work I understand.
+b : Which habit would suit the duty? | Would you welcome it?
+a : The habit of asking the actual worker about the awkward part before proposing an elegant improvement. | I intend to give it careful attention. Welcome is a more complicated feeling.
+
+scene fatherwords
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : A hinge made properly by my own hands would be something worth showing to #self.father#.
+b : What would you ask afterwards? | What is the satisfaction?
+a : Whether a small piece of work done properly may count for something beside a large obligation. | Feeling the two sides meet without a scrape. A hinge can give quite definite evidence.
+
+scene motherword
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I've thought of making an iron rest small enough to sit inconspicuously beside a book for #self.mother#.
+b : How would the rest work? | Would you decorate it?
+a : A lip under the lower cover and a gentle slope. I wouldn't have the iron touch any printed part. | Just polish the face that meets a hand. Comfort is a sort of ornament one can feel.
+
+scene homehall
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : A formal entrance at an estate gives one a good look at the door furniture while the introductions proceed.
+b : Do you find that useful? | Do you miss the introductions?
+a : It gives me something well understood to look at while I collect my thoughts. | I attend to the names. It's my own first sentence that sometimes requires the extra time.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd sooner show #self.friend# the spring in a book clasp than try to describe my disappointment when it sticks.
+b : Could I understand it too? | What's the disappointment?
+a : Certainly. Press gently and you can feel the exact point at which a smooth curve becomes a catch. | The iron is almost right. A near success can require more patience than an entirely fresh attempt.
+
+scene coin
+when topic=prices self.wealth=rich|comfortable
+does tell.self / ask.detail / answer.detail
+a : Paying well for a tool does not relieve its owner of learning to use it.
+b : Would you buy a fine tool straightaway? | What are you paying for then?
+a : Sometimes. I want a good worker to earn a good price. I don't expect the price to educate my fingers. | Sound material, a true edge and somebody else's trained hours. The work in my own hands comes separately.
+
+scene dreamforge
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd welcome responsibility for a forge because I know the work of it.
+b : Would you accept a title otherwise? | What work appeals most?
+a : I'd accept the duty to learn. A title readily acquired takes a considerable time to justify. | The small fittings that let a heavy thing move easily. I sometimes wish the same arrangement worked on conversation.
+
+scene sealplain
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I note the condition of a seal separately from the particulars of the packet.
+b : Can you tell what's inside? | Why separate the marks?
+a : Not from intact wax. I can see the state in which it reached the receiving desk. | A sealed delivery still needs its description read carefully. One kind of certainty doesn't supply another.
+
+scene inkmark
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : A receipt on damp paper can be a faithful account which tomorrow's clerk may find illegible.
+b : Do you copy it immediately? | What about the original?
+a : I dry it flat first and make any copy with the original visible under a clean weight. | It remains with the record. I can't certify the delivery a second time simply by writing neatly.
+
+scene roadtravel
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A journey with a stiff book in a narrow bag can teach its owner to appreciate a round metal corner.
+b : Does a round corner help the book? | Is the bag too small?
+a : It helps the bag survive the book. After a few wet walks the distinction becomes quite important. | I prefer a plain bag I can carry with one hand. The book's metalwork can meet it halfway.
+
+scene faithquiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like a quiet interval in which nobody minds the time required to put a difficult sentence into words.
+b : In a chapel? | Would you write the sentence first?
+a : A chapel can offer it. So can a considerate companion beside a bench. | For my own understanding, perhaps. A formal text often makes an ordinary feeling harder to utter.
+
+scene daylamp
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : Before putting a spring away at dusk I check that its tip is free of the leather.
+b : Why the extra check? | Should the covers remain apart?
+a : Overnight pressure can stamp an unwanted ridge into a good cover. | Just while the ink dries. Protection shouldn't cost the entry its final line.
+
+scene newsring
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I give a story a little space round the part I'm certain of.
+b : What goes in that space? | When do you fill it?
+a : Any proper question I still need to ask. I dislike joining facts with a convenient stretch of imagination. | In its own time. A gap that can be seen does less damage than an invisible guess.
+
+scene quietbody
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When I've bent over a small spring for an hour my shoulders take longer than the spring to come straight.
+b : Does a walk help? | Why bend so close?
+a : A few unhurried paces make the next hour considerably easier. | A dark lip against dark leather can need a rather close inspection. Better light would save some of the bending.
+
+scene wetiron
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A warm room draws little beads of moisture onto cold iron carried in from outside.
+b : Wouldn't a closed drawer protect it? | When is the iron ready?
+a : I'd wipe the iron while the moisture shows. Closed drawers can preserve an unfortunate amount of weather. | Until the bright face stays dry after a second look. A small delay guards a much longer life.
+
+scene newface
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor who says a few ordinary words about the door makes a formal introduction easier for me.
+b : Which part would you remark on? | Is every door interesting?
+a : How neatly or awkwardly its weight rides the hinges. Then I'd need to remember the visitor had other interests. | If it's moving, yes. For a short interval at least.
+
+scene coldsky
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A clear winter night puts such a clean rim on the stars that I almost expect to find tool marks.
+b : Could you see a mark that small? | Would it spoil the view?
+a : Only in imagination. My iron ring helps me look steadily rather than increasing the power of the eye. | No. A neat mark is an interesting claim to have made something; one ought merely to ask whose it is.
+
+story springflat [topic=pastimes]
+  : I bent a little spring carefully and found the book would open beautifully but refused to stay closed.
+  : I'd measured the leather before fitting the folded page inside it. The extra thickness was precisely the problem.
+  b : Was a new spring needed?
+  : One adjusted turn on a scrap first, then the real piece. It closed so quietly I tried it three times for the pleasure.
+
+story twingull [topic=animals]
+  : A gull outside a warehouse window appeared to have acquired an improbably straight iron leg.
+  : As I moved my head the iron stayed against the frame while the gull continued some distance along the sill.
+  b : What had you seen?
+  : A reflection of my book clasp on the glass. I found the actual gull quite sufficiently equipped without my assistance.
+
+story stewstar [topic=food]
+  : A small hole in a spoon cast a bright spot onto the surface of my evening stew.
+  : I moved the spoon until the patch floated precisely midway across the broth's brown surface.
+  b : Did you keep it there?
+  : Only until the stew was cool enough for supper. A little astronomy is excellent company while an appetite is obliged to wait.
+
+story mistmap [topic=travel]
+  : I once held an erroneous map up towards a misty headland to compare the two profiles.
+  : For a short interval the mist hid exactly the right proportion of the coast to make the map look remarkably good.
+  b : Did that redeem the map?
+  : It redeemed the sketch as an interesting view of the weather. For finding a harbour I'd consult a more accurate sheet.
+
+story hingeear [topic=work self.job=sailor]
+  : I heard a faint click whenever I put a particular warehouse book down and looked all round its metal corners.
+  : The sound followed the book because a small brass button had rolled under its leather guard.
+  b : Was the clasp at fault?
+  : Perfectly blameless. I put the button in a cup and gave the iron a quite unnecessary polish by way of acknowledgement.
+
+rule @book
+when concept=bark self.job=sailor self.working=yes
+does aside
+cooldown 8h
+say Keep the leather between iron and page. | Receipt visible until the countercheck is made.
+
+rule @sky
+when concept=bark self.likes=stars
+does aside
+cooldown 8h
+say One bright star inside the iron circle. | Let the eye settle before moving on.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say An impressive visitor with no appointment. | Shut the lunch box while the sill's occupied.
+
+rule @stew
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say Set that bowl beyond the book rest. | Warm enough to wait for a spoon.
+
+rule @mist
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say That dark rail has just come clear. | No counting a shape I can't see properly.
+
+rule @late
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Release the iron before leaving the leather. | Make sure the last entry's dry.
+dlg resident.hub : I can put the book on its rest. There's time for a conversation.
+dlg resident.hub [topic.meeting=known] : This clasp will be familiar to you, #topic.player#.
+dlg resident.hub [pair.disposition=wary|hostile] : I'll hear the proposal with my book closed for the present.
+dlg resident.hub [here.time=night] : One lamp will serve our conversation with the account safely shut.
+dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. I try to keep each receipt attached to something that actually came through the warehouse.
+dlg resident.job : I do well with objects that need close attention and accounts that will stand inspection.
+dlg resident.news [world.news] : Here's the entry I could support in good light. #world.news#.
+dlg resident.news [world.event_words] : I have heard mention of #world.event_words#. I'd keep the outcome open till there are particulars.
+dlg resident.news [world.death=recent] : A recent death needs room for the living household to choose which words it wishes to offer.
+dlg resident.news [world.wedding=recent] : A wedding deserves a wish for a settled home with doors that move easily for good company.
+dlg resident.news [world.wagons=raided] : With wagons raided I'd check what's actually reached the warehouse before committing to any delivery.
+dlg resident.gossip [here.gossip!=yes] : No confidence has been left with me for a caller to take away.
+dlg resident.bye : Let the door come to rest on its own sound hinge.
+
+graft @ironfinger resident.hub
+choice Is the iron piece meant to look like a thumb? -> ironfinger
+node ironfinger
+say The bright hollow has been worn by an actual thumb. A plain curve of iron becomes very particular once somebody uses it for several years.
+choice Would you replace a worn clasp? -> ironfinger_more
+choice Put the book on its rest. -> hub
+node ironfinger_more
+say I'd keep it if the pressure's sound and the tip clears the leather. Comfortable wear is something a new fitting can take years to acquire.
+choice Put the book on its rest. -> hub
+choice Leave it under its cover. -> bye
+
+graft @starcircle resident.hub
+choice Can a ring really help you look at a star? -> starcircle
+node starcircle
+say It leaves out the neighbouring lights and gives my attention one little patch of sky. The ring's quite ordinary iron with an edge polished smooth.
+choice Wouldn't a wider view be better? -> starcircle_more
+choice Lower the ring to the table. -> hub
+node starcircle_more
+say When I'm considering the whole sky, yes. When I'm learning a small pattern I'd rather see the pattern without borrowing its neighbour's points of light.
+choice Lower the ring to the table. -> hub
+choice Go outside to look at the sky. -> bye

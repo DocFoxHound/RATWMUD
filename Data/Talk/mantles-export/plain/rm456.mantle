@@ -1,0 +1,263 @@
+mantle rm456
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_jarl_saltcot
+title the cork on the cord
+fits stage=adult|old
+prefers job=merchant warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk slides_a_small_cork_down_a_cord_before_promising_any_money
+likes warm_bread evening_line tidy_house frosty_mornings
+dislikes smoke drizzle
+fears a_wharf_loss_wrapped_in_formal_words
+hopes a_household_with_enough_left_to_lend
+topics work +0.6 pastimes +0.5 family +0.4 food +0.2
+styles comfort=listen gossip=reserved refuse=gentle tease=kind
+marks oath saying
+persona #self.first# measures a promise on a pocket cord, sliding the cork past the part already spoken for.
+
+words
+oath! = Forge heat and salt water | By anvil scale and brine
+saying! = Leave enough cork showing | Measure the promise twice
+float = a pale cork | the pocket float
+cordend = a frayed end | the last twist
+redturn = a red winding | the paid part
+bluespan = a blue span | the part for later
+casting = an evening cast | a quiet throw
+breadfold = a warm fold | the soft bread lap
+tinroof = a cold roof edge | a clean white rim
+dripcoat = a damp collar | the persistent wet
+answerbook = a neat entry | an open figure
+readycoin = a loose copper | the spendable bit
+shorestep = a dry footing | a safe stone
+blackair = a sooty drift | the thick air
+
+any
+opinion houses against 2 : A seal on a wharf paper can scarcely answer a household that's lost a brother there.
+opinion dole for 3 : When a house has spent its last spare copper, a decent supper should still be possible.
+opinion newcomers for 1 : I'd sooner explain a strange column of figures than let a new arrival agree to an expense by mistake.
+opinion merchants mixed 0 : I understand wanting a return. I also understand dividing one warm loaf till the shares look pitiful.
+opinion church for 1 : A quiet bench to remember the dead ought to cost exactly what a breathing space costs.
+opinion watch mixed 0 : I'd like a statement heard as patiently from a wet sleeve as from a dry embroidered one.
+
+grown
+line greet : Hello. This bit of cord can wait. | You're welcome to the bit of quiet beside me.
+line greet [pair.band=strangers] : Come nearer if you can see better there. | First meetings ought to start with room for both voices.
+line greet [here.time=dawn] : Good morning. The roofs look sharp enough to draw round. | Early light has put the figures in very clear order.
+line greet.return : Hello back. My little cork was taking my attention. | You have both my ears free now.
+line greet.return [pair.band=friends|family] : A familiar step makes even a short pause pleasant. | There's a place for your voice in this small interval.
+line greet.return [here.time=night] : A good late hour for a measured word. | Evening. The figures can wait for better light.
+line again.open : Another turn of the cord already. | Still at hand with one interval free.
+line hail [pair.band=friends] : Come and look how little the current's moving! | Good company for a quiet stretch. Come over.
+line farewell : Reserve a few moments for a warm mouthful. | May your road finish at a well-swept threshold.
+line farewell.return : I'll keep the spare part in hand. | Go easy across the wet places.
+line react.news : I can lay my figures down for this. | Just tell the bit you can vouch for.
+line react.news.new : That's new to the small account I keep. | I hadn't marked that particular change.
+line react.news.known : I recognise that sum of circumstances. | The earlier word tallied much the same way.
+line react.news.doubt : I'd like some better footing for the claim. | That promise sticks farther out than its backing.
+line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : A loss doesn't shrink by being entered neatly. | I can sit quietly beside you with that hurt.
+line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. A household deserves something pleasant to count. | There's a heartening addition to an ordinary day.
+line ask.how : Does today leave you any quiet to spend? | How much of the morning have you got to yourself?
+line answer.how : Fairly steady. My cord runs freely today. | Content enough if I keep my promises small.
+line decline : That would spend a part already promised elsewhere. | I can't put my word to a sum beyond my reach.
+line accept_decline : A clear refusal is easy to carry. | Then I'll keep that space unclaimed.
+line preclose : I'd better put the small things back in order. | Time to slide the cork home.
+line accept_preclose : Leave yourself a comfortable margin. | I'll wind up here quite willingly.
+line thank : You left me more breathing space than you know. Thanks. | That kindness fits neatly between two hard expenses.
+line deflect_thanks : I'd reckoned on a spare portion alongside mine. | It's a small share I could comfortably spare.
+line sympathise : Sit by my dry side while it hurts. | You needn't cast for words on my account.
+line reassure : We've only to cover the next small expense today. | A little slack might give you time to think.
+line ack : Yes. The cord sits comfortably there. | I follow the sum so far.
+line give.advice : Hold your promise against what you can actually spare. | Cover the bit with one finger if it's what you're saving for later.
+
+scene pocketfloat
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I've a cork with no hook attached. Slides over this short cord when my mind wants something to do.
+b : How far does it travel? | A float for dry land?
+a : Only a handspan. I can reach that distant bank without getting wet. | Exactly. It tells me when my thoughts have got into a current.
+
+scene counter
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I use a finger between columns. A figure can look very much at home one line too low.
+b : Is the cord for counting? | Does it slow your work?
+a : More for remembering what I've agreed to spare. I leave the real sums to ink. | A steady finger takes less time than an afternoon spent tracing a wandering copper.
+
+scene appr
+when topic=work self.apprentice=yes
+does tell.memory / ask.detail / answer.detail
+a : I remember wanting to write a bold answer before I'd finished listening to the question.
+b : What changed your hand? | Do the figures come first now?
+a : Discovering I could produce a perfectly exact answer to quite the wrong problem. | An open ear comes first. Then I decide which figures belong with what I heard.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : With #self.mother# I can ask to hear a hard sum explained a second way.
+b : What makes the second way stick? | Do you learn by heart?
+a : Household things. I can see two loaves and three mouths before I can see a fraction. | Only the method. Each visitor deserves to have the actual figures looked at fresh.
+
+scene raft
+when topic=memories
+does tell.feeling / react.self / assess
+a : There's a place down by the wharf where my brother's absence has never grown any smaller.
+b : Would you like to leave it there? | Which memory comes back clearest?
+a : For today, yes. Thank you for giving me the choice. | Having a whole conversation without having to decide first what ought to be said.
+
+scene seal
+when topic=lore
+does give.opinion / react.self / assess
+a : A wharf may answer to a House. A family left short one voice has a right to ask the House to listen.
+b : Would a payment make it right? | What answer do you want?
+a : It might settle an expense. I'd never enter it as the price of my brother. | An honest one, spoken where a household can hear it. Seals don't speak very loudly.
+
+scene supper
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Bread just warm enough to fog a cold saucer is my favourite degree of comfort.
+b : Why put it on a saucer? | Must the bread get cold first?
+a : It's a way of keeping one kitchen table tidy while enjoying a slice slowly. | Only while the butter finds its own way into the crumb.
+
+scene line
+when topic=pastimes self.likes=evening_line
+does tell.feeling / react.self / assess
+a : My favourite moment fishing is when the float stands upright for the first time.
+b : Even if nothing bites? | What if it lies sideways?
+a : Especially on an empty evening. That upright little mark is all the news I need. | I reel in a little and look for what I've snagged. No sense getting cross with a cork.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A frosty sill looks beautifully balanced till the first drop breaks loose underneath.
+b : A balance like your sums? | Why watch for the drop?
+a : A little. Something can look firm across the top and be changing very fast below. | Because then I know how long I've got before the street turns slippery.
+
+scene drizzle
+when topic=weather here.weather=rain self.dislikes=drizzle
+does tell.complaint / ask.detail / answer.detail
+a : The trouble with drizzle is it makes a cuff unpleasant before you think you've got wet.
+b : Could you roll your cuffs up? | Why mind a damp cuff?
+a : I usually fold them in early. A straight edge beats wiping the tabletop repeatedly. | At a desk a sleeve goes over every dry figure a hand has just put down.
+
+scene smut
+when topic=health self.dislikes=smoke
+does warn / react.self / assess
+a : When the air stings my eyes I stop looking at fine figures till they clear.
+b : Can you hear them instead? | Does it happen by the water?
+a : I can hear a sum twice and still want to see it once. I'll do both when the air shifts. | With the drift in the wrong direction, yes. Even a wide stretch of water can't wash the air on demand.
+
+scene dwelling
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I like to put my cup back where a sleepy hand would expect it.
+b : Why imagine being sleepy? | Even a chipped cup?
+a : I've reached into a dark cupboard often enough to appreciate the virtue of yesterday's tidiness. | Especially that one. I turn the chip to the back and know which side to drink from.
+
+scene weight
+when topic=prices
+does give.opinion / react.self / assess
+a : A cheap promise to lend is an expensive thing to take at face value.
+b : How do you test one? | Do you never borrow?
+a : Ask what part can go across the counter right now. The loose part often proves much smaller. | I'd borrow with open eyes. The day it comes due ought to be as clear as the day it's offered.
+
+scene tight
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When the purse goes slack I shift the cork just a fingernail. It reminds me to leave some supper money.
+b : Why so small a shift? | Where does the rest go?
+a : Because going short by one copper can be quite enough. I'm not pretending to make a fortune. | To things already owing. Wishing doesn't move that far winding any farther down the cord.
+
+scene hearth
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I hope for patience when I pray. A question asked three times merits three attentive hearings.
+b : Why three times? | Would patience help at a counter?
+a : A wolf ashamed to ask once may only find the right words on the third try. | Much more than the expression I used to wear when nervous. Nobody should have to read my eyebrows to know the charge.
+
+scene homewater
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : Some evening I'd like to follow my float along a bank without a single high wharf wall in sight.
+b : Would you keep walking after dark? | Take another wolf along?
+a : Until the cork began looking like every other pale patch. Then I'd go get warm. | One who can bear a long agreeable silence. I don't need a witness for every ripple.
+
+scene forgeword
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #oath#. That's two places to stand by a promise, and neither cares for soft footing.
+b : Do you say that at work? | Which place would you choose?
+a : Under my breath when I'm learning. The customer is entitled to a quieter account of the day's difficulties. | Dry ground between them, if there's a choice. I admire a forge without needing to stand in it.
+
+scene margin
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like to lend a household its first copper without leaving my own table bare.
+b : Would the cork reach that far? | What would you charge?
+a : Someday. I can see the part of the cord I want to reach even from here. | Only what I'd gladly see entered beside my own name if I had come in asking.
+
+grown
+
+story deepfloat [topic=pastimes|memories]
+  : I tied a float to an old line and sat congratulating myself on how upright it stood. The water moved away a little.
+  : The cork remained remarkably steady, balanced on a stone barely under the surface.
+  b : Did you move it deeper?
+  : I did. The new patch had less impressive fishing but much better water.
+
+story warmplate [topic=food|memories]
+  : I put a warm slice under a little tower of cold saucers to keep it soft. Then I went looking for my breakfast.
+  : The cupboard looked tidier than usual. It took a few puzzled glances to discover how I'd managed that.
+  b : How was the bread?
+  : Pressed rather flat, still good. I only warm one plate these days.
+
+story wrongbead [topic=work|memories]
+  : I once tucked my cork cord into the same pocket as a key. Took them both out when a visitor asked how far a little money might go.
+  : Spent three quiet heartbeats trying to slide a keyhole down a key.
+  b : What did you say?
+  : That the question deserved a moment's thought. It did. The method remained my own affair.
+
+rule @pocket
+when concept=bark
+does aside
+cooldown 8h
+say That winding's spoken for. The pale bit's free. | Little cork runs smoothly enough today.
+
+rule @desk
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Let me read those sums in the order you gave them. | A narrow gap between columns saves a wide misunderstanding.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Turn that cuff in before you reach over anything dry. | Drizzle travels farther up a sleeve than seems fair.
+
+rule @line
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say Good light for picking out one floating speck. | A quiet cast and an untroubled bank would do.
+
+dlg resident.hub : I've set my little cord down. Have you a question that wants time or one that wants figures?
+dlg resident.hub [topic.meeting=known] : #topic.player#, welcome. A small part of today remains unpromised.
+dlg resident.hub [here.time=night] : Late light makes a good time for thinking a promise over before giving it.
+dlg resident.hub [pair.disposition=wary|hostile] : We might start with what each thinks is owing. I'd appreciate a clear figure from each side.
+dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look twice at a sum and listen twice to whoever came needing that sum explained.
+dlg resident.job : I enjoy an occupation where a tidy line can spare a household some worrying.
+dlg resident.bye : May there be a comfortable little margin left to your evening.
+
+graft resident.hub
+choice What's the cork on that short cord for? -> corkmargin
+node corkmargin
+say The red end stands for what's promised. The bare end is what I can still offer. I slide the cork while I think. It saves a quick tongue from a long regret.
+free
+choice Why use a fishing float to reckon with? -> floatreason
+choice Let me think about my own promises. -> hub
+node floatreason
+say A coin can vanish into the week's loaf. I can keep this cork for years, and its pale end recalls water at the pleasantest hour.
+choice Keep the cork safe. -> hub
+choice I'll leave enough for the loaf. -> bye

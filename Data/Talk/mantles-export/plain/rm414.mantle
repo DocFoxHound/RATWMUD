@@ -1,0 +1,373 @@
+mantle rm414
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_desmond_grantham
+title the brewer's paired stars
+fits stage=adult|old
+prefers role=merchant job=brewer
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk pairs_stars_into_debtors_and_creditors
+likes plum_tart stars tidy_house autumn_wind
+dislikes cold_tea wet_floors
+fears owing_more_than_the_house_can_stand
+hopes keeping_a_brewhouse_clear_of_house_quarrels
+topics prices +0.6 work +0.4 weather +0.3 family +0.2
+styles comfort=practical gossip=careful refuse=plain tease=none
+marks oath saying
+persona #self.first# pairs stars into debtors and creditors and turns a clean cup upside down when the last account comes square.
+words
+oath! = Sour my last tun | Scratch my clean slate
+saying! = A debt points both ways | Put the paid cup down
+openrim = an upright cup | a wide-mouthed beaker
+closedrim = a cup turned over | a dark circle on the shelf
+creditstar = a small pale star | a clear point above the chimney
+chalkknob = a square chalk end | a flat bit of chalk
+wetcask = a black hoop mark | a swelling stave
+tartbit = a plum-stained crust | a triangle of pastry
+teaedge = a cold dark rim | a skin of bitter tea
+windfeel = a dry leaf gust | a little autumn breath
+cupboardline = a clear middle shelf | a broad level board
+spillcloth = a square of scrub cloth | a rough mop head
+mashscent = a warm grain smell | a rising sweetness
+potiron = a plain iron pot | a dark kettle
+markknife = a nicked marking stick | a short timber tally
+starturn = a close pair of lights | two points in a line
+endjar = a small earthen jar | a little covered pot
+
+grown
+
+opinion merchants for 1 : Keep full measure on the serving side and the paying side can be asked for the same decency.
+opinion houses mixed 1 : A brewer could survive a dozen House quarrels if the quarrelling Houses remembered to pay the brewer.
+opinion watch mixed 1 : A paid account doesn't need a uniform standing over it. An unpaid one still requires an honest hearing.
+opinion strangers mixed 1 : Give a stranger an ordinary cup and an ordinary price. Credit takes a little acquaintance.
+opinion drink for 1 : There is work, heat and good water in a cup. Treat the contents with enough respect to know when you've had them.
+opinion church for 1 : I can give thanks for an account squared without making the Bright One responsible for my arithmetic.
+opinion dole for 2 : Set the gift down as a gift at the start. Nobody hungry needs a bill concealed beneath a bowl.
+opinion city for 1 : The city may divide over colours, but decent grain still finds its way to a thirsty mouth.
+line greet : A clear place here. No account to open for a word.
+line greet [here.time=dawn] : Early start. There are fewer claims on the ear yet.
+line greet [pair.band=strangers] : Welcome. You needn't establish your credit to stand beside me.
+line greet.return : I've set the running total aside for now.
+line greet.return [pair.band=friends|family] : Yours is a voice I can hear free of all reckonings.
+line greet.return [self.working=yes] : Let me finish this stroke before I spoil two figures at once.
+line again.open : Another meeting without an entry against our names.
+line kin.open [pair.kin!=no] : Nearer, where family can speak easily.
+line hail [pair.band=friends] : Over by the vacant corner, in plain view.
+line farewell : May the day's last sum come square.
+line farewell.return : An even balance and a dry tread to you.
+line react.news : Which parts can bear their own weight under a closer look, I wonder.
+line react.news.new : That brings a fresh figure into the margin.
+line react.news.known : I've accounted for those particular words before.
+line react.news.doubt : Don't ask me to extend credit on that without another witness.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd turn a cup upright for a small celebration of that.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : No account should be pressed on a household in the first days after that.
+line decline : I won't make an entry I couldn't defend from either side of the counter.
+line accept_decline : No obligation recorded while you make up your mind.
+line ask.how : Is the weight of the day landing more or less evenly?
+line answer.how : A little anxious, with most of the loose items now in their places.
+line answer.how.busy [self.working=yes] : Busy with figures that refuse to add themselves.
+line thank : You've returned a bit of confidence as well as doing me a service.
+line deflect_thanks : There's no interest due on an ordinary kindness.
+line sympathise : I'll stay alongside without asking what this comes to.
+line reassure : The cup needn't be turned over till every part is settled.
+line ack : That agrees with the mark I've kept in mind.
+line accept_preclose : You may take the balance of this hour with you.
+line preclose : I have a last figure left standing the wrong way up.
+line give.advice : Check what you owe with the same care you use for what you're owed.
+line offer : I can take one of those weights while you find a level place.
+
+scene work_1
+when topic=work self.job=brewer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# two open cups in a row remind me that one account runs each way.
+b : Which cup is yours? | Does it matter at brewing time?
+a : The one by my writing hand. I wouldn't like my own obligation to go behind the pots. | It matters afterwards if I forgot to replenish the grain because I was admiring the froth.
+
+scene pastimes_1
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I've paired faint stars as if they kept accounts between them.
+b : What if a third appears? | Do any shine especially bright?
+a : That's an unfamiliar creditor. I'm quite relieved the sky doesn't send a collector. | The ones uncovered by cloud after I'd given them up for bad debts.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I remember every small debt more exactly than the price of my own coat.
+b : Why the small ones? | Isn't that wearing?
+a : They're precisely the ones a comfortable wolf forgets and an uncomfortable wolf can't afford to overlook. | Some nights. I find the star ledger has the considerable advantage of never asking for a receipt.
+
+scene family_1
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I'd teach #self.child# to give without making a secret tally.
+b : Doesn't that run against your habits? | How do you distinguish a gift?
+a : That's the point of teaching it. The habit needs instruction at my end as well. | Call it by its name before handing it over. A birthday cake shouldn't arrive with an invisible string tied round the plate.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I like a plum tart to have one dark spot just by the crimp.
+b : A leak's a virtue? | What if every spot is dark?
+a : Proof there was fruit inside trying to introduce itself to the heat. | Then I'll put a dish under it and apply myself to rescuing the evidence.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Autumn wind leaves a roof bare enough to see which star still stands above it.
+b : Do you mind cold air? | What about the falling leaves?
+a : I prefer a clean draught to an afternoon's air kept indoors past its useful life. | I like the rattling until one gets under my boot on a smooth floor.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A tidy shelf keeps my mind from counting things twice.
+b : Do you arrange by size? | What upsets the order?
+a : By whether the thing has to come forward tomorrow. A small jar can have a large claim on a morning. | Putting an open matter away where it looks completed. Then I've a whole fresh error to find.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I refuse to drink cold tea simply because a discussion ran long.
+b : Would you heat it again? | What if the discussion's urgent?
+a : I ask for fresh if there's some going. Old bitterness doesn't improve much with a second boiling. | Then let the tea go. Nobody gains by treating an urgent matter like a piece of crockery.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I don't trust a floor whose shine has become remarkably good for no clear reason.
+b : Do you always test it? | What could make it worse?
+a : With one toe before the rest of my weight. An anxious brewer is frequently an upright one. | A helper rushing to assure me it's completely dry while holding a dripping mop.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When times pinch I'm more exact about what I owe and slower to collect what's mine.
+b : Isn't that a dangerous imbalance? | Do you say so on the bill?
+a : For a little while I can carry it. The trick is to see how much without converting kindness into another unpaid wage. | Quietly. A debt already hurts enough without advertising its condition to a queue.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If a friend returns too much I dislike it at least as keenly as being paid short.
+b : Even as a present? | Why not keep the difference?
+a : As a present, name it and give me leave to answer. Hidden in a total, it makes an honest exchange look crooked. | Because I'd remember it till the week ran out. Peace costs precisely that extra copper.
+
+scene work_2
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I never put the cloth across the balance before I've looked at the hooks.
+b : What needs examining there? | Are you afraid of dust?
+a : A thread caught where a little cup ought to hang free. Neatness can do damage disguised as virtue. | Afraid of overlooking a little drag simply because the board looks handsome and clean.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I prefer a prayer of thanks the night before a debt falls due to a large one the morning after forgetting.
+b : What are you thankful for? | Would you ask for credit?
+a : Having enough notice to make another wolf's day start as expected. | I'd ask a lender for that. Prayer's a poor substitute for speaking plainly to the one expecting payment.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : On a climb through town I think of casks going downhill and all the empty wood coming home.
+b : Which way's harder? | Do the houses up high notice?
+a : A full cask needs restraining more than urging. Two different sorts of tired. | They'll notice if the drink arrives shaken. The hill itself sends no bill with its own name on.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can remember the first round of money I dared put into a brewing pot of my own hopes.
+b : Were you confident? | Why choose brewing?
+a : I knew what I stood to lose. That felt oddly steadier than the grand promises being offered round me. | A thirsty table doesn't wait for the winner of a quarrel before wanting another jug.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I expect our grand Houses to disagree before the cold really gathers, though I'm unable to set a date.
+b : What makes you think it? | Will it change your plans?
+a : Too many favours have been charged to both ends of the same account. That's my reading, not public proof. | I'll keep the barrels fit for whoever buys honestly. Malt is refreshingly incurious about banners.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I look for one little star I can see only out of the corner of an eye.
+b : Why not look straight at it? | What persuades you there's really a star there?
+a : It fades. The sky appears to reward a sideways approach to certain small matters. | I find the two neighbours and let my sight drift. If it never turns up I don't enter it as seen.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Cold tea has a skin like a bill pushed under a door.
+b : A bill for what? | Doesn't the flavour stay the same?
+a : For the time I let someone else use up while my cup cooled. I do try not to send the tea the invoice. | It gains a rough edge which has a very direct opinion about my delay.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I dislike seeing a friend produce a purse to repay a favour that never had a price.
+b : Couldn't the friend buy a drink? | Where should the money go?
+a : That would be company freely chosen. Company differs rather markedly from settlement of an imaginary invoice. | Slide it back while both of us are looking. No performance and no little game of forgetting.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I've seen more accidents in a yard after the rain slackened than while everybody was plainly wet.
+b : Why afterwards? | Would you sprinkle the dry places?
+a : Folk stop looking at the ground although the stones go on behaving just as treacherously. | I would mark the wet places. I'd prefer not to create additional work as a cure for inattention.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I check one thing before going to sleep, never seven.
+b : Which thing? | Can you stop at one?
+a : Whether I've put tomorrow's first duty somewhere my waking eye will meet it. | Usually. On a bad night I give the remaining six to six very patient stars.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A shelf at the wrong angle can make a row of empty cups look like a public disagreement.
+b : Do you straighten the shelf? | Could you put them all nearer the wall?
+a : First. Then I save my sharper remarks for a matter with some real responsibility. | I did that once. They all politely congregated round the low corner after the door shut.
+
+scene family_2
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I'd rather leave #self.child# one trustworthy figure than three impressive estimates.
+b : Even if the figure's small? | What about your hopes?
+a : Especially when it's small. A young pair of hands deserves to know what the start actually weighs. | Those come with no total written on. My child gets to count in an entirely different direction if desired.
+
+scene work_3
+when topic=work self.job=brewer
+does tell.self / ask.detail / answer.detail
+a : There's a sweet smell to grain before the work has earned any praise.
+b : Why hold back praise? | What if it doesn't smell sweet?
+a : Smell promises something. A sound finished jug keeps the promise. I like to distinguish the two. | Then it's a useful time to stop admiring the notion of a sale and look at the grain.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I like a paid cup put mouth down on the board.
+b : What if somebody's still drinking? | Could that start an argument?
+a : An empty cup for my own bookkeeping. A thirsty customer would soon educate me about turning the wrong one over. | It can finish one. Both of us see the same cup in the same position before leaving the matter.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I can give a newcomer a plain account of which sorts of work need two steady hands.
+b : Would you give a stranger credit? | What if I'm just passing through?
+a : For a little time and an honest question, yes. A barrel of fine drink is a different calculation. | Then I'll spend one minute marking your easiest way out. Information needn't come by the cask.
+
+scene health_2
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I ease the worry in my jaw by putting chalk down whenever I'm done with a figure.
+b : What's the connection? | Do you grind your teeth as well?
+a : My fingers let go and the rest of me often takes the hint. A very small economy in temper. | Occasionally. I've never yet made a wrong sum right by chewing it more fiercely.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The report from this taproom corner is that #topic.subject# #topic.claim#.
+b : Do the figures support it? | Will you extend any credit to the report?
+a : I've heard words. I haven't had an actual account laid open, and wouldn't pretend otherwise. | Enough to remember it as a claim, which leaves me able to correct it without losing somebody else's money.
+
+story sky [topic=pastimes]
+  : I matched a line of stars to four little sums I wanted to remember overnight.
+  : A cloud blew in across the second star before I'd reached the end.
+  b : Did you lose the sum?
+  : No, but I fetched chalk. Heavenly accounts use rather erratic shutters.
+
+story cup [topic=memories]
+  : I turned a cup upside down with a particularly satisfied tap after a small debt was paid.
+  : I had forgotten the floor leaned and the tap set three cups hopping along the shelf.
+  b : Did any break?
+  : Caught the dear one, nudged the plain ones upright. Three entirely new obligations for my formerly idle fingers.
+
+story pastry [topic=food]
+  : A bit of plum juice dropped on my chalk mark and turned a copper into something resembling a beetle.
+  : I gave the matter time to wander off of its own accord.
+  b : Did it?
+  : Not even with encouragement. I rubbed the board and wrote the sum again after putting the tart behind me.
+
+story spill [topic=work]
+  : I was loudly explaining the danger of leaving a floor wet when my own heel went out sideways.
+  : I caught a post and remained just sufficiently upright to finish the sentence.
+  b : What did you say?
+  : That the demonstration was more convincing than the explanation and I'd be very glad of the mop.
+
+story wind [topic=weather]
+  : I left an unpaid list under a saucer and an autumn gust lifted the page clean up against my nose.
+  : One large figure stared back upside down in the light.
+  b : Did you recognise it?
+  : My own small debt for the saucer. One might call the wind an excessively familiar but quite effective clerk.
+
+rule @debt
+when concept=bark
+does aside
+cooldown 8h
+say Paid goes face down and stays settled. | Count both ways before accusing the chalk.
+
+rule @star
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Two clear points, one little matter set aside. | Fine dark for leaving my arithmetic with the sky.
+
+rule @cellar
+when concept=bark self.job=brewer
+does aside
+cooldown 8h
+say Sweet in the nose isn't the same as ready in the jug. | Keep the hoop off the wet patch.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The floor stays wet longer than the sky does. | Mind the shine before you admire the shelves.
+
+rule @tidy
+when concept=bark
+does aside
+cooldown 8h
+say Clear the middle shelf for what's actually due. | A cup on its side can't tell me anything sensible.
+
+rule @cake
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say Keep the chalk well away from the plum edge. | One purple fingerprint won't balance a bill.
+dlg resident.hub : Come to this clear end of the account.
+dlg resident.hub [topic.meeting=known] : #topic.player#, one familiar voice within easy speaking distance of a clear board.
+dlg resident.hub [pair.disposition=wary|hostile] : State the item under dispute. We can examine it in good light.
+dlg resident.hub [here.time=night] : The stars have room for further entries tonight.
+dlg resident.job [self.job=brewer] : At #self.workplace# good drink and clear accounts have to be managed separately if both are to stay sound.
+dlg resident.job : I keep the obligations I owe where my own thumb can reach them.
+dlg resident.news [world.news] : This has come across in clear figures. #world.news#.
+dlg resident.gossip [here.gossip=yes] : A report now going round says #topic.subject# #topic.claim#. That's a claim entered provisionally.
+dlg resident.bye : Walk carefully past anything recently polished.
+dlg shop.greet [here.shop=open] : Have a look. I'd sooner you knew exactly what you were purchasing.
+dlg shop.greet [here.shop=bare] : Nothing on hand for sale. Show me your own goods if you're selling today.
+dlg shop.bye [here.shop!=asleep] : I trust you and I agree where that account stands.
+
+graft resident.hub
+choice Do the stars pay what they owe? -> star_credit
+node star_credit
+say Their accounts have the merit of staying open without demanding interest. I put a difficult figure beside a small star for the night.
+choice What if you can't see it tomorrow? -> star_cloud
+choice Leave a corner of sky clear. -> hub
+node star_cloud
+say Then I consult my chalk. I enjoy the sky but I don't employ it to keep records for a business.
+choice Leave a corner of sky clear. -> hub
+
+graft shop.greet
+choice Why turn the cup down like that? -> paid_rim
+node paid_rim
+say To close a small debt in sight of the one who settled it. No little mark left under my thumb to surprise a customer on the next visit.
+choice What if there was a mistake? -> paid_review
+choice Back to the board. -> greet
+node paid_review
+say We turn it upright and both look again. I'd rather put the thing right than build a good reputation on one bad figure.
+choice Back to the board. -> greet

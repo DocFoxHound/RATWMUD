@@ -1,0 +1,278 @@
+mantle rm445
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_pim_pitchham
+title the singing hood
+fits stage=young|adolescent|adult|old
+prefers temper=calm humour=dry
+traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
+quirk turns_one_corner_of_an_oilcloth_hood_up_to_catch_a_tune
+likes warm_bread singing festival_bells summer_evenings
+dislikes drizzle stale_bread
+fears a_voice_cut_off_in_mid_verse bread_too_dry_for_a_tender_mouth
+hopes to_hear_a_whole_bell_peal_beneath_a_dry_hood
+topics smalltalk +0.6 festival +0.5 weather +0.4 food +0.3
+styles comfort=quiet gossip=plain refuse=gentle tease=dry
+marks oath saying
+persona #self.first# turns one corner of an oilcloth hood back to hear a song through the rain and keeps the other ear comfortably out of the weather.
+
+words
+oath! = Soak my songbook | A crumb in my hood
+saying! = One ear for the weather and one for the song | Turn up the corner worth hearing
+hood = my soft oilcloth hood | my rain hood
+corner = the turned-up corner | my hearing corner
+drum = a tiny drumroll of drops | a little patter of rain
+crumb = a good warm crumb | a warm bit of bread
+crust = a leathery crust | a very stubborn heel
+peal = a bright spill of bells | the long festival peal
+summernote = a note hanging in the evening air | a late bit of tune
+stitch = a raised stitch | the bumpy seam
+rill = a thread of water | a tiny rill
+inside = the dry lining | the soft part inside
+sill = a broad bit of sill | a well-sheltered sill end
+
+any
+opinion sump for 1 : It's a good street for hearing the very last bell after the tune goes round a corner.
+opinion festivals for 2 : I get bells and singing and nice bits of noise all obliged to take turns.
+opinion city for 1 : I like living where a song can come home along a different street.
+opinion dole for 1 : Warm bread does twice as much good as stale bread if you count the smell.
+opinion houses mixed 0 : Big doors keep the rain off nicely. I wish all doors had such deep tops.
+opinion road mixed 0 : I prefer the road where the splash comes from the same side as the rain.
+opinion times mixed 0 : A long day wants a little tune saved up for the walk indoors.
+
+any
+line greet : A hello from the dry corner.
+line greet [pair.band=strangers] : I'll turn my good ear to a new voice.
+line greet [here.time=dawn] : Morning. Nothing's dripping down my neck yet.
+line greet [here.time=dusk|night] : Evening makes the high notes sound farther away.
+line greet.return : Heard you quite clear on the dry side.
+line greet.return [pair.band=friends|family] : Yours is a voice worth unfolding a corner for.
+line greet.return [self.working=yes] : I can listen with my hands still occupied.
+line greet.return [here.time=dusk|night] : A familiar tune sounds nice in the dark.
+line kin.open [pair.kin!=no] : Kin can come under the sheltered bit.
+line again.open : I remember where the song stopped.
+line hail [pair.band=friends] : Friend, come where the gutter can't join in!
+line farewell : Go with a dry ear.
+line farewell.return : Catch the last note on your way.
+line react.news : Say the words where the drops won't swallow them.
+line react.news.new : I haven't caught that tune before.
+line react.news.known : I heard the earlier verse.
+line react.news.doubt : Did it really sound like that?
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We needn't sing anything for a while.
+line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'm lifting both corners for that news.
+line ask.how : Can you still hear the nice part of today?
+line answer.how : Most of me is dry. I'll take that.
+line thank : You kept my good corner dry. Thanks.
+line deflect_thanks : It was only a little turn of cloth.
+line sympathise : I'll sit on the quiet side with you.
+line reassure : One damp bit doesn't spoil the whole lining.
+line decline : I'd like to keep that part of the day dry.
+line accept_decline : Very well. Your corner can stay down.
+line preclose : I'd like some daylight left for singing.
+line accept_preclose : Take the bit of tune that fits.
+
+young
+
+scene ear_game
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Under #hood# I have a dry ear and a singing ear. | Fold #corner# back and my head turns into a little music room.
+b : What does the dry one do? | Who else fits in there?
+a : Takes a rest. Then they swap. | Nobody. It's quite a small concert.
+
+scene bread_rain
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I hold #crumb# on my tongue till I can feel how warm it is. | My hood smells of bread if I stand over a good loaf.
+b : Does it last? | Can you eat the smell?
+a : No. I am still working on that bit. | I tried breathing it twice. I'd like some bread now.
+
+scene school_beat
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I can sound out a long word by tapping it on my knee. | I don't let my hood drip over a lesson.
+b : Like a song? | Where do the drops go?
+a : A song that stops when I can say it. | Down my elbow. My elbow's getting a wet sort of lesson.
+
+scene bell_cup
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I can catch #peal# by holding an ear flat to a dry wall. | I wait for the tiny bell that comes right after the great noise.
+b : What does the wall do? | Which sound is the tiny one?
+a : Hums a little. It's trying to remember, same as me. | It sounds as if it just got a word in.
+
+scene rain_race
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle starts #rill# down one seam and leaves my other seam waiting. | Little tickly drops get right down the edge.
+b : Is there a race? | Why don't you pull the corner down?
+a : Yes. I never agree to a race with only one runner. | Then I'd miss asking you to say it again.
+
+scene late_loaf
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #crust.capitalize# won't bend even if I sing to it. | Old bread makes a noise when it breaks.
+b : Could you dunk it? | Do you dislike the noise?
+a : Right. It probably likes a swimming song. | No. It's what my teeth have to do to make it.
+
+adolescent
+
+scene testing_pitch
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I turn #corner# just a little when I'm testing a note. | I used to sing right into my hood.
+b : Can you hear yourself better? | And now?
+a : The note coming back from the street gets an ear all to itself. | Now I'd like a note that reaches somebody beyond my nose.
+
+scene quick_stitch
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I've learnt to sew #stitch# in the shape my hood already wants to take. | If I'd stitched this hood younger I'd have sewn both corners up.
+b : What difference does that make? | So why leave one loose now?
+a : It doesn't tug my ear flat halfway through a tune. | I can choose a different side if the sound moves.
+
+scene sump_chorus
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A Sump street puts a second rhythm under whatever I'm practising. | I choose a dry wall if I'm going to try an unfamiliar tune in a Sump street.
+b : Does it spoil your time? | Why a wall?
+a : I'm learning to keep whichever rhythm I started with. | It answers quickly enough to hear the mistake before I repeat it.
+
+scene summer_echo
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : #summernote.capitalize# holds after I stop singing. | A mild evening means nobody has to huddle under the best bit of roof to hear.
+b : Is it an echo? | Do you sing louder?
+a : Just a want to keep listening. Summer leaves room for that. | I can sing more quietly. The listeners aren't jostling.
+
+scene drum_under
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : #drum.capitalize# used to set the pace of all my wet-day songs. | Oilcloth's convenient when you forget a verse.
+b : And now? | How would cloth help?
+a : I like the bit where our two rhythms meet on purpose. | Just lower the lifted corner and let the rain play its little solo.
+
+scene plain_loss
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There are places by the water where I'd sooner keep my voice low. | I keep one song very plain.
+b : Remembering something? | To save breath?
+a : Yes. I can do the remembering without an audience. | So there's enough quiet between the words to miss somebody.
+
+grown
+
+scene hold_note
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : A hood made a fine first singing room. | My trick with the corner still works on a crowded evening.
+b : Have you found a better one? | Even under a roof?
+a : A room in which another voice can come in without either of us raising the roof. | I angle the uncovered ear towards a voice in the crowd.
+
+scene room_at_sill
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I leave #sill# clear for an oilcloth to drain. | #inside.capitalize# can stay dry through a storm if you hang it by the right loop.
+b : Any particular reason? | Which is right?
+a : I remember how far a small wet hood can drip onto the chair below. | The one that doesn't turn the whole thing inside out.
+
+scene bread_heat
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : A fresh loaf can bring a remembered street to mind before its wrapper opens. | I cut one heel while the loaf still holds its heat.
+b : What do you remember? | Why only one?
+a : Standing with my face in a warm gust and a wet hood down my back. | Warmth tastes better shared. The rest has to reach the table.
+
+scene passing_song
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : An old tune travels with me as cheaply as I breathe. | On a wet road I can tell the direction of the shelter by listening.
+b : What's the fare for the return? | Listening to what?
+a : Remembering the words I always used to get wrong. | Where the drops stop drumming and start ticking off an edge.
+
+scene light_evening
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like one entire peal with a dry collar and no need to hurry. | My perfect summer evening has room for a song to finish.
+b : Where would you stand? | No encore?
+a : Close enough to walk home on the very last note. | A quiet ending is its own good fortune.
+
+any
+
+scene send_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : Heard this from #world.news_from#. #world.news#. | #world.news#. They gave the place as #world.news_from#.
+b : Was it easy to hear? | Shall we say it louder?
+a : Easy enough to get the words as far as here. | Only if a listener's missing a word.
+
+scene wind_talk
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A little bit of chatter found its way under my hood. | I caught the tune of some talk without getting every word.
+b : Did it belong there? | What did you make out?
+a : I'll tip it out over the same ear. | Too little to sing it to somebody else.
+
+story hood_boat [topic=memories|weather]
+  : I set my hood on a sill and it filled with rain.
+  : Picked it up in the usual way and gave my toes a thorough washing.
+  b : Was the inside still dry?
+  : It had been perfectly dry. My toes just hadn't been told what was coming.
+
+story bread_note [topic=memories|food]
+  : I tried to sing a long note as a hot loaf arrived.
+  : The smell reached my nose and I took a great breath without meaning to.
+  b : Did you lose the note?
+  : It broke into a very short tune about hunger. Much nearer to what I meant.
+
+story wrong_bell [topic=memories|festival]
+  : I thought the quiet bell had missed the end of a peal.
+  : Stood waiting with one ear uncovered till a drop slid down my nose.
+  b : Did you ever hear it?
+  : Yes. A little clink behind me was the buckle on my own hood. I'd brought an extra bell.
+
+rule @fold_flap
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Up with the singing corner.
+
+rule @last_bell
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say There. The little note got through.
+
+rule @bread_room
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Plenty of room under this hood for a bread smell.
+
+rule @pause_cloth
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Let that drop finish its tune.
+
+dlg resident.hub : Stand by the folded ear. An ordinary voice carries fine.
+dlg resident.hub [topic.meeting=known] : #topic.player#, I'd know your voice through two layers of oilcloth.
+dlg resident.hub [here.time=night] : Now even a little tune will go quite a way.
+dlg resident.hub [pair.disposition=hostile|wary] : I can hear you well with the corner down.
+dlg resident.job [self.job=child self.workplace] : My lessons are at #self.workplace#. I tap tricky words against a knee.
+dlg resident.job : I'll give a bit of patient attention to whatever's in hand.
+dlg resident.news [world.news] : A bit of word from #world.news_from#. #world.news#.
+dlg resident.gossip [here.gossip=yes] : What I caught was mostly the tune the voices made.
+dlg resident.bye : Keep an ear free for the last bell.
+
+graft resident.hub
+choice What does your hood sound like in the rain? -> hood_music
+node hood_music
+say One fat drop goes tum. A little one hardly ticks. If both come down together I hear the fat one and feel the little one.
+choice Can you sing along to that? -> hood_beat
+choice I'll listen for a little drop. -> hub
+node hood_beat
+say I choose a tune with plenty of places for surprise drops. The weather doesn't practise.
+choice I'll take the dry side of the chorus. -> hub
+choice Time to get my ears out of the rain. -> bye

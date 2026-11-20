@@ -1,0 +1,375 @@
+mantle rm330
+state ready
+dialect plain
+accent none
+tier full
+written_for rmx_ivo_wainwright
+title the butcher's fleet
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
+quirk names_joints_like_ships_before_weighing_them
+likes mutton_stew draughts fresh_straw misty_dawns
+dislikes flies crowds
+fears leaving_the_counter_to_a_sharp_practice
+hopes keeping_good_weight_under_the_family_name
+topics food +0.6 prices +0.5 pastimes +0.4 travel +0.3
+styles comfort=practical gossip=plain refuse=direct tease=merry
+marks oath saying
+persona #self.first# names the lean and fat ends of a joint like ships in a harbour and takes fierce exception to a dishonest weight.
+words
+oath! = Sink my stockpot | Salt my draughtsmen
+saying! = Weigh both ends of the boat | The bone sails with the joint
+stewfleet = a flotilla of roots | a little broth fleet
+scalehook = a curved scale hook | a dark iron hook
+tidemark = a pale streak of fat | a run of white gristle
+pennybit = a copper gone green | a penny with a nick
+weightbit = a square iron weight | a squat lump of brass
+sawbone = a round marrow bone | a short piece of shin
+redcarver = a red draughtsman | a king with a nick
+winddeck = a broad deal board | a clean slab of wood
+wipepad = a folded wiping cloth | a strip of old linen
+strawtwist = a fresh straw twist | a handful of clean straw
+fogbank = a low woolly bank | a grey roll of mist
+flycap = a cover of fine mesh | a little net lid
+brinecup = a crock of brine | a lidded salt crock
+lettertie = a narrow parcel tie | a piece of saved ribbon
+sharpennub = a worn sharpening nub | a piece of fine stone
+bootnose = a rounded toe | the tip of a boot
+basketgap = a gap in the baskets | a space along the counter
+
+grown
+
+opinion merchants mixed 1 : An extra scrap put in after weighing can be a kindness. A thumb on the hook can never be.
+opinion watch for 1 : It's easier to meet a customer's eye without having to count the hands below the counter.
+opinion newcomers for 1 : Every unfamiliar tongue says the name of some ship a little differently.
+opinion houses against 1 : A fine family seal is no sort of guarantee that a poor wolf got a fair slice.
+opinion dole for 2 : Keep a good bone for the public pot. Hungry mouths deserve broth that sets when it's cold.
+opinion city for 1 : There's enough sea behind the markets to keep a stall-bound imagination in steady employment.
+opinion road against 1 : A late cart costs me even when my own two feet have kept a most astonishing punctuality.
+opinion festivals mixed 1 : I enjoy watching dancers from a place where nobody has balanced a basket on my toes.
+line greet : Alongside, if you please. This bit of board is yours.
+line greet [pair.band=strangers] : An unfamiliar arrival alongside deserves an honest welcome.
+line greet [here.time=dawn] : Morning. First chance to see the boats before the voices start.
+line greet.return : Ah, the right voice has hailed the right vessel.
+line greet.return [self.working=yes] : I can spare the ear that isn't listening for a weight to settle.
+line greet.return [pair.band=friends|family] : Come to the calm side of my counter, shipmate.
+line again.open : We've put into the same port for another word.
+line kin.open [pair.kin!=no] : A berth by my shoulder goes to kin without weighing.
+line hail [pair.band=friends] : Here, look lively enough to claim the good corner!
+line farewell : May nobody tax the wind that takes you home.
+line farewell.return : I'll keep a friendly port open for you.
+line react.news : Bring it alongside for a closer look.
+line react.news.new : There's a new hull on my horizon.
+line react.news.known : I've already seen that little vessel come in once.
+line react.news.doubt : I'd weigh the cargo before praising the fine paint.
+line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Now that's a ship I'd cheer from the shore.
+line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd send something tender to the household that has to hear that.
+line answer.how : My tongue's afloat and my feet have yet to mutiny.
+line answer.how.busy [self.working=yes] : Busy enough to count my change twice and my jokes just once.
+line ask.how : Sailing steady with the load you've brought?
+line thank : You kept that whole business from running aground.
+line deflect_thanks : I had the scrap to give and a good place to send it.
+line decline : I won't send a crooked deal sailing off in a cloud of compliments.
+line accept_decline : I'll strike that parcel off today's manifest.
+line sympathise : I can hold my tongue till dinner's gone down.
+line reassure : Even a crowded harbour leaves a vessel room to turn eventually.
+line ack : I can see what's riding under those words.
+line offer : Want a cleared length of board for a minute?
+line preclose : I'd best see to the pieces waiting for their proper homes.
+line accept_preclose : Away while the traffic's kind to your toes.
+line give.advice : Look at the hook as well as what's hanging from it.
+
+scene work_1
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I mind the public face of #self.trade_words# most carefully when the counter's crowded.
+b : Who's watching the weight? | What's public about a purchase?
+a : Me, chiefly, and anyone may inspect the balance. Brass should blush at nobody's scrutiny. | The price and the measure. What's left in the buyer's purse can stay strictly below decks.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I can sail a spoon through mutton stew without grounding on a bone.
+b : Where's the deep channel? | Isn't a bone in the way?
+a : Between two islands of onion. Take care on the approach or you'll get pepper up your nose. | A good bone is our flagship. It gives the whole fleet a purpose.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I can name a remarkable number of ships from the way the side sits on the Sound.
+b : Even with the name covered? | What's your favourite vessel?
+a : I make a guess and commend myself if the paint agrees. If not, I commend the painter. | The one that arrives with everyone aboard. A tidy line comes second to that.
+
+scene pastimes_1
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I sail my draughtsmen out in pairs and hope one remembers the way home.
+b : Isn't that a poor strategy? | What happens to the king?
+a : Often. It's a splendid public demonstration of the cost of rash shipping. | Gets twice the privilege and precisely the same horrible end off the board if I'm careless.
+
+scene animals_1
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly makes a poor customer and a persistent inspector. | I'd like to charge flies a penny for every circuit of the cover.
+b : Could you put up a sign? | How would you collect?
+a : I could, but most flies have a taste for sitting on precisely the important word. | Cover the food and let the empty space send the bill. No credit under any circumstances.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Clean straw underfoot is the cheapest improvement I can think of for a bad morning.
+b : Why not bare boards? | How much straw?
+a : Boards let a fallen copper bounce halfway to another household. Straw has a dear little rustle when it catches one. | Enough to hear my own feet arriving, short of nesting depth.
+
+scene weather_1
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : A ship looks twice as grand emerging slowly from a bank of mist.
+b : Because it seems bigger? | What do you see first?
+a : Because no impatient eye can rush the introduction. I admire a vessel with a sense of occasion. | Usually the upper line. I can happily take a minute guessing the belly below.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Crowds make me talk louder and get rather less pleasure out of hearing myself.
+b : How do you dodge elbows? | You don't like hearing yourself?
+a : Turn sideways and keep one narrow channel clear for whoever's carrying the heaviest basket. | In moderation. A whole street shouting my price back at me is no great improvement on silence.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I call a good friend to witness when a game ends in my favour.
+b : Expect disbelief? | What happens when you lose?
+a : I consider independent evidence essential on such a rare occasion. | My witnesses appear without being asked and generally remember every detail.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A blessing over something humble ought to last about as long as the first steam rising.
+b : Would you bless a bone? | Why keep the words so short?
+a : Gladly. A bone can carry a noble family of onions clear through to supper. | My gratitude will keep. A hot dinner occasionally has other destinations.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : If my voice rises when somebody questions a measure I make myself lower the hook.
+b : Why lower it? | Do you take a question personally?
+a : So we see the measure from an equal height. No case was ever settled by my ears getting hot. | I'm working on it. There is a considerable difference between an enquiry and a claim of wrongdoing.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I came by one useful art late and spoke of it afterwards with ridiculous authority.
+b : What betrayed you? | Was that a bad thing?
+a : My first confident explanation left out the one awkward corner a beginner never forgets. | It made me go back and learn the elementary part properly. Pride provided the tuition.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I give the board one clean swipe towards the edge before I set so much as a cup on it.
+b : Does that keep the dirt away? | Why towards the edge?
+a : No, but the first patch of dirt has to establish itself on my terms. | So the scraps leave my business altogether. Wiping round in circles just takes the dust for a dance.
+
+scene work_2
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I keep my jokes going till the instant a count needs my whole head.
+b : Could you count in rhyme? | Is the customer expected to stop as well?
+a : I could and then I'd owe somebody exactly one clever rhyme and several missing coppers. | The customer may sing an opera if inclined. I'm responsible for my own mistakes.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When my leg grumbles I give it a seat and let my tongue take next watch.
+b : Does a joke ease an ache? | Would you still go out?
+a : It eases the company of the one whose leg is doing the complaining. | If the ground looks honest. I've no need to prove my courage to a greasy cobble.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A cheap cut can turn into the grandest vessel on a stew fleet with sufficient time.
+b : What goes into your pot first? | How can I tell it's ready?
+a : Water and a willingness to wait. The fine flourishes can come later. | It slips from the bone when politely requested by a spoon.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times make a stockpot a very serious piece of civic equipment.
+b : What goes in the public pot? | Do you boil a bone twice?
+a : Enough bone to give the water body and whatever roots bring a bit of sweetness. | If there's another honest spoonful in it, yes. I don't charge twice for the memory of a sheep.
+
+scene land_1
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : City roofs look like a fleet hauled up on very steep ground.
+b : Where would you put the harbour master? | Which would be your ship?
+a : Among the chimneys with a long brush. A great deal of the upper traffic is soot. | That squat comfortable one. A high prow would only give the wind more to tease.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I want a bit of table that needn't be making me money every time I sit down.
+b : Do you cover it? | Would you play a game on it?
+a : A cloth if available. Mostly I cover it with the accumulated elbows of friends. | Gladly. A captured draughtsman makes a much less alarming loss than a day's takings.
+
+scene newcomer_1
+when topic=newcomer
+does offer / ask.detail / answer.detail
+a : I can offer a new arrival directions by naming the smells along the way. | I'd describe the market by everything except all the shouting.
+b : What if the wind turns? | How would I find your place?
+a : Then wait for the traffic to turn its head. Everybody looks round at the first hot pie. | Look for the boot tips pointing towards a good argument about fair portions.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain makes a poor market crier. Nobody can tell what it's offering.
+b : A bath, surely? | Do you keep selling through it?
+a : All at once and on no terms I'd accept voluntarily. Give me a basin at home. | If there's a willing buyer and the goods are covered. Water adds no value to a parcel.
+
+scene memories_2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I like a letter that carries a trace of the land it comes from.
+b : Do you mean dirt on the fold? | Would you prefer a parcel?
+a : Even a pressed leaf will make a whole vineyard easier to picture than a column of figures. | Only if it has a letter in it. The plum goes in a bite and the description stays.
+
+scene day_2
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I count familiar ships the way another wolf might count familiar boots at a door.
+b : What if a familiar hull fails to arrive? | Don't they change their paint?
+a : I keep a berth in the count till I hear the reason. No sense inventing a wreck on a bright morning. | Frequently. A hull has habits under the new colour, much like a wolf in a decent coat.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A family name on a stall would oblige whoever takes it on to meet an honest standard.
+b : Would you insist on the same trade? | What if nobody wants the counter?
+a : No. I'd rather the standard went out walking than sat sulking behind a board. | Let it go to somebody whose face lights up at a fair deal. A sulky inheritance will never draw custom.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A draughtboard with a crack through its centre makes a wonderful harbour for captured men.
+b : What about the living pieces? | Wouldn't they fall in?
+a : They march on planks above their less fortunate company. A most economical port. | Only if the board's split all the way through. That would make it two boards and another problem.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If I start a joke and somebody flinches, I'd like enough sense to leave it unfinished.
+b : Would you ask what stung? | Wouldn't the pause be awkward?
+a : I'd ask quietly later. The rest of the crowd needn't help me do better. | Less awkward than finishing a joke at the entirely wrong wolf's expense.
+
+scene work_3
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I wipe each weight before it goes back on the hook.
+b : Dust doesn't weigh much, does it? | Worth that extra moment?
+a : Little enough that it costs me less to wipe it off than to explain my neglect. | A second to keep the measure honest is the most profitable moment at any stall.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : It's been hailed across the water that #topic.subject# #topic.claim#.
+b : Was it a reliable hail? | How will you tell it?
+a : Loud and clear isn't the same as reliable. I'd wait for the vessel to dock. | With the uncertainty left on the hook in full view for inspection.
+
+story onion [topic=food]
+  : I cut an onion in half and found one side of it looked just like a little boat.
+  : I launched that onion onto the stew and it immediately listed to port.
+  b : Did you rescue your vessel?
+  : I turned it over. Capsizing is an improvement when both sides need cooking.
+
+story letter [topic=memories]
+  : A letter came wrapped round a dark little leaf and I admired the shape for an age.
+  : Eventually I discovered there were quite a few words hidden under it.
+  b : Interesting news?
+  : A long discussion of leaf rot. I'd been admiring the main piece of evidence.
+
+story stall [topic=work]
+  : I started out rehearsing my first market cry in a level voice behind a closed door.
+  : By the fifth attempt I was announcing an imaginary joint to the entire neighbourhood.
+  b : Did anybody buy it?
+  : Had two enquiries before I had so much as a bone to offer. After that I worked on the supply side.
+
+story hook [topic=prices]
+  : I balanced two empty pans perfectly and stood back to admire the even line.
+  : A fly settled on one edge and seemed to make the whole arrangement dip.
+  b : Was the fly that heavy?
+  : My elbow was leaning on the board. I forgave the fly its effect on commerce but not its manners.
+
+story army [topic=pastimes]
+  : I stacked my captured pieces so high the top one fell into a bowl of straw.
+  : I went fishing among the stalks and came up with an old copper first.
+  b : Did you find your lost piece?
+  : Eventually. The only occasion on which losing most of my army has made me money.
+
+rule @market
+when concept=bark
+does aside
+cooldown 8h
+say Both ends of the joint have passage on this ship. | A clean weight tells a short story.
+
+rule @game
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say My red fleet's had an unfortunate encounter with a king. | Save one corner for a retreat.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Early enough to count bows before baskets. | There's air enough for a modest market cry.
+
+rule @flies
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Mesh down before the winged customers arrive. | That fly hasn't brought so much as a farthing.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A damp parcel's dear at any price. | Under the cloth till the shower clears.
+
+rule @friend
+when concept=bark
+does aside
+cooldown 8h
+say Let the shortest basket through before the tall elbows. | A little room at the rail, if you please.
+dlg resident.hub : Bring your question alongside. I've an empty stretch of dock for it.
+dlg resident.hub [pair.disposition=wary|hostile] : State the difficulty plainly. My board shows both edges.
+dlg resident.hub [topic.meeting=known] : #topic.player#, a familiar vessel in previously quiet waters.
+dlg resident.job [self.job=merchant] : The name I trade under is #self.trade_words#. You may inspect the measure from either side.
+dlg resident.job : I have opinions about a fair counter even when nobody's asked me to stand at one.
+dlg resident.news [world.news] : Here's the cargo that actually made port. #world.news#.
+dlg resident.gossip [here.gossip=yes] : An unsealed account says #topic.subject# #topic.claim#. Check the weight before putting your money on it.
+dlg resident.bye : May your next parcel have plenty beyond the wrapping.
+dlg shop.greet [here.shop=open] : Choose a piece at your leisure. The measure can stand inspection.
+dlg shop.greet [here.shop=bare] : Stripped board today, I'm afraid. I'll still buy what's fit to bring in.
+dlg shop.greet [here.shop=asleep] : The board's shut and my market voice has gone to sleep.
+dlg shop.bye [here.shop!=asleep] : A fair wind for you and a firm grip on the basket.
+
+graft resident.hub
+choice Does every stew have a flagship? -> stew_ship
+node stew_ship
+say A proper pot needs one grand object for the rest to sail around. I like a marrow bone but an onion with ambitions can fill the post.
+choice What if it sinks? -> stew_sunk
+choice I'll try the carrot. -> hub
+node stew_sunk
+say Promote a carrot. A fleet composed entirely of supper can afford to take a cheerful view of sinking ships.
+choice I'll try the carrot. -> hub
+
+graft shop.greet
+choice Can I see how the scale hangs empty? -> hook_empty
+node hook_empty
+say With pleasure. A buyer ought to see the starting point before any parcel makes a speech about its weight.
+choice What's a fair start? -> hook_start
+choice Back to the counter. -> greet
+node hook_start
+say Nothing touching the pan, nothing on the hook and both of us looking from a level height. Brass doesn't get to keep secrets here.
+choice Back to the counter. -> greet
