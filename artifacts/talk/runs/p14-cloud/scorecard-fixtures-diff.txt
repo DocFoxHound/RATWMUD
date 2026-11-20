@@ -1,0 +1,8 @@
+R8 (habit saturation (% of a speaker's lines, mean)): 0.627 regresses more than 10% from the baseline's 0.0242 (260 events against 10 at the baseline's rate; by chance 1.5e-58)
+C8 (conversations with a third speaker (%)): 0.128 regresses more than 10% from the baseline's 0.401 (16 events against 51 at the baseline's rate; by chance 1.2e-05)
+C9 (callbacks per 10 conversations): 1.15 regresses more than 10% from the baseline's 1.45 (1461 events against 1818 at the baseline's rate; by chance 4.5e-10)
+D1A (lines said a step broader or plainer than the speaker's own accent (%)): 24.4 regresses more than 10% from the baseline's 29.2
+O1 (opinions given per 10 conversations): 0 regresses more than 10% from the baseline's 0.483 (0 events against 561 at the baseline's rate; by chance 5.3e-171)
+D1B (lines with a dialect's words (%): broad speakers): 6.64 regresses more than 10% from the baseline's 8.28 (1873 events against 2852 at the baseline's rate; by chance 1.9e-55)
+D2 (another dialect's words in a speaker's line): 1 breaks the hard gate (0); the baseline passed
+X1 (lexical cohesion: replies sharing a content word with the line before (%)): 23.3 regresses more than 10% from the baseline's 26.8

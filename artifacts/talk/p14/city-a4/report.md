@@ -185,3 +185,18 @@ The batch was compared against every exported dialect and the 36 city-a3 files i
 ## Owner handoff
 
 World day, wear coverage, binding, database export agreement and the post-merge game tests belong to the owner-side handoff. File checks are complete, with 14 lore warnings in the dialect baseline and zero new talk-lint findings. There are no open editorial questions. The batch was written and checked on November 19 during overlapping writing and editorial sessions. Individual token counts were unavailable.
+
+
+## Owner-side integration (2026-11-19, branch `r3-mantles-cloud`)
+
+Merged from `cloud/mantles-city-a4` with the other ten cloud batches (only mantle files and reports changed).
+
+- G1 `talk_check --mantle`: 42 mantles, 3570 items, 3025 rules and scenes; 0 refused
+- G2 `mantle_check --strict --world ridgemere3` (all plain, then all 805 after the export): 0 refusals; the 2 warnings are rm117's and cw197's, from before.
+- `mantle_batch lint`: 0 refusals, 0 warnings. G3 (`mantle_batch gates` with the world): 42 mantles worn; 830 of 988 scenes heard by some listener; 0 holes in the core moves; W1 98.4496%.
+- `dialect_check --world ridgemere3`: 0 failures, 0 warnings; `talk_lint`: 0 new.
+- Editor's review (no one had checked the cloud's quality): Read whole: rm222, rm225, rm227, rm246 (and scene by scene rm221, rm223, rm224, rm226, rm238, rm240, rm257). rm221-rm226 share one `b` reply across threads it didn't always fit; all 148 such scenes checked. Every file scanned by the city-work checkers. Fixed: cryptic or non-sequitur replies, stiff lines, `#self.trade_words#` mid-sentence ("My work is #self.trade_words#" breaks for "runs X", "works the salt at X") turned into fragments, ungated "up here"/"down here" claims, uncapitalised slots at a sentence's start, 5-word runs the edits made. No breach of the deity, dog, tells, pronoun or sex-word rules was found.
+- Quirk ids longer than the database allows (`^[a-z_]{0,60}$`) were shortened (36 across the batches); `mantle_check` doesn't catch it, the load does.
+- Left for a later pass: about 80-90% of scenes share one shape (`tell.self / ask.detail / answer.detail`, 3 turns); a wordy, whimsical house style; some motifs repeated across mantles from the briefs (charcoal camp, a future stall, lucky coal, oilcloth hoods).
+- Loaded into ratw_ridgemere3 by `mantle_load --batch city-a4 --written-by codex --bind` (backed up first), every mantle bound to its resident; `mantle_export --check`: the rows and the files agree.
+- `talk_card` after all eleven batches (`artifacts/talk/runs/p14-cloud`): the open hard gates R1 and B5 as at stage 4; T2 now passes; two single events newly break hard gates, both in older mantles and not in these batches: D2 (cw163's "Nothing, #address#." drew "neighbour", which the lexicon counts as southmeadow's "nothing neighbour") and T3 (cw194's "I didn't see it with my own eyes", counted as an unbacked eyewitness claim). Both are for the owner (a lexicon allow entry or an edit to those mantles).
