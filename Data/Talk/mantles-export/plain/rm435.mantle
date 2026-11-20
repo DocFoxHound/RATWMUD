@@ -1,9 +1,12 @@
+# rm435, the singing jar lids (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm435
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_oda_sootdale
+written_by codex
 title the singing jar lids
 fits stage=young|adolescent|adult|old
 prefers talk=plain drive=steady
@@ -33,61 +36,134 @@ sundot = a pale glint over water | a small patch of warm light
 crowdgap = a place past the elbows | an opening a shoulder wide
 
 any
-opinion city for 1 : There are songs enough in this place for every jar to have a different one. I'd miss a city that full of noises.
-opinion festivals for 1 : I like music that reaches the little clear spot behind the crowd. It's nicer if someone saves room for a small pair of ears.
-opinion merchants mixed 0 : I'll buy a jar faster if it keeps the same price all the time my paw's on it.
-opinion houses mixed 0 : A big roof over a store is good if the food stays dry. A grand red mark on a wet lid won't help one fish.
-opinion strangers mixed 0 : A stranger may know the words I missed. A stranger might also want my best jar. I like the answer before I offer my jar.
+opinion @1 city for 1 : There are songs enough in this place for every jar to have a different one. I'd miss a city that full of noises.
+opinion @1 festivals for 1 : I like music that reaches the little clear spot behind the crowd. It's nicer if someone saves room for a small pair of ears.
+opinion @1 merchants mixed 0 : I'll buy a jar faster if it keeps the same price all the time my paw's on it.
+opinion @1 houses mixed 0 : A big roof over a store is good if the food stays dry. A grand red mark on a wet lid won't help one fish.
+opinion @1 strangers mixed 0 : A stranger may know the words I missed. A stranger might also want my best jar. I like the answer before I offer my jar.
 
 grown
+line @1 greet : A word with you before this lid goes home.
+line @1 greet.return : I heard you clearly over the jars.
+line @1 farewell.return : I can finish the little tune here on my own.
+line @1 react.news : I'll put a rest between hearing that and passing it on.
+line @1 thank : You thought to steady the jar before it went.
+line @1 decline : I'd give it a quieter hour than this one can spare.
+scene childsong
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I played sea songs on the pantry lids long before I could hold a tune in company.
+b : What did it teach you? | Would you do it now?
+a : How an empty jar swallows a small silence. I still hear that space after a low note. | With a shelf well out of the neighbours' hearing I'd gladly take a spoon to a firm old lid.
 
-grown
-line greet : A word with you before this lid goes home.
-line greet.return : I heard you clearly over the jars.
-line farewell.return : I can finish the little tune here on my own.
-line react.news : I'll put a rest between hearing that and passing it on.
-line thank : You thought to steady the jar before it went.
-line decline : I'd give it a quieter hour than this one can spare.
+scene eveningfloat
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : The float makes a little rest in the motion of the water.
+b : Can you watch it all evening? | How can you spot a quiver?
+a : Better than I can watch the whole harbour. I like one clear matter for the eye at day's end. | The reflected point below the cork has a different length. I lift a little line and feel.
 
-adolescent
-line greet : Welcome beyond the noisy row.
-line greet.return : Yes. My ears aren't all occupied by the music.
-line farewell.return : I'll put the cork away and let the evening finish.
-line react.news : I'd like the missing part about where it began before I set it to a tune.
+scene salamis
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I set aside a separate cloth for any jar that once held fish in brine.
+b : Does the smell really last? | Which mark distinguishes the cloth?
+a : It lingers in good clean wood. I'd rather fresh tea not carry an account of last week's fish. | A little square sewn into the corner. A mark done in chalk would rinse away with the salt.
+
+scene firstnote
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I set out the things I'll need in the order their turn comes.
+b : Is that from playing a tune? | What happens if you're interrupted?
+a : Partly. I've learnt the value of being able to reach the next low note without taking a long look. | I make a little deliberate gap at the halt. That gap is my place to restart.
+
+scene hushharbour
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : A sheltered bit of water can make the nearest sounds travel in strange directions.
+b : Do you ever mistake their source? | Where do you like to sit?
+a : Yes. I wait till there's a second call before setting somebody down as the speaker. | A little above the surface with one ear turned to the water. Then whatever comes from the land has its own side.
+
+scene freshseason
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : In spring I can feel the shelf under the jars change its warmth before the room smells different.
+b : Do you move the food? | Does it change the tune?
+a : The things that want cool storage go a little further back. I'm content with a sunny patch where my hands can rest. | Very slightly; my spoon hand feels much less stiff. That may be all the tuning required.
+
+scene busyfair
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A busy stall has a different rhythm from a shoulder-to-shoulder crowd.
+b : Which do you prefer? | Isn't a busy stall crowded?
+a : The stall if there's still a clear place for my elbow. Being able to pay and get away is part of its service. | It can be. I'd give the last caller a little room to leave before sending the next one forward.
+
+scene sharefaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : When there is a decent stock of food behind a door I picture one extra bowl standing inside it.
+b : Would it really be used? | Why inside the door?
+a : Not every day. That's a very poor reason for putting it out of reach on the day it's needed. | It makes sharing easy without putting the matter on show. An empty belly already gives a visitor business enough.
+
+scene pricelore
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A ringing jar may be almost empty. I am as careful with tales that make a great noise outside.
+b : Do quiet tales get your trust? | What proves that there's substance inside?
+a : They get a good hearing. Trust comes when I can see what the telling rests on. | With a jar I lift it. With a tale I ask whose eye had the view the words are offering me.
+
+scene notesfriend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could give a little tune to #self.friend# without finding paper for it.
+b : Could a tune really be a gift? | Would you expect it to come back?
+a : Certainly. A little sound easily carried through a hard day has quite as much worth as a little weight in a pocket. | In a different voice, perhaps. That would be a second gift I hadn't had to ask for.
+
+scene wholehouse
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a pantry that opens quietly even if the jars choose to sing.
+b : Do you oil the hinges? | What stops those jars colliding?
+a : Regularly. I'm particular about whose music I want to hear before breakfast. | A folded dry cloth at the base and room between each lid. Then the only noise comes by invitation.
+
+scene drysail
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I still like to imagine a dry berth with a busy shelf close enough to hear.
+b : Would a shelf on a ship be busy? | What does a dry berth smell like?
+a : A ship that moves makes its jars quietly uneasy. There'd be life in that little room however still I lay. | Wood, line and a trace of pickle. I'm not setting out without a proper dinner waiting somewhere aboard.
+
 
 young
-line greet : I'm keeping one ear for a visitor. Hello.
-line greet [pair.band=strangers] : The tune's mine but there's space to hear it.
-line greet [here.time=dawn] : The small lids have woken up. Welcome.
-line greet [here.time=dusk|night] : I play a quiet tune now the light's nearly done.
-line kin.open [pair.kin!=no] : Come hear the low note that's kept for us.
-line again.open : You're back on the part about rowing home.
-line greet.return : That was a real voice. Hullo back.
-line greet.return [pair.band=friends|family] : I didn't even need to look up to know that greeting.
-line greet.return [self.working=yes] : Everything's keeping still on the shelf while I hear you.
-line greet.return [here.time=dusk|night] : I can hear that welcome over my sleepy lids.
-line farewell : I hope something hums along the way with you.
-line farewell.return : I'll keep the little sticks out of the road.
-line react.news : Don't play a note a moment. My ears are ready for your news.
-line react.news.new : That's a new note entirely!
-line react.news.known : I've tapped out that bit with the same ending.
-line react.news.doubt : Was the sound in the next room or right beside you?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd give the wolf who's heard something sad a bit of silence by my lids.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now there's something to sing up the stair!
-line ask.how : How does today sound at your house?
-line answer.how : Fine since I got the big lid to sing low enough.
-line sympathise : You can give your ears a rest by me for a bit.
-line reassure : The two of us can let that whole noise go by and still be here.
-line decline : No. I'd be short one good note if you took my lid.
-line accept_decline : Your lid's yours to keep quiet.
-line thank : You didn't let the rattly jar roll off the shelf.
-line deflect_thanks : Give somebody else a go at the small spoon.
-line preclose : My low part needs a little practice while I remember.
-line accept_preclose : I'll play the last small note when you've gone.
-line ack : Fits the tune.
-
-young
-
+line @1 greet : I'm keeping one ear for a visitor. Hello.
+line @2 greet [pair.band=strangers] : The tune's mine but there's space to hear it.
+line @3 greet [here.time=dawn] : The small lids have woken up. Welcome.
+line @4 greet [here.time=dusk|night] : I play a quiet tune now the light's nearly done.
+line @1 kin.open [pair.kin!=no] : Come hear the low note that's kept for us.
+line @1 again.open : You're back on the part about rowing home.
+line @1 greet.return : That was a real voice. Hullo back.
+line @2 greet.return [pair.band=friends|family] : I didn't even need to look up to know that greeting.
+line @3 greet.return [self.working=yes] : Everything's keeping still on the shelf while I hear you.
+line @4 greet.return [here.time=dusk|night] : I can hear that welcome over my sleepy lids.
+line @1 farewell : I hope something hums along the way with you.
+line @1 farewell.return : I'll keep the little sticks out of the road.
+line @1 react.news : Don't play a note a moment. My ears are ready for your news.
+line @1 react.news.new : That's a new note entirely!
+line @1 react.news.known : I've tapped out that bit with the same ending.
+line @1 react.news.doubt : Was the sound in the next room or right beside you?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd give the wolf who's heard something sad a bit of silence by my lids.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now there's something to sing up the stair!
+line @1 ask.how : How does today sound at your house?
+line @1 answer.how : Fine since I got the big lid to sing low enough.
+line @1 sympathise : You can give your ears a rest by me for a bit.
+line @1 reassure : The two of us can let that whole noise go by and still be here.
+line @1 decline : No. I'd be short one good note if you took my lid.
+line @1 accept_decline : Your lid's yours to keep quiet.
+line @1 thank : You didn't let the rattly jar roll off the shelf.
+line @1 deflect_thanks : Give somebody else a go at the small spoon.
+line @1 preclose : My low part needs a little practice while I remember.
+line @1 accept_preclose : I'll play the last small note when you've gone.
+line @1 ack : Fits the tune.
 scene lidchoir
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -207,117 +283,6 @@ a : One curled herring tail will make a round little fence round the soft centre
 b : What goes inside the fence? | Does it keep the fish on your plate?
 a : A scrap of onion, if there is one. If not, I'll just have a bigger bite of herring. | No. The only thing really keeping it there is my own astonishing self-control.
 
-adolescent
-
-scene thinmusic
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I'm learning how to carry a tune without needing all the jars set out before me.
-b : Do you miss the lids? | What do you use?
-a : Yes. In a small room they're a very obliging band. Outside, other ears have rather more to say about the noise. | A tap on the knee and a tune in the throat. My knees are gaining a fine education.
-
-scene widerwater
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : Water outside the harbour looks more interesting now I can picture a ship spending a whole night there.
-b : Would you like a berth? | What would travel in your bag?
-a : I want the dry berth of my early wishes, but I should hear what work I'd owe for the berth before agreeing. | A spoon, some food, my fishing line. The song's the one article I couldn't possibly leave on the shelf.
-
-scene truthprice
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : I find the important part of a bargain is hearing when the figure ought to stop moving.
-b : Can a buyer call an end? | Would you accept a changed price?
-a : Certainly. A good quiet refusal is a proper part of trading. | If the goods have changed as well. Otherwise I'd like the first honest figure to stand.
-
-grown
-
-scene childsong
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : I played sea songs on the pantry lids long before I could hold a tune in company.
-b : What did it teach you? | Would you do it now?
-a : How an empty jar swallows a small silence. I still hear that space after a low note. | With a shelf well out of the neighbours' hearing I'd gladly take a spoon to a firm old lid.
-
-scene eveningfloat
-when topic=pastimes self.likes=evening_line
-does tell.self / ask.detail / answer.detail
-a : The float makes a little rest in the motion of the water.
-b : Can you watch it all evening? | How can you spot a quiver?
-a : Better than I can watch the whole harbour. I like one clear matter for the eye at day's end. | The reflected point below the cork has a different length. I lift a little line and feel.
-
-scene salamis
-when topic=food
-does tell.self / ask.detail / answer.detail
-a : I set aside a separate cloth for any jar that once held fish in brine.
-b : Does the smell really last? | Which mark distinguishes the cloth?
-a : It lingers in good clean wood. I'd rather fresh tea not carry an account of last week's fish. | A little square sewn into the corner. A mark done in chalk would rinse away with the salt.
-
-scene firstnote
-when topic=work
-does tell.self / ask.detail / answer.detail
-a : I set out the things I'll need in the order their turn comes.
-b : Is that from playing a tune? | What happens if you're interrupted?
-a : Partly. I've learnt the value of being able to reach the next low note without taking a long look. | I make a little deliberate gap at the halt. That gap is my place to restart.
-
-scene hushharbour
-when topic=land
-does tell.self / ask.detail / answer.detail
-a : A sheltered bit of water can make the nearest sounds travel in strange directions.
-b : Do you ever mistake their source? | Where do you like to sit?
-a : Yes. I wait till there's a second call before setting somebody down as the speaker. | A little above the surface with one ear turned to the water. Then whatever comes from the land has its own side.
-
-scene freshseason
-when topic=season
-does tell.self / ask.detail / answer.detail
-a : In spring I can feel the shelf under the jars change its warmth before the room smells different.
-b : Do you move the food? | Does it change the tune?
-a : The things that want cool storage go a little further back. I'm content with a sunny patch where my hands can rest. | Very slightly; my spoon hand feels much less stiff. That may be all the tuning required.
-
-scene busyfair
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : A busy stall has a different rhythm from a shoulder-to-shoulder crowd.
-b : Which do you prefer? | Isn't a busy stall crowded?
-a : The stall if there's still a clear place for my elbow. Being able to pay and get away is part of its service. | It can be. I'd give the last caller a little room to leave before sending the next one forward.
-
-scene sharefaith
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : When there is a decent stock of food behind a door I picture one extra bowl standing inside it.
-b : Would it really be used? | Why inside the door?
-a : Not every day. That's a very poor reason for putting it out of reach on the day it's needed. | It makes sharing easy without putting the matter on show. An empty belly already gives a visitor business enough.
-
-scene pricelore
-when topic=gossip
-does tell.self / ask.detail / answer.detail
-a : A ringing jar may be almost empty. I am as careful with tales that make a great noise outside.
-b : Do quiet tales get your trust? | What proves that there's substance inside?
-a : They get a good hearing. Trust comes when I can see what the telling rests on. | With a jar I lift it. With a tale I ask whose eye had the view the words are offering me.
-
-scene notesfriend
-when topic=smalltalk self.friend
-does tell.self / ask.detail / answer.detail
-a : I could give a little tune to #self.friend# without finding paper for it.
-b : Could a tune really be a gift? | Would you expect it to come back?
-a : Certainly. A little sound easily carried through a hard day has quite as much worth as a little weight in a pocket. | In a different voice, perhaps. That would be a second gift I hadn't had to ask for.
-
-scene wholehouse
-when topic=home
-does tell.self / ask.detail / answer.detail
-a : I like a pantry that opens quietly even if the jars choose to sing.
-b : Do you oil the hinges? | What stops those jars colliding?
-a : Regularly. I'm particular about whose music I want to hear before breakfast. | A folded dry cloth at the base and room between each lid. Then the only noise comes by invitation.
-
-scene drysail
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I still like to imagine a dry berth with a busy shelf close enough to hear.
-b : Would a shelf on a ship be busy? | What does a dry berth smell like?
-a : A ship that moves makes its jars quietly uneasy. There'd be life in that little room however still I lay. | Wood, line and a trace of pickle. I'm not setting out without a proper dinner waiting somewhere aboard.
-
-young
-
 story newrhythm [topic=memories]
   : I put two lids beside each other for a song and gave the left one a very grand first stroke.
   : It jumped onto the other lid. Neither of them would give me the second note.
@@ -335,8 +300,6 @@ story quietline [topic=pastimes]
   : I thought some obliging fish might be replying. Then I laid my free hand on the rail.
   b : Did the fish stop singing?
   : My hand had been tapping on the same board as my rod. The fish had a splendid rest once I got the tune off the wood.
-
-young
 
 rule @larder
 when concept=bark self.likes=full_larder
@@ -362,17 +325,13 @@ does aside
 cooldown 8h
 say Make enough space for two busy paws. | Back of the crowd's my bit.
 
-young
-dlg resident.hub : You can ask something while my jars are quiet.
-dlg resident.hub [topic.meeting=known] : You'll know the tin-lid bit, #topic.player#. Hello again.
-dlg resident.hub [pair.disposition=wary|hostile] : My little spoon stays in my paw. You can speak across the table.
-dlg resident.hub [here.time=night] : I've only got the soft taps left tonight.
-dlg resident.job [self.job=child] : #self.trade_words.capitalize#. My sums get a very small tap when they're right.
-dlg resident.job : Finding which lid each little voice belongs to.
-dlg resident.bye : Keep the last tap in your ears till the next tune finds you.
-
-young
-
+dlg @1 resident.hub : You can ask something while my jars are quiet.
+dlg @2 resident.hub [topic.meeting=known] : You'll know the tin-lid bit, #topic.player#. Hello again.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : My little spoon stays in my paw. You can speak across the table.
+dlg @4 resident.hub [here.time=night] : I've only got the soft taps left tonight.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. My sums get a very small tap when they're right.
+dlg @2 resident.job : Finding which lid each little voice belongs to.
+dlg @1 resident.bye : Keep the last tap in your ears till the next tune finds you.
 graft @jarvoices resident.hub
 choice Can a jar of oats really sing? -> jarvoices
 node jarvoices
@@ -383,3 +342,30 @@ node jarvoices_more
 say It gives the very sharp note. Also it looks down its nose at the tune. You would too if you had a whole jar of pickle under your lid.
 choice Lay the spoon across the cloth. -> hub
 choice Leave the jars to settle. -> bye
+
+
+adolescent
+line @1 greet : Welcome beyond the noisy row.
+line @1 greet.return : Yes. My ears aren't all occupied by the music.
+line @1 farewell.return : I'll put the cork away and let the evening finish.
+line @1 react.news : I'd like the missing part about where it began before I set it to a tune.
+scene thinmusic
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I'm learning how to carry a tune without needing all the jars set out before me.
+b : Do you miss the lids? | What do you use?
+a : Yes. In a small room they're a very obliging band. Outside, other ears have rather more to say about the noise. | A tap on the knee and a tune in the throat. My knees are gaining a fine education.
+
+scene widerwater
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Water outside the harbour looks more interesting now I can picture a ship spending a whole night there.
+b : Would you like a berth? | What would travel in your bag?
+a : I want the dry berth of my early wishes, but I should hear what work I'd owe for the berth before agreeing. | A spoon, some food, my fishing line. The song's the one article I couldn't possibly leave on the shelf.
+
+scene truthprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I find the important part of a bargain is hearing when the figure ought to stop moving.
+b : Can a buyer call an end? | Would you accept a changed price?
+a : Certainly. A good quiet refusal is a proper part of trading. | If the goods have changed as well. Otherwise I'd like the first honest figure to stand.

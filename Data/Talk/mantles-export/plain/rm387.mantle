@@ -1,9 +1,12 @@
+# rm387, the apple-skin pennant (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm387
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_moll_millton
+written_by codex
 title the apple-skin pennant
 fits stage=young|adolescent|adult|old
 prefers quarter=commons
@@ -48,151 +51,6 @@ line @2 farewell.return : Take a sharp look at the high roof on the road. | An a
 line @3 react.news : I'll hear the claim and look for the proper colours. | What was seen from where the teller stood?
 line @4 answer.how : Attentive to a few small bright matters. | I can spot a wing against the weather yet.
 line @5 decline : There are promises already hanging on my line for today.
-
-adolescent
-line @7 greet.return : Come stand where the colours aren't all running together. | Your steady voice reached me.
-line @8 farewell.return : I'll keep a bit of the best view for you. | Look where the tiles overlap coming home.
-line @9 react.news : Let me judge what the bright bit of the story really is. | I'll listen while the high roof's empty.
-line @10 answer.how : Trying to get my count down properly. | Steady under all the coming and going.
-
-young
-line @12 greet [pair.band=strangers] : Hi! New ears at the apple post! | Welcome to the little tail-watching post.
-line @13 greet [here.time=dawn] : Up before the best pecking! Hello. | Here comes the frost light. Come see.
-line @14 greet [here.weather=snow] : White roofs, dark birds. Lovely to see you. | Come count the feet in the snow with me.
-line @15 greet.return : That's a nice clear call back. | Hello. I kept a bit to tell you.
-line @16 greet.return [pair.band=friends|family] : Ah, the good ears! | You know which roof I mean without pointing.
-line @17 farewell : Look up when the street gets boring. | Don't drop your apple round the turn.
-line @18 farewell.return : I'll keep your bit of string on the post. | Off you go. Good bird spotting.
-line @19 again.open : Back again and the brave bird's still sitting tight! | There's the same pair of ears again.
-line @20 kin.open [pair.kin!=no] : Here, family get the red strip with a curl. | I've saved the roof story for our own first.
-line @21 hail [pair.band=friends] : Two tails on the far ridge! | Here at the dangling red bit!
-line @22 react.news : Tell it loud enough to get past the baskets. | Which bit did somebody actually see?
-line @23 react.news.new : Ooh, a colour I haven't hung up yet. | My ears never caught that call before.
-line @24 react.news.known : I counted that one already, right here by my thumb. | That's been round my end of the square.
-line @25 react.news.doubt : I think the flag in that story has changed colour twice. | I'm not sure anybody looked up to check that part.
-line @26 react.news.sorrow [topic.kind=death|loss|assault] : Oh. I'll put the colours down and sit here. | I'll save my shouting for some other afternoon.
-line @27 react.news.glad [topic.kind=birth|marriage] : A red flag all its own for that lovely word! | I'd call that one right across the market.
-line @28 answer.how : Crunchy apple, busy ears, all good. | Finding room for one more colour.
-line @29 decline : I promised to keep watch on this bit of roof first. | I haven't got enough paws for both at once.
-line @30 accept_decline : Then you can watch from down there. | I'll keep your turn if you're done with guessing.
-line @31 sympathise : Take the good apple side and sit beside me. | I'll stop making noise so you can think a little.
-line @32 thank : I've a whole bright strip for that kindness. | I won't let a fly get near the bit you gave me.
-line @33 deflect_thanks : There was more peel than birds anyhow. | I was looking that way already.
-line @34 preclose : I think there's a new lot landing soon. | I've to get back to my coloured string.
-line @35 accept_preclose : Go before the tall baskets come through. | Go on then. The birds can have me awhile.
-line @36 farewell [here.time=night] : Watch your feet. The roofs can wait till morning. | Sleep like the little ball of wings.
-
-young
-
-scene pennants
-when topic=pastimes self.likes=roof_birds
-does tell.self / ask.detail / answer.detail
-a : #bird# needs #flag# since it came first to #tip#. | See the third bit of my apple peel? That's for the one who pecked twice.
-b : Do you tie the flag to the bird? | What made that second peck count?
-a : No, to #cord#. A bird has enough on with staying up there. | Tail went up twice. My own eyes wrote the entry.
-
-scene applecut
-when topic=food self.likes=crisp_apples
-does tell.self / ask.detail / answer.detail
-a : #apple# has a red side for brave birds and green for shy ones. | I can make five pennants out of #bite# before I eat it.
-b : Does the shy bird know about its green flag? | Which bit gets to be dinner then?
-a : Certainly not. I'd never shout shy at a shy bird. | All the pale bit. I've yet to eat a decent supper made of string.
-
-scene marketcall
-when topic=pastimes self.likes=market_bustle
-does tell.self / react.self / assess
-a : #noise# sounds different under every stall awning. | I like the big moment at market when all the covers come off.
-b : And underneath all the noise you still hear a bird? | Can you tell what's in a basket before it opens?
-a : I can see its throat wobble. Counts as hearing in my record. | Apples knock. Bread doesn't. I'm still trying to find the sound for a fish.
-
-scene frostcount
-when topic=weather self.likes=frosty_mornings
-does tell.self / ask.detail / answer.detail
-a : #frost# is the starting line for collecting bird toes. | Frost leaves clean little triangles where the birds have been.
-b : Do the toes have to be attached to a bird? | Which way does a triangle look when the bird hops?
-a : Absolutely! If the bird hops off I just count its little black tracks. | Downhill pointing uphill. You'll have to come see it properly.
-
-scene flycuss
-when topic=smalltalk self.dislikes=flies
-does tell.complaint / react.complaint / assess
-a : #fly# wants a flag for walking all through my supper. | Flies won't perch neatly on a roof like the sensible birds.
-b : Does the fly have a colour in your book? | Which page of your record gets the fly?
-a : Clear. It's for things you can't see on account of me waving them away. | Under unwelcome visitors to a bite mark. I'd shut the page quick too.
-
-scene lesson
-when topic=work self.job=child self.working=yes self.workplace
-does tell.self / ask.detail / answer.detail
-a : At #self.workplace# I can draw a wing that shows which way the wind went. | I've started keeping my bird count in the little space left at #self.workplace#.
-b : Would your letters fly away then? | Won't you run out of space beside the sums?
-a : No. Notes on birds have got to be very well stuck down. | I've made the wings shorter. The arithmetic can have its space if it behaves.
-
-scene wait
-when topic=smalltalk self.dislikes=waiting
-does tell.complaint / react.complaint / assess
-a : Waiting for the really little bird to hop out can stretch an hour twice as long. | Don't make me wait till all the baskets empty to see the new strip of red.
-b : What's taking the little bird so long? | Does the strip get any less red?
-a : Lots of considerations, I suppose. It's got to decide which of its two feet goes first. | It curls inwards. A curled one looks like plain kitchen scraps, which is very different.
-
-scene vineleaf
-when topic=dreams
-does tell.plan / ask.detail / answer.detail
-a : Some day #leaf# will come in a letter with a drawing of a bird beside it. | I've wondered which colour fruit a vineyard bird pecks first.
-b : How will you tell the letter came from far away? | Can't you guess from the leaf?
-a : A flat leaf and hills on the paper. The best thing would be words from family inside. | I can guess purple. I'd much rather have an answer in handwriting.
-
-scene truecolour
-when topic=gossip
-does give.opinion / disagree / concede
-a : I'm not giving a bird to a House just because the roof's hung with its colour. | A wolf who says the rival roof has no birds ought to look up first.
-b : Would you count one on a roof you don't like? | Even if the banners are right in front of it?
-a : Yes! I'd mark which feet the bird actually put down. No cheating for a nice colour. | Exactly. You can't see a whole bird through a blanket of boastfulness.
-
-scene palrope
-when topic=friends self.friend
-does offer / accept / assess
-a : I've saved one piece of #cord# for #self.friend#. Want the end nearest me? | There's room on #post# for my friend's colours as well. You can help me hold #feather#.
-b : I'll hold it while you tie. | The feather might blow right over a stall.
-a : Tie where you can reach to undo it later. The birds move faster than flags. | Grip at the stiff little bit. No point grabbing at all the tickly parts.
-
-scene sumpprice
-when topic=prices
-does tell.self / react.self / assess
-a : One whole apple is cheaper than a packet of fancy flags and there's fruit in the middle. | I keep the shiny apples with plain skins in mind whenever the price starts climbing.
-b : Do you have to use new fruit for every bird? | Why keep track of the plain ones?
-a : Not every bird. The bird that comes back gets last night's curly flag. | Because I can tell what I'm paying for instead of borrowing somebody's shine.
-
-scene street
-when topic=land self.quarter=commons
-does tell.self / react.self / assess
-a : In the Commons the rooftops have twice as much company as the front doors if you count the birds. | I have a favourite Commons corner where three baskets and a roof ridge line up.
-b : What if the birds get restless? | Which do you look at first?
-a : My count's got enough space for crossing things out. Plenty of old birds come back. | Roof first. You can still catch the smell from the baskets with your eyes up.
-
-scene newkid
-when topic=newcomer
-does offer / accept / assess
-a : Come see one good bit of the square without anybody telling you you're in the way. | I've a strip of peel left if you'd rather visit the roof birds than wait at a stall.
-b : Do I have to know all their calls? | I might put it on the wrong part of the string.
-a : No. You just need to tell me if I'm standing on your boot when I look up. | Pick the part you can describe to me. We'll make it the proper place between us.
-
-adolescent
-
-scene flagswap
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I've gone from peel to a painted bit of wood for my regular roof birds. | I can tell a returning bird without its colours these days.
-b : What made you keep the old colours at all? | How did you manage the trick?
-a : Seeing a full string cheers me. It reminds me to keep a good account of every perch. | A steady eye on the way a tail lifts. Colour isn't the only tidy mark to take.
-
-scene marketchalk
-when topic=smalltalk
-does tell.self / react.self / assess
-a : I speak across a market by waiting till the nearest basket has come down. | You can see which part of a good call was lost by watching ears along the street.
-b : You're still plenty loud when you let go. | Do you need the whole street for a message?
-a : I like to be heard exactly once. It saves everybody's throat a lot of pulling. | Just the ears I was aiming for. Everybody between us has a right to a quieter afternoon.
-
-grown
-
 scene roofnote
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -277,7 +135,123 @@ a : A quiet companion at a market is a surprisingly good way to hear more voices
 b : Does company make a loud place feel quieter? | You are serving birds as guests now?
 a : It makes me feel less pressed to call above every basket. Then I can start listening. | Only in my manner of speaking. An ordinary friend is quite as welcome to it.
 
+
 young
+line @12 greet [pair.band=strangers] : Hi! New ears at the apple post! | Welcome to the little tail-watching post.
+line @13 greet [here.time=dawn] : Up before the best pecking! Hello. | Here comes the frost light. Come see.
+line @14 greet [here.weather=snow] : White roofs, dark birds. Lovely to see you. | Come count the feet in the snow with me.
+line @15 greet.return : That's a nice clear call back. | Hello. I kept a bit to tell you.
+line @16 greet.return [pair.band=friends|family] : Ah, the good ears! | You know which roof I mean without pointing.
+line @17 farewell : Look up when the street gets boring. | Don't drop your apple round the turn.
+line @18 farewell.return : I'll keep your bit of string on the post. | Off you go. Good bird spotting.
+line @19 again.open : Back again and the brave bird's still sitting tight! | There's the same pair of ears again.
+line @20 kin.open [pair.kin!=no] : Here, family get the red strip with a curl. | I've saved the roof story for our own first.
+line @21 hail [pair.band=friends] : Two tails on the far ridge! | Here at the dangling red bit!
+line @22 react.news : Tell it loud enough to get past the baskets. | Which bit did somebody actually see?
+line @23 react.news.new : Ooh, a colour I haven't hung up yet. | My ears never caught that call before.
+line @24 react.news.known : I counted that one already, right here by my thumb. | That's been round my end of the square.
+line @25 react.news.doubt : I think the flag in that story has changed colour twice. | I'm not sure anybody looked up to check that part.
+line @26 react.news.sorrow [topic.kind=death|loss|assault] : Oh. I'll put the colours down and sit here. | I'll save my shouting for some other afternoon.
+line @27 react.news.glad [topic.kind=birth|marriage] : A red flag all its own for that lovely word! | I'd call that one right across the market.
+line @28 answer.how : Crunchy apple, busy ears, all good. | Finding room for one more colour.
+line @29 decline : I promised to keep watch on this bit of roof first. | I haven't got enough paws for both at once.
+line @30 accept_decline : Then you can watch from down there. | I'll keep your turn if you're done with guessing.
+line @31 sympathise : Take the good apple side and sit beside me. | I'll stop making noise so you can think a little.
+line @32 thank : I've a whole bright strip for that kindness. | I won't let a fly get near the bit you gave me.
+line @33 deflect_thanks : There was more peel than birds anyhow. | I was looking that way already.
+line @34 preclose : I think there's a new lot landing soon. | I've to get back to my coloured string.
+line @35 accept_preclose : Go before the tall baskets come through. | Go on then. The birds can have me awhile.
+line @36 farewell [here.time=night] : Watch your feet. The roofs can wait till morning. | Sleep like the little ball of wings.
+scene pennants
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : #bird# needs #flag# since it came first to #tip#. | See the third bit of my apple peel? That's for the one who pecked twice.
+b : Do you tie the flag to the bird? | What made that second peck count?
+a : No, to #cord#. A bird has enough on with staying up there. | Tail went up twice. My own eyes wrote the entry.
+
+scene applecut
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : #apple# has a red side for brave birds and green for shy ones. | I can make five pennants out of #bite# before I eat it.
+b : Does the shy bird know about its green flag? | Which bit gets to be dinner then?
+a : Certainly not. I'd never shout shy at a shy bird. | All the pale bit. I've yet to eat a decent supper made of string.
+
+scene marketcall
+when topic=pastimes self.likes=market_bustle
+does tell.self / react.self / assess
+a : #noise# sounds different under every stall awning. | I like the big moment at market when all the covers come off.
+b : And underneath all the noise you still hear a bird? | Can you tell what's in a basket before it opens?
+a : I can see its throat wobble. Counts as hearing in my record. | Apples knock. Bread doesn't. I'm still trying to find the sound for a fish.
+
+scene frostcount
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #frost# is the starting line for collecting bird toes. | Frost leaves clean little triangles where the birds have been.
+b : Do the toes have to be attached to a bird? | Which way does a triangle look when the bird hops?
+a : Absolutely! If the bird hops off I just count its little black tracks. | Downhill pointing uphill. You'll have to come see it properly.
+
+scene flycuss
+when topic=smalltalk self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #fly# wants a flag for walking all through my supper. | Flies won't perch neatly on a roof like the sensible birds.
+b : Does the fly have a colour in your book? | Which page of your record gets the fly?
+a : Clear. It's for things you can't see on account of me waving them away. | Under unwelcome visitors. I'd shut that page quick too.
+
+scene lesson
+when topic=work self.job=child self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I can draw a wing that shows which way the wind went. | I've started keeping my bird count in the little space left at #self.workplace#.
+b : Would your letters fly away then? | Won't you run out of space beside the sums?
+a : No. Notes on birds have got to be very well stuck down. | I've made the wings shorter. The arithmetic can have its space if it behaves.
+
+scene wait
+when topic=smalltalk self.dislikes=waiting
+does tell.complaint / react.complaint / assess
+a : Waiting for the really little bird to hop out can stretch an hour twice as long. | Don't make me wait till all the baskets empty to see the new strip of red.
+b : What's taking the little bird so long? | Does the strip get any less red?
+a : Lots of considerations, I suppose. It's got to decide which of its two feet goes first. | It curls inwards. A curled one looks like plain kitchen scraps, which is very different.
+
+scene vineleaf
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Some day #leaf# will come in a letter with a drawing of a bird beside it. | I've wondered which colour fruit a vineyard bird pecks first.
+b : How will you tell the letter came from far away? | Can't you guess from the leaf?
+a : A flat leaf and hills on the paper. The best thing would be words from family inside. | I can guess purple. I'd much rather have an answer in handwriting.
+
+scene truecolour
+when topic=gossip
+does give.opinion / disagree / concede
+a : I'm not giving a bird to a House just because the roof's hung with its colour. | A wolf who says the rival roof has no birds ought to look up first.
+b : Would you count one on a roof you don't like? | Even if the banners are right in front of it?
+a : Yes! I'd mark which feet the bird actually put down. No cheating for a nice colour. | Exactly. You can't see a whole bird through a blanket of boastfulness.
+
+scene palrope
+when topic=friends self.friend
+does offer / accept / assess
+a : I've saved one piece of #cord# for #self.friend#. Want the end nearest me? | There's room on #post# for my friend's colours as well. You can help me hold #feather#.
+b : I'll hold it while you tie. | The feather might blow right over a stall.
+a : Tie where you can reach to undo it later. The birds move faster than flags. | Grip at the stiff little bit. No point grabbing at all the tickly parts.
+
+scene sumpprice
+when topic=prices
+does tell.self / react.self / assess
+a : One whole apple is cheaper than a packet of fancy flags and there's fruit in the middle. | I keep the shiny apples with plain skins in mind whenever the price starts climbing.
+b : Do you have to use new fruit for every bird? | Why keep track of the plain ones?
+a : Not every bird. The bird that comes back gets last night's curly flag. | Because I can tell what I'm paying for instead of borrowing somebody's shine.
+
+scene street
+when topic=land self.quarter=commons
+does tell.self / react.self / assess
+a : In the Commons the rooftops have twice as much company as the front doors if you count the birds. | I have a favourite Commons corner where three baskets and a roof ridge line up.
+b : What if the birds get restless? | Which do you look at first?
+a : My count's got enough space for crossing things out. Plenty of old birds come back. | Roof first. You can still catch the smell from the baskets with your eyes up.
+
+scene newkid
+when topic=newcomer
+does offer / accept / assess
+a : Come see one good bit of the square without anybody telling you you're in the way. | I've a strip of peel left if you'd rather visit the roof birds than wait at a stall.
+b : Do I have to know all their calls? | I might put it on the wrong part of the string.
+a : No. You just need to tell me if I'm standing on your boot when I look up. | Pick the part you can describe to me. We'll make it the proper place between us.
 
 story wrong_flag [topic=pastimes]
   : I hung three red bits of peel on my string for three big birds. Then the middle bird sat up on the head of a taller one.
@@ -328,7 +302,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : You can ask me your questi
 dlg @5 resident.job [self.job=child self.workplace] : I go to #self.workplace#. My sums have a whole row of little wings to themselves.
 dlg @6 resident.job : I list the things that show up here before they're gone again.
 dlg @7 resident.bye : Give the next high roof a look for me.
-
 graft resident.hub
 choice Who's allowed the longest red pennant? -> high_tail
 node high_tail
@@ -339,3 +312,23 @@ node equal_perch
 say Then I eat a second apple. You can't ask a perfectly good bird to share a flag it earned fairly just because my stomach's full.
 choice An excellent excuse for an apple. -> hub
 choice I'll go look for a steady bird. -> bye
+
+
+adolescent
+line @7 greet.return : Come stand where the colours aren't all running together. | Your steady voice reached me.
+line @8 farewell.return : I'll keep a bit of the best view for you. | Look where the tiles overlap coming home.
+line @9 react.news : Let me judge what the bright bit of the story really is. | I'll listen while the high roof's empty.
+line @10 answer.how : Trying to get my count down properly. | Steady under all the coming and going.
+scene flagswap
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've gone from peel to a painted bit of wood for my regular roof birds. | I can tell a returning bird without its colours these days.
+b : What made you keep the old colours at all? | How did you manage the trick?
+a : Seeing a full string cheers me. It reminds me to keep a good account of every perch. | A steady eye on the way a tail lifts. Colour isn't the only tidy mark to take.
+
+scene marketchalk
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I speak across a market by waiting till the nearest basket has come down. | You can see which part of a good call was lost by watching ears along the street.
+b : You're still plenty loud when you let go. | Do you need the whole street for a message?
+a : I like to be heard exactly once. It saves everybody's throat a lot of pulling. | Just the ears I was aiming for. Everybody between us has a right to a quieter afternoon.

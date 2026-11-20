@@ -1,9 +1,12 @@
+# rm451, the brewer's smoky float (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm451
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_arne_wickdale
+written_by codex
 title the brewer's smoky float
 fits stage=adult|old
 prefers role=merchant job=brewer
@@ -53,28 +56,28 @@ opinion @9 times against 1 : The wait between customers stretches while the food
 
 grown
 line @1 greet [pair.band=strangers] : Welcome over there where the counter's dry. | A clear corner. Your business will fit.
-line @2 greet [here.time=dawn] : Early. I've left the lid off the conversation at least. | Morning, before the bang of work begins.
+line @2 greet [here.time=dawn] : Early. Just me awake, and the casks. | Morning, before the bang of work begins.
 line @3 greet [here.weather=rain] : Come out of the soft wet. Mind the cask. | Warm rain. You can dry off on this side.
 line @4 greet [self.working=yes] : Keep the dipper in reach. Welcome just there. | I've one ear free for a visitor.
-line @5 greet.return : I got the greeting without any spilling. | That's a fair quiet beginning between us.
-line @6 greet.return [pair.band=friends|family] : Ah. A voice I can mark by its ordinary weight. | There's some slow evening light saved for you.
+line @5 greet.return : Hello back. Quietly, if you don't mind. | Same to you. Watch that wet board.
+line @6 greet.return [pair.band=friends|family] : Ah, it's you. The brew room's better for it. | Glad it's you. Sit a while.
 line @7 greet.return [here.time=dusk|night] : An evening word in the still stretch. | Easy company after the louder part.
 line @8 farewell : Keep the paper wrapped against the street. | Go easy past the water line.
-line @9 farewell.return : I shall watch the last ripple settle. | Your side's properly closed, then.
-line @10 again.open : Round comes the dark cork once more. | Back before the last ring's gone.
+line @9 farewell.return : Go well. I'll be here by the casks. | Mind how you go.
+line @10 again.open : Back again. I'd only just stopped thinking about you. | Back before the last ring's gone.
 line @11 kin.open [pair.kin!=no] : Come up by the clean end, family. | No receipt wanted from our own household.
 line @12 hail [pair.band=friends] : Over by the smoky float! | Here. A dry corner beyond the noise!
 line @13 react.news : I'll look for the little movement under the big report. | Best tell me what's come to the top by itself.
 line @14 react.news.new : That cork hadn't moved till you spoke. | Fresh mark for my quiet bit of slate.
 line @15 react.news.known : I've been watching that ring spread already. | The first telling had the same dark face on it.
-line @16 react.news.doubt : Whose thumb might have been on the end of that report. | A large commotion can be a small fish with a broad tail.
+line @16 react.news.doubt : I'd ask who started it before I believed a word. | A large commotion can be a small fish with a broad tail.
 line @17 react.news.sorrow [topic.kind=death|loss|assault] : Set the empty cup where I can get to it. I'll stay. | There's a long quiet stretch after news like that.
 line @18 react.news.glad [topic.kind=birth|marriage] : Good. I'd draw a full warm measure for that lot. | A kind word rising to the light for once.
-line @19 answer.how : Still bobbing on a slack line. | A bit smoked, enough air left in me.
+line @19 answer.how : Still bobbing, on a slack line. | Smelling of smoke, but well enough.
 line @20 decline : I haven't got a clean promise to put behind that request. | I'm keeping some time for a matter that won't settle by itself.
 line @21 accept_decline : Right. No second pull from me. | I'll let that particular line drift loose.
 line @22 sympathise : Stay beside me where the board's firm under both wrists. | Sit where the brew room's quieter.
-line @23 thank : A decent thing coming clean to the surface. | That steadies my hand more than you know.
+line @23 thank : That was a decent turn, and I noticed. | That steadies my hand more than you know.
 line @24 deflect_thanks : No need to send round a notice for that. | I already had my half of that load.
 line @25 preclose : I ought to see what's shifted while we talked. | There's a little matter for my slate's dark face.
 line @26 accept_preclose : Go on. We'll leave the cork in easy water. | A fair close with nothing left to settle.
@@ -83,7 +86,6 @@ line @28 greet [pair.band=friends] : There's my known face above the casks. | Cu
 line @29 farewell [here.time=night] : A soft night before the next bell has its say. | Put a quiet stretch of water between you and work.
 line @30 answer.how [self.working=yes] : Keeping a level face on the wet measure. | Steady enough while the bung stays put.
 line @31 preclose [here.time=dusk] : One cast left in this daylight. | My evening cork's due its chance in the water.
-
 scene sootfloat
 when topic=pastimes self.likes=evening_line
 does tell.self / ask.detail / answer.detail
@@ -199,16 +201,16 @@ a : Good. The line will draw across water then without sawing the wood. | That c
 scene officefog
 when topic=dreams
 does tell.feeling / sympathise / assess
-a : I sometimes think the paper's what stays quietest at the office while I'm asking after it. | If my lost petition could speak I imagine it'd have better directions than the last clerk.
-b : Do you take much comfort from the thought?
-a : Some. At least it isn't thinking it's been neglected on purpose. I can waste an evening quite easily on that idea. | I'd be glad of a laugh if I could have the directions first. A whole week is a long gap between answers.
+a : I've a paper lost somewhere in the City Office. Every time I ask after it, the place goes very quiet. | If my lost petition could speak I imagine it'd have better directions than the last clerk.
+b : Do you think anyone's looking for it?
+a : I hope so. Mostly I picture it under somebody's elbow. | Somebody, slowly. A whole week is a long gap between answers.
 
 scene kneadsmell
 when topic=food
 does tell.self / ask.detail / answer.detail
-a : The smell of smoke on my sleeve puts a new crust into a different sort of breakfast. | I can put warm bread to my nose and still catch a little of the brew hearth.
-b : Which smell do you notice in the crust?
-a : Hold the loaf away from the arm carrying it. Cuffs keep reckoning of yesterday's fire. | Ask a wolf with a clean coat. There's a limit to the value of my own second opinion.
+a : The smoke on my sleeve gets into every crust I carry home. | I can put warm bread to my nose and still catch a little of the brew hearth.
+b : Does it spoil the bread?
+a : No. Smoke and bread go well enough. It's only that I never get to smell the loaf on its own. | Not for me. Ask a wolf with a clean coat whether it smells odd.
 
 scene dockroad
 when topic=travel here.region=ridgemere
@@ -248,9 +250,9 @@ a : The few heartbeats between a fish coming up and my worrying about how best t
 scene oldcork
 when topic=lore
 does tell.self / ask.detail / answer.detail
-a : An old harbour tale has a brewer stopping a tiny leak with the very cork a fish had just pinched off a line. | There's a story where a trading boat gets home by means of one dark bung.
-b : What was it doing anywhere near the leaky boat?
-a : Fish spat it under the low side while the crew were hunting a cover. A courteous little invention for a winter night. | The tale makes a few twists before it gets to the important part. I like the version where the fish receives its supper.
+a : An old harbour tale has a brewer stopping a leak in a boat with a cork a fish had pinched off a line. | There's a story where a leaking trading boat gets home stopped with one dark bung.
+b : Where did the cork come from? | Where did they find the bung?
+a : The fish spat it out under the low side while the crew hunted for a cover. A tale for a winter night. | A fish brought it, in the version I like. It's the only telling where the fish gets its supper after.
 
 scene thincoat
 when topic=weather here.weather=rain
@@ -263,8 +265,8 @@ scene milltidy
 when topic=smalltalk
 does tell.self / react.self / assess
 a : I can put ten small loose bungs into a box without making a sound. | A clean cork left on its side rolls in a surprisingly determined way.
-b : Why pay that much attention to something so light?
-a : So my black float can come out without waking another dozen questions at day's end. | I have lost several small useful pieces in the gap below the sill. It has a remarkable appetite for cork.
+b : Why bother being so careful with them?
+a : Noise in the brew room makes me jump. I'd rather the corks didn't add to it. | I've lost several in the gap below the sill. It has a great appetite for cork.
 
 scene gullnoise
 when topic=pastimes
@@ -292,7 +294,7 @@ when topic=dreams
 does tell.feeling / sympathise / assess
 a : I could make do with a room that held dry bread, a clean measure and one good hook near the threshold. | I'd like a night when the smells of bread and clean water reach me before old smoke does.
 b : Would the petition be in that room too?
-a : Framed over the hook with received written plain. I should be entitled to a little display after the wait. | In a closed file somewhere I could name. My dreams don't need the whole business spread out on the supper board.
+a : Pinned over the hook with "received" written on it plain. I'd have earned that much show. | In a closed file somewhere I could name. I don't need it on the supper board.
 
 story backwards_cork [topic=pastimes]
   : I blackened the face of a cork and laid it by the little box where I keep my line. Then I took the clean bung from beside it and went out fishing.
@@ -375,7 +377,6 @@ dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, you're
 dlg @13 shop.prices : You'll see what the figure buys before committing a coin. #shop_offer#
 dlg @14 shop.bye : Mind the full measure on the way home.
 dlg @15 resident.hub [here.weather=rain] : Put the dry part of the errand forward. I'll keep the wet from the papers.
-
 graft resident.hub
 choice How do you know a float has really moved? -> black_face
 node black_face

@@ -1,9 +1,12 @@
+# rm294, the petition ribbon (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm294
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_agnes_wetley
+written_by codex
 title the petition ribbon
 fits stage=adult|old
 prefers job=priest
@@ -38,51 +41,50 @@ leafmark = the wet print of a leaf | a leaf-shaped smudge
 gathercloth = a cloth for wet ribbons | my folded drying cloth
 
 any
-opinion church for 2 : A place to say a hard thing without buying the ear first is worth keeping open.
-opinion dole for 2 : We ask about hungry mouths. It's too easy to overlook a quiet one when the loudest still needs a loaf.
-opinion houses against 2 : High windows stay closed while a small request making the rounds down here wears holes in its folds.
-opinion watch against 1 : I'd like the boots that come to a door to bring an answer once in a while. Plenty of wolves here know the sound of the other sort of visit.
-opinion festivals against 1 : I enjoy the stroke of a bell. The crush that hurries after it makes a poor place to bring a private sorrow.
-opinion merchants against 2 : I've seen the soft grey place where the last coin lay in a purse. The price of bread puts it there early in the week.
-opinion sump for 1 : Down our stairs a bowl can travel from one door to another and come back warm. I count that for something.
-opinion times against 2 : Each week adds a knot to my ribbon. Other wolves carry a wait much heavier for no better reason.
+opinion @1 church for 2 : A place to say a hard thing without buying the ear first is worth keeping open.
+opinion @1 dole for 2 : We ask about hungry mouths. It's too easy to overlook a quiet one when the loudest still needs a loaf.
+opinion @1 houses against 2 : High windows stay closed while a small request making the rounds in the low streets wears holes in its folds.
+opinion @1 watch against 1 : I'd like the boots that come to a door to bring an answer once in a while. Plenty of wolves here know the sound of the other sort of visit.
+opinion @1 festivals against 1 : I enjoy the stroke of a bell. The crush that hurries after it makes a poor place to bring a private sorrow.
+opinion @1 merchants against 2 : I've seen the soft grey place where the last coin lay in a purse. The price of bread puts it there early in the week.
+opinion @1 sump for 1 [self.quarter=sump] : Down our stairs a bowl can travel from one door to another and come back warm. I count that for something.
+opinion @1 times against 2 : Each week adds a knot to my ribbon. Other wolves carry a wait much heavier for no better reason.
 
 grown
-line greet : This patch of quiet has room for your voice.
-line greet [pair.band=strangers] : You can begin without giving me a name.
-line greet [here.time=dawn] : Early light finds the ribbon still on my wrist. Welcome.
-line greet [here.time=dusk|night] : I'll speak more softly in case there's an ear just settling to rest.
-line greet [self.working=yes] : I can put this knot down to hear you speak.
-line kin.open [pair.kin!=no] : Come close. A familiar voice needs no fine introduction.
-line again.open : There's a second chance for a word we may have missed.
-line greet.return : Your greeting found a listening ear.
-line greet.return [pair.band=friends|family] : That voice is a welcome lower note.
-line greet.return [self.working=yes] : You've reached me between one duty and the next.
-line greet.return [here.time=dusk|night] : I heard your word across the dark. Welcome.
-line farewell : Carry a little of this quiet into the street.
-line farewell.return : May the way back give your shoulders ease.
-line farewell [here.time=dusk|night] : A quiet doorstep and a peaceful bed to you.
-line react.news : Give my ears time to follow it all the way round.
-line react.news.new : I'd need a fresh bend of ribbon to hold that.
-line react.news.known : It has come to me once in a less kindly voice.
-line react.news.doubt : Has the asking gone as far as the account?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The house will need a quiet visitor after the loudest grief has passed.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A full-throated note for that occasion.
-line answer.how : My ribbon still has a few good inches unknotted.
-line answer.how [self.working=yes] : I've one small duty poised and both ears working.
-line ask.how : Is there some part of the day you'd like another wolf to hear?
-line sympathise : Grief can speak very softly when it comes back round.
-line reassure : Keep the first words small. There's time for the rest to arrive.
-line decline : I'd be taking somebody else's private words out without leave.
-line accept_decline : Leave the ribbon loose. We'll ask no more.
-line thank : That kindness reached me just when the wait felt long.
-line deflect_thanks : A shared weight doesn't ask for a grand answer.
-line preclose : There's an end of ribbon asking to be wound away.
-line preclose [self.working=yes] : There's something unfinished that deserves my full hearing.
-line accept_preclose : Go while you have the quiet to yourself.
-line hail [pair.band=friends] : My friend, I've a whole free minute within earshot.
-line ack : Fairly heard.
-
+line @1 greet : This patch of quiet has room for your voice.
+line @2 greet [pair.band=strangers] : You can begin without giving me a name.
+line @3 greet [here.time=dawn] : Early light finds the ribbon still on my wrist. Welcome.
+line @4 greet [here.time=dusk|night] : I'll speak more softly in case there's an ear just settling to rest.
+line @5 greet [self.working=yes] : I can put this knot down to hear you speak.
+line @1 kin.open [pair.kin!=no] : Come close. A familiar voice needs no fine introduction.
+line @1 again.open : There's a second chance for a word we may have missed.
+line @1 greet.return : Your greeting found a listening ear.
+line @2 greet.return [pair.band=friends|family] : That voice is a welcome lower note.
+line @3 greet.return [self.working=yes] : You've reached me between one duty and the next.
+line @4 greet.return [here.time=dusk|night] : I heard your word across the dark. Welcome.
+line @1 farewell : Carry a little of this quiet into the street.
+line @1 farewell.return : May the way back give your shoulders ease.
+line @2 farewell [here.time=dusk|night] : A quiet doorstep and a peaceful bed to you.
+line @1 react.news : Give my ears time to follow it all the way round.
+line @1 react.news.new : I'd need a fresh bend of ribbon to hold that.
+line @1 react.news.known : It has come to me once in a less kindly voice.
+line @1 react.news.doubt : Has the asking gone as far as the account?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The house will need a quiet visitor after the loudest grief has passed.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A full-throated note for that occasion.
+line @1 answer.how : My ribbon still has a few good inches unknotted.
+line @2 answer.how [self.working=yes] : I've one small duty poised and both ears working.
+line @1 ask.how : Is there some part of the day you'd like another wolf to hear?
+line @1 sympathise : Grief can speak very softly when it comes back round.
+line @1 reassure : Keep the first words small. There's time for the rest to arrive.
+line @1 decline : I'd be taking somebody else's private words out without leave.
+line @1 accept_decline : Leave the ribbon loose. We'll ask no more.
+line @1 thank : That kindness reached me just when the wait felt long.
+line @1 deflect_thanks : A shared weight doesn't ask for a grand answer.
+line @1 preclose : There's an end of ribbon asking to be wound away.
+line @2 preclose [self.working=yes] : There's something unfinished that deserves my full hearing.
+line @1 accept_preclose : Go while you have the quiet to yourself.
+line @1 hail [pair.band=friends] : My friend, I've a whole free minute within earshot.
+line @1 ack : Fairly heard.
 scene knots
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -116,7 +118,7 @@ when topic=festival self.likes=festival_bells
 does tell.self / ask.detail / answer.detail
 a : I've a liking for the sound beneath the first great note of a festival bell. | The second bell sounds to me a good deal nearer than the first.
 b : Is there another bell down there? | Is the ringer coming to meet you?
-a : A lower note in the same metal. Give it one breath before you speak. | No. The first has got my attention out of my collar and into the air.
+a : A lower note in the same metal. Give it one breath before you speak. | No. The first one just woke me up. I hear the second properly.
 
 scene hush
 when topic=day here.time=night self.dislikes=night_noise
@@ -130,7 +132,7 @@ when topic=weather self.dislikes=salt_wind
 does tell.self / ask.detail / answer.detail
 a : Salt wind leaves my ribbon rough as a piece of old string. | I hold my coat collar just under one ear in a salt wind.
 b : Does it soften again? | Why leave the other ear out?
-a : In clean water, given time. I'd ask for as much of both for myself. | I'd hear a sentence out, even in rough weather.
+a : In clean water, given time. Most things do, wolves included. | I'd hear a sentence out, even in rough weather.
 
 scene eel
 when topic=food self.likes=smoked_eel
@@ -144,7 +146,7 @@ when topic=weather self.likes=first_snow
 does tell.self / ask.detail / answer.detail
 a : First snow makes a doorstep look as though a whole foot might sink into it. | I put one paw on the sill to see if the first white flakes will stay.
 b : Do you go straight out? | Doesn't your paw melt them?
-a : When I've glimpsed the board through it. I want first snow and two sound hips to enjoy it on. | Just one patch. I watch the rest and leave the salt outside for later.
+a : Not before the board shows through it. I want first snow and two sound hips to enjoy it on. | Just one patch. I watch the rest and leave the salt outside for later.
 
 scene supper
 when topic=faith self.job=priest
@@ -207,7 +209,7 @@ when topic=day here.time=dusk
 does tell.self / ask.detail / answer.detail
 a : The dusk takes the colour out of my ribbon before it takes the knots. | When evening comes I turn my ear towards home.
 b : Can you tell the count by touch? | Can you hear that far?
-a : One bend to each week. A smooth space means I put it down and did something else. | Not often. I'm putting the wish for quiet ahead of the actual journey.
+a : One bend to each week. A smooth space means I put it down and did something else. | No. It's only my mind going home ahead of my feet.
 
 scene outsider
 when topic=newcomer
@@ -263,7 +265,7 @@ when topic=travel
 does tell.self / ask.detail / answer.detail
 a : I can make a walk pass by giving each turn a different verse to sing. | A little singing goes a long way up a steep street.
 b : What if the verses finish before the walk? | Won't that cost you breath?
-a : Then a very long note till I reach the door. No need for a song to file a written account. | Take one note each time you breathe out. The street takes scarcely more from you than silence does.
+a : Then a very long note till I reach the door. Nobody's counting the verses but me. | Take one note each time you breathe out. The street takes scarcely more from you than silence does.
 
 scene slackribbon
 when topic=pastimes
@@ -337,23 +339,23 @@ when concept=bark self.likes=singing
 does aside
 cooldown 8h
 say Hold the low note till the two meet. | Not quite so loud on that high bit.
-dlg resident.hub : Whatever brings you here can have time enough to be said.
-dlg resident.hub [topic.meeting=known] : I've a piece of time to share with you, #topic.player#.
-dlg resident.hub [here.time=night] : I keep my voice low at this hour. I'll listen closely to yours.
-dlg resident.hub [pair.disposition=wary|hostile] : Your words may be welcome without your coming any closer.
-dlg resident.job [self.job=priest] : #self.trade_words.capitalize#. I try to hear the wolf at the back as clearly as the first one in.
-dlg resident.job : I've patience for an honest question, even one without an answer yet.
-dlg resident.news [world.news] : One scrap has arrived that I can pass on. #world.news#.
-dlg resident.news [world.death=recent] : There's been a death. Spare a little quiet along the way home.
-dlg resident.gossip [here.gossip!=yes] : No name has been offered me to pass round.
-dlg church.greet [here.day=rest] : Welcome on Restday. Today's service is #here.service#.
-dlg church.poor : The poorest households receive bread on Restday. Ask if a quiet door needs remembering.
-dlg church.offering : Give only what leaves the next mouth fed as well as your own.
-dlg church.thanked : That gift will give a hungry mouth a better day.
-dlg church.refused : #topic.why#. There's still room for you to sit.
-dlg church.bye : Go in the care of the Bright One.
-dlg resident.bye : May the waiting ease before I see you again.
 
+dlg @1 resident.hub : Whatever brings you here can have time enough to be said.
+dlg @2 resident.hub [topic.meeting=known] : I've a piece of time to share with you, #topic.player#.
+dlg @3 resident.hub [here.time=night] : I keep my voice low at this hour. I'll listen closely to yours.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your words may be welcome without your coming any closer.
+dlg @1 resident.job [self.job=priest] : #self.trade_words.capitalize#. I try to hear the wolf at the back as clearly as the first one in.
+dlg @2 resident.job : I've patience for an honest question, even one without an answer yet.
+dlg @1 resident.news [world.news] : One scrap has arrived that I can pass on. #world.news#.
+dlg @2 resident.news [world.death=recent] : There's been a death. Spare a little quiet along the way home.
+dlg @1 resident.gossip [here.gossip!=yes] : No name has been offered me to pass round.
+dlg @1 church.greet [here.day=rest] : Welcome on Restday. Today's service is #here.service#.
+dlg @1 church.poor : The poorest households receive bread on Restday. Ask if a quiet door needs remembering.
+dlg @1 church.offering : Give only what leaves the next mouth fed as well as your own.
+dlg @1 church.thanked : That gift will give a hungry mouth a better day.
+dlg @1 church.refused : #topic.why#. There's still room for you to sit.
+dlg @1 church.bye : Go in the care of the Bright One.
+dlg @1 resident.bye : May the waiting ease before I see you again.
 graft @waitingknots resident.hub
 choice Why wear the knots where you can see them? -> waitingknots
 node waitingknots

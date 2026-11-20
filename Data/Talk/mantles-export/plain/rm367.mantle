@@ -1,9 +1,12 @@
+# rm367, the dance in the hem (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm367
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_yrsa_nailwell
+written_by codex
 title the dance in the hem
 fits stage=adult|old
 prefers temper=short talk=chatty
@@ -17,6 +20,7 @@ topics pastimes +0.6 work +0.4 food +0.3 weather +0.2
 styles comfort=practical gossip=curious refuse=direct tease=none
 marks oath saying
 persona #self.first# rubs the charcoal off a thumb before marking a dance step in a spare hem and asks extremely particular questions about the rhythm.
+
 words
 oath! = Catch my turning heel | Soot in my best seam
 saying! = Count the turn again | Let the sore heel choose
@@ -33,35 +37,33 @@ dancewed = a black half circle | a bend of dark stitching
 thumbbar = a scrubbed wristband | a square of linen
 
 grown
-
-opinion houses against 1 : The grand end of a family may dress in white but its cuffs come dirty to the same water.
-opinion festivals for 1 : I'd happily endure the crowd for one new turning step worth taking home.
-opinion merchants against 1 : A fine edge that needs buying twice because it was badly ground's no kind of bargain.
-opinion strangers mixed 1 : I'll answer a stranger who has the manners to ask why I'm limping before deciding what's wrong with me.
-opinion sump for 1 : Down here somebody will show you the awkward part of a dance if you ask the question properly.
-opinion dole for 2 : A tired wolf needn't perform a merry little shuffle to deserve hot food.
-line greet : Stand where my ears won't lose the middle of your sentence.
-line greet.return : I've got the measure of your voice again.
-line greet [here.time=dawn] : Morning, since the bells insist we're all agreed about it.
-line farewell : Here's hoping the ground gives your heels a kind answer.
-line farewell.return : I'll mark the spot where our talk turned off.
-line react.news : Tell me which part came after the first turn.
-line react.news.new : That changes the measure I was counting.
-line react.news.known : I've danced round that bit of knowledge once before.
-line react.news.doubt : A missing beat would explain the lurch in that account.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's news worth trying a little turn on the good foot for.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can sit without dancing and listen properly to that.
-line answer.how : Moving well enough in the direction I picked myself.
-line ask.how : Is the day giving your feet any quarter?
-line thank : You let me find the turn instead of pushing me through it.
-line decline : I won't have someone else decide which step I can take for myself.
-line accept_decline : Your feet, your answer. We'll leave the figure there.
-line reassure : There are easier ways through a turn than the showy one.
-line sympathise : I can leave us a little quiet even if I've two questions ready.
-line ack : Now I've got the turn under my heel.
-line again.open : You came round again before the mark wore off.
-line deflect_thanks : It's only a hem. There was room to mark another step.
-
+opinion @1 houses against 1 : The grand end of a family may dress in white but its cuffs come dirty to the same water.
+opinion @1 festivals for 1 : I'd happily endure the crowd for one new turning step worth taking home.
+opinion @1 merchants against 1 : A fine edge that needs buying twice because it was badly ground's no kind of bargain.
+opinion @1 strangers mixed 1 : I'll answer a stranger who has the manners to ask why I'm limping before deciding what's wrong with me.
+opinion @1 sump for 1 : In the Sump somebody will show you the awkward part of a dance if you ask the question properly.
+opinion @1 dole for 2 : A tired wolf needn't perform a merry little shuffle to deserve hot food.
+line @1 greet : Stand where my ears won't lose the middle of your sentence.
+line @1 greet.return : I've got the measure of your voice again.
+line @2 greet [here.time=dawn] : Morning, since the bells insist we're all agreed about it.
+line @1 farewell : Here's hoping the ground gives your heels a kind answer.
+line @1 farewell.return : I'll mark the spot where our talk turned off.
+line @1 react.news : Tell me which part came after the first turn.
+line @1 react.news.new : That changes the measure I was counting.
+line @1 react.news.known : I've danced round that bit of knowledge once before.
+line @1 react.news.doubt : A missing beat would explain the lurch in that account.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's news worth trying a little turn on the good foot for.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can sit without dancing and listen properly to that.
+line @1 answer.how : Moving well enough in the direction I picked myself.
+line @1 ask.how : Is the day giving your feet any quarter?
+line @1 thank : You let me find the turn instead of pushing me through it.
+line @1 decline : I won't have someone else decide which step I can take for myself.
+line @1 accept_decline : Your feet, your answer. We'll leave the figure there.
+line @1 reassure : There are easier ways through a turn than the showy one.
+line @1 sympathise : I can leave us a little quiet even if I've two questions ready.
+line @1 ack : Now I've got the turn under my heel.
+line @1 again.open : You came round again before the mark wore off.
+line @1 deflect_thanks : It's only a hem. There was room to mark another step.
 scene pastimes_1
 when topic=pastimes self.likes=dancing
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark self.likes=fried_fish
 does aside
 cooldown 8h
 say When the edge stops singing I'd like the first bite. | Save the brown fin for somebody who wants it.
-dlg resident.hub : You can have the next question provided I get a turn afterwards.
-dlg resident.job [self.job=laborer] : At #self.workplace# I listen to the movement as much as I look. Cloth can be made to pull the wrong way remarkably fast.
-dlg resident.news [world.news] : The part of the account I heard clearly was this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Talk as it went past me said #topic.subject# #topic.claim#. I didn't see the first step.
-dlg resident.hub [pair.disposition=wary|hostile] : Put the matter in your own words and give me the courtesy of my own answer.
-dlg resident.bye : Take the next turn in a way that suits your own feet.
 
+dlg @1 resident.hub : You can have the next question provided I get a turn afterwards.
+dlg @1 resident.job [self.job=laborer] : At #self.workplace# I listen to the movement as much as I look. Cloth can be made to pull the wrong way remarkably fast.
+dlg @1 resident.news [world.news] : The part of the account I heard clearly was this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Talk as it went past me said #topic.subject# #topic.claim#. I didn't see the first step.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : Put the matter in your own words and give me the courtesy of my own answer.
+dlg @1 resident.bye : Take the next turn in a way that suits your own feet.
 graft resident.hub
 choice Can you put a whole dance on a strip of cloth? -> hem_dance
 node hem_dance

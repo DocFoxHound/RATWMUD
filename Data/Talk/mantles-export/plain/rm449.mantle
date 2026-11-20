@@ -1,14 +1,17 @@
+# rm449, the pebble roll call (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm449
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_hakon_plankcot
+written_by codex
 title the pebble roll call
 fits stage=adult|old
 prefers job=miner
 traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
-quirk gives_difficult_names_to_pocket_stones_until_the_sound_sticks
+quirk names_pocket_stones_until_the_sound_sticks
 likes mutton_stew evening_line tidy_house misty_dawns
 dislikes crowds drizzle
 fears a_path_that_disappears_into_deep_trees
@@ -35,35 +38,34 @@ mist = a curtain of mist | a grey wisp
 shade = deep green shade | the crowded shade
 
 any
-opinion road mixed 1 : I like a road that gives you time to see the last clear stone before the trees come together.
-opinion strangers for 1 : One name heard properly can make an unknown face a sensible acquaintance.
-opinion dole for 2 : Stew over a bowl edge has the merit of requiring no elaborate recommendation.
-opinion merchants mixed 1 : Stone priced by size ought to arrive with every corner still on it.
-opinion city for 1 : A city puts a name to its turns. I know what a comfort that is when a road gets close.
-opinion houses mixed 1 : I'd admire any House that remembered its cutters' names as well as the names on its buildings.
+opinion @1 road mixed 1 : I like a road that gives you time to see the last clear stone before the trees come together.
+opinion @1 strangers for 1 : One name heard properly can make an unknown face a sensible acquaintance.
+opinion @1 dole for 2 : Stew over a bowl edge has the merit of requiring no elaborate recommendation.
+opinion @1 merchants mixed 1 : Stone priced by size ought to arrive with every corner still on it.
+opinion @1 city for 1 : A city puts a name to its turns. I know what a comfort that is when a road gets close.
+opinion @1 houses mixed 1 : I'd admire any House that remembered its cutters' names as well as the names on its buildings.
 
 grown
-line greet : There's a clear bit of sky over this spot. | I can put the stone down while we speak.
-line greet.return : And a good name for this meeting from me.
-line again.open : Round to the same marked corner already.
-line farewell : Go where the next turn shows sky. | Mind the little loose stones when the path goes quiet.
-line farewell.return : A firm landing for your own boots in return.
-line react.news : Give me the names as clearly as you heard them. | I have a spare bit of memory for your news.
-line react.news.new : That's a fresh set of sounds to me.
-line react.news.known : I've kept that account from the earlier time.
-line react.news.doubt : The name and the tale don't quite line up.
-line react.news.sorrow [topic.kind=death|loss|assault] : Some names are better spoken very gently after news like that.
-line react.news.glad [topic.kind=birth|marriage|work] : One more name worth keeping proud under the tongue.
-line ask.how : How is the day sitting in your palm?
-line answer.how : Steady. A clear sky helps the reckonings.
-line sympathise : I won't forget a hurt because you told it quietly.
-line reassure : You needn't fit the whole block under one arm.
-line refuse : I owe some care to a different bit of work just now.
-line accept_decline : No need to carve the refusal twice.
-line preclose : Best get my boots back on their appointed track.
-line accept_preclose : Go while the stone's still good underfoot.
-line ack : That's settled squarely enough in my memory.
-
+line @1 greet : There's a clear bit of sky over this spot. | I can put the stone down while we speak.
+line @1 greet.return : And a good name for this meeting from me.
+line @1 again.open : Round to the same marked corner already.
+line @1 farewell : Go where the next turn shows sky. | Mind the little loose stones when the path goes quiet.
+line @1 farewell.return : A firm landing for your own boots in return.
+line @1 react.news : Give me the names as clearly as you heard them. | I have a spare bit of memory for your news.
+line @1 react.news.new : That's a fresh set of sounds to me.
+line @1 react.news.known : I've kept that account from the earlier time.
+line @1 react.news.doubt : The name and the tale don't quite line up.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Some names are better spoken very gently after news like that.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : One more name worth keeping proud under the tongue.
+line @1 ask.how : How is the day sitting in your palm?
+line @1 answer.how : Steady. A clear sky helps the reckonings.
+line @1 sympathise : I won't forget a hurt because you told it quietly.
+line @1 reassure : You needn't fit the whole block under one arm.
+line @1 refuse : I owe some care to a different bit of work just now.
+line @1 accept_decline : No need to carve the refusal twice.
+line @1 preclose : Best get my boots back on their appointed track.
+line @1 accept_preclose : Go while the stone's still good underfoot.
+line @1 ack : That's settled squarely enough in my memory.
 scene exchange1
 when topic=work self.job=miner
 does tell.self / ask.detail / answer.detail
@@ -231,16 +233,16 @@ when concept=bark self.likes=evening_line
 does aside
 cooldown 8h
 say One clean cork and an evening for itself. | A still float gets a very distinguished name.
-dlg resident.hub : Speak your name or keep it in your pocket. I can hear either sort of question.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've kept the name without needing my pebble today.
-dlg resident.hub [here.time=night] : Late doesn't matter if there's room to see our feet.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your fresh marks off my stone until we're through talking.
-dlg resident.job [self.job=miner] : I cut stone at the quarry. A sound face and an open exit suit me.
-dlg resident.job : I remember who wanted each job and how it was meant to finish.
-dlg resident.news [world.news] : The report I remember names this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. That fixes only the words in my memory.
-dlg resident.bye : Take the road with a proper name at its far turn.
 
+dlg @1 resident.hub : Speak your name or keep it in your pocket. I can hear either sort of question.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've kept the name without needing my pebble today.
+dlg @3 resident.hub [here.time=night] : Late doesn't matter if there's room to see our feet.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep your fresh marks off my stone until we're through talking.
+dlg @1 resident.job [self.job=miner] : I cut stone at the quarry. A sound face and an open exit suit me.
+dlg @2 resident.job : I remember who wanted each job and how it was meant to finish.
+dlg @1 resident.news [world.news] : The report I remember names this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. That fixes only the words in my memory.
+dlg @1 resident.bye : Take the road with a proper name at its far turn.
 graft resident.hub
 choice How does a stone remember a name? -> vowel_pebble
 node vowel_pebble

@@ -1,14 +1,17 @@
+# rm442, the doorway soot seal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm442
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_grete_dimmock
+written_by codex
 title the doorway soot seal
 fits stage=adult|old
 prefers job=official
 traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
-quirk presses_a_sooty_knuckle_to_the_inside_of_a_finished_errand_note
+quirk presses_a_sooty_knuckle_inside_a_finished_errand_note
 likes blackberries cards tidy_house autumn_wind
 dislikes night_noise waiting
 fears delivering_a_letter_with_an_extra_listener_attached
@@ -35,41 +38,40 @@ step = my last return step | the quiet pace home
 noise = a late shutter knock | a troublesome rattle
 
 any
-opinion strangers for 1 : A traveller who remembers a door from one good meal may come back years later with a perfectly civil word.
-opinion dole for 1 : Nobody ought to spend the homeward walk wondering whether the kitchen has even a single bowl to spare.
-opinion houses for 1 : A sound public office rests on quite ordinary doors and roofs. Somebody must keep the timber and the work coming.
-opinion times for 1 : I've a sound bed to come home to and food under cover. Those are substantial entries on my personal account.
-opinion road mixed 0 : A route improves when you know which walls give shelter at the turning. A strange road takes longer to be fair to.
+opinion @1 strangers for 1 : A traveller who remembers a door from one good meal may come back years later with a perfectly civil word.
+opinion @1 dole for 1 : Nobody ought to spend the homeward walk wondering whether the kitchen has even a single bowl to spare.
+opinion @1 houses for 1 : A sound public office rests on quite ordinary doors and roofs. Somebody must keep the timber and the work coming.
+opinion @1 times for 1 : I've a sound bed to come home to and food under cover. Those are substantial entries on my personal account.
+opinion @1 road mixed 0 : A route improves when you know which walls give shelter at the turning. A strange road takes longer to be fair to.
 
 grown
-line greet [pair.band=strangers] : Hello. I can take a word for myself here. | Welcome beside the clean cuff.
-line greet [self.working=yes] : One errand can accommodate a greeting. | Walk beside the parcel if you like.
-line greet [here.time=dawn] : Morning. A clean list to begin. | Fresh light on the waiting names.
-line greet [here.time=dusk|night] : Evening. The last run's gentler. | Come to the still spot just past the lamps.
-line kin.open [pair.kin!=no] : Family can read my unwritten welcome. | There's a door that opens easily for kin.
-line again.open : This time the return walk brings us together. | My list has room for a second greeting.
-line greet.return : Heard and received quite safely. | Hello. My pockets are buttoned and my ears open.
-line greet.return [pair.band=friends|family] : I'd recognise the easy end of your footfall. | Your voice belongs on the pleasant side of the list.
-line greet.return [self.working=yes] : My hand can write while my ears attend. | I'll keep your word separate from the order.
-line greet.return [here.time=dusk|night] : Step within range of my little lamp. | Evening. A soft hello travels beautifully beside me.
-line farewell : May the correct door open easily. | Keep your paper close on the way.
-line farewell.return : I'll mark our meeting safe and done. | See you on a kinder return errand.
-line farewell.return [here.time=night] : Quiet hinges outside your bedchamber. | An undisturbed walk past your last lamp.
-line react.news : Give me the bit you heard distinctly. | What message actually reached your ear?
-line react.news.new : New word in the inner pocket. | That's the first copy I've heard.
-line react.news.known : I've made the mark beside that one. | The same message reached me by a different route.
-line react.news.doubt : I'd see the fold before signing for that account. | A message that's been through several mouths may have lost its last word.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can walk beside you carrying silence. | That has a weight I wouldn't hurry along.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome errand for anybody's tongue. | That's news I'd keep clean all the way home.
-line ask.how : Did your door open onto a good morning? | Have the errands sat easily with you?
-line answer.how : Quite happy with the walk between the doors. | Working through my little list without hurry.
-line decline : I'd rather reserve the dry pocket for its proper errand. | I need some quiet walking before I can undertake that.
-line accept_decline : A good clear refusal travels cleanly. | I'll take that answer back unchanged.
-line thank : A kindness for the inside fold. | You've saved me a whole troublesome turning.
-line sympathise : I'll carry whatever part you can set down. | Walk here and take what quiet you require.
-line reassure : There's time enough between these two doors. | I'll keep the last clean corner ready.
-line preclose : I should mark off one more errand now. | My little list hasn't entirely let me go.
-
+line @1 greet [pair.band=strangers] : Hello. I can take a word for myself here. | Welcome beside the clean cuff.
+line @2 greet [self.working=yes] : One errand can accommodate a greeting. | Walk beside the parcel if you like.
+line @3 greet [here.time=dawn] : Morning. A clean list to begin. | Fresh light on the waiting names.
+line @4 greet [here.time=dusk|night] : Evening. The last run's gentler. | Come to the still spot just past the lamps.
+line @1 kin.open [pair.kin!=no] : Family can read my unwritten welcome. | There's a door that opens easily for kin.
+line @1 again.open : This time the return walk brings us together. | My list has room for a second greeting.
+line @1 greet.return : Heard and received quite safely. | Hello. My pockets are buttoned and my ears open.
+line @2 greet.return [pair.band=friends|family] : I'd recognise the easy end of your footfall. | Your voice belongs on the pleasant side of the list.
+line @3 greet.return [self.working=yes] : My hand can write while my ears attend. | I'll keep your word separate from the order.
+line @4 greet.return [here.time=dusk|night] : Step within range of my little lamp. | Evening. A soft hello travels beautifully beside me.
+line @1 farewell : May the correct door open easily. | Keep your paper close on the way.
+line @1 farewell.return : I'll mark our meeting safe and done. | See you on a kinder return errand.
+line @2 farewell.return [here.time=night] : Quiet hinges outside your bedchamber. | An undisturbed walk past your last lamp.
+line @1 react.news : Give me the bit you heard distinctly. | What message actually reached your ear?
+line @1 react.news.new : New word in the inner pocket. | That's the first copy I've heard.
+line @1 react.news.known : I've made the mark beside that one. | The same message reached me by a different route.
+line @1 react.news.doubt : I'd see the fold before signing for that account. | A message that's been through several mouths may have lost its last word.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can walk beside you carrying silence. | That has a weight I wouldn't hurry along.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome errand for anybody's tongue. | That's news I'd keep clean all the way home.
+line @1 ask.how : Did your door open onto a good morning? | Have the errands sat easily with you?
+line @1 answer.how : Quite happy with the walk between the doors. | Working through my little list without hurry.
+line @1 decline : I'd rather reserve the dry pocket for its proper errand. | I need some quiet walking before I can undertake that.
+line @1 accept_decline : A good clear refusal travels cleanly. | I'll take that answer back unchanged.
+line @1 thank : A kindness for the inside fold. | You've saved me a whole troublesome turning.
+line @1 sympathise : I'll carry whatever part you can set down. | Walk here and take what quiet you require.
+line @1 reassure : There's time enough between these two doors. | I'll keep the last clean corner ready.
+line @1 preclose : I should mark off one more errand now. | My little list hasn't entirely let me go.
 scene soot
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Keep the flap shut where the corner blows. | A leaf can run the light errands itself.
 
-dlg resident.hub : I've time to hear whatever you've brought. Stand on the side where you don't have to raise your voice over my bag buckle.
-dlg resident.job [self.job=official self.workplace] : I carry for #self.workplace#. The letter gets a clean passage and my private list gets whatever's on my knuckles.
-dlg resident.news [world.news] : This report travelled as far as my doorstep. #world.news#
-dlg resident.hub [topic.meeting=known] : I'd know your voice behind a folded message, #topic.player#.
-dlg resident.bye : May the wind keep behind your papers and the latch open on the first attempt.
-
+dlg @1 resident.hub : I've time to hear whatever you've brought. Stand on the side where you don't have to raise your voice over my bag buckle.
+dlg @1 resident.job [self.job=official self.workplace] : I carry for #self.workplace#. The letter gets a clean passage and my private list gets whatever's on my knuckles.
+dlg @1 resident.news [world.news] : This report travelled as far as my doorstep. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : I'd know your voice behind a folded message, #topic.player#.
+dlg @1 resident.bye : May the wind keep behind your papers and the latch open on the first attempt.
 graft resident.hub
 choice What does the dark little crescent say? -> soot_end
 node soot_end

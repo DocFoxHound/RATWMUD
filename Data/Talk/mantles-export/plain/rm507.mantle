@@ -1,9 +1,12 @@
+# rm507, the empty place setting (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm507
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_emmerich_greyridge
+written_by codex
 title the empty place setting
 fits stage=adult|old
 prefers job=servant
@@ -33,39 +36,38 @@ glassmark = a tired pale ring | the faint cup circle
 compass = my straight fork | a fork laid true
 
 any
-opinion city for 1 : A cup can travel up three stairs and across two offices here without leaving the knowledge of anyone who has to wash it. It's home.
-opinion merchants against 1 : A new price written across yesterday's figure remains an increase, even in particularly good handwriting.
-opinion houses mixed 1 : The initials embroidered on a napkin don't explain who washed it this morning. They also don't stop it serving a guest perfectly well.
-opinion drink mixed 0 : A cup of something pleasant is welcome if I am free to clear my own empty cup.
-opinion times mixed 0 : A full bowl generally improves my view of the afternoon. I'd defer a grander judgement until after the washing up.
+opinion @1 city for 1 : A cup can travel up three stairs and across two offices here without leaving the knowledge of anyone who has to wash it. It's home.
+opinion @1 merchants against 1 : A new price written across yesterday's figure remains an increase, even in particularly good handwriting.
+opinion @1 houses mixed 1 : The initials embroidered on a napkin don't explain who washed it this morning. They also don't stop it serving a guest perfectly well.
+opinion @1 drink mixed 0 : A cup of something pleasant is welcome if I am free to clear my own empty cup.
+opinion @1 times mixed 0 : A full bowl generally improves my view of the afternoon. I'd defer a grander judgement until after the washing up.
 
 grown
-line greet : My empty setting admits another caller.
-line greet [pair.band=strangers] : Welcome. There's no form to fill for a chair.
-line greet [here.time=dawn] : Morning light requires a fresh inspection of my cuffs.
-line greet [here.time=dusk|night] : There's a little light left on the polished edge.
-line greet [self.working=yes] : Leave me the aisle that a laden plate requires.
-line kin.open [pair.kin!=no] : I've set a genuinely easy chair for family.
-line again.open : Another visit duly noticed and quite willingly received.
-line greet.return : Your greeting reached me before any formal notice.
-line greet.return [pair.band=friends|family] : Yours is a voice I'd make time for between courses.
-line farewell : Take your leave without accounting for the spoons.
-line farewell.return : I'll see to whatever the table has retained.
-line react.news : What part should go in the account before the remarks?
-line react.news.new : An item newly arrived on my afternoon docket.
-line react.news.known : An existing matter in a handsomer hand.
-line react.news.doubt : Was anybody present who could sign for that assertion?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Empty chairs should be allowed to mean different things to each household.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a better cup than the ordinary one.
-line answer.how : Adequate to the work. The clean plates have offered no objection.
-line ask.how : What part of your day would you mark complete?
-line sympathise : I'd reserve your chair if that would ease the evening.
-line reassure : A bowl and a chair require very little explanation.
-line decline : I've still a formal engagement with the plates already standing beside me.
-line accept_decline : My small request has been put away with its proper papers.
-line preclose : I've one unused setting to lift before the cloth comes off.
-line ack : Entered.
-
+line @1 greet : My empty setting admits another caller.
+line @2 greet [pair.band=strangers] : Welcome. There's no form to fill for a chair.
+line @3 greet [here.time=dawn] : Morning light requires a fresh inspection of my cuffs.
+line @4 greet [here.time=dusk|night] : There's a little light left on the polished edge.
+line @5 greet [self.working=yes] : Leave me the aisle that a laden plate requires.
+line @1 kin.open [pair.kin!=no] : I've set a genuinely easy chair for family.
+line @1 again.open : Another visit duly noticed and quite willingly received.
+line @1 greet.return : Your greeting reached me before any formal notice.
+line @2 greet.return [pair.band=friends|family] : Yours is a voice I'd make time for between courses.
+line @1 farewell : Take your leave without accounting for the spoons.
+line @1 farewell.return : I'll see to whatever the table has retained.
+line @1 react.news : What part should go in the account before the remarks?
+line @1 react.news.new : An item newly arrived on my afternoon docket.
+line @1 react.news.known : An existing matter in a handsomer hand.
+line @1 react.news.doubt : Was anybody present who could sign for that assertion?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Empty chairs should be allowed to mean different things to each household.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a better cup than the ordinary one.
+line @1 answer.how : Adequate to the work. The clean plates have offered no objection.
+line @1 ask.how : What part of your day would you mark complete?
+line @1 sympathise : I'd reserve your chair if that would ease the evening.
+line @1 reassure : A bowl and a chair require very little explanation.
+line @1 decline : I've still a formal engagement with the plates already standing beside me.
+line @1 accept_decline : My small request has been put away with its proper papers.
+line @1 preclose : I've one unused setting to lift before the cloth comes off.
+line @1 ack : Entered.
 scene setting
 when topic=work self.job=servant self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -226,15 +228,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Keep a lamp by the folded border. | Last of the light on clean silver.
-dlg resident.hub : The spare setting can be moved quite easily. Sit here.
-dlg resident.hub [topic.meeting=known] : Your place won't require a fresh introduction, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : State the purpose plainly and let the table keep its distance.
-dlg resident.hub [here.time=night] : Enough lamplight for a civil word and one unchipped cup.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. Dishes, messages and the occasional extraordinary request pass through my hands.
-dlg resident.job : I try to send the guest away remembering supper and forgetting how much work it took.
-dlg resident.news [world.news] : Here's an item I can enter in plain handwriting. #world.news#.
-dlg resident.bye : Leave your cup on the table. I'll take it with the rest.
 
+dlg @1 resident.hub : The spare setting can be moved quite easily. Sit here.
+dlg @2 resident.hub [topic.meeting=known] : Your place won't require a fresh introduction, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : State the purpose plainly and let the table keep its distance.
+dlg @4 resident.hub [here.time=night] : Enough lamplight for a civil word and one unchipped cup.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. Dishes, messages and the occasional extraordinary request pass through my hands.
+dlg @2 resident.job : I try to send the guest away remembering supper and forgetting how much work it took.
+dlg @1 resident.news [world.news] : Here's an item I can enter in plain handwriting. #world.news#.
+dlg @1 resident.bye : Leave your cup on the table. I'll take it with the rest.
 graft @clippedqueen resident.hub
 choice Why is a playing card lying by the fork? -> clippedqueen
 node clippedqueen

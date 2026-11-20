@@ -1,14 +1,17 @@
+# rm513, the pocket fleet of shavings (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm513
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_grete_gullhand
+written_by codex
 title the pocket fleet of shavings
 fits stage=adult|old
 prefers job=laborer honesty=frank
 traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
-quirk cuts_the_shapes_of_masts_into_wood_shavings_and_floats_them_in_a_basin
+quirk floats_wood_shaving_masts_in_a_basin
 likes warm_bread whittling tidy_house warm_rain
 dislikes crowds salt_wind
 fears a_full_basin_knocked_over a_winter_quarrel_with_no_way_through
@@ -34,45 +37,44 @@ brimline = my scratched waterline | a pencilled fill mark
 yarddust = a pocketful of yard dust | dust in a clean cuff
 
 any
-opinion houses against 1 : I fancy the big Houses will be elbowing for room before winter. That's a guess you can blame on me.
-opinion dole for 2 : Bread on a bare board beats a fine discussion of who left it bare.
-opinion city for 1 : I can see more fine rigs off this city than my biggest basin will hold.
-opinion festivals mixed 0 : I'll take the music home in my head. A crowd would step on my feet all the way there.
-opinion merchants mixed 0 : Offer me a price you can say while looking at the same piece of wood.
-opinion sump for 2 : A neighbour down my way can make a child's whole fleet out of what a well-off house sweeps up.
-opinion road mixed 0 : My tiny cargo needs a lid and a steady elbow on the steep parts.
+opinion @1 houses against 1 : I fancy the big Houses will be elbowing for room before winter. That's a guess you can blame on me.
+opinion @1 dole for 2 : Bread on a bare board beats a fine discussion of who left it bare.
+opinion @1 city for 1 : I can see more fine rigs off this city than my biggest basin will hold.
+opinion @1 festivals mixed 0 : I'll take the music home in my head. A crowd would step on my feet all the way there.
+opinion @1 merchants mixed 0 : Offer me a price you can say while looking at the same piece of wood.
+opinion @1 sump for 2 : A neighbour down my way can make a child's whole fleet out of what a well-off house sweeps up.
+opinion @1 road mixed 0 : My tiny cargo needs a lid and a steady elbow on the steep parts.
 
 grown
-line greet : Look sharp. The little fleet's coming out.
-line greet [pair.band=strangers] : Here's a face my harbour hasn't seen.
-line greet [here.time=dawn] : Morning light makes the shavings look gilt.
-line greet [here.time=dusk|night] : Welcome aboard for the last of the daylight.
-line greet.return : Heard you clear past my left mast.
-line greet.return [pair.band=friends|family] : Well met. You can name the next launch.
-line greet.return [self.working=yes] : Wood curls just as well to the sound of my voice.
-line greet.return [here.time=dusk|night] : Night gives the basin a handsome black sea.
-line kin.open [pair.kin!=no] : Come beside the winner, kin.
-line again.open : Where we left it the little ship was still afloat.
-line hail [pair.band=friends] : Friend, we've a berth for one more opinion!
-line farewell : Take a dry chip for luck.
-line farewell.return : And don't sail it in your soup.
-line react.news : Tell me before the ripples die.
-line react.news.new : That's a fresh splash in my dock.
-line react.news.known : Heard it while my last ship was drying.
-line react.news.doubt : Which end of that account floats?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can put the games away for words like those.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Float the best sail for that bit of news.
-line ask.how : Has your day leaked much?
-line answer.how : I've kept the wet below my elbows.
-line thank : You saved a whole little fleet there. Thanks.
-line deflect_thanks : Hardly a dock due on lifting one chip.
-line sympathise : Come sit by still water till the words come easily.
-line reassure : Even a sunken chip can dry on the sill.
-line decline : I've no spare elbow for that today.
-line accept_decline : Fair. No need to launch a thing you won't back.
-line preclose : I'd better count my ships before somebody washes up.
-line accept_preclose : Sail clear of the soap.
-
+line @1 greet : Look sharp. The little fleet's coming out.
+line @2 greet [pair.band=strangers] : Here's a face my harbour hasn't seen.
+line @3 greet [here.time=dawn] : Morning light makes the shavings look gilt.
+line @4 greet [here.time=dusk|night] : Welcome aboard for the last of the daylight.
+line @1 greet.return : Heard you clear past my left mast.
+line @2 greet.return [pair.band=friends|family] : Well met. You can name the next launch.
+line @3 greet.return [self.working=yes] : Wood curls just as well to the sound of my voice.
+line @4 greet.return [here.time=dusk|night] : Night gives the basin a handsome black sea.
+line @1 kin.open [pair.kin!=no] : Come beside the winner, kin.
+line @1 again.open : Where we left it the little ship was still afloat.
+line @1 hail [pair.band=friends] : Friend, we've a berth for one more opinion!
+line @1 farewell : Take a dry chip for luck.
+line @1 farewell.return : And don't sail it in your soup.
+line @1 react.news : Tell me before the ripples die.
+line @1 react.news.new : That's a fresh splash in my dock.
+line @1 react.news.known : Heard it while my last ship was drying.
+line @1 react.news.doubt : Which end of that account floats?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can put the games away for words like those.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Float the best sail for that bit of news.
+line @1 ask.how : Has your day leaked much?
+line @1 answer.how : I've kept the wet below my elbows.
+line @1 thank : You saved a whole little fleet there. Thanks.
+line @1 deflect_thanks : Hardly a dock due on lifting one chip.
+line @1 sympathise : Come sit by still water till the words come easily.
+line @1 reassure : Even a sunken chip can dry on the sill.
+line @1 decline : I've no spare elbow for that today.
+line @1 accept_decline : Fair. No need to launch a thing you won't back.
+line @1 preclose : I'd better count my ships before somebody washes up.
+line @1 accept_preclose : Sail clear of the soap.
 scene basin_launch
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Keep the chipped bow facing uphill.
 
-dlg resident.hub : Step up where you can see what the current champion's made of.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your berth on the rim is still open.
-dlg resident.hub [here.time=dusk] : Last sailing in the basin. Visitors welcome.
-dlg resident.hub [pair.disposition=hostile|wary] : Speak from that side, please. My ships bruise easily.
-dlg resident.job [self.workplace self.job=laborer] : I'm a hand at #self.workplace#. The ships in my pocket are private business.
-dlg resident.news [world.news] : Word has sailed across from #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I haven't measured the original mast on that tale.
-dlg resident.bye : May your own little craft come home with its mast.
-
+dlg @1 resident.hub : Step up where you can see what the current champion's made of.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your berth on the rim is still open.
+dlg @3 resident.hub [here.time=dusk] : Last sailing in the basin. Visitors welcome.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from that side, please. My ships bruise easily.
+dlg @1 resident.job [self.workplace self.job=laborer] : I'm a hand at #self.workplace#. The ships in my pocket are private business.
+dlg @1 resident.news [world.news] : Word has sailed across from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I haven't measured the original mast on that tale.
+dlg @1 resident.bye : May your own little craft come home with its mast.
 graft resident.hub
 choice Why does that ship have such a short mast? -> little_rig
 node little_rig

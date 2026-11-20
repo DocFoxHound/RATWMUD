@@ -1,9 +1,12 @@
+# rm316, the fleet in four voices (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm316
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_bertil_slagley
+written_by codex
 title the fleet in four voices
 fits stage=adult|old
 prefers job=priest
@@ -39,51 +42,50 @@ seal = my wax pellet | a red thumb of wax
 pitch = the opening pitch | my single starting note
 
 any
-opinion houses against 1 : A good voice can carry all across town and still need a House's nod to find a better place to stand.
-opinion dole against 1 : I prefer bread I have earned by practice. I say that for my own plate.
-opinion festivals against 1 : A festival morning interrupts work without interrupting the bills. I do the arithmetic before joining in.
-opinion sump against 1 : Below the Ropewalk I strain to hear my thoughts. I generally take my walk elsewhere.
-opinion church mixed 1 : One uncertain voice may still address the Bright One. A choir must still answer for doing its work well.
-opinion merchants mixed 0 : If the price sings true when repeated quietly a counter suits me well enough.
-opinion times mixed 0 : My shelf is orderly. Whether the signs beyond the shelf are quite as tidy I couldn't venture to say.
-opinion watch mixed 0 : A watchman's step has a place in the morning sounds. I judge the service by what accompanies the step.
-opinion strangers mixed 0 : An unfamiliar voice can join well. I'd hear the opening interval before promising a place.
+opinion @1 houses against 1 : A good voice can carry all across town and still need a House's nod to find a better place to stand.
+opinion @1 dole against 1 : I prefer bread I have earned by practice. I say that for my own plate.
+opinion @1 festivals against 1 : A festival morning interrupts work without interrupting the bills. I do the arithmetic before joining in.
+opinion @1 sump against 1 : Below the Ropewalk I strain to hear my thoughts. I generally take my walk elsewhere.
+opinion @1 church mixed 1 : One uncertain voice may still address the Bright One. A choir must still answer for doing its work well.
+opinion @1 merchants mixed 0 : If the price sings true when repeated quietly a counter suits me well enough.
+opinion @1 times mixed 0 : My shelf is orderly. Whether the signs beyond the shelf are quite as tidy I couldn't venture to say.
+opinion @1 watch mixed 0 : A watchman's step has a place in the morning sounds. I judge the service by what accompanies the step.
+opinion @1 strangers mixed 0 : An unfamiliar voice can join well. I'd hear the opening interval before promising a place.
 
 grown
-line greet [pair.band=strangers] : Your voice is new to me. Welcome. | Take the clear space opposite.
-line greet [self.working=yes] : Room beside the score. | I hear you between phrases.
-line greet [here.time=dawn] : Morning. The ear is rested. | Day's opening pitch sounds clear.
-line greet [here.time=dusk|night] : Evening draws the high notes in. | Welcome into the quiet measure.
-line kin.open [pair.kin!=no] : A family voice has its own clear place. | Come within our usual compass.
-line again.open : The returning phrase. Welcome. | Here's our second entrance.
-line greet.return : I hear you quite distinctly. | Your greeting carried true.
-line greet.return [pair.band=friends|family] : A voice so familiar comes perfectly in tune. | I could pick out that timbre anywhere.
-line greet.return [self.working=yes] : Speak on the breathing mark. | There's room before I take my pitch again.
-line greet.return [here.time=dusk|night] : Evening. I hear the lower notes now. | My ears make out your outline well enough.
-line farewell : Go in good time and tune. | Keep a breath for the return.
-line farewell.return : I'll take the rest at this end. | May your last note reach you gently.
-line farewell.return [here.time=night] : An easy passage beyond the late lamps. | Let the low light guide you home.
-line react.news : I'll listen for the precise note. | Give me what reached your ear.
-line react.news.new : A note outside my present range. | That adds a fresh line.
-line react.news.known : I've the earlier phrase already. | That pitch is familiar.
-line react.news.doubt : I'd compare that account with a steadier note. | The first and final parts sound oddly distant.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. I'll make a space for quiet. | That word takes the breath short.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A clear and welcome interval. | News to lift the whole pitch.
-line ask.how : How has your breathing been today? | Any clear note in your affairs?
-line answer.how : Quiet practice. I hear small gains. | Within my range for now.
-line decline : I'd rather keep my breath for the work ahead. | I should keep today's practice in proper order.
-line accept_decline : That settles your part of the matter. | Your rest is properly marked.
-line thank : That carries my note considerably further. | You've steadied a difficult entry.
-line sympathise : I'll keep my voice beneath yours. | There's space to breathe before another word.
-line reassure : Every part has a place to come back in. | You can pause without losing the line.
-line preclose : I'll take the next rest now. | Time to put my parts in order.
-line accept_preclose : I'll let you break off on that note. | A sensible place to leave the phrase.
-line deflect_thanks : Your thanks have carried quite well. | One acknowledgement is ample.
-line ack : In tune. | Distinctly so.
-line give.advice : Choose the pitch you can sustain. | A rest badly placed costs a whole line.
-line offer : I can hear your practice through once. | Let me leave the starting note with you.
-line praise : A clean entry at precisely the right time. | You knew just where the room would carry it.
-
+line @1 greet [pair.band=strangers] : Your voice is new to me. Welcome. | Take the clear space opposite.
+line @2 greet [self.working=yes] : Room beside the score. | I hear you between phrases.
+line @3 greet [here.time=dawn] : Morning. The ear is rested. | Day's opening pitch sounds clear.
+line @4 greet [here.time=dusk|night] : Evening draws the high notes in. | Welcome into the quiet measure.
+line @1 kin.open [pair.kin!=no] : A family voice has its own clear place. | Come within our usual compass.
+line @1 again.open : The returning phrase. Welcome. | Here's our second entrance.
+line @1 greet.return : I hear you quite distinctly. | Your greeting carried true.
+line @2 greet.return [pair.band=friends|family] : A voice so familiar comes perfectly in tune. | I could pick out that timbre anywhere.
+line @3 greet.return [self.working=yes] : Speak on the breathing mark. | There's room before I take my pitch again.
+line @4 greet.return [here.time=dusk|night] : Evening. I hear the lower notes now. | My ears make out your outline well enough.
+line @1 farewell : Go in good time and tune. | Keep a breath for the return.
+line @1 farewell.return : I'll take the rest at this end. | May your last note reach you gently.
+line @2 farewell.return [here.time=night] : An easy passage beyond the late lamps. | Let the low light guide you home.
+line @1 react.news : I'll listen for the precise note. | Give me what reached your ear.
+line @1 react.news.new : A note outside my present range. | That adds a fresh line.
+line @1 react.news.known : I've the earlier phrase already. | That pitch is familiar.
+line @1 react.news.doubt : I'd compare that account with a steadier note. | The first and final parts sound oddly distant.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. I'll make a space for quiet. | That word takes the breath short.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A clear and welcome interval. | News to lift the whole pitch.
+line @1 ask.how : How has your breathing been today? | Any clear note in your affairs?
+line @1 answer.how : Quiet practice. I hear small gains. | Within my range for now.
+line @1 decline : I'd rather keep my breath for the work ahead. | I should keep today's practice in proper order.
+line @1 accept_decline : That settles your part of the matter. | Your rest is properly marked.
+line @1 thank : That carries my note considerably further. | You've steadied a difficult entry.
+line @1 sympathise : I'll keep my voice beneath yours. | There's space to breathe before another word.
+line @1 reassure : Every part has a place to come back in. | You can pause without losing the line.
+line @1 preclose : I'll take the next rest now. | Time to put my parts in order.
+line @1 accept_preclose : I'll let you break off on that note. | A sensible place to leave the phrase.
+line @1 deflect_thanks : Your thanks have carried quite well. | One acknowledgement is ample.
+line @1 ack : In tune. | Distinctly so.
+line @1 give.advice : Choose the pitch you can sustain. | A rest badly placed costs a whole line.
+line @1 offer : I can hear your practice through once. | Let me leave the starting note with you.
+line @1 praise : A clean entry at precisely the right time. | You knew just where the room would carry it.
 scene fleet
 when topic=travel here.region=ridgemere
 does tell.self / ask.detail / answer.detail
@@ -360,20 +362,19 @@ does aside
 cooldown 11h
 say Let the collar stand off the throat. | Cold air deserves a little warming first.
 
-dlg resident.hub : Come to where the walls carry your voice evenly. I like a distinctly heard introduction.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember the cadence of our last greeting.
-dlg resident.job [self.job=priest self.workplace] : I sing at #self.workplace#. At the moment the first note has rather more interest for me than the highest.
-dlg resident.job [self.job=priest self.trade_words] : #self.trade_words.capitalize#. A voice gets its place by keeping the pitch entrusted to it.
-dlg resident.job : I put in quiet practice and wait for an opportunity to let the improvement be heard.
-dlg resident.news [world.news] : One part carried quite distinctly. #world.news#
-dlg resident.bye : An even phrase to finish on. Safe passage.
-dlg resident.bye [here.time=night] : Go quietly through the late streets. Voices carry beyond the lamps.
-dlg resident.hub [here.time=dawn] : I've not tried my highest notes yet. An ordinary speaking voice is quite ready.
-dlg resident.hub [here.time=dusk] : There's time before evening practice to listen at a civil pace.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll give you a clear hearing. Let each of us mind the pitch.
-dlg resident.hub [self.working=yes] : The next breathing mark is mine. You can speak then.
-dlg church.greet [self.job=priest here.day!=rest] : Come in and find a place where you can hear both rows. The lower line's worth attending to.
-
+dlg @1 resident.hub : Come to where the walls carry your voice evenly. I like a distinctly heard introduction.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember the cadence of our last greeting.
+dlg @1 resident.job [self.job=priest self.workplace] : I sing at #self.workplace#. At the moment the first note has rather more interest for me than the highest.
+dlg @2 resident.job [self.job=priest self.trade_words] : #self.trade_words.capitalize#. A voice gets its place by keeping the pitch entrusted to it.
+dlg @3 resident.job : I put in quiet practice and wait for an opportunity to let the improvement be heard.
+dlg @1 resident.news [world.news] : One part carried quite distinctly. #world.news#
+dlg @1 resident.bye : An even phrase to finish on. Safe passage.
+dlg @2 resident.bye [here.time=night] : Go quietly through the late streets. Voices carry beyond the lamps.
+dlg @3 resident.hub [here.time=dawn] : I've not tried my highest notes yet. An ordinary speaking voice is quite ready.
+dlg @4 resident.hub [here.time=dusk] : There's time before evening practice to listen at a civil pace.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : I'll give you a clear hearing. Let each of us mind the pitch.
+dlg @6 resident.hub [self.working=yes] : The next breathing mark is mine. You can speak then.
+dlg @1 church.greet [self.job=priest here.day!=rest] : Come in and find a place where you can hear both rows. The lower line's worth attending to.
 graft @fleet resident.hub
 choice What kind of voice would you give a broad barge? -> barge_voice
 node barge_voice
@@ -385,6 +386,7 @@ node light_barge
 say Higher in the water, so a little lighter in tone. Same part on the page. A wolf can be a good bass without always bringing a cargo of gloom.
 choice I'll look for that sort of barge. -> hub
 choice I'll leave the fleet to practise. -> bye
+
 graft @pitch resident.hub
 choice Why practise a single opening note for so long? -> first_pitch
 node first_pitch

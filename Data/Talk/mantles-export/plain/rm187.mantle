@@ -1,10 +1,12 @@
-# rm187, the depth-keeper at the counter (doc 84 P14, batch city-a3): written for rm_yrsa_nailridge (Yrsa Nailridge: helping at Soundings, Ridgemere-born).
+# rm187, the depth-keeper at the counter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm187
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_yrsa_nailridge
+written_by codex
 title the depth-keeper at the counter
 fits stage=adult|old
 prefers job=merchant talk=quiet
@@ -89,7 +91,6 @@ line @1 give.advice : Say a thing once and plainly. Folk hear it better than sho
 line @2 give.advice [here.weather=rain] : Keep off the steps down by the water. Slick as soap in this. | Wait it out under an awning. It'll ease by the hour.
 line @1 warn [world.bandits=near] : #warn#. Keep within the walls this week. | Go in company this week, or stay put.
 line @1 disagree : #demur#. I've seen it fall out the opposite. | I don't think so. I've a reason, if you want it.
-
 scene thunder_over_the_roof
 when topic=weather here.weather=storm
 does tell.feeling / react.self / assess
@@ -303,7 +304,6 @@ dlg @2 resident.job [self.workplace=Soundings] : Charts, mostly. I know where ev
 dlg @3 resident.job : I do my work, I pick brambles in season, and I watch the storms. That's all of me. | Not much to tell. I work, and I go home content.
 dlg @1 resident.bye : #farewell#. | #farewell#. Mind the wet steps.
 dlg @2 resident.bye [here.time=night] : Good night. Mind the gutters. | #farewell#. Sleep, if the rain lets you.
-
 graft resident.hub
 choice How deep is the water off the piers? [here.region=ridgemere] -> depths
 node depths

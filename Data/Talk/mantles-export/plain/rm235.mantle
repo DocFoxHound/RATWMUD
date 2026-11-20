@@ -1,9 +1,12 @@
+# rm235, the verse runner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm235
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_aldric_rustgate
+written_by codex
 title the verse runner
 fits stage=young|adolescent|adult|old
 prefers talk=chatty temper=nervy
@@ -35,41 +38,160 @@ cord = the cord at my wrist | a loop of old thread
 wake = the trail left by a tune | a little wake of sound
 
 any
-opinion houses against 1 : Big houses can pay for a dry tread. They ought to try carrying a tune on a staircase with a step missing.
-opinion drink against 1 : You lose words when you drink. Somebody else has to carry them home.
-opinion watch against 1 : Boots making the same noise together don't prove everybody's headed somewhere good.
-opinion sump for 1 : Take a wrong turn down here and there's generally an ear at a door to put you right.
-opinion festivals for 2 : One day the whole street knows the same refrain and nobody minds you trying it twice.
-opinion road against 1 : There's no comfort in a long road if you can't ask someone where the next turning is.
+opinion @1 houses against 1 : Big houses can pay for a dry tread. They ought to try carrying a tune on a staircase with a step missing.
+opinion @1 drink against 1 : You lose words when you drink. Somebody else has to carry them home.
+opinion @1 watch against 1 : Boots making the same noise together don't prove everybody's headed somewhere good.
+opinion @1 sump for 1 : Take a wrong turn in the Sump and there's generally an ear at a door to put you right.
+opinion @1 festivals for 2 : One day the whole street knows the same refrain and nobody minds you trying it twice.
+opinion @1 road against 1 : There's no comfort in a long road if you can't ask someone where the next turning is.
+line @1 greet : Just reaching the end of my tune. There's room for your voice. | Hello. My breath will catch up presently.
+line @2 greet [pair.band=strangers] : First I've heard of your footfall. Welcome. | I'll remember this corner by meeting you.
+line @1 greet.return : Heard you between two beats. | It takes a word to stop a tune. Yours did.
+line @2 greet.return [here.time=night] : I was humming small enough for the hour. | Good evening on the quiet side.
+line @3 greet.return [pair.band=friends|family] : I could pick your step out of a chorus. | Familiar voice, no need to count beats now.
+line @1 again.open : We've managed the same turn twice. | My verse comes round and so do you.
+line @1 kin.open [pair.kin!=no] : Come inside the tune a moment, there's a private bit. | I'll tell you the thing I didn't sing out.
+line @1 hail [pair.band=friends] : Catch this voice before I run on! | Spare me one verse end to end!
+line @1 farewell : Leave me a beat to come back on. | Good running if you've running yet to do.
+line @1 farewell.return : I'll keep that last note going. | You take the easy turning home.
+line @1 react.news : Tell me which words to keep exactly. | I can hold the whole of it. Say on.
+line @1 react.news.new : That's stopped my tune in its tracks. | I haven't any verse to fit that yet.
+line @1 react.news.known : I've already got that turning by heart. | Yes, those words passed this way today.
+line @1 react.news.doubt : There's a word out of step in that tale. | Might be what somebody meant instead of what was said.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor folk. I'll carry that bit gently. | Some words shouldn't be made to hurry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's a verse with a good ending! | I'd run far to bring somebody such words.
+line @1 ask.how : Has today had a kind sound to it? | How are your feet holding up today?
+line @1 answer.how : Better with my breath and feet in agreement. | Full of small thoughts all wanting a turn.
+line @1 sympathise : I'll stand by your shoulder while you find the words. | No need to sing over a sad bit.
+line @1 reassure : I'll remember the next turning for both of us. | We can walk this piece slowly together.
+line @1 decline : I can't take on two errands on the same breath. | If I hurry off now I'll forget something that matters.
+line @1 accept_decline : Then I can drop that from the verse. | All right. One less thing to hurry about.
+line @1 thank : You've saved me a second journey there. | I'd make up a thankful verse if I had the puff.
+line @1 deflect_thanks : It was a short run for such kind words. | I had a tune going that way already.
+line @1 preclose : I'll be tapping away down the next flight shortly. | I mustn't lose the rest of my errand.
+line @1 accept_preclose : Go on before my tune holds you up. | I can finish the refrain without you.
+line @1 ack : That's the sound of it. | Yes, all the beats fit.
+graft resident.hub
+choice Can you sing a turning in the street? -> turn_tune
+node turn_tune
+say Hum two low notes for straight ahead. Left gets a little lift on the first. Right gets it on the second. Hardly anybody notices they're directions.
+mood keen
+free
+choice And how do you sing getting lost? -> turn_lost
+choice I've got the turns now. -> hub
+node turn_lost
+say Stop altogether. If you carry on humming while you're lost you can go on for miles thinking you're quite correct.
+choice That last part I can manage. -> hub
+choice I'll try it on the walk. -> bye
 
-any
-line greet : Just reaching the end of my tune. There's room for your voice. | Hello. My breath will catch up presently.
-line greet [pair.band=strangers] : First I've heard of your footfall. Welcome. | I'll remember this corner by meeting you.
-line greet.return : Heard you between two beats. | It takes a word to stop a tune. Yours did.
-line greet.return [here.time=night] : I was humming small enough for the hour. | Good evening on the quiet side.
-line greet.return [pair.band=friends|family] : I could pick your step out of a chorus. | Familiar voice, no need to count beats now.
-line again.open : We've managed the same turn twice. | My verse comes round and so do you.
-line kin.open [pair.kin!=no] : Come inside the tune a moment, there's a private bit. | I'll tell you the thing I didn't sing out.
-line hail [pair.band=friends] : Catch this voice before I run on! | Spare me one verse end to end!
-line farewell : Leave me a beat to come back on. | Good running if you've running yet to do.
-line farewell.return : I'll keep that last note going. | You take the easy turning home.
-line react.news : Tell me which words to keep exactly. | I can hold the whole of it. Say on.
-line react.news.new : That's stopped my tune in its tracks. | I haven't any verse to fit that yet.
-line react.news.known : I've already got that turning by heart. | Yes, those words passed this way today.
-line react.news.doubt : There's a word out of step in that tale. | Might be what somebody meant instead of what was said.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor folk. I'll carry that bit gently. | Some words shouldn't be made to hurry.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's a verse with a good ending! | I'd run far to bring somebody such words.
-line ask.how : Has today had a kind sound to it? | How are your feet holding up today?
-line answer.how : Better with my breath and feet in agreement. | Full of small thoughts all wanting a turn.
-line sympathise : I'll stand by your shoulder while you find the words. | No need to sing over a sad bit.
-line reassure : I'll remember the next turning for both of us. | We can walk this piece slowly together.
-line decline : I can't take on two errands on the same breath. | If I hurry off now I'll forget something that matters.
-line accept_decline : Then I can drop that from the verse. | All right. One less thing to hurry about.
-line thank : You've saved me a second journey there. | I'd make up a thankful verse if I had the puff.
-line deflect_thanks : It was a short run for such kind words. | I had a tune going that way already.
-line preclose : I'll be tapping away down the next flight shortly. | I mustn't lose the rest of my errand.
-line accept_preclose : Go on before my tune holds you up. | I can finish the refrain without you.
-line ack : That's the sound of it. | Yes, all the beats fit.
+
+grown
+scene folded_route
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A route folds nicely into a working tune if you leave room for a mistake. | I give every set of directions a place to draw breath.
+b : Do you sing the mistakes too? | Even a short run?
+a : Under my breath. They sound better after I've found my feet. | Especially those. It's easy to rush the obvious bit.
+
+scene table_salt
+when topic=food self.likes=hard_cheese
+does tell.feeling / react.self / assess
+a : I like cheese that makes the jaw work long after the bread's gone. | I cut #cheese# thin so it lasts a whole tune.
+b : Too tough for me. | Wouldn't one bite be easier?
+a : Let it warm beside the bread first. Softens it a little. | Easier, yes. A much shorter supper though.
+
+scene echo_steps
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : On Sump stairs a footfall can sound a whole flight away from its owner. | I count the echoes before I call down from home.
+b : How do you pair the sound with the foot? | Why wait?
+a : Listen for the turn. A boot turns round a landing, an echo doesn't. | A voice can land in somebody else's doorway.
+
+scene folded_cord
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : There's a knot on #cord# where the song changes key. | A twist of thread can carry a tune past a noisy room.
+b : Does it sound when you tug? | How would you hear over the noise?
+a : It tells my thumb where to start me again. | I feel for the knot instead. The next note follows it naturally.
+
+scene half_told
+when topic=gossip
+does tell.worry / react.self / assess
+a : A half-heard word makes a dangerous beginning to an errand. | I'll repeat a tale back before I undertake to carry it.
+b : Even a funny one? | In the very same words?
+a : All the more. Wolves remember a joke after they've forgotten whether it was true. | As nearly as I can. A changed word can change the wolf it means.
+
+scene find_voice
+when topic=health
+does tell.self / react.self / assess
+a : When worry has its teeth in my voice I breathe the last note first. | A short tune can tell me how fast I'm walking.
+b : Can it really loosen its grip? | Without looking down?
+a : Just enough to get a beginning out. | If I've no breath left at the turning I'm going too hard.
+
+scene caravan
+when topic=caravan world.wagons=late
+does tell.worry / ask.detail / answer.detail
+a : Late wagons put every waiting errand a beat behind. | With wagons overdue I stop myself promising exact hours.
+b : How do you catch up? | What do you promise?
+a : I don't promise more than my paws can actually cover. | The first word that comes to me complete and certain.
+
+scene winter_fair
+when topic=festival
+does tell.feeling / react.self / assess
+a : At a feast I like the moment before the first bell. | The quietest part of a celebration is when every ear turns the same way.
+b : Because it's quiet? | Waiting for the bells?
+a : Because everybody seems about to remember the same words. | A bell or a voice. I love seeing that silence all lean together.
+
+scene summer_roof
+when topic=season here.season=summer here.time=dusk
+does tell.feeling / ask.detail / answer.detail
+a : Summer dusk lets an errand run long without becoming a worry. | I like to sing the daylight down in summer.
+b : You don't hurry home? | Does it set the pace?
+a : I still hurry. I just get an extra verse to myself afterwards. | The sky starts slowly and takes the last few steps in a rush.
+
+scene small_exchange
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A good greeting has enough room after it for an honest answer. | I sometimes hum to a friend instead of asking how things stand.
+b : You wait to hear it? | How do you know?
+a : I try. My feet learn patience much slower than my ears. | If the answer comes back in tune, we can start gently from there.
+
+scene stray_verse
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt all the streets had learnt my errand tune. | Once, dreaming, I pushed a door open without singing the last line.
+b : Could you follow it home? | Was it the wrong door?
+a : Not a bit. They kept answering one another across me. | It was a mouth singing the end back at me. I woke up humming.
+
+scene new_feet
+when topic=newcomer
+does tell.plan / ask.detail / answer.detail
+a : I'd lend a newcomer the first verse of my walk. | I give directions one corner at a time.
+b : Why not lend the lot? | What if there's nobody at the next corner?
+a : Better to leave enough space to make up an ending of your own. | Then I walk that far along. I generally find a tune for the trip back.
+
+story the_short_cut [topic=memories|travel]
+  : For years I thought there were five turns in a certain alley. That was how many the old song gave it.
+  : I walked it slowly once and counted four. Somebody had worked in an extra beat to leave time for a long breath.
+  b : Did you change the song?
+  : No. When I guessed better than that old singer I arrived both early and quite winded.
+
+rule @evening
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 9h
+say One more stretch of light for the return trip. | Plenty of evening for finishing the verse.
+
+rule @delivery
+when concept=bark self.working=yes
+does aside
+cooldown 7h
+say Keep the words together. One door, one message! | Leave me one clear beat before the next account.
+
+dlg @g1 resident.hub : Come walk a little alongside me. Words settle better with a pace under them.
+dlg @g2 resident.job : I remember the turn where each little task begins.
+dlg @g3 resident.bye : There's the last word delivered sound.
+
 young
 scene wrong_verse
 when topic=pastimes|smalltalk
@@ -179,6 +301,7 @@ dlg @p3 resident.hub [here.time=night] : I'll keep it small. Sound goes through 
 dlg @p4 resident.hub [pair.disposition=wary|hostile] : Both ears are working. Stay on your own step and I'll hear.
 dlg @p1 resident.job [self.job=child] : Learning to hold a long sum between my ears without singing it to everybody.
 dlg @p1 resident.bye : I'll hear you round the next turning, maybe.
+
 adolescent
 scene public_song
 when topic=pastimes
@@ -199,123 +322,3 @@ story cleared_throat [topic=memories]
   : When I arrived everybody thought I was ill. I had to drink a great mug of hot water before anybody let me explain.
   b : Did you get the words out?
   : Quite beautifully. I put the heavy mug down on the difficult word and it came out like a bell.
-
-grown
-scene folded_route
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : A route folds nicely into a working tune if you leave room for a mistake. | I give every set of directions a place to draw breath.
-b : Do you sing the mistakes too? | Even a short run?
-a : Under my breath. They sound better after I've found my feet. | Especially those. It's easy to rush the obvious bit.
-
-scene table_salt
-when topic=food self.likes=hard_cheese
-does tell.feeling / react.self / assess
-a : I like cheese that makes the jaw work long after the bread's gone. | I cut #cheese# thin so it lasts a whole tune.
-b : Too tough for me. | Wouldn't one bite be easier?
-a : Let it warm beside the bread first. Softens it a little. | Easier, yes. A much shorter supper though.
-
-scene echo_steps
-when topic=home self.quarter=sump
-does tell.self / ask.detail / answer.detail
-a : On Sump stairs a footfall can sound a whole flight away from its owner. | I count the echoes before I call down from home.
-b : How do you pair the sound with the foot? | Why wait?
-a : Listen for the turn. A boot turns round a landing, an echo doesn't. | A voice can land in somebody else's doorway.
-
-scene folded_cord
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : There's a knot on #cord# where the song changes key. | A twist of thread can carry a tune past a noisy room.
-b : Does it sound when you tug? | How would you hear over the noise?
-a : It tells my thumb where to start me again. | I feel for the knot instead. The next note follows it naturally.
-
-scene half_told
-when topic=gossip
-does tell.worry / react.self / assess
-a : A half-heard word makes a dangerous beginning to an errand. | I'll repeat a tale back before I undertake to carry it.
-b : Even a funny one? | In the very same words?
-a : All the more. Wolves remember a joke after they've forgotten whether it was true. | As nearly as I can. A changed word can change the wolf it means.
-
-scene find_voice
-when topic=health
-does tell.self / react.self / assess
-a : When worry has its teeth in my voice I breathe the last note first. | A short tune can tell me how fast I'm walking.
-b : Can it really loosen its grip? | Without looking down?
-a : Just enough to get a beginning out. | If I've no breath left at the turning I'm going too hard.
-
-scene caravan
-when topic=caravan world.wagons=late
-does tell.worry / ask.detail / answer.detail
-a : Late wagons put every waiting errand a beat behind. | With wagons overdue I stop myself promising exact hours.
-b : How do you catch up? | What do you promise?
-a : I don't promise more than my paws can actually cover. | The first word that comes to me complete and certain.
-
-scene winter_fair
-when topic=festival
-does tell.feeling / react.self / assess
-a : At a feast I like the moment before the first bell. | The quietest part of a celebration is when every ear turns the same way.
-b : Because it's quiet? | Waiting for the bells?
-a : Because everybody seems about to remember the same words. | A bell or a voice. I love seeing that silence all lean together.
-
-scene summer_roof
-when topic=season here.season=summer here.time=dusk
-does tell.feeling / ask.detail / answer.detail
-a : Summer dusk lets an errand run long without becoming a worry. | I like to sing the daylight down in summer.
-b : You don't hurry home? | Does it set the pace?
-a : I still hurry. I just get an extra verse to myself afterwards. | The sky starts slowly and takes the last few steps in a rush.
-
-scene small_exchange
-when topic=friends
-does tell.self / ask.detail / answer.detail
-a : A good greeting has enough room after it for an honest answer. | I sometimes hum to a friend instead of asking how things stand.
-b : You wait to hear it? | How do you know?
-a : I try. My feet learn patience much slower than my ears. | If the answer comes back in tune, we can start gently from there.
-
-scene stray_verse
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I dreamt all the streets had learnt my errand tune. | Once, dreaming, I pushed a door open without singing the last line.
-b : Could you follow it home? | Was it the wrong door?
-a : Not a bit. They kept answering one another across me. | It was a mouth singing the end back at me. I woke up humming.
-
-scene new_feet
-when topic=newcomer
-does tell.plan / ask.detail / answer.detail
-a : I'd lend a newcomer the first verse of my walk. | I give directions one corner at a time.
-b : Why not lend the lot? | What if there's nobody at the next corner?
-a : Better to leave enough space to make up an ending of your own. | Then I walk that far along. I generally find a tune for the trip back.
-
-story the_short_cut [topic=memories|travel]
-  : For years I thought there were five turns in a certain alley. That was how many the old song gave it.
-  : I walked it slowly once and counted four. Somebody had worked in an extra beat to leave time for a long breath.
-  b : Did you change the song?
-  : No. When I guessed better than that old singer I arrived both early and quite winded.
-
-rule @evening
-when concept=bark here.season=summer here.time=dusk
-does aside
-cooldown 9h
-say One more stretch of light for the return trip. | Plenty of evening for finishing the verse.
-
-rule @delivery
-when concept=bark self.working=yes
-does aside
-cooldown 7h
-say Keep the words together. One door, one message! | Leave me one clear beat before the next account.
-
-dlg @g1 resident.hub : Come walk a little alongside me. Words settle better with a pace under them.
-dlg @g2 resident.job : I remember the turn where each little task begins.
-dlg @g3 resident.bye : There's the last word delivered sound.
-any
-graft resident.hub
-choice Can you sing a turning in the street? -> turn_tune
-node turn_tune
-say Hum two low notes for straight ahead. Left gets a little lift on the first. Right gets it on the second. Hardly anybody notices they're directions.
-mood keen
-free
-choice And how do you sing getting lost? -> turn_lost
-choice I've got the turns now. -> hub
-node turn_lost
-say Stop altogether. If you carry on humming while you're lost you can go on for miles thinking you're quite correct.
-choice That last part I can manage. -> hub
-choice I'll try it on the walk. -> bye

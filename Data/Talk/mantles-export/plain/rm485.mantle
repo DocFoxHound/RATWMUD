@@ -1,9 +1,12 @@
+# rm485, bells on purple fingers (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm485
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_brand_fogworth
+written_by codex
 title bells on purple fingers
 fits stage=young|adolescent|adult|old
 prefers job=child
@@ -48,12 +51,34 @@ line @2 farewell.return : I'll walk a while after the bells fall quiet.
 line @3 answer.how : Finding a decent stretch of evening for myself.
 line @4 react.news : Some words are worth hearing twice before I count them.
 line @5 decline : I'm afraid I've set that part of my day aside already.
+scene echo
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : There's a corner where the last chapel note comes back quite clear.
+b : Did you ever count that echo twice?
+a : I made a business of it once. Now I keep a finger folded for the wall.
 
-adolescent
-line @7 greet.return : My ears can pick your voice out beside a rattling cart.
-line @8 farewell.return : I'll take the long steps out behind you.
-line @9 react.news : Got the words clear despite the whole market.
-line @10 answer.how : Taller than the low barrows. Good for seeing past.
+scene barrows
+when topic=land
+does tell.plan / ask.detail / answer.detail
+a : I'd put a lower shelf on a market barrow for children to look along.
+b : What would you keep down there?
+a : Fallen apples with the bruises in view. Nobody should have to guess what a copper buys.
+
+scene evenfall
+when topic=weather
+does tell.self / react.self / assess
+a : A long light evening still gives me the urge to go out and count something.
+b : Bells or berries these days?
+a : Doorsteps mostly. I count how many I pass before the light goes.
+
+scene days
+when topic=prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Market talk is harder to listen to when every price hurts.
+b : There's still a street out beyond the costliest stalls.
+a : I walk it and look along each wall for brambles. That's one supper I can gather.
+
 
 young
 line @12 greet [pair.band=strangers] : Hello. I can still hear with my hand up.
@@ -80,9 +105,6 @@ line @32 thank : My nicest berry would be about right for you.
 line @33 deflect_thanks : I picked it myself. There's lots.
 line @34 preclose : I want to hear if another one's coming.
 line @35 accept_preclose : Go on before the evening shrinks.
-
-young
-
 scene purple
 when topic=food self.likes=blackberries
 does tell.self / ask.detail / answer.detail
@@ -149,9 +171,9 @@ a : This little claw goes across my palm to mean one whole hand.
 scene moon
 when topic=dreams self.owes=yes
 does tell.worry / reassure / assess
-a : I'm supposed to find money before the moon goes black.
+a : I owe a copper, and I'm meant to find it before the moon's gone dark.
 b : Would it help if a grown wolf heard what you owe?
-a : Yes. I can show the size of the moon with two fingers but it won't stay that way.
+a : Yes. Saying it out loud already makes it feel smaller.
 
 scene stall
 when topic=prices
@@ -166,54 +188,6 @@ does tell.feeling / sympathise / assess
 a : I dreamed a bell came into bed and rolled under my back.
 b : That must have made a racket when you turned.
 a : No sound at all. A waking bell would have made my ears jump.
-
-adolescent
-
-scene scrape
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I mark longer walks with little chalk strokes inside the gate.
-b : How do you keep another walker from spoiling the count?
-a : I mark the height too. The old ones come halfway up my arm.
-
-scene carry
-when topic=family
-does offer / accept / assess
-a : I can carry the berries in a proper bowl these days.
-b : I'll let you have the fuller bowl then.
-a : Leave me #cloth#. I don't fancy feeding the flies on the way.
-
-grown
-
-scene echo
-when topic=lore
-does tell.self / ask.detail / answer.detail
-a : There's a corner where the last chapel note comes back quite clear.
-b : Did you ever count that echo twice?
-a : I made a business of it once. Now I keep a finger folded for the wall.
-
-scene barrows
-when topic=land
-does tell.plan / ask.detail / answer.detail
-a : I'd put a lower shelf on a market barrow for children to look along.
-b : What would you keep down there?
-a : Fallen apples with the bruises in view. Nobody should have to guess what a copper buys.
-
-scene evenfall
-when topic=weather
-does tell.self / react.self / assess
-a : A long light evening still gives me the urge to go out and count something.
-b : Bells or berries these days?
-a : Doorsteps mostly. I know how far the little legs I remember could manage.
-
-scene days
-when topic=prices world.times=hard|lean
-does tell.worry / reassure / assess
-a : Market talk is harder to listen to when every price hurts.
-b : There's still a street out beyond the costliest stalls.
-a : I walk it and look along each wall for brambles. That's one supper I can gather.
-
-young
 
 story stuckfive [topic=pastimes]
   : I once counted six bells and only saw four fingers.
@@ -264,14 +238,33 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : You stand up there. I hear
 dlg @5 resident.job [self.job=child] : I walk and listen. A pup's legs get busy enough.
 dlg @6 resident.job : Leave me a shred of daylight for walking after my shift ends.
 dlg @7 resident.bye : Bye from my clean hand.
-
 graft resident.hub
 choice What do the purple marks mean? -> berryhand
 node berryhand
-say A spot for sitting by the bush. That mark doesn't wash off as soon as a bell count.
+say One spot for every bell I heard while I sat picking by the bramble bush. The spots last a lot longer than the bells do.
 choice Which one lasts longest? -> deepmark
 choice We can talk about something else. -> hub
 node deepmark
 say The one under my claw. I can go to sleep and wake with yesterday's berry still saying hello.
 choice I'll listen a little longer. -> hub
 choice Good evening, then. -> bye
+
+
+adolescent
+line @7 greet.return : My ears can pick your voice out beside a rattling cart.
+line @8 farewell.return : I'll take the long steps out behind you.
+line @9 react.news : Got the words clear despite the whole market.
+line @10 answer.how : Taller than the low barrows. Good for seeing past.
+scene scrape
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I mark longer walks with little chalk strokes inside the gate.
+b : How do you keep another walker from spoiling the count?
+a : I mark the height too. The old ones come halfway up my arm.
+
+scene carry
+when topic=family
+does offer / accept / assess
+a : I can carry the berries in a proper bowl these days.
+b : I'll let you have the fuller bowl then.
+a : Leave me #cloth#. I don't fancy feeding the flies on the way.

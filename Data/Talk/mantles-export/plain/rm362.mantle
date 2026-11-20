@@ -1,9 +1,12 @@
+# rm362, the straw tide gauge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm362
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_florence_millhand
+written_by codex
 title the straw tide gauge
 fits stage=adult|old
 prefers job=sailor
@@ -36,35 +39,34 @@ curb = a low kerb | a broken kerb
 jar = a lidded stone jar | a squat pot
 
 any
-opinion houses against 2 : A factor's calendar doesn't get any heavier as the date draws near. The weight all lands at my end.
-opinion dole for 2 : A bowl now can keep a wolf in work long enough for the next bowl to be earned.
-opinion sump for 1 : A wolf who knows the first gutter to rise can steer a whole lane home here.
-opinion merchants against 2 : Someone who sees a wet coat and raises the price of straw deserves an empty counter.
-opinion road mixed 1 : A high road earns its keep when the low one starts floating sticks through the door.
-opinion times against 2 [world.times=hard|lean] : It's hard putting a copper by when dinner wants the same copper in advance.
+opinion @1 houses against 2 : A factor's calendar doesn't get any heavier as the date draws near. The weight all lands at my end.
+opinion @1 dole for 2 : A bowl now can keep a wolf in work long enough for the next bowl to be earned.
+opinion @1 sump for 1 : A wolf who knows the first gutter to rise can steer a whole lane home here.
+opinion @1 merchants against 2 : Someone who sees a wet coat and raises the price of straw deserves an empty counter.
+opinion @1 road mixed 1 : A high road earns its keep when the low one starts floating sticks through the door.
+opinion @1 times against 2 [world.times=hard|lean] : It's hard putting a copper by when dinner wants the same copper in advance.
 
 grown
-line greet : I'll stand over here where the first drops miss. | Welcome to the higher edge.
-line greet.return : I hear you. This little dry spot's free. | A quiet greeting coming back.
-line again.open : Here again above the same damp mark.
-line farewell : Take the crossing that still shows its stones. | Let the runnel go unacquainted with your feet or purse.
-line farewell.return : Safe passage back to your own step. | There's a dry wish to carry away.
-line react.news : Give me the first plain bit of the account. | I'll listen where there's a little privacy.
-line react.news.new : That hasn't floated past my door before.
-line react.news.known : I know which gutter carried that once.
-line react.news.doubt : I'd trace that story back to its first damp corner.
-line react.news.sorrow [topic.kind=death|loss|assault] : That's more weight than one back ought to carry.
-line react.news.glad [topic.kind=birth|marriage|work] : A bright little mark to set against the day.
-line ask.how : Any crossing given you particular trouble today?
-line answer.how : Holding level. That's a decent answer for now.
-line sympathise : Come where the questions won't crowd you.
-line reassure : Even a low sill leaves a bit of dry ground behind it awhile.
-line refuse : Some private reckoning of mine finishing first.
-line accept_decline : All right. I'll keep the request in my own pocket.
-line preclose : I've got a turn to make before my light goes.
-line accept_preclose : Go while the high edge is still clear.
-line ack : I have the height and direction of it.
-
+line @1 greet : I'll stand over here where the first drops miss. | Welcome to the higher edge.
+line @1 greet.return : I hear you. This little dry spot's free. | A quiet greeting coming back.
+line @1 again.open : Here again above the same damp mark.
+line @1 farewell : Take the crossing that still shows its stones. | Let the runnel go unacquainted with your feet or purse.
+line @1 farewell.return : Safe passage back to your own step. | There's a dry wish to carry away.
+line @1 react.news : Give me the first plain bit of the account. | I'll listen where there's a little privacy.
+line @1 react.news.new : That hasn't floated past my door before.
+line @1 react.news.known : I know which gutter carried that once.
+line @1 react.news.doubt : I'd trace that story back to its first damp corner.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : That's more weight than one back ought to carry.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A bright little mark to set against the day.
+line @1 ask.how : Any crossing given you particular trouble today?
+line @1 answer.how : Holding level. That's a decent answer for now.
+line @1 sympathise : Come where the questions won't crowd you.
+line @1 reassure : Even a low sill leaves a bit of dry ground behind it awhile.
+line @1 refuse : Some private reckoning of mine finishing first.
+line @1 accept_decline : All right. I'll keep the request in my own pocket.
+line @1 preclose : I've got a turn to make before my light goes.
+line @1 accept_preclose : Go while the high edge is still clear.
+line @1 ack : I have the height and direction of it.
 scene exchange1
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.likes=plum_tart
 does aside
 cooldown 8h
 say A dark corner of tart earns its pastry. | Good plum colour along that cut.
-dlg resident.hub : I can spare a private moment on the dry side.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've found your way to my quiet corner.
-dlg resident.hub [here.time=night] : Late talk carries. Stand close enough to let me speak low.
-dlg resident.hub [pair.disposition=wary|hostile] : There'll be no need to count my pockets to ask a question.
-dlg resident.job [self.job=sailor] : I unload where the piers come ashore. The low corner of a load has my attention first.
-dlg resident.job : I like a shift that leaves room after it for my own plans.
-dlg resident.news [world.news] : Here's what crossed the low streets. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The claim goes #topic.subject# #topic.claim#. I've no weight to add to it.
-dlg resident.bye : Watch the straw before committing your whole boot.
 
+dlg @1 resident.hub : I can spare a private moment on the dry side.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've found your way to my quiet corner.
+dlg @3 resident.hub [here.time=night] : Late talk carries. Stand close enough to let me speak low.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There'll be no need to count my pockets to ask a question.
+dlg @1 resident.job [self.job=sailor] : I unload where the piers come ashore. The low corner of a load has my attention first.
+dlg @2 resident.job : I like a shift that leaves room after it for my own plans.
+dlg @1 resident.news [world.news] : Here's what crossed the low streets. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim goes #topic.subject# #topic.claim#. I've no weight to add to it.
+dlg @1 resident.bye : Watch the straw before committing your whole boot.
 graft resident.hub
 choice How much can one straw tell you? -> straw_gauge
 node straw_gauge

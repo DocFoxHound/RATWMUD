@@ -1,9 +1,12 @@
+# rm222, the thumb on the bowl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm222
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_torvald_slagton
+written_by codex
 title the thumb on the bowl
 fits stage=adult|old
 prefers job=innkeeper
@@ -39,48 +42,47 @@ benchend = a safe bench corner | the near end of a bench
 crustbit = a piece of crust | a brown corner of bread
 
 grown
-
-opinion merchants mixed 1 : A fair price leaves enough in the kitchen to feed the late arrival.
-opinion houses against 1 : I've seen fine property papers. Never met a set that knew when to take a pot off.
-opinion newcomers for 2 : Put food within reach before you ask how far somebody's come.
-opinion festivals mixed 1 : I'll dance till I'm footsore provided the last dancer helps clear up.
-opinion dole for 2 : Count the bowls you've got. Count the mouths after, and find another bowl.
-opinion church for 1 : Blessings feel more convincing when they come with a bit of crust for the way home.
-opinion times mixed 1 : I can judge a season by how carefully a guest scrapes the rim.
-opinion sump for 1 : Down our way a bent spoon gets straightened often enough to go bright again.
-opinion strangers for 1 : A tired stranger needs a level seat as much as the best customer does.
-line greet : Come level with me. That'll save a shout across the room.
-line greet [here.time=dawn] : Awake and upright. That's two things going our way.
-line greet [here.time=night] : A soft voice carries quite far enough at this hour.
-line greet [pair.band=strangers] : Welcome. I'll leave you room to get your breath.
-line greet.return : Set your elbows down. Your voice carries nicely from that spot.
-line greet.return [self.working=yes] : Just keeping my thumbs clear. I'm listening.
-line greet.return [pair.band=friends|family] : Ah, an easy face to set before me.
-line again.open : Back on the same landing for a moment.
-line hail [pair.band=friends] : Here by my shoulder, within reach of my elbow.
-line kin.open [pair.kin!=no] : Keep a little room for me in the family noise.
-line farewell : May the next plate reach you warm.
-line farewell.return : And an easy climb on the way back.
-line react.news : I'd better let that cool before I touch it.
-line react.news.new : First serving of that news I've had.
-line react.news.known : Same dish, slightly different seasoning this time.
-line react.news.doubt : Somebody's carried that one a long way without a cover.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm meal might go down easier than questions just now.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd warm an extra bowl to celebrate that.
-line answer.how : I've been worse fitted to the day than this.
-line answer.how.busy [self.working=yes] : Busy, but one ear costs the job very little.
-line ask.how : You've had time to eat something decent, I hope?
-line sympathise : Stay as long as one bowl takes to cool.
-line reassure : There's usually something worth keeping at the bottom.
-line thank : You saw what was needed before I spilt it.
-line deflect_thanks : I like things to reach the right hands, that's all.
-line decline : I don't hold the rights to what you're asking for.
-line accept_decline : I'll put the offer aside, then.
-line preclose : If you'll let me slip past, I've a bit of business waiting.
-line accept_preclose : Your time's your own to spend. Off you go.
-line ack : I'm following without losing a drop.
-line give.advice : Look for the steam before you take hold of the rim.
-line offer : I can take the heavier end if that helps.
+opinion @1 merchants mixed 1 : A fair price leaves enough in the kitchen to feed the late arrival.
+opinion @1 houses against 1 : I've seen fine property papers. Never met a set that knew when to take a pot off.
+opinion @1 newcomers for 2 : Put food within reach before you ask how far somebody's come.
+opinion @1 festivals mixed 1 : I'll dance till I'm footsore provided the last dancer helps clear up.
+opinion @1 dole for 2 : Count the bowls you've got. Count the mouths after, and find another bowl.
+opinion @1 church for 1 : Blessings feel more convincing when they come with a bit of crust for the way home.
+opinion @1 times mixed 1 : I can judge a season by how carefully a guest scrapes the rim.
+opinion @1 sump for 1 : Down our way a bent spoon gets straightened often enough to go bright again.
+opinion @1 strangers for 1 : A tired stranger needs a level seat as much as the best customer does.
+line @1 greet : Come level with me. That'll save a shout across the room.
+line @2 greet [here.time=dawn] : Awake and upright. That's two things going our way.
+line @3 greet [here.time=night] : A soft voice carries quite far enough at this hour.
+line @4 greet [pair.band=strangers] : Welcome. I'll leave you room to get your breath.
+line @1 greet.return : Set your elbows down. Your voice carries nicely from that spot.
+line @2 greet.return [self.working=yes] : Just keeping my thumbs clear. I'm listening.
+line @3 greet.return [pair.band=friends|family] : Ah, an easy face to set before me.
+line @1 again.open : Back on the same landing for a moment.
+line @1 hail [pair.band=friends] : Here by my shoulder, within reach of my elbow.
+line @1 kin.open [pair.kin!=no] : Keep a little room for me in the family noise.
+line @1 farewell : May the next plate reach you warm.
+line @1 farewell.return : And an easy climb on the way back.
+line @1 react.news : I'd better let that cool before I touch it.
+line @1 react.news.new : First serving of that news I've had.
+line @1 react.news.known : Same dish, slightly different seasoning this time.
+line @1 react.news.doubt : Somebody's carried that one a long way without a cover.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm meal might go down easier than questions just now.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd warm an extra bowl to celebrate that.
+line @1 answer.how : I've been worse fitted to the day than this.
+line @1 answer.how.busy [self.working=yes] : Busy, but one ear costs the job very little.
+line @1 ask.how : You've had time to eat something decent, I hope?
+line @1 sympathise : Stay as long as one bowl takes to cool.
+line @1 reassure : There's usually something worth keeping at the bottom.
+line @1 thank : You saw what was needed before I spilt it.
+line @1 deflect_thanks : I like things to reach the right hands, that's all.
+line @1 decline : I don't hold the rights to what you're asking for.
+line @1 accept_decline : I'll put the offer aside, then.
+line @1 preclose : If you'll let me slip past, I've a bit of business waiting.
+line @1 accept_preclose : Your time's your own to spend. Off you go.
+line @1 ack : I'm following without losing a drop.
+line @1 give.advice : Look for the steam before you take hold of the rim.
+line @1 offer : I can take the heavier end if that helps.
 scene an_unheated_bowl_steals
 when topic=food
 does tell.self / ask.detail / answer.detail
@@ -100,12 +102,12 @@ when topic=travel
 does tell.self / ask.detail / answer.detail
 a : I take long stairs in pairs. On a short flight I go rather carefully. | The turn on a stair is where I collect my feet again.
 b : What if you're carrying soup?
-a : Then I give every tread my whole acquaintance. | That's an argument for a landing just wide enough to put a bowl down.
+a : Then it's one tread at a time, and my eyes stay on each one. | That's an argument for a landing just wide enough to put a bowl down.
 
 scene dance_steps_and_kitchen
 when topic=pastimes self.likes=dancing
 does tell.self / ask.detail / answer.detail
-a : Dance steps and kitchen steps part company at the elbow. | I can turn cleanly with another dancer and without looking down.
+a : A dance and a crowded kitchen want the same thing from your elbows. | I can turn cleanly with another dancer and without looking down.
 b : What's the trick?
 a : Leave room for somebody else to be clever. I do that badly with a saucepan. | Meet the other shoulder halfway. Stew, on the other hand, gets the whole width.
 
@@ -147,7 +149,7 @@ a : Find a very absorbing occupation with a napkin until I get a nod. | Pour som
 scene i_ask_friends_if
 when topic=friends
 does tell.self / ask.detail / answer.detail
-a : I ask friends if they'd like a little more and mind their faces for the answer. | It's easy to refuse a second helping too soon.
+a : I ask friends if they'd like a little more and mind their faces for the answer. | Some friends turn down a second helping before they've thought about it.
 b : What if you can't tell?
 a : Set the pot where a friend can reach. I've done my part as soon as the ladle's loose. | I find something to do at a distance. A quiet scoop often settles it.
 
@@ -163,7 +165,7 @@ when topic=smalltalk
 does tell.self / ask.detail / answer.detail
 a : I can lay a cloth straight on a table that's listing like a boat. | A folded cloth has saved more suppers than an impressive speech.
 b : Under the short leg?
-a : Only if nobody's resting a full dish above it. I've learnt that much. | I push it in with a boot so I can keep both hands on the broth.
+a : That's where the second cloth goes. The first I smooth over the tilt. | I push it in with a boot so I can keep both hands on the broth.
 
 scene i_do_the_job
 when topic=work self.working=yes
@@ -217,7 +219,7 @@ a : Then the next step is an apology. I can do that one in time. | Not on a toe.
 scene the_city_s_steps
 when topic=land here.region=ridgemere
 does tell.self / ask.detail / answer.detail
-a : The city's steps give everybody a different story about how far supper is. | One hill walk up here can use more belly than the whole walk down.
+a : The city's steps give everybody a different story about how far supper is. | One walk uphill can use more belly than the whole walk down.
 b : Which way do you prefer?
 a : Down with an empty bowl, up with one that's got a good lid. | Uphill towards supper. I like a purpose in both feet.
 
@@ -266,7 +268,7 @@ a : It catches the rhythm like a second drum. I rather look forward to it. | Onl
 scene the_house_talk_has
 when topic=gossip here.gossip=yes
 does tell.self / ask.detail / answer.detail
-a : The house talk has it that #topic.subject# #topic.claim#. | I heard it put this way. #topic.subject# #topic.claim#.
+a : The house talk has it that #topic.subject# #topic.claim#. | I heard it put this way. #topic.subject.capitalize# #topic.claim#.
 b : How much faith do you put in it?
 a : Less than I put in a simmering pot. I can lift that lid for myself. | I remember the wording and leave the weighing till there's something firmer.
 
@@ -343,18 +345,18 @@ does aside
 cooldown 8h
 say Let that latch down against a thumb. | Late voices, soft crockery. That suits my ears nicely.
 
-dlg resident.hub : Sit where your sleeve can clear the rim.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've caught me with both hands free for once.
-dlg resident.hub [pair.disposition=wary|hostile] : A little distance will serve both our purposes.
-dlg resident.job [self.job=innkeeper] : At #self.workplace# I'm the one who likes a hot bowl to meet hot broth.
-dlg resident.job : I judge most jobs by the shape your hands are in at the end.
-dlg resident.news [world.news] : Here's the bit that came round intact. #world.news#.
-dlg resident.gossip [here.gossip=yes] : What reached the end where I was sitting was that #topic.subject# #topic.claim#.
-dlg resident.bye : Clear passage through the tables to you.
-dlg inn.greet [here.inn_helper=yes] : I help here. Ask #here.innkeeper# about the beds upstairs while I find you a clear place.
-dlg inn.rest [here.lodging=yes] : Rest your feet. The bed you've taken upstairs can wait till you're ready.
-dlg inn.refused : There's a reason I can't put it through. #topic.why#.
-dlg inn.bye [here.shop!=asleep] : Tread carefully past the entrance boards. Good walking.
+dlg @1 resident.hub : Sit where your sleeve can clear the rim.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've caught me with both hands free for once.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A little distance will serve both our purposes.
+dlg @1 resident.job [self.job=innkeeper] : At #self.workplace# I'm the one who likes a hot bowl to meet hot broth.
+dlg @2 resident.job : I judge most jobs by the shape your hands are in at the end.
+dlg @1 resident.news [world.news] : Here's the bit that came round intact. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip=yes] : What reached the end where I was sitting was that #topic.subject# #topic.claim#.
+dlg @1 resident.bye : Clear passage through the tables to you.
+dlg @1 inn.greet [here.inn_helper=yes] : I help here. Ask #here.innkeeper# about the beds upstairs while I find you a clear place.
+dlg @1 inn.rest [here.lodging=yes] : Rest your feet. The bed you've taken upstairs can wait till you're ready.
+dlg @1 inn.refused : There's a reason I can't put it through. #topic.why#.
+dlg @1 inn.bye [here.shop!=asleep] : Tread carefully past the entrance boards. Good walking.
 graft resident.hub
 choice Why put a thumb on the bowl first? -> thumb_heat
 node thumb_heat
@@ -364,6 +366,7 @@ choice I'll take your word for it. -> hub
 node thumb_hot
 say Put it aside. A guest only gets one good first mouthful, and I don't much want that mouthful to be a yelp.
 choice I'll wait a bit. -> bye
+
 graft inn.greet
 choice Do you always climb two stairs at once? -> tread_twice
 node tread_twice

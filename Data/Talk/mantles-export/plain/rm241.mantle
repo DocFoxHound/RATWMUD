@@ -1,9 +1,12 @@
+# rm241, the pockets of plenty (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm241
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_ivo_dripworth
+written_by codex
 title the pockets of plenty
 fits stage=adult|old
 prefers job=fisher warmth=warm
@@ -34,45 +37,44 @@ kindness = a good turn | a kindness passed along
 busybells = bells and voices together | a bright racket of barrows
 
 any
-opinion dole for 3 : A pot of fish stew gives a hungry wolf a choice about tomorrow. Hunger takes choices away.
-opinion city for 2 : I can walk out wanting nobody and come back with four good reasons to return a favour. That's Ridgemere.
-opinion festivals against 1 : A holiday can empty a purse while everybody's congratulating the purse on its holiday.
-opinion strangers for 1 : It takes two plates to feed a neighbour and somebody about to become one.
-opinion sump for 1 : Put a dish outside down our way and there's always some little good to come of it.
-opinion houses against 2 : I've never got a leaking sill mended by calling it somebody's property.
-opinion newcomers for 1 : A fresh arrival might have a fresh recipe for the tails.
+opinion @1 dole for 3 : A pot of fish stew gives a hungry wolf a choice about tomorrow. Hunger takes choices away.
+opinion @1 city for 2 : I can walk out wanting nobody and come back with four good reasons to return a favour. That's Ridgemere.
+opinion @1 festivals against 1 : A holiday can empty a purse while everybody's congratulating the purse on its holiday.
+opinion @1 strangers for 1 : It takes two plates to feed a neighbour and somebody about to become one.
+opinion @1 sump for 1 : Put a dish outside down our way and there's always some little good to come of it.
+opinion @1 houses against 2 : I've never got a leaking sill mended by calling it somebody's property.
+opinion @1 newcomers for 1 : A fresh arrival might have a fresh recipe for the tails.
 
 grown
-line greet : Welcome along. I can make the space.
-line greet [pair.band=strangers] : We've a first word to get past. Welcome.
-line greet [here.time=dawn] : Cold light makes the whole street look silver.
-line greet [here.time=dusk|night] : Good evening. Just got the chill off my nose.
-line greet.return : There's a kindness in being hailed like that.
-line greet.return [pair.band=friends|family] : Come right over, favourite face.
-line greet.return [self.working=yes] : Work takes two paws. You can still have an ear.
-line greet.return [here.time=dusk|night] : It's late enough that your voice carries beautifully.
-line kin.open [pair.kin!=no] : Come stand on the family side of my elbow.
-line again.open : Hoped there'd be time to finish our word.
-line hail [pair.band=friends] : Hoy! I've a thought just your size.
-line farewell : Walk home with a little to spare.
-line farewell.return : May you find a warm plate at the end.
-line react.news : I'll make room on the table for those words.
-line react.news.new : I'd have put money on hearing that sooner.
-line react.news.known : That particular fish has crossed my dish before.
-line react.news.doubt : There's a dull patch to that account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a weight no pocket could carry.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Put another coal on the happy side.
-line ask.how : How's your share of the day turned out?
-line answer.how : I can still make room for an unexpected good turn.
-line thank : That earns a coal in the patched pocket.
-line deflect_thanks : Let the good bit travel one place further.
-line sympathise : A little food and listening I could manage.
-line reassure : Some things need another pair of paws nearby.
-line decline : I'd love to, but my next hour's promised out.
-line accept_decline : Your own business needs you first.
-line preclose : I'll carry the rest of my words home.
-line accept_preclose : I'll keep some good company for another day.
-
+line @1 greet : Welcome along. I can make the space.
+line @2 greet [pair.band=strangers] : We've a first word to get past. Welcome.
+line @3 greet [here.time=dawn] : Cold light makes the whole street look silver.
+line @4 greet [here.time=dusk|night] : Good evening. Just got the chill off my nose.
+line @1 greet.return : There's a kindness in being hailed like that.
+line @2 greet.return [pair.band=friends|family] : Come right over, favourite face.
+line @3 greet.return [self.working=yes] : Work takes two paws. You can still have an ear.
+line @4 greet.return [here.time=dusk|night] : It's late enough that your voice carries beautifully.
+line @1 kin.open [pair.kin!=no] : Come stand on the family side of my elbow.
+line @1 again.open : Hoped there'd be time to finish our word.
+line @1 hail [pair.band=friends] : Hoy! I've a thought just your size.
+line @1 farewell : Walk home with a little to spare.
+line @1 farewell.return : May you find a warm plate at the end.
+line @1 react.news : I'll make room on the table for those words.
+line @1 react.news.new : I'd have put money on hearing that sooner.
+line @1 react.news.known : That particular fish has crossed my dish before.
+line @1 react.news.doubt : There's a dull patch to that account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a weight no pocket could carry.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Put another coal on the happy side.
+line @1 ask.how : How's your share of the day turned out?
+line @1 answer.how : I can still make room for an unexpected good turn.
+line @1 thank : That earns a coal in the patched pocket.
+line @1 deflect_thanks : Let the good bit travel one place further.
+line @1 sympathise : A little food and listening I could manage.
+line @1 reassure : Some things need another pair of paws nearby.
+line @1 decline : I'd love to, but my next hour's promised out.
+line @1 accept_decline : Your own business needs you first.
+line @1 preclose : I'll carry the rest of my words home.
+line @1 accept_preclose : I'll keep some good company for another day.
 scene turn_counter
 when topic=smalltalk|pastimes
 does tell.self / ask.detail / answer.detail
@@ -181,7 +183,7 @@ a : Then it needs to stay put till somebody sees the bottom of it. | I'd be maki
 scene kind_work
 when topic=news world.news
 does tell.news / react.self / assess
-a : Out of #world.news_from# comes this account: #world.news#. | #world.news#. That reached me from #world.news_from#.
+a : Out of #world.news_from# comes this account: #world.news#. | #world.news.capitalize#. That reached me from #world.news_from#.
 b : How do you take it? | Can I repeat it?
 a : I'd give it room to breathe before making more of it. | In the words you heard. Leave my fish out of the telling.
 
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Catch the far end and leave the hard bit to me.
 
-dlg resident.hub : Step across. One body more never spoiled a welcome.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Good to match that face to a voice again.
-dlg resident.hub [here.time=night] : I can offer a decent word even at this hour.
-dlg resident.hub [pair.disposition=hostile|wary] : We can give the words room by standing well apart.
-dlg resident.job [self.job=fisher] : #self.trade_words.capitalize#. A keen eye's worth as much as a quick blade.
-dlg resident.job : I try to find the bit of any job that leaves something over for supper.
-dlg resident.news [world.news] : I kept the account plain from #world.news_from#: #world.news#.
-dlg resident.gossip [here.gossip=yes] : The talk that landed here was this: #topic.subject# #topic.claim#. My part ends there.
-dlg resident.bye : I hope the next door yields something warm.
-
+dlg @1 resident.hub : Step across. One body more never spoiled a welcome.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good to match that face to a voice again.
+dlg @3 resident.hub [here.time=night] : I can offer a decent word even at this hour.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : We can give the words room by standing well apart.
+dlg @1 resident.job [self.job=fisher] : #self.trade_words.capitalize#. A keen eye's worth as much as a quick blade.
+dlg @2 resident.job : I try to find the bit of any job that leaves something over for supper.
+dlg @1 resident.news [world.news] : I kept the account plain from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The talk that landed here was this: #topic.subject# #topic.claim#. My part ends there.
+dlg @1 resident.bye : I hope the next door yields something warm.
 graft resident.hub
 choice Do those pockets have different jobs? -> patched_corner
 node patched_corner

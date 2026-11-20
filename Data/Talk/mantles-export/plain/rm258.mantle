@@ -1,9 +1,12 @@
+# rm258, the paper fringe (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm258
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_lars_wickwell
+written_by codex
 title the paper fringe
 fits stage=adult|old
 prefers job=merchant
@@ -35,42 +38,41 @@ tape = a twisted cotton tie | a knotted tape end
 wave = a small wriggle | a ripple down the edge
 
 any
-opinion strangers against 2 : A stranger can leave a question behind like a foot in a door. I'd like the door free.
-opinion church for 1 : The chapel loaf came wrapped. Whoever tied the cloth spared us the neighbours' arithmetic.
-opinion road against 1 : There's a stretch of road between the last two lights that I don't care to describe or walk.
-opinion dole for 2 : Pay attention to the hungry jaws behind the first one. A dole line extends past the last visible wolf.
-opinion drink against 1 : Drink opens mouths that sober wolves have good reason to close.
-opinion houses against 1 : Somebody signed to have the roof built. I'd like that signature still attached when it leaks.
+opinion @1 strangers against 2 : A stranger can leave a question behind like a foot in a door. I'd like the door free.
+opinion @1 church for 1 : The chapel loaf came wrapped. Whoever tied the cloth spared us the neighbours' arithmetic.
+opinion @1 road against 1 : There's a stretch of road between the last two lights that I don't care to describe or walk.
+opinion @1 dole for 2 : Pay attention to the hungry jaws behind the first one. A dole line extends past the last visible wolf.
+opinion @1 drink against 1 : Drink opens mouths that sober wolves have good reason to close.
+opinion @1 houses against 1 : Somebody signed to have the roof built. I'd like that signature still attached when it leaks.
 
 grown
-line greet : That's close enough for a greeting. Welcome. | A greeting will do between us for now.
-line greet [pair.band=strangers] : I haven't placed your face. You can say your business plainly.
-line greet [here.time=dawn] : Light enough to count the teeth on a key. Welcome.
-line greet.return : Hullo. Your greeting reached me. | Yes. Civil enough of you.
-line greet.return [here.time=dusk|night] : That voice sounds near. Don't come any closer in the dark.
-line kin.open [pair.kin!=no] : You may put a parcel down. Nobody's counting.
-line again.open : Same errand still following you, I take it.
-line hail [pair.band=friends] : Turn this way briefly. No need to shout back.
-line farewell : Keep the fold shut till you're home. | Go with your parcel entire.
-line farewell.return : Mind whatever's loose in your pockets.
-line react.news : Leave me something I can verify afterwards.
-line react.news.new : That's not a mark I've seen on the paper before.
-line react.news.known : Yes. That bit's on my receipt, overleaf.
-line react.news.doubt : I'd need to know whose paw made the first mark.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Enough of the telling. What's wanted at the house?
-line react.news.glad [topic.kind=marriage|birth|work] : That's a scrap I should like to keep.
-line answer.how : My pockets weigh as they did when I left. Fair enough.
-line ask.how : Anything loose or worrying at your end?
-line sympathise : Hard to shut a lid on a hurt of that size.
-line reassure : We can test one little piece before you risk the whole.
-line decline : That's more of my business than I care to share.
-line accept_decline : Understood. Your fold stays shut.
-line thank : One thing fewer to watch, thanks to you.
-line deflect_thanks : Keep your part dry. That will serve.
-line preclose : I've a tie to check before I move on.
-line accept_preclose : Carry on. I don't need the route.
-line ack : Right. Square edge to that.
-
+line @1 greet : That's close enough for a greeting. Welcome. | A greeting will do between us for now.
+line @2 greet [pair.band=strangers] : I haven't placed your face. You can say your business plainly.
+line @3 greet [here.time=dawn] : Light enough to count the teeth on a key. Welcome.
+line @1 greet.return : Hullo. Your greeting reached me. | Yes. Civil enough of you.
+line @2 greet.return [here.time=dusk|night] : That voice sounds near. Don't come any closer in the dark.
+line @1 kin.open [pair.kin!=no] : You may put a parcel down. Nobody's counting.
+line @1 again.open : Same errand still following you, I take it.
+line @1 hail [pair.band=friends] : Turn this way briefly. No need to shout back.
+line @1 farewell : Keep the fold shut till you're home. | Go with your parcel entire.
+line @1 farewell.return : Mind whatever's loose in your pockets.
+line @1 react.news : Leave me something I can verify afterwards.
+line @1 react.news.new : That's not a mark I've seen on the paper before.
+line @1 react.news.known : Yes. That bit's on my receipt, overleaf.
+line @1 react.news.doubt : I'd need to know whose paw made the first mark.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Enough of the telling. What's wanted at the house?
+line @1 react.news.glad [topic.kind=marriage|birth|work] : That's a scrap I should like to keep.
+line @1 answer.how : My pockets weigh as they did when I left. Fair enough.
+line @1 ask.how : Anything loose or worrying at your end?
+line @1 sympathise : Hard to shut a lid on a hurt of that size.
+line @1 reassure : We can test one little piece before you risk the whole.
+line @1 decline : That's more of my business than I care to share.
+line @1 accept_decline : Understood. Your fold stays shut.
+line @1 thank : One thing fewer to watch, thanks to you.
+line @1 deflect_thanks : Keep your part dry. That will serve.
+line @1 preclose : I've a tie to check before I move on.
+line @1 accept_preclose : Carry on. I don't need the route.
+line @1 ack : Right. Square edge to that.
 scene testslip
 when topic=pastimes|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,14 @@ does aside
 cooldown 8h
 say Count the pieces under the lamp! | Loose things find holes in the dark.
 
-dlg resident.hub : Plain business first. I decide the rest when I've heard it.
-dlg resident.hub [topic.meeting=known] : I've kept your name, #topic.player#. You can supply the rest.
-dlg resident.hub [pair.disposition=wary|hostile] : You can set the parcel down before either of us says more.
-dlg resident.hub [here.time=night] : Come under the bit of lamp. I prefer callers with visible faces.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look first at what's worth keeping.
-dlg resident.job : A steady paw at a troublesome join, when wanted.
-dlg resident.news [world.news] : This is what I can repeat exactly. #world.news#.
-dlg resident.bye : Check your ties before you take the road.
-
+dlg @1 resident.hub : Plain business first. I decide the rest when I've heard it.
+dlg @2 resident.hub [topic.meeting=known] : I've kept your name, #topic.player#. You can supply the rest.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : You can set the parcel down before either of us says more.
+dlg @4 resident.hub [here.time=night] : Come under the bit of lamp. I prefer callers with visible faces.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look first at what's worth keeping.
+dlg @2 resident.job : A steady paw at a troublesome join, when wanted.
+dlg @1 resident.news [world.news] : This is what I can repeat exactly. #world.news.capitalize#.
+dlg @1 resident.bye : Check your ties before you take the road.
 graft resident.hub
 choice Why the cuts along that scrap of paper? -> ragged_margin
 node ragged_margin

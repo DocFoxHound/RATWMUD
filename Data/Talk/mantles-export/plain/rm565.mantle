@@ -1,9 +1,12 @@
+# rm565, a letter under oiled seams (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm565
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_bertil_coalley
+written_by codex
 title a letter under oiled seams
 fits stage=adult|old
 prefers quarter=sump
@@ -35,41 +38,40 @@ knot = the hood tie | a strip of dark braid
 light = a slit of open sky | the thin outside light
 
 any
-opinion houses against 1 : An important crest takes up a lot of space on a parcel nobody is quite ready to receive.
-opinion dole for 1 : Give a wolf a bowl and let the wolf eat without submitting an account of home.
-opinion strangers mixed 1 : A new face gets a hearing. A stranger's outstretched paw doesn't get my letter on sight.
-opinion festivals against 1 : I've lost enough room for my own elbows in the ordinary market without going back for a holiday squeeze.
-opinion church for 1 : An empty pew asks no questions about a traveller's pockets.
+opinion @1 houses against 1 : An important crest takes up a lot of space on a parcel nobody is quite ready to receive.
+opinion @1 dole for 1 : Give a wolf a bowl and let the wolf eat without submitting an account of home.
+opinion @1 strangers mixed 1 : A new face gets a hearing. A stranger's outstretched paw doesn't get my letter on sight.
+opinion @1 festivals against 1 : I've lost enough room for my own elbows in the ordinary market without going back for a holiday squeeze.
+opinion @1 church for 1 : An empty pew asks no questions about a traveller's pockets.
 
 grown
-line greet [pair.band=strangers] : Stand outside the drip from my hood. | Welcome. Keep the stair clear.
-line greet [self.working=yes] : Between errands I've a brief welcome. | A word can fit here.
-line greet [here.time=dawn] : Morning. Good light past the brim. | Come into view before greeting me.
-line greet [here.time=dusk|night] : Dusk. I heard your step. | A late word in plain hearing.
-line kin.open [pair.kin!=no] : Family gets a place under the eave. | Home voices carry inside the hood.
-line again.open : Old fold. Fresh meeting. | There's another turn round together.
-line greet.return : I know that step under the hood. | Back within plain sight.
-line greet.return [pair.band=friends|family] : Back where we can deal plainly. | Welcome under the cleaner eave.
-line greet.return [self.working=yes] : My errand can spare a little talk. | I'll stop short of the landing for you.
-line greet.return [here.time=dusk|night] : I'm hearing you clearly through the dark. | Good evening beneath the sill.
-line farewell : Keep the seal you were handed. | Good footing beyond my reach.
-line farewell.return : I'll know the step next time. | Bring your own word back sound.
-line farewell.return [here.time=night] : Dry pillow and no scratching overhead. | Keep out of the dark press.
-line react.news : Whose paw carried that one? | Give me the unembroidered bit.
-line react.news.new : First hearing under this hood. | Nobody's put that in my ear before.
-line react.news.known : I've heard that sheet rustle already. | The same report's been up here once.
-line react.news.doubt : I'd be slow to repeat a thing carried without its source. | A loud voice in a crowd doesn't give a rumour a seal.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put that weight down for a moment if you can. | I'll hear you without passing it on.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That word arrived where it belonged. | One account I'm glad reached my ears.
-line ask.how : Did the crowd give you enough room today? | What have you had to keep dry?
-line answer.how : My hood's sound. That's a start. | I've kept one thing dry all day.
-line decline : I'd keep my empty hand free for the errand I already hold. | My answer has to wait till this burden reaches its door.
-line accept_decline : Fold the subject closed. Understood. | No need for another refusal.
-line thank : That was honest help. I noticed. | You gave the right paw a chance.
-line sympathise : Take the seat away from the gathering. | I can keep the outer end clear.
-line reassure : You needn't answer every paw held out. | Wait for a voice you recognise.
-line preclose : My dry fold deserves a look. | My hood wants the open air again.
-
+line @1 greet [pair.band=strangers] : Stand outside the drip from my hood. | Welcome. Keep the stair clear.
+line @2 greet [self.working=yes] : Between errands I've a brief welcome. | A word can fit here.
+line @3 greet [here.time=dawn] : Morning. Good light past the brim. | Come into view before greeting me.
+line @4 greet [here.time=dusk|night] : Dusk. I heard your step. | A late word in plain hearing.
+line @1 kin.open [pair.kin!=no] : Family gets a place under the eave. | Home voices carry inside the hood.
+line @1 again.open : Old fold. Fresh meeting. | There's another turn round together.
+line @1 greet.return : I know that step under the hood. | Back within plain sight.
+line @2 greet.return [pair.band=friends|family] : Back where we can deal plainly. | Welcome under the cleaner eave.
+line @3 greet.return [self.working=yes] : My errand can spare a little talk. | I'll stop short of the landing for you.
+line @4 greet.return [here.time=dusk|night] : I'm hearing you clearly through the dark. | Good evening beneath the sill.
+line @1 farewell : Keep the seal you were handed. | Good footing beyond my reach.
+line @1 farewell.return : I'll know the step next time. | Bring your own word back sound.
+line @2 farewell.return [here.time=night] : Dry pillow and no scratching overhead. | Keep out of the dark press.
+line @1 react.news : Whose paw carried that one? | Give me the unembroidered bit.
+line @1 react.news.new : First hearing under this hood. | Nobody's put that in my ear before.
+line @1 react.news.known : I've heard that sheet rustle already. | The same report's been up here once.
+line @1 react.news.doubt : I'd be slow to repeat a thing carried without its source. | A loud voice in a crowd doesn't give a rumour a seal.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put that weight down for a moment if you can. | I'll hear you without passing it on.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That word arrived where it belonged. | One account I'm glad reached my ears.
+line @1 ask.how : Did the crowd give you enough room today? | What have you had to keep dry?
+line @1 answer.how : My hood's sound. That's a start. | I've kept one thing dry all day.
+line @1 decline : I'd keep my empty hand free for the errand I already hold. | My answer has to wait till this burden reaches its door.
+line @1 accept_decline : Fold the subject closed. Understood. | No need for another refusal.
+line @1 thank : That was honest help. I noticed. | You gave the right paw a chance.
+line @1 sympathise : Take the seat away from the gathering. | I can keep the outer end clear.
+line @1 reassure : You needn't answer every paw held out. | Wait for a voice you recognise.
+line @1 preclose : My dry fold deserves a look. | My hood wants the open air again.
 scene seam
 when topic=home
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Get the hood above the scratching. | There's still a hard seal in that fold.
 
-dlg resident.hub : Speak here with the doorway and your face in plain sight. The business in my hood can wait its turn elsewhere.
-dlg resident.news [world.news] : A report I can pass outside the sealed fold. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, your face looks familiar clear of the crowd.
-dlg resident.hub [here.time=dusk] : Fewer shoulders on the landing now. Your words will carry.
-dlg resident.bye : Sound seal under a dry fold wherever you go.
-
+dlg @1 resident.hub : Speak here with the doorway and your face in plain sight. The business in my hood can wait its turn elsewhere.
+dlg @1 resident.news [world.news] : A report I can pass outside the sealed fold. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your face looks familiar clear of the crowd.
+dlg @3 resident.hub [here.time=dusk] : Fewer shoulders on the landing now. Your words will carry.
+dlg @1 resident.bye : Sound seal under a dry fold wherever you go.
 graft resident.hub
 choice How do you keep a sealed letter dry all day? -> hood_fold
 node hood_fold

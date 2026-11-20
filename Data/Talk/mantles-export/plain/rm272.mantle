@@ -1,9 +1,12 @@
+# rm272, the singing whetstone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm272
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_rosamund_coalford
+written_by codex
 title the singing whetstone
 fits stage=adult|old
 prefers role=merchant job=fisher
@@ -83,7 +86,6 @@ line @29 answer.how [self.working=yes] : Up to the wrist in honest business. | S
 line @30 preclose [here.time=dusk] : There's only a thread of honing light left. | I'll put things by while I can see their edges.
 line @31 farewell.return [here.time=night] : Sleep where the first gust can't reach you. | Rest with your shoes set to dry.
 line @32 react.news [here.weather=rain] : I'll hear you clearer under the eaves. | Speak where the rain can't rub the words out.
-
 scene ring
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -375,7 +377,6 @@ dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, the cl
 dlg @13 shop.prices : I'll give the figure straight and let you see where the value lies. #shop_offer#
 dlg @14 shop.bye : May the value follow you home in full.
 dlg @15 resident.hub [here.weather=snow] : There's snow to admire when we've done talking. Come a bit nearer.
-
 graft resident.hub
 choice Where did you learn that note? -> stone_note
 node stone_note

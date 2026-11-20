@@ -1,9 +1,12 @@
+# rm372, the gate in view (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm372
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for cty_ridge_larkridge
+written_by codex
 title the gate in view
 fits stage=adult|old
 prefers job=herder
@@ -17,6 +20,7 @@ topics animals +0.6 faith +0.4 pastimes +0.3 prices -0.3
 styles comfort=practical gossip=guarded refuse=plain tease=none
 marks oath saying
 persona #self.first# chooses a bench with the gate in view and leaves the conversation open just wide enough for one civil question.
+
 words
 oath! = Slip my gatepin | Turn my solid bench round
 saying! = Know what the latch heard | A view costs no bread
@@ -33,35 +37,33 @@ stickmarker = a bit of bent willow | a pegged hazel
 summershade = a patch of late shade | the cool side of a post
 
 grown
-
-opinion houses mixed 1 : A post in a great household might suit young shoulders, if the wolf can walk out through the same gate freely.
-opinion merchants mixed 1 : Mark a price once and stick by it. My ear is no market stall where figures ought to be jostling.
-opinion strangers mixed 1 : I'll greet an unfamiliar face when I see the approach the same as any other.
-opinion festivals mixed 1 : A busy market suits me admirably given a seat and a sound wall behind it.
-opinion church for 2 : A short prayer reaches the Bright One without my turning away from a gate entrusted to me.
-opinion dole for 2 : An oatcake divided will feed two watchers better than a feast promised after both go hungry.
-line greet : From this bench we'll both see the doorway clearly.
-line greet [pair.band=strangers] : Welcome. Stand where both our faces catch the light.
-line greet.return : Heard you. My eye can mind the latch by itself.
-line farewell : Close what you opened and travel safely.
-line farewell.return : May you see what's coming up the path.
-line ask.how : Found a quiet side to put your back against?
-line answer.how : Steady on my feet and sure where the hinges are.
-line react.news : I'll let those words pass the threshold at its own speed.
-line react.news.new : I hadn't seen that particular shape approaching.
-line react.news.known : That came in by an earlier opening.
-line react.news.doubt : A latch lifted somewhere doesn't tell me what walked through.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Glad tidings deserve a whole oatcake and time to sit.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd mind the door for somebody needing privacy with that.
-line decline : That asks more of my trust than we've settled between us.
-line accept_decline : I'll leave the latch as I found it.
-line sympathise : I can watch the way in while you sit with the hurt.
-line reassure : No need to turn around at every noise. I'll look.
-line thank : You kept clear of the bit of work I needed to see.
-line deflect_thanks : I had a view of the gate anyhow.
-line ack : Yes. That's the part I can vouch for too.
-line accept_preclose : Go along with both hands free of this now.
-
+opinion @1 houses mixed 1 : A post in a great household might suit young shoulders, if the wolf can walk out through the same gate freely.
+opinion @1 merchants mixed 1 : Mark a price once and stick by it. My ear is no market stall where figures ought to be jostling.
+opinion @1 strangers mixed 1 : I'll greet an unfamiliar face when I see the approach the same as any other.
+opinion @1 festivals mixed 1 : A busy market suits me admirably given a seat and a sound wall behind it.
+opinion @1 church for 2 : A short prayer reaches the Bright One without my turning away from a gate entrusted to me.
+opinion @1 dole for 2 : An oatcake divided will feed two watchers better than a feast promised after both go hungry.
+line @1 greet : From this bench we'll both see the doorway clearly.
+line @2 greet [pair.band=strangers] : Welcome. Stand where both our faces catch the light.
+line @1 greet.return : Heard you. My eye can mind the latch by itself.
+line @1 farewell : Close what you opened and travel safely.
+line @1 farewell.return : May you see what's coming up the path.
+line @1 ask.how : Found a quiet side to put your back against?
+line @1 answer.how : Steady on my feet and sure where the hinges are.
+line @1 react.news : I'll let those words pass the threshold at its own speed.
+line @1 react.news.new : I hadn't seen that particular shape approaching.
+line @1 react.news.known : That came in by an earlier opening.
+line @1 react.news.doubt : A latch lifted somewhere doesn't tell me what walked through.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Glad tidings deserve a whole oatcake and time to sit.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd mind the door for somebody needing privacy with that.
+line @1 decline : That asks more of my trust than we've settled between us.
+line @1 accept_decline : I'll leave the latch as I found it.
+line @1 sympathise : I can watch the way in while you sit with the hurt.
+line @1 reassure : No need to turn around at every noise. I'll look.
+line @1 thank : You kept clear of the bit of work I needed to see.
+line @1 deflect_thanks : I had a view of the gate anyhow.
+line @1 ack : Yes. That's the part I can vouch for too.
+line @1 accept_preclose : Go along with both hands free of this now.
 scene home_1
 when topic=home
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Line can go out while the last light's on the cork. | A quiet ending asks very little of my tongue.
-dlg resident.hub : This angle suits me. We can see when we're interrupted.
-dlg resident.hub [pair.disposition=wary|hostile] : No need to come in behind me. The matter can be put from there.
-dlg resident.job [self.job=herder] : At #self.workplace# I'm concerned with the distance between the last beast and the latch.
-dlg resident.news [world.news] : These words have come through fairly clearly. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard the claim that #topic.subject# #topic.claim#. I make a distinction between hearing and witnessing.
-dlg resident.bye : Shut the gate with a steady palm where one wants shutting.
 
+dlg @1 resident.hub : This angle suits me. We can see when we're interrupted.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : No need to come in behind me. The matter can be put from there.
+dlg @1 resident.job [self.job=herder] : At #self.workplace# I'm concerned with the distance between the last beast and the latch.
+dlg @1 resident.news [world.news] : These words have come through fairly clearly. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard the claim that #topic.subject# #topic.claim#. I make a distinction between hearing and witnessing.
+dlg @1 resident.bye : Shut the gate with a steady palm where one wants shutting.
 graft resident.hub
 choice Will you always turn a chair to face the door? -> latch_angle
 node latch_angle

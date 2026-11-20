@@ -1,9 +1,12 @@
+# rm457, the wool peg weather vane (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm457
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_lotte_greyley
+written_by codex
 title the wool peg weather vane
 fits stage=adult|old
 prefers job=merchant
@@ -35,41 +38,40 @@ grain = a long straight fibre | the wood's pale line
 wisp = a wisp of teasing wool | the stray wool end
 
 any
-opinion houses against 1 : I can distinguish the wool on a grand cuff without seeing the face above it. I'd sometimes prefer an actual acquaintance.
-opinion merchants against 1 : An extra copper on a little item is easy for the seller to miss and hard for my purse to forgive.
-opinion strangers for 1 : A visitor knows whether a scarf's edge still sits flat after three windy miles. That's worth listening to.
-opinion festivals against 1 : I like a feast at the distance where the colours remain distinct and needn't keep clearing my throat.
-opinion watch against 1 : A question thrust into everybody's wool bag leaves a good deal of innocent fluff to be explained.
+opinion @1 houses against 1 : I can distinguish the wool on a grand cuff without seeing the face above it. I'd sometimes prefer an actual acquaintance.
+opinion @1 merchants against 1 : An extra copper on a little item is easy for the seller to miss and hard for my purse to forgive.
+opinion @1 strangers for 1 : A visitor knows whether a scarf's edge still sits flat after three windy miles. That's worth listening to.
+opinion @1 festivals against 1 : I like a feast at the distance where the colours remain distinct and needn't keep clearing my throat.
+opinion @1 watch against 1 : A question thrust into everybody's wool bag leaves a good deal of innocent fluff to be explained.
 
 grown
-line greet [pair.band=strangers] : Welcome by the winding end. | My peg can wait to be turned.
-line greet [self.working=yes] : My hands are presently busier than my ears. | Pass your word just here.
-line greet [here.time=dawn] : Morning. The wood's a shade cool. | Early enough for the thread to show clearly.
-line greet [here.time=dusk|night] : Evening. Good light on the pale strand still. | The narrow shade's my side.
-line kin.open [pair.kin!=no] : Kin can peek inside my wool bag. | A familiar foot across the old map.
-line again.open : Another turn of the little peg. | We've met again before the thread's unwound.
-line greet.return : Hello. I'm listening beneath the collar. | A greeting received quite cleanly.
-line greet.return [pair.band=friends|family] : That voice can penetrate quite thick wool. | The sheltered side is yours this time.
-line greet.return [self.working=yes] : Speak while the winding hand goes on. | There's room between two honest tasks.
-line greet.return [here.time=dusk|night] : Evening. Your voice reaches round the peg. | I've time where the air lies still.
-line farewell : A kind breeze off the map's edge. | Good footing where the thread runs out.
-line farewell.return : I'll coil the spare end after you. | Safe through the less agreeable wind.
-line farewell.return [here.time=night] : Go where the night air's easy on the chest. | A warm collar after the lamps end.
-line react.news : Give me the thread I can follow. | What came through the fleece clearly?
-line react.news.new : Fresh wool on an empty peg. | An unfamiliar winding there.
-line react.news.known : I've handled that particular twist. | The old account has found its way here again.
-line react.news.doubt : I'd ease that tangle before pulling any harder. | That story has a remarkably convenient loose end.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's a quiet turn of air for you here. | I'll not try to colour that news up.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Warm news for a cold bit of air. | That certainly unwinds more pleasantly.
-line ask.how : How has the day sat at your collar? | Any troublesome twists in your morning?
-line answer.how : My hands are steady if the air isn't. | A small rough bit now and again. Quite ordinary.
-line decline : I'd prefer the quiet edge of my present task today. | I have one careful winding left to finish.
-line accept_decline : Plain enough. I can leave the thread there. | That suits. There's no need to tug.
-line thank : A kind turn very neatly given. | I'll remember who set the strand right.
-line sympathise : Take the side without the draught. | A rough spell needs no embellished account.
-line reassure : Give the knot time to loosen of itself. | A careful breath goes further than a loud one.
-line preclose : I'd best get the peg back to its task. | Time for me to draw the thread close.
-
+line @1 greet [pair.band=strangers] : Welcome by the winding end. | My peg can wait to be turned.
+line @2 greet [self.working=yes] : My hands are presently busier than my ears. | Pass your word just here.
+line @3 greet [here.time=dawn] : Morning. The wood's a shade cool. | Early enough for the thread to show clearly.
+line @4 greet [here.time=dusk|night] : Evening. Good light on the pale strand still. | The narrow shade's my side.
+line @1 kin.open [pair.kin!=no] : Kin can peek inside my wool bag. | A familiar foot across the old map.
+line @1 again.open : Another turn of the little peg. | We've met again before the thread's unwound.
+line @1 greet.return : Hello. I'm listening beneath the collar. | A greeting received quite cleanly.
+line @2 greet.return [pair.band=friends|family] : That voice can penetrate quite thick wool. | The sheltered side is yours this time.
+line @3 greet.return [self.working=yes] : Speak while the winding hand goes on. | There's room between two honest tasks.
+line @4 greet.return [here.time=dusk|night] : Evening. Your voice reaches round the peg. | I've time where the air lies still.
+line @1 farewell : A kind breeze off the map's edge. | Good footing where the thread runs out.
+line @1 farewell.return : I'll coil the spare end after you. | Safe through the less agreeable wind.
+line @2 farewell.return [here.time=night] : Go where the night air's easy on the chest. | A warm collar after the lamps end.
+line @1 react.news : Give me the thread I can follow. | What came through the fleece clearly?
+line @1 react.news.new : Fresh wool on an empty peg. | An unfamiliar winding there.
+line @1 react.news.known : I've handled that particular twist. | The old account has found its way here again.
+line @1 react.news.doubt : I'd ease that tangle before pulling any harder. | That story has a remarkably convenient loose end.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's a quiet turn of air for you here. | I'll not try to colour that news up.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Warm news for a cold bit of air. | That certainly unwinds more pleasantly.
+line @1 ask.how : How has the day sat at your collar? | Any troublesome twists in your morning?
+line @1 answer.how : My hands are steady if the air isn't. | A small rough bit now and again. Quite ordinary.
+line @1 decline : I'd prefer the quiet edge of my present task today. | I have one careful winding left to finish.
+line @1 accept_decline : Plain enough. I can leave the thread there. | That suits. There's no need to tug.
+line @1 thank : A kind turn very neatly given. | I'll remember who set the strand right.
+line @1 sympathise : Take the side without the draught. | A rough spell needs no embellished account.
+line @1 reassure : Give the knot time to loosen of itself. | A careful breath goes further than a loud one.
+line @1 preclose : I'd best get the peg back to its task. | Time for me to draw the thread close.
 scene fork
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Fold the map inside the soft cloth. | Shallower shadows in this quiet corner.
 
-dlg resident.hub : Stand near the wound fleece. Then loose thread won't find its way into my answer.
-dlg resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. A close look at the fold generally answers more questions than a price alone.
-dlg resident.news [world.news] : The strand of information I've kept is this. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've found the end I'm listening from.
-dlg resident.bye : A soft collar and a map that takes you reasonably close to the intended destination.
-
+dlg @1 resident.hub : Stand near the wound fleece. Then loose thread won't find its way into my answer.
+dlg @1 resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. A close look at the fold generally answers more questions than a price alone.
+dlg @1 resident.news [world.news] : The strand of information I've kept is this. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've found the end I'm listening from.
+dlg @1 resident.bye : A soft collar and a map that takes you reasonably close to the intended destination.
 graft resident.hub
 choice What does a thread on that little fork tell you? -> peg_wind
 node peg_wind

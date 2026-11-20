@@ -1,9 +1,12 @@
+# rm338, the flooded threshold (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm338
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_silas_wickford
+written_by codex
 title the flooded threshold
 fits stage=adult|old
 prefers job=merchant
@@ -36,35 +39,34 @@ kerb = a dry edge | a finger of stone
 sash = a high sash | a polished sill
 
 any
-opinion houses mixed 1 : A grand address may have a particularly substantial threshold. It cannot receive correspondence in the occupant's absence.
-opinion watch mixed 1 : A measured eye on a doorway spares everyone a considerable disturbance.
-opinion merchants for 1 : A dry counter and an unaltered price are modest courtesies worth preserving.
-opinion road mixed 1 : I prefer to discuss a route with somebody who has actually seen it in rain.
-opinion strangers mixed 1 : New arrivals need the dry turning. They need not know the extent of my private affairs.
-opinion festivals against 1 : Far too many bodies for the available breadth of pavement, even in fine weather.
+opinion @1 houses mixed 1 : A grand address may have a particularly substantial threshold. It cannot receive correspondence in the occupant's absence.
+opinion @1 watch mixed 1 : A measured eye on a doorway spares everyone a considerable disturbance.
+opinion @1 merchants for 1 : A dry counter and an unaltered price are modest courtesies worth preserving.
+opinion @1 road mixed 1 : I prefer to discuss a route with somebody who has actually seen it in rain.
+opinion @1 strangers mixed 1 : New arrivals need the dry turning. They need not know the extent of my private affairs.
+opinion @1 festivals against 1 : Far too many bodies for the available breadth of pavement, even in fine weather.
 
 grown
-line greet : There's a dry width beside the threshold. | Stand clear of the lower runnel. Welcome.
-line greet.return : I shall return that greeting from the sheltered side. | A perfectly civil arrival from both directions.
-line again.open : We meet again above the waterline.
-line farewell : The higher paving should serve you well. | Take the dry approach to your next engagement.
-line farewell.return : And a sound threshold wherever you arrive. | Your good wishes have crossed quite dry.
-line react.news : Let me ascertain how far the information has travelled. | Present it from the beginning, if convenient.
-line react.news.new : That has not previously reached this threshold.
-line react.news.known : I've already seen the mark that account leaves.
-line react.news.doubt : I would keep that claim above the line of doubt awhile.
-line react.news.sorrow [topic.kind=death|loss|assault] : A private sorrow needs a door that closes gently.
-line react.news.glad [topic.kind=birth|marriage|work] : An agreeable turn worth preserving under a clean fold.
-line ask.how : Have the day's arrangements kept satisfactorily dry?
-line answer.how : Quite composed behind my sheltered sill.
-line sympathise : One can stand quietly beside a difficulty before naming it.
-line reassure : There is generally a higher approach if the first seems impassable.
-line refuse : I owe the next stretch of time to an undelivered errand.
-line accept_decline : As you please. No pressure from this doorway.
-line preclose : I'll attend now to the protected portion of my errands.
-line accept_preclose : Go before the paving loses its clear outlines.
-line ack : I have the height of your meaning.
-
+line @1 greet : There's a dry width beside the threshold. | Stand clear of the lower runnel. Welcome.
+line @1 greet.return : I shall return that greeting from the sheltered side. | A perfectly civil arrival from both directions.
+line @1 again.open : We meet again above the waterline.
+line @1 farewell : The higher paving should serve you well. | Take the dry approach to your next engagement.
+line @1 farewell.return : And a sound threshold wherever you arrive. | Your good wishes have crossed quite dry.
+line @1 react.news : Let me ascertain how far the information has travelled. | Present it from the beginning, if convenient.
+line @1 react.news.new : That has not previously reached this threshold.
+line @1 react.news.known : I've already seen the mark that account leaves.
+line @1 react.news.doubt : I would keep that claim above the line of doubt awhile.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A private sorrow needs a door that closes gently.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : An agreeable turn worth preserving under a clean fold.
+line @1 ask.how : Have the day's arrangements kept satisfactorily dry?
+line @1 answer.how : Quite composed behind my sheltered sill.
+line @1 sympathise : One can stand quietly beside a difficulty before naming it.
+line @1 reassure : There is generally a higher approach if the first seems impassable.
+line @1 refuse : I owe the next stretch of time to an undelivered errand.
+line @1 accept_decline : As you please. No pressure from this doorway.
+line @1 preclose : I'll attend now to the protected portion of my errands.
+line @1 accept_preclose : Go before the paving loses its clear outlines.
+line @1 ack : I have the height of your meaning.
 scene exchange1
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.likes=thunder
 does aside
 cooldown 8h
 say A fine measured roll above the roofline. | That note travelled in considerable comfort.
-dlg resident.hub : The threshold permits a conversation of reasonable length.
-dlg resident.hub [topic.meeting=known] : #topic.player#, the drier approach suits you quite well.
-dlg resident.hub [here.time=night] : A late errand is entitled to a civil hearing at the sill.
-dlg resident.hub [pair.disposition=wary|hostile] : I will take the business from the shelter of my own jamb.
-dlg resident.job [self.job=merchant] : I mind the door at #self.workplace# and observe how the street changes.
-dlg resident.job : My occupation requires attention to matters just outside the ordinary field of view.
-dlg resident.news [world.news] : The latest particulars to reach the street are #world.news#.
-dlg resident.gossip [here.gossip=yes] : It is being said that #topic.subject# #topic.claim#. I attach no additional warranty.
-dlg resident.bye : I hope your destination is receiving visitors.
 
+dlg @1 resident.hub : The threshold permits a conversation of reasonable length.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the drier approach suits you quite well.
+dlg @3 resident.hub [here.time=night] : A late errand is entitled to a civil hearing at the sill.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I will take the business from the shelter of my own jamb.
+dlg @1 resident.job [self.job=merchant] : I mind the door at #self.workplace# and observe how the street changes.
+dlg @2 resident.job : My occupation requires attention to matters just outside the ordinary field of view.
+dlg @1 resident.news [world.news] : The latest particulars to reach the street are #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : It is being said that #topic.subject# #topic.claim#. I attach no additional warranty.
+dlg @1 resident.bye : I hope your destination is receiving visitors.
 graft resident.hub
 choice How do you read a flood line? -> door_almanac
 node door_almanac

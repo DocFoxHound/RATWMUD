@@ -1,9 +1,12 @@
+# rm418, the hot cup timer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm418
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_signe_ashstack
+written_by codex
 title the hot cup timer
 fits stage=adult|old
 prefers job=servant
@@ -33,44 +36,43 @@ smokewisp = a breath of old smoke | a grey curl in the light
 teatime = the pleasant warmth at the rim | the first sip's heat
 
 any
-opinion dole for 1 : A meal handed over warm carries consideration as well as nourishment. The poorest bowl ought to receive its due in both.
-opinion drink against 1 : There are words spilled after drink that a cloth won't gather into a cup again. I prefer a settled mouth.
-opinion houses for 1 : My board has been set and my boots kept dry on a House wage. It's an ordinary mercy of which I am well aware.
-opinion road against 1 : The least pleasant cup I've carried was one that crossed an uneven bit of road. Long journeys aren't made more inviting by multiplying the uneven bits.
-opinion sump against 2 : When a stair has space for haste or a tray but scarcely both, I'd rather deliver what I came with and go gently home.
+opinion @1 dole for 1 : A meal handed over warm carries consideration as well as nourishment. The poorest bowl ought to receive its due in both.
+opinion @1 drink against 1 : There are words spilled after drink that a cloth won't gather into a cup again. I prefer a settled mouth.
+opinion @1 houses for 1 : My board has been set and my boots kept dry on a House wage. It's an ordinary mercy of which I am well aware.
+opinion @1 road against 1 : The least pleasant cup I've carried was one that crossed an uneven bit of road. Long journeys aren't made more inviting by multiplying the uneven bits.
+opinion @1 sump against 2 : When a stair has space for haste or a tray but scarcely both, I'd rather deliver what I came with and go gently home.
 
 grown
-line greet : You've caught an ordinary quiet moment here.
-line greet [pair.band=strangers] : Welcome. Come only as far as you feel at ease.
-line greet [here.time=dawn] : A little warmth in the saucer this early is welcome company.
-line greet [here.time=dusk|night] : Enough light to see one another politely in.
-line greet [self.working=yes] : I'll settle the saucer and give you my attention.
-line kin.open [pair.kin!=no] : Our own folk may turn the handle where it best suits the paw.
-line again.open : I've kept your place pleasantly warm between our meetings.
-line greet.return : A civil word like yours will carry clear round the furthest chairs.
-line greet.return [pair.band=friends|family] : A familiar voice takes a little worry out of the morning's work.
-line greet.return [self.working=yes] : Your greeting crossed the rim without spilling anything.
-line greet.return [here.time=dusk|night] : That reached me very gently from the shadows.
-line farewell : May your next cup arrive agreeably hot.
-line farewell.return : I'll pick up the cloth once you're well past.
-line react.news : I'll try to hear that account without setting my own hopes on top of it.
-line react.news.new : That's a different piece of business to place on my tray.
-line react.news.known : Yes. A rather thinner version has come to my ear before.
-line react.news.doubt : Was anybody there to check that particular detail?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd happily see a warm pot to that door and take the empty one home again.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such agreeable news merits my handsomest cups.
-line answer.how : A minor rasp in my throat and plenty of willingness left in my arms.
-line ask.how : Had a chance to take a quiet sip today?
-line sympathise : An unwelcome wait has a way of making every little discomfort grow.
-line reassure : Rest your paws on this dry cloth for a minute.
-line decline : I couldn't undertake another errand and still do justice to the first.
-line accept_decline : That's a choice you are quite entitled to make.
-line thank : The difference a steadying paw makes is quite remarkable.
-line deflect_thanks : Enjoy the little comfort it provided. That's a pleasant enough return.
-line preclose : There's a cup beginning to cool in my thoughts.
-line accept_preclose : I'll keep the passage still while you go.
-line ack : Quite settled.
-
+line @1 greet : You've caught an ordinary quiet moment here.
+line @2 greet [pair.band=strangers] : Welcome. Come only as far as you feel at ease.
+line @3 greet [here.time=dawn] : A little warmth in the saucer this early is welcome company.
+line @4 greet [here.time=dusk|night] : Enough light to see one another politely in.
+line @5 greet [self.working=yes] : I'll settle the saucer and give you my attention.
+line @1 kin.open [pair.kin!=no] : Our own folk may turn the handle where it best suits the paw.
+line @1 again.open : I've kept your place pleasantly warm between our meetings.
+line @1 greet.return : A civil word like yours will carry clear round the furthest chairs.
+line @2 greet.return [pair.band=friends|family] : A familiar voice takes a little worry out of the morning's work.
+line @3 greet.return [self.working=yes] : Your greeting crossed the rim without spilling anything.
+line @4 greet.return [here.time=dusk|night] : That reached me very gently from the shadows.
+line @1 farewell : May your next cup arrive agreeably hot.
+line @1 farewell.return : I'll pick up the cloth once you're well past.
+line @1 react.news : I'll try to hear that account without setting my own hopes on top of it.
+line @1 react.news.new : That's a different piece of business to place on my tray.
+line @1 react.news.known : Yes. A rather thinner version has come to my ear before.
+line @1 react.news.doubt : Was anybody there to check that particular detail?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd happily see a warm pot to that door and take the empty one home again.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such agreeable news merits my handsomest cups.
+line @1 answer.how : A minor rasp in my throat and plenty of willingness left in my arms.
+line @1 ask.how : Had a chance to take a quiet sip today?
+line @1 sympathise : An unwelcome wait has a way of making every little discomfort grow.
+line @1 reassure : Rest your paws on this dry cloth for a minute.
+line @1 decline : I couldn't undertake another errand and still do justice to the first.
+line @1 accept_decline : That's a choice you are quite entitled to make.
+line @1 thank : The difference a steadying paw makes is quite remarkable.
+line @1 deflect_thanks : Enjoy the little comfort it provided. That's a pleasant enough return.
+line @1 preclose : There's a cup beginning to cool in my thoughts.
+line @1 accept_preclose : I'll keep the passage still while you go.
+line @1 ack : Quite settled.
 scene copper
 when topic=work self.job=servant self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -238,15 +240,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say The last warm cup needs a clear passage. | Give the light one more notch before pouring.
-dlg resident.hub : You're welcome here. What would make waiting a little easier?
-dlg resident.hub [topic.meeting=known] : A familiar face and a clear place beside me, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Stand clear of my fragile tray, please. I can hear you quite comfortably there.
-dlg resident.hub [here.time=night] : I'd like to leave any sleeper's rest undisturbed. Speak gently.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. My business is to leave a guest no need to ask why the tea has cooled.
-dlg resident.job : I take notice of the small arrangements that a comfortable wolf need never mention.
-dlg resident.news [world.news] : The account that's reached my corner runs this way. #world.news#.
-dlg resident.bye : May there still be a warm cup waiting at the other end.
 
+dlg @1 resident.hub : You're welcome here. What would make waiting a little easier?
+dlg @2 resident.hub [topic.meeting=known] : A familiar face and a clear place beside me, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Stand clear of my fragile tray, please. I can hear you quite comfortably there.
+dlg @4 resident.hub [here.time=night] : I'd like to leave any sleeper's rest undisturbed. Speak gently.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. My business is to leave a guest no need to ask why the tea has cooled.
+dlg @2 resident.job : I take notice of the small arrangements that a comfortable wolf need never mention.
+dlg @1 resident.news [world.news] : The account that's reached my corner runs this way. #world.news#.
+dlg @1 resident.bye : May there still be a warm cup waiting at the other end.
 graft @saucertimer resident.hub
 choice What is that small copper doing on an empty saucer? -> saucertimer
 node saucertimer

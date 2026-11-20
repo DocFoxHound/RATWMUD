@@ -1,9 +1,12 @@
+# rm351, the clerk of little wedges (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm351
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_gwen_cinderdale
+written_by codex
 title the clerk of little wedges
 fits stage=adult|old
 prefers job=scholar
@@ -35,41 +38,40 @@ snow = the first white drift | a little patch of fresh snow
 pin = a small dark pin | a sealing pin
 
 any
-opinion houses for 1 : A single desk cannot carry all the city's weight. It helps to know which House is answerable for which beam.
-opinion dole against 1 : Before I paid in again I'd want an account of how far the first serving went.
-opinion watch for 1 : A familiar round outside my window saves me getting up to lift the blind at every sound.
-opinion times for 1 : My shelves are quiet and full. I won't borrow somebody else's reason for complaint.
-opinion strangers against 1 : An unknown caller makes me check the open drawer. Habit born of keeping other wolves' affairs.
+opinion @1 houses for 1 : A single desk cannot carry all the city's weight. It helps to know which House is answerable for which beam.
+opinion @1 dole against 1 : Before I paid in again I'd want an account of how far the first serving went.
+opinion @1 watch for 1 : A familiar round outside my window saves me getting up to lift the blind at every sound.
+opinion @1 times for 1 : My shelves are quiet and full. I won't borrow somebody else's reason for complaint.
+opinion @1 strangers against 1 : An unknown caller makes me check the open drawer. Habit born of keeping other wolves' affairs.
 
 grown
-line greet [pair.band=strangers] : Welcome. Mind the loose sheaf. | There's a clear spot for your hand.
-line greet [self.working=yes] : I've heard. The paper can wait. | Stay clear of the nib.
-line greet [here.time=dawn] : Morning. The desk's still cool. | Fresh daylight against the slips.
-line greet [here.time=dusk|night] : Evening. Ink keeps legible awhile. | Come to the lighted corner.
-line kin.open [pair.kin!=no] : Family can leave the form blank. | I know you without the docket.
-line again.open : The same face before the ink dries. | Your second appearance is welcome.
-line greet.return : My ear's yours. Go ahead. | Hello from this corner.
-line greet.return [pair.band=friends|family] : I know how you let the quiet stand. | A welcome voice without preliminaries.
-line greet.return [self.working=yes] : I can pause between slips. | Wait till I set the pin down.
-line greet.return [here.time=dusk|night] : Evening. Take the pale side. | There's light on my listening side.
-line farewell : A clear path between your errands. | Mind the loose boards going out.
-line farewell.return : I'll keep the proper gap. | Leave the sheaf to my care.
-line farewell.return [here.time=night] : Look for sound ground after dark. | Safe home past the high shadows.
-line react.news : Give me the matter in order. | I'll give that a separate slip.
-line react.news.new : Not entered here before. | A fresh line in these ears.
-line react.news.known : I know that docket. | I'd already heard its main point.
-line react.news.doubt : I need more separation between fact and suspicion. | Two accounts seem to be sticking together there.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard to keep a steady hand through. | Rest where no answer's required.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad thing to set apart. | That makes the small print easier to face.
-line ask.how : Has the day allowed you breathing room? | How crowded are your hours?
-line answer.how : Keeping my papers from walking together. | A little uneven, but in order.
-line decline : I'd sooner remain by this work a minute. | I need to keep my hands steady here.
-line accept_decline : Clear enough. I'll set it aside. | One less question to misplace.
-line thank : You've spared a deal of searching. | I'll keep that favour distinct.
-line sympathise : Take the chair by my clear shelf. | I've time to sit quite still.
-line reassure : We'll keep one business separate from another. | A little open space may help.
-line preclose : Time to file the loose ends. | I'll put the wedge back in.
-
+line @1 greet [pair.band=strangers] : Welcome. Mind the loose sheaf. | There's a clear spot for your hand.
+line @2 greet [self.working=yes] : I've heard. The paper can wait. | Stay clear of the nib.
+line @3 greet [here.time=dawn] : Morning. The desk's still cool. | Fresh daylight against the slips.
+line @4 greet [here.time=dusk|night] : Evening. Ink keeps legible awhile. | Come to the lighted corner.
+line @1 kin.open [pair.kin!=no] : Family can leave the form blank. | I know you without the docket.
+line @1 again.open : The same face before the ink dries. | Your second appearance is welcome.
+line @1 greet.return : My ear's yours. Go ahead. | Hello from this corner.
+line @2 greet.return [pair.band=friends|family] : I know how you let the quiet stand. | A welcome voice without preliminaries.
+line @3 greet.return [self.working=yes] : I can pause between slips. | Wait till I set the pin down.
+line @4 greet.return [here.time=dusk|night] : Evening. Take the pale side. | There's light on my listening side.
+line @1 farewell : A clear path between your errands. | Mind the loose boards going out.
+line @1 farewell.return : I'll keep the proper gap. | Leave the sheaf to my care.
+line @2 farewell.return [here.time=night] : Look for sound ground after dark. | Safe home past the high shadows.
+line @1 react.news : Give me the matter in order. | I'll give that a separate slip.
+line @1 react.news.new : Not entered here before. | A fresh line in these ears.
+line @1 react.news.known : I know that docket. | I'd already heard its main point.
+line @1 react.news.doubt : I need more separation between fact and suspicion. | Two accounts seem to be sticking together there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's hard to keep a steady hand through. | Rest where no answer's required.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad thing to set apart. | That makes the small print easier to face.
+line @1 ask.how : Has the day allowed you breathing room? | How crowded are your hours?
+line @1 answer.how : Keeping my papers from walking together. | A little uneven, but in order.
+line @1 decline : I'd sooner remain by this work a minute. | I need to keep my hands steady here.
+line @1 accept_decline : Clear enough. I'll set it aside. | One less question to misplace.
+line @1 thank : You've spared a deal of searching. | I'll keep that favour distinct.
+line @1 sympathise : Take the chair by my clear shelf. | I've time to sit quite still.
+line @1 reassure : We'll keep one business separate from another. | A little open space may help.
+line @1 preclose : Time to file the loose ends. | I'll put the wedge back in.
 scene wedge
 when topic=work self.job=scholar
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Put the pinned stack clear of the lamp. | Ink dry before I close the drawer.
 
-dlg resident.hub : You can stand by the empty shelf. It is quite deliberate that there's nothing in your way.
-dlg resident.hub [topic.meeting=known] : I remember the distinction we made last time, #topic.player#.
-dlg resident.job [self.job=scholar self.workplace] : At #self.workplace# I keep the papers that let a wolf get on with lawful business. Nobody wants a lost application.
-dlg resident.news [world.news] : The word came in quite distinctly. #world.news#
-dlg resident.bye : I hope you find your matter ready and correctly filed.
-
+dlg @1 resident.hub : You can stand by the empty shelf. It is quite deliberate that there's nothing in your way.
+dlg @2 resident.hub [topic.meeting=known] : I remember the distinction we made last time, #topic.player#.
+dlg @1 resident.job [self.job=scholar self.workplace] : At #self.workplace# I keep the papers that let a wolf get on with lawful business. Nobody wants a lost application.
+dlg @1 resident.news [world.news] : The word came in quite distinctly. #world.news#
+dlg @1 resident.bye : I hope you find your matter ready and correctly filed.
 graft resident.hub
 choice Why does that bit of wood smell of smoke? -> wedge_scent
 node wedge_scent

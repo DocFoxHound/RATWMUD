@@ -1,9 +1,12 @@
+# rm466, the bootlace counsel (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm466
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_corrie_oakfield
+written_by codex
 title the bootlace counsel
 fits stage=adult|old
 prefers role=civilian
@@ -35,41 +38,40 @@ note = a folded letter | a letter with a worn crease
 grass = a knot of sweet grass | a fresh grass blade
 
 any
-opinion dole for 3 : I had a meal from that pot when every knot in my lace stood for some expense I couldn't meet. It kept me walking.
-opinion houses against 1 : I can mind a beast for a fine house. I'd be glad of the same freedom to take an empty seat in one.
-opinion merchants against 2 : The price of an oatcake seems always to take the longer stride. My money has smaller feet.
-opinion strangers for 1 : Someone with a long dusty walk behind them ought to get the first bite before the first question.
-opinion times against 2 : The gap between supper and wages keeps getting wider. I can't tie those two ends together easily.
+opinion @1 dole for 3 : I had a meal from that pot when every knot in my lace stood for some expense I couldn't meet. It kept me walking.
+opinion @1 houses against 1 : I can mind a beast for a fine house. I'd be glad of the same freedom to take an empty seat in one.
+opinion @1 merchants against 2 : The price of an oatcake seems always to take the longer stride. My money has smaller feet.
+opinion @1 strangers for 1 : Someone with a long dusty walk behind them ought to get the first bite before the first question.
+opinion @1 times against 2 : The gap between supper and wages keeps getting wider. I can't tie those two ends together easily.
 
 grown
-line greet [pair.band=strangers] : Come by the dry shoelace side. | Hello, with room on this bit of ground.
-line greet [self.working=yes] : My word for you comes from beside the gate. | Come within reach of an ordinary voice.
-line greet [here.time=dawn] : Morning. The laces have sat up neatly. | First steps find good company.
-line greet [here.time=dusk|night] : Evening leaves my knees a little quieter. | There's room beside the setting light.
-line kin.open [pair.kin!=no] : I recognise the family stretch of ground. | Kin can stop and retie a lace here.
-line again.open : Back round the knot again. | Another shared patch of path.
-line greet.return : I've got you by the sound of that greeting. | I can hold still and listen.
-line greet.return [pair.band=friends|family] : A familiar voice gives me a little rest. | Take the good side of my step.
-line greet.return [self.working=yes] : I'll keep one hand steady at work. | There's time for a quiet word by the latch.
-line greet.return [here.time=dusk|night] : Evening. My walking ears are open. | Welcome while the light still reaches my laces.
-line farewell : Good laces and an easy pace home. | May your boots find the level ground.
-line farewell.return : I'll keep the little knot here. | Step round the rough bit going out.
-line farewell.return [here.time=night] : A steady tread past the late lamps. | Quiet between your threshold and your bed.
-line react.news : Tell it from the knot you know. | Which end of the word's clear?
-line react.news.new : New advice for my lace. | That sound hasn't come along my road.
-line react.news.known : That knot's been tied before. | I've carried the earlier telling.
-line react.news.doubt : I'd like the ends to meet before I trust that account. | Somebody may have pulled an old word out of shape.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a painful road to walk. | I'll take the outside of the path beside you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : An easy bit of light come through. | I'd carry glad word like that anywhere.
-line ask.how : Did your feet get an easy turn today? | Has the ground been kind to you?
-line answer.how : My knots are staying put so far. | My feet have settled comfortably enough.
-line decline : I'd sooner stay on this familiar stretch today. | Let me keep the easy hour for my own little task.
-line accept_decline : Your feet know what suits them. | No need to pull that knot tighter.
-line thank : That's an hour of easier walking. | I'll mark the kindness in this lace.
-line sympathise : Rest here. I'll take the gate side. | Let me come alongside the harder bit.
-line reassure : One small step can carry plenty. | Time enough to get both boots planted again.
-line preclose : Those laces need my hand again. | My return journey's due for a beginning.
-
+line @1 greet [pair.band=strangers] : Come by the dry shoelace side. | Hello, with room on this bit of ground.
+line @2 greet [self.working=yes] : My word for you comes from beside the gate. | Come within reach of an ordinary voice.
+line @3 greet [here.time=dawn] : Morning. The laces have sat up neatly. | First steps find good company.
+line @4 greet [here.time=dusk|night] : Evening leaves my knees a little quieter. | There's room beside the setting light.
+line @1 kin.open [pair.kin!=no] : I recognise the family stretch of ground. | Kin can stop and retie a lace here.
+line @1 again.open : Back round the knot again. | Another shared patch of path.
+line @1 greet.return : I've got you by the sound of that greeting. | I can hold still and listen.
+line @2 greet.return [pair.band=friends|family] : A familiar voice gives me a little rest. | Take the good side of my step.
+line @3 greet.return [self.working=yes] : I'll keep one hand steady at work. | There's time for a quiet word by the latch.
+line @4 greet.return [here.time=dusk|night] : Evening. My walking ears are open. | Welcome while the light still reaches my laces.
+line @1 farewell : Good laces and an easy pace home. | May your boots find the level ground.
+line @1 farewell.return : I'll keep the little knot here. | Step round the rough bit going out.
+line @2 farewell.return [here.time=night] : A steady tread past the late lamps. | Quiet between your threshold and your bed.
+line @1 react.news : Tell it from the knot you know. | Which end of the word's clear?
+line @1 react.news.new : New advice for my lace. | That sound hasn't come along my road.
+line @1 react.news.known : That knot's been tied before. | I've carried the earlier telling.
+line @1 react.news.doubt : I'd like the ends to meet before I trust that account. | Somebody may have pulled an old word out of shape.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a painful road to walk. | I'll take the outside of the path beside you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : An easy bit of light come through. | I'd carry glad word like that anywhere.
+line @1 ask.how : Did your feet get an easy turn today? | Has the ground been kind to you?
+line @1 answer.how : My knots are staying put so far. | My feet have settled comfortably enough.
+line @1 decline : I'd sooner stay on this familiar stretch today. | Let me keep the easy hour for my own little task.
+line @1 accept_decline : Your feet know what suits them. | No need to pull that knot tighter.
+line @1 thank : That's an hour of easier walking. | I'll mark the kindness in this lace.
+line @1 sympathise : Rest here. I'll take the gate side. | Let me come alongside the harder bit.
+line @1 reassure : One small step can carry plenty. | Time enough to get both boots planted again.
+line @1 preclose : Those laces need my hand again. | My return journey's due for a beginning.
 scene knot
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Both laces free before the feet rest. | Carry that lesson in the left knot.
 
-dlg resident.hub : If you've a hard bit of walking behind you we can rest those weary heels awhile before speaking.
-dlg resident.job [self.job=none self.working=yes self.workplace] : I look after the cattle at #self.workplace#. A broad quiet hand works best at a gate.
-dlg resident.news [world.news] : The word I brought along came in this shape. #world.news#
-dlg resident.hub [topic.meeting=known] : Your footsteps have an ordinary welcome here, #topic.player#.
-dlg resident.bye : Good soles under you through the steeper stretch beyond.
-
+dlg @1 resident.hub : If you've a hard bit of walking behind you we can rest those weary heels awhile before speaking.
+dlg @1 resident.job [self.job=none self.working=yes self.workplace] : I look after the cattle at #self.workplace#. A broad quiet hand works best at a gate.
+dlg @1 resident.news [world.news] : The word I brought along came in this shape. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : Your footsteps have an ordinary welcome here, #topic.player#.
+dlg @1 resident.bye : Good soles under you through the steeper stretch beyond.
 graft resident.hub
 choice Why is that knot tied halfway along? -> lace_word
 node lace_word

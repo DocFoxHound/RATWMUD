@@ -1,9 +1,12 @@
+# rm208, the listening hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm208
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_ragnar_roperidge
+written_by codex
 title the listening hood
 fits stage=adult|old
 prefers role=merchant job=herder
@@ -80,7 +83,6 @@ line @28 preclose : I must turn my hood towards home. | There are little fasteni
 line @29 accept_preclose : Go when you're ready; I'll stand clear. | You've given me plenty of your day already.
 line @30 ack : Understood through the cloth. | That sounds square to me.
 line @31 give.advice : Listen once before you move anything heavy. | Try the quiet way while you still have a choice.
-
 scene toggle
 when topic=pastimes|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -373,7 +375,6 @@ dlg @12 shop.greet [here.shop=open] : Tell me what would suit you best. You'll g
 dlg @13 shop.greet [here.shop=bare] : Nothing here to pass to a buyer today. You can show me what you've brought.
 dlg @14 shop.prices : You're entitled to the figure before you choose. #shop_offer#
 dlg @15 shop.bye : That concludes our business as I understand it. Good travelling.
-
 graft resident.hub
 choice Why pin up just one side? -> hoodpin
 node hoodpin

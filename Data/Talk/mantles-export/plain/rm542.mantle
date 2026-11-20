@@ -1,9 +1,12 @@
+# rm542, the gate song's gap (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm542
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_palle_plankmore
+written_by codex
 title the gate song's gap
 fits stage=adult|old
 prefers job=guard
@@ -38,47 +41,46 @@ bone = a plum stone | a little wooden bead
 work = the next turn by the hinge | another spell beside the latch
 
 any
-opinion watch for 2 : A gate guard ought to hear a tired voice before a fine coat.
-opinion houses against 1 : A fine shipping emblem won't bring a lost wolf ashore.
-opinion city mixed 1 : The city takes wharf work readily enough. I'd like it to listen as readily.
-opinion festivals for 1 : A festival bell seldom asks what tune I've got wrong.
-opinion strangers for 1 : An unfamiliar voice deserves a hearing before it gets a label.
-opinion church mixed 1 : I can stand in silence for one absent voice without borrowing a sermon.
-opinion road mixed 1 : The last yard near a gate ought to drain as thoroughly as a whole mile of road.
-opinion times against 1 [world.times=lean|hard] : Thin purses make an already cold wind cut closer.
+opinion @1 watch for 2 : A gate guard ought to hear a tired voice before a fine coat.
+opinion @1 houses against 1 : A fine shipping emblem won't bring a lost wolf ashore.
+opinion @1 city mixed 1 : The city takes wharf work readily enough. I'd like it to listen as readily.
+opinion @1 festivals for 1 : A festival bell seldom asks what tune I've got wrong.
+opinion @1 strangers for 1 : An unfamiliar voice deserves a hearing before it gets a label.
+opinion @1 church mixed 1 : I can stand in silence for one absent voice without borrowing a sermon.
+opinion @1 road mixed 1 : The last yard near a gate ought to drain as thoroughly as a whole mile of road.
+opinion @1 times against 1 [world.times=lean|hard] : Thin purses make an already cold wind cut closer.
 
 grown
-line greet : Stand on the patch my boots haven't polished. | Welcome past the noisy hinge.
-line greet.return : My welcome comes with a little wood dust.
-line again.open : Back inside the same short tune.
-line farewell : Keep yourself on sound planks.
-line farewell.return : Mind your home step too.
-line react.news : Sing out the account. Plain voice will do.
-line react.news.new : A new verse, that one.
-line react.news.known : I know the bones of that refrain.
-line react.news.doubt : There's a missing beat in that telling.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'll leave quiet room beside such grief.
-line react.news.glad [topic.kind=birth|marriage|work] : That one could stand a bell or two.
-line ask.how : How's the ground treating your boots?
-line answer.how : Standing level. That's worth mentioning here.
-line sympathise : Stay by my dry shoulder for a bit.
-line reassure : One bad footing needn't choose the whole walk.
-line refuse : My next turn is spoken for already.
-line accept_decline : I'll let that invitation fall quiet.
-line preclose : I've a small matter still catching on its hinge.
-line accept_preclose : Go on. The last beat's yours.
-line ack : Aye, I heard the turn.
-line greet [here.time=dawn] : A pale deck of sky over us.
-line greet [here.time=night] : Come level with the lamplight.
-line greet [pair.band=strangers] : There's a spot clear of shavings here.
-line hail [pair.band=friends] : This way, past the complaining latch!
-line greet.return [pair.band=friends] : A familiar voice clears my ear nicely.
-line answer.how.busy [self.working=yes] : Both eyes at work. One ear available.
-line thank : That favour landed square.
-line deflect_thanks : A loose peg needed making anyway.
-line give.advice : Try the board with an empty foot first.
-line ask.how [pair.band=friends] : Any burr on the day worth shaving down?
-
+line @1 greet : Stand on the patch my boots haven't polished. | Welcome past the noisy hinge.
+line @1 greet.return : My welcome comes with a little wood dust.
+line @1 again.open : Back inside the same short tune.
+line @1 farewell : Keep yourself on sound planks.
+line @1 farewell.return : Mind your home step too.
+line @1 react.news : Sing out the account. Plain voice will do.
+line @1 react.news.new : A new verse, that one.
+line @1 react.news.known : I know the bones of that refrain.
+line @1 react.news.doubt : There's a missing beat in that telling.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'll leave quiet room beside such grief.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That one could stand a bell or two.
+line @1 ask.how : How's the ground treating your boots?
+line @1 answer.how : Standing level. That's worth mentioning here.
+line @1 sympathise : Stay by my dry shoulder for a bit.
+line @1 reassure : One bad footing needn't choose the whole walk.
+line @1 refuse : My next turn is spoken for already.
+line @1 accept_decline : I'll let that invitation fall quiet.
+line @1 preclose : I've a small matter still catching on its hinge.
+line @1 accept_preclose : Go on. The last beat's yours.
+line @1 ack : Aye, I heard the turn.
+line @2 greet [here.time=dawn] : A pale deck of sky over us.
+line @3 greet [here.time=night] : Come level with the lamplight.
+line @4 greet [pair.band=strangers] : There's a spot clear of shavings here.
+line @1 hail [pair.band=friends] : This way, past the complaining latch!
+line @2 greet.return [pair.band=friends] : A familiar voice clears my ear nicely.
+line @1 answer.how.busy [self.working=yes] : Both eyes at work. One ear available.
+line @1 thank : That favour landed square.
+line @1 deflect_thanks : A loose peg needed making anyway.
+line @1 give.advice : Try the board with an empty foot first.
+line @2 ask.how [pair.band=friends] : Any burr on the day worth shaving down?
 scene exchange1
 when topic=work self.job=guard
 does tell.self / ask.detail / answer.detail
@@ -145,7 +147,7 @@ a : A friend needn't mend my workmanship as well as the chair. | Keep walking be
 scene exchange10
 when topic=work self.job=guard self.workplace
 does tell.self / ask.detail / answer.detail
-a : At #self.workplace# I test my footing before settling in. | My post has its own low note.
+a : At my post I test my footing before settling in. | My post has its own low note.
 b : Is the stone bad? | Wind through the gate?
 a : A fine stone and a wet boot have differences. | A latch that requires oil more than admiration.
 
@@ -340,23 +342,23 @@ when concept=bark here.weather=clear
 does aside
 cooldown 8h
 say Dry boards at present. | Sky's clear enough for humming.
-dlg resident.hub : There's a dry footing here for a word with me.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your step comes back on the beat.
-dlg resident.hub [here.time=night] : Late already. My tune barely lifts my lip.
-dlg resident.hub [pair.disposition=wary|hostile] : I can hear a plain question without anybody crowding my boots.
-dlg resident.job [self.job=guard self.workplace] : You'll find my watch at #self.workplace#. A clear crossing keeps me reasonably happy.
-dlg resident.job : I listen to the small complaints before they turn into a crash.
-dlg resident.news [world.news] : What came over the boards was #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody offered #topic.subject# #topic.claim#. No signature of mine goes beneath it yet.
-dlg resident.bye : Find dry planks beyond my little bit of music.
-dlg watch.hub [here.wanted=yes] : There's an outstanding entry for you, #here.fine# pennies. We can speak to the matter plainly.
-dlg watch.hub [here.wanted=no on_watch=yes] : I'm holding the watch. Tell me what needs entry or attention.
-dlg watch.hub [here.wanted=no on_watch=no] : Between shifts, with wood chips to prove it. What's your business?
-dlg watch.crime [here.witnessed=0] : Give me the part your own eyes caught. Start wherever you can place your feet.
-dlg watch.fine [here.wanted=yes] : The Watch has #here.fine# pennies down against your name.
-dlg watch.fine [here.wanted=no] : Your entry's clear of a fine. An admirably short account.
-dlg watch.bye : Safe over the sill and the boards beyond it.
 
+dlg @1 resident.hub : There's a dry footing here for a word with me.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your step comes back on the beat.
+dlg @3 resident.hub [here.time=night] : Late already. My tune barely lifts my lip.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can hear a plain question without anybody crowding my boots.
+dlg @1 resident.job [self.job=guard self.workplace] : You'll find me at my post most days. A clear crossing keeps me reasonably happy.
+dlg @2 resident.job : I listen to the small complaints before they turn into a crash.
+dlg @1 resident.news [world.news] : What came over the boards was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody offered #topic.subject# #topic.claim#. No signature of mine goes beneath it yet.
+dlg @1 resident.bye : Find dry planks beyond my little bit of music.
+dlg @1 watch.hub [here.wanted=yes] : There's an outstanding entry for you, #here.fine# pennies. We can speak to the matter plainly.
+dlg @2 watch.hub [here.wanted=no on_watch=yes] : I'm holding the watch. Tell me what needs entry or attention.
+dlg @3 watch.hub [here.wanted=no on_watch=no] : Between shifts, with wood chips to prove it. What's your business?
+dlg @1 watch.crime [here.witnessed=0] : Give me the part your own eyes caught. Start wherever you can place your feet.
+dlg @1 watch.fine [here.wanted=yes] : The Watch has #here.fine# pennies down against your name.
+dlg @2 watch.fine [here.wanted=no] : Your entry's clear of a fine. An admirably short account.
+dlg @1 watch.bye : Safe over the sill and the boards beyond it.
 graft resident.hub
 choice Why does that song peg have a smooth place? -> silent_notch
 node silent_notch

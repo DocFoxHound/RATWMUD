@@ -1,9 +1,12 @@
+# rm285, the skipped tread (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm285
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_theodora_fogdale
+written_by codex
 title the skipped tread
 fits stage=adult|old
 prefers job=laborer
@@ -68,7 +71,6 @@ line @22 deflect_thanks : My voice carries. Costs me no extra. | Only pointed wh
 line @23 preclose : I've a whole run of treads ahead. | Time I put some space behind my heels.
 line @24 accept_preclose : Go on. Keep the rail within reach. | You've a clear turn from here.
 line @25 farewell [here.time=night] : Take the dark flight single. | Count twice when the light goes.
-
 scene double
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Whatever you want, ask wit
 dlg @5 resident.job [self.job=laborer self.workplace] : I'm a washer at #self.workplace#. If you're carrying anything, let me see where it's going.
 dlg @6 resident.job : I take my share of the weight. I'm particular about knowing which share it is.
 dlg @7 resident.bye : Step wide of the wet patch and we've no more business.
-
 graft resident.hub
 choice Why count the steps behind you? -> missing_count
 node missing_count

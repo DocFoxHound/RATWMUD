@@ -1,9 +1,12 @@
+# rm354, the downhill map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm354
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_piet_wickridge
+written_by codex
 title the downhill map
 fits stage=adult|old
 prefers job=none temper=short
@@ -35,43 +38,42 @@ land = a half landing | the low platform
 swirl = the eddy | a turn in the water
 
 any
-opinion houses against 2 : I'd be glad to see a House mark on the splintered rail as well as on the goods that travel past it.
-opinion watch against 1 : Come down the stairs the way the parcel went before deciding who ought to have seen a collision.
-opinion sump for 1 : We know a few good ways out as well as ways into the low streets.
-opinion dole for 2 : If the shoulder gives way the appetite doesn't. I'm in favour of food for the interval.
-opinion merchants against 1 : I'd charge a full carriage back to a seller who forgets to mention returns.
-opinion road for 1 : A short road can be very dear if there's no sensible way back.
+opinion @1 houses against 2 : I'd be glad to see a House mark on the splintered rail as well as on the goods that travel past it.
+opinion @1 watch against 1 : Come down the stairs the way the parcel went before deciding who ought to have seen a collision.
+opinion @1 sump for 1 : We know a few good ways out as well as ways into the low streets.
+opinion @1 dole for 2 : If the shoulder gives way the appetite doesn't. I'm in favour of food for the interval.
+opinion @1 merchants against 1 : I'd charge a full carriage back to a seller who forgets to mention returns.
+opinion @1 road for 1 : A short road can be very dear if there's no sensible way back.
 
 grown
-line greet : Here. There's a view round the bend from this spot. | Hello. I've put the load down already.
-line greet [pair.band=strangers] : New face this way. There's a clear place to stand. | You can speak without getting under my elbow.
-line greet [here.time=dawn] : Morning. Even the return way looks fresh. | A good early view down the stair.
-line greet.return : Heard that. I'm just shifting my shoulder. | Yes, hello. The turn's behind me.
-line greet.return [pair.band=friends|family] : Good, a voice I'd know coming back up as well. | Take the clear place beside the rail.
-line greet.return [here.time=night] : Hello through the dark. Stay on the level bit. | Late feet on a familiar turning.
-line again.open : Our routes have crossed on the return already. | Back before my chalk's had a chance to wear off.
-line hail [pair.band=friends] : Look down from here. There's your awkward turn. | Stand on this side, the view's different.
-line farewell : Mind the step you can't see from above. | Give yourself a good way home.
-line farewell.return : I'll turn down here myself presently. | Right. An easy walk back to you.
-line react.news : Tell it from the end you actually saw. | I'll hear the full trip before deciding.
-line react.news.new : That hadn't made the return journey to me yet. | An unfamiliar turn. I'll remember it.
-line react.news.known : Yes. It reads the same from this end. | I'd already got the account over my shoulder.
-line react.news.doubt : Somebody's missed the corner in the middle. | I'd take that tale back over its own tracks.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That's a terrible load to get home with. Sit down. | Some hurts don't improve for being carted about. Leave yours here awhile.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's a good turn in the road for somebody. | I'd go back up a flight to hear news like that.
-line ask.how : How's the return journey treating you so far? | Any steep bits still to get through today?
-line answer.how : My feet are willing. The shoulder has a different opinion. | Not downright cross, by my usual standard.
-line decline : I'd be taking a trip with no sensible return if I agreed. | I can't give you the answer you want without making part of it up.
-line accept_decline : Refusal noted. Saves me standing on a stair. | Fair. I'll try an open way.
-line preclose : I'd like to get down before the next parcel comes up. | My shoulder has had enough of standing ready.
-line accept_preclose : Go clean round that bend then. | You may as well get the walking done.
-line thank : You kept the turning clear for my whole parcel. Thanks. | That's help you can feel across your shoulders.
-line deflect_thanks : I already knew the bad corner was there. | It was easy to point where I could see.
-line sympathise : Lean against that railing. You can stop for a minute. | No need to carry it straight back the way it came.
-line reassure : We can manage the turning without doing the whole road again. | Take off a little weight and have another look.
-line ack : Yes, the arrow points that way down. | That matches the way I remember it.
-line give.advice : Look back once before you leave the last clear patch. | Try the return route with one paw occupied.
-
+line @1 greet : Here. There's a view round the bend from this spot. | Hello. I've put the load down already.
+line @2 greet [pair.band=strangers] : New face this way. There's a clear place to stand. | You can speak without getting under my elbow.
+line @3 greet [here.time=dawn] : Morning. Even the return way looks fresh. | A good early view down the stair.
+line @1 greet.return : Heard that. I'm just shifting my shoulder. | Yes, hello. The turn's behind me.
+line @2 greet.return [pair.band=friends|family] : Good, a voice I'd know coming back up as well. | Take the clear place beside the rail.
+line @3 greet.return [here.time=night] : Hello through the dark. Stay on the level bit. | Late feet on a familiar turning.
+line @1 again.open : Our routes have crossed on the return already. | Back before my chalk's had a chance to wear off.
+line @1 hail [pair.band=friends] : Look down from here. There's your awkward turn. | Stand on this side, the view's different.
+line @1 farewell : Mind the step you can't see from above. | Give yourself a good way home.
+line @1 farewell.return : I'll turn down here myself presently. | Right. An easy walk back to you.
+line @1 react.news : Tell it from the end you actually saw. | I'll hear the full trip before deciding.
+line @1 react.news.new : That hadn't made the return journey to me yet. | An unfamiliar turn. I'll remember it.
+line @1 react.news.known : Yes. It reads the same from this end. | I'd already got the account over my shoulder.
+line @1 react.news.doubt : Somebody's missed the corner in the middle. | I'd take that tale back over its own tracks.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That's a terrible load to get home with. Sit down. | Some hurts don't improve for being carted about. Leave yours here awhile.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's a good turn in the road for somebody. | I'd go back up a flight to hear news like that.
+line @1 ask.how : How's the return journey treating you so far? | Any steep bits still to get through today?
+line @1 answer.how : My feet are willing. The shoulder has a different opinion. | Not downright cross, by my usual standard.
+line @1 decline : I'd be taking a trip with no sensible return if I agreed. | I can't give you the answer you want without making part of it up.
+line @1 accept_decline : Refusal noted. Saves me standing on a stair. | Fair. I'll try an open way.
+line @1 preclose : I'd like to get down before the next parcel comes up. | My shoulder has had enough of standing ready.
+line @1 accept_preclose : Go clean round that bend then. | You may as well get the walking done.
+line @1 thank : You kept the turning clear for my whole parcel. Thanks. | That's help you can feel across your shoulders.
+line @1 deflect_thanks : I already knew the bad corner was there. | It was easy to point where I could see.
+line @1 sympathise : Lean against that railing. You can stop for a minute. | No need to carry it straight back the way it came.
+line @1 reassure : We can manage the turning without doing the whole road again. | Take off a little weight and have another look.
+line @1 ack : Yes, the arrow points that way down. | That matches the way I remember it.
+line @1 give.advice : Look back once before you leave the last clear patch. | Try the return route with one paw occupied.
 scene topview
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : A late wagon hasn't relieved anybody of the return trip after unloading. | T
 b : Wouldn't more paws help? | What would you plan for?
 a : They help the lift. They can't all stand sideways on the same turning. | Where the last carrier can come back round while the next goes up.
 
-grown
-
 story arrowtail [topic=memories|travel]
   : I sketched a route on the front and reverse of a scrap once. The drawing on the back showed through, running quite neatly the wrong way.
   : Took me past one very familiar doorway twice.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Fold the soft bit over the butter. | A whole meal strapped into one bit of clean cloth.
 
-dlg resident.hub : I've time while the strap marks fade off my shoulder. What brings you?
-dlg resident.hub [topic.meeting=known] : #topic.player#, recognise that turning you can only see on the way back?
-dlg resident.hub [here.time=night] : It's dark round the bend. This patch is level enough to stand and talk.
-dlg resident.hub [pair.disposition=wary|hostile] : We'll talk with the parcel and a bit of air between us.
-dlg resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. A fine route with no space for turning is no route for me.
-dlg resident.job : If I take something on I think about the journey both ways.
-dlg resident.bye : Don't come back down that last stair without a look.
-
+dlg @1 resident.hub : I've time while the strap marks fade off my shoulder. What brings you?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, recognise that turning you can only see on the way back?
+dlg @3 resident.hub [here.time=night] : It's dark round the bend. This patch is level enough to stand and talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We'll talk with the parcel and a bit of air between us.
+dlg @1 resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. A fine route with no space for turning is no route for me.
+dlg @2 resident.job : If I take something on I think about the journey both ways.
+dlg @1 resident.bye : Don't come back down that last stair without a look.
 graft resident.hub
 choice Why does your arrow have a fork at both ends? -> arrowfork
 node arrowfork

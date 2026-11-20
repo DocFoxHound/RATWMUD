@@ -1,9 +1,12 @@
+# rm274, the cupboard constellations (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm274
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_ottilie_dripdale
+written_by codex
 title the cupboard constellations
 fits stage=adult|old
 prefers job=merchant
@@ -34,46 +37,45 @@ windskin = a dry peel | a curl of apple skin
 saltcase = a horn salt cup | my box for dry salt
 
 any
-opinion church for 1 : Food without the usual price pinned beside it is a comfort. The chapel knows how to serve such a meal.
-opinion dole for 2 : The ration gave my cupboard a smell of bread again. Somebody upstairs ought to come down and smell hunger for comparison.
-opinion merchants against 2 : They've found a way of charging for the spice and the dust where the spice once lay.
-opinion houses against 2 : A high wall leaves a fine dry patch inside. The rest of us get the drips down our necks.
-opinion strangers for 1 : One visitor described six different ways to spice a hot drink. I'd have let that wolf stay for a seventh.
-opinion festivals against 1 : I can see the same stars from a quiet landing without a stranger's hat in my mouth.
+opinion @1 church for 1 : Food without the usual price pinned beside it is a comfort. The chapel knows how to serve such a meal.
+opinion @1 dole for 2 : The ration gave my cupboard a smell of bread again. Somebody upstairs ought to come down and smell hunger for comparison.
+opinion @1 merchants against 2 : They've found a way of charging for the spice and the dust where the spice once lay.
+opinion @1 houses against 2 : A high wall leaves a fine dry patch inside. The rest of us get the drips down our necks.
+opinion @1 strangers for 1 : One visitor described six different ways to spice a hot drink. I'd have let that wolf stay for a seventh.
+opinion @1 festivals against 1 : I can see the same stars from a quiet landing without a stranger's hat in my mouth.
 
 grown
-line greet : Come within smelling distance of the cider. | Space to speak near the spice shelf.
-line greet [pair.band=strangers] : I'm particular about my cupboard and civil to a caller.
-line greet [here.time=dawn] : Early enough to have the last star for company.
-line greet [here.time=dusk|night] : One more voice under the evening sky.
-line greet [self.working=yes] : I've a jar balanced here. Welcome from a paw's length off.
-line kin.open [pair.kin!=no] : Come in. Our folk may have the good cup.
-line again.open : You've turned up twice like a peppercorn that's lost a chip.
-line greet.return : Heard. You're the nearer voice.
-line greet.return [pair.band=friends|family] : A familiar word goes well with the spice.
-line greet.return [self.working=yes] : Your greeting's arrived between two twists of the string.
-line greet.return [here.time=dusk|night] : I can place the voice with my eyes shut.
-line farewell : Carry a little warmth away with you.
-line farewell.return : I'll set the last cup in its place.
-line farewell [here.time=dusk|night] : Take the steps where the pale edges show.
-line react.news : Let me get the grain of this.
-line react.news.new : That's added a star to my private sky.
-line react.news.known : I heard the same thing from the far shelf.
-line react.news.doubt : Who saw it clearly enough to count it?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I might bring something warm that won't ask for an answer.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll put extra spice in the next cup to celebrate that bit of news.
-line answer.how : Getting by. The cupboard hasn't had cause to complain.
-line ask.how : How do your own stores stand?
-line sympathise : You needn't pour any more of this out than you can bear.
-line reassure : Sit till the sting comes off it.
-line decline : My cupboard's a private matter once the doors are fast.
-line accept_decline : Keep the lid on whatever you choose.
-line thank : My hands are freer for what you did.
-line deflect_thanks : Save the grand thanks. Tell me if the spice suits you.
-line preclose : Time I put those little stars back in line.
-line accept_preclose : I'll leave the way by the jars clear.
-line ack : Neatly reckoned.
-
+line @1 greet : Come within smelling distance of the cider. | Space to speak near the spice shelf.
+line @2 greet [pair.band=strangers] : I'm particular about my cupboard and civil to a caller.
+line @3 greet [here.time=dawn] : Early enough to have the last star for company.
+line @4 greet [here.time=dusk|night] : One more voice under the evening sky.
+line @5 greet [self.working=yes] : I've a jar balanced here. Welcome from a paw's length off.
+line @1 kin.open [pair.kin!=no] : Come in. Our folk may have the good cup.
+line @1 again.open : You've turned up twice like a peppercorn that's lost a chip.
+line @1 greet.return : Heard. You're the nearer voice.
+line @2 greet.return [pair.band=friends|family] : A familiar word goes well with the spice.
+line @3 greet.return [self.working=yes] : Your greeting's arrived between two twists of the string.
+line @4 greet.return [here.time=dusk|night] : I can place the voice with my eyes shut.
+line @1 farewell : Carry a little warmth away with you.
+line @1 farewell.return : I'll set the last cup in its place.
+line @2 farewell [here.time=dusk|night] : Take the steps where the pale edges show.
+line @1 react.news : Let me get the grain of this.
+line @1 react.news.new : That's added a star to my private sky.
+line @1 react.news.known : I heard the same thing from the far shelf.
+line @1 react.news.doubt : Who saw it clearly enough to count it?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I might bring something warm that won't ask for an answer.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll put extra spice in the next cup to celebrate that bit of news.
+line @1 answer.how : Getting by. The cupboard hasn't had cause to complain.
+line @1 ask.how : How do your own stores stand?
+line @1 sympathise : You needn't pour any more of this out than you can bear.
+line @1 reassure : Sit till the sting comes off it.
+line @1 decline : My cupboard's a private matter once the doors are fast.
+line @1 accept_decline : Keep the lid on whatever you choose.
+line @1 thank : My hands are freer for what you did.
+line @1 deflect_thanks : Save the grand thanks. Tell me if the spice suits you.
+line @1 preclose : Time I put those little stars back in line.
+line @1 accept_preclose : I'll leave the way by the jars clear.
+line @1 ack : Neatly reckoned.
 scene sky
 when topic=pastimes self.likes=stars
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,15 @@ when concept=bark self.likes=autumn_wind
 does aside
 cooldown 8h
 say Catch the wrapper before the wind takes an interest. | Don't let the breeze price my goods.
-dlg resident.hub : I've got my lids on. Ask while both ears are free.
-dlg resident.hub [topic.meeting=known] : You again, #topic.player#. I've found room for another star.
-dlg resident.hub [pair.disposition=wary|hostile] : A pace back from the cupboard. Now we can be civil.
-dlg resident.hub [here.time=night] : You've caught the hour when I count bright things.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. A neat shelf and a plain price suit me.
-dlg resident.job : Steady paws for parcels that shouldn't come open.
-dlg resident.news [world.news] : Word among the jars was this. #world.news#.
-dlg resident.bye : I hope the sky has saved you a clear patch.
 
+dlg @1 resident.hub : I've got my lids on. Ask while both ears are free.
+dlg @2 resident.hub [topic.meeting=known] : You again, #topic.player#. I've found room for another star.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A pace back from the cupboard. Now we can be civil.
+dlg @4 resident.hub [here.time=night] : You've caught the hour when I count bright things.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. A neat shelf and a plain price suit me.
+dlg @2 resident.job : Steady paws for parcels that shouldn't come open.
+dlg @1 resident.news [world.news] : Word among the jars was this. #world.news#.
+dlg @1 resident.bye : I hope the sky has saved you a clear patch.
 graft @pepper_night resident.hub
 choice Why do you arrange the pepper like that? -> pepper_night
 node pepper_night

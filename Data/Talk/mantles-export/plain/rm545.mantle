@@ -1,9 +1,12 @@
+# rm545, the charcoal rest (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm545
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_ragnar_vance
+written_by codex
 title the charcoal rest
 fits stage=young|adolescent|adult|old
 prefers temper=short honesty=guarded
@@ -17,6 +20,7 @@ topics memories +0.6 pastimes +0.5 home +0.3 weather +0.2
 styles comfort=quiet gossip=guarded refuse=short tease=none
 marks oath saying
 persona #self.first# draws the rests between chapel bells in charcoal, saves the longest rest for a hillside memory, and expects other hands to leave the finished count alone.
+
 words
 oath! = Smear my last rest | Ash in the bell
 saying! = Count what falls quiet | Leave the hill one blank
@@ -32,155 +36,31 @@ nighttick = a faint wooden tick | a tiny roof creak
 duskchar = an evening-grey smudge | a streak of late light
 
 any
-
-opinion city mixed 1 : There are places where I can scarcely hear the thoughts inside my head. I would leave a little more quiet between roofs.
-opinion houses mixed 1 : It matters what a camp is like to live in after the account of what it produces has gone away to town.
-opinion road for 1 : Some roads are worth taking for the sounds that cease as you climb.
-opinion festivals against 1 : Let me stand where one last bell can finish clearly. You may have the loud middle of the company.
-opinion merchants mixed 1 : I'll remember who let me consider the goods in peace. A second speech has never made my appetite larger.
-line greet : Mind the blank bit. That's what I've been counting.
-line greet.return : I can fit your voice in again now.
-line farewell : Let the last sound finish of its own accord.
-line farewell.return : I'll remember where your part goes quiet.
-line ask.how : Have you had a whole stretch of quiet today?
-line answer.how : I'd be easier with fewer little sounds competing for my ear.
-line thank : You let that one end without filling the space afterwards.
-line decline : I won't hand over something that took all that quiet to put right.
-line accept_decline : I can keep your answer as short as you gave it.
-line sympathise : I'll stay here without adding another demand for an answer.
-line reassure : There may still be one clear space after all that noise.
-line react.news : Start with the one part you're certain of.
-line react.news.new : That sound hadn't entered the count till now.
-line react.news.known : I've a dark mark down for that one already.
-line react.news.doubt : A ring still hanging in the air can be mistaken for another stroke.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I can give good news a clean place all to itself.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Lower your voice. The part that hurts doesn't need any extra ringing.
-line ack : Just so. Now I have the count straight.
-
-young
-
-line greet [pair.band=strangers] : You may stand here if you won't rub the charcoal away.
-
-scene pastimes_1
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I draw the silence after it rings. Look, the paper's all black except #coalrest#.
-b : How did you draw nothing? | Is it a really long quiet?
-a : I drew right round it. Don't put a finger there or it'll be a picture of your finger instead. | It's as long as the bit where I can imagine being up the hill with nobody calling.
-
-scene work_1
-when topic=work self.job=child
-does tell.self / ask.detail / answer.detail
-a : I'm #self.trade_words#. My charcoal goes very straight for the exercises and crooked when I draw the hill.
-b : What does the hill learn? | Do your exercises get smoky?
-a : Nothing. It's already a fine hill before I begin putting sums on the other side. | Only if I fold them inwards. I've learnt to keep a decent calculation out of my mountains now.
-
-scene food_1
-when topic=food self.likes=pickled_herring
-does tell.self / ask.detail / answer.detail
-a : A piece of herring curls into quite a neat little bell if you put the tail end upwards.
-b : Can you ring it? | Can you eat your bell?
-a : Once. It makes a little slap on the plate and after that it's only fish again. | That's how you get it to keep quiet for a really long time.
-
-scene family_1
-when topic=family self.mother
-does tell.self / ask.detail / answer.detail
-a : I'd show this drawing to #self.mother# before the bells make me change it.
-b : Can you put another drawing on top? | What part do you want to show first?
-a : I'd slip a clean sheet between the pictures. Charcoal tries to put itself on both sides. | The bit left bare for the hill. It wasn't nearly so noisy where the charcoal used to burn.
-
-scene weather_1
-when topic=weather self.likes=first_snow
-does tell.self / ask.detail / answer.detail
-a : The first snow makes everything outside look like my untouched bit of paper.
-b : Will you draw the snow? | Won't the bell still ring?
-a : I'd have to put charcoal all round the whole street. I might draw just one snowy chimney instead. | Yes. But its edges seem to go soft when all the roofs are wearing white.
-
-scene home_1
-when topic=home self.likes=tidy_house
-does tell.self / ask.detail / answer.detail
-a : My drawings have one shelf to themselves with nothing loose that can go walking over the hills.
-b : Can a thing walk on paper? | What's allowed on the shelf?
-a : A button can roll. You should see the road one little button made across a whole quiet valley. | Drawings and the clean cloth that goes between. The charcoal has to sleep well away from the clean edges.
-
-scene animals_1
-when topic=animals
-does tell.self / ask.detail / answer.detail
-a : A moth on a bell drawing looks surprisingly like a missing piece of the hill.
-b : Did you put it there? | How could you tell it was a moth?
-a : No. It arrived without asking, the way little moving things so often do. | It took the hillside off in two pieces and flew away with both of them.
-
-scene memories_1
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : Up at the charcoal camp even the smoke seemed in no hurry to go anywhere.
-b : Was everything black? | Would you sleep back there?
-a : No. The hill had green on it and there was quite a lot of sky left even after a busy morning. | I want an unbroken stretch of night where the roof doesn't count out the town for me.
-
-scene day_1
-when topic=day self.dislikes=night_noise
-does tell.self / ask.detail / answer.detail
-a : Once the chapel bell finishes at night there's a little bit of quiet a louder sound keeps barging into.
-b : Why don't you like that? | What larger sound?
-a : It's the cart or a door just when I'm listening for the nice quiet part. It muddles up my whole page. | Any one that could have waited till morning in my considered opinion.
-
-story crookedvalley [topic=memories]
-  : I folded my hill drawing to keep it in a pocket and forgot to slip a clean sheet inside.
-  : When I opened it the next morning there were hills on either valley wall.
-  b : Did you draw another camp?
-  : The second was a reflection. I left a big patch of untouched valley so the two could have some quiet between them.
-
-rule @mark
-when concept=bark
-does aside
-cooldown 8h
-say One black mark and a properly long rest. | The square without charcoal is the one I meant.
-
-rule @snow
-when concept=bark self.likes=first_snow
-does aside
-cooldown 8h
-say Snow's rubbed some quiet onto all the roofs. | Fewer black strokes for the chimney tops today.
-dlg resident.hub : You can see the drawing provided your fingers keep clear of the edges.
-dlg resident.job [self.job=child] : I'm #self.trade_words#. I keep a good clean bit for the figures and do the hill on the reverse.
-dlg resident.bye : Don't take a black thumbprint away with you.
-
-graft resident.hub
-choice Why did you leave a white square on your hill? -> coal_gap
-node coal_gap
-say That's the quiet between the chapel's last loud ring and the rest of town starting up. It's the best bit. I did it by leaving it alone.
-choice Can I look more closely? -> coal_near
-choice I'll keep my hands here. -> hub
-node coal_near
-say Look with your eyes. All the charcoal on the rest of the page is trying terribly hard to get inside that square.
-choice I'll keep my hands here. -> hub
-
-adolescent
-
-
-scene friends_1
-when topic=friends
-does tell.self / ask.detail / answer.detail
-a : I'll let a friend add a charcoal mark provided we have agreed which sounds are worth counting.
-b : What isn't worth a mark? | Do you let a friend choose?
-a : The second echo pretending to be a bell all by itself. We'd end up arguing with our own room. | For a separate row, certainly. Two counts can disagree without one being deliberately spoilt.
-
-scene pastimes_1
-when topic=pastimes self.likes=evening_line
-does tell.self / ask.detail / answer.detail
-a : A float has its own rests. Sometimes it stays motionless enough to disappear into the water behind it.
-b : What shows where the float is? | Is quiet good for fishing?
-a : The thread holds a faint sweep of evening light. That gives my eyes somewhere to return. | It's good for me. I wouldn't presume to answer for a fish before it decides to enquire.
-
-story oddstroke [topic=pastimes]
-  : I wrote what I thought was an extra bell on a scrap and carried it outside to count again.
-  : The extra stroke returned at precisely the same interval.
-  b : Was the chapel ringing an extra one?
-  : My little cork float was knocking the side of its bowl on my sill. I moved it and gave the chapel back its usual count.
+opinion @1 city mixed 1 : There are places where I can scarcely hear the thoughts inside my head. I would leave a little more quiet between roofs.
+opinion @1 houses mixed 1 : It matters what a camp is like to live in after the account of what it produces has gone away to town.
+opinion @1 road for 1 : Some roads are worth taking for the sounds that cease as you climb.
+opinion @1 festivals against 1 : Let me stand where one last bell can finish clearly. You may have the loud middle of the company.
+opinion @1 merchants mixed 1 : I'll remember who let me consider the goods in peace. A second speech has never made my appetite larger.
+line @1 greet : Mind the blank bit. That's what I've been counting.
+line @1 greet.return : I can fit your voice in again now.
+line @1 farewell : Let the last sound finish of its own accord.
+line @1 farewell.return : I'll remember where your part goes quiet.
+line @1 ask.how : Have you had a whole stretch of quiet today?
+line @1 answer.how : I'd be easier with fewer little sounds competing for my ear.
+line @1 thank : You let that one end without filling the space afterwards.
+line @1 decline : I won't hand over something that took all that quiet to put right.
+line @1 accept_decline : I can keep your answer as short as you gave it.
+line @1 sympathise : I'll stay here without adding another demand for an answer.
+line @1 reassure : There may still be one clear space after all that noise.
+line @1 react.news : Start with the one part you're certain of.
+line @1 react.news.new : That sound hadn't entered the count till now.
+line @1 react.news.known : I've a dark mark down for that one already.
+line @1 react.news.doubt : A ring still hanging in the air can be mistaken for another stroke.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I can give good news a clean place all to itself.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Lower your voice. The part that hurts doesn't need any extra ringing.
+line @1 ack : Just so. Now I have the count straight.
 
 grown
-
-
 scene pastimes_1
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -282,6 +162,125 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say There's a tick worth identifying before anyone rings again. | A dry roof can be an orchestra after dusk.
-dlg resident.hub : We can talk quietly here. My count can keep its place for a while.
-dlg resident.news [world.news] : These words reached me in the gap between other sounds. #world.news#.
-dlg resident.bye : Leave room for the quieter half of your journey.
+
+dlg @2 resident.hub : We can talk quietly here. My count can keep its place for a while.
+dlg @1 resident.news [world.news] : These words reached me in the gap between other sounds. #world.news#.
+dlg @2 resident.bye : Leave room for the quieter half of your journey.
+
+young
+line @1 greet [pair.band=strangers] : You may stand here if you won't rub the charcoal away.
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I draw the silence after it rings. Look, the paper's all black except #coalrest#.
+b : How did you draw nothing? | Is it a really long quiet?
+a : I drew right round it. Don't put a finger there or it'll be a picture of your finger instead. | It's as long as the bit where I can imagine being up the hill with nobody calling.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I'm #self.trade_words#. My charcoal goes very straight for the exercises and crooked when I draw the hill.
+b : What does the hill learn? | Do your exercises get smoky?
+a : Nothing. It's already a fine hill before I begin putting sums on the other side. | Only if I fold them inwards. I've learnt to keep a decent calculation out of my mountains now.
+
+scene food_1
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A piece of herring curls into quite a neat little bell if you put the tail end upwards.
+b : Can you ring it? | Can you eat your bell?
+a : Once. It makes a little slap on the plate and after that it's only fish again. | That's how you get it to keep quiet for a really long time.
+
+scene family_1
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd show this drawing to #self.mother# before the bells make me change it.
+b : Can you put another drawing on top? | What part do you want to show first?
+a : I'd slip a clean sheet between the pictures. Charcoal tries to put itself on both sides. | The bit left bare for the hill. It wasn't nearly so noisy where the charcoal used to burn.
+
+scene weather_1
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : The first snow makes everything outside look like my untouched bit of paper.
+b : Will you draw the snow? | Won't the bell still ring?
+a : I'd have to put charcoal all round the whole street. I might draw just one snowy chimney instead. | Yes. But its edges seem to go soft when all the roofs are wearing white.
+
+scene home_1
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : My drawings have one shelf to themselves with nothing loose that can go walking over the hills.
+b : Can a thing walk on paper? | What's allowed on the shelf?
+a : A button can roll. You should see the road one little button made across a whole quiet valley. | Drawings and the clean cloth that goes between. The charcoal has to sleep well away from the clean edges.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A moth on a bell drawing looks surprisingly like a missing piece of the hill.
+b : Did you put it there? | How could you tell it was a moth?
+a : No. It arrived without asking, the way little moving things so often do. | It took the hillside off in two pieces and flew away with both of them.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Up at the charcoal camp even the smoke seemed in no hurry to go anywhere.
+b : Was everything black? | Would you sleep back there?
+a : No. The hill had green on it and there was quite a lot of sky left even after a busy morning. | I want an unbroken stretch of night where the roof doesn't count out the town for me.
+
+scene day_1
+when topic=day self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : Once the chapel bell finishes at night there's a little bit of quiet a louder sound keeps barging into.
+b : Why don't you like that? | What larger sound?
+a : It's the cart or a door just when I'm listening for the nice quiet part. It muddles up my whole page. | Any one that could have waited till morning in my considered opinion.
+
+story crookedvalley [topic=memories]
+  : I folded my hill drawing to keep it in a pocket and forgot to slip a clean sheet inside.
+  : When I opened it the next morning there were hills on either valley wall.
+  b : Did you draw another camp?
+  : The second was a reflection. I left a big patch of untouched valley so the two could have some quiet between them.
+
+rule @mark
+when concept=bark
+does aside
+cooldown 8h
+say One black mark and a properly long rest. | The square without charcoal is the one I meant.
+
+rule @snow
+when concept=bark self.likes=first_snow
+does aside
+cooldown 8h
+say Snow's rubbed some quiet onto all the roofs. | Fewer black strokes for the chimney tops today.
+
+dlg @1 resident.hub : You can see the drawing provided your fingers keep clear of the edges.
+dlg @1 resident.job [self.job=child] : I'm #self.trade_words#. I keep a good clean bit for the figures and do the hill on the reverse.
+dlg @1 resident.bye : Don't take a black thumbprint away with you.
+graft resident.hub
+choice Why did you leave a white square on your hill? -> coal_gap
+node coal_gap
+say That's the quiet between the chapel's last loud ring and the rest of town starting up. It's the best bit. I did it by leaving it alone.
+choice Can I look more closely? -> coal_near
+choice I'll keep my hands here. -> hub
+node coal_near
+say Look with your eyes. All the charcoal on the rest of the page is trying terribly hard to get inside that square.
+choice I'll keep my hands here. -> hub
+
+
+adolescent
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'll let a friend add a charcoal mark provided we have agreed which sounds are worth counting.
+b : What isn't worth a mark? | Do you let a friend choose?
+a : The second echo pretending to be a bell all by itself. We'd end up arguing with our own room. | For a separate row, certainly. Two counts can disagree without one being deliberately spoilt.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : A float has its own rests. Sometimes it stays motionless enough to disappear into the water behind it.
+b : What shows where the float is? | Is quiet good for fishing?
+a : The thread holds a faint sweep of evening light. That gives my eyes somewhere to return. | It's good for me. I wouldn't presume to answer for a fish before it decides to enquire.
+
+story oddstroke [topic=pastimes]
+  : I wrote what I thought was an extra bell on a scrap and carried it outside to count again.
+  : The extra stroke returned at precisely the same interval.
+  b : Was the chapel ringing an extra one?
+  : My little cork float was knocking the side of its bowl on my sill. I moved it and gave the chapel back its usual count.

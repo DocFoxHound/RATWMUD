@@ -1,9 +1,12 @@
+# rm347, the count after the churn (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm347
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_pell_barleymead
+written_by codex
 title the count after the churn
 fits stage=adult|old
 prefers job=none
@@ -35,35 +38,34 @@ lid = the churn lid | a wooden cover
 pip = a little mark | a deep count notch
 
 any
-opinion houses against 3 : I brought the Council a matter I could count on my fingers. It appears some benches use different arithmetic.
-opinion dole for 2 : A short portion hiding under the rim is still a portion short, no matter how cheerful the server.
-opinion sump for 1 : The low streets know what a long churn of a day costs the one holding the handle.
-opinion merchants mixed 1 : Weigh the butter after taking the stamp off. Both of us will know what changed paws.
-opinion watch mixed 1 : I like an account with as many names going out as came in.
-opinion festivals for 1 : A crowd can sing the last number of a count better than I can mutter it.
+opinion @1 houses against 3 : I brought the Council a matter I could count on my fingers. It appears some benches use different arithmetic.
+opinion @1 dole for 2 : A short portion hiding under the rim is still a portion short, no matter how cheerful the server.
+opinion @1 sump for 1 : The low streets know what a long churn of a day costs the one holding the handle.
+opinion @1 merchants mixed 1 : Weigh the butter after taking the stamp off. Both of us will know what changed paws.
+opinion @1 watch mixed 1 : I like an account with as many names going out as came in.
+opinion @1 festivals for 1 : A crowd can sing the last number of a count better than I can mutter it.
 
 grown
-line greet : Here you are. I can count my company aloud. | Step clear of my working elbow.
-line greet.return : Your greeting makes two good voices in this space. | A plain welcome back from me.
-line again.open : Another turn brings you round already.
-line farewell : Get home with enough strength left for supper. | Count yourself a dry seat at the other end.
-line farewell.return : And may your last mile be the shorter one. | I'll remember that kindness at the next count.
-line react.news : Speak up. I keep better count when I hear properly. | Lay the whole reckonable part before me.
-line react.news.new : Something new to put under my breath.
-line react.news.known : I remember the tally from the first hearing.
-line react.news.doubt : That count won't fill the vessel claimed for it.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd trade every number I know for one less wolf hurt.
-line react.news.glad [topic.kind=birth|marriage|work] : A better sum than I was braced to hear.
-line ask.how : Any loose counts rattling in your head?
-line answer.how : Steady enough on the working stroke.
-line sympathise : Sit where you can talk without having to repeat it.
-line reassure : Start counting again after a rest if you need one.
-line refuse : My hands have another claim coming due this hour.
-line accept_decline : Fair decision. No second ballot called for.
-line preclose : I'm due back at my own end of the count.
-line accept_preclose : Go on. I'll mind the count till later.
-line ack : Loud and plain. I have it.
-
+line @1 greet : Here you are. I can count my company aloud. | Step clear of my working elbow.
+line @1 greet.return : Your greeting makes two good voices in this space. | A plain welcome back from me.
+line @1 again.open : Another turn brings you round already.
+line @1 farewell : Get home with enough strength left for supper. | Count yourself a dry seat at the other end.
+line @1 farewell.return : And may your last mile be the shorter one. | I'll remember that kindness at the next count.
+line @1 react.news : Speak up. I keep better count when I hear properly. | Lay the whole reckonable part before me.
+line @1 react.news.new : Something new to put under my breath.
+line @1 react.news.known : I remember the tally from the first hearing.
+line @1 react.news.doubt : That count won't fill the vessel claimed for it.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd trade every number I know for one less wolf hurt.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A better sum than I was braced to hear.
+line @1 ask.how : Any loose counts rattling in your head?
+line @1 answer.how : Steady enough on the working stroke.
+line @1 sympathise : Sit where you can talk without having to repeat it.
+line @1 reassure : Start counting again after a rest if you need one.
+line @1 refuse : My hands have another claim coming due this hour.
+line @1 accept_decline : Fair decision. No second ballot called for.
+line @1 preclose : I'm due back at my own end of the count.
+line @1 accept_preclose : Go on. I'll mind the count till later.
+line @1 ack : Loud and plain. I have it.
 scene exchange1
 when topic=work self.job=none self.workplace
 does tell.self / ask.detail / answer.detail
@@ -153,7 +155,7 @@ when topic=travel
 does tell.self / ask.detail / answer.detail
 a : I count the turns on a walk for a change. | I like directions with the steep bit named.
 b : From counting the churn? | So you can avoid it?
-a : A lane can turn left. My handle's never done that yet. | So I can take a breath before I set about it.
+a : A lane turns left now and then. My churn handle only ever goes the one way. | So I can take a breath before I set about it.
 
 scene exchange14
 when topic=faith
@@ -231,16 +233,16 @@ when concept=bark self.likes=first_snow
 does aside
 cooldown 8h
 say A couple of white flakes would cover all those wrong turns. | I'm waiting for the year's first clean sheet from the sky.
-dlg resident.hub : You get the aloud part of my attention. The count can stay quiet.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your name already has a tidy place in my reckoning.
-dlg resident.hub [here.time=night] : I've run the day down to its quietest strokes.
-dlg resident.hub [pair.disposition=wary|hostile] : No need to dress it up. I can add a plain statement.
-dlg resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. I keep at the handle till the sound changes.
-dlg resident.job : I like work that gives me one good honest thing to put down at the finish.
-dlg resident.news [world.news] : The part I counted on my own ears was #world.news#.
-dlg resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. I've counted no evidence beyond the telling.
-dlg resident.bye : Go with the right number of errands still in your pocket.
 
+dlg @1 resident.hub : You get the aloud part of my attention. The count can stay quiet.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your name already has a tidy place in my reckoning.
+dlg @3 resident.hub [here.time=night] : I've run the day down to its quietest strokes.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : No need to dress it up. I can add a plain statement.
+dlg @1 resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. I keep at the handle till the sound changes.
+dlg @2 resident.job : I like work that gives me one good honest thing to put down at the finish.
+dlg @1 resident.news [world.news] : The part I counted on my own ears was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. I've counted no evidence beyond the telling.
+dlg @1 resident.bye : Go with the right number of errands still in your pocket.
 graft resident.hub
 choice Does a fixed count make butter? -> churn_count
 node churn_count

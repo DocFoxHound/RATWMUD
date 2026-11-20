@@ -1,9 +1,12 @@
+# rm438, the pocket passenger (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm438
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_silas_brinemore
+written_by codex
 title the pocket passenger
 fits stage=adult|old
 prefers warmth=warm drive=restless
@@ -17,6 +20,7 @@ topics travel +0.6 pastimes +0.4 friends +0.3 food +0.2
 styles comfort=practical gossip=careful refuse=plain tease=gentle
 marks oath saying
 persona #self.first# wraps pocket coal in two layers of cloth, calls the smallest piece a passenger, and likes to hear where other feet are going.
+
 words
 oath! = Coal down my clean sleeve | Shake my luck loose
 saying! = Carry one passenger free | Keep the outside clean
@@ -33,35 +37,33 @@ luckpurse = a rolled rag purse | a dark cloth pocket
 knockmark = a crease in the flap | a mark beside the pocket
 
 grown
-
-opinion strangers for 1 : A traveller may have seen the far shore I keep trying to put a shape to.
-opinion houses mixed 1 : A House has a hundred ways to send a package travelling. I like to remember the servant carrying it might want a journey too.
-opinion road for 2 : I enjoy a road even before it goes anywhere I know, especially before then.
-opinion church for 1 : One small coal steadies my nerve. Giving thanks is the Bright One's due. I can carry both thoughts comfortably.
-opinion dole for 2 : A wolf with spare coin can play generous with more than guesses about luck.
-opinion merchants mixed 1 : I appreciate a seller who says exactly how much the wrapping costs before I decide what is going inside it.
-line greet : Come stand where my passenger can meet your boots.
-line greet [pair.band=strangers] : Any traveller's welcome to this little space beside me.
-line greet.return : There you are. My feet have stayed put till your words reached me.
-line farewell : May your pockets travel lighter than your hopes.
-line farewell.return : I'd wave the coal but I've only just got the cloth folded neatly.
-line ask.how : Any opportunity to walk a little ground beyond your usual round?
-line answer.how : Restless from my ears to the passenger in my pocket.
-line react.news : Where's the far end of those words travelled from?
-line react.news.known : That bit's come up my road already.
-line react.news.new : Another little parcel for my travelling memory.
-line react.news.doubt : I'd see what lay inside the wrapping before paying freight on that.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That sets my best bit of luck knocking against my thigh.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can turn my feet towards whoever's carrying the worst of that.
-line decline : I've promised this little bit of freedom to a journey still ahead.
-line accept_decline : One invitation can go back inside my pocket unopened.
-line thank : You spared a corner of the road for my hopes.
-line deflect_thanks : There's room in my good luck for a second traveller.
-line sympathise : My feet can sit quiet long enough for you to get some rest.
-line reassure : A journey can be worth keeping even before there's money for a berth.
-line ack : There's a familiar shape inside that fold now.
-line preclose : I must take the whole passenger list up the next flight.
-
+opinion @1 strangers for 1 : A traveller may have seen the far shore I keep trying to put a shape to.
+opinion @1 houses mixed 1 : A House has a hundred ways to send a package travelling. I like to remember the servant carrying it might want a journey too.
+opinion @1 road for 2 : I enjoy a road even before it goes anywhere I know, especially before then.
+opinion @1 church for 1 : One small coal steadies my nerve. Giving thanks is the Bright One's due. I can carry both thoughts comfortably.
+opinion @1 dole for 2 : A wolf with spare coin can play generous with more than guesses about luck.
+opinion @1 merchants mixed 1 : I appreciate a seller who says exactly how much the wrapping costs before I decide what is going inside it.
+line @1 greet : Come stand where my passenger can meet your boots.
+line @2 greet [pair.band=strangers] : Any traveller's welcome to this little space beside me.
+line @1 greet.return : There you are. My feet have stayed put till your words reached me.
+line @1 farewell : May your pockets travel lighter than your hopes.
+line @1 farewell.return : I'd wave the coal but I've only just got the cloth folded neatly.
+line @1 ask.how : Any opportunity to walk a little ground beyond your usual round?
+line @1 answer.how : Restless from my ears to the passenger in my pocket.
+line @1 react.news : Where's the far end of those words travelled from?
+line @1 react.news.known : That bit's come up my road already.
+line @1 react.news.new : Another little parcel for my travelling memory.
+line @1 react.news.doubt : I'd see what lay inside the wrapping before paying freight on that.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That sets my best bit of luck knocking against my thigh.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can turn my feet towards whoever's carrying the worst of that.
+line @1 decline : I've promised this little bit of freedom to a journey still ahead.
+line @1 accept_decline : One invitation can go back inside my pocket unopened.
+line @1 thank : You spared a corner of the road for my hopes.
+line @1 deflect_thanks : There's room in my good luck for a second traveller.
+line @1 sympathise : My feet can sit quiet long enough for you to get some rest.
+line @1 reassure : A journey can be worth keeping even before there's money for a berth.
+line @1 ack : There's a familiar shape inside that fold now.
+line @1 preclose : I must take the whole passenger list up the next flight.
 scene smalltalk_1
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.weather=storm
 does aside
 cooldown 8h
 say The best passage today is somewhere inside a coat. | Mind the bit of cloth the wind keeps trying to open.
-dlg resident.hub : Room for your parcel of talk, even with my pocket already occupied.
-dlg resident.job [self.job=servant] : At #self.workplace# I look after every clean little detail and let my mind travel only when my hands know the way.
-dlg resident.news [world.news] : Here's what has completed its passage. #world.news#.
-dlg resident.gossip [here.gossip=yes] : A travelling account says #topic.subject# #topic.claim#. I've left its coat of uncertainty on.
-dlg resident.hub [topic.meeting=known] : #topic.player#, a pleasant stop on my present small circuit.
-dlg resident.bye : I hope your next little journey surprises you kindly.
 
+dlg @1 resident.hub : Room for your parcel of talk, even with my pocket already occupied.
+dlg @1 resident.job [self.job=servant] : At #self.workplace# I look after every clean little detail and let my mind travel only when my hands know the way.
+dlg @1 resident.news [world.news] : Here's what has completed its passage. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : A travelling account says #topic.subject# #topic.claim#. I've left its coat of uncertainty on.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a pleasant stop on my present small circuit.
+dlg @1 resident.bye : I hope your next little journey surprises you kindly.
 graft resident.hub
 choice Can I meet this passenger? -> coal_guest
 node coal_guest

@@ -1,9 +1,12 @@
+# rm359, the margin cut clean (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm359
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_dagny_pitchley
+written_by codex
 title the margin cut clean
 fits stage=adult|old
 prefers job=scholar
@@ -68,7 +71,6 @@ line @22 deflect_thanks : There was a rough edge and I took it off. | A short jo
 line @23 preclose : There's a nib of business left for my attention. | My own rather untidy margin needs me again.
 line @24 accept_preclose : Close the page when it suits your hand. | I'll finish my corrections in peace.
 line @25 farewell [here.time=night] : Read the turnings under decent lamplight. | Leave the small lettering for daylight.
-
 scene papercut
 when topic=work self.job=scholar self.working=yes self.workplace
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : That distance is sufficien
 dlg @5 resident.job [self.job=scholar self.workplace] : I copy at #self.workplace#. I can give a rough sheet the finish an exact reader expects.
 dlg @6 resident.job : I take note of what actually fits on the page in front of us.
 dlg @7 resident.bye : Keep a narrow strip of clean margin on the way back.
-
 graft resident.hub
 choice Is there a reason to leave a line unwritten? -> blank_fact
 node blank_fact

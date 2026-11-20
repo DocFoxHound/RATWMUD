@@ -1,9 +1,12 @@
+# rm464, the copyist's beet alphabet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm464
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_septimus_ives
+written_by codex
 title the copyist's beet alphabet
 fits stage=adult|old
 prefers job=scholar
@@ -68,7 +71,6 @@ line @21 thank : I'll put that kindness in my own hand.
 line @22 deflect_thanks : No receipt for a small kindness, if you please.
 line @23 preclose : I've a private line that daylight might just let me finish.
 line @24 accept_preclose : Your closing bracket falls in a sensible place.
-
 scene beetletter
 when topic=pastimes self.likes=digging
 does tell.self / ask.detail / answer.detail
@@ -245,7 +247,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : You can read over the tabl
 dlg @5 resident.job [self.job=scholar self.workplace] : I make fair copies at #self.workplace#. Some marks cost more to put right than others.
 dlg @6 resident.job : I put marks where another wolf can find the sense later.
 dlg @7 resident.bye : Leave me a clear inch for the closing stroke.
-
 graft resident.hub
 choice Why is there a root beside the paper? -> beetseal
 node beetseal

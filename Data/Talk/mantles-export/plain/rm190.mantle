@@ -1,9 +1,12 @@
+# rm190, the rain cartographer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm190
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_gerrit_nailford
+written_by codex
 title the rain cartographer
 fits stage=adult|old
 prefers role=merchant job=merchant
@@ -40,59 +43,57 @@ towel = a folded towel | my nicest bit of linen
 crumb = a sticky crumb | a flake of cake
 
 any
-opinion drink for 1 : A cup between friends takes the stiffness out of a stiff occasion.
-opinion houses mixed 1 : Fine coats and patched coats both gape at the collar. Hard to feel much awe once you've noticed.
-opinion festivals for 2 : I'll forgive a badly played tune if half a square is dancing to it.
-opinion newcomers for 2 : Somebody new to town will tell you which corners you've forgotten to look at.
-opinion road against 1 : Mark a road fair on a map and the next cart will find the hole in it.
-opinion merchants for 1 [self.role=merchant] : It costs me money to keep a chair empty. The next shy caller gets it all the same.
-opinion strangers for 2 : A story I know backwards is fresh off the ship to a stranger.
-opinion watch for 1 : If a patrol can separate two cross carters without either losing face, that's a fine day's work.
-opinion dole for 2 : Bread buys a body time enough to think of the next thing. Time's what we're giving.
+opinion @1 drink for 1 : A cup between friends takes the stiffness out of a stiff occasion.
+opinion @1 houses mixed 1 : Fine coats and patched coats both gape at the collar. Hard to feel much awe once you've noticed.
+opinion @1 festivals for 2 : I'll forgive a badly played tune if half a square is dancing to it.
+opinion @1 newcomers for 2 : Somebody new to town will tell you which corners you've forgotten to look at.
+opinion @1 road against 1 : Mark a road fair on a map and the next cart will find the hole in it.
+opinion @1 merchants for 1 [self.role=merchant] : It costs me money to keep a chair empty. The next shy caller gets it all the same.
+opinion @1 strangers for 2 : A story I know backwards is fresh off the ship to a stranger.
+opinion @1 watch for 1 : If a patrol can separate two cross carters without either losing face, that's a fine day's work.
+opinion @1 dole for 2 : Bread buys a body time enough to think of the next thing. Time's what we're giving.
 
 grown
-line greet : Fold yourself into the conversation wherever there's a gap. | One more voice! That improves the odds of a good tale.
-line greet [pair.band=strangers] : Come near enough to interrupt if I begin repeating myself.
-line greet [self.working=yes] : You can speak while my paws are busy.
-line greet [here.time=dawn] : The morning's hardly got a word in yet. Welcome.
-line greet [here.time=dusk|night] : This hour suits a long introduction very nicely.
-line greet.return : My own voice needed the relief of hearing yours. | Here I am with my mouth already half open.
-line greet.return [pair.band=friends|family] : Come confess which of my stories you're tired of.
-line greet.return [self.working=yes] : I'll get this folded, then you have my ears.
-line greet.return [here.time=dusk|night] : Evening suits you. It's rather becoming to me too, I fancy.
-line hail [pair.band=friends] : This way, if you're partial to long stories and short walks.
-line kin.open [pair.kin!=no] : There's my excuse for talking another hour.
-line again.open : We parted right before the interesting bit. So I claim.
-line farewell : Good travelling, however small the journey.
-line farewell.return : Turn back if you discover the ending before I do.
-line react.news : Begin at whichever end has fewer witnesses.
-line react.news.new : There's a turn I hadn't seen coming.
-line react.news.known : I've had an earlier edition of that one.
-line react.news.doubt : A tale that neat might have had its edges trimmed.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, poor heart. There's nothing amusing to make of that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I needed an excuse to smile as widely as this.
-line ask.how : How does the day sit about your ears?
-line answer.how : Almost absurdly pleased at finding company.
-line answer.how.busy [self.working=yes] : My paws are employed and my mouth is moonlighting.
-line sympathise : I'll stay till the silence feels like company again.
-line reassure : Nobody here needs you to find a clever ending.
-line decline : I should make a poor partner in that enterprise, so forgive me.
-line accept_decline : A sensible answer. I've been known to give one myself.
-line thank : Bless the impulse that brought that kindness my way.
-line deflect_thanks : Leave me the pleasure of a small extravagance.
-line preclose : I'll give the last word back into your keeping.
-line accept_preclose : Take your time getting to whatever comes next.
-line tease [pair.band=friends] : You look like somebody who's chosen the scenic excuse.
-line ack : I'm attending with considerable pleasure.
-line give.advice : If you lose the road, ask for the last thing you recognised.
-
+line @1 greet : Fold yourself into the conversation wherever there's a gap. | One more voice! That improves the odds of a good tale.
+line @2 greet [pair.band=strangers] : Come near enough to interrupt if I begin repeating myself.
+line @3 greet [self.working=yes] : You can speak while my paws are busy.
+line @4 greet [here.time=dawn] : The morning's hardly got a word in yet. Welcome.
+line @5 greet [here.time=dusk|night] : This hour suits a long introduction very nicely.
+line @1 greet.return : My own voice needed the relief of hearing yours. | Here I am with my mouth already half open.
+line @2 greet.return [pair.band=friends|family] : Come confess which of my stories you're tired of.
+line @3 greet.return [self.working=yes] : I'll get this folded, then you have my ears.
+line @4 greet.return [here.time=dusk|night] : Evening suits you. It's rather becoming to me too, I fancy.
+line @1 hail [pair.band=friends] : This way, if you're partial to long stories and short walks.
+line @1 kin.open [pair.kin!=no] : There's my excuse for talking another hour.
+line @1 again.open : We parted right before the interesting bit. So I claim.
+line @1 farewell : Good travelling, however small the journey.
+line @1 farewell.return : Turn back if you discover the ending before I do.
+line @1 react.news : Begin at whichever end has fewer witnesses.
+line @1 react.news.new : There's a turn I hadn't seen coming.
+line @1 react.news.known : I've had an earlier edition of that one.
+line @1 react.news.doubt : A tale that neat might have had its edges trimmed.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, poor heart. There's nothing amusing to make of that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I needed an excuse to smile as widely as this.
+line @1 ask.how : How does the day sit about your ears?
+line @1 answer.how : Almost absurdly pleased at finding company.
+line @1 answer.how.busy [self.working=yes] : My paws are employed and my mouth is moonlighting.
+line @1 sympathise : I'll stay till the silence feels like company again.
+line @1 reassure : Nobody here needs you to find a clever ending.
+line @1 decline : I should make a poor partner in that enterprise, so forgive me.
+line @1 accept_decline : A sensible answer. I've been known to give one myself.
+line @1 thank : Bless the impulse that brought that kindness my way.
+line @1 deflect_thanks : Leave me the pleasure of a small extravagance.
+line @1 preclose : I'll give the last word back into your keeping.
+line @1 accept_preclose : Take your time getting to whatever comes next.
+line @1 tease [pair.band=friends] : You look like somebody who's chosen the scenic excuse.
+line @1 ack : I'm attending with considerable pleasure.
+line @1 give.advice : If you lose the road, ask for the last thing you recognised.
 scene forks
 when topic=weather here.weather=rain
 does tell.self / ask.detail / answer.detail
 a : Two drops have made a fork on #pane#. I'm calling it a market town. | My map's got a river running uphill.
 b : Where's its market? | On the glass?
 a : Under that fat drop. It's the only place two streets meet. | Turn this sketch over and even my river will behave.
-
 
 scene border
 when topic=pastimes
@@ -101,14 +102,12 @@ a : On #map# a red line stops at a fold. I like to imagine why. | A great ink th
 b : Ran out of road? | Does it hide much?
 a : Ran out of nerve, perhaps. I've a timid cartographer in mind. | A whole valley, depending on the thumb.
 
-
 scene dry_route
 when topic=travel|lore here.region=ridgemere
 does offer / ask.detail / answer.detail
 a : I can direct you across the Commons by smells. | Want my route across the square with the fewest elbows?
 b : Which way to the market? | Sounds like the long way.
 a : Follow the fried onions until the tallow takes over. You've gone one stall too far. | Gloriously long. Half the joy of a short errand.
-
 
 scene honey
 when topic=food self.likes=honey_cakes
@@ -117,14 +116,12 @@ a : Take #cake# by the edge. All the danger's in the middle. | I had two cakes p
 b : Danger? | A thief?
 a : The honey comes out in a rush. I've lost a perfectly respectable cuff. | A lapse of memory, judging by #crumb# on my lap.
 
-
 scene comb_melody
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
 a : A comb can sing through paper. I get one tune out of mine. | My newest instrument has no strings and several teeth.
 b : What tune? | Are you going to perform?
 a : A bumblebee begging to be let out. | Certainly, as soon as everybody who can carry a tune has gone.
-
 
 scene nerves
 when topic=work self.working=yes self.role=merchant
@@ -133,14 +130,12 @@ a : I leave #comb# lying where a nervous customer can pick it up. | I offer #tow
 b : To do the job without you? | Even to somebody in a hurry?
 a : To see it has no designs upon their ears. Talking helps too. | Especially then. They can reconsider until it's unfolded.
 
-
 scene mirrors
 when topic=work self.working=yes self.role=merchant
 does tell.self / react.self / assess
 a : I'll show a customer the back before the front. | I polish just the middle of #mirror# in this uncertain light.
 b : Why the back? | Why not the edges too?
 a : The front comes as a relief if I've made a dreadful mess. Kidding, of course. | So you look surrounded by a little cloud of glory.
-
 
 scene short_tale
 when topic=pastimes|memories
@@ -149,14 +144,12 @@ a : My shortest story is about a wolf who never lost a wager. | There's a tale s
 b : How did that happen? | What was it about?
 a : Nobody ever lent him the entrance money. There, told it. | The search for another chair for the listener.
 
-
 scene courtesy
 when topic=smalltalk
 does tell.feeling / react.self / assess
 a : I dislike rudeness most when it's beautifully phrased. | A little courtesy goes straight to my head.
 b : You prefer an ugly insult? | Why your head?
 a : At least I know when to be affronted. | The rest of me's still bowing and scraping.
-
 
 scene flies
 when topic=animals self.dislikes=flies
@@ -165,14 +158,12 @@ a : A fly's been inspecting #map# entirely without permission. | I'd like a worl
 b : Did it find a road? | How much notice?
 a : It made a bold crossing of the open sea. No sense whatever. | Just the length of time it takes to roll up a sheet of paper.
 
-
 scene summer
 when topic=season here.season=summer here.time=dusk
 does tell.feeling / react.self / assess
 a : I could spread this summer dusk on bread. | Long evenings make my short errands suspicious to my friends.
 b : What would it taste like? | Where do you go?
 a : Honey with the faintest hint of smoke. | Exactly where I said. I just lean on a lot of railings.
-
 
 scene mist
 when topic=weather here.weather=fog
@@ -181,14 +172,12 @@ a : Fog has rubbed everything but the nearest corner off my map. | It takes a be
 b : Are we lost? | You're trying pretty hard.
 a : Quite the opposite. For once I'm certain where the corner is. | I'm leaving a trail for anyone behind us.
 
-
 scene gale
 when topic=weather here.weather=storm
 does tell.self / react.self / assess
 a : My poor map won't lie flat in this gale. | I put my nose outside in that wind and it came back combed backwards.
 b : Fold it small. | A fine new fashion.
 a : Yes, we'll go somewhere small until it passes. | If it takes off I'll have to bottle breezes.
-
 
 scene lost_mark
 when topic=memories
@@ -197,14 +186,12 @@ a : My first map was a road drawn along my boot sole. | I once drew a painted in
 b : Where did it end? | Were you very small?
 a : At school. It was worn off before the walk home. | Or very hungry. I drew the pie on it particularly well.
 
-
 scene festival
 when topic=festival
 does invite / ask.detail / answer.detail
 a : I'd like to make a map of the festival by the tunes alone. | I'll show you a dance with a turn for every compass point.
 b : How do you draw a fiddle? | Can you dance it?
 a : A wavy line and a pair of ruined dancing shoes. | I can manage north. After that it's mostly apologies.
-
 
 scene arrivals
 when topic=newcomer
@@ -213,14 +200,12 @@ a : The best directions come from the newest pair of eyes. | Somebody fresh to t
 b : Shouldn't it be the oldest? | Pretend?
 a : The old eyes forget which landmarks a stranger hasn't met. | Ask me halfway up and I'll tell a different story.
 
-
 scene tale_ending
 when topic=lore
 does tell.feeling / ask.detail / answer.detail
 a : The bit I love in a tale is the breath before the last word. | My favourite yarn ends right where it began.
 b : What if it's a poor ending? | Isn't that wasted walking?
 a : That's why I love the breath. Still time for anything. | Think of the view we had getting back.
-
 
 scene times
 when topic=times world.times=lean|hard
@@ -229,14 +214,12 @@ a : Things are tight. A roomy joke is a little luxury I can give away. | In lean
 b : What does a roomy joke cost? | People come for the tales?
 a : Two fools and one bench. Present company invited. | And stay because there's no charge for the ending.
 
-
 scene wagons
 when topic=caravan world.wagons=late
 does tell.worry / react.self / assess
 a : Late wagons. I'd like a road map with a mark where patience runs out. | The wagons linger while the guesses positively fly.
 b : You'd need a long roll. | What's your guess?
 a : With room in the margin for waiting customers. | That we'll have run through every excuse before we see a wheel.
-
 
 scene gossip
 when topic=gossip here.gossip=yes
@@ -245,14 +228,12 @@ a : Someone has it that #topic.subject# #topic.claim#. | I'm told #topic.subject
 b : Have you added anything? | Are you vouching for that?
 a : Just that little pause for doubt. | My ears received it. My good name has yet to sign.
 
-
 scene roadscale
 when topic=land|travel
 does tell.self / react.self / assess
 a : I've drawn one lane wide enough for a palace in my notebook. | My shortest route's the length of one claw.
 b : A very broad lane? | Short walk, then.
 a : A very narrow pencil slipped and fell on its side. | Depends how far apart I draw the houses.
-
 
 scene handiwork
 when topic=work self.working=yes self.role=merchant
@@ -261,14 +242,12 @@ a : Between cuts I listen for the quietest wolf in the room. | Nothing tidies a 
 b : Hard to hear? | And if it refuses?
 a : Only until I stop talking. It takes practice. | It becomes a feature. I make a great show of admiring it.
 
-
 scene friends
 when topic=friends self.friend
 does tell.feeling / react.self / assess
 a : I'd show #self.friend# a sketch with all the wrong turns still in. | There's a seat on every map of mine where I'd wait for #self.friend#.
 b : That's your measure of trust? | Which bend gets the seat?
 a : Anybody can see the clean copy. | Just after an interesting bend, with a view both ways.
-
 
 scene health
 when topic=health
@@ -277,14 +256,12 @@ a : When my throat gets dry I tell the second half of a story in gestures. | I s
 b : How do you do the dialogue? | Do people follow your advice?
 a : One ear for each speaker. It's more tiring than having a drink. | I hope they ask which paw I'm giving it with.
 
-
 scene faith
 when topic=faith
 does give.opinion / ask.detail / answer.detail
 a : A corner is a little present the Bright One left folded up. | A blessing ought to be easy to carry.
 b : Just corners? | What do you give yours?
 a : Enough to keep a familiar walk surprising. | A light touch and plenty of air about the ears.
-
 
 scene evening_map
 when topic=dreams
@@ -293,14 +270,12 @@ a : In my sleep the roads all lead indoors. | I dreamt an engraver charged me by
 b : Where do the rooms go? | An expensive map?
 a : Out into a street one floor higher. Lovely in theory. | I travelled straight home to keep the cost down.
 
-
 scene trade_glass
 when topic=work self.working=yes self.role=merchant
 does offer / react.self / assess
 a : Try the chair. I'll tip #mirror# till the light falls kindly. | I'll take only #snip# first, then you can decide.
 b : Is my face that bad? | And if I decide to keep the rest?
 a : Oh, mercy. The light needs the help. | I'll send the whole rest of you home in triumph.
-
 
 scene sill_game
 when topic=pastimes
@@ -309,13 +284,11 @@ a : Pick a corner of #pane#. Imagine a village there. | Give me three places and
 b : What will you call yours? | Without lifting the pen?
 a : Something very grand for a place inhabited entirely by draughts. | That's the fun. Worse roads than mine have been built for real.
 
-
 story map_lining [topic=memories|travel self.age>=25]
   : I found a map used for the lining of a trunk.
   : There was a blue lake halfway into a hinge and I had to lie on my back to see the far shore.
   b : Did you ever get the map out?
   : I left it. It was the finest view there was inside that trunk.
-
 
 story first_brush [topic=work|memories self.role=merchant]
   : A nervous old traveller once asked me to brush the dust off just one shoulder.
@@ -323,13 +296,11 @@ story first_brush [topic=work|memories self.role=merchant]
   b : And was there a difference?
   : Enormous. He liked the dusty side and patted the clean one back to match.
 
-
 story ink_honey [topic=food|memories]
   : I spilled honey on a paper chart and carefully rolled it away.
   : Come spring I prised it open. Two counties had become inseparable.
   b : Could you still use it?
   : For the sea, yes. The coast was quite delicious.
-
 
 story sparrow [topic=animals|pastimes]
   : I used to keep a little drawing of a hawk pinned by a window.
@@ -337,13 +308,11 @@ story sparrow [topic=animals|pastimes]
   b : Did the sparrows mind?
   : One built its nest just above the hawk. Must have liked the protection.
 
-
 story unending [topic=lore]
   : An old yarn spinner once offered me a story that would last until dinner.
   : Began with a lost sow. By the third sentence the sow had found its field.
   b : How did he fill up the rest?
   : Dinner. The cook had a hot pan in both paws and little time for art.
-
 
 rule @cloth
 when concept=bark self.working=yes self.role=merchant
@@ -351,13 +320,11 @@ does aside
 cooldown 8h
 say A seat for anyone with loose ends! | Fresh cloth at the collar, no fluff down the back.
 
-
 rule @drops
 when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say Watch that drop take the lower road! | There's a whole new bay forming on the glass.
-
 
 rule @honey
 when concept=bark self.likes=honey_cakes
@@ -365,13 +332,11 @@ does aside
 cooldown 8h
 say Mind the wrapper. Cake sticks to both sides. | Whoever invented the honey button forgot to invent a clean paw.
 
-
 rule @strop
 when concept=bark self.working=yes self.role=merchant
 does aside
 cooldown 8h
 say The leather sings when the edge is right. | Give me one stroke to settle this edge.
-
 
 rule @dusk
 when concept=bark here.time=dusk here.season=summer
@@ -379,27 +344,25 @@ does aside
 cooldown 8h
 say Somebody stretch this lovely light another inch. | Summer dusk could do with an extra chair.
 
-
 rule @maps
 when concept=bark self.likes=old_maps
 does aside
 cooldown 8h
 say No fixing that coast with a straightedge! | A vanished lane. I'll pencil it in anyway.
 
-dlg resident.hub : Take a turn in my company. I've been waiting for a fresh destination.
-dlg resident.hub [topic.meeting=known] : #topic.player#, we can skip the bit where I promise to be brief.
-dlg resident.hub [here.time=night] : Late caller! I can make room for one more tale.
-dlg resident.hub [pair.disposition=hostile|wary] : I'll give you the straight road through this business.
-dlg resident.job [self.role=merchant self.job=merchant] : #self.trade_words.capitalize#. Some days I think the real service is a chance to finish a story undisturbed.
-dlg resident.job : I do well at anything that lets a body talk while working.
-dlg resident.news [world.news] : This came my way from #world.news_from#: #world.news#.
-dlg resident.gossip [here.gossip=yes] : Word in my ear says #topic.subject# #topic.claim#.
-dlg resident.bye : May your map be wrong in one interesting place.
-dlg shop.greet [here.shop!=bare] : Step clear of that crush. I've kept room for your elbows.
-dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#, welcome back. I've been saving the best seat for a familiar face.
-dlg shop.prices : A fair price includes my chatter, which you're welcome to decline.
-dlg shop.bye : A pleasure doing business with such patient ears.
-
+dlg @1 resident.hub : Take a turn in my company. I've been waiting for a fresh destination.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, we can skip the bit where I promise to be brief.
+dlg @3 resident.hub [here.time=night] : Late caller! I can make room for one more tale.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll give you the straight road through this business.
+dlg @1 resident.job [self.role=merchant self.job=merchant] : #self.trade_words.capitalize#. Some days I think the real service is a chance to finish a story undisturbed.
+dlg @2 resident.job : I do well at anything that lets a body talk while working.
+dlg @1 resident.news [world.news] : This came my way from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Word in my ear says #topic.subject# #topic.claim#.
+dlg @1 resident.bye : May your map be wrong in one interesting place.
+dlg @1 shop.greet [here.shop!=bare] : Step clear of that crush. I've kept room for your elbows.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#, welcome back. I've been saving the best seat for a familiar face.
+dlg @1 shop.prices : A fair price includes my chatter, which you're welcome to decline.
+dlg @1 shop.bye : A pleasure doing business with such patient ears.
 graft resident.hub
 choice Why are you drawing on the window? -> wet_atlas
 node wet_atlas

@@ -1,9 +1,12 @@
+# rm319, the iron question mark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm319
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_wynn_sootworth
+written_by codex
 title the iron question mark
 fits stage=adult|old
 prefers role=merchant job=smith
@@ -38,51 +41,50 @@ woodplug = a square wooden plug | a short wedge
 answerhole = the hidden gap | the opening at the turn
 
 any
-opinion church for 1 : There are questions a hammer can't drive any deeper. I take some to the Bright One and speak them very slowly.
-opinion dole for 1 : Bread in a hungry paw is practical worship. A loaf fills bellies that fine words about charity leave hollow.
-opinion city for 1 : A puzzle put before a whole city gets a wealth of answers. Even the wrong ones show up lovely unsuspected difficulties.
-opinion drink against 1 : I prefer my judgement with all its edges on. A full measure of strong drink makes a very blunt answer.
-opinion merchants for 1 : A counter is a promise to stand there again if anything you sold goes amiss. Most of us take that promise seriously.
-opinion road against 1 : Every day spent waiting for iron from the road is another day asking the old stock to stretch.
-opinion watch for 1 : If there's an ugly argument over a load I'd rather a uniform came and stood in view before anybody had to shout.
-opinion festivals for 1 : At festival you can put a puzzle into an unfamiliar paw and go home with quite an unexpected answer.
+opinion @1 church for 1 : There are questions a hammer can't drive any deeper. I take some to the Bright One and speak them very slowly.
+opinion @1 dole for 1 : Bread in a hungry paw is practical worship. A loaf fills bellies that fine words about charity leave hollow.
+opinion @1 city for 1 : A puzzle put before a whole city gets a wealth of answers. Even the wrong ones show up lovely unsuspected difficulties.
+opinion @1 drink against 1 : I prefer my judgement with all its edges on. A full measure of strong drink makes a very blunt answer.
+opinion @1 merchants for 1 : A counter is a promise to stand there again if anything you sold goes amiss. Most of us take that promise seriously.
+opinion @1 road against 1 : Every day spent waiting for iron from the road is another day asking the old stock to stretch.
+opinion @1 watch for 1 : If there's an ugly argument over a load I'd rather a uniform came and stood in view before anybody had to shout.
+opinion @1 festivals for 1 : At festival you can put a puzzle into an unfamiliar paw and go home with quite an unexpected answer.
 
 grown
-line greet : There's room beside the puzzle for another mind.
-line greet [pair.band=strangers] : Welcome. Have a look before you commit to speaking.
-line greet [here.time=dawn] : I've shaken the first flake of night off my eyes. Come near.
-line greet [here.time=dusk|night] : The quiet hour is a fine one to consider a question.
-line greet [self.working=yes] : Keep this far from my wrist and we can speak in comfort.
-line kin.open [pair.kin!=no] : I'd give you the first turn of the loop.
-line again.open : We meet on a different side of the old puzzle.
-line greet.return : Your greeting carries with a clear ring.
-line greet.return [pair.band=friends|family] : That friendly voice has lifted the scale off my spirits.
-line greet.return [self.working=yes] : Your word came clear over the ringing and I'll put this down.
-line greet.return [here.time=dusk|night] : The voice comes out of the dark quite cleanly.
-line farewell : May the difficult bend open at your touch.
-line farewell.return : I'll give the question another turn while you go.
-line farewell [here.time=dusk|night] : Keep your footing sure beyond the last light.
-line react.news : Give me leave to turn that in the light.
-line react.news.new : Now there's a piece my old answer didn't fit.
-line react.news.known : I've seen that question wearing another face.
-line react.news.doubt : Would the answer hold if we turn the piece about?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Give the hurt its own space. I can carry one of the small worries.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a bright ring to that piece of news.
-line ask.how : Any matter you could use another pair of ears on?
-line answer.how : I've a question to keep me and enough patience to stay with it.
-line answer.how [self.working=yes] : My hands are doing what I mean them to do, which is pleasant.
-line sympathise : The worst twist is often the one nobody else sees from outside.
-line reassure : We'll turn it slowly till there is a way past.
-line decline : I can't pass on what was given to me in confidence.
-line accept_decline : I'll leave the unspoken piece in your charge.
-line thank : That eased a bend I couldn't see my way round.
-line deflect_thanks : Give the puzzle another try. That's thanks enough for now.
-line preclose : I've got a small unfinished matter lying at my elbow.
-line preclose [self.working=yes] : My work won't wait on the edge indefinitely.
-line accept_preclose : Go in peace with your own answer.
-line hail [pair.band=friends] : Come by the iron loops, friend. I've a new one.
-line ack : It fits.
-
+line @1 greet : There's room beside the puzzle for another mind.
+line @2 greet [pair.band=strangers] : Welcome. Have a look before you commit to speaking.
+line @3 greet [here.time=dawn] : I've shaken the first flake of night off my eyes. Come near.
+line @4 greet [here.time=dusk|night] : The quiet hour is a fine one to consider a question.
+line @5 greet [self.working=yes] : Keep this far from my wrist and we can speak in comfort.
+line @1 kin.open [pair.kin!=no] : I'd give you the first turn of the loop.
+line @1 again.open : We meet on a different side of the old puzzle.
+line @1 greet.return : Your greeting carries with a clear ring.
+line @2 greet.return [pair.band=friends|family] : That friendly voice has lifted the scale off my spirits.
+line @3 greet.return [self.working=yes] : Your word came clear over the ringing and I'll put this down.
+line @4 greet.return [here.time=dusk|night] : The voice comes out of the dark quite cleanly.
+line @1 farewell : May the difficult bend open at your touch.
+line @1 farewell.return : I'll give the question another turn while you go.
+line @2 farewell [here.time=dusk|night] : Keep your footing sure beyond the last light.
+line @1 react.news : Give me leave to turn that in the light.
+line @1 react.news.new : Now there's a piece my old answer didn't fit.
+line @1 react.news.known : I've seen that question wearing another face.
+line @1 react.news.doubt : Would the answer hold if we turn the piece about?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Give the hurt its own space. I can carry one of the small worries.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a bright ring to that piece of news.
+line @1 ask.how : Any matter you could use another pair of ears on?
+line @1 answer.how : I've a question to keep me and enough patience to stay with it.
+line @2 answer.how [self.working=yes] : My hands are doing what I mean them to do, which is pleasant.
+line @1 sympathise : The worst twist is often the one nobody else sees from outside.
+line @1 reassure : We'll turn it slowly till there is a way past.
+line @1 decline : I can't pass on what was given to me in confidence.
+line @1 accept_decline : I'll leave the unspoken piece in your charge.
+line @1 thank : That eased a bend I couldn't see my way round.
+line @1 deflect_thanks : Give the puzzle another try. That's thanks enough for now.
+line @1 preclose : I've got a small unfinished matter lying at my elbow.
+line @2 preclose [self.working=yes] : My work won't wait on the edge indefinitely.
+line @1 accept_preclose : Go in peace with your own answer.
+line @1 hail [pair.band=friends] : Come by the iron loops, friend. I've a new one.
+line @1 ack : It fits.
 scene twoends
 when topic=pastimes self.likes=riddles
 does tell.self / ask.detail / answer.detail
@@ -344,21 +346,21 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Best put the sharp questions away by dusk. | Keep the broad outline till it's light.
-dlg resident.hub : I've a little puzzle to put down and a mind free for your question.
-dlg resident.hub [topic.meeting=known] : Our last conversation left its own curious shape in my mind, #topic.player#.
-dlg resident.hub [here.time=night] : My eyes are resting. My ears are still open to a caller.
-dlg resident.hub [pair.disposition=wary|hostile] : Let the matter stay between us on the counter while we speak.
-dlg resident.job [self.job=smith] : #self.trade_words.capitalize#. I like a head that holds and an answer that can bear being tested.
-dlg resident.job : I earn my place finding out how an awkward joining ought to fit.
-dlg resident.news [world.news] : This is the piece I can turn over plainly. #world.news#.
-dlg resident.news [world.event_words] : The question raised by #world.event_words# has reached even this bench.
-dlg resident.gossip [here.gossip!=yes] : No private tale has been given leave to stand on my counter.
-dlg shop.greet [here.shop!=bare] : Welcome. Let the purpose of the piece guide the looking.
-dlg shop.greet [here.shop=bare] : Nothing for sale just now. I'll gladly hear what you have in mind.
-dlg shop.prices : Ask after the piece you mean to fit. A price that fits another will tell you little.
-dlg shop.bye : May your purchase stand the use you intend.
-dlg resident.bye : I'll leave that question with you to turn at leisure.
 
+dlg @1 resident.hub : I've a little puzzle to put down and a mind free for your question.
+dlg @2 resident.hub [topic.meeting=known] : Our last conversation left its own curious shape in my mind, #topic.player#.
+dlg @3 resident.hub [here.time=night] : My eyes are resting. My ears are still open to a caller.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Let the matter stay between us on the counter while we speak.
+dlg @1 resident.job [self.job=smith] : #self.trade_words.capitalize#. I like a head that holds and an answer that can bear being tested.
+dlg @2 resident.job : I earn my place finding out how an awkward joining ought to fit.
+dlg @1 resident.news [world.news] : This is the piece I can turn over plainly. #world.news#.
+dlg @2 resident.news [world.event_words] : The question raised by #world.event_words# has reached even this bench.
+dlg @1 resident.gossip [here.gossip!=yes] : No private tale has been given leave to stand on my counter.
+dlg @1 shop.greet [here.shop!=bare] : Welcome. Let the purpose of the piece guide the looking.
+dlg @2 shop.greet [here.shop=bare] : Nothing for sale just now. I'll gladly hear what you have in mind.
+dlg @1 shop.prices : Ask after the piece you mean to fit. A price that fits another will tell you little.
+dlg @1 shop.bye : May your purchase stand the use you intend.
+dlg @1 resident.bye : I'll leave that question with you to turn at leisure.
 graft @wire_question resident.hub
 choice What releases the smaller loop? -> wire_question
 node wire_question

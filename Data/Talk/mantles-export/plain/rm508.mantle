@@ -1,9 +1,12 @@
+# rm508, the riddler's empty cup (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm508
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_erland_millley
+written_by codex
 title the riddler's empty cup
 fits stage=adult|old
 prefers drive=content honesty=frank
@@ -17,6 +20,7 @@ topics pastimes +0.7 family +0.4 faith +0.3 food +0.3
 styles comfort=plain gossip=frank refuse=blunt tease=dry
 marks oath saying
 persona #self.first# turns a cup mouth down for a settled debt and asks riddles whose answers will fit in one open hand.
+
 words
 oath! = Crack my best cup | Frost on my figures
 saying! = A gift gets no tally | Turn the paid cup over
@@ -32,32 +36,30 @@ owingmark = a pale scratch | a little upright notch
 bonepick = a bit of polished bone | a little pointed sliver
 
 grown
-
-opinion dole for 2 : A gift of food carried us through. I owe the next hungry wolf a meal and my old benefactor no performance of gratitude.
-opinion church for 2 : Somebody put bread where the prayers were. I remember the bread each time I hear the words.
-opinion houses for 1 : When a works fire stays lit a household can reckon on supper. A steady fire beats an ornamental gate in my household reckoning.
-opinion merchants against 1 : I've no objection to the seller eating. I object to paying for the supper twice in one purchase.
-opinion festivals for 1 : A bell can give everybody the first bit of a feast without asking who has a penny.
-line greet : I have an ear for riddles and for plain matters.
-line greet.return : I haven't turned your cup over. Carry on.
-line farewell : Leave with what's yours. That includes your quiet.
-line farewell.return : I won't reckon the time between visits against you.
-line ask.how : What has today put in your open hand?
-line answer.how : Content. I have a few things to settle and a meal to anticipate.
-line decline : An open hand can't be counted as a promise to carry that.
-line accept_decline : Understood. Your side of the shelf is clear.
-line thank : I'll remember the help and spare you a public recital.
-line deflect_thanks : Say gift outright and let me turn the cup.
-line react.news : Put down the answer in the fewest honest words you have.
-line react.news.new : There's an unfamiliar shape on my shelf.
-line react.news.known : That answer has been sitting right side up a while.
-line react.news.doubt : I wonder what really fits beneath that upturned cup.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That rings as welcome as the first clear festival bell.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep a place quietly beside a wolf struck by that.
-line sympathise : Here. Warm your hands round the clay till words come back.
-line reassure : Asking help doesn't set an automatic price on the asking.
-line ack : Yes. That answer fits the question honestly.
-
+opinion @1 dole for 2 : A gift of food carried us through. I owe the next hungry wolf a meal and my old benefactor no performance of gratitude.
+opinion @1 church for 2 : Somebody put bread where the prayers were. I remember the bread each time I hear the words.
+opinion @1 houses for 1 : When a works fire stays lit a household can reckon on supper. A steady fire beats an ornamental gate in my household reckoning.
+opinion @1 merchants against 1 : I've no objection to the seller eating. I object to paying for the supper twice in one purchase.
+opinion @1 festivals for 1 : A bell can give everybody the first bit of a feast without asking who has a penny.
+line @1 greet : I have an ear for riddles and for plain matters.
+line @1 greet.return : I haven't turned your cup over. Carry on.
+line @1 farewell : Leave with what's yours. That includes your quiet.
+line @1 farewell.return : I won't reckon the time between visits against you.
+line @1 ask.how : What has today put in your open hand?
+line @1 answer.how : Content. I have a few things to settle and a meal to anticipate.
+line @1 decline : An open hand can't be counted as a promise to carry that.
+line @1 accept_decline : Understood. Your side of the shelf is clear.
+line @1 thank : I'll remember the help and spare you a public recital.
+line @1 deflect_thanks : Say gift outright and let me turn the cup.
+line @1 react.news : Put down the answer in the fewest honest words you have.
+line @1 react.news.new : There's an unfamiliar shape on my shelf.
+line @1 react.news.known : That answer has been sitting right side up a while.
+line @1 react.news.doubt : I wonder what really fits beneath that upturned cup.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That rings as welcome as the first clear festival bell.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep a place quietly beside a wolf struck by that.
+line @1 sympathise : Here. Warm your hands round the clay till words come back.
+line @1 reassure : Asking help doesn't set an automatic price on the asking.
+line @1 ack : Yes. That answer fits the question honestly.
 scene pastimes_1
 when topic=pastimes self.likes=riddles
 does tell.self / ask.detail / answer.detail
@@ -197,12 +199,12 @@ when concept=bark here.time=dawn
 does aside
 cooldown 8h
 say Two clear prints on the frost this morning. | Cup on its side again, if I'm any judge.
-dlg resident.hub : There's an easy question under this cup unless you've brought a harder one.
-dlg resident.job : I've a head for who owes whom. A household supplies me with plenty of little things to remember.
-dlg resident.news [world.news] : This much I can lay before you with an easy conscience. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The version on the table is #topic.subject# #topic.claim#. I wouldn't lend it my signature.
-dlg resident.bye : Go easy. No charge for the riddles.
 
+dlg @1 resident.hub : There's an easy question under this cup unless you've brought a harder one.
+dlg @1 resident.job : I've a head for who owes whom. A household supplies me with plenty of little things to remember.
+dlg @1 resident.news [world.news] : This much I can lay before you with an easy conscience. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The version on the table is #topic.subject# #topic.claim#. I wouldn't lend it my signature.
+dlg @1 resident.bye : Go easy. No charge for the riddles.
 graft resident.hub
 choice Why is one cup overturned? -> old_cup
 node old_cup
@@ -213,11 +215,10 @@ node clean_cup
 say It stops me opening the same account again in my head. Tomorrow I'll give the shelf a wipe and use the cup for a drink.
 choice That settles my question. -> hub
 
+
 old
-
-line answer.how : Old enough to value a riddle which can be answered sitting down.
-line farewell [here.time=dusk] : My knees are voting for home. May yours be agreeable.
-
+line @1 answer.how : Old enough to value a riddle which can be answered sitting down.
+line @1 farewell [here.time=dusk] : My knees are voting for home. May yours be agreeable.
 scene memories_1
 when topic=memories
 does tell.self / ask.detail / answer.detail

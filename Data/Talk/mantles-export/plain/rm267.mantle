@@ -1,9 +1,12 @@
+# rm267, the stall measured in elbows (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm267
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_soren_coaldale
+written_by codex
 title the stall measured in elbows
 fits stage=adult|old
 prefers job=carter
@@ -38,51 +41,50 @@ handroom = room to bend my elbows | space enough for a turn
 rowcover = an old sack spread flat | a rag of sacking
 
 any
-opinion church for 1 : I've lifted flour sacks enough to remember the weight. The chapel has put plenty of that weight into hungry bellies.
-opinion city for 1 : There's only one square where my elbow knows all four corners. I'd miss it.
-opinion dole for 2 : I used to think everybody in that queue had time to spare. Try missing a shift for a loaf and see what it costs.
-opinion road for 1 : The road puts weight in my barrow and a bit of brass in my pocket. I won't call it cruel on a fair day.
-opinion houses against 2 : The House mark faces out on the bale. The scrape down my shoulder faces in, where no fine wolf sees it.
-opinion watch against 1 : A cart blocking a Sump doorway will stand there all afternoon. Strange what the Watch finds time to move.
-opinion merchants against 1 : A price offered after the load is lifted is never the one I'd have agreed while it stood on the ground.
-opinion festivals against 1 : Let the music come after the market. You can't hear a warning over a horn.
+opinion @1 church for 1 : I've lifted flour sacks enough to remember the weight. The chapel has put plenty of that weight into hungry bellies.
+opinion @1 city for 1 : There's only one square where my elbow knows all four corners. I'd miss it.
+opinion @1 dole for 2 : I used to think everybody in that queue had time to spare. Try missing a shift for a loaf and see what it costs.
+opinion @1 road for 1 : The road puts weight in my barrow and a bit of brass in my pocket. I won't call it cruel on a fair day.
+opinion @1 houses against 2 : The House mark faces out on the bale. The scrape down my shoulder faces in, where no fine wolf sees it.
+opinion @1 watch against 1 : A cart blocking a Sump doorway will stand there all afternoon. Strange what the Watch finds time to move.
+opinion @1 merchants against 1 : A price offered after the load is lifted is never the one I'd have agreed while it stood on the ground.
+opinion @1 festivals against 1 : Let the music come after the market. You can't hear a warning over a horn.
 
 grown
-line greet : Come stand beside the marks. There's clear space.
-line greet [pair.band=strangers] : Keep your toes off the chalk and we're well met.
-line greet [here.time=dawn] : First light makes this square look twice its size. Welcome.
-line greet [here.time=dusk|night] : Enough said by a nod at this hour.
-line greet [self.working=yes] : Welcome along my empty side.
-line kin.open [pair.kin!=no] : There's room for a familiar pair of elbows alongside mine.
-line again.open : We've gone all the way round to one another.
-line greet.return : Your voice came clear over here.
-line greet.return [pair.band=friends|family] : I've an elbow free for a familiar nudge.
-line greet.return [self.working=yes] : Much obliged. I'll answer properly when the load's down.
-line greet.return [here.time=dusk|night] : Can hear you better than see you, but welcome.
-line farewell : Keep the weight close on the way.
-line farewell.return : I'll keep my chalk. You keep your footing.
-line farewell [here.time=dusk|night] : Pick the lighter patch at the bend.
-line react.news : I'm listening. Tell it at the pace it happened.
-line react.news.new : That's another mark to put down.
-line react.news.known : I'd counted that bit in already.
-line react.news.doubt : Whose shoulder was under it when it happened?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd spare the weight of a small errand for that house.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A nice broad piece of news to set out in the sun.
-line answer.how : Worn about the shoulders. Sound underfoot.
-line answer.how [self.working=yes] : I've room to move a load and small reason to complain.
-line ask.how : Any part of today still riding heavy on you?
-line sympathise : A hard day doesn't finish when the weight comes off.
-line reassure : Put one corner down here. You'll breathe easier.
-line decline : No extra carrying till we agree the whole distance.
-line accept_decline : Fair. I'll shift my mark back.
-line thank : My shoulder knows exactly what that favour's worth.
-line deflect_thanks : You can give somebody else the easy end next time.
-line preclose : I'm beginning to measure the space beyond you.
-line preclose [self.working=yes] : Can't leave this weight hanging on a corner.
-line accept_preclose : Carry on. My elbows are well clear.
-line hail [pair.band=friends] : A familiar shoulder! This way a moment.
-line ack : Square enough.
-
+line @1 greet : Come stand beside the marks. There's clear space.
+line @2 greet [pair.band=strangers] : Keep your toes off the chalk and we're well met.
+line @3 greet [here.time=dawn] : First light makes this square look twice its size. Welcome.
+line @4 greet [here.time=dusk|night] : Enough said by a nod at this hour.
+line @5 greet [self.working=yes] : Welcome along my empty side.
+line @1 kin.open [pair.kin!=no] : There's room for a familiar pair of elbows alongside mine.
+line @1 again.open : We've gone all the way round to one another.
+line @1 greet.return : Your voice came clear over here.
+line @2 greet.return [pair.band=friends|family] : I've an elbow free for a familiar nudge.
+line @3 greet.return [self.working=yes] : Much obliged. I'll answer properly when the load's down.
+line @4 greet.return [here.time=dusk|night] : Can hear you better than see you, but welcome.
+line @1 farewell : Keep the weight close on the way.
+line @1 farewell.return : I'll keep my chalk. You keep your footing.
+line @2 farewell [here.time=dusk|night] : Pick the lighter patch at the bend.
+line @1 react.news : I'm listening. Tell it at the pace it happened.
+line @1 react.news.new : That's another mark to put down.
+line @1 react.news.known : I'd counted that bit in already.
+line @1 react.news.doubt : Whose shoulder was under it when it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd spare the weight of a small errand for that house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A nice broad piece of news to set out in the sun.
+line @1 answer.how : Worn about the shoulders. Sound underfoot.
+line @2 answer.how [self.working=yes] : I've room to move a load and small reason to complain.
+line @1 ask.how : Any part of today still riding heavy on you?
+line @1 sympathise : A hard day doesn't finish when the weight comes off.
+line @1 reassure : Put one corner down here. You'll breathe easier.
+line @1 decline : No extra carrying till we agree the whole distance.
+line @1 accept_decline : Fair. I'll shift my mark back.
+line @1 thank : My shoulder knows exactly what that favour's worth.
+line @1 deflect_thanks : You can give somebody else the easy end next time.
+line @1 preclose : I'm beginning to measure the space beyond you.
+line @2 preclose [self.working=yes] : Can't leave this weight hanging on a corner.
+line @1 accept_preclose : Carry on. My elbows are well clear.
+line @1 hail [pair.band=friends] : A familiar shoulder! This way a moment.
+line @1 ack : Square enough.
 scene elbow
 when topic=pastimes|dreams
 does tell.self / ask.detail / answer.detail
@@ -107,9 +109,9 @@ a : That little hiss when you put the lid back. Supper's asked you to leave it a
 scene ditch
 when topic=pastimes self.likes=digging
 does tell.self / ask.detail / answer.detail
-a : I bury the first spadeful last. | I spread rough sacking beside the patch I'm digging.
-b : Where does the earth wait? | For kneeling?
-a : On a scrap of cloth. When I finish, the last hole has its dinner waiting. | For the good topsoil. My knees can fend for themselves.
+a : I keep the first spadeful of good earth to fill the hole back in. | I spread rough sacking beside the patch I'm digging.
+b : Why save that one? | For kneeling?
+a : That's the good earth. The rough stuff underneath can go to the bottom. | For the good topsoil. My knees can fend for themselves.
 
 scene crowd
 when topic=smalltalk self.likes=market_bustle
@@ -261,9 +263,9 @@ a : Point to where we stand, point to where we finish. Then say the price slowly
 scene faith
 when topic=faith
 does tell.self / ask.detail / answer.detail
-a : I have heard the scrape of bowls carry outside a chapel door. | First the bowls. I give thanks after stacking. Otherwise I'd be holding up the next hungry wolf.
-b : Does the noise spoil the quiet? | Why after the stacking?
-a : I'd be more uneasy at a quiet meal with an empty queue of dishes. | It gives somebody else a free minute to eat. That's a thanks with a little weight to it.
+a : I like hearing bowls scrape outside a chapel door on a dole day. | At the chapel supper I stack the bowls first and give thanks after.
+b : Doesn't the noise spoil the quiet? | Why after the stacking?
+a : No. A noisy queue means folk are being fed. A silent one worries me more. | It frees the bench for the next hungry wolf. That's a thanks with a little weight to it.
 
 scene storm
 when topic=dreams|weather
@@ -344,20 +346,20 @@ when concept=bark self.dislikes=rats
 does aside
 cooldown 8h
 say Leave air between the sack and the wall. | Sweep that spill before the whiskers find it.
-dlg resident.hub : There's a strip clear beside me. Speak from there.
-dlg resident.hub [topic.meeting=known] : I've measured your elbow before, #topic.player#. Welcome.
-dlg resident.hub [pair.disposition=wary|hostile] : I haven't agreed to carry a thing. You may speak.
-dlg resident.hub [here.time=night] : The ground's only just visible here. Stay in the lighter patch.
-dlg resident.job [self.job=carter] : #self.trade_words.capitalize#. I name a price with both ends of the journey in mind.
-dlg resident.job : I've a shoulder that knows when to take the strain.
-dlg resident.news [world.news] : Here's what has made it as far as my patch. #world.news#.
-dlg resident.news [world.event_words] : I can hear the stir about #world.event_words# from the square.
-dlg resident.news [world.wagons=raided] : There'll be gaps in the stacks after that cart was stripped.
-dlg resident.news [world.wedding=recent] : A wedding! Gives a new pair of shoulders reason to share the weight.
-dlg resident.news [world.death=recent] : I'd leave a way clear for the house with a death to bear.
-dlg resident.gossip [here.gossip!=yes] : Nobody's brought me anything I'd repeat even for a bright new barrow.
-dlg resident.bye : There's your space in the stream. Go while it's clear.
 
+dlg @1 resident.hub : There's a strip clear beside me. Speak from there.
+dlg @2 resident.hub [topic.meeting=known] : I've measured your elbow before, #topic.player#. Welcome.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I haven't agreed to carry a thing. You may speak.
+dlg @4 resident.hub [here.time=night] : The ground's only just visible here. Stay in the lighter patch.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I name a price with both ends of the journey in mind.
+dlg @2 resident.job : I've a shoulder that knows when to take the strain.
+dlg @1 resident.news [world.news] : Here's what has made it as far as my patch. #world.news#.
+dlg @2 resident.news [world.event_words] : I can hear the stir about #world.event_words# from the square.
+dlg @3 resident.news [world.wagons=raided] : There'll be gaps in the stacks after that cart was stripped.
+dlg @4 resident.news [world.wedding=recent] : A wedding! Gives a new pair of shoulders reason to share the weight.
+dlg @5 resident.news [world.death=recent] : I'd leave a way clear for the house with a death to bear.
+dlg @1 resident.gossip [here.gossip!=yes] : Nobody's brought me anything I'd repeat even for a bright new barrow.
+dlg @1 resident.bye : There's your space in the stream. Go while it's clear.
 graft @elbow_pitch resident.hub
 choice How big is the stall you mean to have? -> elbow_pitch
 node elbow_pitch

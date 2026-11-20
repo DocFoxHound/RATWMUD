@@ -1,9 +1,12 @@
+# rm471, the orchard of three tales (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm471
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_rue_sheafley
+written_by codex
 title the orchard of three tales
 fits stage=adult|old
 prefers talk=chatty drive=content
@@ -33,45 +36,44 @@ walkstop = my little wayside rest | a pause by a dry stone
 warmstew = the steam above the soup | a warm curl from the bowl
 
 any
-opinion dole for 2 : A given bowl of thick soup is an excellent reason to stay on your feet another afternoon. That's quite a lot to give anybody.
-opinion festivals for 2 : I can hear five new endings to the same old song before the last dance. I'd go just for the company the words carry home.
-opinion houses against 1 : I can see the owner's mark on a full barrel very plainly. When the barrel's empty I generally see who must go and find the next load.
-opinion merchants against 2 : A seller who tells me about bruises before I pay gets more respect than one who has a cleverer story ready after the purchase.
-opinion church for 1 : I've eaten a quiet meal under a chapel roof while the wind made a performance of itself outside. I keep the warm part of that memory.
-opinion times against 2 : The money I've managed to put aside keeps wanting to turn into the price of an ordinary week's food. I'd prefer a greater distance between those two piles.
+opinion @1 dole for 2 : A given bowl of thick soup is an excellent reason to stay on your feet another afternoon. That's quite a lot to give anybody.
+opinion @1 festivals for 2 : I can hear five new endings to the same old song before the last dance. I'd go just for the company the words carry home.
+opinion @1 houses against 1 : I can see the owner's mark on a full barrel very plainly. When the barrel's empty I generally see who must go and find the next load.
+opinion @1 merchants against 2 : A seller who tells me about bruises before I pay gets more respect than one who has a cleverer story ready after the purchase.
+opinion @1 church for 1 : I've eaten a quiet meal under a chapel roof while the wind made a performance of itself outside. I keep the warm part of that memory.
+opinion @1 times against 2 : The money I've managed to put aside keeps wanting to turn into the price of an ordinary week's food. I'd prefer a greater distance between those two piles.
 
 grown
-line greet : There's a short walk's worth of time to share here.
-line greet [pair.band=strangers] : A new face may choose whichever story ring looks right.
-line greet [here.time=dawn] : The air's just cool enough to keep the apples sweet. Welcome.
-line greet [here.time=dusk|night] : A soft time of day to listen before turning home.
-line greet [self.working=yes] : One piece of fruit to put down safely and I'm yours to hear.
-line kin.open [pair.kin!=no] : Come have the inner bit of the cloth. That's for our own.
-line again.open : Around you come with quite a different afternoon behind you.
-line greet.return : A welcome word's as good as a bite on a long walk.
-line greet.return [pair.band=friends|family] : That voice would bring me back from a complicated ending.
-line greet.return [self.working=yes] : You've got an answer over my gathering basket.
-line greet.return [here.time=dusk|night] : Softly back across the dark. I heard you.
-line farewell : Carry one agreeable thought into the next turning.
-line farewell.return : I'll wrap the last little piece and follow in my own time.
-line react.news : I'd hear that from the part where a real pair of feet first came across it.
-line react.news.new : This puts a fourth bend in a familiar road.
-line react.news.known : I've a version of that which still smells of the first telling.
-line react.news.doubt : Is there a wolf who could point out the spot where it happened?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could spend a fair afternoon walking a proper meal to that door.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such news leaves the last mouthful sweet.
-line ask.how : Is there anything beyond your day's errands worth taking a slightly longer road to?
-line answer.how : There's soup ahead of me and something interesting just behind my last turning.
-line sympathise : A tired mind can carry an old piece of sorrow a considerable way.
-line reassure : A rest in the story won't spoil where you intended to go with it.
-line decline : I'll tell you a long tale but I'm keeping the object of my savings quiet.
-line accept_decline : A closed fold in a story needs no further poking.
-line thank : You've left me enough free hands to carry the whole good thing home.
-line deflect_thanks : We may yet manage to spend an afternoon passing the kindness about.
-line preclose : I have let my feet wait patiently through quite a fair stretch of talking.
-line accept_preclose : Go with the turn the light is giving you.
-line ack : Fine ending.
-
+line @1 greet : There's a short walk's worth of time to share here.
+line @2 greet [pair.band=strangers] : A new face may choose whichever story ring looks right.
+line @3 greet [here.time=dawn] : The air's just cool enough to keep the apples sweet. Welcome.
+line @4 greet [here.time=dusk|night] : A soft time of day to listen before turning home.
+line @5 greet [self.working=yes] : One piece of fruit to put down safely and I'm yours to hear.
+line @1 kin.open [pair.kin!=no] : Come have the inner bit of the cloth. That's for our own.
+line @1 again.open : Around you come with quite a different afternoon behind you.
+line @1 greet.return : A welcome word's as good as a bite on a long walk.
+line @2 greet.return [pair.band=friends|family] : That voice would bring me back from a complicated ending.
+line @3 greet.return [self.working=yes] : You've got an answer over my gathering basket.
+line @4 greet.return [here.time=dusk|night] : Softly back across the dark. I heard you.
+line @1 farewell : Carry one agreeable thought into the next turning.
+line @1 farewell.return : I'll wrap the last little piece and follow in my own time.
+line @1 react.news : I'd hear that from the part where a real pair of feet first came across it.
+line @1 react.news.new : This puts a fourth bend in a familiar road.
+line @1 react.news.known : I've a version of that which still smells of the first telling.
+line @1 react.news.doubt : Is there a wolf who could point out the spot where it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could spend a fair afternoon walking a proper meal to that door.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such news leaves the last mouthful sweet.
+line @1 ask.how : Is there anything beyond your day's errands worth taking a slightly longer road to?
+line @1 answer.how : There's soup ahead of me and something interesting just behind my last turning.
+line @1 sympathise : A tired mind can carry an old piece of sorrow a considerable way.
+line @1 reassure : A rest in the story won't spoil where you intended to go with it.
+line @1 decline : I'll tell you a long tale but I'm keeping the object of my savings quiet.
+line @1 accept_decline : A closed fold in a story needs no further poking.
+line @1 thank : You've left me enough free hands to carry the whole good thing home.
+line @1 deflect_thanks : We may yet manage to spend an afternoon passing the kindness about.
+line @1 preclose : I have let my feet wait patiently through quite a fair stretch of talking.
+line @1 accept_preclose : Go with the turn the light is giving you.
+line @1 ack : Fine ending.
 scene threerings
 when topic=lore
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say Quiet end to a well-walked day. | Let the last hinge down gently.
-dlg resident.hub : I've got time for one question or one rather long answer, as you prefer.
-dlg resident.hub [topic.meeting=known] : Let's choose a different apple ring today, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll keep my savings rolled and hear your account with the cloth lying between us.
-dlg resident.hub [here.time=night] : A small voice will carry a surprisingly long story this late.
-dlg resident.job [self.job=none] : #self.trade_words.capitalize#. I give each sound piece room enough to arrive that way.
-dlg resident.job : Whatever I put aside for tomorrow, I make sure I could still take it out in good condition.
-dlg resident.news [world.news] : Here's how the news has come round to my bit of the road. #world.news#.
-dlg resident.bye : May you find a full shelf after the last turn.
 
+dlg @1 resident.hub : I've got time for one question or one rather long answer, as you prefer.
+dlg @2 resident.hub [topic.meeting=known] : Let's choose a different apple ring today, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll keep my savings rolled and hear your account with the cloth lying between us.
+dlg @4 resident.hub [here.time=night] : A small voice will carry a surprisingly long story this late.
+dlg @1 resident.job [self.job=none] : #self.trade_words.capitalize#. I give each sound piece room enough to arrive that way.
+dlg @2 resident.job : Whatever I put aside for tomorrow, I make sure I could still take it out in good condition.
+dlg @1 resident.news [world.news] : Here's how the news has come round to my bit of the road. #world.news#.
+dlg @1 resident.bye : May you find a full shelf after the last turn.
 graft @rings_choice resident.hub
 choice What are those rings tied into the cloth for? -> rings_choice
 node rings_choice

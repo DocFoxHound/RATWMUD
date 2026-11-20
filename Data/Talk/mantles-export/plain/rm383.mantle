@@ -1,9 +1,12 @@
+# rm383, the barley-grain wager (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm383
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_ludo_chalkham
+written_by codex
 title the barley-grain wager
 fits stage=adult|old
 prefers class=lower
@@ -68,7 +71,6 @@ line @22 deflect_thanks : A grain of help doesn't need weighing out. | I'd have 
 line @23 preclose : I have a walk I ought to begin in decent light. | There's a little matter I must see settled.
 line @24 accept_preclose : Go where the next good piece of light falls. | May the day's other business be kind to you.
 line @25 farewell [here.time=night] : A quiet hour before the first bell, at least. | Put the dark part of the road behind you soon.
-
 scene stake
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : You can make the whole acc
 dlg @5 resident.job [self.job=none self.workplace] : I see to the churning at #self.workplace#. A steady ear's nearly as useful as practised paws.
 dlg @6 resident.job : I make my hands do something useful while my thoughts go wandering.
 dlg @7 resident.bye : May the next turn bring a word you wanted.
-
 graft resident.hub
 choice What can you stake on that sound? -> grain_bet
 node grain_bet

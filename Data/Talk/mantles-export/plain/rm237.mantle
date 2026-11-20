@@ -1,9 +1,12 @@
+# rm237, the stall in a string (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm237
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_brenna_greyworth
+written_by codex
 title the stall in a string
 fits stage=adult|old
 prefers job=crafter
@@ -36,41 +39,41 @@ wax = a curl of wax | soft comb wax
 mark = my width mark | the centre knot
 
 any
-opinion houses against 2 : Whoever takes money for a roof can find time to climb under the bit that leaks.
-opinion merchants against 1 : Pay me for the time I spent making it. You can talk the ear off a post for free.
-opinion road for 1 : A decent road leaves room for me to carry a bundle without being told to tuck my elbows in.
-opinion festivals against 1 : Dance all you like. I object to having the end of somebody's dance land in my cider.
-opinion dole for 2 : Soup tastes better served before the questions. Ask them after the bowl comes back.
-opinion sump for 2 : Down here a wolf shows you the bad board on the landing. Fancy folk pretend theirs are quite sound.
+opinion @1 houses against 2 : Whoever takes money for a roof can find time to climb under the bit that leaks.
+opinion @1 merchants against 1 : Pay me for the time I spent making it. You can talk the ear off a post for free.
+opinion @1 road for 1 : A decent road leaves room for me to carry a bundle without being told to tuck my elbows in.
+opinion @1 festivals against 1 : Dance all you like. I object to having the end of somebody's dance land in my cider.
+opinion @1 dole for 2 : Soup tastes better served before the questions. Ask them after the bowl comes back.
+opinion @1 sump for 2 : In the Sump a wolf shows you the bad board on the landing. Fancy folk pretend theirs are quite sound.
 
 grown
-line greet : Move that elbow a shade. There, we're both in. | Welcome. Don't get the knots underfoot.
-line greet [pair.band=strangers] : Room enough for a first word. | A fresh face. Don't let me measure you by mistake.
-line greet [here.time=dawn] : Early enough to spread my things. | Day's got an empty edge yet.
-line greet.return : Heard you before you stepped across my string. | Welcome, within reason and reach.
-line greet.return [self.working=yes] : Say on while the wax settles. | A word fits between jobs. Go on.
-line greet.return [pair.band=friends|family] : Plenty of room for your sort of interruption. | Good. You know which bit to leave clear.
-line greet.return [here.time=dusk|night] : There's daylight enough left for talk. | Evening. Leave the string where it lies, please.
-line again.open : Second visit. You'll be owing me stall rent. | Back inside my measure again.
-line kin.open [pair.kin!=no] : Sit here, family get the wide end. | I can let my temper out round you.
-line farewell : Go on while there's space for passing. | Take your elbow and your good news with you.
-line farewell.return : Straight string and a clear way out. | I'll tuck my things in behind you.
-line react.news : Give it me by the useful end. | Skip the decoration. I want the happening.
-line react.news.new : That's fresh off the reel. | I couldn't have measured for that one.
-line react.news.known : Had the length of that already, thanks. | Nothing new between the knots there.
-line react.news.doubt : It sounds wider in the telling than it ever stood. | I'd measure that account against another ear.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. That's sore news to rub against. | Put my temper aside a minute. That's bad.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Some things deserve the whole counter. | That's a bright little copper in a grubby day.
-line ask.how : Has anybody left you room to breathe today? | How tight's the day tied you?
-line answer.how : Still scratching out a corner for myself. | I've done enough today to soften one knot.
-line decline : No, I'd lose my afternoon to that bargain. | Leave me out. I need the time more.
-line accept_decline : Saves a stretch of useless bargaining. | Clear answer. I respect that.
-line thank : You've freed up a whole paw for me. | I'll count that with the savings.
-line deflect_thanks : Fine. Don't spend all afternoon paying for it. | Already done. Leave off reckoning.
-line sympathise : Hard to stand straight with so little space left. | Here, put the weight down on my roll.
-line preclose : I've got a knot to set before I forget. | I'd best coil this conversation up now.
-line accept_preclose : Go settle your business. Mine can wait a minute. | Fine. Take the wide way out.
-line ack : Just to the mark. | That width exactly.
+line @1 greet : Move that elbow a shade. There, we're both in. | Welcome. Don't get the knots underfoot.
+line @2 greet [pair.band=strangers] : Room enough for a first word. | A fresh face. Don't let me measure you by mistake.
+line @3 greet [here.time=dawn] : Early enough to spread my things. | Day's got an empty edge yet.
+line @1 greet.return : Heard you before you stepped across my string. | Welcome, within reason and reach.
+line @2 greet.return [self.working=yes] : Say on while the wax settles. | A word fits between jobs. Go on.
+line @3 greet.return [pair.band=friends|family] : Plenty of room for your sort of interruption. | Good. You know which bit to leave clear.
+line @4 greet.return [here.time=dusk|night] : There's daylight enough left for talk. | Evening. Leave the string where it lies, please.
+line @1 again.open : Second visit. You'll be owing me stall rent. | Back inside my measure again.
+line @1 kin.open [pair.kin!=no] : Sit here, family get the wide end. | I can let my temper out round you.
+line @1 farewell : Go on while there's space for passing. | Take your elbow and your good news with you.
+line @1 farewell.return : Straight string and a clear way out. | I'll tuck my things in behind you.
+line @1 react.news : Give it me by the useful end. | Skip the decoration. I want the happening.
+line @1 react.news.new : That's fresh off the reel. | I couldn't have measured for that one.
+line @1 react.news.known : Had the length of that already, thanks. | Nothing new between the knots there.
+line @1 react.news.doubt : It sounds wider in the telling than it ever stood. | I'd measure that account against another ear.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. That's sore news to rub against. | Put my temper aside a minute. That's bad.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Some things deserve the whole counter. | That's a bright little copper in a grubby day.
+line @1 ask.how : Has anybody left you room to breathe today? | How tight's the day tied you?
+line @1 answer.how : Still scratching out a corner for myself. | I've done enough today to soften one knot.
+line @1 decline : No, I'd lose my afternoon to that bargain. | Leave me out. I need the time more.
+line @1 accept_decline : Saves a stretch of useless bargaining. | Clear answer. I respect that.
+line @1 thank : You've freed up a whole paw for me. | I'll count that with the savings.
+line @1 deflect_thanks : Fine. Don't spend all afternoon paying for it. | Already done. Leave off reckoning.
+line @1 sympathise : Hard to stand straight with so little space left. | Here, put the weight down on my roll.
+line @1 preclose : I've got a knot to set before I forget. | I'd best coil this conversation up now.
+line @1 accept_preclose : Go settle your business. Mine can wait a minute. | Fine. Take the wide way out.
+line @1 ack : Just to the mark. | That width exactly.
 scene width
 when topic=dreams|work
 does tell.plan / ask.detail / answer.detail
@@ -247,14 +250,14 @@ does aside
 cooldown 7h
 say Drink it before the price discussion starts! | Lukewarm bargain, cold supper. Enough.
 
-dlg resident.hub : Step inside my length of string. I've time for whatever's brought you here.
-dlg resident.hub [topic.meeting=known] : #topic.player#, right on the edge of my calculations.
-dlg resident.hub [here.time=night] : After hours is no time to haggle. We can still talk.
-dlg resident.hub [pair.disposition=hostile|wary] : Say it without leaning across my space.
-dlg resident.job [self.job=crafter self.workplace] : #self.workplace#. Wax, cord, the work in front of my paws, then my own dreams after.
-dlg resident.job : I make enough space to see what I'm doing.
-dlg resident.news [world.news] : This has come along: #world.news#. There's the useful length of it.
-dlg resident.bye : Lift your foot over the string on the way.
+dlg @1 resident.hub : Step inside my length of string. I've time for whatever's brought you here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, right on the edge of my calculations.
+dlg @3 resident.hub [here.time=night] : After hours is no time to haggle. We can still talk.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it without leaning across my space.
+dlg @1 resident.job [self.job=crafter self.workplace] : #self.workplace.capitalize#. Wax, cord, the work in front of my paws, then my own dreams after.
+dlg @2 resident.job : I make enough space to see what I'm doing.
+dlg @1 resident.news [world.news] : This has come along: #world.news#. There's the useful length of it.
+dlg @1 resident.bye : Lift your foot over the string on the way.
 graft resident.hub
 choice What are those two knots measuring? -> knot_stall
 node knot_stall

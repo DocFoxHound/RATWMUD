@@ -1,9 +1,12 @@
+# rm479, the narrow wedge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm479
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_beatha_foggate
+written_by codex
 title the narrow wedge
 fits stage=adult|old
 prefers job=servant talk=quiet
@@ -34,45 +37,44 @@ smudge = a grey smear of smoke | a thumbprint of soot
 fogbank = a fold of morning mist | a thin bank of mist
 
 any
-opinion houses mixed 0 : A very fine door still has two sides and somebody generally has to rub the prints off both.
-opinion city for 1 : The stairs suit me. I like a place with separate landings for separate thoughts.
-opinion watch mixed 0 : One may share a roof with heavy boots and retain one's own opinion of the noise.
-opinion drink for 1 : A small warm measure rewards the hand that has properly finished a task.
-opinion festivals mixed 0 : A closed casement improves the louder portions and lets the quieter ones through.
-opinion road mixed 0 : A pencilled road remains quite straight through an astonishing assortment of hills.
-opinion strangers mixed 0 : A quiet knock earns an attentive ear.
+opinion @1 houses mixed 0 : A very fine door still has two sides and somebody generally has to rub the prints off both.
+opinion @1 city for 1 : The stairs suit me. I like a place with separate landings for separate thoughts.
+opinion @1 watch mixed 0 : One may share a roof with heavy boots and retain one's own opinion of the noise.
+opinion @1 drink for 1 : A small warm measure rewards the hand that has properly finished a task.
+opinion @1 festivals mixed 0 : A closed casement improves the louder portions and lets the quieter ones through.
+opinion @1 road mixed 0 : A pencilled road remains quite straight through an astonishing assortment of hills.
+opinion @1 strangers mixed 0 : A quiet knock earns an attentive ear.
 
 grown
-line greet : The door will stay there. You may speak freely.
-line greet [pair.band=strangers] : A visitor. I'll put my blade aside.
-line greet [here.time=dawn] : Morning suits a room before the marks appear.
-line greet [here.time=dusk|night] : Evening brings the grain up in the boards.
-line greet.return : I heard. The hinge was quieter than you were.
-line greet.return [pair.band=friends|family] : Your knock needs very little identifying.
-line greet.return [self.working=yes] : This hand can listen while the other finishes.
-line greet.return [here.time=dusk|night] : A voice carries some distance through an open casement.
-line kin.open [pair.kin!=no] : Come in, kin. The opening is quite sufficient.
-line again.open : I left a finger's width in case you wished to continue.
-line hail [pair.band=friends] : Friend. I thought I recognised the rhythm.
-line farewell : May your next door open quietly.
-line farewell.return : And stop short of your heels.
-line react.news : Set the facts down in an orderly fashion.
-line react.news.new : Fresh marks on a clean page.
-line react.news.known : That entry is already quite distinct.
-line react.news.doubt : I'd inspect the other hinge before judging that one.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll shut the noise outside where it belongs.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Very good. Let that word reach the inner rooms.
-line ask.how : Have you come across a quiet minute today?
-line answer.how : I've little to put right this instant.
-line thank : You spared me some stooping. My thanks.
-line deflect_thanks : I had the wedge in hand already.
-line sympathise : Lean here. The panel will hold.
-line reassure : Leave the matter ajar till morning.
-line decline : That is a larger opening than I care to leave.
-line accept_decline : Then we'll let the door rest where it is.
-line preclose : I ought to put these small things back.
-line accept_preclose : I can see you clear of the hinge.
-
+line @1 greet : The door will stay there. You may speak freely.
+line @2 greet [pair.band=strangers] : A visitor. I'll put my blade aside.
+line @3 greet [here.time=dawn] : Morning suits a room before the marks appear.
+line @4 greet [here.time=dusk|night] : Evening brings the grain up in the boards.
+line @1 greet.return : I heard. The hinge was quieter than you were.
+line @2 greet.return [pair.band=friends|family] : Your knock needs very little identifying.
+line @3 greet.return [self.working=yes] : This hand can listen while the other finishes.
+line @4 greet.return [here.time=dusk|night] : A voice carries some distance through an open casement.
+line @1 kin.open [pair.kin!=no] : Come in, kin. The opening is quite sufficient.
+line @1 again.open : I left a finger's width in case you wished to continue.
+line @1 hail [pair.band=friends] : Friend. I thought I recognised the rhythm.
+line @1 farewell : May your next door open quietly.
+line @1 farewell.return : And stop short of your heels.
+line @1 react.news : Set the facts down in an orderly fashion.
+line @1 react.news.new : Fresh marks on a clean page.
+line @1 react.news.known : That entry is already quite distinct.
+line @1 react.news.doubt : I'd inspect the other hinge before judging that one.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll shut the noise outside where it belongs.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Very good. Let that word reach the inner rooms.
+line @1 ask.how : Have you come across a quiet minute today?
+line @1 answer.how : I've little to put right this instant.
+line @1 thank : You spared me some stooping. My thanks.
+line @1 deflect_thanks : I had the wedge in hand already.
+line @1 sympathise : Lean here. The panel will hold.
+line @1 reassure : Leave the matter ajar till morning.
+line @1 decline : That is a larger opening than I care to leave.
+line @1 accept_decline : Then we'll let the door rest where it is.
+line @1 preclose : I ought to put these small things back.
+line @1 accept_preclose : I can see you clear of the hinge.
 scene quiet_door
 when topic=home
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Keep a thumb beneath that talkative latch.
 
-dlg resident.hub : There is a quiet hand's breadth left in the afternoon.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you may trust the door to remain precisely there.
-dlg resident.hub [here.time=dusk] : Have a word while the room still has a little colour.
-dlg resident.hub [pair.disposition=hostile|wary] : The threshold provides a suitable interval.
-dlg resident.job [self.trade_words] : The post is #self.trade_words#. A door should seldom announce a servant.
-dlg resident.news [world.news] : This came from #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That latch is closed quite deliberately.
-dlg resident.bye : I'll catch the panel behind you.
-
+dlg @1 resident.hub : There is a quiet hand's breadth left in the afternoon.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you may trust the door to remain precisely there.
+dlg @3 resident.hub [here.time=dusk] : Have a word while the room still has a little colour.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : The threshold provides a suitable interval.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. A door should seldom announce a servant.
+dlg @1 resident.news [world.news] : This came from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That latch is closed quite deliberately.
+dlg @1 resident.bye : I'll catch the panel behind you.
 graft resident.hub
 choice How do you fit a wedge to a door? -> palm_space
 node palm_space

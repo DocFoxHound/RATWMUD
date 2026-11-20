@@ -1,9 +1,12 @@
+# rm251, the swallowed beat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm251
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_magnus_greycot
+written_by codex
 title the swallowed beat
 fits stage=adult|old
 prefers job=laborer
@@ -66,7 +69,6 @@ line @22 deflect_thanks : Easy enough while I stood here. | Just a small shift o
 line @23 preclose : I'll move before I doze off standing. | Time I let the talk run down.
 line @24 accept_preclose : Catch your rest when it comes past. | Aye. Finish on the soft beat.
 line @25 farewell [here.time=night] : There's a dream out there with your shape in it. | Go softly till your own door shuts.
-
 scene blankbeat
 when topic=pastimes self.likes=dancing
 does tell.self / ask.detail / answer.detail
@@ -119,7 +121,7 @@ a : Water makes a better job of being water. | I can drink fast and remember bet
 scene washplace
 when topic=work self.job=laborer self.working=yes self.workplace
 does tell.self / ask.detail / answer.detail
-a : At #self.workplace# I shake a drip off before it finds my neck. | #self.workplace# puts a slow sideways pull in my shoulders.
+a : At #self.workplace# I shake a drip off before it finds my neck. | #self.workplace.capitalize# puts a slow sideways pull in my shoulders.
 b : Have you a trick for missing it? | Can you feel it after work?
 a : Look down while you lift. Water can't run uphill into a collar. | Only till I give 'em a turn to a dance measure.
 
@@ -242,7 +244,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : No need for a push. I'll g
 dlg @5 resident.job [self.job=laborer self.workplace] : Bending and lifting at #self.workplace#. A wet shirt weighs more than it looks.
 dlg @6 resident.job : Mostly my shoulders know the answer before my mouth does.
 dlg @7 resident.bye : Pick a dry place to stop tonight.
-
 graft resident.hub
 choice Is that a dance you're doing? -> heel_music
 node heel_music

@@ -1,9 +1,12 @@
+# rm266, the uphill king (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm266
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_edda_muddale
+written_by codex
 title the uphill king
 fits stage=adult|old
 prefers quarter=sump
@@ -68,7 +71,6 @@ line @22 deflect_thanks : Wasn't any further than my elbow. | Save your speech t
 line @23 preclose : Enough talk for a whole game. | Need to sit where the light holds.
 line @24 accept_preclose : Finish the turn your way. | Aye. That's a sensible stopping square.
 line @25 farewell [here.time=night] : Watch the black squares after dark. | Go quiet on those stone steps.
-
 scene crown
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -174,31 +176,6 @@ a : Rain on the board shows every hollow it owns. | My bad corner holds three dr
 b : How do you play with puddles? | Do you count them all?
 a : Turn it edge on. Rain's turn is over. | Only until the tea has cooled enough for drinking.
 
-old
-
-scene knees
-when topic=dreams self.age>=55
-does tell.self / react.self / assess
-a : My knees have earned a different view for their remaining turns. | At my age a chair on the flat is a serious property.
-b : With a few steps left to get to it. | Must it have arms?
-a : I'll pay the steps once, for a window I can keep. | Enough arm to put tea down level.
-
-scene memory
-when topic=lore self.age>=55
-does tell.self / ask.detail / answer.detail
-a : I remember drawing my playing squares with a bit of char. | I used to spend new leather without looking down at it.
-b : Didn't the lines rub off? | When did that change?
-a : The board got better. The figures learned to jostle on it just the same. | When I started reckoning my boots by climbs left in them.
-
-scene lastboard
-when topic=land self.age>=55
-does give.opinion / disagree / concede
-a : I'm old enough to want my last game in a different room. | I've given the lower streets a great many soles.
-b : You might miss your first windowsill. | Cost you another pair going up.
-a : I'll take its measure with me. I can get a higher one cut to fit. | Good. A pair well used at last.
-
-grown
-
 story button_king [topic=pastimes]
   : I once crowned a draughts piece with a crust. A long game, weak tea, and my mouth started making arrangements.
   : I ate the crown while I was thinking my move out.
@@ -248,7 +225,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep the width of the boar
 dlg @5 resident.job [self.job=none] : I've my eyes and a seat. I know what goes on across it.
 dlg @6 resident.job : I can tell a level board by touch.
 dlg @7 resident.bye : Take the better of the two turnings.
-
 graft resident.hub
 choice Why a button for the crown? -> boot_crown
 node boot_crown
@@ -259,3 +235,26 @@ node high_square
 say A windowsill on a high street. One chair, one board, and water that goes to trouble somebody further downhill.
 choice A fair move. -> hub
 choice I'll leave you to play. -> bye
+
+
+old
+scene knees
+when topic=dreams self.age>=55
+does tell.self / react.self / assess
+a : My knees have earned a different view for their remaining turns. | At my age a chair on the flat is a serious property.
+b : With a few steps left to get to it. | Must it have arms?
+a : I'll pay the steps once, for a window I can keep. | Enough arm to put tea down level.
+
+scene memory
+when topic=lore self.age>=55
+does tell.self / ask.detail / answer.detail
+a : I remember drawing my playing squares with a bit of char. | I used to spend new leather without looking down at it.
+b : Didn't the lines rub off? | When did that change?
+a : The board got better. The figures learned to jostle on it just the same. | When I started reckoning my boots by climbs left in them.
+
+scene lastboard
+when topic=land self.age>=55
+does give.opinion / disagree / concede
+a : I'm old enough to want my last game in a different room. | I've given the lower streets a great many soles.
+b : You might miss your first windowsill. | Cost you another pair going up.
+a : I'll take its measure with me. I can get a higher one cut to fit. | Good. A pair well used at last.

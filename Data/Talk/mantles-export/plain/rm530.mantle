@@ -1,14 +1,17 @@
+# rm530, the unentered voyage (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm530
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_julian_greatly
+written_by codex
 title the unentered voyage
 fits stage=adult|old
 prefers job=merchant
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk keeps_a_tiny_unpriced_ship_in_the_margin_of_a_private_account
+quirk keeps_a_tiny_unpriced_ship_in_an_account_margin
 likes oatcakes stars fresh_straw misty_dawns
 dislikes haggling flies
 fears a_book_that_accounts_for_everything_but_the_day a_berth_passed_by
@@ -37,50 +40,49 @@ sightslit = an opening beyond the roof | my view through two rafters
 paperwind = a slight curl of the page | an ink-favouring breeze
 
 any
-opinion city for 1 : All the goods in my books have somewhere to go within reach of these walls. I like knowing the use of the figures.
-opinion dole against 1 : I'd sooner finance work that continues after the first purse is spent. One meal has a very short accounting period.
-opinion houses for 1 : The yard can accept responsibility over a season because a house stands behind the work. I give that arrangement its due.
-opinion newcomers for 1 : Fresh eyes on an old yard may ask precisely why we've kept an inconvenient habit.
-opinion strangers for 1 : My door need not know a caller's grandparent before I can offer a chair and hear the proposal.
-opinion sump against 2 : I find the damp reaches the books before I've properly settled to a page down there. I favour higher quarters.
-opinion times for 1 : I can afford sound paper and leisure to put a useless little ship on it. The present has treated me decently.
-opinion watch for 1 : A witnessed delivery should be a matter one can take to the Watch and get a patient hearing.
+opinion @1 city for 1 : All the goods in my books have somewhere to go within reach of these walls. I like knowing the use of the figures.
+opinion @1 dole against 1 : I'd sooner finance work that continues after the first purse is spent. One meal has a very short accounting period.
+opinion @1 houses for 1 : The yard can accept responsibility over a season because a house stands behind the work. I give that arrangement its due.
+opinion @1 newcomers for 1 : Fresh eyes on an old yard may ask precisely why we've kept an inconvenient habit.
+opinion @1 strangers for 1 : My door need not know a caller's grandparent before I can offer a chair and hear the proposal.
+opinion @1 sump against 2 : I find the damp reaches the books before I've properly settled to a page down there. I favour higher quarters.
+opinion @1 times for 1 : I can afford sound paper and leisure to put a useless little ship on it. The present has treated me decently.
+opinion @1 watch for 1 : A witnessed delivery should be a matter one can take to the Watch and get a patient hearing.
 
 grown
-line greet : There's an open margin here for a visitor.
-line greet [pair.band=strangers] : Your name may follow your business, if you please.
-line greet [here.time=dawn] : First light has almost found the sail on my page.
-line greet [here.time=dusk|night] : The desk is quiet enough to entertain another voice.
-line greet [self.working=yes] : Allow me to finish this small upright stroke.
-line kin.open [pair.kin!=no] : For family I reserve a longer interval without an entry.
-line again.open : You've come round to a familiar page.
-line greet.return : A clear hail over the white margin.
-line greet.return [pair.band=friends|family] : There's a voice that won't require a memorandum.
-line greet.return [self.working=yes] : I heard while I was bringing the column down.
-line greet.return [here.time=dusk|night] : I have the light and the leisure to listen.
-line farewell : May the day keep a little space unassigned for you.
-line farewell.return : I'll put that visit among my better expenditures.
-line farewell [here.time=dusk|night] : Good light to your feet until your door.
-line react.news : What part of the account has been directly observed?
-line react.news.new : That's a detail I've yet to bring into the book.
-line react.news.known : I can find that entry on an earlier leaf.
-line react.news.doubt : Would that total survive inspection of the original notes?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would suspend business with the household for a respectful interval.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd spare some of my best paper for such an entry.
-line answer.how : A little restless about matters absent from the day's account.
-line answer.how [self.working=yes] : Thoroughly occupied by things which can be counted.
-line ask.how : What have you enjoyed today beyond the ordinary figures?
-line sympathise : No entry has sufficient room for every sort of loss.
-line reassure : Take whatever part of the evening the matter asks.
-line decline : I'd have to break a proper undertaking at the yard to accept yours.
-line accept_decline : I shall leave my proposal in an unentered state.
-line thank : You have saved me a great many unnecessary figures.
-line deflect_thanks : Return the consideration to another patient reader.
-line preclose : My little ship is still waiting for a mast.
-line preclose [self.working=yes] : The yard requires the better part of this remaining light.
-line accept_preclose : Let's close the cover while there's a clear stopping place.
-line ack : Accounted.
-
+line @1 greet : There's an open margin here for a visitor.
+line @2 greet [pair.band=strangers] : Your name may follow your business, if you please.
+line @3 greet [here.time=dawn] : First light has almost found the sail on my page.
+line @4 greet [here.time=dusk|night] : The desk is quiet enough to entertain another voice.
+line @5 greet [self.working=yes] : Allow me to finish this small upright stroke.
+line @1 kin.open [pair.kin!=no] : For family I reserve a longer interval without an entry.
+line @1 again.open : You've come round to a familiar page.
+line @1 greet.return : A clear hail over the white margin.
+line @2 greet.return [pair.band=friends|family] : There's a voice that won't require a memorandum.
+line @3 greet.return [self.working=yes] : I heard while I was bringing the column down.
+line @4 greet.return [here.time=dusk|night] : I have the light and the leisure to listen.
+line @1 farewell : May the day keep a little space unassigned for you.
+line @1 farewell.return : I'll put that visit among my better expenditures.
+line @2 farewell [here.time=dusk|night] : Good light to your feet until your door.
+line @1 react.news : What part of the account has been directly observed?
+line @1 react.news.new : That's a detail I've yet to bring into the book.
+line @1 react.news.known : I can find that entry on an earlier leaf.
+line @1 react.news.doubt : Would that total survive inspection of the original notes?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would suspend business with the household for a respectful interval.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd spare some of my best paper for such an entry.
+line @1 answer.how : A little restless about matters absent from the day's account.
+line @2 answer.how [self.working=yes] : Thoroughly occupied by things which can be counted.
+line @1 ask.how : What have you enjoyed today beyond the ordinary figures?
+line @1 sympathise : No entry has sufficient room for every sort of loss.
+line @1 reassure : Take whatever part of the evening the matter asks.
+line @1 decline : I'd have to break a proper undertaking at the yard to accept yours.
+line @1 accept_decline : I shall leave my proposal in an unentered state.
+line @1 thank : You have saved me a great many unnecessary figures.
+line @1 deflect_thanks : Return the consideration to another patient reader.
+line @1 preclose : My little ship is still waiting for a mast.
+line @2 preclose [self.working=yes] : The yard requires the better part of this remaining light.
+line @1 accept_preclose : Let's close the cover while there's a clear stopping place.
+line @1 ack : Accounted.
 scene ship
 when topic=dreams
 does tell.self / ask.detail / answer.detail
@@ -335,21 +337,21 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say A stone weight for the foot of the page. | My paper ship is trying the air.
-dlg resident.hub : I have a private margin with a little room for an unexpected conversation.
-dlg resident.hub [topic.meeting=known] : You've seen the little vessel in the margin, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : The public account is available. My other pages will stay closed.
-dlg resident.hub [here.time=night] : The lamp gives us a circle of paper and the window supplies a patch of sky.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I reconcile the entries with materials somebody can actually build with.
-dlg resident.job : I know what a sheet can tell us about a load and where the sheet must yield to the load itself.
-dlg resident.news [world.news] : One entry newly reached my desk. #world.news#.
-dlg resident.news [world.event_words] : The subject of #world.event_words# may affect today's returns.
-dlg resident.gossip [here.gossip!=yes] : Nothing on that subject has been made public in my hearing.
-dlg shop.greet [here.shop!=bare] : There are articles available to inspect. I'll give the figures for the particular piece that interests you.
-dlg shop.greet [here.shop=bare] : No stock to offer today. A sensible enquiry may still earn a sensible answer.
-dlg shop.prices : I'd look at numbers and goods together before discussing terms.
-dlg shop.bye : May your purchase give as honest an account of itself in use.
-dlg resident.bye : Leave the day's last corner open to a view past the roofs.
 
+dlg @1 resident.hub : I have a private margin with a little room for an unexpected conversation.
+dlg @2 resident.hub [topic.meeting=known] : You've seen the little vessel in the margin, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : The public account is available. My other pages will stay closed.
+dlg @4 resident.hub [here.time=night] : The lamp gives us a circle of paper and the window supplies a patch of sky.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I reconcile the entries with materials somebody can actually build with.
+dlg @2 resident.job : I know what a sheet can tell us about a load and where the sheet must yield to the load itself.
+dlg @1 resident.news [world.news] : One entry newly reached my desk. #world.news#.
+dlg @2 resident.news [world.event_words] : The subject of #world.event_words# may affect today's returns.
+dlg @1 resident.gossip [here.gossip!=yes] : Nothing on that subject has been made public in my hearing.
+dlg @1 shop.greet [here.shop!=bare] : There are articles available to inspect. I'll give the figures for the particular piece that interests you.
+dlg @2 shop.greet [here.shop=bare] : No stock to offer today. A sensible enquiry may still earn a sensible answer.
+dlg @1 shop.prices : I'd look at numbers and goods together before discussing terms.
+dlg @1 shop.bye : May your purchase give as honest an account of itself in use.
+dlg @1 resident.bye : Leave the day's last corner open to a view past the roofs.
 graft @fleetmargin resident.hub
 choice What's the little sail beside the figures? -> fleetmargin
 node fleetmargin

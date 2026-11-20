@@ -1,9 +1,12 @@
+# rm363, the price in a tune (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm363
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_josephine_dripgate
+written_by codex
 title the price in a tune
 fits stage=adult|old
 prefers role=merchant job=merchant
@@ -39,51 +42,50 @@ draught = the thin air upstairs | a stairwell breeze
 edge = a narrow folded lip | the clean paper edge
 
 any
-opinion dole for 2 : Hunger once made a heavy noise in our cupboards. The dole quieted it for a week I keep in mind.
-opinion church for 1 : I like a charity that knows which end of a ladle is for passing food.
-opinion merchants mixed 1 : I trade in small wares. A mean little bargain and a fair one can fit on the same scrap. Listen closely.
-opinion houses against 1 : A House should at least cover up its own gaps before charging a tenant for draughts.
-opinion newcomers for 1 : Some of my best coppers come from faces I haven't seen before. Plenty of room to start there.
-opinion strangers for 1 : A traveller can tell me what a needle actually did six streets beyond my counter.
-opinion festivals against 1 : Let me hear the tune through a shutter. I'd like my supper to stay on my plate while I listen.
-opinion road against 1 : A late load doesn't pay the hour I spent looking for it round the bend.
-opinion times against 2 : A purse with one small copper left has to sing a harder tune each week.
+opinion @1 dole for 2 : Hunger once made a heavy noise in our cupboards. The dole quieted it for a week I keep in mind.
+opinion @1 church for 1 : I like a charity that knows which end of a ladle is for passing food.
+opinion @1 merchants mixed 1 : I trade in small wares. A mean little bargain and a fair one can fit on the same scrap. Listen closely.
+opinion @1 houses against 1 : A House should at least cover up its own gaps before charging a tenant for draughts.
+opinion @1 newcomers for 1 : Some of my best coppers come from faces I haven't seen before. Plenty of room to start there.
+opinion @1 strangers for 1 : A traveller can tell me what a needle actually did six streets beyond my counter.
+opinion @1 festivals against 1 : Let me hear the tune through a shutter. I'd like my supper to stay on my plate while I listen.
+opinion @1 road against 1 : A late load doesn't pay the hour I spent looking for it round the bend.
+opinion @1 times against 2 : A purse with one small copper left has to sing a harder tune each week.
 
 grown
-line greet [pair.band=strangers] : Hello. Set your parcel flat. | New face, clear patch on the board.
-line greet [self.working=yes] : Give me room for the last knot. | I hear past the rustling twine.
-line greet [here.time=dawn] : Morning. First note's scarcely warmed up. | Come near the clean wrapping.
-line greet [here.time=dusk|night] : Evening. Prices sound lower in this light. | Dusk. Keep the corners clear.
-line kin.open [pair.kin!=no] : Family may come inside the string. | Kin needn't carry a price tag.
-line again.open : Another verse round my corner. | Back before the wax set.
-line greet.return : Welcome to the unwrapped part of my day. | I heard. Your turn.
-line greet.return [pair.band=friends|family] : Your voice won't tangle the string. | You're welcome between knots.
-line greet.return [self.working=yes] : I'll tie the end while you speak. | My hands are wrapping. Ear's free.
-line greet.return [here.time=dusk|night] : Evening. My voice still reaches the door. | A quiet caller after the high notes.
-line farewell : Carry the thing by its stout side. | Keep the knot above the wet.
-line farewell.return : I'll mind my own loose ends. | May the wrapping see you home.
-line farewell.return [here.time=night] : A dry walk under the late lamps. | Don't let the dark catch your string.
-line react.news : What's the clear note in it? | Remove the price tags before the telling.
-line react.news.new : Fresh in my wrapping. | That changes the tune a bit.
-line react.news.known : Yes. I've counted that verse already. | That note's been round the counter.
-line react.news.doubt : I'd check what that account was wrapped round. | There's a turn missing from the total there.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the tune alone awhile. | A heavy parcel of news.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something to lift the last note for. | Glad of a bright turn there.
-line ask.how : How stands your little reckoning? | How's the load in your pocket today?
-line answer.how : Still keeping my parcels mostly straight. | A touch smoked round the edges.
-line decline : I'd best save my fingers for the next knot. | I'd sooner have the time than that particular bargain.
-line accept_decline : Then we cut the string there. | A clear end to that price.
-line thank : A useful kindness, well tied. | That comes through the wrapping warm.
-line sympathise : Hand me the unwieldy bundle. | You're welcome to rest on the plain side.
-line reassure : One loose end can wait. | We'll take the wrapping slowly.
-line preclose : My twine's threatening a knot of its own. | Time I cleared the little board.
-line accept_preclose : I'll hold the tune here. | Go and settle your loose bundle.
-line deflect_thanks : Leave off pricing that favour. | That bit was thrown in freely.
-line ack : Neatly tied. | True pitch.
-line give.advice : Pull the short end before tugging the knot. | A label belongs outside the fold.
-line offer : I can put fresh wrapping paper round that. | Shall I hold the corner steady?
-line praise : A sound price clearly spoken. | You tied that matter off quite tidily.
-
+line @1 greet [pair.band=strangers] : Hello. Set your parcel flat. | New face, clear patch on the board.
+line @2 greet [self.working=yes] : Give me room for the last knot. | I hear past the rustling twine.
+line @3 greet [here.time=dawn] : Morning. First note's scarcely warmed up. | Come near the clean wrapping.
+line @4 greet [here.time=dusk|night] : Evening. Prices sound lower in this light. | Dusk. Keep the corners clear.
+line @1 kin.open [pair.kin!=no] : Family may come inside the string. | Kin needn't carry a price tag.
+line @1 again.open : Another verse round my corner. | Back before the wax set.
+line @1 greet.return : Welcome to the unwrapped part of my day. | I heard. Your turn.
+line @2 greet.return [pair.band=friends|family] : Your voice won't tangle the string. | You're welcome between knots.
+line @3 greet.return [self.working=yes] : I'll tie the end while you speak. | My hands are wrapping. Ear's free.
+line @4 greet.return [here.time=dusk|night] : Evening. My voice still reaches the door. | A quiet caller after the high notes.
+line @1 farewell : Carry the thing by its stout side. | Keep the knot above the wet.
+line @1 farewell.return : I'll mind my own loose ends. | May the wrapping see you home.
+line @2 farewell.return [here.time=night] : A dry walk under the late lamps. | Don't let the dark catch your string.
+line @1 react.news : What's the clear note in it? | Remove the price tags before the telling.
+line @1 react.news.new : Fresh in my wrapping. | That changes the tune a bit.
+line @1 react.news.known : Yes. I've counted that verse already. | That note's been round the counter.
+line @1 react.news.doubt : I'd check what that account was wrapped round. | There's a turn missing from the total there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the tune alone awhile. | A heavy parcel of news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something to lift the last note for. | Glad of a bright turn there.
+line @1 ask.how : How stands your little reckoning? | How's the load in your pocket today?
+line @1 answer.how : Still keeping my parcels mostly straight. | A touch smoked round the edges.
+line @1 decline : I'd best save my fingers for the next knot. | I'd sooner have the time than that particular bargain.
+line @1 accept_decline : Then we cut the string there. | A clear end to that price.
+line @1 thank : A useful kindness, well tied. | That comes through the wrapping warm.
+line @1 sympathise : Hand me the unwieldy bundle. | You're welcome to rest on the plain side.
+line @1 reassure : One loose end can wait. | We'll take the wrapping slowly.
+line @1 preclose : My twine's threatening a knot of its own. | Time I cleared the little board.
+line @1 accept_preclose : I'll hold the tune here. | Go and settle your loose bundle.
+line @1 deflect_thanks : Leave off pricing that favour. | That bit was thrown in freely.
+line @1 ack : Neatly tied. | True pitch.
+line @1 give.advice : Pull the short end before tugging the knot. | A label belongs outside the fold.
+line @1 offer : I can put fresh wrapping paper round that. | Shall I hold the corner steady?
+line @1 praise : A sound price clearly spoken. | You tied that matter off quite tidily.
 scene sum
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
@@ -110,14 +112,14 @@ when topic=food self.likes=mutton_stew
 does tell.self / ask.detail / answer.detail
 a : I put a spoon of mutton stew on bread and wait for the rim to sag.
 b : Why not dip it? | Are you judging the bread?
-a : I am dipping it, only right side up. | I'm judging whether a second spoonful will stay on top.
+a : Dipping drowns the bread. I'd sooner it soaked slowly from the top. | I'm judging whether a second spoonful will stay on top.
 
 scene song
 when topic=pastimes self.likes=singing
 does tell.self / ask.detail / answer.detail
 a : A price in a tune is no use at a friendly singing.
 b : Different songs? | Afraid of mentioning money?
-a : I prefer something with room for two voices to lean on a word. | Afraid of finding myself wrapping the singer's elbow in paper.
+a : I prefer something with room for two voices to lean on a word. | Afraid I'd start pricing the chorus. A singing isn't a counter.
 
 scene warm
 when topic=season self.likes=first_warm_day
@@ -165,8 +167,8 @@ scene stair
 when topic=home self.quarter=sump
 does tell.self / ask.detail / answer.detail
 a : My bit of the Sump has a stair with just enough room to turn a parcel.
-b : And you? | What if it's too wide?
-a : I go round at much the same time, which gives the neighbours a little entertainment. | I take it corner first. Pride has to come round last.
+b : Room for you as well? | What if it's too wide?
+a : Just. The parcel goes first and I follow it round like a tail. | I take it corner first. Pride has to come round last.
 
 scene dolefood
 when topic=food
@@ -310,7 +312,7 @@ story dustsun [topic=season]
   : On a fine spring morning I hung a cuff outside to air and discovered my fingers still moving as if they were tying a knot indoors.
   : I tried the same thing with an imaginary parcel the size of my entire shop. I had to step back twice before I found its far corner.
   b : Did you tie it at last?
-  : Decided the customer ought to collect that one without wrapping.
+  : No. A parcel that size can carry itself home unwrapped.
 
 story cordcount [topic=work self.job=merchant]
   : I used to count the length of string by the number of turns round my wrist. A winter sleeve gave me very generous measure and a bare wrist much less.
@@ -360,20 +362,19 @@ does aside
 cooldown 11h
 say Air the smoke from the cuff at the first chance. | A clean space for spring on the sill.
 
-dlg resident.hub : The unwrapped patch on the board is for talking. Set your elbows there if they're reasonably clean.
-dlg resident.hub [topic.meeting=known] : I know how your name goes in my tune, #topic.player#.
-dlg resident.hub [here.time=dawn] : Paper's cut and my throat's clear. You're early enough for both.
-dlg resident.hub [here.time=night] : Light's poor for little goods but more than adequate for a conversation.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep the twine clear and your voice ordinary. I'll do the same.
-dlg resident.job [self.role=merchant self.workplace] : I keep #self.workplace#. Small things take a surprising amount of wrapping.
-dlg resident.job : I try to send things home in the right paws and properly tied.
-dlg resident.news [world.news] : The word came in with its corners still clear. #world.news#
-dlg resident.bye : Take the easy knot with you, if you can't take anything else.
-dlg shop.greet [self.role=merchant here.shop!=bare] : Take a look at the small wares. They behave much better once paid for and wrapped.
-dlg shop.greet [self.role=merchant here.shop=bare] : No stock to put into a parcel today. My tune has a bit of a rest.
-dlg shop.prices [self.role=merchant here.shop!=bare] : I'll give the figure in a speaking voice. The tune comes when I wrap it.
-dlg shop.bye [self.role=merchant] : A dry pocket does wonders for the cheaper goods.
-
+dlg @1 resident.hub : The unwrapped patch on the board is for talking. Set your elbows there if they're reasonably clean.
+dlg @2 resident.hub [topic.meeting=known] : I know how your name goes in my tune, #topic.player#.
+dlg @3 resident.hub [here.time=dawn] : Paper's cut and my throat's clear. You're early enough for both.
+dlg @4 resident.hub [here.time=night] : Light's poor for little goods but more than adequate for a conversation.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : Keep the twine clear and your voice ordinary. I'll do the same.
+dlg @1 resident.job [self.role=merchant self.workplace] : I keep #self.workplace#. Small things take a surprising amount of wrapping.
+dlg @2 resident.job : I try to send things home in the right paws and properly tied.
+dlg @1 resident.news [world.news] : The word came in with its corners still clear. #world.news#
+dlg @1 resident.bye : Take the easy knot with you, if you can't take anything else.
+dlg @1 shop.greet [self.role=merchant here.shop!=bare] : Take a look at the small wares. They behave much better once paid for and wrapped.
+dlg @2 shop.greet [self.role=merchant here.shop=bare] : No stock to put into a parcel today. My tune has a bit of a rest.
+dlg @1 shop.prices [self.role=merchant here.shop!=bare] : I'll give the figure in a speaking voice. The tune comes when I wrap it.
+dlg @1 shop.bye [self.role=merchant] : A dry pocket does wonders for the cheaper goods.
 graft @tune resident.hub
 choice Do your little parcels really have prices you can hear? -> tune_price
 node tune_price
@@ -385,6 +386,7 @@ node tune_pair
 say Then I write a label and get on with my life. My customers never agreed to pay extra for an opera.
 choice A label sounds reasonable. -> hub
 choice I'll give your throat a rest. -> bye
+
 graft @string shop.greet
 choice Why wax the string? [self.role=merchant] -> wax_knot
 node wax_knot

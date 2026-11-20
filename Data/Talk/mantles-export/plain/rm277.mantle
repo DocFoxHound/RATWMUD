@@ -1,9 +1,12 @@
+# rm277, the unpainted handle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm277
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ottilie_nailmarsh
+written_by codex
 title the unpainted handle
 fits stage=adult|old
 prefers job=none honesty=guarded
@@ -35,43 +38,42 @@ crook = my elbow joint | a bent elbow
 tune = a held note | the low part
 
 any
-opinion houses against 2 : A fine colour on a cracked carrying pole doesn't pay the injured wolf's rent.
-opinion church for 2 : I can carry a weight right to the chapel threshold and set it down inside me there.
-opinion sump for 1 : No shame down our end in carrying somebody else's goods for the price of your own dinner.
-opinion dole for 2 : An injured shoulder can't earn bread by trying harder. The dole keeps that shoulder fed.
-opinion watch against 1 : I'd rather see somebody looking at the rotten stairs before a fall than writing names down afterwards.
-opinion strangers mixed 0 : I can work beside an unknown wolf. I'll still try the grip myself.
+opinion @1 houses against 2 : A fine colour on a cracked carrying pole doesn't pay the injured wolf's rent.
+opinion @1 church for 2 : I can carry a weight right to the chapel threshold and set it down inside me there.
+opinion @1 sump for 1 [self.quarter=sump] : No shame down our end in carrying somebody else's goods for the price of your own dinner.
+opinion @1 dole for 2 : An injured shoulder can't earn bread by trying harder. The dole keeps that shoulder fed.
+opinion @1 watch against 1 : I'd rather see somebody looking at the rotten stairs before a fall than writing names down afterwards.
+opinion @1 strangers mixed 0 : I can work beside an unknown wolf. I'll still try the grip myself.
 
 grown
-line greet : Hello. Careful where the paint's fresh. | You've come on my easy side.
-line greet [pair.band=strangers] : Room there for a voice I haven't heard. | We can stand on level terms to start with.
-line greet [here.time=dawn] : Clear light makes the bare grain show. Morning. | A new day. My shoulders are ready enough.
-line greet.return : Heard you. I've a quiet answer for you. | Yes, hello across the load.
-line greet.return [pair.band=friends|family] : There's a welcome sound through all this knocking wood. | I can lower my guard a little with you.
-line greet.return [here.time=night] : Late hello. I'll feel the railing as I go. | You found me through the dark then.
-line again.open : We've had time to change shoulders since we spoke. | Back at this bit of road together.
-line hail [pair.band=friends] : Stand alongside me and see this grain. | Here, where the paint's worn through.
-line farewell : An easy shoulder to your journey. | Walk where you know the boards are sound.
-line farewell.return : I'll keep the near end here. Goodbye. | I pray your feet stay planted.
-line react.news : You can set the account down plain. | Speak. I've got both ears free.
-line react.news.new : I hadn't heard a syllable of it. | That's new grain showing through.
-line react.news.known : I'd heard it in much the same colouring. | That piece was known to me.
-line react.news.doubt : I hear a bit of paint over a soft place. | I'd turn that over before trusting it.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There is room for your hurt here. Say as little as you need. | I'll pray for those left carrying that loss.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A good bit of hearing after heavy going. | My prayer will have a little more gratitude in it tonight.
-line ask.how : Are your shoulders taking the day soundly? | Found a soft spot to rest against?
-line answer.how : I've some weight on me. It's sitting square. | A little worn where the straps lie.
-line decline : I'd leave that to somebody better placed to carry it. | I can't answer that without breaking another confidence.
-line accept_decline : I'll leave that corner in your keeping. | You have a right to set your limits.
-line preclose : Time I was taking this weight along. | I've given my shoulder quite long enough.
-line accept_preclose : Then I'll leave your way clear ahead. | Go easily over the uneven bits.
-line thank : A real lift. You have my thanks. | My shoulders know the difference you made.
-line deflect_thanks : I had a free arm just there. | Somebody needed to hold that end steady.
-line sympathise : Lean the sore side away from the rail. | I can wait while you gather what's left.
-line reassure : We can turn it over before choosing a grip. | Try the sound side first. I'm with you.
-line ack : Yes. I can put weight on that. | The bare facts sit straight enough.
-line give.advice : Look for wood where the paint wears thin. | Give a quiet answer time to travel.
-
+line @1 greet : Hello. Careful where the paint's fresh. | You've come on my easy side.
+line @2 greet [pair.band=strangers] : Room there for a voice I haven't heard. | We can stand on level terms to start with.
+line @3 greet [here.time=dawn] : Clear light makes the bare grain show. Morning. | A new day. My shoulders are ready enough.
+line @1 greet.return : Heard you. I've a quiet answer for you. | Yes, hello across the load.
+line @2 greet.return [pair.band=friends|family] : There's a welcome sound through all this knocking wood. | I can lower my guard a little with you.
+line @3 greet.return [here.time=night] : Late hello. I'll feel the railing as I go. | You found me through the dark then.
+line @1 again.open : We've had time to change shoulders since we spoke. | Back at this bit of road together.
+line @1 hail [pair.band=friends] : Stand alongside me and see this grain. | Here, where the paint's worn through.
+line @1 farewell : An easy shoulder to your journey. | Walk where you know the boards are sound.
+line @1 farewell.return : I'll keep the near end here. Goodbye. | I pray your feet stay planted.
+line @1 react.news : You can set the account down plain. | Speak. I've got both ears free.
+line @1 react.news.new : I hadn't heard a syllable of it. | That's new grain showing through.
+line @1 react.news.known : I'd heard it in much the same colouring. | That piece was known to me.
+line @1 react.news.doubt : I hear a bit of paint over a soft place. | I'd turn that over before trusting it.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There is room for your hurt here. Say as little as you need. | I'll pray for those left carrying that loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : A good bit of hearing after heavy going. | My prayer will have a little more gratitude in it tonight.
+line @1 ask.how : Are your shoulders taking the day soundly? | Found a soft spot to rest against?
+line @1 answer.how : I've some weight on me. It's sitting square. | A little worn where the straps lie.
+line @1 decline : I'd leave that to somebody better placed to carry it. | I can't answer that without breaking another confidence.
+line @1 accept_decline : I'll leave that corner in your keeping. | You have a right to set your limits.
+line @1 preclose : Time I was taking this weight along. | I've given my shoulder quite long enough.
+line @1 accept_preclose : Then I'll leave your way clear ahead. | Go easily over the uneven bits.
+line @1 thank : A real lift. You have my thanks. | My shoulders know the difference you made.
+line @1 deflect_thanks : I had a free arm just there. | Somebody needed to hold that end steady.
+line @1 sympathise : Lean the sore side away from the rail. | I can wait while you gather what's left.
+line @1 reassure : We can turn it over before choosing a grip. | Try the sound side first. I'm with you.
+line @1 ack : Yes. I can put weight on that. | The bare facts sit straight enough.
+line @1 give.advice : Look for wood where the paint wears thin. | Give a quiet answer time to travel.
 scene grain
 when topic=work self.job=none self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : Don't clap a loaded wolf on the sore shoulder for a greeting. | Give space t
 b : Even a friendly slap? | How should I greet a carrier?
 a : A friendly voice does just as well and leaves the skin whole. | At speaking distance. Lend a paw once it's wanted.
 
-grown
-
 story bare_edge [topic=memories|work self.job=none self.working=yes]
   : I'd once carried a painted bar the whole way with my chin tipped up so the wet colour wouldn't rub.
   : The moment it landed I saw the underside was white as bone. It hadn't been wet in a year.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Strap's softer where the rain has found it. | A wet bar wants a firm steady grip.
 
-dlg resident.hub : Settle your breathing. I'm in no rush for your words.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you can speak to my unbruised side.
-dlg resident.hub [here.time=night] : Dark enough to feel a handle before reaching out for the load.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll take your question from the clear side of the landing.
-dlg resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. The painted marks are the least important part of a load to me.
-dlg resident.job : I check what will bear before promising to carry it.
-dlg resident.bye : Take good care of the parts that bear the weight.
-
+dlg @1 resident.hub : Settle your breathing. I'm in no rush for your words.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you can speak to my unbruised side.
+dlg @3 resident.hub [here.time=night] : Dark enough to feel a handle before reaching out for the load.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll take your question from the clear side of the landing.
+dlg @1 resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. The painted marks are the least important part of a load to me.
+dlg @2 resident.job : I check what will bear before promising to carry it.
+dlg @1 resident.bye : Take good care of the parts that bear the weight.
 graft resident.hub
 choice What do you look for under the paint? -> sidegrain
 node sidegrain

@@ -1,9 +1,12 @@
+# rm360, the bark king (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm360
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_eleanor_wickhand
+written_by codex
 title the bark king
 fits stage=adult|old
 prefers job=woodcutter
@@ -33,45 +36,44 @@ woodknock = the crack of dry ends | a short wooden knock
 knoteye = a dark seam in the cut | a tight eye in the grain
 
 any
-opinion church for 2 : Faith has let me look beyond a bad position and see a neighbour waiting for a hand. That matters more than winning any little game.
-opinion dole for 3 : Giving out bread has one rule plain enough to put on a board. Get a meal into a hungry mouth before anybody goes home.
-opinion houses against 3 : A House seems born sitting on the far row. The rest of us would like a clear square even to begin.
-opinion merchants against 2 : I'd sooner one hard price on a scrap of board than a kind word that grows dearer while I'm counting.
-opinion drink against 1 : I'd like to choose which move is mine. Too much ale can take the choice and leave a wolf the entire blame.
-opinion sump for 1 : A Sump door can open on two seats and a game and give me all the room I need. The hill's fine games can't do more.
+opinion @1 church for 2 : Faith has let me look beyond a bad position and see a neighbour waiting for a hand. That matters more than winning any little game.
+opinion @1 dole for 3 : Giving out bread has one rule plain enough to put on a board. Get a meal into a hungry mouth before anybody goes home.
+opinion @1 houses against 3 : A House seems born sitting on the far row. The rest of us would like a clear square even to begin.
+opinion @1 merchants against 2 : I'd sooner one hard price on a scrap of board than a kind word that grows dearer while I'm counting.
+opinion @1 drink against 1 : I'd like to choose which move is mine. Too much ale can take the choice and leave a wolf the entire blame.
+opinion @1 sump for 1 : A Sump door can open on two seats and a game and give me all the room I need. The hill's fine games can't do more.
 
 grown
-line greet : I've set the pieces aside for a caller.
-line greet [pair.band=strangers] : A caller I haven't placed yet, in the nearest row. Welcome.
-line greet [here.time=dawn] : There's light to see the pale pieces now. Come near.
-line greet [here.time=dusk|night] : We can leave the board dark and talk.
-line greet [self.working=yes] : I've a cut to finish neatly before I turn.
-line kin.open [pair.kin!=no] : Come sit by the edge we know between us.
-line again.open : The far row's no farther off than when we parted.
-line greet.return : You have an answer across a plain stretch of board.
-line greet.return [pair.band=friends|family] : A friendly word's got through the centre cleanly.
-line greet.return [self.working=yes] : Your greeting carried beyond the wood knocking.
-line greet.return [here.time=dusk|night] : Your voice shows up better than the squares do now.
-line farewell : May the street open up once you've crossed it.
-line farewell.return : My turn to watch the loose pieces. Go well.
-line react.news : Put the moving part before me and leave it there a moment.
-line react.news.new : I hadn't reckoned on that piece moving.
-line react.news.known : I'd seen the position before, if not quite from there.
-line react.news.doubt : Did the teller see the piece or just its empty square?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : May that house find somebody who'll carry a little of the ordinary weight.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Fair room for a good move there.
-line answer.how : I've a firm square under me and another in view.
-line ask.how : Seen a way clear through today's business yet?
-line sympathise : Tough to see past an empty place meant for somebody else.
-line reassure : Wait for a patch of clear ground. There's no clock on grief.
-line decline : I'd have to call a crooked bargain straight, and I won't.
-line accept_decline : I'll keep my hand clear of your pieces.
-line thank : You let me see another move when I'd seen none.
-line deflect_thanks : Give the next learner a decent turn.
-line preclose : My board has slipped half a square across my knee.
-line accept_preclose : I can carry on without rushing you.
-line ack : Sound square.
-
+line @1 greet : I've set the pieces aside for a caller.
+line @2 greet [pair.band=strangers] : A caller I haven't placed yet, in the nearest row. Welcome.
+line @3 greet [here.time=dawn] : There's light to see the pale pieces now. Come near.
+line @4 greet [here.time=dusk|night] : We can leave the board dark and talk.
+line @5 greet [self.working=yes] : I've a cut to finish neatly before I turn.
+line @1 kin.open [pair.kin!=no] : Come sit by the edge we know between us.
+line @1 again.open : The far row's no farther off than when we parted.
+line @1 greet.return : You have an answer across a plain stretch of board.
+line @2 greet.return [pair.band=friends|family] : A friendly word's got through the centre cleanly.
+line @3 greet.return [self.working=yes] : Your greeting carried beyond the wood knocking.
+line @4 greet.return [here.time=dusk|night] : Your voice shows up better than the squares do now.
+line @1 farewell : May the street open up once you've crossed it.
+line @1 farewell.return : My turn to watch the loose pieces. Go well.
+line @1 react.news : Put the moving part before me and leave it there a moment.
+line @1 react.news.new : I hadn't reckoned on that piece moving.
+line @1 react.news.known : I'd seen the position before, if not quite from there.
+line @1 react.news.doubt : Did the teller see the piece or just its empty square?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : May that house find somebody who'll carry a little of the ordinary weight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Fair room for a good move there.
+line @1 answer.how : I've a firm square under me and another in view.
+line @1 ask.how : Seen a way clear through today's business yet?
+line @1 sympathise : Tough to see past an empty place meant for somebody else.
+line @1 reassure : Wait for a patch of clear ground. There's no clock on grief.
+line @1 decline : I'd have to call a crooked bargain straight, and I won't.
+line @1 accept_decline : I'll keep my hand clear of your pieces.
+line @1 thank : You let me see another move when I'd seen none.
+line @1 deflect_thanks : Give the next learner a decent turn.
+line @1 preclose : My board has slipped half a square across my knee.
+line @1 accept_preclose : I can carry on without rushing you.
+line @1 ack : Sound square.
 scene barkking
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.place=market
 does aside
 cooldown 8h
 say Name the figure while the hands are free. | One square of space to pass.
-dlg resident.hub : I'll clear a square for whatever thought you've brought.
-dlg resident.hub [topic.meeting=known] : There's the familiar piece again, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your paws to the near squares. We're within easy speaking distance.
-dlg resident.hub [here.time=night] : The last row's nearly invisible now but I can hear a voice well enough.
-dlg resident.job [self.job=woodcutter] : #self.trade_words.capitalize#. I like a cut that runs true all the way into the useful wood.
-dlg resident.job : I take a look at both faces before putting a piece to use.
-dlg resident.news [world.news] : The news fits on this bit of the board. #world.news#.
-dlg resident.bye : Save one clear move for coming home.
 
+dlg @1 resident.hub : I'll clear a square for whatever thought you've brought.
+dlg @2 resident.hub [topic.meeting=known] : There's the familiar piece again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Keep your paws to the near squares. We're within easy speaking distance.
+dlg @4 resident.hub [here.time=night] : The last row's nearly invisible now but I can hear a voice well enough.
+dlg @1 resident.job [self.job=woodcutter] : #self.trade_words.capitalize#. I like a cut that runs true all the way into the useful wood.
+dlg @2 resident.job : I take a look at both faces before putting a piece to use.
+dlg @1 resident.news [world.news] : The news fits on this bit of the board. #world.news#.
+dlg @1 resident.bye : Save one clear move for coming home.
 graft @barkpiece resident.hub
 choice How did this piece earn its bark? -> barkpiece
 node barkpiece

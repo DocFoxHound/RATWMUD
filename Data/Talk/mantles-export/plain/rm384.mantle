@@ -1,9 +1,12 @@
+# rm384, the smoked-glass rehearsal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm384
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_edda_gullford
+written_by codex
 title the smoked-glass rehearsal
 fits stage=adult|old
 prefers job=laborer
@@ -33,45 +36,44 @@ sealine = the clean edge below the black | a narrow line of light
 shutnote = the verse under my breath | a closed-mouth measure
 
 any
-opinion strangers against 2 : A caller can ask about the goods. My purse and my tunes aren't on the same stall.
-opinion houses against 2 : I'd like the price of a licence to include a place where the roof doesn't empty itself between my collar and my pelt.
-opinion sump for 1 : My own patch of Sump will leave a tired voice alone. I wouldn't sell that courtesy cheaply.
-opinion dole for 2 : Bread available without a fine introduction gives one hungry door a quiet evening. Quiet is a fairly costly thing down here.
-opinion watch against 1 : One set of loud boots can turn a dozen conversations into shut mouths. I'd like a better use for leather.
-opinion church for 1 : The chapel gets food into a pot and lets a quiet wolf sit by it. I value both pieces of work.
+opinion @1 strangers against 2 : A caller can ask about the goods. My purse and my tunes aren't on the same stall.
+opinion @1 houses against 2 : I'd like the price of a licence to include a place where the roof doesn't empty itself between my collar and my pelt.
+opinion @1 sump for 1 : My own patch of Sump will leave a tired voice alone. I wouldn't sell that courtesy cheaply.
+opinion @1 dole for 2 : Bread available without a fine introduction gives one hungry door a quiet evening. Quiet is a fairly costly thing in the Sump.
+opinion @1 watch against 1 : One set of loud boots can turn a dozen conversations into shut mouths. I'd like a better use for leather.
+opinion @1 church for 1 : The chapel gets food into a pot and lets a quiet wolf sit by it. I value both pieces of work.
 
 grown
-line greet : There's enough light to recognise a caller. Welcome.
-line greet [pair.band=strangers] : I hear you. Ordinary dealings first.
-line greet [here.time=dawn] : Still a bit of night caught in my cloth. Welcome.
-line greet [here.time=dusk|night] : Keep within the patch that shows your face.
-line greet [self.working=yes] : One lamp needs my full reach. I'll hear you over here.
-line kin.open [pair.kin!=no] : Draw your stool up to this end.
-line again.open : Same face, freshly lit. I remember.
-line greet.return : A greeting heard through the last quiet bar.
-line greet.return [pair.band=friends|family] : I know that voice in company or out.
-line greet.return [self.working=yes] : Your words reached past the nippers.
-line greet.return [here.time=dusk|night] : You have my answer from the lighter patch.
-line farewell : Keep one light ahead of your footsteps.
-line farewell.return : I'll do the closing verse alone.
-line react.news : I'd like a clearer patch on that account.
-line react.news.new : That one's arrived without a mark I recognise.
-line react.news.known : I've rubbed this piece over once already.
-line react.news.doubt : Who was in good light when it happened?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Quiet at the hurt door first. An errand after.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth opening up a little more light for that.
-line answer.how : I've a clean rag end left. Enough to go on with.
-line ask.how : Much crowding round your business today?
-line sympathise : Hurts worse when every ear turns to hear about it.
-line reassure : We can speak through the gap when the crowd goes by.
-line decline : I'd keep my private verse clear of all those mouths.
-line accept_decline : Closed glass. I can recognise it.
-line thank : You've given a quiet task some room.
-line deflect_thanks : Leave a lamp in good order for the next tired face.
-line preclose : That little dark crescent wants wiping now.
-line accept_preclose : I've a rag full of my own business.
-line ack : Clear patch.
-
+line @1 greet : There's enough light to recognise a caller. Welcome.
+line @2 greet [pair.band=strangers] : I hear you. Ordinary dealings first.
+line @3 greet [here.time=dawn] : Still a bit of night caught in my cloth. Welcome.
+line @4 greet [here.time=dusk|night] : Keep within the patch that shows your face.
+line @5 greet [self.working=yes] : One lamp needs my full reach. I'll hear you over here.
+line @1 kin.open [pair.kin!=no] : Draw your stool up to this end.
+line @1 again.open : Same face, freshly lit. I remember.
+line @1 greet.return : A greeting heard through the last quiet bar.
+line @2 greet.return [pair.band=friends|family] : I know that voice in company or out.
+line @3 greet.return [self.working=yes] : Your words reached past the nippers.
+line @4 greet.return [here.time=dusk|night] : You have my answer from the lighter patch.
+line @1 farewell : Keep one light ahead of your footsteps.
+line @1 farewell.return : I'll do the closing verse alone.
+line @1 react.news : I'd like a clearer patch on that account.
+line @1 react.news.new : That one's arrived without a mark I recognise.
+line @1 react.news.known : I've rubbed this piece over once already.
+line @1 react.news.doubt : Who was in good light when it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Quiet at the hurt door first. An errand after.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth opening up a little more light for that.
+line @1 answer.how : I've a clean rag end left. Enough to go on with.
+line @1 ask.how : Much crowding round your business today?
+line @1 sympathise : Hurts worse when every ear turns to hear about it.
+line @1 reassure : We can speak through the gap when the crowd goes by.
+line @1 decline : I'd keep my private verse clear of all those mouths.
+line @1 accept_decline : Closed glass. I can recognise it.
+line @1 thank : You've given a quiet task some room.
+line @1 deflect_thanks : Leave a lamp in good order for the next tired face.
+line @1 preclose : That little dark crescent wants wiping now.
+line @1 accept_preclose : I've a rag full of my own business.
+line @1 ack : Clear patch.
 scene mask
 when topic=work self.job=laborer self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say Leave the glass facing the low step. | Keep the dark rag out of the flame.
-dlg resident.hub : I can lend an ear while the glass cools.
-dlg resident.hub [topic.meeting=known] : That isn't lamp smoke; it's your face again, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your paws within the lit bit and I'll hear you.
-dlg resident.hub [here.time=night] : Light on the step, quiet on both sides. Speak.
-dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. I leave enough light for a wolf to make the last step in comfort.
-dlg resident.job : I'm good for an unhurried paw where a careless one costs glass.
-dlg resident.news [world.news] : This piece came through unsmudged. #world.news#.
-dlg resident.bye : May the low steps show clear going home.
 
+dlg @1 resident.hub : I can lend an ear while the glass cools.
+dlg @2 resident.hub [topic.meeting=known] : That isn't lamp smoke; it's your face again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Keep your paws within the lit bit and I'll hear you.
+dlg @4 resident.hub [here.time=night] : Light on the step, quiet on both sides. Speak.
+dlg @1 resident.job [self.job=laborer] : #self.trade_words.capitalize#. I leave enough light for a wolf to make the last step in comfort.
+dlg @2 resident.job : I'm good for an unhurried paw where a careless one costs glass.
+dlg @1 resident.news [world.news] : This piece came through unsmudged. #world.news#.
+dlg @1 resident.bye : May the low steps show clear going home.
 graft @ear_glass resident.hub
 choice Are you really singing to that smudge? -> ear_glass
 node ear_glass

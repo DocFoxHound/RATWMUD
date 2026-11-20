@@ -1,9 +1,12 @@
+# rm446, the walker's second copy (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm446
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_rosamund_ash
+written_by codex
 title the walker's second copy
 fits stage=adult|old
 prefers honesty=guarded talk=quiet
@@ -34,45 +37,44 @@ seam = a well-stitched fold | the seam inside my coat
 sunbrick = the first warm brick | a little heat in the wall
 
 any
-opinion city for 1 : Plenty of ways home. A great convenience when company goes one way and I prefer another.
-opinion houses mixed 0 : A grand office can lose a small request just as thoroughly as a poor one.
-opinion dole mixed 0 : Give the bread. Keep the names out of the street afterwards.
-opinion watch for 1 : A quiet stretch of North Road speaks quite adequately for an uneventful patrol.
-opinion strangers against 1 : Strangers can keep their estimates of my mileage. The direction I'll give freely.
-opinion festivals for 1 : Let the bells have their hour. They can reach me without my joining the crowd.
-opinion times mixed 0 : I can judge a hard winter. City tempers take a finer instrument.
+opinion @1 city for 1 : Plenty of ways home. A great convenience when company goes one way and I prefer another.
+opinion @1 houses mixed 0 : A grand office can lose a small request just as thoroughly as a poor one.
+opinion @1 dole mixed 0 : Give the bread. Keep the names out of the street afterwards.
+opinion @1 watch for 1 : A quiet stretch of North Road speaks quite adequately for an uneventful patrol.
+opinion @1 strangers against 1 : Strangers can keep their estimates of my mileage. The direction I'll give freely.
+opinion @1 festivals for 1 : Let the bells have their hour. They can reach me without my joining the crowd.
+opinion @1 times mixed 0 : I can judge a hard winter. City tempers take a finer instrument.
 
 grown
-line greet : Room by the turnstone.
-line greet [pair.band=strangers] : New face. We'll begin with a word.
-line greet [here.time=dawn] : There's a bite left in the morning.
-line greet [here.time=dusk|night] : Evening. Light still shows the pale upper edge of each step.
-line greet.return : Yes. I heard you come clear of the carts.
-line greet.return [pair.band=friends|family] : A familiar voice travels the easier road.
-line greet.return [self.working=yes] : I can hear you through an ordinary occupation.
-line greet.return [here.time=dusk|night] : Voices outlast faces in the dark.
-line kin.open [pair.kin!=no] : Come up on the inside, kin.
-line again.open : The second fold's still there if we need it.
-line hail [pair.band=friends] : Here, friend. No need to carry your voice farther.
-line farewell : Have a warm cup waiting where you finish.
-line farewell.return : And leave the cold cup sitting.
-line react.news : Say the part you're willing to stand by.
-line react.news.new : That's only just crossed my path.
-line react.news.known : Those same words walked by before you did.
-line react.news.doubt : I'd want the spare copy before I trusted that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wouldn't hurry anybody through such a loss.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives the bells a good reason to ring.
-line ask.how : Any comfort in the day's walking?
-line answer.how : I've kept enough wind for getting home.
-line thank : I count the quiet kindness you took time for.
-line deflect_thanks : It required very little explaining to do it.
-line sympathise : There's a place here to sit without being examined.
-line reassure : Give the day one more turning before deciding.
-line decline : I've kept a private appointment for that stretch of daylight.
-line accept_decline : You're entitled to let the answer end there.
-line preclose : I'll move on before the warmth leaves the bricks.
-line accept_preclose : The turn is yours to take when it suits you.
-
+line @1 greet : Room by the turnstone.
+line @2 greet [pair.band=strangers] : New face. We'll begin with a word.
+line @3 greet [here.time=dawn] : There's a bite left in the morning.
+line @4 greet [here.time=dusk|night] : Evening. Light still shows the pale upper edge of each step.
+line @1 greet.return : Yes. I heard you come clear of the carts.
+line @2 greet.return [pair.band=friends|family] : A familiar voice travels the easier road.
+line @3 greet.return [self.working=yes] : I can hear you through an ordinary occupation.
+line @4 greet.return [here.time=dusk|night] : Voices outlast faces in the dark.
+line @1 kin.open [pair.kin!=no] : Come up on the inside, kin.
+line @1 again.open : The second fold's still there if we need it.
+line @1 hail [pair.band=friends] : Here, friend. No need to carry your voice farther.
+line @1 farewell : Have a warm cup waiting where you finish.
+line @1 farewell.return : And leave the cold cup sitting.
+line @1 react.news : Say the part you're willing to stand by.
+line @1 react.news.new : That's only just crossed my path.
+line @1 react.news.known : Those same words walked by before you did.
+line @1 react.news.doubt : I'd want the spare copy before I trusted that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wouldn't hurry anybody through such a loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives the bells a good reason to ring.
+line @1 ask.how : Any comfort in the day's walking?
+line @1 answer.how : I've kept enough wind for getting home.
+line @1 thank : I count the quiet kindness you took time for.
+line @1 deflect_thanks : It required very little explaining to do it.
+line @1 sympathise : There's a place here to sit without being examined.
+line @1 reassure : Give the day one more turning before deciding.
+line @1 decline : I've kept a private appointment for that stretch of daylight.
+line @1 accept_decline : You're entitled to let the answer end there.
+line @1 preclose : I'll move on before the warmth leaves the bricks.
+line @1 accept_preclose : The turn is yours to take when it suits you.
 scene inner_fold
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Sun on the rail. I'll borrow a little.
 
-dlg resident.hub : There's time for whatever one thing brought you here.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Yes. I kept your name on the inside fold.
-dlg resident.hub [here.time=night] : Say it quietly. There's little else for it to carry over.
-dlg resident.hub [pair.disposition=hostile|wary] : From that distance I can listen with reasonable patience.
-dlg resident.job : I take care of the matters that can still be put right by attending to them.
-dlg resident.news [world.news] : The place against this entry is #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The talk passed by. I'd prefer to leave it past.
-dlg resident.bye : Leave yourself a moment to enjoy arriving.
-
+dlg @1 resident.hub : There's time for whatever one thing brought you here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Yes. I kept your name on the inside fold.
+dlg @3 resident.hub [here.time=night] : Say it quietly. There's little else for it to carry over.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : From that distance I can listen with reasonable patience.
+dlg @1 resident.job : I take care of the matters that can still be put right by attending to them.
+dlg @1 resident.news [world.news] : The place against this entry is #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The talk passed by. I'd prefer to leave it past.
+dlg @1 resident.bye : Leave yourself a moment to enjoy arriving.
 graft resident.hub
 choice Why carry a second copy? -> fold_twice
 node fold_twice

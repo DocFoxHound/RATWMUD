@@ -1,9 +1,12 @@
+# rm353, the coal that walks (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm353
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_philippa_dripworth
+written_by codex
 title the coal that walks
 fits stage=adult|old
 prefers role=merchant job=fisher
@@ -42,48 +45,47 @@ trunk = a lidded fish chest | a shallow chest
 brine = a wash of brine | a pinch of coarse salt
 
 any
-opinion merchants mixed 2 : A price written in chalk amounts to a promise. Fish may decline in the course of a day. The truth about them mustn't.
-opinion houses against 2 : Come winter we shall need all the landings. I wouldn't have one closed merely to improve somebody's argument.
-opinion watch mixed 1 : Look in my basket with clean paws and a stated reason. I can go on serving quite civilly.
-opinion dole for 2 : A fish head makes a much better bowl of broth than it makes a performance of charity.
-opinion church mixed 1 : Quiet followed by a useful kindness suit my idea of a decent service.
-opinion strangers for 1 : Strangers have walked the parts of my map my own legs haven't tested.
-opinion festivals mixed 1 : I enjoy a festival walk once the persuasive selling is finished.
-opinion road for 2 : I stand by a stretch of ground that gives my restlessness somewhere solid to go.
-opinion times against 2 [world.times=lean|hard] : The smaller portions sell first these days, and I'm hearing less talk of next week's supper.
+opinion @1 merchants mixed 2 : A price written in chalk amounts to a promise. Fish may decline in the course of a day. The truth about them mustn't.
+opinion @1 houses against 2 : Come winter we shall need all the landings. I wouldn't have one closed merely to improve somebody's argument.
+opinion @1 watch mixed 1 : Look in my basket with clean paws and a stated reason. I can go on serving quite civilly.
+opinion @1 dole for 2 : A fish head makes a much better bowl of broth than it makes a performance of charity.
+opinion @1 church mixed 1 : Quiet followed by a useful kindness suit my idea of a decent service.
+opinion @1 strangers for 1 : Strangers have walked the parts of my map my own legs haven't tested.
+opinion @1 festivals mixed 1 : I enjoy a festival walk once the persuasive selling is finished.
+opinion @1 road for 2 : I stand by a stretch of ground that gives my restlessness somewhere solid to go.
+opinion @1 times against 2 [world.times=lean|hard] : The smaller portions sell first these days, and I'm hearing less talk of next week's supper.
 
 grown
-line greet : I'll put my basket down a moment. Welcome. | Take a place on the walking side.
-line greet.return : My greeting's got good legs on it too. | Glad we were standing within reach of that welcome.
-line again.open : You've come round faster than my boots.
-line farewell : Go on sound feet with a little dry space in reserve. | Find a good long stretch without having to bargain for it.
-line farewell.return : Your own path be clear to the last stone. | I'll carry that good wish in the clean pocket.
-line react.news : Give me the news with its head and tail both on. | I'll hear the account without filleting it first.
-line react.news.new : Something new for my route home.
-line react.news.known : I know the ground that account covers.
-line react.news.doubt : That tale smells older than the date on the wrapping.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd leave supper on the sill for the hurting wolf to find in peace.
-line react.news.glad [topic.kind=birth|marriage|work] : A bright bit worth walking round to share.
-line ask.how : How heavy's the road been under you?
-line answer.how : Feet itching some, arms steady.
-line sympathise : Sit for a minute. I've carried worse than a silence.
-line reassure : There's another turning when the rest looks too straight and hard.
-line refuse : I promised my two feet to an earlier errand.
-line accept_decline : All right. No bargaining over an honest answer.
-line preclose : My road's been waiting quite a stretch already.
-line accept_preclose : Go claim the rest of the daylight for your feet.
-line ack : I reckon I've measured it down to the last inch.
-line greet [here.time=dawn] : Welcome before the Works have finished rubbing sleep from their eyes.
-line greet [pair.band=strangers] : A clean board for a newcomer. Step near enough to speak easily.
-line greet.return [pair.band=friends] : There's an elbow's width saved for a voice I know.
-line hail [pair.band=friends] : Come round to the dry corner beside me!
-line thank : That'll be a kindness to take along a good long road.
-line deflect_thanks : It cost less strength than a carry up the hill.
-line give.advice : Ask for the lean side and inspect the fat side as well.
-line answer.how.busy [self.working=yes] : I'm weighing with one eye and keeping the way clear with the other.
-line ask.how [pair.band=friends] : Anything setting your feet itching as mine do?
-line greet [here.time=night] : There's still a patch of lamplight for the two of us.
-
+line @1 greet : I'll put my basket down a moment. Welcome. | Take a place on the walking side.
+line @1 greet.return : My greeting's got good legs on it too. | Glad we were standing within reach of that welcome.
+line @1 again.open : You've come round faster than my boots.
+line @1 farewell : Go on sound feet with a little dry space in reserve. | Find a good long stretch without having to bargain for it.
+line @1 farewell.return : Your own path be clear to the last stone. | I'll carry that good wish in the clean pocket.
+line @1 react.news : Give me the news with its head and tail both on. | I'll hear the account without filleting it first.
+line @1 react.news.new : Something new for my route home.
+line @1 react.news.known : I know the ground that account covers.
+line @1 react.news.doubt : That tale smells older than the date on the wrapping.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd leave supper on the sill for the hurting wolf to find in peace.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A bright bit worth walking round to share.
+line @1 ask.how : How heavy's the road been under you?
+line @1 answer.how : Feet itching some, arms steady.
+line @1 sympathise : Sit for a minute. I've carried worse than a silence.
+line @1 reassure : There's another turning when the rest looks too straight and hard.
+line @1 refuse : I promised my two feet to an earlier errand.
+line @1 accept_decline : All right. No bargaining over an honest answer.
+line @1 preclose : My road's been waiting quite a stretch already.
+line @1 accept_preclose : Go claim the rest of the daylight for your feet.
+line @1 ack : I reckon I've measured it down to the last inch.
+line @2 greet [here.time=dawn] : Welcome before the Works have finished rubbing sleep from their eyes.
+line @3 greet [pair.band=strangers] : A clean board for a newcomer. Step near enough to speak easily.
+line @2 greet.return [pair.band=friends] : There's an elbow's width saved for a voice I know.
+line @1 hail [pair.band=friends] : Come round to the dry corner beside me!
+line @1 thank : That'll be a kindness to take along a good long road.
+line @1 deflect_thanks : It cost less strength than a carry up the hill.
+line @1 give.advice : Ask for the lean side and inspect the fat side as well.
+line @1 answer.how.busy [self.working=yes] : I'm weighing with one eye and keeping the way clear with the other.
+line @2 ask.how [pair.band=friends] : Anything setting your feet itching as mine do?
+line @4 greet [here.time=night] : There's still a patch of lamplight for the two of us.
 scene exchange1
 when topic=work self.job=fisher
 does tell.self / ask.detail / answer.detail
@@ -359,24 +361,24 @@ when concept=bark self.likes=spiced_cider
 does aside
 cooldown 8h
 say Something hot with a spice twist would do just now. | A warm mug beats a noisy bargain.
-dlg resident.hub : I've walked the impatience out of myself for the moment. Speak freely.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's nobody between you and a straight answer here.
-dlg resident.hub [here.time=night] : I can spare a bit of the late walk for talking.
-dlg resident.hub [pair.disposition=wary|hostile] : Watch my hands, watch the board. I keep the words just as plain.
-dlg resident.job [self.job=fisher] : I know what's been cut, what's been salted and what belongs in a pot. My trade's right here on the board.
-dlg resident.job : I want both of us clear about what changed hands when a deal's done.
-dlg resident.news [world.news] : The news has travelled this length of street. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. A report isn't the same as a fish in my paw.
-dlg resident.bye : May you get both a dry route and a bit of weather to look at.
-dlg shop.greet [here.shop=open] : Look underneath any cut before you choose. I've chalked the honest price in an easy spot to see.
-dlg shop.greet [here.shop=bare] : Nothing to wrap just now. There's no sense weighing the bare board.
-dlg shop.greet [here.shop=asleep] : Even the fish boards are shut. Come on a waking visit.
-dlg shop.prices : The figure you see belongs to the fish you see. Inspect before you pay.
-dlg shop.bye [here.shop!=asleep] : Keep the thick side of the parcel underneath.
-dlg resident.business [business=failing] : Too many fine-looking fish and too few suppers calling for them.
-dlg resident.business [business=steady] : The usual customers keep my pots washed and my board moving.
-dlg resident.business [business=thriving] : There's a warm pot waiting for almost every piece before I finish wrapping it.
 
+dlg @1 resident.hub : I've walked the impatience out of myself for the moment. Speak freely.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's nobody between you and a straight answer here.
+dlg @3 resident.hub [here.time=night] : I can spare a bit of the late walk for talking.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Watch my hands, watch the board. I keep the words just as plain.
+dlg @1 resident.job [self.job=fisher] : I know what's been cut, what's been salted and what belongs in a pot. My trade's right here on the board.
+dlg @2 resident.job : I want both of us clear about what changed hands when a deal's done.
+dlg @1 resident.news [world.news] : The news has travelled this length of street. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. A report isn't the same as a fish in my paw.
+dlg @1 resident.bye : May you get both a dry route and a bit of weather to look at.
+dlg @1 shop.greet [here.shop=open] : Look underneath any cut before you choose. I've chalked the honest price in an easy spot to see.
+dlg @2 shop.greet [here.shop=bare] : Nothing to wrap just now. There's no sense weighing the bare board.
+dlg @3 shop.greet [here.shop=asleep] : Even the fish boards are shut. Come on a waking visit.
+dlg @1 shop.prices : The figure you see belongs to the fish you see. Inspect before you pay.
+dlg @1 shop.bye [here.shop!=asleep] : Keep the thick side of the parcel underneath.
+dlg @1 resident.business [business=failing] : Too many fine-looking fish and too few suppers calling for them.
+dlg @2 resident.business [business=steady] : The usual customers keep my pots washed and my board moving.
+dlg @3 resident.business [business=thriving] : There's a warm pot waiting for almost every piece before I finish wrapping it.
 graft resident.hub
 choice Why carry two pieces of coal? -> walk_coals
 node walk_coals

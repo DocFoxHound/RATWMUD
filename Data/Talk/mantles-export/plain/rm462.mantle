@@ -1,9 +1,12 @@
+# rm462, the low-sling roofline (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm462
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_wystan_coalmarsh
+written_by codex
 title the low-sling roofline
 fits stage=adult|old
 prefers job=sailor
@@ -17,6 +20,7 @@ topics work +0.5 animals +0.4 faith +0.4 prices +0.2
 styles comfort=practical gossip=guarded refuse=direct tease=none
 marks oath saying
 persona #self.first# measures the height of a future window against the feet of roof birds and saves the longest complaints for the walk with no one listening.
+
 words
 oath! = Jam my right sheave | Shorten my honest lift
 saying! = Lift level and look up | A bird owes no roof rent
@@ -33,35 +37,33 @@ payline = a square pay mark | a sum with an honest edge
 liftcloth = a folded shoulder rag | a soft strap pad
 
 grown
-
-opinion houses against 1 : A better connection can take a post. It cannot hoist the load still standing where the work was left.
-opinion road mixed 1 : A hill is lovely to look up at until you have to carry somebody else's expensive parcel all the way.
-opinion watch mixed 1 : I'd like as much protection for a working back as for the bale that's riding on it.
-opinion city mixed 1 : From a higher window I'd see another part of the city without first leaving home.
-opinion church for 2 : A second willing pair of hands deserves thanks before the first one lets the weight go.
-opinion festivals for 1 : I enjoy the market pushing and talking while there's still room for a carrier to set a load down safe.
-line greet : Step into view alongside my end of the work.
-line greet [pair.band=strangers] : Welcome. Give the road behind you a little clearance.
-line greet.return : I can hear you above the market, distinctly enough.
-line farewell : May your next climb be more for yourself than for a parcel.
-line farewell.return : Carry your sights high and set your feet where they belong.
-line ask.how : How heavily has the day been leaning on your better shoulder?
-line answer.how : Good for the work if I take my knee's advice on the turn.
-line react.news : I'll hear what that weighed when the cargo first set out.
-line react.news.known : Heard that one passing the first row of roofs.
-line react.news.new : A fresh shape above the old roofline, then.
-line react.news.doubt : That sounds weightier than the hands behind it can account for.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : A small celebration somewhere with a view would fit that news.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd set the load down and be there to take part of the strain.
-line decline : I won't complain to the whole market just because one account is crooked.
-line accept_decline : Your choice. The sling needn't go on every shoulder.
-line thank : You waited till both my feet had a grip before letting go.
-line deflect_thanks : There was work needing a willing end of a strap.
-line reassure : A climb doesn't lose its purpose because a knee calls one pause.
-line sympathise : Stand clear here a minute. I'll keep the traffic moving round us.
-line ack : I know which end you're carrying now.
-line preclose : I'd best move before a new heap grows round my soles.
-
+opinion @1 houses against 1 : A better connection can take a post. It cannot hoist the load still standing where the work was left.
+opinion @1 road mixed 1 : A hill is lovely to look up at until you have to carry somebody else's expensive parcel all the way.
+opinion @1 watch mixed 1 : I'd like as much protection for a working back as for the bale that's riding on it.
+opinion @1 city mixed 1 : From a higher window I'd see another part of the city without first leaving home.
+opinion @1 church for 2 : A second willing pair of hands deserves thanks before the first one lets the weight go.
+opinion @1 festivals for 1 : I enjoy the market pushing and talking while there's still room for a carrier to set a load down safe.
+line @1 greet : Step into view alongside my end of the work.
+line @2 greet [pair.band=strangers] : Welcome. Give the road behind you a little clearance.
+line @1 greet.return : I can hear you above the market, distinctly enough.
+line @1 farewell : May your next climb be more for yourself than for a parcel.
+line @1 farewell.return : Carry your sights high and set your feet where they belong.
+line @1 ask.how : How heavily has the day been leaning on your better shoulder?
+line @1 answer.how : Good for the work if I take my knee's advice on the turn.
+line @1 react.news : I'll hear what that weighed when the cargo first set out.
+line @1 react.news.known : Heard that one passing the first row of roofs.
+line @1 react.news.new : A fresh shape above the old roofline, then.
+line @1 react.news.doubt : That sounds weightier than the hands behind it can account for.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : A small celebration somewhere with a view would fit that news.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd set the load down and be there to take part of the strain.
+line @1 decline : I won't complain to the whole market just because one account is crooked.
+line @1 accept_decline : Your choice. The sling needn't go on every shoulder.
+line @1 thank : You waited till both my feet had a grip before letting go.
+line @1 deflect_thanks : There was work needing a willing end of a strap.
+line @1 reassure : A climb doesn't lose its purpose because a knee calls one pause.
+line @1 sympathise : Stand clear here a minute. I'll keep the traffic moving round us.
+line @1 ack : I know which end you're carrying now.
+line @1 preclose : I'd best move before a new heap grows round my soles.
 scene work_1
 when topic=work self.job=sailor
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark self.likes=plum_tart
 does aside
 cooldown 8h
 say Keep the plum streak clear of the lifting strap. | Crisp edge first if it's going up a steep road.
-dlg resident.hub : Stand where the load won't come round on you while we talk.
-dlg resident.job [self.job=sailor] : I work around #self.workplace#. No sling's properly balanced till the feet at both ends can move.
-dlg resident.news [world.news] : This made it past the crowded part of the day. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Market talk has #topic.subject# #topic.claim#. I'm repeating words. Ask elsewhere for a witness prepared to carry that account into court.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I recognised you above the market before you got near the sling.
-dlg resident.bye : Good footing for the climb and a clear look from the top.
 
+dlg @1 resident.hub : Stand where the load won't come round on you while we talk.
+dlg @1 resident.job [self.job=sailor] : I work around #self.workplace#. No sling's properly balanced till the feet at both ends can move.
+dlg @1 resident.news [world.news] : This made it past the crowded part of the day. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Market talk has #topic.subject# #topic.claim#. I'm repeating words. Ask elsewhere for a witness prepared to carry that account into court.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I recognised you above the market before you got near the sling.
+dlg @1 resident.bye : Good footing for the climb and a clear look from the top.
 graft resident.hub
 choice Would one high window make that much difference? -> roof_window
 node roof_window

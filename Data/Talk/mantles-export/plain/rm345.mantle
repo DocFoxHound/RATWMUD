@@ -1,9 +1,12 @@
+# rm345, the carter's straw skirts (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm345
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_millicent_wickwick
+written_by codex
 title the carter's straw skirts
 fits stage=adult|old
 prefers job=carter temper=calm
@@ -34,45 +37,44 @@ diecorner = a rounded dice corner | the small edge of a die
 settle = a little settling noise | one low wooden sigh
 
 any
-opinion road for 2 : I like a road with enough life in it to ask for care and enough kindness to bring the load home.
-opinion dole for 3 : I'd wedge another bowl in any cart before I'd leave a hungry wolf standing there.
-opinion church for 1 : A prayer can travel wedged between quite ordinary thoughts about the road. The Bright One finds it easily.
-opinion strangers for 1 : A new face on a long stretch can make the next turn worth seeing.
-opinion merchants against 1 : A price set for carrying ought to stay the same when the last crate comes out.
-opinion houses against 1 : I've seen a crest given a comfortable ride on a wagon that badly wanted mending.
-opinion times against 1 : It seems to take a longer road each week to earn the same oatcake.
+opinion @1 road for 2 : I like a road with enough life in it to ask for care and enough kindness to bring the load home.
+opinion @1 dole for 3 : I'd wedge another bowl in any cart before I'd leave a hungry wolf standing there.
+opinion @1 church for 1 : A prayer can travel wedged between quite ordinary thoughts about the road. The Bright One finds it easily.
+opinion @1 strangers for 1 : A new face on a long stretch can make the next turn worth seeing.
+opinion @1 merchants against 1 : A price set for carrying ought to stay the same when the last crate comes out.
+opinion @1 houses against 1 : I've seen a crest given a comfortable ride on a wagon that badly wanted mending.
+opinion @1 times against 1 : It seems to take a longer road each week to earn the same oatcake.
 
 grown
-line greet : Come where you won't catch a sleeve on the straw.
-line greet [pair.band=strangers] : A little room left for company. Welcome to it.
-line greet [here.time=dawn] : Morning light, quiet wheels. Good time to meet.
-line greet [here.time=dusk|night] : The evening's still wide enough to share.
-line greet.return : A word from the roadside does my ears good.
-line greet.return [pair.band=friends|family] : Good! I'd recognise that voice through four loose buckets.
-line greet.return [self.working=yes] : There's room for talk if there's room to turn round.
-line greet.return [here.time=dusk|night] : I had nearly missed your voice in the dark there.
-line kin.open [pair.kin!=no] : Take the comfortable bit. Family saves trouble that way.
-line again.open : I kept your last words good and snug.
-line hail [pair.band=friends] : Hoy there, travelling friend! Level with my elbow.
-line farewell : Go lightly over the places that shake.
-line farewell.return : And let the last turn bring you somewhere pleasant.
-line react.news : Let me hear what travelled in with you.
-line react.news.new : Not a wheel of that has rolled past my hearing.
-line react.news.known : That same load of news came by me earlier.
-line react.news.doubt : Something's knocking loose beneath that account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor wolf. I wish some ordinary comfort could reach there.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Glad news will ride with me quite willingly.
-line ask.how : Has the way been easy underfoot?
-line answer.how : I've had more jolts than bruises. A fair return.
-line thank : That's one less corner for me to worry over.
-line deflect_thanks : It was no more weight than a twist of straw.
-line sympathise : Lean on this till you feel the ground again.
-line reassure : Let the jolt finish travelling through you. I'll wait.
-line decline : I'd gladly help once my present load is safely down.
-line accept_decline : Then fit the hour to your own errands.
-line preclose : I mean to arrive with daylight to spare.
-line accept_preclose : Here's hoping a shaded road takes you home.
-
+line @1 greet : Come where you won't catch a sleeve on the straw.
+line @2 greet [pair.band=strangers] : A little room left for company. Welcome to it.
+line @3 greet [here.time=dawn] : Morning light, quiet wheels. Good time to meet.
+line @4 greet [here.time=dusk|night] : The evening's still wide enough to share.
+line @1 greet.return : A word from the roadside does my ears good.
+line @2 greet.return [pair.band=friends|family] : Good! I'd recognise that voice through four loose buckets.
+line @3 greet.return [self.working=yes] : There's room for talk if there's room to turn round.
+line @4 greet.return [here.time=dusk|night] : I had nearly missed your voice in the dark there.
+line @1 kin.open [pair.kin!=no] : Take the comfortable bit. Family saves trouble that way.
+line @1 again.open : I kept your last words good and snug.
+line @1 hail [pair.band=friends] : Hoy there, travelling friend! Level with my elbow.
+line @1 farewell : Go lightly over the places that shake.
+line @1 farewell.return : And let the last turn bring you somewhere pleasant.
+line @1 react.news : Let me hear what travelled in with you.
+line @1 react.news.new : Not a wheel of that has rolled past my hearing.
+line @1 react.news.known : That same load of news came by me earlier.
+line @1 react.news.doubt : Something's knocking loose beneath that account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor wolf. I wish some ordinary comfort could reach there.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Glad news will ride with me quite willingly.
+line @1 ask.how : Has the way been easy underfoot?
+line @1 answer.how : I've had more jolts than bruises. A fair return.
+line @1 thank : That's one less corner for me to worry over.
+line @1 deflect_thanks : It was no more weight than a twist of straw.
+line @1 sympathise : Lean on this till you feel the ground again.
+line @1 reassure : Let the jolt finish travelling through you. I'll wait.
+line @1 decline : I'd gladly help once my present load is safely down.
+line @1 accept_decline : Then fit the hour to your own errands.
+line @1 preclose : I mean to arrive with daylight to spare.
+line @1 accept_preclose : Here's hoping a shaded road takes you home.
 scene quiet_skirt
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Put the springy bit where the weight will come.
 
-dlg resident.hub : I can make a comfortable corner for a few words.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Good to have the company of that voice again.
-dlg resident.hub [here.time=night] : We can speak softly. Everything carries farther after dark.
-dlg resident.hub [pair.disposition=hostile|wary] : That's room enough for two civil voices at a distance.
-dlg resident.job [self.job=carter] : #self.trade_words.capitalize#. I listen to the load as carefully as I look ahead.
-dlg resident.job : I like to finish with everything in as good a shape as when it came to me.
-dlg resident.news [world.news] : The place on this account is #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Take care of the name if you carry that farther.
-dlg resident.bye : A comfortable ride to you, or a gentle walk if that's your portion.
-
+dlg @1 resident.hub : I can make a comfortable corner for a few words.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good to have the company of that voice again.
+dlg @3 resident.hub [here.time=night] : We can speak softly. Everything carries farther after dark.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : That's room enough for two civil voices at a distance.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I listen to the load as carefully as I look ahead.
+dlg @2 resident.job : I like to finish with everything in as good a shape as when it came to me.
+dlg @1 resident.news [world.news] : The place on this account is #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Take care of the name if you carry that farther.
+dlg @1 resident.bye : A comfortable ride to you, or a gentle walk if that's your portion.
 graft resident.hub
 choice Why wrap an empty pot as carefully as a full one? -> empty_shape
 node empty_shape

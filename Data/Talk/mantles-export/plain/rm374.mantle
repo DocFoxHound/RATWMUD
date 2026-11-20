@@ -1,9 +1,12 @@
+# rm374, the paper shoal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm374
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_delphine_dripham
+written_by codex
 title the paper shoal
 fits stage=adult|old
 prefers job=scholar warmth=warm
@@ -35,43 +38,42 @@ weightchip = a flat chip | a little stone
 boil = a soft simmer | the small rolling boil
 
 any
-opinion houses against 1 : By the time a little request reaches a House, no amount of elegant folding is going to make it a large one.
-opinion church for 1 : A kind answer fits on as little paper as a sharp one. Good practice for anybody near a chapel.
-opinion sump for 1 : A good clean page can come from a wet street. I dislike the assumption that ink knows an address.
-opinion merchants against 1 : Show me the sum on the wrapping while my purse is still tied up.
-opinion dole for 2 : I'd give the last name just as much soup as the first and let the writing be as small as needed.
-opinion watch against 1 : On the low streets official boots knocking rarely mean a visit to admire the penmanship.
+opinion @1 houses against 1 : By the time a little request reaches a House, no amount of elegant folding is going to make it a large one.
+opinion @1 church for 1 : A kind answer fits on as little paper as a sharp one. Good practice for anybody near a chapel.
+opinion @1 sump for 1 : A good clean page can come from a wet street. I dislike the assumption that ink knows an address.
+opinion @1 merchants against 1 : Show me the sum on the wrapping while my purse is still tied up.
+opinion @1 dole for 2 : I'd give the last name just as much soup as the first and let the writing be as small as needed.
+opinion @1 watch against 1 : On the low streets official boots knocking rarely mean a visit to admire the penmanship.
 
 grown
-line greet : Hello. A clean strip here for a new exchange. | Welcome. Mind that little school of paper on the sill.
-line greet [pair.band=strangers] : First time you've caught me between folds. | I haven't seen your face above this particular bit of paper before.
-line greet [here.time=dawn] : Morning. The first fish of the day still lies flat. | Good light and a tolerably civil temper to you.
-line greet.return : Yes, hello back. My paws were finishing a tail. | I heard you quite well through the rustling.
-line greet.return [pair.band=friends|family] : Your voice can usually keep my shoal from growing. | A friend gets the best of the uncreased paper.
-line greet.return [here.time=night] : Hello late. A whisper and a rustle will carry. | The fins are all folded away for night.
-line again.open : Another meeting before the fresh folding has settled. | Here again as I start the tail fold.
-line hail [pair.band=friends] : Look, I've made one with a particularly grand tail. | Come see how peaceful a bad temper can look.
-line farewell : May your scraps turn out more agreeable than the words behind them. | Go with something worth keeping in your pocket.
-line farewell.return : I'll keep my temper occupied here. Goodbye. | The little fleet sends you its respects.
-line react.news : Tell the news in words you'd keep on paper. | I'll leave the strip unfolded till I've heard you.
-line react.news.new : I haven't tucked a word of that away before. | An entirely new fish in my bit of water.
-line react.news.known : Yes. I'd already got the whole little shape of that. | That report came to my desk earlier.
-line react.news.doubt : A corner's been folded over something in that account. | I'd like to read the part somebody's turned inside.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : We're in no hurry to turn that hurt into a tidy story. | I'll sit and hear it. There's quite enough comfort in staying sometimes.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : An occasion for a particularly cheerful bookmark. | I'd give that news the best position in a clean window.
-line ask.how : Had cause for many sharp words today? | Is the world treating you any more gently than a stiff page?
-line answer.how : Not entirely serene. The evidence is on the windowsill. | Warm enough in the heart and a bit hot in the ears.
-line decline : I'd be tempted to say something sharp and spoil the whole business. | I won't sign an answer that properly belongs elsewhere.
-line accept_decline : You've left the answer quite plain. I'll take it. | That refusal can remain a plain sheet.
-line preclose : My ink needs me back while it's still reasonably fluid. | I've more fins than useful words at present. Time for work.
-line accept_preclose : Off you go while we both have an agreeable word left. | Fine. The remainder of your day is yours.
-line thank : You saved me from making an extremely irritable paper trout. Thanks. | I appreciate the clean edge you gave that answer.
-line deflect_thanks : One fold and a little patience. Hardly a costly gift. | It used a scrap I would have swept away.
-line sympathise : I can hear the hurt underneath the sharp part. | You can set the creased bit down by me.
-line reassure : One bad word needn't take up an entire page. | Give it one fold's worth of time before you answer.
-line ack : That's the shape I meant exactly. | Yes. The little points meet now.
-line give.advice : Fold the word away until it feels less hot. | Hold the corner still before making a crease.
-
+line @1 greet : Hello. A clean strip here for a new exchange. | Welcome. Mind that little school of paper on the sill.
+line @2 greet [pair.band=strangers] : First time you've caught me between folds. | I haven't seen your face above this particular bit of paper before.
+line @3 greet [here.time=dawn] : Morning. The first fish of the day still lies flat. | Good light and a tolerably civil temper to you.
+line @1 greet.return : Yes, hello back. My paws were finishing a tail. | I heard you quite well through the rustling.
+line @2 greet.return [pair.band=friends|family] : Your voice can usually keep my shoal from growing. | A friend gets the best of the uncreased paper.
+line @3 greet.return [here.time=night] : Hello late. A whisper and a rustle will carry. | The fins are all folded away for night.
+line @1 again.open : Another meeting before the fresh folding has settled. | Here again as I start the tail fold.
+line @1 hail [pair.band=friends] : Look, I've made one with a particularly grand tail. | Come see how peaceful a bad temper can look.
+line @1 farewell : May your scraps turn out more agreeable than the words behind them. | Go with something worth keeping in your pocket.
+line @1 farewell.return : I'll keep my temper occupied here. Goodbye. | The little fleet sends you its respects.
+line @1 react.news : Tell the news in words you'd keep on paper. | I'll leave the strip unfolded till I've heard you.
+line @1 react.news.new : I haven't tucked a word of that away before. | An entirely new fish in my bit of water.
+line @1 react.news.known : Yes. I'd already got the whole little shape of that. | That report came to my desk earlier.
+line @1 react.news.doubt : A corner's been folded over something in that account. | I'd like to read the part somebody's turned inside.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : We're in no hurry to turn that hurt into a tidy story. | I'll sit and hear it. There's quite enough comfort in staying sometimes.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : An occasion for a particularly cheerful bookmark. | I'd give that news the best position in a clean window.
+line @1 ask.how : Had cause for many sharp words today? | Is the world treating you any more gently than a stiff page?
+line @1 answer.how : Not entirely serene. The evidence is on the windowsill. | Warm enough in the heart and a bit hot in the ears.
+line @1 decline : I'd be tempted to say something sharp and spoil the whole business. | I won't sign an answer that properly belongs elsewhere.
+line @1 accept_decline : You've left the answer quite plain. I'll take it. | That refusal can remain a plain sheet.
+line @1 preclose : My ink needs me back while it's still reasonably fluid. | I've more fins than useful words at present. Time for work.
+line @1 accept_preclose : Off you go while we both have an agreeable word left. | Fine. The remainder of your day is yours.
+line @1 thank : You saved me from making an extremely irritable paper trout. Thanks. | I appreciate the clean edge you gave that answer.
+line @1 deflect_thanks : One fold and a little patience. Hardly a costly gift. | It used a scrap I would have swept away.
+line @1 sympathise : I can hear the hurt underneath the sharp part. | You can set the creased bit down by me.
+line @1 reassure : One bad word needn't take up an entire page. | Give it one fold's worth of time before you answer.
+line @1 ack : That's the shape I meant exactly. | Yes. The little points meet now.
+line @1 give.advice : Fold the word away until it feels less hot. | Hold the corner still before making a crease.
 scene fishoath
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : I like to make one unhurried fold before a new day makes suggestions for sha
 b : What would it represent? | Why make it then?
 a : The possibility of leaving a little space where a word might have gone. | Because I like making them. A temper needn't have exclusive rights to a pleasant occupation.
 
-grown
-
 story fishledger [topic=work|memories self.job=scholar]
   : I used a long paper tail to mark an unfinished copy and stopped work quite satisfied with my clever arrangement.
   : Opened the book next day and found the tail in one place and the fish just inside my sleeve.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Steam off the page and over the bowl, where it belongs. | Leave a spoonful of the good grains for last.
 
-dlg resident.hub : You find me in possession of several unsaid words and enough good humour for a conversation.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I might let you choose the most preposterous fin today.
-dlg resident.hub [here.time=night] : The ink's put away. I can fold a credible fish without seeing it.
-dlg resident.hub [pair.disposition=wary|hostile] : I'd let that particular remark stay folded while we see what you're here for.
-dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I keep my unprofessional observations in the form of small folded fish.
-dlg resident.job : I do the necessary thing and try not to lose anybody's good temper on the way.
-dlg resident.bye : May you find a kind word where a sharp one almost came out.
-
+dlg @1 resident.hub : You find me in possession of several unsaid words and enough good humour for a conversation.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I might let you choose the most preposterous fin today.
+dlg @3 resident.hub [here.time=night] : The ink's put away. I can fold a credible fish without seeing it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'd let that particular remark stay folded while we see what you're here for.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I keep my unprofessional observations in the form of small folded fish.
+dlg @2 resident.job : I do the necessary thing and try not to lose anybody's good temper on the way.
+dlg @1 resident.bye : May you find a kind word where a sharp one almost came out.
 graft resident.hub
 choice Can I use one of those fish as a bookmark? -> markfish
 node markfish

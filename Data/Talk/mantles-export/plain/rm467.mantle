@@ -1,9 +1,12 @@
+# rm467, the churner's unpaid wagers (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm467
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for cty_egil_bilgeley
+written_by codex
 title the churner's unpaid wagers
 fits stage=adult|old
 prefers piety=devout temper=short
@@ -17,6 +20,7 @@ topics food +0.5 faith +0.5 pastimes +0.3 work +0.3
 styles comfort=practical gossip=guarded refuse=direct tease=none
 marks oath saying
 persona #self.first# makes wagers payable in sweeping or silence and keeps the family's butter clear of the stakes.
+
 words
 oath! = Skim my last pat | Clap my lid crosswise
 saying! = Wager a chore you can pay | Listen for the change
@@ -33,39 +37,37 @@ pantryshade = a dark shelf corner | a strip of cool shade
 yardbeat = an uneven tap | a regular hollow knock
 
 grown
-
-opinion houses mixed 1 : A House is entitled to decent service. It cannot make truth richer by setting a large purse beside it.
-opinion church for 2 : I keep my prayers out of the wager. A chip falling sideways won't give me a claim on heavenly favours.
-opinion merchants mixed 1 : I'll have one clear figure for a working thing. I get my gaming pleasure elsewhere.
-opinion strangers mixed 1 : I'd stake a little yard sweeping on a friendly guess with a stranger, but no household has to fund my introductions.
-opinion dole for 2 : The poor pot has nothing to do with how lucky anyone was that morning.
-opinion city mixed 1 : I'd enjoy more of the city's good bread if less of the city were wedged into the same doorway to buy it.
-line greet : Welcome. The only stake today is a little spare time.
-line greet.return : You've found the listening side of me before the betting side.
-line greet [pair.band=strangers] : We can stand well clear of the elbows and hear each other here.
-line farewell : May your day's last reckoning be easy enough to pay.
-line farewell.return : Keep your supper clear of any wager on the road.
-line ask.how : Does the day feel reasonably even in both hands?
-line answer.how : Steady till somebody offers me a guess too good to leave alone.
-line react.news : I'll listen for the change beneath the first account.
-line react.news.new : That gives the whole question a different sound.
-line react.news.known : I'd already laid a little thought beside that piece.
-line react.news.doubt : I wouldn't even stake my sweeping turn on the account as given.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give thanks for that and keep the betting out of it.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can take an unwelcome chore off a household dealing with that.
-line decline : I won't put a household promise on a stranger's chance.
-line thank : You helped me keep my promise without asking to share the winnings.
-line deflect_thanks : I set the stake myself and I mean to pay what I promised.
-line accept_decline : No wager taken and no account between us.
-line sympathise : I can do the next little task while you come to terms with it.
-line reassure : A poor guess needn't determine what either of us does afterwards.
-line ack : I hear the turn in that reasoning now.
-line preclose : Something is waiting for a steady pair of arms.
-
+opinion @1 houses mixed 1 : A House is entitled to decent service. It cannot make truth richer by setting a large purse beside it.
+opinion @1 church for 2 : I keep my prayers out of the wager. A chip falling sideways won't give me a claim on heavenly favours.
+opinion @1 merchants mixed 1 : I'll have one clear figure for a working thing. I get my gaming pleasure elsewhere.
+opinion @1 strangers mixed 1 : I'd stake a little yard sweeping on a friendly guess with a stranger, but no household has to fund my introductions.
+opinion @1 dole for 2 : The poor pot has nothing to do with how lucky anyone was that morning.
+opinion @1 city mixed 1 : I'd enjoy more of the city's good bread if less of the city were wedged into the same doorway to buy it.
+line @1 greet : Welcome. The only stake today is a little spare time.
+line @1 greet.return : You've found the listening side of me before the betting side.
+line @2 greet [pair.band=strangers] : We can stand well clear of the elbows and hear each other here.
+line @1 farewell : May your day's last reckoning be easy enough to pay.
+line @1 farewell.return : Keep your supper clear of any wager on the road.
+line @1 ask.how : Does the day feel reasonably even in both hands?
+line @1 answer.how : Steady till somebody offers me a guess too good to leave alone.
+line @1 react.news : I'll listen for the change beneath the first account.
+line @1 react.news.new : That gives the whole question a different sound.
+line @1 react.news.known : I'd already laid a little thought beside that piece.
+line @1 react.news.doubt : I wouldn't even stake my sweeping turn on the account as given.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give thanks for that and keep the betting out of it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can take an unwelcome chore off a household dealing with that.
+line @1 decline : I won't put a household promise on a stranger's chance.
+line @1 thank : You helped me keep my promise without asking to share the winnings.
+line @1 deflect_thanks : I set the stake myself and I mean to pay what I promised.
+line @1 accept_decline : No wager taken and no account between us.
+line @1 sympathise : I can do the next little task while you come to terms with it.
+line @1 reassure : A poor guess needn't determine what either of us does afterwards.
+line @1 ack : I hear the turn in that reasoning now.
+line @1 preclose : Something is waiting for a steady pair of arms.
 scene work_1
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : My bit of the work goes by #self.trade_words#. I listen as carefully as I pull.
+a : #self.trade_words.capitalize#, that's my bit. I listen as carefully as I pull.
 b : What change are you waiting for? | Does it take both arms?
 a : The sound gets a heavier centre to it. Then I look, however certain I was before. | It takes both arms and enough good sense to keep them from competing with one another.
 
@@ -229,13 +231,13 @@ when concept=bark self.likes=roof_birds
 does aside
 cooldown 8h
 say That little brown head is thinking about a departure. | Keep the broom handy till both claws actually leave.
-dlg resident.hub : An honest question doesn't need a stake put down beside it.
-dlg resident.job [self.trade_words] : Put my day down as #self.trade_words#. When the sound shifts, the work deserves both eyes.
-dlg resident.news [world.news] : This much arrived while my ears were free. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The public version says #topic.subject# #topic.claim#. I save my wagers for matters with rather fewer reputations attached.
-dlg resident.hub [topic.meeting=known] : #topic.player#, no odds at all against recognising that particular voice.
-dlg resident.bye : May supper be yours without a single stake required.
 
+dlg @1 resident.hub : An honest question doesn't need a stake put down beside it.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#, day in and day out. When the sound shifts, the work deserves both eyes.
+dlg @1 resident.news [world.news] : This much arrived while my ears were free. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The public version says #topic.subject# #topic.claim#. I save my wagers for matters with rather fewer reputations attached.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, no odds at all against recognising that particular voice.
+dlg @1 resident.bye : May supper be yours without a single stake required.
 graft resident.hub
 choice What can I wager without spending coin? -> churn_sweep
 node churn_sweep

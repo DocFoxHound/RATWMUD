@@ -1,9 +1,12 @@
+# rm265, the pull of a thumb (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm265
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_finn_saltwell
+written_by codex
 title the pull of a thumb
 fits stage=adult|old
 prefers job=sailor drive=ambitious
@@ -35,43 +38,42 @@ spare = a short cord end | the spare string
 inkmark = my thumbprint | a faint dark smudge
 
 any
-opinion houses against 1 : A House gets the credit for a full hold. The backs that emptied it deserve a mention.
-opinion merchants against 1 : Name the sum for the good part. I'm tired of buying weight that gets swept off the floor.
-opinion sump for 1 : A bit of clean rope can live seven lives down our way. Nobody looks down on the sixth.
-opinion watch against 1 : Boots arriving after a load falls aren't much help keeping your feet clear.
-opinion dole for 1 : An empty bread sling means an easy climb and a bad dinner. I'm for filling it.
-opinion strangers for 1 : I'd give a stranger one end of a cord. You learn quite a bit about a wolf that way.
+opinion @1 houses against 1 : A House gets the credit for a full hold. The backs that emptied it deserve a mention.
+opinion @1 merchants against 1 : Name the sum for the good part. I'm tired of buying weight that gets swept off the floor.
+opinion @1 sump for 1 [self.quarter=sump] : A bit of clean rope can live seven lives down our way. Nobody looks down on the sixth.
+opinion @1 watch against 1 : Boots arriving after a load falls aren't much help keeping your feet clear.
+opinion @1 dole for 1 : An empty bread sling means an easy climb and a bad dinner. I'm for filling it.
+opinion @1 strangers for 1 : I'd give a stranger one end of a cord. You learn quite a bit about a wolf that way.
 
 grown
-line greet : My cord's all paid out. Hello to you. | Here's a word while I take another turn.
-line greet [pair.band=strangers] : An unfamiliar face alongside my loose end, I see. | Welcome alongside this little operation.
-line greet [here.time=dawn] : Fresh light for an intricate job. Morning to you. | A decent hour to start something ambitious.
-line greet.return : Yes, hello. The knot can wait while I talk. | I heard your hail over my own voice.
-line greet.return [pair.band=friends|family] : Good to hear that particular voice carry. | For you I'd set down a whole armload.
-line greet.return [here.time=night] : Evening to you across this snarl of string. | Night's a good time for talk and a poor time for fine knots.
-line again.open : We're back at the same bight of cord. | There's a bit still to be unpicked between us.
-line hail [pair.band=friends] : Come feel how clean this one runs! | Have a look at my latest little triumph.
-line farewell : Leave plenty of slack for your journey. | A whole foot of spare cord go with you.
-line farewell.return : I'll draw my end in now. Goodbye. | Off you go with a free swinging stride.
-line react.news : Straight from your mouth to my ears. I'm listening. | Set the news down where I can consider the size of it.
-line react.news.new : Even its loose ends had passed me by. | That's new enough to stop my thumb.
-line react.news.known : Yes. I've had that bundle put to me once already. | Heard that exact turn earlier on.
-line react.news.doubt : I'd give the middle of that yarn a firm tug. | I don't believe every turn in that account is sound.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Hard hearing. I'll put this tangle down and stay. | That's the sort of weight two ought to carry together.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's a piece I'd cheer from the farthest pier. | Good hearing, up and down the whole length of me.
-line ask.how : Has the day left any slack in your shoulders? | How freely have things been running?
-line answer.how : Full of plans and a touch short of cord. | Quite able to pull my share and an inch more.
-line decline : I'd have little chance of getting that back to you sound. | There's more in my paws than I can lay down just now.
-line accept_decline : Clear enough. I'll draw the offer in. | Very well. No loose obligation between us.
-line preclose : I've said enough to fill a good sized hold. | There's another piece I'm keen to try before I rest.
-line accept_preclose : You've hauled your end in handsomely. Go on. | We can leave this coil just as it lies.
-line thank : That spared my thumb a blister. Much obliged. | I felt your share of the pull and appreciated it.
-line deflect_thanks : I'd found the good end already. The rest took little effort. | Those loops would have gone to waste otherwise.
-line sympathise : You can put an untidy problem down beside me. | Some things bind tighter the longer you pull. Rest here.
-line reassure : We'll slacken one turn and see what gives. | It looks a worse tangle from underneath.
-line ack : I can follow that strand clean through. | That's clear along its whole length.
-line give.advice : Leave yourself one end longer than you think necessary. | Practise opening the knot as well as making it.
-
+line @1 greet : My cord's all paid out. Hello to you. | Here's a word while I take another turn.
+line @2 greet [pair.band=strangers] : An unfamiliar face alongside my loose end, I see. | Welcome alongside this little operation.
+line @3 greet [here.time=dawn] : Fresh light for an intricate job. Morning to you. | A decent hour to start something ambitious.
+line @1 greet.return : Yes, hello. The knot can wait while I talk. | I heard your hail over my own voice.
+line @2 greet.return [pair.band=friends|family] : Good to hear that particular voice carry. | For you I'd set down a whole armload.
+line @3 greet.return [here.time=night] : Evening to you across this snarl of string. | Night's a good time for talk and a poor time for fine knots.
+line @1 again.open : We're back at the same bight of cord. | There's a bit still to be unpicked between us.
+line @1 hail [pair.band=friends] : Come feel how clean this one runs! | Have a look at my latest little triumph.
+line @1 farewell : Leave plenty of slack for your journey. | A whole foot of spare cord go with you.
+line @1 farewell.return : I'll draw my end in now. Goodbye. | Off you go with a free swinging stride.
+line @1 react.news : Straight from your mouth to my ears. I'm listening. | Set the news down where I can consider the size of it.
+line @1 react.news.new : Even its loose ends had passed me by. | That's new enough to stop my thumb.
+line @1 react.news.known : Yes. I've had that bundle put to me once already. | Heard that exact turn earlier on.
+line @1 react.news.doubt : I'd give the middle of that yarn a firm tug. | I don't believe every turn in that account is sound.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Hard hearing. I'll put this tangle down and stay. | That's the sort of weight two ought to carry together.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's a piece I'd cheer from the farthest pier. | Good hearing, up and down the whole length of me.
+line @1 ask.how : Has the day left any slack in your shoulders? | How freely have things been running?
+line @1 answer.how : Full of plans and a touch short of cord. | Quite able to pull my share and an inch more.
+line @1 decline : I'd have little chance of getting that back to you sound. | There's more in my paws than I can lay down just now.
+line @1 accept_decline : Clear enough. I'll draw the offer in. | Very well. No loose obligation between us.
+line @1 preclose : I've said enough to fill a good sized hold. | There's another piece I'm keen to try before I rest.
+line @1 accept_preclose : You've hauled your end in handsomely. Go on. | We can leave this coil just as it lies.
+line @1 thank : That spared my thumb a blister. Much obliged. | I felt your share of the pull and appreciated it.
+line @1 deflect_thanks : I'd found the good end already. The rest took little effort. | Those loops would have gone to waste otherwise.
+line @1 sympathise : You can put an untidy problem down beside me. | Some things bind tighter the longer you pull. Rest here.
+line @1 reassure : We'll slacken one turn and see what gives. | It looks a worse tangle from underneath.
+line @1 ack : I can follow that strand clean through. | That's clear along its whole length.
+line @1 give.advice : Leave yourself one end longer than you think necessary. | Practise opening the knot as well as making it.
 scene loaf_trial
 when topic=pastimes self.likes=knots
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : My voice carries well, but you won't hear me shouting across a loaded sling.
 b : Would anyone hear a quiet call? | What do the two notes mean?
 a : A call pitched high and then low cuts clean across a rumble. | Look this way. After that you can see my paw.
 
-grown
-
 story split_loaf [topic=memories|food]
   : Made a fancy sling once with a double turn just where my supper lay.
   : Brought home my loaf neatly halved and one smug-looking knot.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say You can see every turn in the white now. | Fresh snow and a good black cord make a legible diagram.
 
-dlg resident.hub : I'll give you a straight account provided you've time for both ends and the middle.
-dlg resident.hub [topic.meeting=known] : #topic.player#, see how neatly this bit of trouble comes apart now.
-dlg resident.hub [here.time=dawn] : Good light and a clear length of day ahead. I'd call that a promising start.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll give you an answer with my belongings on this side of me.
-dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. I always have an eye on what it'll take to get a load unwrapped.
-dlg resident.job : A complicated beginning and a clean finish suit me in any work.
-dlg resident.bye : There's a generous piece of daylight left for your own use.
-
+dlg @1 resident.hub : I'll give you a straight account provided you've time for both ends and the middle.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, see how neatly this bit of trouble comes apart now.
+dlg @3 resident.hub [here.time=dawn] : Good light and a clear length of day ahead. I'd call that a promising start.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll give you an answer with my belongings on this side of me.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. I always have an eye on what it'll take to get a load unwrapped.
+dlg @2 resident.job : A complicated beginning and a clean finish suit me in any work.
+dlg @1 resident.bye : There's a generous piece of daylight left for your own use.
 graft resident.hub
 choice Which end frees your bread sling? -> breadtail
 node breadtail

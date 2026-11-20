@@ -1,10 +1,12 @@
-# rm195, the copyist who sings the low part (doc 84 P14, batch city-a3): written for rmx_hollis_shaw (Hollis Shaw: copying at the Records Office, Ridgemere-born). Name-free. A Northgate wolf with a copyist's soft, sparing speech: few words, said gently, the Bright One in passing, and a damp-weather cough passed off as practice for the choir's bass line.
+# rm195, the low-part copyist (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm195
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_hollis_shaw
+written_by codex
 title the low-part copyist
 fits stage=adult|old
 prefers job=scholar talk=quiet piety=devout
@@ -38,50 +40,49 @@ damp = the damp | the damp in the stairwell
 gate = the gate | the north gate
 
 any
-opinion church for 2 : Once I could only hum my thanks through chattering teeth. The Bright One caught the tune. I sing the bass part now. | They keep my place in the second row.
-opinion dole for 1 : If my loaf can ease somebody's hunger it's already blessed. | The chapel loaf has fed folk I'd not have guessed were hungry. That's enough said.
-opinion drink against 1 : I've watched a jar take a good wolf and leave a poor one. Draw another cup of water for me. | Ale at noon makes a crooked line by two.
-opinion strangers against 1 : I keep my door latched until I know the face. It's no insult; it's my habit. | A stranger may be kind. I'd like to know first.
-opinion city for 1 : Ridgemere lays a damp paw on my chest. I'd still miss those bells anywhere else.
-opinion festivals mixed 0 : A feast brings a crowd, and I can't abide a crowd. It brings the choir out too, and I'd not miss that.
-opinion newcomers mixed 0 : New folk at the gate every week. Some stay and learn the place. I give them time before I give them my name.
+opinion @1 church for 2 : Once I could only hum my thanks through chattering teeth. The Bright One caught the tune. I sing the bass part now. | They keep my place in the second row.
+opinion @1 dole for 1 : If my loaf can ease somebody's hunger it's already blessed. | The chapel loaf has fed folk I'd not have guessed were hungry. That's enough said.
+opinion @1 drink against 1 : I've watched a jar take a good wolf and leave a poor one. Draw another cup of water for me. | Ale at noon makes a crooked line by two.
+opinion @1 strangers against 1 : I keep my door latched until I know the face. It's no insult; it's my habit. | A stranger may be kind. I'd like to know first.
+opinion @1 city for 1 : Ridgemere lays a damp paw on my chest. I'd still miss those bells anywhere else.
+opinion @1 festivals mixed 0 : A feast brings a crowd, and I can't abide a crowd. It brings the choir out too, and I'd not miss that.
+opinion @1 newcomers mixed 0 : New folk at the gate every week. Some stay and learn the place. I give them time before I give them my name.
 
 grown
-line greet : #greet#. | #greet#. Quiet morning, so far.
-line greet [pair.band=strangers] : #greet#. You'll forgive me; I don't know you. | #greet#. I believe this is our first meeting.
-line greet [self.working=yes] : #greet#. Wait for the last downstroke. | #greet#. One moment. The ink's wet.
-line greet [here.time=dawn] : Morning. The light's still grey. | Morning. I'm early for the desk.
-line greet [here.time=dusk|night] : Evening. I'm on my way home. | Evening. Mind the wet cobbles.
-line greet.return : #greet#. | #greet#. Kindly met.
-line greet.return [pair.band=friends|family] : Ah. You. Good. | Glad to see you, truly.
-line greet.return [self.working=yes] : #greet#. I'm copying, but say on. | #greet#. Softly, if you would.
-line greet.return [here.time=dusk|night] : Evening. | Evening. Late for you, too.
-line kin.open [pair.kin!=no] : Sit. Let me draw the kettle closer. | You've come. That's good.
-line again.open : Twice today. I'd not complain of it. | You've come back. I'd hoped so.
-line farewell : #farewell#. #bless#. | #farewell#. Keep dry.
-line farewell [here.time=dusk|night] : Rest well. #bless#. | Goodnight. Bolt your door.
-line farewell.return : And you. #bless#. | #farewell#.
-line react.news : Tell it slowly. | Go on. I'm listening.
-line react.news.new : I'd not heard. | I hadn't caught even a whisper. In confidence, I take it.
-line react.news.known : That reached our desk before the ink was out. | I'd heard. Briefly.
-line react.news.doubt : Perhaps. Let me see the entry first. | Show me a signed copy and I'll consider it.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll sit a while in chapel after hearing that. | I'll remember them on Restday.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'm glad enough to risk the high part. | Good. There's kindness in the Bright One yet.
-line answer.how : Well enough. | Steady. My chest's a little tight. It's nothing.
-line answer.how.busy [self.working=yes] : Three pages behind. I'll catch up. | Busy. The ink won't wait.
-line ask.how : You're keeping well? | Are you warm enough, in this?
-line sympathise : I'm sorry. I'll remember you when the choir kneels. | Such a loss. We can sit quiet if you like.
-line reassure : It will pass. Most things do, with patience. | You'll come through. There's room in the Bright One's care for that worry too.
-line decline : Please let me pass. Another voice belongs in that matter. | Forgive me. My place in that matter is well outside the margin.
-line accept_decline : Of course. No need to say why. | That's quite all right.
-line thank : A kindness duly entered, with my thanks. | I'm grateful. I'll not forget it.
-line deflect_thanks : It was little enough. | Don't mention it, please.
-line preclose [self.working=yes] : The page is waiting. Forgive me. | There's a line still waiting for its full stop.
-line preclose : I'll go on, if you don't mind. | The bell will be going soon.
-line accept_preclose : Go well. | Of course. Another time.
-line ack : Quite plain now. | Ah, so. | Duly heard.
-line give.advice : Write it down. Memory's a poor clerk. | Dry boots spare you a miserable walk.
-
+line @1 greet : #greet#. | #greet#. Quiet morning, so far.
+line @2 greet [pair.band=strangers] : #greet#. You'll forgive me; I don't know you. | #greet#. I believe this is our first meeting.
+line @3 greet [self.working=yes] : #greet#. Wait for the last downstroke. | #greet#. One moment. The ink's wet.
+line @4 greet [here.time=dawn] : Morning. The light's still grey. | Morning. I'm early for the desk.
+line @5 greet [here.time=dusk|night] : Evening. I'm on my way home. | Evening. Mind the wet cobbles.
+line @1 greet.return : #greet#. | #greet#. Kindly met.
+line @2 greet.return [pair.band=friends|family] : Ah. You. Good. | Glad to see you, truly.
+line @3 greet.return [self.working=yes] : #greet#. I'm copying, but say on. | #greet#. Softly, if you would.
+line @4 greet.return [here.time=dusk|night] : Evening. | Evening. Late for you, too.
+line @1 kin.open [pair.kin!=no] : Sit. Let me draw the kettle closer. | You've come. That's good.
+line @1 again.open : Twice today. I'd not complain of it. | You've come back. I'd hoped so.
+line @1 farewell : #farewell#. #bless#. | #farewell#. Keep dry.
+line @2 farewell [here.time=dusk|night] : Rest well. #bless#. | Goodnight. Bolt your door.
+line @1 farewell.return : And you. #bless#. | #farewell#.
+line @1 react.news : Tell it slowly. | Go on. I'm listening.
+line @1 react.news.new : I'd not heard. | I hadn't caught even a whisper. In confidence, I take it.
+line @1 react.news.known : That reached our desk before the ink was out. | I'd heard. Briefly.
+line @1 react.news.doubt : Perhaps. Let me see the entry first. | Show me a signed copy and I'll consider it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll sit a while in chapel after hearing that. | I'll remember them on Restday.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'm glad enough to risk the high part. | Good. There's kindness in the Bright One yet.
+line @1 answer.how : Well enough. | Steady. My chest's a little tight. It's nothing.
+line @1 answer.how.busy [self.working=yes] : Three pages behind. I'll catch up. | Busy. The ink won't wait.
+line @1 ask.how : You're keeping well? | Are you warm enough, in this?
+line @1 sympathise : I'm sorry. I'll remember you when the choir kneels. | Such a loss. We can sit quiet if you like.
+line @1 reassure : It will pass. Most things do, with patience. | You'll come through. There's room in the Bright One's care for that worry too.
+line @1 decline : Please let me pass. Another voice belongs in that matter. | Forgive me. My place in that matter is well outside the margin.
+line @1 accept_decline : Of course. No need to say why. | That's quite all right.
+line @1 thank : A kindness duly entered, with my thanks. | I'm grateful. I'll not forget it.
+line @1 deflect_thanks : It was little enough. | Don't mention it, please.
+line @1 preclose [self.working=yes] : The page is waiting. Forgive me. | There's a line still waiting for its full stop.
+line @2 preclose : I'll go on, if you don't mind. | The bell will be going soon.
+line @1 accept_preclose : Go well. | Of course. Another time.
+line @1 ack : Quite plain now. | Ah, so. | Duly heard.
+line @1 give.advice : Write it down. Memory's a poor clerk. | Dry boots spare you a miserable walk.
 scene sc_cough_note
 when topic=health|weather here.weather=rain|fog|overcast
 does tell.self / react.self / clarify / backchannel / assess
@@ -162,7 +163,7 @@ a : So. Dry feet for a winter. A modest luxury. | They'll soften. So will the cl
 scene sc_misty_gate
 when topic=weather here.time=dawn here.weather=fog
 does tell.feeling / react.self / assess
-a : #mist.capitalize#. Down here even the gate arch has vanished. | The bells come muffled in fog. I like them best so. | Hear how the whole city hushes in a fog.
+a : #mist.capitalize#. Even the gate arch has vanished. | The bells come muffled in fog. I like them best so. | Hear how the whole city hushes in a fog.
 b : It's eerie. | Muffled? | It does.
 a : Not to me. It's peaceful. Like the moment before a hymn. | Softer. As if they're praying too. | And then the carts start, and it's over. I walk slowly while it lasts.
 
@@ -290,18 +291,17 @@ does aside
 cooldown 12h
 say The bell. Time to latch the door. | Lamps lit. Home, then.
 
-dlg resident.hub : #greet#. Softly, if you would. What is it? | #greet#. I've a moment.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Welcome back. Is there a particular matter? | #greet#, #topic.player#. Kindly met.
-dlg resident.hub [pair.disposition=hostile|wary] : I'd rather keep this short. Say what you need. | I don't know you. Please, say your business.
-dlg resident.job [self.job=scholar|official] : I make fair copies for the city. Deeds, wills, petitions. Slowly. | #self.trade_words.capitalize#. One line, then the next.
-dlg resident.job : My work suits a closed mouth. I can pass a morning in silence. | My days have a regular shape. I value that.
-dlg resident.bye : #farewell#. #bless#. | Go gently. #farewell#.
-dlg resident.news [world.news] : The words from #world.news_from# were these: #world.news#. That's the whole entry. | I took these words down at the gate: #world.news#, from #world.news_from#.
-dlg resident.news [world.event_words] : Everyone's speaking of #world.event_words#. I've only heard it in passing. | #world.event_words.capitalize#, they say. I kept my pen capped.
-dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing has reached my desk. I keep to my desk. | I've heard nothing. I'd not be the first to hear, in any case.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I'll say no more of it. | The report under the arch was #topic.subject# #topic.claim#. Leave my name off that.
-dlg resident.gossip [here.gossip!=yes] : I don't carry tales. Forgive me. | Nothing I'd care to repeat.
-
+dlg @1 resident.hub : #greet#. Softly, if you would. What is it? | #greet#. I've a moment.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Welcome back. Is there a particular matter? | #greet#, #topic.player#. Kindly met.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : I'd rather keep this short. Say what you need. | I don't know you. Please, say your business.
+dlg @1 resident.job [self.job=scholar|official] : I make fair copies for the city. Deeds, wills, petitions. Slowly. | #self.trade_words.capitalize#. One line, then the next.
+dlg @2 resident.job : My work suits a closed mouth. I can pass a morning in silence. | My days have a regular shape. I value that.
+dlg @1 resident.bye : #farewell#. #bless#. | Go gently. #farewell#.
+dlg @1 resident.news [world.news] : The words from #world.news_from# were these: #world.news#. That's the whole entry. | I took these words down at the gate: #world.news#, from #world.news_from#.
+dlg @2 resident.news [world.event_words] : Everyone's speaking of #world.event_words#. I've only heard it in passing. | #world.event_words.capitalize#, they say. I kept my pen capped.
+dlg @3 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing has reached my desk. I keep to my desk. | I've heard nothing. I'd not be the first to hear, in any case.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I'll say no more of it. | The report under the arch was #topic.subject# #topic.claim#. Leave my name off that.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't carry tales. Forgive me. | Nothing I'd care to repeat.
 graft resident.hub
 choice Was that a cough just now? -> cough
 node cough

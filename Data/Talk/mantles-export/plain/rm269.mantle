@@ -1,9 +1,12 @@
+# rm269, the jury of draughtsmen (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm269
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_lotte_bilgeton
+written_by codex
 title the jury of draughtsmen
 fits stage=adult|old
 prefers warmth=warm talk=quiet
@@ -17,6 +20,7 @@ topics pastimes +0.6 work +0.3 faith +0.3 friends +0.2
 styles comfort=quiet gossip=careful refuse=soft tease=dry
 marks oath saying
 persona #self.first# makes a quiet jury of captured draughtsmen and keeps the wording of a much-delayed petition folded in a cuff.
+
 words
 oath! = Crown my last black man | Ink and berry skins
 saying! = Keep a copy of the king | A quiet move stays moved
@@ -33,35 +37,33 @@ chapelseat = a back bench | a small bare stool
 berry = a plump berry | a blackberry with a bent stalk
 
 grown
-
-opinion city mixed 1 : Somewhere in all those rooms there's a shelf my request would fit on. I'd like the shelf to admit it.
-opinion houses against 1 : On a draughtboard a grand crest takes one square. I'd have it so off the board too.
-opinion church for 1 : A quiet bench gives me time to think what favour I meant to ask.
-opinion sump for 1 : My neighbours can keep a game going on three buttons and a flattened cork.
-opinion strangers mixed 1 : I'll offer a seat across the board. My private papers can stay up my sleeve.
-opinion dole for 2 : Even a hungry player ought to get a turn without waiting to win a crust.
-line greet : Sit by the unoccupied squares. Plenty of them at present.
-line greet [pair.band=friends] : Glad of a familiar face among my solemn little counters.
-line greet.return : I lifted my head. That means you've got the floor.
-line farewell : Mind you don't leave a good piece behind.
-line farewell.return : May you find the right desk first try.
-line again.open : We've reached the same square again, I see.
-line react.news : I'll keep that beside the earlier account.
-line react.news.new : There's a move I hadn't allowed for.
-line react.news.known : Heard that on an earlier visit to the board.
-line react.news.doubt : I'd want to examine the little bit that fell between those words.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A place on my bench is going spare if somebody needs it.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That earns a double crown in my book.
-line decline : I'd prefer to keep that paper folded a little longer.
-line ask.how : Is the day playing a decent game with you?
-line answer.how : Several moves behind my hopes. Still playing.
-line thank : That saved me a whole journey round the board.
-line accept_decline : I shall return your piece to its square.
-line sympathise : You can have this sheltered bench end.
-line reassure : A slow answer might still be a kind one.
-line preclose : Time I collected the little fellows before a sleeve does it for me.
-line ack : I follow that move easily enough.
-
+opinion @1 city mixed 1 : Somewhere in all those rooms there's a shelf my request would fit on. I'd like the shelf to admit it.
+opinion @1 houses against 1 : On a draughtboard a grand crest takes one square. I'd have it so off the board too.
+opinion @1 church for 1 : A quiet bench gives me time to think what favour I meant to ask.
+opinion @1 sump for 1 [self.quarter=sump] : My neighbours can keep a game going on three buttons and a flattened cork.
+opinion @1 strangers mixed 1 : I'll offer a seat across the board. My private papers can stay up my sleeve.
+opinion @1 dole for 2 : Even a hungry player ought to get a turn without waiting to win a crust.
+line @1 greet : Sit by the unoccupied squares. Plenty of them at present.
+line @2 greet [pair.band=friends] : Glad of a familiar face among my solemn little counters.
+line @1 greet.return : I lifted my head. That means you've got the floor.
+line @1 farewell : Mind you don't leave a good piece behind.
+line @1 farewell.return : May you find the right desk first try.
+line @1 again.open : We've reached the same square again, I see.
+line @1 react.news : I'll keep that beside the earlier account.
+line @1 react.news.new : There's a move I hadn't allowed for.
+line @1 react.news.known : Heard that on an earlier visit to the board.
+line @1 react.news.doubt : I'd want to examine the little bit that fell between those words.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A place on my bench is going spare if somebody needs it.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That earns a double crown in my book.
+line @1 decline : I'd prefer to keep that paper folded a little longer.
+line @1 ask.how : Is the day playing a decent game with you?
+line @1 answer.how : Several moves behind my hopes. Still playing.
+line @1 thank : That saved me a whole journey round the board.
+line @1 accept_decline : I shall return your piece to its square.
+line @1 sympathise : You can have this sheltered bench end.
+line @1 reassure : A slow answer might still be a kind one.
+line @1 preclose : Time I collected the little fellows before a sleeve does it for me.
+line @1 ack : I follow that move easily enough.
 scene pastimes_1
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Room for a final game before those colours merge. | The red pieces are going dark round the edges.
-dlg resident.hub : You've found me between moves. A convenient time to talk.
-dlg resident.hub [topic.meeting=known] : #topic.player#, my solemn jury recognises you.
-dlg resident.job [self.job=crafter] : I help at #self.workplace#. I keep the offcuts till I've learnt all they'll show me.
-dlg resident.news [world.news] : This seems to have got past the waiting bench. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody's account is that #topic.subject# #topic.claim#. The other side has yet to play.
-dlg resident.bye : Keep a copy if it matters.
 
+dlg @1 resident.hub : You've found me between moves. A convenient time to talk.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my solemn jury recognises you.
+dlg @1 resident.job [self.job=crafter] : I help at #self.workplace#. I keep the offcuts till I've learnt all they'll show me.
+dlg @1 resident.news [world.news] : This seems to have got past the waiting bench. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody's account is that #topic.subject# #topic.claim#. The other side has yet to play.
+dlg @1 resident.bye : Keep a copy if it matters.
 graft resident.hub
 choice Do your captured pieces have a say? -> jury_hearing
 node jury_hearing

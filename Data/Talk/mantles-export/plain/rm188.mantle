@@ -1,9 +1,12 @@
+# rm188, the keeper of turns (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm188
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_cressida_tarham
+written_by codex
 title the keeper of turns
 fits stage=young|adolescent|adult|old
 prefers temper=short drive=steady
@@ -36,30 +39,29 @@ rumble = a long grumble | a crack and a growl
 turntag = a little tally | one white stroke
 
 any
-opinion houses mixed 1 : A bright badge may put you first at a House dinner. It gets you no nearer my chalk mark.
-opinion dole for 2 : If there's a heel of loaf going spare, give it to the emptiest belly.
-opinion city for 1 : There's always somebody here who knows a different game to teach.
-opinion newcomers for 1 : A newcomer deserves a turn before all the old hands have a second go.
-opinion strangers for 1 : You can ask a stranger to keep score without asking where the coat came from.
-opinion festivals mixed 1 : I love a crowd until the biggest bodies take the whole front row.
-opinion merchants mixed 1 : I'll wait my turn gladly if cases at the counter get heard in order.
-line react.news : I want to hear how it really happened.
-line react.news.known : I know that part. Have you heard what followed?
-line react.news.new : That changes what I thought I knew.
-line react.news.doubt : I'd like to hear whoever actually saw it first.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's awful. Does somebody need company?
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd draw a great white star for news like that.
-line greet.return [here.time=dusk|night] : Evening. I've just enough chalk left for another round.
-line greet.return [pair.band=friends|family] : Back within shouting reach. I like that.
-line accept_preclose : I'll keep your place while you go.
-line deflect_thanks : A turn's a turn, and yours was due.
-line accept_decline : Nobody gets shoved into a game on my watch.
-line sympathise : Show me where it hurts. I'll sit nearby.
-line reassure : Nobody needs to hurry just because the rest can run.
-line ack : That seems fair enough to me.
+opinion @1 houses mixed 1 : A bright badge may put you first at a House dinner. It gets you no nearer my chalk mark.
+opinion @1 dole for 2 : If there's a heel of loaf going spare, give it to the emptiest belly.
+opinion @1 city for 1 : There's always somebody here who knows a different game to teach.
+opinion @1 newcomers for 1 : A newcomer deserves a turn before all the old hands have a second go.
+opinion @1 strangers for 1 : You can ask a stranger to keep score without asking where the coat came from.
+opinion @1 festivals mixed 1 : I love a crowd until the biggest bodies take the whole front row.
+opinion @1 merchants mixed 1 : I'll wait my turn gladly if cases at the counter get heard in order.
+line @1 react.news : I want to hear how it really happened.
+line @1 react.news.known : I know that part. Have you heard what followed?
+line @1 react.news.new : That changes what I thought I knew.
+line @1 react.news.doubt : I'd like to hear whoever actually saw it first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's awful. Does somebody need company?
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd draw a great white star for news like that.
+line @1 greet.return [here.time=dusk|night] : Evening. I've just enough chalk left for another round.
+line @2 greet.return [pair.band=friends|family] : Back within shouting reach. I like that.
+line @1 accept_preclose : I'll keep your place while you go.
+line @1 deflect_thanks : A turn's a turn, and yours was due.
+line @1 accept_decline : Nobody gets shoved into a game on my watch.
+line @1 sympathise : Show me where it hurts. I'll sit nearby.
+line @1 reassure : Nobody needs to hurry just because the rest can run.
+line @1 ack : That seems fair enough to me.
 dlg @allnews resident.news [world.news] : This much has gone round: #world.news#.
 dlg @allgossip resident.gossip [here.gossip=yes] : I heard that #topic.subject# #topic.claim#. I didn't see it myself.
-
 graft resident.hub
 choice What's that chalk ring for? -> ring_turns
 node ring_turns
@@ -70,27 +72,143 @@ node ring_again
 say I remember faces better than chalk remembers cobbles. I can draw it again.
 choice I'll take the next place. -> bye
 
-young
-line greet : Hullo. See where my heel is? There, you've got room.
-line greet [pair.band=strangers] : Stand by my elbow. I'll tell you when it's your go.
-line greet [here.time=dawn] : Early enough to get first pick of the cobbles!
-line greet.return : Oh, good. Nobody here gets left out. | I've heard you. Come on inside the ring.
-line farewell : Mind the wet patch by the chalk.
-line farewell.return : I'll save a bit of white for next time.
-line answer.how : A little bit cross and otherwise perfectly well.
-line ask.how : Did you get what you were waiting for?
-line decline : My paws are too tired for another round, so count me out.
-line thank : You remembered my turn when I'd forgotten. Thanks.
-line kin.open [pair.kin!=no] : Here, look at what I've got in my pocket.
-line preclose : I'll collect my chalk ends before I run.
 
+grown
+line @1 greet : There's a gap here you can step into.
+line @1 greet.return : Thanks for waiting. You've got my whole attention.
+line @2 greet.return [self.working=yes] : I'll put this away and face you properly.
+line @1 hail [pair.band=friends] : Come over. I've been keeping you a dry place.
+line @1 again.open : You've come back before the chalk's worn off.
+line @1 farewell : I'll remember just where we left off.
+line @1 farewell.return : Good walking to you, all the way along.
+line @1 decline : I can't promise that and give the next caller a fair hearing.
+line @1 thank : You held your place and mine. I appreciate it.
+line @1 answer.how : Calmer than my voice makes out, I hope.
+scene old_mark
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I still put a chalk mark down for the last caller. | There's always room to lengthen #lineup# by a tail.
+b : To hold a place? | Does it get unwieldy?
+a : To remind me someone quieter hasn't yet spoken. | Only if somebody thinks a finely brushed tail takes two places.
+
+scene crossing
+when topic=travel here.region=ridgemere
+does tell.self / react.self / assess
+a : I know which steps let two pass without either turning sideways. | I'd put a landing halfway up every Rise stair.
+b : Worth knowing at market time. | You'd stop a lot of traffic.
+a : Worth more when you're walking with somebody unsteady. | A cart won't suffer for letting an unsteady walker by.
+
+scene cake_knife
+when topic=food self.likes=plum_tart
+does give.advice / ask.detail / answer.detail
+a : Cut the last slice where you wouldn't mind getting either half. | A good plum tart deserves a dry knife.
+b : Is that a threat? | Why bother drying it?
+a : An invitation to choose second. | Less pastry goes away on the blade. More pastry goes to you.
+
+scene changing_mind
+when topic=friends
+does tell.feeling / react.self / assess
+a : The hardest place to keep for a friend is a place in an argument. | I like a friend who will tell me to lower my voice.
+b : When you disagree? | Even in company?
+a : Especially. I have to bite the words in two before they come out. | Quietly. There's no point making a duet of it.
+
+scene parcel_string
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I untie the string on a parcel without cutting it. | I've a knot so tight it might keep for another winter.
+b : Saving string? | Want my knife?
+a : Practising patience. The string's a pleasant extra. | A little longer. I should hate to be beaten by string twice in one week.
+
+scene wages
+when topic=prices world.times=hard|lean
+does tell.worry / react.self / assess
+a : When times pinch, it feels as though even the little treats have gone to queue somewhere else. | Hard going. I'm putting my coin back for something more necessary than pastry.
+b : What do you miss first? | Are you sure?
+a : The freedom to give away half a pie without doing sums. | No. But I'm putting it back all the same.
+
+scene noise
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : The thunder always arrives behind the flash like somebody protesting the result. | Rain on the awning makes each word cost a breath extra.
+b : Did it lose the race? | We could wait for quiet.
+a : Every time, which explains the volume. | We could. I don't mind waiting when I've company.
+
+scene visiting
+when topic=home
+does tell.feeling / ask.detail / answer.detail
+a : I judge a good doorstep by whether two callers can wait there together. | I'll let a guest stand in the doorway awhile.
+b : Expecting company? | Why not ask them in?
+a : Hoping for it is sufficient reason to sweep. | I will. I'd like them to feel the choice is really theirs.
+
+scene houses
+when topic=smalltalk
+does give.opinion / challenge / answer.detail
+a : No House ribbon ever bought the right to interrupt. | I'll listen to the poorest coat in the room first if it got there first.
+b : What buys that right? | Even if the others object?
+a : A shout of fire qualifies, silk or no silk. | Especially then. An objection can stand in line.
+
+scene patience
+when topic=health
+does tell.self / react.self / assess
+a : I carry a smooth #pit# to press when I'm impatient. | I can feel myself starting to snap by the way I curl my toes.
+b : Does it make you patient? | And then?
+a : It keeps the next sharp word inside until I've looked at it. | I straighten all ten. By then I've usually heard the whole question.
+
+scene give_news
+when topic=gossip here.gossip=yes
+does tell.gossip / ask.detail / answer.detail
+a : The tale going round is that #topic.subject# #topic.claim#. | People are saying #topic.subject# #topic.claim#.
+b : Is there much weight to it? | Should we spread that?
+a : Enough that I'd like to ask, less than I'd want for a verdict. | I'd leave space for another version first.
+
+scene newcomer
+when topic=newcomer
+does offer / ask.detail / answer.detail
+a : I can show a new arrival the place to stand and be heard. | I keep a little chalk for sketching directions on a doorstep.
+b : A special spot? | Even for strangers?
+a : Wherever the most patient face is pointing. Start there. | Mainly for strangers. A neighbour knows which corner stinks of fish.
+
+story fourth_slice [topic=memories|food]
+  : I cut a little pie in three for what I thought were three guests.
+  : I looked up to find four sets of eyes watching.
+  b : How did you divide it?
+  : One more cut across all three. They spent so long choosing I had time to find another pie.
+
+rule @wait
+when concept=bark
+does aside
+cooldown 8h
+say Space here for whoever was waiting before me. | Let the quiet caller get a word in.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Chalk's washing off faster than I can draw. | A puddle took the line. Our places still count.
+
+dlg @ghub resident.hub : Come forward now, you're quite within your rights.
+dlg @gjob resident.job : Making sure a quiet voice gets the same hearing as a loud one takes up a surprising part of my day.
+dlg @gbye resident.bye : May the walk back feel shorter than the wait.
+
+young
+line @1 greet : Hullo. See where my heel is? There, you've got room.
+line @2 greet [pair.band=strangers] : Stand by my elbow. I'll tell you when it's your go.
+line @3 greet [here.time=dawn] : Early enough to get first pick of the cobbles!
+line @1 greet.return : Oh, good. Nobody here gets left out. | I've heard you. Come on inside the ring.
+line @1 farewell : Mind the wet patch by the chalk.
+line @1 farewell.return : I'll save a bit of white for next time.
+line @1 answer.how : A little bit cross and otherwise perfectly well.
+line @1 ask.how : Did you get what you were waiting for?
+line @1 decline : My paws are too tired for another round, so count me out.
+line @1 thank : You remembered my turn when I'd forgotten. Thanks.
+line @1 kin.open [pair.kin!=no] : Here, look at what I've got in my pocket.
+line @1 preclose : I'll collect my chalk ends before I run.
 scene queue_badge
 when topic=pastimes
 does tell.self / challenge / answer.detail
 a : I've drawn #circle# big enough for one pair of boots. | A ribbon doesn't let anybody jump #lineup#.
 b : What if two pups hop in on one foot each? | Not even a very grand ribbon?
 a : Then they've earned the place between them. | It can go first by itself. The wolf stays back here.
-
 
 scene pits
 when topic=food
@@ -99,14 +217,12 @@ a : I'm saving #pit# for a marker. | Tart is two treats in one if you don't swal
 b : Still purple? | What's the second?
 a : I rubbed it on my cuff. My cuff's purple instead. | Spinning it on the table till somebody says enough.
 
-
 scene float_race
 when topic=pastimes
 does invite / ask.detail / answer.detail
 a : Let's race #float# against a twig. | I'll cut your bark boat a notch before we start.
 b : What do I win? | Won't that slow it?
 a : You get to tell me mine went down facing bravely forward. | Maybe. But you'll know it from all the sticks pretending to be boats.
-
 
 scene school
 when topic=work self.job=child
@@ -115,14 +231,12 @@ a : I did a beautiful sum and smudged it with #blot#. | We're practising tall le
 b : Which figures are still clear? | Why don't you prop them up?
 a : I can read the answer. The middle looks like a small pond. | I drew a wall beside one. My nicest letter lives there now.
 
-
 scene newboots
 when topic=pastimes self.likes=new_boots
 does tell.self / ask.detail / answer.detail
 a : New boots take longer to teach than old ones. | I can tell it's me coming home by the squeak.
 b : Teach them what? | Can't you tell anyway?
 a : Which way my toes want to point, for a start. | I mean if I had to shut my eyes and guess. Oh, it's harder to explain than to do.
-
 
 scene mud
 when topic=weather here.weather=rain
@@ -131,14 +245,12 @@ a : My chalk ring's turned into a little white river. | I jumped over the mud an
 b : Where's it going? | You didn't jump far enough.
 a : Down the gutter to give somebody else a turn. | It went round the corner. Nobody told me mud could do that.
 
-
 scene mother
 when topic=family self.mother
 does tell.feeling / react.self / assess
 a : A whole afternoon with #self.mother# would suit me even with no tart. | I've got something for #self.mother# hidden in my paw.
 b : Even with no games? | Is it a surprise?
 a : I could make up a game with two stones. So yes. | A polished stone. Pretend I didn't tell you.
-
 
 scene thunder
 when topic=weather here.weather=storm
@@ -147,14 +259,12 @@ a : The roof said bang and I ducked before I could stop. | That rumble had two m
 b : I ducked too. | Are you counting them?
 a : We can both say we were looking for #chalk#. | Yes. My toes are braver if they have work.
 
-
 scene disgruntled
 when topic=friends
 does tell.feeling / ask.detail / answer.detail
 a : I'm cross because somebody small didn't get a turn. | I shouted so hard about fair turns I didn't hear whose turn it was.
 b : Did you give up yours? | And then?
 a : I did. Now I'm cross about two things, but one wolf's happy. | I went to the back. I'd do the shouting quieter next time.
-
 
 scene swimming
 when topic=pastimes self.likes=swimming
@@ -163,14 +273,12 @@ a : I practise kicking while I'm on my belly on the step. | If I can't see my fe
 b : Does the step take you far? | Why count them?
 a : Only in my head. But it never tips me under. | To have something in my ears besides me getting scared.
 
-
 scene which_news
 when topic=gossip
 does give.opinion / disagree / concede
 a : If somebody whispers a thing it sounds twice as true to me. | I'd put a circle round a guess so everybody could see.
 b : Or half as true and twice as juicy. | You can't chalk a voice.
 a : That's a rotten trick for my ears to play. | Well, I have to ask out loud instead, and then everybody scowls.
-
 
 scene plum_edges
 when topic=food self.likes=plum_tart
@@ -179,7 +287,6 @@ a : The best bit of #slice# is where the purple boils over. | I can share tart e
 b : What about the middle? | How's that exact?
 a : That's what I trade somebody for the other edge. | You cut, I choose. You watch how careful you get.
 
-
 scene waiting
 when topic=day
 does tell.complaint / give.advice / assess
@@ -187,20 +294,17 @@ a : Waiting makes my ears hot. I'd rather run there twice. | I've counted every 
 b : Set your feet a puzzle. | Try counting what grows in the cracks.
 a : Good. I'll stand as still as possible except for my smallest toe. | There's a yellow flower. That one's worth a wait.
 
-
 story erased [topic=memories]
   : I ruled a whole game out in the dust with the side of my boot.
   : A goat came and stood in the very middle. Couldn't shift it.
   b : Did you play round the goat?
   : Better. We made the goat the winning square. Softest finish to a race I ever had.
 
-
 rule @mark
 when concept=bark
 does aside
 cooldown 8h
 say There's an empty space inside my chalk! | A place for the littlest boots, right here.
-
 
 rule @ink
 when concept=bark self.job=child
@@ -217,18 +321,16 @@ dlg @yjob2 resident.job : I've three jobs to finish and I'm keeping count on my 
 dlg @ybye resident.bye : I'll see if the ring lasts till you come back.
 
 adolescent
-line greet : Glad you're here. We can get this going now.
-line greet.return : Heard you. Come help me make this fair.
-line farewell.return : I'll run the next round myself.
-line decline : I've promised my place to somebody who has waited longer.
-
+line @1 greet : Glad you're here. We can get this going now.
+line @1 greet.return : Heard you. Come help me make this fair.
+line @1 farewell.return : I'll run the next round myself.
+line @1 decline : I've promised my place to somebody who has waited longer.
 scene judge
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
 a : They let me judge a race. I set the start and forgot to mark the finish. | I'm teaching little pups to referee.
 b : Who won, then? | Do they understand fair play?
 a : The first one to notice. I called that good observation. | Down to the last whisker. It's forgiveness they're still working on.
-
 
 scene badge_colour
 when topic=smalltalk
@@ -237,14 +339,12 @@ a : I'd rather be recognised by my voice than my ribbon. | My badge would be a c
 b : Even if it was a fine silk one? | That rubs off.
 a : Especially then. Everybody would talk to the ribbon. | Good. I'd have to earn another mark tomorrow.
 
-
 scene dare
 when topic=pastimes self.likes=swimming
 does decline / ask.detail / answer.detail
 a : I'll swim alongside you but I won't race out of my depth. | Don't count my strokes in front of everybody.
 b : Worried I'll win? | Why ever not?
 a : Worried we'll both forget which way the bank lies. | I swim straighter when I'm thinking where I'm going.
-
 
 story boot_swap [topic=memories]
   : I once lent a pup my new boots for a race.
@@ -255,135 +355,3 @@ story boot_swap [topic=memories]
 dlg @adhub resident.hub : Take a moment. I'm old enough to hear you out without calling an assembly.
 dlg @adjob resident.job : I keep getting trusted with things I used to have to ask to touch.
 dlg @adbye resident.bye : If anyone asks, you had your turn quite properly.
-
-grown
-line greet : There's a gap here you can step into.
-line greet.return : Thanks for waiting. You've got my whole attention.
-line greet.return [self.working=yes] : I'll put this away and face you properly.
-line hail [pair.band=friends] : Come over. I've been keeping you a dry place.
-line again.open : You've come back before the chalk's worn off.
-line farewell : I'll remember just where we left off.
-line farewell.return : Good walking to you, all the way along.
-line decline : I can't promise that and give the next caller a fair hearing.
-line thank : You held your place and mine. I appreciate it.
-line answer.how : Calmer than my voice makes out, I hope.
-
-scene old_mark
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I still put a chalk mark down for the last caller. | There's always room to lengthen #lineup# by a tail.
-b : To hold a place? | Does it get unwieldy?
-a : To remind me someone quieter hasn't yet spoken. | Only if somebody thinks a finely brushed tail takes two places.
-
-
-scene crossing
-when topic=travel here.region=ridgemere
-does tell.self / react.self / assess
-a : I know which steps let two pass without either turning sideways. | I'd put a landing halfway up every Rise stair.
-b : Worth knowing at market time. | You'd stop a lot of traffic.
-a : Worth more when you're walking with somebody unsteady. | A cart won't suffer for letting an unsteady walker by.
-
-
-scene cake_knife
-when topic=food self.likes=plum_tart
-does give.advice / ask.detail / answer.detail
-a : Cut the last slice where you wouldn't mind getting either half. | A good plum tart deserves a dry knife.
-b : Is that a threat? | Why bother drying it?
-a : An invitation to choose second. | Less pastry goes away on the blade. More pastry goes to you.
-
-
-scene changing_mind
-when topic=friends
-does tell.feeling / react.self / assess
-a : The hardest place to keep for a friend is a place in an argument. | I like a friend who will tell me to lower my voice.
-b : When you disagree? | Even in company?
-a : Especially. I have to bite the words in two before they come out. | Quietly. There's no point making a duet of it.
-
-
-scene parcel_string
-when topic=day
-does tell.self / ask.detail / answer.detail
-a : I untie the string on a parcel without cutting it. | I've a knot so tight it might keep for another winter.
-b : Saving string? | Want my knife?
-a : Practising patience. The string's a pleasant extra. | A little longer. I should hate to be beaten by string twice in one week.
-
-
-scene wages
-when topic=prices world.times=hard|lean
-does tell.worry / react.self / assess
-a : When times pinch, it feels as though even the little treats have gone to queue somewhere else. | Hard going. I'm putting my coin back for something more necessary than pastry.
-b : What do you miss first? | Are you sure?
-a : The freedom to give away half a pie without doing sums. | No. But I'm putting it back all the same.
-
-
-scene noise
-when topic=weather here.weather=storm
-does tell.self / react.self / assess
-a : The thunder always arrives behind the flash like somebody protesting the result. | Rain on the awning makes each word cost a breath extra.
-b : Did it lose the race? | We could wait for quiet.
-a : Every time, which explains the volume. | We could. I don't mind waiting when I've company.
-
-
-scene visiting
-when topic=home
-does tell.feeling / ask.detail / answer.detail
-a : I judge a good doorstep by whether two callers can wait there together. | I'll let a guest stand in the doorway awhile.
-b : Expecting company? | Why not ask them in?
-a : Hoping for it is sufficient reason to sweep. | I will. I'd like them to feel the choice is really theirs.
-
-
-scene houses
-when topic=smalltalk
-does give.opinion / challenge / answer.detail
-a : No House ribbon ever bought the right to interrupt. | I'll listen to the poorest coat in the room first if it got there first.
-b : What buys that right? | Even if the others object?
-a : A shout of fire qualifies, silk or no silk. | Especially then. An objection can stand in line.
-
-
-scene patience
-when topic=health
-does tell.self / react.self / assess
-a : I carry a smooth #pit# to press when I'm impatient. | I can feel myself starting to snap by the way I curl my toes.
-b : Does it make you patient? | And then?
-a : It keeps the next sharp word inside until I've looked at it. | I straighten all ten. By then I've usually heard the whole question.
-
-
-scene give_news
-when topic=gossip here.gossip=yes
-does tell.gossip / ask.detail / answer.detail
-a : The tale going round is that #topic.subject# #topic.claim#. | People are saying #topic.subject# #topic.claim#.
-b : Is there much weight to it? | Should we spread that?
-a : Enough that I'd like to ask, less than I'd want for a verdict. | I'd leave space for another version first.
-
-
-scene newcomer
-when topic=newcomer
-does offer / ask.detail / answer.detail
-a : I can show a new arrival the place to stand and be heard. | I keep a little chalk for sketching directions on a doorstep.
-b : A special spot? | Even for strangers?
-a : Wherever the most patient face is pointing. Start there. | Mainly for strangers. A neighbour knows which corner stinks of fish.
-
-
-story fourth_slice [topic=memories|food]
-  : I cut a little pie in three for what I thought were three guests.
-  : I looked up to find four sets of eyes watching.
-  b : How did you divide it?
-  : One more cut across all three. They spent so long choosing I had time to find another pie.
-
-
-rule @wait
-when concept=bark
-does aside
-cooldown 8h
-say Space here for whoever was waiting before me. | Let the quiet caller get a word in.
-
-
-rule @wet
-when concept=bark here.weather=rain
-does aside
-cooldown 8h
-say Chalk's washing off faster than I can draw. | A puddle took the line. Our places still count.
-
-dlg @ghub resident.hub : Come forward now, you're quite within your rights.
-dlg @gjob resident.job : Making sure a quiet voice gets the same hearing as a loud one takes up a surprising part of my day.
-dlg @gbye resident.bye : May the walk back feel shorter than the wait.

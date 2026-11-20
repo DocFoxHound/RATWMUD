@@ -1,9 +1,12 @@
+# rm502, the procession of spoons (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm502
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_edric_kelpham
+written_by codex
 title the procession of spoons
 fits stage=adult|old
 prefers job=servant
@@ -17,6 +20,7 @@ topics work +0.5 pastimes +0.5 food +0.3 weather +0.3
 styles comfort=courteous gossip=plain refuse=polite tease=merry
 marks oath saying
 persona #self.first# conducts spoons in silent procession, follows showers down the window glass, and keeps the private purse firmly buttoned away from the household keys.
+
 words
 oath! = Polish my procession | Spoons upside down
 saying! = A spoon knows whom it serves | March the gravy home
@@ -32,33 +36,31 @@ saucetrail = a glossy brown stripe | a streak of gravy
 walkgate = a narrow garden gate | a little side gate
 
 grown
-
-opinion houses mixed 1 : A great table looks dignified partly because somebody below stairs has already laughed at the arrangement that didn't work.
-opinion merchants against 1 : A well-turned compliment over the scales has never made me less disposed to watch the weight.
-opinion festivals for 2 : Let me hear the musicians tuning up from the edge and still leave my feet free to follow a private measure.
-opinion drink for 1 : One cup between friends after the spoons are counted can put a very tolerable finish on a long dinner.
-opinion city for 1 : I can walk until the hill changes the sound of the market without quite carrying me out of hearing of home.
-line greet : Enter the procession wherever you please. I'll find you a place.
-line greet.return : Here again, like my spoon that always travels back with the pudding.
-line farewell : An unhurried walk to a good dinner for you.
-line farewell.return : I shall put your place aside in the conversation.
-line ask.how : Has your morning advanced as far as the pudding yet?
-line answer.how : At present I'm fit to conduct a dinner of modest dimensions.
-line thank : You have restored the order of march quite beautifully.
-line decline : I must decline to put my own promise on a household tray.
-line accept_decline : I'll instruct the procession to proceed without that spoon.
-line sympathise : You can stay beside me quietly until the company goes through.
-line reassure : One spoon laid crooked is a reason to shift it half an inch.
-line react.news : Shall we let the first course of that arrive?
-line react.news.new : Now that's a dish I hadn't seen coming through.
-line react.news.known : I recognise the pattern on the handle of that account.
-line react.news.doubt : Such a polished tale could do with showing its ordinary underside.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd set an extra spoon at every place for news that sweet.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let us close the serving door and give that news some privacy.
-line ack : I see where that belongs in the order.
-line deflect_thanks : I had two hands and only one spoon requiring my immediate attention.
-line again.open : We've met between courses once more, it appears.
-
+opinion @1 houses mixed 1 : A great table looks dignified partly because somebody below stairs has already laughed at the arrangement that didn't work.
+opinion @1 merchants against 1 : A well-turned compliment over the scales has never made me less disposed to watch the weight.
+opinion @1 festivals for 2 : Let me hear the musicians tuning up from the edge and still leave my feet free to follow a private measure.
+opinion @1 drink for 1 : One cup between friends after the spoons are counted can put a very tolerable finish on a long dinner.
+opinion @1 city for 1 : I can walk until the hill changes the sound of the market without quite carrying me out of hearing of home.
+line @1 greet : Enter the procession wherever you please. I'll find you a place.
+line @1 greet.return : Here again, like my spoon that always travels back with the pudding.
+line @1 farewell : An unhurried walk to a good dinner for you.
+line @1 farewell.return : I shall put your place aside in the conversation.
+line @1 ask.how : Has your morning advanced as far as the pudding yet?
+line @1 answer.how : At present I'm fit to conduct a dinner of modest dimensions.
+line @1 thank : You have restored the order of march quite beautifully.
+line @1 decline : I must decline to put my own promise on a household tray.
+line @1 accept_decline : I'll instruct the procession to proceed without that spoon.
+line @1 sympathise : You can stay beside me quietly until the company goes through.
+line @1 reassure : One spoon laid crooked is a reason to shift it half an inch.
+line @1 react.news : Shall we let the first course of that arrive?
+line @1 react.news.new : Now that's a dish I hadn't seen coming through.
+line @1 react.news.known : I recognise the pattern on the handle of that account.
+line @1 react.news.doubt : Such a polished tale could do with showing its ordinary underside.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd set an extra spoon at every place for news that sweet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let us close the serving door and give that news some privacy.
+line @1 ack : I see where that belongs in the order.
+line @1 deflect_thanks : I had two hands and only one spoon requiring my immediate attention.
+line @1 again.open : We've met between courses once more, it appears.
 scene work_1
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -97,7 +99,7 @@ a : Towards the lowest-looking fold. A small adjustment can save quite a disting
 scene work_2
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : My duties include #self.trade_words#. The household purse and my own don't so much as visit each other's pockets.
+a : #self.trade_words.capitalize#, and the household purse and my own don't so much as visit each other's pockets.
 b : Isn't that awkward when you owe money? | Does the household need so many keys?
 a : A little awkwardness is very cheap compared with one wrong penny. My private reckoning comes due at the new moon. | Enough keys that the weight of them makes a useful reminder which pocket is which.
 
@@ -219,12 +221,12 @@ when concept=bark self.likes=plum_tart
 does aside
 cooldown 8h
 say A plum stone has exceptionally tidy manners. | The guest of honour will take no second helping.
-dlg resident.hub : Make yourself a small comfortable gap in the order of service.
-dlg resident.job [self.job=servant] : At #self.workplace# I see that even a plain dinner has the right spoon at the right moment.
-dlg resident.news [world.news] : The message delivered between courses was this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : What was passed down the table had #topic.subject# #topic.claim#. A story on a tray can travel absurdly far.
-dlg resident.bye : Let your next course arrive exactly when your appetite desires it.
 
+dlg @1 resident.hub : Make yourself a small comfortable gap in the order of service.
+dlg @1 resident.job [self.job=servant] : At #self.workplace# I see that even a plain dinner has the right spoon at the right moment.
+dlg @1 resident.news [world.news] : The message delivered between courses was this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : What was passed down the table had #topic.subject# #topic.claim#. A story on a tray can travel absurdly far.
+dlg @1 resident.bye : Let your next course arrive exactly when your appetite desires it.
 graft resident.hub
 choice Can a procession of spoons really be late? -> spoon_tail
 node spoon_tail

@@ -1,9 +1,12 @@
+# rm358, the roof's contrary witness (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm358
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_hob_appleby
+written_by codex
 title the roof's contrary witness
 fits stage=adult|old
 prefers job=farmer honesty=guarded
@@ -35,43 +38,42 @@ tagend = the loose straw | a flag tip
 sliver = a narrow peel | one apple shaving
 
 any
-opinion houses against 1 : Before I'd take a House's word about the weather I'd like to see which side of the eaves the factor stood on.
-opinion merchants against 1 : I should like to take my own bite of a sample apple. A fine report doesn't make it crisp.
-opinion church mixed 0 : I can sit quietly in chapel. I can sit quietly in a shed too, when the roof holds.
-opinion dole for 1 : A share for a wolf in a bad week doesn't require the whole week explained to the queue.
-opinion watch against 1 : Two witnesses from one dry doorway may have seen the same very small patch of road.
-opinion road mixed 0 : I've no quarrel with a long road till the middle of it comes off on my boots.
+opinion @1 houses against 1 : Before I'd take a House's word about the weather I'd like to see which side of the eaves the factor stood on.
+opinion @1 merchants against 1 : I should like to take my own bite of a sample apple. A fine report doesn't make it crisp.
+opinion @1 church mixed 0 : I can sit quietly in chapel. I can sit quietly in a shed too, when the roof holds.
+opinion @1 dole for 1 : A share for a wolf in a bad week doesn't require the whole week explained to the queue.
+opinion @1 watch against 1 : Two witnesses from one dry doorway may have seen the same very small patch of road.
+opinion @1 road mixed 0 : I've no quarrel with a long road till the middle of it comes off on my boots.
 
 grown
-line greet : Hello. Stay where the roof breaks the wind. | There's a still patch if you want it.
-line greet [pair.band=strangers] : Your first visit, I believe. Have the sheltered side. | I don't place you. There's room to speak.
-line greet [here.time=dawn] : Morning. Roof and hedge disagree already. | Two different winds to start the day.
-line greet.return : Yes. Your voice gets through the draught. | I heard you over that loose bit of straw.
-line greet.return [pair.band=friends|family] : I trust that voice above the weather's promises. | A known face under an uncertain sky.
-line greet.return [here.time=night] : Night hello. I can hear the straw, at least. | Darkness hasn't quieted the wind there.
-line again.open : Back before the roof gives a straight answer. | The witness is still nodding. Come through.
-line hail [pair.band=friends] : Look how contrary these two bits of straw are. | Stand behind the peg for a better angle.
-line farewell : Go by the weather you actually meet. | Keep a dry place about your shoulders.
-line farewell.return : Off you go. Don't take the clouds' word alone. | Safe under the next sensible eave.
-line react.news : Let's hear which part was seen from outside. | Tell it straight past the draught.
-line react.news.new : No sign of that in my reckoning till now. | I'd heard precisely nothing of that.
-line react.news.known : Yes. The other account pointed much the same way. | That's been across my threshold already.
-line react.news.doubt : There's a shelter missing from that account. | I hear plenty of certainty for so little open ground.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I won't make much noise about your hurt. I can stay. | A rough piece of hearing. Rest your paws there.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'll give that piece of news a favourable mark. | Good to hear a decent turn without having to dispute it.
-line ask.how : Which way's the day been pushing you? | Had a dry minute to yourself today?
-line answer.how : Doing well enough in the sheltered patches. | I've had disagreements with the sky. Nothing unusual.
-line decline : I'd be speaking about a matter I keep inside my own door. | I'm unwilling to promise more time than the weather allows me.
-line accept_decline : Keep it with you. The answer's clear. | Then I'll call that part settled.
-line preclose : I want another reading from my little flag. | I'd better check what the roof's been saying.
-line accept_preclose : You're free to step back into the weather. | Good enough. The business can lie here.
-line thank : That spared me quite a wet argument. Thanks. | You took the exposed end. I noticed.
-line deflect_thanks : It was a spare stalk. There's another where it grew. | My paws were already out in it.
-line sympathise : Leave the bigger clouds for another argument. Sit. | I can give a hard bit of news some shelter.
-line reassure : We can wait to see what the next gust actually does. | A wet patch is a poor judge of the whole field.
-line ack : I saw the straw move that way too. | That's the direction I understood.
-line give.advice : Look under shelter before calling the air still. | Try a lightly bent stalk. A stiff one won't confess much.
-
+line @1 greet : Hello. Stay where the roof breaks the wind. | There's a still patch if you want it.
+line @2 greet [pair.band=strangers] : Your first visit, I believe. Have the sheltered side. | I don't place you. There's room to speak.
+line @3 greet [here.time=dawn] : Morning. Roof and hedge disagree already. | Two different winds to start the day.
+line @1 greet.return : Yes. Your voice gets through the draught. | I heard you over that loose bit of straw.
+line @2 greet.return [pair.band=friends|family] : I trust that voice above the weather's promises. | A known face under an uncertain sky.
+line @3 greet.return [here.time=night] : Night hello. I can hear the straw, at least. | Darkness hasn't quieted the wind there.
+line @1 again.open : Back before the roof gives a straight answer. | The witness is still nodding. Come through.
+line @1 hail [pair.band=friends] : Look how contrary these two bits of straw are. | Stand behind the peg for a better angle.
+line @1 farewell : Go by the weather you actually meet. | Keep a dry place about your shoulders.
+line @1 farewell.return : Off you go. Don't take the clouds' word alone. | Safe under the next sensible eave.
+line @1 react.news : Let's hear which part was seen from outside. | Tell it straight past the draught.
+line @1 react.news.new : No sign of that in my reckoning till now. | I'd heard precisely nothing of that.
+line @1 react.news.known : Yes. The other account pointed much the same way. | That's been across my threshold already.
+line @1 react.news.doubt : There's a shelter missing from that account. | I hear plenty of certainty for so little open ground.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I won't make much noise about your hurt. I can stay. | A rough piece of hearing. Rest your paws there.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'll give that piece of news a favourable mark. | Good to hear a decent turn without having to dispute it.
+line @1 ask.how : Which way's the day been pushing you? | Had a dry minute to yourself today?
+line @1 answer.how : Doing well enough in the sheltered patches. | I've had disagreements with the sky. Nothing unusual.
+line @1 decline : I'd be speaking about a matter I keep inside my own door. | I'm unwilling to promise more time than the weather allows me.
+line @1 accept_decline : Keep it with you. The answer's clear. | Then I'll call that part settled.
+line @1 preclose : I want another reading from my little flag. | I'd better check what the roof's been saying.
+line @1 accept_preclose : You're free to step back into the weather. | Good enough. The business can lie here.
+line @1 thank : That spared me quite a wet argument. Thanks. | You took the exposed end. I noticed.
+line @1 deflect_thanks : It was a spare stalk. There's another where it grew. | My paws were already out in it.
+line @1 sympathise : Leave the bigger clouds for another argument. Sit. | I can give a hard bit of news some shelter.
+line @1 reassure : We can wait to see what the next gust actually does. | A wet patch is a poor judge of the whole field.
+line @1 ack : I saw the straw move that way too. | That's the direction I understood.
+line @1 give.advice : Look under shelter before calling the air still. | Try a lightly bent stalk. A stiff one won't confess much.
 scene doublewind
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : For a wet stranger I can offer shelter without asking the whole road's histo
 b : Names can wait, then? | You'd let anyone stand here?
 a : A dripping coat is a fairly complete introduction to a covered corner. | For a time. The space under the outer eave isn't my private supper table.
 
-grown
-
 story teasign [topic=weather|memories]
   : Caught my little flag shaking on a dead calm day. Spent a while working out what clever turn of air I'd discovered.
   : The string was snagged on the sleeve I was drinking my tea with.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Rain here, dry three steps to the left. Both true. | The eave's changed its story again.
 
-dlg resident.hub : I've had all the weather's opinions for now. I'll hear yours.
-dlg resident.hub [topic.meeting=known] : #topic.player#, look where the sheltered straw's pointing this time.
-dlg resident.hub [here.time=night] : I can hear that little peg ticking. Good enough light for a voice at any rate.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep to the open side. Your words will travel perfectly well over the gap.
-dlg resident.job [self.job=farmer] : #self.trade_words.capitalize#. A still landing makes a busy hive easier to attend.
-dlg resident.job : I inspect the surroundings of a job before making claims about it.
-dlg resident.bye : Trust the corner you're standing in more than a report from the ridge.
-
+dlg @1 resident.hub : I've had all the weather's opinions for now. I'll hear yours.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, look where the sheltered straw's pointing this time.
+dlg @3 resident.hub [here.time=night] : I can hear that little peg ticking. Good enough light for a voice at any rate.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep to the open side. Your words will travel perfectly well over the gap.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. A still landing makes a busy hive easier to attend.
+dlg @2 resident.job : I inspect the surroundings of a job before making claims about it.
+dlg @1 resident.bye : Trust the corner you're standing in more than a report from the ridge.
 graft resident.hub
 choice How is a straw a contrary witness? -> flagwitness
 node flagwitness

@@ -1,9 +1,12 @@
+# rm332, the loaded wheel's level (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm332
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rmx_orm_carlisle
+written_by codex
 title the loaded wheel's level
 fits stage=adult|old
 prefers role=merchant job=laborer
@@ -83,7 +86,6 @@ line @28 farewell [here.time=night] : May the only night noise be your own latch
 line @29 answer.how [self.working=yes] : There is work in hand and room in the account for all of it. | I am occupied without being hurried.
 line @30 greet [here.season=spring] : A promising turn in the temperature. Welcome. | Come to the clear side of this early sun.
 line @31 preclose [here.time=dusk] : It is time to consider the final entries for today. | My accounts prefer a little natural light.
-
 scene level
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -375,7 +377,6 @@ dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, you wi
 dlg @13 shop.prices : I can account for the charge as well as state it. #shop_offer#
 dlg @14 shop.bye : Thank you. I trust the arrangement will travel well.
 dlg @15 resident.hub [here.season=spring] : The surface is beginning to dry. We have ample opportunity to speak while the paving changes colour.
-
 graft resident.hub
 choice Why put water on a whetstone? -> trial_drop
 node trial_drop

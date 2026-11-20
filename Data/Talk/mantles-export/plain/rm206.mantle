@@ -1,10 +1,12 @@
-# rm206, the straw-raker at the tap (doc 84 P14, batch city-a3): written for rm_hollis_gullmore (Hollis Gullmore: keeping the taproom, Ridgemere-born). Name-free. Window lines on the news, gossip, business and inn nodes say their case; a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+# rm206, the straw-raker at the tap (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm206
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_hollis_gullmore
+written_by codex
 title the straw-raker at the tap
 fits stage=adult|old
 prefers role=merchant job=innkeeper humour=none
@@ -42,62 +44,61 @@ bell = the closing bell | the gate bell at dusk
 hill = the hill | every step up from the bottom
 
 any
-opinion watch for 2 : The Watch earn their keep at my door. One whistle and a fight's outside before the first cup breaks.
-opinion sump against 1 : Those lower streets taught me what a stair costs. Most of the trouble I put out of my door came up the same stairs. I'm allowed to say so.
-opinion dole against 1 : I pay into the parish bread. I'd keep a count of the loaves myself. I keep count of everything else I pay into.
-opinion drink for 1 : Ale's an honest trade when the measure's honest. Mine is. Ask anyone who's watched me draw it.
-opinion houses for 1 : The Houses pay their tabs on the nail. I wish I could say that of the drovers.
-opinion merchants for 1 : Anybody with a counter knows a late cart costs before the customer does. I don't begrudge a fair price.
-opinion newcomers for 1 : A new face that pays first is the best kind of face. I don't care where it walked in from.
-opinion road against 1 : Every load that limps in late is a bench left empty at my tap. I've stopped expecting better.
-opinion road against 2 [world.wagons=raided] : A robbed cart leaves its drover precious little to settle a tab with. Chalk'll carry the tab for now.
-opinion strangers for 1 : Folk off the road are half my takings and every bit of my news. I'll serve any of them who can count.
-opinion times for 1 : Rattle my purse and there's an answer. So far that's been enough.
-opinion city for 1 : I started life at the foot of these terraces. I mean to finish above the smoke. It's a fair climb and I'm halfway.
+opinion @1 watch for 2 : The Watch earn their keep at my door. One whistle and a fight's outside before the first cup breaks.
+opinion @1 sump against 1 : Those lower streets taught me what a stair costs. Most of the trouble I put out of my door came up the same stairs. I'm allowed to say so.
+opinion @1 dole against 1 : I pay into the parish bread. I'd keep a count of the loaves myself. I keep count of everything else I pay into.
+opinion @1 drink for 1 : Ale's an honest trade when the measure's honest. Mine is. Ask anyone who's watched me draw it.
+opinion @1 houses for 1 : The Houses pay their tabs on the nail. I wish I could say that of the drovers.
+opinion @1 merchants for 1 : Anybody with a counter knows a late cart costs before the customer does. I don't begrudge a fair price.
+opinion @1 newcomers for 1 : A new face that pays first is the best kind of face. I don't care where it walked in from.
+opinion @1 road against 1 : Every load that limps in late is a bench left empty at my tap. I've stopped expecting better.
+opinion @2 road against 2 [world.wagons=raided] : A robbed cart leaves its drover precious little to settle a tab with. Chalk'll carry the tab for now.
+opinion @1 strangers for 1 : Folk off the road are half my takings and every bit of my news. I'll serve any of them who can count.
+opinion @1 times for 1 : Rattle my purse and there's an answer. So far that's been enough.
+opinion @1 city for 1 : I started life at the foot of these terraces. I mean to finish above the smoke. It's a fair climb and I'm halfway.
 
 grown
-line greet [pair.band=strangers] : #greet#. Bench or bar. Pick one. | #greet#. Coin first, then whatever you like.
-line greet [self.working=yes self.job=innkeeper] : #greet#. I can pour and listen both. | #greet#. Say it. My paw's on the tap, not my ears.
-line greet [here.time=dawn] : Morning. The casks aren't tapped yet. | Morning. I've walked the wall already.
-line greet [here.time=dusk|night] : Evening. Lamps are lit, slate's clean. | Evening. You're ahead of the drovers.
-line greet [pair.band=friends] : You. Good. That seat keeps your face in view. | #greet#. Your stool's free.
-line greet [here.weather=rain] : #greet#. Scrape the mud off first. Fresh straw down. | #greet#. Mat first. I mean it.
-line greet : #greet#. What'll it be. | #greet#. Plain question, plain answer.
-line kin.open [pair.kin!=no] : Here, the end nearest the cask is yours. | It's you. Take the dry end.
-line again.open : Back. You've nothing on the slate, so that's fine. | You're getting your money's worth out of that stool today.
-line greet.return : #greet#. Same to you. | And you. #greet#.
-line greet.return [pair.band=friends|family] : There you are. Good. | You. I'd kept a seat.
-line greet.return [self.working=yes] : And you. I'm pouring, mind. | Same. Busy, but I hear you.
-line greet.return [here.time=dusk|night] : Evening. A full one tonight. | Evening. Feel for the sill with your foot.
-line farewell : #farewell#. Ask for the slate if you need a reckoning. | Right. Off you go, clear.
-line farewell [here.time=dusk|night] : Night. Go round by the gate lamps. | Night. Take the lamplit side past the wheel ruts.
-line farewell.return : And you. | #farewell#. Settled.
-line farewell.return [here.time=dusk|night] : Night. | Good night to you.
-line react.news : Go on. Plainly. | Let's have it.
-line react.news.new : That's new. It's not come over my bar yet. | How'd that get past my tap?
-line react.news.known : Two nights ago a drover brought me that. | Old. The benches had it by noon.
-line react.news.doubt : Who told you? Did they pay for their drink? | I'll want it twice from two mouths.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor news to take to bed. | Bad. I'll not pretend otherwise.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's worth a cup, that is. | That's one piece of good news this week.
-line answer.how : Fair. Slate's mostly clear. | Well enough. I've no complaints worth saying.
-line answer.how.busy [self.working=yes] : Busy. Three tabs open and a cask to change. | Ask after the bell. Even the empty cask needs carrying.
-line answer.how.poorly : Stiff. I'll work it off. | Below my best. It won't stop me pouring.
-line ask.how : You? Plain answer. | And you, then. How's it going?
-line sympathise : Bad luck. Sit. The first cup's mine. | That's hard. Take a bench and keep it.
-line reassure : It'll come square in time. Most debts do. | You'll get through. I've poured for folk who came through worse.
-line decline : Not that. I've the tap to keep and nobody else to keep it. | No, I'll not. I don't lend, and I don't borrow either.
-line accept_decline : Fair. Plain answer. I respect that. | Right. Nothing owed either way.
-line thank : #thanks#. Noted. | One mark in your favour.
-line deflect_thanks : No need. We're even. | It's nothing. Call us clear.
-line preclose [self.working=yes] : There's a cup wants filling. I'm off. | Tab to close at the far bench. That's me.
-line preclose : That's enough from me. | I've said my piece.
-line accept_preclose : Go on. You're clear. | Right. Safe footing to you.
-line ack : #bc_right# | Noted.
-line give.advice : Pay as you go, and nobody can call you anything. | Never drink where they don't chalk it. You'll be cheated.
-line warn [world.bandits=near] : I'd sleep inside the walls while those robbers are abroad. | Not alone through the gate. Go with a cart or don't go.
-line congratulate : Good. Well earned. | That's done right. Good.
-line hail [pair.band=friends] : Here. Your stool. | You. Over here.
-
+line @1 greet [pair.band=strangers] : #greet#. Bench or bar. Pick one. | #greet#. Coin first, then whatever you like.
+line @2 greet [self.working=yes self.job=innkeeper] : #greet#. I can pour and listen both. | #greet#. Say it. My paw's on the tap, not my ears.
+line @3 greet [here.time=dawn] : Morning. The casks aren't tapped yet. | Morning. I've walked the wall already.
+line @4 greet [here.time=dusk|night] : Evening. Lamps are lit, slate's clean. | Evening. You're ahead of the drovers.
+line @5 greet [pair.band=friends] : You. Good. That seat keeps your face in view. | #greet#. Your stool's free.
+line @6 greet [here.weather=rain] : #greet#. Scrape the mud off first. Fresh straw down. | #greet#. Mat first. I mean it.
+line @7 greet : #greet#. What'll it be. | #greet#. Plain question, plain answer.
+line @1 kin.open [pair.kin!=no] : Here, the end nearest the cask is yours. | It's you. Take the dry end.
+line @1 again.open : Back. You've nothing on the slate, so that's fine. | You're getting your money's worth out of that stool today.
+line @1 greet.return : #greet#. Same to you. | And you. #greet#.
+line @2 greet.return [pair.band=friends|family] : There you are. Good. | You. I'd kept a seat.
+line @3 greet.return [self.working=yes] : And you. I'm pouring, mind. | Same. Busy, but I hear you.
+line @4 greet.return [here.time=dusk|night] : Evening. A full one tonight. | Evening. Feel for the sill with your foot.
+line @1 farewell : #farewell#. Ask for the slate if you need a reckoning. | Right. Off you go, clear.
+line @2 farewell [here.time=dusk|night] : Night. Go round by the gate lamps. | Night. Take the lamplit side past the wheel ruts.
+line @1 farewell.return : And you. | #farewell#. Settled.
+line @2 farewell.return [here.time=dusk|night] : Night. | Good night to you.
+line @1 react.news : Go on. Plainly. | Let's have it.
+line @1 react.news.new : That's new. It's not come over my bar yet. | How'd that get past my tap?
+line @1 react.news.known : Two nights ago a drover brought me that. | Old. The benches had it by noon.
+line @1 react.news.doubt : Who told you? Did they pay for their drink? | I'll want it twice from two mouths.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor news to take to bed. | Bad. I'll not pretend otherwise.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's worth a cup, that is. | That's one piece of good news this week.
+line @1 answer.how : Fair. Slate's mostly clear. | Well enough. I've no complaints worth saying.
+line @1 answer.how.busy [self.working=yes] : Busy. Three tabs open and a cask to change. | Ask after the bell. Even the empty cask needs carrying.
+line @1 answer.how.poorly : Stiff. I'll work it off. | Below my best. It won't stop me pouring.
+line @1 ask.how : You? Plain answer. | And you, then. How's it going?
+line @1 sympathise : Bad luck. Sit. The first cup's mine. | That's hard. Take a bench and keep it.
+line @1 reassure : It'll come square in time. Most debts do. | You'll get through. I've poured for folk who came through worse.
+line @1 decline : Not that. I've the tap to keep and nobody else to keep it. | No, I'll not. I don't lend, and I don't borrow either.
+line @1 accept_decline : Fair. Plain answer. I respect that. | Right. Nothing owed either way.
+line @1 thank : #thanks#. Noted. | One mark in your favour.
+line @1 deflect_thanks : No need. We're even. | It's nothing. Call us clear.
+line @1 preclose [self.working=yes] : There's a cup wants filling. I'm off. | Tab to close at the far bench. That's me.
+line @2 preclose : That's enough from me. | I've said my piece.
+line @1 accept_preclose : Go on. You're clear. | Right. Safe footing to you.
+line @1 ack : #bc_right# | Noted.
+line @1 give.advice : Pay as you go, and nobody can call you anything. | Never drink where they don't chalk it. You'll be cheated.
+line @1 warn [world.bandits=near] : I'd sleep inside the walls while those robbers are abroad. | Not alone through the gate. Go with a cart or don't go.
+line @1 congratulate : Good. Well earned. | That's done right. Good.
+line @1 hail [pair.band=friends] : Here. Your stool. | You. Over here.
 scene tab_cleared
 when topic=work self.job=innkeeper self.working=yes
 does tell.self / ask.detail / answer.detail / react.self / assess
@@ -458,36 +459,35 @@ does aside
 cooldown 12h
 say Lamps, then. | There goes the bell. Here we go.
 
-dlg resident.hub : #greet#. Plain question, plain answer. | #greet#. What's wanted?
-dlg resident.hub [topic.meeting=known] : #topic.player#. Nothing owed. Good. | #greet#, #topic.player#. Your tab's clear, if you're asking.
-dlg resident.hub [here.time=night] : Late knock. Let's keep this brief. | It's after the bell. Go on.
-dlg resident.hub [pair.disposition=hostile|wary] : Speak across the boards. I hear well enough. | I know your face. Say your business.
-dlg resident.job [self.job=innkeeper] : #self.trade_words.capitalize#. I pour, I chalk, I collect. | The tap's mine. The beds upstairs aren't. I keep the cups full and the slate honest.
-dlg resident.job : Work. I keep account of it. | My feet put in longer hours than my tongue.
-dlg resident.business [business=thriving] : Busy. Every bench taken and the slate mostly clear. | Doing well. The figures stay under my elbow.
-dlg resident.business [business=steady] : Steady. Drovers come, drovers go, most of them pay. | Steady. That's a figure I can live with.
-dlg resident.business [business=failing] : Thin. Empty benches and a slate full of names. | Poorly. No passing custom to speak of.
-dlg resident.news [world.news] : Off the North Road: from #world.news_from#, #world.news#. That's how it came. | A drover brought this word from #world.news_from#. #world.news#.
-dlg resident.news [world.event_words] : The whole bar's on about #world.event_words#. | It's all #world.event_words#, cup after cup.
-dlg resident.news [world.wagons=raided] : Word of robbers emptying a wagon. I'd find a bed within the walls.
-dlg resident.news [world.death=recent] : A burial lately. The tap's been quieter for it.
-dlg resident.news [world.wedding=recent] : A wedding this week. Good for the casks.
-dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : My benches have yielded precious little news. | Quiet. Ask after the evening carts.
-dlg resident.gossip [here.gossip=yes] : As I heard it: #topic.subject# #topic.claim#. I chalk only what I hear. | They say #topic.subject# #topic.claim#. That's all my chalk will stretch to.
-dlg resident.gossip [here.gossip!=yes] : Nothing I'd repeat. | Talk's cheap. I don't deal in it.
-dlg inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. Bench, bed or a cup. Coin first. | #greet#. #inn_offer#
-dlg inn.greet [topic.meeting=known here.inn_helper!=yes here.shop!=asleep] : #topic.player#. Your face I remember. Shall I fetch the slate? | Back again, #topic.player#. #inn_offer#
-dlg inn.greet [here.time=night here.inn_helper!=yes here.shop!=asleep] : After dark. You'll want a bed, then. #inn_offer# | Late one. Mat first. #inn_offer#
-dlg inn.greet [here.inn_helper=yes] : #greet#. The tap's mine. #here.innkeeper# handles the beds and their keys. | I pour, nothing more. Ask #here.innkeeper# about a room.
-dlg inn.rooms : Overnight I charge #here.bed_night#p. Seven nights come to #here.bed_week#p. If the upper floor's free you can take it for #here.upstairs_night#p. Paid before you climb. | Nightly rate, #here.bed_night#p. Weekly rate, #here.bed_week#p. Coin first, then the key.
-dlg inn.roomed : Up the stairs. Your name's down and paid. That's a figure I can live with. | There's your bed. Paid in full. Sleep sound.
-dlg inn.rest [here.lodging=yes] : Sit till you're rested. Your bed's paid for. | Take the fire. Your room's waiting when you want it.
-dlg inn.rest [here.lodging!=yes] : Sit by the fire, then. A bed would do you more good. | That hearth seat costs nothing. Nobody'll move you.
-dlg inn.refused : #topic.why# | Not that. #topic.why#
-dlg inn.bye : #farewell#. I'll put my chalk away. | Off with you. Mind the step by the barrels.
-dlg resident.bye : #farewell#. Ask for the slate if you need a reckoning. | Right. Mind the step.
-dlg resident.bye [here.time=night] : Night. Keep by the gate lamps. | Night. Mind the ruts.
-
+dlg @1 resident.hub : #greet#. Plain question, plain answer. | #greet#. What's wanted?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Nothing owed. Good. | #greet#, #topic.player#. Your tab's clear, if you're asking.
+dlg @3 resident.hub [here.time=night] : Late knock. Let's keep this brief. | It's after the bell. Go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak across the boards. I hear well enough. | I know your face. Say your business.
+dlg @1 resident.job [self.job=innkeeper] : #self.trade_words.capitalize#. I pour, I chalk, I collect. | The tap's mine. The beds upstairs aren't. I keep the cups full and the slate honest.
+dlg @2 resident.job : Work. I keep account of it. | My feet put in longer hours than my tongue.
+dlg @1 resident.business [business=thriving] : Busy. Every bench taken and the slate mostly clear. | Doing well. The figures stay under my elbow.
+dlg @2 resident.business [business=steady] : Steady. Drovers come, drovers go, most of them pay. | Steady. That's a figure I can live with.
+dlg @3 resident.business [business=failing] : Thin. Empty benches and a slate full of names. | Poorly. No passing custom to speak of.
+dlg @1 resident.news [world.news] : Off the North Road: from #world.news_from#, #world.news#. That's how it came. | A drover brought this word from #world.news_from#. #world.news.capitalize#.
+dlg @2 resident.news [world.event_words] : The whole bar's on about #world.event_words#. | It's all #world.event_words#, cup after cup.
+dlg @3 resident.news [world.wagons=raided] : Word of robbers emptying a wagon. I'd find a bed within the walls.
+dlg @4 resident.news [world.death=recent] : A burial lately. The tap's been quieter for it.
+dlg @5 resident.news [world.wedding=recent] : A wedding this week. Good for the casks.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : My benches have yielded precious little news. | Quiet. Ask after the evening carts.
+dlg @1 resident.gossip [here.gossip=yes] : As I heard it: #topic.subject# #topic.claim#. I chalk only what I hear. | They say #topic.subject# #topic.claim#. That's all my chalk will stretch to.
+dlg @2 resident.gossip [here.gossip!=yes] : Nothing I'd repeat. | Talk's cheap. I don't deal in it.
+dlg @1 inn.greet [here.inn_helper!=yes here.shop!=asleep] : #greet#. Bench, bed or a cup. Coin first. | #greet#. #inn_offer#
+dlg @2 inn.greet [topic.meeting=known here.inn_helper!=yes here.shop!=asleep] : #topic.player#. Your face I remember. Shall I fetch the slate? | Back again, #topic.player#. #inn_offer#
+dlg @3 inn.greet [here.time=night here.inn_helper!=yes here.shop!=asleep] : After dark. You'll want a bed, then. #inn_offer# | Late one. Mat first. #inn_offer#
+dlg @4 inn.greet [here.inn_helper=yes] : #greet#. The tap's mine. #here.innkeeper# handles the beds and their keys. | I pour, nothing more. Ask #here.innkeeper# about a room.
+dlg @1 inn.rooms : Overnight I charge #here.bed_night#p. Seven nights come to #here.bed_week#p. If the upper floor's free you can take it for #here.upstairs_night#p. Paid before you climb. | Nightly rate, #here.bed_night#p. Weekly rate, #here.bed_week#p. Coin first, then the key.
+dlg @1 inn.roomed : Up the stairs. Your name's down and paid. That's a figure I can live with. | There's your bed. Paid in full. Sleep sound.
+dlg @1 inn.rest [here.lodging=yes] : Sit till you're rested. Your bed's paid for. | Take the fire. Your room's waiting when you want it.
+dlg @2 inn.rest [here.lodging!=yes] : Sit by the fire, then. A bed would do you more good. | That hearth seat costs nothing. Nobody'll move you.
+dlg @1 inn.refused : #topic.why# | Not that. #topic.why#
+dlg @1 inn.bye : #farewell#. I'll put my chalk away. | Off with you. Mind the step by the barrels.
+dlg @1 resident.bye : #farewell#. Ask for the slate if you need a reckoning. | Right. Mind the step.
+dlg @2 resident.bye [here.time=night] : Night. Keep by the gate lamps. | Night. Mind the ruts.
 graft resident.hub
 choice Why do you rake the straw every time? [self.job=innkeeper] -> straw
 node straw
@@ -507,9 +507,9 @@ node credit
 say Once. Your name goes on the slate, and it comes off by Restday. Miss it and you'll pay at the door from then on.
 mood stern
 free
-choice And when I pay? -> paid
+choice And when I pay? -> tab_settled
 choice Back to the bar. -> greet
-node paid
+node tab_settled
 say Your name comes off, I rake the floor, and we're clear. A clean floor ends the account.
 choice Fair enough. -> greet
 choice Goodbye. -> bye

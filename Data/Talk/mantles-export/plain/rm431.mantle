@@ -1,9 +1,12 @@
+# rm431, the board of charcoal accounts (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm431
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_ilse_fogridge
+written_by codex
 title the board of charcoal accounts
 fits stage=adult|old
 prefers role=merchant job=merchant
@@ -16,12 +19,12 @@ hopes a_board_without_old_debts a_warm_step_for_a_game
 topics work +0.6 pastimes +0.5 prices +0.4 travel +0.2 food +0.3
 styles comfort=material gossip=guarded refuse=sharp tease=dry
 marks oath saying
-persona #self.first# sets charcoal men on a little board to remember unsettled accounts, keeps a square clear for an old wharf loss and has very little patience for a wolf who confuses soot with poor work.
+persona #self.first# sets charcoal pieces on a little board to remember unsettled accounts, keeps a square clear for an old wharf loss and has very little patience for a wolf who confuses soot with poor work.
 
 words
 oath! = Crack the coal crown | Scuff my last square
 saying! = A paid square stays empty | Try a sack before praising the tie
-man = my little charcoal piece | the light black man
+man = my little charcoal piece | the light black piece
 board = a scored scrap of board | my little debt board
 line = the far rank | the empty row
 sack = a well-tied bag | the charcoal sack
@@ -70,7 +73,7 @@ line @15 react.news.known : That figure's been in my reckoning before. | I had t
 line @16 react.news.doubt : I'd be interested to see a sack weighed behind that fine description. | Somebody's made a pair of moves while we were looking at the wrong square.
 line @17 react.news.sorrow [topic.kind=death|loss|assault] : That leaves a square nobody can fill by talking. | The loss matters more than the account of it.
 line @18 react.news.glad [topic.kind=marriage|birth] : A prosperous move for once. I'll put out the tart. | I'll set a good counter in the light for that.
-line @19 answer.how : Slightly dusty, amply provided with opinions. | My side still has men to play.
+line @19 answer.how : Slightly dusty, amply provided with opinions. | My side of the board still has pieces to play.
 line @20 decline : I'd have to move a settled debt back onto the board for that. | My patience and the available daylight both fall short of the offer.
 line @21 accept_decline : That leaves the square clear for other business. | Your answer came with its own sensible knot.
 line @22 sympathise : Bring the trouble over. There's a dry corner to rest it in. | I've felt how heavily a name can sit that won't come off the account.
@@ -83,7 +86,6 @@ line @28 greet [pair.band=friends] : Excellent. A face that's never mistaken cha
 line @29 farewell [here.time=night] : Go with a little heat left in your own hearth. | No night visits from hungry gulls, I trust.
 line @30 answer.how [self.working=yes] : Occupied with honest sacks and more complicated company. | My knots have held. A tolerable state of business.
 line @31 preclose [here.time=dusk] : Enough light to clear one small account by. | I'll put the pieces back where the room can find them.
-
 scene debtboard
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -166,14 +168,14 @@ when topic=land self.quarter=sump
 does tell.self / react.self / assess
 a : My black Sump cuff could tell you exactly where I've spent the day. | My Sump landing seems to collect one crumb of fuel per journey home.
 b : Do you list that with the household fuel?
-a : If cuffs were sold by the load I'd have a remarkably well-stocked wardrobe. | I sweep it up. Fuel's fuel, even when the margins on carrying it are a little thin.
+a : No. If cuffs counted as fuel I'd be the best-stocked household on the stair. | I sweep it up. Fuel's fuel, even when the margins on carrying it are a little thin.
 
 scene route
 when topic=land here.region=ridgemere
 does tell.self / react.self / assess
 a : A driver learns more about Ridgemere on the downward half of a journey with fuel. | I mark charcoal routes with the street rising along the high edge of my fold.
 b : What does the downward journey show?
-a : Which knots were designed merely to oppose gravity in its usual direction. | Which doors open into the cart's path. Ordinary street maps leave a considerable amount to be desired.
+a : Which knots were tied by somebody who never carried a load downhill. They slip. | Which doors open into the cart's path. Ordinary street maps leave a considerable amount to be desired.
 
 scene friendmove
 when topic=friends self.friend
@@ -192,7 +194,7 @@ a : Any opponent who can read a moving thumb under a settled counter deserves a 
 scene sackcarry
 when topic=work
 does ask.advice / give.advice / assess
-a : Where would you put #slot# if a box of men had to go home under one arm? | How would you lift #sack# if the knot had a dark streak crossing it?
+a : Where would you put #slot# if a box of game pieces had to go home under one arm? | How would you lift #sack# if the knot had a dark streak crossing it?
 b : Test the carrying place before putting your whole weight into the lift.
 a : Agreed. A game scattered down a Sump stair plays by considerably worse rules. | I'd put a board under it as well. Charcoal is much easier to move before the sack hits the floor.
 
@@ -255,7 +257,7 @@ a : Not gratis. I'll earn the interval and keep it as if somebody else's supper 
 scene startset
 when topic=pastimes self.likes=draughts
 does tell.plan / ask.detail / answer.detail
-a : I'll mark a second row of board squares as soon as the weather gives my thumb a warm hour. | I mean to court a new opponent with the old black men and a freshly scrubbed tray.
+a : I'll mark a second row of board squares as soon as the weather gives my thumb a warm hour. | I mean to court a new opponent with the old black pieces and a freshly scrubbed tray.
 b : Do the accounts take precedence over the board?
 a : The accounts can have one side. Time off quite cheerfully takes the other. | Only till they're settled. Then a wolf can be gainfully employed in losing a game.
 
@@ -320,7 +322,7 @@ story lost_line [topic=lore]
 
 story empty_square [topic=dreams]
   : I dreamed my account board was entirely clear. Nobody owing a copper, every sack stored dry, every cart put back in its place.
-  : Then I tried setting the men out for a game and one black square refused to take any piece.
+  : Then I tried setting the pieces out for a game and one black square refused to take any piece.
   b : What became of the recalcitrant square?
   : Left it empty. There are things I remember better than I care to settle, even on an excellent day.
 
@@ -375,7 +377,6 @@ dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, your u
 dlg @13 shop.prices : I charge for fuel and its honest journey. #shop_offer#
 dlg @14 shop.bye : Keep the goods dry. Our business here is settled.
 dlg @15 resident.hub [here.weather=rain] : Take the spot past the stacked fuel. I'm not buying extra water today.
-
 graft resident.hub
 choice Why is that square kept empty? -> reserved_square
 node reserved_square

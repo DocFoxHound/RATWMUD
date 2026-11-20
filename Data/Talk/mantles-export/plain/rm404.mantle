@@ -1,9 +1,12 @@
+# rm404, the dry berth clause (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm404
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_percival_thornbury
+written_by codex
 title the dry berth clause
 fits stage=adult|old
 prefers job=official
@@ -36,35 +39,34 @@ cloud = a shelf of cloud | a low black margin
 rat = a whiskered intruder | a silent little trespasser
 
 any
-opinion houses mixed 1 : A useful vessel and an illustrious owner are two separate propositions. I should enquire about the vessel first.
-opinion road mixed 1 : An excellent departure tells us little concerning conditions at the proposed destination.
-opinion watch mixed 1 : A uniform may establish authority to ask. It does not, by itself, establish the answer.
-opinion merchants mixed 1 : The obligation is to deliver what was actually described, including any dryness expressly promised.
-opinion strangers mixed 1 : I receive an unfamiliar account without attaching either prejudice or unwarranted credit.
-opinion city for 1 : This steep town provides admirable exercise and an ample supply of disputes concerning shared walls.
+opinion @1 houses mixed 1 : A useful vessel and an illustrious owner are two separate propositions. I should enquire about the vessel first.
+opinion @1 road mixed 1 : An excellent departure tells us little concerning conditions at the proposed destination.
+opinion @1 watch mixed 1 : A uniform may establish authority to ask. It does not, by itself, establish the answer.
+opinion @1 merchants mixed 1 : The obligation is to deliver what was actually described, including any dryness expressly promised.
+opinion @1 strangers mixed 1 : I receive an unfamiliar account without attaching either prejudice or unwarranted credit.
+opinion @1 city for 1 : This steep town provides admirable exercise and an ample supply of disputes concerning shared walls.
 
 grown
-line greet : The landing permits us room to converse. | You may stand on the level portion.
-line greet.return : Your courtesy is duly met with mine.
-line again.open : The earlier encounter has a second sitting.
-line farewell : May your outward route give effect to your intentions. | Travel to the place actually promised.
-line farewell.return : I acknowledge your good wishes and return them.
-line react.news : Confine the account to what has reached you directly. | I can hear a preliminary account before seeing documents.
-line react.news.new : An item not previously before me.
-line react.news.known : The essential account is already familiar.
-line react.news.doubt : I would reserve my view pending a clearer statement.
-line react.news.sorrow [topic.kind=death|loss|assault] : Those injured by such news deserve to decide who hears the particulars.
-line react.news.glad [topic.kind=birth|marriage|work] : A happy outcome merits an unqualified acknowledgement.
-line ask.how : Have the practical terms of your day proved acceptable?
-line answer.how : I have reached the landing without undue expense of breath.
-line sympathise : We can keep the particulars within this conversation.
-line reassure : Some matters improve when considered seated and without an audience.
-line refuse : I am committed to an earlier matter which still requires attendance.
-line accept_decline : I accept the stated disposition without further argument.
-line preclose : My engagement requires my presence on a higher landing.
-line accept_preclose : Proceed while you have the necessary interval free.
-line ack : The material point has come across with sufficient clarity.
-
+line @1 greet : The landing permits us room to converse. | You may stand on the level portion.
+line @1 greet.return : Your courtesy is duly met with mine.
+line @1 again.open : The earlier encounter has a second sitting.
+line @1 farewell : May your outward route give effect to your intentions. | Travel to the place actually promised.
+line @1 farewell.return : I acknowledge your good wishes and return them.
+line @1 react.news : Confine the account to what has reached you directly. | I can hear a preliminary account before seeing documents.
+line @1 react.news.new : An item not previously before me.
+line @1 react.news.known : The essential account is already familiar.
+line @1 react.news.doubt : I would reserve my view pending a clearer statement.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Those injured by such news deserve to decide who hears the particulars.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A happy outcome merits an unqualified acknowledgement.
+line @1 ask.how : Have the practical terms of your day proved acceptable?
+line @1 answer.how : I have reached the landing without undue expense of breath.
+line @1 sympathise : We can keep the particulars within this conversation.
+line @1 reassure : Some matters improve when considered seated and without an audience.
+line @1 refuse : I am committed to an earlier matter which still requires attendance.
+line @1 accept_decline : I accept the stated disposition without further argument.
+line @1 preclose : My engagement requires my presence on a higher landing.
+line @1 accept_preclose : Proceed while you have the necessary interval free.
+line @1 ack : The material point has come across with sufficient clarity.
 scene exchange1
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -77,7 +79,7 @@ when topic=travel
 does tell.self / ask.detail / answer.detail
 a : I take two treads when the height permits. | A ship's companion stair invites a narrower stride.
 b : For speed? | Are you considering passage?
-a : For a deliberate rhythm. A trip is a poor opening statement. | Considering the terms. Manifestly different actions.
+a : For a deliberate rhythm. A trip is a poor opening statement. | No. I only note how a ship asks for shorter steps than a city does.
 
 scene exchange3
 when topic=dreams
@@ -175,7 +177,7 @@ when topic=faith
 does tell.self / ask.detail / answer.detail
 a : A profession of gratitude need not be elaborate. | I allow a silence after a solemn undertaking.
 b : Why keep it short? | Expecting an objection?
-a : The object is acknowledgement, not an exhibition of the speaker. | Allowing the maker to hear exactly what was undertaken.
+a : The object is acknowledgement, not an exhibition of the speaker. | So the one who made the promise hears exactly what was promised.
 
 scene exchange17
 when topic=health
@@ -232,16 +234,16 @@ when concept=bark self.likes=roof_birds
 does aside
 cooldown 8h
 say That little observer occupies a very favourable aspect. | A wing grants considerable freedom in the choice of accommodation.
-dlg resident.hub : We may consider a discrete question at this landing.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your previous appearance remains a matter of recollection.
-dlg resident.hub [here.time=night] : At this hour a short statement will generally be the more effective one.
-dlg resident.hub [pair.disposition=wary|hostile] : State your purpose. I shall judge what particulars it requires.
-dlg resident.job [self.job=official] : I plead cases. A statement ought to reach the remedy it asks for without losing its footing halfway.
-dlg resident.job : I attend carefully to the precise promise anyone has made.
-dlg resident.news [world.news] : The report as received is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The claim put about is #topic.subject# #topic.claim#. I decline to certify it on that basis.
-dlg resident.bye : I hope the remainder of your passage is properly arranged.
 
+dlg @1 resident.hub : We may consider a discrete question at this landing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your previous appearance remains a matter of recollection.
+dlg @3 resident.hub [here.time=night] : At this hour a short statement will generally be the more effective one.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : State your purpose. I shall judge what particulars it requires.
+dlg @1 resident.job [self.job=official] : I plead cases. A statement ought to reach the remedy it asks for without losing its footing halfway.
+dlg @2 resident.job : I attend carefully to the precise promise anyone has made.
+dlg @1 resident.news [world.news] : The report as received is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim put about is #topic.subject# #topic.claim#. I decline to certify it on that basis.
+dlg @1 resident.bye : I hope the remainder of your passage is properly arranged.
 graft resident.hub
 choice What would you ask before taking a berth? -> berth_clause
 node berth_clause

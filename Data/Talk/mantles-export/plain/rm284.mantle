@@ -1,9 +1,12 @@
+# rm284, the closed-mouth song (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm284
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_lavinia_brinemarsh
+written_by codex
 title the closed-mouth song
 fits stage=adult|old
 prefers role=civilian
@@ -35,41 +38,40 @@ sky = a grey roll overhead | a ceiling of cloud
 rim = my carrying rim | the edge of a basket
 
 any
-opinion merchants against 2 : My shoulders feel a fair day's wages. The bread wrapped in my pay is getting lighter.
-opinion festivals against 1 : I like one tune at a time and elbow room enough to breathe through it.
-opinion dole for 2 : Once supper came off a public ladle. I remember the weight of that first spoonful.
-opinion houses against 2 : My shoulders are good enough for their loads. The fine seats seem reserved for another sort of shoulder.
-opinion sump for 1 : I know each stair worn low by a thousand loaded feet and a few of them are mine.
+opinion @1 merchants against 2 : My shoulders feel a fair day's wages. The bread wrapped in my pay is getting lighter.
+opinion @1 festivals against 1 : I like one tune at a time and elbow room enough to breathe through it.
+opinion @1 dole for 2 : Once supper came off a public ladle. I remember the weight of that first spoonful.
+opinion @1 houses against 2 : My shoulders are good enough for their loads. The fine seats seem reserved for another sort of shoulder.
+opinion @1 sump for 1 : I know each stair worn low by a thousand loaded feet and a few of them are mine.
 
 grown
-line greet [pair.band=strangers] : I've a quiet side to stand on. | Hello. Leave a little strap room.
-line greet [self.working=yes] : Your voice carries above my tune. | Come abreast of me.
-line greet [here.time=dawn] : Morning. My voice is still low. | Welcome to the first clear note.
-line greet [here.time=dusk|night] : Day's gone to a lower pitch. | Evening, with room to breathe.
-line kin.open [pair.kin!=no] : There's kin within humming distance. | Come close. Family needn't call across.
-line again.open : Same tune, another meeting. | You've come round on the next verse.
-line greet.return : Here. I heard you coming. | My ears are open, at least.
-line greet.return [pair.band=friends|family] : I can ease the strap near you. | Glad of that familiar sound.
-line greet.return [self.working=yes] : Walk beside the loaded side. | I can listen under a weight.
-line greet.return [here.time=dusk|night] : Evening. The quiet notes carry. | There's my visitor in the dim.
-line farewell : Leave me a little tune to follow. | Easy shoulders going home.
-line farewell.return : I'll let the tune go with you. | Safe carrying, even empty.
-line farewell.return [here.time=night] : Watch the low spots in the dark. | Go where the lamps still show.
-line react.news : Tell it without the chorus. | Plain words carry quite far enough.
-line react.news.new : My tune stopped on that word. | New sound to these ears.
-line react.news.known : I've heard it on an earlier turn. | That's the returning verse.
-line react.news.doubt : That telling shifts when I put weight on it. | I'd want a steadier note before trusting that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll be still with you awhile. | That's sore news for any shoulder.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My shoulders feel easier hearing that. | There's a welcome lift in that word.
-line ask.how : Are your shoulders sitting easy? | Has the day ridden you hard?
-line answer.how : I can keep a tune yet. | Still carrying my share fairly level.
-line decline : I'd sooner save my shoulders for a smaller thing. | Best leave me to a quieter load today.
-line accept_decline : Fair. Your shoulders know best. | Then we set it down.
-line thank : You've made my load sit easier. | A steadying paw earns thanks.
-line sympathise : Hand me the awkward corner. | I'll keep pace until you want quiet.
-line reassure : Most weights settle if you stand still once. | You've no need to hurry for me.
-line preclose : I'll get the strap straight again. | My tune wants a quieter street.
-
+line @1 greet [pair.band=strangers] : I've a quiet side to stand on. | Hello. Leave a little strap room.
+line @2 greet [self.working=yes] : Your voice carries above my tune. | Come abreast of me.
+line @3 greet [here.time=dawn] : Morning. My voice is still low. | Welcome to the first clear note.
+line @4 greet [here.time=dusk|night] : Day's gone to a lower pitch. | Evening, with room to breathe.
+line @1 kin.open [pair.kin!=no] : There's kin within humming distance. | Come close. Family needn't call across.
+line @1 again.open : Same tune, another meeting. | You've come round on the next verse.
+line @1 greet.return : Here. I heard you coming. | My ears are open, at least.
+line @2 greet.return [pair.band=friends|family] : I can ease the strap near you. | Glad of that familiar sound.
+line @3 greet.return [self.working=yes] : Walk beside the loaded side. | I can listen under a weight.
+line @4 greet.return [here.time=dusk|night] : Evening. The quiet notes carry. | There's my visitor in the dim.
+line @1 farewell : Leave me a little tune to follow. | Easy shoulders going home.
+line @1 farewell.return : I'll let the tune go with you. | Safe carrying, even empty.
+line @2 farewell.return [here.time=night] : Watch the low spots in the dark. | Go where the lamps still show.
+line @1 react.news : Tell it without the chorus. | Plain words carry quite far enough.
+line @1 react.news.new : My tune stopped on that word. | New sound to these ears.
+line @1 react.news.known : I've heard it on an earlier turn. | That's the returning verse.
+line @1 react.news.doubt : That telling shifts when I put weight on it. | I'd want a steadier note before trusting that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll be still with you awhile. | That's sore news for any shoulder.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My shoulders feel easier hearing that. | There's a welcome lift in that word.
+line @1 ask.how : Are your shoulders sitting easy? | Has the day ridden you hard?
+line @1 answer.how : I can keep a tune yet. | Still carrying my share fairly level.
+line @1 decline : I'd sooner save my shoulders for a smaller thing. | Best leave me to a quieter load today.
+line @1 accept_decline : Fair. Your shoulders know best. | Then we set it down.
+line @1 thank : You've made my load sit easier. | A steadying paw earns thanks.
+line @1 sympathise : Hand me the awkward corner. | I'll keep pace until you want quiet.
+line @1 reassure : Most weights settle if you stand still once. | You've no need to hurry for me.
+line @1 preclose : I'll get the strap straight again. | My tune wants a quieter street.
 scene note
 when topic=work self.job=none self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Take your sharp tune off my shoulder! | Another wing in the middle of my quiet.
 
-dlg resident.hub : Stand on this side so I can set things down without knocking your elbow.
-dlg resident.job [self.working=yes self.job=none self.trade_words] : #self.trade_words.capitalize#. I know when the strap fits by the note I can keep.
-dlg resident.hub [topic.meeting=known] : I'd know your step over a humming load, #topic.player#.
-dlg resident.news [world.news] : What I heard came through clearly enough. #world.news#
-dlg resident.bye : Go with your parcel sitting easy.
-
+dlg @1 resident.hub : Stand on this side so I can set things down without knocking your elbow.
+dlg @1 resident.job [self.working=yes self.job=none self.trade_words] : #self.trade_words.capitalize#. I know when the strap fits by the note I can keep.
+dlg @2 resident.hub [topic.meeting=known] : I'd know your step over a humming load, #topic.player#.
+dlg @1 resident.news [world.news] : What I heard came through clearly enough. #world.news#
+dlg @1 resident.bye : Go with your parcel sitting easy.
 graft resident.hub
 choice Can you tell a load by ear? -> note_load
 node note_load

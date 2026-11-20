@@ -1,9 +1,12 @@
+# rm323, the margin fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm323
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_harriet_platt
+written_by codex
 title the margin fleet
 fits stage=adult|old
 prefers job=scholar piety=devout
@@ -35,43 +38,42 @@ bun = a small honey cake | a sticky round
 point = the sharp corner | the fine point
 
 any
-opinion city for 2 : A city worth keeping accounts for ought to let any ordinary resident understand a fair copy.
-opinion church for 2 : The Bright One already knows what I have seen. A prayer helps me admit how much I only suppose.
-opinion watch mixed 0 : A sighting, a claim and an accusation deserve three separate entries.
-opinion merchants mixed 0 : A complete account will incline me toward a merchant more readily than a polished speech.
-opinion dole for 1 : The last name in a distribution list deserves as legible an entry as the first.
-opinion festivals for 1 : Many small craft make an agreeable border to my account of a festival by the water.
+opinion @1 city for 2 : A city worth keeping accounts for ought to let any ordinary resident understand a fair copy.
+opinion @1 church for 2 : The Bright One already knows what I have seen. A prayer helps me admit how much I only suppose.
+opinion @1 watch mixed 0 : A sighting, a claim and an accusation deserve three separate entries.
+opinion @1 merchants mixed 0 : A complete account will incline me toward a merchant more readily than a polished speech.
+opinion @1 dole for 1 : The last name in a distribution list deserves as legible an entry as the first.
+opinion @1 festivals for 1 : Many small craft make an agreeable border to my account of a festival by the water.
 
 grown
-line greet : Welcome. There's room for another entry today. | Hello. I have set the wet ink aside.
-line greet [pair.band=strangers] : Our first meeting. I can start on a clean page. | I shall remember this as our introduction.
-line greet [here.time=dawn] : Morning. The day's first mark is usually the neatest. | Early light makes delicate writing possible.
-line greet.return : Yes, hello. The page can dry while we talk. | I caught your voice through the turn of a sheet.
-line greet.return [pair.band=friends|family] : A familiar arrival in my little register. | I could recognise your greeting without a caption.
-line greet.return [here.time=night] : A late greeting deserves its own clear entry. | Hello. My ears are more dependable than lamplight.
-line again.open : I see we've appeared twice on one page. | We've contrived another welcome meeting.
-line hail [pair.band=friends] : Come and inspect a little fleet in ink. | Here. This impression came through especially well.
-line farewell : May your journey come under a kindly eye. | An uneventful crossing of the remaining streets to you.
-line farewell.return : I shall close the entry there. Goodbye. | That gives me a pleasant final word to set down.
-line react.news : I'll listen first and choose the proper heading afterwards. | State the facts at the pace they warrant.
-line react.news.new : Nothing like that appears in my recollection. | I can supply a clean heading for that news.
-line react.news.known : Yes, that fits a fairly recent entry. | It agrees with the earlier version in all essentials.
-line react.news.doubt : I would enter a discreet question beside the account. | The identification seems less certain than the outline.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll give that loss its due space and leave the guessing out. | Little space in the account for such a quantity of hurt.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Joy deserves as careful a record as sorrow. I'm glad. | I'd gladly strike a bright little mark beside that event.
-line ask.how : What heading would you give the day so far? | Has your progress kept reasonably steady?
-line answer.how : Quite intent on a plan whose margins are slowly filling. | A little pressed for time, still fairly legible.
-line decline : I'd be exceeding the limits of what I can actually attest. | I have a prior commitment that deserves a complete account of my time.
-line accept_decline : I'll leave the matter open at your request. | Understood. A refusal is a clear answer.
-line preclose : I should attend to the ink before it dries on the stamp. | There is a little unfilled business waiting.
-line accept_preclose : Certainly. I can round off the entry myself. | Our accounts may part quite amicably here.
-line thank : I appreciate that correction. My next entry will be better. | Your care has spared me an inaccurate record. Thanks.
-line deflect_thanks : I already had the proper instrument ready. | The small trouble produced a legible result. Enough for me.
-line sympathise : You may leave the difficult part unrecorded with me. | You can have my company without any detailed inquiries.
-line reassure : A blank left honestly can be filled when we know more. | Allow the ink to settle before judging the shape.
-line ack : I see which outline you mean. | That is an entirely legible distinction.
-line give.advice : Date the first sighting before attempting an identification. | Reserve a narrow margin for a later correction.
-
+line @1 greet : Welcome. There's room for another entry today. | Hello. I have set the wet ink aside.
+line @2 greet [pair.band=strangers] : Our first meeting. I can start on a clean page. | I shall remember this as our introduction.
+line @3 greet [here.time=dawn] : Morning. The day's first mark is usually the neatest. | Early light makes delicate writing possible.
+line @1 greet.return : Yes, hello. The page can dry while we talk. | I caught your voice through the turn of a sheet.
+line @2 greet.return [pair.band=friends|family] : A familiar arrival in my little register. | I could recognise your greeting without a caption.
+line @3 greet.return [here.time=night] : A late greeting deserves its own clear entry. | Hello. My ears are more dependable than lamplight.
+line @1 again.open : I see we've appeared twice on one page. | We've contrived another welcome meeting.
+line @1 hail [pair.band=friends] : Come and inspect a little fleet in ink. | Here. This impression came through especially well.
+line @1 farewell : May your journey come under a kindly eye. | An uneventful crossing of the remaining streets to you.
+line @1 farewell.return : I shall close the entry there. Goodbye. | That gives me a pleasant final word to set down.
+line @1 react.news : I'll listen first and choose the proper heading afterwards. | State the facts at the pace they warrant.
+line @1 react.news.new : Nothing like that appears in my recollection. | I can supply a clean heading for that news.
+line @1 react.news.known : Yes, that fits a fairly recent entry. | It agrees with the earlier version in all essentials.
+line @1 react.news.doubt : I would enter a discreet question beside the account. | The identification seems less certain than the outline.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll give that loss its due space and leave the guessing out. | Little space in the account for such a quantity of hurt.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Joy deserves as careful a record as sorrow. I'm glad. | I'd gladly strike a bright little mark beside that event.
+line @1 ask.how : What heading would you give the day so far? | Has your progress kept reasonably steady?
+line @1 answer.how : Quite intent on a plan whose margins are slowly filling. | A little pressed for time, still fairly legible.
+line @1 decline : I'd be exceeding the limits of what I can actually attest. | I have a prior commitment that deserves a complete account of my time.
+line @1 accept_decline : I'll leave the matter open at your request. | Understood. A refusal is a clear answer.
+line @1 preclose : I should attend to the ink before it dries on the stamp. | There is a little unfilled business waiting.
+line @1 accept_preclose : Certainly. I can round off the entry myself. | Our accounts may part quite amicably here.
+line @1 thank : I appreciate that correction. My next entry will be better. | Your care has spared me an inaccurate record. Thanks.
+line @1 deflect_thanks : I already had the proper instrument ready. | The small trouble produced a legible result. Enough for me.
+line @1 sympathise : You may leave the difficult part unrecorded with me. | You can have my company without any detailed inquiries.
+line @1 reassure : A blank left honestly can be filled when we know more. | Allow the ink to settle before judging the shape.
+line @1 ack : I see which outline you mean. | That is an entirely legible distinction.
+line @1 give.advice : Date the first sighting before attempting an identification. | Reserve a narrow margin for a later correction.
 scene shipstamp
 when topic=ships
 does tell.self / ask.detail / answer.detail
@@ -132,8 +134,8 @@ scene crowdview
 when topic=smalltalk self.dislikes=crowds
 does tell.self / ask.detail / answer.detail
 a : I'd choose a farther view over an elbow beside the register. | Crowds make for an adventurous style of handwriting.
-b : What does an elbow do to a ship? | You could make the entry later.
-a : Adds a sail that nobody on deck would recognise. | I could. I'd rather set down a clear first impression from a little distance.
+b : Does the elbow spoil the count? | You could make the entry later.
+a : It jogged my pen once and gave a sloop a third mast. Nobody on deck would have known her. | I could. I'd rather set down a clear first impression from a little distance.
 
 scene astatement
 when topic=faith
@@ -198,8 +200,6 @@ a : Don't trust a fine dark impression till you've seen it with daylight behind 
 b : How do you assess it tonight? | You'd leave the entry unfinished?
 a : I leave it to dry, with a small scrap marking the place for tomorrow. | The observation's finished. The quality of my little picture can wait.
 
-grown
-
 story backwardship [topic=pastimes|memories]
   : I carved a particularly proud bow and added my own tiny initial. On paper the bow looked lovely. The letter looked like a protesting crab.
   : Had forgotten that letters, as well as hulls, face the other way once printed.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Dry paws for the notebook, sticky ones for supper. | Paper folded up on the corner. That'll be the cake.
 
-dlg resident.hub : The margin's clear. What would you like me to consider?
-dlg resident.hub [topic.meeting=known] : #topic.player#, I'm glad our entries have crossed again.
-dlg resident.hub [here.time=night] : This light suffices for conversation. Fine cutting can wait.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll hear a precise question. Please leave the book closed.
-dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. My private little boats stay well apart from the marks I make at work.
-dlg resident.job : I take care to set down just what I can establish.
-dlg resident.bye : May you reach the right destination under a clear heading.
-
+dlg @1 resident.hub : The margin's clear. What would you like me to consider?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'm glad our entries have crossed again.
+dlg @3 resident.hub [here.time=night] : This light suffices for conversation. Fine cutting can wait.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll hear a precise question. Please leave the book closed.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. My private little boats stay well apart from the marks I make at work.
+dlg @2 resident.job : I take care to set down just what I can establish.
+dlg @1 resident.bye : May you reach the right destination under a clear heading.
 graft resident.hub
 choice How does the print get its bow? -> prowprint
 node prowprint

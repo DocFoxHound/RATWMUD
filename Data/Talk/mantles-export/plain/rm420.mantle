@@ -1,9 +1,12 @@
+# rm420, the coal-stained glove (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm420
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_wynn_sootridge
+written_by codex
 title the coal-stained glove
 fits stage=adult|old
 prefers job=merchant
@@ -36,35 +39,34 @@ pew = the short bench | a quiet bench
 warmth = a patch of sun | a pleasant warmth
 
 any
-opinion houses against 3 : A great name over a wharf gate is very plain to read from the place left empty at supper.
-opinion church for 1 : The chapel hush lets me set my grief down without first providing a suitable introduction.
-opinion dole for 2 : One may arrange a portion with considerable grace while making absolutely certain it reaches the hungry.
-opinion merchants mixed 1 : I approve of an honest cut and very little of the ceremony intended to conceal a poor one.
-opinion sump for 1 : Visitors often notice the soot and quite overlook the hands keeping one another warm beneath it.
-opinion festivals mixed 1 : Give me the good singing and allow me to leave before the smoke reaches my collar.
+opinion @1 houses against 3 : A great name over a wharf gate is very plain to read from the place left empty at supper.
+opinion @1 church for 1 : The chapel hush lets me set my grief down without first providing a suitable introduction.
+opinion @1 dole for 2 : One may arrange a portion with considerable grace while making absolutely certain it reaches the hungry.
+opinion @1 merchants mixed 1 : I approve of an honest cut and very little of the ceremony intended to conceal a poor one.
+opinion @1 sump for 1 : Visitors often notice the soot and quite overlook the hands keeping one another warm beneath it.
+opinion @1 festivals mixed 1 : Give me the good singing and allow me to leave before the smoke reaches my collar.
 
 grown
-line greet : Welcome. The untidy bit is safely in my pocket. | A clean place for company this side.
-line greet.return : I can return a greeting without taking off the glove.
-line again.open : We seem to have turned the same corner twice.
-line farewell : May the wind treat your collar courteously. | An unhurried return to your own fireside.
-line farewell.return : Your good wish may travel in the cleaner fold.
-line react.news : Tell it without the trimmings if you like. | A plain account will be quite presentable here.
-line react.news.new : That's a fresh mark upon the linen.
-line react.news.known : I recall the former impression of that news.
-line react.news.doubt : I should like to turn that attractive account over and inspect the reverse.
-line react.news.sorrow [topic.kind=death|loss|assault] : A bereaved table wants a little space amongst the condolences.
-line react.news.glad [topic.kind=birth|marriage|work] : Quite a welcome tune, that piece of news.
-line ask.how : Has the day kept anything pleasant for your own use?
-line answer.how : Presentable outside, comfortable enough within.
-line sympathise : We can sit quietly without making a display of it.
-line reassure : A little unembarrassed warmth does much to restore an afternoon.
-line refuse : There is a small prior duty with a just claim on me.
-line accept_decline : I shall regard your answer as perfectly sufficient.
-line preclose : A more private part of my day requires attendance.
-line accept_preclose : Go before courtesy begins to charge you for standing.
-line ack : That is clear, even without its fine wrapping.
-
+line @1 greet : Welcome. The untidy bit is safely in my pocket. | A clean place for company this side.
+line @1 greet.return : I can return a greeting without taking off the glove.
+line @1 again.open : We seem to have turned the same corner twice.
+line @1 farewell : May the wind treat your collar courteously. | An unhurried return to your own fireside.
+line @1 farewell.return : Your good wish may travel in the cleaner fold.
+line @1 react.news : Tell it without the trimmings if you like. | A plain account will be quite presentable here.
+line @1 react.news.new : That's a fresh mark upon the linen.
+line @1 react.news.known : I recall the former impression of that news.
+line @1 react.news.doubt : I should like to turn that attractive account over and inspect the reverse.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A bereaved table wants a little space amongst the condolences.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Quite a welcome tune, that piece of news.
+line @1 ask.how : Has the day kept anything pleasant for your own use?
+line @1 answer.how : Presentable outside, comfortable enough within.
+line @1 sympathise : We can sit quietly without making a display of it.
+line @1 reassure : A little unembarrassed warmth does much to restore an afternoon.
+line @1 refuse : There is a small prior duty with a just claim on me.
+line @1 accept_decline : I shall regard your answer as perfectly sufficient.
+line @1 preclose : A more private part of my day requires attendance.
+line @1 accept_preclose : Go before courtesy begins to charge you for standing.
+line @1 ack : That is clear, even without its fine wrapping.
 scene exchange1
 when topic=work self.job=merchant self.workplace
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.likes=singing
 does aside
 cooldown 8h
 say A soft middle note won't trouble the neighbours. | Good voices leave room for a listener.
-dlg resident.hub : I have a comfortable word and a respectable corner of linen to spare.
-dlg resident.hub [topic.meeting=known] : #topic.player#, our acquaintance can comfortably dispense with the stiffest formalities.
-dlg resident.hub [here.time=night] : A quiet visit at this hour has rather a good tune to it.
-dlg resident.hub [pair.disposition=wary|hostile] : Plain speech requires neither polished boots nor a raised voice.
-dlg resident.job [self.job=merchant] : I help at #self.workplace#. The good cuts and the modest ones receive equally clean paper.
-dlg resident.job : I do the work in reach and reserve my own opinion of the manner of its arrival.
-dlg resident.news [world.news] : A report arrived without much wrapping. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I understand #topic.subject# #topic.claim#. An understanding of the words need not confer knowledge of the facts.
-dlg resident.bye : May your luck leave no inconvenient marks on the way home.
 
+dlg @1 resident.hub : I have a comfortable word and a respectable corner of linen to spare.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our acquaintance can comfortably dispense with the stiffest formalities.
+dlg @3 resident.hub [here.time=night] : A quiet visit at this hour has rather a good tune to it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Plain speech requires neither polished boots nor a raised voice.
+dlg @1 resident.job [self.job=merchant] : I help at #self.workplace#. The good cuts and the modest ones receive equally clean paper.
+dlg @2 resident.job : I do the work in reach and reserve my own opinion of the manner of its arrival.
+dlg @1 resident.news [world.news] : A report arrived without much wrapping. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I understand #topic.subject# #topic.claim#. An understanding of the words need not confer knowledge of the facts.
+dlg @1 resident.bye : May your luck leave no inconvenient marks on the way home.
 graft resident.hub
 choice Why does your luck need a glove? -> white_glove
 node white_glove

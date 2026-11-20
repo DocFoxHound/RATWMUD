@@ -1,9 +1,12 @@
+# rm210, the bell notch carver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm210
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_magda_rustham
+written_by codex
 title the bell notch carver
 fits stage=adult|old
 prefers job=merchant
@@ -70,7 +73,6 @@ line @24 preclose : Time I gave these feet a change of stones. | That leaves me 
 line @25 accept_preclose : Off while the notion's with you. | I know the pull of an unfinished walk.
 line @26 sympathise : Sit a bit. The road can wait on both of us. | I can spare a whole bell's length for this.
 line @27 ack : My thumb's on it. | That much follows.
-
 scene stick_scale
 when topic=pastimes|travel
 does tell.self / ask.detail / answer.detail
@@ -179,7 +181,7 @@ a : Shows somebody thought it worth taking out at supper. | True. I prefer evide
 scene story_of_news
 when topic=news world.news
 does tell.news / react.news / assess
-a : This is what reached me: #world.news#. | I can place this much: #world.news_from# sent word. #world.news#.
+a : This is what reached me: #world.news#. | I can place this much: #world.news_from# sent word. #world.news.capitalize#.
 b : Will you carry it further? | Do you know the rest?
 a : To the next doorstep where somebody's listening. | I'd leave a patch of paper blank there.
 
@@ -248,7 +250,6 @@ dlg @5 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I've le
 dlg @6 resident.job : Whatever the work, I like a spot where I can see a bit of road.
 dlg @7 resident.news [world.event_words] : Put a mark against #world.event_words#. That's what folk here have been hearing.
 dlg @8 resident.bye : Go whichever way offers the nicest stretch of quiet.
-
 graft resident.hub
 choice Can you read those scratches without looking? -> roadthumb
 node roadthumb

@@ -1,9 +1,12 @@
+# rm271, the map of missing steps (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm271
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_runa_nailton
+written_by codex
 title the map of missing steps
 fits stage=adult|old
 prefers job=servant humour=dry
@@ -35,43 +38,42 @@ blow = a shoulder of wind | a tilt of wind
 dot = a little hollow dot | one solid spot
 
 any
-opinion houses against 1 : An estate looks small enough on a map till you try going round it with an errand.
-opinion merchants against 1 : If the chalked price has been rubbed off I don't like my chances of hearing a fair one aloud.
-opinion sump for 1 : The low streets have more ways through than a surveying paw with clean boots might suppose.
-opinion road for 2 : A walk with the time to lose a turning and find it again is my kind of day off.
-opinion festivals for 1 : Give me a feast with a market at its centre and I can happily walk its circumference twice.
-opinion watch against 1 : A grand uniform can stand right across a narrow stair and feel quite entitled to the spot.
+opinion @1 houses against 1 : An estate looks small enough on a map till you try going round it with an errand.
+opinion @1 merchants against 1 : If the chalked price has been rubbed off I don't like my chances of hearing a fair one aloud.
+opinion @1 sump for 1 : The low streets have more ways through than a surveying paw with clean boots might suppose.
+opinion @1 road for 2 : A walk with the time to lose a turning and find it again is my kind of day off.
+opinion @1 festivals for 1 : Give me a feast with a market at its centre and I can happily walk its circumference twice.
+opinion @1 watch against 1 : A grand uniform can stand right across a narrow stair and feel quite entitled to the spot.
 
 grown
-line greet : An agreeable interruption to my carefully crooked route. | Hello. I've contrived to arrive by the interesting way.
-line greet [pair.band=strangers] : Our paths seem pleasantly unacquainted. | Welcome to this unremarkable point on my map.
-line greet [here.time=dawn] : Morning. Everything looks more possible before the errands catch up. | Fresh light and an uncreased day to you.
-line greet.return : Hello returned by the shortest available route. | I heard, even round that last turning of the talk.
-line greet.return [pair.band=friends|family] : A friend's face ought to have its own mark on a map. | Excellent. A familiar landmark with ears.
-line greet.return [here.time=night] : Late greetings, delivered somewhat circuitously. | A light in a window and a voice on the road. Welcome.
-line again.open : Our routes have developed a resemblance again. | This corner appears to come furnished with your company.
-line hail [pair.band=friends] : Walk the next little bend alongside me! | I've corrected a peculiar error. Come admire the map.
-line farewell : An interesting road and a tolerable distance to you. | I hope the inconvenient turning proves handsome.
-line farewell.return : I'll put another bend between us now. Goodbye. | May the next flight be short and regular.
-line react.news : Tell it in whatever order the roads fall. | I'll fit the pieces together as we walk.
-line react.news.new : My drawing has quite a blank space where that belongs. | New to me even in outline.
-line react.news.known : Yes, that account followed me round an earlier corner. | I've seen the general shape of that already.
-line react.news.doubt : That road appears to come out behind its own beginning. | A curious account. I'd want firmer ground halfway along.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That's a cruel stretch to have to cover. Take my arm. | No pretty view makes that journey any shorter. I'm listening.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That was worth going round three sides of a square to hear. | I'll take the pleasant way home in honour of such tidings.
-line ask.how : Which way has the day been bending for you? | Been up more steps than down, or about even?
-line answer.how : Somewhat footsore, with a fairly respectable view. | My legs object. My sense of direction remains untroubled.
-line decline : I'd offer, but I should have to promise away tomorrow's legs as well. | That would put me on two roads at once. I'm sorry.
-line accept_decline : We'll mark that way closed and look elsewhere. | I'll respect a clearly marked boundary.
-line preclose : I should go. The walk back won't shorten itself. | I'm due a little distance before I sit.
-line accept_preclose : Then off you go by the route that suits you. | We've reached a perfectly good turning place.
-line thank : You've saved me the uninteresting half of the walk. Thank you. | I'm obliged. Consider that a favourable amendment to my map.
-line deflect_thanks : A detour that short hardly merits a vote of thanks. | It was a welcome excuse to move my feet.
-line sympathise : You may lean on me without explaining where you've been. | There's an unhurried way open for us if you'd like company.
-line reassure : A wrong turn only tells us one thing about one road. | Rest your legs first. The map will keep.
-line ack : That fits quite neatly at this turning. | I've found the place you're speaking of.
-line give.advice : Draw the stairs as stairs or you'll be fooled in the dark. | Listen for running water before trusting a flat patch on a map.
-
+line @1 greet : An agreeable interruption to my carefully crooked route. | Hello. I've contrived to arrive by the interesting way.
+line @2 greet [pair.band=strangers] : Our paths seem pleasantly unacquainted. | Welcome to this unremarkable point on my map.
+line @3 greet [here.time=dawn] : Morning. Everything looks more possible before the errands catch up. | Fresh light and an uncreased day to you.
+line @1 greet.return : Hello returned by the shortest available route. | I heard, even round that last turning of the talk.
+line @2 greet.return [pair.band=friends|family] : A friend's face ought to have its own mark on a map. | Excellent. A familiar landmark with ears.
+line @3 greet.return [here.time=night] : Late greetings, delivered somewhat circuitously. | A light in a window and a voice on the road. Welcome.
+line @1 again.open : Our routes have developed a resemblance again. | This corner appears to come furnished with your company.
+line @1 hail [pair.band=friends] : Walk the next little bend alongside me! | I've corrected a peculiar error. Come admire the map.
+line @1 farewell : An interesting road and a tolerable distance to you. | I hope the inconvenient turning proves handsome.
+line @1 farewell.return : I'll put another bend between us now. Goodbye. | May the next flight be short and regular.
+line @1 react.news : Tell it in whatever order the roads fall. | I'll fit the pieces together as we walk.
+line @1 react.news.new : My drawing has quite a blank space where that belongs. | New to me even in outline.
+line @1 react.news.known : Yes, that account followed me round an earlier corner. | I've seen the general shape of that already.
+line @1 react.news.doubt : That road appears to come out behind its own beginning. | A curious account. I'd want firmer ground halfway along.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That's a cruel stretch to have to cover. Take my arm. | No pretty view makes that journey any shorter. I'm listening.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That was worth going round three sides of a square to hear. | I'll take the pleasant way home in honour of such tidings.
+line @1 ask.how : Which way has the day been bending for you? | Been up more steps than down, or about even?
+line @1 answer.how : Somewhat footsore, with a fairly respectable view. | My legs object. My sense of direction remains untroubled.
+line @1 decline : I'd offer, but I should have to promise away tomorrow's legs as well. | That would put me on two roads at once. I'm sorry.
+line @1 accept_decline : We'll mark that way closed and look elsewhere. | I'll respect a clearly marked boundary.
+line @1 preclose : I should go. The walk back won't shorten itself. | I'm due a little distance before I sit.
+line @1 accept_preclose : Then off you go by the route that suits you. | We've reached a perfectly good turning place.
+line @1 thank : You've saved me the uninteresting half of the walk. Thank you. | I'm obliged. Consider that a favourable amendment to my map.
+line @1 deflect_thanks : A detour that short hardly merits a vote of thanks. | It was a welcome excuse to move my feet.
+line @1 sympathise : You may lean on me without explaining where you've been. | There's an unhurried way open for us if you'd like company.
+line @1 reassure : A wrong turn only tells us one thing about one road. | Rest your legs first. The map will keep.
+line @1 ack : That fits quite neatly at this turning. | I've found the place you're speaking of.
+line @1 give.advice : Draw the stairs as stairs or you'll be fooled in the dark. | Listen for running water before trusting a flat patch on a map.
 scene blank_stairs
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : From a headland path the city on paper looks as if it might fit in a pocket.
 b : Would that shorten the trip round the bay? | You'd fold up the whole Sound?
 a : On paper wonderfully. On foot I must still provide my own lunch. | In a dry pocket and at considerable risk to geography.
 
-grown
-
 story tray_route [topic=memories|work self.job=servant]
   : Drew a really efficient route for carrying empty dishes. Then I tried following it with a tray.
   : There was one door I'd given the useful power of swinging both ways. The real thing had scruples.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say I'll lend you my map after the hill's back in the right place. | One more turning and the drawing will agree with the stones.
 
-dlg resident.hub : I can offer a little direction as long as you don't mind hearing about the other routes.
-dlg resident.hub [topic.meeting=known] : #topic.player#, another crossing to add to my collection.
-dlg resident.hub [here.time=night] : The roads are mostly shapes in the dark now. Talk is still quite legible.
-dlg resident.hub [pair.disposition=wary|hostile] : I'd prefer to keep a whole pavement between our respective questions.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. The most accomplished part is usually getting through a door with no paws free.
-dlg resident.job : My work involves arriving when I'm needed despite several interesting opportunities to go astray.
-dlg resident.bye : May the city's idea of a road agree with yours.
-
+dlg @1 resident.hub : I can offer a little direction as long as you don't mind hearing about the other routes.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, another crossing to add to my collection.
+dlg @3 resident.hub [here.time=night] : The roads are mostly shapes in the dark now. Talk is still quite legible.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'd prefer to keep a whole pavement between our respective questions.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. The most accomplished part is usually getting through a door with no paws free.
+dlg @2 resident.job : My work involves arriving when I'm needed despite several interesting opportunities to go astray.
+dlg @1 resident.bye : May the city's idea of a road agree with yours.
 graft resident.hub
 choice How do you draw steps on a flat map? -> drawingstairs
 node drawingstairs

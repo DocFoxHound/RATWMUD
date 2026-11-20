@@ -1,14 +1,17 @@
+# rm543, the two-sided favour card (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm543
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_piet_muddale
+written_by codex
 title the two-sided favour card
 fits stage=adult|old
 prefers honesty=plain talk=quiet
 traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk turns_a_playing_card_face_up_for_a_favour_due_and_face_down_for_a_favour_received
+quirk turns_a_card_up_for_a_favour_due_and_down_for_one_had
 likes fried_fish cards old_maps autumn_wind
 dislikes stale_bread gulls
 fears a_promise_called_paid_by_mistake gulls_getting_the_only_hot_meal
@@ -34,45 +37,44 @@ mapwest = the western edge of an old chart | a coast in faded ink
 cordback = a fine cord round the pack | the pack's braided cord
 
 any
-opinion merchants mixed 0 : A penny agreed and a penny remembered make better neighbours than two different recollections.
-opinion houses mixed 0 : I'd board a sound ship under a fair agreement. The paint on the stern takes care of itself.
-opinion road mixed 0 : I like the roads on the old maps. At least the rain can't alter the ink while the cover stays shut.
-opinion city for 1 : A city this wet can make a little patch of dry board feel remarkably generous.
-opinion dole for 1 : I remember the warmth of a meal, whoever provides it.
-opinion festivals mixed 0 : I can enjoy the cards on a quiet doorstep while the louder games go on.
-opinion times against 1 : A thin week lets an old obligation take up most of the room in a pocket.
+opinion @1 merchants mixed 0 : A penny agreed and a penny remembered make better neighbours than two different recollections.
+opinion @1 houses mixed 0 : I'd board a sound ship under a fair agreement. The paint on the stern takes care of itself.
+opinion @1 road mixed 0 : I like the roads on the old maps. At least the rain can't alter the ink while the cover stays shut.
+opinion @1 city for 1 : A city this wet can make a little patch of dry board feel remarkably generous.
+opinion @1 dole for 1 : I remember the warmth of a meal, whoever provides it.
+opinion @1 festivals mixed 0 : I can enjoy the cards on a quiet doorstep while the louder games go on.
+opinion @1 times against 1 : A thin week lets an old obligation take up most of the room in a pocket.
 
 grown
-line greet : There's room where the card's lying flat.
-line greet [pair.band=strangers] : No account between us yet. Sit easy.
-line greet [here.time=dawn] : Morning. The boards are drying in strips.
-line greet [here.time=dusk|night] : Evening's brought the wind below the roofline.
-line greet.return : I heard your words. They didn't blow through.
-line greet.return [pair.band=friends|family] : A familiar voice can take the seat by my pack.
-line greet.return [self.working=yes] : My hands can keep count without much looking.
-line greet.return [here.time=dusk|night] : I hear the quiet hauls at this hour.
-line kin.open [pair.kin!=no] : Kin doesn't have to show a receipt.
-line again.open : I left that card on the same face.
-line hail [pair.band=friends] : Friend. There's a dry space for your heel.
-line farewell : A fair passage and dry bedding.
-line farewell.return : And keep the folded coast to yourself.
-line react.news : Start with what came ashore.
-line react.news.new : Fresh word across my card table.
-line react.news.known : I had that entry turned up already.
-line react.news.doubt : Turn that statement over. I'd inspect the reverse.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can hear a hard account without keeping a tally.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Turn that good thing face up for everybody.
-line ask.how : Did the day leave any dry patches?
-line answer.how : Not much spare. Enough for a hand of cards.
-line thank : I'll turn the face down for your kindness.
-line deflect_thanks : It was my turn for the squared account.
-line sympathise : You can rest without owing me a story.
-line reassure : A turn of the card doesn't bring a debt collector to the door.
-line decline : I've no room for a further promise this tide.
-line accept_decline : That's clear enough to mark. No more needed.
-line preclose : I'll tie the pack while there's still light.
-line accept_preclose : We'll count this visit square.
-
+line @1 greet : There's room where the card's lying flat.
+line @2 greet [pair.band=strangers] : No account between us yet. Sit easy.
+line @3 greet [here.time=dawn] : Morning. The boards are drying in strips.
+line @4 greet [here.time=dusk|night] : Evening's brought the wind below the roofline.
+line @1 greet.return : Back again, then. Mind the wind on that side.
+line @2 greet.return [pair.band=friends|family] : A familiar voice can take the seat by my pack.
+line @3 greet.return [self.working=yes] : My hands can keep count without much looking.
+line @4 greet.return [here.time=dusk|night] : Evening. It's quiet enough now to hear each other.
+line @1 kin.open [pair.kin!=no] : Kin doesn't have to show a receipt.
+line @1 again.open : I left that card on the same face.
+line @1 hail [pair.band=friends] : Friend. There's a dry space for your heel.
+line @1 farewell : A fair passage and dry bedding.
+line @1 farewell.return : And keep the folded coast to yourself.
+line @1 react.news : Start with what came ashore.
+line @1 react.news.new : Fresh word across my card table.
+line @1 react.news.known : I had that entry turned up already.
+line @1 react.news.doubt : Turn that statement over. I'd inspect the reverse.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can hear a hard account without keeping a tally.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Turn that good thing face up for everybody.
+line @1 ask.how : Did the day leave any dry patches?
+line @1 answer.how : Not much spare. Enough for a hand of cards.
+line @1 thank : I'll turn the face down for your kindness.
+line @1 deflect_thanks : It was my turn for the squared account.
+line @1 sympathise : You can rest without owing me a story.
+line @1 reassure : A turn of the card doesn't bring a debt collector to the door.
+line @1 decline : I've no room for a further promise this tide.
+line @1 accept_decline : That's clear enough to mark. No more needed.
+line @1 preclose : I'll tie the pack while there's still light.
+line @1 accept_preclose : We'll count this visit square.
 scene two_faces
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -125,7 +127,7 @@ a : To hear it soften. I'm tired of doing the work with my teeth. | I'd give it 
 scene trade_around
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : The work line says #self.trade_words#. I pay attention to what rolls away when the ground tilts. | My work is entered as #self.trade_words#.
+a : #self.trade_words.capitalize#, these days. I watch for what rolls away when the ground tilts. | Work? #self.trade_words.capitalize#. It's smaller parts than folk think.
 b : Such as? | Is it all heavy?
 a : A stray wedge. Cheaper to notice it before a wheel starts moving. | Looking properly at a small part can save a deal of lifting.
 
@@ -134,7 +136,7 @@ when topic=home self.quarter=wharf
 does tell.self / ask.detail / answer.detail
 a : Down on the Wharf my fingers find #dryboard# almost without looking. | I like a day on the Wharf when a cold wind tires of blowing inland and turns.
 b : How can you tell? | Tires of the city?
-a : Look overhead. What's doing the sheltering usually shows before the shelter. | It at least changes the side I'm cold on.
+a : Look overhead first. A roof edge or a crane arm tells you where the dry plank is. | It at least changes the side I'm cold on.
 
 scene friend_seat
 when topic=friends self.friend
@@ -148,7 +150,7 @@ when topic=travel
 does tell.self / ask.detail / answer.detail
 a : #dryberth.capitalize# sounds a fine inducement to take a voyage. | I study the drier ports on a map that has taken a great deal of rain.
 b : Have you the berth? | Is that a good guide?
-a : I've the inducement. The berth is the part still wanted. | It's an excellent explanation of my interest.
+a : I've the inducement. The berth is the part still wanted. | A soaked chart that still shows a port clearly is one I'd trust.
 
 scene ties
 when topic=smalltalk
@@ -167,7 +169,7 @@ a : I record the warm part. I can find the means of returning that much later. |
 scene first_board
 when topic=newcomer
 does tell.self / ask.detail / answer.detail
-a : New in the harbour? Find the step with dry boot marks. | I'd point a stranger to the corner least interesting to a hungry gull.
+a : Anyone new to the harbour should find the step with dry boot marks. | I'd point a stranger to the corner least interesting to a hungry gull.
 b : Aren't wet marks easier to see? | Far from the fish?
 a : That's where folk walked away. Dry prints show where somebody had shelter. | Close to a good bit of cover. I wouldn't send a stranger away hungry.
 
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Cover the hot fish. Something's circling.
 
-dlg resident.hub : I've a card and a dry corner here. What's brought your boots this far?
-dlg resident.hub [topic.meeting=known] : #topic.player#, I'll put away the pack. I remember this hand.
-dlg resident.hub [here.time=night] : The tide's clear to the ear. You will be too.
-dlg resident.hub [pair.disposition=hostile|wary] : Let the width of that plank stand between our accounts.
-dlg resident.job [self.trade_words] : My work's put down as #self.trade_words#. I can speak for the work my own hands have done.
-dlg resident.news [world.news] : The last word in by way of #world.news_from# goes like this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I don't add other wolves' accounts to my private card.
-dlg resident.bye : Keep the map folded on its driest side.
-
+dlg @1 resident.hub : I've a card and a dry corner here. What's brought your boots this far?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'll put away the pack. I remember this hand.
+dlg @3 resident.hub [here.time=night] : The tide's clear to the ear. You will be too.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Let the width of that plank stand between our accounts.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. I can speak for the work my own hands have done.
+dlg @1 resident.news [world.news] : The last word in by way of #world.news_from# goes like this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I don't add other wolves' accounts to my private card.
+dlg @1 resident.bye : Keep the map folded on its driest side.
 graft resident.hub
 choice Can one card remember all that? -> favour_face
 node favour_face

@@ -1,9 +1,12 @@
+# rm406, the extra round (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm406
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_vidar_vance
+written_by codex
 title the extra round
 fits stage=young|adolescent|adult|old
 prefers warmth=warm honesty=frank
@@ -35,126 +38,19 @@ shelf = a larder board | the low shelf
 bellnote = the full low note | a single stroke
 
 any
-opinion houses mixed 0 : A fine House can set a generous table. The invitation to the final seat concerns me most.
-opinion dole for 2 : A portion put by for somebody coming late does more good than admiring the size of the first dish.
-opinion merchants mixed 0 : A plain price lets both parties continue with their day. I'd pay something for the convenience.
-opinion church for 1 : The bell is there for the whole street. I'd like my arrangements to be as audible to the latecomer as to the first arrival.
-opinion festivals for 2 : Games, company and enough food to divide fairly constitute an extremely sensible use of an afternoon.
-opinion road for 1 : A sound dry walk goes rather well with an appetite and pleasant company waiting at the end.
-
-adolescent
-line greet : You're in time for company whatever the count says. | Hello. There's always one more place at this edge.
-line greet [pair.band=strangers] : I don't recognise you yet. There's room to watch. | A first visit is perfectly good reason to join us.
-line greet [here.time=dawn] : Morning. I've a good deal of the day still uncounted. | Early welcome from a reasonably well-rested set of ears.
-line greet.return : I heard you distinctly between the notes. | Yes, hello back. The count can spare a word.
-line greet.return [pair.band=friends|family] : A known face gets a welcome even between rounds. | Good to see somebody whose company I'd already allowed for.
-line greet.return [here.time=night] : Late hello. You're still in time for a word. | The lamps have had a head start on us. Welcome.
-line again.open : You've come round again quite neatly. | Another meeting before I've lost track of the interval.
-line hail [pair.band=friends] : Take the clear end where the count's visible. | Come and watch. It doesn't cost you a crumb.
-line farewell : Save some leisure to enjoy the way home. | May the last round go easily for you.
-line farewell.return : I'll keep the spare in mind. Goodbye. | Go while the path is firm underfoot.
-line react.news : Let's have the account without anyone shouting over it. | There's an interval now. Tell me what happened.
-line react.news.new : That hadn't been announced at my end yet. | News I haven't spent so much as a crumb of thought on.
-line react.news.known : I've counted that report once before. | Yes. I remember how the earlier account went.
-line react.news.doubt : Something's been added after the original count. | I wouldn't award anybody a point on that alone.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sit out the next stretch with me. That's very hard news. | No need to put on a good face when something hurts that deeply.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's news I'd gladly divide a whole plate of cakes over. | I'd happily give a second cheer for something so good.
-line ask.how : Have you had your fair allowance of rest today? | Is there a light bit of the day left for you?
-line answer.how : Fairly even in temper and quite willing to share supper. | A little low. Company makes a considerable difference.
-line decline : I'd have to promise you a share I reserved earlier for somebody else. | I don't believe I can give it the attention it deserves today.
-line accept_decline : That's fair. You get to choose your own turn. | No point awarded or lost for saying no.
-line preclose : I ought to see that everybody's had a turn. | I've an arrangement elsewhere that deserves my being on time.
-line accept_preclose : Go on before the whole afternoon's slipped by you. | You may take a rest from this conversation with good credit.
-line thank : You noticed a place left out. I'm grateful. | Thanks. You made the sharing come out fairly.
-line deflect_thanks : I set an extra portion aside precisely so I could give it up. | It cost only a little forethought before the rest had gone.
-line sympathise : Quiet company is as welcome here as cheerful conversation. | I'd sit beside you without asking for a better explanation.
-line reassure : The next start can be a little gentler than the last one. | There's still the portion nobody's touched yet. We'll begin there.
-line ack : That's a count I can confirm. | I see the reason for the extra place.
-line give.advice : Set the late share aside before dividing the rest. | Agree on the signal before anybody gets absorbed in the game.
-
-adolescent
-
-scene timingmatch
-when topic=pastimes self.likes=wrestling
-does tell.self / ask.detail / answer.detail
-a : Chapel strokes mark my interval when a friendly bout needs a break.
-b : Which stroke stops it? | What if both want another moment?
-a : The one we agreed on before anybody was winning. That's why I bother to count. | Then we have another round after both have caught a breath. Quite straightforward.
-
-scene tasteprize
-when topic=food self.likes=honey_cakes
-does tell.self / ask.detail / answer.detail
-a : I'd rather have a cake for each wrestler than an enormous prize for one. | In my version the onlookers need a share too.
-b : What if there aren't enough? | And you take the largest?
-a : Cut them up, with one uncut for a late arrival. The first oughtn't to eat every advantage. | I take whichever is left after I've done the cutting. That encourages a very even division.
-
-scene lessonbell
-when topic=work self.job=child
-does tell.self / ask.detail / answer.detail
-a : One thing I've learned in lessons is how long a little pause can seem before an answer.
-b : Does counting help? | Do you know the answer by then?
-a : It encourages patience while a classmate comes to an answer. The first voice doesn't win a point. | Sometimes. Then I can wait and see whether somebody found another path to it.
-
-scene motherplate
-when topic=family self.mother
-does tell.self / ask.detail / answer.detail
-a : I'd set my best round aside for #self.mother# even if the plate were nearly out.
-b : What makes it the best? | Do you like the high honours?
-a : The one with honey right round the rim. I attend to important distinctions. | I'd rather enjoy having spotted the good one ahead of a hurried guest who might miss the honey.
-
-scene autumnwind
-when topic=weather self.likes=autumn_wind
-does tell.self / ask.detail / answer.detail
-a : An autumn gust can announce a break by lifting the cloth off the cakes.
-b : Doesn't that spoil the arrangement? | Let the wind referee?
-a : I weight the corners. A flutter merely makes the time to eat a bit harder to overlook. | For refreshments only. It shows a shameful preference for whichever end is upwind.
-
-scene porchroom
-when topic=home self.quarter=heights
-does tell.self / ask.detail / answer.detail
-a : A doorstep in the Heights makes a remarkably generous viewing gallery.
-b : Do you stand on the highest part? | No room for the latecomer?
-a : Only if everybody below can see. A fine step is meant to improve the view, not monopolise it. | That's the lowest clear edge. I'd keep a bit open, if it were my arrangement.
-
-scene darkfoot
-when topic=travel self.dislikes=deep_mud
-does tell.complaint / ask.detail / answer.detail
-a : The worst thing about deep mud isn't my boots. It's giving everybody past me the same boots on the carpet.
-b : Would you turn back? | Trying to keep a best pair clean?
-a : If I'm visiting, I'd find somewhere to scrape them first. An arrival needn't be a public event in brown. | I'd like everybody else's floor to keep its original colour. My boots will live through washing.
-
-scene noprice
-when topic=prices self.dislikes=haggling
-does give.opinion / react.self / assess
-a : I'd prefer a small cake at a plain price to a large one purchased by argument.
-b : But you could get more. | Give anything the seller asks?
-a : More cake and rather less appetite. I'm not convinced that's an improvement. | No. A price can be stated clearly and declined with perfect good manners.
-
-young
-line greet : Hello. You can have a bit of my careful count. | Welcome. I've laid the little pebbles out.
-line farewell : I'll keep one quiet bit for later. | Goodbye. I hope there's a cake left when you get home.
-
-scene smallref
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I pretend every pebble is a guest waiting for a share.
-b : Even the crooked one? | Where do you sit?
-a : Especially the crooked one. It fell off the plate twice and kept its place anyway. | At the end with a view of any pebble still without its crumb.
-
-scene smallcake
-when topic=food self.likes=honey_cakes
-does tell.self / ask.detail / answer.detail
-a : I can divide a cake three ways without a ruler.
-b : How close do you get? | Three equal bits?
-a : I let the other two choose first. That makes my eyes wonderfully accurate. | As equal as a hungry pup with the last pick can possibly manage.
+opinion @1 houses mixed 0 : A fine House can set a generous table. The invitation to the final seat concerns me most.
+opinion @1 dole for 2 : A portion put by for somebody coming late does more good than admiring the size of the first dish.
+opinion @1 merchants mixed 0 : A plain price lets both parties continue with their day. I'd pay something for the convenience.
+opinion @1 church for 1 : The bell is there for the whole street. I'd like my arrangements to be as audible to the latecomer as to the first arrival.
+opinion @1 festivals for 2 : Games, company and enough food to divide fairly constitute an extremely sensible use of an afternoon.
+opinion @1 road for 1 : A sound dry walk goes rather well with an appetite and pleasant company waiting at the end.
 
 grown
-line greet : Welcome. I can move over without upsetting the whole arrangement. | There's a free place and a quiet moment for you here.
-line greet.return : Yes, hello. I had my mind on the interval only briefly. | I heard you above the last note quite clearly.
-line farewell : Take your leave while you can still enjoy the walk. | The road has an agreeable space before the next duty.
-line farewell.return : There's time enough to reach your own table easily. | Go well. I'll mind the unused portion here.
-line react.news : I'd rather hear what happened before anyone proclaims a winner. | I'm listening without having to keep score at present.
-
+line @1 greet : Welcome. I can move over without upsetting the whole arrangement. | There's a free place and a quiet moment for you here.
+line @1 greet.return : Yes, hello. I had my mind on the interval only briefly. | I heard you above the last note quite clearly.
+line @1 farewell : Take your leave while you can still enjoy the walk. | The road has an agreeable space before the next duty.
+line @1 farewell.return : There's time enough to reach your own table easily. | Go well. I'll mind the unused portion here.
+line @1 react.news : I'd rather hear what happened before anyone proclaims a winner. | I'm listening without having to keep score at present.
 scene fairtimer
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -239,7 +135,109 @@ a : Give a newcomer the counting signal before expecting anyone to know when a b
 b : What would you explain first? | Even an obvious bell?
 a : Which part is game and which part is refreshment. People have agreed rather easily after that. | Particularly a familiar sound used in a local way. A bell can announce half a dozen entirely different things.
 
+
+young
+line @1 greet : Hello. You can have a bit of my careful count. | Welcome. I've laid the little pebbles out.
+line @1 farewell : I'll keep one quiet bit for later. | Goodbye. I hope there's a cake left when you get home.
+scene smallref
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I pretend every pebble is a guest waiting for a share.
+b : Even the crooked one? | Where do you sit?
+a : Especially the crooked one. It fell off the plate twice and kept its place anyway. | At the end with a view of any pebble still without its crumb.
+
+scene smallcake
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I can divide a cake three ways without a ruler.
+b : How close do you get? | Three equal bits?
+a : I let the other two choose first. That makes my eyes wonderfully accurate. | As equal as a hungry pup with the last pick can possibly manage.
+
+
 adolescent
+line @1 greet : You're in time for company whatever the count says. | Hello. There's always one more place at this edge.
+line @2 greet [pair.band=strangers] : I don't recognise you yet. There's room to watch. | A first visit is perfectly good reason to join us.
+line @3 greet [here.time=dawn] : Morning. I've a good deal of the day still uncounted. | Early welcome from a reasonably well-rested set of ears.
+line @1 greet.return : I heard you distinctly between the notes. | Yes, hello back. The count can spare a word.
+line @2 greet.return [pair.band=friends|family] : A known face gets a welcome even between rounds. | Good to see somebody whose company I'd already allowed for.
+line @3 greet.return [here.time=night] : Late hello. You're still in time for a word. | The lamps have had a head start on us. Welcome.
+line @1 again.open : You've come round again quite neatly. | Another meeting before I've lost track of the interval.
+line @1 hail [pair.band=friends] : Take the clear end where the count's visible. | Come and watch. It doesn't cost you a crumb.
+line @1 farewell : Save some leisure to enjoy the way home. | May the last round go easily for you.
+line @1 farewell.return : I'll keep the spare in mind. Goodbye. | Go while the path is firm underfoot.
+line @1 react.news : Let's have the account without anyone shouting over it. | There's an interval now. Tell me what happened.
+line @1 react.news.new : That hadn't been announced at my end yet. | News I haven't spent so much as a crumb of thought on.
+line @1 react.news.known : I've counted that report once before. | Yes. I remember how the earlier account went.
+line @1 react.news.doubt : Something's been added after the original count. | I wouldn't award anybody a point on that alone.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sit out the next stretch with me. That's very hard news. | No need to put on a good face when something hurts that deeply.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's news I'd gladly divide a whole plate of cakes over. | I'd happily give a second cheer for something so good.
+line @1 ask.how : Have you had your fair allowance of rest today? | Is there a light bit of the day left for you?
+line @1 answer.how : Fairly even in temper and quite willing to share supper. | A little low. Company makes a considerable difference.
+line @1 decline : I'd have to promise you a share I reserved earlier for somebody else. | I don't believe I can give it the attention it deserves today.
+line @1 accept_decline : That's fair. You get to choose your own turn. | No point awarded or lost for saying no.
+line @1 preclose : I ought to see that everybody's had a turn. | I've an arrangement elsewhere that deserves my being on time.
+line @1 accept_preclose : Go on before the whole afternoon's slipped by you. | You may take a rest from this conversation with good credit.
+line @1 thank : You noticed a place left out. I'm grateful. | Thanks. You made the sharing come out fairly.
+line @1 deflect_thanks : I set an extra portion aside precisely so I could give it up. | It cost only a little forethought before the rest had gone.
+line @1 sympathise : Quiet company is as welcome here as cheerful conversation. | I'd sit beside you without asking for a better explanation.
+line @1 reassure : The next start can be a little gentler than the last one. | There's still the portion nobody's touched yet. We'll begin there.
+line @1 ack : That's a count I can confirm. | I see the reason for the extra place.
+line @1 give.advice : Set the late share aside before dividing the rest. | Agree on the signal before anybody gets absorbed in the game.
+scene timingmatch
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : Chapel strokes mark my interval when a friendly bout needs a break.
+b : Which stroke stops it? | What if both want another moment?
+a : The one we agreed on before anybody was winning. That's why I bother to count. | Then we have another round after both have caught a breath. Quite straightforward.
+
+scene tasteprize
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I'd rather have a cake for each wrestler than an enormous prize for one. | In my version the onlookers need a share too.
+b : What if there aren't enough? | And you take the largest?
+a : Cut them up, with one uncut for a late arrival. The first oughtn't to eat every advantage. | I take whichever is left after I've done the cutting. That encourages a very even division.
+
+scene lessonbell
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : One thing I've learned in lessons is how long a little pause can seem before an answer.
+b : Does counting help? | Do you know the answer by then?
+a : It encourages patience while a classmate comes to an answer. The first voice doesn't win a point. | Sometimes. Then I can wait and see whether somebody found another path to it.
+
+scene motherplate
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd set my best round aside for #self.mother# even if the plate were nearly out.
+b : What makes it the best? | Do you like the high honours?
+a : The one with honey right round the rim. I attend to important distinctions. | I'd rather enjoy having spotted the good one ahead of a hurried guest who might miss the honey.
+
+scene autumnwind
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : An autumn gust can announce a break by lifting the cloth off the cakes.
+b : Doesn't that spoil the arrangement? | Let the wind referee?
+a : I weight the corners. A flutter merely makes the time to eat a bit harder to overlook. | For refreshments only. It shows a shameful preference for whichever end is upwind.
+
+scene porchroom
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : A doorstep in the Heights makes a remarkably generous viewing gallery.
+b : Do you stand on the highest part? | No room for the latecomer?
+a : Only if everybody below can see. A fine step is meant to improve the view, not monopolise it. | That's the lowest clear edge. I'd keep a bit open, if it were my arrangement.
+
+scene darkfoot
+when topic=travel self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail
+a : The worst thing about deep mud isn't my boots. It's giving everybody past me the same boots on the carpet.
+b : Would you turn back? | Trying to keep a best pair clean?
+a : If I'm visiting, I'd find somewhere to scrape them first. An arrival needn't be a public event in brown. | I'd like everybody else's floor to keep its original colour. My boots will live through washing.
+
+scene noprice
+when topic=prices self.dislikes=haggling
+does give.opinion / react.self / assess
+a : I'd prefer a small cake at a plain price to a large one purchased by argument.
+b : But you could get more. | Give anything the seller asks?
+a : More cake and rather less appetite. I'm not convinced that's an improvement. | No. A price can be stated clearly and declined with perfect good manners.
 
 story stonecake [topic=pastimes|memories]
   : I once wrapped a very smooth counting stone and a small honey cake in squares of the same cloth. Took one out as a prize for a friendly game.
@@ -283,14 +281,13 @@ does aside
 cooldown 8h
 say Boots off the supper cloth, especially on that soft patch. | A scrape of the sole before joining the company, please.
 
-dlg resident.hub : I've set the interval long enough for an unhurried word. You are welcome to it.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you'll remember the arrangement about the extra round.
-dlg resident.hub [here.time=night] : This hour calls for quiet conversation. Another round needn't be announced.
-dlg resident.hub [pair.disposition=wary|hostile] : I'm listening. Please leave some comfortable space around the other guests.
-dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I pay particular attention to the part about sharing out the answer accurately.
-dlg resident.job : I try to notice who hasn't had a turn by the time a comfortable arrangement looks complete.
-dlg resident.bye : May whoever gets there before you think to save a place.
-
+dlg @1 resident.hub : I've set the interval long enough for an unhurried word. You are welcome to it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'll remember the arrangement about the extra round.
+dlg @3 resident.hub [here.time=night] : This hour calls for quiet conversation. Another round needn't be announced.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'm listening. Please leave some comfortable space around the other guests.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I pay particular attention to the part about sharing out the answer accurately.
+dlg @2 resident.job : I try to notice who hasn't had a turn by the time a comfortable arrangement looks complete.
+dlg @1 resident.bye : May whoever gets there before you think to save a place.
 graft resident.hub
 choice Why call a cake an extra round? -> extracake
 node extracake

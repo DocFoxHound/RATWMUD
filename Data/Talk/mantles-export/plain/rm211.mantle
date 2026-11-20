@@ -1,9 +1,12 @@
+# rm211, the unfinished chorus (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm211
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_mogens_ashley
+written_by codex
 title the unfinished chorus
 fits stage=adult|old
 prefers job=merchant
@@ -82,7 +85,6 @@ line @29 accept_preclose : Finish where it suits your breath. | Away with you wh
 line @30 ack : Got the beat back. | My ear's with you.
 line @31 apologise : That came out with an edge I didn't mean for you. | Forgive the bark. My impatience is my business.
 line @32 accept_apology : Let that be the last we need say of it. | Now we've air between us again.
-
 scene silent_answer
 when topic=pastimes|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -376,7 +378,6 @@ dlg @13 master.wages : Learning doesn't earn you wages. You can sell what you ma
 dlg @14 master.takes [here.take_on=no] : #here.take_on_why# I'll say plainly when the answer changes.
 dlg @15 master.refused : #topic.why# You deserve the whole reason.
 dlg @16 master.bye : Keep the elbow easy. We'll speak of the rest another time.
-
 graft resident.hub
 choice What goes in the gap in your humming? -> empty_bar
 node empty_bar

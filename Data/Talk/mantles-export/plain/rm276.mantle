@@ -1,9 +1,12 @@
+# rm276, the stitch against forgetting (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm276
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_gerrit_tarmore
+written_by codex
 title the stitch against forgetting
 fits stage=adult|old
 prefers job=crafter
@@ -35,35 +38,34 @@ needleeye = a bright little eye | a glint in the steel
 patch = a scrap with sound edges | a square of fine cloth
 
 any
-opinion merchants against 2 : A tidy figure under a crooked price does nothing to straighten it.
-opinion houses against 1 : The Houses could settle what they owe helpers without needing a larger ledger.
-opinion sump for 2 : I can settle a small kindness down here with another of just the right size.
-opinion dole for 2 : There's no call to keep a wolf forever owing for one bowl.
-opinion road mixed 1 : A good letter makes the road seem short. A missing one can stretch it for weeks.
-opinion strangers for 1 : Fresh company begins with an empty account. That's a fair opening.
+opinion @1 merchants against 2 : A tidy figure under a crooked price does nothing to straighten it.
+opinion @1 houses against 1 : The Houses could settle what they owe helpers without needing a larger ledger.
+opinion @1 sump for 2 [self.quarter=sump] : I can settle a small kindness down here with another of just the right size.
+opinion @1 dole for 2 : There's no call to keep a wolf forever owing for one bowl.
+opinion @1 road mixed 1 : A good letter makes the road seem short. A missing one can stretch it for weeks.
+opinion @1 strangers for 1 : Fresh company begins with an empty account. That's a fair opening.
 
 grown
-line greet : I'll take my thumb off the seam. Welcome. | Stand where the light gets to us.
-line greet.return : Greeting received and returned in full. | A good word back for yours.
-line again.open : Still thread on my needle and you've come round again.
-line farewell : Leave with your cuffs fast and your pockets whole. | May your next doorstep take you in gladly.
-line farewell.return : That's a parting I can pay back gladly. | Good wishes of equal measure to you.
-line react.news : Give me the news down to its last stitch. | I'll hear it without adding anything.
-line react.news.new : Another cross to put in the margin.
-line react.news.known : I know the end of that thread.
-line react.news.doubt : That version runs a little short on evidence.
-line react.news.sorrow [topic.kind=death|loss|assault] : There's no returning what those wolves have lost.
-line react.news.glad [topic.kind=birth|marriage|work] : I'll mark that in the bright thread.
-line ask.how : Anything left hanging over from your morning?
-line answer.how : Upright. My small debts are nearly even.
-line sympathise : You can name the trouble without working out its cost.
-line reassure : A broken stitch needn't spoil both cuffs.
-line refuse : I've an older obligation waiting on my hands.
-line accept_decline : No debt incurred by declining a request.
-line preclose : Fine work wants the rest of this light. I ought to go.
-line accept_preclose : Go settle what's waiting. We're even here.
-line ack : Yes, measured to the very end.
-
+line @1 greet : I'll take my thumb off the seam. Welcome. | Stand where the light gets to us.
+line @1 greet.return : Heard you. Here's one back, every bit as warm. | A good word back for yours.
+line @1 again.open : Still thread on my needle and you've come round again.
+line @1 farewell : Leave with your cuffs fast and your pockets whole. | May your next doorstep take you in gladly.
+line @1 farewell.return : That's a parting I can pay back gladly. | Good wishes of equal measure to you.
+line @1 react.news : Give me the news down to its last stitch. | I'll hear it without adding anything.
+line @1 react.news.new : Another cross to put in the margin.
+line @1 react.news.known : I know the end of that thread.
+line @1 react.news.doubt : That version runs a little short on evidence.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : There's no returning what those wolves have lost.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'll mark that in the bright thread.
+line @1 ask.how : Anything left hanging over from your morning?
+line @1 answer.how : Upright. My small debts are nearly even.
+line @1 sympathise : You can name the trouble without working out its cost.
+line @1 reassure : A broken stitch needn't spoil both cuffs.
+line @1 refuse : I've an older obligation waiting on my hands.
+line @1 accept_decline : No debt incurred by declining a request.
+line @1 preclose : Fine work wants the rest of this light. I ought to go.
+line @1 accept_preclose : Go settle what's waiting. We're even here.
+line @1 ack : Yes, measured to the very end.
 scene exchange1
 when topic=work self.job=crafter
 does tell.self / ask.detail / answer.detail
@@ -231,16 +233,16 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say My eyes have finished the fine stitching for tonight. | Big stitches or bed now.
-dlg resident.hub : If you've got a loose end, hold it up against the light.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you're entered in the familiar part of my memory.
-dlg resident.hub [here.time=night] : This hour will do for talk, though it's poor for fine seams.
-dlg resident.hub [pair.disposition=wary|hostile] : I'd sooner see the whole bill than guess at it.
-dlg resident.job [self.job=crafter] : I help with the stitch work at #self.workplace#. A cuff ought to last longer than the praise for it.
-dlg resident.job : I like work I can finish with both edges level.
-dlg resident.news [world.news] : Here are the particulars I have. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I haven't entered it as settled fact.
-dlg resident.bye : You leave no loose ends at this elbow.
 
+dlg @1 resident.hub : If you've got a loose end, hold it up against the light.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're entered in the familiar part of my memory.
+dlg @3 resident.hub [here.time=night] : This hour will do for talk, though it's poor for fine seams.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'd sooner see the whole bill than guess at it.
+dlg @1 resident.job [self.job=crafter] : I help with the stitch work at #self.workplace#. A cuff ought to last longer than the praise for it.
+dlg @2 resident.job : I like work I can finish with both edges level.
+dlg @1 resident.news [world.news] : Here are the particulars I have. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I haven't entered it as settled fact.
+dlg @1 resident.bye : You leave no loose ends at this elbow.
 graft resident.hub
 choice What's that cross inside your cuff? -> red_cross
 node red_cross

@@ -1,9 +1,12 @@
+# rm311, the odd stair (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm311
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_osric_plankford
+written_by codex
 title the odd stair
 fits stage=adult|old
 prefers job=merchant piety=devout
@@ -35,43 +38,42 @@ snowmark = a heel impression | a snow print
 gatebolt = the lower bolt | a stiff catch
 
 any
-opinion church for 2 : The Bright One may hear even a prayer breathed between thoughts.
-opinion houses mixed 0 : A tall doorway calls for the same courtesy to a visitor as a low one.
-opinion road for 1 : What I appreciate in a public road is room to hesitate without causing a collision.
-opinion watch mixed 0 : I like a record with room to distinguish a certainty from a suspicion.
-opinion newcomers for 1 : A newcomer deserves the correct turning the first time, particularly on a long flight.
-opinion festivals mixed 0 : I'll attend for the small cakes and slip out before the crush reaches the stairs.
+opinion @1 church for 2 : The Bright One may hear even a prayer breathed between thoughts.
+opinion @1 houses mixed 0 : A tall doorway calls for the same courtesy to a visitor as a low one.
+opinion @1 road for 1 : What I appreciate in a public road is room to hesitate without causing a collision.
+opinion @1 watch mixed 0 : I like a record with room to distinguish a certainty from a suspicion.
+opinion @1 newcomers for 1 : A newcomer deserves the correct turning the first time, particularly on a long flight.
+opinion @1 festivals mixed 0 : I'll attend for the small cakes and slip out before the crush reaches the stairs.
 
 grown
-line greet : Welcome. We're on an even footing here. | Hello from the level part.
-line greet [pair.band=strangers] : Our first meeting deserves a quiet moment. | Yours is a face new to me. Welcome.
-line greet [here.time=dawn] : Morning. My first flight lies behind me. | A clean beginning and a sound tread to you.
-line greet.return : Yes, hello. I've finished my count. | I heard you across the last two steps.
-line greet.return [pair.band=friends|family] : Familiar company settles my feet. | There's a reassuring voice on the stair.
-line greet.return [here.time=night] : Late hello. The stars seem steadier than my lamp. | Welcome through the darkness.
-line again.open : We meet within a few paces of our last conversation. | Another familiar landing, it seems.
-line hail [pair.band=friends] : Stand where there's a little room beside me. | Here by the clear length of rail.
-line farewell : May the Bright One watch your next few steps. | A quiet ascent wherever you go.
-line farewell.return : I'll pray your last step goes easily. | Another level place is waiting for you.
-line react.news : Say the part you can swear to seeing. | I've a quiet minute for the whole account.
-line react.news.new : I knew none of that before this meeting. | That's a mark on a previously blank side.
-line react.news.known : Yes. The points coincide with what I'd heard. | That count has come my way already.
-line react.news.doubt : I think one of the points is painted on. | I'd examine the missing bit before trusting either end.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : My prayers will remember those left with that hurt. | We have time to be quiet with a loss like that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's a kindness to my ears and to my prayers. | I'll remember that bright piece in chapel.
-line ask.how : Are you managing the awkward treads today? | How much waiting has the day put on you?
-line answer.how : I'm steady once the first uncertain step is behind me. | Not wholly at ease, but quite able to continue.
-line decline : I'd sooner keep my word small enough to honour it. | I couldn't manage that without failing a prior duty.
-line accept_decline : Then our duties are clear to each of us. | I'll take the answer without adding pressure.
-line preclose : I should move before the way grows crowded. | My errand's been quite patient with me.
-line accept_preclose : Please go while your footing feels sure. | You've spared a generous slice of your time.
-line thank : I'm grateful you let me find my step. | That was a remarkably considerate pause. Thanks.
-line deflect_thanks : I had an interval available at the landing. | It helped me to have a reason to stop.
-line sympathise : You may have the rail till your breathing settles. | Whatever you can say will be enough.
-line reassure : We can take that last one singly. | A small pause needn't become a long delay.
-line ack : That's quite distinct to me now. | Yes. The two counts agree.
-line give.advice : Give the landing a glance before committing to the last pair. | Put a folded wrapper under a die for a quiet game.
-
+line @1 greet : Welcome. We're on an even footing here. | Hello from the level part.
+line @2 greet [pair.band=strangers] : Our first meeting deserves a quiet moment. | Yours is a face new to me. Welcome.
+line @3 greet [here.time=dawn] : Morning. My first flight lies behind me. | A clean beginning and a sound tread to you.
+line @1 greet.return : Yes, hello. I've finished my count. | I heard you across the last two steps.
+line @2 greet.return [pair.band=friends|family] : Familiar company settles my feet. | There's a reassuring voice on the stair.
+line @3 greet.return [here.time=night] : Late hello. The stars seem steadier than my lamp. | Welcome through the darkness.
+line @1 again.open : We meet within a few paces of our last conversation. | Another familiar landing, it seems.
+line @1 hail [pair.band=friends] : Stand where there's a little room beside me. | Here by the clear length of rail.
+line @1 farewell : May the Bright One watch your next few steps. | A quiet ascent wherever you go.
+line @1 farewell.return : I'll pray your last step goes easily. | Another level place is waiting for you.
+line @1 react.news : Say the part you can swear to seeing. | I've a quiet minute for the whole account.
+line @1 react.news.new : I knew none of that before this meeting. | That's a mark on a previously blank side.
+line @1 react.news.known : Yes. The points coincide with what I'd heard. | That count has come my way already.
+line @1 react.news.doubt : I think one of the points is painted on. | I'd examine the missing bit before trusting either end.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : My prayers will remember those left with that hurt. | We have time to be quiet with a loss like that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's a kindness to my ears and to my prayers. | I'll remember that bright piece in chapel.
+line @1 ask.how : Are you managing the awkward treads today? | How much waiting has the day put on you?
+line @1 answer.how : I'm steady once the first uncertain step is behind me. | Not wholly at ease, but quite able to continue.
+line @1 decline : I'd sooner keep my word small enough to honour it. | I couldn't manage that without failing a prior duty.
+line @1 accept_decline : Then our duties are clear to each of us. | I'll take the answer without adding pressure.
+line @1 preclose : I should move before the way grows crowded. | My errand's been quite patient with me.
+line @1 accept_preclose : Please go while your footing feels sure. | You've spared a generous slice of your time.
+line @1 thank : I'm grateful you let me find my step. | That was a remarkably considerate pause. Thanks.
+line @1 deflect_thanks : I had an interval available at the landing. | It helped me to have a reason to stop.
+line @1 sympathise : You may have the rail till your breathing settles. | Whatever you can say will be enough.
+line @1 reassure : We can take that last one singly. | A small pause needn't become a long delay.
+line @1 ack : That's quite distinct to me now. | Yes. The two counts agree.
+line @1 give.advice : Give the landing a glance before committing to the last pair. | Put a folded wrapper under a die for a quiet game.
 scene pairdots
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -126,7 +128,7 @@ when topic=weather here.weather=snow
 does tell.self / ask.detail / answer.detail
 a : The first snow fills the pip marks in a fallen die. | Snow makes even a well-known flight briefly unfamiliar.
 b : Can you see the numbers now? | What disappears first?
-a : Only after I clear the white out with a careful breath. | The sharp edges. I take the whole flight one tread at a time then.
+a : Only after I clear the white out with a careful breath. | The sharp edges. I take the whole flight a single tread at a go then.
 
 scene longwait
 when topic=day self.dislikes=waiting
@@ -198,8 +200,6 @@ a : A late wagon gives me too much time to imagine explanations. | I try to limi
 b : Which is what? | Any news so far?
 a : That it's late. The rest is an exercise with a most unreliable set of dice. | Only that the appointed time has passed. I mustn't promote a guess into a fact.
 
-grown
-
 story honeyroll [topic=pastimes|memories]
   : I rolled a die on a cake wrapper. It came down on an edge and stayed there.
   : I'd been saving the sticky side of the paper quite unintentionally.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Clean paw for the dice, please. | Take the wrapper off the gaming surface first.
 
-dlg resident.hub : I've come to a level place in my thoughts. Your question can have its turn.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your approach is fortunately easy to distinguish from ordinary passing feet.
-dlg resident.hub [here.time=night] : It's quiet under cover here. We can take our time over a word.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll remain within the doorway while you speak.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I try to leave visitors space for an unhurried choice.
-dlg resident.job : A watchful eye and plain courtesy carry me through most duties.
-dlg resident.bye : I hope you come to your last step comfortably.
-
+dlg @1 resident.hub : I've come to a level place in my thoughts. Your question can have its turn.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your approach is fortunately easy to distinguish from ordinary passing feet.
+dlg @3 resident.hub [here.time=night] : It's quiet under cover here. We can take our time over a word.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll remain within the doorway while you speak.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I try to leave visitors space for an unhurried choice.
+dlg @2 resident.job : A watchful eye and plain courtesy carry me through most duties.
+dlg @1 resident.bye : I hope you come to your last step comfortably.
 graft resident.hub
 choice Why leave a step for a prayer? -> pairedprayer
 node pairedprayer

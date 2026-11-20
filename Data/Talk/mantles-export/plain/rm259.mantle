@@ -1,9 +1,12 @@
+# rm259, the carved comma (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm259
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ingrid_ashwell
+written_by codex
 title the carved comma
 fits stage=adult|old
 prefers job=official
@@ -34,41 +37,40 @@ carvecut = one shallow cut | a smooth little scoop
 paperweight = a tile corner in cloth | a little cloth-covered weight
 
 any
-opinion church for 2 : The chapel bench has a dry corner where nobody asks a wolf to give a reason for sitting down.
-opinion dole for 3 : I could read the bread notice on an empty belly. Quite another thing to read it chewing.
-opinion houses against 2 : A House seal on good thick paper. The explanation for an empty berth comes on a thinner sheet.
-opinion watch against 1 : Plenty of ink for warnings to the Sump. Little enough for answers when the Sump writes back.
-opinion sump for 2 : There's usually space to put a sore foot up if you ask at the right door down here.
-opinion merchants against 1 : A nice copperplate figure doesn't make a dear loaf any heavier.
+opinion @1 church for 2 : The chapel bench has a dry corner where nobody asks a wolf to give a reason for sitting down.
+opinion @1 dole for 3 : I could read the bread notice on an empty belly. Quite another thing to read it chewing.
+opinion @1 houses against 2 : A House seal on good thick paper. The explanation for an empty berth comes on a thinner sheet.
+opinion @1 watch against 1 : Plenty of ink for warnings to the Sump. Little enough for answers when the Sump writes back.
+opinion @1 sump for 2 : There's usually space to put a sore foot up in the Sump, if you ask at the right door.
+opinion @1 merchants against 1 : A nice copperplate figure doesn't make a dear loaf any heavier.
 
 grown
-line greet : Take the dry end of this bench. Welcome. | Come a little out of the wet. There's space.
-line greet [here.time=night] : You've brought a shadow with you. Room for both.
-line greet [pair.band=strangers] : You're welcome to a quiet minute here.
-line greet.return : A decent word travels far enough in a low voice. | I heard you fine from there.
-line kin.open [pair.kin!=no] : Sit near. Some things need a familiar ear.
-line again.open : I've kept the place where we broke off.
-line hail [pair.band=friends] : There's a dry spot saved over here!
-line farewell : May the next threshold hold firm for you. | Take your time across the wet stones.
-line farewell.return : I'll gather my bits. Away you go.
-line react.news : Give me a breathing space to take that in.
-line react.news.new : That changes the sense of what I read.
-line react.news.known : The words sounded different the first time round.
-line react.news.doubt : What mark was underneath it, if any?
-line react.news.sorrow [topic.kind=death|loss|crime|assault|theft] : There's a door somewhere that wants a warm pot left at it.
-line react.news.glad [topic.kind=work|birth|marriage] : I'd choose handsome big letters for news like that.
-line answer.how : A little rasp to my voice. Everything else in order.
-line ask.how : Been able to sit somewhere quiet and catch a breath?
-line sympathise : You can finish when your mouth will let you.
-line reassure : Keep a place at the hard bit. We'll come back and read it together.
-line decline : That piece won't bear another airing.
-line accept_decline : I'll put the wood away. Your silence will do.
-line thank : That's a kindness I can put a finger on.
-line deflect_thanks : Leave space for another on the bench sometime.
-line preclose : I'm beginning to scrape up shavings with my heel.
-line accept_preclose : Go along while the stones are still light.
-line ack : I've got the sense of it now.
-
+line @1 greet : Take the dry end of this bench. Welcome. | Come a little out of the wet. There's space.
+line @2 greet [here.time=night] : You've brought a shadow with you. Room for both.
+line @3 greet [pair.band=strangers] : You're welcome to a quiet minute here.
+line @1 greet.return : A decent word travels far enough in a low voice. | I heard you fine from there.
+line @1 kin.open [pair.kin!=no] : Sit near. Some things need a familiar ear.
+line @1 again.open : I've kept the place where we broke off.
+line @1 hail [pair.band=friends] : There's a dry spot saved over here!
+line @1 farewell : May the next threshold hold firm for you. | Take your time across the wet stones.
+line @1 farewell.return : I'll gather my bits. Away you go.
+line @1 react.news : Give me a breathing space to take that in.
+line @1 react.news.new : That changes the sense of what I read.
+line @1 react.news.known : The words sounded different the first time round.
+line @1 react.news.doubt : What mark was underneath it, if any?
+line @1 react.news.sorrow [topic.kind=death|loss|crime|assault|theft] : There's a door somewhere that wants a warm pot left at it.
+line @1 react.news.glad [topic.kind=work|birth|marriage] : I'd choose handsome big letters for news like that.
+line @1 answer.how : A little rasp to my voice. Everything else in order.
+line @1 ask.how : Been able to sit somewhere quiet and catch a breath?
+line @1 sympathise : You can finish when your mouth will let you.
+line @1 reassure : Keep a place at the hard bit. We'll come back and read it together.
+line @1 decline : That piece won't bear another airing.
+line @1 accept_decline : I'll put the wood away. Your silence will do.
+line @1 thank : That's a kindness I can put a finger on.
+line @1 deflect_thanks : Leave space for another on the bench sometime.
+line @1 preclose : I'm beginning to scrape up shavings with my heel.
+line @1 accept_preclose : Go along while the stones are still light.
+line @1 ack : I've got the sense of it now.
 scene comma
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -237,15 +239,14 @@ does aside
 cooldown 8h
 say Light's gone off the cutting edge. | Knives down, rubbing cloth out.
 
-dlg resident.hub : I'll hear a caller from this dry bit of floor. Stand where you're comfortable.
-dlg resident.hub [topic.meeting=known] : A place beside me again, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : We can stay civil across the width of a bench.
-dlg resident.hub [here.time=dawn] : A quiet word will carry this early.
-dlg resident.job [self.job=official] : #self.trade_words.capitalize#. Plenty goes into giving a word its proper space.
-dlg resident.job : A careful paw where a small thing wants putting right.
-dlg resident.news [world.news] : A piece worth reading all the way through. #world.news#.
-dlg resident.bye : Leave your wet footprints going safely home.
-
+dlg @1 resident.hub : I'll hear a caller from this dry bit of floor. Stand where you're comfortable.
+dlg @2 resident.hub [topic.meeting=known] : A place beside me again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : We can stay civil across the width of a bench.
+dlg @4 resident.hub [here.time=dawn] : A quiet word will carry this early.
+dlg @1 resident.job [self.job=official] : #self.trade_words.capitalize#. Plenty goes into giving a word its proper space.
+dlg @2 resident.job : A careful paw where a small thing wants putting right.
+dlg @1 resident.news [world.news] : A piece worth reading all the way through. #world.news.capitalize#.
+dlg @1 resident.bye : Leave your wet footprints going safely home.
 graft resident.hub
 choice May I hold the little carved comma? -> rests_in_hand
 node rests_in_hand

@@ -1,9 +1,12 @@
+# rm511, the coal impression (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm511
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_frederick_rainham
+written_by codex
 title the coal impression
 fits stage=adult|old
 prefers job=merchant
@@ -33,41 +36,40 @@ cinderbag = a little lined purse | the black drawstring bag
 goodrack = my small specimen shelf | a ledge of curiosities
 
 any
-opinion church against 1 : A sermon can make a pleasing impression yet leave my original question untouched.
-opinion city for 2 : It would take a very large cabinet to hold all the marks made by workers in this one city. I should like to try.
-opinion dole against 1 : I'd prefer an opportunity to earn my own shelf and loaf. That judgement applies most securely to my own purse.
-opinion festivals against 1 : At a busy celebration one must either look after the specimens or follow the music. I prefer quieter arrangements.
-opinion houses against 1 : A lord's crest is entitled to an honest description. It isn't entitled to an additional measure of silver for its rank.
-opinion newcomers for 1 : A new arrival may recognise a stamp that has puzzled the whole length of our counter.
-opinion strangers for 1 : A courteous stranger should be allowed to examine the same object on the same terms.
-opinion sump against 1 : A damp pocket can spoil a paper impression in moments. I choose my lower walks with that firmly in mind.
+opinion @1 church against 1 : A sermon can make a pleasing impression yet leave my original question untouched.
+opinion @1 city for 2 : It would take a very large cabinet to hold all the marks made by workers in this one city. I should like to try.
+opinion @1 dole against 1 : I'd prefer an opportunity to earn my own shelf and loaf. That judgement applies most securely to my own purse.
+opinion @1 festivals against 1 : At a busy celebration one must either look after the specimens or follow the music. I prefer quieter arrangements.
+opinion @1 houses against 1 : A lord's crest is entitled to an honest description. It isn't entitled to an additional measure of silver for its rank.
+opinion @1 newcomers for 1 : A new arrival may recognise a stamp that has puzzled the whole length of our counter.
+opinion @1 strangers for 1 : A courteous stranger should be allowed to examine the same object on the same terms.
+opinion @1 sump against 1 : A damp pocket can spoil a paper impression in moments. I choose my lower walks with that firmly in mind.
 
 grown
-line greet : You may examine the clearer impression first.
-line greet [pair.band=strangers] : Fresh eyes may find an interesting detail in my display.
-line greet [here.time=dawn] : First light finds the high points of a stamp.
-line greet [here.time=dusk|night] : The lamplight is low enough to show a raised edge.
-line greet [self.working=yes] : Leave the record sheet clear till the ink has dried.
-line again.open : You've returned at an interesting angle.
-line greet.return : Your greeting left a recognisable impression.
-line greet.return [pair.band=friends|family] : An agreeable familiar note among the day's small enquiries.
-line farewell : Carry the specimen by its smooth edge.
-line farewell.return : I shall put the little things in order now.
-line react.news : Is there an original account I might examine?
-line react.news.new : That detail would require a new space in my catalogue.
-line react.news.known : It bears the same distinctive mark as an earlier account.
-line react.news.doubt : Which detail could be proved without using the teller's reputation?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would offer a quiet seat while the family finds its words.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome entry in a ledger of quite ordinary events.
-line answer.how : Reasonably content with my present shelf. Considering the next.
-line ask.how : Has anything merited a permanent place in your recollection today?
-line sympathise : A private trouble needn't be brought into good light for my sake.
-line reassure : You have time to turn the matter over without my interruption.
-line decline : I must return a borrowed object entire before accepting another commission.
-line accept_decline : I shall close the little case on that request for now.
-line preclose : There's a specimen I'd like to put away with a clean label.
-line ack : Distinctly marked.
-
+line @1 greet : You may examine the clearer impression first.
+line @2 greet [pair.band=strangers] : Fresh eyes may find an interesting detail in my display.
+line @3 greet [here.time=dawn] : First light finds the high points of a stamp.
+line @4 greet [here.time=dusk|night] : The lamplight is low enough to show a raised edge.
+line @5 greet [self.working=yes] : Leave the record sheet clear till the ink has dried.
+line @1 again.open : You've returned at an interesting angle.
+line @1 greet.return : Your greeting left a recognisable impression.
+line @2 greet.return [pair.band=friends|family] : An agreeable familiar note among the day's small enquiries.
+line @1 farewell : Carry the specimen by its smooth edge.
+line @1 farewell.return : I shall put the little things in order now.
+line @1 react.news : Is there an original account I might examine?
+line @1 react.news.new : That detail would require a new space in my catalogue.
+line @1 react.news.known : It bears the same distinctive mark as an earlier account.
+line @1 react.news.doubt : Which detail could be proved without using the teller's reputation?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would offer a quiet seat while the family finds its words.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome entry in a ledger of quite ordinary events.
+line @1 answer.how : Reasonably content with my present shelf. Considering the next.
+line @1 ask.how : Has anything merited a permanent place in your recollection today?
+line @1 sympathise : A private trouble needn't be brought into good light for my sake.
+line @1 reassure : You have time to turn the matter over without my interruption.
+line @1 decline : I must return a borrowed object entire before accepting another commission.
+line @1 accept_decline : I shall close the little case on that request for now.
+line @1 preclose : There's a specimen I'd like to put away with a clean label.
+line @1 ack : Distinctly marked.
 scene coal
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -228,19 +230,19 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Let the low beam catch the outer dots. | A different shadow for the same relief.
-dlg resident.hub : My little specimen is in position for your inspection.
-dlg resident.hub [topic.meeting=known] : You've seen the outer face before, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : The original can stay close beside me while we examine the rubbing.
-dlg resident.hub [here.time=night] : This angled light will do very nicely for a small mark or a quiet conversation.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I study the condition of whatever comes across the counter.
-dlg resident.job : I can identify a few overlooked differences in objects otherwise considered quite ordinary.
-dlg resident.news [world.news] : One detail has made a readable impression. #world.news#.
-dlg shop.greet [here.shop!=bare] : There are articles to examine. I shall be pleased to discuss the condition of a particular one.
-dlg shop.greet [here.shop=bare] : No article's presently offered. A general question on condition would still be welcome.
-dlg shop.prices : Select the article that interests you. Condition contributes rather specifically to its price.
-dlg shop.bye : May the object stand up to the use you have in mind.
-dlg resident.bye : I'll put the coal in its bag before touching anything else.
 
+dlg @1 resident.hub : My little specimen is in position for your inspection.
+dlg @2 resident.hub [topic.meeting=known] : You've seen the outer face before, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : The original can stay close beside me while we examine the rubbing.
+dlg @4 resident.hub [here.time=night] : This angled light will do very nicely for a small mark or a quiet conversation.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I study the condition of whatever comes across the counter.
+dlg @2 resident.job : I can identify a few overlooked differences in objects otherwise considered quite ordinary.
+dlg @1 resident.news [world.news] : One detail has made a readable impression. #world.news#.
+dlg @1 shop.greet [here.shop!=bare] : There are articles to examine. I shall be pleased to discuss the condition of a particular one.
+dlg @2 shop.greet [here.shop=bare] : No article's presently offered. A general question on condition would still be welcome.
+dlg @1 shop.prices : Select the article that interests you. Condition contributes rather specifically to its price.
+dlg @1 shop.bye : May the object stand up to the use you have in mind.
+dlg @1 resident.bye : I'll put the coal in its bag before touching anything else.
 graft @buttonprint resident.hub
 choice Is this little black circle a drawing? -> buttonprint
 node buttonprint

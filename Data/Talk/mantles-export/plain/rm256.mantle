@@ -1,9 +1,12 @@
+# rm256, the hollow tread (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm256
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_gerrit_ropewick
+written_by codex
 title the hollow tread
 fits stage=adult|old
 prefers job=laborer
@@ -35,40 +38,39 @@ highrock = the dry rock | the flat bank stone
 neatrow = a row of tidy toes | shoes lined up in pairs
 
 any
-opinion houses against 2 : A House can afford stairs with a roof over them. Winter would too if somebody sent it the bill.
-opinion dole for 2 : A meal lent me strength once. I never found where to pay it back except into the very same pot.
-opinion merchants against 1 : I've yet to see the scales tipped by what's left in a buyer's purse.
-opinion sump for 2 : On a steep lane folk learn to pass a heavy thing along without being asked to love the carrier.
-opinion road mixed 1 : Good flags last longer than praise. I'd pay for the first and save my breath on the second.
-opinion church for 1 : A seat when you're tired is worth a whole sermon about rest.
+opinion @1 houses against 2 : A House can afford stairs with a roof over them. Winter would too if somebody sent it the bill.
+opinion @1 dole for 2 : A meal lent me strength once. I never found where to pay it back except into the very same pot.
+opinion @1 merchants against 1 : I've yet to see the scales tipped by what's left in a buyer's purse.
+opinion @1 sump for 2 : On a steep lane folk learn to pass a heavy thing along without being asked to love the carrier.
+opinion @1 road mixed 1 : Good flags last longer than praise. I'd pay for the first and save my breath on the second.
+opinion @1 church for 1 : A seat when you're tired is worth a whole sermon about rest.
 
 grown
-line greet : Come up level with me. No prize for arriving winded. | Here, a level bit to speak on.
-line greet [pair.band=strangers] : New tread. Welcome all the same.
-line greet [here.time=dawn] : Dawn's only halfway up the hill. We can wait for it.
-line greet.return : Hullo across the gap. | I heard your greeting over my footfall.
-line greet.return [here.time=dusk|night] : Evening. Step where you heard me, there's room.
-line kin.open [pair.kin!=no] : You're allowed to laugh if I miss a step. Blood privilege.
-line again.open : Our feet seem to have planned this without us.
-line hail [pair.band=friends] : Up on the level, over here!
-line farewell : A sound step under you. | Don't let the hill hurry you downward.
-line farewell.return : I'll hear you coming back, I expect.
-line react.news.new : That's come up the hill ahead of my ears for once.
-line react.news.known : Heard that account already. The echo's very fair.
-line react.news.doubt : I'd put a little weight on that before I trusted the story.
-line react.news.sorrow [topic.kind=loss|death|theft|assault|arrest|crime] : Miserable news. There's room to sit if it's taken your legs.
-line react.news.glad [topic.kind=birth|marriage|work] : Well, there's a landing worth stopping on.
-line answer.how : Sound at the corners, given a quiet tap.
-line ask.how : How much hill have you left in you today?
-line sympathise : It was a bad step. No sense pretending it didn't hurt.
-line decline : I'd sooner decline now than set you down halfway up.
-line accept_decline : Fair. My legs can carry my own errand.
-line thank : You've given my knees a reprieve.
-line deflect_thanks : Don't waste breath. There's still a bit of climb.
-line preclose : Best finish this flight before I stiffen.
-line accept_preclose : Away when you're ready. I can lean quite comfortably here.
-line ack : Ah. Solid enough.
-
+line @1 greet : Come up level with me. No prize for arriving winded. | Here, a level bit to speak on.
+line @2 greet [pair.band=strangers] : New tread. Welcome all the same.
+line @3 greet [here.time=dawn] : Dawn's only halfway up the hill. We can wait for it.
+line @1 greet.return : Hullo across the gap. | I heard your greeting over my footfall.
+line @2 greet.return [here.time=dusk|night] : Evening. Step where you heard me, there's room.
+line @1 kin.open [pair.kin!=no] : You're allowed to laugh if I miss a step. Blood privilege.
+line @1 again.open : Our feet seem to have planned this without us.
+line @1 hail [pair.band=friends] : Up on the level, over here!
+line @1 farewell : A sound step under you. | Don't let the hill hurry you downward.
+line @1 farewell.return : I'll hear you coming back, I expect.
+line @1 react.news.new : That's come up the hill ahead of my ears for once.
+line @1 react.news.known : Heard that account already. The echo's very fair.
+line @1 react.news.doubt : I'd put a little weight on that before I trusted the story.
+line @1 react.news.sorrow [topic.kind=loss|death|theft|assault|arrest|crime] : Miserable news. There's room to sit if it's taken your legs.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Well, there's a landing worth stopping on.
+line @1 answer.how : Sound at the corners, given a quiet tap.
+line @1 ask.how : How much hill have you left in you today?
+line @1 sympathise : It was a bad step. No sense pretending it didn't hurt.
+line @1 decline : I'd sooner decline now than set you down halfway up.
+line @1 accept_decline : Fair. My legs can carry my own errand.
+line @1 thank : You've given my knees a reprieve.
+line @1 deflect_thanks : Don't waste breath. There's still a bit of climb.
+line @1 preclose : Best finish this flight before I stiffen.
+line @1 accept_preclose : Away when you're ready. I can lean quite comfortably here.
+line @1 ack : Ah. Solid enough.
 scene landing
 when topic=land|pastimes
 does tell.self / ask.detail / answer.detail
@@ -237,15 +239,14 @@ does aside
 cooldown 8h
 say Boots in pairs by the low board! | Hang the brush where its toes can dry.
 
-dlg resident.hub : Take the flat spot beside me. We've no need to do this on a slope.
-dlg resident.hub [topic.meeting=known] : More climbing for you, #topic.player#? I'll lean here while you tell me.
-dlg resident.hub [here.time=night] : Dark enough to go by voice. What brings you up?
-dlg resident.hub [pair.disposition=wary|hostile] : Make the case from your own side of the tread.
-dlg resident.job [self.job=laborer] : At #self.workplace# I carry from the high stack to the low one, or the reverse when someone's measured wrong.
-dlg resident.job : My test of good work is whether a thing stays put after I've let go.
-dlg resident.news [world.news] : Up from below comes this word. #world.news#. See if it stands.
-dlg resident.bye : Go easily. The steps will keep their own count.
-
+dlg @1 resident.hub : Take the flat spot beside me. We've no need to do this on a slope.
+dlg @2 resident.hub [topic.meeting=known] : More climbing for you, #topic.player#? I'll lean here while you tell me.
+dlg @3 resident.hub [here.time=night] : Dark enough to go by voice. What brings you up?
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Make the case from your own side of the tread.
+dlg @1 resident.job [self.job=laborer] : At #self.workplace# I carry from the high stack to the low one, or the reverse when someone's measured wrong.
+dlg @2 resident.job : My test of good work is whether a thing stays put after I've let go.
+dlg @1 resident.news [world.news] : Up from below comes this word. #world.news.capitalize#. See if it stands.
+dlg @1 resident.bye : Go easily. The steps will keep their own count.
 graft resident.hub
 choice What were you tapping for? -> landing_echo
 node landing_echo

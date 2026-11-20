@@ -1,9 +1,12 @@
+# rm521, the missing claw's account (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm521
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hjalte_wetdale
+written_by codex
 title the missing claw's account
 fits stage=adult|old
 prefers job=healer
@@ -35,41 +38,40 @@ chime = a bell sounding far off | a bronze holiday chime
 purse = the tied purse | a slender leather bag
 
 any
-opinion houses against 1 : A payment looks much smaller from a factor's window than it does from inside a working purse.
-opinion dole for 1 : A hungry visitor needs a bowl without a mark being set against its price.
-opinion drink against 1 : A careless extra cup leaves me hearing its cost well into the night.
-opinion city for 1 : My feet know the native mist with a jar in either paw.
-opinion festivals for 1 : The holiday bells interrupt my sums without asking me to explain them.
+opinion @1 houses against 1 : A payment looks much smaller from a factor's window than it does from inside a working purse.
+opinion @1 dole for 1 : A hungry visitor needs a bowl without a mark being set against its price.
+opinion @1 drink against 1 : A careless extra cup leaves me hearing its cost well into the night.
+opinion @1 city for 1 : My feet know the native mist with a jar in either paw.
+opinion @1 festivals for 1 : The holiday bells interrupt my sums without asking me to explain them.
 
 grown
-line greet [pair.band=strangers] : There's a ledge here for what you're carrying. | Come in. The waiting cup's clean.
-line greet [self.working=yes] : Give me a low word beside the linen. | My paws can pause awhile.
-line greet [here.time=dawn] : Morning mist has muffled the traffic. | There's room beneath this grey light.
-line greet [here.time=dusk|night] : Welcome under a thinning moon. | Softly. Evening's a listening hour here.
-line kin.open [pair.kin!=no] : A household face can quiet my keeping-count. | Family may draw a little closer.
-line again.open : My fingers remember this meeting. | Back inside hearing distance.
-line greet.return : I saved a quieter space. | I know your tread from the last call.
-line greet.return [pair.band=friends|family] : Familiar company lets these fingers rest. | Welcome among my plain belongings.
-line greet.return [self.working=yes] : Some linen left, and some listening. | Speak near my unoccupied ear.
-line greet.return [here.time=dusk|night] : Back for the quieter hour, welcome. | Good to hear a step after lamplighting.
-line farewell : Easy accounts wherever you go. | Enough silver and a sound doorstep.
-line farewell.return : Bring your own quiet back again. | May the road charge you kindly.
-line farewell.return [here.time=night] : Sleep through the hour of reckoning. | A soft pillow for tomorrow's figures.
-line react.news : I'd hear just the sum of it. | Tell me what you yourself heard.
-line react.news.new : A fresh entry in my hearing. | That reached me only now.
-line react.news.known : That was counted on a former visit. | My ears recall that little reckoning.
-line react.news.doubt : I'd give a thin rumour another night's consideration before counting it. | Even a clear voice can have a figure wrong.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let the price of speaking wait. | You needn't find a brave voice here.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's brought my fingers to rest. | Good. Something to count on the kinder side.
-line ask.how : Have you found a moment free of worry? | Is anything weighing on your sleep?
-line answer.how : I woke adding columns. I'm here all the same. | My day has a narrow margin left.
-line decline : I ought to keep what little spare time I have in hand. | I need the quiet interval before my next call.
-line accept_decline : The request can leave my little ledger. | Nothing owed on that account.
-line thank : I've set your help against my hardest hour. | I won't lose count of your kindness.
-line sympathise : Come sit till the first hurt eases. | You may keep the worst detail private.
-line reassure : Nobody here is charging by the breath. | The cup will be here when you're ready.
-line preclose : I'll take my figures home soon. | There's folded linen asking for my attention.
-
+line @1 greet [pair.band=strangers] : There's a ledge here for what you're carrying. | Come in. The waiting cup's clean.
+line @2 greet [self.working=yes] : Give me a low word beside the linen. | My paws can pause awhile.
+line @3 greet [here.time=dawn] : Morning mist has muffled the traffic. | There's room beneath this grey light.
+line @4 greet [here.time=dusk|night] : Welcome under a thinning moon. | Softly. Evening's a listening hour here.
+line @1 kin.open [pair.kin!=no] : A household face can quiet my keeping-count. | Family may draw a little closer.
+line @1 again.open : My fingers remember this meeting. | Back inside hearing distance.
+line @1 greet.return : I saved a quieter space. | I know your tread from the last call.
+line @2 greet.return [pair.band=friends|family] : Familiar company lets these fingers rest. | Welcome among my plain belongings.
+line @3 greet.return [self.working=yes] : Some linen left, and some listening. | Speak near my unoccupied ear.
+line @4 greet.return [here.time=dusk|night] : Back for the quieter hour, welcome. | Good to hear a step after lamplighting.
+line @1 farewell : Easy accounts wherever you go. | Enough silver and a sound doorstep.
+line @1 farewell.return : Bring your own quiet back again. | May the road charge you kindly.
+line @2 farewell.return [here.time=night] : Sleep through the hour of reckoning. | A soft pillow for tomorrow's figures.
+line @1 react.news : I'd hear just the sum of it. | Tell me what you yourself heard.
+line @1 react.news.new : A fresh entry in my hearing. | That reached me only now.
+line @1 react.news.known : That was counted on a former visit. | My ears recall that little reckoning.
+line @1 react.news.doubt : I'd give a thin rumour another night's consideration before counting it. | Even a clear voice can have a figure wrong.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let the price of speaking wait. | You needn't find a brave voice here.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's brought my fingers to rest. | Good. Something to count on the kinder side.
+line @1 ask.how : Have you found a moment free of worry? | Is anything weighing on your sleep?
+line @1 answer.how : I woke adding columns. I'm here all the same. | My day has a narrow margin left.
+line @1 decline : I ought to keep what little spare time I have in hand. | I need the quiet interval before my next call.
+line @1 accept_decline : The request can leave my little ledger. | Nothing owed on that account.
+line @1 thank : I've set your help against my hardest hour. | I won't lose count of your kindness.
+line @1 sympathise : Come sit till the first hurt eases. | You may keep the worst detail private.
+line @1 reassure : Nobody here is charging by the breath. | The cup will be here when you're ready.
+line @1 preclose : I'll take my figures home soon. | There's folded linen asking for my attention.
 scene claw
 when topic=health
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Tonight I'd willingly spare myself the figures. | Moon's getting very slender indeed.
 
-dlg resident.hub : There's a clean cup beside the seat. Do you need silence, or a willing ear?
-dlg resident.job [self.job=healer self.trade_words] : I'm the #self.trade_words#. A tired caller can borrow my attention without owing me any story afterwards.
-dlg resident.news [world.news] : One report I've kept apart from my own concerns. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've remembered your face without needing either paw.
-dlg resident.bye : Enough for your purse and a peaceful hour for your head.
-
+dlg @1 resident.hub : There's a clean cup beside the seat. Do you need silence, or a willing ear?
+dlg @1 resident.job [self.job=healer self.trade_words] : I'm the #self.trade_words#. A tired caller can borrow my attention without owing me any story afterwards.
+dlg @1 resident.news [world.news] : One report I've kept apart from my own concerns. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've remembered your face without needing either paw.
+dlg @1 resident.bye : Enough for your purse and a peaceful hour for your head.
 graft resident.hub
 choice What are you counting on your fingers? -> gap_lending
 node gap_lending

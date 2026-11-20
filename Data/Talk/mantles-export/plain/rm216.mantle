@@ -1,9 +1,12 @@
+# rm216, the second swatch (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm216
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_ulla_rustham
+written_by codex
 title the second swatch
 fits stage=adult|old
 prefers role=merchant job=crafter
@@ -40,50 +43,49 @@ clothpin = a wooden clip | the plain bone clip
 paleness = one degree less colour | a shade nearer white
 
 any
-opinion dole against 1 : Wages bought my first stool. I'd rather see a queue for stools with work to do at them.
-opinion city for 2 : I couldn't have learned so many shades in a place with one hill and two roofs.
-opinion festivals for 2 : Put a hundred different ribbons outdoors and every ribbon looks freshly made.
-opinion merchants for 1 : Pay the keeper who remembers what you asked for after the coin lands in the drawer.
-opinion road against 1 : A deep rut shakes a lid loose. The colour in the dust is proof of the cost of a road.
-opinion strangers against 2 : An unfamiliar face gets daylight across a table before it gets an invitation indoors.
-opinion watch for 1 : I'd sooner have a patrol within call than a shutter barred the whole afternoon.
-opinion houses mixed 1 : A good commission pays many wages. A crest demanding the last word earns its own surcharge.
-opinion drink mixed 1 : Wine and lamplight together can turn any colour lovely. Finish choosing before the second cup.
+opinion @1 dole against 1 : Wages bought my first stool. I'd rather see a queue for stools with work to do at them.
+opinion @1 city for 2 : I couldn't have learned so many shades in a place with one hill and two roofs.
+opinion @1 festivals for 2 : Put a hundred different ribbons outdoors and every ribbon looks freshly made.
+opinion @1 merchants for 1 : Pay the keeper who remembers what you asked for after the coin lands in the drawer.
+opinion @1 road against 1 : A deep rut shakes a lid loose. The colour in the dust is proof of the cost of a road.
+opinion @1 strangers against 2 : An unfamiliar face gets daylight across a table before it gets an invitation indoors.
+opinion @1 watch for 1 : I'd sooner have a patrol within call than a shutter barred the whole afternoon.
+opinion @1 houses mixed 1 : A good commission pays many wages. A crest demanding the last word earns its own surcharge.
+opinion @1 drink mixed 1 : Wine and lamplight together can turn any colour lovely. Finish choosing before the second cup.
 
 grown
-line greet : Come into the better light, just there. | Welcome. I'd like a clear view of your expression.
-line greet [pair.band=strangers] : You have the advantage of a new face. Mine's in the light already. | Stand by that lighter patch till I have your outline.
-line greet [self.working=yes] : Walk wide of that wet patch and you're welcome to look. | You'll find a clean standing place if you follow my elbow.
-line greet [here.time=dawn] : Clear edge of daylight at last. Good morning. | Daylight shows which edge is which. You came at a good hour.
-line greet.return : Yes, I see you distinctly now. | #greet#. We can speak quite well across this distance.
-line greet.return [here.time=dusk|night] : I'd know the voice with only half this light. | Your greeting arrives before its owner in this dim light.
-line kin.open [pair.kin!=no] : No need for the formal welcome. You've seen my untidy corners. | You've seen my face before I've had it quite in order.
-line again.open : You saw me with the light falling the other way earlier. | Same wolf, different background. I recognise you.
-line hail [pair.band=friends] : Come look at a difference just big enough to argue over! | Your eye would come in handy. Step this way!
-line farewell : Take a long look before you decide anything. | Off you go, then. I like a clean stopping place.
-line farewell.return : I expect we'll come across each other in a different light. | I daresay we'll have new evidence to compare another time.
-line react.news : Which part was observed and which part filled in? | I'd like the order of things as well as their colours.
-line react.news.new : I'd have remembered a piece of news with that colour to it. | My recollection has nothing remotely that shade in it.
-line react.news.known : Yes, I heard the substance. The edges seem to alter in every telling. | That bit comes out the same each time I hear it.
-line react.news.doubt : A second account from a different doorway might persuade me. | Two mouths repeating one witness still make just one witness.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's the sort of news I want delivered once, carefully. | That's a dark piece of news. No need to embroider it.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A bright thing to have heard with my own ears. | A bit of colour back in the town, then.
-line answer.how : I can tell two near shades apart. My day's perfectly adequate. | My eyes agree with each other today. That's condition enough for good work.
-line answer.how.busy [self.working=yes] : I'm halfway through the part that can't be left halfway. | My paws are engaged on different parts of one very awkward job.
-line ask.how : What particular difficulty brought that crease to your forehead? | Is that a tired look or have I caught the shadow wrong?
-line sympathise : Telling it once should suffice. I can attend the first time. | Take the chair facing away from traffic. I'll hear you better there.
-line reassure : I can remember the order even when the words run away from you. | A proper account takes the breath it takes.
-line decline : I'd need better particulars before I undertook any part of it. | I can't agree till somebody tells me exactly what's involved.
-line accept_decline : Very well. I'll put the question back in its box. | I'll draw a line under that particular request.
-line thank : You saw a detail I'd overlooked. I owe you for the sharp eye. | Your observation paid for itself very nicely.
-line deflect_thanks : I wanted it done that way myself. We both gained. | You gave me something to look at. That's a return.
-line preclose : I'd like to keep the last of this light for something small. | I need an uninterrupted moment to examine something.
-line accept_preclose : We'll put a pin through the subject there. | A distinct ending suits me very well.
-line ack : That's a shade clearer. | Well distinguished.
-line give.advice : Keep one piece aside that hasn't been touched. Compare against that. | Turn the thing around before you blame one side.
-line warn [world.bandits=near] : Have someone count the load at both ends of that road. | Take a written count with you. A raided load is difficult to describe from memory.
-line again.open [pair.band=friends] : Back at a more interesting angle already.
-
+line @1 greet : Come into the better light, just there. | Welcome. I'd like a clear view of your expression.
+line @2 greet [pair.band=strangers] : You have the advantage of a new face. Mine's in the light already. | Stand by that lighter patch till I have your outline.
+line @3 greet [self.working=yes] : Walk wide of that wet patch and you're welcome to look. | You'll find a clean standing place if you follow my elbow.
+line @4 greet [here.time=dawn] : Clear edge of daylight at last. Good morning. | Daylight shows which edge is which. You came at a good hour.
+line @1 greet.return : Yes, I see you distinctly now. | #greet#. We can speak quite well across this distance.
+line @2 greet.return [here.time=dusk|night] : I'd know the voice with only half this light. | Your greeting arrives before its owner in this dim light.
+line @1 kin.open [pair.kin!=no] : No need for the formal welcome. You've seen my untidy corners. | You've seen my face before I've had it quite in order.
+line @1 again.open : You saw me with the light falling the other way earlier. | Same wolf, different background. I recognise you.
+line @1 hail [pair.band=friends] : Come look at a difference just big enough to argue over! | Your eye would come in handy. Step this way!
+line @1 farewell : Take a long look before you decide anything. | Off you go, then. I like a clean stopping place.
+line @1 farewell.return : I expect we'll come across each other in a different light. | I daresay we'll have new evidence to compare another time.
+line @1 react.news : Which part was observed and which part filled in? | I'd like the order of things as well as their colours.
+line @1 react.news.new : I'd have remembered a piece of news with that colour to it. | My recollection has nothing remotely that shade in it.
+line @1 react.news.known : Yes, I heard the substance. The edges seem to alter in every telling. | That bit comes out the same each time I hear it.
+line @1 react.news.doubt : A second account from a different doorway might persuade me. | Two mouths repeating one witness still make just one witness.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's the sort of news I want delivered once, carefully. | That's a dark piece of news. No need to embroider it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : A bright thing to have heard with my own ears. | A bit of colour back in the town, then.
+line @1 answer.how : I can tell two near shades apart. My day's perfectly adequate. | My eyes agree with each other today. That's condition enough for good work.
+line @1 answer.how.busy [self.working=yes] : I'm halfway through the part that can't be left halfway. | My paws are engaged on different parts of one very awkward job.
+line @1 ask.how : What particular difficulty brought that crease to your forehead? | Is that a tired look or have I caught the shadow wrong?
+line @1 sympathise : Telling it once should suffice. I can attend the first time. | Take the chair facing away from traffic. I'll hear you better there.
+line @1 reassure : I can remember the order even when the words run away from you. | A proper account takes the breath it takes.
+line @1 decline : I'd need better particulars before I undertook any part of it. | I can't agree till somebody tells me exactly what's involved.
+line @1 accept_decline : Very well. I'll put the question back in its box. | I'll draw a line under that particular request.
+line @1 thank : You saw a detail I'd overlooked. I owe you for the sharp eye. | Your observation paid for itself very nicely.
+line @1 deflect_thanks : I wanted it done that way myself. We both gained. | You gave me something to look at. That's a return.
+line @1 preclose : I'd like to keep the last of this light for something small. | I need an uninterrupted moment to examine something.
+line @1 accept_preclose : We'll put a pin through the subject there. | A distinct ending suits me very well.
+line @1 ack : That's a shade clearer. | Well distinguished.
+line @1 give.advice : Keep one piece aside that hasn't been touched. Compare against that. | Turn the thing around before you blame one side.
+line @1 warn [world.bandits=near] : Have someone count the load at both ends of that road. | Take a written count with you. A raided load is difficult to describe from memory.
+line @2 again.open [pair.band=friends] : Back at a more interesting angle already.
 scene wrist
 when topic=smalltalk|pastimes
 does tell.self / ask.detail / answer.detail
@@ -121,8 +123,8 @@ scene damp_voice
 when topic=health here.weather=rain
 does tell.complaint / reassure / assess
 a : The damp lays hold of the middle of a sentence. I was about to finish one. | I can manage my own throat. It's the sentence I don't like losing.
-b : Start at the last word you meant. | I caught the part about the peg.
-a : An excellent suggestion. The last word was 'finished'. | Oh, good. That leaves only the length and the grain to explain.
+b : Start at the last word you meant. | No rush. Say it at your own speed.
+a : An excellent suggestion. The last word was 'finished'. | Kind of you. Then I'll have it out slowly, and you'll get every word.
 
 scene washed
 when topic=work self.job=crafter self.working=yes
@@ -149,22 +151,22 @@ scene mother
 when topic=family self.mother
 does tell.self / ask.detail / answer.detail
 a : I can sit easily with #self.mother# without putting my work on display. | I think of #self.mother# when a likeness is nearly right.
-b : You'll show it to anyone else? | What does nearly right remind you of?
-a : Not just anyone. It's a comfort to have one less judge in a room. | How much more I notice about a face that's familiar.
+b : No need to impress, then? | Why nearly right?
+a : None at all. It's a comfort to have one less judge in a room. | A face I know that well never sits quite right in any copy.
 
 scene coins
 when topic=prices|pastimes self.likes=a_full_till
 does tell.self / ask.detail / answer.detail
 a : A drawer sounds different if the coins lie flat. | I push the little coins out of the corner before I count.
-b : Fuller? | Afraid of missing one?
-a : Shorter. Less room for a coin to strike another on its edge. | Afraid of counting the same bright rim on two different piles.
+b : Quieter, you mean? | Afraid of missing one?
+a : Quieter and shorter. No coin gets to strike another on its edge. | Afraid of counting the same bright rim on two different piles.
 
 scene bay_air
 when topic=weather here.weather=storm|overcast self.dislikes=salt_wind
 does tell.complaint / give.advice / concede
 a : Bay air leaves a pale whisker round every dark thing I own. | The first thing I taste on a windy day is salt.
 b : Isn't the edge just where you want a pale line? | You could turn your muzzle uphill.
-a : In a pattern, perhaps. I'll save that idea for a border. | For as long as the hill will consent to move ahead of me, certainly.
+a : In a pattern, perhaps. I'll save that idea for a border. | Now and then. It's a long climb for one clean mouthful of air.
 
 scene door_chain
 when topic=home
@@ -236,7 +238,7 @@ when topic=caravan world.wagons=raided
 does tell.self / ask.detail / answer.detail
 a : After a raid I want a list of what's actually known missing. | A robbed wagon starts a fine trade in guesses.
 b : Who keeps such a list? | Why would a guess be worth anything?
-a : Ask the ones who loaded it. The taproom had no paw in the packing. | Because a frightened buyer might pay for it. Reason enough to keep quiet.
+a : Ask whoever loaded it. Nobody in a taproom packed that wagon. | Because a frightened buyer might pay for it. Reason enough to keep quiet.
 
 scene inventory
 when topic=work self.job=crafter
@@ -367,24 +369,23 @@ does aside
 cooldown 8h
 say Keep the curl you've pared away! | That little shaving's my best bit yet.
 
-dlg resident.hub : Ask your first question. We'll give it a thorough airing before the second.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I had the right of your name before you spoke.
-dlg resident.hub [here.time=night] : A shade late for colours, an excellent time for particulars.
-dlg resident.hub [pair.disposition=hostile|wary] : You can make your business plain quite well from there.
-dlg resident.job [self.job=crafter] : I keep a piece to compare with every finished batch. Want to see the differences?
-dlg resident.job : I set two things alongside and look for what might have changed.
-dlg resident.business [business=steady] : Steady orders give me time to check the little differences.
-dlg resident.business [business=failing] : Too many specimens, too few orders. I'm counting carefully.
-dlg resident.business [business=thriving] : Busy enough to pay for fresh light before sunrise and after dusk.
-dlg resident.news [world.news] : I heard this much, in these words. #world.news#.
-dlg resident.gossip [here.gossip!=yes] : No whispers worth taking out and showing you today.
-dlg resident.bye : Remember which side was facing the light.
-dlg shop.greet [here.shop=open] : Stand close enough to compare goods, please. I can move them for you.
-dlg shop.greet [here.shop=bare] : My shelf stands empty. Show me anything you've brought.
-dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, you'll remember the best light falls over here.
-dlg shop.prices : #shop_dear# No asking figure of mine will change between this shelf and that door.
-dlg shop.bye : Keep the wrapping folded till you mean to open it.
-
+dlg @1 resident.hub : Ask your first question. We'll give it a thorough airing before the second.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I had the right of your name before you spoke.
+dlg @3 resident.hub [here.time=night] : A shade late for colours, an excellent time for particulars.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You can make your business plain quite well from there.
+dlg @1 resident.job [self.job=crafter] : I keep a piece to compare with every finished batch. Want to see the differences?
+dlg @2 resident.job : I set two things alongside and look for what might have changed.
+dlg @1 resident.business [business=steady] : Steady orders give me time to check the little differences.
+dlg @2 resident.business [business=failing] : Too many specimens, too few orders. I'm counting carefully.
+dlg @3 resident.business [business=thriving] : Busy enough to pay for fresh light before sunrise and after dusk.
+dlg @1 resident.news [world.news] : I heard this much, in these words. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip!=yes] : No whispers worth taking out and showing you today.
+dlg @1 resident.bye : Remember which side was facing the light.
+dlg @1 shop.greet [here.shop=open] : Stand close enough to compare goods, please. I can move them for you.
+dlg @2 shop.greet [here.shop=bare] : My shelf stands empty. Show me anything you've brought.
+dlg @3 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, you'll remember the best light falls over here.
+dlg @1 shop.prices : #shop_dear# No asking figure of mine will change between this shelf and that door.
+dlg @1 shop.bye : Keep the wrapping folded till you mean to open it.
 graft resident.hub
 choice Why hold things to your wrist? -> wrist_light
 node wrist_light

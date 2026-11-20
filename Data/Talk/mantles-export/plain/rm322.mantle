@@ -1,9 +1,12 @@
+# rm322, the borrowed kitchen rule (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm322
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for cty_mogens_mudstack
+written_by codex
 title the borrowed kitchen rule
 fits stage=adult|old
 prefers job=woodcutter
@@ -35,41 +38,40 @@ cup = a squat tea bowl | a clay cup
 crumb = a stubborn crust | a dry hunk of bread
 
 any
-opinion dole for 1 : Plenty of spare hands for stirring a pot. Plenty of wolves who could use what comes up on the spoon too.
-opinion festivals for 2 : At a dance it's my pleasure to spend hours displaying what a spoon handle looks like on legs.
-opinion houses against 1 : I'd like one grand name to come stand beside a stump and see what the next year's warming really costs.
-opinion merchants against 1 : One copper more on cheese is a great squeeze on the poor last mouthful.
-opinion strangers for 1 : Show me somebody I've never fed and you've found the very wolf to share a cheese heel with.
+opinion @1 dole for 1 : Plenty of spare hands for stirring a pot. Plenty of wolves who could use what comes up on the spoon too.
+opinion @1 festivals for 2 : At a dance it's my pleasure to spend hours displaying what a spoon handle looks like on legs.
+opinion @1 houses against 1 : I'd like one grand name to come stand beside a stump and see what the next year's warming really costs.
+opinion @1 merchants against 1 : One copper more on cheese is a great squeeze on the poor last mouthful.
+opinion @1 strangers for 1 : Show me somebody I've never fed and you've found the very wolf to share a cheese heel with.
 
 grown
-line greet [pair.band=strangers] : You're welcome at the short end of the ladle. | Room for a fresh pair of opinions.
-line greet [self.working=yes] : Come over my working shoulder. | Stand away from the flying curls and say your piece.
-line greet [here.time=dawn] : Day's barely peeled. Hello to you. | Morning with the bark still on it.
-line greet [here.time=dusk|night] : Evening. It's all spoon-coloured light. | Come see what the day's whittled down to.
-line kin.open [pair.kin!=no] : Family needn't apply for a spoon. | Sit in among the familiar elbows.
-line again.open : We cross handles again. | You've come back for my remaining half opinion.
-line greet.return : There's a voice above the shavings. | Good, I heard the greeting clean.
-line greet.return [pair.band=friends|family] : Come closer, you know my splinter side. | Your voice rubs smooth in my ear.
-line greet.return [self.working=yes] : Speak while the shaving's curling. | I'll put the keen edge down a moment.
-line greet.return [here.time=dusk|night] : Evening. I can see the grin from here. | Come up to where the light still works.
-line farewell : Good wood under every step. | Walk till something crooked makes you smile.
-line farewell.return : I'll keep the handle this end. | Fine grain along your road.
-line farewell.return [here.time=night] : Find yourself a lamp with a generous wick. | Easy night beyond the last tree shadow.
-line react.news : Let's hear the shape of it. | Put that chunk of news in my paw.
-line react.news.new : Well, that's a fresh cut. | Haven't seen that grain before.
-line react.news.known : I've had a shaving off that story already. | I know the curl on that account.
-line react.news.doubt : I'd give that knot another good look first. | There's more bend in that account than wood.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, that bites deeper than a sharp edge. | Let me carry something beside you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good grain clean through that news. | I'd carve a smile to suit the occasion.
-line ask.how : How's the old spoon handle sitting today? | Did the day leave your knuckles whole?
-line answer.how : Still an elbow short of a perfect ladle. | Merrily taking the bark off my worries.
-line decline : I reckon I've enough curls to clear just here. | Let me save the keen edge for my own wood.
-line accept_decline : Your handle, your decision. | Good. I'll stop stirring.
-line thank : A kindness worth a spoonful of cheese. | That eases a tight bit of grain.
-line sympathise : Here's a broad shoulder for a crooked trouble. | Let me hold the weighty end awhile.
-line reassure : Even a knot can come out handsome. | There's a good handle left in that branch.
-line preclose : I'll go see which shavings have caught on me. | Time to fold my knife and move.
-
+line @1 greet [pair.band=strangers] : You're welcome at the short end of the ladle. | Room for a fresh pair of opinions.
+line @2 greet [self.working=yes] : Come over my working shoulder. | Stand away from the flying curls and say your piece.
+line @3 greet [here.time=dawn] : Day's barely peeled. Hello to you. | Morning with the bark still on it.
+line @4 greet [here.time=dusk|night] : Evening. It's all spoon-coloured light. | Come see what the day's whittled down to.
+line @1 kin.open [pair.kin!=no] : Family needn't apply for a spoon. | Sit in among the familiar elbows.
+line @1 again.open : We cross handles again. | You've come back for my remaining half opinion.
+line @1 greet.return : There's a voice above the shavings. | Good, I heard the greeting clean.
+line @2 greet.return [pair.band=friends|family] : Come closer, you know my splinter side. | Your voice rubs smooth in my ear.
+line @3 greet.return [self.working=yes] : Speak while the shaving's curling. | I'll put the keen edge down a moment.
+line @4 greet.return [here.time=dusk|night] : Evening. I can see the grin from here. | Come up to where the light still works.
+line @1 farewell : Good wood under every step. | Walk till something crooked makes you smile.
+line @1 farewell.return : I'll keep the handle this end. | Fine grain along your road.
+line @2 farewell.return [here.time=night] : Find yourself a lamp with a generous wick. | Easy night beyond the last tree shadow.
+line @1 react.news : Let's hear the shape of it. | Put that chunk of news in my paw.
+line @1 react.news.new : Well, that's a fresh cut. | Haven't seen that grain before.
+line @1 react.news.known : I've had a shaving off that story already. | I know the curl on that account.
+line @1 react.news.doubt : I'd give that knot another good look first. | There's more bend in that account than wood.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, that bites deeper than a sharp edge. | Let me carry something beside you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good grain clean through that news. | I'd carve a smile to suit the occasion.
+line @1 ask.how : How's the old spoon handle sitting today? | Did the day leave your knuckles whole?
+line @1 answer.how : Still an elbow short of a perfect ladle. | Merrily taking the bark off my worries.
+line @1 decline : I reckon I've enough curls to clear just here. | Let me save the keen edge for my own wood.
+line @1 accept_decline : Your handle, your decision. | Good. I'll stop stirring.
+line @1 thank : A kindness worth a spoonful of cheese. | That eases a tight bit of grain.
+line @1 sympathise : Here's a broad shoulder for a crooked trouble. | Let me hold the weighty end awhile.
+line @1 reassure : Even a knot can come out handsome. | There's a good handle left in that branch.
+line @1 preclose : I'll go see which shavings have caught on me. | Time to fold my knife and move.
 scene gran
 when topic=work self.job=woodcutter
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Fine light to find the natural bend. | No case heard till the shavings wake up.
 
-dlg resident.hub : Come in on my unarmed side. The sharpest thing I have for visitors is generally an opinion.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I have another entirely uncalled-for opinion about ladles ready for you.
-dlg resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. There's more than firewood in a good crooked branch.
-dlg resident.news [world.news] : This report had a fairly straight grain. #world.news#
-dlg resident.bye : Look for a spoon in the next tree you pass.
-
+dlg @1 resident.hub : Come in on my unarmed side. The sharpest thing I have for visitors is generally an opinion.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have another entirely uncalled-for opinion about ladles ready for you.
+dlg @1 resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. There's more than firewood in a good crooked branch.
+dlg @1 resident.news [world.news] : This report had a fairly straight grain. #world.news#
+dlg @1 resident.bye : Look for a spoon in the next tree you pass.
 graft resident.hub
 choice Who's this kitchen judge of yours? -> spoon_judge
 node spoon_judge

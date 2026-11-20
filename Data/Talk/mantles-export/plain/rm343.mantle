@@ -1,9 +1,12 @@
+# rm343, the bell between blows (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm343
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_gudrun_pitchridge
+written_by codex
 title the bell between blows
 fits stage=adult|old
 prefers job=smith
@@ -36,35 +39,34 @@ hook = a bent heel hook | a plain hook
 broom = a stiff yard broom | a birch broom
 
 any
-opinion merchants against 1 : I'll have as much metal as the seller said was in the bundle, even if every last bit needs weighing again.
-opinion houses mixed 1 : The House mark is large on iron that somebody else's shoulder helped to lift.
-opinion dole for 2 : A hard day's heat wants supper after it. So does a hard day without any pay.
-opinion city for 1 : The chapel sound gets through all the iron racket if you give it a decent chance.
-opinion road mixed 1 : A road good enough for a delivery of iron ought to give a little letter a dry passage.
-opinion sump for 1 : Nobody down low waits till work sounds pretty before setting a shoulder to it.
+opinion @1 merchants against 1 : I'll have as much metal as the seller said was in the bundle, even if every last bit needs weighing again.
+opinion @1 houses mixed 1 : The House mark is large on iron that somebody else's shoulder helped to lift.
+opinion @1 dole for 2 : A hard day's heat wants supper after it. So does a hard day without any pay.
+opinion @1 city for 1 : The chapel sound gets through all the iron racket if you give it a decent chance.
+opinion @1 road mixed 1 : A road good enough for a delivery of iron ought to give a little letter a dry passage.
+opinion @1 sump for 1 : Nobody down low waits till work sounds pretty before setting a shoulder to it.
 
 grown
-line greet : Stand where the little sparks won't find your cuff. | There's a clear patch for your boots.
-line greet.return : And a solid answer to your greeting. | A welcome with a sound ring to it.
-line again.open : Back in the gap between two notes.
-line farewell : Mind your hem and keep your pace easy. | I hope the last bell finds you under cover.
-line farewell.return : A straight road and a clean cuff back to you. | I'll hear your good wishes past the racket.
-line react.news : Give me the whole sound of it. | I'll put down the imaginary hammer awhile.
-line react.news.new : A note I couldn't have counted yesterday.
-line react.news.known : I've struck the same account before.
-line react.news.doubt : The ring's a shade flat for my liking.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd sooner hear a minute of quiet alongside a hurt like that.
-line react.news.glad [topic.kind=birth|marriage|work] : A bright note that won't need striking twice.
-line ask.how : Anything in your day rung properly true yet?
-line answer.how : Still enough temper in me for another shift.
-line sympathise : Take the weight off your arms before beginning.
-line reassure : A rough edge can wait on the bench until your grip comes back.
-line refuse : My time's already held in a different pair of tongs.
-line accept_decline : Then we'll leave the metal on the rack.
-line preclose : I've kept my own work cooling long enough.
-line accept_preclose : Off with you before the gap gets smaller.
-line ack : Yes. That's the ring I heard too.
-
+line @1 greet : Stand where the little sparks won't find your cuff. | There's a clear patch for your boots.
+line @1 greet.return : And a solid answer to your greeting. | A welcome with a sound ring to it.
+line @1 again.open : Back in the gap between two notes.
+line @1 farewell : Mind your hem and keep your pace easy. | I hope the last bell finds you under cover.
+line @1 farewell.return : A straight road and a clean cuff back to you. | I'll hear your good wishes past the racket.
+line @1 react.news : Give me the whole sound of it. | I'll put down the imaginary hammer awhile.
+line @1 react.news.new : A note I couldn't have counted yesterday.
+line @1 react.news.known : I've struck the same account before.
+line @1 react.news.doubt : The ring's a shade flat for my liking.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd sooner hear a minute of quiet alongside a hurt like that.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A bright note that won't need striking twice.
+line @1 ask.how : Anything in your day rung properly true yet?
+line @1 answer.how : Still enough temper in me for another shift.
+line @1 sympathise : Take the weight off your arms before beginning.
+line @1 reassure : A rough edge can wait on the bench until your grip comes back.
+line @1 refuse : My time's already held in a different pair of tongs.
+line @1 accept_decline : Then we'll leave the metal on the rack.
+line @1 preclose : I've kept my own work cooling long enough.
+line @1 accept_preclose : Off with you before the gap gets smaller.
+line @1 ack : Yes. That's the ring I heard too.
 scene exchange1
 when topic=work self.job=smith
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.likes=dice
 does aside
 cooldown 8h
 say Soft cloth for a hard throw. | Watch the pips when the cup comes up.
-dlg resident.hub : There's a rest between blows if you'd like to use it.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your voice gets through my work racket nicely.
-dlg resident.hub [here.time=night] : You can hear the quieter end of my opinion now.
-dlg resident.hub [pair.disposition=wary|hostile] : Stand clear and speak level. I won't have my elbow knocked.
-dlg resident.job [self.job=smith] : I work iron at #self.workplace#. I trust my ears quite as readily as I trust my eyes for a bend.
-dlg resident.job : I'll take responsibility for the crooked bits as well as the sound ones.
-dlg resident.news [world.news] : This rang clear enough to reach me. #world.news#.
-dlg resident.gossip [here.gossip=yes] : What I heard was #topic.subject# #topic.claim#. I didn't see it struck.
-dlg resident.bye : I hope you catch a good note on the walk back.
 
+dlg @1 resident.hub : There's a rest between blows if you'd like to use it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your voice gets through my work racket nicely.
+dlg @3 resident.hub [here.time=night] : You can hear the quieter end of my opinion now.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand clear and speak level. I won't have my elbow knocked.
+dlg @1 resident.job [self.job=smith] : I work iron at #self.workplace#. I trust my ears quite as readily as I trust my eyes for a bend.
+dlg @2 resident.job : I'll take responsibility for the crooked bits as well as the sound ones.
+dlg @1 resident.news [world.news] : This rang clear enough to reach me. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : What I heard was #topic.subject# #topic.claim#. I didn't see it struck.
+dlg @1 resident.bye : I hope you catch a good note on the walk back.
 graft resident.hub
 choice How can you hear a bell over iron? -> hammer_bell
 node hammer_bell

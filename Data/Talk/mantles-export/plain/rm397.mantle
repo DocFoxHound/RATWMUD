@@ -1,9 +1,12 @@
+# rm397, the missing bench (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm397
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_linden_sedgeditch
+written_by codex
 title the missing bench
 fits stage=adult|old
 prefers job=sailor temper=calm
@@ -35,43 +38,42 @@ fly = a brisk nuisance | a harrying fly
 turn = the outer circuit | my unhurried route
 
 any
-opinion houses mixed 0 : There's no advantage in putting a House crest on a bench. It still only takes so many backsides.
-opinion merchants for 1 : I enjoy the sound of a market in full business. Every seller has a claim and sometimes one even has an apple to match.
-opinion church mixed 0 : A little room left on a bench does quiet credit to the first arrival.
-opinion dole for 1 : A share laid out for a latecomer costs rather less than an evening explaining why none remains.
-opinion road for 2 : After a stretch afloat a long walk offers the considerable pleasure of ground that stays where it was put.
-opinion watch mixed 0 : I'd go for a count of actual empty seats before asking several excited witnesses how many sailed.
+opinion @1 houses mixed 0 : There's no advantage in putting a House crest on a bench. It still only takes so many backsides.
+opinion @1 merchants for 1 : I enjoy the sound of a market in full business. Every seller has a claim and sometimes one even has an apple to match.
+opinion @1 church mixed 0 : A little room left on a bench does quiet credit to the first arrival.
+opinion @1 dole for 1 : A share laid out for a latecomer costs rather less than an evening explaining why none remains.
+opinion @1 road for 2 : After a stretch afloat a long walk offers the considerable pleasure of ground that stays where it was put.
+opinion @1 watch mixed 0 : I'd go for a count of actual empty seats before asking several excited witnesses how many sailed.
 
 grown
-line greet : Here's a free place. Hello to you. | Welcome. You've saved me counting that gap.
-line greet [pair.band=strangers] : I don't recall that face among the seated yet. | First meeting. Have yourself a bit of room.
-line greet [here.time=dawn] : Morning. The unoccupied places are still in the majority. | Early feet and an agreeable amount of elbow room.
-line greet.return : Heard you. I was just finishing with the gaps. | Hello returned without changing the total.
-line greet.return [pair.band=friends|family] : A familiar face fills the place rather nicely. | You've come within counting distance again.
-line greet.return [here.time=night] : Late hello. I do a fair amount by ear now. | Evening has thinned the company out considerably.
-line again.open : I seem to have accounted for you twice now. | We've met again without the space being measurably larger.
-line hail [pair.band=friends] : There's a place with your name very conspicuously absent. | Come stand where the moving bits look interesting.
-line farewell : Walk comfortably while the ground permits it. | May a dry seat await you when the travelling's done.
-line farewell.return : I'll mark the space empty when you've gone. | Take a comfortable piece of quiet along.
-line react.news : I've interrupted a much less interesting count for your news. | Let the tale arrive in its own good time.
-line react.news.new : That didn't appear in my earlier count. | Entirely new company for my thoughts.
-line react.news.known : I've counted those particulars once before. | Yes. It occupies about the same space as the earlier report.
-line react.news.doubt : There's an empty place halfway through your account. | I can count several claims and rather fewer facts.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Leave your things here and sit a good while. | Heavy hearing. No reason for you to take it straight off again.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's news worth making extra room for. | I'd give that a very satisfactory place on today's count.
-line ask.how : How's the room about you today? | Managed to get a comfortable seat anywhere?
-line answer.how : Still afloat this end, broadly speaking. | My count is modest and my appetite sound.
-line decline : I'd be pencilling in a place that's already promised elsewhere. | I can't see enough clear space in my day to do that properly.
-line accept_decline : An empty place is admirably easy to record. | Fair. I'll leave the space quite clear.
-line preclose : I should move on before sitting becomes my whole occupation. | I'd like to walk while there's a little room ahead.
-line accept_preclose : Go on. No fare due for the seat. | Your place will probably continue to exist without you.
-line thank : You saved me from counting everybody a third time. Thanks. | I value a helping paw that knows where it will fit.
-line deflect_thanks : I had room enough to shift along. | Didn't alter the count by more than a comfortable fraction.
-line sympathise : This place remains yours till you feel ready to move. | No need to explain why you'd like to sit quietly.
-line reassure : Let's count what we have left before dining on worry. | A little breathing space can often be found sideways.
-line ack : I see how that total came about. | Yes. The spare place agrees with you.
-line give.advice : Count the still things before the lively ones. | Leave a bit of bench unoccupied till the last bundle's aboard.
-
+line @1 greet : Here's a free place. Hello to you. | Welcome. You've saved me counting that gap.
+line @2 greet [pair.band=strangers] : I don't recall that face among the seated yet. | First meeting. Have yourself a bit of room.
+line @3 greet [here.time=dawn] : Morning. The unoccupied places are still in the majority. | Early feet and an agreeable amount of elbow room.
+line @1 greet.return : Heard you. I was just finishing with the gaps. | Hello returned without changing the total.
+line @2 greet.return [pair.band=friends|family] : A familiar face fills the place rather nicely. | You've come within counting distance again.
+line @3 greet.return [here.time=night] : Late hello. I do a fair amount by ear now. | Evening has thinned the company out considerably.
+line @1 again.open : I seem to have accounted for you twice now. | We've met again without the space being measurably larger.
+line @1 hail [pair.band=friends] : There's a place with your name very conspicuously absent. | Come stand where the moving bits look interesting.
+line @1 farewell : Walk comfortably while the ground permits it. | May a dry seat await you when the travelling's done.
+line @1 farewell.return : I'll mark the space empty when you've gone. | Take a comfortable piece of quiet along.
+line @1 react.news : I've interrupted a much less interesting count for your news. | Let the tale arrive in its own good time.
+line @1 react.news.new : That didn't appear in my earlier count. | Entirely new company for my thoughts.
+line @1 react.news.known : I've counted those particulars once before. | Yes. It occupies about the same space as the earlier report.
+line @1 react.news.doubt : There's an empty place halfway through your account. | I can count several claims and rather fewer facts.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Leave your things here and sit a good while. | Heavy hearing. No reason for you to take it straight off again.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's news worth making extra room for. | I'd give that a very satisfactory place on today's count.
+line @1 ask.how : How's the room about you today? | Managed to get a comfortable seat anywhere?
+line @1 answer.how : Still afloat this end, broadly speaking. | My count is modest and my appetite sound.
+line @1 decline : I'd be pencilling in a place that's already promised elsewhere. | I can't see enough clear space in my day to do that properly.
+line @1 accept_decline : An empty place is admirably easy to record. | Fair. I'll leave the space quite clear.
+line @1 preclose : I should move on before sitting becomes my whole occupation. | I'd like to walk while there's a little room ahead.
+line @1 accept_preclose : Go on. No fare due for the seat. | Your place will probably continue to exist without you.
+line @1 thank : You saved me from counting everybody a third time. Thanks. | I value a helping paw that knows where it will fit.
+line @1 deflect_thanks : I had room enough to shift along. | Didn't alter the count by more than a comfortable fraction.
+line @1 sympathise : This place remains yours till you feel ready to move. | No need to explain why you'd like to sit quietly.
+line @1 reassure : Let's count what we have left before dining on worry. | A little breathing space can often be found sideways.
+line @1 ack : I see how that total came about. | Yes. The spare place agrees with you.
+line @1 give.advice : Count the still things before the lively ones. | Leave a bit of bench unoccupied till the last bundle's aboard.
 scene quietgap
 when topic=ships self.job=sailor
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : An overdue wagon gives an excellent opportunity to observe the difference be
 b : How so? | You can sit, can't you?
 a : An empty place in the yard and a day spent waiting aren't equally available for use. | Certainly. It's a borrowed seat when my mind remains harnessed to the missing wagon.
 
-grown
-
 story applecount [topic=food|memories]
   : I bought several apples, counted them in my bag and ate one on the way home. When I counted again there was still the same number.
   : Turned out the largest apple had been sitting in the bottom fold where I'd missed it.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Wipe this end first if you mean to sit. | The sheltered seat has become unexpectedly popular.
 
-dlg resident.hub : I've finished with the empty spaces and would gladly hear from one that's occupied.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your arrival always calls for a modest adjustment to my arithmetic.
-dlg resident.hub [here.time=night] : After dark I let footfalls to stand in temporarily for the view.
-dlg resident.hub [pair.disposition=wary|hostile] : Take the end of the bench if you mean to ask. The gap between us is free too.
-dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. I'd give a spare seat a second look before promising it to anybody.
-dlg resident.job : My work generally improves when every empty place has been noticed.
-dlg resident.bye : I hope there's a dry bit of bench waiting beyond the last mile.
-
+dlg @1 resident.hub : I've finished with the empty spaces and would gladly hear from one that's occupied.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your arrival always calls for a modest adjustment to my arithmetic.
+dlg @3 resident.hub [here.time=night] : After dark I let footfalls to stand in temporarily for the view.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Take the end of the bench if you mean to ask. The gap between us is free too.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. I'd give a spare seat a second look before promising it to anybody.
+dlg @2 resident.job : My work generally improves when every empty place has been noticed.
+dlg @1 resident.bye : I hope there's a dry bit of bench waiting beyond the last mile.
 graft resident.hub
 choice How can an empty seat help you count passengers? -> gapcount
 node gapcount

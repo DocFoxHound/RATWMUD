@@ -1,9 +1,12 @@
+# rm217, the sill measurer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm217
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rmx_gorm_halford
+written_by codex
 title the sill measurer
 fits stage=adult|old
 prefers role=merchant job=crafter
@@ -39,53 +42,53 @@ crease = the fold across the middle | the tired crease
 shelf = the upper ledge | the high board
 
 any
-opinion city mixed 1 : These terraces give water somewhere to go. Unfortunate if the place it chooses happens to be your front room.
-opinion drink against 1 : A careless word has no handle to catch it by. A drink loosens plenty such words.
-opinion festivals for 2 : At a fair you can ask who laid a paving stone and someone will fetch the wolf who laid it.
-opinion merchants for 2 : Wrap, carriage, breakage. The asking price has a long walk before it reaches a purse.
-opinion road against 2 : A level mile drawn in ink can shake the contents of a cart to bits.
-opinion strangers against 1 : Give a visitor a chair, certainly. I'd sooner keep the cupboard key myself.
-opinion newcomers mixed 1 : A new pair of eyes might find the leak. Show me first where the buckets belong.
-opinion watch for 1 : Two steady paws apart in a doorway can quiet a scramble before anything smashes.
-opinion houses mixed 0 : A seal looks excellent on an order. It holds none of the weight in transit.
+opinion @1 city mixed 1 : These terraces give water somewhere to go. Unfortunate if the place it chooses happens to be your front room.
+opinion @1 drink against 1 : A careless word has no handle to catch it by. A drink loosens plenty such words.
+opinion @1 festivals for 2 : At a fair you can ask who laid a paving stone and someone will fetch the wolf who laid it.
+opinion @1 merchants for 2 : Wrap, carriage, breakage. The asking price has a long walk before it reaches a purse.
+opinion @1 road against 2 : A level mile drawn in ink can shake the contents of a cart to bits.
+opinion @1 strangers against 1 : Give a visitor a chair, certainly. I'd sooner keep the cupboard key myself.
+opinion @1 newcomers mixed 1 : A new pair of eyes might find the leak. Show me first where the buckets belong.
+opinion @1 watch for 1 : Two steady paws apart in a doorway can quiet a scramble before anything smashes.
+opinion @1 houses mixed 0 : A seal looks excellent on an order. It holds none of the weight in transit.
 
 grown
-line greet : Mind #gauge#. Nearly sat on it myself. | A moment while I clear you a level spot.
-line greet [pair.band=strangers] : We've yet to compare notes, I think. | Room beside me, provided you mind that ledge.
-line greet [here.time=dawn] : First light shows every nick in a sill. | This early the step has scarcely a scuff.
-line greet [here.time=dusk|night] : Come alongside. Shadows make a step look deeper. | Light's tricky now. There's a level patch here.
-line greet.return : Heard you perfectly from here. | A welcome sound, your voice.
-line greet.return [pair.band=friends|family] : Lovely. I'll finish my reckoning with company. | You've caught me fussing again, no doubt.
-line greet.return [self.working=yes] : My ears are free. Both paws occupied. | Speak over this shoulder while I finish.
-line greet.return [here.time=dusk|night] : Evening. Closer now, so I can see you. | I recognised the step before the greeting.
-line again.open : Our paths make a tidy cross today. | Another meeting to enter on my card.
-line kin.open [pair.kin!=no] : You can move my things without asking. | Sit nearest. Plenty of room for us.
-line farewell : Lift your feet at the threshold. | Good going. Fold that corner in first.
-line farewell.return : Off with you, on level ground. | I'll hear the rest another meeting.
-line farewell.return [here.time=night] : Sleep easy above the gutter. | Take the better lamp for going home.
-line react.news : Where did the first account come from? | Give me the part you're sure about.
-line react.news.new : I'd missed that completely. Let me take it in. | That's another mark on today's reckoning.
-line react.news.known : Yes, that squares with my first hearing. | The account got here ahead of you.
-line react.news.doubt : I'd want another witness before passing that along. | A little too smooth to be the whole account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Terrible to be left counting what's gone. | I'd help put things back in order.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My worries can make room for that news. | Tell it twice. I'll listen twice.
-line ask.how : Anything weighing on you today? | You've carried something here besides yourself, perhaps?
-line answer.how : All accounted for, including a little unease. | No pressing trouble I can put a measure to.
-line answer.how.busy [self.working=yes] : Counting while answering makes for slow work. | I'll be easier once this lot is away.
-line sympathise : A shock leaves a hairline long afterwards. | You needn't carry the whole crate alone.
-line reassure : Let's see what holds before we start lifting. | I've a steady grip once the waiting ends.
-line decline : Leave me out this time. I'd spend it worrying. | You need a lighter heart than mine for that.
-line accept_decline : Better a plain answer than a shaky promise. | I'll strike that possibility off, then.
-line thank : You've taken a real weight off my reckoning. | I'll enter that on the credit side.
-line deflect_thanks : Put that kindness by for the next carrier. | I'd already brought the extra packing.
-line preclose : I've one measurement left before I can settle. | My card is waiting at another door.
-line accept_preclose : Go finish your reckoning. I'll finish mine. | I'll spare you the remaining figures.
-line ack : Exactly that width. | Yes, I follow the distinction.
-line ask.detail : Which end tipped first? | At what point did that change?
-line ask.advice : Would you risk one more lift? | How would you steady this corner?
-line give.advice : Check the bottom before you trust the lid. | Put a cushion under the doubtful side.
-line offer : Here, use my spare strip of felt. | My shoulder's free for a moment.
-line warn [world.bandits=near] : The road looks ugly. Travel with voices you know. | I'd leave that journey on the slate awhile.
+line @1 greet : Mind #gauge#. Nearly sat on it myself. | A moment while I clear you a level spot.
+line @2 greet [pair.band=strangers] : We've yet to compare notes, I think. | Room beside me, provided you mind that ledge.
+line @3 greet [here.time=dawn] : First light shows every nick in a sill. | This early the step has scarcely a scuff.
+line @4 greet [here.time=dusk|night] : Come alongside. Shadows make a step look deeper. | Light's tricky now. There's a level patch here.
+line @1 greet.return : Heard you perfectly from here. | A welcome sound, your voice.
+line @2 greet.return [pair.band=friends|family] : Lovely. I'll finish my reckoning with company. | You've caught me fussing again, no doubt.
+line @3 greet.return [self.working=yes] : My ears are free. Both paws occupied. | Speak over this shoulder while I finish.
+line @4 greet.return [here.time=dusk|night] : Evening. Closer now, so I can see you. | I recognised the step before the greeting.
+line @1 again.open : Our paths make a tidy cross today. | Another meeting to enter on my card.
+line @1 kin.open [pair.kin!=no] : You can move my things without asking. | Sit nearest. Plenty of room for us.
+line @1 farewell : Lift your feet at the threshold. | Good going. Fold that corner in first.
+line @1 farewell.return : Off with you, on level ground. | I'll hear the rest another meeting.
+line @2 farewell.return [here.time=night] : Sleep easy above the gutter. | Take the better lamp for going home.
+line @1 react.news : Where did the first account come from? | Give me the part you're sure about.
+line @1 react.news.new : I'd missed that completely. Let me take it in. | That's another mark on today's reckoning.
+line @1 react.news.known : Yes, that squares with my first hearing. | The account got here ahead of you.
+line @1 react.news.doubt : I'd want another witness before passing that along. | A little too smooth to be the whole account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Terrible to be left counting what's gone. | I'd help put things back in order.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My worries can make room for that news. | Tell it twice. I'll listen twice.
+line @1 ask.how : Anything weighing on you today? | You've carried something here besides yourself, perhaps?
+line @1 answer.how : All accounted for, including a little unease. | No pressing trouble I can put a measure to.
+line @1 answer.how.busy [self.working=yes] : Counting while answering makes for slow work. | I'll be easier once this lot is away.
+line @1 sympathise : A shock leaves a hairline long afterwards. | You needn't carry the whole crate alone.
+line @1 reassure : Let's see what holds before we start lifting. | I've a steady grip once the waiting ends.
+line @1 decline : Leave me out this time. I'd spend it worrying. | You need a lighter heart than mine for that.
+line @1 accept_decline : Better a plain answer than a shaky promise. | I'll strike that possibility off, then.
+line @1 thank : You've taken a real weight off my reckoning. | I'll enter that on the credit side.
+line @1 deflect_thanks : Put that kindness by for the next carrier. | I'd already brought the extra packing.
+line @1 preclose : I've one measurement left before I can settle. | My card is waiting at another door.
+line @1 accept_preclose : Go finish your reckoning. I'll finish mine. | I'll spare you the remaining figures.
+line @1 ack : Exactly that width. | Yes, I follow the distinction.
+line @1 ask.detail : Which end tipped first? | At what point did that change?
+line @1 ask.advice : Would you risk one more lift? | How would you steady this corner?
+line @1 give.advice : Check the bottom before you trust the lid. | Put a cushion under the doubtful side.
+line @1 offer : Here, use my spare strip of felt. | My shoulder's free for a moment.
+line @1 warn [world.bandits=near] : The road looks ugly. Travel with voices you know. | I'd leave that journey on the slate awhile.
 scene notch
 when topic=home|pastimes
 does tell.self / ask.detail / answer.detail / assess
@@ -370,21 +373,21 @@ does aside
 cooldown 10h
 say Good light for finding yesterday's misses. | First look goes along the rim.
 
-dlg resident.hub : Let me put this flat first. There. I've your whole question in mind now.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've caught me between reckonings. A particularly good moment.
-dlg resident.hub [here.time=night] : Stand in the lamplight. I like a clear outline when I'm listening.
-dlg resident.hub [pair.disposition=wary|hostile] : Leave a space between us, if you please. Now, what's wanted?
-dlg resident.job [self.job=crafter] : Bubbles, edges, flaws. I look until my eyes need a rest, then feel along the bottom.
-dlg resident.job : I take a measure twice whenever it'll matter once.
-dlg resident.news [world.news] : I've one account worth repeating: #world.news#. I have no second account yet.
-dlg resident.gossip [here.gossip!=yes] : My ears were full of my own voice, I fear. Try again later.
-dlg resident.business [business=steady] : Outgoings and takings about level. I still count both.
-dlg resident.bye : Pick a firm footing on your way.
-dlg shop.greet [here.shop=open] : Set your parcel down first. That leaves both paws to look with.
-dlg shop.greet [here.shop=bare] : Quite bare at present. I'd gladly look over anything you've brought.
-dlg shop.prices : Carriage eats a surprising share. Mind what's wrapped inside the price.
-dlg shop.bye : If anything shifts inside the wrapping, stop and settle it.
-dlg resident.hub [here.region=ridgemere] : In Ridgemere a rise of two steps can mean an entirely different journey for your load.
+dlg @1 resident.hub : Let me put this flat first. There. I've your whole question in mind now.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've caught me between reckonings. A particularly good moment.
+dlg @3 resident.hub [here.time=night] : Stand in the lamplight. I like a clear outline when I'm listening.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Leave a space between us, if you please. Now, what's wanted?
+dlg @1 resident.job [self.job=crafter] : Bubbles, edges, flaws. I look until my eyes need a rest, then feel along the bottom.
+dlg @2 resident.job : I take a measure twice whenever it'll matter once.
+dlg @1 resident.news [world.news] : I've one account worth repeating: #world.news#. I have no second account yet.
+dlg @1 resident.gossip [here.gossip!=yes] : My ears were full of my own voice, I fear. Try again later.
+dlg @1 resident.business [business=steady] : Outgoings and takings about level. I still count both.
+dlg @1 resident.bye : Pick a firm footing on your way.
+dlg @1 shop.greet [here.shop=open] : Set your parcel down first. That leaves both paws to look with.
+dlg @2 shop.greet [here.shop=bare] : Quite bare at present. I'd gladly look over anything you've brought.
+dlg @1 shop.prices : Carriage eats a surprising share. Mind what's wrapped inside the price.
+dlg @1 shop.bye : If anything shifts inside the wrapping, stop and settle it.
+dlg @5 resident.hub [here.region=ridgemere] : In Ridgemere a rise of two steps can mean an entirely different journey for your load.
 graft resident.hub
 choice What do the cuts in your card measure? -> card_cuts
 node card_cuts
@@ -397,6 +400,7 @@ node rule_pocket
 say A wooden rule wants a pocket to itself. My card travels inside the folded account and adds no weight.
 choice Let's leave the measuring there. -> hub
 choice I'll mind the sills. -> bye
+
 graft shop.greet
 choice How would you wrap something hollow? [self.role=merchant] -> hollow_wrap
 node hollow_wrap

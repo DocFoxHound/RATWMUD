@@ -1,9 +1,12 @@
+# rm364, the bird above the mast (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm364
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_karin_sootdale
+written_by codex
 title the bird above the mast
 fits stage=adult|old
 prefers role=merchant humour=dry
@@ -41,56 +44,55 @@ crossref = the second entry | a little reference
 down = the soft feather end | a little loose down
 
 any
-opinion merchants for 1 : A plainly stated copying fee saves customer and seller from discovering different ideas of fairness at the very last line.
-opinion watch mixed 0 : Confusing a dark sleeve with a dark coat makes a very elegant report quite useless.
-opinion city for 2 : There's a city full of objects to identify between one office window and the water. I've scarcely exhausted a single view.
-opinion dole for 1 : Proper names in a dole account should all receive the same size of writing. Small writing needn't conceal small portions.
-opinion houses against 1 : I'd charge a House by the actual number of flattering words in its formal opening. Might encourage brevity.
-opinion church for 1 : The high roof is a good landmark and the quiet inside gives the eye a rest from landmarks.
-opinion festivals for 1 : A feast procession is a very fine parade of temporary signs. My whole book gets a holiday.
-opinion newcomers for 1 : A stranger is the best possible reader of directions. No convenient local knowledge to cover my errors.
-opinion sump for 1 : The roofs down low give the sky a most distinctive edge. I'd miss them from a less interesting window.
-opinion times mixed 0 : One slow week may be an observation. Three well-recorded ones might justify a conclusion.
+opinion @1 merchants for 1 : A plainly stated copying fee saves customer and seller from discovering different ideas of fairness at the very last line.
+opinion @1 watch mixed 0 : Confusing a dark sleeve with a dark coat makes a very elegant report quite useless.
+opinion @1 city for 2 : There's a city full of objects to identify between one office window and the water. I've scarcely exhausted a single view.
+opinion @1 dole for 1 : Proper names in a dole account should all receive the same size of writing. Small writing needn't conceal small portions.
+opinion @1 houses against 1 : I'd charge a House by the actual number of flattering words in its formal opening. Might encourage brevity.
+opinion @1 church for 1 : The high roof is a good landmark and the quiet inside gives the eye a rest from landmarks.
+opinion @1 festivals for 1 : A feast procession is a very fine parade of temporary signs. My whole book gets a holiday.
+opinion @1 newcomers for 1 : A stranger is the best possible reader of directions. No convenient local knowledge to cover my errors.
+opinion @1 sump for 1 : The roofs down low give the sky a most distinctive edge. I'd miss them from a less interesting window.
+opinion @1 times mixed 0 : One slow week may be an observation. Three well-recorded ones might justify a conclusion.
 
 grown
-line greet : Welcome. You stand between two entirely respectable landmarks. | Hello. No need to move, I can look past your ear.
-line greet [pair.band=strangers] : A new face within my usual limits of observation. | We haven't shared this particular bit of skyline before.
-line greet [here.time=dawn] : Morning. The roofline's sharp enough to copy. | A fresh dawn and an unmarked edge of paper.
-line greet.return : Yes, hello. I've recovered my former place in the view. | I heard. The bird flew off and simplified the matter.
-line greet.return [pair.band=friends|family] : A familiar outline with a much more interesting voice. | I'd recognise you without consulting an index.
-line greet.return [here.time=night] : Late hello. Even the birds have been filed away. | The roof edges are black silhouettes now. Welcome.
-line again.open : Another appearance in an unusually agreeable column. | Back before my bookmark shifted.
-line hail [pair.band=friends] : Look up beyond that chimney. Exactly there. | Here. A bird has volunteered to indicate the place.
-line farewell : Leave by whatever landmarks seem likely to stay put. | A clear view and an unambiguous road to you.
-line farewell.return : I'll mark the place where we stopped. Goodbye. | May the next turning be memorable for a fixed reason.
-line react.news : Say what happened and I'll refrain from writing in a decorative bird. | I'll give the news a quite literal hearing.
-line react.news.new : That lacks even a pencilled entry in my recollection. | New to me from first stroke to last.
-line react.news.known : The account fits the previous heading exactly. | Yes. Fairly distinct in my memory, that entry.
-line react.news.doubt : That's a movable feature masquerading as a permanent landmark. | I'd leave the ink off that account a little longer.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's a great vacancy in those few words. Sit down. | I can listen without finding a neat heading for a loss.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now that deserves more space than my usual economical hand. | Lovely hearing. I'll allow myself a thoroughly unprofessional smile.
-line ask.how : Has anything changed places in your day unexpectedly? | How does the view look from where you're standing?
-line answer.how : Attending to the roofline and the living alternately. Quite comfortably occupied. | My list is growing much faster than my spare time.
-line decline : I'd have to make a firm identification on quite insufficient information. | A real customer has a prior claim upon the time I'd need.
-line accept_decline : Then I'll leave a blank without inserting a conjecture. | Quite fair. I asked to discover the answer, and have it.
-line preclose : I've a little operation in ink which won't improve with delay. | My working notes have begun to look like a small flock themselves.
-line accept_preclose : Take your departure while the description still fits. | We've reached a perfectly sensible break in the text.
-line thank : You've put my finger on precisely the right line. Thank you. | A correction offered in time is a substantial gift.
-line deflect_thanks : I'd rather amend a small error now than recopy a proud one later. | The correction fits in the margin. Quite economical.
-line sympathise : Your words can have a moment's quiet about them. | You needn't embellish a difficult piece of news for me.
-line reassure : Start with the one thing in view that hasn't moved. | We can make a serviceable beginning from two clear points.
-line ack : I see the very mark you indicate. | Yes. A relevant and quite visible distinction.
-line give.advice : Find the ridge first, then look for the interesting thing above it. | Give a stranger one fewer turning than you think necessary.
-line kin.open [pair.kin!=no] : A family visit belongs in the less formal part of the record. | For kin I'll put the public book away entirely.
-line greet.return [self.working=yes] : Your voice carries nicely across the counter. | I can leave a clean mark here and hear you.
-line farewell.return [here.time=night] : May a steady window light mark your way. | Night gives most of the landmarks a rest. Mind the stairs.
-line assess : That belongs among the sightings I would sign. | A good outline with room for one quite reasonable doubt.
-line ask.detail : Fixed to the masonry or merely passing over it? | Which side of the chimney did you see?
-line answer.detail : Just where the ridge turns down towards the water. | The bird moved first. The upright beyond it remained.
-line give.opinion : An index proves its merits in the paws of an unfamiliar reader. | A place on a page must take less finding than the thing itself.
-line react.self : I should be curious to see that against a plain background. | Your description suggests a particularly distinctive feature.
-line tell.plan : I'll mark the masonry and leave room for the moving parts. | A second observation in better light should settle the heading.
-
+line @1 greet : Welcome. You stand between two entirely respectable landmarks. | Hello. No need to move, I can look past your ear.
+line @2 greet [pair.band=strangers] : A new face within my usual limits of observation. | We haven't shared this particular bit of skyline before.
+line @3 greet [here.time=dawn] : Morning. The roofline's sharp enough to copy. | A fresh dawn and an unmarked edge of paper.
+line @1 greet.return : Yes, hello. I've recovered my former place in the view. | I heard. The bird flew off and simplified the matter.
+line @2 greet.return [pair.band=friends|family] : A familiar outline with a much more interesting voice. | I'd recognise you without consulting an index.
+line @3 greet.return [here.time=night] : Late hello. Even the birds have been filed away. | The roof edges are black silhouettes now. Welcome.
+line @1 again.open : Another appearance in an unusually agreeable column. | Back before my bookmark shifted.
+line @1 hail [pair.band=friends] : Look up beyond that chimney. Exactly there. | Here. A bird has volunteered to indicate the place.
+line @1 farewell : Leave by whatever landmarks seem likely to stay put. | A clear view and an unambiguous road to you.
+line @1 farewell.return : I'll mark the place where we stopped. Goodbye. | May the next turning be memorable for a fixed reason.
+line @1 react.news : Say what happened and I'll refrain from writing in a decorative bird. | I'll give the news a quite literal hearing.
+line @1 react.news.new : That lacks even a pencilled entry in my recollection. | New to me from first stroke to last.
+line @1 react.news.known : The account fits the previous heading exactly. | Yes. Fairly distinct in my memory, that entry.
+line @1 react.news.doubt : That's a movable feature masquerading as a permanent landmark. | I'd leave the ink off that account a little longer.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's a great vacancy in those few words. Sit down. | I can listen without finding a neat heading for a loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now that deserves more space than my usual economical hand. | Lovely hearing. I'll allow myself a thoroughly unprofessional smile.
+line @1 ask.how : Has anything changed places in your day unexpectedly? | How does the view look from where you're standing?
+line @1 answer.how : Attending to the roofline and the living alternately. Quite comfortably occupied. | My list is growing much faster than my spare time.
+line @1 decline : I'd have to make a firm identification on quite insufficient information. | A real customer has a prior claim upon the time I'd need.
+line @1 accept_decline : Then I'll leave a blank without inserting a conjecture. | Quite fair. I asked to discover the answer, and have it.
+line @1 preclose : I've a little operation in ink which won't improve with delay. | My working notes have begun to look like a small flock themselves.
+line @1 accept_preclose : Take your departure while the description still fits. | We've reached a perfectly sensible break in the text.
+line @1 thank : You've put my finger on precisely the right line. Thank you. | A correction offered in time is a substantial gift.
+line @1 deflect_thanks : I'd rather amend a small error now than recopy a proud one later. | The correction fits in the margin. Quite economical.
+line @1 sympathise : Your words can have a moment's quiet about them. | You needn't embellish a difficult piece of news for me.
+line @1 reassure : Start with the one thing in view that hasn't moved. | We can make a serviceable beginning from two clear points.
+line @1 ack : I see the very mark you indicate. | Yes. A relevant and quite visible distinction.
+line @1 give.advice : Find the ridge first, then look for the interesting thing above it. | Give a stranger one fewer turning than you think necessary.
+line @1 kin.open [pair.kin!=no] : A family visit belongs in the less formal part of the record. | For kin I'll put the public book away entirely.
+line @4 greet.return [self.working=yes] : Your voice carries nicely across the counter. | I can leave a clean mark here and hear you.
+line @2 farewell.return [here.time=night] : May a steady window light mark your way. | Night gives most of the landmarks a rest. Mind the stairs.
+line @1 assess : That belongs among the sightings I would sign. | A good outline with room for one quite reasonable doubt.
+line @1 ask.detail : Fixed to the masonry or merely passing over it? | Which side of the chimney did you see?
+line @1 answer.detail : Just where the ridge turns down towards the water. | The bird moved first. The upright beyond it remained.
+line @1 give.opinion : An index proves its merits in the paws of an unfamiliar reader. | A place on a page must take less finding than the thing itself.
+line @1 react.self : I should be curious to see that against a plain background. | Your description suggests a particularly distinctive feature.
+line @1 tell.plan : I'll mark the masonry and leave room for the moving parts. | A second observation in better light should settle the heading.
 scene birdlocator
 when topic=ships
 does tell.self / ask.detail / answer.detail
@@ -315,8 +317,6 @@ a : Three steps along a street can lodge the same mast over a wholly different c
 b : Does your index mention where to stand? | That must be confusing.
 a : With admirable emphasis. The observer is part of the observation whether flattered by it or not. | Only if one forgets the feet at the bottom of one's own point of view. I mark the corner.
 
-grown
-
 story roofguest [topic=memories|ships]
   : I once labelled a very small lateen shape at considerable distance. The angle of it was beautifully clear.
   : Shortly afterwards the entire sail flew to a different chimney and scratched its ear.
@@ -383,25 +383,24 @@ does aside
 cooldown 8h
 say The fee down plainly and the coin beside the entry. | A satisfying little sound from the till.
 
-dlg resident.hub : I've space for a conversation provided it doesn't insist on fitting into one narrow column.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your entry continues on more than one page by now.
-dlg resident.hub [here.time=night] : The roofs are rather less informative at night. A living visitor improves the view.
-dlg resident.hub [pair.disposition=wary|hostile] : Ask from there, please. The papers aren't among the refreshments.
-dlg resident.job [self.role=merchant self.job=scholar] : #self.trade_words.capitalize#. My preference is to sell one intelligible sentence than a very large mysterious paragraph.
-dlg resident.job : My work ought to be understandable in my absence.
-dlg resident.bye : May your chosen reference point continue to stand still.
-dlg resident.gossip [here.gossip=no] : A clear page where the gossip would belong. The empty space pleases me.
-dlg resident.gossip [here.gossip=yes] : The report is that #topic.subject# #topic.claim#. My part is the reporting, which deserves a small separate heading.
-dlg resident.news [world.news] : News has come by way of #world.news_from#. Here's the substance. #world.news#.
-dlg shop.greet [here.shop=open] : We can look at what's wanted and establish the price before either paw strays towards the ink.
-dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a repeat customer does possess one great advantage. You'll know what my flourishes cost.
-dlg shop.greet [here.shop=bare] : A fine display of bare counter today. I can still consider what you bring to sell.
-dlg shop.greet [here.shop=asleep] : My pen is off duty. So is the paw generally attached to it.
-dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Prices are quite legible from where you're standing. Point to what's wanted.
-dlg shop.prices [here.shop=open] : Describe the work and I'll state the charge in ordinary numbers. Decorative figures cost extra.
-dlg shop.bye : I hope whatever you take away is pleasantly easy to read.
-dlg shop.bye [here.shop=asleep] : The pen and I are staying put till opening.
-
+dlg @1 resident.hub : I've space for a conversation provided it doesn't insist on fitting into one narrow column.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your entry continues on more than one page by now.
+dlg @3 resident.hub [here.time=night] : The roofs are rather less informative at night. A living visitor improves the view.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Ask from there, please. The papers aren't among the refreshments.
+dlg @1 resident.job [self.role=merchant self.job=scholar] : #self.trade_words.capitalize#. My preference is to sell one intelligible sentence than a very large mysterious paragraph.
+dlg @2 resident.job : My work ought to be understandable in my absence.
+dlg @1 resident.bye : May your chosen reference point continue to stand still.
+dlg @1 resident.gossip [here.gossip=no] : A clear page where the gossip would belong. The empty space pleases me.
+dlg @2 resident.gossip [here.gossip=yes] : The report is that #topic.subject# #topic.claim#. My part is the reporting, which deserves a small separate heading.
+dlg @1 resident.news [world.news] : News has come by way of #world.news_from#. Here's the substance. #world.news#.
+dlg @1 shop.greet [here.shop=open] : We can look at what's wanted and establish the price before either paw strays towards the ink.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a repeat customer does possess one great advantage. You'll know what my flourishes cost.
+dlg @3 shop.greet [here.shop=bare] : A fine display of bare counter today. I can still consider what you bring to sell.
+dlg @4 shop.greet [here.shop=asleep] : My pen is off duty. So is the paw generally attached to it.
+dlg @5 shop.greet [here.shop=open pair.disposition=wary|hostile] : Prices are quite legible from where you're standing. Point to what's wanted.
+dlg @1 shop.prices [here.shop=open] : Describe the work and I'll state the charge in ordinary numbers. Decorative figures cost extra.
+dlg @1 shop.bye : I hope whatever you take away is pleasantly easy to read.
+dlg @2 shop.bye [here.shop=asleep] : The pen and I are staying put till opening.
 graft resident.hub
 choice Could a bird help me locate a distant mast? -> wingmark
 node wingmark

@@ -1,9 +1,12 @@
+# rm555, the rose-knot pause (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm555
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_tove_wetgate
+written_by codex
 title the rose-knot pause
 fits stage=adult|old
 prefers job=carter
@@ -39,50 +42,49 @@ room = a well-swept room | my orderly corner
 rain = a warm lifting shower | a shower soft as soup steam
 
 any
-opinion houses mixed 1 : A House with ships to spare could make me a very fair offer if a dry coast appears on the sailing list.
-opinion merchants mixed 1 : Tie the parcels soundly and name the whole weight. That will put me in a trading mood.
-opinion newcomers for 1 : A newcomer should see the far handle before having to guess how this market likes a load carried.
-opinion road for 1 : A road across the city has a drier end somewhere. I've a professional interest in reaching it.
-opinion festivals mixed 1 : I can carry a festival and still wish there were one fewer drum between my ear and the next porter.
-opinion city for 1 : I know my native city by the way bundles of the same weight pull differently on its hills.
-opinion dole for 1 : Broth that's warm now ought to travel on the next pair of shoulders.
-opinion strangers mixed 1 : I'll listen to an unfamiliar customer. A covered parcel has to answer a little more plainly than a face.
+opinion @1 houses mixed 1 : A House with ships to spare could make me a very fair offer if a dry coast appears on the sailing list.
+opinion @1 merchants mixed 1 : Tie the parcels soundly and name the whole weight. That will put me in a trading mood.
+opinion @1 newcomers for 1 : A newcomer should see the far handle before having to guess how this market likes a load carried.
+opinion @1 road for 1 : A road across the city has a drier end somewhere. I've a professional interest in reaching it.
+opinion @1 festivals mixed 1 : I can carry a festival and still wish there were one fewer drum between my ear and the next porter.
+opinion @1 city for 1 : I know my native city by the way bundles of the same weight pull differently on its hills.
+opinion @1 dole for 1 : Broth that's warm now ought to travel on the next pair of shoulders.
+opinion @1 strangers mixed 1 : I'll listen to an unfamiliar customer. A covered parcel has to answer a little more plainly than a face.
 
 grown
-line greet [pair.band=strangers] : Here's a free handle and a civil welcome. | Good to see someone taller than my cargo.
-line greet [self.working=yes] : Give my strap a hand's breadth and come through. | Welcome alongside these unsociable parcels.
-line greet [here.time=dawn] : Morning. Market's put its shoulders on. | Fresh lifting light. Come under it.
-line greet [here.time=dusk|night] : Evening. Cord rose nearly finished. | Come catch the clearance after market.
-line kin.open [pair.kin!=no] : Family can set a burden down with me. | Household business earns the broad handle.
-line again.open : Back with both handles showing. | We're on the return carry now.
-line greet.return : Another welcome worth setting a bundle down for. | There's your face beyond the lashing.
-line greet.return [pair.band=friends|family] : Good to have a face I trust beside the parcel. | You know where my breathing space is.
-line greet.return [self.working=yes] : Let me seat this strap. I'm listening. | My loose end can keep my fingers occupied.
-line greet.return [here.time=dusk|night] : Late company stays visible longer than cargo. | Evening. The last loop's yours to look at.
-line farewell : Dry sky over your travelling strap. | Don't give the short handle all the work.
-line farewell.return : We'll find the paired handles again. | Save your strength for the home carry.
-line farewell.return [here.time=night] : Rest without a weight across your shoulder. | May your bunk stay out of the weather.
-line react.news : Lay out what the wrapping concealed. | What's come in with the market loads?
-line react.news.new : A new shape of parcel to me. | Nobody's brought those words down my lane before.
-line react.news.known : Yes. That's crossed my shoulder earlier. | The cord round that account looks familiar.
-line react.news.doubt : I'd ask the porter who lifted it before settling the question of weight. | A fine ribbon tells me regrettably little about the parcel inside.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A cruel weight for one back. | I'll keep my end steady if you want to speak.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's a welcome load brought home. | Good enough to tie an extra petal for.
-line ask.how : How heavily was your strap sitting this morning? | What sort of cargo was today for you?
-line answer.how : My stride's a little short today. My tongue's fine. | I've nearly worked my breath into a flower.
-line decline : I need to leave this shoulder free for a parcel already promised. | I'd better save what strength remains for the return carry.
-line accept_decline : Then the parcel stays this side. I hear you. | Good. A clear refusal lifts easily.
-line thank : Your hand on the burden counted. | I'll recall which shoulder spared me the pull.
-line sympathise : Let me keep the awkward end awhile. | You can take a breath between two loops.
-line reassure : The load may wait while your paws settle. | We've nobody's pace to keep for this moment.
-line preclose : My shoulder wants its working strap again. | I'm near the last loop before going.
-line accept_preclose : This stretch of paving can take the bundle. | We'll tie that end another day.
-line deflect_thanks : A friendly hand hardly needs a label. | No coin for a well-placed grip.
-line ack : I hear precisely which end is heavy. | That puts the weight where I expected.
-line give.advice : Try the weight before admiring the pretty string. | Give both carriers sight of the next turning.
-line offer : There's room on my barrow for a troublesome corner. | I could lend you a little dry cord.
-line praise : A tidy landing for a top-heavy business. | You lifted with a particularly sensible pause.
-
+line @1 greet [pair.band=strangers] : Here's a free handle and a civil welcome. | Good to see someone taller than my cargo.
+line @2 greet [self.working=yes] : Give my strap a hand's breadth and come through. | Welcome alongside these unsociable parcels.
+line @3 greet [here.time=dawn] : Morning. Market's put its shoulders on. | Fresh lifting light. Come under it.
+line @4 greet [here.time=dusk|night] : Evening. Cord rose nearly finished. | Come catch the clearance after market.
+line @1 kin.open [pair.kin!=no] : Family can set a burden down with me. | Household business earns the broad handle.
+line @1 again.open : Back with both handles showing. | We're on the return carry now.
+line @1 greet.return : Another welcome worth setting a bundle down for. | There's your face beyond the lashing.
+line @2 greet.return [pair.band=friends|family] : Good to have a face I trust beside the parcel. | You know where my breathing space is.
+line @3 greet.return [self.working=yes] : Let me seat this strap. I'm listening. | My loose end can keep my fingers occupied.
+line @4 greet.return [here.time=dusk|night] : Late company stays visible longer than cargo. | Evening. The last loop's yours to look at.
+line @1 farewell : Dry sky over your travelling strap. | Don't give the short handle all the work.
+line @1 farewell.return : We'll find the paired handles again. | Save your strength for the home carry.
+line @2 farewell.return [here.time=night] : Rest without a weight across your shoulder. | May your bunk stay out of the weather.
+line @1 react.news : Lay out what the wrapping concealed. | What's come in with the market loads?
+line @1 react.news.new : A new shape of parcel to me. | Nobody's brought those words down my lane before.
+line @1 react.news.known : Yes. That's crossed my shoulder earlier. | The cord round that account looks familiar.
+line @1 react.news.doubt : I'd ask the porter who lifted it before settling the question of weight. | A fine ribbon tells me regrettably little about the parcel inside.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A cruel weight for one back. | I'll keep my end steady if you want to speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now that's a welcome load brought home. | Good enough to tie an extra petal for.
+line @1 ask.how : How heavily was your strap sitting this morning? | What sort of cargo was today for you?
+line @1 answer.how : My stride's a little short today. My tongue's fine. | I've nearly worked my breath into a flower.
+line @1 decline : I need to leave this shoulder free for a parcel already promised. | I'd better save what strength remains for the return carry.
+line @1 accept_decline : Then the parcel stays this side. I hear you. | Good. A clear refusal lifts easily.
+line @1 thank : Your hand on the burden counted. | I'll recall which shoulder spared me the pull.
+line @1 sympathise : Let me keep the awkward end awhile. | You can take a breath between two loops.
+line @1 reassure : The load may wait while your paws settle. | We've nobody's pace to keep for this moment.
+line @1 preclose : My shoulder wants its working strap again. | I'm near the last loop before going.
+line @1 accept_preclose : This stretch of paving can take the bundle. | We'll tie that end another day.
+line @1 deflect_thanks : A friendly hand hardly needs a label. | No coin for a well-placed grip.
+line @1 ack : I hear precisely which end is heavy. | That puts the weight where I expected.
+line @1 give.advice : Try the weight before admiring the pretty string. | Give both carriers sight of the next turning.
+line @1 offer : There's room on my barrow for a troublesome corner. | I could lend you a little dry cord.
+line @1 praise : A tidy landing for a top-heavy business. | You lifted with a particularly sensible pause.
 scene rose
 when topic=pastimes self.likes=knots
 does tell.self / ask.detail / answer.detail
@@ -359,19 +361,18 @@ does aside
 cooldown 11h
 say Peg for the strap and bowl for the rose. | A lighter shoulder going home.
 
-dlg resident.hub : If it's freight I'll want its weight. For ordinary talk I've both ears free and a spare cord end to keep the fingers happy.
-dlg resident.hub [topic.meeting=known] : #topic.player#, back on the market side of the handle with me.
-dlg resident.job [self.job=carter self.trade_words] : I earn my keep #self.trade_words#. The last handle is seldom as light as the first looked.
-dlg resident.news [world.news] : Here's a report that came across the carrying square. #world.news#
-dlg resident.bye : A dry collar and a well-set strap on your next carry.
-dlg resident.hub [here.time=dawn] : Early yet. You can see every handle without climbing over a customer.
-dlg resident.hub [here.time=dusk] : Come meet the porter standing just behind the final bundle.
-dlg resident.hub [self.working=yes] : Leave the turning space clear and we'll talk pleasantly enough.
-dlg resident.hub [pair.disposition=wary|hostile] : Let's hear what actually wants carrying before we begin dressing it up.
-dlg resident.job [self.master=yes] : I have a teaching knot that looks very fine and shouldn't take an ounce of goods. A learner gets to see the difference on an empty box.
-dlg resident.hub [self.likes=knots] : There's a new loop on the rose today. You can look while I listen.
-dlg resident.bye [here.time=night] : Good sleep under a roof no damp can get under.
-
+dlg @1 resident.hub : If it's freight I'll want its weight. For ordinary talk I've both ears free and a spare cord end to keep the fingers happy.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, back on the market side of the handle with me.
+dlg @1 resident.job [self.job=carter self.trade_words] : #self.trade_words.capitalize#, that's my keep. The last handle is seldom as light as the first looked.
+dlg @1 resident.news [world.news] : Here's a report that came across the carrying square. #world.news#
+dlg @1 resident.bye : A dry collar and a well-set strap on your next carry.
+dlg @3 resident.hub [here.time=dawn] : Early yet. You can see every handle without climbing over a customer.
+dlg @4 resident.hub [here.time=dusk] : Come meet the porter standing just behind the final bundle.
+dlg @5 resident.hub [self.working=yes] : Leave the turning space clear and we'll talk pleasantly enough.
+dlg @6 resident.hub [pair.disposition=wary|hostile] : Let's hear what actually wants carrying before we begin dressing it up.
+dlg @2 resident.job [self.master=yes] : I have a teaching knot that looks very fine and shouldn't take an ounce of goods. A learner gets to see the difference on an empty box.
+dlg @7 resident.hub [self.likes=knots] : There's a new loop on the rose today. You can look while I listen.
+dlg @2 resident.bye [here.time=night] : Good sleep under a roof no damp can get under.
 graft @rose resident.hub
 choice What's the extra petal on the porter knot? -> porter_rose
 node porter_rose
@@ -383,6 +384,7 @@ node porter_load
 say I'd give you the actual lashing for that. The rose advertises my fingers' patience. It has never advertised what a box weighs.
 choice I'd try it on an empty box first. -> hub
 choice Good carrying weather to you. -> bye
+
 graft @bunk resident.hub
 choice What sort of berth would tempt a market porter? -> porter_bunk
 node porter_bunk

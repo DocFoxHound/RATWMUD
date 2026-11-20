@@ -1,9 +1,12 @@
+# rm497, the promised cup's notch (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm497
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_desmond_dripcot
+written_by codex
 title the promised cup's notch
 fits stage=adult|old
 prefers job=guard
@@ -39,50 +42,49 @@ floor = a bare stone flag | a clean block of stone
 nick = a narrow knife line | a faint starting mark
 
 any
-opinion houses against 1 : The landlord's duty has a clear beginning. Right where rain gets in through a roof that's being paid for.
-opinion festivals against 1 : Spilt drink makes poor footing for a watchful wolf and the din makes an honest word difficult to hear.
-opinion watch mixed 1 : A badge gives a wolf a duty. I judge the wearer by what comes back through the door after a promise.
-opinion sump for 1 : In the Sump a neighbour will pass a cup through a gap without first asking for the gap to be widened.
-opinion road for 1 : Give me a sound road over which a tired pair of feet can keep going. I'll attend to my business on it.
-opinion dole mixed 0 : We can dispute what dinner cost after the bowl has been washed. Before that I mind the serving.
-opinion merchants mixed 0 : A cup sold as full should reach the line at its rim. Honest sellers have no difficulty with that.
-opinion strangers mixed 0 : I listen for a plain request before deciding the answer a stranger ought to hear.
+opinion @1 houses against 1 : The landlord's duty has a clear beginning. Right where rain gets in through a roof that's being paid for.
+opinion @1 festivals against 1 : Spilt drink makes poor footing for a watchful wolf and the din makes an honest word difficult to hear.
+opinion @1 watch mixed 1 : A badge gives a wolf a duty. I judge the wearer by what comes back through the door after a promise.
+opinion @1 sump for 1 : In the Sump a neighbour will pass a cup through a gap without first asking for the gap to be widened.
+opinion @1 road for 1 : Give me a sound road over which a tired pair of feet can keep going. I'll attend to my business on it.
+opinion @1 dole mixed 0 : We can dispute what dinner cost after the bowl has been washed. Before that I mind the serving.
+opinion @1 merchants mixed 0 : A cup sold as full should reach the line at its rim. Honest sellers have no difficulty with that.
+opinion @1 strangers mixed 0 : I listen for a plain request before deciding the answer a stranger ought to hear.
 
 grown
-line greet [pair.band=strangers] : New face. Speak where the cup board's clear. | Stand in the open. I'm listening.
-line greet [self.working=yes] : I've one working ear for your business. | Keep the handle free of your sleeve.
-line greet [here.time=dawn] : Morning. The jug's been rinsed. | Daybreak and a smooth place on the stick.
-line greet [here.time=dusk|night] : Evening. The marks are still visible. | Come to the light on the flat wood.
-line kin.open [pair.kin!=no] : Kin have the familiar place at the board. | There's a household face beyond the jug.
-line again.open : Another turn before the stick is smooth. | You've come across my line twice.
-line greet.return : I heard. Speak plainly now. | Good. I can put the cup down.
-line greet.return [pair.band=friends|family] : A known voice can keep its ordinary strength. | I've time for a direct word from you.
-line greet.return [self.working=yes] : Speak while the jug stands upright. | Room between two duties. Use it.
-line greet.return [here.time=dusk|night] : Evening. Close enough for ordinary talk. | The last lamp carries your outline clearly.
-line farewell : See your promise as far as the return. | Dry footing beyond the stone.
-line farewell.return : I'll mark you safely away. | A clean cup at the far end.
-line farewell.return [here.time=night] : Find the sound steps beyond the lamp tonight. | Late duties ought to come to a clear close.
-line react.news : How much of that is your own word? | Give me the account as straight as the grain.
-line react.news.new : New notch for this ear. | First hearing beside my cup board.
-line react.news.known : That one has a cut already. | I know its straight edge from earlier.
-line react.news.doubt : The notch doesn't fit the account you've given. | I'd wait for a firsthand word before carving that in.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad news. I've water to spare if your throat's dry. | Keep the painful bit private awhile.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a promise come home in good shape. | Glad. I'll remember which voice brought the news.
-line ask.how : How much are you still carrying? | Did the day keep its side of the bargain?
-line answer.how : My duty's clear. My patience less so. | Still rubbing one stubborn edge level.
-line decline : I ought to keep this hour free to honour a particular promise. | I'd rather finish what I can honestly answer for.
-line accept_decline : Straight answer. That's all I required. | Then we've no debt on that matter.
-line thank : You've brought that account back sound. | A good turn I shall mark properly.
-line sympathise : Have water before attempting the rest of the words. | I'll attend to what's within reach.
-line reassure : One clean cup is an honest beginning. | You've time to give just the plain account.
-line preclose : The stick's still got some rough work on it. | Time I finished what I said I'd do.
-line accept_preclose : Go with your part clearly understood. | I'll return to my own tally in a moment.
-line deflect_thanks : A word kept needs no celebration. | It was the cup I undertook to bring.
-line ack : Marked true. | Yes, square.
-line give.advice : Write down what you owe before what others owe you. | Put the promised thing within the promised paw's reach.
-line offer : I can bring the clean jug myself. | Let me carry the part I've undertaken.
-line praise : You made the account plain without any dressing-up. | That piece of work will do its honest share.
-
+line @1 greet [pair.band=strangers] : New face. Speak where the cup board's clear. | Stand in the open. I'm listening.
+line @2 greet [self.working=yes] : I've one working ear for your business. | Keep the handle free of your sleeve.
+line @3 greet [here.time=dawn] : Morning. The jug's been rinsed. | Daybreak and a smooth place on the stick.
+line @4 greet [here.time=dusk|night] : Evening. The marks are still visible. | Come to the light on the flat wood.
+line @1 kin.open [pair.kin!=no] : Kin have the familiar place at the board. | There's a household face beyond the jug.
+line @1 again.open : Another turn before the stick is smooth. | You've come across my line twice.
+line @1 greet.return : I heard. Speak plainly now. | Good. I can put the cup down.
+line @2 greet.return [pair.band=friends|family] : A known voice can keep its ordinary strength. | I've time for a direct word from you.
+line @3 greet.return [self.working=yes] : Speak while the jug stands upright. | Room between two duties. Use it.
+line @4 greet.return [here.time=dusk|night] : Evening. Close enough for ordinary talk. | The last lamp carries your outline clearly.
+line @1 farewell : See your promise as far as the return. | Dry footing beyond the stone.
+line @1 farewell.return : I'll mark you safely away. | A clean cup at the far end.
+line @2 farewell.return [here.time=night] : Find the sound steps beyond the lamp tonight. | Late duties ought to come to a clear close.
+line @1 react.news : How much of that is your own word? | Give me the account as straight as the grain.
+line @1 react.news.new : New notch for this ear. | First hearing beside my cup board.
+line @1 react.news.known : That one has a cut already. | I know its straight edge from earlier.
+line @1 react.news.doubt : The notch doesn't fit the account you've given. | I'd wait for a firsthand word before carving that in.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bad news. I've water to spare if your throat's dry. | Keep the painful bit private awhile.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a promise come home in good shape. | Glad. I'll remember which voice brought the news.
+line @1 ask.how : How much are you still carrying? | Did the day keep its side of the bargain?
+line @1 answer.how : My duty's clear. My patience less so. | Still rubbing one stubborn edge level.
+line @1 decline : I ought to keep this hour free to honour a particular promise. | I'd rather finish what I can honestly answer for.
+line @1 accept_decline : Straight answer. That's all I required. | Then we've no debt on that matter.
+line @1 thank : You've brought that account back sound. | A good turn I shall mark properly.
+line @1 sympathise : Have water before attempting the rest of the words. | I'll attend to what's within reach.
+line @1 reassure : One clean cup is an honest beginning. | You've time to give just the plain account.
+line @1 preclose : The stick's still got some rough work on it. | Time I finished what I said I'd do.
+line @1 accept_preclose : Go with your part clearly understood. | I'll return to my own tally in a moment.
+line @1 deflect_thanks : A word kept needs no celebration. | It was the cup I undertook to bring.
+line @1 ack : Marked true. | Yes, square.
+line @1 give.advice : Write down what you owe before what others owe you. | Put the promised thing within the promised paw's reach.
+line @1 offer : I can bring the clean jug myself. | Let me carry the part I've undertaken.
+line @1 praise : You made the account plain without any dressing-up. | That piece of work will do its honest share.
 scene cup
 when topic=work self.job=guard self.role=guard
 does tell.self / ask.detail / answer.detail
@@ -359,20 +361,19 @@ does aside
 cooldown 11h
 say Open the bundle at its tightest point. | Clean underneath as carefully as the visible surface.
 
-dlg resident.hub : Stand just past the cup board. What you say goes in one ear and I'm minded to give the rest a proper hearing.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've heard your voice and seen your face together before.
-dlg resident.hub [pair.disposition=hostile|wary] : Keep your request plain and I'll answer the business in it.
-dlg resident.hub [here.time=dawn] : Clean water, straight wood and the first clear light. Give your word.
-dlg resident.hub [here.time=night] : Talk quietly for anybody trying to rest beyond a shut door.
-dlg resident.job [self.role=guard self.job=guard self.trade_words] : #self.trade_words.capitalize#. A plain duty that includes a proper cup of water when one is promised.
-dlg resident.job : I mark only what requires doing and work till the whole promise is kept.
-dlg resident.news [world.news] : I can stand behind hearing these words. #world.news#
-dlg resident.bye : See your own business finished squarely before you call it settled.
-dlg resident.bye [here.time=night] : Safe under your roof before this lamp needs another trim.
-dlg resident.hub [self.working=yes] : You have my attention while the jug stands clear. Use a straightforward voice.
-dlg watch.bye [self.role=guard] : The account's closed for this visit. Take your time getting back onto the sound ground.
-dlg resident.hub [pair.band=friends|family] : You may stand by my good carving side. Mind the little chips underfoot.
-
+dlg @1 resident.hub : Stand just past the cup board. What you say goes in one ear and I'm minded to give the rest a proper hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've heard your voice and seen your face together before.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Keep your request plain and I'll answer the business in it.
+dlg @4 resident.hub [here.time=dawn] : Clean water, straight wood and the first clear light. Give your word.
+dlg @5 resident.hub [here.time=night] : Talk quietly for anybody trying to rest beyond a shut door.
+dlg @1 resident.job [self.role=guard self.job=guard self.trade_words] : #self.trade_words.capitalize#. A plain duty that includes a proper cup of water when one is promised.
+dlg @2 resident.job : I mark only what requires doing and work till the whole promise is kept.
+dlg @1 resident.news [world.news] : I can stand behind hearing these words. #world.news#
+dlg @1 resident.bye : See your own business finished squarely before you call it settled.
+dlg @2 resident.bye [here.time=night] : Safe under your roof before this lamp needs another trim.
+dlg @6 resident.hub [self.working=yes] : You have my attention while the jug stands clear. Use a straightforward voice.
+dlg @1 watch.bye [self.role=guard] : The account's closed for this visit. Take your time getting back onto the sound ground.
+dlg @7 resident.hub [pair.band=friends|family] : You may stand by my good carving side. Mind the little chips underfoot.
 graft @cup resident.hub
 choice Why do you wait for the empty cup? -> cup_return
 node cup_return
@@ -384,6 +385,7 @@ node cup_shave
 say I shave the edge down to its floor. The stick gets thinner and the promise goes home whole. Eventually a little scrap is good for a fire.
 choice I'll remember the empty cup. -> hub
 choice I leave you to your rounds. -> bye
+
 graft @bird resident.hub
 choice Has every piece of wood got a tally in it? -> ash_grain
 node ash_grain

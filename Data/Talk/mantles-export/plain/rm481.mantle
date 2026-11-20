@@ -1,9 +1,12 @@
+# rm481, the floating spoon (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm481
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_berit_mudton
+written_by codex
 title the floating spoon
 fits stage=adult|old
 prefers job=sailor talk=quiet
@@ -34,45 +37,44 @@ dampcuff = a damp patch on my cuff | a half-wet sleeve
 kindbeat = a steady walking beat | a gentle rhythm
 
 any
-opinion city for 1 : I'd miss the sound of spoons against a hundred breakfast bowls.
-opinion merchants against 1 : Give me a measure that holds the same amount whichever side of the pot you're standing on.
-opinion festivals against 1 : From an upstairs window the singing comes clear and the elbows don't.
-opinion dole for 1 : A meal in a warm room can keep doing good quite late into the next day.
-opinion drink mixed 0 : Cider goes down easily enough. Remember which tune you meant to sing before you order another.
-opinion road mixed 0 : An old map makes fine company provided nobody makes the mistake of following it too closely.
-opinion times mixed 0 : Look into the pot and judge what sort of week it's been.
+opinion @1 city for 1 : I'd miss the sound of spoons against a hundred breakfast bowls.
+opinion @1 merchants against 1 : Give me a measure that holds the same amount whichever side of the pot you're standing on.
+opinion @1 festivals against 1 : From an upstairs window the singing comes clear and the elbows don't.
+opinion @1 dole for 1 : A meal in a warm room can keep doing good quite late into the next day.
+opinion @1 drink mixed 0 : Cider goes down easily enough. Remember which tune you meant to sing before you order another.
+opinion @1 road mixed 0 : An old map makes fine company provided nobody makes the mistake of following it too closely.
+opinion @1 times mixed 0 : Look into the pot and judge what sort of week it's been.
 
 grown
-line greet : Welcome to the quiet end.
-line greet [pair.band=strangers] : There's space in today's chorus for an unfamiliar note.
-line greet [here.time=dawn] : Morning. There's still silence between the first few bowls.
-line greet [here.time=dusk|night] : Evening. The longer tunes fit now.
-line greet.return : I'm listening between the little clinks.
-line greet.return [pair.band=friends|family] : There's the note this seat was short of.
-line greet.return [self.working=yes] : Go on, the spoon can keep its own count.
-line greet.return [here.time=dusk|night] : Your voice travels very clearly at this hour.
-line kin.open [pair.kin!=no] : Come sit inside the curve, kin.
-line again.open : A little rest and then the tune continues.
-line hail [pair.band=friends] : Friend, I've saved the wall side.
-line farewell : Go easy past the stacked bowls.
-line farewell.return : And save a second dry crease for my spoon.
-line react.news : Tell it without the extra beat.
-line react.news.new : First time I've heard that struck.
-line react.news.known : Same words. A different rim, perhaps.
-line react.news.doubt : I'd hear it in a quieter room before I trusted it.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We've time for a silence after that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That one deserves a chorus.
-line ask.how : Any warmth left in your bowl?
-line answer.how : It's been a day for small, well-spaced mouthfuls.
-line thank : That made the load sit evenly. Thank you.
-line deflect_thanks : The cloth needed folding anyway.
-line sympathise : I've a seat that asks nothing of its occupant.
-line reassure : Let the noise settle. You'll hear your own thought again.
-line decline : I owe another turn at the cloth tonight.
-line accept_decline : Fair enough. I'll put the ladle down.
-line preclose : I'd like to finish before anything boils away.
-line accept_preclose : We can set this conversation down quite gently.
-
+line @1 greet : Welcome to the quiet end.
+line @2 greet [pair.band=strangers] : There's space in today's chorus for an unfamiliar note.
+line @3 greet [here.time=dawn] : Morning. There's still silence between the first few bowls.
+line @4 greet [here.time=dusk|night] : Evening. The longer tunes fit now.
+line @1 greet.return : I'm listening between the little clinks.
+line @2 greet.return [pair.band=friends|family] : There's the note this seat was short of.
+line @3 greet.return [self.working=yes] : Go on, the spoon can keep its own count.
+line @4 greet.return [here.time=dusk|night] : Your voice travels very clearly at this hour.
+line @1 kin.open [pair.kin!=no] : Come sit inside the curve, kin.
+line @1 again.open : A little rest and then the tune continues.
+line @1 hail [pair.band=friends] : Friend, I've saved the wall side.
+line @1 farewell : Go easy past the stacked bowls.
+line @1 farewell.return : And save a second dry crease for my spoon.
+line @1 react.news : Tell it without the extra beat.
+line @1 react.news.new : First time I've heard that struck.
+line @1 react.news.known : Same words. A different rim, perhaps.
+line @1 react.news.doubt : I'd hear it in a quieter room before I trusted it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We've time for a silence after that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That one deserves a chorus.
+line @1 ask.how : Any warmth left in your bowl?
+line @1 answer.how : It's been a day for small, well-spaced mouthfuls.
+line @1 thank : That made the load sit evenly. Thank you.
+line @1 deflect_thanks : The cloth needed folding anyway.
+line @1 sympathise : I've a seat that asks nothing of its occupant.
+line @1 reassure : Let the noise settle. You'll hear your own thought again.
+line @1 decline : I owe another turn at the cloth tonight.
+line @1 accept_decline : Fair enough. I'll put the ladle down.
+line @1 preclose : I'd like to finish before anything boils away.
+line @1 accept_preclose : We can set this conversation down quite gently.
 scene spoon_boat
 when topic=food
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Three clinks and a boot for the fourth.
 
-dlg resident.hub : A quiet word will reach this side of the steam.
-dlg resident.hub [topic.meeting=known] : #topic.player#. You've come in exactly on the rest.
-dlg resident.hub [here.time=dusk] : Come out of the bowl traffic and we'll have a word.
-dlg resident.hub [pair.disposition=hostile|wary] : You can speak from beyond that empty seat.
-dlg resident.job [self.trade_words] : The post is #self.trade_words#. I get the warm things where they're wanted.
-dlg resident.news [world.news] : The report names #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That account's simmered quite long enough.
-dlg resident.bye : Leave the spoon resting there. Happy journey.
-
+dlg @1 resident.hub : A quiet word will reach this side of the steam.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You've come in exactly on the rest.
+dlg @3 resident.hub [here.time=dusk] : Come out of the bowl traffic and we'll have a word.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You can speak from beyond that empty seat.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. I get the warm things where they're wanted.
+dlg @1 resident.news [world.news] : The report names #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That account's simmered quite long enough.
+dlg @1 resident.bye : Leave the spoon resting there. Happy journey.
 graft resident.hub
 choice Can a pot really keep a tune? -> low_note
 node low_note

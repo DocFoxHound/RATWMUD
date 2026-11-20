@@ -1,14 +1,17 @@
+# rm529, the black square (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm529
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ivo_wickgate
+written_by codex
 title the black square
 fits stage=adult|old
 prefers job=servant warmth=warm
 traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
-quirk keeps_a_smooth_coal_counter_for_a_draughtsboard_with_one_missing_piece
+quirk keeps_a_coal_counter_for_a_draughtsboard_short_a_piece
 likes crisp_apples draughts quiet_chapel frosty_mornings
 dislikes early_bells wet_floors
 fears a_wet_footprint_across_a_finished_floor a_game_put_away_without_a_return_move
@@ -34,45 +37,44 @@ chapelair = the stillness under the chapel roof | the quiet inside a chapel
 sillwarm = the warmth in a narrow sill | a window ledge holding its heat
 
 any
-opinion city for 1 : I welcome a short walk between my working door and my home door. It gives the evening time to arrive.
-opinion houses mixed 0 : A house can give a wolf steady work and should earn a steady answer in return.
-opinion church for 1 : A chapel leaves more room for thought if you enter with your claims and enquiries left outside.
-opinion road for 1 : A kept path makes the first step indoors cleaner. That's an improvement at both ends.
-opinion dole for 1 : A little food given quietly preserves a great deal of pride.
-opinion festivals mixed 0 : I'd save the earliest bell for a decent hour and give the dancing all the lost time.
-opinion strangers for 1 : A visitor's boots may be wet. There's no reason for the welcome to be cold as well.
+opinion @1 city for 1 : I welcome a short walk between my working door and my home door. It gives the evening time to arrive.
+opinion @1 houses mixed 0 : A house can give a wolf steady work and should earn a steady answer in return.
+opinion @1 church for 1 : A chapel leaves more room for thought if you enter with your claims and enquiries left outside.
+opinion @1 road for 1 : A kept path makes the first step indoors cleaner. That's an improvement at both ends.
+opinion @1 dole for 1 : A little food given quietly preserves a great deal of pride.
+opinion @1 festivals mixed 0 : I'd save the earliest bell for a decent hour and give the dancing all the lost time.
+opinion @1 strangers for 1 : A visitor's boots may be wet. There's no reason for the welcome to be cold as well.
 
 grown
-line greet : A clean square here beside me.
-line greet [pair.band=strangers] : A fresh visitor can have the first move.
-line greet [here.time=dawn] : Morning. Frost still holding in the corners.
-line greet [here.time=dusk|night] : Evening has reached the windowsill.
-line greet.return : It's your move. I haven't forgotten.
-line greet.return [pair.band=friends|family] : There's a familiar step behind that voice.
-line greet.return [self.working=yes] : My fingers can finish a turn while I listen.
-line greet.return [here.time=dusk|night] : The house is quiet. Your voice reaches the board.
-line kin.open [pair.kin!=no] : Kin, the coal piece is yours to turn over.
-line again.open : The game has held its place for both of us.
-line hail [pair.band=friends] : Friend, come share a good square of dry floor.
-line farewell : Keep a sure footing going home.
-line farewell.return : And save a counter for next time.
-line react.news : Set the first bit within my reach.
-line react.news.new : That has only just crossed my board.
-line react.news.known : I could follow that one's earlier track in dust.
-line react.news.doubt : Might we wipe that square and look again?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The board can wait. Sit quietly beside me.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a bright square to end on.
-line ask.how : Did today offer you any easy moves?
-line answer.how : A little restless, though all the pieces are here.
-line thank : You gave a stray piece a place. Thank you.
-line deflect_thanks : There was plenty of room on my square.
-line sympathise : I'll sit the turn out along with you.
-line reassure : A move can take all the time it needs.
-line decline : I'm saving this part of the evening for another promise.
-line accept_decline : Then the square remains free. All quite fair.
-line preclose : I'll put the last piece back in its pocket.
-line accept_preclose : We'll leave the return move open.
-
+line @1 greet : A clean square here beside me.
+line @2 greet [pair.band=strangers] : A fresh visitor can have the first move.
+line @3 greet [here.time=dawn] : Morning. Frost still holding in the corners.
+line @4 greet [here.time=dusk|night] : Evening has reached the windowsill.
+line @1 greet.return : It's your move. I haven't forgotten.
+line @2 greet.return [pair.band=friends|family] : There's a familiar step behind that voice.
+line @3 greet.return [self.working=yes] : My fingers can finish a turn while I listen.
+line @4 greet.return [here.time=dusk|night] : The house is quiet. Your voice reaches the board.
+line @1 kin.open [pair.kin!=no] : Kin, the coal piece is yours to turn over.
+line @1 again.open : The game has held its place for both of us.
+line @1 hail [pair.band=friends] : Friend, come share a good square of dry floor.
+line @1 farewell : Keep a sure footing going home.
+line @1 farewell.return : And save a counter for next time.
+line @1 react.news : Set the first bit within my reach.
+line @1 react.news.new : That has only just crossed my board.
+line @1 react.news.known : I could follow that one's earlier track in dust.
+line @1 react.news.doubt : Might we wipe that square and look again?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The board can wait. Sit quietly beside me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a bright square to end on.
+line @1 ask.how : Did today offer you any easy moves?
+line @1 answer.how : A little restless, though all the pieces are here.
+line @1 thank : You gave a stray piece a place. Thank you.
+line @1 deflect_thanks : There was plenty of room on my square.
+line @1 sympathise : I'll sit the turn out along with you.
+line @1 reassure : A move can take all the time it needs.
+line @1 decline : I'm saving this part of the evening for another promise.
+line @1 accept_decline : Then the square remains free. All quite fair.
+line @1 preclose : I'll put the last piece back in its pocket.
+line @1 accept_preclose : We'll leave the return move open.
 scene coal_game
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say What a fine white edge to the window.
 
-dlg resident.hub : Come beside the board. There's time before anyone needs this bit of floor.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I kept the black piece in play for you.
-dlg resident.hub [here.time=dusk] : The low light shows the game's little tracks.
-dlg resident.hub [pair.disposition=hostile|wary] : We can leave an open square between us.
-dlg resident.job [self.job=servant self.workplace] : At #self.workplace# I try to let the room feel ready before anyone has to ask.
-dlg resident.news [world.news] : Mark the first square #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That talk can sit a turn out. No harm in a little quiet.
-dlg resident.bye : Take your time on the step. It's the first square of your next game.
-
+dlg @1 resident.hub : Come beside the board. There's time before anyone needs this bit of floor.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I kept the black piece in play for you.
+dlg @3 resident.hub [here.time=dusk] : The low light shows the game's little tracks.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : We can leave an open square between us.
+dlg @1 resident.job [self.job=servant self.workplace] : At #self.workplace# I try to let the room feel ready before anyone has to ask.
+dlg @1 resident.news [world.news] : Mark the first square #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That talk can sit a turn out. No harm in a little quiet.
+dlg @1 resident.bye : Take your time on the step. It's the first square of your next game.
 graft resident.hub
 choice Why use coal for a missing draughtsman? -> coal_man
 node coal_man

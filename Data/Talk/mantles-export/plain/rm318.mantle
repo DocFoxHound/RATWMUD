@@ -1,9 +1,12 @@
+# rm318, the returning chime (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm318
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_berit_coalworth
+written_by codex
 title the returning chime
 fits stage=adult|old
 prefers job=priest
@@ -82,7 +85,6 @@ line @28 farewell.return [here.time=night] : A warm sill when the night round en
 line @29 greet [pair.band=friends] : Here comes a welcome sort of echo. | The map had room for a friend at this turning.
 line @30 answer.how [self.working=yes] : Enough purpose for my hands and motion for my feet. | Still sweeping in time with the stroke.
 line @31 preclose [here.time=dusk] : I should make a mark before there's too little light for chalk. | Time for the evening edge of my round.
-
 scene mapring
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
@@ -382,7 +384,6 @@ dlg @20 church.offering : Anything freely spared can help us make another welcom
 dlg @21 church.thanked : Your gift adds another place where someone can sit and eat.
 dlg @22 church.refused : #topic.why# The willing thought is welcome here.
 dlg @23 church.bye : May the Bright One light the part of your road I can't see.
-
 graft resident.hub
 choice What does the curved mark mean? -> echo_mark
 node echo_mark

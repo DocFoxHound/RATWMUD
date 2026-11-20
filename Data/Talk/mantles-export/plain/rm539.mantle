@@ -1,9 +1,12 @@
+# rm539, the tray-steadying verse (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm539
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_oskar_sootwick
+written_by codex
 title the tray-steadying verse
 fits stage=adult|old
 prefers job=servant
@@ -39,50 +42,49 @@ coal = the charcoal scent | a faint wooded smell
 reed = the waterside reed | a long green stem
 
 any
-opinion festivals against 1 : Other wolves hear a holiday band. I hear six trays needing to pass through one door.
-opinion merchants against 1 : A chipped cup at a whole cup's price makes me particularly ready to read the rest of the bill.
-opinion houses mixed 1 : A fine establishment can keep a sound inventory and still never learn the music of its own back stairs.
-opinion city for 1 : My own city has a route from the serving door to quiet water which my feet remember through any long day.
-opinion dole for 1 : I'd much sooner carry a decent meal across the street than scrape good food into a pail.
-opinion road mixed 1 : Any road does well by bringing a traveller in by supper. There's small admiration left for it when the dishes wait till midnight.
-opinion strangers mixed 1 : At a new arrival's elbow I like to discover whether help is wanted before flourishing a cloth.
-opinion church mixed 1 : Once my humming subsides I can give my short prayer its proper breath.
+opinion @1 festivals against 1 : Other wolves hear a holiday band. I hear six trays needing to pass through one door.
+opinion @1 merchants against 1 : A chipped cup at a whole cup's price makes me particularly ready to read the rest of the bill.
+opinion @1 houses mixed 1 : A fine establishment can keep a sound inventory and still never learn the music of its own back stairs.
+opinion @1 city for 1 : My own city has a route from the serving door to quiet water which my feet remember through any long day.
+opinion @1 dole for 1 : I'd much sooner carry a decent meal across the street than scrape good food into a pail.
+opinion @1 road mixed 1 : Any road does well by bringing a traveller in by supper. There's small admiration left for it when the dishes wait till midnight.
+opinion @1 strangers mixed 1 : At a new arrival's elbow I like to discover whether help is wanted before flourishing a cloth.
+opinion @1 church mixed 1 : Once my humming subsides I can give my short prayer its proper breath.
 
 grown
-line greet [pair.band=strangers] : Welcome where the cups have settled. | Come inside the sweep of my tray.
-line greet [self.working=yes] : There's room along my unburdened side. | Mind my elbow. Welcome.
-line greet [here.time=dawn] : Morning under the cold bright eaves. | Fresh light for an orderly visit.
-line greet [here.time=dusk|night] : Evening. The last verse carries. | Come towards the warmer paving.
-line kin.open [pair.kin!=no] : Kin may hear the words behind my humming. | Household company, come through.
-line again.open : Another visit on the return verse. | Back in step with the traffic.
-line greet.return : There's your welcome on the brass rim. | Good to see you past the clattering door.
-line greet.return [pair.band=friends|family] : Good company within my natural reach. | A known footfall worth looking up for.
-line greet.return [self.working=yes] : Speak while the porcelain's quite still. | Another pair of ears beyond the tray.
-line greet.return [here.time=dusk|night] : Evening has a kinder carrying note. | Welcome where the lamplight meets the brass.
-line farewell : A quiet landing wherever you carry to. | May the last cup travel sound.
-line farewell.return : I'll keep the homeward tune ready. | Good footing at the next threshold.
-line farewell.return [here.time=night] : Find your bed without a bell for company. | Quiet over your roof till morning.
-line react.news : I'll hear the news once the rim is clear. | Give me the part worth carrying in.
-line react.news.new : New cargo for a very ordinary tray. | That hadn't made a sound here yet.
-line react.news.known : I've heard that tune in spoken form. | That travelled through the serving passage already.
-line react.news.doubt : I'd set that story down until somebody could account for its weight. | One ringing cup can make an entire tray sound broken.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A harsh note to carry indoors. | I'll stay till you've found your footing.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That would steady a whole trayful. | Pleasant news to take to the water.
-line ask.how : What tune did the day leave in your head? | Were the doors kind to your elbows today?
-line answer.how : My hand is steadier than my temper. | I have most of a fishing evening left.
-line decline : I need to keep an unburdened hand for the last round. | I'd best finish carrying what somebody is already waiting for.
-line accept_decline : All right. I'll leave the tray where it stands. | No second summons from me.
-line thank : You spared those dishes an awkward moment. | I felt the help at my sore elbow.
-line sympathise : We'll put the unnecessary noise outside. | Take a sheltered moment by this wall.
-line reassure : No hurry. The cups are standing level. | Let your breathing choose its own measure.
-line preclose : I'll need to catch the homeward verse. | The last setting wants a clean cloth.
-line accept_preclose : We've come to a decent resting note. | That makes a fair end to the round.
-line deflect_thanks : There's no charge on that little round. | I'd lend that same elbow again.
-line ack : I heard the word under the ringing. | That's come through quite clearly.
-line give.advice : Find the level before adding the next cup. | Hear the floor before trusting a polished sole.
-line offer : My free hand can steady that load. | My bench has a sheltered seat for company.
-line praise : You carried that without wasting a motion. | A neat landing in very close quarters.
-
+line @1 greet [pair.band=strangers] : Welcome where the cups have settled. | Come inside the sweep of my tray.
+line @2 greet [self.working=yes] : There's room along my unburdened side. | Mind my elbow. Welcome.
+line @3 greet [here.time=dawn] : Morning under the cold bright eaves. | Fresh light for an orderly visit.
+line @4 greet [here.time=dusk|night] : Evening. The last verse carries. | Come towards the warmer paving.
+line @1 kin.open [pair.kin!=no] : Kin may hear the words behind my humming. | Household company, come through.
+line @1 again.open : Another visit on the return verse. | Back in step with the traffic.
+line @1 greet.return : There's your welcome on the brass rim. | Good to see you past the clattering door.
+line @2 greet.return [pair.band=friends|family] : Good company within my natural reach. | A known footfall worth looking up for.
+line @3 greet.return [self.working=yes] : Speak while the porcelain's quite still. | Another pair of ears beyond the tray.
+line @4 greet.return [here.time=dusk|night] : Evening has a kinder carrying note. | Welcome where the lamplight meets the brass.
+line @1 farewell : A quiet landing wherever you carry to. | May the last cup travel sound.
+line @1 farewell.return : I'll keep the homeward tune ready. | Good footing at the next threshold.
+line @2 farewell.return [here.time=night] : Find your bed without a bell for company. | Quiet over your roof till morning.
+line @1 react.news : I'll hear the news once the rim is clear. | Give me the part worth carrying in.
+line @1 react.news.new : New cargo for a very ordinary tray. | That hadn't made a sound here yet.
+line @1 react.news.known : I've heard that tune in spoken form. | That travelled through the serving passage already.
+line @1 react.news.doubt : I'd set that story down until somebody could account for its weight. | One ringing cup can make an entire tray sound broken.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A harsh note to carry indoors. | I'll stay till you've found your footing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That would steady a whole trayful. | Pleasant news to take to the water.
+line @1 ask.how : What tune did the day leave in your head? | Were the doors kind to your elbows today?
+line @1 answer.how : My hand is steadier than my temper. | I have most of a fishing evening left.
+line @1 decline : I need to keep an unburdened hand for the last round. | I'd best finish carrying what somebody is already waiting for.
+line @1 accept_decline : All right. I'll leave the tray where it stands. | No second summons from me.
+line @1 thank : You spared those dishes an awkward moment. | I felt the help at my sore elbow.
+line @1 sympathise : We'll put the unnecessary noise outside. | Take a sheltered moment by this wall.
+line @1 reassure : No hurry. The cups are standing level. | Let your breathing choose its own measure.
+line @1 preclose : I'll need to catch the homeward verse. | The last setting wants a clean cloth.
+line @1 accept_preclose : We've come to a decent resting note. | That makes a fair end to the round.
+line @1 deflect_thanks : There's no charge on that little round. | I'd lend that same elbow again.
+line @1 ack : I heard the word under the ringing. | That's come through quite clearly.
+line @1 give.advice : Find the level before adding the next cup. | Hear the floor before trusting a polished sole.
+line @1 offer : My free hand can steady that load. | My bench has a sheltered seat for company.
+line @1 praise : You carried that without wasting a motion. | A neat landing in very close quarters.
 scene cups
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -359,19 +361,18 @@ does aside
 cooldown 11h
 say Homeward verse down to a murmur. | Empty hands for the last light.
 
-dlg resident.hub : Stand where my elbow can take the bend. Once the tray's still, you have the whole of my hearing.
-dlg resident.hub [topic.meeting=known] : #topic.player#, welcome back within easy reach of a cup.
-dlg resident.job [self.job=servant self.trade_words] : My work is #self.trade_words#. A quietly delivered round is the one I'm happiest with.
-dlg resident.news [world.news] : One report has come clear of the clatter. #world.news#
-dlg resident.bye : An unhurried step past a swinging brass latch.
-dlg resident.hub [self.working=yes] : Level cups leave my ears free. Keep your words this side of the rim.
-dlg resident.hub [here.time=dawn] : Any morning word to shake the sleep from my shoulders?
-dlg resident.hub [here.time=dusk] : Lighter traffic now. Come use the extra room.
-dlg resident.hub [pair.disposition=wary|hostile] : The passage isn't wide enough for a quarrel. I'll hear plain business readily.
-dlg resident.job [self.master=yes] : I have a teaching round that can go perfectly well with a dry plum stone and an empty tray.
-dlg resident.bye [here.time=night] : May you hear reeds in your sleep instead of dishes.
-dlg resident.hub [self.likes=evening_line] : Talk while I've my mind on company. It's apt to wander to a fishing float once the work quiets down.
-
+dlg @1 resident.hub : Stand where my elbow can take the bend. Once the tray's still, you have the whole of my hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, welcome back within easy reach of a cup.
+dlg @1 resident.job [self.job=servant self.trade_words] : #self.trade_words.capitalize#. A quietly delivered round is the one I'm happiest with.
+dlg @1 resident.news [world.news] : One report has come clear of the clatter. #world.news#
+dlg @1 resident.bye : An unhurried step past a swinging brass latch.
+dlg @3 resident.hub [self.working=yes] : Level cups leave my ears free. Keep your words this side of the rim.
+dlg @4 resident.hub [here.time=dawn] : Any morning word to shake the sleep from my shoulders?
+dlg @5 resident.hub [here.time=dusk] : Lighter traffic now. Come use the extra room.
+dlg @6 resident.hub [pair.disposition=wary|hostile] : The passage isn't wide enough for a quarrel. I'll hear plain business readily.
+dlg @2 resident.job [self.master=yes] : I have a teaching round that can go perfectly well with a dry plum stone and an empty tray.
+dlg @2 resident.bye [here.time=night] : May you hear reeds in your sleep instead of dishes.
+dlg @7 resident.hub [self.likes=evening_line] : Talk while I've my mind on company. It's apt to wander to a fishing float once the work quiets down.
 graft @tray resident.hub
 choice Could I hear the sound a tray ought to make? -> tray_quiet
 node tray_quiet
@@ -383,6 +384,7 @@ node tray_breath
 say That's mine to keep the cups in company. The moment it's louder than the fellow speaking, I'm giving an unintended concert.
 choice I'd enjoy a little chorus off duty. -> hub
 choice I'll leave you your own tune. -> bye
+
 graft @line resident.hub
 choice What would you take from service to the fishing bank? -> tray_line
 node tray_line

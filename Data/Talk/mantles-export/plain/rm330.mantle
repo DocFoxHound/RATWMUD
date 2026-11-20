@@ -1,9 +1,12 @@
+# rm330, the butcher's fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm330
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rmx_ivo_wainwright
+written_by codex
 title the butcher's fleet
 fits stage=adult|old
 prefers role=merchant job=merchant
@@ -17,6 +20,7 @@ topics food +0.6 prices +0.5 pastimes +0.4 travel +0.3
 styles comfort=practical gossip=plain refuse=direct tease=merry
 marks oath saying
 persona #self.first# names the lean and fat ends of a joint like ships in a harbour and takes fierce exception to a dishonest weight.
+
 words
 oath! = Sink my stockpot | Salt my draughtsmen
 saying! = Weigh both ends of the boat | The bone sails with the joint
@@ -39,51 +43,49 @@ bootnose = a rounded toe | the tip of a boot
 basketgap = a gap in the baskets | a space along the counter
 
 grown
-
-opinion merchants mixed 1 : An extra scrap put in after weighing can be a kindness. A thumb on the hook can never be.
-opinion watch for 1 : It's easier to meet a customer's eye without having to count the hands below the counter.
-opinion newcomers for 1 : Every unfamiliar tongue says the name of some ship a little differently.
-opinion houses against 1 : A fine family seal is no sort of guarantee that a poor wolf got a fair slice.
-opinion dole for 2 : Keep a good bone for the public pot. Hungry mouths deserve broth that sets when it's cold.
-opinion city for 1 : There's enough sea behind the markets to keep a stall-bound imagination in steady employment.
-opinion road against 1 : A late cart costs me even when my own two feet have kept a most astonishing punctuality.
-opinion festivals mixed 1 : I enjoy watching dancers from a place where nobody has balanced a basket on my toes.
-line greet : Alongside, if you please. This bit of board is yours.
-line greet [pair.band=strangers] : An unfamiliar arrival alongside deserves an honest welcome.
-line greet [here.time=dawn] : Morning. First chance to see the boats before the voices start.
-line greet.return : Ah, the right voice has hailed the right vessel.
-line greet.return [self.working=yes] : I can spare the ear that isn't listening for a weight to settle.
-line greet.return [pair.band=friends|family] : Come to the calm side of my counter, shipmate.
-line again.open : We've put into the same port for another word.
-line kin.open [pair.kin!=no] : A berth by my shoulder goes to kin without weighing.
-line hail [pair.band=friends] : Here, look lively enough to claim the good corner!
-line farewell : May nobody tax the wind that takes you home.
-line farewell.return : I'll keep a friendly port open for you.
-line react.news : Bring it alongside for a closer look.
-line react.news.new : There's a new hull on my horizon.
-line react.news.known : I've already seen that little vessel come in once.
-line react.news.doubt : I'd weigh the cargo before praising the fine paint.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Now that's a ship I'd cheer from the shore.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd send something tender to the household that has to hear that.
-line answer.how : My tongue's afloat and my feet have yet to mutiny.
-line answer.how.busy [self.working=yes] : Busy enough to count my change twice and my jokes just once.
-line ask.how : Sailing steady with the load you've brought?
-line thank : You kept that whole business from running aground.
-line deflect_thanks : I had the scrap to give and a good place to send it.
-line decline : I won't send a crooked deal sailing off in a cloud of compliments.
-line accept_decline : I'll strike that parcel off today's manifest.
-line sympathise : I can hold my tongue till dinner's gone down.
-line reassure : Even a crowded harbour leaves a vessel room to turn eventually.
-line ack : I can see what's riding under those words.
-line offer : Want a cleared length of board for a minute?
-line preclose : I'd best see to the pieces waiting for their proper homes.
-line accept_preclose : Away while the traffic's kind to your toes.
-line give.advice : Look at the hook as well as what's hanging from it.
-
+opinion @1 merchants mixed 1 : An extra scrap put in after weighing can be a kindness. A thumb on the hook can never be.
+opinion @1 watch for 1 : It's easier to meet a customer's eye without having to count the hands below the counter.
+opinion @1 newcomers for 1 : Every unfamiliar tongue says the name of some ship a little differently.
+opinion @1 houses against 1 : A fine family seal is no sort of guarantee that a poor wolf got a fair slice.
+opinion @1 dole for 2 : Keep a good bone for the public pot. Hungry mouths deserve broth that sets when it's cold.
+opinion @1 city for 1 : There's enough sea behind the markets to keep a stall-bound imagination in steady employment.
+opinion @1 road against 1 : A late cart costs me even when my own two feet have kept a most astonishing punctuality.
+opinion @1 festivals mixed 1 : I enjoy watching dancers from a place where nobody has balanced a basket on my toes.
+line @1 greet : Alongside, if you please. This bit of board is yours.
+line @2 greet [pair.band=strangers] : An unfamiliar arrival alongside deserves an honest welcome.
+line @3 greet [here.time=dawn] : Morning. First chance to see the boats before the voices start.
+line @1 greet.return : Ah, the right voice has hailed the right vessel.
+line @2 greet.return [self.working=yes] : I can spare the ear that isn't listening for a weight to settle.
+line @3 greet.return [pair.band=friends|family] : Come to the calm side of my counter, shipmate.
+line @1 again.open : We've put into the same port for another word.
+line @1 kin.open [pair.kin!=no] : A berth by my shoulder goes to kin without weighing.
+line @1 hail [pair.band=friends] : Here, look lively enough to claim the good corner!
+line @1 farewell : May nobody tax the wind that takes you home.
+line @1 farewell.return : I'll keep a friendly port open for you.
+line @1 react.news : Bring it alongside for a closer look.
+line @1 react.news.new : There's a new hull on my horizon.
+line @1 react.news.known : I've already seen that little vessel come in once.
+line @1 react.news.doubt : I'd weigh the cargo before praising the fine paint.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Now that's a ship I'd cheer from the shore.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd send something tender to the household that has to hear that.
+line @1 answer.how : My tongue's afloat and my feet have yet to mutiny.
+line @1 answer.how.busy [self.working=yes] : Busy enough to count my change twice and my jokes just once.
+line @1 ask.how : Sailing steady with the load you've brought?
+line @1 thank : You kept that whole business from running aground.
+line @1 deflect_thanks : I had the scrap to give and a good place to send it.
+line @1 decline : I won't send a crooked deal sailing off in a cloud of compliments.
+line @1 accept_decline : I'll strike that parcel off today's manifest.
+line @1 sympathise : I can hold my tongue till dinner's gone down.
+line @1 reassure : Even a crowded harbour leaves a vessel room to turn eventually.
+line @1 ack : I can see what's riding under those words.
+line @1 offer : Want a cleared length of board for a minute?
+line @1 preclose : I'd best see to the pieces waiting for their proper homes.
+line @1 accept_preclose : Away while the traffic's kind to your toes.
+line @1 give.advice : Look at the hook as well as what's hanging from it.
 scene work_1
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
-a : I mind the public face of #self.trade_words# most carefully when the counter's crowded.
+a : #self.trade_words.capitalize#. I mind my manners most carefully when the counter's crowded.
 b : Who's watching the weight? | What's public about a purchase?
 a : Me, chiefly, and anyone may inspect the balance. Brass should blush at nobody's scrutiny. | The price and the measure. What's left in the buyer's purse can stay strictly below decks.
 
@@ -341,19 +343,19 @@ when concept=bark
 does aside
 cooldown 8h
 say Let the shortest basket through before the tall elbows. | A little room at the rail, if you please.
-dlg resident.hub : Bring your question alongside. I've an empty stretch of dock for it.
-dlg resident.hub [pair.disposition=wary|hostile] : State the difficulty plainly. My board shows both edges.
-dlg resident.hub [topic.meeting=known] : #topic.player#, a familiar vessel in previously quiet waters.
-dlg resident.job [self.job=merchant] : The name I trade under is #self.trade_words#. You may inspect the measure from either side.
-dlg resident.job : I have opinions about a fair counter even when nobody's asked me to stand at one.
-dlg resident.news [world.news] : Here's the cargo that actually made port. #world.news#.
-dlg resident.gossip [here.gossip=yes] : An unsealed account says #topic.subject# #topic.claim#. Check the weight before putting your money on it.
-dlg resident.bye : May your next parcel have plenty beyond the wrapping.
-dlg shop.greet [here.shop=open] : Choose a piece at your leisure. The measure can stand inspection.
-dlg shop.greet [here.shop=bare] : Stripped board today, I'm afraid. I'll still buy what's fit to bring in.
-dlg shop.greet [here.shop=asleep] : The board's shut and my market voice has gone to sleep.
-dlg shop.bye [here.shop!=asleep] : A fair wind for you and a firm grip on the basket.
 
+dlg @1 resident.hub : Bring your question alongside. I've an empty stretch of dock for it.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : State the difficulty plainly. My board shows both edges.
+dlg @3 resident.hub [topic.meeting=known] : #topic.player#, a familiar vessel in previously quiet waters.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. You may inspect the measure from either side.
+dlg @2 resident.job : I have opinions about a fair counter even when nobody's asked me to stand at one.
+dlg @1 resident.news [world.news] : Here's the cargo that actually made port. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An unsealed account says #topic.subject# #topic.claim#. Check the weight before putting your money on it.
+dlg @1 resident.bye : May your next parcel have plenty beyond the wrapping.
+dlg @1 shop.greet [here.shop=open] : Choose a piece at your leisure. The measure can stand inspection.
+dlg @2 shop.greet [here.shop=bare] : Stripped board today, I'm afraid. I'll still buy what's fit to bring in.
+dlg @3 shop.greet [here.shop=asleep] : The board's shut and my market voice has gone to sleep.
+dlg @1 shop.bye [here.shop!=asleep] : A fair wind for you and a firm grip on the basket.
 graft resident.hub
 choice Does every stew have a flagship? -> stew_ship
 node stew_ship

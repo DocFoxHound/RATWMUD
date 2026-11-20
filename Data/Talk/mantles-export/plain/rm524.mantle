@@ -1,9 +1,12 @@
+# rm524, the bell float (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm524
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ilse_coalley
+written_by codex
 title the bell float
 fits stage=adult|old
 prefers job=laborer
@@ -33,41 +36,40 @@ teasound = the mug against the rail | an impatient little knock
 windhook = a hook in the box | the inward pointing tip
 
 any
-opinion church for 1 : One chapel's peal is more familiar than some voices I've been hearing all my life. It keeps me company either way.
-opinion dole for 2 : Hot bread should go round even if a wolf's purse hasn't got the price of keeping a lamp alight.
-opinion houses against 2 : Can a house put a street lamp alight in wet weather without somebody else's old feet going through the puddles?
-opinion merchants against 2 : A lamp glass costing double still needs wiping just as often. I should like that pointed out when the price is named.
-opinion sump for 1 : These streets look considerably more loved once the lamps come on. I take a little interest in their looking that way.
-opinion times against 2 : My mug loses its warmth as I count a handful of small coins. That's not the fault of the tea.
-opinion newcomers against 2 : A caller who hasn't yet learned the bells should listen a while before making plans for all our evenings.
+opinion @1 church for 1 : One chapel's peal is more familiar than some voices I've been hearing all my life. It keeps me company either way.
+opinion @1 dole for 2 : Hot bread should go round even if a wolf's purse hasn't got the price of keeping a lamp alight.
+opinion @1 houses against 2 : Can a house put a street lamp alight in wet weather without somebody else's old feet going through the puddles?
+opinion @1 merchants against 2 : A lamp glass costing double still needs wiping just as often. I should like that pointed out when the price is named.
+opinion @1 sump for 1 : These streets look considerably more loved once the lamps come on. I take a little interest in their looking that way.
+opinion @1 times against 2 : My mug loses its warmth as I count a handful of small coins. That's not the fault of the tea.
+opinion @1 newcomers against 2 : A caller who hasn't yet learned the bells should listen a while before making plans for all our evenings.
 
 grown
-line greet : Give the cork a quiet minute. My ear's free.
-line greet [pair.band=strangers] : Welcome from there. The wild bit of line's at your feet.
-line greet [here.time=dawn] : The first chapel sound goes far this morning.
-line greet [here.time=dusk|night] : Evening's the hour when every bit of glass remembers me.
-line greet [self.working=yes] : Let me get the glass seated and I'll hear you properly.
-line kin.open [pair.kin!=no] : Come beside my covered lamp, family.
-line again.open : Another voice returning to this familiar sliver of shoreline.
-line greet.return : Your call got through the ring of the last stroke.
-line greet.return [pair.band=friends|family] : I'd know that familiar note over a whole peal of bells.
-line farewell : Take the lit paving if the mist comes low.
-line farewell.return : I'll keep the last little glow on my side.
-line react.news : I'd hear the first stroke before you give me the echo.
-line react.news.new : That's an additional knot my cord wasn't expecting.
-line react.news.known : An echo can carry a proper distance round here.
-line react.news.doubt : How close was the teller to the source of all that sound?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can carry a little warm food and leave the questions outside.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright small note among a great many ordinary ones.
-line answer.how : I've a good wick and the usual collection of questions.
-line ask.how : Which sound has stayed with you from this morning?
-line sympathise : Hard to keep one's thoughts from going round the same empty place.
-line reassure : A quiet minute here needn't cost you any explanation.
-line decline : I'd be listening for the lamp round while you wanted my whole attention.
-line accept_decline : I'll wind that request in and save the cord.
-line preclose : There's glass to inspect before the air cools.
-line ack : Rang clear.
-
+line @1 greet : Give the cork a quiet minute. My ear's free.
+line @2 greet [pair.band=strangers] : Welcome from there. The wild bit of line's at your feet.
+line @3 greet [here.time=dawn] : The first chapel sound goes far this morning.
+line @4 greet [here.time=dusk|night] : Evening's the hour when every bit of glass remembers me.
+line @5 greet [self.working=yes] : Let me get the glass seated and I'll hear you properly.
+line @1 kin.open [pair.kin!=no] : Come beside my covered lamp, family.
+line @1 again.open : Another voice returning to this familiar sliver of shoreline.
+line @1 greet.return : Your call got through the ring of the last stroke.
+line @2 greet.return [pair.band=friends|family] : I'd know that familiar note over a whole peal of bells.
+line @1 farewell : Take the lit paving if the mist comes low.
+line @1 farewell.return : I'll keep the last little glow on my side.
+line @1 react.news : I'd hear the first stroke before you give me the echo.
+line @1 react.news.new : That's an additional knot my cord wasn't expecting.
+line @1 react.news.known : An echo can carry a proper distance round here.
+line @1 react.news.doubt : How close was the teller to the source of all that sound?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can carry a little warm food and leave the questions outside.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright small note among a great many ordinary ones.
+line @1 answer.how : I've a good wick and the usual collection of questions.
+line @1 ask.how : Which sound has stayed with you from this morning?
+line @1 sympathise : Hard to keep one's thoughts from going round the same empty place.
+line @1 reassure : A quiet minute here needn't cost you any explanation.
+line @1 decline : I'd be listening for the lamp round while you wanted my whole attention.
+line @1 accept_decline : I'll wind that request in and save the cord.
+line @1 preclose : There's glass to inspect before the air cools.
+line @1 ack : Rang clear.
 scene count
 when topic=faith
 does tell.self / ask.detail / answer.detail
@@ -228,15 +230,15 @@ when concept=bark self.dislikes=cold_tea
 does aside
 cooldown 8h
 say A saucer over my second cup. | Cold enough for a whole reflection again.
-dlg resident.hub : I've a quiet ear between the bells. Take your time here.
-dlg resident.hub [topic.meeting=known] : A voice I've heard carried across my line before, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Leave the lamp box closed and we'll keep our conversation in clear light.
-dlg resident.hub [here.time=night] : One small flame is plenty for a patient word.
-dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. A clean lamp glass and a steady little walk hold the round together.
-dlg resident.job : I notice when a glow is missing from a familiar evening walk.
-dlg resident.news [world.news] : Here is what came through before the echo. #world.news#.
-dlg resident.bye : Walk where the little pools of lamplight touch.
 
+dlg @1 resident.hub : I've a quiet ear between the bells. Take your time here.
+dlg @2 resident.hub [topic.meeting=known] : A voice I've heard carried across my line before, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Leave the lamp box closed and we'll keep our conversation in clear light.
+dlg @4 resident.hub [here.time=night] : One small flame is plenty for a patient word.
+dlg @1 resident.job [self.job=laborer] : #self.trade_words.capitalize#. A clean lamp glass and a steady little walk hold the round together.
+dlg @2 resident.job : I notice when a glow is missing from a familiar evening walk.
+dlg @1 resident.news [world.news] : Here is what came through before the echo. #world.news#.
+dlg @1 resident.bye : Walk where the little pools of lamplight touch.
 graft @bellcork resident.hub
 choice Why has a fishing line got knots beside the float? -> bellcork
 node bellcork

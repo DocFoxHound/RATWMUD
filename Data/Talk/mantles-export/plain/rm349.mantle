@@ -1,9 +1,12 @@
+# rm349, the singing coal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm349
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_arne_ashton
+written_by codex
 title the singing coal
 fits stage=adult|old
 prefers job=merchant
@@ -69,7 +72,6 @@ line @22 deflect_thanks : I only supplied the breath for it. | You've given me c
 line @23 preclose : I've to catch a bit of tune before it flees. | My fingers want another turn with the coal.
 line @24 accept_preclose : Go along while the last note's good. | I'll keep a scrap open till next time.
 line @25 farewell [here.time=night] : A quiet step for the sleepers and a soft song for yourself. | Get to a good warm room tonight.
-
 scene point
 when topic=pastimes self.likes=singing
 does tell.self / ask.detail / answer.detail
@@ -245,7 +247,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep a clear step between 
 dlg @5 resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. Even a little dust there earns its keep inside a bit of apple paper.
 dlg @6 resident.job : I can usually make a dry scrap do a second job before supper.
 dlg @7 resident.bye : May the long note carry you up the hill.
-
 graft resident.hub
 choice Is that a song on the inside of the paper? -> inner_song
 node inner_song

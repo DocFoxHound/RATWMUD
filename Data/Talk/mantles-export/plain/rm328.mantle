@@ -1,9 +1,12 @@
+# rm328, the umpire of supper (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm328
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_theodora_driphand
+written_by codex
 title the umpire of supper
 fits stage=adult|old
 prefers job=official
@@ -35,41 +38,40 @@ bell = an untimely peal | a brass intrusion
 gull = a gull with great claims | a white-feathered beggar
 
 any
-opinion houses for 1 : The Houses keep our public rooms standing. I like to see those rooms open to a small voice too.
-opinion watch for 1 : A steady patrol gives the late walker a little more time to consider what to say at the door.
-opinion festivals for 2 : A dance floor's the pleasantest court I know. Everyone can make a motion.
-opinion strangers for 1 : A newcomer at supper can reach the far bowl on a table. That's an excellent argument for another plate.
-opinion times for 1 : My larder will furnish another plate without asking a grave sacrifice. That's good fortune in my eyes.
+opinion @1 houses for 1 : The Houses keep our public rooms standing. I like to see those rooms open to a small voice too.
+opinion @1 watch for 1 : A steady patrol gives the late walker a little more time to consider what to say at the door.
+opinion @1 festivals for 2 : A dance floor's the pleasantest court I know. Everyone can make a motion.
+opinion @1 strangers for 1 : A newcomer at supper can reach the far bowl on a table. That's an excellent argument for another plate.
+opinion @1 times for 1 : My larder will furnish another plate without asking a grave sacrifice. That's good fortune in my eyes.
 
 grown
-line greet [pair.band=strangers] : You're welcome without a formal introduction. | A new face at my informal table.
-line greet [self.working=yes] : Speak freely on this side of my business. | I'll grant a little working space.
-line greet [here.time=dawn] : Morning. First hearing goes to you. | New light on the table. Welcome.
-line greet [here.time=dusk|night] : Evening brings better company than documents. | Come inside the warmer ring.
-line kin.open [pair.kin!=no] : Kin have leave to approach the supper plate. | Good. Family need no summons.
-line again.open : A second appearance on friendly terms. | Your case comes round again.
-line greet.return : Hello. No form required. | Here I am, with an ear unoccupied.
-line greet.return [pair.band=friends|family] : You have permission to tease the umpire. | I know the voices worth interrupting for.
-line greet.return [self.working=yes] : I can hear a visitor between two formalities. | Let me put the serious pen aside.
-line greet.return [here.time=dusk|night] : Evening. I'll sharpen my ears for you. | Welcome to the quieter sitting.
-line farewell : An easy walk and a fair supper. | May your errand need no hearing.
-line farewell.return : I release you into your own custody. | Leave on your own good word.
-line farewell.return [here.time=night] : Fair lamplight beyond this hearing. | Walk towards the bright corner tonight.
-line react.news : Pass me the substance of it. | Let's hear the account before the verdict.
-line react.news.new : A fresh matter altogether. | Nobody brought me that turn of events before.
-line react.news.known : That's been round my little table. | I recognise the account fairly well.
-line react.news.doubt : I'd reserve judgment on that particular account. | I'd keep that story simmering awhile.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That deserves a warm seat and no questions. | I should like to make the day gentler for you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A favourable turn for the best reasons. | Bring more accounts with such a kind ending.
-line ask.how : How has the day pleaded with you? | Anything gone decidedly in your favour?
-line answer.how : Equal measures of good business and tired feet. | Holding my own quite civilly.
-line decline : I'd rather keep my energy for the next serious affair. | I fear that would be one hearing too many.
-line accept_decline : A civil refusal is quite sufficient. | Very well. The matter rests handsomely.
-line thank : A kindness entered in the right place. | I'd rule that very much in my favour.
-line sympathise : You can take the seat with arms. | I'll hear whatever portion you want heard.
-line reassure : A misstep doesn't settle a whole case. | There are kinder interpretations yet to hear.
-line preclose : I should bring this sitting to a close. | My other business is beginning to clear its throat.
-
+line @1 greet [pair.band=strangers] : You're welcome without a formal introduction. | A new face at my informal table.
+line @2 greet [self.working=yes] : Speak freely on this side of my business. | I'll grant a little working space.
+line @3 greet [here.time=dawn] : Morning. First hearing goes to you. | New light on the table. Welcome.
+line @4 greet [here.time=dusk|night] : Evening brings better company than documents. | Come inside the warmer ring.
+line @1 kin.open [pair.kin!=no] : Kin have leave to approach the supper plate. | Good. Family need no summons.
+line @1 again.open : A second appearance on friendly terms. | Your case comes round again.
+line @1 greet.return : Hello. No form required. | Here I am, with an ear unoccupied.
+line @2 greet.return [pair.band=friends|family] : You have permission to tease the umpire. | I know the voices worth interrupting for.
+line @3 greet.return [self.working=yes] : I can hear a visitor between two formalities. | Let me put the serious pen aside.
+line @4 greet.return [here.time=dusk|night] : Evening. I'll sharpen my ears for you. | Welcome to the quieter sitting.
+line @1 farewell : An easy walk and a fair supper. | May your errand need no hearing.
+line @1 farewell.return : I release you into your own custody. | Leave on your own good word.
+line @2 farewell.return [here.time=night] : Fair lamplight beyond this hearing. | Walk towards the bright corner tonight.
+line @1 react.news : Pass me the substance of it. | Let's hear the account before the verdict.
+line @1 react.news.new : A fresh matter altogether. | Nobody brought me that turn of events before.
+line @1 react.news.known : That's been round my little table. | I recognise the account fairly well.
+line @1 react.news.doubt : I'd reserve judgment on that particular account. | I'd keep that story simmering awhile.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That deserves a warm seat and no questions. | I should like to make the day gentler for you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A favourable turn for the best reasons. | Bring more accounts with such a kind ending.
+line @1 ask.how : How has the day pleaded with you? | Anything gone decidedly in your favour?
+line @1 answer.how : Equal measures of good business and tired feet. | Holding my own quite civilly.
+line @1 decline : I'd rather keep my energy for the next serious affair. | I fear that would be one hearing too many.
+line @1 accept_decline : A civil refusal is quite sufficient. | Very well. The matter rests handsomely.
+line @1 thank : A kindness entered in the right place. | I'd rule that very much in my favour.
+line @1 sympathise : You can take the seat with arms. | I'll hear whatever portion you want heard.
+line @1 reassure : A misstep doesn't settle a whole case. | There are kinder interpretations yet to hear.
+line @1 preclose : I should bring this sitting to a close. | My other business is beginning to clear its throat.
 scene supper
 when topic=pastimes self.likes=cards
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A little oil for the late hearing. | My supper plate requires an appearance.
 
-dlg resident.hub : Come inside the informal rail. I have a chair for conversation as well as one for weightier affairs.
-dlg resident.job [self.job=official self.workplace] : At #self.workplace# I watch whose mouth is open and whose words are actually reaching the room.
-dlg resident.news [world.news] : The words I can pass on fairly are these. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, your face already has a friendly entry in my book.
-dlg resident.bye : A fair ending to your errands and a reasonably crisp supper.
-
+dlg @1 resident.hub : Come inside the informal rail. I have a chair for conversation as well as one for weightier affairs.
+dlg @1 resident.job [self.job=official self.workplace] : At #self.workplace# I watch whose mouth is open and whose words are actually reaching the room.
+dlg @1 resident.news [world.news] : The words I can pass on fairly are these. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your face already has a friendly entry in my book.
+dlg @1 resident.bye : A fair ending to your errands and a reasonably crisp supper.
 graft resident.hub
 choice Can your cards really settle a dispute? -> deck_law
 node deck_law

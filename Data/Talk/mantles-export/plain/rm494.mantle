@@ -1,9 +1,12 @@
+# rm494, the hood library (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm494
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_dagny_ropeley
+written_by codex
 title the hood library
 fits stage=adult|old
 prefers job=guard
@@ -37,50 +40,49 @@ slatecloth = the grey rag | my wiping square
 wordroom = the clear part of the slate | room for another line
 
 any
-opinion city for 1 : There's space within these walls for a closed letter to be nobody else's entire concern. I value the courtesy.
-opinion road for 1 : A delivered letter's got two sound boots and a passable road to thank before anyone thanks the sender.
-opinion strangers against 1 : I leave a new caller standing where the lamp falls. Each of us can read the other's expression.
-opinion sump for 1 : A wet hood can drip outside my own door without anybody pretending water's a disgrace. I know where I belong.
-opinion times for 1 : There's stew in reach and a sound patch above it. Today those things weigh more with me than a list of grievances.
-opinion watch mixed 1 : A sergeant can hear two accounts carefully and still have only half the matter. I hold judgement there till something further comes.
-opinion houses mixed 1 : An important address gets its letter in the same state I took it. It doesn't get to command the weather too.
-opinion drink mixed 0 : A drink after work is a private decision until somebody has to carry the cup or the drinker home.
+opinion @1 city for 1 : There's space within these walls for a closed letter to be nobody else's entire concern. I value the courtesy.
+opinion @1 road for 1 : A delivered letter's got two sound boots and a passable road to thank before anyone thanks the sender.
+opinion @1 strangers against 1 : I leave a new caller standing where the lamp falls. Each of us can read the other's expression.
+opinion @1 sump for 1 : A wet hood can drip outside my own door without anybody pretending water's a disgrace. I know where I belong.
+opinion @1 times for 1 : There's stew in reach and a sound patch above it. Today those things weigh more with me than a list of grievances.
+opinion @1 watch mixed 1 : A sergeant can hear two accounts carefully and still have only half the matter. I hold judgement there till something further comes.
+opinion @1 houses mixed 1 : An important address gets its letter in the same state I took it. It doesn't get to command the weather too.
+opinion @1 drink mixed 0 : A drink after work is a private decision until somebody has to carry the cup or the drinker home.
 
 grown
-line greet : I've a dry bit of ground to hear you from.
-line greet [pair.band=strangers] : Face the light. Now we'll know each other's faces.
-line greet [here.time=dawn] : The paper's come through a wet morning whole.
-line greet [here.time=dusk|night] : Come under the last of the eaves.
-line greet [self.working=yes] : I'd hear one clear account before taking the next.
-line kin.open [pair.kin!=no] : Family can share the shelter of this eave.
-line again.open : I haven't lost the place where you left off.
-line greet.return : My hood leaves one ear free.
-line greet.return [pair.band=friends|family] : No slate needed to recall your voice.
-line greet.return [self.working=yes] : I heard across the scratching of my slate.
-line greet.return [here.time=dusk|night] : You're plain to hear through this quiet rain.
-line farewell : Keep your paper under a good cover.
-line farewell.return : My hood can come the longer distance home with me.
-line farewell [here.time=dusk|night] : Step where the lamp gives some account of the stones.
-line react.news : Give me the beginning in the witness's own words.
-line react.news.new : A clean piece for the slate.
-line react.news.known : That's been through this fold once before.
-line react.news.doubt : Would the original teller recognise those words?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave a dry seat available in that house.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. One small clear matter amid all the damp.
-line answer.how : Got a sound hood and my full share of work.
-line answer.how [self.working=yes] : Holding one matter still while the next settles.
-line ask.how : Has anything worth keeping come through your hands today?
-line sympathise : There's no duty to make a neat account of your grief.
-line reassure : You can begin again. I've got more slate.
-line decline : I'd be giving your business a hurried hearing if I took it now.
-line accept_decline : I'll fold my request away until an easier occasion.
-line thank : Your patience kept a difficult account legible.
-line deflect_thanks : Pass on a sound scrap of paper someday.
-line preclose : My hood has stayed folded about long enough.
-line preclose [self.working=yes] : There's another caller due a clear slate.
-line accept_preclose : I'll close the brim over this bit of business.
-line ack : Understood plainly.
-
+line @1 greet : I've a dry bit of ground to hear you from.
+line @2 greet [pair.band=strangers] : Face the light. Now we'll know each other's faces.
+line @3 greet [here.time=dawn] : The paper's come through a wet morning whole.
+line @4 greet [here.time=dusk|night] : Come under the last of the eaves.
+line @5 greet [self.working=yes] : I'd hear one clear account before taking the next.
+line @1 kin.open [pair.kin!=no] : Family can share the shelter of this eave.
+line @1 again.open : I haven't lost the place where you left off.
+line @1 greet.return : My hood leaves one ear free.
+line @2 greet.return [pair.band=friends|family] : No slate needed to recall your voice.
+line @3 greet.return [self.working=yes] : I heard across the scratching of my slate.
+line @4 greet.return [here.time=dusk|night] : You're plain to hear through this quiet rain.
+line @1 farewell : Keep your paper under a good cover.
+line @1 farewell.return : My hood can come the longer distance home with me.
+line @2 farewell [here.time=dusk|night] : Step where the lamp gives some account of the stones.
+line @1 react.news : Give me the beginning in the witness's own words.
+line @1 react.news.new : A clean piece for the slate.
+line @1 react.news.known : That's been through this fold once before.
+line @1 react.news.doubt : Would the original teller recognise those words?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave a dry seat available in that house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. One small clear matter amid all the damp.
+line @1 answer.how : Got a sound hood and my full share of work.
+line @2 answer.how [self.working=yes] : Holding one matter still while the next settles.
+line @1 ask.how : Has anything worth keeping come through your hands today?
+line @1 sympathise : There's no duty to make a neat account of your grief.
+line @1 reassure : You can begin again. I've got more slate.
+line @1 decline : I'd be giving your business a hurried hearing if I took it now.
+line @1 accept_decline : I'll fold my request away until an easier occasion.
+line @1 thank : Your patience kept a difficult account legible.
+line @1 deflect_thanks : Pass on a sound scrap of paper someday.
+line @1 preclose : My hood has stayed folded about long enough.
+line @2 preclose [self.working=yes] : There's another caller due a clear slate.
+line @1 accept_preclose : I'll close the brim over this bit of business.
+line @1 ack : Understood plainly.
 scene hood
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -335,23 +337,23 @@ when concept=bark self.likes=dancing
 does aside
 cooldown 8h
 say The turning heel needs clear floor. | Give the fiddler time to breathe.
-dlg resident.hub : I've kept the slate clear for a fresh matter.
-dlg resident.hub [topic.meeting=known] : I remember your voice under the eaves, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your paws in view and give the account at your own pace.
-dlg resident.hub [here.time=night] : In this light I shall listen first and write afterwards.
-dlg resident.job [self.job=guard] : #self.trade_words.capitalize#. I hear a witness through before I ask for the missing part.
-dlg resident.job : My best use is hearing the bit that got lost in a hurry.
-dlg resident.news [world.news] : I have one matter with a plain heading. #world.news#.
-dlg resident.news [world.event_words] : There's been talk of #world.event_words#. I keep the account short until there's a witness.
-dlg resident.gossip [here.gossip!=yes] : No private word is lying about for a passerby to read.
-dlg watch.hub [here.wanted=no] : I'm listening. Begin with what brought you here.
-dlg watch.hub [here.wanted=yes] : Your name has business with the Watch. The sum is #here.fine# pennies.
-dlg watch.crime [here.witnessed=0] : Start with what you personally recall. There's a little room on my slate.
-dlg watch.reported [topic.reported=yes] : There. Your witnessed account is on the record now.
-dlg watch.fine [here.wanted=no] : No outstanding sum stands against you here.
-dlg watch.bye : You'll find my direction clearer while the paving's dry.
-dlg resident.bye : The paper can go under its cover again.
 
+dlg @1 resident.hub : I've kept the slate clear for a fresh matter.
+dlg @2 resident.hub [topic.meeting=known] : I remember your voice under the eaves, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Keep your paws in view and give the account at your own pace.
+dlg @4 resident.hub [here.time=night] : In this light I shall listen first and write afterwards.
+dlg @1 resident.job [self.job=guard] : #self.trade_words.capitalize#. I hear a witness through before I ask for the missing part.
+dlg @2 resident.job : My best use is hearing the bit that got lost in a hurry.
+dlg @1 resident.news [world.news] : I have one matter with a plain heading. #world.news#.
+dlg @2 resident.news [world.event_words] : There's been talk of #world.event_words#. I keep the account short until there's a witness.
+dlg @1 resident.gossip [here.gossip!=yes] : No private word is lying about for a passerby to read.
+dlg @1 watch.hub [here.wanted=no] : I'm listening. Begin with what brought you here.
+dlg @2 watch.hub [here.wanted=yes] : Your name has business with the Watch. The sum is #here.fine# pennies.
+dlg @1 watch.crime [here.witnessed=0] : Start with what you personally recall. There's a little room on my slate.
+dlg @1 watch.reported [topic.reported=yes] : There. Your witnessed account is on the record now.
+dlg @1 watch.fine [here.wanted=no] : No outstanding sum stands against you here.
+dlg @1 watch.bye : You'll find my direction clearer while the paving's dry.
+dlg @1 resident.bye : The paper can go under its cover again.
 graft @hoodshelf resident.hub
 choice Does that hood really carry a library? -> hoodshelf
 node hoodshelf

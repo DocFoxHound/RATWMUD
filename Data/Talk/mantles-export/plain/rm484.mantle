@@ -1,9 +1,12 @@
+# rm484, the empty stall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm484
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_bettany_ropegate
+written_by codex
 title the empty stall
 fits stage=adult|old
 prefers job=scholar honesty=guarded
@@ -35,43 +38,42 @@ frostink = a white stroke | a clean frost line
 mistwear = a clammy collar | the persistent drip
 
 any
-opinion watch mixed 0 : Ask separately what was witnessed and what was entered. The difference is worth a clerk's pay.
-opinion city for 1 : A town with room for a desk ought to spare room for my future market counter.
-opinion merchants mixed 0 : I'd weigh a stallholder's goods and promises on separate scales.
-opinion road for 1 : A dry delivery saves the cost of replacing a whole stack of paper.
-opinion houses against 1 : A seal can order plenty of work without ever moving a wet file itself.
-opinion dole for 1 : A full shelf is reason enough to spare food before a hungry wolf must explain every expense.
+opinion @1 watch mixed 0 : Ask separately what was witnessed and what was entered. The difference is worth a clerk's pay.
+opinion @1 city for 1 : A town with room for a desk ought to spare room for my future market counter.
+opinion @1 merchants mixed 0 : I'd weigh a stallholder's goods and promises on separate scales.
+opinion @1 road for 1 : A dry delivery saves the cost of replacing a whole stack of paper.
+opinion @1 houses against 1 : A seal can order plenty of work without ever moving a wet file itself.
+opinion @1 dole for 1 : A full shelf is reason enough to spare food before a hungry wolf must explain every expense.
 
 grown
-line greet : You've found the free square. Hello. | Step clear of that damp patch.
-line greet [pair.band=strangers] : A new face for my spare square. | Stand on this square with your hands visible.
-line greet [here.time=dawn] : Morning. Frost makes a clean margin. | Fresh light. I'll take a short interruption.
-line greet.return : Yes, hello. I was shifting the chair. | I've heard you over that scrape.
-line greet.return [pair.band=friends|family] : Take your familiar dry seat. | A familiar face gets the square by the wall.
-line greet.return [here.time=night] : Late callers should mind the unlit step. | Good evening. The black pieces hardly show now.
-line again.open : Back before I put my counter away. | So that square is occupied again.
-line hail [pair.band=friends] : Come see the market I've laid out! | Stand by my elbow where the board's visible!
-line farewell : Dry footing and a sound purchase. | Keep your last copper in a dry pocket.
-line farewell.return : I'll hold your place just long enough to clear it. | Go before the floor gets wetter.
-line react.news : Separate a witness's own words from hearsay. | I'll give the unvarnished account a hearing.
-line react.news.new : That deserves an entry on a fresh square. | New to this desk, at least.
-line react.news.known : I've filed the same particulars before. | That account has a square assigned.
-line react.news.doubt : A source is missing from that entry. | I'd leave that as an allegation.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can have my seat while this sinks in. | A loss like that deserves better than a line of ink.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Put a bright piece straight into the ledger for that. | Glad news. I can receive that without an objection.
-line ask.how : Is today giving you elbow room? | How much square footage has the day cost you?
-line answer.how : Fine. The chair made that noise. | Fairly dry and in command of my pieces.
-line decline : I've just enough clear space for the work booked already. | Another promise would put my whole account out.
-line accept_decline : Then your square can stay vacant. | I'll spare us a second application.
-line preclose : The board wants clearing before my next entry. | I've to get these papers away from the wet.
-line accept_preclose : Good. Your errand has its own call on you. | Go while your papers are dry.
-line thank : That assistance earned a proper entry. Thank you. | You found room for something I'd nearly lost.
-line deflect_thanks : It was one empty square I could spare. | A small favour doesn't need stamping.
-line sympathise : Sit. I'll keep the enquiries off this corner awhile. | That entry can wait until your voice steadies.
-line reassure : The first line only needs the things you know. | A dry chair and two clear minutes may ease matters.
-line ack : Yes. I'd enter that as stated. | It fits the square you've given it.
-line give.advice : Look under a stall before paying for its frontage. | Never lay wet evidence on clean accounts.
-
+line @1 greet : You've found the free square. Hello. | Step clear of that damp patch.
+line @2 greet [pair.band=strangers] : A new face for my spare square. | Stand on this square with your hands visible.
+line @3 greet [here.time=dawn] : Morning. Frost makes a clean margin. | Fresh light. I'll take a short interruption.
+line @1 greet.return : Yes, hello. I was shifting the chair. | I've heard you over that scrape.
+line @2 greet.return [pair.band=friends|family] : Take your familiar dry seat. | A familiar face gets the square by the wall.
+line @3 greet.return [here.time=night] : Late callers should mind the unlit step. | Good evening. The black pieces hardly show now.
+line @1 again.open : Back before I put my counter away. | So that square is occupied again.
+line @1 hail [pair.band=friends] : Come see the market I've laid out! | Stand by my elbow where the board's visible!
+line @1 farewell : Dry footing and a sound purchase. | Keep your last copper in a dry pocket.
+line @1 farewell.return : I'll hold your place just long enough to clear it. | Go before the floor gets wetter.
+line @1 react.news : Separate a witness's own words from hearsay. | I'll give the unvarnished account a hearing.
+line @1 react.news.new : That deserves an entry on a fresh square. | New to this desk, at least.
+line @1 react.news.known : I've filed the same particulars before. | That account has a square assigned.
+line @1 react.news.doubt : A source is missing from that entry. | I'd leave that as an allegation.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can have my seat while this sinks in. | A loss like that deserves better than a line of ink.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Put a bright piece straight into the ledger for that. | Glad news. I can receive that without an objection.
+line @1 ask.how : Is today giving you elbow room? | How much square footage has the day cost you?
+line @1 answer.how : Fine. The chair made that noise. | Fairly dry and in command of my pieces.
+line @1 decline : I've just enough clear space for the work booked already. | Another promise would put my whole account out.
+line @1 accept_decline : Then your square can stay vacant. | I'll spare us a second application.
+line @1 preclose : The board wants clearing before my next entry. | I've to get these papers away from the wet.
+line @1 accept_preclose : Good. Your errand has its own call on you. | Go while your papers are dry.
+line @1 thank : That assistance earned a proper entry. Thank you. | You found room for something I'd nearly lost.
+line @1 deflect_thanks : It was one empty square I could spare. | A small favour doesn't need stamping.
+line @1 sympathise : Sit. I'll keep the enquiries off this corner awhile. | That entry can wait until your voice steadies.
+line @1 reassure : The first line only needs the things you know. | A dry chair and two clear minutes may ease matters.
+line @1 ack : Yes. I'd enter that as stated. | It fits the square you've given it.
+line @1 give.advice : Look under a stall before paying for its frontage. | Never lay wet evidence on clean accounts.
 scene countergame
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : On lean weeks I keep separate squares for food that's here and food somebody
 b : What if the delivery's certain? | Who gets the last square?
 a : When it arrives I'll shift a piece. A promise has yet to feed a visitor to my table. | Whoever hasn't eaten. I can return to my careful arithmetic afterwards.
 
-grown
-
 story crownrent [topic=prices|memories]
   : I put two draughts one atop another for a market roof, then knocked them over while setting out the goods.
   : Both went rolling off the edge. My first imaginary roof had taken the rent along with it.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Wipe the chair feet before bringing it in. | Paper in first, then the wet umbrellas.
 
-dlg resident.hub : My board has room for one enquiry before I shift the pieces.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I can spare the square where we left off.
-dlg resident.hub [here.time=night] : Dark pieces are hard to distinguish now. A plain question will serve.
-dlg resident.hub [pair.disposition=wary|hostile] : Bring your question where both the hood and hands stay visible.
-dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I mind the space between a report and a fact.
-dlg resident.job : A clean account leaves little room for profitable misunderstandings.
-dlg resident.bye : Take the dry path beyond my square.
-
+dlg @1 resident.hub : My board has room for one enquiry before I shift the pieces.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can spare the square where we left off.
+dlg @3 resident.hub [here.time=night] : Dark pieces are hard to distinguish now. A plain question will serve.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Bring your question where both the hood and hands stay visible.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I mind the space between a report and a fact.
+dlg @2 resident.job : A clean account leaves little room for profitable misunderstandings.
+dlg @1 resident.bye : Take the dry path beyond my square.
 graft resident.hub
 choice What's trading on your draughts board? -> squaretrade
 node squaretrade

@@ -1,9 +1,12 @@
+# rm340, the swimming cork (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm340
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_frida_brineford
+written_by codex
 title the swimming cork
 fits stage=adult|old
 prefers role=merchant job=merchant
@@ -38,51 +41,50 @@ priceface = my chalked price board | the face of the little slate
 windcheese = a curled cheese shaving | a thin roll of cheese
 
 any
-opinion city for 1 : Whatever the weather chooses, the city needs breakfast. It's agreeable to live where my shelves have a purpose.
-opinion festivals against 1 : I take the music at a distance where I can also hear the lid go back on a cheese box.
-opinion houses for 1 : A single House order may mean decent paid work for the whole morning. I give credit for a clean order promptly met.
-opinion merchants for 1 : A good merchant puts the dry goods underneath a dry roof. There's work done before a price ever reaches a slate.
-opinion newcomers for 1 : A stranger's first meal is an excellent chance for a shop to become familiar.
-opinion road against 1 : A delivery due from the road can spend a long while being due. I'd like to buy and sell something firmer than an expectation.
-opinion strangers for 1 : I've been paid in a copper and a small correction to my understanding of the coast. Both spent very well.
-opinion watch for 1 : The sight of a badge can save a shopkeeper two hours of watching the same pair of paws.
+opinion @1 city for 1 : Whatever the weather chooses, the city needs breakfast. It's agreeable to live where my shelves have a purpose.
+opinion @1 festivals against 1 : I take the music at a distance where I can also hear the lid go back on a cheese box.
+opinion @1 houses for 1 : A single House order may mean decent paid work for the whole morning. I give credit for a clean order promptly met.
+opinion @1 merchants for 1 : A good merchant puts the dry goods underneath a dry roof. There's work done before a price ever reaches a slate.
+opinion @1 newcomers for 1 : A stranger's first meal is an excellent chance for a shop to become familiar.
+opinion @1 road against 1 : A delivery due from the road can spend a long while being due. I'd like to buy and sell something firmer than an expectation.
+opinion @1 strangers for 1 : I've been paid in a copper and a small correction to my understanding of the coast. Both spent very well.
+opinion @1 watch for 1 : The sight of a badge can save a shopkeeper two hours of watching the same pair of paws.
 
 grown
-line greet : Come over to the quiet side. My tune's nearly done.
-line greet [pair.band=strangers] : Welcome. I take a new face at its own price.
-line greet [here.time=dawn] : First light's drawn a clean line across the counter.
-line greet [here.time=dusk|night] : Welcome to a minute the noise has left alone.
-line greet [self.working=yes] : I'm closing this lid. You might have to speak twice if it sticks.
-line kin.open [pair.kin!=no] : Bring your bowl inside our circle.
-line again.open : You're back sooner than my cork on a calm day.
-line greet.return : Your word came up clear on its own.
-line greet.return [pair.band=friends|family] : That voice can have the quiet end to itself.
-line greet.return [self.working=yes] : I heard you between two boxes shutting.
-line greet.return [here.time=dusk|night] : I know now where the shadow's voice belongs.
-line farewell : A dry return for whatever you carry.
-line farewell.return : I'll keep my cork and my own company awhile.
-line farewell [here.time=dusk|night] : Take the firm step home through the gloom.
-line react.news : Let the news float a little before I reach for it.
-line react.news.new : That hasn't come in with any parcel I opened.
-line react.news.known : Yes, that piece rode in on an earlier tide.
-line react.news.doubt : Did a witness go near enough to make out the mark?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A quiet basket at that door may get a better welcome than further words.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll move the best cheese forward for an occasion like that.
-line ask.how : Anything missing from the day's little shelf?
-line answer.how : I have enough dry space and no quarrel with my appetite.
-line answer.how [self.working=yes] : I've still a patch of counter left on which to rest an elbow.
-line sympathise : Bereavement comes back when all the kind callers have gone home.
-line reassure : We can wait on dry boards till the worst pull slackens.
-line decline : I can't set a price on a matter that belongs behind another door.
-line accept_decline : I'll give that closed lid a respectful distance.
-line thank : You've brought the good end of that business within reach.
-line deflect_thanks : Keep it dry and give it fair use.
-line preclose : There'll be a cork knocking round loose if I stand much longer.
-line preclose [self.working=yes] : I've a parcel that deserves a less leisurely return.
-line accept_preclose : Go along. We needn't turn your departure into a job.
-line hail [pair.band=friends] : There's space by the cork box, friend.
-line ack : Runs true.
-
+line @1 greet : Come over to the quiet side. My tune's nearly done.
+line @2 greet [pair.band=strangers] : Welcome. I take a new face at its own price.
+line @3 greet [here.time=dawn] : First light's drawn a clean line across the counter.
+line @4 greet [here.time=dusk|night] : Welcome to a minute the noise has left alone.
+line @5 greet [self.working=yes] : I'm closing this lid. You might have to speak twice if it sticks.
+line @1 kin.open [pair.kin!=no] : Bring your bowl inside our circle.
+line @1 again.open : You're back sooner than my cork on a calm day.
+line @1 greet.return : Your word came up clear on its own.
+line @2 greet.return [pair.band=friends|family] : That voice can have the quiet end to itself.
+line @3 greet.return [self.working=yes] : I heard you between two boxes shutting.
+line @4 greet.return [here.time=dusk|night] : I know now where the shadow's voice belongs.
+line @1 farewell : A dry return for whatever you carry.
+line @1 farewell.return : I'll keep my cork and my own company awhile.
+line @2 farewell [here.time=dusk|night] : Take the firm step home through the gloom.
+line @1 react.news : Let the news float a little before I reach for it.
+line @1 react.news.new : That hasn't come in with any parcel I opened.
+line @1 react.news.known : Yes, that piece rode in on an earlier tide.
+line @1 react.news.doubt : Did a witness go near enough to make out the mark?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A quiet basket at that door may get a better welcome than further words.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll move the best cheese forward for an occasion like that.
+line @1 ask.how : Anything missing from the day's little shelf?
+line @1 answer.how : I have enough dry space and no quarrel with my appetite.
+line @2 answer.how [self.working=yes] : I've still a patch of counter left on which to rest an elbow.
+line @1 sympathise : Bereavement comes back when all the kind callers have gone home.
+line @1 reassure : We can wait on dry boards till the worst pull slackens.
+line @1 decline : I can't set a price on a matter that belongs behind another door.
+line @1 accept_decline : I'll give that closed lid a respectful distance.
+line @1 thank : You've brought the good end of that business within reach.
+line @1 deflect_thanks : Keep it dry and give it fair use.
+line @1 preclose : There'll be a cork knocking round loose if I stand much longer.
+line @2 preclose [self.working=yes] : I've a parcel that deserves a less leisurely return.
+line @1 accept_preclose : Go along. We needn't turn your departure into a job.
+line @1 hail [pair.band=friends] : There's space by the cork box, friend.
+line @1 ack : Runs true.
 scene cork
 when topic=pastimes self.likes=swimming
 does tell.self / ask.detail / answer.detail
@@ -121,9 +123,9 @@ a : Longer than a warm palm. I give the flake a fair start on the ambitious busi
 scene saltwind
 when topic=weather self.dislikes=salt_wind
 does tell.self / ask.detail / answer.detail
-a : I've settled matters between my cork and the wind. | I turn the shop slate indoors when salt begins to dry on the chalk.
-b : What agreement? | Does salt wipe the price?
-a : I shelter my eyes. The cork takes whatever wind comes, clear to the length of my thread. | It blurs a figure. An unclear price raises more wind than I'd care to usher back outside.
+a : When I fish off the end in a salt wind, the cork and I come to terms. | I turn the shop slate indoors when salt begins to dry on the chalk.
+b : What terms? | Does salt wipe the price?
+a : I keep my back to the wind and my eyes shaded. The cork bobs about and takes the worst of it. | It blurs a figure. An unclear price raises more wind than I'd care to usher back outside.
 
 scene quietfaith
 when topic=faith self.likes=quiet_chapel
@@ -300,7 +302,7 @@ story quietcrowd [topic=faith]
 story snowface [topic=weather self.likes=first_snow]
   : I carried my cork out in the snow, set it on a fence and went to bring the tin.
   : It vanished into a little hollow in the white. My own footprints went halfway along the wrong stretch before turning back.
-  b : What brought you back to the buried cork?
+  b : And how was it recovered?
   : By rubbing my coat across the top board. The cork stuck in the sleeve and travelled home looking very well provided for.
 
 story loadmark [topic=memories self.age>=30]
@@ -344,23 +346,23 @@ when concept=bark here.place=market
 does aside
 cooldown 8h
 say There's room to see the price from the side. | Each lid with its matching box.
-dlg resident.hub : I've got an ear free and no obligation to make a great noise with it. Welcome.
-dlg resident.hub [topic.meeting=known] : My quiet corner's yours for a moment, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : There's a full counter between our paws; let's see how the words fare.
-dlg resident.hub [here.time=night] : At this hour we can let the street do most of the talking.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. There's pleasure in providing a dry supper just when somebody's gone looking for one.
-dlg resident.job : I make sure there's a place to put the next thing a wolf brings in.
-dlg resident.news [world.news] : This bit has come up clear of the wrappings. #world.news#.
-dlg resident.news [world.event_words] : The sound of #world.event_words# has reached me over my shelves.
-dlg resident.gossip [here.gossip!=yes] : You've caught an empty cupboard as far as gossip goes.
-dlg resident.business [business=thriving] : More room on the shelves and a little less on the tally. I'll take a day like that.
-dlg resident.business [business=steady] : As much carried in as it takes to keep food going out by the front.
-dlg shop.greet [here.shop!=bare] : Let me know what must keep and what may go straight to the supper pot.
-dlg shop.greet [here.shop=bare] : The shelves have earned a rest in spite of me. I've still an ear for what you need.
-dlg shop.prices : The slate faces you; there's the chalk figure. I'll give you the plain figure for the piece you want.
-dlg shop.bye : Wrap the good side in, keep the damp side out.
-dlg resident.bye : May you get your feet back on dry boards.
 
+dlg @1 resident.hub : I've got an ear free and no obligation to make a great noise with it. Welcome.
+dlg @2 resident.hub [topic.meeting=known] : My quiet corner's yours for a moment, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : There's a full counter between our paws; let's see how the words fare.
+dlg @4 resident.hub [here.time=night] : At this hour we can let the street do most of the talking.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. There's pleasure in providing a dry supper just when somebody's gone looking for one.
+dlg @2 resident.job : I make sure there's a place to put the next thing a wolf brings in.
+dlg @1 resident.news [world.news] : This bit has come up clear of the wrappings. #world.news#.
+dlg @2 resident.news [world.event_words] : The sound of #world.event_words# has reached me over my shelves.
+dlg @1 resident.gossip [here.gossip!=yes] : You've caught an empty cupboard as far as gossip goes.
+dlg @1 resident.business [business=thriving] : More room on the shelves and a little less on the tally. I'll take a day like that.
+dlg @2 resident.business [business=steady] : As much carried in as it takes to keep food going out by the front.
+dlg @1 shop.greet [here.shop!=bare] : Let me know what must keep and what may go straight to the supper pot.
+dlg @2 shop.greet [here.shop=bare] : The shelves have earned a rest in spite of me. I've still an ear for what you need.
+dlg @1 shop.prices : The slate faces you; there's the chalk figure. I'll give you the plain figure for the piece you want.
+dlg @1 shop.bye : Wrap the good side in, keep the damp side out.
+dlg @1 resident.bye : May you get your feet back on dry boards.
 graft @swimtrial resident.hub
 choice Will the little cork tell you whether to swim? -> swimtrial
 node swimtrial

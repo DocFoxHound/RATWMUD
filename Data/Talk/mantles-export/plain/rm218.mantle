@@ -1,9 +1,12 @@
+# rm218, the pocket choir (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm218
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_jorunn_wetcombe
+written_by codex
 title the pocket choir
 fits stage=young|adolescent|adult|old
 prefers humour=merry talk=chatty
@@ -36,45 +39,166 @@ flap = the loose flap | a triangle of oiled cloth
 pleat = a tuck by the ear | a wedge-shaped pleat
 
 any
-opinion church for 1 : Anyone may take breath in the chapel. A rest counts for something in a tune.
-opinion city for 1 : One street in this city can sing the top and bottom notes at once.
-opinion dole for 2 : A loaf on the table gives a tune the belly it was missing.
-opinion festivals for 3 : There's a side to every dance where a shy wolf can learn the steps.
-opinion merchants against 1 : If you're selling by the handful I want to see your paw open properly.
-opinion times against 1 : Folk say there's plenty and then count the crumbs. I'd take the crumbs' word.
+opinion @1 church for 1 : Anyone may take breath in the chapel. A rest counts for something in a tune.
+opinion @1 city for 1 : One street in this city can sing the top and bottom notes at once.
+opinion @1 dole for 2 : A loaf on the table gives a tune the belly it was missing.
+opinion @1 festivals for 3 : There's a side to every dance where a shy wolf can learn the steps.
+opinion @1 merchants against 1 : If you're selling by the handful I want to see your paw open properly.
+opinion @1 times against 1 : Folk say there's plenty and then count the crumbs. I'd take the crumbs' word.
+line @1 greet : I'm trying the quiet version first. Welcome to it. | Glad you've come within a hood's width.
+line @2 greet [pair.band=strangers] : Fresh ears! My hood sends its greetings. | Hello from under the shiny bit.
+line @3 greet [here.time=dawn] : This hour could do with a softer beginning. | You've caught my first note of the day.
+line @1 greet.return : My ears were under cover. I heard you though. | Right back from inside the hood.
+line @2 greet.return [pair.band=friends|family] : You've got a greeting I can pick out blind. | There, that's the voice my tune wanted.
+line @3 greet.return [here.time=night] : Quiet hello. This one's just for us. | Evening's got a very small audience.
+line @1 again.open : Second verse already. | I was saving the other half for you.
+line @1 kin.open [pair.kin!=no] : There's space under my brim for family talk. | Come close enough for the private version.
+line @1 hail [pair.band=friends] : Catch the tune I'm sending over! | Familiar ears wanted over here!
+line @1 farewell : Take the tune home in your pocket. | I'll hum till you're out of earshot.
+line @1 farewell.return : I'll remember where our verse broke off. | Right, we'll leave the chorus for later.
+line @1 react.news : Come under the brim and say it clearly. | News deserves both my ears for once.
+line @1 react.news.new : That knocked a whole note out of me. | Nobody's sung that verse my way yet.
+line @1 react.news.known : Yes, that tune's reached this ear already. | I could hum the next bit myself.
+line @1 react.news.doubt : Who actually heard it with uncovered ears? | I'd wait for a second voice before singing that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. Let me fold this noisy thing away. | I'll listen quietly for the rest.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My ears are grinning under here. | That's news worth a whole extra verse.
+line @1 ask.how : Have you had a singing day or a silent one? | How's the world sounding your way?
+line @1 answer.how : In tolerable tune, once I get started. | Well enough for company the size of you.
+line @1 sympathise : I'll sit where you can hear me breathe. | No loud comfort from me. Promise.
+line @1 decline : I want to keep that little while to myself. | A crowd would take the pleasure out of it for me.
+line @1 accept_decline : Keep your quiet then. I've got music enough. | You get to choose when to sing.
+line @1 thank : That was worth uncovering both ears for. | I'd put a harmony under that kindness.
+line @1 deflect_thanks : Sing it back another day if you like. | That little bit hardly took a breath.
+line @1 preclose : Time for me to fold my audience away. | I'd better take my racket somewhere else now.
+line @1 accept_preclose : I'll let your footsteps take the tune. | Go on then. The ending can wait.
+line @1 tease [pair.band=friends] : Your footsteps keep much better time than your singing. | There's a whole extra beat in your eyebrow.
+line @1 ack : Heard the curl on that. | Yes, every word under here.
+graft resident.hub
+choice Can a hood really change how a song sounds? -> cloth_chorus
+node cloth_chorus
+say Fold the brim in beside one ear. My voice comes back so close it's like another singer knows exactly when to join.
+mood pleased
+free
+choice What if I fold both sides? -> cloth_both
+choice I'd like to ask something else. -> hub
+node cloth_both
+say You'll sound splendid to yourself. To everybody else you'll look like a wolf trying to climb into a parcel.
+choice I'll try one ear first. -> hub
+choice I'll take the tune with me. -> bye
 
-any
-line greet : I'm trying the quiet version first. Welcome to it. | Glad you've come within a hood's width.
-line greet [pair.band=strangers] : Fresh ears! My hood sends its greetings. | Hello from under the shiny bit.
-line greet [here.time=dawn] : This hour could do with a softer beginning. | You've caught my first note of the day.
-line greet.return : My ears were under cover. I heard you though. | Right back from inside the hood.
-line greet.return [pair.band=friends|family] : You've got a greeting I can pick out blind. | There, that's the voice my tune wanted.
-line greet.return [here.time=night] : Quiet hello. This one's just for us. | Evening's got a very small audience.
-line again.open : Second verse already. | I was saving the other half for you.
-line kin.open [pair.kin!=no] : There's space under my brim for family talk. | Come close enough for the private version.
-line hail [pair.band=friends] : Catch the tune I'm sending over! | Familiar ears wanted over here!
-line farewell : Take the tune home in your pocket. | I'll hum till you're out of earshot.
-line farewell.return : I'll remember where our verse broke off. | Right, we'll leave the chorus for later.
-line react.news : Come under the brim and say it clearly. | News deserves both my ears for once.
-line react.news.new : That knocked a whole note out of me. | Nobody's sung that verse my way yet.
-line react.news.known : Yes, that tune's reached this ear already. | I could hum the next bit myself.
-line react.news.doubt : Who actually heard it with uncovered ears? | I'd wait for a second voice before singing that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. Let me fold this noisy thing away. | I'll listen quietly for the rest.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My ears are grinning under here. | That's news worth a whole extra verse.
-line ask.how : Have you had a singing day or a silent one? | How's the world sounding your way?
-line answer.how : In tolerable tune, once I get started. | Well enough for company the size of you.
-line sympathise : I'll sit where you can hear me breathe. | No loud comfort from me. Promise.
-line decline : I want to keep that little while to myself. | A crowd would take the pleasure out of it for me.
-line accept_decline : Keep your quiet then. I've got music enough. | You get to choose when to sing.
-line thank : That was worth uncovering both ears for. | I'd put a harmony under that kindness.
-line deflect_thanks : Sing it back another day if you like. | That little bit hardly took a breath.
-line preclose : Time for me to fold my audience away. | I'd better take my racket somewhere else now.
-line accept_preclose : I'll let your footsteps take the tune. | Go on then. The ending can wait.
-line tease [pair.band=friends] : Your footsteps keep much better time than your singing. | There's a whole extra beat in your eyebrow.
-line ack : Heard the curl on that. | Yes, every word under here.
+
+grown
+scene lined_bowl
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : The curve of #hood# catches a voice the way a bowl catches water. | I've altered #pleat# so a low note comes back clearer.
+b : How do you empty it? | With a needle?
+a : Stop singing, alas. I've wanted to save one in there. | First with a pin. No sense sewing a bad note in for good.
+
+scene home_back
+when topic=home
+does tell.feeling / react.self / assess / reassure
+a : After a noisy street I can hear myself again under #brim#. | I like a room where nobody has to raise a voice.
+b : You still talk a fair bit. | Including you?
+a : Yes, but softly enough to choose my own words. | Especially me. A loud voice deserves some time off.
+b : I'll stay near enough for the quiet words. | It can put its feet up here.
+
+scene meal_beat
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : The nicest part of a meal is the little hush that falls over it. | A spoon on a dish can spoil a tune in my head.
+b : Before or afterwards? | Just one tap?
+a : After the first bite, when everyone finds a better use for a mouth. | One's enough, especially if it lands half a beat late.
+
+scene echo_shelf
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Some arches in Ridgemere keep a word longer than its owner. | I know a wall by how it gives my voice back.
+b : What word do you lend them? | Even with your eyes shut?
+a : Just a vowel. An arch has no business with my private affairs. | The high wall gives the note a bright little rim.
+
+scene string
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : A slack tie makes a different note from a tight one. | Listen to that twang before you pull the knot.
+b : Which one do you want? | Is the cloth going to tear?
+a : Enough give for an ear to turn without permission. | No, but my ears object to being strung up like fiddle strings.
+
+scene route
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I choose the lane where a conversation can go on at its own pace. | Give me a long path with room to talk in pairs.
+b : Even if it takes longer? | What's wrong with walking three abreast?
+a : A rush takes the good pauses out of a story. | The one at the edge gets half the words and all the hedge.
+
+scene blue_mood
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A very low note can feel like company when I'm blue. | I hum under my breath to find where a worry starts.
+b : How can it answer? | And where does it start?
+a : It doesn't. That's a mercy sometimes. | Where my breath catches. I have to slow down there.
+
+scene returned
+when topic=friends
+does tell.self / react.self / assess
+a : Hearing a friend whistle my tune makes it sound new. | If I lend you a melody will you bring it back changed?
+b : Surely it's the same tune. | What sort of change?
+a : There's another pair of ears inside it now. | Whatever bit your own breath wants to linger on.
+
+scene weather_skin
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : The folds keep one drop back to fall on my nose. | Rain plays different speeds on #flap# and #brim#.
+b : Always the last drop? | Do you count along?
+a : Until I shake it out, when there are six more. | On one side. Trying both makes me walk sideways.
+
+scene lost_tune
+when topic=dreams
+does tell.self / ask.detail / answer.detail / react.self
+a : I dreamt a song with a glorious missing beat. | I've woken with a tune that won't stand up in daylight.
+b : Why glorious if it was missing? | What happens to it?
+a : Everybody leaned forward to hear what ought to come next. | I try to sing the middle and get two beginnings instead.
+b : I'd lean in. I like the moment just before the surprise. | Then sing me whichever beginning you like better.
+
+scene gossip
+when topic=gossip
+does tell.self / react.self / assess
+a : A whisper isn't better news because it fits under cloth. | My private audience prefers tunes to rumours.
+b : Does that stop people trying? | Who's the audience?
+a : No, but I can put my hood up and hum. | Both ears. Neither needs that sort of entertainment.
+
+scene hearing
+when topic=faith
+does tell.feeling / ask.detail / answer.detail
+a : Even my unsung bit of music must reach the Bright One somehow. | On quiet days a breath can feel very close to song.
+b : What part's that? | Does it need words?
+a : The bit where you're making up your mind to try. | Mine never seems to when I'm thankful.
+
+story repaired_brim [topic=memories]
+  : I once had the entire lining mended. Very nice straight stitches, exactly where the old ones had been crooked.
+  : I put it on and heard my own voice like a stranger's. Took the first three stitches out myself.
+  b : Was that enough?
+  : It gave me a little room by one ear. Half a street later my voice and I were friends again.
+
+rule @hum
+when concept=bark self.likes=singing
+does aside
+cooldown 9h
+say Listen for the part tucked under the tune. | Leave a breath where the two parts meet!
+
+rule @fair_space
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say Mind the gap for a dancer joining in. | Plenty of music left on this edge!
+
+dlg @g1 resident.hub : Come a little nearer. A voice this close can afford to be quiet.
+dlg @g2 resident.job : I listen for the bit that gets drowned out.
+dlg @g3 resident.bye : Keep enough breath for your own last verse.
+
 young
-line ask.detail : Can I try the funny bit out loud? | Did it sound as big outside?
-line give.advice : Hide behind your hood till the clapping stops. | Tuck one ear and see how it sounds.
+line @1 ask.detail : Can I try the funny bit out loud? | Did it sound as big outside?
+line @1 give.advice : Hide behind your hood till the clapping stops. | Tuck one ear and see how it sounds.
 scene tiny_stage
 when topic=pastimes|smalltalk
 does tell.self / ask.detail / answer.detail / tease
@@ -187,6 +311,7 @@ dlg @p3 resident.hub [here.time=night] : The late show costs a yawn. I've got on
 dlg @p4 resident.hub [pair.disposition=wary|hostile] : I'll keep the tie fast. You can speak from there.
 dlg @p1 resident.job [self.job=child] : #self.trade_words.capitalize#. My ears learn things while my paws are making mistakes.
 dlg @p1 resident.bye : You can clap with one claw if you liked it.
+
 adolescent
 scene second_part
 when topic=pastimes self.likes=singing
@@ -214,125 +339,3 @@ story outside_ear [topic=memories|pastimes]
   : Everyone waited. Out came a sound thin as a pin, nothing like the choir in my head.
   b : Did you stop leading?
   : I turned the brim back so I could hear what I was really giving them. Then we started again.
-
-grown
-scene lined_bowl
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : The curve of #hood# catches a voice the way a bowl catches water. | I've altered #pleat# so a low note comes back clearer.
-b : How do you empty it? | With a needle?
-a : Stop singing, alas. I've wanted to save one in there. | First with a pin. No sense sewing a bad note in for good.
-
-scene home_back
-when topic=home
-does tell.feeling / react.self / assess / reassure
-a : After a noisy street I can hear myself again under #brim#. | I like a room where nobody has to raise a voice.
-b : You still talk a fair bit. | Including you?
-a : Yes, but softly enough to choose my own words. | Especially me. A loud voice deserves some time off.
-b : I'll stay near enough for the quiet words. | It can put its feet up here.
-
-scene meal_beat
-when topic=food
-does tell.self / ask.detail / answer.detail
-a : The nicest part of a meal is the little hush that falls over it. | A spoon on a dish can spoil a tune in my head.
-b : Before or afterwards? | Just one tap?
-a : After the first bite, when everyone finds a better use for a mouth. | One's enough, especially if it lands half a beat late.
-
-scene echo_shelf
-when topic=lore here.region=ridgemere
-does tell.self / ask.detail / answer.detail
-a : Some arches in Ridgemere keep a word longer than its owner. | I know a wall by how it gives my voice back.
-b : What word do you lend them? | Even with your eyes shut?
-a : Just a vowel. An arch has no business with my private affairs. | The high wall gives the note a bright little rim.
-
-scene string
-when topic=work|smalltalk
-does tell.self / ask.detail / answer.detail
-a : A slack tie makes a different note from a tight one. | Listen to that twang before you pull the knot.
-b : Which one do you want? | Is the cloth going to tear?
-a : Enough give for an ear to turn without permission. | No, but my ears object to being strung up like fiddle strings.
-
-scene route
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : I choose the lane where a conversation can go on at its own pace. | Give me a long path with room to talk in pairs.
-b : Even if it takes longer? | What's wrong with walking three abreast?
-a : A rush takes the good pauses out of a story. | The one at the edge gets half the words and all the hedge.
-
-scene blue_mood
-when topic=health
-does tell.self / ask.detail / answer.detail
-a : A very low note can feel like company when I'm blue. | I hum under my breath to find where a worry starts.
-b : How can it answer? | And where does it start?
-a : It doesn't. That's a mercy sometimes. | Where my breath catches. I have to slow down there.
-
-scene returned
-when topic=friends
-does tell.self / react.self / assess
-a : Hearing a friend whistle my tune makes it sound new. | If I lend you a melody will you bring it back changed?
-b : Surely it's the same tune. | What sort of change?
-a : There's another pair of ears inside it now. | Whatever bit your own breath wants to linger on.
-
-scene weather_skin
-when topic=weather here.weather=rain
-does tell.self / ask.detail / answer.detail
-a : The folds keep one drop back to fall on my nose. | Rain plays different speeds on #flap# and #brim#.
-b : Always the last drop? | Do you count along?
-a : Until I shake it out, when there are six more. | On one side. Trying both makes me walk sideways.
-
-scene lost_tune
-when topic=dreams
-does tell.self / ask.detail / answer.detail / react.self
-a : I dreamt a song with a glorious missing beat. | I've woken with a tune that won't stand up in daylight.
-b : Why glorious if it was missing? | What happens to it?
-a : Everybody leaned forward to hear what ought to come next. | I try to sing the middle and get two beginnings instead.
-b : I'd lean in. I like the moment just before the surprise. | Then sing me whichever beginning you like better.
-
-scene gossip
-when topic=gossip
-does tell.self / react.self / assess
-a : A whisper isn't better news because it fits under cloth. | My private audience prefers tunes to rumours.
-b : Does that stop people trying? | Who's the audience?
-a : No, but I can put my hood up and hum. | Both ears. Neither needs that sort of entertainment.
-
-scene hearing
-when topic=faith
-does tell.feeling / ask.detail / answer.detail
-a : Even my unsung bit of music must reach the Bright One somehow. | On quiet days a breath can feel very close to song.
-b : What part's that? | Does it need words?
-a : The bit where you're making up your mind to try. | Mine never seems to when I'm thankful.
-
-story repaired_brim [topic=memories]
-  : I once had the entire lining mended. Very nice straight stitches, exactly where the old ones had been crooked.
-  : I put it on and heard my own voice like a stranger's. Took the first three stitches out myself.
-  b : Was that enough?
-  : It gave me a little room by one ear. Half a street later my voice and I were friends again.
-
-rule @hum
-when concept=bark self.likes=singing
-does aside
-cooldown 9h
-say Listen for the part tucked under the tune. | Leave a breath where the two parts meet!
-
-rule @fair_space
-when concept=bark here.day=festival
-does aside
-cooldown 8h
-say Mind the gap for a dancer joining in. | Plenty of music left on this edge!
-
-dlg @g1 resident.hub : Come a little nearer. A voice this close can afford to be quiet.
-dlg @g2 resident.job : I listen for the bit that gets drowned out.
-dlg @g3 resident.bye : Keep enough breath for your own last verse.
-any
-graft resident.hub
-choice Can a hood really change how a song sounds? -> cloth_chorus
-node cloth_chorus
-say Fold the brim in beside one ear. My voice comes back so close it's like another singer knows exactly when to join.
-mood pleased
-free
-choice What if I fold both sides? -> cloth_both
-choice I'd like to ask something else. -> hub
-node cloth_both
-say You'll sound splendid to yourself. To everybody else you'll look like a wolf trying to climb into a parcel.
-choice I'll try one ear first. -> hub
-choice I'll take the tune with me. -> bye

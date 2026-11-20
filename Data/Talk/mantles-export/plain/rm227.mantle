@@ -1,9 +1,12 @@
+# rm227, the landing finder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm227
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_kjell_coalham
+written_by codex
 title the landing finder
 fits stage=adult|old
 prefers honesty=guarded temper=short
@@ -34,45 +37,44 @@ ropeburn = a hot streak across the palm | a red line under the fur
 cardback = a grey card back | the back of a playing card
 
 any
-opinion dole for 2 : A loaf when the ropes are idle keeps a back fit for the next load.
-opinion sump for 1 : I can set a pot level on the worst stair in the Sump. There's satisfaction in knowing where.
-opinion watch against 1 : Boots marching abreast leave no room for anyone bringing a burden down.
-opinion houses against 2 : A grand stair can be wide enough for six. How many of those six ever get through the door?
-opinion merchants against 1 : I'd trust a price marked up before my paws were full.
-opinion festivals against 1 : Drum skins rest when a parade ends. Wish my ears did.
-opinion newcomers against 1 : More backs for the same few loads. I count that before I count the welcomes.
+opinion @1 dole for 2 : A loaf when the ropes are idle keeps a back fit for the next load.
+opinion @1 sump for 1 : I can set a pot level on the worst stair in the Sump. There's satisfaction in knowing where.
+opinion @1 watch against 1 : Boots marching abreast leave no room for anyone bringing a burden down.
+opinion @1 houses against 2 : A grand stair can be wide enough for six. How many of those six ever get through the door?
+opinion @1 merchants against 1 : I'd trust a price marked up before my paws were full.
+opinion @1 festivals against 1 : Drum skins rest when a parade ends. Wish my ears did.
+opinion @1 newcomers against 1 : More backs for the same few loads. I count that before I count the welcomes.
 
 grown
-line greet : You can stand here. The stones hold.
-line greet [pair.band=strangers] : We can meet with a step between us.
-line greet [here.time=dawn] : Early enough that the street's still got its shape.
-line greet [here.time=dusk|night] : Stay against the lit edge if you're stopping.
-line greet.return : Heard your tread. Welcome up.
-line greet.return [pair.band=friends|family] : Come ahead. I know that weight of step.
-line greet.return [self.working=yes] : Half a breath. I can listen while my grip settles.
-line greet.return [here.time=dusk|night] : Your voice comes clearer when the carts stop.
-line kin.open [pair.kin!=no] : Blood gets the flatter spot beside me.
-line again.open : There's another dry inch here for our talk.
-line hail [pair.band=friends] : Up here! Follow my bent elbow.
-line farewell : Keep the high side going down.
-line farewell.return : And plant your heel before you turn.
-line react.news : Let me put that down before you go on.
-line react.news.new : None of that reached this landing.
-line react.news.known : I've heard that account make the climb already.
-line react.news.doubt : Which bit could you swear to yourself?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd take a little weight off if I knew how.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. My back feels straighter hearing it.
-line ask.how : Are you keeping your footing today?
-line answer.how : Upright and earning my share of the view.
-line thank : That bought a moment for my shoulders.
-line deflect_thanks : Saving someone a slip is cheap enough.
-line sympathise : Lean a while. The stone can take us.
-line reassure : I'll stand below you till you're steady.
-line decline : I'll pass, my shoulders are keeping other promises.
-line accept_decline : Then take the easier way for once.
-line preclose : I'd better give my feet a chance at home.
-line accept_preclose : I'll let you turn without crowding the rail.
-
+line @1 greet : You can stand here. The stones hold.
+line @2 greet [pair.band=strangers] : We can meet with a step between us.
+line @3 greet [here.time=dawn] : Early enough that the street's still got its shape.
+line @4 greet [here.time=dusk|night] : Stay against the lit edge if you're stopping.
+line @1 greet.return : Heard your tread. Welcome up.
+line @2 greet.return [pair.band=friends|family] : Come ahead. I know that weight of step.
+line @3 greet.return [self.working=yes] : Half a breath. I can listen while my grip settles.
+line @4 greet.return [here.time=dusk|night] : Your voice comes clearer when the carts stop.
+line @1 kin.open [pair.kin!=no] : Blood gets the flatter spot beside me.
+line @1 again.open : There's another dry inch here for our talk.
+line @1 hail [pair.band=friends] : Over here! Follow my bent elbow.
+line @1 farewell : Keep the high side going down.
+line @1 farewell.return : And plant your heel before you turn.
+line @1 react.news : Let me put that down before you go on.
+line @1 react.news.new : None of that reached this landing.
+line @1 react.news.known : I've heard that account make the climb already.
+line @1 react.news.doubt : Which bit could you swear to yourself?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd take a little weight off if I knew how.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. My back feels straighter hearing it.
+line @1 ask.how : Are you keeping your footing today?
+line @1 answer.how : Upright and earning my share of the view.
+line @1 thank : That bought a moment for my shoulders.
+line @1 deflect_thanks : Saving someone a slip is cheap enough.
+line @1 sympathise : Lean a while. The stone can take us.
+line @1 reassure : I'll stand below you till you're steady.
+line @1 decline : I'll pass, my shoulders are keeping other promises.
+line @1 accept_decline : Then take the easier way for once.
+line @1 preclose : I'd better give my feet a chance at home.
+line @1 accept_preclose : I'll let you turn without crowding the rail.
 scene flat_inch
 when topic=work|smalltalk self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -85,7 +87,7 @@ when topic=pastimes|travel
 does tell.self / ask.detail / answer.detail
 a : I know distances by tired strides. | Going up I count the rises. Coming down I count the landings.
 b : How far is a tired stride? | Why change?
-a : From an unfinished errand to the first place your knees will bend. | Landings come sooner when you're looking ahead.
+a : Half a paw shorter than a fresh one. By dusk a street's twice its length. | Landings come sooner when you're looking ahead.
 
 scene loop_cut
 when topic=work self.working=yes self.job=none
@@ -98,22 +100,22 @@ scene maps_fold
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
 a : I smooth #mapedge# before I study the roads. | A map on a wall shows you every possible road at once.
-b : Why the edge? | That sounds handy.
-a : That's where the places I haven't been are generally hiding. | I like a folded map. I can fancy there's more country under my thumb.
+b : Why the edge? | Better than a folded one?
+a : That's where the places I haven't been are generally hiding. | Worse. Folded, I can fancy there's more country under my thumb.
 
 scene soup_heel
 when topic=food self.likes=warm_bread
 does tell.self / ask.detail / answer.detail
 a : Press #crust# against your cheek before you eat. | Give me a heel over a middle slice.
 b : To feel the warmth? | Why the heel?
-a : For a second it's like leaning on the bakehouse wall. | One paw stays free for the rail.
+a : For a second it's like leaning on the bakehouse wall. | It holds together in one paw. The other stays free for the rail.
 
 scene honest_cut
 when topic=pastimes self.likes=cards
 does tell.self / ask.detail / answer.detail
 a : Cards are the one weight I'll carry for nothing. | A bent corner spoils a pack for me.
 b : You play for coin? | Someone's marked it?
-a : No. I'd be doing the lifting all over again. | Maybe just damp. A suspicion weighs plenty either way.
+a : No. Coin turns a game into work, and I've work enough. | Maybe just damp. A suspicion weighs plenty either way.
 
 scene wake_early
 when topic=weather|smalltalk here.time=dawn
@@ -162,7 +164,7 @@ when topic=times|prices world.times=hard|lean
 does tell.self / ask.detail / answer.detail
 a : A short week makes a long crust. | I'm putting the paid jobs nearer together in my head.
 b : Does it stretch? | To what end?
-a : No. You have to eat more slowly. | Gives me something better than the gap to remember.
+a : No. You have to eat more slowly. | So the gaps between look shorter. A trick, but it gets me to Restday.
 
 scene private_name
 when topic=gossip here.gossip=yes
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say There's a groove in my belt where the day's been hanging.
 
-dlg resident.hub : There's holding room for two voices here.
-dlg resident.hub [topic.meeting=known] : #topic.player#. I know the tread as well as the face now.
-dlg resident.hub [here.time=night] : I can hear you if you speak under the noise.
-dlg resident.hub [pair.disposition=hostile|wary] : Easy on that rail. There's space enough apart.
-dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. My feet could quote the rest.
-dlg resident.job : I measure a day's work by how my belt fits at supper.
-dlg resident.news [world.news] : Word took a climb from #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I've heard the talk. My mouth's a bad place to try and get it back.
-dlg resident.bye : Leave a flat stone for the next foot.
-
+dlg @1 resident.hub : There's holding room for two voices here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I know the tread as well as the face now.
+dlg @3 resident.hub [here.time=night] : I can hear you if you speak under the noise.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Easy on that rail. There's space enough apart.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. My feet could quote the rest.
+dlg @2 resident.job : I measure a day's work by how my belt fits at supper.
+dlg @1 resident.news [world.news] : Word took a climb from #world.news_from#. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip=yes] : I've heard the talk. My mouth's a bad place to try and get it back.
+dlg @1 resident.bye : Leave a flat stone for the next foot.
 graft resident.hub
 choice Why do you carry a wooden wedge? -> test_wedge
 node test_wedge

@@ -1,9 +1,12 @@
+# rm548, the seed capital (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm548
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_sigrun_thornbury
+written_by codex
 title the seed capital
 fits stage=young|adolescent|adult|old
 prefers talk=chatty temper=nervy
@@ -33,60 +36,133 @@ clapper = my little spoon bell | the handle of my teaspoon
 twoprice = a pair of sample pips | a seed in each lot
 
 any
-opinion festivals for 2 : A proper festival lets me hear the bells start before I open my little market.
-opinion houses for 1 : It helps if someone with a big roof lets a very small business stay dry underneath.
-opinion strangers against 1 : I'd like callers at my saucer to introduce themselves before I let anybody pick the pips up.
-opinion road against 1 : My little stock rolls away when the road is stony. A table at home doesn't do that.
-opinion times for 1 : I have berries to eat and an actual copper put away. That feels like quite a decent beginning.
-opinion watch for 1 : I'd welcome some help if somebody upset my whole little shop on purpose.
+opinion @1 festivals for 2 : A proper festival lets me hear the bells start before I open my little market.
+opinion @1 houses for 1 : It helps if someone with a big roof lets a very small business stay dry underneath.
+opinion @1 strangers against 1 : I'd like callers at my saucer to introduce themselves before I let anybody pick the pips up.
+opinion @1 road against 1 : My little stock rolls away when the road is stony. A table at home doesn't do that.
+opinion @1 times for 1 : I have berries to eat and an actual copper put away. That feels like quite a decent beginning.
+opinion @1 watch for 1 : I'd welcome some help if somebody upset my whole little shop on purpose.
 
 grown
+line @1 greet : My counter has a space in which a visitor may put an elbow.
+line @1 greet.return : Your voice has quite distinct purchasing power here.
+line @1 again.open : We've opened for another conversation.
+line @1 farewell : Save your next copper for something you want.
+line @1 farewell.return : I'll bring this little account to order.
+line @1 react.news : Could you give the part on which the price depends?
+line @1 preclose : I can close the stall with easy thoughts now.
+scene capital
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : For a time my entire stock in trade would fit on a saucer and leave room for a spoon.
+b : What were you selling? | Did it turn a profit?
+a : Blackberry pips stood for entire lots of imaginary fruit. The smallest traders need a little imagination for capital. | It taught me which half of a transaction requires the most listening. That dividend has stayed with me.
 
-grown
-line greet : My counter has a space in which a visitor may put an elbow.
-line greet.return : Your voice has quite distinct purchasing power here.
-line again.open : We've opened for another conversation.
-line farewell : Save your next copper for something you want.
-line farewell.return : I'll bring this little account to order.
-line react.news : Could you give the part on which the price depends?
-line preclose : I can close the stall with easy thoughts now.
+scene shelter
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I've always fancied a stall with sufficient awning to protect a waiting customer too.
+b : Wouldn't that cost more? | What does the waiting customer gain?
+a : A little in cloth. An overhang wide enough for one caller could turn a damp hesitation into a comfortable purchase. | Time to look at an article without rain making the choice seem urgent.
 
-adolescent
-line greet : I've space beside my first list of prices.
-line greet.return : Your greeting nearly shook my model canopy open.
-line farewell : See whether the awning holds on your way past.
-line farewell.return : I'll count the loose change after closing.
+scene berryripe
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I'd price the fruit that should be eaten now separately from the fruit fit to travel.
+b : Both ripe? | Which would you keep?
+a : Ripe to the eye perhaps. One bruises under its own neighbour and one still holds a firm edge. | The soft lot for supper and the firmer fruit to send a friend tomorrow.
+
+scene debt
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I remember favours distinctly and try not to confuse them with business debts.
+b : Can you settle a favour? | Why keep them distinct?
+a : With kindness when an occasion offers. I wouldn't present a friend with an itemised account. | One has a sum agreed. The other still has room for a generous thought.
+
+scene turn
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A light band along one side of a mist tells me where the sun will soon show.
+b : Would you set up there? | Does the mist spoil a display?
+a : I should first ask where the wind comes across the market. Brightness can't keep a poor canopy from leaking. | It softens the colours. A bit of clear dark fruit on a white cloth still carries remarkably well.
+
+scene quiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : In the pause after the bells I still catch myself hoping for one more stroke.
+b : Would another bell be better? | Which sound are you waiting on?
+a : Not better, quite simply more. I've kept a generous appetite for a well-shaped sound. | The end of the first sound before the next takes its place. It's longer than one ordinarily notices.
+
+scene moneyreal
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A reserve fund only proves its value when the day calls for an unanticipated expense.
+b : What qualifies? | Where would you begin again?
+a : A torn awning before rain. A finer painted sign can generally wait its proper turn. | With the least copper left after covering my obligations. I've had cheerful beginnings considerably smaller than that.
+
+scene dicegrown
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I use a throw of dice for amusement where nobody will have to make a living from the answer.
+b : Does that limit the stake? | Who picks the game?
+a : Happily. I'd like the losing player to finish with funds and a good appetite for supper. | A guest, provided the board sits level and the rules are clear to every player.
+
+scene ratproof
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : The best compliment I can give a well-stocked pantry is to keep the door shut after visiting.
+b : Even for a short errand? | Why say compliment?
+a : A rat has short errands too, and plans them according to quite a different clock. | Because somebody thought about tomorrow before putting that food by. I wish to respect the trouble.
+
+scene merchantlook
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I leave visitors room to study an item before being invited to commit to it.
+b : Wouldn't a prompt word help? | How would you signal welcome?
+a : A plain welcome helps. A sales speech can wait on a politely expressed interest. | An open view over the counter and time to answer the first small question honestly.
+
+scene richroom
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : From the Heights I can overlook the entire market roof and none of the difficult work beneath it.
+b : Would you rather see the work? | What's the appeal of the roof?
+a : I'd go down and ask if anybody wished to show it. A distant point of view ought to recognise its limits. | The long outline resembles my earliest folded paper awning.
+
+scene closing
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I like to gather small loose objects before the shadows flatten out.
+b : What happens if you wait? | Where do they go?
+a : A perfectly bright copper can spend the evening successfully impersonating the timber's darkest knot. | Into a separate bag till morning lets me sort the pieces by appearance.
+
 
 young
-line greet : I have a saucer shop and you can stand right here.
-line greet [pair.band=strangers] : Welcome to the looking side of my counter.
-line greet [here.time=dawn] : My little market's open as soon as the pip casts a shadow.
-line greet [here.time=dusk|night] : I can keep one berry back for evening callers.
-line greet [self.working=yes] : The figures must stay where I put them for my lesson.
-line kin.open [pair.kin!=no] : Family's welcome to look behind the paper roof.
-line again.open : My shop recognises a returning pair of ears.
-line greet.return : Heard you quite clearly over my shop bell.
-line greet.return [pair.band=friends|family] : A familiar customer may have the nearest seat.
-line farewell : Please leave the pips lying in their little rows.
-line farewell.return : I'll look after the stock till you come round.
-line react.news : Would that bit of news change a seller's mind?
-line react.news.new : That's going in my little book of first occurrences.
-line react.news.known : I've a pip set aside for that one already.
-line react.news.doubt : Did the seller actually put the price there?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd let a sad wolf have the quiet saucer.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd ring my spoon lightly to celebrate that.
-line answer.how : Worrying about the roof. Otherwise extremely busy with nothing.
-line ask.how : Did you see a likely pitch for my tiny stall?
-line sympathise : My shop can be shut if you'd like the bench to yourself.
-line reassure : I'll keep the time by my spoon till you're ready.
-line decline : I have a proper promise to keep this stock accounted for.
-line accept_decline : Then that particular purchase can be postponed a little.
-line thank : You've saved me a great deal of counting again.
-line preclose : I need to open the paper roof for some air.
-line ack : Counted twice.
-
-young
-
+line @1 greet : I have a saucer shop and you can stand right here.
+line @2 greet [pair.band=strangers] : Welcome to the looking side of my counter.
+line @3 greet [here.time=dawn] : My little market's open as soon as the pip casts a shadow.
+line @4 greet [here.time=dusk|night] : I can keep one berry back for evening callers.
+line @5 greet [self.working=yes] : The figures must stay where I put them for my lesson.
+line @1 kin.open [pair.kin!=no] : Family's welcome to look behind the paper roof.
+line @1 again.open : My shop recognises a returning pair of ears.
+line @1 greet.return : Heard you quite clearly over my shop bell.
+line @2 greet.return [pair.band=friends|family] : A familiar customer may have the nearest seat.
+line @1 farewell : Please leave the pips lying in their little rows.
+line @1 farewell.return : I'll look after the stock till you come round.
+line @1 react.news : Would that bit of news change a seller's mind?
+line @1 react.news.new : That's going in my little book of first occurrences.
+line @1 react.news.known : I've a pip set aside for that one already.
+line @1 react.news.doubt : Did the seller actually put the price there?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd let a sad wolf have the quiet saucer.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd ring my spoon lightly to celebrate that.
+line @1 answer.how : Worrying about the roof. Otherwise extremely busy with nothing.
+line @1 ask.how : Did you see a likely pitch for my tiny stall?
+line @1 sympathise : My shop can be shut if you'd like the bench to yourself.
+line @1 reassure : I'll keep the time by my spoon till you're ready.
+line @1 decline : I have a proper promise to keep this stock accounted for.
+line @1 accept_decline : Then that particular purchase can be postponed a little.
+line @1 thank : You've saved me a great deal of counting again.
+line @1 preclose : I need to open the paper roof for some air.
+line @1 ack : Counted twice.
 scene seeds
 when topic=prices
 does tell.self / ask.detail / answer.detail
@@ -206,117 +282,6 @@ a : At closing time I tip the pips into a little fold of clean paper.
 b : Won't they escape? | Why not put the whole shop away?
 a : The corners tuck one inside the other. I checked the outgoing and returning numbers to make sure. | The saucer's a saucer again once the market closes. It might be needed under a cup.
 
-adolescent
-
-scene sums
-when topic=work
-does tell.self / ask.detail / answer.detail
-a : My first tallies looked like leafless hedges. I've learned to leave decent spaces between a sum and its neighbour.
-b : What's the benefit? | Do you keep the old tallies?
-a : A customer can see which article belongs to which figure without asking me to read it twice. | Two early ones. They remind me that plain writing was once a thing I had to practise.
-
-scene ribbon
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I have a ribbon sample that makes an awning look expensive without improving its resistance to rain.
-b : Would you buy the ribbon? | Does a sample give enough evidence?
-a : After the waterproof part. I prefer that customers get their fruit and go home quite dry. | Not entirely. I'd test the seam with actual water before ordering.
-
-scene candlemist
-when topic=weather
-does tell.self / ask.detail / answer.detail
-a : In fog I'd rather hang a bright price card than shout a price at every passerby.
-b : Will a card be seen? | What if they ask?
-a : Once the passerby's near enough to be interested. That seems precisely the right distance. | I can give a very clear answer when somebody wants one.
-
-grown
-
-scene capital
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : For a time my entire stock in trade would fit on a saucer and leave room for a spoon.
-b : What were you selling? | Did it turn a profit?
-a : Blackberry pips stood for entire lots of imaginary fruit. The smallest traders need a little imagination for capital. | It taught me which half of a transaction requires the most listening. That dividend has stayed with me.
-
-scene shelter
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I've always fancied a stall with sufficient awning to protect a waiting customer too.
-b : Wouldn't that cost more? | What does the waiting customer gain?
-a : A little in cloth. An overhang wide enough for one caller could turn a damp hesitation into a comfortable purchase. | Time to look at an article without rain making the choice seem urgent.
-
-scene berryripe
-when topic=food self.likes=blackberries
-does tell.self / ask.detail / answer.detail
-a : I'd price the fruit that should be eaten now separately from the fruit fit to travel.
-b : Both ripe? | Which would you keep?
-a : Ripe to the eye perhaps. One bruises under its own neighbour and one still holds a firm edge. | The soft lot for supper and the firmer fruit to send a friend tomorrow.
-
-scene debt
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : I remember favours distinctly and try not to confuse them with business debts.
-b : Can you settle a favour? | Why keep them distinct?
-a : With kindness when an occasion offers. I wouldn't present a friend with an itemised account. | One has a sum agreed. The other still has room for a generous thought.
-
-scene turn
-when topic=weather
-does tell.self / ask.detail / answer.detail
-a : A light band along one side of a mist tells me where the sun will soon show.
-b : Would you set up there? | Does the mist spoil a display?
-a : I should first ask where the wind comes across the market. Brightness can't keep a poor canopy from leaking. | It softens the colours. A bit of clear dark fruit on a white cloth still carries remarkably well.
-
-scene quiet
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : In the pause after the bells I still catch myself hoping for one more stroke.
-b : Would another bell be better? | Which sound are you waiting on?
-a : Not better, quite simply more. I've kept a generous appetite for a well-shaped sound. | The end of the first sound before the next takes its place. It's longer than one ordinarily notices.
-
-scene moneyreal
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : A reserve fund only proves its value when the day calls for an unanticipated expense.
-b : What qualifies? | Where would you begin again?
-a : A torn awning before rain. A finer painted sign can generally wait its proper turn. | With the least copper left after covering my obligations. I've had cheerful beginnings considerably smaller than that.
-
-scene dicegrown
-when topic=pastimes self.likes=dice
-does tell.self / ask.detail / answer.detail
-a : I use a throw of dice for amusement where nobody will have to make a living from the answer.
-b : Does that limit the stake? | Who picks the game?
-a : Happily. I'd like the losing player to finish with funds and a good appetite for supper. | A guest, provided the board sits level and the rules are clear to every player.
-
-scene ratproof
-when topic=animals self.dislikes=rats
-does tell.self / ask.detail / answer.detail
-a : The best compliment I can give a well-stocked pantry is to keep the door shut after visiting.
-b : Even for a short errand? | Why say compliment?
-a : A rat has short errands too, and plans them according to quite a different clock. | Because somebody thought about tomorrow before putting that food by. I wish to respect the trouble.
-
-scene merchantlook
-when topic=newcomer
-does tell.self / ask.detail / answer.detail
-a : I leave visitors room to study an item before being invited to commit to it.
-b : Wouldn't a prompt word help? | How would you signal welcome?
-a : A plain welcome helps. A sales speech can wait on a politely expressed interest. | An open view over the counter and time to answer the first small question honestly.
-
-scene richroom
-when topic=home self.quarter=heights
-does tell.self / ask.detail / answer.detail
-a : From the Heights I can overlook the entire market roof and none of the difficult work beneath it.
-b : Would you rather see the work? | What's the appeal of the roof?
-a : I'd go down and ask if anybody wished to show it. A distant point of view ought to recognise its limits. | The long outline resembles my earliest folded paper awning.
-
-scene closing
-when topic=day here.time=dusk|night
-does tell.self / ask.detail / answer.detail
-a : At dusk I like to gather small loose objects before the shadows flatten out.
-b : What happens if you wait? | Where do they go?
-a : A perfectly bright copper can spend the evening successfully impersonating the timber's darkest knot. | Into a separate bag till morning lets me sort the pieces by appearance.
-
-young
-
 story sixshop [topic=pastimes]
   : I rolled a six when the shop had only five pips out on the saucer.
   : I dug in my pocket and discovered the sixth customer would have to be a very patient wolf indeed.
@@ -334,8 +299,6 @@ story bellberry [topic=festival]
   : Three pips jumped over the rim and made a little queue outside my own shop.
   b : What did the queue want?
   : To get back on the counter, I suppose. I opened quietly with my finger next time.
-
-young
 
 rule @lessons
 when concept=bark self.job=child self.working=yes
@@ -361,18 +324,14 @@ does aside
 cooldown 8h
 say Mist outside and the counter nearly ready. | Morning price for a pretend first customer.
 
-young
-dlg resident.hub : You can see everything on this saucer from where you're standing.
-dlg resident.hub [topic.meeting=known] : There's a familiar face above my paper shop, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I need the pips to stay inside their own rows till I know your business.
-dlg resident.hub [here.time=night] : One little spot of lamp light keeps the paper shop open.
-dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I'm finding out how to add up a whole day's berries.
-dlg resident.job : I can look after a stall not much wider than my paw.
-dlg resident.news [world.news] : Something just came round to my counter. #world.news#.
-dlg resident.bye : I shall close up and lend the saucer back to tea.
-
-young
-
+dlg @1 resident.hub : You can see everything on this saucer from where you're standing.
+dlg @2 resident.hub [topic.meeting=known] : There's a familiar face above my paper shop, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I need the pips to stay inside their own rows till I know your business.
+dlg @4 resident.hub [here.time=night] : One little spot of lamp light keeps the paper shop open.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I'm finding out how to add up a whole day's berries.
+dlg @2 resident.job : I can look after a stall not much wider than my paw.
+dlg @1 resident.news [world.news] : Something just came round to my counter. #world.news#.
+dlg @1 resident.bye : I shall close up and lend the saucer back to tea.
 graft @seedcapital resident.hub
 choice What could I buy at a shop this small? -> seedcapital
 node seedcapital
@@ -383,3 +342,30 @@ node seedcapital_more
 say One shiny pebble to make a purchase and patience about receiving the fruit. All the real coppers go in my other purse for a proper stall.
 choice Look at the sample seeds. -> hub
 choice Let the shop close. -> bye
+
+
+adolescent
+line @1 greet : I've space beside my first list of prices.
+line @1 greet.return : Your greeting nearly shook my model canopy open.
+line @1 farewell : See whether the awning holds on your way past.
+line @1 farewell.return : I'll count the loose change after closing.
+scene sums
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : My first tallies looked like leafless hedges. I've learned to leave decent spaces between a sum and its neighbour.
+b : What's the benefit? | Do you keep the old tallies?
+a : A customer can see which article belongs to which figure without asking me to read it twice. | Two early ones. They remind me that plain writing was once a thing I had to practise.
+
+scene ribbon
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I have a ribbon sample that makes an awning look expensive without improving its resistance to rain.
+b : Would you buy the ribbon? | Does a sample give enough evidence?
+a : After the waterproof part. I prefer that customers get their fruit and go home quite dry. | Not entirely. I'd test the seam with actual water before ordering.
+
+scene candlemist
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : In fog I'd rather hang a bright price card than shout a price at every passerby.
+b : Will a card be seen? | What if they ask?
+a : Once the passerby's near enough to be interested. That seems precisely the right distance. | I can give a very clear answer when somebody wants one.

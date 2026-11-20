@@ -1,14 +1,17 @@
+# rm475, the divided tide book (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm475
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_aldric_grayrock_
+written_by codex
 title the divided tide book
 fits stage=adult|old
 prefers job=sailor temper=even
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk rules_a_tide_book_with_one_column_for_promised_arrivals_and_one_for_actual_bootprints
+quirk rules_a_tide_book_for_promised_and_actual_arrivals
 likes smoked_eel roof_birds new_boots warm_rain
 dislikes stale_bread bad_manners
 fears a_safe_berth_promised_to_two_hulls a_door_at_home_that_ceases_to_expect_a_knock
@@ -38,52 +41,51 @@ homekey = a well-oiled door key | a key warm from my pocket
 redge = the page's rough edge | a deckled edge of paper
 
 any
-opinion houses for 2 : A House with a long memory can see what the cost of a neglected pier becomes after a few rough seasons.
-opinion watch for 1 : I'd have a watch patrol visible from the water and able to answer a civil hail.
-opinion road for 2 : A cart that can meet a rising tide is as much part of a voyage as the vessel.
-opinion city for 2 : I like a city that gives a returning sailor three different heights at which to stop and watch a landing.
-opinion merchants mixed 0 : A merchant may offer the soundest intention in the world. I'd still like the date written out.
-opinion strangers for 1 : A stranger with an unfamiliar chart can improve the afternoon considerably.
-opinion dole mixed 0 : Count what reached the hungry household before congratulating the shipper on a generous load.
-opinion times for 1 : I can see openings for steady work if folk will agree to put their promises in legible hands.
-opinion festivals mixed 0 : I approve of any feast that leaves its visitors a clear road down to the last boat.
+opinion @1 houses for 2 : A House with a long memory can see what the cost of a neglected pier becomes after a few rough seasons.
+opinion @1 watch for 1 : I'd have a watch patrol visible from the water and able to answer a civil hail.
+opinion @1 road for 2 : A cart that can meet a rising tide is as much part of a voyage as the vessel.
+opinion @1 city for 2 : I like a city that gives a returning sailor three different heights at which to stop and watch a landing.
+opinion @1 merchants mixed 0 : A merchant may offer the soundest intention in the world. I'd still like the date written out.
+opinion @1 strangers for 1 : A stranger with an unfamiliar chart can improve the afternoon considerably.
+opinion @1 dole mixed 0 : Count what reached the hungry household before congratulating the shipper on a generous load.
+opinion @1 times for 1 : I can see openings for steady work if folk will agree to put their promises in legible hands.
+opinion @1 festivals mixed 0 : I approve of any feast that leaves its visitors a clear road down to the last boat.
 
 grown
-line greet : A place on the rail for a civil visitor.
-line greet [pair.band=strangers] : A new arrival. I'll leave a clear space for the name.
-line greet [here.time=dawn] : Morning reaches this landing before most of the street.
-line greet [here.time=dusk|night] : Evening. Still daylight on the higher roofs.
-line greet.return : I caught your hail between the cart wheels.
-line greet.return [pair.band=friends|family] : An arrival I could have marked by voice alone.
-line greet.return [self.working=yes] : There's a hand for the book and an ear for your business.
-line greet.return [here.time=dusk|night] : A returning voice carries particularly well across dark water.
-line kin.open [pair.kin!=no] : Family needn't wait for a place on the public list.
-line again.open : Here we were, with the return still to enter.
-line hail [pair.band=friends] : Friend, come look from the landward side.
-line farewell : May the promised space still be clear when you reach it.
-line farewell.return : Keep the tide on the useful side of your keel.
-line react.news : At which landing did this story first put in?
-line react.news.new : A fresh entry for this page.
-line react.news.known : I can turn straight to the earlier account.
-line react.news.doubt : I'll keep that in the promised column for now.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll close the book. A loss can have the full hearing.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A safe arrival wants a proper welcome.
-line ask.how : What's found its way home to you today?
-line answer.how : I've enough of myself ashore for this conversation.
-line thank : You spared a late arrival some very wet boots. My thanks.
-line deflect_thanks : No extraordinary service. I had the rail in hand.
-line sympathise : Stay by my elbow until the first noise passes.
-line reassure : A route survives a missed tide. Let the next one present itself.
-line decline : I'd have to promise away a berth already spoken for.
-line accept_decline : Then we'll close that item with our courtesies intact.
-line preclose : I've one more journey to set down before I go.
-line accept_preclose : We can count that conversation safely landed.
-line greet [here.weather=rain] : Take the sheltered edge. A page dries quicker than a collar.
-line greet [pair.band=friends] : The homeward place on the bench has your name today.
-line greet.return [here.time=dawn] : First tide or second, your arrival improves the forecast.
-line farewell [here.time=night] : Let somebody see your lamp across the water.
-line thank [self.working=yes] : A clean arrival earns its line. You have my thanks for yours.
-
+line @1 greet : A place on the rail for a civil visitor.
+line @2 greet [pair.band=strangers] : A new arrival. I'll leave a clear space for the name.
+line @3 greet [here.time=dawn] : Morning reaches this landing before most of the street.
+line @4 greet [here.time=dusk|night] : Evening. Still daylight on the higher roofs.
+line @1 greet.return : I caught your hail between the cart wheels.
+line @2 greet.return [pair.band=friends|family] : An arrival I could have marked by voice alone.
+line @3 greet.return [self.working=yes] : There's a hand for the book and an ear for your business.
+line @4 greet.return [here.time=dusk|night] : A returning voice carries particularly well across dark water.
+line @1 kin.open [pair.kin!=no] : Family needn't wait for a place on the public list.
+line @1 again.open : Here we were, with the return still to enter.
+line @1 hail [pair.band=friends] : Friend, come look from the landward side.
+line @1 farewell : May the promised space still be clear when you reach it.
+line @1 farewell.return : Keep the tide on the useful side of your keel.
+line @1 react.news : At which landing did this story first put in?
+line @1 react.news.new : A fresh entry for this page.
+line @1 react.news.known : I can turn straight to the earlier account.
+line @1 react.news.doubt : I'll keep that in the promised column for now.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll close the book. A loss can have the full hearing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A safe arrival wants a proper welcome.
+line @1 ask.how : What's found its way home to you today?
+line @1 answer.how : I've enough of myself ashore for this conversation.
+line @1 thank : You spared a late arrival some very wet boots. My thanks.
+line @1 deflect_thanks : No extraordinary service. I had the rail in hand.
+line @1 sympathise : Stay by my elbow until the first noise passes.
+line @1 reassure : A route survives a missed tide. Let the next one present itself.
+line @1 decline : I'd have to promise away a berth already spoken for.
+line @1 accept_decline : Then we'll close that item with our courtesies intact.
+line @1 preclose : I've one more journey to set down before I go.
+line @1 accept_preclose : We can count that conversation safely landed.
+line @5 greet [here.weather=rain] : Take the sheltered edge. A page dries quicker than a collar.
+line @6 greet [pair.band=friends] : The homeward place on the bench has your name today.
+line @5 greet.return [here.time=dawn] : First tide or second, your arrival improves the forecast.
+line @2 farewell [here.time=night] : Let somebody see your lamp across the water.
+line @2 thank [self.working=yes] : A clean arrival earns its line. You have my thanks for yours.
 scene twin_columns
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -346,20 +348,19 @@ does aside
 cooldown 8h
 say Book away. Key at the ready.
 
-dlg resident.hub : We'll have room for your arrival and your business on the same page.
-dlg resident.hub [topic.meeting=known] : #topic.player#, a returning name takes very little ink.
-dlg resident.hub [pair.band=friends|family] : Come round to the homeward side of the book.
-dlg resident.hub [here.time=dawn] : Good morning. This tide has brought a visitor within easy hearing.
-dlg resident.hub [here.time=night] : A word in lamplight still binds in daylight.
-dlg resident.hub [pair.disposition=hostile|wary] : The rail may divide us quite pleasantly while you speak.
-dlg resident.hub [self.working=yes] : I have this much daylight to attend to both arrivals.
-dlg resident.job [self.workplace self.job=sailor] : Around #self.workplace# I see that what was promised on paper has a place to land.
-dlg resident.job [self.trade_words] : The charge is #self.trade_words#. One sees more of it on foot than from a chair.
-dlg resident.news [world.news] : The arrival notice comes from #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : It's come in as talk, and talk is the entry it deserves.
-dlg resident.bye : Go under terms that suit the homeward journey too.
-dlg resident.bye [here.time=dusk] : A little tide light remains to see you away.
-
+dlg @1 resident.hub : We'll have room for your arrival and your business on the same page.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a returning name takes very little ink.
+dlg @3 resident.hub [pair.band=friends|family] : Come round to the homeward side of the book.
+dlg @4 resident.hub [here.time=dawn] : Good morning. This tide has brought a visitor within easy hearing.
+dlg @5 resident.hub [here.time=night] : A word in lamplight still binds in daylight.
+dlg @6 resident.hub [pair.disposition=hostile|wary] : The rail may divide us quite pleasantly while you speak.
+dlg @7 resident.hub [self.working=yes] : I have this much daylight to attend to both arrivals.
+dlg @1 resident.job [self.workplace self.job=sailor] : Around #self.workplace# I see that what was promised on paper has a place to land.
+dlg @2 resident.job [self.trade_words] : #self.trade_words.capitalize#. That is my charge. One sees more of it on foot than from a chair.
+dlg @1 resident.news [world.news] : The arrival notice comes from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : It's come in as talk, and talk is the entry it deserves.
+dlg @1 resident.bye : Go under terms that suit the homeward journey too.
+dlg @2 resident.bye [here.time=dusk] : A little tide light remains to see you away.
 graft @book resident.hub
 choice Why give every arrival two columns? -> promised_date
 node promised_date

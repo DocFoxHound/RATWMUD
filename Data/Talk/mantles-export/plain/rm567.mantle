@@ -1,9 +1,12 @@
+# rm567, the pupil's nesting spoons (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm567
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_hester_greyby
+written_by codex
 title the pupil's nesting spoons
 fits stage=young|adolescent|adult|old
 prefers job=child
@@ -48,12 +51,54 @@ line @2 farewell.return : I'll put the spare tool away once you've gone.
 line @3 answer.how : Trading on what I learnt in a damp little classroom.
 line @4 react.news : Give me the marketable part of the report first.
 line @5 decline : The job would cost me more hours than I can spare.
+scene tooltrade
+when topic=work
+does give.opinion / disagree / concede
+a : I don't quote a pair of nested spoons as two bits of effortless wood.
+b : What extra work goes into the pair?
+a : The backs have to agree. A single honest spoon may have more freedom in its shape.
+
+scene oilpatch
+when topic=season
+does tell.plan / ask.detail / answer.detail
+a : I'll put a fresh strip of oiled cloth over the old hood join before autumn sets in.
+b : Still keeping the join that gave you trouble as a pupil?
+a : My hands still look there first for anything I've kept dry. There's no profit in moving a pocket that works.
+
+scene lunchroom
+when topic=food
+does offer / accept / assess
+a : Have a spoon that reaches the last of a deep stew bowl.
+b : Will you have another in that shape?
+a : I've the original tucked away. I'll mark this long handle for the next deep pot that comes my way.
+
+scene quieten
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I find a quiet bench a better introduction than a whole crowd pressing round.
+b : What do you say when you first sit down?
+a : I ask whether the empty space is free. A very small question deserves time for a proper answer.
+
 
 young
 line @7 greet.return : Hello. You can see my hood before you see my nose.
 line @8 farewell.return : Bye. The little spoon stays warm up here.
 line @9 react.news : I'll listen if my hood isn't flapping.
 line @10 answer.how : Dry inside and going to stay that way.
+scene smallhood
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I can hide a whole ear and a little spoon under this hood.
+b : Which one comes out in the sunshine?
+a : The spoon if there's stew, the ear if there's a nice noise.
+
+scene twiggle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I rubbed a soft twig so long it made a little bowl.
+b : Can it hold a drop of water yet?
+a : One drop before it tips. My other paw has to keep the twig from rolling.
+
 
 adolescent
 line @12 greet [pair.band=strangers] : Welcome to the dry side of my brim.
@@ -80,9 +125,6 @@ line @32 thank : You've given me more room than a pocketful of change.
 line @33 deflect_thanks : I could spare a curl off that particular piece.
 line @34 preclose : I need the last clean light to finish this bowl.
 line @35 accept_preclose : Clear away before the wet gets through your collar.
-
-adolescent
-
 scene nested
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -168,54 +210,6 @@ a : I dream #chalkbit# leaves a hollow in the slate every time I write a price.
 b : Do you fear writing the price too high?
 a : I fear rubbing it down to nothing before I learn what my time is worth.
 
-young
-
-scene smallhood
-when topic=weather
-does tell.self / ask.detail / answer.detail
-a : I can hide a whole ear and a little spoon under this hood.
-b : Which one comes out in the sunshine?
-a : The spoon if there's stew, the ear if there's a nice noise.
-
-scene twiggle
-when topic=pastimes
-does tell.self / react.self / assess
-a : I rubbed a soft twig so long it made a little bowl.
-b : Can it hold a drop of water yet?
-a : One drop before it tips. My other paw has to keep the twig from rolling.
-
-grown
-
-scene tooltrade
-when topic=work
-does give.opinion / disagree / concede
-a : I don't quote a pair of nested spoons as two bits of effortless wood.
-b : What extra work goes into the pair?
-a : The backs have to agree. A single honest spoon may have more freedom in its shape.
-
-scene oilpatch
-when topic=season
-does tell.plan / ask.detail / answer.detail
-a : I'll put a fresh strip of oiled cloth over the old hood join before autumn sets in.
-b : Still keeping the join that gave you trouble as a pupil?
-a : My hands still look there first for anything I've kept dry. There's no profit in moving a pocket that works.
-
-scene lunchroom
-when topic=food
-does offer / accept / assess
-a : Have a spoon that reaches the last of a deep stew bowl.
-b : Will you have another in that shape?
-a : I've the original tucked away. I'll mark this long handle for the next deep pot that comes my way.
-
-scene quieten
-when topic=friends
-does tell.self / ask.detail / answer.detail
-a : I find a quiet bench a better introduction than a whole crowd pressing round.
-b : What do you say when you first sit down?
-a : I ask whether the empty space is free. A very small question deserves time for a proper answer.
-
-adolescent
-
 story spoonrest [topic=pastimes]
   : A little spoon I made had such a broad back it could sit up on a shelf by itself.
   : I was pleased enough to set it there full of water.
@@ -265,7 +259,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll keep my pocket button
 dlg @5 resident.job [self.job=child self.workplace] : I'm at lessons at #self.workplace#. I put my sums to work on a little wood when I can.
 dlg @6 resident.job : I turn scraps into things a hand can keep for a long time.
 dlg @7 resident.bye : Keep a bit of good grain to yourself.
-
 graft resident.hub
 choice Can I see the smaller spoon? -> nestingbowl
 node nestingbowl

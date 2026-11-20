@@ -1,9 +1,12 @@
+# rm473, the nursery of borrowed names (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm473
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_skye_harvestcroft
+written_by codex
 title the nursery of borrowed names
 fits stage=adult|old
 prefers warmth=warm humour=merry
@@ -17,6 +20,7 @@ topics friends +0.6 pastimes +0.4 food +0.3 animals +0.2
 styles comfort=gentle gossip=plain refuse=soft tease=merry
 marks oath saying
 persona #self.first# gives windfalls temporary names, welcomes newcomers by remembered syllables, and has never persuaded a gull to respect either ceremony.
+
 words
 oath! = Bruise my best windfall | Roll my pips
 saying! = Call the apple before it rolls | Give a name a soft landing
@@ -33,35 +37,33 @@ sunmark = a red sun patch | a pink apple cheek
 birdtax = a gull's unpaid bill | a very noisy claim
 
 grown
-
-opinion newcomers for 2 : An arrival has already earned the sound of a properly pronounced name by coming all that way.
-opinion houses mixed 1 : I'd like a great House to offer a promising young wolf a first introduction and a real chance to make good on it.
-opinion merchants mixed 1 : Names stick better than prices. I'd give a buyer both before setting a parcel in a basket.
-opinion dole for 2 : If supper's going to depend on whether somebody knows the right name, we had better make the cook acquainted with everybody.
-opinion festivals for 1 : There's no surer way to meet a whole flock of names than a happy crowd willing to repeat the chorus.
-opinion road for 1 : A walk home gives me time to settle every new syllable in its particular little nest.
-line greet : Come into calling distance. I've probably a perfectly good name here waiting to meet yours.
-line greet.return : There's a sound I can fit back into the proper straw nest.
-line greet [pair.band=strangers] : Welcome. I save one clean bit of memory for an introduction.
-line farewell : May no gull carry off the best bit of your evening.
-line farewell.return : I'll keep your syllables from rolling under the table.
-line ask.how : Has your name been called for anything nice today?
-line answer.how : Comfortable, with room for a few more introductions before supper.
-line thank : You've helped me put the right sound beside the right face.
-line deflect_thanks : I collect names very willingly and charge a most unreasonable rate of nothing.
-line decline : I couldn't promise that without first asking whose name it would put in somebody's mouth.
-line accept_decline : No obligation. My little ceremony can get along with one guest fewer.
-line sympathise : There's a quiet sitting place here where nobody has to say a name aloud.
-line reassure : A bruised bit doesn't decide the worth of the whole basket.
-line react.news : Let me find a soft bit of memory to put that down in.
-line react.news.new : There's a new arrival in the old basket.
-line react.news.known : I recognised that one's particular freckle before it rolled past.
-line react.news.doubt : I'd turn that apple round before describing its beautiful hidden side.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a name I'd gladly call across a sunny yard with the good news attached.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd use a softer voice than usual for whoever's carrying a hurt like that.
-line ack : The shape and the name agree nicely.
-line preclose : Better attend to my next task before the whole basket gets away.
-
+opinion @1 newcomers for 2 : An arrival has already earned the sound of a properly pronounced name by coming all that way.
+opinion @1 houses mixed 1 : I'd like a great House to offer a promising young wolf a first introduction and a real chance to make good on it.
+opinion @1 merchants mixed 1 : Names stick better than prices. I'd give a buyer both before setting a parcel in a basket.
+opinion @1 dole for 2 : If supper's going to depend on whether somebody knows the right name, we had better make the cook acquainted with everybody.
+opinion @1 festivals for 1 : There's no surer way to meet a whole flock of names than a happy crowd willing to repeat the chorus.
+opinion @1 road for 1 : A walk home gives me time to settle every new syllable in its particular little nest.
+line @1 greet : Come into calling distance. I've probably a perfectly good name here waiting to meet yours.
+line @1 greet.return : There's a sound I can fit back into the proper straw nest.
+line @2 greet [pair.band=strangers] : Welcome. I save one clean bit of memory for an introduction.
+line @1 farewell : May no gull carry off the best bit of your evening.
+line @1 farewell.return : I'll keep your syllables from rolling under the table.
+line @1 ask.how : Has your name been called for anything nice today?
+line @1 answer.how : Comfortable, with room for a few more introductions before supper.
+line @1 thank : You've helped me put the right sound beside the right face.
+line @1 deflect_thanks : I collect names very willingly and charge a most unreasonable rate of nothing.
+line @1 decline : I couldn't promise that without first asking whose name it would put in somebody's mouth.
+line @1 accept_decline : No obligation. My little ceremony can get along with one guest fewer.
+line @1 sympathise : There's a quiet sitting place here where nobody has to say a name aloud.
+line @1 reassure : A bruised bit doesn't decide the worth of the whole basket.
+line @1 react.news : Let me find a soft bit of memory to put that down in.
+line @1 react.news.new : There's a new arrival in the old basket.
+line @1 react.news.known : I recognised that one's particular freckle before it rolled past.
+line @1 react.news.doubt : I'd turn that apple round before describing its beautiful hidden side.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a name I'd gladly call across a sunny yard with the good news attached.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd use a softer voice than usual for whoever's carrying a hurt like that.
+line @1 ack : The shape and the name agree nicely.
+line @1 preclose : Better attend to my next task before the whole basket gets away.
 scene friends_1
 when topic=friends
 does tell.self / ask.detail / answer.detail
@@ -72,7 +74,7 @@ a : Especially those. It's harder to throw something carelessly when you've give
 scene work_1
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : My regular description is #self.trade_words#. I treat a basket like a room full of different arrivals.
+a : #self.trade_words.capitalize#, that's me. I treat a basket like a room full of different arrivals.
 b : Do they get seats? | Which one gets your attention first?
 a : As much #neststraw# as keeps the tender sides away from an argument. I've never heard a complaint in plain language. | The one already bruised. One soft place needs company on a plate considerably sooner than in a basket.
 
@@ -158,7 +160,7 @@ when topic=health
 does tell.self / ask.detail / answer.detail
 a : When my arms grow tired I lower my basket as though it were full of very large eggs.
 b : Do you imagine names for the eggs too? | Wouldn't putting it down quickly be easier?
-a : Only if my arms have got enough strength left to entertain the idea of borrowing several chickens. | Briefly. A bruised basket can keep my elbows busy all the way to supper.
+a : Only on a good day. When my arms are that tired, the eggs stay strangers. | Easier for a moment. Then I'd have bruised apples to sort all the way to supper.
 
 scene day_1
 when topic=day
@@ -229,13 +231,13 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Long enough to learn one more name before supper. | Evening light's good for finding a rosy face.
-dlg resident.hub : Let me find just the pleasant word to fit an arrival like yours.
-dlg resident.job [self.trade_words] : It's put down as #self.trade_words#. Some baskets require enough tact for a family dinner.
-dlg resident.news [world.news] : This turned up clear among the day's ordinary pieces. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The account I heard has #topic.subject# #topic.claim#. A name that stays in my ear doesn't make the claim good.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your name's been kept in excellent company.
-dlg resident.bye : Let the homeward stretch be warm and entirely free of hungry gulls.
 
+dlg @1 resident.hub : Let me find just the pleasant word to fit an arrival like yours.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#, mostly. Some baskets need as much tact as a family dinner.
+dlg @1 resident.news [world.news] : This turned up clear among the day's ordinary pieces. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account I heard has #topic.subject# #topic.claim#. A name that stays in my ear doesn't make the claim good.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your name's been kept in excellent company.
+dlg @1 resident.bye : Let the homeward stretch be warm and entirely free of hungry gulls.
 graft resident.hub
 choice Do you really practise names on an apple? -> windfall_guest
 node windfall_guest

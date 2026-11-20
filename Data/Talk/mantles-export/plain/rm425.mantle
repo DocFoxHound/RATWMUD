@@ -1,9 +1,12 @@
+# rm425, the die by the bedpost (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm425
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for cty_flint_snowdrift
+written_by codex
 title the die by the bedpost
 fits stage=adult|old
 prefers job=woodcutter
@@ -35,41 +38,40 @@ crowd = the press of shoulders | a knot of customers
 night = the long still stretch | a wakeful interval
 
 any
-opinion festivals for 2 : A wedding dance put my feet on better terms with a crowded floor. I remember how to enjoy it for a night.
-opinion dole for 2 : A meal kept me steady through a week when my wages did not. My head keeps a clear record of that sort.
-opinion merchants against 2 : There's less fruit in a day's money than my hands remember cutting wood for.
-opinion houses against 1 : Their roof beams come from the same living trees that rock and creak over my head. They might inquire after the cutters.
-opinion strangers against 1 : I'll give an unknown wolf the path but keep looking to see what's coming along behind.
+opinion @1 festivals for 2 : A wedding dance put my feet on better terms with a crowded floor. I remember how to enjoy it for a night.
+opinion @1 dole for 2 : A meal kept me steady through a week when my wages did not. My head keeps a clear record of that sort.
+opinion @1 merchants against 2 : There's less fruit in a day's money than my hands remember cutting wood for.
+opinion @1 houses against 1 : Their roof beams come from the same living trees that rock and creak over my head. They might inquire after the cutters.
+opinion @1 strangers against 1 : I'll give an unknown wolf the path but keep looking to see what's coming along behind.
 
 grown
-line greet [pair.band=strangers] : Step on the still board. Welcome. | There's a quiet place within earshot.
-line greet [self.working=yes] : I'll steady this first. Say what you like. | Welcome by my clear shoulder.
-line greet [here.time=dawn] : Morning. The die's stayed upright. | Fresh light at the bedpost.
-line greet [here.time=dusk|night] : Evening. The little sounds are clearer. | Come where the wind can't steal your first word.
-line kin.open [pair.kin!=no] : Kin can take the sheltered footway. | You have my family ear.
-line again.open : We're at the same corner once more. | Second throw of our meeting.
-line greet.return : I've heard your step distinctly. | Come in. The board holds us both.
-line greet.return [pair.band=friends|family] : That friendly voice carries through a storm. | You know how much quiet suits me.
-line greet.return [self.working=yes] : Give me time to ground the timber. | I can listen over any honest stroke.
-line greet.return [here.time=dusk|night] : Welcome by the late lamp. | Evening. I'll hear you before I see.
-line farewell : Quiet boards beneath you. | Come home dry above the soles.
-line farewell.return : My die will mind this corner. | Travel where a branch can't reach you.
-line farewell.return [here.time=night] : Every roof between you and home stay firm. | Good footing beyond the lamplit gate.
-line react.news : Tell it where I needn't strain to hear. | I'd hear exactly what moved first.
-line react.news.new : Fresh pips showing on that throw. | That's the first rattle of that news for me.
-line react.news.known : Yes. I know the note it made. | Same throw as earlier.
-line react.news.doubt : I'd trust that account better after a second hearing. | A loose board could make precisely the same noise.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll stand close enough to help. | There's a bitter sort of quiet to that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good clear sound to hear. | That's a kinder throw than I'd expected.
-line ask.how : Have you had a steady hour lately? | How much sleep found you last night?
-line answer.how : Steady enough after the morning apple. | Rather aware of every little sound.
-line decline : I should stay where I know how the ground lies. | I'd best keep the spare hour for some rest.
-line accept_decline : Nobody else can throw your die. | Fair. I have your answer plainly.
-line thank : That settles a little worry for me. | You've spared my ears another hour.
-line sympathise : Take the dry spot beside my elbow. | I'll let you hear my breathing there.
-line reassure : One little rattle needn't shift the whole roof. | Steady your knees before reckoning the rest.
-line preclose : Time to make my last check. | I'll go and see to my sleeping place.
-
+line @1 greet [pair.band=strangers] : Step on the still board. Welcome. | There's a quiet place within earshot.
+line @2 greet [self.working=yes] : I'll steady this first. Say what you like. | Welcome by my clear shoulder.
+line @3 greet [here.time=dawn] : Morning. The die's stayed upright. | Fresh light at the bedpost.
+line @4 greet [here.time=dusk|night] : Evening. The little sounds are clearer. | Come where the wind can't steal your first word.
+line @1 kin.open [pair.kin!=no] : Kin can take the sheltered footway. | You have my family ear.
+line @1 again.open : We're at the same corner once more. | Second throw of our meeting.
+line @1 greet.return : I've heard your step distinctly. | Come in. The board holds us both.
+line @2 greet.return [pair.band=friends|family] : That friendly voice carries through a storm. | You know how much quiet suits me.
+line @3 greet.return [self.working=yes] : Give me time to ground the timber. | I can listen over any honest stroke.
+line @4 greet.return [here.time=dusk|night] : Welcome by the late lamp. | Evening. I'll hear you before I see.
+line @1 farewell : Quiet boards beneath you. | Come home dry above the soles.
+line @1 farewell.return : My die will mind this corner. | Travel where a branch can't reach you.
+line @2 farewell.return [here.time=night] : Every roof between you and home stay firm. | Good footing beyond the lamplit gate.
+line @1 react.news : Tell it where I needn't strain to hear. | I'd hear exactly what moved first.
+line @1 react.news.new : Fresh pips showing on that throw. | That's the first rattle of that news for me.
+line @1 react.news.known : Yes. I know the note it made. | Same throw as earlier.
+line @1 react.news.doubt : I'd trust that account better after a second hearing. | A loose board could make precisely the same noise.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll stand close enough to help. | There's a bitter sort of quiet to that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good clear sound to hear. | That's a kinder throw than I'd expected.
+line @1 ask.how : Have you had a steady hour lately? | How much sleep found you last night?
+line @1 answer.how : Steady enough after the morning apple. | Rather aware of every little sound.
+line @1 decline : I should stay where I know how the ground lies. | I'd best keep the spare hour for some rest.
+line @1 accept_decline : Nobody else can throw your die. | Fair. I have your answer plainly.
+line @1 thank : That settles a little worry for me. | You've spared my ears another hour.
+line @1 sympathise : Take the dry spot beside my elbow. | I'll let you hear my breathing there.
+line @1 reassure : One little rattle needn't shift the whole roof. | Steady your knees before reckoning the rest.
+line @1 preclose : Time to make my last check. | I'll go and see to my sleeping place.
 scene dice
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Time to test the wobbling post. | That little tap can take the night watch.
 
-dlg resident.hub : Choose a firm plank near my better ear and give me your message without a lot of guessing.
-dlg resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. I like the wood to settle before I promise the route is clear.
-dlg resident.news [world.news] : I can distinguish this much above the ordinary noise. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, your step has a sound my ears know between the others.
-dlg resident.bye : May there be no more than a little honest settling in your roof tonight.
-
+dlg @1 resident.hub : Choose a firm plank near my better ear and give me your message without a lot of guessing.
+dlg @1 resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. I like the wood to settle before I promise the route is clear.
+dlg @1 resident.news [world.news] : I can distinguish this much above the ordinary noise. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your step has a sound my ears know between the others.
+dlg @1 resident.bye : May there be no more than a little honest settling in your roof tonight.
 graft resident.hub
 choice What can your sleeping die predict? -> die_watch
 node die_watch

@@ -1,9 +1,12 @@
+# rm254, the smoke in the seam (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm254
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rmx_petra_ashgate
+written_by codex
 title the smoke in the seam
 fits stage=adult|old
 prefers job=laborer
@@ -80,7 +83,6 @@ line @29 greet [pair.band=friends] : Ah, company I can sit quiet with. | Here's 
 line @30 again.open [here.time=dusk] : Back for the last light on the wood. | Good. Another visit before we put the lids on.
 line @31 answer.how [self.working=yes] : Quite rinsed, thank you. | As fresh as the driest thing within reach.
 line @32 preclose [here.time=night] : Even the light looks ready for its dust cover. | There's a pillow somewhere going unused on my account.
-
 scene seamsmell
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -133,7 +135,7 @@ a : Entirely public-spirited of somebody to spare us the rest. | A rooster's lig
 scene washlesson
 when topic=work self.job=laborer self.workplace self.working=yes
 does tell.self / ask.detail / answer.detail
-a : At #self.workplace# a cuff can hold on to yesterday harder than a whole shirt. | #self.workplace# puts every sort of sleeve in front of me.
+a : At #self.workplace# a cuff can hold on to yesterday harder than a whole shirt. | #self.workplace.capitalize# puts every sort of sleeve in front of me.
 b : What gets the old day out? | Can you tell where a sleeve's been?
 a : Turn the seam and work gently on what's hiding there. | Only that a smoky room has very long arms.
 
@@ -363,7 +365,7 @@ dlg @3 resident.hub [here.time=night] : The day has stopped demanding clean corn
 dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep the pressure off my elbow and we'll get further.
 dlg @5 resident.job [self.job=laborer self.workplace] : Wash work at #self.workplace#. Sometimes we even persuade a sleeve to give up its previous address.
 dlg @6 resident.job : I do things that leave my paws a little less ornamental by evening.
-dlg @7 resident.news [world.news] : Here's the piece that's come out in the rinse. #world.news#
+dlg @7 resident.news [world.news] : Here's the piece that's come out in the rinse. #world.news.capitalize#
 dlg @8 resident.bye : Leave room enough for a quiet turn on the way home.
 dlg @9 master.learn [here.teaches=yes] : Start by setting the weight down without a thump. I can teach from there.
 dlg @10 master.learn [here.teaches=no] : No teaching space open just now. You can still see what a careful wrist looks like.
@@ -372,7 +374,6 @@ dlg @12 master.wages : No wages for learning. You may sell what you've made, and
 dlg @13 master.takes [here.take_on=no] : #here.take_on_why# Saves us both measuring for something that doesn't fit today.
 dlg @14 master.refused : #topic.why# Better to know which corner caught.
 dlg @15 master.bye : Let those wrists rest between turns.
-
 graft resident.hub
 choice Is that a jar lid in your pocket? -> pocket_lid
 node pocket_lid

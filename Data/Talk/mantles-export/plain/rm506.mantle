@@ -1,14 +1,17 @@
+# rm506, the two-sheet stair (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm506
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_eleanor_vance
+written_by codex
 title the two-sheet stair
 fits stage=adult|old
 prefers warmth=warm temper=nervy
 traits temper=nervy talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
-quirk takes_the_stair_with_a_pair_of_paper_samples_one_held_flat_and_one_against_the_light
+quirk carries_two_paper_samples_one_flat_one_to_the_light
 likes warm_bread cards old_maps thunder
 dislikes cold_tea crowds
 fears a_weak_ledger_split_at_the_seam an_argument_that_outlives_its_paper
@@ -38,52 +41,51 @@ tie = a clean linen ribbon | a narrow bundle tie
 light = the strip of open daylight | the window's long bright bar
 
 any
-opinion merchants for 1 : I'll stand by the paper that holds a price, provided both parties have read the figure on it.
-opinion houses mixed 0 : Great households may differ over a price and use precisely the same quality of paper to say so.
-opinion city for 1 : The city's stairs gave me light at a useful height. The city might have thrown in a few fewer steps.
-opinion watch for 1 : I'd like a docket that explains an inspection in a hand the next reader can follow.
-opinion road mixed 0 : A road drawn in ink is an agreement between ink and paper. The mud has a different vote.
-opinion dole for 1 : The sheet that records a loaf serves little purpose until the loaf has been delivered.
-opinion festivals mixed 0 : Show me a covered stair just off the square and I'll enjoy the entire feast from there.
-opinion times mixed 0 : Hard times can fill a shelf of ledgers. That doesn't make me wish the times hard.
-opinion strangers for 1 : A new customer who knows how the papers will be used can teach a good mill something.
+opinion @1 merchants for 1 : I'll stand by the paper that holds a price, provided both parties have read the figure on it.
+opinion @1 houses mixed 0 : Great households may differ over a price and use precisely the same quality of paper to say so.
+opinion @1 city for 1 : The city's stairs gave me light at a useful height. The city might have thrown in a few fewer steps.
+opinion @1 watch for 1 : I'd like a docket that explains an inspection in a hand the next reader can follow.
+opinion @1 road mixed 0 : A road drawn in ink is an agreement between ink and paper. The mud has a different vote.
+opinion @1 dole for 1 : The sheet that records a loaf serves little purpose until the loaf has been delivered.
+opinion @1 festivals mixed 0 : Show me a covered stair just off the square and I'll enjoy the entire feast from there.
+opinion @1 times mixed 0 : Hard times can fill a shelf of ledgers. That doesn't make me wish the times hard.
+opinion @1 strangers for 1 : A new customer who knows how the papers will be used can teach a good mill something.
 
 grown
-line greet : Come up to the window. Better light on a clean sheet.
-line greet [pair.band=strangers] : Fresh hands to try my samples. Welcome.
-line greet [here.time=dawn] : Morning. See how a pale sheet takes colour from the east.
-line greet [here.time=dusk|night] : At dusk the watermark nearly tells itself.
-line greet.return : I'm here beside the other sheet.
-line greet.return [pair.band=friends|family] : I've kept a landing's worth of time for you.
-line greet.return [self.working=yes] : Speak while the last of the water drains.
-line greet.return [here.time=dusk|night] : The dark has little effect on my hearing.
-line kin.open [pair.kin!=no] : Kin needn't wait behind the sample bundle.
-line again.open : Here's the second leaf. Let's carry on.
-line hail [pair.band=friends] : Friend, save a little elbow room by the pane.
-line farewell : May the fold of your paper stay dry.
-line farewell.return : Go by the sheltered landing if the sky starts talking.
-line react.news : Lay the account beside the light.
-line react.news.new : A fresh watermark to my eye.
-line react.news.known : I know the faint print on that one.
-line react.news.doubt : I'd test the seam before putting trust there.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put down the papers. I'm listening to the loss.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. There's a word worthy of the best stock.
-line ask.how : How firmly is your day holding together?
-line answer.how : My feet would prefer a quieter afternoon than my head does.
-line thank : That saved a perfectly good sheet from the floor. Thank you.
-line deflect_thanks : I had a finger free along the edge.
-line sympathise : Pass me the bundle and rest your feet here.
-line reassure : A crease will take some smoothing. There's time enough for that part.
-line decline : I can't put my mark on another charge just now.
-line accept_decline : Understood. We'll leave the sheet clean between us.
-line preclose : The light's about to move off my working pane.
-line accept_preclose : Good walking and a sound roof at the finish.
-line greet [here.weather=rain] : Step in beside the hanging samples. This bit stays dry.
-line greet.return [here.time=dawn] : Back while the page is scarcely gold yet.
-line farewell [pair.band=friends] : Take the sample that pleased your fingers best.
-line thank [pair.band=friends] : That was the help I hadn't found the words to ask for.
-line greet [self.working=yes] : A moment for you while this leaf drains.
-
+line @1 greet : Come up to the window. Better light on a clean sheet.
+line @2 greet [pair.band=strangers] : Fresh hands to try my samples. Welcome.
+line @3 greet [here.time=dawn] : Morning. See how a pale sheet takes colour from the east.
+line @4 greet [here.time=dusk|night] : At dusk the watermark nearly tells itself.
+line @1 greet.return : I'm here beside the other sheet.
+line @2 greet.return [pair.band=friends|family] : I've kept a landing's worth of time for you.
+line @3 greet.return [self.working=yes] : Speak while the last of the water drains.
+line @4 greet.return [here.time=dusk|night] : The dark has little effect on my hearing.
+line @1 kin.open [pair.kin!=no] : Kin needn't wait behind the sample bundle.
+line @1 again.open : Here's the second leaf. Let's carry on.
+line @1 hail [pair.band=friends] : Friend, save a little elbow room by the pane.
+line @1 farewell : May the fold of your paper stay dry.
+line @1 farewell.return : Go by the sheltered landing if the sky starts talking.
+line @1 react.news : Lay the account beside the light.
+line @1 react.news.new : A fresh watermark to my eye.
+line @1 react.news.known : I know the faint print on that one.
+line @1 react.news.doubt : I'd test the seam before putting trust there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put down the papers. I'm listening to the loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. There's a word worthy of the best stock.
+line @1 ask.how : How firmly is your day holding together?
+line @1 answer.how : My feet would prefer a quieter afternoon than my head does.
+line @1 thank : That saved a perfectly good sheet from the floor. Thank you.
+line @1 deflect_thanks : I had a finger free along the edge.
+line @1 sympathise : Pass me the bundle and rest your feet here.
+line @1 reassure : A crease will take some smoothing. There's time enough for that part.
+line @1 decline : I can't put my mark on another charge just now.
+line @1 accept_decline : Understood. We'll leave the sheet clean between us.
+line @1 preclose : The light's about to move off my working pane.
+line @1 accept_preclose : Good walking and a sound roof at the finish.
+line @5 greet [here.weather=rain] : Step in beside the hanging samples. This bit stays dry.
+line @5 greet.return [here.time=dawn] : Back while the page is scarcely gold yet.
+line @2 farewell [pair.band=friends] : Take the sample that pleased your fingers best.
+line @2 thank [pair.band=friends] : That was the help I hadn't found the words to ask for.
+line @6 greet [self.working=yes] : A moment for you while this leaf drains.
 scene two_sheets
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -339,20 +341,19 @@ does aside
 cooldown 8h
 say Rest flat till morning. Both of you.
 
-dlg resident.hub : Stand just here and I'll listen without squinting through a page.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I have the pair of samples to hand again.
-dlg resident.hub [here.time=night] : No judging sheets till daylight. We can still exchange words.
-dlg resident.hub [pair.disposition=hostile|wary] : The bundle may rest between us while you make your point.
-dlg resident.job [self.workplace] : At #self.workplace# the proof of a good working leaf is how it behaves in another wolf's hand.
-dlg resident.news [world.news] : The outer leaf names #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I'd let that account dry before anybody binds a private name to it.
-dlg resident.bye : May all your paper come home clean at the edges.
-dlg shop.greet [here.shop=open] : The counter is dry. What quantity shall we consider?
-dlg shop.greet [here.shop=bare] : The sample tells you something about the work. The shelf is bare just now.
-dlg shop.greet [here.shop=asleep] : The shop has closed its covers for the night.
-dlg shop.prices : I'll give a figure for what you intend to take away.
-dlg shop.bye [here.shop!=asleep] : Tuck your papers under the sheltering arm on the way home.
-
+dlg @1 resident.hub : Stand just here and I'll listen without squinting through a page.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have the pair of samples to hand again.
+dlg @3 resident.hub [here.time=night] : No judging sheets till daylight. We can still exchange words.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : The bundle may rest between us while you make your point.
+dlg @1 resident.job [self.workplace] : At #self.workplace# the proof of a good working leaf is how it behaves in another wolf's hand.
+dlg @1 resident.news [world.news] : The outer leaf names #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I'd let that account dry before anybody binds a private name to it.
+dlg @1 resident.bye : May all your paper come home clean at the edges.
+dlg @1 shop.greet [here.shop=open] : The counter is dry. What quantity shall we consider?
+dlg @2 shop.greet [here.shop=bare] : The sample tells you something about the work. The shelf is bare just now.
+dlg @3 shop.greet [here.shop=asleep] : The shop has closed its covers for the night.
+dlg @1 shop.prices : I'll give a figure for what you intend to take away.
+dlg @1 shop.bye [here.shop!=asleep] : Tuck your papers under the sheltering arm on the way home.
 graft resident.hub
 choice Why compare two pieces from one batch? -> twin_sheet
 node twin_sheet

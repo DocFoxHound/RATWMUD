@@ -1,10 +1,12 @@
-# rm194, the backwards reader (doc 84 P14, batch city-a3): written for rm_rune_fogworth (Rune Fogworth: printer at The Council Press, Ridgemere-born). Name-free. Window lines on the news, gossip, business and shop nodes say their case; a story's ask is the teller's question (handbook 4.5.6, 4.5.8).
+# rm194, the backwards reader (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm194
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_rune_fogworth
+written_by codex
 title the backwards reader
 fits stage=adult|old
 prefers role=merchant job=official talk=quiet
@@ -41,62 +43,61 @@ bales = the paper bales | the bales off the cart
 margin = the margin | the white down the side
 
 any
-opinion city for 1 : Wet stairs and loud lanes, and half its walls wear my work. I'll stay where my work is.
-opinion houses mixed 0 : I print what the Houses pay for. What I think of them stays out of #type#.
-opinion houses against 1 [here.region=ridgemere] : The wharf takes wolves and pays out wages for them. There. That's my lot on the Houses.
-opinion merchants for 1 : Anyone behind a counter knows the cart's bill before the customer's. Go easy on them.
-opinion road against 1 : Every late load means small print for a week. And the loads get later with every season.
-opinion road against 2 [world.wagons=raided] : Stripped carts mean no paper, and no paper means a clerk from the Council rapping on my shutter.
-opinion strangers against 1 : Unknown paws near good stock make me uneasy. It's no slight on anyone. It's the paper.
-opinion watch for 1 : A Watch lantern has a steady swing. I breathe easier when I catch sight of one.
-opinion festivals against 1 : I print the bills for them and stay home for them. That's my share.
-opinion times for 1 : Bread most days and only one damp patch overhead. No grumbling from this corner.
-opinion drink mixed 0 : A cup on Restday. More than that and the letters start to swim, and they swim enough as it is.
+opinion @1 city for 1 : Wet stairs and loud lanes, and half its walls wear my work. I'll stay where my work is.
+opinion @1 houses mixed 0 : I print what the Houses pay for. What I think of them stays out of #type#.
+opinion @2 houses against 1 [here.region=ridgemere] : The wharf takes wolves and pays out wages for them. There. That's my lot on the Houses.
+opinion @1 merchants for 1 : Anyone behind a counter knows the cart's bill before the customer's. Go easy on them.
+opinion @1 road against 1 : Every late load means small print for a week. And the loads get later with every season.
+opinion @2 road against 2 [world.wagons=raided] : Stripped carts mean no paper, and no paper means a clerk from the Council rapping on my shutter.
+opinion @1 strangers against 1 : Unknown paws near good stock make me uneasy. It's no slight on anyone. It's the paper.
+opinion @1 watch for 1 : A Watch lantern has a steady swing. I breathe easier when I catch sight of one.
+opinion @1 festivals against 1 : I print the bills for them and stay home for them. That's my share.
+opinion @1 times for 1 : Bread most days and only one damp patch overhead. No grumbling from this corner.
+opinion @1 drink mixed 0 : A cup on Restday. More than that and the letters start to swim, and they swim enough as it is.
 
 grown
-line greet [pair.band=strangers] : #greet#. You'll want someone with more to say, but I'll do. | #greet#. That step dips. Everyone trips on it once.
-line greet [self.working=yes self.job=official self.role=merchant] : #greet#. My paws are in the case, but my ears aren't. | #greet#. Half a line set. Give me a breath.
-line greet [here.time=dawn] : Morning. Early for talk. | Morning. No bread in me yet, so go gently.
-line greet [here.time=dusk|night] : Evening. The street's gone quiet, at last. | Evening. Late to be about.
-line greet [pair.band=friends] : There you are. Sit. | #greet#. I knew that tread on the step.
-line greet [here.weather=rain] : #greet#. A wet one. Drip on the mat, not the stock. | #greet#. Rain on the slates again.
-line greet : #greet#. Say what's wanted. | #greet#. A grey, still sort of day, this.
-line kin.open [pair.kin!=no] : There you are. Kettle's warm. | Come in. Take the dry chair.
-line again.open : You again. That's no hardship. | Twice today. That's a lot of talking, for me.
-line greet.return : And to you. | #greet#. The same.
-line greet.return [pair.band=friends|family] : There you are, then. | Good. I was wanting a word.
-line greet.return [self.working=yes] : And you. Mind the ink. | Same. My paws are full, mind.
-line greet.return [here.time=dusk|night] : Evening. Yes. | Evening. A long one, today.
-line farewell : #farewell#. | Right. That'll do me for now.
-line farewell [here.time=dusk|night] : Night. Stay where it's lit, going down. | Night. Mind the gutters by the corner.
-line farewell.return : And you. | #farewell#. Go careful.
-line farewell.return [here.time=dusk|night] : Night. | Good night, then.
-line react.news : Go on. | Say it slowly. I'll keep it.
-line react.news.new : First I've heard. | Not on any wall yet, then.
-line react.news.known : I'd heard. Not from anyone I'd trust. | Old to me. Somebody told it at the door.
-line react.news.known [self.job=official self.role=merchant] : I set that in type yesterday. | Old news. It's drying on #lines#.
-line react.news.doubt : Talk's cheap. Paste it on a wall and I'll read it. | Whose words? I like a name under a notice.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard. That's hard to hear. | Bad news. I'll keep it quiet.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | That warms me. It does.
-line answer.how : Well enough. A bit low. | I'm here. That's most of it.
-line answer.how.busy [self.working=yes] : Busy. Ask me after the light goes. | Too busy for a proper answer.
-line answer.how.poorly : Wheezy. It goes when the wet does. | Low. Leave it there.
-line ask.how : You? All well? | And yourself, then?
-line sympathise : Sit. Talk, or don't. Either does. | That's heavy. I've no words, but I've a chair.
-line reassure : Slow, but it'll mend. Things here generally do. | Give it a week. Worse has mended.
-line decline : Not this one. The work's stacked up and it won't shift itself. | I'd rather not. I keep out of that sort of thing, always.
-line accept_decline : Fair. Another time. | That's all right. I'll not push.
-line thank : #thanks#. I'll remember it. | Kindly done. Thank you.
-line deflect_thanks : It was nothing. | No need. Truly none.
-line preclose [self.working=yes] : I'd best get back. This won't finish itself. | The sheets want turning. I'll go.
-line preclose : I've talked more than I meant. | That'll do me for a while.
-line accept_preclose : Go on, then. | Right you are.
-line ack : #bc_right# | Mm.
-line give.advice : Don't say anything you'd not want pasted on a wall. | Keep your paper dry and your mouth shut, and you'll do.
-line warn [world.bandits=near] : Nobody walks past the walls alone this week. Not you either. | The road's bad. Wait for company, or wait.
-line congratulate : Well done. Truly. | Good. You've earned it.
-line answer.how [here.weather=rain] : There's a wheeze in me. I'm ignoring it. | Wet. Same as everyone.
-
+line @1 greet [pair.band=strangers] : #greet#. You'll want someone with more to say, but I'll do. | #greet#. That step dips. Everyone trips on it once.
+line @2 greet [self.working=yes self.job=official self.role=merchant] : #greet#. My paws are in the case, but my ears aren't. | #greet#. Half a line set. Give me a breath.
+line @3 greet [here.time=dawn] : Morning. Early for talk. | Morning. No bread in me yet, so go gently.
+line @4 greet [here.time=dusk|night] : Evening. The street's gone quiet, at last. | Evening. Late to be about.
+line @5 greet [pair.band=friends] : There you are. Sit. | #greet#. I knew that tread on the step.
+line @6 greet [here.weather=rain] : #greet#. A wet one. Drip on the mat, not the stock. | #greet#. Rain on the slates again.
+line @7 greet : #greet#. Say what's wanted. | #greet#. A grey, still sort of day, this.
+line @1 kin.open [pair.kin!=no] : There you are. Kettle's warm. | Come in. Take the dry chair.
+line @1 again.open : You again. That's no hardship. | Twice today. That's a lot of talking, for me.
+line @1 greet.return : And to you. | #greet#. The same.
+line @2 greet.return [pair.band=friends|family] : There you are, then. | Good. I was wanting a word.
+line @3 greet.return [self.working=yes] : And you. Mind the ink. | Same. My paws are full, mind.
+line @4 greet.return [here.time=dusk|night] : Evening. Yes. | Evening. A long one, today.
+line @1 farewell : #farewell#. | Right. That'll do me for now.
+line @2 farewell [here.time=dusk|night] : Night. Stay where it's lit, going down. | Night. Mind the gutters by the corner.
+line @1 farewell.return : And you. | #farewell#. Go careful.
+line @2 farewell.return [here.time=dusk|night] : Night. | Good night, then.
+line @1 react.news : Go on. | Say it slowly. I'll keep it.
+line @1 react.news.new : First I've heard. | Not on any wall yet, then.
+line @1 react.news.known : I'd heard. Not from anyone I'd trust. | Old to me. Somebody told it at the door.
+line @2 react.news.known [self.job=official self.role=merchant] : I set that in type yesterday. | Old news. It's drying on #lines#.
+line @1 react.news.doubt : Talk's cheap. Paste it on a wall and I'll read it. | Whose words? I like a name under a notice.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard. That's hard to hear. | Bad news. I'll keep it quiet.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. | That warms me. It does.
+line @1 answer.how : Well enough. A bit low. | I'm here. That's most of it.
+line @1 answer.how.busy [self.working=yes] : Busy. Ask me after the light goes. | Too busy for a proper answer.
+line @1 answer.how.poorly : Wheezy. It goes when the wet does. | Low. Leave it there.
+line @1 ask.how : You? All well? | And yourself, then?
+line @1 sympathise : Sit. Talk, or don't. Either does. | That's heavy. I've no words, but I've a chair.
+line @1 reassure : Slow, but it'll mend. Things here generally do. | Give it a week. Worse has mended.
+line @1 decline : Not this one. The work's stacked up and it won't shift itself. | I'd rather not. I keep out of that sort of thing, always.
+line @1 accept_decline : Fair. Another time. | That's all right. I'll not push.
+line @1 thank : #thanks#. I'll remember it. | Kindly done. Thank you.
+line @1 deflect_thanks : It was nothing. | No need. Truly none.
+line @1 preclose [self.working=yes] : I'd best get back. This won't finish itself. | The sheets want turning. I'll go.
+line @2 preclose : I've talked more than I meant. | That'll do me for a while.
+line @1 accept_preclose : Go on, then. | Right you are.
+line @1 ack : #bc_right# | Mm.
+line @1 give.advice : Don't say anything you'd not want pasted on a wall. | Keep your paper dry and your mouth shut, and you'll do.
+line @1 warn [world.bandits=near] : Nobody walks past the walls alone this week. Not you either. | The road's bad. Wait for company, or wait.
+line @1 congratulate : Well done. Truly. | Good. You've earned it.
+line @2 answer.how [here.weather=rain] : There's a wheeze in me. I'm ignoring it. | Wet. Same as everyone.
 scene sign_backwards
 when topic=work|smalltalk self.job=official self.role=merchant self.age>=35
 does tell.self / ask.detail / answer.detail / react.self / assess
@@ -454,31 +455,30 @@ does aside
 cooldown 12h
 say Bread first. Then the rest. | The ovens are open. That smell carries.
 
-dlg resident.hub : #greet#. Say it plain. Talk's not my strong suit. | #greet#. What is it?
-dlg resident.hub [topic.meeting=known] : #topic.player#. Back again. | #greet#, #topic.player#. Shut the door, will you.
-dlg resident.hub [here.time=night] : Late. Make it quick, please. | It's late for callers. Go on.
-dlg resident.hub [pair.disposition=hostile|wary] : From there's close enough, thank you. | Speak from that flagstone, then leave.
-dlg resident.job [self.job=official self.role=merchant] : #self.trade_words.capitalize#. Notices, bills, handbills. The Council's, mostly. | I set type and pull sheets. Every notice you've passed, near enough.
-dlg resident.job : Work. Same as yesterday. | Same as ever. There's not much to tell.
-dlg resident.business [business=thriving] : Busy. More sheets than lines to hang them on. | More work than paper. I'll not complain.
-dlg resident.business [business=steady] : Steady. The Council pays slow, but it pays. | Steady enough.
-dlg resident.business [business=failing] : Poorly. Folk don't buy bills when they can't buy bread. | Thin. I'm printing for the wall more than the till.
-dlg resident.news [world.news] : Word from #world.news_from#: #world.news#. I know nothing past it. | A customer carried it in. From #world.news_from#, #world.news#.
-dlg resident.news [world.event_words] : Even the margins might as well read #world.event_words# today. | Everyone's on about #world.event_words#.
-dlg resident.news [world.wagons=raided] : A wagon was robbed bare, they say. Travel in company.
-dlg resident.news [world.death=recent] : A burial, this week. Folk are hushed.
-dlg resident.news [world.wedding=recent] : There's been a wedding. Somebody's pleased, and that's good news.
-dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing on the walls I'd call news. | Quiet. That suits me.
-dlg resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's the lot. | #topic.subject.capitalize# #topic.claim#, so I'm told. Not from me.
-dlg resident.gossip [here.gossip!=yes] : I don't carry talk. | Nothing I'd repeat.
-dlg shop.greet [here.shop!=bare] : #greet#. Bills, notices, a ream if you need one. Ask. | #greet#. Have a look. Paws off anything still tacky.
-dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Same as before? | #greet#, #topic.player#. Have a look.
-dlg shop.greet [here.shop=bare] : #shop_bare# The paper's not come up the road. | Very little left. The shelves fill when the carts do.
-dlg shop.prices : #shop_dear# The carts set the price of paper, not me. | I add the ink and my time. No more.
-dlg shop.bye : #shop_bye# | #farewell#. Keep it out of the rain.
-dlg resident.bye : #farewell#. | Right. Mind the step.
-dlg resident.bye [here.time=night] : Night. Lamps are your friends, going home. | Night. Latch it after you.
-
+dlg @1 resident.hub : #greet#. Say it plain. Talk's not my strong suit. | #greet#. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Back again. | #greet#, #topic.player#. Shut the door, will you.
+dlg @3 resident.hub [here.time=night] : Late. Make it quick, please. | It's late for callers. Go on.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : From there's close enough, thank you. | Speak from that flagstone, then leave.
+dlg @1 resident.job [self.job=official self.role=merchant] : #self.trade_words.capitalize#. Notices, bills, handbills. The Council's, mostly. | I set type and pull sheets. Every notice you've passed, near enough.
+dlg @2 resident.job : Work. Same as yesterday. | Same as ever. There's not much to tell.
+dlg @1 resident.business [business=thriving] : Busy. More sheets than lines to hang them on. | More work than paper. I'll not complain.
+dlg @2 resident.business [business=steady] : Steady. The Council pays slow, but it pays. | Steady enough.
+dlg @3 resident.business [business=failing] : Poorly. Folk don't buy bills when they can't buy bread. | Thin. I'm printing for the wall more than the till.
+dlg @1 resident.news [world.news] : Word from #world.news_from#: #world.news#. I know nothing past it. | A customer carried it in. From #world.news_from#, #world.news#.
+dlg @2 resident.news [world.event_words] : Even the margins might as well read #world.event_words# today. | Everyone's on about #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : A wagon was robbed bare, they say. Travel in company.
+dlg @4 resident.news [world.death=recent] : A burial, this week. Folk are hushed.
+dlg @5 resident.news [world.wedding=recent] : There's been a wedding. Somebody's pleased, and that's good news.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing on the walls I'd call news. | Quiet. That suits me.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. That's the lot. | #topic.subject.capitalize# #topic.claim#, so I'm told. Not from me.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't carry talk. | Nothing I'd repeat.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Bills, notices, a ream if you need one. Ask. | #greet#. Have a look. Paws off anything still tacky.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Same as before? | #greet#, #topic.player#. Have a look.
+dlg @3 shop.greet [here.shop=bare] : #shop_bare# The paper's not come up the road. | Very little left. The shelves fill when the carts do.
+dlg @1 shop.prices : #shop_dear# The carts set the price of paper, not me. | I add the ink and my time. No more.
+dlg @1 shop.bye : #shop_bye# | #farewell#. Keep it out of the rain.
+dlg @1 resident.bye : #farewell#. | Right. Mind the step.
+dlg @2 resident.bye [here.time=night] : Night. Lamps are your friends, going home. | Night. Latch it after you.
 graft resident.hub
 choice Why do you squint at the signs? [self.job=official self.role=merchant] -> backwards
 node backwards
@@ -498,9 +498,9 @@ node printing
 say Notices for the Council, bills for the shops, and a wedding card when someone asks nicely.
 mood calm
 free
-choice Could you print something for me? -> mine
+choice Could you print something for me? -> print_for_me
 choice Back to the counter. -> greet
-node mine
+node print_for_me
 say Bring me the words, written clear. I'll set them as written. I'll not change a letter.
 choice I'll think about it. -> greet
 choice Goodbye. -> bye

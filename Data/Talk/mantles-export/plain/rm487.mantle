@@ -1,9 +1,12 @@
+# rm487, the witness and the wind (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm487
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_cedric_mudley
+written_by codex
 title the witness and the wind
 fits stage=adult|old
 prefers job=guard
@@ -39,50 +42,49 @@ gate = the high gateway | the public opening
 wake = a streak of white water | the receding furrow
 
 any
-opinion strangers against 2 : An unfamiliar face is entitled to civility. Familiar treatment has rather different terms.
-opinion watch for 1 : An unremarkable night on the public road has usually taken several wolves' complete attention.
-opinion road for 1 : A road worth travelling is worth attending to from its first bend right down to the stones under one's foot.
-opinion festivals for 1 : I like hearing the entire town speak in a single afternoon. There is much to be learnt from the different accounts.
-opinion dole against 1 : A public meal ought to put a wolf on its feet again. I dislike arrangements that have no aim beyond another turn in the line.
-opinion houses mixed 0 : A House can be correct in one account and magnificently mistaken in the next. I keep my judgments available.
-opinion merchants mixed 0 : A quoted price heard up the street is a rumour until the seller gives the terms in person.
-opinion sump against 1 : Below the Ropewalk the crowded turns and the water put too many reflections into a simple view for my preference.
+opinion @1 strangers against 2 : An unfamiliar face is entitled to civility. Familiar treatment has rather different terms.
+opinion @1 watch for 1 : An unremarkable night on the public road has usually taken several wolves' complete attention.
+opinion @1 road for 1 : A road worth travelling is worth attending to from its first bend right down to the stones under one's foot.
+opinion @1 festivals for 1 : I like hearing the entire town speak in a single afternoon. There is much to be learnt from the different accounts.
+opinion @1 dole against 1 : A public meal ought to put a wolf on its feet again. I dislike arrangements that have no aim beyond another turn in the line.
+opinion @1 houses mixed 0 : A House can be correct in one account and magnificently mistaken in the next. I keep my judgments available.
+opinion @1 merchants mixed 0 : A quoted price heard up the street is a rumour until the seller gives the terms in person.
+opinion @1 sump against 1 : Below the Ropewalk the crowded turns and the water put too many reflections into a simple view for my preference.
 
 grown
-line greet [pair.band=strangers] : Give your account in your own voice. Welcome. | A new arrival. There's space in full view.
-line greet [self.working=yes] : Speak from the level ground, please. | I can hear the word over the ordinary traffic.
-line greet [here.time=dawn] : Morning. The sound carries plainly. | Fresh light on the approaching road.
-line greet [here.time=dusk|night] : Evening. Voices carry further than faces now. | Make yourself visible in the remaining light.
-line kin.open [pair.kin!=no] : Kin can give me the informal version. | A family face scarcely needs announcing.
-line again.open : A second appearance confirms the first sighting. | You come round again by the same road.
-line greet.return : I hear a proper greeting. Good. | Welcome within sight as well as hearing.
-line greet.return [pair.band=friends|family] : Your voice comes with an established face. | A familiar account can begin without ceremony.
-line greet.return [self.working=yes] : Allow me to finish the current word. | Speak in turn. I shall hear clearly enough.
-line greet.return [here.time=dusk|night] : Evening. I still know what I saw. | Come inside speaking range after dusk.
-line farewell : Keep the road and your account straight. | An orderly onward journey.
-line farewell.return : I'll keep the fact of your visit distinct. | Travel with the light where possible.
-line farewell.return [here.time=night] : A clear path beyond the final lamp. | Watch your footing through the late mist.
-line react.news : What did the speaker actually witness? | Give me the name and then the source.
-line react.news.new : An unfamiliar name on that hull. | That's news my own ears haven't taken before.
-line react.news.known : Yes. I retain the first account. | I've heard the name from that direction.
-line react.news.doubt : I'd separate what was observed from what was supplied afterwards. | A hull without a reliable name leaves considerable room for error.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That brought a hard private memory with it. | I can attend while you take the word slowly.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Pleasant word and plainly given. | That's one favourable account worth retaining.
-line ask.how : How has the present stretch treated you? | Has the day required much standing?
-line answer.how : Still fairly steady on the better leg. | I've had sufficient occupation for both eye and ear.
-line decline : I'd reserve my attention for its present duty. | I have no reason to undertake a second obligation here.
-line accept_decline : Your answer requires no further embellishment. | A plain refusal will do quite adequately.
-line thank : Your attention has kept an account accurate. | I value the distinction you've drawn.
-line sympathise : Stay on my sheltered side for a minute. | I can give your words a private hearing.
-line reassure : Nothing requires an immediate account of a painful matter. | Leave the uncertain part unspoken awhile.
-line preclose : I should resume my attention to the approach. | I'd best close this account for now.
-line accept_preclose : Your departure is duly observed. | I can release the remainder of your time.
-line deflect_thanks : Credit is attached to the proper act. | I require no second acknowledgment.
-line ack : Clearly witnessed. | I heard.
-line give.advice : Name the source before polishing the tale. | Look once more when the mast clears the mist.
-line offer : I can give you another hearing in quieter air. | Shall I see you to the level bit?
-line praise : You made the distinction admirably plain. | A first-rate account of a small observation.
-
+line @1 greet [pair.band=strangers] : Give your account in your own voice. Welcome. | A new arrival. There's space in full view.
+line @2 greet [self.working=yes] : Speak from the level ground, please. | I can hear the word over the ordinary traffic.
+line @3 greet [here.time=dawn] : Morning. The sound carries plainly. | Fresh light on the approaching road.
+line @4 greet [here.time=dusk|night] : Evening. Voices carry further than faces now. | Make yourself visible in the remaining light.
+line @1 kin.open [pair.kin!=no] : Kin can give me the informal version. | A family face scarcely needs announcing.
+line @1 again.open : A second appearance confirms the first sighting. | You come round again by the same road.
+line @1 greet.return : I hear a proper greeting. Good. | Welcome within sight as well as hearing.
+line @2 greet.return [pair.band=friends|family] : Your voice comes with an established face. | A familiar account can begin without ceremony.
+line @3 greet.return [self.working=yes] : Allow me to finish the current word. | Speak in turn. I shall hear clearly enough.
+line @4 greet.return [here.time=dusk|night] : Evening. I still know what I saw. | Come inside speaking range after dusk.
+line @1 farewell : Keep the road and your account straight. | An orderly onward journey.
+line @1 farewell.return : I'll keep the fact of your visit distinct. | Travel with the light where possible.
+line @2 farewell.return [here.time=night] : A clear path beyond the final lamp. | Watch your footing through the late mist.
+line @1 react.news : What did the speaker actually witness? | Give me the name and then the source.
+line @1 react.news.new : An unfamiliar name on that hull. | That's news my own ears haven't taken before.
+line @1 react.news.known : Yes. I retain the first account. | I've heard the name from that direction.
+line @1 react.news.doubt : I'd separate what was observed from what was supplied afterwards. | A hull without a reliable name leaves considerable room for error.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That brought a hard private memory with it. | I can attend while you take the word slowly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Pleasant word and plainly given. | That's one favourable account worth retaining.
+line @1 ask.how : How has the present stretch treated you? | Has the day required much standing?
+line @1 answer.how : Still fairly steady on the better leg. | I've had sufficient occupation for both eye and ear.
+line @1 decline : I'd reserve my attention for its present duty. | I have no reason to undertake a second obligation here.
+line @1 accept_decline : Your answer requires no further embellishment. | A plain refusal will do quite adequately.
+line @1 thank : Your attention has kept an account accurate. | I value the distinction you've drawn.
+line @1 sympathise : Stay on my sheltered side for a minute. | I can give your words a private hearing.
+line @1 reassure : Nothing requires an immediate account of a painful matter. | Leave the uncertain part unspoken awhile.
+line @1 preclose : I should resume my attention to the approach. | I'd best close this account for now.
+line @1 accept_preclose : Your departure is duly observed. | I can release the remainder of your time.
+line @1 deflect_thanks : Credit is attached to the proper act. | I require no second acknowledgment.
+line @1 ack : Clearly witnessed. | I heard.
+line @1 give.advice : Name the source before polishing the tale. | Look once more when the mast clears the mist.
+line @1 offer : I can give you another hearing in quieter air. | Shall I see you to the level bit?
+line @1 praise : You made the distinction admirably plain. | A first-rate account of a small observation.
 scene first
 when topic=lore here.region=ridgemere
 does tell.self / ask.detail / answer.detail
@@ -359,20 +361,19 @@ does aside
 cooldown 11h
 say No name supplied for a vanished outline. | Steady this leg before the last dark stretch.
 
-dlg resident.hub : Come to where your face and your voice give the same location. I find that a convenient beginning to civil business.
-dlg resident.job [self.job=guard self.trade_words] : #self.trade_words.capitalize#. It keeps me reasonably well acquainted with the difference between a traveller and an account of one.
-dlg resident.job : My attention stays with what can be properly observed. I take considerable pains over the difference.
-dlg resident.hub [topic.meeting=known] : I have the voice and face on the same entry, #topic.player#.
-dlg resident.hub [here.time=dawn] : There's time to provide an intelligible account before the ordinary traffic grows loud.
-dlg resident.hub [here.time=night] : Speak clearly enough for a wolf who declines to identify a traveller by outline alone.
-dlg resident.hub [pair.disposition=wary|hostile] : An ordinary civil account will be heard. Nothing further is required of your manner.
-dlg resident.hub [self.working=yes] : I have the road in view and sufficient hearing left for what you wish to say.
-dlg resident.news [world.news] : This is the account I can attribute to a definite hearing. #world.news#
-dlg resident.bye : Safe passage. Keep the names attached to their proper owners.
-dlg resident.bye [here.time=night] : The road is lit well enough for a patient walker.
-dlg watch.hub [self.role=guard here.wanted=no] : Stand in the ordinary light and describe precisely what you witnessed.
-dlg watch.bye [self.role=guard] : You have been heard. Attend to your footing on the remainder of your business.
-
+dlg @1 resident.hub : Come to where your face and your voice give the same location. I find that a convenient beginning to civil business.
+dlg @1 resident.job [self.job=guard self.trade_words] : #self.trade_words.capitalize#. It keeps me reasonably well acquainted with the difference between a traveller and an account of one.
+dlg @2 resident.job : My attention stays with what can be properly observed. I take considerable pains over the difference.
+dlg @2 resident.hub [topic.meeting=known] : I have the voice and face on the same entry, #topic.player#.
+dlg @3 resident.hub [here.time=dawn] : There's time to provide an intelligible account before the ordinary traffic grows loud.
+dlg @4 resident.hub [here.time=night] : Speak clearly enough for a wolf who declines to identify a traveller by outline alone.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : An ordinary civil account will be heard. Nothing further is required of your manner.
+dlg @6 resident.hub [self.working=yes] : I have the road in view and sufficient hearing left for what you wish to say.
+dlg @1 resident.news [world.news] : This is the account I can attribute to a definite hearing. #world.news#
+dlg @1 resident.bye : Safe passage. Keep the names attached to their proper owners.
+dlg @2 resident.bye [here.time=night] : The road is lit well enough for a patient walker.
+dlg @1 watch.hub [self.role=guard here.wanted=no] : Stand in the ordinary light and describe precisely what you witnessed.
+dlg @1 watch.bye [self.role=guard] : You have been heard. Attend to your footing on the remainder of your business.
 graft @hull resident.hub
 choice Why remember the voice as well as the name of a ship? -> hull_voice
 node hull_voice
@@ -384,6 +385,7 @@ node hull_paint
 say Then I am pleased for the chorus. The paint has made a separate contribution and may be credited for it.
 choice A clear distinction. -> hub
 choice I'll take my account on the road. -> bye
+
 graft @rind resident.hub
 choice What's the apple peel for? -> rind_tale
 node rind_tale

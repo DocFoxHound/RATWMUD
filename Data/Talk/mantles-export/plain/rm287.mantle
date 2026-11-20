@@ -1,9 +1,12 @@
+# rm287, the whittled landing (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm287
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_florence_gullworth
+written_by codex
 title the whittled landing
 fits stage=adult|old
 prefers quarter=sump
@@ -35,35 +38,34 @@ tick = a shallow cut | a little nick
 split = a split up the grain | a long pale crack
 
 any
-opinion houses against 3 : You can count freight and still leave out the wolf who didn't come home. I keep a different reckoning.
-opinion sump for 2 : A bad step gets a name and a worse step gets a joke. That's how we make it upstairs.
-opinion dole for 2 : A hot dish belongs at the top as much as the bottom. Someone ought to carry it all the way.
-opinion festivals for 1 : I like seeing the heads come by underneath my window, particularly the ones with foolish hats.
-opinion merchants against 1 : Rind oughtn't cost as much as the pork it once kept warm.
-opinion road mixed 1 : A path going uphill will at least fetch you a view. The rest have to earn their keep otherwise.
+opinion @1 houses against 3 : You can count freight and still leave out the wolf who didn't come home. I keep a different reckoning.
+opinion @1 sump for 2 [self.quarter=sump] : A bad step gets a name and a worse step gets a joke. That's how we make it upstairs.
+opinion @1 dole for 2 : A hot dish belongs at the top as much as the bottom. Someone ought to carry it all the way.
+opinion @1 festivals for 1 : I like seeing the heads come by underneath my window, particularly the ones with foolish hats.
+opinion @1 merchants against 1 : Rind oughtn't cost as much as the pork it once kept warm.
+opinion @1 road mixed 1 : A path going uphill will at least fetch you a view. The rest have to earn their keep otherwise.
 
 grown
-line greet : There's a seat for two if you take the sunny half. | Welcome to the level bit.
-line greet.return : There's your welcome coming up two steps together. | I was hoping that greeting would reach my landing.
-line again.open : Round again. I thought I knew those feet.
-line farewell : Go steady where the third tread sticks out. | Save a good resting place for the way back.
-line farewell.return : And a polished rail for your downward trip. | You've sent me off smiling at my feet.
-line react.news : Let's hear how it sounds from up here. | Tell it while the shavings settle.
-line react.news.new : That's a fresh notch entirely.
-line react.news.known : I know which stair that account squeaks on.
-line react.news.doubt : Something's shaved too nearly smooth in that version.
-line react.news.sorrow [topic.kind=death|loss|assault] : Some names ought to be kept even when the boats are gone.
-line react.news.glad [topic.kind=birth|marriage|work] : Now there's a tune for coming up the last flight.
-line ask.how : Which part of your day needs a seat?
-line answer.how : About two steps ahead of the slow thoughts.
-line sympathise : Sit wide and let the poor old boards carry this one.
-line reassure : A staircase takes you up one honest inch at a time.
-line refuse : I've promised my knife a little careful attention first.
-line accept_decline : Fair. Nobody can climb another wolf's legs for a favour.
-line preclose : Time to count my own stairs homeward.
-line accept_preclose : Go on with a light hip and an easy knee.
-line ack : Yes. Every little notch of it.
-
+line @1 greet : There's a seat for two if you take the sunny half. | Welcome to the level bit.
+line @1 greet.return : There's your welcome coming up two steps together. | I was hoping that greeting would reach my landing.
+line @1 again.open : Round again. I thought I knew those feet.
+line @1 farewell : Go steady where the third tread sticks out. | Save a good resting place for the way back.
+line @1 farewell.return : And a polished rail for your downward trip. | You've sent me off smiling at my feet.
+line @1 react.news : Let's hear it, and how it's grown on the way to me. | Tell it while the shavings settle.
+line @1 react.news.new : That's a fresh notch entirely.
+line @1 react.news.known : I know which stair that account squeaks on.
+line @1 react.news.doubt : Something's shaved too nearly smooth in that version.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Some names ought to be kept even when the boats are gone.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Now there's a tune for coming up the last flight.
+line @1 ask.how : Which part of your day needs a seat?
+line @1 answer.how : About two steps ahead of the slow thoughts.
+line @1 sympathise : Sit wide and let the poor old boards carry this one.
+line @1 reassure : A staircase takes you up one honest inch at a time.
+line @1 refuse : I've promised my knife a little careful attention first.
+line @1 accept_decline : Fair. Nobody can climb another wolf's legs for a favour.
+line @1 preclose : Time to count my own stairs homeward.
+line @1 accept_preclose : Go on with a light hip and an easy knee.
+line @1 ack : Yes. Every little notch of it.
 scene exchange1
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -162,8 +164,8 @@ a : I'd like a bench above the damp and a low bar under my heels. | A perfect wo
 b : Need much more? | Who'd climb it?
 a : An unhurried bit of afternoon to put on it. | A wolf after a good view and no errand at the other end.
 
-old
 
+old
 scene exchange16
 when topic=health
 does tell.self / ask.detail / answer.detail
@@ -233,16 +235,16 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Last good light goes on my knife edge. | That's enough little stairs for one evening.
-dlg resident.hub : Welcome to a staircase small enough for your pocket.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've climbed back into view.
-dlg resident.hub [here.time=night] : Too late for a sharp knife. Quite early enough for a tale.
-dlg resident.hub [pair.disposition=wary|hostile] : We'll leave a whole tread between our elbows.
-dlg resident.job [self.job=none] : I give the world a good steady looking at. There's plenty it would slip by me otherwise.
-dlg resident.job : I'm partial to work with a good sitting place midway through.
-dlg resident.news [world.news] : News took the stairs up. #world.news#.
-dlg resident.gossip [here.gossip=yes] : This came off the lower landing. #topic.subject# #topic.claim#. Count the steps it climbed first.
-dlg resident.bye : Two steps or one, whatever brings you home easy.
 
+dlg @1 resident.hub : Welcome to a staircase small enough for your pocket.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've climbed back into view.
+dlg @3 resident.hub [here.time=night] : Too late for a sharp knife. Quite early enough for a tale.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We'll leave a whole tread between our elbows.
+dlg @1 resident.job [self.job=none] : I give the world a good steady looking at. There's plenty it would slip by me otherwise.
+dlg @2 resident.job : I'm partial to work with a good sitting place midway through.
+dlg @1 resident.news [world.news] : News took the stairs up. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : This came off the lower landing. #topic.subject# #topic.claim#. Count the steps it climbed first.
+dlg @1 resident.bye : Two steps or one, whatever brings you home easy.
 graft resident.hub
 choice Who climbs a staircase that small? -> toy_stair
 node toy_stair

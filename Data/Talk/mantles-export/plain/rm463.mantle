@@ -1,9 +1,12 @@
+# rm463, the paper-roofed berth (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm463
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_gudrun_mossdale
+written_by codex
 title the paper-roofed berth
 fits stage=adult|old
 prefers job=none
@@ -35,35 +38,34 @@ pane = my clear lower pane | a small side window
 cloth = a plain square cloth | a quiet fold of linen
 
 any
-opinion houses mixed 1 : A ship's grand name won't stop a drip over the pillow. I'd like the berth inspected on its own merits.
-opinion merchants mixed 1 : Bread gives a more candid account of its age than some sellers.
-opinion dole for 1 : If you're giving bread to a household give it while the crust is still pleasant.
-opinion road mixed 1 : I like the road on a map, particularly where the rain cannot join it.
-opinion strangers mixed 1 : A visitor can answer a riddle without being told the private arrangement of my rooms.
-opinion sump for 1 : People on a low street have a particularly accurate sense of what is overhead.
+opinion @1 houses mixed 1 : A ship's grand name won't stop a drip over the pillow. I'd like the berth inspected on its own merits.
+opinion @1 merchants mixed 1 : Bread gives a more candid account of its age than some sellers.
+opinion @1 dole for 1 : If you're giving bread to a household give it while the crust is still pleasant.
+opinion @1 road mixed 1 : I like the road on a map, particularly where the rain cannot join it.
+opinion @1 strangers mixed 1 : A visitor can answer a riddle without being told the private arrangement of my rooms.
+opinion @1 sump for 1 : People on a low street have a particularly accurate sense of what is overhead.
 
 grown
-line greet : Sit where the window won't breathe on your neck. | My paper can wait under its weight.
-line greet.return : Your welcome arrived without disturbing the folds.
-line again.open : You've come back to the sheltered side.
-line farewell : Dry bedding at your destination, I hope. | Travel above the gutter's line.
-line farewell.return : I'll put your kind wish with the dry papers.
-line react.news : Give me the part of the news that actually reached your ears. | One account at a time, if you please.
-line react.news.new : My older chart gives no sign of that.
-line react.news.known : I've seen that crease before.
-line react.news.doubt : The account seems dry on top. I'd inspect underneath.
-line react.news.sorrow [topic.kind=death|loss|assault] : Grief has enough visitors without a curious stare from this window.
-line react.news.glad [topic.kind=birth|marriage|work] : That makes an agreeable change in the view.
-line ask.how : How is the world treating your dry places?
-line answer.how : Settled quite well behind my own clear glass.
-line sympathise : A chair needn't ask its occupant for an explanation.
-line reassure : A careful fold can often save what the damp edge did not touch.
-line refuse : A matter of my own has first claim on this quiet hour.
-line accept_decline : The decision belongs with its original maker.
-line preclose : I'll attend to my own small correspondence now.
-line accept_preclose : Take the interval while it is still your own.
-line ack : That account folds together neatly.
-
+line @1 greet : Sit where the window won't breathe on your neck. | My paper can wait under its weight.
+line @1 greet.return : Your welcome arrived without disturbing the folds.
+line @1 again.open : You've come back to the sheltered side.
+line @1 farewell : Dry bedding at your destination, I hope. | Travel above the gutter's line.
+line @1 farewell.return : I'll put your kind wish with the dry papers.
+line @1 react.news : Give me the part of the news that actually reached your ears. | One account at a time, if you please.
+line @1 react.news.new : My older chart gives no sign of that.
+line @1 react.news.known : I've seen that crease before.
+line @1 react.news.doubt : The account seems dry on top. I'd inspect underneath.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Grief has enough visitors without a curious stare from this window.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That makes an agreeable change in the view.
+line @1 ask.how : How is the world treating your dry places?
+line @1 answer.how : Settled quite well behind my own clear glass.
+line @1 sympathise : A chair needn't ask its occupant for an explanation.
+line @1 reassure : A careful fold can often save what the damp edge did not touch.
+line @1 refuse : A matter of my own has first claim on this quiet hour.
+line @1 accept_decline : The decision belongs with its original maker.
+line @1 preclose : I'll attend to my own small correspondence now.
+line @1 accept_preclose : Take the interval while it is still your own.
+line @1 ack : That account folds together neatly.
 scene exchange1
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
@@ -162,8 +164,8 @@ a : I find a private thanksgiving easily expressed. | A blessing can be welcome 
 b : How many words? | Can it be heard there?
 a : The number I can spare without making a speech to the room. | That depends chiefly on whether the speaker expects an answer.
 
-old
 
+old
 scene exchange16
 when topic=health
 does tell.self / ask.detail / answer.detail
@@ -233,16 +235,16 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say The street's closing its paper shutters for the day. | My cabin has caught the last little strip of light.
-dlg resident.hub : I have an unoccupied bit of window and a little time available.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I needn't rearrange the whole room to welcome a familiar visitor.
-dlg resident.hub [here.time=night] : At this hour the better view is usually indoors.
-dlg resident.hub [pair.disposition=wary|hostile] : Your business needn't involve lifting the paper off my desk.
-dlg resident.job [self.job=none] : I spend a good part of my time attending to what passes the window. The occupation leaves room for judgement.
-dlg resident.job : I prefer work that doesn't require pretending a damp thing is dry.
-dlg resident.news [world.news] : What passed within earshot was #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. Let the unrecorded portions remain unrecorded.
-dlg resident.bye : Dry bedding and a cabin latch to your liking.
 
+dlg @1 resident.hub : I have an unoccupied bit of window and a little time available.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I needn't rearrange the whole room to welcome a familiar visitor.
+dlg @3 resident.hub [here.time=night] : At this hour the better view is usually indoors.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your business needn't involve lifting the paper off my desk.
+dlg @1 resident.job [self.job=none] : I spend a good part of my time attending to what passes the window. The occupation leaves room for judgement.
+dlg @2 resident.job : I prefer work that doesn't require pretending a damp thing is dry.
+dlg @1 resident.news [world.news] : What passed within earshot was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. Let the unrecorded portions remain unrecorded.
+dlg @1 resident.bye : Dry bedding and a cabin latch to your liking.
 graft resident.hub
 choice Can anybody sleep in a berth made of a map? -> paper_berth
 node paper_berth

@@ -1,9 +1,12 @@
+# rm386, the smoky soup ladle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm386
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_lionel_pitchdale
+written_by codex
 title the smoky soup ladle
 fits stage=adult|old
 prefers job=merchant
@@ -41,48 +44,47 @@ brim = a blackened pot rim | the warm rim
 slate = a fresh price slate | a clean bit of board
 
 any
-opinion houses against 1 : If the Houses start wrestling before winter, I hope they'll settle whose pot gets knocked over first. I worry it'll be ours.
-opinion dole for 3 : I can thicken a bowl with barley. I cannot thicken an apology into a meal.
-opinion church for 1 : A blessing followed by a second ladleful is a substantial piece of comfort.
-opinion merchants mixed 1 : A good butcher can make a cheap cut sing. An honest one marks it cheap in the first place.
-opinion sump for 1 : A low street and a high one both lead to mouths needing supper. The pot doesn't ask directions.
-opinion strangers for 1 : Never seen an accent spoil the taste of decent barley.
-opinion festivals for 1 : A wrestling ring with hot soup nearby has a use for almost every talent.
-opinion watch mixed 1 : Crowds need room to move and a constable needs room to see. We can leave both without giving away the pot.
-opinion times against 1 [world.times=lean|hard] : The barley's doing a lot of the heavy wrestling these days. I miss what a bone used to cost.
+opinion @1 houses against 1 : If the Houses start wrestling before winter, I hope they'll settle whose pot gets knocked over first. I worry it'll be ours.
+opinion @1 dole for 3 : I can thicken a bowl with barley. I cannot thicken an apology into a meal.
+opinion @1 church for 1 : A blessing followed by a second ladleful is a substantial piece of comfort.
+opinion @1 merchants mixed 1 : A good butcher can make a cheap cut sing. An honest one marks it cheap in the first place.
+opinion @1 sump for 1 : A low street and a high one both lead to mouths needing supper. The pot doesn't ask directions.
+opinion @1 strangers for 1 : Never seen an accent spoil the taste of decent barley.
+opinion @1 festivals for 1 : A wrestling ring with hot soup nearby has a use for almost every talent.
+opinion @1 watch mixed 1 : Crowds need room to move and a constable needs room to see. We can leave both without giving away the pot.
+opinion @1 times against 1 [world.times=lean|hard] : The barley's doing a lot of the heavy wrestling these days. I miss what a bone used to cost.
 
 grown
-line greet : Slide in past the faint smell of smoke. | Welcome. My elbow has room for a companion.
-line greet.return : A generous spoonful of greeting back. | Your voice found the warm side of my ear.
-line again.open : Here again before the broth's gone flat.
-line farewell : Go with your coat warm and your supper warmer. | Take a sound foothold into the next turn.
-line farewell.return : And a deep bowl of comfort on your own table. | I'll carry that farewell with my spare spoon.
-line react.news : Stir the news up from the bottom for me. | I'll hear the meaty bit and the little bones too.
-line react.news.new : A fresh ingredient entirely.
-line react.news.known : I've fished that particular bit out once before.
-line react.news.doubt : There's rather more smell than meat in that version.
-line react.news.sorrow [topic.kind=death|loss|assault] : Sit somebody by that hurt. A bowl can come once there's a hand to hold it.
-line react.news.glad [topic.kind=birth|marriage|work] : That's good news to bring round the whole table.
-line ask.how : How much of today's weight have you got off your shoulders?
-line answer.how : Warm at the heart, very slightly smoked at the rim.
-line sympathise : Here's a place where a tired wolf needn't keep upright for show.
-line reassure : Once the steam clears, the two handles will still be there.
-line refuse : I've a prior promise warming on my own little fire.
-line accept_decline : No second throw required. I take the answer.
-line preclose : I'd best get a grip on the rest of my errands.
-line accept_preclose : Off you go before the light stops helping your feet.
-line ack : Yes, elbow-deep in the meaning now.
-line greet [here.time=dawn] : A first welcome before my sleeves have gathered their usual smoke.
-line greet [pair.band=strangers] : A new face gets the whole broad end of my welcome.
-line greet [pair.band=friends] : I can make elbow room without a measuring stick for you.
-line greet.return [pair.band=friends] : A known voice and a lovely familiar appetite for company.
-line hail [pair.band=friends] : Over where the smoke's got up on two legs!
-line answer.how.busy [self.working=yes] : Busy enough to mislay the smell of smoke among actual smoke.
-line thank : That's a good weight taken clean off my back.
-line deflect_thanks : The spare place was sitting here doing nothing useful.
-line give.advice : Find both handles before trying to impress anybody.
-line ask.how [pair.band=friends] : Have you got supper settled or still wrestling with it?
-
+line @1 greet : Slide in past the faint smell of smoke. | Welcome. My elbow has room for a companion.
+line @1 greet.return : A generous spoonful of greeting back. | Your voice found the warm side of my ear.
+line @1 again.open : Here again before the broth's gone flat.
+line @1 farewell : Go with your coat warm and your supper warmer. | Take a sound foothold into the next turn.
+line @1 farewell.return : And a deep bowl of comfort on your own table. | I'll carry that farewell with my spare spoon.
+line @1 react.news : Stir the news up from the bottom for me. | I'll hear the meaty bit and the little bones too.
+line @1 react.news.new : A fresh ingredient entirely.
+line @1 react.news.known : I've fished that particular bit out once before.
+line @1 react.news.doubt : There's rather more smell than meat in that version.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Sit somebody by that hurt. A bowl can come once there's a hand to hold it.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's good news to bring round the whole table.
+line @1 ask.how : How much of today's weight have you got off your shoulders?
+line @1 answer.how : Warm at the heart, very slightly smoked at the rim.
+line @1 sympathise : Here's a place where a tired wolf needn't keep upright for show.
+line @1 reassure : Once the steam clears, the two handles will still be there.
+line @1 refuse : I've a prior promise warming on my own little fire.
+line @1 accept_decline : No second throw required. I take the answer.
+line @1 preclose : I'd best get a grip on the rest of my errands.
+line @1 accept_preclose : Off you go before the light stops helping your feet.
+line @1 ack : Yes, elbow-deep in the meaning now.
+line @2 greet [here.time=dawn] : A first welcome before my sleeves have gathered their usual smoke.
+line @3 greet [pair.band=strangers] : A new face gets the whole broad end of my welcome.
+line @4 greet [pair.band=friends] : I can make elbow room without a measuring stick for you.
+line @2 greet.return [pair.band=friends] : A known voice and a lovely familiar appetite for company.
+line @1 hail [pair.band=friends] : Over where the smoke's got up on two legs!
+line @1 answer.how.busy [self.working=yes] : Busy enough to mislay the smell of smoke among actual smoke.
+line @1 thank : That's a good weight taken clean off my back.
+line @1 deflect_thanks : The spare place was sitting here doing nothing useful.
+line @1 give.advice : Find both handles before trying to impress anybody.
+line @2 ask.how [pair.band=friends] : Have you got supper settled or still wrestling with it?
 scene exchange1
 when topic=work self.job=merchant self.workplace
 does tell.self / ask.detail / answer.detail
@@ -358,24 +360,24 @@ when concept=bark self.dislikes=flies
 does aside
 cooldown 8h
 say Cloth back over those soup bones. | No room at my board for six little feet apiece.
-dlg resident.hub : Come join the ordinary smoky end of a perfectly good conversation.
-dlg resident.hub [topic.meeting=known] : #topic.player#, even my steamy coat couldn't keep me from recognising you.
-dlg resident.hub [here.time=night] : The late callers get a quieter story and the same welcome.
-dlg resident.hub [pair.disposition=wary|hostile] : Let's keep both sets of elbows off the wrestling ground. Plain words will do.
-dlg resident.job [self.job=merchant] : I help at #self.workplace#. I know which pieces will make a generous pot after a slow afternoon.
-dlg resident.job : My working day goes well when the last visitor goes away with something useful.
-dlg resident.news [world.news] : The bit that's turned up at supper is #world.news#.
-dlg resident.gossip [here.gossip=yes] : An earful reached me that #topic.subject# #topic.claim#. It may want more than a pinch of caution.
-dlg resident.bye : Find the bowl that was set out with you in mind.
-dlg master.learn [here.teaches=yes] : I can explain a good deal about #here.trade_title# with both our hands on a clear board.
-dlg master.learn [here.teaches=no] : I've a learner in attendance. A little board remains where a curious question can rest.
-dlg master.work : You'll learn weight, patience and which shoulder needs a rest before it grows sore.
-dlg master.wages : A learner's pay comes by selling what's made. The lesson itself doesn't put a second wage in your paw.
-dlg master.takes [here.take_on=no] : I can't make a place yet. #here.take_on_why#.
-dlg master.taken : You're in, then. Stand where you can see my hands and I'll make a start.
-dlg master.refused : The place hasn't worked out this time. #topic.why#.
-dlg master.bye : Keep your grip easy and your appetite in decent shape.
 
+dlg @1 resident.hub : Come join the ordinary smoky end of a perfectly good conversation.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, even my steamy coat couldn't keep me from recognising you.
+dlg @3 resident.hub [here.time=night] : The late callers get a quieter story and the same welcome.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Let's keep both sets of elbows off the wrestling ground. Plain words will do.
+dlg @1 resident.job [self.job=merchant] : I help at #self.workplace#. I know which pieces will make a generous pot after a slow afternoon.
+dlg @2 resident.job : My working day goes well when the last visitor goes away with something useful.
+dlg @1 resident.news [world.news] : The bit that's turned up at supper is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An earful reached me that #topic.subject# #topic.claim#. It may want more than a pinch of caution.
+dlg @1 resident.bye : Find the bowl that was set out with you in mind.
+dlg @1 master.learn [here.teaches=yes] : I can explain a good deal about #here.trade_title# with both our hands on a clear board.
+dlg @2 master.learn [here.teaches=no] : I've a learner in attendance. A little board remains where a curious question can rest.
+dlg @1 master.work : You'll learn weight, patience and which shoulder needs a rest before it grows sore.
+dlg @1 master.wages : A learner's pay comes by selling what's made. The lesson itself doesn't put a second wage in your paw.
+dlg @1 master.takes [here.take_on=no] : I can't make a place yet. #here.take_on_why#.
+dlg @1 master.taken : You're in, then. Stand where you can see my hands and I'll make a start.
+dlg @1 master.refused : The place hasn't worked out this time. #topic.why#.
+dlg @1 master.bye : Keep your grip easy and your appetite in decent shape.
 graft resident.hub
 choice Why do your sleeves smell of smoke? -> smoked_sleeve
 node smoked_sleeve

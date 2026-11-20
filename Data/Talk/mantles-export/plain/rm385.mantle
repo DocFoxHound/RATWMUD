@@ -1,9 +1,12 @@
+# rm385, the coal on the hinge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm385
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_erland_plankwell
+written_by codex
 title the coal on the hinge
 fits stage=adult|old
 prefers job=servant drive=ambitious
@@ -34,45 +37,44 @@ twobars = two bars of a dance | one quiet double turn
 longsun = summer light lasting on stone | a pale late glow
 
 any
-opinion houses against 1 : Serving a great House and belonging to one are two distinct arrangements.
-opinion dole against 1 : I'd rather earn a loaf with my hands if there's a day's work to be had.
-opinion watch against 1 : A patrol looking in at a lamp cannot see who trimmed it. I wish patrols remembered the limits of windows.
-opinion merchants against 1 : A little extra charge for a little extra wrapping has a way of becoming permanent.
-opinion strangers mixed 0 : One may open a door a convenient distance. The width is a matter of judgement.
-opinion festivals for 1 : Two clean shoes on a good floor make excellent use of a feast.
-opinion city for 1 : Ridgemere has doors enough for someone willing to consider the next one.
+opinion @1 houses against 1 : Serving a great House and belonging to one are two distinct arrangements.
+opinion @1 dole against 1 : I'd rather earn a loaf with my hands if there's a day's work to be had.
+opinion @1 watch against 1 : A patrol looking in at a lamp cannot see who trimmed it. I wish patrols remembered the limits of windows.
+opinion @1 merchants against 1 : A little extra charge for a little extra wrapping has a way of becoming permanent.
+opinion @1 strangers mixed 0 : One may open a door a convenient distance. The width is a matter of judgement.
+opinion @1 festivals for 1 : Two clean shoes on a good floor make excellent use of a feast.
+opinion @1 city for 1 : Ridgemere has doors enough for someone willing to consider the next one.
 
 grown
-line greet : Enter the conversation at your convenience.
-line greet [pair.band=strangers] : There is space in the doorway to introduce yourself.
-line greet [here.time=dawn] : Morning. The brass shows rather well.
-line greet [here.time=dusk|night] : Evening. The hinges have fallen quiet.
-line greet.return : I heard the greeting before the latch.
-line greet.return [pair.band=friends|family] : A known voice is generally worth opening for.
-line greet.return [self.working=yes] : Come a little towards the lamp while my hands are occupied.
-line greet.return [here.time=dusk|night] : The hour favours a quiet exchange.
-line kin.open [pair.kin!=no] : Kin may use the convenient entrance.
-line again.open : I retained your place in the order of things.
-line hail [pair.band=friends] : Here in the patch of polished light!
-line farewell : Leave the door in a kindly humour.
-line farewell.return : And go with a comfortable tread.
-line react.news : I have an ear available for your report.
-line react.news.new : Nobody had brought that to this particular ear.
-line react.news.known : An earlier caller left much the same account.
-line react.news.doubt : Some part of the story has been polished too vigorously.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would close a door softly on such news.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is an arrival worth a little extra light.
-line ask.how : Does the day open easily for you?
-line answer.how : Everything is running on a fairly quiet hinge.
-line thank : You have left the awkward part easier to manage.
-line deflect_thanks : A small adjustment can appear very generous.
-line sympathise : There is privacy here if it would serve.
-line reassure : You may leave a little space before answering.
-line decline : I must keep that hour available for an earlier engagement.
-line accept_decline : An answer freely given saves us both a wasted visit.
-line preclose : One last obligation waits behind my own door.
-line accept_preclose : I shall release you before either of us grows late.
-
+line @1 greet : Enter the conversation at your convenience.
+line @2 greet [pair.band=strangers] : There is space in the doorway to introduce yourself.
+line @3 greet [here.time=dawn] : Morning. The brass shows rather well.
+line @4 greet [here.time=dusk|night] : Evening. The hinges have fallen quiet.
+line @1 greet.return : I heard the greeting before the latch.
+line @2 greet.return [pair.band=friends|family] : A known voice is generally worth opening for.
+line @3 greet.return [self.working=yes] : Come a little towards the lamp while my hands are occupied.
+line @4 greet.return [here.time=dusk|night] : The hour favours a quiet exchange.
+line @1 kin.open [pair.kin!=no] : Kin may use the convenient entrance.
+line @1 again.open : I retained your place in the order of things.
+line @1 hail [pair.band=friends] : Here in the patch of polished light!
+line @1 farewell : Leave the door in a kindly humour.
+line @1 farewell.return : And go with a comfortable tread.
+line @1 react.news : I have an ear available for your report.
+line @1 react.news.new : Nobody had brought that to this particular ear.
+line @1 react.news.known : An earlier caller left much the same account.
+line @1 react.news.doubt : Some part of the story has been polished too vigorously.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would close a door softly on such news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That is an arrival worth a little extra light.
+line @1 ask.how : Does the day open easily for you?
+line @1 answer.how : Everything is running on a fairly quiet hinge.
+line @1 thank : You have left the awkward part easier to manage.
+line @1 deflect_thanks : A small adjustment can appear very generous.
+line @1 sympathise : There is privacy here if it would serve.
+line @1 reassure : You may leave a little space before answering.
+line @1 decline : I must keep that hour available for an earlier engagement.
+line @1 accept_decline : An answer freely given saves us both a wasted visit.
+line @1 preclose : One last obligation waits behind my own door.
+line @1 accept_preclose : I shall release you before either of us grows late.
 scene hinge_mark
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -113,7 +115,7 @@ when topic=smalltalk self.likes=new_boots
 does tell.self / ask.detail / answer.detail
 a : #turnshoe.capitalize# can make an old coat look deliberate. | Boots newly blacked ought to rest before stepping out.
 b : Does it work the other way? | Do they tire?
-a : Fine coats do little to explain a hole in a shoe. | The polish marks a carpet. I should be blamed for tiring the carpet.
+a : Fine coats do little to explain a hole in a shoe. | No, but wet polish marks a carpet. The rest is for the carpet's sake.
 
 scene summer_stone
 when topic=season here.season=summer
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say The latch is the final caller this evening.
 
-dlg resident.hub : There is a moment free before the next little necessity.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Your previous call left a favourable impression.
-dlg resident.hub [here.time=night] : Within earshot, if you please. We can spare the night a disturbance.
-dlg resident.hub [pair.disposition=hostile|wary] : Stand there and the room will hear only what is needed.
-dlg resident.job [self.job=servant] : My time is spent #self.trade_words#. I preserve the privacy which the work requires.
-dlg resident.job : The most satisfactory work is seldom noticed at the instant of completion.
-dlg resident.news [world.news] : Here is what reached my door from #world.news_from#: #world.news#.
-dlg resident.gossip [here.gossip=yes] : Private talk travels far too readily in a caller's ears. I prefer to give it a quiet room.
-dlg resident.bye : I hope your own latch gives no trouble when you arrive.
-
+dlg @1 resident.hub : There is a moment free before the next little necessity.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Your previous call left a favourable impression.
+dlg @3 resident.hub [here.time=night] : Within earshot, if you please. We can spare the night a disturbance.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stand there and the room will hear only what is needed.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. My days go to it, and I preserve the privacy the work requires.
+dlg @2 resident.job : The most satisfactory work is seldom noticed at the instant of completion.
+dlg @1 resident.news [world.news] : Here is what reached my door from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Private talk travels far too readily in a caller's ears. I prefer to give it a quiet room.
+dlg @1 resident.bye : I hope your own latch gives no trouble when you arrive.
 graft resident.hub
 choice Why hide the mark inside the jamb? -> inner_mark
 node inner_mark

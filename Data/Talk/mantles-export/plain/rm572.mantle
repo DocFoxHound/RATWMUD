@@ -1,9 +1,12 @@
+# rm572, the rook's footprint (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm572
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rmx_oda_marrowby
+written_by codex
 title the rook's footprint
 fits stage=adult|old
 prefers role=merchant job=baker
@@ -37,50 +40,49 @@ slipstone = the weight on my paper | a grey stone shaped like a plum
 emptyperch = the clean ledge of tile | a bare run of roof
 
 any
-opinion church for 1 : A proper chapel table can receive hot food as well as a pair of folded paws. I'd gladly fill a dish for it.
-opinion city for 1 : There's somebody here who wants each kind of crust I can make. Some even notice whose paw put the mark there.
-opinion dole for 2 : The best time to share a hot pie is when it's hot. The argument about a hungry wolf's circumstances will keep till after dinner.
-opinion road against 1 : Cool pastry tells me precisely how long a late delivery took. I'm losing confidence in the road's arrangements.
-opinion times against 2 : The flour takes a bit more of the price each time. I'd like there still to be room in the pie for a baker's supper.
-opinion watch for 1 : A busy counter serves the honest buyer better if a quick paw must think twice before going round behind it.
-opinion merchants mixed 1 : Marking the pie clearly is my half and paying the marked price is the buyer's. We can manage a decent arrangement that way.
-opinion houses mixed 0 : An impressive roof will keep rain off one side of a lane and drip it down the other. I look where I stand before admiring.
+opinion @1 church for 1 : A proper chapel table can receive hot food as well as a pair of folded paws. I'd gladly fill a dish for it.
+opinion @1 city for 1 : There's somebody here who wants each kind of crust I can make. Some even notice whose paw put the mark there.
+opinion @1 dole for 2 : The best time to share a hot pie is when it's hot. The argument about a hungry wolf's circumstances will keep till after dinner.
+opinion @1 road against 1 : Cool pastry tells me precisely how long a late delivery took. I'm losing confidence in the road's arrangements.
+opinion @1 times against 2 : The flour takes a bit more of the price each time. I'd like there still to be room in the pie for a baker's supper.
+opinion @1 watch for 1 : A busy counter serves the honest buyer better if a quick paw must think twice before going round behind it.
+opinion @1 merchants mixed 1 : Marking the pie clearly is my half and paying the marked price is the buyer's. We can manage a decent arrangement that way.
+opinion @1 houses mixed 0 : An impressive roof will keep rain off one side of a lane and drip it down the other. I look where I stand before admiring.
 
 grown
-line greet : There's a clean bit by the tray for your elbow.
-line greet [pair.band=strangers] : This way for the little track marks.
-line greet [here.time=dawn] : The roof birds have their aprons on early too.
-line greet [here.time=dusk|night] : Last light on the crimp. You caught me at a good minute.
-line greet [self.working=yes] : Stand back from the tray until I've got it settled.
-line kin.open [pair.kin!=no] : A home voice can have the warm corner here.
-line again.open : Back by the rook's toes again.
-line greet.return : Heard you above the first little hiss of gravy.
-line greet.return [pair.band=friends|family] : Take the warm side. I know that note in your voice.
-line greet.return [self.working=yes] : I'm just letting this tray have the counter. I heard you.
-line greet.return [here.time=dusk|night] : Very clear above the rim of my last warm tray.
-line farewell : Warm crust to the very last bite, I hope.
-line farewell.return : I'll leave a bird track on the next crust for luck.
-line farewell [here.time=dusk|night] : Keep to the light when you pass the square's unlit corner.
-line react.news : Which bit of that would have left a visible footprint?
-line react.news.new : That takes a clean place on my paper.
-line react.news.known : Same track with a little extra flour round it.
-line react.news.doubt : Could somebody point out the original mark to me?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could make a pie the household had only to warm.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd cut an extra little wing in a lid for that.
-line answer.how : Floury to the elbows and mostly easy in my mind.
-line answer.how [self.working=yes] : I've both wrists busy with a case that won't crimp itself.
-line ask.how : Did anything good come out of your day's baking?
-line sympathise : I'd make one ordinary thing easy while you carry the difficult part.
-line reassure : I've a warm ledge and time to listen between the batches.
-line decline : The oven's already taken my promise and it has a very particular clock.
-line accept_decline : My request can wait with the dough that isn't risen yet.
-line thank : You've made the next tray considerably easier to manage.
-line deflect_thanks : Give a hungry caller time to choose a decent portion.
-line preclose : There's a crust waiting for its three little toes.
-line preclose [self.working=yes] : That oven lip could use my attention now.
-line accept_preclose : Time enough for another word when the tray is cool.
-line ack : Nicely marked.
-
+line @1 greet : There's a clean bit by the tray for your elbow.
+line @2 greet [pair.band=strangers] : This way for the little track marks.
+line @3 greet [here.time=dawn] : The roof birds have their aprons on early too.
+line @4 greet [here.time=dusk|night] : Last light on the crimp. You caught me at a good minute.
+line @5 greet [self.working=yes] : Stand back from the tray until I've got it settled.
+line @1 kin.open [pair.kin!=no] : A home voice can have the warm corner here.
+line @1 again.open : Back by the rook's toes again.
+line @1 greet.return : Heard you above the first little hiss of gravy.
+line @2 greet.return [pair.band=friends|family] : Take the warm side. I know that note in your voice.
+line @3 greet.return [self.working=yes] : I'm just letting this tray have the counter. I heard you.
+line @4 greet.return [here.time=dusk|night] : Very clear above the rim of my last warm tray.
+line @1 farewell : Warm crust to the very last bite, I hope.
+line @1 farewell.return : I'll leave a bird track on the next crust for luck.
+line @2 farewell [here.time=dusk|night] : Keep to the light when you pass the square's unlit corner.
+line @1 react.news : Which bit of that would have left a visible footprint?
+line @1 react.news.new : That takes a clean place on my paper.
+line @1 react.news.known : Same track with a little extra flour round it.
+line @1 react.news.doubt : Could somebody point out the original mark to me?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could make a pie the household had only to warm.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd cut an extra little wing in a lid for that.
+line @1 answer.how : Floury to the elbows and mostly easy in my mind.
+line @2 answer.how [self.working=yes] : I've both wrists busy with a case that won't crimp itself.
+line @1 ask.how : Did anything good come out of your day's baking?
+line @1 sympathise : I'd make one ordinary thing easy while you carry the difficult part.
+line @1 reassure : I've a warm ledge and time to listen between the batches.
+line @1 decline : The oven's already taken my promise and it has a very particular clock.
+line @1 accept_decline : My request can wait with the dough that isn't risen yet.
+line @1 thank : You've made the next tray considerably easier to manage.
+line @1 deflect_thanks : Give a hungry caller time to choose a decent portion.
+line @1 preclose : There's a crust waiting for its three little toes.
+line @2 preclose [self.working=yes] : That oven lip could use my attention now.
+line @1 accept_preclose : Time enough for another word when the tray is cool.
+line @1 ack : Nicely marked.
 scene prints
 when topic=work self.job=baker self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -106,7 +108,7 @@ scene fish
 when topic=food self.likes=fried_fish
 does tell.self / ask.detail / answer.detail
 a : Fried fish is my first choice on a day when I've looked at more pastry than I want to meet at supper.
-b : Would you put it in a pie? | Which part do you take?
+b : Ever bake it under a crust? | Which part do you take?
 a : For a customer who asked, perhaps. My own part stays crisp in the butter and comes straight to the plate. | The edge that's gone brown while the middle stays tender. Then I get the contrast in a single bite.
 
 scene fulltill
@@ -211,7 +213,7 @@ scene secretnews
 when topic=news
 does tell.self / ask.detail / answer.detail
 a : A bit of talk can get from one counter to another with a whole extra set of feathers attached.
-b : Would you pass it on? | Where would you look for the change?
+b : Would you pass it on? | How do you spot the extra feathers?
 a : Only the part I had good cause to credit. I'd leave the feathers for the actual birds. | Ask two tellers which bit each heard directly. Often there's a much smaller but perfectly good body inside.
 
 scene hush
@@ -335,22 +337,22 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Strip the last loose crumb from the lip. | Let that empty tin have its own shelf.
-dlg resident.hub : You can see the track along the crust from here. There's a little warmth in this corner too.
-dlg resident.hub [topic.meeting=known] : You've stood by my marked trays before, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll keep the till to myself while you explain your visit briefly.
-dlg resident.hub [here.time=night] : The last of the oven heat should last one quiet conversation.
-dlg resident.job [self.job=baker] : #self.trade_words.capitalize#. I mark the lids so I can tell the fillings apart even in a busy spell.
-dlg resident.job : I can give a little food a sound roof and send it out while it's warm.
-dlg resident.news [world.news] : A bit of talk came over my counter quite plainly. #world.news#.
-dlg resident.news [world.event_words] : I heard mention of #world.event_words# between trays. I'll keep to the part I heard clearly.
-dlg resident.news [world.wagons=raided] : When wagons have been raided I need the actual deliveries before I can promise what I'll have to sell.
-dlg resident.gossip [here.gossip!=yes] : The little space under my stall cover contains pie tins and no private account for a passerby.
-dlg shop.greet [here.shop!=bare] : Welcome over to the stall. I'll describe whatever's available and what each mark represents.
-dlg shop.greet [here.shop=bare] : Nothing left to offer at the counter just now. The empty trays certainly had an industrious day.
-dlg shop.prices : Show me which purchase you're considering. I keep the price as plain to a caller as the filling.
-dlg shop.bye : Enjoy what you carry home before the evening takes its warmth.
-dlg resident.bye : Mind the projecting end of the tin as you leave.
 
+dlg @1 resident.hub : You can see the track along the crust from here. There's a little warmth in this corner too.
+dlg @2 resident.hub [topic.meeting=known] : You've stood by my marked trays before, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll keep the till to myself while you explain your visit briefly.
+dlg @4 resident.hub [here.time=night] : The last of the oven heat should last one quiet conversation.
+dlg @1 resident.job [self.job=baker] : #self.trade_words.capitalize#. I mark the lids so I can tell the fillings apart even in a busy spell.
+dlg @2 resident.job : I can give a little food a sound roof and send it out while it's warm.
+dlg @1 resident.news [world.news] : A bit of talk came over my counter quite plainly. #world.news#.
+dlg @2 resident.news [world.event_words] : I heard mention of #world.event_words# between trays. I'll keep to the part I heard clearly.
+dlg @3 resident.news [world.wagons=raided] : When wagons have been raided I need the actual deliveries before I can promise what I'll have to sell.
+dlg @1 resident.gossip [here.gossip!=yes] : The little space under my stall cover contains pie tins and no private account for a passerby.
+dlg @1 shop.greet [here.shop!=bare] : Welcome over to the stall. I'll describe whatever's available and what each mark represents.
+dlg @2 shop.greet [here.shop=bare] : Nothing left to offer at the counter just now. The empty trays certainly had an industrious day.
+dlg @1 shop.prices : Show me which purchase you're considering. I keep the price as plain to a caller as the filling.
+dlg @1 shop.bye : Enjoy what you carry home before the evening takes its warmth.
+dlg @1 resident.bye : Mind the projecting end of the tin as you leave.
 graft @rooksupper resident.hub
 choice Is that bird's foot meant to be on the pie? -> rooksupper
 node rooksupper

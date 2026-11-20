@@ -1,9 +1,12 @@
+# rm346, the blue detour (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm346
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_isolde_gullwick
+written_by codex
 title the blue detour
 fits stage=adult|old
 prefers job=herder
@@ -17,6 +20,7 @@ topics travel +0.6 animals +0.5 pastimes +0.4 weather +0.2
 styles comfort=quiet gossip=careful refuse=plain tease=none
 marks oath saying
 persona #self.first# marks the longer open way in blue and leaves an empty space on the map wherever a path disappears under branches.
+
 words
 oath! = Blot my blue line | Snag my clean cuff
 saying! = Leave sky above the route | Allow for one more gate
@@ -33,34 +37,32 @@ roadbend = a slender blue turn | a hooked line
 hardpad = a square of slate | a smooth writing board
 
 grown
-
-opinion road mixed 1 : A short road has no special claim on me if its trees blot out all the sky.
-opinion merchants mixed 1 : An honest map seller should say how many of those fine lines have been walked.
-opinion strangers for 1 : I'll mark a safe long way for a stranger and own what I don't know about the short one.
-opinion city mixed 1 : Fine streets keep time by a bell that hasn't ever had to close a field gate.
-opinion dole for 2 : A late arrival may have spent the whole day trying. Keep a hot portion back.
-opinion newcomers for 1 : A first journey deserves directions that allow a few minutes for weary feet.
-line greet : You've found me somewhere beyond the time I meant to arrive.
-line greet.return : Here after all, with both ears open.
-line greet [here.time=dawn] : Early light still. There's hope for my punctuality.
-line farewell : Choose the track with breathing space on either side.
-line farewell.return : I'll follow on at my ordinary thoughtful distance.
-line ask.how : Has the ground taken much out of your legs today?
-line answer.how : I'd be a little less tired if my plans weren't so far ahead.
-line thank : You gave the long way a chance to justify itself.
-line decline : I won't promise a time my own boots can't honour.
-line accept_decline : I'll leave your part of the map in pencil.
-line reassure : A turning missed can still be found from level ground.
-line sympathise : Let the path stretch itself out while your knees rest here.
-line react.news : I'll set that beside the older marks.
-line react.news.new : That puts a blue dot where there wasn't one.
-line react.news.known : I've been along that report once before.
-line react.news.doubt : That's a tidy line for a route nobody's shown me yet.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Worth crossing a whole field to bring word like that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : My other errands are welcome to wait for somebody hurting.
-line again.open : Our two crooked routes have met again.
-line ack : I can trace that in my head.
-
+opinion @1 road mixed 1 : A short road has no special claim on me if its trees blot out all the sky.
+opinion @1 merchants mixed 1 : An honest map seller should say how many of those fine lines have been walked.
+opinion @1 strangers for 1 : I'll mark a safe long way for a stranger and own what I don't know about the short one.
+opinion @1 city mixed 1 : Fine streets keep time by a bell that hasn't ever had to close a field gate.
+opinion @1 dole for 2 : A late arrival may have spent the whole day trying. Keep a hot portion back.
+opinion @1 newcomers for 1 : A first journey deserves directions that allow a few minutes for weary feet.
+line @1 greet : You've found me somewhere beyond the time I meant to arrive.
+line @1 greet.return : Here after all, with both ears open.
+line @2 greet [here.time=dawn] : Early light still. There's hope for my punctuality.
+line @1 farewell : Choose the track with breathing space on either side.
+line @1 farewell.return : I'll follow on at my ordinary thoughtful distance.
+line @1 ask.how : Has the ground taken much out of your legs today?
+line @1 answer.how : I'd be a little less tired if my plans weren't so far ahead.
+line @1 thank : You gave the long way a chance to justify itself.
+line @1 decline : I won't promise a time my own boots can't honour.
+line @1 accept_decline : I'll leave your part of the map in pencil.
+line @1 reassure : A turning missed can still be found from level ground.
+line @1 sympathise : Let the path stretch itself out while your knees rest here.
+line @1 react.news : I'll set that beside the older marks.
+line @1 react.news.new : That puts a blue dot where there wasn't one.
+line @1 react.news.known : I've been along that report once before.
+line @1 react.news.doubt : That's a tidy line for a route nobody's shown me yet.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Worth crossing a whole field to bring word like that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : My other errands are welcome to wait for somebody hurting.
+line @1 again.open : Our two crooked routes have met again.
+line @1 ack : I can trace that in my head.
 scene travel_1
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -228,13 +230,13 @@ when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say The blue belongs inside my coat till that fine wet passes. | Fine drops find the smallest crease.
-dlg resident.hub : Walk at my speed for a moment. I can spare the company more easily than the breath.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your turning's already marked in my memory.
-dlg resident.job [self.job=herder] : At #self.workplace# I've learnt that a herd chooses its own length of minute.
-dlg resident.news [world.news] : Here's what made the journey this far. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody's route to the story has #topic.subject# #topic.claim#. I've not walked that ground.
-dlg resident.bye : Give the long way its due if the short one troubles you.
 
+dlg @1 resident.hub : Walk at my speed for a moment. I can spare the company more easily than the breath.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your turning's already marked in my memory.
+dlg @1 resident.job [self.job=herder] : At #self.workplace# I've learnt that a herd chooses its own length of minute.
+dlg @1 resident.news [world.news] : Here's what made the journey this far. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody's route to the story has #topic.subject# #topic.claim#. I've not walked that ground.
+dlg @1 resident.bye : Give the long way its due if the short one troubles you.
 graft resident.hub
 choice Why go all the way round the wood? -> blue_long
 node blue_long

@@ -1,10 +1,12 @@
-# rm192, the drifting tally (doc 84 P14, batch city-a3): written for rm_mab_pitchcot (Mab Pitchcot: keeping the New Store, Ridgemere-born). The Commons: few words and prickly ones, a mind that wanders off to the window mid-count, content with a respectable post.
+# rm192, the drifting tally (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm192
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_mab_pitchcot
+written_by codex
 title the drifting tally
 fits stage=adult|old
 prefers job=merchant temper=short
@@ -36,52 +38,51 @@ sea = the sea | the open sea past the Sound
 leaf = a leaf | a red leaf
 
 any
-opinion city for 1 : This city's soot is in my fur and I'd not wash it out. Born here, staying. | Rain, smoke and bells. It's mine, every wet stone of it.
-opinion festivals mixed 1 : The bells, yes. Every peal. The spilling and the shouting after, no. | I'd have the morning of a feast and give somebody else the night.
-opinion houses for 1 : No Houses, no works. No works, and who'd buy my candles? I'll have no running-down of them over my counter. | A House name above the door and folk settle their slate on time. I like that.
-opinion newcomers for 1 : New faces buy things. I'm not proud. I'll sell to anybody who wipes their feet. | Somebody new is a door that wasn't there before. I'd sooner it opened than not.
-opinion strangers for 1 : Travellers fill the shop and bring me news I'd not get otherwise. | A traveller asking for string brightens my whole day, most days. I'll not pretend otherwise.
-opinion times for 1 : There's bread on our table and a sound roof over it. What else is there to want. | I've what I need. Some folk count what they haven't. I lose count of what I have.
-opinion drink mixed 0 : I'll take one festive cup. Not every night. | I've no quarrel with drink, only with the singing on my street after it.
+opinion @1 city for 1 : This city's soot is in my fur and I'd not wash it out. Born here, staying. | Rain, smoke and bells. It's mine, every wet stone of it.
+opinion @1 festivals mixed 1 : The bells, yes. Every peal. The spilling and the shouting after, no. | I'd have the morning of a feast and give somebody else the night.
+opinion @1 houses for 1 : No Houses, no works. No works, and who'd buy my candles? I'll have no running-down of them over my counter. | A House name above the door and folk settle their slate on time. I like that.
+opinion @1 newcomers for 1 : New faces buy things. I'm not proud. I'll sell to anybody who wipes their feet. | Somebody new is a door that wasn't there before. I'd sooner it opened than not.
+opinion @1 strangers for 1 : Travellers fill the shop and bring me news I'd not get otherwise. | A traveller asking for string brightens my whole day, most days. I'll not pretend otherwise.
+opinion @1 times for 1 : There's bread on our table and a sound roof over it. What else is there to want. | I've what I need. Some folk count what they haven't. I lose count of what I have.
+opinion @1 drink mixed 0 : I'll take one festive cup. Not every night. | I've no quarrel with drink, only with the singing on my street after it.
 
 grown
-line greet [pair.band=strangers] : #greet#. Have a look. Shout if you want something off the high shelf. | #greet#. You'll be new. Fine.
-line greet [self.working=yes] : #greet#. Hold on, I'm counting. Was. | #greet#. Don't talk till I've reached a round number.
-line greet [here.time=dawn] : Morning. Shutters only just up. | Morning. You're my first.
-line greet [here.time=dusk|night] : Evening. I'm about to put the bar across. | Evening. Be quick; I'm closing.
-line greet : #greet#. | #greet#. Call me away from the window any time.
-line greet.return : #greet#. I was miles away. | #greet#. Mm. Yes. Hello.
-line greet.return [pair.band=friends|family] : There. Have the sack by the barrel; it's clean. | You. Good. I wanted somebody who wouldn't talk much.
-line greet.return [self.working=yes] : #greet#. I've lost my count now. Never mind. | Hello. Talk; I'll start the tally again after.
-line kin.open [pair.kin!=no] : I've herring in the jar if you want some. | In you come. Door to, or the wind'll have the shelves.
-line again.open : Back. Fine. | You again. Same shelf, same count, near enough.
-line farewell : #farewell#. I've a tally to start again. | Right. #farewell#.
-line farewell [here.time=dusk|night] : Good night. I hope the street's quiet tonight. It won't be. | Good night. Go straight home; don't sing on the way.
-line farewell.return : #farewell#. | Go careful on the slick bits.
-line farewell.return [here.time=dusk|night] : Good night. Quietly, mind. | Night. Don't slam the gate.
-line react.news : Go on. I'm listening. Mostly. | Hm. Again, please. I was off at the window.
-line react.news.new : That's not been through my door. | News to me. The store always hears last.
-line react.news.known : Three customers brought me that already. | Old news. Customers had it to me days back.
-line react.news.doubt : Show me it on paper with a seal, then I'll believe it. | Sounds like a tale cooked up on a landing.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a wretched thing. I'm sorry. | Oh. Nothing clever comes to me. It's just sad.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. I hope there are bells. | Well. Something nice for a change. I'll drink to that, at supper.
-line answer.how : Content. Go ahead and laugh. I'm happy. | Well. Lost count twice already today, but well.
-line answer.how.busy [self.working=yes] : Busy. Counting. Was counting. | Deep in the tally. Neck deep.
-line ask.how : All well with you? | Keeping dry?
-line sympathise : That's hard. Have the stool by the stove, if you like. | I've nothing to say that helps. I'll sit with you, though.
-line reassure : Leave it seven days. Seven days sorts most things. | Start at one. It's how I manage.
-line decline : I'll not, thank you. The shop wants me and I've a tally half done. | Not today. I'd only drift off and be no use to you.
-line accept_decline : Fine. It doesn't matter. | All right. I won't ask again.
-line accept_preclose : Yes, off you go. I've a count to start. | Fine. Careful, that step's greasy.
-line thank : Thank you. That's stored away, that is. | That's good of you. Truly.
-line deflect_thanks : Nothing. No fuss, please. | No need. I'd have got round to it regardless.
-line preclose [self.working=yes] : Back to the shelves, before the count leaves me entirely. | That's me. The tally won't do itself.
-line preclose : Well. That's enough talking for me. | Right. I've things to stare at.
-line take_offence : I heard that. Don't think I didn't. | That was unkind, and it's going in the book.
-line tease.return : Hm. Very clever. | Laugh, then. I've thick fur.
-line ack : Mm. So it is. | Right, then.
-line give.advice : Write it down. Then you can stare out the window all you like. | Try a few salted kernels. Salt fixes most things.
-
+line @1 greet [pair.band=strangers] : #greet#. Have a look. Shout if you want something off the high shelf. | #greet#. You'll be new. Fine.
+line @2 greet [self.working=yes] : #greet#. Hold on, I'm counting. Was. | #greet#. Don't talk till I've reached a round number.
+line @3 greet [here.time=dawn] : Morning. Shutters only just up. | Morning. You're my first.
+line @4 greet [here.time=dusk|night] : Evening. I'm about to put the bar across. | Evening. Be quick; I'm closing.
+line @5 greet : #greet#. | #greet#. Call me away from the window any time.
+line @1 greet.return : #greet#. I was miles away. | #greet#. Mm. Yes. Hello.
+line @2 greet.return [pair.band=friends|family] : There. Have the sack by the barrel; it's clean. | You. Good. I wanted somebody who wouldn't talk much.
+line @3 greet.return [self.working=yes] : #greet#. I've lost my count now. Never mind. | Hello. Talk; I'll start the tally again after.
+line @1 kin.open [pair.kin!=no] : I've herring in the jar if you want some. | In you come. Door to, or the wind'll have the shelves.
+line @1 again.open : Back. Fine. | You again. Same shelf, same count, near enough.
+line @1 farewell : #farewell#. I've a tally to start again. | Right. #farewell#.
+line @2 farewell [here.time=dusk|night] : Good night. I hope the street's quiet tonight. It won't be. | Good night. Go straight home; don't sing on the way.
+line @1 farewell.return : #farewell#. | Go careful on the slick bits.
+line @2 farewell.return [here.time=dusk|night] : Good night. Quietly, mind. | Night. Don't slam the gate.
+line @1 react.news : Go on. I'm listening. Mostly. | Hm. Again, please. I was off at the window.
+line @1 react.news.new : That's not been through my door. | News to me. The store always hears last.
+line @1 react.news.known : Three customers brought me that already. | Old news. Customers had it to me days back.
+line @1 react.news.doubt : Show me it on paper with a seal, then I'll believe it. | Sounds like a tale cooked up on a landing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a wretched thing. I'm sorry. | Oh. Nothing clever comes to me. It's just sad.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That's good. I hope there are bells. | Well. Something nice for a change. I'll drink to that, at supper.
+line @1 answer.how : Content. Go ahead and laugh. I'm happy. | Well. Lost count twice already today, but well.
+line @1 answer.how.busy [self.working=yes] : Busy. Counting. Was counting. | Deep in the tally. Neck deep.
+line @1 ask.how : All well with you? | Keeping dry?
+line @1 sympathise : That's hard. Have the stool by the stove, if you like. | I've nothing to say that helps. I'll sit with you, though.
+line @1 reassure : Leave it seven days. Seven days sorts most things. | Start at one. It's how I manage.
+line @1 decline : I'll not, thank you. The shop wants me and I've a tally half done. | Not today. I'd only drift off and be no use to you.
+line @1 accept_decline : Fine. It doesn't matter. | All right. I won't ask again.
+line @1 accept_preclose : Yes, off you go. I've a count to start. | Fine. Careful, that step's greasy.
+line @1 thank : Thank you. That's stored away, that is. | That's good of you. Truly.
+line @1 deflect_thanks : Nothing. No fuss, please. | No need. I'd have got round to it regardless.
+line @1 preclose [self.working=yes] : Back to the shelves, before the count leaves me entirely. | That's me. The tally won't do itself.
+line @2 preclose : Well. That's enough talking for me. | Right. I've things to stare at.
+line @1 take_offence : I heard that. Don't think I didn't. | That was unkind, and it's going in the book.
+line @1 tease.return : Hm. Very clever. | Laugh, then. I've thick fur.
+line @1 ack : Mm. So it is. | Right, then.
+line @1 give.advice : Write it down. Then you can stare out the window all you like. | Try a few salted kernels. Salt fixes most things.
 scene back_to_one
 when topic=work|day self.working=yes
 does tell.self / react.self / assess
@@ -274,15 +275,14 @@ does aside
 cooldown 10h
 say Another cart. Of course. | Roll home to bed and give my ears a rest.
 
-dlg resident.hub : #greet#. Yes? | #greet#. Quick, please; I'm mid-count.
-dlg resident.hub [topic.meeting=known] : #topic.player#. You again. Good. | #greet#, #topic.player#. I'd lost count anyway.
-dlg resident.hub [here.time=night] : It's late. I'm putting the bar across. Quickly. | We're shut, near enough. What is it?
-dlg resident.hub [pair.disposition=hostile|wary] : Say it plain and go. | That's close enough. My ears work.
-dlg resident.job [self.job=merchant] : I keep #self.workplace#. Candles, soap, string, herring. And the tally, when I can keep my mind on it. | #self.trade_words.capitalize#. Respectable work. I like it.
-dlg resident.job : #self.trade_words.capitalize#. It suits me. | I count things and look out the window. Somebody has to.
-dlg resident.bye : #farewell#. | #farewell#. I'll go back to counting.
-dlg resident.bye [here.time=dusk|night] : Good night. No singing under my window. | Night. Mind the wet.
-
+dlg @1 resident.hub : #greet#. Yes? | #greet#. Quick, please; I'm mid-count.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You again. Good. | #greet#, #topic.player#. I'd lost count anyway.
+dlg @3 resident.hub [here.time=night] : It's late. I'm putting the bar across. Quickly. | We're shut, near enough. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Say it plain and go. | That's close enough. My ears work.
+dlg @1 resident.job [self.job=merchant] : I keep #self.workplace#. Candles, soap, string, herring. And the tally, when I can keep my mind on it. | #self.trade_words.capitalize#. Respectable work. I like it.
+dlg @2 resident.job : #self.trade_words.capitalize#. It suits me. | I count things and look out the window. Somebody has to.
+dlg @1 resident.bye : #farewell#. | #farewell#. I'll go back to counting.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. No singing under my window. | Night. Mind the wet.
 graft resident.hub
 choice Why do you keep starting your count again? -> recount
 node recount

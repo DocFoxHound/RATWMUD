@@ -1,9 +1,12 @@
+# rm381, the dipping-cup boat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm381
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_roald_toft
+written_by codex
 title the dipping-cup boat
 fits stage=adult|old
 prefers job=merchant
@@ -35,35 +38,34 @@ chip = a pale shaving | a twist of wood
 lip = a raised rim | a worn brim
 
 any
-opinion watch against 1 : Clean water goes cloudy with surprisingly little stirred up from below. I reserve judgement about clean uniforms too.
-opinion houses mixed 1 : Fine doors can shut away more than steam. I like particulars before I speak.
-opinion dole for 1 : Warmth and food both get into a wolf more easily through an open door.
-opinion strangers for 1 : A dry towel can be offered before learning somebody's whole history.
-opinion city for 1 : A city that makes room for washing and for dreaming is tolerably well arranged.
-opinion merchants mixed 1 : Respectable work doesn't absolve a seller from giving the actual measure.
+opinion @1 watch against 1 : Clean water goes cloudy with surprisingly little stirred up from below. I reserve judgement about clean uniforms too.
+opinion @1 houses mixed 1 : Fine doors can shut away more than steam. I like particulars before I speak.
+opinion @1 dole for 1 : Warmth and food both get into a wolf more easily through an open door.
+opinion @1 strangers for 1 : A dry towel can be offered before learning somebody's whole history.
+opinion @1 city for 1 : A city that makes room for washing and for dreaming is tolerably well arranged.
+opinion @1 merchants mixed 1 : Respectable work doesn't absolve a seller from giving the actual measure.
 
 grown
-line greet : There's a dry corner by my humming. | Welcome in a lower voice.
-line greet.return : And a little warmth round your greeting.
-line again.open : Come round the cup again already.
-line farewell : A dry landing when your next journey ends. | Keep the wind off your wet sleeve.
-line farewell.return : I'll return your wish with the towel still warm.
-line react.news : Tell it in air clear of steam. | I'll let the tune fall quiet.
-line react.news.new : I hadn't heard that beneath the tune.
-line react.news.known : I know the waterline on that account.
-line react.news.doubt : Something in that telling won't float straight.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'll keep the little boats still for news of a loss.
-line react.news.glad [topic.kind=birth|marriage|work] : That's a light piece of news to carry.
-line ask.how : Did the day leave a moment for your own thoughts?
-line answer.how : I'm afloat with a quiet bit of room.
-line sympathise : You can sit without having to whistle up a reason.
-line reassure : A small vessel can right itself once the water settles.
-line refuse : I've something in my keeping that needs attention first.
-line accept_decline : Quite understood. Your time hasn't been taken on hire.
-line preclose : I'd best attend to my bit of dry business.
-line accept_preclose : Go while you can still walk at your own speed.
-line ack : Yes. Quite clear below the surface.
-
+line @1 greet : There's a dry corner by my humming. | Welcome in a lower voice.
+line @1 greet.return : And a little warmth round your greeting.
+line @1 again.open : Come round the cup again already.
+line @1 farewell : A dry landing when your next journey ends. | Keep the wind off your wet sleeve.
+line @1 farewell.return : I'll return your wish with the towel still warm.
+line @1 react.news : Tell it in air clear of steam. | I'll let the tune fall quiet.
+line @1 react.news.new : I hadn't heard that beneath the tune.
+line @1 react.news.known : I know the waterline on that account.
+line @1 react.news.doubt : Something in that telling won't float straight.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'll keep the little boats still for news of a loss.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's a light piece of news to carry.
+line @1 ask.how : Did the day leave a moment for your own thoughts?
+line @1 answer.how : I'm afloat with a quiet bit of room.
+line @1 sympathise : You can sit without having to whistle up a reason.
+line @1 reassure : A small vessel can right itself once the water settles.
+line @1 refuse : I've something in my keeping that needs attention first.
+line @1 accept_decline : Quite understood. Your time hasn't been taken on hire.
+line @1 preclose : I'd best attend to my bit of dry business.
+line @1 accept_preclose : Go while you can still walk at your own speed.
+line @1 ack : Yes. Quite clear below the surface.
 scene exchange1
 when topic=work self.job=merchant self.workplace
 does tell.self / ask.detail / answer.detail
@@ -82,8 +84,8 @@ scene exchange3
 when topic=food self.likes=pickled_herring
 does tell.self / ask.detail / answer.detail
 a : A herring curled up in vinegar reminds me of a small harbour. | I like pickled fish after steam.
-b : Does your boat go there? | A sharper taste?
-a : Only if a bit of crust can sail. | A very clear one. The tongue wakes first.
+b : Which part is the harbour? | A sharper taste?
+a : The curl. The vinegar sits inside it like water at a quay. | A very clear one. The tongue wakes first.
 
 scene exchange4
 when topic=pastimes self.likes=festival_bells
@@ -231,16 +233,16 @@ when concept=bark self.likes=whittling
 does aside
 cooldown 8h
 say Another thin shaving off the stubborn side. | Beautiful grain for a very modest voyage.
-dlg resident.hub : I've brought my thoughts back to the landing to hear you.
-dlg resident.hub [topic.meeting=known] : #topic.player#, a known voice above the sound of the cup.
-dlg resident.hub [here.time=night] : My knife is put away, so there's time for talk.
-dlg resident.hub [pair.disposition=wary|hostile] : I can be plain without putting my private pages out for inspection.
-dlg resident.job [self.job=merchant] : I work at #self.workplace#. Warm water, ready cloth and decent footing all take attention.
-dlg resident.job : I prefer work where my hands and my intentions are equally clean.
-dlg resident.news [world.news] : The words I heard through the steam were #world.news#.
-dlg resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. That's the whole extent of what I'm prepared to pass.
-dlg resident.bye : A sheltered, level bit of pavement home to you.
 
+dlg @1 resident.hub : I've brought my thoughts back to the landing to hear you.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a known voice above the sound of the cup.
+dlg @3 resident.hub [here.time=night] : My knife is put away, so there's time for talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can be plain without putting my private pages out for inspection.
+dlg @1 resident.job [self.job=merchant] : I work at #self.workplace#. Warm water, ready cloth and decent footing all take attention.
+dlg @2 resident.job : I prefer work where my hands and my intentions are equally clean.
+dlg @1 resident.news [world.news] : The words I heard through the steam were #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. That's the whole extent of what I'm prepared to pass.
+dlg @1 resident.bye : A sheltered, level bit of pavement home to you.
 graft resident.hub
 choice How do you test a pocket ship? -> small_hull
 node small_hull

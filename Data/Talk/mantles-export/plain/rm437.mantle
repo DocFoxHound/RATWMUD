@@ -1,9 +1,12 @@
+# rm437, smoke above ruled water (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm437
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_rune_gullwell
+written_by codex
 title smoke above ruled water
 fits stage=adult|old
 prefers job=scholar
@@ -54,14 +57,14 @@ opinion @9 festivals against 1 : A day when the street is full offers a remarkab
 grown
 line @1 greet [pair.band=strangers] : A civil introduction may take place here beside the closed book. | That is a suitable distance from which to introduce your errand.
 line @2 greet [here.time=dawn] : Morning. A legible hour before the crowds arrive. | The first of the light is very well suited to short business.
-line @3 greet [here.weather=fog] : Welcome into a more distinct outline. | I can see the visitor quite well at this distance.
+line @3 greet [here.weather=fog] : Ah, a shape in the fog turns into a visitor. Welcome. | Closer is better in this murk. Welcome.
 line @4 greet [self.working=yes] : Take the clear place at the desk's outer corner. | I have reached an appropriate break in the account.
-line @5 greet.return : The greeting has reached me in suitable order. | Your civility has a corresponding entry.
+line @5 greet.return : And to you. Briefly, if it suits. | Yes, yes. Yours is noted, and here's mine.
 line @6 greet.return [pair.band=friends|family] : A known visitor may have the quieter chair. | I can set my pencil down for that voice.
 line @7 greet.return [here.time=dusk|night] : An evening call, with the books already shut. Welcome. | Good. The lamps need serve only our faces for the moment.
 line @8 farewell : Keep a sound margin between your boots and the water. | May any remaining business be efficiently concluded.
-line @9 farewell.return : Your departure is quite in order. | I shall put the place back in readiness.
-line @10 again.open : You appear on the next working slip as well. | A second meeting in the same clear reach.
+line @9 farewell.return : Go carefully, then. | I'll put the chair back as it was. Farewell.
+line @10 again.open : A second meeting so soon. I shall note it as a coincidence. | You again. The day is running to pattern.
 line @11 kin.open [pair.kin!=no] : The private seat is open to our family. | Come to the side reserved for matters of the household.
 line @12 hail [pair.band=friends] : The quiet chair at this end! | Over at the clear patch of bank!
 line @13 react.news : I should like the particulars without the smoky embellishment. | State the known depth before estimating the whole reach.
@@ -70,20 +73,19 @@ line @15 react.news.known : I have the entry in a somewhat earlier hand. | The o
 line @16 react.news.doubt : The claim appears to rest on rather shallower evidence than advertised. | I should decline to sign for that total on the material offered.
 line @17 react.news.sorrow [topic.kind=death|loss|assault] : Let the account rest. There is a living grief to attend to. | A seat is available. No particulars need accompany the taking of it.
 line @18 react.news.glad [topic.kind=birth|marriage] : That is welcome news and may quite properly stay in the light. | An entry worth maintaining in a clear and permanent hand.
-line @19 answer.how : The surface is calm where I am standing. | Proceeding within my own tolerances, thank you.
+line @19 answer.how : Calm enough. The figures are behaving, for now. | Well enough, within my usual tolerances.
 line @20 decline : I am already committed to an undertaking that occupies my available margin. | There is insufficient clarity for me to make that an acceptable obligation.
-line @21 accept_decline : Then the proposed entry may stay blank. | I understand the precise extent of your refusal.
+line @21 accept_decline : Then the proposed entry may stay blank. | Understood. I shan't press it.
 line @22 sympathise : There is a dry seat here where no one need state a reason for resting. | The room has a sheltered corner you may occupy awhile.
 line @23 thank : The assistance was precise and well timed. | I'll keep a quite distinct record of that kindness.
 line @24 deflect_thanks : It was a small correction to an untidy arrangement. | My part may be left out of the public account.
 line @25 preclose : I must secure my final working sheet. | There is a short distance of private daylight left to me.
-line @26 accept_preclose : Take your leave while our arrangement is quite clear. | The remainder of your commitments may have you.
+line @26 accept_preclose : Take your leave while our arrangement is quite clear. | Go on, then. Your other business is waiting.
 line @27 farewell [here.weather=rain] : Protect the bound edge from the damp outdoors. | I wish your papers a clean dry passage.
-line @28 answer.how [self.working=yes] : The day and its figures are behaving with reasonable decorum. | A matter requiring attention is receiving exactly that.
+line @28 answer.how [self.working=yes] : The day and its figures are behaving with reasonable decorum. | Occupied. One column is refusing to agree with the other.
 line @29 greet [pair.band=friends] : Here is a voice for whom the desk can be closed. | The chair has been kept in its accustomed place.
 line @30 preclose [here.time=dusk] : I prefer to finish the fine strokes before artificial light is necessary. | I'll place the pen in its proper hook now.
-line @31 farewell [here.time=night] : A quiet room beyond the reach of the traffic. | Sleep behind a secure and considerate latch.
-
+line @31 farewell [here.time=night] : Good night. May your room be quieter than the street. | Sleep well, and check the latch.
 scene waterline
 when topic=pastimes self.likes=swimming
 does tell.self / ask.detail / answer.detail
@@ -173,7 +175,7 @@ when topic=friends self.friend
 does offer / accept / assess
 a : A clean towel by the bank would be my first provision for #self.friend#. This dry corner is yours for the present. | I can set aside #loaf# for #self.friend#. There is enough remaining for you to try the near end.
 b : I should not like to intrude upon the reserved portion.
-a : It is quite separate. Standing on a dry board occasions no damage to another folded towel. | It is a loaf and not a loan. The cut I offer is available without reference to my private plans.
+a : It is quite separate. There's a second towel for the bank, and this one is yours. | It is a loaf and not a loan. Take the near end, and nobody need keep count.
 
 scene office
 when topic=land self.quarter=office
@@ -234,9 +236,9 @@ a : Certainly. The pleasure would be deciding which count deserved recording aft
 scene wetpages
 when topic=work
 does ask.advice / give.advice / assess
-a : How should one treat an untouched figure alongside an entry obliterated by damp? | How could you reconstruct a receipt where a corner has been lifted away by the wet?
-b : Look for the corresponding entry in an independent record.
-a : Good. An accurate neighbour is no instruction to invent the missing numeral. | Precisely. A partial match can identify the likely entry, then the original can confirm the sum.
+a : Half of today's receipts came in with the damp through them. How would you recover a figure that's gone entirely? | The rain lifted a corner clean off a receipt this morning, figure and all. Where would you look for it?
+b : Look for the same entry in somebody else's book.
+a : The merchant's copy, yes. Better to ask for it than guess the missing numeral. | Sensible. A partial match can point to the likely entry, then the original can confirm the sum.
 
 scene breadshape
 when topic=food
@@ -285,7 +287,7 @@ when topic=smalltalk
 does offer / accept / assess
 a : Take the blotting square while I turn the leaf. The empty desk space below it is quite dry. | I can lend #cloth# to keep the damp from your working page.
 b : Wouldn't the trace of ink make a nuisance of my paper?
-a : Use the folded side. It has not previously been offered that occupation. | It's an unused square. I prefer not to invite anyone to repeat yesterday's mistake in another hand.
+a : Use the folded side. That one is still clean. | It's an unused square. I prefer not to invite anyone to repeat yesterday's mistake in another hand.
 
 scene homehill
 when topic=dreams
@@ -367,7 +369,7 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Nothing on this desk requi
 dlg @5 resident.job [self.job=scholar self.workplace] : I keep accounts at #self.workplace#. A correct transfer is more valuable than a persuasive description of one.
 dlg @6 resident.job : I compare what has actually arrived with what a neat account would have me believe.
 dlg @7 resident.news [world.news] : The account reaches me in this form. #world.news#
-dlg @8 resident.bye : I trust you have the information to which your errand entitles you.
+dlg @8 resident.bye : Farewell. I trust you have what you came for.
 dlg @9 master.learn [here.teaches=yes] : A place is open to learn the work. Begin by stating which part of a simple entry you can verify.
 dlg @10 master.learn [here.teaches=no] : I cannot undertake a fresh pupil under the current arrangement. A precise question can still be heard.
 dlg @11 master.work : Following sources, maintaining an orderly copy and correcting a discrepancy without concealing the original entry.
@@ -375,7 +377,6 @@ dlg @12 master.wages : Learners receive no wages. What you produce may be sold; 
 dlg @13 master.takes [here.take_on=no] : #here.take_on_why# That is the operative limit at present.
 dlg @14 master.refused : #topic.why# I should prefer the reason understood in its precise form.
 dlg @15 master.bye : Put the practice sheet apart from anything that will be entered as a final account.
-
 graft resident.hub
 choice Does the margin really show a swimming place? -> ruled_lane
 node ruled_lane

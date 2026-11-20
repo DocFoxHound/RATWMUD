@@ -1,9 +1,12 @@
+# rm483, the sergeant's spare bowl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm483
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_bettany_nailley
+written_by codex
 title the sergeant's spare bowl
 fits stage=adult|old
 prefers job=guard
@@ -41,48 +44,47 @@ badge = the mark of duty | a shoulder badge
 gutter = the street drain | a broad gutter
 
 any
-opinion dole for 3 : A ladle scraping an empty pot sounds very different to a wolf whose bowl is still empty.
-opinion watch for 1 : The quiet voice has as much right to finish speaking as the loud one. I want a watch that hears both.
-opinion houses against 3 : A tally of returned cargo cannot tell me that every place at a wharf supper was filled again.
-opinion church for 1 : A decent service leaves space to be sore without making an exhibit of the sorrow.
-opinion sump for 2 : We can set a spare bowl down here without first holding a meeting over who is coming.
-opinion strangers for 1 : A stranger needn't know which door to knock on for me to point out the latch.
-opinion merchants mixed 1 : I like a seller who turns the sum to face the payer.
-opinion festivals for 1 : A street can sound cheerful without having to sound orderly at every instant.
-opinion times against 2 [world.times=lean|hard] : Too many wolves remember exactly what they owe because the cupboard has space for little else.
+opinion @1 dole for 3 : A ladle scraping an empty pot sounds very different to a wolf whose bowl is still empty.
+opinion @1 watch for 1 : The quiet voice has as much right to finish speaking as the loud one. I want a watch that hears both.
+opinion @1 houses against 3 : A tally of returned cargo cannot tell me that every place at a wharf supper was filled again.
+opinion @1 church for 1 : A decent service leaves space to be sore without making an exhibit of the sorrow.
+opinion @1 sump for 2 [self.quarter=sump] : We can set a spare bowl down here without first holding a meeting over who is coming.
+opinion @1 strangers for 1 : A stranger needn't know which door to knock on for me to point out the latch.
+opinion @1 merchants mixed 1 : I like a seller who turns the sum to face the payer.
+opinion @1 festivals for 1 : A street can sound cheerful without having to sound orderly at every instant.
+opinion @1 times against 2 [world.times=lean|hard] : Too many wolves remember exactly what they owe because the cupboard has space for little else.
 
 grown
-line greet : Come round to my warm shelf. | I've time to hear an ordinary voice.
-line greet.return : Your welcome goes down in a kindly column.
-line again.open : Back before the spare bowl's cold.
-line farewell : Safe home to a light you know. | Keep a little ease in your shoulders on the way.
-line farewell.return : A decent doorway at your own journey's end.
-line react.news : Let me hear it where the account began. | Speak until you've said your piece.
-line react.news.new : First mark of that I've seen.
-line react.news.known : I remember the earlier telling very clearly.
-line react.news.doubt : I'm leaving a gap beside that claim for what we haven't heard.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd take the first watch beside that hurt.
-line react.news.glad [topic.kind=birth|marriage|work] : There's a bright place at table for such news.
-line ask.how : Anything you need to set down before you start?
-line answer.how : Steady. Whoever comes next gets both ears.
-line sympathise : Tell as much as you have breath for.
-line reassure : I've known courage come up quietly after a warm bite.
-line refuse : I have another wolf's time already in my keeping.
-line accept_decline : That answer can stand without my pushing at it.
-line preclose : I should pay the next bit of time where it's owed.
-line accept_preclose : Go finish the good thing you set out to do.
-line ack : Every piece of that account has landed.
-line greet [here.time=dawn] : One quiet welcome before the louder bell.
-line greet [pair.band=strangers] : A fresh face has a full turn to speak here.
-line greet [here.time=night] : Welcome while there's a little lamp light left.
-line greet.return [pair.band=friends] : I'd always keep some warm bench for that familiar voice.
-line hail [pair.band=friends] : Round here by the low light, there's a place!
-line thank : A favour like that goes on the shelf beside my own bowl.
-line deflect_thanks : I had the hour and you had a use for it.
-line give.advice : Start with what you actually saw. Give doubt its own bit of paper.
-line answer.how.busy [self.working=yes] : A few voices are waiting, but no voice need rush its last word.
-line ask.how [pair.band=friends] : Have the low streets been treating your feet kindly?
-
+line @1 greet : Come round and sit. I'll shift along. | Good to see you. I've a minute free.
+line @1 greet.return : Back again. I'd hoped you might be.
+line @1 again.open : Back before the spare bowl's cold.
+line @1 farewell : Safe home to a light you know. | Keep a little ease in your shoulders on the way.
+line @1 farewell.return : A decent doorway at your own journey's end.
+line @1 react.news : Let me hear it where the account began. | Speak until you've said your piece.
+line @1 react.news.new : First mark of that I've seen.
+line @1 react.news.known : I remember the earlier telling very clearly.
+line @1 react.news.doubt : I'm leaving a gap beside that claim for what we haven't heard.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd take the first watch beside that hurt.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : There's a bright place at table for such news.
+line @1 ask.how : Anything you need to set down before you start?
+line @1 answer.how : Steady. Whoever comes next gets both ears.
+line @1 sympathise : Tell as much as you have breath for.
+line @1 reassure : I've known courage come up quietly after a warm bite.
+line @1 refuse : I have another wolf's time already in my keeping.
+line @1 accept_decline : That answer can stand without my pushing at it.
+line @1 preclose : I should pay the next bit of time where it's owed.
+line @1 accept_preclose : Go finish the good thing you set out to do.
+line @1 ack : Every piece of that account has landed.
+line @2 greet [here.time=dawn] : One quiet welcome before the louder bell.
+line @3 greet [pair.band=strangers] : A fresh face has a full turn to speak here.
+line @4 greet [here.time=night] : Welcome while there's a little lamp light left.
+line @2 greet.return [pair.band=friends] : I'd always keep some warm bench for that familiar voice.
+line @1 hail [pair.band=friends] : Round here by the low light, there's a place!
+line @1 thank : A favour like that goes on the shelf beside my own bowl.
+line @1 deflect_thanks : I had the hour and you had a use for it.
+line @1 give.advice : Start with what you actually saw. Give doubt its own bit of paper.
+line @1 answer.how.busy [self.working=yes] : A few voices are waiting, but no voice need rush its last word.
+line @2 ask.how [pair.band=friends] : Have the low streets been treating your feet kindly?
 scene exchange1
 when topic=work self.job=guard
 does tell.self / ask.detail / answer.detail
@@ -93,9 +95,9 @@ a : Afraid I'll write the ending I expected. | A wolf coming in shaken needn't s
 scene exchange2
 when topic=memories
 does tell.self / ask.detail / answer.detail
-a : I remember kindnesses as empty bowls waiting on a shelf. | My old accounts have a large gap for the wharf.
-b : Whose goes first? | Does a sum go there?
-a : The one that can go back full today. | A wolf went there. No sum can fill that place.
+a : I remember kindnesses as empty bowls waiting on a shelf. | My old tallies have one line I never closed.
+b : Whose goes first? | Is something still owed on it?
+a : The one that can go back full today. | Not in coin. A wolf went missing off the wharf once, and no sum fills that.
 
 scene exchange3
 when topic=food self.likes=pickled_herring
@@ -107,9 +109,9 @@ a : A very dead fish can still salt three innocent cuffs. | It comes out first. 
 scene exchange4
 when topic=pastimes self.likes=stars
 does tell.self / ask.detail / answer.detail
-a : I name a kindness to myself when a star first shows. | A clear sky gives the headland more neighbours.
-b : Enough stars for all of them? | Lights across the water?
-a : Often well past bedtime before I'm done. | Lights farther off than any journey on my list.
+a : I name a kindness to myself when a star first shows. | On clear nights I walk home slowly with my muzzle tipped up.
+b : Enough stars for all of them? | Even in the cold?
+a : Often well past bedtime before I'm done. | The cold usually turns me round before the stars run out.
 
 scene exchange5
 when topic=home self.likes=full_larder
@@ -130,14 +132,14 @@ when topic=day self.dislikes=early_bells
 does tell.self / ask.detail / answer.detail
 a : An early bell wakes every debt I've ever remembered. | I'd happily miss the first clang of the morning.
 b : All needing answers at once? | What about the second?
-a : Fortunately the bell cannot tell my bowls apart. | By then I've admitted there's a morning.
+a : All of them, and none willing to wait its turn. | By then I've admitted there's a morning.
 
 scene exchange8
 when topic=animals self.dislikes=flies
 does tell.self / ask.detail / answer.detail
-a : A fly can locate my herring through two thoughts and a towel. | I turn an empty bowl over.
-b : A gifted investigator? | No food to keep safe.
-a : One with dreadful regard for private property. | The flies would get their little feet on the inside all the same.
+a : A fly can find my herring through a lid and a towel. | I turn an empty bowl over the jar before I sit down.
+b : A gifted investigator? | Does that keep them off?
+a : One with no regard at all for whose supper it is. | Mostly. One always finds the chip in the rim.
 
 scene exchange9
 when topic=faith
@@ -150,8 +152,8 @@ scene exchange10
 when topic=friends self.friend
 does tell.self / ask.detail / answer.detail
 a : I'd trust #self.friend# with a sore account still unfinished. | I'd keep a seat facing the stars for a friend.
-b : Which favour would repay it? | Where would you look?
-a : A little patience while I find the proper end. | At a familiar face getting a little rest.
+b : Which favour would repay it? | And where would you sit?
+a : A little patience while I find the proper end. | Facing the friend. I've seen the stars before.
 
 scene exchange11
 when topic=work self.role=guard self.workplace
@@ -177,7 +179,7 @@ a : Who's had to manage without enough. That's the count I want. | Not in the st
 scene exchange14
 when topic=travel
 does tell.self / ask.detail / answer.detail
-a : I like coming home by the headland's shadowed side. | I can count my route by the smells of supper.
+a : I like coming home along the unlit edge of the street. | I can count my route by the smells of supper.
 b : A gloomy walk? | Which one means home?
 a : Far better for the stars than the side with windows. | The vinegar at the last turn has a particularly familiar bite.
 
@@ -226,9 +228,9 @@ a : A free paw is worth a surprising amount in an unfamiliar room. | Letters rep
 scene exchange21
 when topic=home
 does tell.self / ask.detail / answer.detail
-a : I don't set my private tablets on the breadboard. | My pantry light reaches the threshold.
-b : Do they take the taste of food? | For seeing late visitors?
-a : I want the table free of obligations long enough for supper. | For letting them see that setting a foot inside is welcome.
+a : I don't bring my work to the supper table. | My pantry light reaches the threshold.
+b : Not even a little of it? | For seeing late visitors?
+a : Not a scrap. The table stays free of obligations long enough to eat. | For letting them see that a foot inside is welcome.
 
 scene exchange22
 when topic=food self.likes=pickled_herring
@@ -241,8 +243,8 @@ scene exchange23
 when topic=memories
 does tell.self / ask.detail / answer.detail
 a : I remember a kindness in its giver's voice. | A wharf can be busy enough to hide a very empty place.
-b : What if a voice changes? | At work?
-a : Then the kindness has two ways to call me back. | Come nightfall, where a familiar bowl should stand.
+b : What if a voice changes? | Busy how?
+a : Then the kindness has two ways to call me back. | Crowds at the cranes all day. Come nightfall you notice who isn't at supper.
 
 scene exchange24
 when topic=season
@@ -358,24 +360,24 @@ when concept=bark self.likes=full_larder
 does aside
 cooldown 8h
 say A little space among the full pots for a visitor's parcel. | That's a comfortable sound off the pantry shelf.
-dlg resident.hub : Say what brings you in without hurrying the first part.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember more than a name against an entry.
-dlg resident.hub [here.time=night] : Late business and early worry can share the lamp for a minute.
-dlg resident.hub [pair.disposition=wary|hostile] : You're entitled to hear what I'm asking and why.
-dlg resident.job [self.job=guard] : I serve the Watch. The rank on the coat hasn't taken away the duty of listening to the last wolf in line.
-dlg resident.job : I keep account of what I've promised and make room for the next voice.
-dlg resident.news [world.news] : The public report that came to me is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The word reported was #topic.subject# #topic.claim#. That's a matter of hearing rather than witnessing.
-dlg resident.bye : Come away with the account clearer and the walk a little lighter.
-dlg watch.hub [here.wanted=yes] : There's a Watch matter standing against you. The sum entered is #here.fine# pennies. You can ask me about it.
-dlg watch.hub [here.wanted=no on_watch=yes] : I'm on duty and ready to hear what you need from the Watch.
-dlg watch.hub [here.wanted=no on_watch=no] : I'm off watch. I can give an ordinary question an ordinary hearing.
-dlg watch.crime [here.witnessed=0] : Tell me in your own words what you saw. I won't put a line down before you start.
-dlg watch.reported [topic.reported=yes] : Your report's entered. The particulars you gave are part of the record.
-dlg watch.fine [here.wanted=no] : Your account with the Watch stands clear. That's a short and very decent entry.
-dlg watch.fine [here.wanted=yes] : The Watch account currently records #here.fine# pennies against you.
-dlg watch.bye : Walk out in good order and find a quiet roof.
 
+dlg @1 resident.hub : Say what brings you in without hurrying the first part.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember more than a name against an entry.
+dlg @3 resident.hub [here.time=night] : Late business and early worry can share the lamp for a minute.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You're entitled to hear what I'm asking and why.
+dlg @1 resident.job [self.job=guard] : I serve the Watch. The rank on the coat hasn't taken away the duty of listening to the last wolf in line.
+dlg @2 resident.job : I keep account of what I've promised and make room for the next voice.
+dlg @1 resident.news [world.news] : The public report that came to me is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The word reported was #topic.subject# #topic.claim#. That's a matter of hearing rather than witnessing.
+dlg @1 resident.bye : Come away with the account clearer and the walk a little lighter.
+dlg @1 watch.hub [here.wanted=yes] : There's a Watch matter standing against you. The sum entered is #here.fine# pennies. You can ask me about it.
+dlg @2 watch.hub [here.wanted=no on_watch=yes] : I'm on duty and ready to hear what you need from the Watch.
+dlg @3 watch.hub [here.wanted=no on_watch=no] : I'm off watch. I can give an ordinary question an ordinary hearing.
+dlg @1 watch.crime [here.witnessed=0] : Tell me in your own words what you saw. I won't put a line down before you start.
+dlg @1 watch.reported [topic.reported=yes] : Your report's entered. The particulars you gave are part of the record.
+dlg @1 watch.fine [here.wanted=no] : Your account with the Watch stands clear. That's a short and very decent entry.
+dlg @2 watch.fine [here.wanted=yes] : The Watch account currently records #here.fine# pennies against you.
+dlg @1 watch.bye : Walk out in good order and find a quiet roof.
 graft resident.hub
 choice How do you remember every little favour? -> return_bowl
 node return_bowl

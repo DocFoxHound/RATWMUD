@@ -1,9 +1,12 @@
+# rm298, the bell after the bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm298
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hollis_greydale
+written_by codex
 title the bell after the bell
 fits stage=adult|old
 prefers job=merchant
@@ -36,35 +39,34 @@ cloudedge = the whitening edge | the last lit rim
 lint = a loose thread | a white wisp
 
 any
-opinion church for 1 : The sound can get where a sermon never would, right in through the bread cloth on my lap.
-opinion sump for 2 : Down here silence doesn't last long, but it belongs to everybody while it lasts.
-opinion strangers for 2 : There's a whole portion of bread in the space between strangers if one breaks the loaf.
-opinion dole for 2 : Warm bread's at its best in a hungry paw. No point telling it to wait for an explanation.
-opinion houses mixed 1 : A grand collar still goes round a throat that can tighten unexpectedly.
-opinion festivals for 1 : A whole market in good voice makes a fine high roof over my head.
+opinion @1 church for 1 : The sound can get where a sermon never would, right in through the bread cloth on my lap.
+opinion @1 sump for 2 : Down here silence doesn't last long, but it belongs to everybody while it lasts.
+opinion @1 strangers for 2 : There's a whole portion of bread in the space between strangers if one breaks the loaf.
+opinion @1 dole for 2 : Warm bread's at its best in a hungry paw. No point telling it to wait for an explanation.
+opinion @1 houses mixed 1 : A grand collar still goes round a throat that can tighten unexpectedly.
+opinion @1 festivals for 1 : A whole market in good voice makes a fine high roof over my head.
 
 grown
-line greet : Welcome. I've left a comfortable pause for you. | Stand where you can hear the farthest bell.
-line greet.return : And the soft end of a greeting back. | Two friendly voices in the same pause.
-line again.open : That little hush brought you back already.
-line farewell : Take a pleasant quiet bit of the way for yourself. | May warm bread be by your plate when you arrive.
-line farewell.return : And a sheltered corner when your feet stop. | That's one kindness worth adding to my collection of sounds.
-line react.news : Tell it at whatever pitch the matter wants. | My ears can wait through the pauses.
-line react.news.new : A sound I've never counted before.
-line react.news.known : That note has been round the roofs once.
-line react.news.doubt : I wouldn't ring the whole town up on that account.
-line react.news.sorrow [topic.kind=death|loss|assault] : Some grief deserves a shutter pulled gently across.
-line react.news.glad [topic.kind=birth|marriage|work] : I'd gladly let that sound reach the whole market.
-line ask.how : Has the noise let you finish a thought today?
-line answer.how : The part of my head I prize is wonderfully quiet.
-line sympathise : I've room to sit beside you without looking too closely.
-line reassure : Something warm can be held while the words come.
-line refuse : I'd like to keep a small promise made earlier today.
-line accept_decline : There's a kindness in saying plainly what you can spare.
-line preclose : I should go before the next bell finds me standing idle.
-line accept_preclose : I'll keep a quiet corner for a later meeting.
-line ack : Yes. I heard the last little bit of it.
-
+line @1 greet : Welcome. I've left a comfortable pause for you. | Stand where you can hear the farthest bell.
+line @1 greet.return : And the soft end of a greeting back. | Two friendly voices in the same pause.
+line @1 again.open : That little hush brought you back already.
+line @1 farewell : Take a pleasant quiet bit of the way for yourself. | May warm bread be by your plate when you arrive.
+line @1 farewell.return : And a sheltered corner when your feet stop. | That's one kindness worth adding to my collection of sounds.
+line @1 react.news : Tell it at whatever pitch the matter wants. | My ears can wait through the pauses.
+line @1 react.news.new : A sound I've never counted before.
+line @1 react.news.known : That note has been round the roofs once.
+line @1 react.news.doubt : I wouldn't ring the whole town up on that account.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Some grief deserves a shutter pulled gently across.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd gladly let that sound reach the whole market.
+line @1 ask.how : Has the noise let you finish a thought today?
+line @1 answer.how : The part of my head I prize is wonderfully quiet.
+line @1 sympathise : I've room to sit beside you without looking too closely.
+line @1 reassure : Something warm can be held while the words come.
+line @1 refuse : I'd like to keep a small promise made earlier today.
+line @1 accept_decline : There's a kindness in saying plainly what you can spare.
+line @1 preclose : I should go before the next bell finds me standing idle.
+line @1 accept_preclose : I'll keep a quiet corner for a later meeting.
+line @1 ack : Yes. I heard the last little bit of it.
 scene exchange1
 when topic=day
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Good long hush coming over the headland. | There's a warm end to the light.
-dlg resident.hub : I've got time to listen through a pause or two.
-dlg resident.hub [topic.meeting=known] : #topic.player#, a familiar sound to put beside the bells.
-dlg resident.hub [here.time=night] : Late hours carry soft words very nicely.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll keep a private bit of silence and hear you from there.
-dlg resident.job [self.job=merchant] : I'm a helping pair of paws at #self.workplace#. I leave the scales clean.
-dlg resident.job : I enjoy work with sufficient bustle to make coming home a pleasure.
-dlg resident.news [world.news] : This is the note that's reached us. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I'd leave the rest of somebody's business in peace.
-dlg resident.bye : Go where you can hear the hush behind the last note.
 
+dlg @1 resident.hub : I've got time to listen through a pause or two.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a familiar sound to put beside the bells.
+dlg @3 resident.hub [here.time=night] : Late hours carry soft words very nicely.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll keep a private bit of silence and hear you from there.
+dlg @1 resident.job [self.job=merchant] : I'm a helping pair of paws at #self.workplace#. I leave the scales clean.
+dlg @2 resident.job : I enjoy work with sufficient bustle to make coming home a pleasure.
+dlg @1 resident.news [world.news] : This is the note that's reached us. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I'd leave the rest of somebody's business in peace.
+dlg @1 resident.bye : Go where you can hear the hush behind the last note.
 graft resident.hub
 choice How long does the last bell take? -> last_hush
 node last_hush

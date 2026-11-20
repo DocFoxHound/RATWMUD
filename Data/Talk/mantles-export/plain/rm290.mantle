@@ -1,9 +1,12 @@
+# rm290, the ladle rest (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm290
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_osric_wetford
+written_by codex
 title the ladle rest
 fits stage=adult|old
 prefers job=merchant drive=ambitious
@@ -35,43 +38,42 @@ chorus = the returning line | the low chorus
 peg = a spare peg | the free hook
 
 any
-opinion houses against 1 : Big doors keep a lot of steam and several dinners on the comfortable side of the street.
-opinion merchants against 1 : Charging for thin broth as though a whole joint were swimming in it. That's what I object to.
-opinion sump for 1 : Down my end folk appreciate a supper still sending up steam.
-opinion times against 1 : Prices go up quick enough. Getting a bigger spoonful for your work takes a deal longer.
-opinion watch against 1 : I'll believe in the value of a uniform when it carries a hot supper up a wet stair.
-opinion festivals for 1 : I'd like a whole square singing a line I made up while serving supper.
+opinion @1 houses against 1 : Big doors keep a lot of steam and several dinners on the comfortable side of the street.
+opinion @1 merchants against 1 : Charging for thin broth as though a whole joint were swimming in it. That's what I object to.
+opinion @1 sump for 1 [self.quarter=sump] : Down my end folk appreciate a supper still sending up steam.
+opinion @1 times against 1 : Prices go up quick enough. Getting a bigger spoonful for your work takes a deal longer.
+opinion @1 watch against 1 : I'll believe in the value of a uniform when it carries a hot supper up a wet stair.
+opinion @1 festivals for 1 : I'd like a whole square singing a line I made up while serving supper.
 
 grown
-line greet : Heard those taps, good. Hello. | Hello. Come in between beats.
-line greet [pair.band=strangers] : No need to know the tune for an introduction. | New voice by my elbow. Welcome.
-line greet [here.time=dawn] : Morning. Steady light for a first verse. | Time for an opening note or two.
-line greet.return : Yes, hello. You caught my voice in working order. | I'll answer you on my next good breath.
-line greet.return [pair.band=friends|family] : Ah, a voice I could sing against. | You'll know where to come into the tune.
-line greet.return [here.time=night] : Late hello. I'll keep the time quietly. | Hushed greetings at this hour, certainly.
-line again.open : Back already. Here's another measure. | Didn't even miss a whole chorus.
-line hail [pair.band=friends] : Come catch this little bit of time with me! | Over here where the tune picks up.
-line farewell : Take the last beat with you. | Walk off while there's still spring in the tune.
-line farewell.return : I'll keep time from here. Goodbye. | Your going falls tidily on the beat.
-line react.news : Let's have the words without a great flourish. | Quiet with the ladle. I want to hear this.
-line react.news.new : First scrap of that song I've heard. | That's news clean through to the handle.
-line react.news.known : I'd heard that before you reached the middle. | Recognised it by the first few words.
-line react.news.doubt : A bit of that sounds beaten out of shape. | Somebody has added a verse without knowing the tune.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That story wants quiet. I'll put the spoon down. | I can make time to hear you through the hard bit.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Yes, there ought to be a chorus to mark news like that. | My feet are quite ready to take that up.
-line ask.how : Is there any spring in your stride today? | How's your own breath been holding up?
-line answer.how : I've a short supply of patience and a long list of intentions. | Room enough for one good tune in me.
-line decline : I haven't breath for that as well as what's promised. | That'd mean dropping the work somebody's already counting on.
-line accept_decline : Clear refusal. I'll get on with my end. | The beat won't stop because you sit out.
-line preclose : I'm near the scrape at the bottom of this talk. | It's time I found something for these paws to do.
-line accept_preclose : You may go easy on the last few steps. | We've talked through a whole decent measure.
-line thank : You came in where I needed another voice. Thanks. | That's a service worth a fine hot supper.
-line deflect_thanks : I knew that bit of the tune already. | No extra work to pass a bowl sideways.
-line sympathise : Stand near the warm side and catch your breath. | I hear how hard you had to push the words out.
-line reassure : Take the rest where the words leave room. | I can go on tapping till your voice is steady.
-line ack : That's on the beat as I hear it. | Yes, I know the sound you mean.
-line give.advice : Breathe before the long note, not halfway through it. | Keep the portion level until the bowl is in reach.
-
+line @1 greet : Heard those taps, good. Hello. | Hello. Come in between beats.
+line @2 greet [pair.band=strangers] : No need to know the tune for an introduction. | New voice by my elbow. Welcome.
+line @3 greet [here.time=dawn] : Morning. Steady light for a first verse. | Time for an opening note or two.
+line @1 greet.return : Yes, hello. You caught my voice in working order. | I'll answer you on my next good breath.
+line @2 greet.return [pair.band=friends|family] : Ah, a voice I could sing against. | You'll know where to come into the tune.
+line @3 greet.return [here.time=night] : Late hello. I'll keep the time quietly. | Hushed greetings at this hour, certainly.
+line @1 again.open : Back already. Here's another measure. | Didn't even miss a whole chorus.
+line @1 hail [pair.band=friends] : Come catch this little bit of time with me! | Over here where the tune picks up.
+line @1 farewell : Take the last beat with you. | Walk off while there's still spring in the tune.
+line @1 farewell.return : I'll keep time from here. Goodbye. | Your going falls tidily on the beat.
+line @1 react.news : Let's have the words without a great flourish. | Quiet with the ladle. I want to hear this.
+line @1 react.news.new : First scrap of that song I've heard. | That's news clean through to the handle.
+line @1 react.news.known : I'd heard that before you reached the middle. | Recognised it by the first few words.
+line @1 react.news.doubt : A bit of that sounds beaten out of shape. | Somebody has added a verse without knowing the tune.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That story wants quiet. I'll put the spoon down. | I can make time to hear you through the hard bit.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Yes, there ought to be a chorus to mark news like that. | My feet are quite ready to take that up.
+line @1 ask.how : Is there any spring in your stride today? | How's your own breath been holding up?
+line @1 answer.how : I've a short supply of patience and a long list of intentions. | Room enough for one good tune in me.
+line @1 decline : I haven't breath for that as well as what's promised. | That'd mean dropping the work somebody's already counting on.
+line @1 accept_decline : Clear refusal. I'll get on with my end. | The beat won't stop because you sit out.
+line @1 preclose : I'm near the scrape at the bottom of this talk. | It's time I found something for these paws to do.
+line @1 accept_preclose : You may go easy on the last few steps. | We've talked through a whole decent measure.
+line @1 thank : You came in where I needed another voice. Thanks. | That's a service worth a fine hot supper.
+line @1 deflect_thanks : I knew that bit of the tune already. | No extra work to pass a bowl sideways.
+line @1 sympathise : Stand near the warm side and catch your breath. | I hear how hard you had to push the words out.
+line @1 reassure : Take the rest where the words leave room. | I can go on tapping till your voice is steady.
+line @1 ack : That's on the beat as I hear it. | Yes, I know the sound you mean.
+line @1 give.advice : Breathe before the long note, not halfway through it. | Keep the portion level until the bowl is in reach.
 scene tap_catch
 when topic=pastimes self.likes=singing
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : After dark I tap the handle against my soft cuff. | A beat needn't travel th
 b : Can you still hear it? | Don't you lose some of the sound?
 a : Just me, which is exactly the size of the audience I want. | Yes. I keep the time and lose the clatter. A civil arrangement.
 
-grown
-
 story mutecloth [topic=memories|pastimes]
   : I wrapped a ladle handle in cloth once to practise the supper beat quietly. Worked beautifully till I put it down.
   : Couldn't remember which cloth I'd put it in and spent part of a morning hunting under every folded towel.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say That's a clean heel note on a sound board. | One good stamp and that sole sits right.
 
-dlg resident.hub : I can talk through a rest in the song. You've found one.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you're in good time to hear the altered bit.
-dlg resident.hub [here.time=night] : I'll give you words without the tapping. Some folk have gone to bed.
-dlg resident.hub [pair.disposition=wary|hostile] : Stand well clear of my serving arm if you're about to take offence.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I mean every supper I handle to reach its table hot.
-dlg resident.job : I'd like my next piece of work to reach more folk than the last.
-dlg resident.bye : Keep enough breath for the climb home.
-
+dlg @1 resident.hub : I can talk through a rest in the song. You've found one.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're in good time to hear the altered bit.
+dlg @3 resident.hub [here.time=night] : I'll give you words without the tapping. Some folk have gone to bed.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand well clear of my serving arm if you're about to take offence.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I mean every supper I handle to reach its table hot.
+dlg @2 resident.job : I'd like my next piece of work to reach more folk than the last.
+dlg @1 resident.bye : Keep enough breath for the climb home.
 graft resident.hub
 choice Where do those two taps come in? -> ladletime
 node ladletime

@@ -1,9 +1,12 @@
+# rm409, the ships above the roofs (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm409
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_frida_marrowby
+written_by codex
 title the ships above the roofs
 fits stage=young|adolescent|adult|old
 prefers job=child
@@ -35,43 +38,145 @@ gap = a patch of clear dark | the gap beyond a roof
 string = a circle of thread | a dark loop of cord
 
 any
-opinion dole for 2 : Soup lets a wolf spend the evening looking up. Without it the empty bowl takes up the whole view.
-opinion church for 1 : A filled bowl made the walk out of chapel much lighter than the walk in. I believe that counts for something.
-opinion festivals for 1 : The music carries right past the crowded part. The sweet things travel that far too if I go for them early.
-opinion merchants against 1 : A small bowl has precisely the same price written on it after a hungry day as a big one used to have.
-opinion times against 1 : Some nights I set the bowl against the window, just to see that the bottom still lets no light through.
+opinion @1 dole for 2 : Soup lets a wolf spend the evening looking up. Without it the empty bowl takes up the whole view.
+opinion @1 church for 1 : A filled bowl made the walk out of chapel much lighter than the walk in. I believe that counts for something.
+opinion @1 festivals for 1 : The music carries right past the crowded part. The sweet things travel that far too if I go for them early.
+opinion @1 merchants against 1 : A small bowl has precisely the same price written on it after a hungry day as a big one used to have.
+opinion @1 times against 1 : Some nights I set the bowl against the window, just to see that the bottom still lets no light through.
+line @1 greet [pair.band=strangers] : Hello. Don't cover the little patch of sky. | Room here with a view for both of us.
+line @2 greet [self.working=yes] : I'm listening on the roof side. | Come beside me for a minute.
+line @3 greet [here.time=dawn] : Morning. The stars are put away. | Welcome into the clear daytime bit.
+line @4 greet [here.time=dusk|night] : Evening lets the first little ship out. | Come watch the dark pick up its lights.
+line @1 kin.open [pair.kin!=no] : Family know where the little stars belong. | A clear patch for kin.
+line @1 again.open : We come round beneath the same roof again. | You're back before the sky's moved much.
+line @1 greet.return : Hello. Your voice reached my sill. | I can hear without looking down.
+line @2 greet.return [pair.band=friends|family] : Your voice has its own spot on my crowded sky map. | You can have the best bit of sky.
+line @3 greet.return [self.working=yes] : I can listen between my little marks. | Hold still and I'll get this line straight.
+line @4 greet.return [here.time=dusk|night] : Evening. There are lights enough for us both. | Your greeting came up under the stars.
+line @1 farewell : Find a clear patch on the way home. | I hope your ship stays in sight.
+line @1 farewell.return : I'll watch the lights at this end. | Safe travelling beneath the little fleet.
+line @2 farewell.return [here.time=night] : Keep a lamp under the stars tonight. | May the roof show you home.
+line @1 react.news : Which bit of the sky did it come from? | Give me the little clear points of it.
+line @1 react.news.new : A light I hadn't found before. | Something fresh above this roof.
+line @1 react.news.known : I've seen that little shape already. | That news shone here earlier.
+line @1 react.news.doubt : I'd look for another light to make the shape clear. | One bright bit can belong to several different stories.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's plenty of quiet sky for grief. | I can stay still a good while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a good star coming out. | I like the light of that word.
+line @1 ask.how : Are you keeping your little lights clear? | How wide's the sky been for you?
+line @1 answer.how : A little low but looking upwards. | Still finding more lights than I expected.
+line @1 decline : I'd sooner wait where the little sky is clear. | This quiet is what I came to find today.
+line @1 accept_decline : You've your own sky to watch. | Then I'll keep the place from here.
+line @1 thank : That brings the whole shape back. | I'll save you the clearest view.
+line @1 sympathise : Stand where my shoulder's blocking the crowd. | We can take a breath beside the window.
+line @1 reassure : There's another patch of dark further round. | A lost light comes back sometimes.
+line @1 preclose : I'd like to catch the change above the roofs. | The page with the lights wants putting away now.
+rule @aside1
+when concept=bark self.likes=stars here.time=night
+does aside
+cooldown 6h
+say Little stern light, stay beyond the chimney. | Let the faint porthole come through.
 
-any
-line greet [pair.band=strangers] : Hello. Don't cover the little patch of sky. | Room here with a view for both of us.
-line greet [self.working=yes] : I'm listening on the roof side. | Come beside me for a minute.
-line greet [here.time=dawn] : Morning. The stars are put away. | Welcome into the clear daytime bit.
-line greet [here.time=dusk|night] : Evening lets the first little ship out. | Come watch the dark pick up its lights.
-line kin.open [pair.kin!=no] : Family know where the little stars belong. | A clear patch for kin.
-line again.open : We come round beneath the same roof again. | You're back before the sky's moved much.
-line greet.return : Hello. Your voice reached my sill. | I can hear without looking down.
-line greet.return [pair.band=friends|family] : Your voice has its own spot on my crowded sky map. | You can have the best bit of sky.
-line greet.return [self.working=yes] : I can listen between my little marks. | Hold still and I'll get this line straight.
-line greet.return [here.time=dusk|night] : Evening. There are lights enough for us both. | Your greeting came up under the stars.
-line farewell : Find a clear patch on the way home. | I hope your ship stays in sight.
-line farewell.return : I'll watch the lights at this end. | Safe travelling beneath the little fleet.
-line farewell.return [here.time=night] : Keep a lamp under the stars tonight. | May the roof show you home.
-line react.news : Which bit of the sky did it come from? | Give me the little clear points of it.
-line react.news.new : A light I hadn't found before. | Something fresh above this roof.
-line react.news.known : I've seen that little shape already. | That news shone here earlier.
-line react.news.doubt : I'd look for another light to make the shape clear. | One bright bit can belong to several different stories.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's plenty of quiet sky for grief. | I can stay still a good while.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a good star coming out. | I like the light of that word.
-line ask.how : Are you keeping your little lights clear? | How wide's the sky been for you?
-line answer.how : A little low but looking upwards. | Still finding more lights than I expected.
-line decline : I'd sooner wait where the little sky is clear. | This quiet is what I came to find today.
-line accept_decline : You've your own sky to watch. | Then I'll keep the place from here.
-line thank : That brings the whole shape back. | I'll save you the clearest view.
-line sympathise : Stand where my shoulder's blocking the crowd. | We can take a breath beside the window.
-line reassure : There's another patch of dark further round. | A lost light comes back sometimes.
-line preclose : I'd like to catch the change above the roofs. | The page with the lights wants putting away now.
+rule @aside2
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 7h
+say One straight straw to mark a star. | Clear stalk for a clean little hole.
+
+rule @aside3
+when concept=bark self.dislikes=crowds
+does aside
+cooldown 8h
+say Room for a pair of upward eyes. | One elbow's worth of sky, please.
+
+rule @aside4
+when concept=bark here.season=summer here.time=dusk
+does aside
+cooldown 9h
+say Long slow evening for the faint fleet. | First white speck gets a ship of its own.
+
+dlg @1 resident.hub : Stand a little to my left to leave the gap between roofs clear. I've a bit of sky in my pocket if the light's wrong.
+dlg @1 resident.job [self.job=child self.workplace] : I go to #self.workplace#. A bit of dark paper makes a fine place to keep the lights I remember.
+dlg @2 resident.job : A task suits me when there's time to recognise something small across a distance.
+dlg @1 resident.news [world.news] : This part showed clearly through the crowd. #world.news#
+dlg @1 resident.bye : Look up once above a quiet roof for me.
+graft resident.hub
+choice How do you put a night ship inside your pocket? -> star_fold
+node star_fold
+say Mark the stars in a little patch of sky on dark paper. I poke a tiny hole for each star. Lift it before a lamp. My ship can sail in daylight.
+free
+choice How do you know which way the ship is sailing? -> star_course
+choice Let me look through the little holes. -> hub
+node star_course
+say Find the darkest gap in front of the bright ones. That's the water the ship still has to cross. You can use a different gap if you want another voyage.
+choice Mine will take the long dark way. -> hub
+choice I'll see what the real sky is doing. -> bye
+
+
+grown
+scene g_map
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I still use remembered hulls to keep the less conspicuous stars in view.
+b : Which works better, drawing or memory? | Does the sky really look like boats?
+a : I draw a difficult patch once. After that the picture fits inside the smallest glance. | A bow here and a spar there. The rest is private workmanship.
+
+scene g_warm
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I like a clean straw for marking a page when I rest my eyes.
+b : Better than a strip of paper? | Where do you leave it?
+a : It stands up a little without making a hard lump against the binding. | At the first light I mean to look for on another evening.
+
+scene g_supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A steaming dish makes a complete invitation by itself.
+b : What should one say with it? | No questions at all?
+a : Say where the spoon lies and leave the rest for a less hungry minute. | Only whether there's enough salt. A stranger can answer that by tasting.
+
+scene g_avoid
+when topic=travel self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : On a crowded walk I keep one quiet roofline in view.
+b : To find the road? | What if you lose it?
+a : To remember there's still something in the world that won't press closer if I stand still. | Choose another between breaths. It's keeping a little distance that matters.
+
+scene g_ear
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like a prayer quiet enough that I can still hear a hungry belly beside me.
+b : Does the belly enter your prayer? | What do you hear afterwards?
+a : It ought to affect what I do after I stand up. I'd hope so, at least. | Sometimes just a spoon against an empty dish. I can help with that.
+
+scene g_light
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I once imagined every star a separate lamp kept on in a very distant home.
+b : Would you go and live there? | Does it seem lonely?
+a : I'd miss the view from below. A light might never see where it belongs among its neighbours. | Less so than counting them all as points on a cold page.
+
+scene g_shop
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I keep the price of a full barley bowl in mind whenever an evening's entertainment is offered.
+b : As a measure of value? | Do you begrudge a good time?
+a : As a reminder of what else I could buy for the same small money. | Never. I just like a good time that leaves enough for breakfast.
+
+scene g_funny
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I look for a tale's outline after the decoration is taken away.
+b : What decoration? | What's left?
+a : The name-dropping and all those splendid speeches nobody quite remembers hearing. | Sometimes a very small happening. I'd give the little thing its proper size back.
+
+story g_soup [topic=memories]
+  : Once in a lean season I sat over a bowl of grain waiting until a patch of clean light began to reach the table. I meant to draw before eating.
+  : The light found the bowl instead and the barley looked like a scatter of bright stars. I ate slowly till there was one grain left.
+  b : Did you save the grain?
+  : I ate it too. The memory of how it shone takes considerably less looking after than the barley would.
+
 
 young
-
 scene y_star
 when topic=pastimes self.likes=stars
 does tell.self / ask.detail / answer.detail
@@ -162,8 +267,8 @@ story y_chimney [topic=memories]
   b : Was it a star at all?
   : A drop above the gutter catching lamplight. It went on my page regardless and gave it a little tail.
 
-adolescent
 
+adolescent
 scene t_distance
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -183,118 +288,10 @@ when topic=friends
 does tell.self / ask.detail / answer.detail
 a : I'd rather share a little bit of open sky than try to talk above a crowd.
 b : Can you be good company quietly? | Would you tell a story?
-a : That's the sort I'd most like to have, so I practise providing it. | If asked. A whole fleet already goes over without needing an introduction.
+a : That's the sort I'd most like to have, so I practise providing it. | If asked. Mostly I'd point at the clouds and let them do the telling.
 
 story t_paper [topic=pastimes]
   : I pricked a picture of my favourite bit of sky in paper and held it with the face reversed. I couldn't find a single ship I'd been expecting.
   : Then I tried drawing the reversed fleet. The strangest hull came out looking like a bird rising off the water.
   b : Did you correct it?
   : I kept the bird for the back of that same page. It does no harm to have two ways of seeing one set of holes.
-
-grown
-
-scene g_map
-when topic=pastimes self.likes=stars
-does tell.self / ask.detail / answer.detail
-a : I still use remembered hulls to keep the less conspicuous stars in view.
-b : Which works better, drawing or memory? | Does the sky really look like boats?
-a : I draw a difficult patch once. After that the picture fits inside the smallest glance. | A bow here and a spar there. The rest is private workmanship.
-
-scene g_warm
-when topic=home self.likes=fresh_straw
-does tell.self / ask.detail / answer.detail
-a : I like a clean straw for marking a page when I rest my eyes.
-b : Better than a strip of paper? | Where do you leave it?
-a : It stands up a little without making a hard lump against the binding. | At the first light I mean to look for on another evening.
-
-scene g_supper
-when topic=food
-does tell.self / ask.detail / answer.detail
-a : A steaming dish makes a complete invitation by itself.
-b : What should one say with it? | No questions at all?
-a : Say where the spoon lies and leave the rest for a less hungry minute. | Only whether there's enough salt. A stranger can answer that by tasting.
-
-scene g_avoid
-when topic=travel self.dislikes=crowds
-does tell.self / ask.detail / answer.detail
-a : On a crowded walk I keep one quiet roofline in view.
-b : To find the road? | What if you lose it?
-a : To remember there's still something in the world that won't press closer if I stand still. | Choose another between breaths. It's keeping a little distance that matters.
-
-scene g_ear
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : I like a prayer quiet enough that I can still hear a hungry belly beside me.
-b : Does the belly enter your prayer? | What do you hear afterwards?
-a : It ought to affect what I do after I stand up. I'd hope so, at least. | Sometimes just a spoon against an empty dish. I can help with that.
-
-scene g_light
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I once imagined every star a separate lamp kept on in a very distant home.
-b : Would you go and live there? | Does it seem lonely?
-a : I'd miss the view from below. A light might never see where it belongs among its neighbours. | Less so than counting them all as points on a cold page.
-
-scene g_shop
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : I keep the price of a full barley bowl in mind whenever an evening's entertainment is offered.
-b : As a measure of value? | Do you begrudge a good time?
-a : As a reminder of what else I could buy for the same small money. | Never. I just like a good time that leaves enough for breakfast.
-
-scene g_funny
-when topic=gossip
-does tell.self / ask.detail / answer.detail
-a : I look for a tale's outline after the decoration is taken away.
-b : What decoration? | What's left?
-a : The name-dropping and all those splendid speeches nobody quite remembers hearing. | Sometimes a very small happening. I'd give the little thing its proper size back.
-
-story g_soup [topic=memories]
-  : Once in a lean season I sat over a bowl of grain waiting until a patch of clean light began to reach the table. I meant to draw before eating.
-  : The light found the bowl instead and the barley looked like a scatter of bright stars. I ate slowly till there was one grain left.
-  b : Did you save the grain?
-  : I ate it too. The memory of how it shone takes considerably less looking after than the barley would.
-
-any
-
-rule @aside1
-when concept=bark self.likes=stars here.time=night
-does aside
-cooldown 6h
-say Little stern light, stay beyond the chimney. | Let the faint porthole come through.
-
-rule @aside2
-when concept=bark self.likes=fresh_straw
-does aside
-cooldown 7h
-say One straight straw to mark a star. | Clear stalk for a clean little hole.
-
-rule @aside3
-when concept=bark self.dislikes=crowds
-does aside
-cooldown 8h
-say Room for a pair of upward eyes. | One elbow's worth of sky, please.
-
-rule @aside4
-when concept=bark here.season=summer here.time=dusk
-does aside
-cooldown 9h
-say Long slow evening for the faint fleet. | First white speck gets a ship of its own.
-
-dlg resident.hub : Stand a little to my left to leave the gap between roofs clear. I've a bit of sky in my pocket if the light's wrong.
-dlg resident.job [self.job=child self.workplace] : I go to #self.workplace#. A bit of dark paper makes a fine place to keep the lights I remember.
-dlg resident.job : A task suits me when there's time to recognise something small across a distance.
-dlg resident.news [world.news] : This part showed clearly through the crowd. #world.news#
-dlg resident.bye : Look up once above a quiet roof for me.
-
-graft resident.hub
-choice How do you put a night ship inside your pocket? -> star_fold
-node star_fold
-say Mark the stars in a little patch of sky on dark paper. I poke a tiny hole for each star. Lift it before a lamp. My ship can sail in daylight.
-free
-choice How do you know which way the ship is sailing? -> star_course
-choice Let me look through the little holes. -> hub
-node star_course
-say Find the darkest gap in front of the bright ones. That's the water the ship still has to cross. You can use a different gap if you want another voyage.
-choice Mine will take the long dark way. -> hub
-choice I'll see what the real sky is doing. -> bye

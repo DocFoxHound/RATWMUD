@@ -1,14 +1,17 @@
+# rm579, the cancelled-receipt pack (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm579
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_wenna_sootham
+written_by codex
 title the cancelled-receipt pack
 fits stage=adult|old
 prefers job=merchant talk=quiet
 traits temper=even talk=quiet warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
-quirk trims_cancelled_receipts_to_playing_card_size_and_draws_a_suit_on_the_blank_back
+quirk trims_cancelled_receipts_to_card_size_and_draws_suits
 likes blackberries cards quiet_chapel autumn_wind
 dislikes deep_mud stale_bread
 fears a_private_moment_set_down_as_public_business a_good_entry_blotted_by_a_damp_cuff
@@ -34,45 +37,44 @@ mudshelf = a shelf of clinging mud | a heavy band of wet earth
 loafheel = the hard end of a loaf | a worn bread heel
 
 any
-opinion merchants for 1 : A firm can speak with a particularly clear voice by settling every account on the agreed day.
-opinion church for 1 : Silence has a place on the chapel bench even when there isn't room for an extra coat.
-opinion city for 1 : I like windows that show a busy street and still let a wolf close the shutter.
-opinion strangers mixed 0 : I'll show a visitor how to reach the right door. What happened behind it belongs elsewhere.
-opinion dole for 1 : Give bread fresh enough that its receiver needn't do another meal's work on it.
-opinion road mixed 0 : The driest route often has fewer papers blowing along it than the grandest.
-opinion times mixed 0 : Ask me the number of loads received. My talent for telling next winter's count is less considerable.
+opinion @1 merchants for 1 : A firm can speak with a particularly clear voice by settling every account on the agreed day.
+opinion @1 church for 1 : Silence has a place on the chapel bench even when there isn't room for an extra coat.
+opinion @1 city for 1 : I like windows that show a busy street and still let a wolf close the shutter.
+opinion @1 strangers mixed 0 : I'll show a visitor how to reach the right door. What happened behind it belongs elsewhere.
+opinion @1 dole for 1 : Give bread fresh enough that its receiver needn't do another meal's work on it.
+opinion @1 road mixed 0 : The driest route often has fewer papers blowing along it than the grandest.
+opinion @1 times mixed 0 : Ask me the number of loads received. My talent for telling next winter's count is less considerable.
 
 grown
-line greet : Come round the side where the cards are blank.
-line greet [pair.band=strangers] : A fresh hand. I'll hear it as it lies.
-line greet [here.time=dawn] : Morning has left a clean rectangle of light on the desk.
-line greet [here.time=dusk|night] : Welcome under the last bright pane.
-line greet.return : I'm here. The cards can wait in their little stack.
-line greet.return [pair.band=friends|family] : No shutter could make me mistake your voice.
-line greet.return [self.working=yes] : I've a free ear beside a busy nib.
-line greet.return [here.time=dusk|night] : At night I hear the paper move before the voice.
-line kin.open [pair.kin!=no] : Come close, kin. There isn't a fee for the chair.
-line again.open : I left our place in the pack.
-line hail [pair.band=friends] : Friend, the next clean slip is yours.
-line farewell : Good walking before the autumn paper chase begins.
-line farewell.return : May the receipt state exactly what you paid.
-line react.news : Let me hear the wording as you received it.
-line react.news.new : That hasn't found its way onto my desk till now.
-line react.news.known : That entry has a familiar turn at its corner.
-line react.news.doubt : I'd turn it over before marking the suit.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The book can stay closed for this conversation.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I could make a pleasant card out of news like that.
-line ask.how : How have the corners of your day held up?
-line answer.how : One corner bent a little. Still a playable hand.
-line thank : You left it clear enough to read. My thanks.
-line deflect_thanks : The spare face wasn't doing anybody much good in the drawer.
-line sympathise : I'll sit by you without requiring an account.
-line reassure : Take the quiet part first. The figures can follow.
-line decline : My hand's quite full enough for the present deal.
-line accept_decline : Very well. I can put that card by.
-line preclose : I ought to stack the loose pieces before a gust arrives.
-line accept_preclose : Safe home with your corners still on.
-
+line @1 greet : Come round the side where the cards are blank.
+line @2 greet [pair.band=strangers] : A fresh hand. I'll hear it as it lies.
+line @3 greet [here.time=dawn] : Morning has left a clean rectangle of light on the desk.
+line @4 greet [here.time=dusk|night] : Welcome under the last bright pane.
+line @1 greet.return : I'm here. The cards can wait in their little stack.
+line @2 greet.return [pair.band=friends|family] : No shutter could make me mistake your voice.
+line @3 greet.return [self.working=yes] : I've a free ear beside a busy nib.
+line @4 greet.return [here.time=dusk|night] : At night I hear the paper move before the voice.
+line @1 kin.open [pair.kin!=no] : Come close, kin. There isn't a fee for the chair.
+line @1 again.open : I left our place in the pack.
+line @1 hail [pair.band=friends] : Friend, the next clean slip is yours.
+line @1 farewell : Good walking before the autumn paper chase begins.
+line @1 farewell.return : May the receipt state exactly what you paid.
+line @1 react.news : Let me hear the wording as you received it.
+line @1 react.news.new : That hasn't found its way onto my desk till now.
+line @1 react.news.known : That entry has a familiar turn at its corner.
+line @1 react.news.doubt : I'd turn it over before marking the suit.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The book can stay closed for this conversation.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I could make a pleasant card out of news like that.
+line @1 ask.how : How have the corners of your day held up?
+line @1 answer.how : One corner bent a little. Still a playable hand.
+line @1 thank : You left it clear enough to read. My thanks.
+line @1 deflect_thanks : The spare face wasn't doing anybody much good in the drawer.
+line @1 sympathise : I'll sit by you without requiring an account.
+line @1 reassure : Take the quiet part first. The figures can follow.
+line @1 decline : My hand's quite full enough for the present deal.
+line @1 accept_decline : Very well. I can put that card by.
+line @1 preclose : I ought to stack the loose pieces before a gust arrives.
+line @1 accept_preclose : Safe home with your corners still on.
 scene blank_side
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Every faded suit legible today.
 
-dlg resident.hub : A blank piece of paper leaves a small discussion room to grow.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I kept the last hand in order for you.
-dlg resident.hub [here.time=night] : The accounts are away. There's room for ordinary words now.
-dlg resident.hub [pair.disposition=hostile|wary] : Put the point beside your own elbow and let me look across at it.
-dlg resident.job [self.job=merchant self.workplace] : My part at #self.workplace# is getting a tally to agree with the goods actually on hand.
-dlg resident.news [world.news] : The account reads #world.news_from# for its starting point. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I'd have to spoil a good blank card to give that much talk a place.
-dlg resident.bye : Safe going. I'll put the pack away before the next gust.
-
+dlg @1 resident.hub : A blank piece of paper leaves a small discussion room to grow.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I kept the last hand in order for you.
+dlg @3 resident.hub [here.time=night] : The accounts are away. There's room for ordinary words now.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Put the point beside your own elbow and let me look across at it.
+dlg @1 resident.job [self.job=merchant self.workplace] : My part at #self.workplace# is getting a tally to agree with the goods actually on hand.
+dlg @1 resident.news [world.news] : The account reads #world.news_from# for its starting point. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I'd have to spoil a good blank card to give that much talk a place.
+dlg @1 resident.bye : Safe going. I'll put the pack away before the next gust.
 graft resident.hub
 choice Are those playing cards made out of accounts? -> cancelled_pack
 node cancelled_pack

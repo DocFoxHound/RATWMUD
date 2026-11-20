@@ -1,9 +1,12 @@
+# rm403, the service-stair map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm403
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_orm_wickcot
+written_by codex
 title the service-stair map
 fits stage=adult|old
 prefers talk=chatty humour=dry
@@ -17,6 +20,7 @@ topics travel +0.6 work +0.4 pastimes +0.3 gossip +0.2
 styles comfort=practical gossip=discreet refuse=plain tease=dry
 marks oath saying
 persona #self.first# draws the service stair in the blank spaces of grand maps and lowers a splendid carrying voice to talk about private accounts.
+
 words
 oath! = Salt my stair rail | Split my soup ladle
 saying! = Draw the back way too | Two stairs or a full bowl
@@ -33,35 +37,33 @@ songcue = a rising phrase | a quiet held note
 topstep = a shallow upper tread | a worn half step
 
 grown
-
-opinion houses mixed 1 : A fine house may hold a hundred rooms and leave the people who carry supper out of every single drawing.
-opinion watch mixed 1 : I notice when a uniform chooses the door farthest from the clerk. My noticing isn't a verdict.
-opinion merchants mixed 1 : A bill that leaves half the walk out of the price can be exceedingly grand and exceedingly cheap.
-opinion church for 1 : Even a servant midway up a stair can find a breath to spend in gratitude.
-opinion city for 1 : Old city plans have space between their fine square blocks for another city of practical routes.
-opinion dole for 2 : A full service tray can usually spare one portion without the state of the realm collapsing.
-line greet : Come by the side door of the conversation. It's considerably quicker.
-line greet [pair.band=strangers] : Welcome. There's a civil amount of room here for both our elbows.
-line greet.return : My ears have found you on the first landing.
-line farewell : May your route omit the stair with the unfortunate wobble.
-line farewell.return : I'll put a dot where we last met.
-line ask.how : Has the day made you carry anything particularly awkward up a flight?
-line answer.how : Perfectly cheerful as long as nobody asks me to wait with the broth.
-line react.news : I'll draw the way those words reached this landing.
-line react.news.new : A passage I hadn't previously found on the plan.
-line react.news.known : I had that marked in a different ink already.
-line react.news.doubt : There's a rather convenient blank where the proof ought to be.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That deserves my carrying voice in an entirely respectable tune.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can take some small service off the shoulders dealing with that.
-line thank : You moved the door instead of watching me wrestle my tray through it.
-line decline : I'd prefer not to make a dining-room entertainment out of private figures.
-line accept_decline : I'll carry the offer away without another flourish.
-line sympathise : We can sit on this landing as long as your thoughts require.
-line reassure : A wrong turn needn't be recorded in the public minutes.
-line ack : I see where both those stairways meet.
-line preclose : The next journey's going to require all my elbows.
-line deflect_thanks : A useful route improves through being shared with the right feet.
-
+opinion @1 houses mixed 1 : A fine house may hold a hundred rooms and leave the people who carry supper out of every single drawing.
+opinion @1 watch mixed 1 : I notice when a uniform chooses the door farthest from the clerk. My noticing isn't a verdict.
+opinion @1 merchants mixed 1 : A bill that leaves half the walk out of the price can be exceedingly grand and exceedingly cheap.
+opinion @1 church for 1 : Even a servant midway up a stair can find a breath to spend in gratitude.
+opinion @1 city for 1 : Old city plans have space between their fine square blocks for another city of practical routes.
+opinion @1 dole for 2 : A full service tray can usually spare one portion without the state of the realm collapsing.
+line @1 greet : Come by the side door of the conversation. It's considerably quicker.
+line @2 greet [pair.band=strangers] : Welcome. There's a civil amount of room here for both our elbows.
+line @1 greet.return : My ears have found you on the first landing.
+line @1 farewell : May your route omit the stair with the unfortunate wobble.
+line @1 farewell.return : I'll put a dot where we last met.
+line @1 ask.how : Has the day made you carry anything particularly awkward up a flight?
+line @1 answer.how : Perfectly cheerful as long as nobody asks me to wait with the broth.
+line @1 react.news : I'll draw the way those words reached this landing.
+line @1 react.news.new : A passage I hadn't previously found on the plan.
+line @1 react.news.known : I had that marked in a different ink already.
+line @1 react.news.doubt : There's a rather convenient blank where the proof ought to be.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That deserves my carrying voice in an entirely respectable tune.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can take some small service off the shoulders dealing with that.
+line @1 thank : You moved the door instead of watching me wrestle my tray through it.
+line @1 decline : I'd prefer not to make a dining-room entertainment out of private figures.
+line @1 accept_decline : I'll carry the offer away without another flourish.
+line @1 sympathise : We can sit on this landing as long as your thoughts require.
+line @1 reassure : A wrong turn needn't be recorded in the public minutes.
+line @1 ack : I see where both those stairways meet.
+line @1 preclose : The next journey's going to require all my elbows.
+line @1 deflect_thanks : A useful route improves through being shared with the right feet.
 scene work_1
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say A little of the stair music travels farther at dusk. | Time the lower passages had a note to themselves.
-dlg resident.hub : Your question may use the short passage today.
-dlg resident.job [self.job=servant] : I serve at #self.workplace#. It is fascinating how many stairs stand between two quite ordinary wants.
-dlg resident.news [world.news] : These words have made the climb intact. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The circulating sheet would have it that #topic.subject# #topic.claim#. I've seen no signature worth showing.
-dlg resident.hub [topic.meeting=known] : #topic.player#, an old acquaintance with excellent timing on the stairs.
-dlg resident.bye : Find your intended landing with every bowl still level.
 
+dlg @1 resident.hub : Your question may use the short passage today.
+dlg @1 resident.job [self.job=servant] : I serve at #self.workplace#. It is fascinating how many stairs stand between two quite ordinary wants.
+dlg @1 resident.news [world.news] : These words have made the climb intact. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The circulating sheet would have it that #topic.subject# #topic.claim#. I've seen no signature worth showing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, an old acquaintance with excellent timing on the stairs.
+dlg @1 resident.bye : Find your intended landing with every bowl still level.
 graft resident.hub
 choice Can you really find the service stair on a plan without one? -> serving_stair
 node serving_stair

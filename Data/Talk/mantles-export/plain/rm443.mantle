@@ -1,14 +1,17 @@
+# rm443, summer light on account (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm443
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_harriet_pennock
+written_by codex
 title summer light on account
 fits stage=adult|old
 prefers talk=chatty humour=merry
 traits temper=short talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=steady
-quirk pencils_the_last_reach_of_summer_light_beside_the_daybook_entry
+quirk pencils_the_last_summer_light_beside_the_daybook_entry
 likes roast_pork swimming sharp_knife summer_evenings
 dislikes haggling stale_bread
 fears having_a_figure_altered_behind_the_page
@@ -17,6 +20,7 @@ topics work +0.6 pastimes +0.4 weather +0.3 prices +0.2
 styles comfort=practical gossip=exact refuse=plain tease=merry
 marks oath saying
 persona #self.first# pencils the reach of summer light beside the day's last entry and gives a damp cough a succession of implausibly official descriptions.
+
 words
 oath! = Soak my last column | Put a blot on the sunset
 saying! = Light doesn't file itself | Ink it once it's dry
@@ -33,35 +37,33 @@ breadsoak = a damp crumb | a heel softened with broth
 lineend = a last inked figure | a double stroke
 
 grown
-
-opinion city mixed 1 : I should like a room high enough to see how the city looks when I've finished copying the city's opinion of itself.
-opinion houses mixed 1 : A House's name can take a grand space in a heading without adding one honest figure to the column beneath.
-opinion merchants mixed 1 : A clearly written price saves the buyer a performance. Haggling uses up a great many improvable words.
-opinion church for 1 : Even an exacting account can leave a clean margin of thanks for a pleasant evening.
-opinion strangers for 1 : Some stranger will read whatever we put down. That ought to keep me making the little numbers legible.
-opinion dole for 2 : Seeing another bowl go out full is more interesting than balancing any number of empty ones on paper.
-line greet : Convenient timing. The light's still on the unoccupied part of my page.
-line greet.return : Ah, another entry in a hand I recognise.
-line greet [pair.band=strangers] : Welcome to the day's unruled margin.
-line farewell : May your evening outlast the official business.
-line farewell.return : I'll leave one nice open space after your name.
-line react.news : Let us see which part is an entry and which part is a flourish.
-line react.news.known : I'd already made a little mark by that account.
-line react.news.new : A line I have not had the honour of misfiling yet.
-line react.news.doubt : Could we see an earlier copy before making that our permanent record?
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : An unexpectedly handsome entry on the credit side of the day.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put down the pen and spare a whole evening for whoever needs one.
-line ask.how : Have you been cheated of your quiet half hour today?
-line answer.how : I am in possession of one very serviceable working voice, with occasional amendments.
-line thank : You found the right line without running a finger through my wet ink.
-line decline : I won't sign something that needs a round of haggling just to find the meaning.
-line accept_decline : I'll mark the matter closed without charging for the ink.
-line accept_preclose : Away before the light has returned to its owner.
-line sympathise : I have an unentered minute here. You may have the whole of it.
-line reassure : Errors noticed before the ink is dry are still exceedingly affordable.
-line ack : I have the figure squarely in the column.
-line preclose : There is work awaiting my attention with characteristic impatience.
-
+opinion @1 city mixed 1 : I should like a room high enough to see how the city looks when I've finished copying the city's opinion of itself.
+opinion @1 houses mixed 1 : A House's name can take a grand space in a heading without adding one honest figure to the column beneath.
+opinion @1 merchants mixed 1 : A clearly written price saves the buyer a performance. Haggling uses up a great many improvable words.
+opinion @1 church for 1 : Even an exacting account can leave a clean margin of thanks for a pleasant evening.
+opinion @1 strangers for 1 : Some stranger will read whatever we put down. That ought to keep me making the little numbers legible.
+opinion @1 dole for 2 : Seeing another bowl go out full is more interesting than balancing any number of empty ones on paper.
+line @1 greet : Convenient timing. The light's still on the unoccupied part of my page.
+line @1 greet.return : Ah, another entry in a hand I recognise.
+line @2 greet [pair.band=strangers] : Welcome to the day's unruled margin.
+line @1 farewell : May your evening outlast the official business.
+line @1 farewell.return : I'll leave one nice open space after your name.
+line @1 react.news : Let us see which part is an entry and which part is a flourish.
+line @1 react.news.known : I'd already made a little mark by that account.
+line @1 react.news.new : A line I have not had the honour of misfiling yet.
+line @1 react.news.doubt : Could we see an earlier copy before making that our permanent record?
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : An unexpectedly handsome entry on the credit side of the day.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put down the pen and spare a whole evening for whoever needs one.
+line @1 ask.how : Have you been cheated of your quiet half hour today?
+line @1 answer.how : Well enough. The voice works; the throat files the odd objection.
+line @1 thank : You found the right line without running a finger through my wet ink.
+line @1 decline : I won't sign something that needs a round of haggling just to find the meaning.
+line @1 accept_decline : I'll mark the matter closed without charging for the ink.
+line @1 accept_preclose : Away before the light has returned to its owner.
+line @1 sympathise : I have an unentered minute here. You may have the whole of it.
+line @1 reassure : Errors noticed before the ink is dry are still exceedingly affordable.
+line @1 ack : I have the figure squarely in the column.
+line @1 preclose : There is work awaiting my attention with characteristic impatience.
 scene work_1
 when topic=work self.job=scholar
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark self.likes=roast_pork
 does aside
 cooldown 8h
 say I volunteer to verify the quantity of crackling in person. | Four edges of which at least one ought to be mine.
-dlg resident.hub : I'm prepared to enter a civil conversation without charging the paper to anybody.
-dlg resident.job [self.job=scholar] : At #self.workplace# I keep letters and figures in their proper lines and the day's last light on a scrap of my own.
-dlg resident.news [world.news] : This would be the legible version. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The report says #topic.subject# #topic.claim#. The word to underline is report.
-dlg resident.hub [topic.meeting=known] : #topic.player#, recognisable without further documentary assistance.
-dlg resident.bye : Take the summer-light share of whatever day is going.
 
+dlg @1 resident.hub : I'm prepared to enter a civil conversation without charging the paper to anybody.
+dlg @1 resident.job [self.job=scholar] : At #self.workplace# I keep letters and figures in their proper lines and the day's last light on a scrap of my own.
+dlg @1 resident.news [world.news] : This would be the legible version. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The report says #topic.subject# #topic.claim#. The word to underline is report.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, recognisable without further documentary assistance.
+dlg @1 resident.bye : Take the summer-light share of whatever day is going.
 graft resident.hub
 choice Does light require a written entry? -> sun_record
 node sun_record

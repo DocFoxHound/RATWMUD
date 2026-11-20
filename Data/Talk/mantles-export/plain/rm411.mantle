@@ -1,14 +1,17 @@
+# rm411, the uncut moon (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm411
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_soren_ashcote
+written_by codex
 title the uncut moon
 fits stage=adult|old
 prefers quarter=works
 traits temper=calm talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=content
-quirk leaves_the_last_slice_of_a_carved_moon_uncut_till_the_bells_finish
+quirk leaves_the_last_moon_slice_uncut_till_the_bells_finish
 likes smoked_eel whittling festival_bells misty_dawns
 dislikes flies night_noise
 fears the_factor_at_the_door a_full_night_without_sleep
@@ -68,7 +71,6 @@ line @22 deflect_thanks : An entirely manageable scrap of time. | The thing came
 line @23 preclose : I've a last shaving still holding on. | Time to put a little order in the ordinary work.
 line @24 accept_preclose : Go on. You've kept the account square. | Your next occupation may have the pleasure of you.
 line @25 farewell [here.time=night] : May no loose shutter discover your window tonight. | A generous allowance of silence after dark.
-
 scene woodmoon
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : State the business without
 dlg @5 resident.job [self.job=none self.workplace] : I work at #self.workplace#. Soon as the pressure is right I prefer to let the fruit do the talking.
 dlg @6 resident.job : I manage the part where a little time can spare a great deal of effort.
 dlg @7 resident.bye : Keep your quiet hours out of the general account.
-
 graft resident.hub
 choice Why leave the wood moon almost finished? -> last_moon
 node last_moon

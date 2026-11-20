@@ -1,9 +1,12 @@
+# rm533, the handspan shop shutter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm533
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_kjell_saltton
+written_by codex
 title the handspan shop shutter
 fits stage=young|adolescent|adult|old
 prefers quarter=commons
@@ -35,43 +38,145 @@ counter = a flat board | the little counter plank
 bell = the chapel's inner hush | the deep hush following a bell
 
 any
-opinion merchants for 1 : I'd like my own price to fit on one little board a wolf can read from either side.
-opinion houses against 1 : I'd let a House pay in ordinary coin. Its crest alone wouldn't open my till.
-opinion strangers for 1 : A stranger might see a catch in my shutter that a familiar face has stopped noticing.
-opinion dole for 1 : Were my shutter open already, its last cake could go where supper was still in doubt.
-opinion church for 1 : A minute among empty pews lets a hurried thought lie down flat.
+opinion @1 merchants for 1 : I'd like my own price to fit on one little board a wolf can read from either side.
+opinion @1 houses against 1 : I'd let a House pay in ordinary coin. Its crest alone wouldn't open my till.
+opinion @1 strangers for 1 : A stranger might see a catch in my shutter that a familiar face has stopped noticing.
+opinion @1 dole for 1 : Were my shutter open already, its last cake could go where supper was still in doubt.
+opinion @1 church for 1 : A minute among empty pews lets a hurried thought lie down flat.
+line @1 greet [pair.band=strangers] : Welcome by this very small counter. | Hello. Plenty of room beside the model.
+line @2 greet [self.working=yes] : Careful where the little hinge has landed. | Welcome among the shavings.
+line @3 greet [here.time=dawn] : Morning makes the grain look silver. | Hello through the market mist.
+line @4 greet [here.time=dusk|night] : Evening. The shutter still turns. | Come share the end of the light.
+line @1 kin.open [pair.kin!=no] : There's a household seat near my work. | Good to have a home voice here.
+line @1 again.open : Hinge still swings your way. | You've come round my little shop again.
+line @1 greet.return : Come back to the board awhile. | Your face fits this opening.
+line @2 greet.return [pair.band=friends|family] : Welcome behind my model counter. | I've a few new shavings to show you.
+line @3 greet.return [self.working=yes] : You'll find a welcome between shavings. | You can watch the shutter move now.
+line @4 greet.return [here.time=dusk|night] : Quiet visiting hour, welcome. | I saved a clean bench corner.
+line @1 farewell : Go with an easy turn on your hinges. | May the ground stay firm beneath you.
+line @1 farewell.return : I'll remember which end you carved. | Come back when the shutter's up.
+line @2 farewell.return [here.time=night] : Find a dry patch all the way home. | Good rest behind your own shutters.
+line @1 react.news : Set the news beside the model. | I'd like the plain wood of that account.
+line @1 react.news.new : First time the grain's shown that way. | That's a fresh cut for my ears.
+line @1 react.news.known : Yes. I had that part in hand already. | My little board has heard that one.
+line @1 react.news.doubt : I'd check the fit before putting my full weight on that account. | A crest alone wouldn't persuade me to spend good trust.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take the cleaner seat. I'll listen. | A small quiet may serve just now.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a little honey on top. | My shutter would go right up for such happy tidings.
+line @1 ask.how : Has anything worked smoothly for you today? | Did the mud let your feet through?
+line @1 answer.how : My board's smooth and the morning was kind. | One good cut for every awkward one.
+line @1 decline : I should save my spare hour for fitting this difficult hinge. | I'd like to finish one small promise before adding another.
+line @1 accept_decline : A shut flap is a perfectly clear answer. | We can leave it on the bench.
+line @1 thank : Your patience gave the hinge a proper chance. | I'll remember whose paw steadied that end.
+line @1 sympathise : Stay awhile in the chapel quiet. | I can let the model wait for company.
+line @1 reassure : Try the fit again when your paws feel ready. | A rough patch doesn't spoil the whole board.
+line @1 preclose : I'll put these little pieces away soon. | The shutter wants one last touch.
+rule @aside1
+when concept=bark self.likes=whittling
+does aside
+cooldown 6h
+say One more sliver under that hinge. | The little flap has found its turn.
 
-any
-line greet [pair.band=strangers] : Welcome by this very small counter. | Hello. Plenty of room beside the model.
-line greet [self.working=yes] : Careful where the little hinge has landed. | Welcome among the shavings.
-line greet [here.time=dawn] : Morning makes the grain look silver. | Hello through the market mist.
-line greet [here.time=dusk|night] : Evening. The shutter still turns. | Come share the end of the light.
-line kin.open [pair.kin!=no] : There's a household seat near my work. | Good to have a home voice here.
-line again.open : Hinge still swings your way. | You've come round my little shop again.
-line greet.return : Come back to the board awhile. | Your face fits this opening.
-line greet.return [pair.band=friends|family] : Welcome behind my model counter. | I've a few new shavings to show you.
-line greet.return [self.working=yes] : You'll find a welcome between shavings. | You can watch the shutter move now.
-line greet.return [here.time=dusk|night] : Quiet visiting hour, welcome. | I saved a clean bench corner.
-line farewell : Go with an easy turn on your hinges. | May the ground stay firm beneath you.
-line farewell.return : I'll remember which end you carved. | Come back when the shutter's up.
-line farewell.return [here.time=night] : Find a dry patch all the way home. | Good rest behind your own shutters.
-line react.news : Set the news beside the model. | I'd like the plain wood of that account.
-line react.news.new : First time the grain's shown that way. | That's a fresh cut for my ears.
-line react.news.known : Yes. I had that part in hand already. | My little board has heard that one.
-line react.news.doubt : I'd check the fit before putting my full weight on that account. | A crest alone wouldn't persuade me to spend good trust.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take the cleaner seat. I'll listen. | A small quiet may serve just now.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves a little honey on top. | My shutter would go right up for such happy tidings.
-line ask.how : Has anything worked smoothly for you today? | Did the mud let your feet through?
-line answer.how : My board's smooth and the morning was kind. | One good cut for every awkward one.
-line decline : I should save my spare hour for fitting this difficult hinge. | I'd like to finish one small promise before adding another.
-line accept_decline : A shut flap is a perfectly clear answer. | We can leave it on the bench.
-line thank : Your patience gave the hinge a proper chance. | I'll remember whose paw steadied that end.
-line sympathise : Stay awhile in the chapel quiet. | I can let the model wait for company.
-line reassure : Try the fit again when your paws feel ready. | A rough patch doesn't spoil the whole board.
-line preclose : I'll put these little pieces away soon. | The shutter wants one last touch.
+rule @aside2
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 7h
+say Honey crumbs off the working side. | A corner for the imaginary customer.
+
+rule @aside3
+when concept=bark self.likes=misty_dawns
+does aside
+cooldown 8h
+say The far market's vanished behind the small one. | Morning fog suits a pocket shop.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Bring the shutter down by its peg. | The little counter keeps its warmth late.
+
+dlg @1 resident.hub : My shop fits on my palm for now. There's plenty of market left for your own market business.
+dlg @1 resident.news [world.news] : Word's travelled round to my small counter. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, come try the fit of the shutter since your last visit.
+dlg @3 resident.hub [here.time=dawn] : Soft grey morning beyond my handspan shop.
+dlg @1 resident.bye : Keep a dry footing between the market ruts.
+graft resident.hub
+choice Can that little stall really open for business? -> model_open
+node model_open
+say One finger on this peg. The flap comes up, the counter holds, and my offering is a very small length of wood with quite a good hinge on it.
+free
+choice What's missing from the full-sized stall? -> model_full
+choice I'll leave a shaving on the counter. -> hub
+node model_full
+say Most of the coppers. Some mornings that bothers me. On others it feels like having a long time to get the working parts right.
+choice I'd want to see it when it opens. -> hub
+choice I'll leave the hinge to you. -> bye
+
+
+grown
+scene g_customer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a new customer the shutter hinge and let the question come naturally.
+b : Will everyone care? | Why that bit first?
+a : Some want the price and I'll give it plainly. Others like to know where a thing has its strength. | It's a moving part. Anybody can try it without learning my whole trade.
+
+scene g_wood
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #wood.capitalize# sometimes conceals a knot exactly where the eye wants a hinge.
+b : Carve through it? | Waste the piece?
+a : I'd move the opening a little. One can be stubborn enough to make a poor joint very neatly. | A knot left in plain sight brings out the plainer grain beside it.
+
+scene g_cost
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A shop that costs no more than its wood has forgotten the day spent fitting the door.
+b : Would you charge by the hour? | Any exceptions?
+a : I work out what the finished job deserves. My mistakes needn't all sit on a customer's bill. | A small gift can cost a day too. Knowing that makes it a better gift.
+
+scene g_silence
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can still put a noisy market down when I reach an empty chapel.
+b : What if a price sticks? | Do you stay long?
+a : I let it lie unanswered. Even the chapel walls can hear what's being sold outside. | Till the quiet feels quite valuable in itself.
+
+scene g_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.friend# to open the shutter without my saying how.
+b : A test of your friend? | And if it sticks?
+a : A test of the maker. A good small hinge shouldn't need a speech in its support. | I take the work back and find the bind. Which was my reason for wanting an honest hand on it.
+
+scene g_road
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : On a market road I examine wheel marks beside each stall.
+b : For puddles? | To follow the crowds?
+a : A boot sunk in mud doesn't easily stop for a small purchase. A sound footing is an invitation. | For where people can linger without blocking a cart. No trade's worth a bad fall.
+
+scene g_prayer
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I want any shop of mine to have one quiet corner without a price pinned to it.
+b : What belongs there? | For whom?
+a : A chair if I can fit it. A strip of clear counter if I can't. | A tired neighbour or a stranger looking lost. That seems a reasonable use of a corner.
+
+scene g_hinge
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once thought a shop began with the raising of its shutter.
+b : Changed your mind? | What comes first?
+a : It began on the day I saved my first copper and left it in the purse overnight. | A fair notion of what good the shop might do on an ordinary unremarkable morning.
+
+story g_pin [topic=memories]
+  : A small hinge used to squeak each time I showed my model. I spent a morning making the pin as smooth as I could before noticing the board was crooked.
+  : One sliver at the foot set things straight. The best part of all my careful polishing was the time it gave me to hear the trouble properly.
+  b : Did the old pin stay in?
+  : It fitted fine once it wasn't asked to support a market gone sideways.
+
 
 young
-
 scene y_peg
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -106,8 +211,8 @@ story y_shoe [topic=memories]
   b : Was there anything for sale?
   : A single honey crumb. It went before closing time.
 
-adolescent
 
+adolescent
 scene t_stall
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -183,111 +288,3 @@ story t_model [topic=work]
   : For a moment that price blotted out my shop. I slid it sideways under the counter. The shop looked possible again.
   b : Had the price gone down?
   : Not a copper. But I remembered which direction I wanted to open the shutter.
-
-grown
-
-scene g_customer
-when topic=newcomer
-does tell.self / ask.detail / answer.detail
-a : I'd show a new customer the shutter hinge and let the question come naturally.
-b : Will everyone care? | Why that bit first?
-a : Some want the price and I'll give it plainly. Others like to know where a thing has its strength. | It's a moving part. Anybody can try it without learning my whole trade.
-
-scene g_wood
-when topic=pastimes self.likes=whittling
-does tell.self / ask.detail / answer.detail
-a : #wood.capitalize# sometimes conceals a knot exactly where the eye wants a hinge.
-b : Carve through it? | Waste the piece?
-a : I'd move the opening a little. One can be stubborn enough to make a poor joint very neatly. | A knot left in plain sight brings out the plainer grain beside it.
-
-scene g_cost
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : A shop that costs no more than its wood has forgotten the day spent fitting the door.
-b : Would you charge by the hour? | Any exceptions?
-a : I work out what the finished job deserves. My mistakes needn't all sit on a customer's bill. | A small gift can cost a day too. Knowing that makes it a better gift.
-
-scene g_silence
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : I can still put a noisy market down when I reach an empty chapel.
-b : What if a price sticks? | Do you stay long?
-a : I let it lie unanswered. Even the chapel walls can hear what's being sold outside. | Till the quiet feels quite valuable in itself.
-
-scene g_friend
-when topic=friends self.friend
-does tell.self / ask.detail / answer.detail
-a : I'd ask #self.friend# to open the shutter without my saying how.
-b : A test of your friend? | And if it sticks?
-a : A test of the maker. A good small hinge shouldn't need a speech in its support. | I take the work back and find the bind. Which was my reason for wanting an honest hand on it.
-
-scene g_road
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : On a market road I examine wheel marks beside each stall.
-b : For puddles? | To follow the crowds?
-a : A boot sunk in mud doesn't easily stop for a small purchase. A sound footing is an invitation. | For where people can linger without blocking a cart. No trade's worth a bad fall.
-
-scene g_prayer
-when topic=home
-does tell.self / ask.detail / answer.detail
-a : I want any shop of mine to have one quiet corner without a price pinned to it.
-b : What belongs there? | For whom?
-a : A chair if I can fit it. A strip of clear counter if I can't. | A tired neighbour or a stranger looking lost. That seems a reasonable use of a corner.
-
-scene g_hinge
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : I once thought a shop began with the raising of its shutter.
-b : Changed your mind? | What comes first?
-a : It began on the day I saved my first copper and left it in the purse overnight. | A fair notion of what good the shop might do on an ordinary unremarkable morning.
-
-story g_pin [topic=memories]
-  : A small hinge used to squeak each time I showed my model. I spent a morning making the pin as smooth as I could before noticing the board was crooked.
-  : One sliver at the foot set things straight. The best part of all my careful polishing was the time it gave me to hear the trouble properly.
-  b : Did the old pin stay in?
-  : It fitted fine once it wasn't asked to support a market gone sideways.
-
-any
-
-rule @aside1
-when concept=bark self.likes=whittling
-does aside
-cooldown 6h
-say One more sliver under that hinge. | The little flap has found its turn.
-
-rule @aside2
-when concept=bark self.likes=honey_cakes
-does aside
-cooldown 7h
-say Honey crumbs off the working side. | A corner for the imaginary customer.
-
-rule @aside3
-when concept=bark self.likes=misty_dawns
-does aside
-cooldown 8h
-say The far market's vanished behind the small one. | Morning fog suits a pocket shop.
-
-rule @aside4
-when concept=bark here.time=dusk
-does aside
-cooldown 9h
-say Bring the shutter down by its peg. | The little counter keeps its warmth late.
-
-dlg resident.hub : My shop fits on my palm for now. There's plenty of market left for your own market business.
-dlg resident.news [world.news] : Word's travelled round to my small counter. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, come try the fit of the shutter since your last visit.
-dlg resident.hub [here.time=dawn] : Soft grey morning beyond my handspan shop.
-dlg resident.bye : Keep a dry footing between the market ruts.
-
-graft resident.hub
-choice Can that little stall really open for business? -> model_open
-node model_open
-say One finger on this peg. The flap comes up, the counter holds, and my offering is a very small length of wood with quite a good hinge on it.
-free
-choice What's missing from the full-sized stall? -> model_full
-choice I'll leave a shaving on the counter. -> hub
-node model_full
-say Most of the coppers. Some mornings that bothers me. On others it feels like having a long time to get the working parts right.
-choice I'd want to see it when it opens. -> hub
-choice I'll leave the hinge to you. -> bye

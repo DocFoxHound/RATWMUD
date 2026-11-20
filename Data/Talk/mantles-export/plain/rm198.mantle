@@ -1,9 +1,12 @@
+# rm198, the pocket fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm198
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_philippa_rainford
+written_by codex
 title the pocket fleet
 fits stage=young|adolescent|adult|old
 prefers temper=short honesty=frank
@@ -35,200 +38,38 @@ notch = a launch mark | my little fork cut
 paint = the last dab of red | a smear of berry red
 
 any
-opinion dole for 2 : Queueing with a bowl takes long enough. Must you explain the empty bowl as well?
-opinion church for 1 : A loaf from the chapel cuts into just as many slices as one you buy.
-opinion merchants against 1 : Ask the price of a buckle and suddenly you're judging the whole shop. I only wanted the number.
-opinion city for 2 : I could learn this city one gutter at a time and still have something left to find.
-opinion festivals mixed 1 : I want the music. I also want the tall wolves to let the little ones see.
-opinion houses mixed 0 : A crest looks splendid on a sail. Whether it stays upright is another business.
-line greet : Come and see from this end. There's room beside my elbow. | #greet#. Look all you like.
-line greet.return : I hear you. I've just got to steady this. | Hello back. Come a pace closer.
-line farewell : Off you paddle, then. I'll mind the shore. | #farewell#. Thanks for staying through the launch.
-line farewell.return : I'll see you when there's something afloat. | A dry crossing to you.
-line react.news : Let me have the bit you actually heard. | All right, my ears are yours.
-line react.news.doubt : I'd sooner try it myself before swearing to it. | That needs a better witness than an echo.
-line react.news.known : That one's already come into harbour twice. | Heard that before my last launch.
-line react.news.new : That's the first splash I've heard of it. | Hold on. That's new to me.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. Here I am fussing over a chip. Tell me the rest. | That must hurt past anybody's mending.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a bit of bright paint on the day. | Something worth making a whole bright flag for!
-line thank : You kept it steady when it counted. I'll remember. | That was worth a dry pair of cuffs to me. Thanks.
-line decline : Leave me out this once. I've barely started. | I'd sooner finish my own bit first.
-line accept_decline : Suit yourself. The water can wait. | Fair enough. I don't like being pressed either.
-line accept_preclose : Right, take the dry edge going out. | Go on, before somebody comes asking one last thing.
-line kin.open [pair.kin!=no] : There's my own lot. Mind the wet patch. | Look who I've got here. Family gets a look under the cloth.
-line again.open : You got back before the paint dried. | My little fleet's still in the same port.
-line preclose : I'll lose the set of this edge if I talk any longer. | There's a job on my lap that's been very good about waiting.
-line ask.how : What's kept your paws busy lately? | Got anything to show for your trouble today?
-line answer.how : I'm getting one stubborn thing to behave. That'll do. | Wetter than I began, which generally means progress.
-line sympathise : Nobody asked how hard you tried. I will. | I know the feeling when everybody has advice and nobody offers a paw.
-line reassure : Give it a second go with me holding this end. | It's allowed to go crooked while you learn to steer.
-
-grown
-
-scene balance
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I can predict a little hull's lean before it's wet. | My latest hull lists even without a sail.
-b : How do you tell? | Will you cut it down?
-a : Balance it on a nail laid sideways. The heavy cheek dips first. | I'll shift #ballast# a whisker before I take wood off.
-
-
-scene breadboat
-when topic=food self.likes=warm_bread
-does offer / ask.detail / answer.detail
-a : Take #crust#. I like the bit with the split. | I'll take the lopsided loaf if it's warm.
-b : What's better about a split? | You don't pick the neat one?
-a : Butter gets down inside where your tongue can't scrape it off. | That's the same weight of supper and a better crunch.
-
-
-scene squall
-when topic=weather here.weather=storm
-does tell.self / ask.detail / answer.detail
-a : That racket overhead would pitch every boat off my shelf. | I'd give the thunder a job announcing my launches.
-b : Have you secured them? | Would it come when you called?
-a : Rag under each keel. A soft berth saves paint. | No, I'd launch when it came. Much less bother.
-
-
-scene blunt
-when topic=pastimes
-does tell.complaint / ask.detail / answer.detail
-a : A blunt edge made that woolly bow. | I spoiled a bow trying to smooth it with a spoon.
-b : Would a sharper edge fix it? | How could a spoon spoil wood?
-a : Once it's woolly, best rub it smooth and start fresh underneath. | Pressed harder and harder till I had a dent with a lovely shine.
-
-
-scene savings
-when topic=dreams|prices
-does tell.plan / ask.detail / answer.detail
-a : I'd sell boats from a table with a tub built into it. | When I price a fleet I'll mark each keel.
-b : So buyers could try them? | Why hide the price?
-a : Exactly. If it goes over, it stays mine. | So picking a favourite comes before counting your purse.
-
-
-scene haggling
-when topic=prices self.dislikes=haggling
-does tell.complaint / react.self / assess
-a : Some wolves bid low then wink. I can do without the wink. | A bargain ought to end sometime.
-b : What would suit you? | Isn't payment the end?
-a : A number meant in earnest. I'll give an earnest answer. | You'd think. I've heard the arguing follow a buyer out.
-
-
-scene citygutters
-when topic=land here.region=ridgemere
-does tell.self / ask.detail / answer.detail
-a : The steep streets here teach a hull to hurry. | I've charted a city voyage just the length of a doorstep.
-b : What teaches it to stop? | Is there much to chart?
-a : Usually a grate. I walk ahead with a twig. | A drop, a rock and a harbour. Plenty can go wrong.
-
-
-scene bentmast
-when topic=smalltalk
-does tell.self / react.self / assess
-a : This crooked mast makes the boat look curious. | I've stopped straightening every crooked stick.
-b : It seems to be peering round something. | What changed?
-a : Yes! I'll leave it leaning just so. | Tried a crooked one for a tiller and my paw liked the fit.
-
-
-scene quietlaunch
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : I say my thanks after the launch. | I'd like a blessing small enough to fit under a keel.
-b : Only if it floats? | What would it say?
-a : A sinking shows me something too. That's worth thanks. | Come safe to someone's paw.
-
-
-scene names
-when topic=lore|pastimes
-does tell.self / ask.detail / answer.detail
-a : I won't name a boat still on the bench. | One went backwards first time out.
-b : Suppose the right name occurs to you? | What name did that earn?
-a : I whisper it into the shavings. If it sticks till launch, it's right. | Homeward. Seemed rude to argue.
-
-
-scene tea
-when topic=food self.dislikes=cold_tea
-does tell.self / ask.detail / answer.detail
-a : Tea too cold to drink makes good brown stain. | I once kept my mug for staining and my dish for drinking.
-b : Will it stay brown? | Did that work?
-a : Twice dipped, yes. Once just looks like a dirty thumb. | Till somebody served my boat a fresh hot drink.
-
-
-scene world
-when topic=times world.times=hard|lean
-does tell.worry / react.self / assess
-a : Hard times. Little toys slide down the list. | When money's short I keep the shavings too.
-b : What takes their place? | What can you make from those?
-a : Bread. But you can still carve after supper. | A sail that curls from prow to stern all by itself.
-
-
-young
-
-scene school
-when topic=day|work self.job=child
-does tell.self / ask.detail / answer.detail
-a : I drew a boat on my lesson slate. | I can spell every part of a boat except the slippery end.
-b : Where did the sums go? | The stern?
-a : On the sail. Even a sums lesson can go somewhere. | No, the bit where my paw rubbed out the chalk.
-
-
-scene race
-when topic=pastimes
-does invite / ask.detail / answer.detail
-a : Race me a twig against #boat#. | Want to count a launch for me?
-b : Doesn't a boat have the advantage? | What's there to count?
-a : Twigs can't fill with water. I say we're even. | How long I can let go before I have to catch it.
-
-
-scene pocket
-when topic=home
-does tell.complaint / react.self / assess
-a : My pocket's got a shoreline. Feel the damp. | I keep finding little curls of wood in my blanket.
-b : You put a wet boat in there? | Do you carve in bed?
-a : I wasn't leaving it behind for somebody's boot. | No. But my cuffs save things for later.
-
-
-scene market
-when topic=dreams
-does tell.plan / ask.detail / answer.detail
-a : The bottom shelf of my stall will be low. | I'll keep one boat that costs a pebble.
-b : For the little boats? | What sort of pebble?
-a : For the little buyers. Nobody ever asks what we can reach. | Nice and flat. It'll hold down the cloth.
-
-
-scene crumb
-when topic=food
-does tell.self / react.self / assess
-a : I made a sail out of the thinnest bit of crust. | Look at this wake of crumbs I've left.
-b : Did it work? | Anyone could follow you.
-a : Till lunch. A good sail but an even better bite. | Good. They'd find the bread, too.
-
-
-adolescent
-
-scene serious
-when topic=work|dreams
-does tell.worry / react.self / assess
-a : Ask about my boats and I'll tell you. Ask about my little toys and I go deaf. | I've started signing the undersides.
-b : Isn't that a little harsh? | Afraid of somebody copying them?
-a : Maybe. I'd rather hear a question about the hull. | No. I want the bad ones coming back to me as well.
-
-
-scene apron
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I sewed a deep pocket just for #ballast#. | My boat apron ties off to one side.
-b : Why does a pebble need that much cloth? | Why there?
-a : It's my one reliable test weight. Takes ages to find another. | So the knot won't push things about when I lean over to carve.
-
-
-any
-
+opinion @1 dole for 2 : Queueing with a bowl takes long enough. Must you explain the empty bowl as well?
+opinion @1 church for 1 : A loaf from the chapel cuts into just as many slices as one you buy.
+opinion @1 merchants against 1 : Ask the price of a buckle and suddenly you're judging the whole shop. I only wanted the number.
+opinion @1 city for 2 : I could learn this city one gutter at a time and still have something left to find.
+opinion @1 festivals mixed 1 : I want the music. I also want the tall wolves to let the little ones see.
+opinion @1 houses mixed 0 : A crest looks splendid on a sail. Whether it stays upright is another business.
+line @1 greet : Come and see from this end. There's room beside my elbow. | #greet#. Look all you like.
+line @1 greet.return : I hear you. I've just got to steady this. | Hello back. Come a pace closer.
+line @1 farewell : Off you paddle, then. I'll mind the shore. | #farewell#. Thanks for staying through the launch.
+line @1 farewell.return : I'll see you when there's something afloat. | A dry crossing to you.
+line @1 react.news : Let me have the bit you actually heard. | All right, my ears are yours.
+line @1 react.news.doubt : I'd sooner try it myself before swearing to it. | That needs a better witness than an echo.
+line @1 react.news.known : That one's already come into harbour twice. | Heard that before my last launch.
+line @1 react.news.new : That's the first splash I've heard of it. | Hold on. That's new to me.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. Here I am fussing over a chip. Tell me the rest. | That must hurt past anybody's mending.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a bit of bright paint on the day. | Something worth making a whole bright flag for!
+line @1 thank : You kept it steady when it counted. I'll remember. | That was worth a dry pair of cuffs to me. Thanks.
+line @1 decline : Leave me out this once. I've barely started. | I'd sooner finish my own bit first.
+line @1 accept_decline : Suit yourself. The water can wait. | Fair enough. I don't like being pressed either.
+line @1 accept_preclose : Right, take the dry edge going out. | Go on, before somebody comes asking one last thing.
+line @1 kin.open [pair.kin!=no] : There's my own lot. Mind the wet patch. | Look who I've got here. Family gets a look under the cloth.
+line @1 again.open : You got back before the paint dried. | My little fleet's still in the same port.
+line @1 preclose : I'll lose the set of this edge if I talk any longer. | There's a job on my lap that's been very good about waiting.
+line @1 ask.how : What's kept your paws busy lately? | Got anything to show for your trouble today?
+line @1 answer.how : I'm getting one stubborn thing to behave. That'll do. | Wetter than I began, which generally means progress.
+line @1 sympathise : Nobody asked how hard you tried. I will. | I know the feeling when everybody has advice and nobody offers a paw.
+line @1 reassure : Give it a second go with me holding this end. | It's allowed to go crooked while you learn to steer.
 story cork [topic=memories]
   : The cleverest craft I made had a cork all down one side.
   : It couldn't sink. Just rolled over and stayed there, belly in the air.
   b : A very safe boat for a beetle hanging upside down.
   : Hadn't thought of selling to beetles.
-
 
 story lettering [topic=pastimes]
   : I lettered a name right across a bow before its first bath.
@@ -236,13 +77,11 @@ story lettering [topic=pastimes]
   b : Did the name survive?
   : I called it whiskers from then on.
 
-
 story crumbs [topic=food]
   : At a feast I got a loaf shaped like a swan.
   : Saved the head all through supper. In my pocket it broke into nine bits.
   b : So you ate the pieces at last?
   : All nine. Next time I'll start with the beak.
-
 
 rule @water
 when concept=bark self.likes=whittling
@@ -250,13 +89,11 @@ does aside
 cooldown 8h
 say Fresh water in #basin#. Anything that won't float now can hardly blame the water. | My basin's open to all beetles with business over the water.
 
-
 rule @grain
 when concept=bark self.likes=whittling
 does aside
 cooldown 8h
 say One curl right off the length of it! Look how thin it came. | What a ribbon off that little stick. It'd curl a mast twice round.
-
 
 rule @thunder
 when concept=bark here.weather=storm
@@ -264,22 +101,20 @@ does aside
 cooldown 8h
 say There's the sky trying out its big hammer. | Sounded like an enormous piece of iron dropped flat.
 
-
 rule @coin
 when concept=bark self.wealth=poor|destitute
 does aside
 cooldown 8h
 say Stall money on this side. Bread money tucked in the other seam. | Bread on one side, boat pennies in the other. Easy to keep the peace.
 
-dlg resident.hub : I'm listening while this dries. You've got a little while yet.
-dlg resident.hub [topic.meeting=known] : #topic.player#, try this side. You'll have the light.
-dlg resident.hub [here.time=night] : Careful in the dark. You'll upset my launch bowl.
-dlg resident.hub [pair.disposition=wary|hostile] : Your words will carry from there. That's plenty close enough.
-dlg resident.job [self.job=child] : Lessons, just now. I draw what I hope to make next.
-dlg resident.job : I try the thing all the way through before I say it's done.
-dlg resident.bye : Off you float. I'll show you the next one sometime.
-dlg resident.news [world.news] : Here's what reached my end of the street. #world.news#.
-
+dlg @1 resident.hub : I'm listening while this dries. You've got a little while yet.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, try this side. You'll have the light.
+dlg @3 resident.hub [here.time=night] : Careful in the dark. You'll upset my launch bowl.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your words will carry from there. That's plenty close enough.
+dlg @1 resident.job [self.job=child] : Lessons, just now. I draw what I hope to make next.
+dlg @2 resident.job : I try the thing all the way through before I say it's done.
+dlg @1 resident.bye : Off you float. I'll show you the next one sometime.
+dlg @1 resident.news [world.news] : Here's what reached my end of the street. #world.news.capitalize#.
 graft resident.hub
 choice May I try floating one? -> thumbboat
 node thumbboat
@@ -291,3 +126,142 @@ node thumbboat_more
 say Then it ships half a bowlful before you've even given it a chance. Tip it out and try again.
 choice I'll let it dry first. -> hub
 choice Goodbye. -> bye
+
+
+grown
+scene balance
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can predict a little hull's lean before it's wet. | My latest hull lists even without a sail.
+b : How do you tell? | Will you cut it down?
+a : Balance it on a nail laid sideways. The heavy cheek dips first. | I'll shift #ballast# a whisker before I take wood off.
+
+scene breadboat
+when topic=food self.likes=warm_bread
+does offer / ask.detail / answer.detail
+a : Take #crust#. I like the bit with the split. | I'll take the lopsided loaf if it's warm.
+b : What's better about a split? | You don't pick the neat one?
+a : Butter gets down inside where your tongue can't scrape it off. | That's the same weight of supper and a better crunch.
+
+scene squall
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : That racket overhead would pitch every boat off my shelf. | I'd give the thunder a job announcing my launches.
+b : Have you secured them? | Would it come when you called?
+a : Rag under each keel. A soft berth saves paint. | No, I'd launch when it came. Much less bother.
+
+scene blunt
+when topic=pastimes
+does tell.complaint / ask.detail / answer.detail
+a : A blunt edge made that woolly bow. | I spoiled a bow trying to smooth it with a spoon.
+b : Would a sharper edge fix it? | How could a spoon spoil wood?
+a : Once it's woolly, best rub it smooth and start fresh underneath. | Pressed harder and harder till I had a dent with a lovely shine.
+
+scene savings
+when topic=dreams|prices
+does tell.plan / ask.detail / answer.detail
+a : I'd sell boats from a table with a tub built into it. | When I price a fleet I'll mark each keel.
+b : So buyers could try them? | Why hide the price?
+a : Exactly. If it goes over, it stays mine. | So picking a favourite comes before counting your purse.
+
+scene haggling
+when topic=prices self.dislikes=haggling
+does tell.complaint / react.self / assess
+a : Some wolves bid low then wink. I can do without the wink. | A bargain ought to end sometime.
+b : What would suit you? | Isn't payment the end?
+a : A number meant in earnest. I'll give an earnest answer. | You'd think. I've heard the arguing follow a buyer out.
+
+scene citygutters
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The steep streets here teach a hull to hurry. | I've charted a city voyage just the length of a doorstep.
+b : What teaches it to stop? | Is there much to chart?
+a : Usually a grate. I walk ahead with a twig. | A drop, a rock and a harbour. Plenty can go wrong.
+
+scene bentmast
+when topic=smalltalk
+does tell.self / react.self / assess
+a : This crooked mast makes the boat look curious. | I've stopped straightening every crooked stick.
+b : It seems to be peering round something. | What changed?
+a : Yes! I'll leave it leaning just so. | Tried a crooked one for a tiller and my paw liked the fit.
+
+scene quietlaunch
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say my thanks after the launch. | I'd like a blessing small enough to fit under a keel.
+b : Only if it floats? | What would it say?
+a : A sinking shows me something too. That's worth thanks. | Come safe to someone's paw.
+
+scene names
+when topic=lore|pastimes
+does tell.self / ask.detail / answer.detail
+a : I won't name a boat still on the bench. | One went backwards first time out.
+b : Suppose the right name occurs to you? | What name did that earn?
+a : I whisper it into the shavings. If it sticks till launch, it's right. | Homeward. Seemed rude to argue.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Tea too cold to drink makes good brown stain. | I once kept my mug for staining and my dish for drinking.
+b : Will it stay brown? | Did that work?
+a : Twice dipped, yes. Once just looks like a dirty thumb. | Till somebody served my boat a fresh hot drink.
+
+scene world
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : Hard times. Little toys slide down the list. | When money's short I keep the shavings too.
+b : What takes their place? | What can you make from those?
+a : Bread. But you can still carve after supper. | A sail that curls from prow to stern all by itself.
+
+
+young
+scene school
+when topic=day|work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I drew a boat on my lesson slate. | I can spell every part of a boat except the slippery end.
+b : Where did the sums go? | The stern?
+a : On the sail. Even a sums lesson can go somewhere. | No, the bit where my paw rubbed out the chalk.
+
+scene race
+when topic=pastimes
+does invite / ask.detail / answer.detail
+a : Race me a twig against #boat#. | Want to count a launch for me?
+b : Doesn't a boat have the advantage? | What's there to count?
+a : Twigs can't fill with water. I say we're even. | How long I can let go before I have to catch it.
+
+scene pocket
+when topic=home
+does tell.complaint / react.self / assess
+a : My pocket's got a shoreline. Feel the damp. | I keep finding little curls of wood in my blanket.
+b : You put a wet boat in there? | Do you carve in bed?
+a : I wasn't leaving it behind for somebody's boot. | No. But my cuffs save things for later.
+
+scene market
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : The bottom shelf of my stall will be low. | I'll keep one boat that costs a pebble.
+b : For the little boats? | What sort of pebble?
+a : For the little buyers. Nobody ever asks what we can reach. | Nice and flat. It'll hold down the cloth.
+
+scene crumb
+when topic=food
+does tell.self / react.self / assess
+a : I made a sail out of the thinnest bit of crust. | Look at this wake of crumbs I've left.
+b : Did it work? | Anyone could follow you.
+a : Till lunch. A good sail but an even better bite. | Good. They'd find the bread, too.
+
+
+adolescent
+scene serious
+when topic=work|dreams
+does tell.worry / react.self / assess
+a : Ask about my boats and I'll tell you. Ask about my little toys and I go deaf. | I've started signing the undersides.
+b : Isn't that a little harsh? | Afraid of somebody copying them?
+a : Maybe. I'd rather hear a question about the hull. | No. I want the bad ones coming back to me as well.
+
+scene apron
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I sewed a deep pocket just for #ballast#. | My boat apron ties off to one side.
+b : Why does a pebble need that much cloth? | Why there?
+a : It's my one reliable test weight. Takes ages to find another. | So the knot won't push things about when I lean over to carve.

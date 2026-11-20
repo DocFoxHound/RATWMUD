@@ -1,9 +1,12 @@
+# rm320, the keeper of apple quarters (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm320
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_wystan_mudcot
+written_by codex
 title the keeper of apple quarters
 fits stage=adult|old
 prefers honesty=frank warmth=warm
@@ -17,6 +20,7 @@ topics friends +0.5 food +0.4 pastimes +0.3 weather +0.2
 styles comfort=practical gossip=discreet refuse=direct tease=none
 marks oath saying
 persona #self.first# quarters an apple before dealing a hand of cards and leaves private sorrows out of any account of the day.
+
 words
 oath! = Split my last pip | Scorch my green peel
 saying! = Deal the fruit first | Say what your eyes earned
@@ -33,35 +37,33 @@ peelbit = a strip of green peel | a coiled green shaving
 cardback = a faded crown | a barred back
 
 grown
-
-opinion houses mixed 1 : I'd have a fine House answer for what it actually did, however handsome or ugly the rumour looks.
-opinion strangers for 1 : A cut apple makes introductions easier and costs each of us very little.
-opinion road for 1 : A walk lets me see both ends of a claim somebody made from a comfortable chair.
-opinion church for 1 : There's a particular kindness in being allowed to sit unexamined in a quiet chapel.
-opinion merchants mixed 1 : I can make up my mind about a straight price. Haggling leaves me buying an end to the noise.
-opinion city for 1 : From the Heights you can see where a rain shower has gone before it reaches the next roof.
-line greet : Come within sharing distance. There's a wedge for you.
-line greet [pair.band=strangers] : I like an introduction with both hands in plain view.
-line greet.return : Welcome again. You won't have to bargain for a hearing.
-line farewell : Go while that bit of apple still snaps under a tooth.
-line farewell.return : I'll save your place through the next deal.
-line react.news : Put down what you saw and we'll look at it together.
-line react.news.new : Fresh slice of the matter for me.
-line react.news.known : My earlier piece cut along much the same line.
-line react.news.doubt : That sounds too well polished to be a first impression.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd cut up a second apple to give that news company.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the guessing out and bring something to eat.
-line decline : No, I'd be putting another wolf's private hurt on view.
-line answer.how : Steady, though I'd happily trade smoke for a clean breeze.
-line ask.how : Is there much grit left from your day's walk?
-line thank : That was fairly and plainly done. I appreciate it.
-line deflect_thanks : There were four pieces however I sliced it.
-line accept_decline : I'll take you at the value of your word.
-line sympathise : My shoulder makes a better screen than my questions would.
-line reassure : Nothing you keep to yourself will cost you a welcome.
-line ack : That matches the bit I can see.
-line preclose : I'll move my feet before the day gets ahead of them.
-
+opinion @1 houses mixed 1 : I'd have a fine House answer for what it actually did, however handsome or ugly the rumour looks.
+opinion @1 strangers for 1 : A cut apple makes introductions easier and costs each of us very little.
+opinion @1 road for 1 : A walk lets me see both ends of a claim somebody made from a comfortable chair.
+opinion @1 church for 1 : There's a particular kindness in being allowed to sit unexamined in a quiet chapel.
+opinion @1 merchants mixed 1 : I can make up my mind about a straight price. Haggling leaves me buying an end to the noise.
+opinion @1 city for 1 : From the Heights you can see where a rain shower has gone before it reaches the next roof.
+line @1 greet : Come within sharing distance. There's a wedge for you.
+line @2 greet [pair.band=strangers] : I like an introduction with both hands in plain view.
+line @1 greet.return : Welcome again. You won't have to bargain for a hearing.
+line @1 farewell : Go while that bit of apple still snaps under a tooth.
+line @1 farewell.return : I'll save your place through the next deal.
+line @1 react.news : Put down what you saw and we'll look at it together.
+line @1 react.news.new : Fresh slice of the matter for me.
+line @1 react.news.known : My earlier piece cut along much the same line.
+line @1 react.news.doubt : That sounds too well polished to be a first impression.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd cut up a second apple to give that news company.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the guessing out and bring something to eat.
+line @1 decline : No, I'd be putting another wolf's private hurt on view.
+line @1 answer.how : Steady, though I'd happily trade smoke for a clean breeze.
+line @1 ask.how : Is there much grit left from your day's walk?
+line @1 thank : That was fairly and plainly done. I appreciate it.
+line @1 deflect_thanks : There were four pieces however I sliced it.
+line @1 accept_decline : I'll take you at the value of your word.
+line @1 sympathise : My shoulder makes a better screen than my questions would.
+line @1 reassure : Nothing you keep to yourself will cost you a welcome.
+line @1 ack : That matches the bit I can see.
+line @1 preclose : I'll move my feet before the day gets ahead of them.
 scene food_1
 when topic=food self.likes=crisp_apples
 does tell.self / ask.detail / answer.detail
@@ -86,14 +88,14 @@ a : Waiting to see which little thread feeds it last. I'm not often patient with
 scene work_1
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : The post is written down as #self.trade_words#. I'll let the writing speak for the name.
+a : #self.trade_words.capitalize#. That's the short way of putting it.
 b : And the work itself? | Do you like that description?
 a : Minding exactly where each boot lands and leaving the next wolf an honest account of what I saw. | A short description leaves out most of the day. That's why we've still got voices.
 
 scene travel_1
 when topic=travel here.region=ridgemere
 does tell.self / ask.detail / answer.detail
-a : A walk up here will show you the front of one roof and the back of a dozen others.
+a : A walk along the top streets will show you the front of one roof and the back of a dozen others.
 b : Which do you prefer? | Do you look into the windows?
 a : The back. You see where the water really goes and how much damage the paint is disguising. | I look at roof tiles. What's behind a window isn't part of my route.
 
@@ -229,13 +231,13 @@ when concept=bark self.likes=crisp_apples
 does aside
 cooldown 8h
 say Four shares in one fruit if the knife goes true. | A good apple sounds fresh before I've tasted it.
-dlg resident.hub : Let's set our cards down and talk with empty hands.
-dlg resident.job [self.trade_words] : The name entered for my post is #self.trade_words#. Good footing matters whatever the entry says.
-dlg resident.news [world.news] : The account I can pass along goes like this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Someone said #topic.subject# #topic.claim#. My own eyes haven't added anything to that.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there is room for an honest word and an apple wedge.
-dlg resident.bye : Choose the wedge showing you its clean face.
 
+dlg @1 resident.hub : Let's set our cards down and talk with empty hands.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. Good footing matters whatever the work is called.
+dlg @1 resident.news [world.news] : The account I can pass along goes like this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Someone said #topic.subject# #topic.claim#. My own eyes haven't added anything to that.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there is room for an honest word and an apple wedge.
+dlg @1 resident.bye : Choose the wedge showing you its clean face.
 graft resident.hub
 choice Why put down the core before the cards? -> quarter_deal
 node quarter_deal

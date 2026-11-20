@@ -1,9 +1,12 @@
+# rm477, the boot ladder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm477
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ansel_tarley
+written_by codex
 title the boot ladder
 fits stage=adult|old
 prefers job=servant
@@ -33,42 +36,41 @@ dicecup = a little horn shaker | the neat yellow cup
 summerstone = a warm outside step | the sunlit corner stone
 
 any
-opinion city for 2 : Within these walls I can make a fresh start on a high landing with yesterday's mud still clinging to my boot. I value that.
-opinion merchants against 1 : I've heard a fine upper sold as a dry boot. I care a great deal more about the seam where the two prices meet.
-opinion newcomers for 1 : The courtesy a new arrival can use is the name of one street that will still be passable on the wet walk home.
-opinion road for 1 : I'd pay my copper for a dry approach and call the expense by its proper name.
-opinion sump against 1 : There's a taint at the base of my old boot that I can trace to one ordinary crossing down there. It never entirely came out.
+opinion @1 city for 2 : Within these walls I can make a fresh start on a high landing with yesterday's mud still clinging to my boot. I value that.
+opinion @1 merchants against 1 : I've heard a fine upper sold as a dry boot. I care a great deal more about the seam where the two prices meet.
+opinion @1 newcomers for 1 : The courtesy a new arrival can use is the name of one street that will still be passable on the wet walk home.
+opinion @1 road for 1 : I'd pay my copper for a dry approach and call the expense by its proper name.
+opinion @1 sump against 1 : There's a taint at the base of my old boot that I can trace to one ordinary crossing down there. It never entirely came out.
 
 grown
-line greet : Leave the worn boot upright and there's a seat for you.
-line greet [pair.band=strangers] : Welcome. The shallow crossing is clear today.
-line greet [here.time=dawn] : Morning. The stone's almost the colour of my last mark.
-line greet [here.time=dusk|night] : Take the upper step while the light holds.
-line greet [self.working=yes] : Let the dish pass your sleeve, then speak.
-line kin.open [pair.kin!=no] : You've seen this old boot in worse trim.
-line again.open : Good. I've got a second dry step handy.
-line greet.return : Your greeting managed the climb quite comfortably.
-line greet.return [pair.band=friends|family] : I'd know that voice halfway down a flooded lane.
-line greet.return [here.time=dusk|night] : The sound reaches this high after sundown.
-line farewell : May your return crossing come below the first stitch.
-line farewell.return : My socks and I wish you dry stones.
-line react.news : Which part of the account touched ground?
-line react.news.new : A fresh mark for this day's measures.
-line react.news.known : I recognise the account by its muddy lower edge.
-line react.news.doubt : I'd ask whether the teller walked that particular crossing.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave the threshold free for a wolf coming home tired.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something there worth climbing home a little quicker for.
-line answer.how : Rested above the knees, restless from there down.
-line ask.how : Has your day reached a comfortable level?
-line reassure : That upper seat will keep your clothes clean.
-line sympathise : A dry sleeve goes a remarkably short way towards a whole wet afternoon.
-line decline : I'd put your errand behind the dishes I owe the hall, which wouldn't serve you.
-line accept_decline : I'll set my request aside before it starts gathering dust.
-line thank : That saves me coming up with water squelching at every step.
-line deflect_thanks : An accurate report of a wet street will settle us.
-line preclose : Time I found where this day's damp ends.
-line ack : Below the stitch.
-
+line @1 greet : Leave the worn boot upright and there's a seat for you.
+line @2 greet [pair.band=strangers] : Welcome. The shallow crossing is clear today.
+line @3 greet [here.time=dawn] : Morning. The stone's almost the colour of my last mark.
+line @4 greet [here.time=dusk|night] : Take the upper step while the light holds.
+line @5 greet [self.working=yes] : Let the dish pass your sleeve, then speak.
+line @1 kin.open [pair.kin!=no] : You've seen this old boot in worse trim.
+line @1 again.open : Good. I've got a second dry step handy.
+line @1 greet.return : Your greeting managed the climb quite comfortably.
+line @2 greet.return [pair.band=friends|family] : I'd know that voice halfway down a flooded lane.
+line @3 greet.return [here.time=dusk|night] : The sound reaches this high after sundown.
+line @1 farewell : May your return crossing come below the first stitch.
+line @1 farewell.return : My socks and I wish you dry stones.
+line @1 react.news : Which part of the account touched ground?
+line @1 react.news.new : A fresh mark for this day's measures.
+line @1 react.news.known : I recognise the account by its muddy lower edge.
+line @1 react.news.doubt : I'd ask whether the teller walked that particular crossing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave the threshold free for a wolf coming home tired.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something there worth climbing home a little quicker for.
+line @1 answer.how : Rested above the knees, restless from there down.
+line @1 ask.how : Has your day reached a comfortable level?
+line @1 reassure : That upper seat will keep your clothes clean.
+line @1 sympathise : A dry sleeve goes a remarkably short way towards a whole wet afternoon.
+line @1 decline : I'd put your errand behind the dishes I owe the hall, which wouldn't serve you.
+line @1 accept_decline : I'll set my request aside before it starts gathering dust.
+line @1 thank : That saves me coming up with water squelching at every step.
+line @1 deflect_thanks : An accurate report of a wet street will settle us.
+line @1 preclose : Time I found where this day's damp ends.
+line @1 ack : Below the stitch.
 scene boot
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -229,15 +231,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Last warm place on the high tread. | Lift the boot out of the creeping shade.
-dlg resident.hub : I'm keeping this step for a moment's rest. You may take the dry half.
-dlg resident.hub [topic.meeting=known] : This landing suits your feet, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Stay below the top tread while you explain the business that brought you here.
-dlg resident.hub [here.time=night] : The stair keeps very little light. A still voice will carry from where you are.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. A dish should reach a guest just as it left the hearth.
-dlg resident.job : I can carry a dinner above the splash of a busy threshold.
-dlg resident.news [world.news] : I'd put this account beside a fairly fresh watermark. #world.news#.
-dlg resident.bye : Try the upper stones when you reach the crossing.
 
+dlg @1 resident.hub : I'm keeping this step for a moment's rest. You may take the dry half.
+dlg @2 resident.hub [topic.meeting=known] : This landing suits your feet, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Stay below the top tread while you explain the business that brought you here.
+dlg @4 resident.hub [here.time=night] : The stair keeps very little light. A still voice will carry from where you are.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. A dish should reach a guest just as it left the hearth.
+dlg @2 resident.job : I can carry a dinner above the splash of a busy threshold.
+dlg @1 resident.news [world.news] : I'd put this account beside a fairly fresh watermark. #world.news#.
+dlg @1 resident.bye : Try the upper stones when you reach the crossing.
 graft @bootladder resident.hub
 choice Why is one old boot standing there? -> bootladder
 node bootladder

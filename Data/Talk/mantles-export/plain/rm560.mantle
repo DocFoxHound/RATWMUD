@@ -1,9 +1,12 @@
+# rm560, the cheese witness (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm560
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_wynn_pitchwell
+written_by codex
 title the cheese witness
 fits stage=adult|old
 prefers job=servant
@@ -33,39 +36,38 @@ bookroad = the old ink road | a mistake in fine brown lines
 cheeseflower = the shaving off the tip | a little curl of hard cheese
 
 any
-opinion city for 1 : Our city accommodates a house that requires my service and a market stall I might one day call mine. I appreciate the arrangement.
-opinion festivals against 2 : A crowd admiring a great procession is apt to forget its smaller obligation to let the supper through.
-opinion merchants against 1 : A price that changes when my coat changes would make me reluctant to buy a button.
-opinion sump against 1 : I prefer a return route where a dish and its bearer can both arrive without having been rinsed en route.
-opinion dole mixed 0 : I'd consider the actual need of the hungry guest before offering a lecture on dividing the portions.
+opinion @1 city for 1 : Our city accommodates a house that requires my service and a market stall I might one day call mine. I appreciate the arrangement.
+opinion @1 festivals against 2 : A crowd admiring a great procession is apt to forget its smaller obligation to let the supper through.
+opinion @1 merchants against 1 : A price that changes when my coat changes would make me reluctant to buy a button.
+opinion @1 sump against 1 : I prefer a return route where a dish and its bearer can both arrive without having been rinsed en route.
+opinion @1 dole mixed 0 : I'd consider the actual need of the hungry guest before offering a lecture on dividing the portions.
 
 grown
-line greet : The model's wood. You may safely stand near it.
-line greet [pair.band=strangers] : Welcome. Stand by my sample's square wooden heel.
-line greet [here.time=dawn] : Frost has begun signing its name on the cheese board.
-line greet [here.time=dusk|night] : I've one appointment with a quiet seat this evening.
-line greet [self.working=yes] : Let me stand the serving board square before speaking.
-line kin.open [pair.kin!=no] : I reserve the seat clear of the scales for family.
-line again.open : Back to inspect the honest wedge once more.
-line greet.return : Your voice comes through with a good clean edge.
-line greet.return [pair.band=friends|family] : I recognise a familiar note even during the weighing.
-line farewell : Leave the wooden portion to sharpen somebody else's curiosity.
-line farewell.return : My practice counter can close entirely without receipts.
-line react.news : Shall we weigh the actual occurrence separately from the opinion?
-line react.news.new : No mark resembling that has appeared on my board.
-line react.news.known : An old quantity under a freshly polished weight.
-line react.news.doubt : Would the original witness recognise the portion you've just served?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A simple meal with no formal obligation to speak might be welcome.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a sound piece of cheese by for that occasion.
-line answer.how : My temper's tolerable. The measure remains reliable.
-line ask.how : Would you say today delivered what the label promised?
-line sympathise : I'm content to hear the difficult part without putting a figure on it.
-line reassure : A pause won't add anything to the price you owe.
-line decline : I've undertaken to bring this board back complete before considering outside business.
-line accept_decline : I'll fold my own request up and carry it away.
-line preclose : My little wooden customer is entitled to the remainder of my attention.
-line ack : Sits level.
-
+line @1 greet : The model's wood. You may safely stand near it.
+line @2 greet [pair.band=strangers] : Welcome. Stand by my sample's square wooden heel.
+line @3 greet [here.time=dawn] : Frost has begun signing its name on the cheese board.
+line @4 greet [here.time=dusk|night] : I've one appointment with a quiet seat this evening.
+line @5 greet [self.working=yes] : Let me stand the serving board square before speaking.
+line @1 kin.open [pair.kin!=no] : I reserve the seat clear of the scales for family.
+line @1 again.open : Back to inspect the honest wedge once more.
+line @1 greet.return : Your voice comes through with a good clean edge.
+line @2 greet.return [pair.band=friends|family] : I recognise a familiar note even during the weighing.
+line @1 farewell : Leave the wooden portion to sharpen somebody else's curiosity.
+line @1 farewell.return : My practice counter can close entirely without receipts.
+line @1 react.news : Shall we weigh the actual occurrence separately from the opinion?
+line @1 react.news.new : No mark resembling that has appeared on my board.
+line @1 react.news.known : An old quantity under a freshly polished weight.
+line @1 react.news.doubt : Would the original witness recognise the portion you've just served?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A simple meal with no formal obligation to speak might be welcome.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a sound piece of cheese by for that occasion.
+line @1 answer.how : My temper's tolerable. The measure remains reliable.
+line @1 ask.how : Would you say today delivered what the label promised?
+line @1 sympathise : I'm content to hear the difficult part without putting a figure on it.
+line @1 reassure : A pause won't add anything to the price you owe.
+line @1 decline : I've undertaken to bring this board back complete before considering outside business.
+line @1 accept_decline : I'll fold my own request up and carry it away.
+line @1 preclose : My little wooden customer is entitled to the remainder of my attention.
+line @1 ack : Sits level.
 scene wedge
 when topic=prices
 does tell.self / ask.detail / answer.detail
@@ -226,15 +228,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Return the wooden sample to its drawer. | Lamplight has flattered the wax again.
-dlg resident.hub : There's my wooden witness. The cheese itself would incline to less prolonged conversation.
-dlg resident.hub [topic.meeting=known] : You've seen the portion I measure by, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll keep both the scale and my own judgement within reach.
-dlg resident.hub [here.time=night] : The board catches enough lamplight for an unhurried word.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. A board laid square and a supper received hot generally meet the case.
-dlg resident.job : I'm useful to a household that values dinner more highly than the fuss of producing it.
-dlg resident.news [world.news] : I've kept the part that passed inspection on my scales. #world.news#.
-dlg resident.bye : Take the higher pavement where the street turns.
 
+dlg @1 resident.hub : There's my wooden witness. The cheese itself would incline to less prolonged conversation.
+dlg @2 resident.hub [topic.meeting=known] : You've seen the portion I measure by, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll keep both the scale and my own judgement within reach.
+dlg @4 resident.hub [here.time=night] : The board catches enough lamplight for an unhurried word.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. A board laid square and a supper received hot generally meet the case.
+dlg @2 resident.job : I'm useful to a household that values dinner more highly than the fuss of producing it.
+dlg @1 resident.news [world.news] : I've kept the part that passed inspection on my scales. #world.news#.
+dlg @1 resident.bye : Take the higher pavement where the street turns.
 graft @modelportion resident.hub
 choice Would that wooden cheese fit a real set of scales? -> modelportion
 node modelportion

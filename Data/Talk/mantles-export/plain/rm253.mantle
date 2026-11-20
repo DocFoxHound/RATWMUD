@@ -1,9 +1,12 @@
+# rm253, the windfall holes (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm253
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_disa_bilgemarsh
+written_by codex
 title the windfall holes
 fits stage=adult|old
 prefers quarter=sump
@@ -67,7 +70,6 @@ line @22 deflect_thanks : Just keep an eye open for good earth above the roofs. 
 line @23 preclose : I've a scrap to check for stray pips. | Wind's shifting. I'll look where the leaves went.
 line @24 accept_preclose : Go along while the path shows plain. | I'll keep that little question till you come back.
 line @25 farewell [here.time=night] : Set the latch before you dream. | Have a roof that can see the night through.
-
 scene windtest
 when topic=pastimes self.likes=digging
 does tell.self / ask.detail / answer.detail
@@ -173,31 +175,6 @@ a : Where would you put #twig# so I'd see it before I trampled my little hole? |
 b : A handbreadth to the windward side. | Set the stick three paces off and remember the direction.
 a : That's right. Let the stick take the first shove from the weather. | Good. I'll scratch an arrow into the stick where a beak can't read it.
 
-old
-
-scene slowhand
-when topic=pastimes self.age>=55
-does tell.self / ask.detail / answer.detail
-a : At my age the ground's quite a way from where my eyes remember it. | I've kept #shovel# short. Less earth to lift with each year in my wrists.
-b : How do you get a good look down there? | Doesn't that make the digging take longer?
-a : I bring a clod up. Dirt travels better than knees do. | Enough longer to notice where a nice seed might take.
-
-scene betterroof
-when topic=dreams self.age>=55
-does tell.feeling / sympathise / assess
-a : I've fewer winters to spare on a low ceiling than I once had. | I don't mean my last glimpse of sky to be down a wet stairwell.
-b : A high window sounds a reasonable thing to want. | A perch where the first rain shows up miles away?
-a : I'd take a small one, provided the bottom of the frame stayed dry. | Yes, and watch it pass beneath me for a blessed change.
-
-scene memorywind
-when topic=weather self.age>=55
-does tell.self / react.self / assess
-a : Years teach you which draughts to ask after and which to let pass. | My old ears know the autumn wind before the leaves begin to show it.
-b : Which sort's worth asking after? | What do your ears hear first?
-a : The little one by the floor. That's how winter learns where you sleep. | A fine dry scratching. Rather as if the sky had taken up digging.
-
-grown
-
 story core_star [topic=food]
   : I cut an apple across by accident and found the little star in its belly. Thought I'd better count all the pips before I ate the rest.
   : A gust put one straight up my sleeve. I walked half the afternoon with a little hard nagging under the fur.
@@ -247,7 +224,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : There's a gap between us t
 dlg @5 resident.job [self.job=none] : I spend a deal of time seeing what's blown this way and working out where it came from.
 dlg @6 resident.job : I've good eyes for what the ground's up to.
 dlg @7 resident.bye : If you see a dry garden well up the hill, remember me.
-
 graft resident.hub
 choice Why the two pips? -> seed_pair
 node seed_pair
@@ -258,3 +234,26 @@ node better_patch
 say Up where I could look down on the rain for once. I'd like to watch a young tree worry about its roots and let my own rest easy.
 choice I'll keep my eyes on the uphill gardens. -> hub
 choice A good wind to you. -> bye
+
+
+old
+scene slowhand
+when topic=pastimes self.age>=55
+does tell.self / ask.detail / answer.detail
+a : At my age the ground's quite a way from where my eyes remember it. | I've kept #shovel# short. Less earth to lift with each year in my wrists.
+b : How do you get a good look down there? | Doesn't that make the digging take longer?
+a : I bring a clod up. Dirt travels better than knees do. | Enough longer to notice where a nice seed might take.
+
+scene betterroof
+when topic=dreams self.age>=55
+does tell.feeling / sympathise / assess
+a : I've fewer winters to spare on a low ceiling than I once had. | I don't mean my last glimpse of sky to be down a wet stairwell.
+b : A high window sounds a reasonable thing to want. | A perch where the first rain shows up miles away?
+a : I'd take a small one, provided the bottom of the frame stayed dry. | Yes, and watch it pass beneath me for a blessed change.
+
+scene memorywind
+when topic=weather self.age>=55
+does tell.self / react.self / assess
+a : Years teach you which draughts to ask after and which to let pass. | My old ears know the autumn wind before the leaves begin to show it.
+b : Which sort's worth asking after? | What do your ears hear first?
+a : The little one by the floor. That's how winter learns where you sleep. | A fine dry scratching. Rather as if the sky had taken up digging.

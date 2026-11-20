@@ -1,9 +1,12 @@
+# rm215, the erased account (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm215
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_jorunn_tarham
+written_by codex
 title the erased account
 fits stage=adult|old
 prefers role=merchant job=baker
@@ -40,50 +43,49 @@ ledgerfold = a turned page corner | a narrow paper fold
 peelboard = the oven paddle | a dusted bread board
 
 any
-opinion merchants for 2 : Include the cartage in the price and show it plainly. Flour isn't delivered by wishing.
-opinion watch for 1 : A watch on the square means I can turn to speak to someone without clasping my purse.
-opinion road against 1 : Mend the track before gilding the milestone. A marker doesn't save a cart wheel.
-opinion sump for 1 : A small coin from below the wall buys just as much crust as one from the hill.
-opinion church mixed 1 : I'd accept a blessing over breakfast. I'd still want the breakfast.
-opinion dole for 2 : Hungry folk can count their ribs. I don't need a written proof besides.
-opinion newcomers for 1 : Tell new faces where the order starts. There's no fairness in a line you can't find.
-opinion festivals mixed 1 : A merry square is splendid from its edge. Three deep at the front I hear less music.
-opinion times mixed 1 : I only reckon the week once every last bill is in.
+opinion @1 merchants for 2 : Include the cartage in the price and show it plainly. Flour isn't delivered by wishing.
+opinion @1 watch for 1 : A watch on the square means I can turn to speak to someone without clasping my purse.
+opinion @1 road against 1 : Mend the track before gilding the milestone. A marker doesn't save a cart wheel.
+opinion @1 sump for 1 : A small coin from below the wall buys just as much crust as one from the hill.
+opinion @1 church mixed 1 : I'd accept a blessing over breakfast. I'd still want the breakfast.
+opinion @1 dole for 2 : Hungry folk can count their ribs. I don't need a written proof besides.
+opinion @1 newcomers for 1 : Tell new faces where the order starts. There's no fairness in a line you can't find.
+opinion @1 festivals mixed 1 : A merry square is splendid from its edge. Three deep at the front I hear less music.
+opinion @1 times mixed 1 : I only reckon the week once every last bill is in.
 
 grown
-line greet : Leave a little space between us. Plenty of time. | Welcome. I've a clean ear for you.
-line greet [pair.band=strangers] : New voice. Speak up and I'll give it a fair hearing. | Not seen at this end before. Pull up beside me.
-line greet [here.time=dawn] : Up with the pale edge of the roof, are we. | Dawn looks thin yet. Give it a moment to rise.
-line greet [here.time=dusk|night] : Good evening. I've put the day's sums away. | Late enough to have tidied the chalk away.
-line greet.return : Greetings fairly traded. | That was a civil hail.
-line greet.return [self.working=yes self.job=baker] : Here you are. I'll speak while the crust sets. | I can turn an ear without turning the paddle.
-line greet.return [here.time=dusk|night] : Evening. I can just see you nod. | Evening to you from this dark corner.
-line kin.open [pair.kin!=no] : Come in close. Family can hear me the first time. | All the ceremony's used up. There's just us now.
-line again.open : Our paths have crossed twice and neither of us owes a toll. | Another meeting to add on, free of charge.
-line hail [pair.band=friends] : Look this way. Here's a familiar muzzle. | You there, familiar face by the edge! Over here!
-line farewell : Go with a clear account. | Good walking and no grit in the boots.
-line farewell.return : Clear weather for the leaving, I hope. | Then we'll call this a good breaking place.
-line react.news : Begin with whoever could actually see it.
-line react.news.new : I hadn't a single mark for that on my slate. | That's worth putting the chalk down to hear.
-line react.news.known : I've already set that piece of news in its place. | The sum's familiar even if the figures come out in a new order.
-line react.news.doubt : I'd wait for another witness before I charged anybody with that. | A story with that many neat edges often turns out short in the middle.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard enough without the whole square pressing in. | That's a weight I'd have spared anybody.
-line react.news.glad [topic.kind=birth|marriage|work] : Something fit to set a good table for. | There's occasion for bringing the good dishes down.
-line answer.how : Steady weight, even measure. I'm content with that. | Everything I need is within my reach.
-line answer.how.busy [self.working=yes] : I've both paws full and one more thing to reckon. | Today's list runs from my wrist to my elbow.
-line ask.how : What would make your day easier to finish? | What would it cost to put a little ease into your day?
-line sympathise : Take a moment. Let the crush go on around us. | Come clear of all these shoulders first. There. Speak.
-line reassure : Owing a favour doesn't make you smaller in my sight. | Nobody expects you to settle every small thing at once.
-line decline : I can't put my name to that. I haven't seen the measure. | I'd take on twice the trouble I could pay back.
-line accept_decline : Then the score between us stays as it stood. | An answer's enough. You owe me no reasons.
-line thank : That kindness has a place of its own in my memory. | That kindness has weight enough to hold.
-line deflect_thanks : Paid in the saying. You can stop now. | Don't charge yourself interest on a favour.
-line preclose : My day's got a loose end that needs taking in. | I'd like to leave while my thoughts still add up.
-line accept_preclose : A good point to leave it there. | One last chalk mark, then we're square.
-line ack : That's the missing grain. | Account balances now.
-line give.advice : Keep the proof till both sides have seen the sum come off. | Don't reckon a favour in money. Too easy to mistake the units.
-line warn [world.bandits=near] : Let the next cart take company along that stretch. | Ask who's taking the road ahead of you. This isn't a week to walk it alone.
-
+line @1 greet : Leave a little space between us. Plenty of time. | Welcome. I've a clean ear for you.
+line @2 greet [pair.band=strangers] : New voice. Speak up and I'll give it a fair hearing. | Not seen at this end before. Pull up beside me.
+line @3 greet [here.time=dawn] : Up with the pale edge of the roof, are we. | Dawn looks thin yet. Give it a moment to rise.
+line @4 greet [here.time=dusk|night] : Good evening. I've put the day's sums away. | Late enough to have tidied the chalk away.
+line @1 greet.return : Greetings fairly traded. | That was a civil hail.
+line @2 greet.return [self.working=yes self.job=baker] : Here you are. I'll speak while the crust sets. | I can turn an ear without turning the paddle.
+line @3 greet.return [here.time=dusk|night] : Evening. I can just see you nod. | Evening to you from this dark corner.
+line @1 kin.open [pair.kin!=no] : Come in close. Family can hear me the first time. | All the ceremony's used up. There's just us now.
+line @1 again.open : Our paths have crossed twice and neither of us owes a toll. | Another meeting to add on, free of charge.
+line @1 hail [pair.band=friends] : Look this way. Here's a familiar muzzle. | You there, familiar face by the edge! Over here!
+line @1 farewell : Go with a clear account. | Good walking and no grit in the boots.
+line @1 farewell.return : Clear weather for the leaving, I hope. | Then we'll call this a good breaking place.
+line @1 react.news : Begin with whoever could actually see it.
+line @1 react.news.new : I hadn't a single mark for that on my slate. | That's worth putting the chalk down to hear.
+line @1 react.news.known : I've already set that piece of news in its place. | The sum's familiar even if the figures come out in a new order.
+line @1 react.news.doubt : I'd wait for another witness before I charged anybody with that. | A story with that many neat edges often turns out short in the middle.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard enough without the whole square pressing in. | That's a weight I'd have spared anybody.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Something fit to set a good table for. | There's occasion for bringing the good dishes down.
+line @1 answer.how : Steady weight, even measure. I'm content with that. | Everything I need is within my reach.
+line @1 answer.how.busy [self.working=yes] : I've both paws full and one more thing to reckon. | Today's list runs from my wrist to my elbow.
+line @1 ask.how : What would make your day easier to finish? | What would it cost to put a little ease into your day?
+line @1 sympathise : Take a moment. Let the crush go on around us. | Come clear of all these shoulders first. There. Speak.
+line @1 reassure : Owing a favour doesn't make you smaller in my sight. | Nobody expects you to settle every small thing at once.
+line @1 decline : I can't put my name to that. I haven't seen the measure. | I'd take on twice the trouble I could pay back.
+line @1 accept_decline : Then the score between us stays as it stood. | An answer's enough. You owe me no reasons.
+line @1 thank : That kindness has a place of its own in my memory. | That kindness has weight enough to hold.
+line @1 deflect_thanks : Paid in the saying. You can stop now. | Don't charge yourself interest on a favour.
+line @1 preclose : My day's got a loose end that needs taking in. | I'd like to leave while my thoughts still add up.
+line @1 accept_preclose : A good point to leave it there. | One last chalk mark, then we're square.
+line @1 ack : That's the missing grain. | Account balances now.
+line @1 give.advice : Keep the proof till both sides have seen the sum come off. | Don't reckon a favour in money. Too easy to mistake the units.
+line @1 warn [world.bandits=near] : Let the next cart take company along that stretch. | Ask who's taking the road ahead of you. This isn't a week to walk it alone.
 scene paid_line
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -366,25 +368,24 @@ does aside
 cooldown 8h
 say Make one row. Leave space for elbows. | Keep room for the ones coming through!
 
-dlg resident.hub : Put your request in plain words. You needn't dress it up.
-dlg resident.hub [topic.meeting=known] : I remember you well enough, #topic.player#. What's wanted?
-dlg resident.hub [here.time=night] : A late caller. I'll shake off sleep long enough to hear you.
-dlg resident.hub [pair.disposition=wary|hostile] : A clear account, please, and from where you stand.
-dlg resident.job [self.job=baker] : I run the blade along the dough so the loaf opens where I intend.
-dlg resident.job : A measure of work for a measure of pay. That's my rule.
-dlg resident.bye : We'll leave a clean edge on this meeting.
-dlg resident.gossip [here.gossip!=yes] : My reckoning runs to things I can weigh. Nothing doing in whispers.
-dlg resident.news [world.news] : The account as it reached me goes like this. #world.news#.
-dlg shop.greet [here.shop=open] : Take your time choosing. I'll weigh it where you can see.
-dlg shop.greet [here.shop=bare] : Nothing left for me to weigh out. I'll look at what you're offering.
-dlg shop.prices : #shop_dear# I can count the change into your paw twice if you wish.
-dlg shop.bye : Your parcel sits level if you take both ends.
-dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize# takes a steady eye. You can ask me how I learned.
-dlg master.learn [here.teaches=no] : My teaching place is spoken for already. A question takes less room.
-dlg master.wages : What you make belongs to you to sell. Learning alongside me goes quicker, though it draws no wage.
-dlg master.takes [here.take_on=no] : I won't make an undertaking I can't keep. #here.take_on_why#.
-dlg master.refused : The reckonings aren't in order for that. #topic.why#.
-
+dlg @1 resident.hub : Put your request in plain words. You needn't dress it up.
+dlg @2 resident.hub [topic.meeting=known] : I remember you well enough, #topic.player#. What's wanted?
+dlg @3 resident.hub [here.time=night] : A late caller. I'll shake off sleep long enough to hear you.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : A clear account, please, and from where you stand.
+dlg @1 resident.job [self.job=baker] : I run the blade along the dough so the loaf opens where I intend.
+dlg @2 resident.job : A measure of work for a measure of pay. That's my rule.
+dlg @1 resident.bye : We'll leave a clean edge on this meeting.
+dlg @1 resident.gossip [here.gossip!=yes] : My reckoning runs to things I can weigh. Nothing doing in whispers.
+dlg @1 resident.news [world.news] : The account as it reached me goes like this. #world.news.capitalize#.
+dlg @1 shop.greet [here.shop=open] : Take your time choosing. I'll weigh it where you can see.
+dlg @2 shop.greet [here.shop=bare] : Nothing left for me to weigh out. I'll look at what you're offering.
+dlg @1 shop.prices : #shop_dear# I can count the change into your paw twice if you wish.
+dlg @1 shop.bye : Your parcel sits level if you take both ends.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize# takes a steady eye. You can ask me how I learned.
+dlg @2 master.learn [here.teaches=no] : My teaching place is spoken for already. A question takes less room.
+dlg @1 master.wages : What you make belongs to you to sell. Learning alongside me goes quicker, though it draws no wage.
+dlg @1 master.takes [here.take_on=no] : I won't make an undertaking I can't keep. #here.take_on_why#.
+dlg @1 master.refused : The reckonings aren't in order for that. #topic.why#.
 graft resident.hub
 choice Why carry a scrap of soft leather? -> thumb_clean
 node thumb_clean

@@ -1,9 +1,12 @@
+# rm299, the unpriced hour (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm299
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_lionel_ropestack
+written_by codex
 title the unpriced hour
 fits stage=adult|old
 prefers job=priest
@@ -39,51 +42,50 @@ quiet = a hush before a reading | quiet under the arches
 tab = an unwritten note | a little loosened page
 
 any
-opinion church for 1 : Serving the Bright One leaves me plenty of work after the candles are out. I value those hours too.
-opinion city for 1 : The city's paid me back in chalk marks, sore feet and the sound of a home latch. I call it a fair account.
-opinion sump for 1 : Down in the Sump my spare hour fills itself without my having to plan a charitable deed.
-opinion times for 1 : Bread to spare and an untroubled place to eat it make my own count generous.
-opinion watch against 1 : I'd remember a patrol that came down to sit awhile instead of coming to fetch somebody.
-opinion dole mixed 0 : I'd serve whatever stew is there and leave the tally of deserving bowls unfinished.
-opinion houses mixed 1 : A large name is just as capable as a small one of signing an honest receipt or a foolish promise.
-opinion drink mixed 0 : A shared cup eases some tongues and makes another set speak carelessly. I take each cup as it comes.
-opinion merchants mixed 0 : There's good reason to keep accounts at a counter. I mind when the counter follows me home.
+opinion @1 church for 1 : Serving the Bright One leaves me plenty of work after the candles are out. I value those hours too.
+opinion @1 city for 1 : The city's paid me back in chalk marks, sore feet and the sound of a home latch. I call it a fair account.
+opinion @1 sump for 1 [self.quarter=sump] : Down in the Sump my spare hour fills itself without my having to plan a charitable deed.
+opinion @1 times for 1 : Bread to spare and an untroubled place to eat it make my own count generous.
+opinion @1 watch against 1 : I'd remember a patrol that came down to sit awhile instead of coming to fetch somebody.
+opinion @1 dole mixed 0 : I'd serve whatever stew is there and leave the tally of deserving bowls unfinished.
+opinion @1 houses mixed 1 : A large name is just as capable as a small one of signing an honest receipt or a foolish promise.
+opinion @1 drink mixed 0 : A shared cup eases some tongues and makes another set speak carelessly. I take each cup as it comes.
+opinion @1 merchants mixed 0 : There's good reason to keep accounts at a counter. I mind when the counter follows me home.
 
 grown
-line greet [pair.band=strangers] : You're welcome in this free hour. | Step where we've room for introductions.
-line greet [self.working=yes] : I'll put the paper aside. | Speak while my ink is resting.
-line greet [here.time=dawn] : Morning. First page still clean. | A fresh hour and a visitor.
-line greet [here.time=dusk|night] : Evening. My book's nearly shut. | Welcome into the late quiet.
-line kin.open [pair.kin!=no] : Kin don't need a ticket for my time. | I know that family tread.
-line again.open : You've found a second blank minute. | Back within the selfsame reckoning.
-line greet.return : Welcome. I'll spare the minute gladly. | You have my attention in full.
-line greet.return [pair.band=friends|family] : Your name carries its own welcome. | Good company can sit both sides of my desk.
-line greet.return [self.working=yes] : I can hear with the pen resting. | Room between entries. Go ahead.
-line greet.return [here.time=dusk|night] : Evening. There's oil for another word. | The dark's left this chair easy to find.
-line farewell : Keep something of the day unpriced. | Walk without an account to settle.
-line farewell.return : I'll put away the figures. | You take the rest of the hour free.
-line farewell.return [here.time=night] : May a quiet lamp meet you further on. | No reckoning till morning now.
-line react.news : Let me hear the whole sum. | Set it before me in plain words.
-line react.news.new : No earlier entry for that. | Something new on this quiet page.
-line react.news.known : That's already under my eye. | The word reached me a little earlier.
-line react.news.doubt : I'd hear the witnesses before I total that up. | That account wants another look in clear light.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : For that grief I'd leave an hour empty. | Rest here. Figures can wait.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a blessing I can remember without ink. | Good news buys its own quiet minute.
-line ask.how : How much of today belonged to you? | Had an hour free to spend?
-line answer.how : I've saved a little silence for myself. | Content with my account so far.
-line decline : I'd rather keep this stretch free for another purpose. | I'm reluctant to spend a promise I haven't made.
-line accept_decline : A clear no keeps us both honest. | We can close that page.
-line thank : That hour came freely and I value it. | I'll keep that kindness in memory.
-line sympathise : I've kept this chair quiet for you. | Put the figuring aside until it hurts less.
-line reassure : Some reckonings can wait a whole season. | My spare minute's yours if you need longer.
-line preclose : I'd best set my papers square. | Time to leave an hour open.
-line accept_preclose : Take whatever time your errand needs. | I'll keep the place in our talk.
-line deflect_thanks : Don't turn a gift into an invoice. | I put no price beside that favour.
-line ack : Quite clear. | Duly heard.
-line give.advice : Leave a margin for something unforeseen. | Spare yourself one hour's accounting.
-line offer : Can I sit in while you rest? | Let my pen carry that load awhile.
-line praise : A kindly piece of reckoning. | You saw the owner behind that figure.
-
+line @1 greet [pair.band=strangers] : You're welcome in this free hour. | Step where we've room for introductions.
+line @2 greet [self.working=yes] : I'll put the paper aside. | Speak while my ink is resting.
+line @3 greet [here.time=dawn] : Morning. First page still clean. | A fresh hour and a visitor.
+line @4 greet [here.time=dusk|night] : Evening. My book's nearly shut. | Welcome into the late quiet.
+line @1 kin.open [pair.kin!=no] : Kin don't need a ticket for my time. | I know that family tread.
+line @1 again.open : You've found a second blank minute. | Back within the selfsame reckoning.
+line @1 greet.return : Welcome. I'll spare the minute gladly. | You have my attention in full.
+line @2 greet.return [pair.band=friends|family] : Your name carries its own welcome. | Good company can sit both sides of my desk.
+line @3 greet.return [self.working=yes] : I can hear with the pen resting. | Room between entries. Go ahead.
+line @4 greet.return [here.time=dusk|night] : Evening. There's oil for another word. | The dark's left this chair easy to find.
+line @1 farewell : Keep something of the day unpriced. | Walk without an account to settle.
+line @1 farewell.return : I'll put away the figures. | You take the rest of the hour free.
+line @2 farewell.return [here.time=night] : May a quiet lamp meet you further on. | No reckoning till morning now.
+line @1 react.news : Let me hear the whole sum. | Set it before me in plain words.
+line @1 react.news.new : No earlier entry for that. | Something new on this quiet page.
+line @1 react.news.known : That's already under my eye. | The word reached me a little earlier.
+line @1 react.news.doubt : I'd hear the witnesses before I total that up. | That account wants another look in clear light.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : For that grief I'd leave an hour empty. | Rest here. Figures can wait.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a blessing I can remember without ink. | Good news buys its own quiet minute.
+line @1 ask.how : How much of today belonged to you? | Had an hour free to spend?
+line @1 answer.how : I've saved a little silence for myself. | Content with my account so far.
+line @1 decline : I'd rather keep this stretch free for another purpose. | I'm reluctant to spend a promise I haven't made.
+line @1 accept_decline : A clear no keeps us both honest. | We can close that page.
+line @1 thank : That hour came freely and I value it. | I'll keep that kindness in memory.
+line @1 sympathise : I've kept this chair quiet for you. | Put the figuring aside until it hurts less.
+line @1 reassure : Some reckonings can wait a whole season. | My spare minute's yours if you need longer.
+line @1 preclose : I'd best set my papers square. | Time to leave an hour open.
+line @1 accept_preclose : Take whatever time your errand needs. | I'll keep the place in our talk.
+line @1 deflect_thanks : Don't turn a gift into an invoice. | I put no price beside that favour.
+line @1 ack : Quite clear. | Duly heard.
+line @1 give.advice : Leave a margin for something unforeseen. | Spare yourself one hour's accounting.
+line @1 offer : Can I sit in while you rest? | Let my pen carry that load awhile.
+line @1 praise : A kindly piece of reckoning. | You saw the owner behind that figure.
 scene gift
 when topic=friends
 does tell.self / ask.detail / answer.detail
@@ -129,9 +131,9 @@ a : One copyist must have sneezed in precisely the same spot twice. | The bend w
 scene snow
 when topic=weather self.likes=first_snow
 does tell.self / ask.detail / answer.detail
-a : First snow covers every unpaid footprint at once.
+a : First snow covers every old footprint at once.
 b : So none remains? | What about new marks?
-a : Underneath they're there. I like being given a fresh top sheet. | Immediately somebody makes one. That's the pleasure of clean snow.
+a : They're all there underneath. I just like a fresh top sheet now and then. | Somebody makes one straight away. That's the pleasure of clean snow.
 
 scene mire
 when topic=travel self.dislikes=deep_mud
@@ -360,21 +362,20 @@ does aside
 cooldown 11h
 say Turn the inkpot's cold cheek to the lamp. | A little warm water for the stiff nib.
 
-dlg resident.hub : There's an hour in my pocket that belongs to nobody. Sit down if you'd like some of it.
-dlg resident.hub [topic.meeting=known] : You can spend my spare time again, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Speak in your own words. I can stand a plain answer.
-dlg resident.hub [here.time=night] : The lamp's trimmed. We can take a few minutes yet.
-dlg resident.hub [here.time=dawn] : My list is still quite short. Bring your business in.
-dlg resident.job [self.job=priest self.workplace] : I attend to the needs of #self.workplace#. Some come on a printed list and some come through the door.
-dlg resident.job [self.job=priest self.trade_words] : #self.trade_words.capitalize#. The work that pleases me most comes without a bill.
-dlg resident.job : I put things in order while trying to leave a little room for what I cannot reckon.
-dlg resident.news [world.news] : I can pass on this much. #world.news#
-dlg resident.bye : Keep a blank line somewhere in tomorrow's business.
-dlg resident.bye [here.time=night] : Go home by a kind light. I've no charge for the oil.
-dlg resident.hub [self.working=yes] : You have my working chair for a moment. Give me your account quietly.
-dlg resident.hub [pair.band=friends|family] : Yours is a visit with a place already kept for it.
-dlg church.greet [self.job=priest here.day!=rest] : Take an ordinary seat here and an ordinary breath. A quiet word reaches the Bright One here.
-
+dlg @1 resident.hub : There's an hour in my pocket that belongs to nobody. Sit down if you'd like some of it.
+dlg @2 resident.hub [topic.meeting=known] : You can spend my spare time again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Speak in your own words. I can stand a plain answer.
+dlg @4 resident.hub [here.time=night] : The lamp's trimmed. We can take a few minutes yet.
+dlg @5 resident.hub [here.time=dawn] : My list is still quite short. Bring your business in.
+dlg @1 resident.job [self.job=priest self.workplace] : I attend to the needs of #self.workplace#. Some come on a printed list and some come through the door.
+dlg @2 resident.job [self.job=priest self.trade_words] : #self.trade_words.capitalize#. The work that pleases me most comes without a bill.
+dlg @3 resident.job : I put things in order while trying to leave a little room for what I cannot reckon.
+dlg @1 resident.news [world.news] : I can pass on this much. #world.news#
+dlg @1 resident.bye : Keep a blank line somewhere in tomorrow's business.
+dlg @2 resident.bye [here.time=night] : Go home by a kind light. I've no charge for the oil.
+dlg @6 resident.hub [self.working=yes] : You have my working chair for a moment. Give me your account quietly.
+dlg @7 resident.hub [pair.band=friends|family] : Yours is a visit with a place already kept for it.
+dlg @1 church.greet [self.job=priest here.day!=rest] : Take an ordinary seat here and an ordinary breath. A quiet word reaches the Bright One here.
 graft resident.hub
 choice Is there really an hour nobody owes you? -> no_bill
 node no_bill
@@ -387,6 +388,7 @@ node no_guest
 say I can spend it on the pleasure of seeing my own pen stay still. There's room enough in a day to be both giver and receiver.
 choice That squares your book neatly. -> hub
 choice I'll give you your quiet. -> bye
+
 graft @riddle resident.hub
 choice What has two ends but no distance between them? -> ends_riddle
 node ends_riddle

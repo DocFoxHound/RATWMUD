@@ -1,9 +1,12 @@
+# rm279, the gull's false answer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm279
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_magnus_saltford
+written_by codex
 title the gull's false answer
 fits stage=young|adolescent|adult|old
 prefers quarter=sump
@@ -14,7 +17,7 @@ dislikes gulls salt_wind
 fears a_quiet_place_gone a_gull_with_the_last_word
 hopes a_hill_without_echoes a_book_of_own_riddles
 topics pastimes +0.6 food +0.4 weather +0.2 dreams +0.4 lore +0.3
-styles gossip=quick comfort=playful refuse=plain tease=light
+styles comfort=playful gossip=quick refuse=plain tease=light
 marks oath saying
 persona #self.first# saves impossible answers for squawking gulls, draws riddles on scraps of charcoal paper and craves the quiet interval before a good guess.
 
@@ -43,11 +46,95 @@ opinion @5 sump for 1 : Corners you know in the Sump have a hundred answers if y
 opinion @6 watch against 1 : The Watch asks questions with the answer already tucked in a pocket. Rotten sort of game.
 
 grown
-line @1 greet.return : I'll trade a clear welcome for that. | Even a soft welcome's audible here.
+line @1 greet.return : I'll trade a clear welcome for that. | A soft hello. I heard it fine.
 line @2 farewell.return : Keep a good answer by for the journey. | Go with the riddle comfortably settled.
 line @3 react.news : I'm curious how the words fit the facts. | Let's see how the whole answer reads.
 line @4 answer.how : I've had room to think between cries. | My boots are steadier than my thoughts.
 line @5 decline : I've too many questions of my own to take that on.
+scene twist
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I judge a riddle by how much is left after the right guess. | A question gets stale if its only answer's a single clever word.
+b : What else do you ask it to hold? | Would you give it another ending?
+a : A memory. Good ones take me somewhere I forgot I knew. | A bit of room inside the first one will generally do.
+
+scene coolembers
+when topic=dreams
+does tell.self / react.self / assess
+a : I still listen for a cinder ticking after supper. | An evening gone quiet feels like a whole room recovered.
+b : Even without a fire there? | Where from?
+a : Especially then. Little noises get a fair hearing. | From the business of being audible all day long.
+
+scene farsky
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : #cut# makes a good landmark seen from inland. | Walking toward a notch in a cliff gives the distance a shape.
+b : What if a cloud drops across it? | Better than walking after a road?
+a : Stop for supper. No disgrace in taking one's time with fog. | Roads turn. Rock keeps its mind properly made up.
+
+scene peel
+when topic=food self.likes=smoked_eel
+does offer / accept / assess
+a : There's eel in this twist if you like a dark rich bite. | I'll share this tail. Kept the best smoke in it.
+b : I'd like to try the tail end. | I'll bite at the narrow end myself.
+a : Teeth pick it clean. No knife work wasted. | That leaves a good bite under the thicker skin for me.
+
+scene windlace
+when topic=weather
+does tell.self / react.self / assess
+a : The wind among a row of boots can find every loose lace. | My bootlace is a decent little gale warning.
+b : Do they make a sound? | What does it do when you need shelter?
+a : A small ticking against the toes. Like cooling wood. | Lifts straight away from the tongue. That's a vote for going in.
+
+scene cheapchalk
+when topic=prices
+does give.opinion / disagree / concede
+a : A riddle costs a wolf next to nothing if the charcoal's spare. | I could amuse a whole supper queue with one burnt twig.
+b : The time spent thinking is worth something. | Doesn't put food in anybody's mouth.
+a : A price I can afford by walking a little slower. | Granted. But waiting's more bearable with a mouthful of guesses.
+
+scene rookspan
+when topic=pastimes
+does tell.self / react.self / assess
+a : I made a riddle once that only worked when the tide was out. | I enjoy a question whose answer will be underwater shortly.
+b : That's a short life for a good joke. | What happens when the water comes back?
+a : Long as it comes back tomorrow, I'll take the bargain. | The sand's rubbed clean for a wolf with a different question.
+
+scene quietpal
+when topic=friends
+does tell.feeling / sympathise / assess
+a : I like the wolf who can share a seat through an unfilled silence. | An old question can be a comfortable thing between friends.
+b : Are you setting another riddle there? | One you both know by heart?
+a : No. Just offering the other half of a seat. | Yes. We both know the answer, so nobody needs to say it.
+
+scene lookout
+when topic=land self.quarter=sump
+does tell.plan / ask.detail / answer.detail
+a : I'd give the Sump a patch of hillside silence for every crowded landing. | I like a Sump window where you can see more sky than wall.
+b : How would you get that silence down the steps? | Doesn't the wind come in there too?
+a : In a jar with the lid on. It would leak out by the second landing, mind. | Yes, salt and all. I'd still take the sky.
+
+scene faithword
+when topic=lore
+does tell.self / react.self / assess
+a : A charred stick only writes once its fire has gone out. | The hush of cold coals at dawn is the quietest thing I know.
+b : Is that one of your riddles? | Does it matter who hears it?
+a : Half of one. What makes its mark only after it's dead? Charcoal. | Only whoever's turn it is to rake the ashes. Everybody else can sleep.
+
+scene stillguess
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep a wrong guess by for the unnecessary questions. | There's a difference between hiding an answer and just folding it away.
+b : What's the difference in practice? | Which part do you bring back into view?
+a : A riddle gets my best. Idle prying gets the tail of a gull. | The useful part, for whoever needs it. The rest stays folded.
+
+scene saltroad
+when topic=weather self.dislikes=salt_wind
+does tell.self / react.self / assess
+a : Salt on the tongue can carry a wolf back a long way. | Wind always reminds me what I was trying to escape by going uphill.
+b : Does the taste stay pleasant? | Did you get away from it?
+a : Eel tastes better. I prefer to season it myself. | A few times. Long enough to learn why I go looking again.
+
 
 young
 line @7 greet : Look, a clean scrap! Come see. | Hi. I know where the quiet hides.
@@ -55,16 +142,30 @@ line @8 greet.return : Hi back from my side! | You can come and guess with me.
 line @9 farewell.return : Bye. Keep your eel tucked in! | My slate will keep your guess.
 line @10 react.news : Wait, I've got both ears on you. | My guessing ear's ready.
 line @11 answer.how : Full of guesses. Pretty hungry too. | Good at hiding my black thumb today.
+scene littleash
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My thumb's got a black twin. See? | I made a hill with one charcoal swipe.
+b : Would your twin like washing? | Who's at the top?
+a : It likes smudging my other thumb better. | A very small wolf. That's my dot running about.
+
+scene smallfish
+when topic=food
+does tell.self / react.self / assess
+a : Eel's a ribbon with dinner inside. | I hide my best bite behind my knee.
+b : Hard ribbon to tie in a bow. | Does your knee like fish too?
+a : It goes round my tooth once. Quite enough bow. | No. The gull hasn't worked that out.
+
 
 adolescent
 line @13 greet [pair.band=strangers] : Welcome to one reasonable guess. | New face. I've kept the easy question back.
 line @14 greet [here.time=dusk] : Here's a whole blue hour to talk in. | Glad you caught the long light.
 line @15 greet [self.working=yes] : Welcome. Mind my scribbled notes. | A voice louder than charcoal. Come along.
-line @16 greet.return : Welcome right back. You can have first guess. | A decent hello. Quite understood it.
+line @16 greet.return : Welcome right back. You can have first guess. | A decent hello. I'll take it.
 line @17 greet.return [pair.band=friends|family] : You know my black-thumbed handshake. | Ah, the voice that gets a second guess.
 line @18 farewell : Keep your pocket buttoned against wings. | Good guessing down the road.
 line @19 farewell.return : I'll let the gull have the wrong end of that. | Go with the sunny patch on your toes.
-line @20 again.open : Back before my next answer dried. | Our talk's been waiting on its other ear.
+line @20 again.open : Back before my chalk dried. | You again. Good, I'd only got halfway through that.
 line @21 kin.open [pair.kin!=no] : Family gets a free hint, naturally. | Get your elbows in here with mine.
 line @22 hail [pair.band=friends] : Over by the scratch marks! | Catch this before the gull answers!
 line @23 react.news : Hold the sly answer a moment. What's the true account? | You've set my guessing ear afire.
@@ -81,9 +182,6 @@ line @33 thank : My list of good turns just gained a line. | You've done the cle
 line @34 deflect_thanks : Next time you can catch my eel. | Better to save the speech for a prize.
 line @35 preclose : I've another answer hunting for a question. | My boots are working themselves loose to go.
 line @36 accept_preclose : Go while the best light holds. | I'll keep your place on the slate.
-
-adolescent
-
 scene wronggull
 when topic=pastimes self.likes=riddles
 does tell.self / ask.detail / answer.detail
@@ -159,7 +257,7 @@ when topic=smalltalk self.dislikes=gulls
 does tell.self / react.self / assess
 a : I make #beak# a firm offer of yesterday's schoolwork. | A gull has room for a surprising quantity of noise.
 b : Was it a hungry bit of arithmetic? | Where does the fish go then?
-a : Yes, all the sums came up short. | Between the first squeak and the last. It eats punctuation.
+a : Yes, all the sums came up short. | Straight down, between one squawk and the next. It never stops to chew.
 
 scene campember
 when topic=lore
@@ -175,115 +273,11 @@ a : I'll draw a puzzle in the dust with #shine#. | I mean to hide an answer insi
 b : Where will you put the clue? | Which boot will give it away?
 a : In the heel. The hasty guesser's already run past it. | The one where I turn my toes toward the sea.
 
-young
-
-scene littleash
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : My thumb's got a black twin. See? | I made a hill with one charcoal swipe.
-b : Would your twin like washing? | Who's at the top?
-a : It likes smudging my other thumb better. | A very small wolf. That's my dot running about.
-
-scene smallfish
-when topic=food
-does tell.self / react.self / assess
-a : Eel's a ribbon with dinner inside. | I hide my best bite behind my knee.
-b : Hard ribbon to tie in a bow. | Does your knee like fish too?
-a : It goes round my tooth once. Quite enough bow. | No. The gull hasn't worked that out.
-
-grown
-
-scene twist
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I judge a riddle by how much is left after the right guess. | A question gets stale if its only answer's a single clever word.
-b : What else do you ask it to hold? | Would you give it another ending?
-a : A memory. Good ones take me somewhere I forgot I knew. | A bit of room inside the first one will generally do.
-
-scene coolembers
-when topic=dreams
-does tell.self / react.self / assess
-a : I still listen for a cinder ticking after supper. | An evening gone quiet feels like a whole room recovered.
-b : Even without a fire there? | Where from?
-a : Especially then. Little noises get a fair hearing. | From the business of being audible all day long.
-
-scene farsky
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : #cut# makes a good landmark seen from inland. | Walking toward a notch in a cliff gives the distance a shape.
-b : What if a cloud drops across it? | Better than walking after a road?
-a : Stop for supper. No disgrace in taking one's time with fog. | Roads turn. Rock keeps its mind properly made up.
-
-scene peel
-when topic=food self.likes=smoked_eel
-does offer / accept / assess
-a : There's eel in this twist if you like a dark rich bite. | I'll share this tail. Kept the best smoke in it.
-b : I'd like to try the tail end. | I'll bite at the narrow end myself.
-a : Teeth pick it clean. No knife work wasted. | That leaves a good bite under the thicker skin for me.
-
-scene windlace
-when topic=weather
-does tell.self / react.self / assess
-a : The wind among a row of boots can find every loose lace. | My bootlace is a decent little gale warning.
-b : Do they make a sound? | What does it do when you need shelter?
-a : A small ticking against the toes. Like cooling wood. | Lifts straight away from the tongue. That's a vote for going in.
-
-scene cheapchalk
-when topic=prices
-does give.opinion / disagree / concede
-a : A riddle costs a wolf next to nothing if the charcoal's spare. | I could amuse a whole supper queue with one burnt twig.
-b : The time spent thinking is worth something. | Doesn't put food in anybody's mouth.
-a : A price I can afford by walking a little slower. | Granted. But waiting's more bearable with a mouthful of guesses.
-
-scene rookspan
-when topic=pastimes
-does tell.self / react.self / assess
-a : I made a riddle once that only worked when the tide was out. | I enjoy a question whose answer will be underwater shortly.
-b : That's a short life for a good joke. | What happens when the water comes back?
-a : Long as it comes back tomorrow, I'll take the bargain. | The sand's rubbed clean for a wolf with a different question.
-
-scene quietpal
-when topic=friends
-does tell.feeling / sympathise / assess
-a : I like the wolf who can share a seat through an unfilled silence. | An old question can be a comfortable thing between friends.
-b : Are you setting another riddle there? | One you both know by heart?
-a : No. Just offering the other half of a seat. | Each can set it up for the other and neither need answer.
-
-scene lookout
-when topic=land self.quarter=sump
-does tell.plan / ask.detail / answer.detail
-a : I'd give the Sump a patch of hillside silence for every crowded landing. | I like a Sump window where you can see more sky than wall.
-b : How would you get that silence down the steps? | Doesn't the wind come in there too?
-a : In a pocket with no coppers to rattle. Thin stuff, quiet. | Yes. Difficult neighbours sometimes bring a good view.
-
-scene faithword
-when topic=lore
-does tell.self / react.self / assess
-a : There's a good question in the way a charred stick writes about its own fire. | The hush of completely cold coals is its own answer.
-b : What's left to say after a fire? | Does it matter who hears it?
-a : Put a paw round the stick and find out what you remember. | Only if there's a wolf wanting to know when to turn the ashes.
-
-scene stillguess
-when topic=smalltalk
-does tell.self / ask.detail / answer.detail
-a : I keep a wrong guess by for the unnecessary questions. | There's a difference between hiding an answer and just folding it away.
-b : What's the difference in practice? | Which part do you bring back into view?
-a : A riddle gets my best. Idle prying gets the tail of a gull. | The useful part, for whoever needs it. The rest stays folded.
-
-scene saltroad
-when topic=weather self.dislikes=salt_wind
-does tell.self / react.self / assess
-a : Salt on the tongue can carry a wolf back a long way. | Wind always reminds me what I was trying to escape by going uphill.
-b : Does the taste stay pleasant? | Did you get away from it?
-a : Eel tastes better. I prefer to season it myself. | A few times. Long enough to learn why I go looking again.
-
-adolescent
-
 story coal_dot [topic=pastimes]
   : I drew a riddle as dots on my wrist. A black dot for a coal, a white space for the supper fire. Then a shower ran down my sleeve.
   : My whole riddle ran downhill and left me with one black claw.
   b : Could you still work it out?
-  : My question was what travels after the fire goes away. I'd got a better answer than the one I started with.
+  : Not a hope. The rain answered it for me: everything ends up downhill on a dirty sleeve.
 
 story false_supper [topic=food]
   : I slipped an eel into one pocket and paper in the other. Soon as the gulls collected I took the paper out very carefully.
@@ -328,7 +322,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : You can put your question 
 dlg @5 resident.job [self.job=child self.workplace] : I take questions to #self.workplace# and bring guesses home on my sleeves.
 dlg @6 resident.job : Finding a bit of quiet takes most of my ingenuity.
 dlg @7 resident.bye : May the next squawk miss your ears.
-
 graft resident.hub
 choice What's the question on the scrap? -> gull_scrap
 node gull_scrap

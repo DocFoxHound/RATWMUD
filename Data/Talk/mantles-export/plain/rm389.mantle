@@ -1,9 +1,12 @@
+# rm389, the pot turned inward (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm389
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_signe_mossgrave
+written_by codex
 title the pot turned inward
 fits stage=adult|old
 prefers job=official
@@ -39,51 +42,50 @@ light = a spring gleam | a thin warm beam
 window = the open upper sash | the window by my table
 
 any
-opinion houses for 1 : A House's public voice ought to remember where its wood, iron and bread actually come from.
-opinion watch for 1 : When the street is quiet enough for a weary head to stay down, somebody has done a night's work well.
-opinion times for 1 : There is plenty under my roof. I try to let that fact govern my manners as well as my opinions.
-opinion dole against 1 : I'd rather see an empty bowl filled first than a full one offered a second ladle. I do ask how it's managed.
-opinion festivals mixed 0 : A good occasion makes room for the wolf that stays an hour and the wolf that leaves before music.
-opinion strangers mixed 0 : A stranger may sit by my table for a cup without being offered the keys to the cupboard.
-opinion church mixed 0 : Faith's a private duty, like cleaning one's own bowl before passing it to another pair of paws.
-opinion merchants mixed 0 : I prefer a trader who will say what the weight contains and allow me to examine the wrapping.
-opinion city for 1 : With all its steep public steps the city still makes a thousand private places to sit down.
+opinion @1 houses for 1 : A House's public voice ought to remember where its wood, iron and bread actually come from.
+opinion @1 watch for 1 : When the street is quiet enough for a weary head to stay down, somebody has done a night's work well.
+opinion @1 times for 1 : There is plenty under my roof. I try to let that fact govern my manners as well as my opinions.
+opinion @1 dole against 1 : I'd rather see an empty bowl filled first than a full one offered a second ladle. I do ask how it's managed.
+opinion @1 festivals mixed 0 : A good occasion makes room for the wolf that stays an hour and the wolf that leaves before music.
+opinion @1 strangers mixed 0 : A stranger may sit by my table for a cup without being offered the keys to the cupboard.
+opinion @1 church mixed 0 : Faith's a private duty, like cleaning one's own bowl before passing it to another pair of paws.
+opinion @1 merchants mixed 0 : I prefer a trader who will say what the weight contains and allow me to examine the wrapping.
+opinion @1 city for 1 : With all its steep public steps the city still makes a thousand private places to sit down.
 
 grown
-line greet [pair.band=strangers] : You may take the chair on the quiet side. | Welcome. The table has room.
-line greet [self.working=yes] : Set your business down for a moment. | Speak across my tray, please.
-line greet [here.time=dawn] : Morning. The tray is still warm. | Early enough to take our time.
-line greet [here.time=dusk|night] : Evening. Pull the nearer chair round. | A late arrival needn't make a formal entrance.
-line kin.open [pair.kin!=no] : For family the handle turns inward. | Kin can settle before giving an account.
-line again.open : The same day brings another sitting. | We're at the table together again.
-line greet.return : You're heard quite clearly. | Hello. I'll set the pot down.
-line greet.return [pair.band=friends|family] : You may leave ceremony outside our circle. | I'd recognise that comfortable voice in any room.
-line greet.return [self.working=yes] : A little business can rest while I listen. | Let me leave this page safely facedown.
-line greet.return [here.time=dusk|night] : Evening. Choose the lamp side. | I can hear from either end after dark.
-line farewell : Allow a decent interval for steep ground. | May your meal begin before it grows cool.
-line farewell.return : I'll turn the handle back when you're gone. | A quiet return to your own concerns.
-line farewell.return [here.time=night] : May your journey finish at a lit window. | Go with the street still quiet about you.
-line react.news : Tell me which details you have considered. | Lay the account before me quietly.
-line react.news.new : A fresh matter for the table. | I've had no previous word of that.
-line react.news.known : That question has been served already. | The earlier account reached my chair.
-line react.news.doubt : I would leave some space between report and fact. | There are grounds for waiting before I give that credence.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll clear the table of everything less pressing. | That news deserves some unhurried company.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright word to bring into a house. | I'm glad to have that matter settled so well.
-line ask.how : Have you taken a proper rest today? | Did you secure a quiet meal for yourself?
-line answer.how : Steady enough when I remember to sit. | My breath comes easier away from the papers.
-line decline : I should leave this interval free for a duty at home. | I'd rather give a smaller task my full attention.
-line accept_decline : Your preference is plainly understood. | That settles the invitation without offence.
-line thank : That made an ordinary hour much gentler. | I'll keep that care in mind.
-line sympathise : Sit here until you're ready to go on. | I'll take some smaller concern off your hands.
-line reassure : There is time to lift one burden at a time. | We can let a little quiet do its work.
-line preclose : I'll see to the tray now. | There are some small household matters calling.
-line accept_preclose : I'll release you before your tea cools. | A convenient pause for us both.
-line deflect_thanks : A practical kindness needs little ceremony. | A quiet word is ample repayment.
-line ack : Understood well. | Entirely clear.
-line give.advice : Leave a hand free to take the cup. | Sit long enough to feel the chair beneath you.
-line offer : I can set that out where it will be ready. | Shall I bring a chair closer?
-line praise : A measured word delivered with care. | I value the plain sense in that.
-
+line @1 greet [pair.band=strangers] : You may take the chair on the quiet side. | Welcome. The table has room.
+line @2 greet [self.working=yes] : Set your business down for a moment. | Speak across my tray, please.
+line @3 greet [here.time=dawn] : Morning. The tray is still warm. | Early enough to take our time.
+line @4 greet [here.time=dusk|night] : Evening. Pull the nearer chair round. | A late arrival needn't make a formal entrance.
+line @1 kin.open [pair.kin!=no] : For family the handle turns inward. | Kin can settle before giving an account.
+line @1 again.open : The same day brings another sitting. | We're at the table together again.
+line @1 greet.return : You're heard quite clearly. | Hello. I'll set the pot down.
+line @2 greet.return [pair.band=friends|family] : You may leave ceremony outside our circle. | I'd recognise that comfortable voice in any room.
+line @3 greet.return [self.working=yes] : A little business can rest while I listen. | Let me leave this page safely facedown.
+line @4 greet.return [here.time=dusk|night] : Evening. Choose the lamp side. | I can hear from either end after dark.
+line @1 farewell : Allow a decent interval for steep ground. | May your meal begin before it grows cool.
+line @1 farewell.return : I'll turn the handle back when you're gone. | A quiet return to your own concerns.
+line @2 farewell.return [here.time=night] : May your journey finish at a lit window. | Go with the street still quiet about you.
+line @1 react.news : Tell me which details you have considered. | Lay the account before me quietly.
+line @1 react.news.new : A fresh matter for the table. | I've had no previous word of that.
+line @1 react.news.known : That question has been served already. | The earlier account reached my chair.
+line @1 react.news.doubt : I would leave some space between report and fact. | There are grounds for waiting before I give that credence.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll clear the table of everything less pressing. | That news deserves some unhurried company.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright word to bring into a house. | I'm glad to have that matter settled so well.
+line @1 ask.how : Have you taken a proper rest today? | Did you secure a quiet meal for yourself?
+line @1 answer.how : Steady enough when I remember to sit. | My breath comes easier away from the papers.
+line @1 decline : I should leave this interval free for a duty at home. | I'd rather give a smaller task my full attention.
+line @1 accept_decline : Your preference is plainly understood. | That settles the invitation without offence.
+line @1 thank : That made an ordinary hour much gentler. | I'll keep that care in mind.
+line @1 sympathise : Sit here until you're ready to go on. | I'll take some smaller concern off your hands.
+line @1 reassure : There is time to lift one burden at a time. | We can let a little quiet do its work.
+line @1 preclose : I'll see to the tray now. | There are some small household matters calling.
+line @1 accept_preclose : I'll release you before your tea cools. | A convenient pause for us both.
+line @1 deflect_thanks : A practical kindness needs little ceremony. | A quiet word is ample repayment.
+line @1 ack : Understood well. | Entirely clear.
+line @1 give.advice : Leave a hand free to take the cup. | Sit long enough to feel the chair beneath you.
+line @1 offer : I can set that out where it will be ready. | Shall I bring a chair closer?
+line @1 praise : A measured word delivered with care. | I value the plain sense in that.
 scene handle
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -99,7 +101,7 @@ b : Do you plan the interval? | Does supper help?
 a : I can make the seat inviting. The decision to sit belongs elsewhere. | Especially hot supper. Even a very grand duty can wait for a spoonful.
 
 scene child
-when topic=family self.parent=yes self.child
+when topic=family self.parent=yes self.child self.job=official
 does tell.self / ask.detail / answer.detail
 a : I'd let #self.child# see exactly why I chose a difficult vote.
 b : Every detail? | Why explain it at home?
@@ -243,7 +245,7 @@ when topic=lore here.region=ridgemere
 does tell.self / ask.detail / answer.detail
 a : Ridgemere gives the best view to the one who has climbed the furthest. I have a quarrel with that arrangement.
 b : Would you level the hill? | What do you suggest?
-a : Not even the Houses have so far acquired a vote over the hillside. | Give some of the landings windows where a wolf can look out sitting down.
+a : No. I'd settle for a bench at every second landing. | Give some of the landings windows where a wolf can look out sitting down.
 
 scene habit
 when topic=gossip
@@ -288,7 +290,7 @@ b : You'd move it away from the fire? | To stand and stretch?
 a : Just enough for a long shin to come round without a scorch. | Yes. Becoming too comfortable to move is no improvement on being too busy to sit.
 
 scene dream
-when topic=dreams
+when topic=dreams self.job=official
 does tell.self / ask.detail / answer.detail
 a : I dreamed the Council sat in a room full of soft chairs and no table whatsoever.
 b : Did anything get done? | Where did you put the papers?
@@ -360,20 +362,19 @@ does aside
 cooldown 11h
 say Draw the good chair a little towards the window. | Clean cloth ready for the first warm meal.
 
-dlg resident.hub : Take a chair without waiting to discover which one the etiquette recommends. A comfortable sitting makes for a clearer hearing.
-dlg resident.hub [topic.meeting=known] : #topic.player#, come and take the ordinary household chair.
-dlg resident.hub [here.time=dawn] : We're in good time to talk before the house begins to require both my hands.
-dlg resident.hub [here.time=dusk] : Evening gives us a few minutes when the quiet seat has particular merit.
-dlg resident.hub [pair.disposition=wary|hostile] : A brief and civil account will do quite well for a beginning.
-dlg resident.hub [pair.band=friends|family] : Come inside the household circle. There's no business to clear before we may speak.
-dlg resident.job [self.job=official self.workplace] : My duties at #self.workplace# involve allowing practical things to have their due time alongside public ones.
-dlg resident.job [self.job=official self.trade_words] : #self.trade_words.capitalize#. The private needs of a household continue while public decisions are being considered.
-dlg resident.job : I notice an unseated guest or a bowl that hasn't been warmed.
-dlg resident.news [world.news] : This is the matter that has reached my table. #world.news#
-dlg resident.bye : I hope your next engagement leaves time for a proper meal.
-dlg resident.bye [here.time=night] : May you reach a quiet chair while the lamp is still warm.
-dlg resident.hub [self.parent=yes] : I make a practice of hearing a request through. There may be a family matter just after it, so begin as you like.
-
+dlg @1 resident.hub : Take a chair without waiting to discover which one the etiquette recommends. A comfortable sitting makes for a clearer hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, come and take the ordinary household chair.
+dlg @3 resident.hub [here.time=dawn] : We're in good time to talk before the house begins to require both my hands.
+dlg @4 resident.hub [here.time=dusk] : Evening gives us a few minutes when the quiet seat has particular merit.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : A brief and civil account will do quite well for a beginning.
+dlg @6 resident.hub [pair.band=friends|family] : Come inside the household circle. There's no business to clear before we may speak.
+dlg @1 resident.job [self.job=official self.workplace] : My duties at #self.workplace# involve allowing practical things to have their due time alongside public ones.
+dlg @2 resident.job [self.job=official self.trade_words] : #self.trade_words.capitalize#. The private needs of a household continue while public decisions are being considered.
+dlg @3 resident.job : I notice an unseated guest or a bowl that hasn't been warmed.
+dlg @1 resident.news [world.news] : This is the matter that has reached my table. #world.news#
+dlg @1 resident.bye : I hope your next engagement leaves time for a proper meal.
+dlg @2 resident.bye [here.time=night] : May you reach a quiet chair while the lamp is still warm.
+dlg @7 resident.hub [self.parent=yes] : I make a practice of hearing a request through. There may be a family matter just after it, so begin as you like.
 graft @handle resident.hub
 choice What does the turned handle tell me? -> inward_handle
 node inward_handle
@@ -385,6 +386,7 @@ node outward_handle
 say Turn it back, with a word for the wolf whose rest you're about to interrupt. Sometimes so small a courtesy changes the nature of the interruption.
 choice I'll make that courtesy first. -> hub
 choice I shall leave the handle as you set it. -> bye
+
 graft @line resident.hub
 choice Does your household run to the rhythm of a fishing line? -> evening_float
 node evening_float

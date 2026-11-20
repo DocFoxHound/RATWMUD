@@ -1,9 +1,12 @@
+# rm393, the iron flood atlas (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm393
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_montague_kettlecote
+written_by codex
 title the iron flood atlas
 fits stage=adult|old
 prefers job=merchant
@@ -36,35 +39,34 @@ hole = a rat hole | a gap in the skirting
 rack = a plain iron rack | a grid of rods
 
 any
-opinion road for 2 : One passable street is worth a pretty map of ten that have rivers where the doors should be.
-opinion houses mixed 1 : A high seat is a poor place to hide a face. Give its occupant some ordinary privacy.
-opinion merchants mixed 1 : A bar sold by weight is either there or missing. Give me trade I can check with my own paws.
-opinion strangers mixed 1 : I'll give a visitor a dry route. No charge and no requirement to walk it at my elbow.
-opinion times against 2 [world.times=lean|hard] : A bad spell makes everybody with a dry store think twice before moving anything out of it.
-opinion sump for 1 : The low streets taught me more about drains than the maps kept in dry rooms ever did.
+opinion @1 road for 2 : One passable street is worth a pretty map of ten that have rivers where the doors should be.
+opinion @1 houses mixed 1 : A high seat is a poor place to hide a face. Give its occupant some ordinary privacy.
+opinion @1 merchants mixed 1 : A bar sold by weight is either there or missing. Give me trade I can check with my own paws.
+opinion @1 strangers mixed 1 : I'll give a visitor a dry route. No charge and no requirement to walk it at my elbow.
+opinion @1 times against 2 [world.times=lean|hard] : A bad spell makes everybody with a dry store think twice before moving anything out of it.
+opinion @1 sump for 1 : The low streets taught me more about drains than the maps kept in dry rooms ever did.
 
 grown
-line greet : Dry patch here by my map elbow. | You can stand here without moving the pins.
-line greet.return : A level greeting coming back uphill.
-line again.open : We haven't lost the road between us yet.
-line farewell : Take the one high turn and save your socks. | Don't let a short map sell you a long soak.
-line farewell.return : Dry iron and a dry doorstep to you too.
-line react.news : Lay the news where I can put a point on it. | Start with the street it reached you on.
-line react.news.new : That wants a fresh mark entirely.
-line react.news.known : I recognise the dent that story left.
-line react.news.doubt : It doesn't sit square on what I know.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd keep a stranger's hurt out of the public window.
-line react.news.glad [topic.kind=birth|marriage|work] : That's a bright nail for a decent stretch of road.
-line ask.how : Any rising trouble at your end today?
-line answer.how : More or less above water. Feet still restless.
-line sympathise : Come out of the press. I'll stand in the gap.
-line reassure : There's another track round the blocked part.
-line refuse : My boots have a journey promised to them already.
-line accept_decline : Leave it there. I dislike a second hard sell myself.
-line preclose : Need to catch the road before it fills with elbows.
-line accept_preclose : Go now, there's still a clear line ahead.
-line ack : I've set a point beside your meaning.
-
+line @1 greet : Dry patch here by my map elbow. | You can stand here without moving the pins.
+line @1 greet.return : A level greeting coming back uphill.
+line @1 again.open : We haven't lost the road between us yet.
+line @1 farewell : Take the one high turn and save your socks. | Don't let a short map sell you a long soak.
+line @1 farewell.return : Dry iron and a dry doorstep to you too.
+line @1 react.news : Lay the news where I can put a point on it. | Start with the street it reached you on.
+line @1 react.news.new : That wants a fresh mark entirely.
+line @1 react.news.known : I recognise the dent that story left.
+line @1 react.news.doubt : It doesn't sit square on what I know.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd keep a stranger's hurt out of the public window.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's a bright nail for a decent stretch of road.
+line @1 ask.how : Any rising trouble at your end today?
+line @1 answer.how : More or less above water. Feet still restless.
+line @1 sympathise : Come out of the press. I'll stand in the gap.
+line @1 reassure : There's another track round the blocked part.
+line @1 refuse : My boots have a journey promised to them already.
+line @1 accept_decline : Leave it there. I dislike a second hard sell myself.
+line @1 preclose : Need to catch the road before it fills with elbows.
+line @1 accept_preclose : Go now, there's still a clear line ahead.
+line @1 ack : I've set a point beside your meaning.
 scene exchange1
 when topic=work self.job=merchant self.workplace
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.dislikes=crowds
 does aside
 cooldown 8h
 say Room to lay my parcel level, that's all. | A clear width between those shoulders would do me.
-dlg resident.hub : I'll move the map for a sensible question.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember which turning brought you through last time.
-dlg resident.hub [here.time=night] : My eyes have finished reading for tonight. My ears still work.
-dlg resident.hub [pair.disposition=wary|hostile] : Stay clear of my marked roads till I've heard your errand.
-dlg resident.job [self.job=merchant] : I keep the iron dry and counted at #self.workplace#.
-dlg resident.job : Give me work I can set straight before rain gets into it.
-dlg resident.news [world.news] : The report that made it up my street was #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody put #topic.subject# #topic.claim# into circulation. I've no extra particulars for you.
-dlg resident.bye : Take the road with the clear runnel.
 
+dlg @1 resident.hub : I'll move the map for a sensible question.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember which turning brought you through last time.
+dlg @3 resident.hub [here.time=night] : My eyes have finished reading for tonight. My ears still work.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stay clear of my marked roads till I've heard your errand.
+dlg @1 resident.job [self.job=merchant] : I keep the iron dry and counted at #self.workplace#.
+dlg @2 resident.job : Give me work I can set straight before rain gets into it.
+dlg @1 resident.news [world.news] : The report that made it up my street was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody put #topic.subject# #topic.claim# into circulation. I've no extra particulars for you.
+dlg @1 resident.bye : Take the road with the clear runnel.
 graft resident.hub
 choice Why put a bent nail on a street? -> nail_map
 node nail_map

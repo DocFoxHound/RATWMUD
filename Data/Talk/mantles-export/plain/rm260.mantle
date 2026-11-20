@@ -1,9 +1,12 @@
+# rm260, the sail sampler (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm260
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_ansel_kelpford
+written_by codex
 title the sail sampler
 fits stage=adult|old
 prefers job=crafter
@@ -35,40 +38,39 @@ seamend = a knotted tail | a turned-back stitch
 frostleaf = a silver leaf on the sill | a leaf stiff as tin
 
 any
-opinion dole for 2 : Give a wolf bread while there's still strength to chew it. Forms and questions can wait till the second slice.
-opinion church for 1 : At the chapel I got a bowlful right down to the bottom. Some places the serving spoon just skims the broth.
-opinion houses against 2 : We have to stand clear when a House boat comes in. I've been waiting to hear where the rest of us should land.
-opinion festivals against 1 : Somebody always takes a nice plain ship and hangs flags everywhere till you can't see how it's made.
-opinion watch against 1 : A Watch shoulder feels just as sharp as any other in a crowd, whatever's on the badge.
-opinion merchants against 2 : Smoked eel gets thinner and dearer going up the street. Only thing growing on the way is the price.
+opinion @1 dole for 2 : Give a wolf bread while there's still strength to chew it. Forms and questions can wait till the second slice.
+opinion @1 church for 1 : At the chapel I got a bowlful right down to the bottom. Some places the serving spoon just skims the broth.
+opinion @1 houses against 2 : We have to stand clear when a House boat comes in. I've been waiting to hear where the rest of us should land.
+opinion @1 festivals against 1 : Somebody always takes a nice plain ship and hangs flags everywhere till you can't see how it's made.
+opinion @1 watch against 1 : A Watch shoulder feels just as sharp as any other in a crowd, whatever's on the badge.
+opinion @1 merchants against 2 : Smoked eel gets thinner and dearer going up the street. Only thing growing on the way is the price.
 
 grown
-line greet : Give me a breath to lay my thread aside. Welcome. | There's room on my seaward side.
-line greet [here.time=dawn] : Frost or no frost, you're early. I like that.
-line greet.return : A straight greeting. I'll answer it gladly. | Aye, I've a moment between stitches.
-line again.open : Got a little further on my strip since we spoke.
-line kin.open [pair.kin!=no] : You're near enough to put your coat on mine.
-line hail [pair.band=friends] : Over by the rolled cloth! Here.
-line farewell : Go easy by the landing steps. | Give yourself a little slack going home.
-line farewell.return : You're clear of my loose thread. Go well.
-line react.news : Speak so I can see the shape of what happened.
-line react.news.new : That puts a different ship in the picture.
-line react.news.known : I had the outline. Now it's got some colour on it.
-line react.news.doubt : Who had a clear sight of it?
-line react.news.sorrow [topic.kind=loss|death|crime|assault|theft] : I can put this roll away and walk beside you for a bit.
-line react.news.glad [topic.kind=work|birth|marriage] : Worth a bright stitch to remember it by.
-line ask.how : How's the day wearing against you?
-line answer.how : Settled. There's thread enough here to finish today's stitching.
-line sympathise : A rough thing rubbed in the same place makes one mighty sore.
-line reassure : You could sit on my coat till the shaking eases.
-line decline : No. Please keep your paws off my roll.
-line accept_decline : Fair. I leave your things in your keeping.
-line thank : You left me room to do it properly. Much obliged.
-line deflect_thanks : Mind the next wolf has room as well.
-line preclose : My loose end's trailing. Better see to that.
-line accept_preclose : I'll let you by without a fuss.
-line ack : Clear as a mast against snow.
-
+line @1 greet : Give me a breath to lay my thread aside. Welcome. | There's room on my seaward side.
+line @2 greet [here.time=dawn] : Frost or no frost, you're early. I like that.
+line @1 greet.return : A straight greeting. I'll answer it gladly. | Aye, I've a moment between stitches.
+line @1 again.open : Got a little further on my strip since we spoke.
+line @1 kin.open [pair.kin!=no] : You're near enough to put your coat on mine.
+line @1 hail [pair.band=friends] : Over by the rolled cloth! Here.
+line @1 farewell : Go easy by the landing steps. | Give yourself a little slack going home.
+line @1 farewell.return : You're clear of my loose thread. Go well.
+line @1 react.news : Speak so I can see the shape of what happened.
+line @1 react.news.new : That puts a different ship in the picture.
+line @1 react.news.known : I had the outline. Now it's got some colour on it.
+line @1 react.news.doubt : Who had a clear sight of it?
+line @1 react.news.sorrow [topic.kind=loss|death|crime|assault|theft] : I can put this roll away and walk beside you for a bit.
+line @1 react.news.glad [topic.kind=work|birth|marriage] : Worth a bright stitch to remember it by.
+line @1 ask.how : How's the day wearing against you?
+line @1 answer.how : Settled. There's thread enough here to finish today's stitching.
+line @1 sympathise : A rough thing rubbed in the same place makes one mighty sore.
+line @1 reassure : You could sit on my coat till the shaking eases.
+line @1 decline : No. Please keep your paws off my roll.
+line @1 accept_decline : Fair. I leave your things in your keeping.
+line @1 thank : You left me room to do it properly. Much obliged.
+line @1 deflect_thanks : Mind the next wolf has room as well.
+line @1 preclose : My loose end's trailing. Better see to that.
+line @1 accept_preclose : I'll let you by without a fuss.
+line @1 ack : Clear as a mast against snow.
 scene sampler
 when topic=pastimes|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -237,15 +239,14 @@ does aside
 cooldown 8h
 say A word before the elbow, please. | Room enough if you ask for it.
 
-dlg resident.hub : I'm rolling up some cloth. There's an ear free if you've business.
-dlg resident.hub [topic.meeting=known] : You remember my fleet, #topic.player#. I've found another mast for it.
-dlg resident.hub [pair.disposition=wary|hostile] : Stand there and I'll hear you. This much room suits me.
-dlg resident.hub [here.time=dusk] : Nearly too dull to thread a needle. Speak while I've still light to see your face.
-dlg resident.job [self.job=crafter] : #self.trade_words.capitalize#. There's a place for a steady stitch and I know where to take one.
-dlg resident.job : Give me the loose end and I'll see where I can help.
-dlg resident.news [world.news] : Here's what came through clearly enough. #world.news#.
-dlg resident.bye : May you find a sound foothold at the water.
-
+dlg @1 resident.hub : I'm rolling up some cloth. There's an ear free if you've business.
+dlg @2 resident.hub [topic.meeting=known] : You remember my fleet, #topic.player#. I've found another mast for it.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Stand there and I'll hear you. This much room suits me.
+dlg @4 resident.hub [here.time=dusk] : Nearly too dull to thread a needle. Speak while I've still light to see your face.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. There's a place for a steady stitch and I know where to take one.
+dlg @2 resident.job : Give me the loose end and I'll see where I can help.
+dlg @1 resident.news [world.news] : Here's what came through clearly enough. #world.news.capitalize#.
+dlg @1 resident.bye : May you find a sound foothold at the water.
 graft resident.hub
 choice Unroll a little of that fleet for me. -> narrow_fleet
 node narrow_fleet

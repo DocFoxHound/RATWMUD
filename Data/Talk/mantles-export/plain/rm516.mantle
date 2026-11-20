@@ -1,9 +1,12 @@
+# rm516, the hum under the gate (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm516
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_hester_bilgeham
+written_by codex
 title the hum under the gate
 fits stage=adult|old
 prefers job=guard
@@ -17,6 +20,7 @@ topics friends +0.6 work +0.5 food +0.4 weather +0.2
 styles comfort=warm gossip=guarded refuse=quiet tease=none
 marks oath saying
 persona #self.first# remembers favours by humming the note on which a thank-you was spoken, and leaves the deepest part of a chorus open for a late arrival.
+
 words
 oath! = Rattle my lowest note | Mist in my music
 saying! = Leave room for the bass | A return needn't be loud
@@ -36,51 +40,49 @@ dewlint = a grey thread of moisture | a whisker of morning mist
 kitchenhum = a humming kettle | a softly singing pot
 
 grown
-
-opinion watch for 2 : I value a turn of duty on which an anxious arrival leaves with shoulders rather lower than they came.
-opinion road for 1 : A well-kept approach lets a traveller spare some breath for saying what brings the journey to its end.
-opinion houses mixed 1 : I remember a House by how it asks to be repaid. A quiet demand may be as heavy as a shouted one.
-opinion newcomers for 1 : A chorus makes room for somebody who knows only the ending. The rest comes with a little listening.
-opinion merchants mixed 1 : Name the price in a voice you could use at breakfast. A figure which requires a whole performance wearies me.
-opinion dole for 1 : A hot dish makes an easier beginning than a list of circumstances. Serve first and we'll hear the explanation in comfort.
-opinion festivals for 2 : A dozen ordinary voices can keep a tune going after the finest voice in the group has gone home.
-opinion city for 1 : I can remember the approach to the city in mist by humming its turns under my breath.
-line greet : Come where the air between us will carry a low voice.
-line greet.return : I remember the sound of our last exchange.
-line greet [here.time=dawn] : Good morning. Come through the pale air at your own speed.
-line greet [pair.band=friends|family] : There's a warm low note been waiting for your company.
-line farewell : Carry the tune as far as the turn suits you.
-line farewell.return : My thanks will travel quietly after you.
-line ask.how : What sort of note would suit your morning?
-line answer.how : My voice can keep a low part steady without assistance.
-line thank : Your kindness will be easy to recognise when I hear that note again.
-line deflect_thanks : You can return it in an ordinary voice some other day.
-line decline : I won't add my word to a promise I might have to sing over.
-line accept_decline : I hear the answer clearly. I'll let the note die away.
-line sympathise : If words are too much today, a seat beside me is enough.
-line reassure : Someone else can sustain the tune during the pause for breath.
-line react.news : Spare me the flourishes and let the words speak plainly.
-line react.news.new : A new note to fit into the account.
-line react.news.known : I remember hearing the earlier voice on that one.
-line react.news.doubt : That account keeps changing pitch whenever it reaches the doubtful part.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Those words have earned the longest, warmest note my chest will carry.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A low voice will do. Sorrow already knows how to make itself heard.
-line ack : Yes. The words and the note agree.
-line again.open : Our two parts have come together again.
-line preclose : The tune has reached a comfortable resting place.
-line accept_preclose : I can carry the unfinished part quietly.
-line greet.return [here.time=night] : An evening voice travels farther than you may suppose.
-line decline [pair.disposition=wary] : I'd keep that matter outside the reach of even a friendly promise.
-line ask.how [pair.band=friends|family] : Have you had a moment to hear yourself hum lately?
-line reassure [here.time=night] : I'll be a little quiet company until the air feels easier.
-line farewell [here.time=dusk] : Let the cooling stones give your step a pleasant sound.
-line tell.self : I collect more old notes in my head than actual tunes.
-line answer.how [here.time=dawn] : Misty mornings suit me almost as well as singing company.
-
+opinion @1 watch for 2 : I value a turn of duty on which an anxious arrival leaves with shoulders rather lower than they came.
+opinion @1 road for 1 : A well-kept approach lets a traveller spare some breath for saying what brings the journey to its end.
+opinion @1 houses mixed 1 : I remember a House by how it asks to be repaid. A quiet demand may be as heavy as a shouted one.
+opinion @1 newcomers for 1 : A chorus makes room for somebody who knows only the ending. The rest comes with a little listening.
+opinion @1 merchants mixed 1 : Name the price in a voice you could use at breakfast. A figure which requires a whole performance wearies me.
+opinion @1 dole for 1 : A hot dish makes an easier beginning than a list of circumstances. Serve first and we'll hear the explanation in comfort.
+opinion @1 festivals for 2 : A dozen ordinary voices can keep a tune going after the finest voice in the group has gone home.
+opinion @1 city for 1 : I can remember the approach to the city in mist by humming its turns under my breath.
+line @1 greet : Come where the air between us will carry a low voice.
+line @1 greet.return : I remember the sound of our last exchange.
+line @2 greet [here.time=dawn] : Good morning. Come through the pale air at your own speed.
+line @3 greet [pair.band=friends|family] : There's a warm low note been waiting for your company.
+line @1 farewell : Carry the tune as far as the turn suits you.
+line @1 farewell.return : My thanks will travel quietly after you.
+line @1 ask.how : What sort of note would suit your morning?
+line @1 answer.how : My voice can keep a low part steady without assistance.
+line @1 thank : Your kindness will be easy to recognise when I hear that note again.
+line @1 deflect_thanks : You can return it in an ordinary voice some other day.
+line @1 decline : I won't add my word to a promise I might have to sing over.
+line @1 accept_decline : I hear the answer clearly. I'll let the note die away.
+line @1 sympathise : If words are too much today, a seat beside me is enough.
+line @1 reassure : Someone else can sustain the tune during the pause for breath.
+line @1 react.news : Spare me the flourishes and let the words speak plainly.
+line @1 react.news.new : A new note to fit into the account.
+line @1 react.news.known : I remember hearing the earlier voice on that one.
+line @1 react.news.doubt : That account keeps changing pitch whenever it reaches the doubtful part.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Those words have earned the longest, warmest note my chest will carry.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A low voice will do. Sorrow already knows how to make itself heard.
+line @1 ack : Yes. The words and the note agree.
+line @1 again.open : Our two parts have come together again.
+line @1 preclose : The tune has reached a comfortable resting place.
+line @1 accept_preclose : I can carry the unfinished part quietly.
+line @2 greet.return [here.time=night] : An evening voice travels farther than you may suppose.
+line @2 decline [pair.disposition=wary] : I'd keep that matter outside the reach of even a friendly promise.
+line @2 ask.how [pair.band=friends|family] : Have you had a moment to hear yourself hum lately?
+line @2 reassure [here.time=night] : I'll be a little quiet company until the air feels easier.
+line @2 farewell [here.time=dusk] : Let the cooling stones give your step a pleasant sound.
+line @1 tell.self : I collect more old notes in my head than actual tunes.
+line @2 answer.how [here.time=dawn] : Misty mornings suit me almost as well as singing company.
 scene work_1
 when topic=work self.job=guard
 does tell.self / ask.detail / answer.detail
-a : My stretch of duty is #self.trade_words#. A traveller's voice often tells me when to offer a dry seat.
+a : #self.trade_words.capitalize#, these days. A traveller's voice often tells me when to offer a dry seat.
 b : Before asking any questions? | What in the voice tells you?
 a : The seat doesn't interfere with an answer. Sometimes a wolf can remember the business better for sitting down. | A little gasp between name and business. I've heard it after many a long uphill approach.
 
@@ -338,19 +340,19 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say The last note comes home at this hour. | It may be a humming sort of evening.
-dlg resident.hub : Stand close enough for a gently spoken greeting.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I have the sound of the name again.
-dlg resident.job [self.job=guard] : My post is #self.trade_words#. Giving a tired arrival time to get a breath is part of the duty as I understand it.
-dlg resident.quirk : I remember a debt by the pitch of the voice that first acknowledged the kindness.
-dlg resident.news [world.news] : The words I heard clearly were these. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The claim on my stretch of road has #topic.subject# #topic.claim#. I've no first voice to attach to it.
-dlg resident.bye : An easy note to carry out with you.
-dlg watch.hub [on_watch=no] : I'm off duty and can spare a little ordinary conversation.
-dlg watch.crime [here.witnessed!=0] : I'll hear what you witnessed. Use your own speaking voice and begin where you were standing.
-dlg watch.unpaid : An unpaid fine means waiting in the cells until the sum is met.
-dlg watch.bye : Your business is concluded here. Mind the damp on the way.
-dlg watch.refused : The difficulty is this. #topic.why#.
 
+dlg @1 resident.hub : Stand close enough for a gently spoken greeting.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have the sound of the name again.
+dlg @1 resident.job [self.job=guard] : #self.trade_words.capitalize#. Giving a tired arrival time to get a breath is part of the duty as I understand it.
+dlg @1 resident.quirk : I remember a debt by the pitch of the voice that first acknowledged the kindness.
+dlg @1 resident.news [world.news] : The words I heard clearly were these. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim on my stretch of road has #topic.subject# #topic.claim#. I've no first voice to attach to it.
+dlg @1 resident.bye : An easy note to carry out with you.
+dlg @1 watch.hub [on_watch=no] : I'm off duty and can spare a little ordinary conversation.
+dlg @1 watch.crime [here.witnessed!=0] : I'll hear what you witnessed. Use your own speaking voice and begin where you were standing.
+dlg @1 watch.unpaid : An unpaid fine means waiting in the cells until the sum is met.
+dlg @1 watch.bye : Your business is concluded here. Mind the damp on the way.
+dlg @1 watch.refused : The difficulty is this. #topic.why#.
 graft resident.hub
 choice Could you remember a favour without a tune? -> note_favour
 node note_favour

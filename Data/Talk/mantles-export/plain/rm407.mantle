@@ -1,9 +1,12 @@
+# rm407, the bottle-rack king (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm407
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_dagny_catterick
+written_by codex
 title the bottle-rack king
 fits stage=adult|old
 prefers job=merchant humour=dry
@@ -34,45 +37,44 @@ gatedin = a shout from the gate | the noise off the gate road
 bootridge = the upper rim of my boot | a line of muddy stitching
 
 any
-opinion merchants for 1 : I'd trust a price from somebody willing to write it large before the first cup's poured.
-opinion houses against 1 : A fine badge can take up a lot of board without earning the right to move a piece.
-opinion strangers mixed 0 : Any stranger may play white. If the dark pieces go home in a strange pocket I reassess.
-opinion city for 1 : Send a lost cork rolling in Ridgemere and it'll find three possible employers before it stops.
-opinion dole for 1 : You have to get everybody fed before you can start boasting what a fine table it is.
-opinion festivals for 1 : A feast is worth the disturbance when the loser of a game can still go home singing.
-opinion watch mixed 0 : A patrol doesn't bother me till the boots go across my nice square rows.
+opinion @1 merchants for 1 : I'd trust a price from somebody willing to write it large before the first cup's poured.
+opinion @1 houses against 1 : A fine badge can take up a lot of board without earning the right to move a piece.
+opinion @1 strangers mixed 0 : Any stranger may play white. If the dark pieces go home in a strange pocket I reassess.
+opinion @1 city for 1 : Send a lost cork rolling in Ridgemere and it'll find three possible employers before it stops.
+opinion @1 dole for 1 : You have to get everybody fed before you can start boasting what a fine table it is.
+opinion @1 festivals for 1 : A feast is worth the disturbance when the loser of a game can still go home singing.
+opinion @1 watch mixed 0 : A patrol doesn't bother me till the boots go across my nice square rows.
 
 grown
-line greet : Here's your square. It's an excellent place to begin.
-line greet [pair.band=strangers] : You'll be the new face on the far side. Welcome.
-line greet [here.time=dawn] : Morning. I've beaten the day to the first square.
-line greet [here.time=dusk|night] : Evening good enough to spend on another move.
-line greet.return : I heard that over my own explaining. Well done.
-line greet.return [pair.band=friends|family] : The board looks more civil with you at it.
-line greet.return [self.working=yes] : Hold beside the counter while I free my paw.
-line greet.return [here.time=dusk|night] : After dark a loud hello covers the distance twice.
-line kin.open [pair.kin!=no] : Kin can have the comfortable side and make no speeches.
-line again.open : I left the counters just where they ought to be.
-line hail [pair.band=friends] : There you are! Right beside my winning position!
-line farewell : Walk away in a straight line if you possibly can.
-line farewell.return : And keep the better squares to yourself going home.
-line react.news : Give me the account before I start commenting on it.
-line react.news.new : That cork's just hit my board for the first time.
-line react.news.known : Seen that opening from both sides of the table.
-line react.news.doubt : It sits a little too prettily to convince me yet.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. I'll put both pieces down a minute.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Somebody deserves a little crown for that piece of news.
-line ask.how : Has the day let you choose your own moves?
-line answer.how : I'm in a position which could be improved by supper.
-line thank : I've got a reason to put your name on a better square.
-line deflect_thanks : Cost me one move and I'd plenty to spare.
-line sympathise : Sit opposite. I can keep my big voice down if it helps.
-line reassure : The unfortunate opening hasn't settled the whole game.
-line decline : I'd otherwise agree, but my next move's promised elsewhere.
-line accept_decline : Then a straight refusal leaves us both standing comfortably.
-line preclose : I'll take my last light along while it's still portable.
-line accept_preclose : We can give a good pause its own square.
-
+line @1 greet : Here's your square. It's an excellent place to begin.
+line @2 greet [pair.band=strangers] : You'll be the new face on the far side. Welcome.
+line @3 greet [here.time=dawn] : Morning. I've beaten the day to the first square.
+line @4 greet [here.time=dusk|night] : Evening good enough to spend on another move.
+line @1 greet.return : I heard that over my own explaining. Well done.
+line @2 greet.return [pair.band=friends|family] : The board looks more civil with you at it.
+line @3 greet.return [self.working=yes] : Hold beside the counter while I free my paw.
+line @4 greet.return [here.time=dusk|night] : After dark a loud hello covers the distance twice.
+line @1 kin.open [pair.kin!=no] : Kin can have the comfortable side and make no speeches.
+line @1 again.open : I left the counters just where they ought to be.
+line @1 hail [pair.band=friends] : There you are! Right beside my winning position!
+line @1 farewell : Walk away in a straight line if you possibly can.
+line @1 farewell.return : And keep the better squares to yourself going home.
+line @1 react.news : Give me the account before I start commenting on it.
+line @1 react.news.new : That cork's just hit my board for the first time.
+line @1 react.news.known : Seen that opening from both sides of the table.
+line @1 react.news.doubt : It sits a little too prettily to convince me yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. I'll put both pieces down a minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Somebody deserves a little crown for that piece of news.
+line @1 ask.how : Has the day let you choose your own moves?
+line @1 answer.how : I'm in a position which could be improved by supper.
+line @1 thank : I've got a reason to put your name on a better square.
+line @1 deflect_thanks : Cost me one move and I'd plenty to spare.
+line @1 sympathise : Sit opposite. I can keep my big voice down if it helps.
+line @1 reassure : The unfortunate opening hasn't settled the whole game.
+line @1 decline : I'd otherwise agree, but my next move's promised elsewhere.
+line @1 accept_decline : Then a straight refusal leaves us both standing comfortably.
+line @1 preclose : I'll take my last light along while it's still portable.
+line @1 accept_preclose : We can give a good pause its own square.
 scene cork_set
 when topic=pastimes|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -148,7 +150,7 @@ when topic=times world.times=hard|lean
 does tell.self / ask.detail / answer.detail
 a : When the week's poor I crown a cork and count my evening's entertainment paid for. | A lean shelf leaves room for all the things you can't buy.
 b : Cheer yourself up? | Do you keep the space clean?
-a : Invest heavily in future entertainment. | Spotless. Poverty has yet to outwit my dusting rag.
+a : That, and a crowned cork costs nothing. A free game is a fair evening. | Spotless. Poverty has yet to outwit my dusting rag.
 
 scene late_casks
 when topic=travel world.wagons=late
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say A cork can go to sleep without a thump. Most civil.
 
-dlg resident.hub : Across here, where we can get a good argument out of a small question.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Glad you kept your place on my board.
-dlg resident.hub [here.time=night] : Well, we've a small lamp and two perfectly serviceable ears apiece.
-dlg resident.hub [pair.disposition=hostile|wary] : Speak from your square. I'm uninclined to trade positions.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. Lively business for such quiet neighbours as bottles.
-dlg resident.job : It pleases me when a day's work adds up the second time too.
-dlg resident.news [world.news] : To put that in proper order, #world.news_from#, and the account is #world.news#.
-dlg resident.gossip [here.gossip=yes] : What was said of #topic.subject# was #topic.claim#. I wasn't playing witness.
-dlg resident.bye : There's daylight on the squares yet. Safe going.
-
+dlg @1 resident.hub : Across here, where we can get a good argument out of a small question.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Glad you kept your place on my board.
+dlg @3 resident.hub [here.time=night] : Well, we've a small lamp and two perfectly serviceable ears apiece.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from your square. I'm uninclined to trade positions.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. Lively business for such quiet neighbours as bottles.
+dlg @2 resident.job : It pleases me when a day's work adds up the second time too.
+dlg @1 resident.news [world.news] : To put that in proper order, #world.news_from#, and the account is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : What was said of #topic.subject# was #topic.claim#. I wasn't playing witness.
+dlg @1 resident.bye : There's daylight on the squares yet. Safe going.
 graft resident.hub
 choice Which cork ought I to move first? -> board_guest
 node board_guest

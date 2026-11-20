@@ -1,9 +1,12 @@
+# rm559, the east watch's travelling breadbox (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm559
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_vidar_dripmarsh
+written_by codex
 title the east watch's travelling breadbox
 fits stage=adult|old
 prefers job=guard
@@ -81,7 +84,6 @@ line @28 answer.how [self.working=yes] : Standing my turn with a riddle in reser
 line @29 greet [pair.band=friends] : Good company for my unclaimed slice.
 line @30 preclose [here.time=dusk] : Lamp and loaf both need a small evening service.
 line @31 farewell.return [here.weather=rain] : Tuck the warm word under the driest fold.
-
 scene lidriddle
 when topic=pastimes self.likes=riddles
 does tell.self / ask.detail / answer.detail / assess
@@ -373,7 +375,6 @@ dlg @11 watch.fine [here.wanted=yes] : Your fine stands at #here.fine# pennies. 
 dlg @12 watch.fine [here.wanted=no] : You have a clear account with this watch at present.
 dlg @13 watch.reported [topic.reported=yes] : Your account has reached the watch. I'm grateful you made the walk.
 dlg @14 watch.bye : Walk out with time for a decent supper.
-
 graft resident.hub
 choice Is the answer carved outside the lid? -> loafanswer
 node loafanswer

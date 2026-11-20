@@ -1,9 +1,12 @@
+# rm247, the missing beat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm247
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_corwin_sootton
+written_by codex
 title the missing beat
 fits stage=adult|old
 prefers job=sailor
@@ -35,42 +38,40 @@ lastturn = the final turn | a little closing dip
 heelmark = a dark heel mark | a scuffed half circle
 
 any
-opinion festivals for 2 : A wolf who can't afford the supper can still afford one turn with the music.
-opinion church for 2 : Even a half-spoken blessing can reach the Bright One past the last scrap of breath.
-opinion dole for 3 : Hunger sets such a fast time a wolf can't keep step with it. Food steadies the feet.
-opinion drink against 1 : An evening cup's too dear when it takes tomorrow's balance as part of the price.
-opinion houses against 2 : I worry about which House will let the line go slack just to spite the one holding the other end.
-opinion sump for 1 : I can stamp my heels down here without a whole stairful asking what's broken.
+opinion @1 festivals for 2 : A wolf who can't afford the supper can still afford one turn with the music.
+opinion @1 church for 2 : Even a half-spoken blessing can reach the Bright One past the last scrap of breath.
+opinion @1 dole for 3 : Hunger sets such a fast time a wolf can't keep step with it. Food steadies the feet.
+opinion @1 drink against 1 : An evening cup's too dear when it takes tomorrow's balance as part of the price.
+opinion @1 houses against 2 : I worry about which House will let the line go slack just to spite the one holding the other end.
+opinion @1 sump for 1 : A wolf can stamp the wet off in the Sump without a whole stairful asking what's broken.
 
 grown
-line greet : Step into the tune wherever it suits. | Plenty of space beyond my swinging elbow.
-line greet [pair.band=strangers] : New feet keeping time beside mine. You're welcome. | A welcome from the head of this little procession.
-line greet.return : I send your welcome round a second time. | A friendly word always sets me right on my feet.
-line again.open : Round to the start of the figure already. | There's your step on the boards again.
-line farewell : Travel to the easy beat while it lasts. | May your heels find somewhere dry at the finish.
-line farewell.return : Your own way be clear underfoot. | I'll take that good wish away in my stride.
-line react.news : Come close to tell it. I want the quiet parts too. | Carry on through the end of the measure.
-line react.news.new : A turn I hadn't heard was coming. | First vibration of that to reach my end.
-line react.news.known : I remember which way that one swung before. | My ear's already learned that measure.
-line react.news.doubt : A step's missing in the middle of that telling. | I'll wait till two accounts can keep time together.
-line react.news.glad [topic.kind=birth|marriage|work] : Good reason for a little dancing space tonight. | I could put my heels to that bit of news.
-line react.news.sorrow [topic.kind=loss|death|assault] : I'd give the hurting wolves a little quiet round that news. | May the Bright One give the grieving some ease.
-line ask.how : How's your breath holding on today's climb? | Found an easy pace for the work yet?
-line answer.how : Still catching every beat I mean to catch. | There's breath enough left over for company.
-line sympathise : Rest on this side. I can carry the conversation. | Nobody expects you to dance with a weight like that.
-line ack : Yes. My ear's keeping time. | I've caught the shape of your meaning.
-line refuse : My feet are wanted on a different errand first. | I'd leave you a promise I couldn't keep.
-line accept_decline : Quite fair. A partner has to choose freely. | We'll catch another tune between us sometime.
-line preclose : My feet have the next errand half begun already. | There's another call I've promised to answer.
-line accept_preclose : Go on while the walking still costs little. | We can take the next turn when it comes.
-
+line @1 greet : Step into the tune wherever it suits. | Plenty of space beyond my swinging elbow.
+line @2 greet [pair.band=strangers] : New feet keeping time beside mine. You're welcome. | A welcome from the head of this little procession.
+line @1 greet.return : I send your welcome round a second time. | A friendly word always sets me right on my feet.
+line @1 again.open : Round to the start of the figure already. | There's your step on the boards again.
+line @1 farewell : Travel to the easy beat while it lasts. | May your heels find somewhere dry at the finish.
+line @1 farewell.return : Your own way be clear underfoot. | I'll take that good wish away in my stride.
+line @1 react.news : Come close to tell it. I want the quiet parts too. | Carry on through the end of the measure.
+line @1 react.news.new : A turn I hadn't heard was coming. | First vibration of that to reach my end.
+line @1 react.news.known : I remember which way that one swung before. | My ear's already learned that measure.
+line @1 react.news.doubt : A step's missing in the middle of that telling. | I'll wait till two accounts can keep time together.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Good reason for a little dancing space tonight. | I could put my heels to that bit of news.
+line @1 react.news.sorrow [topic.kind=loss|death|assault] : I'd give the hurting wolves a little quiet round that news. | May the Bright One give the grieving some ease.
+line @1 ask.how : How's your breath holding on today's climb? | Found an easy pace for the work yet?
+line @1 answer.how : Still catching every beat I mean to catch. | There's breath enough left over for company.
+line @1 sympathise : Rest on this side. I can carry the conversation. | Nobody expects you to dance with a weight like that.
+line @1 ack : Yes. My ear's keeping time. | I've caught the shape of your meaning.
+line @1 refuse : My feet are wanted on a different errand first. | I'd leave you a promise I couldn't keep.
+line @1 accept_decline : Quite fair. A partner has to choose freely. | We'll catch another tune between us sometime.
+line @1 preclose : My feet have the next errand half begun already. | There's another call I've promised to answer.
+line @1 accept_preclose : Go on while the walking still costs little. | We can take the next turn when it comes.
 scene quiet
 when topic=pastimes self.likes=dancing
 does tell.self / ask.detail / answer.detail
 a : I miss one step in every other figure. | There's a quiet step with no footfall at all.
 b : Does it throw your partner? | A hop?
 a : It's the same step each time. Soon there's two of us enjoying the hush. | More like changing your mind with one heel still up.
-
 
 scene berries
 when topic=food self.likes=blackberries
@@ -79,14 +80,12 @@ a : I reach for the blackberry where the branch sags lowest. | I tap a ripe berr
 b : Is that one the sweetest? | Too soft for picking?
 a : It's the least likely to stain my nose when the branch flies back. | The best ones make up their own minds to let go.
 
-
 scene cord
 when topic=faith self.piety=devout
 does tell.self / ask.detail / answer.detail
 a : I close my paw round a cord to say a short blessing. | My prayer before a turn is for sound feet all round.
 b : Does the Bright One need the reminder? | Even the feet that step on yours?
 a : It's my wandering attention that needs catching. | Especially those. Mine are particularly interested.
-
 
 scene planks
 when topic=work self.job=sailor
@@ -95,14 +94,12 @@ a : The planks under a cargo make a quite different music loaded and bare. | A j
 b : Can you hear how heavy it is? | Do all six call the pace?
 a : I can hear where to give another carrier room. | One call. The rest of the music comes from feet.
 
-
 scene market
 when topic=prices self.likes=market_bustle
 does tell.self / ask.detail / answer.detail
 a : I like a market busy enough for the voices to run together. | At a busy market even the coin has a tune.
 b : Can you pick out one particular seller then? | A tune you can dance to?
 a : The berry seller takes tiny breaths between cries. I'm listening for the gap. | Only till my little handful's spent.
-
 
 scene weather
 when topic=weather self.dislikes=drizzle here.weather=rain
@@ -111,14 +108,12 @@ a : Drizzle puts a catch just where the long note goes. | The little spit of rai
 b : Was that a cough I heard? | Would shelter improve the music?
 a : A change of note. By all means carry on talking. | It couldn't hurt. I'll call the move part of the dance.
 
-
 scene wind
 when topic=season self.likes=autumn_wind
 does tell.self / ask.detail / answer.detail
 a : Autumn wind takes two steps for every one of mine. | I practise turning with the first rough wind of autumn.
 b : Does it lead? | Is the wind a steady partner?
 a : The leaves always seem to think so. | Disgraceful. I come out a better dancer for it.
-
 
 scene haggle
 when topic=prices self.dislikes=haggling
@@ -127,14 +122,12 @@ a : A price that dances about ought to wear bells. | Haggling puts a stumble in 
 b : So you can catch it cheap? | What if the seller expects it?
 a : I'd hear it jingling and shop elsewhere. | I'd sooner spend my breath saying what good berries those are.
 
-
 scene church
 when topic=faith self.piety=devout
 does tell.feeling / react.self / assess
 a : I like the little quiet after a blessing. | I ask for steadiness from the Bright One just as the cargo starts moving.
 b : Are you waiting to hear something? | And if it still slips?
 a : Somebody usually draws an easier breath. That's quite enough. | I put my whole shoulder to the work of keeping it up.
-
 
 scene friend
 when topic=friends self.friend
@@ -143,14 +136,12 @@ a : I could keep a good place for #self.friend# beside the music. | I'd like a f
 b : How good a place? | Wouldn't that hurt your pride?
 a : Within earshot of the gentler beats, far enough back to talk. | My pride can limp. My ankles need sound advice.
 
-
 scene winter
 when topic=dreams
 does tell.feeling / ask.detail / answer.detail
 a : I'm afraid the Houses might turn their shoulders against one another before winter. | I hope the Houses can pull on one line come winter.
 b : A thing you've seen? | Are you expecting a quarrel?
 a : A thing I'm dreading. Cold's hard enough without crossed arms. | I worry about one. Worry has never once been a full cargo of proof.
-
 
 scene rope
 when topic=work self.job=sailor
@@ -159,14 +150,12 @@ a : My working step changes where a rope crosses the pier. | Two calls can sound
 b : Taller steps? | Which call do you move on?
 a : More deliberate ones. There's no applause for a fine tumble into cargo. | The one from the crew I'm lifting with. I watch the shoulders too.
 
-
 scene dusk
 when topic=day here.time=dusk|night
 does tell.self / react.self / assess
 a : Dusk rubs the rough marks off the pier boards. | You can hear the day's last feet go by quite separately.
 b : Safer to stop walking? | Where do the hurried steps go?
 a : Safer to shorten the stride till I know the plank. | Same as mine. They come home and forget all about hurrying.
-
 
 scene lean
 when topic=times world.times=hard|lean
@@ -175,14 +164,12 @@ a : Hard times steal a little breath from the end of every tune. | Thin purses m
 b : Is there a short tune you keep? | Is the bustle any comfort?
 a : Two steps and a turn. Enough for a pair to feel like company. | Yes. We can still give each other a fair amount of noise.
 
-
 scene home
 when topic=home self.street
 does tell.self / ask.detail / answer.detail
 a : I could tell a tune from #self.street# by the echo. | Going home puts a lift into the left heel first.
 b : Does the road sing differently? | Why the left?
 a : In one narrow bit the end of every line comes hurrying back. | It's the first to turn off the main road.
-
 
 scene faithless
 when topic=health
@@ -191,14 +178,12 @@ a : Sometimes I leave a little gap in my talking. | I trust my feet to give my b
 b : To let somebody get a word in? | Won't walking cost you more breath?
 a : Sometimes. Sometimes lungs want to speak for themselves. | With my voice at rest and my pace easy, I come out ahead.
 
-
 scene gossip
 when topic=gossip here.gossip=yes
 does tell.self / ask.detail / answer.detail
 a : I heard the words #topic.subject# #topic.claim#. | I heard more voices than I heard witnesses to that piece.
 b : What tune do you set to that? | Does another voice add weight?
 a : None. If I don't know the truth I won't help it dance. | Only when it's carrying a sight of its own.
-
 
 scene green
 when topic=pastimes self.likes=dancing
@@ -207,13 +192,11 @@ a : Stand level with me and tap the ground three times. | No need to follow my f
 b : Do I turn now? | Won't that make two dances?
 a : Take the quiet beat first. Now there's room to turn. | Two ways of coming round to the same place. I like seeing both.
 
-
 story tub [topic=pastimes self.likes=dancing]
   : I once learned half a tune through a wall and practised it for a fortnight. It had a grand slapping finish.
   : When the door stood open I saw a wash tub and a board. No instrument anywhere.
   b : Did you give the tune up?
   : I finished the other half myself. Damp linen was a fair composer while it lasted.
-
 
 story berryhem [topic=food self.likes=blackberries]
   : I picked blackberries into an apron with one corner lower than the other. A purple trail followed every homeward step.
@@ -221,13 +204,11 @@ story berryhem [topic=food self.likes=blackberries]
   b : Did you have any berries left for supper?
   : One handful in the high corner. I ate them slowly and took a different route next time.
 
-
 story echo [topic=faith self.piety=devout]
   : Alone in a bare room, I offered the Bright One a softly spoken prayer. The echo picked up only the last little bit.
   : I tried speaking more softly, until the words came back like breath through a reed.
   b : Could you still hear your prayer?
   : I'd stopped listening for my own voice by then. The quiet was the part I'd gone in search of.
-
 
 rule @load
 when concept=bark working=yes self.job=sailor
@@ -235,13 +216,11 @@ does aside
 cooldown 8h
 say Feet clear of the returning sling. | Hold that beat till all the weight is down.
 
-
 rule @berry
 when concept=bark self.likes=blackberries
 does aside
 cooldown 8h
 say A hedge full of black fruit sets my feet moving. | Save the soft ones for the nearest mouth.
-
 
 rule @drip
 when concept=bark here.weather=rain
@@ -249,23 +228,21 @@ does aside
 cooldown 8h
 say Drizzle, your entrance missed the beat again. | My throat's perfectly capable of clearing itself.
 
-
 rule @late
 when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say The boards have an evening ring to them now. | Last light gets one figure all to itself.
 
-dlg resident.hub : I've a good ear for company and a free one just now.
-dlg resident.hub [topic.meeting=known] : #topic.player#, our feet have found the same patch again.
-dlg resident.hub [here.time=night] : Even late feet tell what sort of day they've had.
-dlg resident.hub [pair.disposition=wary|hostile] : Stand where you're comfortable. We can speak across a little distance.
-dlg resident.job [self.job=sailor] : I put my shoulder under cargo and my feet where the crew needs them.
-dlg resident.job : I'll take anything that lets a wolf work beside a good steady pair of paws.
-dlg resident.news [world.news] : The news carried this far. #world.news#.
-dlg resident.gossip [here.gossip=yes] : These were the words. #topic.subject# #topic.claim#. I can't vouch for the tune.
-dlg resident.bye : Walk with a steady tread and the Bright One's blessing.
-
+dlg @1 resident.hub : I've a good ear for company and a free one just now.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our feet have found the same patch again.
+dlg @3 resident.hub [here.time=night] : Even late feet tell what sort of day they've had.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand where you're comfortable. We can speak across a little distance.
+dlg @1 resident.job [self.job=sailor] : I put my shoulder under cargo and my feet where the crew needs them.
+dlg @2 resident.job : I'll take anything that lets a wolf work beside a good steady pair of paws.
+dlg @1 resident.news [world.news] : The news carried this far. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip=yes] : These were the words. #topic.subject.capitalize# #topic.claim#. I can't vouch for the tune.
+dlg @1 resident.bye : Walk with a steady tread and the Bright One's blessing.
 graft resident.hub
 choice Show me that step you left out? -> count_four
 node count_four

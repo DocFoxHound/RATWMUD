@@ -1,9 +1,12 @@
+# rm493, the mile owed in pastry (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm493
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_dagfinn_brineley
+written_by codex
 title the mile owed in pastry
 fits stage=adult|old
 prefers role=civilian
@@ -35,41 +38,40 @@ length = a double stretch | a measured distance
 bell = the uninvited early bell | a blunt brass clang
 
 any
-opinion houses against 1 : I could walk every mile on my own feet and still need a House to acknowledge the last few yards. I'd like a better measure of merit.
-opinion festivals for 1 : A feast lets me hear the accounts from both ends of the market in a single walk.
-opinion church against 1 : An excellent sermon will occupy the interval before supper. It doesn't supply the supper itself.
-opinion city for 2 : I can walk a day entirely inside the city and still turn a new corner on the way home. That's a considerable attachment.
-opinion sump against 1 : Below the Ropewalk I find fewer of the quiet, clear return routes I prefer. I keep my spare walking higher up.
+opinion @1 houses against 1 : I could walk every mile on my own feet and still need a House to acknowledge the last few yards. I'd like a better measure of merit.
+opinion @1 festivals for 1 : A feast lets me hear the accounts from both ends of the market in a single walk.
+opinion @1 church against 1 : An excellent sermon will occupy the interval before supper. It doesn't supply the supper itself.
+opinion @1 city for 2 : I can walk a day entirely inside the city and still turn a new corner on the way home. That's a considerable attachment.
+opinion @1 sump against 1 : Below the Ropewalk I find fewer of the quiet, clear return routes I prefer. I keep my spare walking higher up.
 
 grown
-line greet [pair.band=strangers] : Come into the short return stretch. | A new face to place along my walk.
-line greet [self.working=yes] : I can spare a little walking time. | Talk where we both have clear footing.
-line greet [here.time=dawn] : Morning. The page of miles is blank. | Early light lands squarely on the turning.
-line greet [here.time=dusk|night] : Evening. I keep the gentler miles for now. | Welcome on the homeward piece.
-line kin.open [pair.kin!=no] : Kin make a welcome detour. | Glad to set the family distance aside.
-line again.open : My return walk brings you round again. | Another greeting from these well-travelled soles.
-line greet.return : Hello. I can stop here comfortably. | A word reaches me without an extra step.
-line greet.return [pair.band=friends|family] : Your voice is never a wasted turning. | An old acquaintance shortens the way.
-line greet.return [self.working=yes] : I can round off this task as I listen. | There's a moment between useful errands.
-line greet.return [here.time=dusk|night] : Evening. Near enough for a clear return word. | The last lamp leaves us in earshot.
-line farewell : Keep one easy mile in reserve. | A pleasant distance between your doors.
-line farewell.return : I'll stretch my own legs after you. | The shorter return wherever it suits.
-line farewell.return [here.time=night] : Go by the best-lit turning tonight. | No extra miles through the dark for you.
-line react.news : How far did this word walk? | Which end of the account arrived first?
-line react.news.new : A new distance to put on paper. | That's word I hadn't carried before.
-line react.news.known : I've already walked this account home. | Same measure as on the earlier visit.
-line react.news.doubt : I'd check where that story actually began its travels. | A twice-told mile can lengthen very considerably.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can walk the hard bit beside you. | Let me spare you a little of the return.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Glad news puts a spring in the homeward mile. | That's an errand I'd do for nothing.
-line ask.how : Have you had a stretch of road to yourself? | Did the return errands leave you much daylight?
-line answer.how : I'm collecting useful turnings as I go. | A good distance with a little ambition left over.
-line decline : I'd rather keep my next stretch open for a useful return. | I'd best save what daylight remains to repay an old kindness.
-line accept_decline : Your own route to choose. | I can strike that turning off the account.
-line thank : You've saved me a measurable piece of walking. | That kindness deserves the return journey.
-line sympathise : Let me fetch something you need while you rest. | No need to stand through the whole telling.
-line reassure : One spare step can wait until tomorrow. | We can find the shorter road together.
-line preclose : I'd best take my open miles in hand. | Time to close my private distance account.
-
+line @1 greet [pair.band=strangers] : Hello. I don't believe we've crossed paths before. | Hello there. Yours is a face I'll start to look for.
+line @2 greet [self.working=yes] : I can spare a little walking time. | Talk where we both have clear footing.
+line @3 greet [here.time=dawn] : Morning. The page of miles is blank. | Early light lands squarely on the turning.
+line @4 greet [here.time=dusk|night] : Evening. I keep the gentler miles for now. | Welcome on the homeward piece.
+line @1 kin.open [pair.kin!=no] : Kin make a welcome detour. | Glad to set the family distance aside.
+line @1 again.open : My return walk brings you round again. | Another greeting from these well-travelled soles.
+line @1 greet.return : Hello. I can stop here comfortably. | A word reaches me without an extra step.
+line @2 greet.return [pair.band=friends|family] : Your voice is never a wasted turning. | An old acquaintance shortens the way.
+line @3 greet.return [self.working=yes] : I can round off this task as I listen. | There's a moment between useful errands.
+line @4 greet.return [here.time=dusk|night] : Evening. Near enough for a clear return word. | The last lamp leaves us in earshot.
+line @1 farewell : Keep one easy mile in reserve. | A pleasant distance between your doors.
+line @1 farewell.return : I'll stretch my own legs after you. | The shorter return wherever it suits.
+line @2 farewell.return [here.time=night] : Go by the best-lit turning tonight. | No extra miles through the dark for you.
+line @1 react.news : How far did this word walk? | Which end of the account arrived first?
+line @1 react.news.new : A new distance to put on paper. | That's a word I hadn't carried before.
+line @1 react.news.known : I've already walked this account home. | Same measure as on the earlier visit.
+line @1 react.news.doubt : I'd check where that story actually began its travels. | A twice-told mile can lengthen very considerably.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can walk the hard bit beside you. | Let me spare you a little of the return.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Glad news puts a spring in the homeward mile. | That's an errand I'd do for nothing.
+line @1 ask.how : Have you had a stretch of road to yourself? | Did the return errands leave you much daylight?
+line @1 answer.how : I'm collecting useful turnings as I go. | A good distance with a little ambition left over.
+line @1 decline : I'd rather keep my next stretch open for a useful return. | I'd best save what daylight remains to repay an old kindness.
+line @1 accept_decline : Fair enough. It's your own route to choose. | Then I'll strike that turning off the account.
+line @1 thank : You've saved me a measurable piece of walking. | That kindness deserves the return journey.
+line @1 sympathise : Let me fetch something you need while you rest. | No need to stand through the whole telling.
+line @1 reassure : One spare step can wait until tomorrow. | We can find the shorter road together.
+line @1 preclose : I'd best get my open errands walked before dark. | I've a return walk owed, and I ought to start it.
 scene favour
 when topic=friends
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Look at the white steps before the sun spends them. | One pair out, one pair in. A well-balanced road.
 
-dlg resident.hub : I've time to stop while the road is comparatively free. An errand can still improve when somebody interrupts it with sense.
-dlg resident.job [self.apprentice=yes] : I'm learning to finish the task I'm trusted with and recognise which one might be worth asking about next.
-dlg resident.job : I take an interest in work that brings a useful result all the way home.
-dlg resident.news [world.news] : This account met me on my return errand. #world.news#
-dlg resident.bye : Allow a spare stretch of the return walk for something you actually enjoy.
-
+dlg @1 resident.hub : I've time to stop while the road is comparatively free. An errand can still improve when somebody interrupts it with sense.
+dlg @1 resident.job [self.apprentice=yes] : I'm learning to finish the task I'm trusted with and recognise which one might be worth asking about next.
+dlg @2 resident.job : I take an interest in work that brings a useful result all the way home.
+dlg @1 resident.news [world.news] : This account met me on my return errand. #world.news#
+dlg @1 resident.bye : Allow a spare stretch of the return walk for something you actually enjoy.
 graft resident.hub
 choice How far would a slice of plum tart oblige you to walk? -> tart_mile
 node tart_mile

@@ -1,9 +1,12 @@
+# rm501, the lid match (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm501
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_edda_mudmore
+written_by codex
 title the lid match
 fits stage=adult|old
 prefers job=sailor
@@ -33,40 +36,39 @@ brasspeg = a yellow nail head | the bright corner stud
 smokethread = a curl of grey | a thread from a banked fire
 
 any
-opinion dole for 2 : Give a wolf enough to eat before asking for a long explanation. Hunger's rotten at explaining itself.
-opinion merchants against 3 : Had a price climb quicker than a draughts king into the back row. No extra bread to show for all that clever movement.
-opinion festivals for 2 : For a tune and a clear scrap of floor I'll go up more steps than I'd climb for most reasons.
-opinion houses against 2 : Don't expect me to fill a board and then step aside so a house can claim the victory.
-opinion sump for 1 : There's room on this sill for another elbow when the shelves aren't full. That's what I remember about home.
-opinion drink for 1 : A cup tastes better with enough coin for tomorrow's crust still rubbing my pocket.
-opinion newcomers against 1 : A new arrival can wait one minute before turning a settled supper into a dozen questions.
+opinion @1 dole for 2 : Give a wolf enough to eat before asking for a long explanation. Hunger's rotten at explaining itself.
+opinion @1 merchants against 3 : Had a price climb quicker than a draughts king into the back row. No extra bread to show for all that clever movement.
+opinion @1 festivals for 2 : For a tune and a clear scrap of floor I'll go up more steps than I'd climb for most reasons.
+opinion @1 houses against 2 : Don't expect me to fill a board and then step aside so a house can claim the victory.
+opinion @1 sump for 1 : There's room on this sill for another elbow when the shelves aren't full. That's what I remember about home.
+opinion @1 drink for 1 : A cup tastes better with enough coin for tomorrow's crust still rubbing my pocket.
+opinion @1 newcomers against 1 : A new arrival can wait one minute before turning a settled supper into a dozen questions.
 
 grown
-line greet : Take the pale counters. I went first last time.
-line greet [pair.band=strangers] : New face. The board won't demand references.
-line greet [here.time=dusk|night] : Low light gives the dark counters ideas above their station.
-line greet [self.working=yes] : Keep an elbow out of the crate's long shadow.
-line again.open : My favourite opponent is an opponent who comes back.
-line greet.return : Heard that above my last winning shout.
-line greet.return [pair.band=friends|family] : I'd recognise that note even over a spill of draughts.
-line farewell : Keep the shell crown by the pale counters.
-line farewell.return : I'll mind your row until you get clear.
-line react.news : Whose move set all that going?
-line react.news.new : Fresh square for that story to land on.
-line react.news.known : I've nudged that same account across another board.
-line react.news.doubt : Tell me which bit you actually had your paws beside.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm loaf won't mend that. I'd bring one anyway.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news can take a whole clean corner of my board.
-line answer.how : Bit smoked round the edges. No worse in the middle.
-line ask.how : Has anything made you laugh as far as your whiskers today?
-line sympathise : I'd share the quiet half of a meal with you.
-line reassure : One piece at a time works on most sorts of day.
-line decline : I've barely got both elbows free to do the job already waiting.
-line accept_decline : Then my errand can take a long seat by the larder.
-line thank : That's one jump I won't have to make alone.
-line preclose : My bread's been under a game quite long enough.
-line ack : Your move.
-
+line @1 greet : Take the pale counters. I went first last time.
+line @2 greet [pair.band=strangers] : New face. The board won't demand references.
+line @3 greet [here.time=dusk|night] : Low light gives the dark counters ideas above their station.
+line @4 greet [self.working=yes] : Keep an elbow out of the crate's long shadow.
+line @1 again.open : My favourite opponent is an opponent who comes back.
+line @1 greet.return : Heard that above my last winning shout.
+line @2 greet.return [pair.band=friends|family] : I'd recognise that note even over a spill of draughts.
+line @1 farewell : Keep the shell crown by the pale counters.
+line @1 farewell.return : I'll mind your row until you get clear.
+line @1 react.news : Whose move set all that going?
+line @1 react.news.new : Fresh square for that story to land on.
+line @1 react.news.known : I've nudged that same account across another board.
+line @1 react.news.doubt : Tell me which bit you actually had your paws beside.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm loaf won't mend that. I'd bring one anyway.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news can take a whole clean corner of my board.
+line @1 answer.how : Bit smoked round the edges. No worse in the middle.
+line @1 ask.how : Has anything made you laugh as far as your whiskers today?
+line @1 sympathise : I'd share the quiet half of a meal with you.
+line @1 reassure : One piece at a time works on most sorts of day.
+line @1 decline : I've barely got both elbows free to do the job already waiting.
+line @1 accept_decline : Then my errand can take a long seat by the larder.
+line @1 thank : That's one jump I won't have to make alone.
+line @1 preclose : My bread's been under a game quite long enough.
+line @1 ack : Your move.
 scene board
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -227,15 +229,15 @@ when concept=bark self.dislikes=flies
 does aside
 cooldown 8h
 say Off that board, uninvited player. | No flies at the king's table.
-dlg resident.hub : I've a lid balanced square and enough buttons for company.
-dlg resident.hub [topic.meeting=known] : The pale row remembers you, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : My lid stays on the bread while I hear that account.
-dlg resident.hub [here.time=night] : Step into the lamplight to tell buttons from crusts.
-dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. The sea does most of the distance and leaves the heavy bit at my end.
-dlg resident.job : An honest load and a level board suit my pair of paws.
-dlg resident.news [world.news] : A piece has moved since supper. #world.news#.
-dlg resident.bye : Mind the edge as you step past my match.
 
+dlg @1 resident.hub : I've a lid balanced square and enough buttons for company.
+dlg @2 resident.hub [topic.meeting=known] : The pale row remembers you, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : My lid stays on the bread while I hear that account.
+dlg @4 resident.hub [here.time=night] : Step into the lamplight to tell buttons from crusts.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. The sea does most of the distance and leaves the heavy bit at my end.
+dlg @2 resident.job : An honest load and a level board suit my pair of paws.
+dlg @1 resident.news [world.news] : A piece has moved since supper. #world.news#.
+dlg @1 resident.bye : Mind the edge as you step past my match.
 graft @lidmatch resident.hub
 choice Is that a game on your bread lid? -> lidmatch
 node lidmatch

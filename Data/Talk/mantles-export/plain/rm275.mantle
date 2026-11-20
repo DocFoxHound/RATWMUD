@@ -1,9 +1,12 @@
+# rm275, the awning in the apron (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm275
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_frida_kelpford
+written_by codex
 title the awning in the apron
 fits stage=adult|old
 prefers warmth=warm honesty=frank
@@ -17,6 +20,7 @@ topics prices +0.5 food +0.4 weather +0.4 work +0.3
 styles comfort=practical gossip=plain refuse=direct tease=none
 marks oath saying
 persona #self.first# carries a scrap of canvas for a future stall and always asks where the rain will run off.
+
 words
 oath! = Peel my plums | Stitch my thumb
 saying! = Price the roof as well | Rain runs somewhere
@@ -33,35 +37,33 @@ pegline = a length of good string | a brace of stout cords
 measures = a span of linen tape | a marked scrap of webbing
 
 grown
-
-opinion merchants mixed 1 : Put the full price where a short customer can see it without standing on tiptoe.
-opinion houses against 1 : A great roof can keep one family dry and send a river onto its neighbours.
-opinion festivals for 1 : Give me the bit where a shy singer can hear a whole street take up the song.
-opinion strangers for 1 : A stranger holding the corner of a cloth deserves to stand underneath too.
-opinion dole for 2 : A good pantry ought to make an empty pantry less likely on the next landing.
-opinion sump for 1 : We know which gutters overshoot a waiting customer's neck down here.
-line greet : Here, step under the bit of cover I've got in mind.
-line greet.return : Glad you came within ordinary speaking range.
-line greet.return [here.time=night] : Easy voices now. Night racket's worn my ears quite thin.
-line farewell : May you get home ahead of the next drop.
-line farewell.return : Take your bundle by the dry end.
-line ask.how : Keeping a little by for yourself these days?
-line answer.how : One copper nearer my hope if I mind what I buy.
-line thank : You held that corner square when it wanted to twist.
-line decline : I won't take coin for a promise I can't keep.
-line deflect_thanks : You'll hold the high corner for me another time.
-line accept_decline : I'll leave that piece on the counter, then.
-line sympathise : I can share whatever shelter my own shoulders get.
-line reassure : A roof starts with a piece small enough to fold.
-line react.news : Come round the counter with the whole story.
-line react.news.new : That hit a patch I hadn't covered.
-line react.news.known : I'd already put that piece away.
-line react.news.doubt : I'd see what leaked through before I bought that account.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's cause to cut a generous slice today.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wish I could keep that much hurt from falling.
-line again.open : There's a familiar face beside my little awning.
-line ack : That would keep the worst off, yes.
-
+opinion @1 merchants mixed 1 : Put the full price where a short customer can see it without standing on tiptoe.
+opinion @1 houses against 1 : A great roof can keep one family dry and send a river onto its neighbours.
+opinion @1 festivals for 1 : Give me the bit where a shy singer can hear a whole street take up the song.
+opinion @1 strangers for 1 : A stranger holding the corner of a cloth deserves to stand underneath too.
+opinion @1 dole for 2 : A good pantry ought to make an empty pantry less likely on the next landing.
+opinion @1 sump for 1 [self.quarter=sump] : We know which gutters overshoot a waiting customer's neck down here.
+line @1 greet : Here, step under the bit of cover I've got in mind.
+line @1 greet.return : Glad you came within ordinary speaking range.
+line @2 greet.return [here.time=night] : Easy voices now. Night racket's worn my ears quite thin.
+line @1 farewell : May you get home ahead of the next drop.
+line @1 farewell.return : Take your bundle by the dry end.
+line @1 ask.how : Keeping a little by for yourself these days?
+line @1 answer.how : One copper nearer my hope if I mind what I buy.
+line @1 thank : You held that corner square when it wanted to twist.
+line @1 decline : I won't take coin for a promise I can't keep.
+line @1 deflect_thanks : You'll hold the high corner for me another time.
+line @1 accept_decline : I'll leave that piece on the counter, then.
+line @1 sympathise : I can share whatever shelter my own shoulders get.
+line @1 reassure : A roof starts with a piece small enough to fold.
+line @1 react.news : Come round the counter with the whole story.
+line @1 react.news.new : That hit a patch I hadn't covered.
+line @1 react.news.known : I'd already put that piece away.
+line @1 react.news.doubt : I'd see what leaked through before I bought that account.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's cause to cut a generous slice today.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wish I could keep that much hurt from falling.
+line @1 again.open : There's a familiar face beside my little awning.
+line @1 ack : That would keep the worst off, yes.
 scene prices_1
 when topic=prices
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark self.apprentice=yes
 does aside
 cooldown 8h
 say Add the cost of the string before naming a price. | A learner does well to look at both sides of a deal.
-dlg resident.hub : Come look at something I mean to have full size one day.
-dlg resident.job [self.job=merchant] : At #self.workplace# I watch how buying feels on both sides of a counter.
-dlg resident.news [world.news] : This is the bit in clear view. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Talk round here says #topic.subject# #topic.claim#. I didn't put a price on the truth of it.
-dlg shop.greet [here.shop=open] : Take a look. You'll know the price before you part with a penny.
-dlg resident.bye : Hope the next purchase leaves you something to keep.
 
+dlg @1 resident.hub : Come look at something I mean to have full size one day.
+dlg @1 resident.job [self.job=merchant] : At #self.workplace# I watch how buying feels on both sides of a counter.
+dlg @1 resident.news [world.news] : This is the bit in clear view. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Talk round here says #topic.subject# #topic.claim#. I didn't put a price on the truth of it.
+dlg @1 shop.greet [here.shop=open] : Take a look. You'll know the price before you part with a penny.
+dlg @1 resident.bye : Hope the next purchase leaves you something to keep.
 graft resident.hub
 choice How wide will that roof be? -> stripe_roof
 node stripe_roof

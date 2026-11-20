@@ -1,9 +1,12 @@
+# rm458, the baker's draughtsman fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm458
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_montague_millcot
+written_by codex
 title the baker's draughtsman fleet
 fits stage=adult|old
 prefers job=baker
@@ -68,7 +71,6 @@ line @21 thank : I'd give a row of crowned pieces for a kindness like that.
 line @22 deflect_thanks : A piece more or less hardly weighs on my side.
 line @23 preclose : Time for me to gather the little fleet in.
 line @24 accept_preclose : Go comfortably. I'll see to the last red piece.
-
 scene heel
 when topic=food self.likes=pickled_herring
 does tell.self / ask.detail / answer.detail
@@ -245,7 +247,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : We can keep a clear square
 dlg @5 resident.job [self.job=baker self.workplace] : I help with the long racks at #self.workplace#. Hot loaves take room to breathe.
 dlg @6 resident.job : Give me ordinary lifting work and time to finish it.
 dlg @7 resident.bye : I'll leave your men the way you played them.
-
 graft resident.hub
 choice What ship is the red piece? -> redvessel
 node redvessel

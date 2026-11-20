@@ -1,9 +1,12 @@
+# rm456, the cork on the cord (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm456
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_jarl_saltcot
+written_by codex
 title the cork on the cord
 fits stage=adult|old
 prefers job=merchant warmth=warm
@@ -35,43 +38,42 @@ shorestep = a dry footing | a safe stone
 blackair = a sooty drift | the thick air
 
 any
-opinion houses against 2 : A seal on a wharf paper can scarcely answer a household that's lost a brother there.
-opinion dole for 3 : When a house has spent its last spare copper, a decent supper should still be possible.
-opinion newcomers for 1 : I'd sooner explain a strange column of figures than let a new arrival agree to an expense by mistake.
-opinion merchants mixed 0 : I understand wanting a return. I also understand dividing one warm loaf till the shares look pitiful.
-opinion church for 1 : A quiet bench to remember the dead ought to cost exactly what a breathing space costs.
-opinion watch mixed 0 : I'd like a statement heard as patiently from a wet sleeve as from a dry embroidered one.
+opinion @1 houses against 2 : A seal on a wharf paper can scarcely answer a household that's lost a brother there.
+opinion @1 dole for 3 : When a house has spent its last spare copper, a decent supper should still be possible.
+opinion @1 newcomers for 1 : I'd sooner explain a strange column of figures than let a new arrival agree to an expense by mistake.
+opinion @1 merchants mixed 0 : I understand wanting a return. I also understand dividing one warm loaf till the shares look pitiful.
+opinion @1 church for 1 : A quiet bench to remember the dead ought to cost exactly what a breathing space costs.
+opinion @1 watch mixed 0 : I'd like a statement heard as patiently from a wet sleeve as from a dry embroidered one.
 
 grown
-line greet : Hello. This bit of cord can wait. | You're welcome to the bit of quiet beside me.
-line greet [pair.band=strangers] : Come nearer if you can see better there. | First meetings ought to start with room for both voices.
-line greet [here.time=dawn] : Good morning. The roofs look sharp enough to draw round. | Early light has put the figures in very clear order.
-line greet.return : Hello back. My little cork was taking my attention. | You have both my ears free now.
-line greet.return [pair.band=friends|family] : A familiar step makes even a short pause pleasant. | There's a place for your voice in this small interval.
-line greet.return [here.time=night] : A good late hour for a measured word. | Evening. The figures can wait for better light.
-line again.open : Another turn of the cord already. | Still at hand with one interval free.
-line hail [pair.band=friends] : Come and look how little the current's moving! | Good company for a quiet stretch. Come over.
-line farewell : Reserve a few moments for a warm mouthful. | May your road finish at a well-swept threshold.
-line farewell.return : I'll keep the spare part in hand. | Go easy across the wet places.
-line react.news : I can lay my figures down for this. | Just tell the bit you can vouch for.
-line react.news.new : That's new to the small account I keep. | I hadn't marked that particular change.
-line react.news.known : I recognise that sum of circumstances. | The earlier word tallied much the same way.
-line react.news.doubt : I'd like some better footing for the claim. | That promise sticks farther out than its backing.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : A loss doesn't shrink by being entered neatly. | I can sit quietly beside you with that hurt.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. A household deserves something pleasant to count. | There's a heartening addition to an ordinary day.
-line ask.how : Does today leave you any quiet to spend? | How much of the morning have you got to yourself?
-line answer.how : Fairly steady. My cord runs freely today. | Content enough if I keep my promises small.
-line decline : That would spend a part already promised elsewhere. | I can't put my word to a sum beyond my reach.
-line accept_decline : A clear refusal is easy to carry. | Then I'll keep that space unclaimed.
-line preclose : I'd better put the small things back in order. | Time to slide the cork home.
-line accept_preclose : Leave yourself a comfortable margin. | I'll wind up here quite willingly.
-line thank : You left me more breathing space than you know. Thanks. | That kindness fits neatly between two hard expenses.
-line deflect_thanks : I'd reckoned on a spare portion alongside mine. | It's a small share I could comfortably spare.
-line sympathise : Sit by my dry side while it hurts. | You needn't cast for words on my account.
-line reassure : We've only to cover the next small expense today. | A little slack might give you time to think.
-line ack : Yes. The cord sits comfortably there. | I follow the sum so far.
-line give.advice : Hold your promise against what you can actually spare. | Cover the bit with one finger if it's what you're saving for later.
-
+line @1 greet : Hello. This bit of cord can wait. | You're welcome to the bit of quiet beside me.
+line @2 greet [pair.band=strangers] : Come nearer if you can see better there. | First meetings ought to start with room for both voices.
+line @3 greet [here.time=dawn] : Good morning. The roofs look sharp enough to draw round. | Early light has put the figures in very clear order.
+line @1 greet.return : Hello back. My little cork was taking my attention. | You have both my ears free now.
+line @2 greet.return [pair.band=friends|family] : A familiar step makes even a short pause pleasant. | There's a place for your voice in this small interval.
+line @3 greet.return [here.time=night] : A good late hour for a measured word. | Evening. The figures can wait for better light.
+line @1 again.open : Another turn of the cord already. | Still at hand with one interval free.
+line @1 hail [pair.band=friends] : Come and look how little the current's moving! | Good company for a quiet stretch. Come over.
+line @1 farewell : Reserve a few moments for a warm mouthful. | May your road finish at a well-swept threshold.
+line @1 farewell.return : I'll keep the spare part in hand. | Go easy across the wet places.
+line @1 react.news : I can lay my figures down for this. | Just tell the bit you can vouch for.
+line @1 react.news.new : That's new to the small account I keep. | I hadn't marked that particular change.
+line @1 react.news.known : I recognise that sum of circumstances. | The earlier word tallied much the same way.
+line @1 react.news.doubt : I'd like some better footing for the claim. | That promise sticks farther out than its backing.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : A loss doesn't shrink by being entered neatly. | I can sit quietly beside you with that hurt.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. A household deserves something pleasant to count. | There's a heartening addition to an ordinary day.
+line @1 ask.how : Does today leave you any quiet to spend? | How much of the morning have you got to yourself?
+line @1 answer.how : Fairly steady. My cord runs freely today. | Content enough if I keep my promises small.
+line @1 decline : That would spend a part already promised elsewhere. | I can't put my word to a sum beyond my reach.
+line @1 accept_decline : A clear refusal is easy to carry. | Then I'll keep that space unclaimed.
+line @1 preclose : I'd better put the small things back in order. | Time to slide the cork home.
+line @1 accept_preclose : Leave yourself a comfortable margin. | I'll wind up here quite willingly.
+line @1 thank : You left me more breathing space than you know. Thanks. | That kindness fits neatly between two hard expenses.
+line @1 deflect_thanks : I'd reckoned on a spare portion alongside mine. | It's a small share I could comfortably spare.
+line @1 sympathise : Sit by my dry side while it hurts. | You needn't cast for words on my account.
+line @1 reassure : We've only to cover the next small expense today. | A little slack might give you time to think.
+line @1 ack : Yes. The cord sits comfortably there. | I follow the sum so far.
+line @1 give.advice : Hold your promise against what you can actually spare. | Cover the bit with one finger if it's what you're saving for later.
 scene pocketfloat
 when topic=pastimes self.likes=evening_line
 does tell.self / ask.detail / answer.detail
@@ -98,7 +100,7 @@ when topic=family self.mother
 does tell.self / ask.detail / answer.detail
 a : With #self.mother# I can ask to hear a hard sum explained a second way.
 b : What makes the second way stick? | Do you learn by heart?
-a : Household things. I can see two loaves and three mouths before I can see a fraction. | Only the method. Each visitor deserves to have the actual figures looked at fresh.
+a : Household things. Two loaves and three mouths make sense to me long before a fraction does. | Only the method. Each visitor deserves to have the actual figures looked at fresh.
 
 scene raft
 when topic=memories
@@ -198,8 +200,6 @@ a : I'd like to lend a household its first copper without leaving my own table b
 b : Would the cork reach that far? | What would you charge?
 a : Someday. I can see the part of the cord I want to reach even from here. | Only what I'd gladly see entered beside my own name if I had come in asking.
 
-grown
-
 story deepfloat [topic=pastimes|memories]
   : I tied a float to an old line and sat congratulating myself on how upright it stood. The water moved away a little.
   : The cork remained remarkably steady, balanced on a stone barely under the surface.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Good light for picking out one floating speck. | A quiet cast and an untroubled bank would do.
 
-dlg resident.hub : I've set my little cord down. Have you a question that wants time or one that wants figures?
-dlg resident.hub [topic.meeting=known] : #topic.player#, welcome. A small part of today remains unpromised.
-dlg resident.hub [here.time=night] : Late light makes a good time for thinking a promise over before giving it.
-dlg resident.hub [pair.disposition=wary|hostile] : We might start with what each thinks is owing. I'd appreciate a clear figure from each side.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look twice at a sum and listen twice to whoever came needing that sum explained.
-dlg resident.job : I enjoy an occupation where a tidy line can spare a household some worrying.
-dlg resident.bye : May there be a comfortable little margin left to your evening.
-
+dlg @1 resident.hub : I've set my little cord down. Have you a question that wants time or one that wants figures?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, welcome. A small part of today remains unpromised.
+dlg @3 resident.hub [here.time=night] : Late light makes a good time for thinking a promise over before giving it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We might start with what each thinks is owing. I'd appreciate a clear figure from each side.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look twice at a sum and listen twice to whoever came needing that sum explained.
+dlg @2 resident.job : I enjoy an occupation where a tidy line can spare a household some worrying.
+dlg @1 resident.bye : May there be a comfortable little margin left to your evening.
 graft resident.hub
 choice What's the cork on that short cord for? -> corkmargin
 node corkmargin

@@ -1,9 +1,12 @@
+# rm304, the humming measure (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm304
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_tage_slagworth
+written_by codex
 title the humming measure
 fits stage=adult|old
 prefers temper=calm honesty=guarded
@@ -34,45 +37,44 @@ dripnoise = the slow ticking of drops | a clicking from a wet ledge
 talestring = a tale with a long return | a story that comes back on itself
 
 any
-opinion dole for 2 : Hungry wolves can't earn a dinner on an empty promise either. Give a dinner.
-opinion church for 1 : Nobody times a prayer in chapel. I value that.
-opinion houses against 2 : There's fine lettering on the closed side of too many doors.
-opinion strangers against 2 : Let a name settle in my memory before you ask me to open anything.
-opinion festivals mixed 0 : The first peal lifts me. The shouting that follows puts me down again.
-opinion merchants against 2 : I dislike sellers who tap a measure on the board until the buyer stops looking at it.
-opinion sump for 1 : From down in the Sump the city sounds different. You hear what keeps running after the doors shut.
+opinion @1 dole for 2 : Hungry wolves can't earn a dinner on an empty promise either. Give a dinner.
+opinion @1 church for 1 : Nobody times a prayer in chapel. I value that.
+opinion @1 houses against 2 : There's fine lettering on the closed side of too many doors.
+opinion @1 strangers against 2 : Let a name settle in my memory before you ask me to open anything.
+opinion @1 festivals mixed 0 : The first peal lifts me. The shouting that follows puts me down again.
+opinion @1 merchants against 2 : I dislike sellers who tap a measure on the board until the buyer stops looking at it.
+opinion @1 sump for 1 : From down in the Sump the city sounds different. You hear what keeps running after the doors shut.
 
 grown
-line greet : I'll lay the tune aside. Speak.
-line greet [pair.band=strangers] : We've room for the length of an introduction.
-line greet [here.time=dawn] : Morning. The first sound carries a fair way.
-line greet [here.time=dusk|night] : Evening. I heard your foot take the turn.
-line greet.return : That's my measure of quiet done, then.
-line greet.return [pair.band=friends|family] : There's room in the tune for a familiar voice.
-line greet.return [self.working=yes] : I'm mid-count. I'll listen between strokes.
-line greet.return [here.time=dusk|night] : A low word carries comfortably tonight.
-line kin.open [pair.kin!=no] : Kin may have the first word freely.
-line again.open : I remember where the measure broke off.
-line hail [pair.band=friends] : Over by the shutter, if you want me.
-line farewell : Keep the slow part for the walk back.
-line farewell.return : And a smooth ending to your own day.
-line react.news : Let the facts stand a breath once they're out.
-line react.news.new : That hadn't come within my hearing.
-line react.news.known : Heard it already. Same length, same notes.
-line react.news.doubt : That version runs longer than the facts I know.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Such a loss needs all the quiet it can get.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll mark that moment with the high note.
-line ask.how : Is anything pressing hard on you?
-line answer.how : I've got my breathing back to its usual time.
-line thank : A neat kindness. I will remember the measure of it.
-line deflect_thanks : Barely cost me two notes.
-line sympathise : I can keep the room quiet for a little.
-line reassure : Nothing here needs to be settled in one breath.
-line decline : I've promised the quiet part of my evening elsewhere.
-line accept_decline : Then keep your time and I'll keep mine.
-line preclose : My last note's about used up for today.
-line accept_preclose : You've given this a fair hearing. Go easily.
-
+line @1 greet : I'll lay the tune aside. Speak.
+line @2 greet [pair.band=strangers] : We've room for the length of an introduction.
+line @3 greet [here.time=dawn] : Morning. The first sound carries a fair way.
+line @4 greet [here.time=dusk|night] : Evening. I heard your foot take the turn.
+line @1 greet.return : That's my measure of quiet done, then.
+line @2 greet.return [pair.band=friends|family] : There's room in the tune for a familiar voice.
+line @3 greet.return [self.working=yes] : I'm mid-count. I'll listen between strokes.
+line @4 greet.return [here.time=dusk|night] : A low word carries comfortably tonight.
+line @1 kin.open [pair.kin!=no] : Kin may have the first word freely.
+line @1 again.open : I remember where the measure broke off.
+line @1 hail [pair.band=friends] : Over by the shutter, if you want me.
+line @1 farewell : Keep the slow part for the walk back.
+line @1 farewell.return : And a smooth ending to your own day.
+line @1 react.news : Let the facts stand a breath once they're out.
+line @1 react.news.new : That hadn't come within my hearing.
+line @1 react.news.known : Heard it already. Same length, same notes.
+line @1 react.news.doubt : That version runs longer than the facts I know.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Such a loss needs all the quiet it can get.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll mark that moment with the high note.
+line @1 ask.how : Is anything pressing hard on you?
+line @1 answer.how : I've got my breathing back to its usual time.
+line @1 thank : A neat kindness. I will remember the measure of it.
+line @1 deflect_thanks : Barely cost me two notes.
+line @1 sympathise : I can keep the room quiet for a little.
+line @1 reassure : Nothing here needs to be settled in one breath.
+line @1 decline : I've promised the quiet part of my evening elsewhere.
+line @1 accept_decline : Then keep your time and I'll keep mine.
+line @1 preclose : My last note's about used up for today.
+line @1 accept_preclose : You've given this a fair hearing. Go easily.
 scene air_measure
 when topic=pastimes|work
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Can't get rid of that little tick at the sill.
 
-dlg resident.hub : A plain word will carry well enough from there.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Your voice fits where I remember it.
-dlg resident.hub [here.time=night] : Speak easily. Darkness leaves plenty of room for sound.
-dlg resident.hub [pair.disposition=hostile|wary] : My patience will reach that far. I prefer to stay here.
-dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Takes a good nose to know when to wait.
-dlg resident.job : I earn what I can and keep a careful measure of the time.
-dlg resident.news [world.news] : From #world.news_from# I've kept this much: #world.news#.
-dlg resident.gossip [here.gossip=yes] : You'd be asking me to loosen a lid I'd sooner keep tight.
-dlg resident.bye : Take the unhurried way if the day allows.
-
+dlg @1 resident.hub : A plain word will carry well enough from there.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Your voice fits where I remember it.
+dlg @3 resident.hub [here.time=night] : Speak easily. Darkness leaves plenty of room for sound.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : My patience will reach that far. I prefer to stay here.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Takes a good nose to know when to wait.
+dlg @2 resident.job : I earn what I can and keep a careful measure of the time.
+dlg @1 resident.news [world.news] : From #world.news_from# I've kept this much: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : You'd be asking me to loosen a lid I'd sooner keep tight.
+dlg @1 resident.bye : Take the unhurried way if the day allows.
 graft resident.hub
 choice How long is the tune you're humming? -> air_length
 node air_length

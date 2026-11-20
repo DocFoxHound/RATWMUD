@@ -1,9 +1,12 @@
+# rm540, the tart on the landing (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm540
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_oskar_wickmarsh
+written_by codex
 title the tart on the landing
 fits stage=adult|old
 prefers job=servant humour=dry
@@ -39,56 +42,55 @@ balancepoint = a level moment | the lifted pause
 latchspace = a door's swing | the free arc
 
 any
-opinion houses mixed 0 : A factor's due date descends the stairs rather faster than wages climb them.
-opinion merchants mixed 0 : My price for a tart concerns the quantity of plum and let the gilding on the window pay for itself.
-opinion newcomers for 1 : A new servant ought to hear about the awkward turn before attempting the stairs under observation.
-opinion road for 1 : Walking on a surface someone has kept level can be a remarkable act of public generosity.
-opinion church for 1 : A peaceful bench where no one needs serving gives me time to return thanks properly.
-opinion dole for 1 : A warm portion can give a tired wolf much more than its weight on paper suggests.
-opinion city for 1 : From a landing in this city one can hear both the very fine bells and the ordinary business that feeds them.
-opinion festivals for 1 : I'd gladly carry a tray down to a festival as long as somebody saves a level spot for my slice.
-opinion watch mixed 0 : A clear account delivered soberly beats an impressive race down a staircase.
-opinion sump mixed 0 : Low doors can be as carefully attended as high ones. The rain just gives the low ones extra work.
+opinion @1 houses mixed 0 : A factor's due date descends the stairs rather faster than wages climb them.
+opinion @1 merchants mixed 0 : My price for a tart concerns the quantity of plum and let the gilding on the window pay for itself.
+opinion @1 newcomers for 1 : A new servant ought to hear about the awkward turn before attempting the stairs under observation.
+opinion @1 road for 1 : Walking on a surface someone has kept level can be a remarkable act of public generosity.
+opinion @1 church for 1 : A peaceful bench where no one needs serving gives me time to return thanks properly.
+opinion @1 dole for 1 : A warm portion can give a tired wolf much more than its weight on paper suggests.
+opinion @1 city for 1 : From a landing in this city one can hear both the very fine bells and the ordinary business that feeds them.
+opinion @1 festivals for 1 : I'd gladly carry a tray down to a festival as long as somebody saves a level spot for my slice.
+opinion @1 watch mixed 0 : A clear account delivered soberly beats an impressive race down a staircase.
+opinion @1 sump mixed 0 : Low doors can be as carefully attended as high ones. The rain just gives the low ones extra work.
 
 grown
-line greet : Welcome to this level patch. | A greeting from a wolf briefly at rest.
-line greet [pair.band=strangers] : A fresh arrival may claim the unoccupied side. | Come inside the arc of this door.
-line greet [here.time=dawn] : Morning. The first rise still has a little novelty. | Daylight has inspected the trays before me.
-line greet.return : Yes, hello. My imaginary tart is steady now. | There's one interval between my actual errands.
-line greet.return [pair.band=friends|family] : A friend is always welcome on this landing. | Your arrival improves the prospect from the turn.
-line greet.return [here.time=night] : An evening greeting from the last level patch. | At this hour I can take the single treads.
-line again.open : Another lap of the same civil staircase. | Back before my imaginary plum has shifted.
-line hail [pair.band=friends] : Come see the bend from this angle! | A free space for you on the level end!
-line farewell : A level road for whatever you're carrying. | May the last stair treat your tired foot kindly.
-line farewell.return : I'll steward the remains of the landing. | Step away before the next tray arrives.
-line react.news : A measured account will come up quite comfortably. | Tell the part that survived the turn intact.
-line react.news.new : That's a new slice on my plate. | I'd allotted no place to that item till now.
-line react.news.known : I've had a portion just that shape. | It reached my landing on an earlier journey.
-line react.news.doubt : That account leans heavily to one side. | I'd put it level before deciding how much it weighs.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I can stand by while you set that weight down. | Take the seat where no other errand need pass you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Excellent. A plum landed exactly where it belonged. | Good news deserves the unbroken piece of pastry.
-line ask.how : Has today given you anywhere level to pause? | How is your share of the day's climbing?
-line answer.how : Upright with the filling still inside. | Moderately rested by my own generous reckoning.
-line decline : I'd have to put two trays on a single hand for that. | What you're asking exceeds my remaining clear portion.
-line accept_decline : Then your business stays upon its own plate. | A refusal needn't be carried through another turn.
-line preclose : My imaginary tart can wait. The real tasks can't. | The next rise is beginning to look impatient.
-line accept_preclose : Your own staircase has a claim on you. | Very well. I'll keep the passage free.
-line thank : You saved me an entire extra climb. Much obliged. | I felt the benefit just where the tray changed hands.
-line deflect_thanks : It was a very shallow rise to spare. | I'd already brought a little extra all that way.
-line sympathise : Come out of the household traffic while you grieve. | Nobody needs the chair by my landing so much as you do.
-line reassure : Reach the first level place before measuring the whole ascent. | I'll take a spare edge if it helps your breathing.
-line ack : Yes. That settles level in my hand. | A well-proportioned slice of sense.
-line give.advice : Arrange the landing before attempting the grand entrance. | Never judge a stair with both hands full.
-line kin.open [pair.kin!=no] : Family can take the unreserved side of my tray. | A household turn I need no directions for.
-line hail [here.time=night] : Stand here above the lamplit tread! | The last bright patch is wide enough for company!
-line farewell.return [here.time=dawn] : Fresh light for the first turn of your walk. | Go while the morning has plenty of room.
-line assess : The filling stayed within bounds. I'd accept the result. | That judgement will carry past the awkward corner.
-line give.opinion : Time for the turn belongs in every estimate of a journey. | A pleasing entrance starts with an uneventful arrival.
-line greet [here.weather=rain] : Welcome. The dry portion begins past that tread. | Come off the glazed paving a moment.
-line again.open [pair.band=friends] : A second little helping of your company. | Welcome again to my entirely unofficial landing.
-line thank [pair.band=friends] : You've earned the slice with the best plum in it. | That favour will travel very comfortably in my memory.
-line answer.how [here.time=night] : Tired enough to let the tart carry me upstairs. | Ready for a last slice and the end of my errands.
-
+line @1 greet : Welcome to this level patch. | A greeting from a wolf briefly at rest.
+line @2 greet [pair.band=strangers] : A fresh arrival may claim the unoccupied side. | Come inside the arc of this door.
+line @3 greet [here.time=dawn] : Morning. The first rise still has a little novelty. | Daylight has inspected the trays before me.
+line @1 greet.return : Yes, hello. My imaginary tart is steady now. | There's one interval between my actual errands.
+line @2 greet.return [pair.band=friends|family] : A friend is always welcome on this landing. | Your arrival improves the prospect from the turn.
+line @3 greet.return [here.time=night] : An evening greeting from the last level patch. | At this hour I can take the single treads.
+line @1 again.open : Another lap of the same civil staircase. | Back before my imaginary plum has shifted.
+line @1 hail [pair.band=friends] : Come see the bend from this angle! | A free space for you on the level end!
+line @1 farewell : A level road for whatever you're carrying. | May the last stair treat your tired foot kindly.
+line @1 farewell.return : I'll steward the remains of the landing. | Step away before the next tray arrives.
+line @1 react.news : A measured account will come up quite comfortably. | Tell the part that survived the turn intact.
+line @1 react.news.new : That's a new slice on my plate. | I'd allotted no place to that item till now.
+line @1 react.news.known : I've had a portion just that shape. | It reached my landing on an earlier journey.
+line @1 react.news.doubt : That account leans heavily to one side. | I'd put it level before deciding how much it weighs.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I can stand by while you set that weight down. | Take the seat where no other errand need pass you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Excellent. A plum landed exactly where it belonged. | Good news deserves the unbroken piece of pastry.
+line @1 ask.how : Has today given you anywhere level to pause? | How is your share of the day's climbing?
+line @1 answer.how : Upright with the filling still inside. | Moderately rested by my own generous reckoning.
+line @1 decline : I'd have to put two trays on a single hand for that. | What you're asking exceeds my remaining clear portion.
+line @1 accept_decline : Then your business stays upon its own plate. | A refusal needn't be carried through another turn.
+line @1 preclose : My imaginary tart can wait. The real tasks can't. | The next rise is beginning to look impatient.
+line @1 accept_preclose : Your own staircase has a claim on you. | Very well. I'll keep the passage free.
+line @1 thank : You saved me an entire extra climb. Much obliged. | I felt the benefit just where the tray changed hands.
+line @1 deflect_thanks : It was a very shallow rise to spare. | I'd already brought a little extra all that way.
+line @1 sympathise : Come out of the household traffic while you grieve. | Nobody needs the chair by my landing so much as you do.
+line @1 reassure : Reach the first level place before measuring the whole ascent. | I'll take a spare edge if it helps your breathing.
+line @1 ack : Yes. That settles level in my hand. | A well-proportioned slice of sense.
+line @1 give.advice : Arrange the landing before attempting the grand entrance. | Never judge a stair with both hands full.
+line @1 kin.open [pair.kin!=no] : Family can take the unreserved side of my tray. | A household turn I need no directions for.
+line @2 hail [here.time=night] : Stand here above the lamplit tread! | The last bright patch is wide enough for company!
+line @2 farewell.return [here.time=dawn] : Fresh light for the first turn of your walk. | Go while the morning has plenty of room.
+line @1 assess : The filling stayed within bounds. I'd accept the result. | That judgement will carry past the awkward corner.
+line @1 give.opinion : Time for the turn belongs in every estimate of a journey. | A pleasing entrance starts with an uneventful arrival.
+line @4 greet [here.weather=rain] : Welcome. The dry portion begins past that tread. | Come off the glazed paving a moment.
+line @2 again.open [pair.band=friends] : A second little helping of your company. | Welcome again to my entirely unofficial landing.
+line @2 thank [pair.band=friends] : You've earned the slice with the best plum in it. | That favour will travel very comfortably in my memory.
+line @2 answer.how [here.time=night] : Tired enough to let the tart carry me upstairs. | Ready for a last slice and the end of my errands.
 scene flyingtart
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -299,8 +301,6 @@ a : If tarts could complain, I suspect the sharpest objection would concern a do
 b : Wouldn't the carrier object first? | Could you blame the door?
 a : Possibly. I like to grant the filling an independent view in these discussions. | Only if the hinges changed their minds since morning. More honest to examine my approach.
 
-grown
-
 story fallenplum [topic=work|memories]
   : I practised my grand entrance with one plum on an empty plate. It sat still through the bend and rolled off when I stopped to admire the result.
   : It went straight back downstairs. I made a considerably less grand exit.
@@ -367,26 +367,25 @@ does aside
 cooldown 8h
 say An evening float has quite different duties from a serving dish. | Rest the line where there's room to watch the water.
 
-dlg resident.hub : I've brought my imaginary tart to a level pause. You'll find me available here.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's still a seat beside our previous landing.
-dlg resident.hub [here.time=night] : The late turn is best taken gently. The approaching turn affords me a short interval.
-dlg resident.hub [pair.disposition=wary|hostile] : Stand beyond the tray's swinging room. I'll be quite civil from here.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. A level dish, an unblocked door and no impression of excessive haste.
-dlg resident.job : I enjoy duties where small matters of balance visibly contribute to somebody's comfort.
-dlg resident.bye : May the last turn take nothing from what you're carrying.
-dlg resident.gossip [here.gossip=yes] : This household heard that #topic.subject# #topic.claim#. I set it before you as a received remark.
-dlg resident.gossip [here.gossip=no] : Household confidence isn't a dish for me to set out on an empty table.
-dlg resident.news [world.news] : From #world.news_from# I received this account. #world.news#. I'll leave the words in their original portion.
-dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can demonstrate why a good servant first looks at where a journey finishes.
-dlg master.learn [here.teaches=no] : I already have a learner beside me. A brief question about a level arrival still has room.
-dlg master.work : You'll carry, arrange and observe. You'll also receive what somebody else carries so both sides of a service become clear.
-dlg master.wages : Training itself doesn't pay wages. It speeds your learning, and anything earned by your completed work stays yours.
-dlg master.takes [here.take_on=yes] : I've room to show one learner the turns. Make the request and we'll give it a proper beginning.
-dlg master.takes [here.take_on=no] : I can't put you beside me as a learner under the present conditions. #here.take_on_why#.
-dlg master.taken : You're taken on. We'll begin with a bare plate and a plum that hasn't learnt discretion.
-dlg master.refused : I can't take that arrangement through to the landing today. #topic.why#.
-dlg master.bye : Try noticing which way the next service door swings.
-
+dlg @1 resident.hub : I've brought my imaginary tart to a level pause. You'll find me available here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's still a seat beside our previous landing.
+dlg @3 resident.hub [here.time=night] : The late turn is best taken gently. The approaching turn affords me a short interval.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand beyond the tray's swinging room. I'll be quite civil from here.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. A level dish, an unblocked door and no impression of excessive haste.
+dlg @2 resident.job : I enjoy duties where small matters of balance visibly contribute to somebody's comfort.
+dlg @1 resident.bye : May the last turn take nothing from what you're carrying.
+dlg @1 resident.gossip [here.gossip=yes] : This household heard that #topic.subject# #topic.claim#. I set it before you as a received remark.
+dlg @2 resident.gossip [here.gossip=no] : Household confidence isn't a dish for me to set out on an empty table.
+dlg @1 resident.news [world.news] : From #world.news_from# I received this account. #world.news#. I'll leave the words in their original portion.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can demonstrate why a good servant first looks at where a journey finishes.
+dlg @2 master.learn [here.teaches=no] : I already have a learner beside me. A brief question about a level arrival still has room.
+dlg @1 master.work : You'll carry, arrange and observe. You'll also receive what somebody else carries so both sides of a service become clear.
+dlg @1 master.wages : Training itself doesn't pay wages. It speeds your learning, and anything earned by your completed work stays yours.
+dlg @1 master.takes [here.take_on=yes] : I've room to show one learner the turns. Make the request and we'll give it a proper beginning.
+dlg @2 master.takes [here.take_on=no] : I can't put you beside me as a learner under the present conditions. #here.take_on_why#.
+dlg @1 master.taken : You're taken on. We'll begin with a bare plate and a plum that hasn't learnt discretion.
+dlg @1 master.refused : I can't take that arrangement through to the landing today. #topic.why#.
+dlg @1 master.bye : Try noticing which way the next service door swings.
 graft resident.hub
 choice Why do you picture a plum tart on every landing? -> tartangle
 node tartangle

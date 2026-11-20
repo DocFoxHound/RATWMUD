@@ -1,9 +1,12 @@
+# rm337, the wick's second breath (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm337
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rmx_magnus_wetherell
+written_by codex
 title the wick's second breath
 fits stage=adult|old
 prefers job=laborer
@@ -17,6 +20,7 @@ topics work +0.5 health +0.4 pastimes +0.3 weather +0.3
 styles comfort=practical gossip=careful refuse=gentle tease=none
 marks oath saying
 persona #self.first# waits through a second steady breath before trusting a wick and offers the same unhurried attention to a tired companion.
+
 words
 oath! = Smoke curl my sleeve | Snuff my trimming scrap
 saying! = Wait for the second breath | A light can settle
@@ -39,47 +43,45 @@ breathgap = a long enough pause | a quiet space
 rushend = a neat rush tip | a short pale fibre
 
 grown
-
-opinion houses against 1 : A post ought to go to the hands that can keep a steady light in it.
-opinion merchants mixed 1 : The price of one good wick can look foolishly high until a cheap one chokes the room.
-opinion dole for 2 : A stale heel is no great charity unless somebody has considered how to make it edible.
-opinion city mixed 1 : There's good work in this city and less room than I'd like between a favour and an appointment.
-opinion church for 1 : A lamp burning quietly does better justice to thanks than a show of sparks.
-opinion strangers for 1 : A stranger can make use of a lit step without giving any account of the journey.
-opinion festivals mixed 1 : I like the lights after the noise has drawn everybody a little farther up the road.
-opinion watch mixed 1 : If someone guards a street I like a dark stretch to count as much as a grand lit doorway.
-line greet : Come stand where the air has stopped hurrying.
-line greet [here.time=dawn] : Morning. The daylight's taken the watch off a great many wicks.
-line greet [pair.band=strangers] : Welcome. Here you can breathe before you explain yourself.
-line greet.return : You've caught me on the easier part of a breath.
-line greet.return [self.working=yes] : A moment for this to settle and my ears are free.
-line greet.return [pair.band=friends|family] : A known voice keeps its own light about it.
-line again.open : Here we are before the same little flame again.
-line hail [pair.band=friends] : Quiet patch over here, if you'd like a word.
-line kin.open [pair.kin!=no] : Stay close. I can speak softly to my own.
-line farewell : Keep some breath for the last stretch home.
-line farewell.return : May your light carry clear of the draught.
-line react.news : I'll see what remains when the first smoke lifts.
-line react.news.new : That puts a different shape against the glass.
-line react.news.known : I recognise the outline under the new telling.
-line react.news.doubt : That flared up too sharply for me to trust it yet.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep a quiet light for a household in pain.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a reason to put a warm glow in the window.
-line ask.how : Have you enough breath to spare for this bit of road?
-line answer.how : Going steadily. That's an answer I'm content with.
-line answer.how.busy [self.working=yes] : Still working. Nothing that needs a rush of air from me.
-line decline : I'd sooner keep my hands free for something I can do properly.
-line accept_decline : Set that offer back on the shelf, then.
-line thank : You gave me the extra second I needed.
-line deflect_thanks : Nobody loses a light by giving you a share.
-line sympathise : I can stay through the part when words are too much trouble.
-line reassure : A little time to settle can change the look of everything.
-line ack : That comes through clear after a moment.
-line preclose : My hands had better return before the light goes astray.
-line accept_preclose : Slip away while there's enough light for the first steps.
-line offer : Here, take the side sheltered by my shoulder.
-line give.advice : Let the first puff pass before deciding how the thing will burn.
-
+opinion @1 houses against 1 : A post ought to go to the hands that can keep a steady light in it.
+opinion @1 merchants mixed 1 : The price of one good wick can look foolishly high until a cheap one chokes the room.
+opinion @1 dole for 2 : A stale heel is no great charity unless somebody has considered how to make it edible.
+opinion @1 city mixed 1 : There's good work in this city and less room than I'd like between a favour and an appointment.
+opinion @1 church for 1 : A lamp burning quietly does better justice to thanks than a show of sparks.
+opinion @1 strangers for 1 : A stranger can make use of a lit step without giving any account of the journey.
+opinion @1 festivals mixed 1 : I like the lights after the noise has drawn everybody a little farther up the road.
+opinion @1 watch mixed 1 : If someone guards a street I like a dark stretch to count as much as a grand lit doorway.
+line @1 greet : Come stand where the air has stopped hurrying.
+line @2 greet [here.time=dawn] : Morning. The daylight's taken the watch off a great many wicks.
+line @3 greet [pair.band=strangers] : Welcome. Here you can breathe before you explain yourself.
+line @1 greet.return : You've caught me on the easier part of a breath.
+line @2 greet.return [self.working=yes] : A moment for this to settle and my ears are free.
+line @3 greet.return [pair.band=friends|family] : A known voice keeps its own light about it.
+line @1 again.open : Here we are before the same little flame again.
+line @1 hail [pair.band=friends] : Quiet patch over here, if you'd like a word.
+line @1 kin.open [pair.kin!=no] : Stay close. I can speak softly to my own.
+line @1 farewell : Keep some breath for the last stretch home.
+line @1 farewell.return : May your light carry clear of the draught.
+line @1 react.news : I'll see what remains when the first smoke lifts.
+line @1 react.news.new : That puts a different shape against the glass.
+line @1 react.news.known : I recognise the outline under the new telling.
+line @1 react.news.doubt : That flared up too sharply for me to trust it yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep a quiet light for a household in pain.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a reason to put a warm glow in the window.
+line @1 ask.how : Have you enough breath to spare for this bit of road?
+line @1 answer.how : Going steadily. That's an answer I'm content with.
+line @1 answer.how.busy [self.working=yes] : Still working. Nothing that needs a rush of air from me.
+line @1 decline : I'd sooner keep my hands free for something I can do properly.
+line @1 accept_decline : Set that offer back on the shelf, then.
+line @1 thank : You gave me the extra second I needed.
+line @1 deflect_thanks : Nobody loses a light by giving you a share.
+line @1 sympathise : I can stay through the part when words are too much trouble.
+line @1 reassure : A little time to settle can change the look of everything.
+line @1 ack : That comes through clear after a moment.
+line @1 preclose : My hands had better return before the light goes astray.
+line @1 accept_preclose : Slip away while there's enough light for the first steps.
+line @1 offer : Here, take the side sheltered by my shoulder.
+line @1 give.advice : Let the first puff pass before deciding how the thing will burn.
 scene work_1
 when topic=work self.job=laborer
 does tell.self / ask.detail / answer.detail
@@ -341,19 +343,19 @@ when concept=bark here.weather=storm
 does aside
 cooldown 8h
 say Hold the glass steady till the big noise passes. | Thunder outside, small clean flame in here.
-dlg resident.hub : Stand within an easy glance of me without getting a draught in yours.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your voice has reached a quiet patch.
-dlg resident.hub [here.time=night] : There's light left for a little unhurried talk.
-dlg resident.hub [pair.disposition=wary|hostile] : We needn't gust at each other to get an answer.
-dlg resident.job [self.job=laborer] : At #self.workplace# I'm useful in small instalments and in no great hurry to be admired.
-dlg resident.job : Give me work that benefits from one more patient look.
-dlg resident.news [world.news] : Here's what's showing clear enough to pass along. #world.news#.
-dlg resident.gossip [here.gossip=yes] : One account says #topic.subject# #topic.claim#. I'm watching to see whether it smokes or settles.
-dlg resident.bye : Easy breathing to you round the next corner.
-dlg master.work : One good look after your first attempt can teach more than five hurried repetitions.
-dlg master.wages : There's no wage while learning. Beside me you'll learn three times as fast and anything you turn out is yours for sale.
-dlg master.bye : Take the pace your hands can keep.
 
+dlg @1 resident.hub : Stand within an easy glance of me without getting a draught in yours.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your voice has reached a quiet patch.
+dlg @3 resident.hub [here.time=night] : There's light left for a little unhurried talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We needn't gust at each other to get an answer.
+dlg @1 resident.job [self.job=laborer] : At #self.workplace# I'm useful in small instalments and in no great hurry to be admired.
+dlg @2 resident.job : Give me work that benefits from one more patient look.
+dlg @1 resident.news [world.news] : Here's what's showing clear enough to pass along. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : One account says #topic.subject# #topic.claim#. I'm watching to see whether it smokes or settles.
+dlg @1 resident.bye : Easy breathing to you round the next corner.
+dlg @1 master.work : One good look after your first attempt can teach more than five hurried repetitions.
+dlg @1 master.wages : There's no wage while learning. Beside me you'll learn three times as fast and anything you turn out is yours for sale.
+dlg @1 master.bye : Take the pace your hands can keep.
 graft resident.hub
 choice What is the second breath of a wick? -> rush_second
 node rush_second

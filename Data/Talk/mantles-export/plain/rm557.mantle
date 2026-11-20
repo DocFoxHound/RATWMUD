@@ -1,9 +1,12 @@
+# rm557, the purse-sized stall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm557
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ulf_pitchham
+written_by codex
 title the purse-sized stall
 fits stage=adult|old
 prefers job=servant
@@ -35,37 +38,36 @@ hook = a line hook | a tiny bright bend
 snow = the first white coat | a new soft covering
 
 any
-opinion merchants for 1 : A modest market stall gives a small sum an honest chance to grow.
-opinion houses mixed 1 : A grand household can teach excellent habits. It cannot save my pennies on my behalf.
-opinion road for 1 : An old road drawn across a fold still deserves to be walked and measured.
-opinion dole for 1 : A spare cake is more readily shared before one begins calculating its retail value.
-opinion city for 1 : I appreciate a city large enough for another counter and small enough to cross on foot.
-opinion times against 1 [world.times=lean|hard] : A rise in timber prices moves my imaginary counter back a remarkably real distance.
+opinion @1 merchants for 1 : A modest market stall gives a small sum an honest chance to grow.
+opinion @1 houses mixed 1 : A grand household can teach excellent habits. It cannot save my pennies on my behalf.
+opinion @1 road for 1 : An old road drawn across a fold still deserves to be walked and measured.
+opinion @1 dole for 1 : A spare cake is more readily shared before one begins calculating its retail value.
+opinion @1 city for 1 : I appreciate a city large enough for another counter and small enough to cross on foot.
+opinion @1 times against 1 [world.times=lean|hard] : A rise in timber prices moves my imaginary counter back a remarkably real distance.
 
 grown
-line greet : Come beside the service board. | Welcome to a tolerably quiet corner.
-line greet.return : Your greeting receives my undivided attention.
-line again.open : Still within the same small deposit of time.
-line farewell : May your return journey require few adjustments.
-line farewell.return : I accept the farewell at its full value.
-line react.news : Let us see what sort of account has come in.
-line react.news.new : I hadn't set that item among the day's expectations.
-line react.news.known : I believe that account is already entered.
-line react.news.doubt : That edge looks finer than the evidence warrants.
-line react.news.sorrow [topic.kind=death|loss|assault] : I wish sorrow had a shorter term of service.
-line react.news.glad [topic.kind=birth|marriage|work] : Quite a pleasing increase in good fortune.
-line ask.how : Did your affairs permit a genuinely free interval?
-line answer.how : Steady, and one fraction nearer my ambition.
-line sympathise : Leave your trouble with me while a quiet cup is still warm.
-line reassure : It may wait here without acquiring additional charges.
-line refuse : My next spare interval is already invested.
-line accept_decline : I shall close that offer with no hard feelings.
-line preclose : I have several small duties requiring exactly this minute.
-line accept_preclose : You have my good wishes and a clear departure.
-line ack : That reads quite plainly from here.
-line thank : Your kindness saved me some unnecessary sharpening.
-line greet [here.time=dawn] : Welcome before the first service tray.
-
+line @1 greet : Come beside the service board. | Welcome to a tolerably quiet corner.
+line @1 greet.return : Well met again. I have a minute.
+line @1 again.open : Back again, and the board's still clear for you.
+line @1 farewell : May your return journey require few adjustments.
+line @1 farewell.return : The same to you. Watch the wet steps on your way.
+line @1 react.news : Let us see what sort of account has come in.
+line @1 react.news.new : I hadn't set that item among the day's expectations.
+line @1 react.news.known : I believe that account is already entered.
+line @1 react.news.doubt : That edge looks finer than the evidence warrants.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I wish sorrow had a shorter term of service.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Quite a pleasing increase in good fortune.
+line @1 ask.how : Did your affairs permit a genuinely free interval?
+line @1 answer.how : Steady, and one fraction nearer my ambition.
+line @1 sympathise : Leave your trouble with me while a quiet cup is still warm.
+line @1 reassure : It may wait here without acquiring additional charges.
+line @1 refuse : My next spare interval is already invested.
+line @1 accept_decline : I shall close that offer with no hard feelings.
+line @1 preclose : I have several small duties requiring exactly this minute.
+line @1 accept_preclose : You have my good wishes and a clear departure.
+line @1 ack : That reads quite plainly from here.
+line @1 thank : Your kindness saved me some unnecessary sharpening.
+line @2 greet [here.time=dawn] : Welcome before the first service tray.
 scene exchange1
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -78,7 +80,7 @@ when topic=prices
 does tell.self / ask.detail / answer.detail
 a : I know what one board of my future stall will cost. | A saved coin no longer looks entirely round to me.
 b : Just one board? | What shape is it?
-a : I find a corner affordable if considered alone. | Mostly the shape of a nail or a small hinge.
+a : I find a corner affordable if considered alone. | Like a nail, or a hinge. I see what it will buy before I see the coin.
 
 scene exchange3
 when topic=dreams
@@ -111,9 +113,9 @@ a : It proves the earth has supported my ambition at least once. | I use the dry
 scene exchange7
 when topic=weather self.likes=first_snow
 does tell.self / ask.detail / answer.detail
-a : First snow outlines a vacant counter beautifully. | I count new tracks before the snow gets busy.
-b : What counter? | Customers for the stall?
-a : Precisely. I can supply the outline of the legs myself. | Strictly speaking, several hopeful birds.
+a : First snow makes a bare yard look like a counter with its cloth laid. | I count new tracks before the snow gets busy.
+b : Whose counter? | Customers for the stall?
+a : Mine, for as long as the snow lies. I fill in the legs myself. | Strictly speaking, several hopeful birds.
 
 scene exchange8
 when topic=day self.dislikes=cold_tea
@@ -127,7 +129,7 @@ when topic=day self.dislikes=flies
 does tell.self / ask.detail / answer.detail
 a : I put a plain cover over a sticky plate. | I leave the window open beyond the sweets.
 b : Does it discourage flies? | Won't the flies come in?
-a : It makes my intentions legally quite unambiguous. | Some already have. I am offering a civil departure.
+a : That, and it tells the hall the plate isn't free for the taking. | Some already have. I am offering a civil departure.
 
 scene exchange10
 when topic=friends self.friend
@@ -233,15 +235,15 @@ when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say Wrap the survey twice. | Keep the hone clear of grit.
-dlg resident.hub : My service board has a clean end for a brief enquiry.
-dlg resident.hub [topic.meeting=known] : #topic.player#, the little stall in my head still has a place for you.
-dlg resident.hub [pair.disposition=wary|hostile] : A direct question is considerably easier to attend to than a veiled demand.
-dlg resident.job [self.job=servant self.workplace] : I serve at #self.workplace#. My own counter is still mostly a matter of saved coin and measured boards.
-dlg resident.job : I keep modest tools in working order and make careful plans with what is left.
-dlg resident.news [world.news] : Among the accounts to pass this board is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The report in circulation is #topic.subject# #topic.claim#. Its value remains to be established.
-dlg resident.bye : May your next cup retain sufficient heat for the whole conversation.
 
+dlg @1 resident.hub : My service board has a clean end for a brief enquiry.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the little stall in my head still has a place for you.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A direct question is considerably easier to attend to than a veiled demand.
+dlg @1 resident.job [self.job=servant self.workplace] : I serve at #self.workplace#. My own counter is still mostly a matter of saved coin and measured boards.
+dlg @2 resident.job : I keep modest tools in working order and make careful plans with what is left.
+dlg @1 resident.news [world.news] : Among the accounts to pass this board is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The report in circulation is #topic.subject# #topic.claim#. Its value remains to be established.
+dlg @1 resident.bye : May your next cup retain sufficient heat for the whole conversation.
 graft resident.hub
 choice How wide will that market counter be? -> counter_measure
 node counter_measure

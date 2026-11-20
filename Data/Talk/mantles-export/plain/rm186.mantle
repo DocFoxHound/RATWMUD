@@ -1,10 +1,12 @@
-# rm186, the ink-pawed baker (doc 84 P14, batch city-a3): written for rm_una_pitchcot (Una Pitchcot: baker at The Eastgate Bakehouse, Ridgemere-born). The Commons: quiet, short worried turns, a riddle inked on every bread-paper, thunder loved from under a roof.
+# rm186, the ink-pawed baker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm186
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_una_pitchcot
+written_by codex
 title the ink-pawed baker
 fits stage=adult|old
 prefers role=merchant job=baker talk=quiet
@@ -40,60 +42,59 @@ bells = the first bells | the bells before light
 counter = the counter | my counter
 
 any
-opinion houses mixed 1 : The four Houses bow low in the Rain Hall, then bare their teeth back home. I'm frightened it comes to worse before spring. | All four Houses eat bread. That's all they've ever agreed on, and long may it last.
-opinion houses against 1 [world.times=hard|lean] : When the Houses squabble, the flour's dearer by the next sack. I've watched it twice. | Half the street short of supper, and the Houses squabbling yet over which of them sits nearest the fire.
-opinion merchants for 1 [self.role=merchant] : I keep #counter# myself. I could name what a cart of flour costs before it's past the gate. | Folk call a shopkeeper greedy. None of them has paid a miller in their lives.
-opinion drink against 1 : A cup undoes the knot on a tongue, and nobody ties it again by morning. | One cup at supper, fine. After the second it's promises, and nobody keeps them.
-opinion newcomers against 1 : New folk, fine. I'd still want to know whose stair they slept on before they come round my side. | A strange face on our street, and I lock #flourbin#. I'm sorry, but I do.
-opinion road against 2 : Past the walls? You couldn't pay me in gold. Not this year. | The road's where the flour comes from, and where the trouble comes from too.
-opinion road against 3 [world.wagons=raided] : A cart robbed again. That's flour I'll never get my paws in, and dearer bread by Marketday. | Robbed carts mean short loaves. I hate cutting them short.
-opinion sump against 1 : I don't go below Market Square after dark. Nor much before. I'm sorry for the ones who live there. | The Sump frightens me. That's not fair to the folk in it, I know.
-opinion watch for 1 : #watch.capitalize# go by my shutters two or three times between dusk and the bells. I rest easier hearing their boots. | No friends of mine, but #thief.s# give my till a wide berth while #watch# are about.
-opinion church for 1 : I like #chapel# best. The praying's fine, but what brings me back is the hush. | I reckon my whisper carries far enough for the Bright One. That's a mercy to anyone who's heard my singing.
-opinion city mixed 1 : It's a fine city when it isn't raining. So, now and then. | Nowhere else would have me, and I'd not go. I'd only like it a bit drier and a bit quieter.
+opinion @1 houses mixed 1 : The four Houses bow low in the Rain Hall, then bare their teeth back home. I'm frightened it comes to worse before spring. | All four Houses eat bread. That's all they've ever agreed on, and long may it last.
+opinion @2 houses against 1 [world.times=hard|lean] : When the Houses squabble, the flour's dearer by the next sack. I've watched it twice. | Half the street short of supper, and the Houses squabbling yet over which of them sits nearest the fire.
+opinion @1 merchants for 1 [self.role=merchant] : I keep #counter# myself. I could name what a cart of flour costs before it's past the gate. | Folk call a shopkeeper greedy. None of them has paid a miller in their lives.
+opinion @1 drink against 1 : A cup undoes the knot on a tongue, and nobody ties it again by morning. | One cup at supper, fine. After the second it's promises, and nobody keeps them.
+opinion @1 newcomers against 1 : New folk, fine. I'd still want to know whose stair they slept on before they come round my side. | A strange face on our street, and I lock #flourbin#. I'm sorry, but I do.
+opinion @1 road against 2 : Past the walls? You couldn't pay me in gold. Not this year. | The road's where the flour comes from, and where the trouble comes from too.
+opinion @2 road against 3 [world.wagons=raided] : A cart robbed again. That's flour I'll never get my paws in, and dearer bread by Marketday. | Robbed carts mean short loaves. I hate cutting them short.
+opinion @1 sump against 1 : I don't go below Market Square after dark. Nor much before. I'm sorry for the ones who live there. | The Sump frightens me. That's not fair to the folk in it, I know.
+opinion @1 watch for 1 : #watch.capitalize# go by my shutters two or three times between dusk and the bells. I rest easier hearing their boots. | No friends of mine, but #thief.s# give my till a wide berth while #watch# are about.
+opinion @1 church for 1 : I like #chapel# best. The praying's fine, but what brings me back is the hush. | I reckon my whisper carries far enough for the Bright One. That's a mercy to anyone who's heard my singing.
+opinion @1 city mixed 1 : It's a fine city when it isn't raining. So, now and then. | Nowhere else would have me, and I'd not go. I'd only like it a bit drier and a bit quieter.
 
 grown
-line greet [pair.band=strangers] : #greet#. If it's bread, it's on the shelf. | #greet#. A new face. That's all right.
-line greet [self.working=yes self.job=baker] : #greet#. Flour on everything, me included. | #greet#. Mind the trays; they're hot.
-line greet [here.time=dawn] : Morning. Paws in dough since #bells#, me. | Morning. First batch is nearly out.
-line greet [here.time=dusk|night] : Evening. I'm half asleep, so speak up. | Evening. There's just a little warmth left in the bricks.
-line greet : #greet#. Don't mind the ink. It's always on me. | #greet#. I was just turning a riddle over.
-line greet.return : #greet#. You caught me between batches. | #greet#. Quiet so far. That suits me.
-line greet.return [pair.band=friends|family] : Oh. You. I'd hoped it would be. | You. Good. Find a stool that's not got flour on it.
-line greet.return [self.working=yes] : #greet#. Talk while I knead, if you don't mind. | Hello. Kneading needs paws, not ears. Talk away.
-line greet.return [here.time=dusk|night] : Evening. You're out late. | Evening. I'll be in bed by the next bell.
-line kin.open [pair.kin!=no] : I saved you the crusty end. Don't tell anyone. | Sit down. I'll fret about you less if you sit.
-line again.open : Twice today. I don't mind it. | You again. I've a fresh riddle since.
-line farewell : #farewell#. I've #dough# to see to. | I'll get back to it. #farewell#.
-line farewell [here.time=dusk|night] : Good night. Drop the bar on your door. I do. | Good night. My oven's lit before light, so that's me.
-line farewell.return : #farewell#. Keep dry. | Go carefully. And come for bread.
-line farewell.return [here.time=dusk|night] : Good night. Mind the step. | Good night, then. Sleep, if you can.
-line react.news : Oh. Tell me slowly. | Go on. Kneading's no reason not to listen.
-line react.news.new : That's not reached me. Things never reach me first. | That's new. I'll fret about it all night now.
-line react.news.known : Three customers told me that before noon. | I'd heard. Half the street had it before me.
-line react.news.doubt : Say it again tomorrow. If it hasn't changed, I'll believe it. | Hm. Folk say a lot over a loaf that isn't so.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. That's hard. I'll go and sit in #chapel# for them. | That's cruel. Every one of them, poor souls.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, good. Someone'll be wanting a cake. | Good news. It's that rare I'll need a stool.
-line answer.how : Tired. Fine. Tired. | Well enough. Flour in my chest, but well enough.
-line answer.how.busy [self.working=yes] : Busy. The loaves don't wait for anybody. | Up since #bells# and not sat down once.
-line answer.how [here.weather=rain|fog] : Damp. It settles on my chest. It's nothing. | Wet out, warm in. I've the oven.
-line ask.how : Are you eating? You look thin. | Sleeping? I'm not, much.
-line sympathise : Oh. That's a weight. Sit a while. | I'm sorry. I've no clever words for it. Only sorry.
-line reassure : It'll mend. Most things I've fretted over did. | Leave the fretting to me. I've the practice.
-line decline : I'd rather not, I'm sorry. The oven wants me back by the bell. | Not today. There's a batch proving and I daren't leave it to itself.
-line accept_decline : No, that's fair. Another day. | All right. I'll not press you.
-line accept_preclose : Go on, then. I've loaves to turn. | Yes. Go on. Watch the wet cobbles.
-line thank : Thank you. It comes out small, but I mean it big. | That's kind. There's a loaf in it for you.
-line deflect_thanks : It was nothing. A loaf's a loaf. | Don't. You'll make me blush through the flour.
-line preclose [self.working=yes] : Back I go. The oven sulks without me. | That's the batch calling. I have to go.
-line preclose : Well. I should get on. | Off you go. My worries won't keep themselves.
-line tease.return : Oh. Was that a joke? I'll laugh later. | You're a wicked one. Go on, then.
-line ack : Mm. Right. | Yes, all right.
-line give.advice : Wrap it in paper and keep it off the floor. Rats. | Get something hot inside you before you face that weather.
-line warn [world.bandits=near] : Keep inside the gate today. Please. | There's #bandits# about. Stay inside the walls.
-line hail [pair.band=friends] : Over here. I've a crust going spare. | Here. In, before you drown.
-line accept_apology : It's forgotten. I'd forgotten it already. | No, it's all right. I fret over less than that.
-
+line @1 greet [pair.band=strangers] : #greet#. If it's bread, it's on the shelf. | #greet#. A new face. That's all right.
+line @2 greet [self.working=yes self.job=baker] : #greet#. Flour on everything, me included. | #greet#. Mind the trays; they're hot.
+line @3 greet [here.time=dawn] : Morning. Paws in dough since #bells#, me. | Morning. First batch is nearly out.
+line @4 greet [here.time=dusk|night] : Evening. I'm half asleep, so speak up. | Evening. There's just a little warmth left in the bricks.
+line @5 greet : #greet#. Don't mind the ink. It's always on me. | #greet#. I was just turning a riddle over.
+line @1 greet.return : #greet#. You caught me between batches. | #greet#. Quiet so far. That suits me.
+line @2 greet.return [pair.band=friends|family] : Oh. You. I'd hoped it would be. | You. Good. Find a stool that's not got flour on it.
+line @3 greet.return [self.working=yes] : #greet#. Talk while I knead, if you don't mind. | Hello. Kneading needs paws, not ears. Talk away.
+line @4 greet.return [here.time=dusk|night] : Evening. You're out late. | Evening. I'll be in bed by the next bell.
+line @1 kin.open [pair.kin!=no] : I saved you the crusty end. Don't tell anyone. | Sit down. I'll fret about you less if you sit.
+line @1 again.open : Twice today. I don't mind it. | You again. I've a fresh riddle since.
+line @1 farewell : #farewell#. I've #dough# to see to. | I'll get back to it. #farewell#.
+line @2 farewell [here.time=dusk|night] : Good night. Drop the bar on your door. I do. | Good night. My oven's lit before light, so that's me.
+line @1 farewell.return : #farewell#. Keep dry. | Go carefully. And come for bread.
+line @2 farewell.return [here.time=dusk|night] : Good night. Mind the step. | Good night, then. Sleep, if you can.
+line @1 react.news : Oh. Tell me slowly. | Go on. Kneading's no reason not to listen.
+line @1 react.news.new : That's not reached me. Things never reach me first. | That's new. I'll fret about it all night now.
+line @1 react.news.known : Three customers told me that before noon. | I'd heard. Half the street had it before me.
+line @1 react.news.doubt : Say it again tomorrow. If it hasn't changed, I'll believe it. | Hm. Folk say a lot over a loaf that isn't so.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, no. That's hard. I'll go and sit in #chapel# for them. | That's cruel. Every one of them, poor souls.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, good. Someone'll be wanting a cake. | Good news. It's that rare I'll need a stool.
+line @1 answer.how : Tired. Fine. Tired. | Well enough. Flour in my chest, but well enough.
+line @1 answer.how.busy [self.working=yes] : Busy. The loaves don't wait for anybody. | Up since #bells# and not sat down once.
+line @2 answer.how [here.weather=rain|fog] : Damp. It settles on my chest. It's nothing. | Wet out, warm in. I've the oven.
+line @1 ask.how : Are you eating? You look thin. | Sleeping? I'm not, much.
+line @1 sympathise : Oh. That's a weight. Sit a while. | I'm sorry. I've no clever words for it. Only sorry.
+line @1 reassure : It'll mend. Most things I've fretted over did. | Leave the fretting to me. I've the practice.
+line @1 decline : I'd rather not, I'm sorry. The oven wants me back by the bell. | Not today. There's a batch proving and I daren't leave it to itself.
+line @1 accept_decline : No, that's fair. Another day. | All right. I'll not press you.
+line @1 accept_preclose : Go on, then. I've loaves to turn. | Yes. Go on. Watch the wet cobbles.
+line @1 thank : Thank you. It comes out small, but I mean it big. | That's kind. There's a loaf in it for you.
+line @1 deflect_thanks : It was nothing. A loaf's a loaf. | Don't. You'll make me blush through the flour.
+line @1 preclose [self.working=yes] : Back I go. The oven sulks without me. | That's the batch calling. I have to go.
+line @2 preclose : Well. I should get on. | Off you go. My worries won't keep themselves.
+line @1 tease.return : Oh. Was that a joke? I'll laugh later. | You're a wicked one. Go on, then.
+line @1 ack : Mm. Right. | Yes, all right.
+line @1 give.advice : Wrap it in paper and keep it off the floor. Rats. | Get something hot inside you before you face that weather.
+line @1 warn [world.bandits=near] : Keep inside the gate today. Please. | There's #bandits# about. Stay inside the walls.
+line @1 hail [pair.band=friends] : Over here. I've a crust going spare. | Here. In, before you drown.
+line @1 accept_apology : It's forgotten. I'd forgotten it already. | No, it's all right. I fret over less than that.
 scene riddle_paper
 when topic=work|pastimes self.job=baker
 does tell.self / ask.detail / answer.detail / react.self
@@ -394,33 +395,32 @@ does aside
 cooldown 10h
 say Price is inked on the paper. | Same price as yesterday. I promise.
 
-dlg resident.hub : #greet#. You'll want bread, I expect. | #greet#. Sorry, flour everywhere. What is it?
-dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a new riddle, if you've time. | #topic.player#. Good. I'd half hoped you'd come by.
-dlg resident.hub [here.time=night] : Late, and my oven's lit before light. Quickly, please. | Evening. I'm half asleep standing up.
-dlg resident.hub [pair.disposition=hostile|wary] : You can say it from there. | Keep the counter between us, please.
-dlg resident.job [self.job=baker] : I bake. Bread, mostly, and a cake for a wedding. Every loaf goes out in paper, with a riddle on it. | #self.trade_words.capitalize#. Up before the bells, flour to the elbows.
-dlg resident.job : #self.trade_words.capitalize#. Busy paws fret less. Mine stay busy. | I work. I worry. I write riddles in between.
-dlg resident.business [business=thriving] : Bare shelf before noon, most days. The afternoons feel strange. | Very well. Too well to sleep.
-dlg resident.business [business=steady] : Steady. I'm not complaining. Not out loud. | It pays for the flour and the rent. Just.
-dlg resident.business [business=failing] : Badly. I bake the same and sell half. | Poorly. The nights are long over it.
-dlg resident.news [world.news] : From #world.news_from#, by way of a customer: #world.news#. That's all of it I've got. | Word came in with the flour, from #world.news_from#: #world.news#.
-dlg resident.news [world.event_words] : Every loaf goes out with talk of #world.event_words#. | It's #world.event_words#, all morning, over the counter.
-dlg resident.news [world.wagons=raided] : Robbers have emptied a wagon outside the gate. Don't you go out there. | A cart's gone to robbers. I'm baking small for now.
-dlg resident.news [world.death=recent] : A death on our street. I wrapped up bread for the household. A loaf's the only comfort my paws can make. | There's been a burying. The street's gone quiet.
-dlg resident.news [world.wedding=recent] : A wedding! Somebody'll want a cake, and I hope it's from me. | Someone's wed. The street's gone soft in the face over it.
-dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Flour came in. That's my news. | Nothing, and I'm glad. Quiet suits me.
-dlg resident.gossip [here.gossip=yes] : I don't usually. But folk are saying #topic.subject# #topic.claim#. Leave me out of it, mind. | Over the counter I heard #topic.subject# #topic.claim#. I've told nobody else.
-dlg resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Folk say #topic.subject# #topic.claim#. The till sleeps upstairs with me now. | It's said #topic.subject# #topic.claim#. Keep your purse close, please.
-dlg resident.gossip [here.gossip!=yes] : #gossip_none# Whatever I hear gets baked into the bread. | Nothing I'd pass on.
-dlg resident.bye : #farewell#. Mind you read the paper. | #farewell#. Come for bread.
-dlg resident.bye [here.time=dusk|night] : Good night. Bolt up tight. | Good night. I'm for my bed.
-dlg shop.greet [here.shop!=bare self.job=baker] : #greet#. Loaves #warm#, and a riddle on every paper. | #greet#. Bread on the shelf, price on the paper. #shop_offer#
-dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Did you get yesterday's riddle? | #greet#, #topic.player#. I kept a crusty one back, in case.
-dlg shop.greet [here.shop=bare] : #shop_bare# I'm sorry. Come before the bells tomorrow. | Not a crumb left. I'm sorry. Early tomorrow.
-dlg shop.greet [here.shop!=bare] : #greet#. Have a look. Please don't haggle. | #greet#. Prices are on the paper. #shop_offer#
-dlg shop.prices : It's inked on the paper, and the ink doesn't bend. I'm sorry. | The flour went up, so the loaf went up. Not a farthing more than the flour did.
-dlg shop.bye : #shop_bye# Read the paper before you eat it. | #farewell#. Keep it wrapped. Rats.
-
+dlg @1 resident.hub : #greet#. You'll want bread, I expect. | #greet#. Sorry, flour everywhere. What is it?
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#. I've a new riddle, if you've time. | #topic.player#. Good. I'd half hoped you'd come by.
+dlg @3 resident.hub [here.time=night] : Late, and my oven's lit before light. Quickly, please. | Evening. I'm half asleep standing up.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You can say it from there. | Keep the counter between us, please.
+dlg @1 resident.job [self.job=baker] : I bake. Bread, mostly, and a cake for a wedding. Every loaf goes out in paper, with a riddle on it. | #self.trade_words.capitalize#. Up before the bells, flour to the elbows.
+dlg @2 resident.job : #self.trade_words.capitalize#. Busy paws fret less. Mine stay busy. | I work. I worry. I write riddles in between.
+dlg @1 resident.business [business=thriving] : Bare shelf before noon, most days. The afternoons feel strange. | Very well. Too well to sleep.
+dlg @2 resident.business [business=steady] : Steady. I'm not complaining. Not out loud. | It pays for the flour and the rent. Just.
+dlg @3 resident.business [business=failing] : Badly. I bake the same and sell half. | Poorly. The nights are long over it.
+dlg @1 resident.news [world.news] : From #world.news_from#, by way of a customer: #world.news#. That's all of it I've got. | Word came in with the flour, from #world.news_from#: #world.news#.
+dlg @2 resident.news [world.event_words] : Every loaf goes out with talk of #world.event_words#. | It's #world.event_words#, all morning, over the counter.
+dlg @3 resident.news [world.wagons=raided] : Robbers have emptied a wagon outside the gate. Don't you go out there. | A cart's gone to robbers. I'm baking small for now.
+dlg @4 resident.news [world.death=recent] : A death on our street. I wrapped up bread for the household. A loaf's the only comfort my paws can make. | There's been a burying. The street's gone quiet.
+dlg @5 resident.news [world.wedding=recent] : A wedding! Somebody'll want a cake, and I hope it's from me. | Someone's wed. The street's gone soft in the face over it.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Flour came in. That's my news. | Nothing, and I'm glad. Quiet suits me.
+dlg @1 resident.gossip [here.gossip=yes] : I don't usually. But folk are saying #topic.subject# #topic.claim#. Leave me out of it, mind. | Over the counter I heard #topic.subject# #topic.claim#. I've told nobody else.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Folk say #topic.subject# #topic.claim#. The till sleeps upstairs with me now. | It's said #topic.subject# #topic.claim#. Keep your purse close, please.
+dlg @3 resident.gossip [here.gossip!=yes] : #gossip_none# Whatever I hear gets baked into the bread. | Nothing I'd pass on.
+dlg @1 resident.bye : #farewell#. Mind you read the paper. | #farewell#. Come for bread.
+dlg @2 resident.bye [here.time=dusk|night] : Good night. Bolt up tight. | Good night. I'm for my bed.
+dlg @1 shop.greet [here.shop!=bare self.job=baker] : #greet#. Loaves #warm#, and a riddle on every paper. | #greet#. Bread on the shelf, price on the paper. #shop_offer#
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. Did you get yesterday's riddle? | #greet#, #topic.player#. I kept a crusty one back, in case.
+dlg @3 shop.greet [here.shop=bare] : #shop_bare# I'm sorry. Come before the bells tomorrow. | Not a crumb left. I'm sorry. Early tomorrow.
+dlg @4 shop.greet [here.shop!=bare] : #greet#. Have a look. Please don't haggle. | #greet#. Prices are on the paper. #shop_offer#
+dlg @1 shop.prices : It's inked on the paper, and the ink doesn't bend. I'm sorry. | The flour went up, so the loaf went up. Not a farthing more than the flour did.
+dlg @1 shop.bye : #shop_bye# Read the paper before you eat it. | #farewell#. Keep it wrapped. Rats.
 graft resident.hub
 choice What's the riddle on your bread-paper? [self.job=baker] -> paper
 node paper

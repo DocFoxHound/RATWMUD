@@ -1,9 +1,12 @@
+# rm307, the pale inventory tag (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm307
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_brand_mudridge
+written_by codex
 title the pale inventory tag
 fits stage=adult|old
 prefers job=merchant honesty=frank
@@ -35,43 +38,42 @@ lid = a fitting lid | the close cover
 drawer = a shallow drawer | the narrow tray
 
 any
-opinion watch mixed 0 : A good count protects the wolf receiving a parcel as much as the wolf delivering one.
-opinion church for 1 : A chapel lets me keep silence without filing notice.
-opinion city for 1 : The city has rooms merely for preserving what the living might otherwise forget. That merits some care.
-opinion merchants mixed 0 : I'd read the delivery chit and look in the box before remarking on the price.
-opinion dole for 1 : A measure stamped and checked should be as reliable for a poor supper as for a rich one.
-opinion houses against 1 : One House name on a cupboard obscures a remarkable number of ordinary working paws.
+opinion @1 watch mixed 0 : A good count protects the wolf receiving a parcel as much as the wolf delivering one.
+opinion @1 church for 1 : A chapel lets me keep silence without filing notice.
+opinion @1 city for 1 : The city has rooms merely for preserving what the living might otherwise forget. That merits some care.
+opinion @1 merchants mixed 0 : I'd read the delivery chit and look in the box before remarking on the price.
+opinion @1 dole for 1 : A measure stamped and checked should be as reliable for a poor supper as for a rich one.
+opinion @1 houses against 1 : One House name on a cupboard obscures a remarkable number of ordinary working paws.
 
 grown
-line greet : Welcome. There's a clean spot for you here. | Hello. My count came to a convenient end.
-line greet [pair.band=strangers] : A first acquaintance. I'll remember the face. | I don't think I've entered your name in my memory yet.
-line greet [here.time=dawn] : Morning. Good light to pick out a grey mark. | The day's first page lies flat enough.
-line greet.return : I heard your greeting quite distinctly. | Yes, hello. I've put the tally aside.
-line greet.return [pair.band=friends|family] : You belong among the faces I recognise at a glance. | A good voice to hear over a morning's count.
-line greet.return [here.time=night] : Hello after hours. The dim light makes no difference to my ears. | I can take a late greeting without a lamp.
-line again.open : A second entry on the same page, as it were. | I'm glad you've come into view again.
-line hail [pair.band=friends] : Come see what a clean thumb brought to light. | Here, where I've laid out the pale pieces.
-line farewell : Leave with your account in order. | May you find each parcel where it belongs.
-line farewell.return : That closes the visit neatly. Goodbye. | I'll enter no further demands against your day.
-line react.news : State the part you'd trust to ink. | I can give the report a proper hearing.
-line react.news.new : There was a blank where that belonged. | New information from first mark to last.
-line react.news.known : That tallies with what I already had down. | Yes. I know the principal entries.
-line react.news.doubt : One of those details appears on neither side of the account. | I'd like an independent count of that story.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's more sorrow in that than a record can convey. | I'll set down the work and hear you properly.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A welcome addition to any day's reckoning. | There's a good return on an ordinary day.
-line ask.how : Has the day left your affairs in decent order? | How much of your list is still hanging about?
-line answer.how : Reasonably clear in the head. A little grey about the cuffs. | In order apart from the usual small discrepancies.
-line decline : I'd be affirming a matter beyond my personal knowledge. | I can't take responsibility for a figure I haven't checked.
-line accept_decline : That answer leaves my own position quite clear. | I shall mark it as declined and move on.
-line preclose : There are a few unchecked spaces waiting for me. | I'd prefer daylight to make out my last few marks.
-line accept_preclose : Very well. We'll keep this account to a reasonable length. | You can close your part here.
-line thank : You've cleared up a difference that mattered. Thank you. | I appreciate a return made in such good order.
-line deflect_thanks : It took one mark on a piece of ordinary wood. | A straightforward check serves both of us.
-line sympathise : I'll take over something small while you collect yourself. | No form of words can alter what you've had to bear.
-line reassure : An empty space tells us where to start looking. | We can check the sound parts before worrying about the rest.
-line ack : That corresponds with my observation. | Yes, both entries agree on that.
-line give.advice : Hold a pale surface beside a doubtful mark. | Count again from the other end if the figures differ.
-
+line @1 greet : Welcome. There's a clean spot for you here. | Hello. My count came to a convenient end.
+line @2 greet [pair.band=strangers] : A first acquaintance. I'll remember the face. | I don't think I've entered your name in my memory yet.
+line @3 greet [here.time=dawn] : Morning. Good light to pick out a grey mark. | The day's first page lies flat enough.
+line @1 greet.return : I heard your greeting quite distinctly. | Yes, hello. I've put the tally aside.
+line @2 greet.return [pair.band=friends|family] : You belong among the faces I recognise at a glance. | A good voice to hear over a morning's count.
+line @3 greet.return [here.time=night] : Hello after hours. The dim light makes no difference to my ears. | I can take a late greeting without a lamp.
+line @1 again.open : A second entry on the same page, as it were. | I'm glad you've come into view again.
+line @1 hail [pair.band=friends] : Come see what a clean thumb brought to light. | Here, where I've laid out the pale pieces.
+line @1 farewell : Leave with your account in order. | May you find each parcel where it belongs.
+line @1 farewell.return : That closes the visit neatly. Goodbye. | I'll enter no further demands against your day.
+line @1 react.news : State the part you'd trust to ink. | I can give the report a proper hearing.
+line @1 react.news.new : There was a blank where that belonged. | New information from first mark to last.
+line @1 react.news.known : That tallies with what I already had down. | Yes. I know the principal entries.
+line @1 react.news.doubt : One of those details appears on neither side of the account. | I'd like an independent count of that story.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's more sorrow in that than a record can convey. | I'll set down the work and hear you properly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : A welcome addition to any day's reckoning. | There's a good return on an ordinary day.
+line @1 ask.how : Has the day left your affairs in decent order? | How much of your list is still hanging about?
+line @1 answer.how : Reasonably clear in the head. A little grey about the cuffs. | In order apart from the usual small discrepancies.
+line @1 decline : I'd be affirming a matter beyond my personal knowledge. | I can't take responsibility for a figure I haven't checked.
+line @1 accept_decline : That answer leaves my own position quite clear. | I shall mark it as declined and move on.
+line @1 preclose : There are a few unchecked spaces waiting for me. | I'd prefer daylight to make out my last few marks.
+line @1 accept_preclose : Very well. We'll keep this account to a reasonable length. | You can close your part here.
+line @1 thank : You've cleared up a difference that mattered. Thank you. | I appreciate a return made in such good order.
+line @1 deflect_thanks : It took one mark on a piece of ordinary wood. | A straightforward check serves both of us.
+line @1 sympathise : I'll take over something small while you collect yourself. | No form of words can alter what you've had to bear.
+line @1 reassure : An empty space tells us where to start looking. | We can check the sound parts before worrying about the rest.
+line @1 ack : That corresponds with my observation. | Yes, both entries agree on that.
+line @1 give.advice : Hold a pale surface beside a doubtful mark. | Count again from the other end if the figures differ.
 scene pale_work
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail / react.self
@@ -183,8 +185,8 @@ scene chinook
 when topic=faith
 does tell.feeling / react.self / assess
 a : I like to give thanks without first attempting to calculate the return. | My best prayer probably comes while I've a blank piece of wood in reach.
-b : You write it down? | Does that mean no accounts in chapel?
-a : No. I let it remain blank. It's a useful interval in a working habit. | That's my intention when I go in. A list of obligations isn't always a prayer.
+b : Not even in your head? | Does that mean no accounts in chapel?
+a : Not even there. It's the one column I'm content to leave blank. | That's my intention when I go in. A list of obligations isn't always a prayer.
 
 scene whitegoods
 when topic=dreams
@@ -199,8 +201,6 @@ does tell.self / ask.detail / answer.detail
 a : Fog makes a clean pale tag hard to read against a pale wall. | On a misty day I hold #tag# over a dark cuff.
 b : You can see the notches better? | Isn't the cuff meant to be clean?
 a : Exactly. A dark edge makes the little cuts distinct. | I own dark cloth as well as grey dust. Fortunately they're easy to distinguish.
-
-grown
 
 story fivesix [topic=pastimes|memories]
   : I cut five tags and stacked them so neatly they looked like one solid block. Made a note of the total before going to supper.
@@ -244,14 +244,13 @@ does aside
 cooldown 8h
 say Grey transferred to the rag. The chip is sound. | That dark spot was only on the surface.
 
-dlg resident.hub : Your question has my attention. I've reached a place I can mark and return to.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your last visit is within easy reach of my memory.
-dlg resident.hub [here.time=night] : Figures can wait for daylight. A voice carries its own distinctions.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll listen. There's room between us for all the necessary facts.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. My concern is an accurate account of what goes out and comes back.
-dlg resident.job : An exact return, thoroughly checked, leaves me quite content with a day's work.
-dlg resident.bye : May the rest of your business prove easy to account for.
-
+dlg @1 resident.hub : Your question has my attention. I've reached a place I can mark and return to.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your last visit is within easy reach of my memory.
+dlg @3 resident.hub [here.time=night] : Figures can wait for daylight. A voice carries its own distinctions.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll listen. There's room between us for all the necessary facts.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. My concern is an accurate account of what goes out and comes back.
+dlg @2 resident.job : An exact return, thoroughly checked, leaves me quite content with a day's work.
+dlg @1 resident.bye : May the rest of your business prove easy to account for.
 graft resident.hub
 choice May I try that thumb test? -> palerub
 node palerub

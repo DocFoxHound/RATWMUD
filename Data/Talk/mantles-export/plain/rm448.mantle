@@ -1,9 +1,12 @@
+# rm448, the sparrow's road map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm448
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_frederick_ropeford
+written_by codex
 title the sparrow's road map
 fits stage=adult|old
 prefers honesty=guarded talk=chatty
@@ -17,6 +20,7 @@ topics animals +0.6 travel +0.5 pastimes +0.3 friends +0.2
 styles comfort=practical gossip=guarded refuse=plain tease=none
 marks oath saying
 persona #self.first# lays out tiny measured portions for sparrows and watches the road past the birds without explaining every reason for keeping watch.
+
 words
 oath! = Nip my map edge | Scatter my last grain
 saying! = Count wings and wait for boots | Leave the road in sight
@@ -33,35 +37,33 @@ waterprint = a widening ring | a ripple under the alder
 yardend = a gap by the post | a clear strip of ground
 
 grown
-
-opinion road mixed 1 : A road means different things to the boots travelling along it and the nose that's watching for their return.
-opinion strangers mixed 1 : A stranger gets directions far enough to be useful. Nobody needs the exact position of every household gate.
-opinion church for 1 : If there's one extra mouthful to share, a kindness done quietly suits me better than a fine pronouncement.
-opinion merchants mixed 1 : A seller of maps ought to know which crossing hasn't stood above water since the paper was made.
-opinion dole for 2 : A winter meal should be ready before empty stomachs have to give the street a convincing account of themselves.
-opinion city mixed 1 : I appreciate a busy place that can still leave a bit of ledge for a small brown bird.
-line greet : Pass the little scattered grains on the clear side and stand here.
-line greet [pair.band=strangers] : You're within speaking distance. That's as close as we need to get yet.
-line greet.return : I've an ear to spare from the wings and the road.
-line farewell : Find your return while there's still some light on the marks.
-line farewell.return : I'll keep your boots out of my count of missing things.
-line ask.how : You haven't been kept somewhere past the time you were expected?
-line answer.how : Well, provided every bird doesn't want feeding all in the same instant.
-line react.news : Which way did those particular words travel to reach you?
-line react.news.known : Seen the marks of that story once already.
-line react.news.new : A fresh set of tracks leading in from elsewhere.
-line react.news.doubt : I'd look for a second print before naming what passed.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd go out from the gate to meet somebody carrying that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let me know whether a meal or a watchful pair of eyes would help.
-line decline : My reasons for watching that stretch can stay inside my own coat.
-line thank : You came back with the news instead of leaving me to guess.
-line deflect_thanks : I could watch the road and still count sparrows.
-line accept_decline : I'll leave that question off my map.
-line reassure : Even that deserted bend may bring a traveller home.
-line sympathise : I'll stay a little farther down the road with you.
-line ack : I can follow those marks without much trouble.
-line preclose : I've some small winged claimants waiting on my attention.
-
+opinion @1 road mixed 1 : A road means different things to the boots travelling along it and the nose that's watching for their return.
+opinion @1 strangers mixed 1 : A stranger gets directions far enough to be useful. Nobody needs the exact position of every household gate.
+opinion @1 church for 1 : If there's one extra mouthful to share, a kindness done quietly suits me better than a fine pronouncement.
+opinion @1 merchants mixed 1 : A seller of maps ought to know which crossing hasn't stood above water since the paper was made.
+opinion @1 dole for 2 : A winter meal should be ready before empty stomachs have to give the street a convincing account of themselves.
+opinion @1 city mixed 1 : I appreciate a busy place that can still leave a bit of ledge for a small brown bird.
+line @1 greet : Pass the little scattered grains on the clear side and stand here.
+line @2 greet [pair.band=strangers] : You're within speaking distance. That's as close as we need to get yet.
+line @1 greet.return : I've an ear to spare from the wings and the road.
+line @1 farewell : Find your return while there's still some light on the marks.
+line @1 farewell.return : I'll keep your boots out of my count of missing things.
+line @1 ask.how : You haven't been kept somewhere past the time you were expected?
+line @1 answer.how : Well, provided every bird doesn't want feeding all in the same instant.
+line @1 react.news : Which way did those particular words travel to reach you?
+line @1 react.news.known : Seen the marks of that story once already.
+line @1 react.news.new : A fresh set of tracks leading in from elsewhere.
+line @1 react.news.doubt : I'd look for a second print before naming what passed.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd go out from the gate to meet somebody carrying that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let me know whether a meal or a watchful pair of eyes would help.
+line @1 decline : My reasons for watching that stretch can stay inside my own coat.
+line @1 thank : You came back with the news instead of leaving me to guess.
+line @1 deflect_thanks : I could watch the road and still count sparrows.
+line @1 accept_decline : I'll leave that question off my map.
+line @1 reassure : Even that deserted bend may bring a traveller home.
+line @1 sympathise : I'll stay a little farther down the road with you.
+line @1 ack : I can follow those marks without much trouble.
+line @1 preclose : I've some small winged claimants waiting on my attention.
 scene animals_1
 when topic=animals
 does tell.self / ask.detail / answer.detail
@@ -79,7 +81,7 @@ a : I'd trust the part visible under my feet. Any further confidence can stay fo
 scene work_1
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : My day's described as #self.trade_words#. I like a gate I can see well from either side.
+a : #self.trade_words.capitalize#, most days. I like a gate I can see well from either side.
 b : Does a clear view save you time? | Don't you trust a good latch?
 a : It saves another pair of feet from getting surprised halfway through. That's plenty to ask of a gate. | I trust a latch that I've actually closed. A view tells me what happened after my paw came off it.
 
@@ -229,13 +231,13 @@ when concept=bark
 does aside
 cooldown 8h
 say Look for the dull board before shifting weight. | A rag is cheaper than a turned ankle.
-dlg resident.hub : You can ask from here without cutting across the landing birds.
-dlg resident.job [self.trade_words] : Mine's the entry marked #self.trade_words#. A clear view through an opening matters more than some realise.
-dlg resident.news [world.news] : Here's the part that travelled here by road. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Roadside talk has #topic.subject# #topic.claim#. I wouldn't send a search party out on the word of a footprint.
-dlg resident.hub [pair.disposition=wary|hostile] : Put your question in front of me without the wrappings. I'll take my time with the answer.
-dlg resident.bye : Take the firm stretch past the birds and I'll look for you at the far bend.
 
+dlg @1 resident.hub : You can ask from here without cutting across the landing birds.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. That's my day. A clear view through an opening matters more than some realise.
+dlg @1 resident.news [world.news] : Here's the part that travelled here by road. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Roadside talk has #topic.subject# #topic.claim#. I wouldn't send a search party out on the word of a footprint.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : Put your question in front of me without the wrappings. I'll take my time with the answer.
+dlg @1 resident.bye : Take the firm stretch past the birds and I'll look for you at the far bend.
 graft resident.hub
 choice Why put the grain down in two places? -> sparrow_second
 node sparrow_second

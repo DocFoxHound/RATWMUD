@@ -1,9 +1,12 @@
+# rm378, the space beside the sum (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm378
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_petra_vance
+written_by codex
 title the space beside the sum
 fits stage=adult|old
 prefers piety=devout talk=quiet
@@ -34,45 +37,44 @@ dryline = the distant dry line | land pale beyond the water
 clearcup = a little cup of water | plain water
 
 any
-opinion church for 2 : Before the Bright One even the blank space can be read. I value that privacy.
-opinion houses for 1 : It is easier to plan over a long term where a House takes a long view of its word.
-opinion strangers against 1 : A first request need not be refused to be considered in silence.
-opinion dole mixed 0 : An open hand and a sound account can belong to the same wolf. I would consider each case on its merits.
-opinion road mixed 0 : I have seen a road cost more in delay than it ever cost in stone.
-opinion watch for 1 : The peace of an uneventful night is difficult to price and easy to lose.
-opinion city for 1 : A city offers a place for the solitary as well as the sociable. I am grateful for both provisions.
+opinion @1 church for 2 : Before the Bright One even the blank space can be read. I value that privacy.
+opinion @1 houses for 1 : It is easier to plan over a long term where a House takes a long view of its word.
+opinion @1 strangers against 1 : A first request need not be refused to be considered in silence.
+opinion @1 dole mixed 0 : An open hand and a sound account can belong to the same wolf. I would consider each case on its merits.
+opinion @1 road mixed 0 : I have seen a road cost more in delay than it ever cost in stone.
+opinion @1 watch for 1 : The peace of an uneventful night is difficult to price and easy to lose.
+opinion @1 city for 1 : A city offers a place for the solitary as well as the sociable. I am grateful for both provisions.
 
 grown
-line greet : We may speak here. I have a little room.
-line greet [pair.band=strangers] : I will hear your reason for coming.
-line greet [here.time=dawn] : Early light makes a clean beginning possible.
-line greet [here.time=dusk|night] : The light remaining is quite sufficient for a word.
-line greet.return : I heard and acknowledge your welcome.
-line greet.return [pair.band=friends|family] : Your voice may dispense with formalities.
-line greet.return [self.working=yes] : I can keep your question beside my work a moment.
-line greet.return [here.time=dusk|night] : Quiet suits an evening introduction.
-line kin.open [pair.kin!=no] : A family call has its own place in the day.
-line again.open : I have kept a little space since our last meeting.
-line hail [pair.band=friends] : Across here, if you are free for a quiet word.
-line farewell : I trust you will reach home comfortably.
-line farewell.return : And may the street allow you an easy passage.
-line react.news : You may put the facts in your own order.
-line react.news.new : I have only just received notice of that.
-line react.news.known : The matter has already occupied my thoughts.
-line react.news.doubt : That would require a more exact account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will remember that loss quietly before the Bright One.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives me something generous to remember in prayer.
-line ask.how : Has the day made a reasonable demand on you?
-line answer.how : I have managed to preserve an hour of my own.
-line thank : A kindness for which you have my private thanks.
-line deflect_thanks : There was time in reserve for a small service.
-line sympathise : I can remain beside you with my questions folded away.
-line reassure : It may be left unanswered until you feel steady.
-line decline : I have reserved those particular hours to fulfil another obligation.
-line accept_decline : I accept your preference. The reason belongs to you.
-line preclose : I should like the remainder of this hour to myself.
-line accept_preclose : Then let us preserve a little leisure on either side.
-
+line @1 greet : We may speak here. I have a little room.
+line @2 greet [pair.band=strangers] : I will hear your reason for coming.
+line @3 greet [here.time=dawn] : Early light makes a clean beginning possible.
+line @4 greet [here.time=dusk|night] : The light remaining is quite sufficient for a word.
+line @1 greet.return : I heard and acknowledge your welcome.
+line @2 greet.return [pair.band=friends|family] : Your voice may dispense with formalities.
+line @3 greet.return [self.working=yes] : I can keep your question beside my work a moment.
+line @4 greet.return [here.time=dusk|night] : Quiet suits an evening introduction.
+line @1 kin.open [pair.kin!=no] : A family call has its own place in the day.
+line @1 again.open : I have kept a little space since our last meeting.
+line @1 hail [pair.band=friends] : Across here, if you are free for a quiet word.
+line @1 farewell : I trust you will reach home comfortably.
+line @1 farewell.return : And may the street allow you an easy passage.
+line @1 react.news : You may put the facts in your own order.
+line @1 react.news.new : I have only just received notice of that.
+line @1 react.news.known : The matter has already occupied my thoughts.
+line @1 react.news.doubt : That would require a more exact account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will remember that loss quietly before the Bright One.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives me something generous to remember in prayer.
+line @1 ask.how : Has the day made a reasonable demand on you?
+line @1 answer.how : I have managed to preserve an hour of my own.
+line @1 thank : A kindness for which you have my private thanks.
+line @1 deflect_thanks : There was time in reserve for a small service.
+line @1 sympathise : I can remain beside you with my questions folded away.
+line @1 reassure : It may be left unanswered until you feel steady.
+line @1 decline : I have reserved those particular hours to fulfil another obligation.
+line @1 accept_decline : I accept your preference. The reason belongs to you.
+line @1 preclose : I should like the remainder of this hour to myself.
+line @1 accept_preclose : Then let us preserve a little leisure on either side.
 scene reserve_square
 when topic=smalltalk|work
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Time for the sheet that covers today's business.
 
-dlg resident.hub : The business which brought you here has my attention.
-dlg resident.hub [topic.meeting=known] : #topic.player#. I recall the voice without consulting a note.
-dlg resident.hub [here.time=night] : At this hour I prefer to attend to one voice at a time.
-dlg resident.hub [pair.disposition=hostile|wary] : I should be obliged if you would speak from the farther side.
-dlg resident.job [self.working=yes self.job=none] : My present work concerns #self.trade_words#. I keep particular accounts private.
-dlg resident.job : I prefer my work to permit some attention to my other obligations.
-dlg resident.news [world.news] : The report is attributed to #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : No entry in my possession gives me leave to distribute a private name.
-dlg resident.bye : May you have sufficient light for the return.
-
+dlg @1 resident.hub : The business which brought you here has my attention.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I recall the voice without consulting a note.
+dlg @3 resident.hub [here.time=night] : At this hour I prefer to attend to one voice at a time.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I should be obliged if you would speak from the farther side.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#, at present. I keep particular accounts private.
+dlg @2 resident.job : I prefer my work to permit some attention to my other obligations.
+dlg @1 resident.news [world.news] : The report is attributed to #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : No entry in my possession gives me leave to distribute a private name.
+dlg @1 resident.bye : May you have sufficient light for the return.
 graft resident.hub
 choice What might go in that blank square? -> private_square
 node private_square

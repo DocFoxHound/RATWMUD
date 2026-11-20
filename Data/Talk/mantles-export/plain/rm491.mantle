@@ -1,14 +1,17 @@
+# rm491, the hillside decanter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm491
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_corwin_fell_
+written_by codex
 title the hillside decanter
 fits stage=adult|old
 prefers job=merchant
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk draws_the_hills_in_spilled_wine_then_offers_the_whole_table_a_glass
+quirk draws_hills_in_spilled_wine_then_pours_for_the_table
 likes warm_bread digging quiet_chapel autumn_wind
 dislikes flies crowds
 fears a_district_surrendered_by_a_timid_voice
@@ -41,48 +44,47 @@ cloth = a white serving cloth | a folded napkin
 fly = a winged trespasser | a tiny black speck
 
 any
-opinion houses for 3 : A well-kept house can husband a slope more generously than a dozen impressively titled committees.
-opinion city for 2 : Ridgemere deserves an abundance proportionate to its imposing appetite. I intend to speak up for abundance.
-opinion merchants for 1 : A reputable seller can describe both the contents and their point of origin without lowering the voice.
-opinion dole for 2 : A cellar full of good things sits ill beneath a house with hungry callers at the door.
-opinion road for 1 : A passable road from a hill to a cellar preserves a remarkable quantity of flavour.
-opinion festivals for 2 : I admire a festival that lets a proposal reach the whole table over a shared glass.
-opinion church for 1 : Some projects seem considerably smaller once one has sat in the quiet long enough to hear oneself think.
-opinion strangers for 1 : Leave an empty glass beside a stranger and an interesting opinion may come round the table.
-opinion times against 1 [world.times=lean|hard] : A thin year deserves an honest measure. One should not respond to a thin crop by thinning the hospitality as well.
+opinion @1 houses for 3 : A well-kept house can husband a slope more generously than a dozen impressively titled committees.
+opinion @1 city for 2 : Ridgemere deserves an abundance proportionate to its imposing appetite. I intend to speak up for abundance.
+opinion @1 merchants for 1 : A reputable seller can describe both the contents and their point of origin without lowering the voice.
+opinion @1 dole for 2 : A cellar full of good things sits ill beneath a house with hungry callers at the door.
+opinion @1 road for 1 : A passable road from a hill to a cellar preserves a remarkable quantity of flavour.
+opinion @1 festivals for 2 : I admire a festival that lets a proposal reach the whole table over a shared glass.
+opinion @1 church for 1 : Some projects seem considerably smaller once one has sat in the quiet long enough to hear oneself think.
+opinion @1 strangers for 1 : Leave an empty glass beside a stranger and an interesting opinion may come round the table.
+opinion @1 times against 1 [world.times=lean|hard] : A thin year deserves an honest measure. One should not respond to a thin crop by thinning the hospitality as well.
 
 grown
-line greet : The larger side of the table is at your disposal. | Welcome under a hospitable bit of roof.
-line greet.return : Your greeting comes back in a generous measure.
-line again.open : The conversation has scarcely had time to breathe since your last appearance.
-line farewell : A fine stretch of open hillside to your onward view. | May your host unstop the welcome in good time.
-line farewell.return : And fruitful ground beneath your own steps.
-line react.news : Let me hear the news before it acquires a house label. | I should like the whole account properly poured.
-line react.news.new : A completely fresh account for my table.
-line react.news.known : I have sampled the earlier version.
-line react.news.doubt : That proposal has been served before its flavour settled.
-line react.news.sorrow [topic.kind=death|loss|assault] : A grievous account deserves privacy and substantial attendance.
-line react.news.glad [topic.kind=birth|marriage|work] : Splendid news deserves ample space round the table.
-line ask.how : Did the day provide a generous allowance for your own affairs?
-line answer.how : Steady enough to state a considered opinion rather loudly.
-line sympathise : Take the comfortable seat. No word of justification is required.
-line reassure : Even contentious ground may be approached along a gentler slope.
-line refuse : My next hour is rather specifically pledged to another undertaking.
-line accept_decline : A courteous refusal leaves the glass and the company quite sound.
-line preclose : My presence is required for the less conversational part of my responsibilities.
-line accept_preclose : Take an easy leave while the road is well lit.
-line ack : I believe I've grasped the full measure of your account.
-line greet [pair.band=strangers] : A place for a visitor who hasn't heard my proposition yet.
-line greet [here.time=dawn] : The first good light is fit to receive company.
-line greet [here.time=night] : Excellent company can improve a late inspection considerably.
-line greet.return [pair.band=friends] : A familiar voice is entitled to the generous end of my attention.
-line hail [pair.band=friends] : Come over to my view of the table!
-line answer.how.busy [self.working=yes] : Several things require attention at once, most of them quite capable of waiting politely.
-line thank : That has done my undertaking a considerable service.
-line deflect_thanks : A generous gesture oughtn't detain the recipient through a ceremony about it.
-line give.advice : Draw the boundary boldly enough that a second opinion can point at it.
-line ask.how [pair.band=friends] : Has the world given your own projects a tolerably sound hearing?
-
+line @1 greet : The larger side of the table is at your disposal. | Welcome under a hospitable bit of roof.
+line @1 greet.return : Your greeting comes back in a generous measure.
+line @1 again.open : The conversation has scarcely had time to breathe since your last appearance.
+line @1 farewell : A fine stretch of open hillside to your onward view. | May your host unstop the welcome in good time.
+line @1 farewell.return : And fruitful ground beneath your own steps.
+line @1 react.news : Let me hear the news before it acquires a house label. | I should like the whole account properly poured.
+line @1 react.news.new : A completely fresh account for my table.
+line @1 react.news.known : I have sampled the earlier version.
+line @1 react.news.doubt : That proposal has been served before its flavour settled.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A grievous account deserves privacy and substantial attendance.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Splendid news deserves ample space round the table.
+line @1 ask.how : Did the day provide a generous allowance for your own affairs?
+line @1 answer.how : Steady enough to state a considered opinion rather loudly.
+line @1 sympathise : Take the comfortable seat. No word of justification is required.
+line @1 reassure : Even contentious ground may be approached along a gentler slope.
+line @1 refuse : My next hour is rather specifically pledged to another undertaking.
+line @1 accept_decline : A courteous refusal leaves the glass and the company quite sound.
+line @1 preclose : My presence is required for the less conversational part of my responsibilities.
+line @1 accept_preclose : Take an easy leave while the road is well lit.
+line @1 ack : I believe I've grasped the full measure of your account.
+line @2 greet [pair.band=strangers] : A place for a visitor who hasn't heard my proposition yet.
+line @3 greet [here.time=dawn] : The first good light is fit to receive company.
+line @4 greet [here.time=night] : Excellent company can improve a late inspection considerably.
+line @2 greet.return [pair.band=friends] : A familiar voice is entitled to the generous end of my attention.
+line @1 hail [pair.band=friends] : Come over to my view of the table!
+line @1 answer.how.busy [self.working=yes] : Several things require attention at once, most of them quite capable of waiting politely.
+line @1 thank : That has done my undertaking a considerable service.
+line @1 deflect_thanks : A generous gesture oughtn't detain the recipient through a ceremony about it.
+line @1 give.advice : Draw the boundary boldly enough that a second opinion can point at it.
+line @2 ask.how [pair.band=friends] : Has the world given your own projects a tolerably sound hearing?
 scene exchange1
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
@@ -358,22 +360,22 @@ when concept=bark self.likes=warm_bread
 does aside
 cooldown 8h
 say A loaf with room for a generous slice. | Let the bread have the warm corner nearest my elbow.
-dlg resident.hub : I can furnish a seat, an opinion and an admirable view of a rather promising hill.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your proposals always reach the proper table corner.
-dlg resident.hub [here.time=night] : The evening might accommodate one last civil account before the bottles go away.
-dlg resident.hub [pair.disposition=wary|hostile] : You needn't endorse my geography to receive an adequate hearing.
-dlg resident.job [self.job=merchant] : I supervise the cellar and keep its produce in presentable condition. A fair description is part of the service.
-dlg resident.job : I am responsible for ensuring that what is promised can be brought to the table.
-dlg resident.news [world.news] : The account offered to the household is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The words served up were #topic.subject# #topic.claim#. I have yet to inspect the account.
-dlg resident.bye : May your table prove warm and a host who has considered the bill.
-dlg resident.hub [topic.meeting=returning] : A pleasure to entertain an acquaintance after sufficient time for the cellar to have changed.
-dlg resident.hub [pair.band=friends] : An agreeable face deserves an unhurried measure of conversation.
-dlg resident.business [business=thriving] : The racks give up a cask almost as soon as I have introduced its merits.
-dlg resident.business [business=steady] : The cellar turns over at a sensible rate and the measures can be kept generous.
-dlg resident.business [business=failing] : Too many fine labels have time to admire one another on the rack.
-dlg resident.hub [here.time=dawn] : The first audience of the morning may choose a seat while I arrange the map.
 
+dlg @1 resident.hub : I can furnish a seat, an opinion and an admirable view of a rather promising hill.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your proposals always reach the proper table corner.
+dlg @3 resident.hub [here.time=night] : The evening might accommodate one last civil account before the bottles go away.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You needn't endorse my geography to receive an adequate hearing.
+dlg @1 resident.job [self.job=merchant] : I supervise the cellar and keep its produce in presentable condition. A fair description is part of the service.
+dlg @2 resident.job : I am responsible for ensuring that what is promised can be brought to the table.
+dlg @1 resident.news [world.news] : The account offered to the household is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The words served up were #topic.subject# #topic.claim#. I have yet to inspect the account.
+dlg @1 resident.bye : May your table prove warm and a host who has considered the bill.
+dlg @5 resident.hub [topic.meeting=returning] : A pleasure to entertain an acquaintance after sufficient time for the cellar to have changed.
+dlg @6 resident.hub [pair.band=friends] : An agreeable face deserves an unhurried measure of conversation.
+dlg @1 resident.business [business=thriving] : The racks give up a cask almost as soon as I have introduced its merits.
+dlg @2 resident.business [business=steady] : The cellar turns over at a sensible rate and the measures can be kept generous.
+dlg @3 resident.business [business=failing] : Too many fine labels have time to admire one another on the rack.
+dlg @7 resident.hub [here.time=dawn] : The first audience of the morning may choose a seat while I arrange the map.
 graft resident.hub
 choice Is that wine ring meant to be a map? -> hill_ring
 node hill_ring

@@ -1,9 +1,12 @@
+# rm528, the gatekeeper's coal map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm528
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_ivo_dripford
+written_by codex
 title the gatekeeper's coal map
 fits stage=adult|old
 prefers job=guard
@@ -38,47 +41,46 @@ home = my quiet room | a corner facing the rise
 thanks = a kindly service | a real courtesy
 
 any
-opinion road for 2 : A road is a welcome written large enough for tired feet to read.
-opinion church for 2 : At prayer I can ask for mercy without explaining somebody else's business.
-opinion watch for 2 : A good watch keeps the arch open to an honest question, even an awkward one.
-opinion strangers for 1 : An unfamiliar accent may carry an exceedingly precise direction.
-opinion drink mixed 1 : If the glass interferes with remembering a turn, I would leave it on the board.
-opinion dole for 1 : A meal offered without an account of the giver tastes much the same and keeps more dignity.
-opinion city for 1 : I admire a place whose gate can be found again by tracing one bright line of stone.
-opinion houses mixed 1 : A House seal entitles a letter to its destination. It does not entitle a stranger to its contents.
+opinion @1 road for 2 : A road is a welcome written large enough for tired feet to read.
+opinion @1 church for 2 : At prayer I can ask for mercy without explaining somebody else's business.
+opinion @1 watch for 2 : A good watch keeps the arch open to an honest question, even an awkward one.
+opinion @1 strangers for 1 : An unfamiliar accent may carry an exceedingly precise direction.
+opinion @1 drink mixed 1 : If the glass interferes with remembering a turn, I would leave it on the board.
+opinion @1 dole for 1 : A meal offered without an account of the giver tastes much the same and keeps more dignity.
+opinion @1 city for 1 : I admire a place whose gate can be found again by tracing one bright line of stone.
+opinion @1 houses mixed 1 : A House seal entitles a letter to its destination. It does not entitle a stranger to its contents.
 
 grown
-line greet : A clear entrance and a welcome to you. | Stand here under the friendly face of the arch.
-line greet.return : A good welcome carries both ways.
-line again.open : The charcoal hasn't rubbed from our last crossing.
-line farewell : May the road meet you with its easy face.
-line farewell.return : Your good wishes have found a warm pocket.
-line react.news : Let the account through at an ordinary pace.
-line react.news.new : My mental map acquires a fresh mark.
-line react.news.known : I recognise the turn that story takes.
-line react.news.doubt : I would want a second bearing before drawing that firmly.
-line react.news.sorrow [topic.kind=death|loss|assault] : I wish grief an easier passage than it usually finds.
-line react.news.glad [topic.kind=birth|marriage|work] : That's news fit for a generous patch of daylight.
-line ask.how : Has your journey allowed you much comfort?
-line answer.how : My pockets are heavy and my spirits fortunately light.
-line sympathise : Come out of the throughway with that sorrow.
-line reassure : There is time to retrace one mistaken step.
-line refuse : I must hold to an earlier undertaking.
-line accept_decline : Your refusal reaches me in good order.
-line preclose : I ought now to recover the rest of my round.
-line accept_preclose : Go while the light is still kind to tired eyes.
-line ack : Yes, I have your bearing.
-line greet [here.time=dawn] : A new day and an excellent patch of pale stone.
-line greet [here.time=night] : Welcome within the lantern's little circle.
-line greet [pair.band=strangers] : There is ample standing room by my elbow.
-line hail [pair.band=friends] : Here, just beyond the black thumbprint!
-line greet.return [pair.band=friends] : Your greeting improves my view considerably.
-line answer.how.busy [self.working=yes] : Occupied, though a civil word requires very little paving.
-line thank : A generous deed deserves more than a passing nod.
-line deflect_thanks : I had the charcoal about me already.
-line give.advice : Learn the turn as it looks on the way home.
-line ask.how [pair.band=friends] : How have your feet and your fortunes agreed today?
-
+line @1 greet : A clear entrance and a welcome to you. | Stand here under the friendly face of the arch.
+line @1 greet.return : A good welcome carries both ways.
+line @1 again.open : The charcoal hasn't rubbed from our last crossing.
+line @1 farewell : May the road meet you with its easy face.
+line @1 farewell.return : Your good wishes have found a warm pocket.
+line @1 react.news : Let the account through at an ordinary pace.
+line @1 react.news.new : My mental map acquires a fresh mark.
+line @1 react.news.known : I recognise the turn that story takes.
+line @1 react.news.doubt : I would want a second bearing before drawing that firmly.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I wish grief an easier passage than it usually finds.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's news fit for a generous patch of daylight.
+line @1 ask.how : Has your journey allowed you much comfort?
+line @1 answer.how : My pockets are heavy and my spirits fortunately light.
+line @1 sympathise : Come out of the throughway with that sorrow.
+line @1 reassure : There is time to retrace one mistaken step.
+line @1 refuse : I must hold to an earlier undertaking.
+line @1 accept_decline : Your refusal reaches me in good order.
+line @1 preclose : I ought now to recover the rest of my round.
+line @1 accept_preclose : Go while the light is still kind to tired eyes.
+line @1 ack : Yes, I have your bearing.
+line @2 greet [here.time=dawn] : A new day and an excellent patch of pale stone.
+line @3 greet [here.time=night] : Welcome within the lantern's little circle.
+line @4 greet [pair.band=strangers] : There is ample standing room by my elbow.
+line @1 hail [pair.band=friends] : Here, just beyond the black thumbprint!
+line @2 greet.return [pair.band=friends] : Your greeting improves my view considerably.
+line @1 answer.how.busy [self.working=yes] : Occupied, though a civil word requires very little paving.
+line @1 thank : A generous deed deserves more than a passing nod.
+line @1 deflect_thanks : I had the charcoal about me already.
+line @1 give.advice : Learn the turn as it looks on the way home.
+line @2 ask.how [pair.band=friends] : How have your feet and your fortunes agreed today?
 scene exchange1
 when topic=work self.job=guard
 does tell.self / ask.detail / answer.detail
@@ -159,7 +161,7 @@ a : The part belonging to me is simply that I stopped. | Quite. I know which poc
 scene exchange12
 when topic=work self.job=guard self.workplace
 does tell.self / ask.detail / answer.detail
-a : At #self.workplace# I keep directions short enough for cold ears. | My post has two views worth attention.
+a : At my post I keep directions short enough for cold ears. | My post has two views worth attention.
 b : How short? | Inside and outside?
 a : One turn, one landmark, then the next crossing. | And a duty to be courteous facing either.
 
@@ -340,23 +342,23 @@ when concept=bark here.weather=clear
 does aside
 cooldown 8h
 say Fine weather for reading the hills. | A clean line from gate to sky.
-dlg resident.hub : I have time to hear what brought you as far as my shoulder.
-dlg resident.hub [topic.meeting=known] : #topic.player#, welcome back within charcoal range.
-dlg resident.hub [here.time=night] : A late question may stand under my lantern.
-dlg resident.hub [pair.disposition=wary|hostile] : Give me a plain enquiry and expect a plain hearing.
-dlg resident.job [self.job=guard self.workplace] : I stand watch at #self.workplace#. Directions are among the more pleasant demands of the post.
-dlg resident.job : I like work that helps a tired traveller find a destination.
-dlg resident.news [world.news] : The latest account to reach my ear is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The claim which passed this way was #topic.subject# #topic.claim#. I have only its direction of travel.
-dlg resident.bye : May you recognise your turning while the daylight holds.
-dlg watch.hub [here.wanted=yes] : Your entry in the Watch register carries a fine of #here.fine# pennies. We can look into it here.
-dlg watch.hub [here.wanted=no on_watch=yes] : I'm keeping watch. Let me know the business you came about.
-dlg watch.hub [here.wanted=no on_watch=no] : I'm between watches. I can still point you in a sensible direction.
-dlg watch.crime [here.witnessed=0] : Describe your own observations, beginning with whatever caught your eye first.
-dlg watch.fine [here.wanted=yes] : The sum entered opposite your name is #here.fine# pennies.
-dlg watch.fine [here.wanted=no] : Your name carries no fine in the present account.
-dlg watch.bye : A peaceful crossing to you from here.
 
+dlg @1 resident.hub : I have time to hear what brought you as far as my shoulder.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, welcome back within charcoal range.
+dlg @3 resident.hub [here.time=night] : A late question may stand under my lantern.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Give me a plain enquiry and expect a plain hearing.
+dlg @1 resident.job [self.job=guard self.workplace] : I stand my watch where the carts come through. Directions are among the more pleasant demands of the post.
+dlg @2 resident.job : I like work that helps a tired traveller find a destination.
+dlg @1 resident.news [world.news] : The latest account to reach my ear is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim which passed this way was #topic.subject# #topic.claim#. I have only its direction of travel.
+dlg @1 resident.bye : May you recognise your turning while the daylight holds.
+dlg @1 watch.hub [here.wanted=yes] : Your entry in the Watch register carries a fine of #here.fine# pennies. We can look into it here.
+dlg @2 watch.hub [here.wanted=no on_watch=yes] : I'm keeping watch. Let me know the business you came about.
+dlg @3 watch.hub [here.wanted=no on_watch=no] : I'm between watches. I can still point you in a sensible direction.
+dlg @1 watch.crime [here.witnessed=0] : Describe your own observations, beginning with whatever caught your eye first.
+dlg @1 watch.fine [here.wanted=yes] : The sum entered opposite your name is #here.fine# pennies.
+dlg @2 watch.fine [here.wanted=no] : Your name carries no fine in the present account.
+dlg @1 watch.bye : A peaceful crossing to you from here.
 graft resident.hub
 choice May I see how you draw a turning? -> charcoal_bearing
 node charcoal_bearing

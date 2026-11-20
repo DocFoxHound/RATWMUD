@@ -1,9 +1,12 @@
+# rm461, the latch with the cough (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm461
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_una_rustridge
+written_by codex
 title the latch with the cough
 fits stage=adult|old
 prefers job=merchant
@@ -35,41 +38,40 @@ gull = a loud grey gull | a hungry white bird
 hip = a sideways hip turn | my short wrestling turn
 
 any
-opinion houses against 2 : Fine timber for a grand door. What I'd like to know is whether it opens to the wolves who carried the boards there.
-opinion merchants against 2 : A warm bread smell comes out free. I've been obliged to make do with the smell on more than one afternoon.
-opinion dole for 2 : Soup got past my throat when a dry crust wouldn't, one lean week. I'll give the ladle that much credit.
-opinion times against 2 : There's a little less coming in through my own door each week. The draught's as generous as ever.
-opinion festivals against 1 : The bells please me. I appreciate all the qualities of the crowd from a considerable distance.
+opinion @1 houses against 2 : Fine timber for a grand door. What I'd like to know is whether it opens to the wolves who carried the boards there.
+opinion @1 merchants against 2 : A warm bread smell comes out free. I've been obliged to make do with the smell on more than one afternoon.
+opinion @1 dole for 2 : Soup got past my throat when a dry crust wouldn't, one lean week. I'll give the ladle that much credit.
+opinion @1 times against 2 : There's a little less coming in through my own door each week. The draught's as generous as ever.
+opinion @1 festivals against 1 : The bells please me. I appreciate all the qualities of the crowd from a considerable distance.
 
 grown
-line greet [pair.band=strangers] : Come inside the swing. Welcome. | There's room near the quiet hinge.
-line greet [self.working=yes] : One ear free at the door. | I can hear before the latch goes down.
-line greet [here.time=dawn] : No other sound this early but the click. | Morning. The door's in a decent temper.
-line greet [here.time=dusk|night] : Evening brings a slower foot over the sill. | Late light fits under the door.
-line kin.open [pair.kin!=no] : Kin can stand beside my own latch hand. | A familiar sound against the wood.
-line again.open : Back before the hinge has cooled. | There's our second little rattle.
-line greet.return : Heard you. No knock needed. | Yes. I can look up now.
-line greet.return [pair.band=friends|family] : I'd pick your step out under a heavy door. | That sound's welcome on my sill.
-line greet.return [self.working=yes] : Speak while I keep the door from swinging. | I've got the weight of it. Go ahead.
-line greet.return [here.time=dusk|night] : Evening. I can see a little by the crack. | The quiet hinge leaves room for a greeting.
-line farewell : Take the gap before the wind claims it. | May your own latch lift easily.
-line farewell.return : I'll put the hook back after you. | Keep your tail clear of the moving bit.
-line farewell.return [here.time=night] : A quiet hinge at the dark end of the street. | Good footing under the last sill.
-line react.news : Which part came clearly through the door? | Speak above the little rattle.
-line react.news.new : That's a different knock altogether. | News from a hinge I haven't heard.
-line react.news.known : Already lifted the latch on that bit. | I know which way that story opens.
-line react.news.doubt : There may be loose iron in that account somewhere. | I'd listen once more without a door rattling in between.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit on the warm side with me. | Poor news. I'll keep the draught away.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news comes in almost silently. | A pleasant caller, that account.
-line ask.how : How has the draught been treating you? | Anything caught in the hinge of your day?
-line answer.how : A quieter throat than my latch would suggest. | Doing tolerably well at keeping the door steady.
-line decline : I'd sooner keep my place out of the draught. | I need a little rest in easier air today.
-line accept_decline : Clear enough. I can let that close. | The hook need never come loose.
-line thank : You've saved me a hard push. | I'll remember the paw on the door.
-line sympathise : Take my sheltered angle and your time. | I'll hold the awkward part still.
-line reassure : A door can wait till your breathing comes easy. | Most rattles settle if you keep your paw steady.
-line preclose : My latch wants another look before long. | I should move back to the opening now.
-
+line @1 greet [pair.band=strangers] : Come inside the swing. Welcome. | There's room near the quiet hinge.
+line @2 greet [self.working=yes] : One ear free at the door. | I can hear before the latch goes down.
+line @3 greet [here.time=dawn] : No other sound this early but the click. | Morning. The door's in a decent temper.
+line @4 greet [here.time=dusk|night] : Evening brings a slower foot over the sill. | Late light fits under the door.
+line @1 kin.open [pair.kin!=no] : Kin can stand beside my own latch hand. | A familiar sound against the wood.
+line @1 again.open : Back before the hinge has cooled. | There's our second little rattle.
+line @1 greet.return : Heard you. No knock needed. | Yes. I can look up now.
+line @2 greet.return [pair.band=friends|family] : I'd pick your step out under a heavy door. | That sound's welcome on my sill.
+line @3 greet.return [self.working=yes] : Speak while I keep the door from swinging. | I've got the weight of it. Go ahead.
+line @4 greet.return [here.time=dusk|night] : Evening. I can see a little by the crack. | The quiet hinge leaves room for a greeting.
+line @1 farewell : Take the gap before the wind claims it. | May your own latch lift easily.
+line @1 farewell.return : I'll put the hook back after you. | Keep your tail clear of the moving bit.
+line @2 farewell.return [here.time=night] : A quiet hinge at the dark end of the street. | Good footing under the last sill.
+line @1 react.news : Which part came clearly through the door? | Speak above the little rattle.
+line @1 react.news.new : That's a different knock altogether. | News from a hinge I haven't heard.
+line @1 react.news.known : Already lifted the latch on that bit. | I know which way that story opens.
+line @1 react.news.doubt : There may be loose iron in that account somewhere. | I'd listen once more without a door rattling in between.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit on the warm side with me. | Poor news. I'll keep the draught away.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news comes in almost silently. | A pleasant caller, that account.
+line @1 ask.how : How has the draught been treating you? | Anything caught in the hinge of your day?
+line @1 answer.how : A quieter throat than my latch would suggest. | Doing tolerably well at keeping the door steady.
+line @1 decline : I'd sooner keep my place out of the draught. | I need a little rest in easier air today.
+line @1 accept_decline : Clear enough. I can let that close. | The hook need never come loose.
+line @1 thank : You've saved me a hard push. | I'll remember the paw on the door.
+line @1 sympathise : Take my sheltered angle and your time. | I'll hold the awkward part still.
+line @1 reassure : A door can wait till your breathing comes easy. | Most rattles settle if you keep your paw steady.
+line @1 preclose : My latch wants another look before long. | I should move back to the opening now.
 scene cough
 when topic=health
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Wide stance for a long bit of wind. | That draught's a lively little wrestler.
 
-dlg resident.hub : Stand beyond the latch's turning circle. It's simpler to conduct a conversation when the door hasn't taken hold of your coat.
-dlg resident.job [self.job=merchant self.trade_words] : #self.trade_words.capitalize#. I keep people and parcels on speaking terms with the hinge.
-dlg resident.news [world.news] : This bit came in with a very clear knock. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, the latch hasn't lost the sound of you.
-dlg resident.bye : Leave the heavy part of the door to me.
-
+dlg @1 resident.hub : Stand beyond the latch's turning circle. It's simpler to conduct a conversation when the door hasn't taken hold of your coat.
+dlg @1 resident.job [self.job=merchant self.trade_words] : #self.trade_words.capitalize#. I keep people and parcels on speaking terms with the hinge.
+dlg @1 resident.news [world.news] : This bit came in with a very clear knock. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the latch hasn't lost the sound of you.
+dlg @1 resident.bye : Leave the heavy part of the door to me.
 graft resident.hub
 choice Which noise is the door and which one is you? -> latch_noise
 node latch_noise

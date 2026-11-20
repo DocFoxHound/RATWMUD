@@ -1,9 +1,12 @@
+# rm399, the threshold fold (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm399
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_frederick_pitchcot
+written_by codex
 title the threshold fold
 fits stage=adult|old
 prefers job=merchant
@@ -68,7 +71,6 @@ line @22 deflect_thanks : I believed in getting the right visitor to the right d
 line @23 preclose : I must fold up some of my loose geography. | Another turning of the day wants minding.
 line @24 accept_preclose : Go before I can recommend a longer road. | Quite so. Follow the part that runs toward home.
 line @25 farewell [here.time=night] : Keep the good lamp on the near side of your hat. | A friendly latch waiting beyond these dark turnings.
-
 scene doorfold
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
@@ -114,7 +116,7 @@ a : Then a single bright tap will serve for three polite ones, provided it prece
 scene working
 when topic=work self.job=merchant self.working=yes self.trade_words
 does tell.self / ask.detail / answer.detail
-a : #self.trade_words#. A wolf on a threshold can tell a new errand by which paw first comes forward. | #self.trade_words#. I put #chalk# beside a catch that wants a little work.
+a : #self.trade_words.capitalize#. A wolf on a threshold can tell a new errand by which paw first comes forward. | #self.trade_words.capitalize#. I put #chalk# beside a catch that wants a little work.
 b : What's the first sign you look for?
 a : One hand kept under a parcel. I open wide enough to spare the corner, after a civil word. | A caller tugs twice at the same place. Little chalk tells me to look there when the crowd clears.
 
@@ -174,31 +176,6 @@ a : A new visitor may have toured six entrances before finding the right one in 
 b : Suppose the first impression's a little mixed?
 a : That's usual. Put it into a map and you can at least distinguish where the trouble began. | A mixed impression tells me which corner of the map has been folded too many times.
 
-old
-
-scene oldshoe
-when topic=travel self.age>=55
-does tell.self / ask.detail / answer.detail
-a : My longest map has outlived several pairs of boots. | At my age the whole trip must be worth the aftercare of two rather opinionated knees.
-b : Which road still deserves its place?
-a : The one with sun on the outward side and a seat on the long return. | A road with old friends at the end. My knees tend to be better tempered once they've sat there.
-
-scene oldwatch
-when topic=family self.age>=55 self.parent=yes
-does tell.self / react.self / assess
-a : A parent with some years of practice knows a door is no good if nobody's free to come through it. | I have a doorway in my head for every age my child has been.
-b : Which one do you leave open longest?
-a : The present one. I'd lose my manners keeping a grown caller waiting on all the older visitors first. | The broadest. Family can come in carrying whatever the intervening years have put into a pair of paws.
-
-scene oldink
-when topic=dreams self.age>=55
-does tell.feeling / sympathise / assess
-a : After so many wet mornings I want to come in smelling of sun-warmed rope. | My feet have had years enough to wear a hole in the road to that imaginary dry ship.
-b : Would you miss this old stretch of pavement?
-a : From a dry berth I'd be delighted to miss the rain properly for a week or two. | I'm willing to risk a little homesickness to see that road end at a gangway.
-
-grown
-
 story backward_map [topic=lore]
   : I lent a visitor a map with the river side folded in and the gate folded over the top. It made perfect sense to me.
   : The visitor came back looking pleased, with a bit of eel in a wrapper.
@@ -245,10 +222,9 @@ dlg @1 resident.hub [topic.meeting=stranger] : The welcome's a perfectly straigh
 dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're on the short route through my introductions.
 dlg @3 resident.hub [here.time=night] : Even the polite caller knocks a shade softer with the moon up.
 dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll have the knock before the entrance, however urgent your errand appears.
-dlg @5 resident.job [self.job=merchant self.trade_words] : #self.trade_words#. A fine occupation for a wolf with an exact sense of inside and out.
+dlg @5 resident.job [self.job=merchant self.trade_words] : #self.trade_words.capitalize#. A fine occupation for a wolf with an exact sense of inside and out.
 dlg @6 resident.job : I'm an authority on which way round a doorway opens.
 dlg @7 resident.bye : May the proper turning find you before the scenic one does.
-
 graft resident.hub
 choice How long is the polite way round? -> welcome_fold
 node welcome_fold
@@ -259,3 +235,26 @@ node long_manner
 say Most certainly. I take pride in accurate directions. Besides, a long walk can give a wolf time to prepare a perfectly courteous arrival at the far end.
 choice I admire your faith in the exercise. -> hub
 choice An easy road to your door. -> bye
+
+
+old
+scene oldshoe
+when topic=travel self.age>=55
+does tell.self / ask.detail / answer.detail
+a : My longest map has outlived several pairs of boots. | At my age the whole trip must be worth the aftercare of two rather opinionated knees.
+b : Which road still deserves its place?
+a : The one with sun on the outward side and a seat on the long return. | A road with old friends at the end. My knees tend to be better tempered once they've sat there.
+
+scene oldwatch
+when topic=family self.age>=55 self.parent=yes
+does tell.self / react.self / assess
+a : A parent with some years of practice knows a door is no good if nobody's free to come through it. | I have a doorway in my head for every age my child has been.
+b : Which one do you leave open longest?
+a : The present one. I'd lose my manners keeping a grown caller waiting on all the older visitors first. | The broadest. Family can come in carrying whatever the intervening years have put into a pair of paws.
+
+scene oldink
+when topic=dreams self.age>=55
+does tell.feeling / sympathise / assess
+a : After so many wet mornings I want to come in smelling of sun-warmed rope. | My feet have had years enough to wear a hole in the road to that imaginary dry ship.
+b : Would you miss this old stretch of pavement?
+a : From a dry berth I'd be delighted to miss the rain properly for a week or two. | I'm willing to risk a little homesickness to see that road end at a gangway.

@@ -1,9 +1,12 @@
+# rm460, the chalk stair (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm460
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_sigrun_kelphand
+written_by codex
 title the chalk stair
 fits stage=adult|old
 prefers job=crafter piety=devout
@@ -39,56 +42,55 @@ dryhouse = a room above water | a sill above flood
 rankdoor = a painted door | the high doorstep
 
 any
-opinion sump for 2 : A wolf with wet floorboards knows plenty worth hearing about the fancy gutter farther up.
-opinion houses against 1 : I'd show a councillor the stain under the beds before I'd show off the clean pump.
-opinion dole for 2 : A supper you can carry upstairs beats one left at a door under water.
-opinion merchants mixed 0 : Give a sound measure and name a fair sum once. After that endless wheedling wears the hoops loose.
-opinion church for 2 : The Bright One hears through wet plaster as easily as through carved panels.
-opinion road for 1 : A raised footway pays back every stone the first time a load comes home dry.
-opinion watch mixed 0 : I'd be glad of more eyes on the low crossing when there's fast water in it.
-opinion newcomers for 1 : Tell a new tenant plainly which steps disappear before renting the room downstairs.
-opinion city mixed 0 : From below the terraces are a great many roofs sending their rain our way.
-opinion festivals mixed 0 : I'll join a table if there's space under it to keep everybody's dry shoes.
+opinion @1 sump for 2 : A wolf with wet floorboards knows plenty worth hearing about the fancy gutter farther up.
+opinion @1 houses against 1 : I'd show a councillor the stain under the beds before I'd show off the clean pump.
+opinion @1 dole for 2 : A supper you can carry upstairs beats one left at a door under water.
+opinion @1 merchants mixed 0 : Give a sound measure and name a fair sum once. After that endless wheedling wears the hoops loose.
+opinion @1 church for 2 : The Bright One hears through wet plaster as easily as through carved panels.
+opinion @1 road for 1 : A raised footway pays back every stone the first time a load comes home dry.
+opinion @1 watch mixed 0 : I'd be glad of more eyes on the low crossing when there's fast water in it.
+opinion @1 newcomers for 1 : Tell a new tenant plainly which steps disappear before renting the room downstairs.
+opinion @1 city mixed 0 : From below the terraces are a great many roofs sending their rain our way.
+opinion @1 festivals mixed 0 : I'll join a table if there's space under it to keep everybody's dry shoes.
 
 grown
-line greet : Evening or morning, there's a dry place here. | Mind the scrap stave. You're welcome this side.
-line greet [pair.band=strangers] : Fresh feet, I see. Try the higher board. | Come where the standing water ends.
-line greet [here.time=dawn] : First light shows the tide line plain. | Morning. The upper edge looks clean so far.
-line greet.return : I hear you across the barrel heads. | A greeting in return, now I've put my chalk down.
-line greet.return [pair.band=friends|family] : Come closer. You know which notch is mine. | A voice I'd hear over any rattling hoop.
-line greet.return [here.time=night] : Late company can take the high step. | Good evening. Don't mistake that dark patch for dry stone.
-line again.open : A second visit fits without shifting the chalk. | Here again before the mark's rubbed off.
-line hail [pair.band=friends] : Look from here. Every rise shows plain from here! | Stand beside my stave a moment!
-line farewell : Dry soles and a good rise home. | May the wet stop one step short of your threshold.
-line farewell.return : Go high if you hear the gutter roaring. | I'll leave the upper board clear behind you.
-line react.news : Set it out in the order it reached you. | Give me the facts before the muddy bits settle.
-line react.news.new : A fresh mark. I've heard nothing like it lately. | That hasn't reached my little piece of timber.
-line react.news.known : Same water line as the earlier report. | I've chalked that particular change already.
-line react.news.doubt : There's a stain there without a clear source. | I'd inspect the first joint before swearing where it leaked.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sorrow gets up steps no flood can climb. | I'd put my best dry seat at your disposal today.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's earned a good bright chalk stroke. | Glad tidings. I'd raise my eel supper to that.
-line ask.how : How high has the day risen round you? | Got one comfortable place to put a foot?
-line answer.how : Working toward a drier sill. No complaint today. | On firm boards with my price settled.
-line decline : I won't promise what would leave a seam unfinished. | My working time is spoken for down to the last stave.
-line accept_decline : Then the bargain ends tidily there. | A straight refusal holds water with me.
-line preclose : Time I swept my chalk back into a heap. | These rings want hanging up before I leave.
-line accept_preclose : Take the sound boards on your way out. | Your time's your own once you've called the halt.
-line thank : You kept something precious dry. My thanks. | I'll count that help toward my next clean doorstep.
-line deflect_thanks : A spare dry board didn't cost me a cask. | Easy kindness when you know where the low ground lies.
-line sympathise : I've room to hear you without naming a remedy. | Stand on the high board beside me till the shaking settles.
-line reassure : One dry step gives you somewhere to look from. | Let's find the firmest patch within your reach.
-line ack : Yes. I see where that water runs. | That's one seam I'd call sound.
-line give.advice : Price a room after a whole wet week. | Look underneath a thing before admiring its polish.
-line kin.open [pair.kin!=no] : Family can stand by the little stair with me. | Kin have seen where I started from.
-line hail [here.time=night] : There's a dry landing up here! | Come up one rise before you stop!
-line farewell.return [here.time=dawn] : Early feet still need a sound footing. | First light on your next landing.
-line assess : It holds. I can say that much from inspection. | That finish is honest down past the polish.
-line give.opinion : I'd put the driest bed ahead of the handsomest window. | Wet timber deserves counting before fine promises.
-line again.open [pair.band=friends] : Back to compare chalk lines, I see. | A friend can watch the next mark go on.
-line greet [here.weather=rain] : Come off the runnel. There's space by this hoop. | You're welcome under my bit of cover.
-line thank [pair.band=friends] : That was worth a whole dry landing to me. | I'd trust you with my last piece of chalk.
-line answer.how [here.time=night] : Tired enough to dream of a high room. | I'd enjoy a warm bowl with dry boards beneath it.
-
+line @1 greet : Evening or morning, there's a dry place here. | Mind the scrap stave. You're welcome this side.
+line @2 greet [pair.band=strangers] : Fresh feet, I see. Try the higher board. | Come where the standing water ends.
+line @3 greet [here.time=dawn] : First light shows the tide line plain. | Morning. The upper edge looks clean so far.
+line @1 greet.return : I hear you across the barrel heads. | A greeting in return, now I've put my chalk down.
+line @2 greet.return [pair.band=friends|family] : Come closer. You know which notch is mine. | A voice I'd hear over any rattling hoop.
+line @3 greet.return [here.time=night] : Late company can take the high step. | Good evening. Don't mistake that dark patch for dry stone.
+line @1 again.open : A second visit fits without shifting the chalk. | Here again before the mark's rubbed off.
+line @1 hail [pair.band=friends] : Look from here. Every rise shows plain from here! | Stand beside my stave a moment!
+line @1 farewell : Dry soles and a good rise home. | May the wet stop one step short of your threshold.
+line @1 farewell.return : Go high if you hear the gutter roaring. | I'll leave the upper board clear behind you.
+line @1 react.news : Set it out in the order it reached you. | Give me the facts before the muddy bits settle.
+line @1 react.news.new : A fresh mark. I've heard nothing like it lately. | That hasn't reached my little piece of timber.
+line @1 react.news.known : Same water line as the earlier report. | I've chalked that particular change already.
+line @1 react.news.doubt : There's a stain there without a clear source. | I'd inspect the first joint before swearing where it leaked.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sorrow gets up steps no flood can climb. | I'd put my best dry seat at your disposal today.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's earned a good bright chalk stroke. | Glad tidings. I'd raise my eel supper to that.
+line @1 ask.how : How high has the day risen round you? | Got one comfortable place to put a foot?
+line @1 answer.how : Working toward a drier sill. No complaint today. | On firm boards with my price settled.
+line @1 decline : I won't promise what would leave a seam unfinished. | My working time is spoken for down to the last stave.
+line @1 accept_decline : Then the bargain ends tidily there. | A straight refusal holds water with me.
+line @1 preclose : Time I swept my chalk back into a heap. | These rings want hanging up before I leave.
+line @1 accept_preclose : Take the sound boards on your way out. | Your time's your own once you've called the halt.
+line @1 thank : You kept something precious dry. My thanks. | I'll count that help toward my next clean doorstep.
+line @1 deflect_thanks : A spare dry board didn't cost me a cask. | Easy kindness when you know where the low ground lies.
+line @1 sympathise : I've room to hear you without naming a remedy. | Stand on the high board beside me till the shaking settles.
+line @1 reassure : One dry step gives you somewhere to look from. | Let's find the firmest patch within your reach.
+line @1 ack : Yes. I see where that water runs. | That's one seam I'd call sound.
+line @1 give.advice : Price a room after a whole wet week. | Look underneath a thing before admiring its polish.
+line @1 kin.open [pair.kin!=no] : Family can stand by the little stair with me. | Kin have seen where I started from.
+line @2 hail [here.time=night] : There's a dry landing up here! | Come up one rise before you stop!
+line @2 farewell.return [here.time=dawn] : Early feet still need a sound footing. | First light on your next landing.
+line @1 assess : It holds. I can say that much from inspection. | That finish is honest down past the polish.
+line @1 give.opinion : I'd put the driest bed ahead of the handsomest window. | Wet timber deserves counting before fine promises.
+line @2 again.open [pair.band=friends] : Back to compare chalk lines, I see. | A friend can watch the next mark go on.
+line @4 greet [here.weather=rain] : Come off the runnel. There's space by this hoop. | You're welcome under my bit of cover.
+line @2 thank [pair.band=friends] : That was worth a whole dry landing to me. | I'd trust you with my last piece of chalk.
+line @2 answer.how [here.time=night] : Tired enough to dream of a high room. | I'd enjoy a warm bowl with dry boards beneath it.
 scene tinystair
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -306,8 +308,6 @@ a : I'd have a peg by the chapel door for a stranger's wet cloak given my choice
 b : What's devout about a peg? | Wouldn't it drip inside?
 a : A wet wolf shouldn't spend a whole prayer apologising for the floor. | I'd put a pan beneath. Prayer and good housekeeping get on well when they meet.
 
-grown
-
 story barrelboot [topic=work|memories]
   : A little cask stood all morning over a wet patch. I chalked every seam and searched for the one I'd got wrong.
   : I shifted it a pace. The old patch grew and the new boards stayed dry.
@@ -374,25 +374,24 @@ does aside
 cooldown 8h
 say That pale mark shows where the next step begins. | Give the lower landing a wide turn in this light.
 
-dlg resident.hub : I've my little stair here. Choose the high end or the wet one for a closer look.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's still room to add another chalk mark.
-dlg resident.hub [here.time=night] : Watch the edge of the landing. It's harder to read the wet after dark.
-dlg resident.hub [pair.disposition=wary|hostile] : Speak straight from there. I've no wish to bargain over what either of us meant.
-dlg resident.job [self.job=crafter] : #self.trade_words.capitalize#. A good cooper looks underneath before charging for anything.
-dlg resident.job : I prefer to make a thing that can stand being filled and inspected on the spot.
-dlg resident.bye : Keep your dry shoes above the first chalk mark.
-dlg resident.gossip [here.gossip=yes] : I've heard that #topic.subject# #topic.claim#. That's word received, not an inspection I've made.
-dlg resident.gossip [here.gossip=no] : Only my own water marks to show today. I won't chalk up somebody else's story.
-dlg resident.news [world.news] : The report comes from #world.news_from#. #world.news#. Keep the source with the words, please.
-dlg shop.greet [here.shop=open] : Choose a sound place to set what you've brought. I can show the joints before we discuss the price.
-dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, back for another look. Turn a piece over if you'd like to inspect it.
-dlg shop.greet [here.shop=bare] : My stock's run low. I can still consider something sound you have to sell.
-dlg shop.greet [here.shop=asleep] : The counter's put to bed. Come back when I'm awake enough to inspect a seam.
-dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Look from that side. I'll give the same straight price to anyone.
-dlg shop.prices [here.shop=open] : You'll hear my actual figure first time. I allow for sound timber, tight work and a fair return.
-dlg shop.bye : May your purchase reach home sound on all its edges.
-dlg shop.bye [here.shop=asleep] : Leave the sleeping stock in peace till the counter opens.
-
+dlg @1 resident.hub : I've my little stair here. Choose the high end or the wet one for a closer look.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's still room to add another chalk mark.
+dlg @3 resident.hub [here.time=night] : Watch the edge of the landing. It's harder to read the wet after dark.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Speak straight from there. I've no wish to bargain over what either of us meant.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. A good cooper looks underneath before charging for anything.
+dlg @2 resident.job : I prefer to make a thing that can stand being filled and inspected on the spot.
+dlg @1 resident.bye : Keep your dry shoes above the first chalk mark.
+dlg @1 resident.gossip [here.gossip=yes] : I've heard that #topic.subject# #topic.claim#. That's word received, not an inspection I've made.
+dlg @2 resident.gossip [here.gossip=no] : Only my own water marks to show today. I won't chalk up somebody else's story.
+dlg @1 resident.news [world.news] : The report comes from #world.news_from#. #world.news#. Keep the source with the words, please.
+dlg @1 shop.greet [here.shop=open] : Choose a sound place to set what you've brought. I can show the joints before we discuss the price.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, back for another look. Turn a piece over if you'd like to inspect it.
+dlg @3 shop.greet [here.shop=bare] : My stock's run low. I can still consider something sound you have to sell.
+dlg @4 shop.greet [here.shop=asleep] : The counter's put to bed. Come back when I'm awake enough to inspect a seam.
+dlg @5 shop.greet [here.shop=open pair.disposition=wary|hostile] : Look from that side. I'll give the same straight price to anyone.
+dlg @1 shop.prices [here.shop=open] : You'll hear my actual figure first time. I allow for sound timber, tight work and a fair return.
+dlg @1 shop.bye : May your purchase reach home sound on all its edges.
+dlg @2 shop.bye [here.shop=asleep] : Leave the sleeping stock in peace till the counter opens.
 graft resident.hub
 choice Show me the little stair with its chalk marks. -> waterstair
 node waterstair

@@ -1,9 +1,12 @@
+# rm492, the last raindrop's advocate (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm492
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_cressida_carlisle
+written_by codex
 title the last raindrop's advocate
 fits stage=adult|old
 prefers job=official
@@ -67,7 +70,6 @@ line @21 thank : You have brought an awkward matter to a much kinder close.
 line @22 deflect_thanks : There was room in my day for the hearing.
 line @23 preclose : I believe the spout has quieted. I'll use that interval.
 line @24 accept_preclose : I release you with my very good wishes.
-
 scene close
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -246,7 +248,6 @@ dlg @6 resident.job : I am most at home with a difficult question and sufficient
 dlg @7 resident.bye : An untroubled passage to your next engagement.
 dlg @8 official.board [here.chapter=no] : A chapter must stand behind an undertaking entered on this board.
 dlg @9 official.board [here.chapter=yes here.missions=0] : The board offers your chapter no business at present.
-
 graft resident.hub
 choice What are the cards measuring? -> cabincards
 node cabincards

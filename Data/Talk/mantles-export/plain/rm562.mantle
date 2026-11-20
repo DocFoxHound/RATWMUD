@@ -1,9 +1,12 @@
+# rm562, the stall weighed in pebbles (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm562
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_yrsa_tarwick
+written_by codex
 title the stall weighed in pebbles
 fits stage=adult|old
 prefers job=merchant
@@ -17,6 +20,7 @@ topics work +0.7 prices +0.5 ships +0.4 land +0.3
 styles comfort=gentle gossip=plain refuse=measured tease=none
 marks oath saying
 persona #self.first# sets pebbles out to the width of a future stall, keeps the first penny for its awning apart, and knows ships by the sound of names carried over water.
+
 words
 oath! = Tip my little stall | Pebbles in both pans
 saying! = Let the beam settle | Price the patch of shade
@@ -32,33 +36,31 @@ porkedge = a bit of crisp rind | a warm brown edge
 rainshine = a wet patch of pale light | a soft watery glint
 
 grown
-
-opinion merchants for 1 : I trust a seller willing to let a buyer stand where both pans can be seen without craning.
-opinion strangers for 1 : A traveller who has come by water may remember a ship in a way my own view from shore couldn't give me.
-opinion city for 1 : I'd set my own stall here. I already know which direction the light takes over the market cloth.
-opinion road mixed 1 : A cart that gets through a rutted street in dry weather has given us only half the figures we need.
-opinion houses mixed 1 : A seal agrees who sent the goods. I'll still take the trouble to measure what arrived.
-line greet : This side gives us space. I have space there to hear you properly.
-line greet.return : The light has found us both in this spot again.
-line farewell : May the ground offer a steady measure beneath your feet.
-line farewell.return : I'll keep the small stones in order till we speak again.
-line ask.how : Has what you brought through the day sat lightly enough?
-line answer.how : Fairly steady, and another small measure nearer the stall I want.
-line thank : You gave the beam time to find its own level.
-line deflect_thanks : I'd wish for the same little courtesy on the buying side.
-line decline : I wouldn't give my word on the figure until I've been allowed to take the proper measure.
-line accept_decline : All understood. Your decision can stand without an extra weight on it.
-line sympathise : We can shift the spare stool for you and leave the account till later.
-line reassure : One small coin will still buy its share of a larger future.
-line react.news : Would you lay the entire account in plain view?
-line react.news.new : I hadn't seen that parcel come ashore before.
-line react.news.known : The shape of that cargo was familiar on arrival.
-line react.news.doubt : I'd like longer than one swing of the beam before accepting that weight.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give that news its own bright patch under the market cloth.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A figure can never take the whole weight of a loss.
-line ack : The measure sits within a hair of level.
-line again.open : The near pan can accommodate another little matter.
-
+opinion @1 merchants for 1 : I trust a seller willing to let a buyer stand where both pans can be seen without craning.
+opinion @1 strangers for 1 : A traveller who has come by water may remember a ship in a way my own view from shore couldn't give me.
+opinion @1 city for 1 : I'd set my own stall here. I already know which direction the light takes over the market cloth.
+opinion @1 road mixed 1 : A cart that gets through a rutted street in dry weather has given us only half the figures we need.
+opinion @1 houses mixed 1 : A seal agrees who sent the goods. I'll still take the trouble to measure what arrived.
+line @1 greet : Step over to my side, clear of the crush. Your words won't get lost in the noise here.
+line @1 greet.return : The light has found us both in this spot again.
+line @1 farewell : May the ground offer a steady measure beneath your feet.
+line @1 farewell.return : I'll keep the small stones in order till we speak again.
+line @1 ask.how : Has what you brought through the day sat lightly enough?
+line @1 answer.how : Fairly steady, and another small measure nearer the stall I want.
+line @1 thank : You gave the beam time to find its own level.
+line @1 deflect_thanks : I'd wish for the same little courtesy on the buying side.
+line @1 decline : I wouldn't give my word on the figure until I've been allowed to take the proper measure.
+line @1 accept_decline : All understood. Your decision can stand without an extra weight on it.
+line @1 sympathise : We can shift the spare stool for you and leave the account till later.
+line @1 reassure : One small coin will still buy its share of a larger future.
+line @1 react.news : Would you lay the entire account in plain view?
+line @1 react.news.new : I hadn't seen that parcel come ashore before.
+line @1 react.news.known : The shape of that cargo was familiar on arrival.
+line @1 react.news.doubt : I'd like longer than one swing of the beam before accepting that weight.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd give that news its own bright patch under the market cloth.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A figure can never take the whole weight of a loss.
+line @1 ack : The measure sits within a hair of level.
+line @1 again.open : The near pan can accommodate another little matter.
 scene work_1
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
@@ -188,7 +190,7 @@ story doubledname [topic=ships]
   : I heard a ship called across the water on a warm evening. The end of the name returned very faintly from a wall.
   : For a moment the little vessel seemed to have brought company.
   b : Did a second vessel appear?
-  : Only when I looked down. A very good reflection had added a third copy of a name to my evening's count.
+  : Only in the water below me. Between the echo and the reflection, I'd counted one ship three times.
 
 story smallroof [topic=weather]
   : I put one shiny penny on a scrap of blue cloth to see how much it sagged between two twigs.
@@ -219,12 +221,12 @@ when concept=bark self.likes=warm_rain
 does aside
 cooldown 8h
 say Warm drops will show the lowest fold. | A twig raised here should spare the customer a shower.
-dlg resident.hub : These stones mark out the space I'd occupy at market. See how close they are? It fits between these four small stones.
-dlg resident.job [self.job=merchant] : I give weights at #self.workplace# only after both pans have grown still.
-dlg resident.news [world.news] : The account delivered beside my weighing pan was #world.news#.
-dlg resident.gossip [here.gossip=yes] : A passing account put #topic.subject# #topic.claim#. I'd have to see rather more before giving it my own mark.
-dlg resident.bye : Good footing and a decent bit of shade for your next stop.
 
+dlg @1 resident.hub : These stones mark out the stall I'll have one day. Small, isn't it? Every inch of it fits between four pebbles.
+dlg @1 resident.job [self.job=merchant] : I give weights at #self.workplace# only after both pans have grown still.
+dlg @1 resident.news [world.news] : The account delivered beside my weighing pan was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : A passing account put #topic.subject# #topic.claim#. I'd have to see rather more before giving it my own mark.
+dlg @1 resident.bye : Good footing and a decent bit of shade for your next stop.
 graft resident.hub
 choice Why is the back pebble half under the soil? -> pebble_floor
 node pebble_floor

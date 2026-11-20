@@ -1,9 +1,12 @@
+# rm261, the silent bar (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm261
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_una_brineridge
+written_by codex
 title the silent bar
 fits stage=adult|old
 prefers job=merchant
@@ -34,40 +37,39 @@ faintmark = a slight nick in the wood | a shallow notch
 spunend = the tuft at the end | the soft brush of fibre
 
 any
-opinion church for 1 : One pot at the chapel can make a whole room stop worrying about supper. I like hearing the spoons start together.
-opinion newcomers for 1 : A newcomer knows tunes that haven't been worn thin round here. Sometimes the tune comes with a paying customer.
-opinion dole for 2 : That first bowl gets the hollow note out of an empty stomach. The second lets a wolf sleep.
-opinion festivals against 1 : I'd pay a small fee for a festival that kept one street free of elbows.
-opinion houses against 1 : If a House owns the clean upper window it can own the rain running off it onto the sill below.
-opinion city for 1 : Half the songs I know fit the length of my walk home. Move me and I'd have to change the music.
+opinion @1 church for 1 : One pot at the chapel can make a whole room stop worrying about supper. I like hearing the spoons start together.
+opinion @1 newcomers for 1 : A newcomer knows tunes that haven't been worn thin round here. Sometimes the tune comes with a paying customer.
+opinion @1 dole for 2 : That first bowl gets the hollow note out of an empty stomach. The second lets a wolf sleep.
+opinion @1 festivals against 1 : I'd pay a small fee for a festival that kept one street free of elbows.
+opinion @1 houses against 1 : If a House owns the clean upper window it can own the rain running off it onto the sill below.
+opinion @1 city for 1 : Half the songs I know fit the length of my walk home. Move me and I'd have to change the music.
 
 grown
-line greet : You caught me between verses. Welcome. | I can lower the tune a little for company.
-line greet [here.time=dusk] : A little evening light left for a caller.
-line greet.return : Your voice carries well enough at that pitch. | Welcome on my side too.
-line again.open : I left a breath between our visits.
-line kin.open [pair.kin!=no] : Come within the circle. We've room for one of our own.
-line hail [pair.band=friends] : One familiar face! There's space by me.
-line farewell : Leave a little music for the walk. | May your coat get a dry hour.
-line farewell.return : I'll carry your part of the tune awhile.
-line react.news : Give me the whole verse before I hum along.
-line react.news.new : That puts my eyebrows somewhere near my ears.
-line react.news.known : Same words, almost the same tune.
-line react.news.doubt : There's a missing beat somewhere in the telling.
-line react.news.sorrow [topic.kind=death|loss|crime|theft|assault] : Would sitting a while help? I can be quiet company.
-line react.news.glad [topic.kind=work|marriage|birth] : A little more room in my chest after hearing that.
-line ask.how : Any quiet corners in your day?
-line answer.how : Getting by at a very comfortable volume.
-line sympathise : Some days all the noise finds the one sore place.
-line reassure : I'd be glad to sit through the first bit with you.
-line decline : I need a few quiet bars for myself this time.
-line accept_decline : A rest it is, then.
-line thank : You gave me breathing space. I appreciate it.
-line deflect_thanks : A little extra room costs me very little.
-line preclose : I have a small tune waiting to be finished.
-line accept_preclose : Go before the crowd fills the gap.
-line ack : That sounds true all the way through.
-
+line @1 greet : You caught me between verses. Welcome. | I can lower the tune a little for company.
+line @2 greet [here.time=dusk] : A little evening light left for a caller.
+line @1 greet.return : Your voice carries well enough at that pitch. | Welcome on my side too.
+line @1 again.open : I left a breath between our visits.
+line @1 kin.open [pair.kin!=no] : Come within the circle. We've room for one of our own.
+line @1 hail [pair.band=friends] : One familiar face! There's space by me.
+line @1 farewell : Leave a little music for the walk. | May your coat get a dry hour.
+line @1 farewell.return : I'll carry your part of the tune awhile.
+line @1 react.news : Give me the whole verse before I hum along.
+line @1 react.news.new : That puts my eyebrows somewhere near my ears.
+line @1 react.news.known : Same words, almost the same tune.
+line @1 react.news.doubt : There's a missing beat somewhere in the telling.
+line @1 react.news.sorrow [topic.kind=death|loss|crime|theft|assault] : Would sitting a while help? I can be quiet company.
+line @1 react.news.glad [topic.kind=work|marriage|birth] : A little more room in my chest after hearing that.
+line @1 ask.how : Any quiet corners in your day?
+line @1 answer.how : Getting by at a very comfortable volume.
+line @1 sympathise : Some days all the noise finds the one sore place.
+line @1 reassure : I'd be glad to sit through the first bit with you.
+line @1 decline : I need a few quiet bars for myself this time.
+line @1 accept_decline : A rest it is, then.
+line @1 thank : You gave me breathing space. I appreciate it.
+line @1 deflect_thanks : A little extra room costs me very little.
+line @1 preclose : I have a small tune waiting to be finished.
+line @1 accept_preclose : Go before the crowd fills the gap.
+line @1 ack : That sounds true all the way through.
 scene heldrest
 when topic=pastimes self.likes=singing
 does tell.self / ask.detail / answer.detail
@@ -236,15 +238,14 @@ does aside
 cooldown 8h
 say A little space lets everybody see the colour. | Step clear of the bundle on the ground.
 
-dlg resident.hub : I've stopped humming. You've got my ear till the tune comes back.
-dlg resident.hub [topic.meeting=known] : Here again, #topic.player#. I was just at the quiet part.
-dlg resident.hub [pair.disposition=wary|hostile] : Please leave room between us for the end of my sentence.
-dlg resident.hub [here.time=dusk] : One little scrap of light. Enough to see each other's faces.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I have a feel for when a bundle's wound tight enough.
-dlg resident.job : There's work in doing the small part at the proper time.
-dlg resident.news [world.news] : I've heard this part clear above the humming. #world.news#.
-dlg resident.bye : Keep the spare note. I'll manage the rest.
-
+dlg @1 resident.hub : I've stopped humming. You've got my ear till the tune comes back.
+dlg @2 resident.hub [topic.meeting=known] : Here again, #topic.player#. I was just at the quiet part.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Please leave room between us for the end of my sentence.
+dlg @4 resident.hub [here.time=dusk] : One little scrap of light. Enough to see each other's faces.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I have a feel for when a bundle's wound tight enough.
+dlg @2 resident.job : There's work in doing the small part at the proper time.
+dlg @1 resident.news [world.news] : I've heard this part clear above the humming. #world.news.capitalize#.
+dlg @1 resident.bye : Keep the spare note. I'll manage the rest.
 graft resident.hub
 choice What happened to the middle of your song? -> missing_bar
 node missing_bar

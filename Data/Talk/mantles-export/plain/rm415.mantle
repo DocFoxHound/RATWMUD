@@ -1,9 +1,12 @@
+# rm415, the camp ember in town (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm415
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_philippa_rustton
+written_by codex
 title the camp ember in town
 fits stage=adult|old
 prefers job=herder
@@ -35,35 +38,34 @@ mat = a plaited mat | a flat rush pad
 crowd = a pushing crowd | a crush of shoulders
 
 any
-opinion houses against 2 : There's always a comfortable explanation waiting for the wolf who gets the good post. The wolf walking home needs supper more than an explanation.
-opinion dole for 2 : Something warm in the stomach means the hill looks climbable again.
-opinion strangers for 1 : I know what it's like to smell of a different place when you first open a town door.
-opinion church for 1 : A chapel with a hush that lets me hear my coat settling earns my affection.
-opinion sump for 2 : You can share the warmth from a single coal in a little room down here.
-opinion merchants mixed 1 : A seller who knows where the loaf last came out warm has got my attention.
+opinion @1 houses against 2 : There's always a comfortable explanation waiting for the wolf who gets the good post. The wolf walking home needs supper more than an explanation.
+opinion @1 dole for 2 : Something warm in the stomach means the hill looks climbable again.
+opinion @1 strangers for 1 : I know what it's like to smell of a different place when you first open a town door.
+opinion @1 church for 1 : A chapel with a hush that lets me hear my coat settling earns my affection.
+opinion @1 sump for 2 : You can share the warmth from a single coal in a little room down here.
+opinion @1 merchants mixed 1 : A seller who knows where the loaf last came out warm has got my attention.
 
 grown
-line greet : Come stand where the noise settles between us. | You've found the warm edge of my day.
-line greet.return : That's a welcome I could carry over a stable yard.
-line again.open : We're back in talking reach before the ash cooled.
-line farewell : Take a little hill quiet down the road. | Get home with a warm bite still in mind.
-line farewell.return : May the going leave your shoulders easy too.
-line react.news : Let me hear what carried all this way. | I'll settle my voice down to listen.
-line react.news.new : That's a smell of news I can't place.
-line react.news.known : I've heard that pass between the hooves once.
-line react.news.doubt : I'd rake round the edges before calling it sound.
-line react.news.sorrow [topic.kind=death|loss|assault] : Give the grieving a warm corner and enough time for the first shock to ease.
-line react.news.glad [topic.kind=birth|marriage|work] : I'd call that good news loud enough for the far stall.
-line ask.how : Did you find some quiet amidst all your work today?
-line answer.how : A little smoky still. Glad of the company.
-line sympathise : Lean here a moment. My coat can hold a bit of worry.
-line reassure : A tired beast settles quicker when somebody else stands near.
-line refuse : I've a quiet promise to keep before my working hours slip off.
-line accept_decline : Then we'll leave it lying comfortably where it is.
-line preclose : I'll get back before the evening feed wants its noise.
-line accept_preclose : Go find the warm side of your own wall.
-line ack : Yes. I hear beyond the loud part.
-
+line @1 greet : Come stand where the noise settles between us. | You've found the warm edge of my day.
+line @1 greet.return : That's a welcome I could carry over a stable yard.
+line @1 again.open : We're back in talking reach before the ash cooled.
+line @1 farewell : Take a little hill quiet down the road. | Get home with a warm bite still in mind.
+line @1 farewell.return : May the going leave your shoulders easy too.
+line @1 react.news : Let me hear what carried all this way. | I'll settle my voice down to listen.
+line @1 react.news.new : That's a smell of news I can't place.
+line @1 react.news.known : I've heard that pass between the hooves once.
+line @1 react.news.doubt : I'd rake round the edges before calling it sound.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Give the grieving a warm corner and enough time for the first shock to ease.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd call that good news loud enough for the far stall.
+line @1 ask.how : Did you find some quiet amidst all your work today?
+line @1 answer.how : A little smoky still. Glad of the company.
+line @1 sympathise : Lean here a moment. My coat can hold a bit of worry.
+line @1 reassure : A tired beast settles quicker when somebody else stands near.
+line @1 refuse : I've a quiet promise to keep before my working hours slip off.
+line @1 accept_decline : Then we'll leave it lying comfortably where it is.
+line @1 preclose : I'll get back before the evening feed wants its noise.
+line @1 accept_preclose : Go find the warm side of your own wall.
+line @1 ack : Yes. I hear beyond the loud part.
 scene exchange1
 when topic=work self.job=herder self.workplace
 does tell.self / ask.detail / answer.detail
@@ -231,16 +233,16 @@ when concept=bark self.likes=warm_bread
 does aside
 cooldown 8h
 say A good bread smell can turn a whole morning round. | Fold the cloth while the middle's still steaming.
-dlg resident.hub : I've a bit of the camp's quiet to share under this smoky coat.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I could pick out your voice in the bustle of feeding time.
-dlg resident.hub [here.time=night] : The town almost lets a wolf hear the hills at this hour.
-dlg resident.hub [pair.disposition=wary|hostile] : We can use plain voices and leave comfortable room between our shoulders.
-dlg resident.job [self.job=herder] : I keep the stock settled at #self.workplace#. Quiet ears sometimes do more than a loud call.
-dlg resident.job : I'm fond of work where something living comes easier for the care.
-dlg resident.news [world.news] : This is what the yard noise let through. #world.news#.
-dlg resident.gossip [here.gossip=yes] : There's talk that #topic.subject# #topic.claim#. I heard only the words. The beginning's still hidden.
-dlg resident.bye : Walk with a kind bit of wind at your shoulder.
 
+dlg @1 resident.hub : I've a bit of the camp's quiet to share under this smoky coat.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I could pick out your voice in the bustle of feeding time.
+dlg @3 resident.hub [here.time=night] : The town almost lets a wolf hear the hills at this hour.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can use plain voices and leave comfortable room between our shoulders.
+dlg @1 resident.job [self.job=herder] : I keep the stock settled at #self.workplace#. Quiet ears sometimes do more than a loud call.
+dlg @2 resident.job : I'm fond of work where something living comes easier for the care.
+dlg @1 resident.news [world.news] : This is what the yard noise let through. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : There's talk that #topic.subject# #topic.claim#. I heard only the words. The beginning's still hidden.
+dlg @1 resident.bye : Walk with a kind bit of wind at your shoulder.
 graft resident.hub
 choice How do you carry a hill's silence into town? -> camp_ember
 node camp_ember

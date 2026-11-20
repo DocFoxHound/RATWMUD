@@ -1,9 +1,12 @@
+# rm470, the chair on the skids (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm470
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_rue_haycombe
+written_by codex
 title the chair on the skids
 fits stage=adult|old
 prefers job=farmer
@@ -35,41 +38,40 @@ gust = the salt draught | a draught tasting of brine
 light = long summer light | the last yellow light
 
 any
-opinion dole for 2 : An orchard table doesn't grow poorer for cutting a wedge for a hungry wolf.
-opinion festivals against 1 : I want a tune giving me a chance to hear who came in halfway. A street full of shouting spoils the verse.
-opinion newcomers for 1 : Fresh shoulders can help lift the day as readily as a familiar pair.
-opinion strangers for 1 : A road greeting ought to get a wolf as far as the cheese plate.
-opinion city for 1 : I've followed the homeward smell of spent apple leaves for too many years to want another city.
+opinion @1 dole for 2 : An orchard table doesn't grow poorer for cutting a wedge for a hungry wolf.
+opinion @1 festivals against 1 : I want a tune giving me a chance to hear who came in halfway. A street full of shouting spoils the verse.
+opinion @1 newcomers for 1 : Fresh shoulders can help lift the day as readily as a familiar pair.
+opinion @1 strangers for 1 : A road greeting ought to get a wolf as far as the cheese plate.
+opinion @1 city for 1 : I've followed the homeward smell of spent apple leaves for too many years to want another city.
 
 grown
-line greet [pair.band=strangers] : Slide your load this way. Welcome. | I can see you fine from this seat.
-line greet [self.working=yes] : Come clear of that crate lip. | Welcome, there's an end free to lean on.
-line greet [here.time=dawn] : Morning. The apples are still cool. | Good light on the orchard door.
-line greet [here.time=dusk|night] : Evening. Bring that chair into earshot. | Welcome under the last picking light.
-line kin.open [pair.kin!=no] : Household voices deserve first cut of cheese. | Bring your face into the good light.
-line again.open : Found the runners again, I see. | We can take that other end now.
-line greet.return : Good to see your shoulders clear the door. | Back within reach of a cheese wedge.
-line greet.return [pair.band=friends|family] : You've a welcome warm enough to sing in. | Slide over, familiar face.
-line greet.return [self.working=yes] : I'll put my box down for company. | Good to see where the help is coming from.
-line greet.return [here.time=dusk|night] : I left the lamp facing outwards. | Come catch the last of our light.
-line farewell : Keep a steady hold downhill. | May your load reach the right door.
-line farewell.return : I'll look up for you next time. | Come back with a verse to spare.
-line farewell.return [here.time=night] : Mind the soft verge on your way home. | Some light hangs above the leaf line.
-line react.news : Set down the load and let me hear. | Pass me the plain account.
-line react.news.new : That landed fresh in my lap. | New as this season's first windfall.
-line react.news.known : I've had my shoulders under that story before. | That one came up the orchard road earlier.
-line react.news.doubt : I'd look for another witness before hauling that any farther. | Somebody's added a weight that never grew on that tree.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll take an end if the weight gets too much. | A bitter thing to have fetched home.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a verse to such good fortune. | That's worth a generous second cutting.
-line ask.how : How's the load sitting today? | What weight have you carried in here?
-line answer.how : A fair load, and a chair that answers. | I've a thorn in my patience. Otherwise sound.
-line decline : I'll have to keep my shoulders for the evening crates. | A wolf with free paws would serve you better.
-line accept_decline : Set it down then. I've heard you. | Let the empty box stay empty.
-line thank : You saw the weight and pitched in. | I felt that kindness at my end.
-line sympathise : Turn your chair towards this bit of light. | Have some sharp cheese while your voice comes back.
-line reassure : We can start with one small box between us. | There's room to take a second hold.
-line preclose : My facing chair is wanted at the door. | That last row can't bring itself indoors.
-
+line @1 greet [pair.band=strangers] : Slide your load this way. Welcome. | I can see you fine from this seat.
+line @2 greet [self.working=yes] : Come clear of that crate lip. | Welcome, there's an end free to lean on.
+line @3 greet [here.time=dawn] : Morning. The apples are still cool. | Good light on the orchard door.
+line @4 greet [here.time=dusk|night] : Evening. Bring that chair into earshot. | Welcome under the last picking light.
+line @1 kin.open [pair.kin!=no] : Household voices deserve first cut of cheese. | Bring your face into the good light.
+line @1 again.open : Found the runners again, I see. | We can take that other end now.
+line @1 greet.return : Good to see your shoulders clear the door. | Back within reach of a cheese wedge.
+line @2 greet.return [pair.band=friends|family] : You've a welcome warm enough to sing in. | Slide over, familiar face.
+line @3 greet.return [self.working=yes] : I'll put my box down for company. | Good to see where the help is coming from.
+line @4 greet.return [here.time=dusk|night] : I left the lamp facing outwards. | Come catch the last of our light.
+line @1 farewell : Keep a steady hold downhill. | May your load reach the right door.
+line @1 farewell.return : I'll look up for you next time. | Come back with a verse to spare.
+line @2 farewell.return [here.time=night] : Mind the soft verge on your way home. | Some light hangs above the leaf line.
+line @1 react.news : Set down the load and let me hear. | Pass me the plain account.
+line @1 react.news.new : That landed fresh in my lap. | New as this season's first windfall.
+line @1 react.news.known : I've had my shoulders under that story before. | That one came up the orchard road earlier.
+line @1 react.news.doubt : I'd look for another witness before hauling that any farther. | Somebody's added a weight that never grew on that tree.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll take an end if the weight gets too much. | A bitter thing to have fetched home.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a verse to such good fortune. | That's worth a generous second cutting.
+line @1 ask.how : How's the load sitting today? | What weight have you carried in here?
+line @1 answer.how : A fair load, and a chair that answers. | I've a thorn in my patience. Otherwise sound.
+line @1 decline : I'll have to keep my shoulders for the evening crates. | A wolf with free paws would serve you better.
+line @1 accept_decline : Set it down then. I've heard you. | Let the empty box stay empty.
+line @1 thank : You saw the weight and pitched in. | I felt that kindness at my end.
+line @1 sympathise : Turn your chair towards this bit of light. | Have some sharp cheese while your voice comes back.
+line @1 reassure : We can start with one small box between us. | There's room to take a second hold.
+line @1 preclose : My facing chair is wanted at the door. | That last row can't bring itself indoors.
 scene skids
 when topic=work self.job=farmer
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Runners round towards the fading light. | One last verse before the crates go quiet.
 
-dlg resident.hub : Slide my chair towards the door as you come through. I've a sharp cheese wedge and enough patience for plain speaking.
-dlg resident.job [self.job=farmer self.workplace] : The crates at #self.workplace# get their first rest after a long morning in the branches.
-dlg resident.news [world.news] : Here's what's reached the orchard door. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, I know that step. There's a fresh cutting of cheese within reach.
-dlg resident.bye : A smooth runner under whatever you carry home.
-
+dlg @1 resident.hub : Slide my chair towards the door as you come through. I've a sharp cheese wedge and enough patience for plain speaking.
+dlg @1 resident.job [self.job=farmer self.workplace] : The crates at #self.workplace# get their first rest after a long morning in the branches.
+dlg @1 resident.news [world.news] : Here's what's reached the orchard door. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I know that step. There's a fresh cutting of cheese within reach.
+dlg @1 resident.bye : A smooth runner under whatever you carry home.
 graft resident.hub
 choice Why does the orchard chair run on skids? -> orchard_seat
 node orchard_seat

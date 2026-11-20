@@ -1,9 +1,12 @@
+# rm356, the borrowed echo (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm356
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_rupert_greyley
+written_by codex
 title the borrowed echo
 fits stage=adult|old
 prefers job=laborer
@@ -33,45 +36,44 @@ wraphinge = a little paper flap | the folded back edge
 cornercrumb = a dark sweet crumb | a speck of honey crust
 
 any
-opinion houses against 2 : A rich coat can plant itself squarely across my call and not hear a word. Turn its name into a price and suddenly it hears.
-opinion merchants against 2 : I'd like the pay for crying a full basket to stretch far enough to buy some of the things in it.
-opinion dole for 2 : The bread keeps a tired throat from having to beg for its next mouthful. That spares more than hunger.
-opinion sump for 1 : A little voice here knows which wall will give it back. There's some comfort in knowing where a small thing will be heard.
-opinion watch against 2 : The street can ask for attention all week. Whisper a name the Watch wants and the ears come running.
-opinion festivals against 1 : I earn no extra for being drowned out by a drum and I'd be glad to forget the drum altogether.
+opinion @1 houses against 2 : A rich coat can plant itself squarely across my call and not hear a word. Turn its name into a price and suddenly it hears.
+opinion @1 merchants against 2 : I'd like the pay for crying a full basket to stretch far enough to buy some of the things in it.
+opinion @1 dole for 2 : The bread keeps a tired throat from having to beg for its next mouthful. That spares more than hunger.
+opinion @1 sump for 1 : A little voice here knows which wall will give it back. There's some comfort in knowing where a small thing will be heard.
+opinion @1 watch against 2 : The street can ask for attention all week. Whisper a name the Watch wants and the ears come running.
+opinion @1 festivals against 1 : I earn no extra for being drowned out by a drum and I'd be glad to forget the drum altogether.
 
 grown
-line greet : Welcome inside ordinary speaking distance.
-line greet [pair.band=strangers] : I hear a new voice. It may have a moment here.
-line greet [here.time=dawn] : There's little noise to speak over this early. Welcome.
-line greet [here.time=dusk|night] : You can hear me without the walls helping now.
-line greet [self.working=yes] : One breath to call my last word. Then yours.
-line kin.open [pair.kin!=no] : Come within reach of my quieter voice.
-line again.open : My echo's sent you back round, it seems.
-line greet.return : Your greeting came over clean.
-line greet.return [pair.band=friends|family] : That voice gets the first hearing clear of the crowd.
-line greet.return [self.working=yes] : I've another call to make. You reached me first.
-line greet.return [here.time=dusk|night] : A small word carries handsomely this late.
-line farewell : Keep a little breath for the walk up.
-line farewell.return : I'll take it from here in my own voice.
-line react.news : Tell it close to how the first voice pitched it.
-line react.news.new : That's come in off an unfamiliar wall.
-line react.news.known : I'd heard the longer version going round.
-line react.news.doubt : Was that said once or heard twice?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Somebody at the house may want a quiet errand done.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves room to travel without my improving it.
-line answer.how : Still getting my last word where I want it.
-line ask.how : Have you had one decent quiet hour of your own?
-line sympathise : You needn't pitch a sore matter high to reach me.
-line reassure : I'll hear the rest once it's comfortable to speak.
-line decline : That name's resting behind my teeth and I intend no disturbance.
-line accept_decline : Then it needn't come out into the square.
-line thank : You've saved my throat a second asking.
-line deflect_thanks : A quiet favour doesn't need a public price.
-line preclose : I'll save what voice I've got for the next corner.
-line accept_preclose : I heard the ending. Travel well.
-line ack : It carries.
-
+line @1 greet : Welcome inside ordinary speaking distance.
+line @2 greet [pair.band=strangers] : I hear a new voice. It may have a moment here.
+line @3 greet [here.time=dawn] : There's little noise to speak over this early. Welcome.
+line @4 greet [here.time=dusk|night] : You can hear me without the walls helping now.
+line @5 greet [self.working=yes] : One breath to call my last word. Then yours.
+line @1 kin.open [pair.kin!=no] : Come within reach of my quieter voice.
+line @1 again.open : My echo's sent you back round, it seems.
+line @1 greet.return : Your greeting came over clean.
+line @2 greet.return [pair.band=friends|family] : That voice gets the first hearing clear of the crowd.
+line @3 greet.return [self.working=yes] : I've another call to make. You reached me first.
+line @4 greet.return [here.time=dusk|night] : A small word carries handsomely this late.
+line @1 farewell : Keep a little breath for the walk up.
+line @1 farewell.return : I'll take it from here in my own voice.
+line @1 react.news : Tell it close to how the first voice pitched it.
+line @1 react.news.new : That's come in off an unfamiliar wall.
+line @1 react.news.known : I'd heard the longer version going round.
+line @1 react.news.doubt : Was that said once or heard twice?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Somebody at the house may want a quiet errand done.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves room to travel without my improving it.
+line @1 answer.how : Still getting my last word where I want it.
+line @1 ask.how : Have you had one decent quiet hour of your own?
+line @1 sympathise : You needn't pitch a sore matter high to reach me.
+line @1 reassure : I'll hear the rest once it's comfortable to speak.
+line @1 decline : That name's resting behind my teeth and I intend no disturbance.
+line @1 accept_decline : Then it needn't come out into the square.
+line @1 thank : You've saved my throat a second asking.
+line @1 deflect_thanks : A quiet favour doesn't need a public price.
+line @1 preclose : I'll save what voice I've got for the next corner.
+line @1 accept_preclose : I heard the ending. Travel well.
+line @1 ack : It carries.
 scene echo
 when topic=work self.job=laborer self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark self.likes=honey_cakes
 does aside
 cooldown 8h
 say Fold in the sticky corner. | Keep your paw clear of the paper flap.
-dlg resident.hub : I've no need to shout just here. What brings you close?
-dlg resident.hub [topic.meeting=known] : I recognise the voice between calls, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : We can hear each other perfectly well across that gap.
-dlg resident.hub [here.time=night] : Speak at the pitch you'd use to yourself. I'll hear it.
-dlg resident.job [self.job=laborer] : #self.trade_words.capitalize#. I'll pitch the low note carefully so a wolf looks up for the high one.
-dlg resident.job : I catch an ear before competing sounds sweep it away.
-dlg resident.news [world.news] : These were the words that carried. #world.news#.
-dlg resident.bye : A quiet bit of road for your ears.
 
+dlg @1 resident.hub : I've no need to shout just here. What brings you close?
+dlg @2 resident.hub [topic.meeting=known] : I recognise the voice between calls, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : We can hear each other perfectly well across that gap.
+dlg @4 resident.hub [here.time=night] : Speak at the pitch you'd use to yourself. I'll hear it.
+dlg @1 resident.job [self.job=laborer] : #self.trade_words.capitalize#. I'll pitch the low note carefully so a wolf looks up for the high one.
+dlg @2 resident.job : I catch an ear before competing sounds sweep it away.
+dlg @1 resident.news [world.news] : These were the words that carried. #world.news#.
+dlg @1 resident.bye : A quiet bit of road for your ears.
 graft @bent_echo resident.hub
 choice What does a good corner do for your voice? -> bent_echo
 node bent_echo

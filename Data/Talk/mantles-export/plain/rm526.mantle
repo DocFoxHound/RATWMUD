@@ -1,9 +1,12 @@
+# rm526, the graft that took (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm526
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_isolde_fell_
+written_by codex
 title the graft that took
 fits stage=adult|old
 prefers job=noble
@@ -17,6 +20,7 @@ topics work +0.7 land +0.5 family +0.3 prices +0.3
 styles comfort=practical gossip=plain refuse=cold tease=none
 marks oath saying
 persona #self.first# tests a visitor's usefulness by offering a small definite task, cuts old graft ties loose with care, and keeps a salt-stiff fragment of cord beneath the garden weights.
+
 words
 oath! = Sour the rootstock | Salt in the furrow
 saying! = Show me where it took | A living branch pays in fruit
@@ -36,51 +40,49 @@ dibbled = a short planting stick | a plain wooden dibble
 stemline = a narrow join | a faint seam in the bark
 
 grown
-
-opinion houses for 2 : A House earns its holdings by sustaining them through a change of season. A grand name will not preserve even a cask.
-opinion merchants mixed 1 : I am civil to merchants with sound goods. The degree of my civility has never altered the weight I require.
-opinion dole against 1 : I would have a kitchen give me its exact number of portions before it asks for another vat of fruit.
-opinion city for 1 : There is soil above the streets where roots will live. I have my reasons for keeping my interests on land.
-opinion road for 1 : A cart of ripe fruit makes the value of a sound road plain within an hour.
-opinion newcomers mixed 1 : A stranger who handles a valuable shoot with care has already supplied one satisfactory introduction.
-opinion church mixed 1 : I value a place to give silence its due. A great many public occasions make no provision for it.
-opinion watch mixed 1 : What matters to me is whether a loaded wagon can arrive intact. Reassurance is easily obtained elsewhere.
-line greet : State what you bring and where it can be put to use.
-line greet [pair.band=strangers] : I'll allow time enough to unwrap a sound sample.
-line greet.return : I recall precisely which part remained to be tested.
-line greet [here.time=dawn] : Use the morning while the ground is still easy to read.
-line farewell : You may leave the sample and take your leave.
-line farewell.return : The next meeting can begin with the result.
-line ask.how : Has today provided anything worth setting by?
-line answer.how : My decisions will survive the weather intact.
-line thank : That was useful. I do not employ the word lightly.
-line deflect_thanks : A good return in due season will answer.
-line decline : I cannot grant terms which would be a burden on the root.
-line accept_decline : Good. A clear refusal can be entered and set aside.
-line sympathise : There is no deadline for what has no satisfactory answer.
-line reassure : Begin with the single thing your hand can actually reach.
-line react.news : Name the source and give me the sound portion.
-line react.news.new : I will have a separate place made for that cutting.
-line react.news.known : That information already has a date against it.
-line react.news.doubt : I'd test the join before committing a season to that stock.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : A sound result. Let the credit fall precisely where the work was done.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bring the living something needed. Leave the manner of grief to those concerned.
-line ack : The join holds under a modest pressure.
-line again.open : Resume with the part that required a second hearing.
-line preclose : We have reached the point where further talk needs a result.
-line accept_preclose : Go and see how the thing fares in actual soil.
-line tell.self : I retain a name most easily after someone has done a useful piece of work.
-line greet.return [pair.band=friends|family] : You need not present your credentials again. Sit here.
-line decline [pair.disposition=hostile] : You have used your time to confirm my original refusal.
-line ask.how [pair.band=friends|family] : What would you choose to salvage from this particular day?
-line farewell [here.time=dusk] : Leave the garden ties loose enough to survive the night.
-line answer.how [here.time=night] : There are still matters I would rather inspect by daylight.
-line reassure [here.time=dawn] : Even a bare branch can be given one full morning.
-
+opinion @1 houses for 2 : A House earns its holdings by sustaining them through a change of season. A grand name will not preserve even a cask.
+opinion @1 merchants mixed 1 : I am civil to merchants with sound goods. The degree of my civility has never altered the weight I require.
+opinion @1 dole against 1 : I would have a kitchen give me its exact number of portions before it asks for another vat of fruit.
+opinion @1 city for 1 : There is soil above the streets where roots will live. I have my reasons for keeping my interests on land.
+opinion @1 road for 1 : A cart of ripe fruit makes the value of a sound road plain within an hour.
+opinion @1 newcomers mixed 1 : A stranger who handles a valuable shoot with care has already supplied one satisfactory introduction.
+opinion @1 church mixed 1 : I value a place to give silence its due. A great many public occasions make no provision for it.
+opinion @1 watch mixed 1 : What matters to me is whether a loaded wagon can arrive intact. Reassurance is easily obtained elsewhere.
+line @1 greet : State what you bring and where it can be put to use.
+line @2 greet [pair.band=strangers] : I'll allow time enough to unwrap a sound sample.
+line @1 greet.return : I recall precisely which part remained to be tested.
+line @3 greet [here.time=dawn] : Use the morning while the ground is still easy to read.
+line @1 farewell : You may leave the sample and take your leave.
+line @1 farewell.return : The next meeting can begin with the result.
+line @1 ask.how : Has today provided anything worth setting by?
+line @1 answer.how : Busy, and satisfied with most of what I decided today.
+line @1 thank : That was useful. I do not employ the word lightly.
+line @1 deflect_thanks : A good return in due season will answer.
+line @1 decline : I cannot grant terms which would be a burden on the root.
+line @1 accept_decline : Good. A clear refusal can be entered and set aside.
+line @1 sympathise : There is no deadline for what has no satisfactory answer.
+line @1 reassure : Begin with the single thing your hand can actually reach.
+line @1 react.news : Name the source and give me the sound portion.
+line @1 react.news.new : I will have a separate place made for that cutting.
+line @1 react.news.known : That information already has a date against it.
+line @1 react.news.doubt : I'd test the join before committing a season to that stock.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : A sound result. Let the credit fall precisely where the work was done.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Bring the living something needed. Leave the manner of grief to those concerned.
+line @1 ack : Understood. That part will bear weight.
+line @1 again.open : Resume with the part that required a second hearing.
+line @1 preclose : We have reached the point where further talk needs a result.
+line @1 accept_preclose : Go and see how the thing fares in actual soil.
+line @1 tell.self : I retain a name most easily after someone has done a useful piece of work.
+line @2 greet.return [pair.band=friends|family] : You need not present your credentials again. Sit here.
+line @2 decline [pair.disposition=hostile] : You have used your time to confirm my original refusal.
+line @2 ask.how [pair.band=friends|family] : What would you choose to salvage from this particular day?
+line @2 farewell [here.time=dusk] : Leave the garden ties loose enough to survive the night.
+line @2 answer.how [here.time=night] : There are still matters I would rather inspect by daylight.
+line @2 reassure [here.time=dawn] : Even a bare branch can be given one full morning.
 scene work_1
 when topic=work self.job=noble
 does tell.self / ask.detail / answer.detail
-a : My duty is #self.trade_words#. Let me inspect the fruit before anyone brings the painted label.
+a : #self.trade_words.capitalize#, and that means I inspect the fruit before anyone brings the painted label.
 b : Even with a good vintage? | Why keep the label?
 a : Especially then. A distinguished year ought to bear examination. | To name the contents after I am satisfied. It can perform that service admirably.
 
@@ -89,7 +91,7 @@ when topic=land
 does tell.self / ask.detail / answer.detail
 a : A graft can live under #graftcord# and still be slowly strangled by its own success.
 b : When do you remove the tie? | How can success strangle it?
-a : When the join looks firm and feel the tape beginning to bite. | A growing branch takes more room. A tie doesn't grow just because I chose it carefully in spring.
+a : When the join looks firm and I can feel the tape beginning to bite. | A growing branch takes more room. A tie doesn't grow just because I chose it carefully in spring.
 
 scene prices_1
 when topic=prices
@@ -176,7 +178,7 @@ b : Is that distrust of the ships? | What cost is never quoted?
 a : It is knowledge of what a house can lose in one unlucky journey along a coast. | The one that keeps going after the goods have been written out of the stock account.
 
 scene memories_1
-when topic=memories
+when topic=memories self.house
 does tell.self / ask.detail / answer.detail
 a : A wine barge can disappear and leave a reckoning that outlasts an entire cellar of wine.
 b : Have you seen that happen? | Can a reckoning be finished?
@@ -338,19 +340,19 @@ when concept=bark self.likes=warm_rain
 does aside
 cooldown 8h
 say A warm rain can earn its welcome underground. | Test the root bed when it has passed.
-dlg resident.hub : A definite proposal will receive a definite hearing.
-dlg resident.job [self.job=noble] : I direct the affairs of #self.workplace#. The successful applicant will show what can be accomplished with the resources at hand.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your name requires no further explanation.
-dlg resident.news [world.news] : This report arrived for my consideration. #world.news#.
-dlg resident.gossip [here.gossip=yes] : There is a claim that #topic.subject# #topic.claim#. It carries no warranty from this table.
-dlg resident.quirk : I press a graft tie with my thumb before I trust my eyes as to the state of the join.
-dlg resident.how [tired=yes] : Weary enough to insist that the next visitor bring the short account.
-dlg resident.bye : When you return, bring the result you can verify.
-dlg resident.hub [pair.disposition=hostile] : I can recognise a grievance dressed up as a proposition. Put it plainly.
-dlg resident.hub [pair.band=friends|family] : You have earned a chair beside the useful work. Come nearer.
-dlg resident.bye [here.time=dusk] : I am keeping the final daylight for a brief inspection outside.
-dlg resident.hub [here.time=dawn] : The earth is still soft enough for a good test. What have you brought?
 
+dlg @1 resident.hub : A definite proposal will receive a definite hearing.
+dlg @1 resident.job [self.job=noble] : I direct the affairs of #self.workplace#. The successful applicant will show what can be accomplished with the resources at hand.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your name requires no further explanation.
+dlg @1 resident.news [world.news] : This report arrived for my consideration. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : There is a claim that #topic.subject# #topic.claim#. It carries no warranty from this table.
+dlg @1 resident.quirk : I press a graft tie with my thumb before I trust my eyes as to the state of the join.
+dlg @1 resident.how [tired=yes] : Weary enough to insist that the next visitor bring the short account.
+dlg @1 resident.bye : When you return, bring the result you can verify.
+dlg @3 resident.hub [pair.disposition=hostile] : I can recognise a grievance dressed up as a proposition. Put it plainly.
+dlg @4 resident.hub [pair.band=friends|family] : You have earned a chair beside the useful work. Come nearer.
+dlg @2 resident.bye [here.time=dusk] : I am keeping the final daylight for a brief inspection outside.
+dlg @5 resident.hub [here.time=dawn] : The earth is still soft enough for a good test. What have you brought?
 graft resident.hub
 choice How do you decide if a visitor is useful? -> scion_sort
 node scion_sort

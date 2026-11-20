@@ -1,9 +1,12 @@
+# rm569, the higher larder shelf (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm569
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_kari_wickworth
+written_by codex
 title the higher larder shelf
 fits stage=adult|old
 prefers job=sailor
@@ -35,41 +38,40 @@ latch = the pantry latch | a wooden cupboard catch
 wind = the wind across the pier | the salt draught from the bay
 
 any
-opinion houses against 1 : A House crest got between my hands and a former wage. I examine an ordinary load fairly and keep the crest out of my reckoning.
-opinion merchants mixed 1 : A proper price can be told with an open barrel and a dry measure. Titles make poor measures.
-opinion dole for 1 : A full pantry someday will let me spare a decent meal before setting off for the piers.
-opinion city mixed 1 : The ridges look handsome from the wet planks. I mean someday to look down from higher up while deciding what to cook.
-opinion times mixed 1 : I take the work on the boards today. Tomorrow's shelf needn't have today's bare shape.
+opinion @1 houses against 1 : A House crest got between my hands and a former wage. I examine an ordinary load fairly and keep the crest out of my reckoning.
+opinion @1 merchants mixed 1 : A proper price can be told with an open barrel and a dry measure. Titles make poor measures.
+opinion @1 dole for 1 : A full pantry someday will let me spare a decent meal before setting off for the piers.
+opinion @1 city mixed 1 : The ridges look handsome from the wet planks. I mean someday to look down from higher up while deciding what to cook.
+opinion @1 times mixed 1 : I take the work on the boards today. Tomorrow's shelf needn't have today's bare shape.
 
 grown
-line greet [pair.band=strangers] : There's a clean side to this greeting. | Come stand where the tag can stay dry.
-line greet [self.working=yes] : Give the barrel a little turning room. | Welcome past the high cask.
-line greet [here.time=dawn] : Morning over the white quay edge. | Cold start and a civil word.
-line greet [here.time=dusk|night] : Evening. The last mark's on the tag. | Come above the damp line.
-line kin.open [pair.kin!=no] : Household ears may hear my shelf plans. | There's room at the home side.
-line again.open : Another pass by the labels. | Back on the clean reverse.
-line greet.return : Hello again, under a lighter load. | Your tread's survived the pier turn.
-line greet.return [pair.band=friends|family] : Welcome where my private drawings sit. | I'd share the top-shelf space with you.
-line greet.return [self.working=yes] : I'm free while the next load settles. | My shoulder may pause for a word.
-line greet.return [here.time=dusk|night] : A familiar visitor after the casks are quiet. | Come away from the dark water.
-line farewell : A full jar at the home end. | May your shelf stand level.
-line farewell.return : I'll keep a dry bit of label for next time. | Good footing where the boards run out.
-line farewell.return [here.time=night] : Keep your latch towards warm light. | A whole night's quiet above the quay.
-line react.news : What was written on that parcel? | Give me the count before the crest.
-line react.news.new : That's new cargo to my hearing. | My label had no such mark yet.
-line react.news.known : I've seen that on a former tally. | The same news went out last tide.
-line react.news.doubt : I'd ask whose paw weighed that claim before taking it aboard. | The fine name on a label can belong to an empty barrel.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a bare shelf to look at. | I'll keep company without asking for the worst detail.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good addition to a lean day's stores. | That's put something solid on my shelf.
-line ask.how : Did today yield much for your pantry? | How heavy was your latest carry?
-line answer.how : I've a sound shoulder and a rather empty jar. | My drawing's fuller than my larder. Both are coming along.
-line decline : I ought to keep my spare strength for a return haul already waiting. | I'd need to finish the present load before another could fairly take its place.
-line accept_decline : We'll leave that patch of paper plain. | I heard the answer and can live with it.
-line thank : You spared my back a needless turn. | I'll remember what came free of the charge.
-line sympathise : Sit beyond the cask and let the wind pass. | An empty hour can hold decent company.
-line reassure : One jar can be put back before the whole shelf is full. | A blank corner in my sketch can hold a fresh beginning.
-line preclose : My rough label wants a final line. | The pier will need my shoulder shortly.
-
+line @1 greet [pair.band=strangers] : There's a clean side to this greeting. | Come stand where the tag can stay dry.
+line @2 greet [self.working=yes] : Give the barrel a little turning room. | Welcome past the high cask.
+line @3 greet [here.time=dawn] : Morning over the white quay edge. | Cold start and a civil word.
+line @4 greet [here.time=dusk|night] : Evening. The last mark's on the tag. | Come above the damp line.
+line @1 kin.open [pair.kin!=no] : Household ears may hear my shelf plans. | There's room at the home side.
+line @1 again.open : Another pass by the labels. | Back on the clean reverse.
+line @1 greet.return : Hello again, under a lighter load. | Your tread's survived the pier turn.
+line @2 greet.return [pair.band=friends|family] : Welcome where my private drawings sit. | I'd share the top-shelf space with you.
+line @3 greet.return [self.working=yes] : I'm free while the next load settles. | My shoulder may pause for a word.
+line @4 greet.return [here.time=dusk|night] : A familiar visitor after the casks are quiet. | Come away from the dark water.
+line @1 farewell : A full jar at the home end. | May your shelf stand level.
+line @1 farewell.return : I'll keep a dry bit of label for next time. | Good footing where the boards run out.
+line @2 farewell.return [here.time=night] : Keep your latch towards warm light. | A whole night's quiet above the quay.
+line @1 react.news : What was written on that parcel? | Give me the count before the crest.
+line @1 react.news.new : That's new cargo to my hearing. | My label had no such mark yet.
+line @1 react.news.known : I've seen that on a former tally. | The same news went out last tide.
+line @1 react.news.doubt : I'd ask whose paw weighed that claim before taking it aboard. | The fine name on a label can belong to an empty barrel.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a bare shelf to look at. | I'll keep company without asking for the worst detail.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good addition to a lean day's stores. | That's put something solid on my shelf.
+line @1 ask.how : Did today yield much for your pantry? | How heavy was your latest carry?
+line @1 answer.how : I've a sound shoulder and a rather empty jar. | My drawing's fuller than my larder. Both are coming along.
+line @1 decline : I ought to keep my spare strength for a return haul already waiting. | I'd need to finish the present load before another could fairly take its place.
+line @1 accept_decline : We'll leave that patch of paper plain. | I heard the answer and can live with it.
+line @1 thank : You spared my back a needless turn. | I'll remember what came free of the charge.
+line @1 sympathise : Sit beyond the cask and let the wind pass. | An empty hour can hold decent company.
+line @1 reassure : One jar can be put back before the whole shelf is full. | A blank corner in my sketch can hold a fresh beginning.
+line @1 preclose : My rough label wants a final line. | The pier will need my shoulder shortly.
 scene shelf
 when topic=home
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A clear print on the white edge. | Look where the last sole went sideways.
 
-dlg resident.hub : That's a spent cargo tag turned to its cleaner face. I've space left for a cupboard and a little while to hear your business.
-dlg resident.job [self.job=sailor self.trade_words] : I'm #self.trade_words#. A landed barrel leaves a good deal less trouble than one with half its weight still swinging.
-dlg resident.news [world.news] : A fresh account off the carrying boards. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's a new shelf on the drawing since you last passed the casks.
-dlg resident.bye : Something worth putting away on your top shelf.
-
+dlg @1 resident.hub : That's a spent cargo tag turned to its cleaner face. I've space left for a cupboard and a little while to hear your business.
+dlg @1 resident.job [self.job=sailor self.trade_words] : I'm #self.trade_words#. A landed barrel leaves a good deal less trouble than one with half its weight still swinging.
+dlg @1 resident.news [world.news] : A fresh account off the carrying boards. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a new shelf on the drawing since you last passed the casks.
+dlg @1 resident.bye : Something worth putting away on your top shelf.
 graft resident.hub
 choice What do you draw on the back of the freight label? -> label_pantry
 node label_pantry

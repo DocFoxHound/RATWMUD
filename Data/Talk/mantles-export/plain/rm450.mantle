@@ -1,9 +1,12 @@
+# rm450, the crust country (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm450
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_aldric_rainmarsh
+written_by codex
 title the crust country
 fits stage=adult|old
 prefers job=baker warmth=warm
@@ -35,43 +38,42 @@ board = the cooling board | a bare bread board
 wetair = a close dampness | a wet little draught
 
 any
-opinion merchants mixed 0 : A loaf can be a handsome picture and still deserve opening before its price is taken on trust.
-opinion sump for 1 : Low streets have taught me a broken end can be the most interesting piece on the board.
-opinion church for 1 : A prayer said over bread is particularly well placed to be followed up by sharing the bread.
-opinion road for 2 : Give me a road with a welcoming bend and a savoury dish to discover round the turn.
-opinion festivals for 1 : A few real tables full of ordinary appetites make an excellent reason for giving the ovens a busy day.
-opinion dole for 2 : There's room at a trough for one more small loaf when enough care has gone into counting the mouths.
+opinion @1 merchants mixed 0 : A loaf can be a handsome picture and still deserve opening before its price is taken on trust.
+opinion @1 sump for 1 : Low streets have taught me a broken end can be the most interesting piece on the board.
+opinion @1 church for 1 : A prayer said over bread is particularly well placed to be followed up by sharing the bread.
+opinion @1 road for 2 : Give me a road with a welcoming bend and a savoury dish to discover round the turn.
+opinion @1 festivals for 1 : A few real tables full of ordinary appetites make an excellent reason for giving the ovens a busy day.
+opinion @1 dole for 2 : There's room at a trough for one more small loaf when enough care has gone into counting the mouths.
 
 grown
-line greet : Hello. A harbour's appeared in this crust. | Welcome. I've room at the edge where the land starts to cool.
-line greet [pair.band=strangers] : A fresh face on the border of my little country. | I'd offer a proper welcome before asking your opinion of the hills.
-line greet [here.time=dawn] : Morning. First light turns every crack into a good deep valley. | The crust country looks particularly spacious this early.
-line greet.return : Yes, hello. I was almost lost in a rather narrow road. | I've finished with my geography and can listen now.
-line greet.return [pair.band=friends|family] : There's an agreeable companion for an entirely imaginary walk. | I know that step across my cooling country.
-line greet.return [here.time=night] : Late hello. The dim light suits a country made mostly of shadows. | Glad you came while the day's last hills are still visible.
-line again.open : You find me at another bend across yesterday's board. | Back before the map has been eaten, I see.
-line hail [pair.band=friends] : Come see whether you make that an inlet or a river mouth! | Try standing here to look along this valley.
-line farewell : May your next walk end pleasantly beside a table. | A clear route among the crumbs and corners to you.
-line farewell.return : I'll guard the remaining hills till the next slice. | Get out before the weather spoils an actual walk.
-line react.news : I'm happy to hear a real story after these invented roads. | Tell it as far as you followed it yourself.
-line react.news.new : I hadn't found even the first little turning of that news. | Oh, a completely new country to my ears.
-line react.news.known : Yes. The earlier story followed that same bend. | I've heard its shape described in much the same words.
-line react.news.doubt : That road grows a little misty between event and claim. | I'd look again before making a whole country out of that rumour.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Come rest by me while the world feels so rough underfoot. | I can leave these little distractions aside for your sorrow.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good news warms a room without borrowing anything from the oven. | I'd put a particularly fine bread end by to mark that happy news.
-line ask.how : How has the road over today's hills been for you? | Have you found a pleasant stopping place anywhere?
-line answer.how : A little short of clear breath and quite full of ideas. | Easy enough if I give myself an occasional pause between sentences.
-line decline : That hillside wants company. I'd be claiming more time than is left in my day. | I'd have to make the road up beyond this point and that wouldn't serve you.
-line accept_decline : Then we've come to a perfectly civil boundary. | Fair. I shan't send the request on another little journey.
-line preclose : Time to descend these floury hills to what the day asks of me. | I'd best see how the last few pieces are cooling.
-line accept_preclose : Go and enjoy a stretch of road I can't draw for you. | Our short halt has been a pleasant one.
-line thank : You pointed out a comfortable way through. Thank you. | You've given me an idea to carry round a good while.
-line deflect_thanks : I had a spare crust and a story to go with it. | It was easy to make a corner by shifting a little flour.
-line sympathise : Sit here beside my folded map with no need to travel anywhere. | I'll listen as long as the words want to come slowly.
-line reassure : Not every road needs covering before supper. | We can look for a shallow turning before trying the highest ridge.
-line ack : Yes, those lines would meet rather neatly. | I see the bit of country you mean.
-line give.advice : Let a loaf settle before cutting straight across its finest view. | Move away from the food when your throat asks for a pause.
-
+line @1 greet : Hello. A harbour's appeared in this crust. | Welcome. I've room at the edge where the land starts to cool.
+line @2 greet [pair.band=strangers] : A fresh face on the border of my little country. | I'd offer a proper welcome before asking your opinion of the hills.
+line @3 greet [here.time=dawn] : Morning. First light turns every crack into a good deep valley. | The crust country looks particularly spacious this early.
+line @1 greet.return : Yes, hello. I was almost lost in a rather narrow road. | I've finished with my geography and can listen now.
+line @2 greet.return [pair.band=friends|family] : There's an agreeable companion for an entirely imaginary walk. | I know that step across my cooling country.
+line @3 greet.return [here.time=night] : Late hello. The dim light suits a country made mostly of shadows. | Glad you came while the day's last hills are still visible.
+line @1 again.open : You find me at another bend across yesterday's board. | Back before the map has been eaten, I see.
+line @1 hail [pair.band=friends] : Come see whether you make that an inlet or a river mouth! | Try standing here to look along this valley.
+line @1 farewell : May your next walk end pleasantly beside a table. | A clear route among the crumbs and corners to you.
+line @1 farewell.return : I'll guard the remaining hills till the next slice. | Get out before the weather spoils an actual walk.
+line @1 react.news : I'm happy to hear a real story after these invented roads. | Tell it as far as you followed it yourself.
+line @1 react.news.new : I hadn't found even the first little turning of that news. | Oh, a completely new country to my ears.
+line @1 react.news.known : Yes. The earlier story followed that same bend. | I've heard its shape described in much the same words.
+line @1 react.news.doubt : That road grows a little misty between event and claim. | I'd look again before making a whole country out of that rumour.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Come rest by me while the world feels so rough underfoot. | I can leave these little distractions aside for your sorrow.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good news warms a room without borrowing anything from the oven. | I'd put a particularly fine bread end by to mark that happy news.
+line @1 ask.how : How has the road over today's hills been for you? | Have you found a pleasant stopping place anywhere?
+line @1 answer.how : A little short of clear breath and quite full of ideas. | Easy enough if I give myself an occasional pause between sentences.
+line @1 decline : That hillside wants company. I'd be claiming more time than is left in my day. | I'd have to make the road up beyond this point and that wouldn't serve you.
+line @1 accept_decline : Then we've come to a perfectly civil boundary. | Fair. I shan't send the request on another little journey.
+line @1 preclose : Time to descend these floury hills to what the day asks of me. | I'd best see how the last few pieces are cooling.
+line @1 accept_preclose : Go and enjoy a stretch of road I can't draw for you. | Our short halt has been a pleasant one.
+line @1 thank : You pointed out a comfortable way through. Thank you. | You've given me an idea to carry round a good while.
+line @1 deflect_thanks : I had a spare crust and a story to go with it. | It was easy to make a corner by shifting a little flour.
+line @1 sympathise : Sit here beside my folded map with no need to travel anywhere. | I'll listen as long as the words want to come slowly.
+line @1 reassure : Not every road needs covering before supper. | We can look for a shallow turning before trying the highest ridge.
+line @1 ack : Yes, those lines would meet rather neatly. | I see the bit of country you mean.
+line @1 give.advice : Let a loaf settle before cutting straight across its finest view. | Move away from the food when your throat asks for a pause.
 scene firstbreak
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : I'd enjoy a table long enough for everybody to take a road into the same lar
 b : Who names the rivers? | Would you let anyone cut a mountain?
 a : Whoever gets to sit by them. A good generous map has enough jobs for all the guests. | Gladly. I'm making a dinner in this dream. It'd be a poor one if nobody were allowed a slice.
 
-grown
-
 story wholekingdom [topic=food|memories]
   : I decided an exceptionally wide loaf looked like three little islands barely touching. Turned it on the board to show the bright side of each.
   : The three islands came cleanly apart. I'd been admiring three rolls quite skilfully stuck together.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say A curved strip of fish round a bread heel. Fine lunch. | Keep the little bit of brine on the dinner side, please.
 
-dlg resident.hub : I've found a pleasant turning in the crust and can leave it there while we speak.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's a new country on the board since last we stopped for a look.
-dlg resident.hub [here.time=night] : The hills on my smallest map stand out handsomely in lamplight. There's plenty left to see.
-dlg resident.hub [pair.disposition=wary|hostile] : There's a fair gap in the board between us. You can ask quite plainly from there.
-dlg resident.job [self.job=baker] : #self.trade_words.capitalize#. The little uplands on a loaf are my own private reward for watching it cool.
-dlg resident.job : I enjoy making something that can be shared even while it's giving folk a story to tell one another.
-dlg resident.bye : I hope you find the pleasant way round the last ridge on your road.
-
+dlg @1 resident.hub : I've found a pleasant turning in the crust and can leave it there while we speak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a new country on the board since last we stopped for a look.
+dlg @3 resident.hub [here.time=night] : The hills on my smallest map stand out handsomely in lamplight. There's plenty left to see.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's a fair gap in the board between us. You can ask quite plainly from there.
+dlg @1 resident.job [self.job=baker] : #self.trade_words.capitalize#. The little uplands on a loaf are my own private reward for watching it cool.
+dlg @2 resident.job : I enjoy making something that can be shared even while it's giving folk a story to tell one another.
+dlg @1 resident.bye : I hope you find the pleasant way round the last ridge on your road.
 graft resident.hub
 choice How do you find a road on an ordinary loaf? -> findcrack
 node findcrack

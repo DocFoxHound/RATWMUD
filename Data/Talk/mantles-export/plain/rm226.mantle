@@ -1,9 +1,12 @@
+# rm226, the corner turned in (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm226
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_ulla_greymore
+written_by codex
 title the corner turned in
 fits stage=adult|old
 prefers job=laborer
@@ -40,48 +43,47 @@ threadbit = a short blue thread | a length of black wool
 breadrag = a little bread cloth | a clean square for oatcakes
 
 grown
-
-opinion houses against 2 : A grand badge doesn't make the water any lighter for the wolf who lifts it.
-opinion dole for 3 : Let the one who brings the bowl choose how full. Hunger has a voice worth hearing.
-opinion strangers for 1 : If I've got an oatcake I can find a way to break it cleanly in two.
-opinion merchants against 1 : That last bit of soap costs most to the household with the fewest clothes.
-opinion festivals against 1 : I'd like room to cross a street on weary legs without shouting setting me spinning.
-opinion church for 1 : A chapel bell reaches through the steam when I can't see my own boots.
-opinion sump for 1 : I like neighbours who'll give you a hand with a soaking bundle and keep their eyes off the mark.
-opinion watch against 1 : Anyone asking to inspect somebody else's business ought to give a reason out loud.
-opinion city mixed 1 : There's a hard climb between a rich wolf's doorstep and the hands that keep the linen clean.
-line greet : Set down whatever you're carrying. My ears work better when nobody's straining.
-line greet [pair.band=strangers] : No ceremony needed. You have my attention.
-line greet [here.time=dawn] : Morning. I'll take my first words a little softer.
-line greet [self.working=yes] : I'm listening above my wrists, anyhow.
-line greet.return : I've put the sharp edge of my voice away.
-line greet.return [pair.band=friends|family] : For you I can loosen a little of the day.
-line greet.return [here.time=dusk] : A welcome voice to hear with the light going.
-line again.open : You caught me before the next bundle of business.
-line hail [pair.band=friends] : Nearer, if you've got time to stop properly!
-line kin.open [pair.kin!=no] : Take an easy hold of my arm. There's room.
-line farewell : Leave yourself a bit of unclaimed daylight.
-line farewell.return : Go with light hands if you've any say in it.
-line react.news : Give me the whole bundle before I judge the weight.
-line react.news.new : That's a fresh bit of cloth on the pile.
-line react.news.known : I've handled that piece of news once already.
-line react.news.doubt : A mark on one corner proves less than you might suppose.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd do a quiet turn of work for whoever's hurting.
-line react.news.glad [topic.kind=birth|marriage|work|succession|apprentice] : That's worth an extra oatcake and a generous scrape of butter.
-line answer.how : My wrists are speaking and I'm letting them finish.
-line ask.how : Is anything pulling harder on you than it ought?
-line answer.how.busy [self.working=yes] : Busy down to the knuckles. I can still hear you.
-line sympathise : Give me one small thing to take off your hands.
-line reassure : It needn't all be wrung out in one turn.
-line thank : My arms owe you for the weight you've spared.
-line deflect_thanks : Doing the little part was easier than standing watching.
-line decline : I'd be spending somebody else's trust if I did that.
-line accept_decline : I'll take my hands off the matter.
-line preclose : I need to let my feet get moving again.
-line accept_preclose : Away with you before another job finds you.
-line ack : I've got both corners of your meaning now.
-line offer : Here, take this corner. It's the driest.
-line give.advice : Loosen the knot while you can still get a nail under it.
+opinion @1 houses against 2 : A grand badge doesn't make the water any lighter for the wolf who lifts it.
+opinion @1 dole for 3 : Let the one who brings the bowl choose how full. Hunger has a voice worth hearing.
+opinion @1 strangers for 1 : If I've got an oatcake I can find a way to break it cleanly in two.
+opinion @1 merchants against 1 : That last bit of soap costs most to the household with the fewest clothes.
+opinion @1 festivals against 1 : I'd like room to cross a street on weary legs without shouting setting me spinning.
+opinion @1 church for 1 : A chapel bell reaches through the steam when I can't see my own boots.
+opinion @1 sump for 1 : I like neighbours who'll give you a hand with a soaking bundle and keep their eyes off the mark.
+opinion @1 watch against 1 : Anyone asking to inspect somebody else's business ought to give a reason out loud.
+opinion @1 city mixed 1 : There's a hard climb between a rich wolf's doorstep and the hands that keep the linen clean.
+line @1 greet : Set down whatever you're carrying. My ears work better when nobody's straining.
+line @2 greet [pair.band=strangers] : No ceremony needed. You have my attention.
+line @3 greet [here.time=dawn] : Morning. I'll take my first words a little softer.
+line @4 greet [self.working=yes] : I'm listening above my wrists, anyhow.
+line @1 greet.return : I've put the sharp edge of my voice away.
+line @2 greet.return [pair.band=friends|family] : For you I can loosen a little of the day.
+line @3 greet.return [here.time=dusk] : A welcome voice to hear with the light going.
+line @1 again.open : You caught me before the next bundle of business.
+line @1 hail [pair.band=friends] : Nearer, if you've got time to stop properly!
+line @1 kin.open [pair.kin!=no] : Take an easy hold of my arm. There's room.
+line @1 farewell : Leave yourself a bit of unclaimed daylight.
+line @1 farewell.return : Go with light hands if you've any say in it.
+line @1 react.news : Give me the whole bundle before I judge the weight.
+line @1 react.news.new : That's a fresh bit of cloth on the pile.
+line @1 react.news.known : I've handled that piece of news once already.
+line @1 react.news.doubt : A mark on one corner proves less than you might suppose.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd do a quiet turn of work for whoever's hurting.
+line @1 react.news.glad [topic.kind=birth|marriage|work|succession|apprentice] : That's worth an extra oatcake and a generous scrape of butter.
+line @1 answer.how : My wrists are speaking and I'm letting them finish.
+line @1 ask.how : Is anything pulling harder on you than it ought?
+line @1 answer.how.busy [self.working=yes] : Busy down to the knuckles. I can still hear you.
+line @1 sympathise : Give me one small thing to take off your hands.
+line @1 reassure : It needn't all be wrung out in one turn.
+line @1 thank : My arms owe you for the weight you've spared.
+line @1 deflect_thanks : Doing the little part was easier than standing watching.
+line @1 decline : I'd be spending somebody else's trust if I did that.
+line @1 accept_decline : I'll take my hands off the matter.
+line @1 preclose : I need to let my feet get moving again.
+line @1 accept_preclose : Away with you before another job finds you.
+line @1 ack : I've got both corners of your meaning now.
+line @1 offer : Here, take this corner. It's the driest.
+line @1 give.advice : Loosen the knot while you can still get a nail under it.
 scene at_self_workplace_i
 when topic=work self.job=laborer
 does tell.self / ask.detail / answer.detail
@@ -120,14 +122,14 @@ a : No, but I enjoy finding how far my own thoughts have taken me. | The early o
 scene the_first_snow_is
 when topic=weather
 does tell.self / ask.detail / answer.detail
-a : The first snow is my favourite coverlet. Nobody has to haul it up the hill. | I'd get out of bed to see the season's first flakes.
+a : I'd rise ahead of the bells for the first snow. Nobody has to haul that coverlet up the hill. | I'd get out of bed to see the season's first flakes.
 b : Even before the bells?
 a : For snow, yes. A bell has never made the whole street clean in one breath. | I'd be cross about the hour and delighted at the sight. I can manage both.
 
 scene a_gull_knows_precisely
 when topic=animals self.dislikes=gulls
 does tell.self / ask.detail / answer.detail
-a : A gull knows precisely when to begin shouting over something worth hearing. | I wouldn't trust a gull alone with an uncovered oatcake.
+a : A gull shouts over anything worth hearing. I'd trust it with very little. | I wouldn't trust a gull alone with an uncovered oatcake.
 b : What would you trust it with?
 a : The dirty end of a very long line, well clear of everybody else's supper. | Flying its own wings and making its own awful racket.
 
@@ -204,7 +206,7 @@ a : A little oval, stitches close together, no hard ridge to rub through from in
 scene rain_s_no_enemy
 when topic=weather here.weather=rain
 does tell.self / ask.detail / answer.detail
-a : Rain's no enemy to a wolf with everything still soaking in the tub. | A shower always seems to know when something's nearly ready to take in.
+a : Rain's the enemy of a wolf with the washing still out on the line. | A shower always seems to know when something's nearly ready to take in.
 b : What do you save first?
 a : Whatever took the longest to wring out. My wrists have strong opinions. | Small stuff I could tuck inside my coat. I won't carry the whole sky at once.
 
@@ -233,14 +235,14 @@ scene i_ask_the_bright
 when topic=faith
 does tell.self / ask.detail / answer.detail
 a : When I speak to the Bright One, it's a gentle grip I want more often than a strong back. | I don't need much ceremony to give thanks after I've set down a load.
-b : A gentle grip on what?
-a : Usually on my temper. Other things can stay held well enough. | Whatever's been handed back to me more tenderly than I expected.
+b : Then what's your prayer?
+a : A gentle grip on my temper, usually. Other things hold well enough. | Nothing much. I give thanks for whatever came back to me gentler than I expected.
 
 scene i_ll_offer_a
 when topic=newcomer
 does tell.self / ask.detail / answer.detail
 a : I'll offer a newcomer a piece out of my clean bread cloth. | It's easy to help somebody in a way that puts the whole street in on it.
-b : What makes a private kindness possible?
+b : And with nobody watching?
 a : Make it ordinary. Hand over the cake like I'm passing a pin. | Speak softly and once. There's no need to announce a refusal either.
 
 scene i_don_t_like
@@ -253,7 +255,7 @@ a : Then my walk has become a visit and I can have my walk some other time. | I 
 scene a_damp_rag_by
 when topic=home
 does tell.self / ask.detail / answer.detail
-a : A damp rag by a latch makes a whole room smell like a forgotten job. | I leave a gap around anything drying, even the meanest dishcloth.
+a : Hang a damp rag with no gap round it and by noon the air's gone sour as a job left undone. | I leave a gap around anything drying, even the meanest dishcloth.
 b : Does a gap matter so much?
 a : Touch two wet folds in the morning and try to tell me air doesn't earn its keep. | I like getting a second use out of one day's airing.
 
@@ -269,12 +271,12 @@ when topic=memories
 does tell.self / ask.detail / answer.detail
 a : I remember making a parcel look grander than the thing wrapped up in it. | I've spent more string than sense on a present before now.
 b : What were you giving?
-a : One plain oatcake to a friend with a long hungry walk ahead. | A square of good cloth. I'd wrapped the wrapper and forgotten to laugh about it.
+a : One plain oatcake to a friend with a long hungry walk ahead. | A square of good cloth. Wrapped in more good cloth. I laughed about it afterwards.
 
 scene somebody_put_it_about
 when topic=gossip here.gossip=yes
 does tell.self / ask.detail / answer.detail
-a : Somebody put it about that #topic.subject# #topic.claim#. | I've heard this. #topic.subject# #topic.claim#.
+a : Somebody put it about that #topic.subject# #topic.claim#. | I've heard this. #topic.subject.capitalize# #topic.claim#.
 b : Would you put your mark against it?
 a : On a clean sheet I'd mark only that I've heard it. Mind the difference. | No. A repeat costs breath. A guarantee would cost my good name.
 
@@ -344,18 +346,18 @@ does aside
 cooldown 8h
 say Find where the strain is before showing off a grip. | Let the learner feel the balance first.
 
-dlg resident.hub : Mind the bundle if you take the nearer seat.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your hands on your own business and I'll hear you.
-dlg resident.hub [topic.meeting=known] : #topic.player#, come where we can talk at an ordinary volume.
-dlg resident.job [self.job=laborer] : #self.workplace# keeps my wrists busy. Clean cloth has to find its own door again too.
-dlg resident.job : I like work where I can give a thing back in better shape.
-dlg resident.news [world.news] : Here's the news as it came into my hands. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody said #topic.subject# #topic.claim#. Allow for a few twists on the way round.
-dlg resident.bye : May the next load sit comfortably.
-dlg master.work : Get a feel for the weight before you agree to carry it. A trade lives in the fingers as much as the head.
-dlg master.takes [here.take_on=yes] : There's room under my wing for a single learner I trust. Ask and I'll take you on.
-dlg master.wages : There's no apprentice wage. You'll learn three times faster beside me, and can sell whatever your hands turn out.
-dlg master.bye : Give those fingers a rest on your way.
+dlg @1 resident.hub : Mind the bundle if you take the nearer seat.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : Keep your hands on your own business and I'll hear you.
+dlg @3 resident.hub [topic.meeting=known] : #topic.player#, come where we can talk at an ordinary volume.
+dlg @1 resident.job [self.job=laborer] : #self.workplace.capitalize# keeps my wrists busy. Clean cloth has to find its own door again too.
+dlg @2 resident.job : I like work where I can give a thing back in better shape.
+dlg @1 resident.news [world.news] : Here's the news as it came into my hands. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody said #topic.subject# #topic.claim#. Allow for a few twists on the way round.
+dlg @1 resident.bye : May the next load sit comfortably.
+dlg @1 master.work : Get a feel for the weight before you agree to carry it. A trade lives in the fingers as much as the head.
+dlg @1 master.takes [here.take_on=yes] : There's room under my wing for a single learner I trust. Ask and I'll take you on.
+dlg @1 master.wages : There's no apprentice wage. You'll learn three times faster beside me, and can sell whatever your hands turn out.
+dlg @1 master.bye : Give those fingers a rest on your way.
 graft resident.hub
 choice Why hide the mark on the cloth? -> corner_privacy
 node corner_privacy
@@ -365,6 +367,7 @@ choice I'll leave it folded. -> hub
 node corner_pair
 say Two halves of a tally or a quick look inside the fold. A whole street doesn't need to help me read.
 choice I see how that works. -> bye
+
 graft master.learn
 choice Can I try balancing a bundle? -> corner_balance
 node corner_balance

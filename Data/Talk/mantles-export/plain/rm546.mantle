@@ -1,9 +1,12 @@
+# rm546, the gutter-mark star (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm546
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_roald_wickstack
+written_by codex
 title the gutter-mark star
 fits stage=adult|old
 prefers job=servant
@@ -35,41 +38,40 @@ cart = the laden handcart | a low market truck
 rill = a narrow runnel | a busy strip of gutter water
 
 any
-opinion church for 2 : A dry turning under my neighbour's load deserves a grateful prayer. I can mark it on paper as well as giving thanks.
-opinion dole for 1 : Carry a meal round the high way before deciding a flooded street is reason enough to leave it cold.
-opinion festivals against 1 : In a crush I can't even see the water at my own feet. The bells may travel here without the crowd.
-opinion merchants against 1 : A narrow gutter doesn't double the journey. I'm apt to question a price that says otherwise.
-opinion drink against 1 : Spice is what I like in a winter cup. I've seen good company washed away by what's poured afterwards.
+opinion @1 church for 2 : A dry turning under my neighbour's load deserves a grateful prayer. I can mark it on paper as well as giving thanks.
+opinion @1 dole for 1 : Carry a meal round the high way before deciding a flooded street is reason enough to leave it cold.
+opinion @1 festivals against 1 : In a crush I can't even see the water at my own feet. The bells may travel here without the crowd.
+opinion @1 merchants against 1 : A narrow gutter doesn't double the journey. I'm apt to question a price that says otherwise.
+opinion @1 drink against 1 : Spice is what I like in a winter cup. I've seen good company washed away by what's poured afterwards.
 
 grown
-line greet [pair.band=strangers] : Come up by the high step. | Welcome past the trickle.
-line greet [self.working=yes] : You've caught me beside the dry bundles. | Mind the folded map under my cuff.
-line greet [here.time=dawn] : Morning keeps a clear edge on the gutter. | A fresh sky above the paving.
-line greet [here.time=dusk|night] : Evening. I can still see our footing. | Come in under a star or two.
-line kin.open [pair.kin!=no] : Household company gets the drier chair. | Good to see a home face past the puddles.
-line again.open : Here we are on the high part again. | There's another turn in our talk.
-line greet.return : Welcome back to a dry crossing. | Your feet found a sound way here.
-line greet.return [pair.band=friends|family] : I'd mark your doorstep with a welcome star. | Friendly faces brighten this high ground.
-line greet.return [self.working=yes] : My hands are stained but free. | This dry end of the passage will do.
-line greet.return [here.time=dusk|night] : Welcome by the lamp above the flood mark. | A familiar step after the stars come out.
-line farewell : Keep above the first wet turning. | Dry cuffs when your last gate opens.
-line farewell.return : I'll remember the crossing for you. | Find a sound route for your next errand.
-line farewell.return [here.time=night] : Bright stars above a safe homeward path. | May your last doorstep stand clear.
-line react.news : Which turn has that report taken? | Tell me the part worth writing beside a star.
-line react.news.new : My map had no mark for that yet. | A new report under these eaves.
-line react.news.known : That came by the high road yesterday. | I've already a mark beside that word.
-line react.news.doubt : I'd walk to the turning before marking a flood quite that deep. | Some tales run downhill faster than the water itself.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : An ugly turning. I'll wait here with you. | Bring your burden over onto this dry bit.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a star to put in good ink. | A heartening arrival by any road.
-line ask.how : What sort of crossing did you get today? | Have you had a dry hour for yourself?
-line answer.how : My cuffs are dry and my prayers are said. | Some ink on my paws, enough hope in my pocket.
-line decline : I'd sooner keep the light for the other route I promised to check. | I must leave my spare hour open for a household errand.
-line accept_decline : No black star beside that answer. | The matter stands where you left it.
-line thank : You kept a troublesome bit of work dry. | That help will go in my evening thanks.
-line sympathise : Take a steady breath by this high sill. | I'll stay where you can see a friendly face.
-line reassure : A little higher ground can change the whole view. | We can set out when the water falls.
-line preclose : I'd best take one more look at that gutter. | There is a folding sum waiting in my cuff.
-
+line @1 greet [pair.band=strangers] : Come up by the high step. | Welcome past the trickle.
+line @2 greet [self.working=yes] : You've caught me beside the dry bundles. | Mind the folded map under my cuff.
+line @3 greet [here.time=dawn] : Morning keeps a clear edge on the gutter. | A fresh sky above the paving.
+line @4 greet [here.time=dusk|night] : Evening. I can still see our footing. | Come in under a star or two.
+line @1 kin.open [pair.kin!=no] : Household company gets the drier chair. | Good to see a home face past the puddles.
+line @1 again.open : Here we are on the high part again. | There's another turn in our talk.
+line @1 greet.return : Welcome back to a dry crossing. | Your feet found a sound way here.
+line @2 greet.return [pair.band=friends|family] : I'd mark your doorstep with a welcome star. | Friendly faces brighten this high ground.
+line @3 greet.return [self.working=yes] : My hands are stained but free. | This dry end of the passage will do.
+line @4 greet.return [here.time=dusk|night] : Welcome by the lamp above the flood mark. | A familiar step after the stars come out.
+line @1 farewell : Keep above the first wet turning. | Dry cuffs when your last gate opens.
+line @1 farewell.return : I'll remember the crossing for you. | Find a sound route for your next errand.
+line @2 farewell.return [here.time=night] : Bright stars above a safe homeward path. | May your last doorstep stand clear.
+line @1 react.news : Which turn has that report taken? | Tell me the part worth writing beside a star.
+line @1 react.news.new : My map had no mark for that yet. | A new report under these eaves.
+line @1 react.news.known : That came by the high road yesterday. | I've already a mark beside that word.
+line @1 react.news.doubt : I'd walk to the turning before marking a flood quite that deep. | Some tales run downhill faster than the water itself.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : An ugly turning. I'll wait here with you. | Bring your burden over onto this dry bit.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a star to put in good ink. | A heartening arrival by any road.
+line @1 ask.how : What sort of crossing did you get today? | Have you had a dry hour for yourself?
+line @1 answer.how : My cuffs are dry and my prayers are said. | Some ink on my paws, enough hope in my pocket.
+line @1 decline : I'd sooner keep the light for the other route I promised to check. | I must leave my spare hour open for a household errand.
+line @1 accept_decline : No black star beside that answer. | The matter stands where you left it.
+line @1 thank : You kept a troublesome bit of work dry. | That help will go in my evening thanks.
+line @1 sympathise : Take a steady breath by this high sill. | I'll stay where you can see a friendly face.
+line @1 reassure : A little higher ground can change the whole view. | We can set out when the water falls.
+line @1 preclose : I'd best take one more look at that gutter. | There is a folding sum waiting in my cuff.
 scene star
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A thankful word for these dry steps. | Ink for the map after a word of prayer.
 
-dlg resident.hub : Come onto the raised paving with me. I'll hear you while the little runnel finds its direction.
-dlg resident.job [self.job=servant self.workplace] : I'm in household service at #self.workplace#. Dry bundles take a good deal of thought in this city.
-dlg resident.news [world.news] : This travelled clear of the flooded turns. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, room on the high step for a familiar caller.
-dlg resident.bye : Dry ground by the Bright One's favour all along your journey.
-
+dlg @1 resident.hub : Come onto the raised paving with me. I'll hear you while the little runnel finds its direction.
+dlg @1 resident.job [self.job=servant self.workplace] : I'm in household service at #self.workplace#. Dry bundles take a good deal of thought in this city.
+dlg @1 resident.news [world.news] : This travelled clear of the flooded turns. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, room on the high step for a familiar caller.
+dlg @1 resident.bye : Dry ground by the Bright One's favour all along your journey.
 graft resident.hub
 choice What does the star on your cuff map mean? -> cuff_star
 node cuff_star

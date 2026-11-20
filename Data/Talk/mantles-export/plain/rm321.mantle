@@ -1,9 +1,12 @@
+# rm321, the envelope under oilcloth (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm321
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_cedric_rook
+written_by codex
 title the envelope under oilcloth
 fits stage=adult|old
 prefers job=none
@@ -36,35 +39,34 @@ stoneflag = a polished flag | a square of worn stone
 inkline = a clean black stroke | a crisp downstroke
 
 any
-opinion city for 2 : A city that can mislay an address and still deliver its roast dinners has not yet exhausted my affection.
-opinion houses mixed 1 : Rank confers many privileges. Being in two houses to receive one letter apparently remains beyond it.
-opinion merchants for 1 : At a busy counter one can watch concise communication practised under considerable pressure.
-opinion festivals for 1 : The only procession I endorse is one with time for every participant to finish an anecdote.
-opinion strangers for 1 : The price of hearing a new tale is generally the modest trouble of offering a stranger a chair.
-opinion road for 1 : A serviceable road makes a very long address considerably more bearable.
+opinion @1 city for 2 : A city that can mislay an address and still deliver its roast dinners has not yet exhausted my affection.
+opinion @1 houses mixed 1 : Rank confers many privileges. Being in two houses to receive one letter apparently remains beyond it.
+opinion @1 merchants for 1 : At a busy counter one can watch concise communication practised under considerable pressure.
+opinion @1 festivals for 1 : The only procession I endorse is one with time for every participant to finish an anecdote.
+opinion @1 strangers for 1 : The price of hearing a new tale is generally the modest trouble of offering a stranger a chair.
+opinion @1 road for 1 : A serviceable road makes a very long address considerably more bearable.
 
 grown
-line greet : I can shelter both our greetings under this brim. | Welcome. My paperwork can withstand the interruption.
-line greet.return : Your courtesy is acknowledged with an equal measure of my own. | A very cordial return from inside the hood.
-line again.open : A repeat appearance in today's margin.
-line farewell : May the next door recognise your errand. | Keep your route and your papers reasonably dry.
-line farewell.return : I'll return that farewell with the seal intact. | A kindly wish deserves delivery in both directions.
-line react.news : I'll take the oral account before reaching for ink. | Give me the particulars while the page is open.
-line react.news.new : My mental register gains an entry.
-line react.news.known : That item bears a familiar filing crease.
-line react.news.doubt : I should hesitate to sign the covering note.
-line react.news.sorrow [topic.kind=death|loss|assault] : Some losses deserve a great deal more than a neatly written condolence.
-line react.news.glad [topic.kind=birth|marriage|work] : A welcome addition to the happier correspondence.
-line ask.how : How fares your collection of unfinished business?
-line answer.how : I am present, suitably dry and still in possession of my errand.
-line sympathise : I can provide a chair without requesting a statement.
-line reassure : A second attempt is quite admissible under ordinary weather.
-line refuse : I have an older appointment already waiting at a closed door.
-line accept_decline : I take your decision as delivered in full.
-line preclose : My correspondence and I should resume our joint journey.
-line accept_preclose : I release you to your more pressing engagements.
-line ack : Clear on every material point.
-
+line @1 greet : I can shelter both our greetings under this brim. | Welcome. My paperwork can withstand the interruption.
+line @1 greet.return : Your courtesy is acknowledged with an equal measure of my own. | A very cordial return from inside the hood.
+line @1 again.open : A repeat appearance in today's margin.
+line @1 farewell : May the next door recognise your errand. | Keep your route and your papers reasonably dry.
+line @1 farewell.return : I'll return that farewell with the seal intact. | A kindly wish deserves delivery in both directions.
+line @1 react.news : I'll take the oral account before reaching for ink. | Give me the particulars while the page is open.
+line @1 react.news.new : My mental register gains an entry.
+line @1 react.news.known : That item bears a familiar filing crease.
+line @1 react.news.doubt : I should hesitate to sign the covering note.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Some losses deserve a great deal more than a neatly written condolence.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A welcome addition to the happier correspondence.
+line @1 ask.how : How fares your collection of unfinished business?
+line @1 answer.how : I am present, suitably dry and still in possession of my errand.
+line @1 sympathise : I can provide a chair without requesting a statement.
+line @1 reassure : A second attempt is quite admissible under ordinary weather.
+line @1 refuse : I have an older appointment already waiting at a closed door.
+line @1 accept_decline : I take your decision as delivered in full.
+line @1 preclose : My correspondence and I should resume our joint journey.
+line @1 accept_preclose : I release you to your more pressing engagements.
+line @1 ack : Clear on every material point.
 scene exchange1
 when topic=work self.working=yes self.job=none self.workplace
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.likes=market_bustle
 does aside
 cooldown 8h
 say I admire how promptly a basket makes its point. | Market business arrives at a gratifying volume.
-dlg resident.hub : My schedule contains a perfectly serviceable conversational interval.
-dlg resident.hub [topic.meeting=known] : #topic.player#, my recollection has retained the address of our last conversation.
-dlg resident.hub [here.time=night] : At this hour I allow an errand to rest and an anecdote to stretch.
-dlg resident.hub [pair.disposition=wary|hostile] : I can accept a plain statement without an accompanying seal.
-dlg resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. The portion involving closed doors is more extensive than the title suggests.
-dlg resident.job : I attend to the little details that would otherwise lodge crosswise in a grand undertaking.
-dlg resident.news [world.news] : The matter circulating at present is this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The account in circulation says #topic.subject# #topic.claim#. I should file it under hearsay.
-dlg resident.bye : A clear address and a receptive doorway to you.
 
+dlg @1 resident.hub : My schedule contains a perfectly serviceable conversational interval.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my recollection has retained the address of our last conversation.
+dlg @3 resident.hub [here.time=night] : At this hour I allow an errand to rest and an anecdote to stretch.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can accept a plain statement without an accompanying seal.
+dlg @1 resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. The portion involving closed doors is more extensive than the title suggests.
+dlg @2 resident.job : I attend to the little details that would otherwise lodge crosswise in a grand undertaking.
+dlg @1 resident.news [world.news] : The matter circulating at present is this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account in circulation says #topic.subject# #topic.claim#. I should file it under hearsay.
+dlg @1 resident.bye : A clear address and a receptive doorway to you.
 graft resident.hub
 choice Why the oilcloth even on a dry day? -> oiled_pocket
 node oiled_pocket

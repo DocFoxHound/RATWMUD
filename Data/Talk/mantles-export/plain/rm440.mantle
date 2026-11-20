@@ -1,14 +1,17 @@
+# rm440, the iron's bright corner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm440
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_wenna_mossgrave
+written_by codex
 title the iron's bright corner
 fits stage=adult|old
 prefers job=merchant temper=even
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk files_one_corner_of_an_iron_sample_before_discussing_its_price
+quirk files_a_corner_of_an_iron_sample_before_naming_a_price
 likes blackberries dice market_bustle warm_rain
 dislikes deep_mud gulls
 fears a_cargo_sold_twice_on_the_same_paper a_good_trial_lost_to_bad_stowage
@@ -38,52 +41,51 @@ warmspot = the warm touch of rain | a patch of mild rain
 ruling = the rule across my memorandum | a fine dividing line
 
 any
-opinion houses for 2 : A House that puts a durable mark into honest iron can live on its reputation two ports away.
-opinion merchants for 1 : A good buyer can ask a hard question without pretending the answer was already agreed.
-opinion newcomers for 2 : Give me an unfamiliar port and an accurate weight. I'll make room for that visitor.
-opinion watch for 1 : A predictable watch on a busy road saves the cost of a disputed gate toll many times over.
-opinion dole mixed 0 : I want the bread delivered and the costs legible. Both are practical questions.
-opinion city for 2 : We can make things here that a buyer across the water will recognise by their working edges.
-opinion road for 1 : A cart road that preserves the corners of a load is a piece of good iron work in its own right.
-opinion festivals mixed 0 : I enjoy a feast at which the hosts remember to leave a passage for the deliveries.
-opinion times for 1 : Give me a difficult market and enough reliable figures to understand what makes it difficult.
+opinion @1 houses for 2 : A House that puts a durable mark into honest iron can live on its reputation two ports away.
+opinion @1 merchants for 1 : A good buyer can ask a hard question without pretending the answer was already agreed.
+opinion @1 newcomers for 2 : Give me an unfamiliar port and an accurate weight. I'll make room for that visitor.
+opinion @1 watch for 1 : A predictable watch on a busy road saves the cost of a disputed gate toll many times over.
+opinion @1 dole mixed 0 : I want the bread delivered and the costs legible. Both are practical questions.
+opinion @1 city for 2 : We can make things here that a buyer across the water will recognise by their working edges.
+opinion @1 road for 1 : A cart road that preserves the corners of a load is a piece of good iron work in its own right.
+opinion @1 festivals mixed 0 : I enjoy a feast at which the hosts remember to leave a passage for the deliveries.
+opinion @1 times for 1 : Give me a difficult market and enough reliable figures to understand what makes it difficult.
 
 grown
-line greet : Good light on the sample. Take this side.
-line greet [pair.band=strangers] : A fresh eye is welcome at this table.
-line greet [here.time=dawn] : Morning. We can see the clean metal now.
-line greet [here.time=dusk|night] : The last daylight is useful on an edge.
-line greet.return : Yes, I have your words separate from your offer.
-line greet.return [pair.band=friends|family] : Welcome back. Pick up the figure where we put it down.
-line greet.return [self.working=yes] : Speak while I finish this stroke.
-line greet.return [here.time=dusk|night] : We can hear an answer after the metal's gone dark.
-line kin.open [pair.kin!=no] : Blood earns a hearing. Come beside me.
-line again.open : We left the bright corner showing.
-line hail [pair.band=friends] : Friend, there's still an open place on the list.
-line farewell : Carry home a straight account of the bargain.
-line farewell.return : May your cargo reach the port you're charging for.
-line react.news : Give me a place and a definite occurrence.
-line react.news.new : That has only just reached this table.
-line react.news.known : The earlier account had the same mark on it.
-line react.news.doubt : Turn that account unfiled side up, please.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Set the reckoning aside. Tell me what the loss demands.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's an arrival worth recording in a clear hand.
-line ask.how : Did objections take up your valuable hours today?
-line answer.how : I've advanced the part that was mine to advance.
-line thank : You saved a second weighing. I value that.
-line deflect_thanks : It was an ordinary courtesy to a careful visitor.
-line sympathise : Sit down here till the number of things to attend to grows smaller.
-line reassure : Choose the first sound step. The whole route can wait.
-line decline : Those terms carry more weight than I intend to assume.
-line accept_decline : A definite refusal lets both of us proceed.
-line preclose : I'll put the sample away before the light fails.
-line accept_preclose : Take your figures with you. We'll keep the opening clear.
-line greet [self.working=yes] : The table's open for a short discussion.
-line greet [here.weather=rain] : Dry the wrapper here. We can talk while it drains.
-line farewell [pair.band=friends] : I'll save a look at the next bright edge for you.
-line thank [pair.band=friends] : You knew precisely where another eye would help.
-line greet.return [here.time=dawn] : That voice has beaten the first counting to the table.
-
+line @1 greet : Good light on the sample. Take this side.
+line @2 greet [pair.band=strangers] : A fresh eye is welcome at this table.
+line @3 greet [here.time=dawn] : Morning. We can see the clean metal now.
+line @4 greet [here.time=dusk|night] : The last daylight is useful on an edge.
+line @1 greet.return : Yes, I have your words separate from your offer.
+line @2 greet.return [pair.band=friends|family] : Welcome back. Pick up the figure where we put it down.
+line @3 greet.return [self.working=yes] : Speak while I finish this stroke.
+line @4 greet.return [here.time=dusk|night] : We can hear an answer after the metal's gone dark.
+line @1 kin.open [pair.kin!=no] : Blood earns a hearing. Come beside me.
+line @1 again.open : We left the bright corner showing.
+line @1 hail [pair.band=friends] : Friend, there's still an open place on the list.
+line @1 farewell : Carry home a straight account of the bargain.
+line @1 farewell.return : May your cargo reach the port you're charging for.
+line @1 react.news : Give me a place and a definite occurrence.
+line @1 react.news.new : That has only just reached this table.
+line @1 react.news.known : The earlier account had the same mark on it.
+line @1 react.news.doubt : Turn that account unfiled side up, please.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Set the reckoning aside. Tell me what the loss demands.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's an arrival worth recording in a clear hand.
+line @1 ask.how : Did objections take up your valuable hours today?
+line @1 answer.how : I've advanced the part that was mine to advance.
+line @1 thank : You saved a second weighing. I value that.
+line @1 deflect_thanks : It was an ordinary courtesy to a careful visitor.
+line @1 sympathise : Sit down here till the number of things to attend to grows smaller.
+line @1 reassure : Choose the first sound step. The whole route can wait.
+line @1 decline : Those terms carry more weight than I intend to assume.
+line @1 accept_decline : A definite refusal lets both of us proceed.
+line @1 preclose : I'll put the sample away before the light fails.
+line @1 accept_preclose : Take your figures with you. We'll keep the opening clear.
+line @5 greet [self.working=yes] : The table's open for a short discussion.
+line @6 greet [here.weather=rain] : Dry the wrapper here. We can talk while it drains.
+line @2 farewell [pair.band=friends] : I'll save a look at the next bright edge for you.
+line @2 thank [pair.band=friends] : You knew precisely where another eye would help.
+line @5 greet.return [here.time=dawn] : That voice has beaten the first counting to the table.
 scene file_corner
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -346,20 +348,19 @@ does aside
 cooldown 8h
 say Dry the last figure before closing.
 
-dlg resident.hub : State what you'd have considered, and turn the sample whichever way suits you.
-dlg resident.hub [topic.meeting=known] : #topic.player#, we've a clean margin to resume on.
-dlg resident.hub [pair.band=friends|family] : Come round to my side. The light is considerably better.
-dlg resident.hub [pair.disposition=hostile|wary] : Lay the particulars in the middle. We can look at them across the table.
-dlg resident.hub [here.time=dawn] : Good morning. This light will show exactly what the file took off.
-dlg resident.hub [here.time=night] : Figures can wait till morning. Words carry quite well now.
-dlg resident.hub [self.working=yes] : I can finish a stroke while you give me the purpose of your visit.
-dlg resident.job [self.workplace self.job=merchant] : At #self.workplace# I put goods, buyers and a credible cost of carriage on one page.
-dlg resident.job [self.trade_words] : The appointment is #self.trade_words#. A route repays close attention.
-dlg resident.news [world.news] : This is the latest notice marked #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : An unmarked claim goes back to whoever brought it.
-dlg resident.bye : Keep the sample beside the description.
-dlg resident.bye [here.time=night] : I wish you enough light for the return route.
-
+dlg @1 resident.hub : State what you'd have considered, and turn the sample whichever way suits you.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, we've a clean margin to resume on.
+dlg @3 resident.hub [pair.band=friends|family] : Come round to my side. The light is considerably better.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Lay the particulars in the middle. We can look at them across the table.
+dlg @5 resident.hub [here.time=dawn] : Good morning. This light will show exactly what the file took off.
+dlg @6 resident.hub [here.time=night] : Figures can wait till morning. Words carry quite well now.
+dlg @7 resident.hub [self.working=yes] : I can finish a stroke while you give me the purpose of your visit.
+dlg @1 resident.job [self.workplace self.job=merchant] : At #self.workplace# I put goods, buyers and a credible cost of carriage on one page.
+dlg @2 resident.job [self.trade_words] : #self.trade_words.capitalize#, by appointment. A route repays close attention.
+dlg @1 resident.news [world.news] : This is the latest notice marked #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An unmarked claim goes back to whoever brought it.
+dlg @1 resident.bye : Keep the sample beside the description.
+dlg @2 resident.bye [here.time=night] : I wish you enough light for the return route.
 graft @corner resident.hub
 choice What does filing a corner tell a buyer? -> sample_corner
 node sample_corner

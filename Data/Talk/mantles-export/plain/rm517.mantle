@@ -1,9 +1,12 @@
+# rm517, the folded hall cloth (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm517
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hilde_bilgegate
+written_by codex
 title the folded hall cloth
 fits stage=adult|old
 prefers job=servant
@@ -35,37 +38,36 @@ twine = a clean bit of flax | a fine length of thread
 rest = an evening on the back step | a seat behind the door
 
 any
-opinion houses against 1 : A borrowed House badge earns exactly as much confidence as a borrowed tablecloth.
-opinion festivals mixed 1 : I dance once the dancers have stopped counting who is watching.
-opinion merchants against 1 : I look beneath the binding before I accept any hamper by weight.
-opinion road mixed 1 : A crooked cart road can still bring a letter straight to one particular wolf.
-opinion strangers against 1 : I offer water to new arrivals. The private shelf is another matter.
-opinion drink against 1 : Spilled wine will wash away. A confidence spilled at table seldom does.
+opinion @1 houses against 1 : A borrowed House badge earns exactly as much confidence as a borrowed tablecloth.
+opinion @1 festivals mixed 1 : I dance once the dancers have stopped counting who is watching.
+opinion @1 merchants against 1 : I look beneath the binding before I accept any hamper by weight.
+opinion @1 road mixed 1 : A crooked cart road can still bring a letter straight to one particular wolf.
+opinion @1 strangers against 1 : I offer water to new arrivals. The private shelf is another matter.
+opinion @1 drink against 1 : Spilled wine will wash away. A confidence spilled at table seldom does.
 
 grown
-line greet : Here's a place beyond the serving sweep. | Come just inside the door's reach.
-line greet.return : Welcome back. These dishes can wait a breath.
-line again.open : Back while the cloth still holds its crease.
-line farewell : Take care where the paving dips. | Go well beyond all this clatter.
-line farewell.return : I'll keep your greeting tucked safely away.
-line react.news : Give me the part that's fit for hall ears.
-line react.news.new : That hasn't arrived folded among my news.
-line react.news.known : I've heard a parcel of words much like that.
-line react.news.doubt : Who actually carried this account here?
-line react.news.sorrow [topic.kind=death|loss|assault] : May that sorrow have some shelter from curious eyes.
-line react.news.glad [topic.kind=birth|marriage|work] : A lovely piece of news to unwrap.
-line ask.how : Has the bustle allowed you an easy hour?
-line answer.how : A little stirred up, though my dishes are level.
-line sympathise : Here, let the others pass before you speak.
-line reassure : We can leave the fold closed while you think.
-line refuse : I've other arrangements under this cloth.
-line accept_decline : I'll leave your answer exactly as folded.
-line preclose : These dishes have waited on my conversation long enough.
-line accept_preclose : Slip away while the entrance is clear.
-line ack : Yes, that sits quite level.
-line thank : You made room precisely where I needed it.
-line greet [here.time=night] : At this hour the quiet end belongs to us.
-
+line @1 greet : Here's a place beyond the serving sweep. | Come just inside the door's reach.
+line @1 greet.return : Welcome back. These dishes can wait a breath.
+line @1 again.open : Back while the cloth still holds its crease.
+line @1 farewell : Take care where the paving dips. | Go well beyond all this clatter.
+line @1 farewell.return : I'll keep your greeting tucked safely away.
+line @1 react.news : Give me the part that's fit for hall ears.
+line @1 react.news.new : That hasn't arrived folded among my news.
+line @1 react.news.known : I've heard a parcel of words much like that.
+line @1 react.news.doubt : Who actually carried this account here?
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : May that sorrow have some shelter from curious eyes.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A lovely piece of news to unwrap.
+line @1 ask.how : Has the bustle allowed you an easy hour?
+line @1 answer.how : A little stirred up, though my dishes are level.
+line @1 sympathise : Here, let the others pass before you speak.
+line @1 reassure : We can leave the fold closed while you think.
+line @1 refuse : I've other arrangements under this cloth.
+line @1 accept_decline : I'll leave your answer exactly as folded.
+line @1 preclose : These dishes have waited on my conversation long enough.
+line @1 accept_preclose : Slip away while the entrance is clear.
+line @1 ack : Yes, that sits quite level.
+line @1 thank : You made room precisely where I needed it.
+line @2 greet [here.time=night] : At this hour the quiet end belongs to us.
 scene exchange1
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -233,15 +235,15 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say The last rim is wiped. | There's still a little dusk behind the shutter.
-dlg resident.hub : Speak from beside my neat pile of covers.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's an interval we can share before the next trip.
-dlg resident.hub [pair.disposition=wary|hostile] : Questions about another household may be taken to its own door.
-dlg resident.job [self.job=servant self.workplace] : I serve the tables at #self.workplace#. Plates and privacy both need looking after.
-dlg resident.job : My work is easier to see when something has gone slightly awry.
-dlg resident.news [world.news] : The news brought here was #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. You would need to ask the source about accuracy.
-dlg resident.bye : May your seat at supper be far from the door draught.
 
+dlg @1 resident.hub : Speak from beside my neat pile of covers.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's an interval we can share before the next trip.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Questions about another household may be taken to its own door.
+dlg @1 resident.job [self.job=servant self.workplace] : I serve the tables at #self.workplace#. Plates and privacy both need looking after.
+dlg @2 resident.job : My work is easier to see when something has gone slightly awry.
+dlg @1 resident.news [world.news] : The news brought here was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. You would need to ask the source about accuracy.
+dlg @1 resident.bye : May your seat at supper be far from the door draught.
 graft resident.hub
 choice What is the little flap in your cloth for? -> linen_fold
 node linen_fold

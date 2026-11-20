@@ -1,9 +1,12 @@
+# rm408, the travelling seal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm408
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_florence_pennock
+written_by codex
 title the travelling seal
 fits stage=adult|old
 prefers piety=devout talk=quiet
@@ -17,6 +20,7 @@ topics travel +0.6 faith +0.5 pastimes +0.3 work +0.3
 styles comfort=quiet gossip=guarded refuse=plain tease=none
 marks oath saying
 persona #self.first# wraps the whetstone apart from any sealed letter and marks an unsuccessful call with a quiet turn of the heel.
+
 words
 oath! = Crumble my corner wax | Snarl my satchel seam
 saying! = A shut door is half a journey | Keep the seal facing air
@@ -33,35 +37,33 @@ rainridge = a ridge of folded cloth | a small upright seam
 nameface = a neat direction line | a clear written address
 
 grown
-
-opinion houses mixed 1 : A great House might have the courtesy to arrange for one reliable palm at the door where it expects its letters.
-opinion watch mixed 1 : A seal in honest keeping deserves to travel without providing every curious uniform with entertainment.
-opinion church for 2 : My day's journeys are easier to face when I've left a few words with the Bright One before starting.
-opinion merchants mixed 1 : Say what the carrying costs. A wolf who haggles at every doorstep soon empties the whole day of anything else.
-opinion festivals for 1 : A bell that calls us to dance has earned a different answer from my feet.
-opinion road for 1 : Even a fruitless journey leaves the next corner a little better known.
-line greet : I have a moment between one door and the next.
-line greet [pair.band=strangers] : Welcome. We'll leave the satchel shut while we speak.
-line greet.return : You found me on a bit of level going.
-line farewell : May the right palm be waiting when your errand brings you to the door.
-line farewell.return : Take a dry turn where the eaves allow it.
-line answer.how : Tired in a way a small cake might improve.
-line ask.how : Did somebody open when your day's work came knocking?
-line react.news : I'll hold that as carefully as a folded sheet.
-line react.news.known : I recognise the direction written on that news.
-line react.news.new : That is a new delivery to my ears.
-line react.news.doubt : I'd look carefully at the seal on a tale so conveniently addressed.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd be happy to carry glad words another good stretch today.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd see that reached a quiet ear before a crowded room.
-line decline : No, that fold belongs to the one whose name is on it.
-line accept_decline : Then I'll carry my offer back unopened.
-line reassure : A closed door today can still receive you kindly tomorrow.
-line sympathise : I can stand beside you through the moment before the knock.
-line thank : You made a tired set of steps somewhat shorter.
-line deflect_thanks : My feet were already pointed towards the work.
-line ack : That direction is clear on the first reading.
-line accept_preclose : Walk on while you have an easy road.
-
+opinion @1 houses mixed 1 : A great House might have the courtesy to arrange for one reliable palm at the door where it expects its letters.
+opinion @1 watch mixed 1 : A seal in honest keeping deserves to travel without providing every curious uniform with entertainment.
+opinion @1 church for 2 : My day's journeys are easier to face when I've left a few words with the Bright One before starting.
+opinion @1 merchants mixed 1 : Say what the carrying costs. A wolf who haggles at every doorstep soon empties the whole day of anything else.
+opinion @1 festivals for 1 : A bell that calls us to dance has earned a different answer from my feet.
+opinion @1 road for 1 : Even a fruitless journey leaves the next corner a little better known.
+line @1 greet : I have a moment between one door and the next.
+line @2 greet [pair.band=strangers] : Welcome. We'll leave the satchel shut while we speak.
+line @1 greet.return : You found me on a bit of level going.
+line @1 farewell : May the right palm be waiting when your errand brings you to the door.
+line @1 farewell.return : Take a dry turn where the eaves allow it.
+line @1 answer.how : Tired in a way a small cake might improve.
+line @1 ask.how : Did somebody open when your day's work came knocking?
+line @1 react.news : I'll hold that as carefully as a folded sheet.
+line @1 react.news.known : I recognise the direction written on that news.
+line @1 react.news.new : That is a new delivery to my ears.
+line @1 react.news.doubt : I'd look carefully at the seal on a tale so conveniently addressed.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd be happy to carry glad words another good stretch today.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd see that reached a quiet ear before a crowded room.
+line @1 decline : No, that fold belongs to the one whose name is on it.
+line @1 accept_decline : Then I'll carry my offer back unopened.
+line @1 reassure : A closed door today can still receive you kindly tomorrow.
+line @1 sympathise : I can stand beside you through the moment before the knock.
+line @1 thank : You made a tired set of steps somewhat shorter.
+line @1 deflect_thanks : My feet were already pointed towards the work.
+line @1 ack : That direction is clear on the first reading.
+line @1 accept_preclose : Walk on while you have an easy road.
 scene work_1
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Long evening roads improve a small cake wonderfully. | There's a little more walking left in my soles.
-dlg resident.hub : Your voice carries nicely to the shoulder with the strap on it.
-dlg resident.job [self.job=official] : At #self.workplace# I keep track of what reached the right hands and what still calls for another journey.
-dlg resident.news [world.news] : What has come into open hearing is this. #world.news#.
-dlg resident.gossip [here.gossip=yes] : A street account says #topic.subject# #topic.claim#. That's public talk, quite apart from anything sealed.
-dlg resident.hub [topic.meeting=known] : #topic.player#, this meeting has spared me at least one knock.
-dlg resident.bye : I hope the door you're bound for is ready for your hand.
 
+dlg @1 resident.hub : Your voice carries nicely to the shoulder with the strap on it.
+dlg @1 resident.job [self.job=official] : At #self.workplace# I keep track of what reached the right hands and what still calls for another journey.
+dlg @1 resident.news [world.news] : What has come into open hearing is this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : A street account says #topic.subject# #topic.claim#. That's public talk, quite apart from anything sealed.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, this meeting has spared me at least one knock.
+dlg @1 resident.bye : I hope the door you're bound for is ready for your hand.
 graft resident.hub
 choice Do you ever tire of carrying an undelivered letter? -> wax_route
 node wax_route

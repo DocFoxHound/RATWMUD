@@ -1,9 +1,12 @@
+# rm293, the crust under the eave (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm293
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_tobias_rainley
+written_by codex
 title the crust under the eave
 fits stage=adult|old
 prefers job=baker
@@ -35,41 +38,40 @@ sill = my cooling sill | the broad window stone
 shade = the eave shadow | the wall's grey stripe
 
 any
-opinion houses against 2 : The names above the dock gates are very clear. They're harder to find when a house has an empty chair.
-opinion festivals against 2 : For a decent bout I want consent on both sides. A feast crowd has a way of forgetting to ask.
-opinion dole for 2 : A week of ladled food kept my hands strong enough to earn the next.
-opinion merchants against 2 : If you want a smaller price, agree to a smaller weight. Don't make me shave my supper.
-opinion sump for 1 : I know how to find my own window down here by the smell on the sill.
+opinion @1 houses against 2 : The names above the dock gates are very clear. They're harder to find when a house has an empty chair.
+opinion @1 festivals against 2 : For a decent bout I want consent on both sides. A feast crowd has a way of forgetting to ask.
+opinion @1 dole for 2 : A week of ladled food kept my hands strong enough to earn the next.
+opinion @1 merchants against 2 : If you want a smaller price, agree to a smaller weight. Don't make me shave my supper.
+opinion @1 sump for 1 [self.quarter=sump] : I know how to find my own window down here by the smell on the sill.
 
 grown
-line greet [pair.band=strangers] : Hello. Keep the window clear. | Come stand beyond my floury elbow.
-line greet [self.working=yes] : Welcome where the dust has settled. | Speak while the batch rests.
-line greet [here.time=dawn] : Early light, clean sill. | Day's only just beginning to colour.
-line greet [here.time=dusk|night] : Evening. Crust's gone quiet. | Light's holding on round the eaves.
-line kin.open [pair.kin!=no] : Kin can come to the warm end. | There's the family outline.
-line again.open : Second rise to our meeting. | Back at the cooling end.
-line greet.return : I hear. Have a word. | Come to the open side.
-line greet.return [pair.band=friends|family] : You know where the sound crust goes. | Good to recognise a voice over the tin.
-line greet.return [self.working=yes] : You've time while the batch comes off. | I can work and hear at once.
-line greet.return [here.time=dusk|night] : Evening. Nearer the light if you like. | Dim enough to listen by smell.
-line farewell : Go easy past the cooling shelf. | Sound footing over the threshold.
-line farewell.return : I'll leave the sill clear. | Keep your pocket dry.
-line farewell.return [here.time=night] : Quiet streets after the last lamp. | Night. Walk where the stone's firm.
-line react.news : Let's hear how it came out. | Tell the plain baked truth.
-line react.news.new : New to my ears and cooling fast. | I hadn't had a whiff of that.
-line react.news.known : I've already lifted that lid. | That bit of news has cooled here.
-line react.news.doubt : I'd let that cool before calling it done. | A fine outside can hide a raw middle.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That puts a stone in my middle. | I'll turn the chatter down for you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Well risen news. | Ah, something good inside this day.
-line ask.how : How has the heat treated you? | What's left in your arms today?
-line answer.how : I can still turn a full tray. | A little brittle near the edges.
-line decline : I'd keep my hands clear of that batch. | I'm saving the sound knee for my own errands.
-line accept_decline : Then we leave the tray empty. | Fair. Your grip, your choice.
-line thank : That saves me a hard turn. | I count that as good bread.
-line sympathise : I'll stand on your stiff side. | There's room to rest a wrist.
-line reassure : A stumble needn't settle the bout. | Let the weight go for a minute.
-line preclose : I should turn my attention to the sill. | Time to see how things have cooled.
-
+line @1 greet [pair.band=strangers] : Hello. Keep the window clear. | Come stand beyond my floury elbow.
+line @2 greet [self.working=yes] : Welcome where the dust has settled. | Speak while the batch rests.
+line @3 greet [here.time=dawn] : Early light, clean sill. | Day's only just beginning to colour.
+line @4 greet [here.time=dusk|night] : Evening. Crust's gone quiet. | Light's holding on round the eaves.
+line @1 kin.open [pair.kin!=no] : Kin can come to the warm end. | There's the family outline.
+line @1 again.open : Second rise to our meeting. | Back at the cooling end.
+line @1 greet.return : I hear. Have a word. | Come to the open side.
+line @2 greet.return [pair.band=friends|family] : You know where the sound crust goes. | Good to recognise a voice over the tin.
+line @3 greet.return [self.working=yes] : You've time while the batch comes off. | I can work and hear at once.
+line @4 greet.return [here.time=dusk|night] : Evening. Nearer the light if you like. | Dim enough to listen by smell.
+line @1 farewell : Go easy past the cooling shelf. | Sound footing over the threshold.
+line @1 farewell.return : I'll leave the sill clear. | Keep your pocket dry.
+line @2 farewell.return [here.time=night] : Quiet streets after the last lamp. | Night. Walk where the stone's firm.
+line @1 react.news : Let's hear how it came out. | Tell the plain baked truth.
+line @1 react.news.new : New to my ears and cooling fast. | I hadn't had a whiff of that.
+line @1 react.news.known : I've already lifted that lid. | That bit of news has cooled here.
+line @1 react.news.doubt : I'd let that cool before calling it done. | A fine outside can hide a raw middle.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That puts a stone in my middle. | I'll turn the chatter down for you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Well risen news. | Ah, something good inside this day.
+line @1 ask.how : How has the heat treated you? | What's left in your arms today?
+line @1 answer.how : I can still turn a full tray. | A little brittle near the edges.
+line @1 decline : I'd keep my hands clear of that batch. | I'm saving the sound knee for my own errands.
+line @1 accept_decline : Then we leave the tray empty. | Fair. Your grip, your choice.
+line @1 thank : That saves me a hard turn. | I count that as good bread.
+line @1 sympathise : I'll stand on your stiff side. | There's room to rest a wrist.
+line @1 reassure : A stumble needn't settle the bout. | Let the weight go for a minute.
+line @1 preclose : I should turn my attention to the sill. | Time to see how things have cooled.
 scene crust
 when topic=work self.job=baker
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Last bit of light on the rack. | The sill's gone cool from the wall out.
 
-dlg resident.hub : Keep the window to my left and speak clearly. Then I can attend to two things without scorching either.
-dlg resident.job [self.job=baker self.workplace] : The ovens at #self.workplace# are only half my work. I mind the loaves till the crust holds its own.
-dlg resident.news [world.news] : Word as it came across the sill. #world.news#
-dlg resident.hub [topic.meeting=known] : I know your voice over a crackling tray, #topic.player#.
-dlg resident.bye : See if the air's kind to a crust out there.
-
+dlg @1 resident.hub : Keep the window to my left and speak clearly. Then I can attend to two things without scorching either.
+dlg @1 resident.job [self.job=baker self.workplace] : The ovens at #self.workplace# are only half my work. I mind the loaves till the crust holds its own.
+dlg @1 resident.news [world.news] : Word as it came across the sill. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : I know your voice over a crackling tray, #topic.player#.
+dlg @1 resident.bye : See if the air's kind to a crust out there.
 graft resident.hub
 choice What's the air got to do with a baked loaf? -> ear_air
 node ear_air

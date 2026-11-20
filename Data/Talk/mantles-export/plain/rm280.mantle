@@ -1,9 +1,12 @@
+# rm280, the roof flock ledger (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm280
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rmx_sigrun_mudmore
+written_by codex
 title the roof flock ledger
 fits stage=adult|old
 prefers job=merchant
@@ -38,51 +41,50 @@ quietroost = a blank patch of roof | an empty ridge
 countercloth = the plain counter cloth | a square of washed grey linen
 
 any
-opinion church for 1 : There's a meal set out when little else comes within reach. More gets done with a cut loaf than a fine speech.
-opinion dole for 2 : A full stomach lets me look up instead of down for dropped coppers. Plenty down here could do with that much room in a day.
-opinion houses against 2 : On a House's business I'd consult the roofs. Every high roof seems to take the sun off a lower one.
-opinion sump for 1 : A Sump roof has a story in every odd tile. Start again with new slates and I'd have to learn a whole city.
-opinion merchants against 2 : A thin shaving weighed with a great deal of wrapping starts out rather dear for a mouthful.
-opinion strangers for 1 : The best thing a stranger can bring me is a description of a bird I've never marked.
-opinion watch against 1 : My old board has a good many more marks for passing boots than for boots that stopped to lend a paw.
-opinion festivals mixed 0 : A clear bell and a vacant roof for the birds make a fine festival. For the rest I can take my chances.
+opinion @1 church for 1 : There's a meal set out when little else comes within reach. More gets done with a cut loaf than a fine speech.
+opinion @1 dole for 2 : A full stomach lets me look up instead of down for dropped coppers. Plenty in the Sump could do with that much room in a day.
+opinion @1 houses against 2 : On a House's business I'd consult the roofs. Every high roof seems to take the sun off a lower one.
+opinion @1 sump for 1 : A Sump roof has a story in every odd tile. Start again with new slates and I'd have to learn a whole city.
+opinion @1 merchants against 2 : A thin shaving weighed with a great deal of wrapping starts out rather dear for a mouthful.
+opinion @1 strangers for 1 : The best thing a stranger can bring me is a description of a bird I've never marked.
+opinion @1 watch against 1 : My old board has a good many more marks for passing boots than for boots that stopped to lend a paw.
+opinion @1 festivals mixed 0 : A clear bell and a vacant roof for the birds make a fine festival. For the rest I can take my chances.
 
 grown
-line greet : There's a place by the board. Come and share the view.
-line greet [pair.band=strangers] : Welcome. Keep a little clear of my sightline.
-line greet [here.time=dawn] : Light under the birds' wings. A good start between us.
-line greet [here.time=dusk|night] : Evening gives us a quiet ridge to talk beside.
-line greet [self.working=yes] : Hello from behind the cloth. One moment for the loose rind.
-line kin.open [pair.kin!=no] : You know the open side of my board. Come as near as you like.
-line again.open : The flock's settled since I last saw you.
-line greet.return : I heard. I was counting the gaps between calls.
-line greet.return [pair.band=friends|family] : Your voice is one I'd always pick out of the flock.
-line greet.return [self.working=yes] : Your word's got through to this side of the counter.
-line greet.return [here.time=dusk|night] : I hear a caller where I can barely see a muzzle.
-line farewell : Keep an eye up when the bells go.
-line farewell.return : I'll keep the board steady. Go well.
-line farewell [here.time=dusk|night] : Leave a little twilight for the birds.
-line react.news : Give me the first mark to start from.
-line react.news.new : I'd never have put a nick there before.
-line react.news.known : I had a little sign of that already.
-line react.news.doubt : Just how near a view did anyone get?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Cut a decent piece for that door. A thin scraping wouldn't say much.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's room along my top row for a bit of happy news.
-line answer.how : Content enough where the roosts show clear.
-line answer.how [self.working=yes] : I've work in both paws and a corner in sight for later.
-line ask.how : What's taken your eye of late?
-line sympathise : An empty place keeps drawing a wolf's eye back.
-line reassure : I'll stay till you can lift your head again.
-line decline : I'd sooner leave an empty mark than promise what I can't deliver.
-line accept_decline : No score on the board for that, then.
-line thank : I could feel the difference when you helped.
-line deflect_thanks : You've settled the account by making use of it.
-line preclose : I'm losing the shape of that roof in my head.
-line preclose [self.working=yes] : There's a cut face waiting for its cloth.
-line accept_preclose : Go on, I've kept your way clear.
-line hail [pair.band=friends] : Up here by the board! I saved you a look.
-line ack : Marked clear.
-
+line @1 greet : There's a place by the board. Come and share the view.
+line @2 greet [pair.band=strangers] : Welcome. Keep a little clear of my sightline.
+line @3 greet [here.time=dawn] : Light under the birds' wings. A good start between us.
+line @4 greet [here.time=dusk|night] : Evening gives us a quiet ridge to talk beside.
+line @5 greet [self.working=yes] : Hello from behind the cloth. One moment for the loose rind.
+line @1 kin.open [pair.kin!=no] : You know the open side of my board. Come as near as you like.
+line @1 again.open : The flock's settled since I last saw you.
+line @1 greet.return : I heard. I was counting the gaps between calls.
+line @2 greet.return [pair.band=friends|family] : Your voice is one I'd always pick out of the flock.
+line @3 greet.return [self.working=yes] : Your word's got through to this side of the counter.
+line @4 greet.return [here.time=dusk|night] : I hear a caller where I can barely see a muzzle.
+line @1 farewell : Keep an eye up when the bells go.
+line @1 farewell.return : I'll keep the board steady. Go well.
+line @2 farewell [here.time=dusk|night] : Leave a little twilight for the birds.
+line @1 react.news : Give me the first mark to start from.
+line @1 react.news.new : I'd never have put a nick there before.
+line @1 react.news.known : I had a little sign of that already.
+line @1 react.news.doubt : Just how near a view did anyone get?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Cut a decent piece for that door. A thin scraping wouldn't say much.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's room along my top row for a bit of happy news.
+line @1 answer.how : Content enough where the roosts show clear.
+line @2 answer.how [self.working=yes] : I've work in both paws and a corner in sight for later.
+line @1 ask.how : What's taken your eye of late?
+line @1 sympathise : An empty place keeps drawing a wolf's eye back.
+line @1 reassure : I'll stay till you can lift your head again.
+line @1 decline : I'd sooner leave an empty mark than promise what I can't deliver.
+line @1 accept_decline : No score on the board for that, then.
+line @1 thank : I could feel the difference when you helped.
+line @1 deflect_thanks : You've settled the account by making use of it.
+line @1 preclose : I'm losing the shape of that roof in my head.
+line @2 preclose [self.working=yes] : There's a cut face waiting for its cloth.
+line @1 accept_preclose : Go on, I've kept your way clear.
+line @1 hail [pair.band=friends] : Up here by the board! I saved you a look.
+line @1 ack : Marked clear.
 scene roofs
 when topic=animals self.likes=roof_birds
 does tell.self / ask.detail / answer.detail
@@ -337,20 +339,20 @@ when concept=bark self.dislikes=gulls
 does aside
 cooldown 8h
 say Cover the rind till the white wings pass. | That gull has an eye on my cuttings.
-dlg resident.hub : We can speak till those birds come down again. Plenty of time.
-dlg resident.hub [topic.meeting=known] : I've kept you a clear sightline, #topic.player#.
-dlg resident.hub [here.time=night] : There's more to hear than see this late. Come near enough to speak.
-dlg resident.hub [pair.disposition=wary|hostile] : Board on my side, paws on yours. We can talk.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I keep the cloth clean and the cut face where a customer can see it.
-dlg resident.job : A sound eye for edges earns its keep.
-dlg resident.news [world.news] : Here's the part I can see plain. #world.news#.
-dlg resident.news [world.event_words] : Everybody below the eaves has heard of #world.event_words#.
-dlg resident.news [world.wagons=raided] : Robbing a cart takes dinner off the board a long way beyond the driver.
-dlg resident.news [world.death=recent] : A death changes which window we look towards when the street goes quiet.
-dlg resident.news [world.wedding=recent] : If there's a wedding there's cause to open up the room and give a pair a proper view.
-dlg resident.gossip [here.gossip!=yes] : Plenty of wings in sight. Not a scrap of gossip caught in those feathers.
-dlg resident.bye : May the next turn show you a clear stretch of sky.
 
+dlg @1 resident.hub : We can speak till those birds come down again. Plenty of time.
+dlg @2 resident.hub [topic.meeting=known] : I've kept you a clear sightline, #topic.player#.
+dlg @3 resident.hub [here.time=night] : There's more to hear than see this late. Come near enough to speak.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Board on my side, paws on yours. We can talk.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I keep the cloth clean and the cut face where a customer can see it.
+dlg @2 resident.job : A sound eye for edges earns its keep.
+dlg @1 resident.news [world.news] : Here's the part I can see plain. #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody below the eaves has heard of #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Robbing a cart takes dinner off the board a long way beyond the driver.
+dlg @4 resident.news [world.death=recent] : A death changes which window we look towards when the street goes quiet.
+dlg @5 resident.news [world.wedding=recent] : If there's a wedding there's cause to open up the room and give a pair a proper view.
+dlg @1 resident.gossip [here.gossip!=yes] : Plenty of wings in sight. Not a scrap of gossip caught in those feathers.
+dlg @1 resident.bye : May the next turn show you a clear stretch of sky.
 graft @birdgrooves resident.hub
 choice Can I trace the roof on your board? -> birdgrooves
 node birdgrooves

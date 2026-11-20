@@ -1,9 +1,12 @@
+# rm436, the seed-row harbour (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm436
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_rosamund_saltmarsh
+written_by codex
 title the seed-row harbour
 fits stage=adult|old
 prefers job=merchant
@@ -39,50 +42,49 @@ berth = a berth snug under a dry blanket | my imagined bunk
 mark = a short nick in wood | an old dark mark
 
 any
-opinion strangers for 1 : A returning buyer knows which bit of a purchase wore through. The customer standing still can't possibly know.
-opinion watch against 1 : A boot that hasn't paid for a thing has no pressing claim to hear what went inside the wrapping.
-opinion church against 1 : I like a prayer allowed to finish at its own pace before anybody attends to the collection.
-opinion merchants mixed 0 : A good bargain should come up in reliable rows. I'll give a selling promise time to grow to its advertised size.
-opinion road mixed 0 : A road earns its keep by the dry places when you're carrying something packed in paper.
-opinion festivals mixed 0 : There's music I appreciate very well from a little distance. It's a question of choosing one's position.
-opinion houses mixed 0 : A fine House can keep the soil around its roots in wonderful order. I look at what grows just outside its boundary.
-opinion dole mixed 0 : I care what comes up from the pot and whether the waiting feet have any cover. The rest can fit in somebody's speech.
+opinion @1 strangers for 1 : A returning buyer knows which bit of a purchase wore through. The customer standing still can't possibly know.
+opinion @1 watch against 1 : A boot that hasn't paid for a thing has no pressing claim to hear what went inside the wrapping.
+opinion @1 church against 1 : I like a prayer allowed to finish at its own pace before anybody attends to the collection.
+opinion @1 merchants mixed 0 : A good bargain should come up in reliable rows. I'll give a selling promise time to grow to its advertised size.
+opinion @1 road mixed 0 : A road earns its keep by the dry places when you're carrying something packed in paper.
+opinion @1 festivals mixed 0 : There's music I appreciate very well from a little distance. It's a question of choosing one's position.
+opinion @1 houses mixed 0 : A fine House can keep the soil around its roots in wonderful order. I look at what grows just outside its boundary.
+opinion @1 dole mixed 0 : I care what comes up from the pot and whether the waiting feet have any cover. The rest can fit in somebody's speech.
 
 grown
-line greet [pair.band=strangers] : Welcome. Mind the marked end of the board. | New visitor, dry spot just inside.
-line greet [self.working=yes] : There's room behind the packing edge. | A voice and a little light this way, please.
-line greet [here.time=dawn] : Morning. The marks show sharply. | Fresh light along the neat rows.
-line greet [here.time=dusk|night] : Evening. Step within the remaining light. | My ears keep their range after dusk.
-line kin.open [pair.kin!=no] : Kin know which bit of ground's private. | You've the household end of the bench.
-line again.open : Back at my marker again. | Same little ship come round twice.
-line greet.return : You've reached the right end. | Hello. Take the clean board.
-line greet.return [pair.band=friends|family] : Your voice comes past any shutter. | Good to have a well-known hull in sight.
-line greet.return [self.working=yes] : I'll let the parcel settle while you talk. | My hands can wait beside the string.
-line greet.return [here.time=dusk|night] : Evening. The peg still throws a shadow. | Come to the late light by my shoulder.
-line farewell : Follow the sound line home. | A dry corner at journey's end.
-line farewell.return : I'll keep the row properly marked. | May the ground take your footprint easily.
-line farewell.return [here.time=night] : Good footing past the last bright gable. | Safe passage under the few late lamps.
-line react.news : Set the account beside its marker. | What bit stood clear of the rest?
-line react.news.new : New ground inside this row. | I haven't seen that bow mark.
-line react.news.known : It's come by this little harbour before. | I recognise the shape of that business.
-line react.news.doubt : I'd see what sprouts before naming the crop. | That's a handsome marker for a row nobody's seen.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor souls. I'll give the matter room. | A heavy bit of ground to turn over.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a fine bright first shoot. | Something worth marking plainly.
-line ask.how : How's the soil gone under your day? | Any dry footing under your day?
-line answer.how : Keeping clear of the wet edges. | Fairly level, if not particularly rested.
-line decline : I should keep today's soundest hours for another errand. | I'd sooner spend my dry interval on this row.
-line accept_decline : Good. I'll put the peg away. | You've marked your wishes plainly.
-line thank : That leaves a much cleaner row. | I'll keep a good notch for that favour.
-line sympathise : I've a clear patch where you can rest. | Set it down and ease your stance.
-line reassure : A hidden shoot can still find its way. | You may leave that ground untended for a little.
-line preclose : I'll put my small tools back in order. | Time to find the right bit of ground again.
-line accept_preclose : Take whatever road suits your feet. | I'll keep the last marker here.
-line deflect_thanks : That bit of trouble was mine to take. | A simple nod meets the price completely.
-line ack : Clearly marked. | Sound growth.
-line give.advice : Watch which end the peg turns to. | Wait a day before declaring a bare row barren.
-line offer : I can help put a dry lid over it. | Shall I mark the spot for later?
-line praise : That's close work, neatly finished. | You recognised an awkward edge at once.
-
+line @1 greet [pair.band=strangers] : Welcome. Mind the marked end of the board. | New visitor, dry spot just inside.
+line @2 greet [self.working=yes] : There's room behind the packing edge. | A voice and a little light this way, please.
+line @3 greet [here.time=dawn] : Morning. The marks show sharply. | Fresh light along the neat rows.
+line @4 greet [here.time=dusk|night] : Evening. Step within the remaining light. | My ears keep their range after dusk.
+line @1 kin.open [pair.kin!=no] : Kin know which bit of ground's private. | You've the household end of the bench.
+line @1 again.open : Back at my marker again. | Same little ship come round twice.
+line @1 greet.return : You've reached the right end. | Hello. Take the clean board.
+line @2 greet.return [pair.band=friends|family] : Your voice comes past any shutter. | Good to have a well-known hull in sight.
+line @3 greet.return [self.working=yes] : I'll let the parcel settle while you talk. | My hands can wait beside the string.
+line @4 greet.return [here.time=dusk|night] : Evening. The peg still throws a shadow. | Come to the late light by my shoulder.
+line @1 farewell : Follow the sound line home. | A dry corner at journey's end.
+line @1 farewell.return : I'll keep the row properly marked. | May the ground take your footprint easily.
+line @2 farewell.return [here.time=night] : Good footing past the last bright gable. | Safe passage under the few late lamps.
+line @1 react.news : Set the account beside its marker. | What bit stood clear of the rest?
+line @1 react.news.new : New ground inside this row. | I haven't seen that bow mark.
+line @1 react.news.known : It's come by this little harbour before. | I recognise the shape of that business.
+line @1 react.news.doubt : I'd see what sprouts before naming the crop. | That's a handsome marker for a row nobody's seen.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor souls. I'll give the matter room. | A heavy bit of ground to turn over.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a fine bright first shoot. | Something worth marking plainly.
+line @1 ask.how : How's the soil gone under your day? | Any dry footing under your day?
+line @1 answer.how : Keeping clear of the wet edges. | Fairly level, if not particularly rested.
+line @1 decline : I should keep today's soundest hours for another errand. | I'd sooner spend my dry interval on this row.
+line @1 accept_decline : Good. I'll put the peg away. | You've marked your wishes plainly.
+line @1 thank : That leaves a much cleaner row. | I'll keep a good notch for that favour.
+line @1 sympathise : I've a clear patch where you can rest. | Set it down and ease your stance.
+line @1 reassure : A hidden shoot can still find its way. | You may leave that ground untended for a little.
+line @1 preclose : I'll put my small tools back in order. | Time to find the right bit of ground again.
+line @1 accept_preclose : Take whatever road suits your feet. | I'll keep the last marker here.
+line @1 deflect_thanks : That bit of trouble was mine to take. | A simple nod meets the price completely.
+line @1 ack : Clearly marked. | Sound growth.
+line @1 give.advice : Watch which end the peg turns to. | Wait a day before declaring a bare row barren.
+line @1 offer : I can help put a dry lid over it. | Shall I mark the spot for later?
+line @1 praise : That's close work, neatly finished. | You recognised an awkward edge at once.
 scene ships
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -359,20 +361,19 @@ does aside
 cooldown 11h
 say Silver line on each good furrow. | The frosty boards need a careful entrance.
 
-dlg resident.hub : Set your business on the unmarked space. The little notches along the rest of the counter mean something to me.
-dlg resident.hub [topic.meeting=known] : Your last visit has its own notch, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Stay beside the clean marker, please. I'll take mine and we can conduct a civil exchange.
-dlg resident.hub [here.time=dawn] : There's good light for a clear account at this hour.
-dlg resident.hub [here.time=dusk] : We can talk while the outlines are still distinct.
-dlg resident.job [self.job=merchant self.workplace] : I help with the orders at #self.workplace#. I like a counter where things can be found after the first interruption.
-dlg resident.job [self.master=yes] : I show the marks clearly to the learner as well as the task. Neither is any use in the wrong place.
-dlg resident.job : I keep the small things in their proper rows and watch what comes of them.
-dlg resident.news [world.news] : I've put a mark beside this particular account. #world.news#
-dlg resident.bye : A dry berth and a properly marked turning for the rest of your way.
-dlg resident.bye [here.time=night] : May you see the edge of every damp board coming home in the dark.
-dlg resident.hub [self.working=yes] : Leave that peg in place. My ear isn't attached to the marker and you may have my attention.
-dlg resident.hub [pair.band=friends|family] : Choose the dry corner. I've kept that little bit of room ready.
-
+dlg @1 resident.hub : Set your business on the unmarked space. The little notches along the rest of the counter mean something to me.
+dlg @2 resident.hub [topic.meeting=known] : Your last visit has its own notch, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Stay beside the clean marker, please. I'll take mine and we can conduct a civil exchange.
+dlg @4 resident.hub [here.time=dawn] : There's good light for a clear account at this hour.
+dlg @5 resident.hub [here.time=dusk] : We can talk while the outlines are still distinct.
+dlg @1 resident.job [self.job=merchant self.workplace] : I help with the orders at #self.workplace#. I like a counter where things can be found after the first interruption.
+dlg @2 resident.job [self.master=yes] : I show the marks clearly to the learner as well as the task. Neither is any use in the wrong place.
+dlg @3 resident.job : I keep the small things in their proper rows and watch what comes of them.
+dlg @1 resident.news [world.news] : I've put a mark beside this particular account. #world.news#
+dlg @1 resident.bye : A dry berth and a properly marked turning for the rest of your way.
+dlg @2 resident.bye [here.time=night] : May you see the edge of every damp board coming home in the dark.
+dlg @6 resident.hub [self.working=yes] : Leave that peg in place. My ear isn't attached to the marker and you may have my attention.
+dlg @7 resident.hub [pair.band=friends|family] : Choose the dry corner. I've kept that little bit of room ready.
 graft @ship resident.hub
 choice What do the little wooden ships mark? -> seedharbour
 node seedharbour
@@ -384,6 +385,7 @@ node seedswap
 say Then I wait to learn my lesson at harvest. A little nick on the buried end insures my pegs against unusually helpful visitors.
 choice I'll let the fleet stay anchored. -> hub
 choice I'll leave you to the harvest. -> bye
+
 graft @dry resident.hub
 choice What sort of voyage would tempt you away from your garden? -> seedberth
 node seedberth

@@ -1,9 +1,12 @@
+# rm268, the pocket palette (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm268
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_vigdis_pitchmarsh
+written_by codex
 title the pocket palette
 fits stage=adult|old
 prefers job=crafter
@@ -35,41 +38,40 @@ pot = the stew kettle | a fat brown pot
 mud = tar-dark mud | a sticky black patch
 
 any
-opinion dole for 3 : Hunger bleaches the whole street. A bowl of hot food puts the colours back.
-opinion merchants against 2 : Fancy wrapping never made me a larger supper.
-opinion houses against 2 : I'd like to carry my shade card upstairs and see the colour of whoever sets my wage.
-opinion strangers for 1 : Plenty of stew stretches a little further if the last bowl brings a fresh account of the road.
-opinion sump for 1 : No use calling our streets all grey. Hold six greys alongside one another and look again.
+opinion @1 dole for 3 : Hunger bleaches the whole street. A bowl of hot food puts the colours back.
+opinion @1 merchants against 2 : Fancy wrapping never made me a larger supper.
+opinion @1 houses against 2 : I'd like to carry my shade card upstairs and see the colour of whoever sets my wage.
+opinion @1 strangers for 1 : Plenty of stew stretches a little further if the last bowl brings a fresh account of the road.
+opinion @1 sump for 1 [self.quarter=sump] : No use calling our streets all grey. Hold six greys alongside one another and look again.
 
 grown
-line greet [pair.band=strangers] : Pleased to have a fresh face to remember. | Hello. There's colour in the day already.
-line greet [self.working=yes] : Welcome by my elbow. | Room on the clean side here.
-line greet [here.time=dawn] : Pale morning. Glad of company. | First light's good for meeting faces.
-line greet [here.time=dusk|night] : Evening, with the colours settling down. | Come where the light still holds.
-line kin.open [pair.kin!=no] : Kin bring their own colours. | There's the familiar outline.
-line again.open : Another turn brings you back. | Same face in a different light.
-line greet.return : I heard you plainly. | Here, I've a clean paw for you.
-line greet.return [pair.band=friends|family] : You've brightened my corner already. | Your voice makes a comfortable shade.
-line greet.return [self.working=yes] : Time enough while this dries. | I can listen over my work.
-line greet.return [here.time=dusk|night] : Evening. Mind the dark patch. | The light's nearly spent. Welcome in.
-line farewell : Keep a colour for yourself. | Come back by the bright way.
-line farewell.return : Find the dry side home. | May the turns come clear.
-line farewell.return [here.time=night] : Walk where there's a lamp still burning. | Gentle night beyond my window.
-line react.news : Give me the colours true. | Let me hear the plain bits first.
-line react.news.new : That shades things differently. | Fresh colour to my ear.
-line react.news.known : Old stain, still showing. | I recognise that particular outline.
-line react.news.doubt : I'd wait until the smudge dries before deciding. | That sounds touched up to please somebody.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, even the bright strip looks dull hearing that. | Let me take some weight.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something worth saving a swatch of. | That's good light let in.
-line ask.how : How's the day coloured you? | Any brightness in your pocket?
-line answer.how : Still keeping a little blue back. | Some colour left under my nails.
-line decline : I'd best keep this hour for mixing. | I reckon my feet need a quiet turning.
-line accept_decline : Then we'll let that colour dry. | Your own shade suits you best.
-line thank : I'll keep that kindness bright. | That's a fine colour you've left me.
-line sympathise : Share my dry edge awhile. | I'm beside you through the dull bit.
-line reassure : There'll be a kinder shade somewhere. | I've room to walk alongside.
-line preclose : I must put these slips in order. | Best catch my turning now.
-
+line @1 greet [pair.band=strangers] : Pleased to have a fresh face to remember. | Hello. There's colour in the day already.
+line @2 greet [self.working=yes] : Welcome by my elbow. | Room on the clean side here.
+line @3 greet [here.time=dawn] : Pale morning. Glad of company. | First light's good for meeting faces.
+line @4 greet [here.time=dusk|night] : Evening, with the colours settling down. | Come where the light still holds.
+line @1 kin.open [pair.kin!=no] : Kin bring their own colours. | There's the familiar outline.
+line @1 again.open : Another turn brings you back. | Same face in a different light.
+line @1 greet.return : I heard you plainly. | Here, I've a clean paw for you.
+line @2 greet.return [pair.band=friends|family] : You've brightened my corner already. | Your voice makes a comfortable shade.
+line @3 greet.return [self.working=yes] : Time enough while this dries. | I can listen over my work.
+line @4 greet.return [here.time=dusk|night] : Evening. Mind the dark patch. | The light's nearly spent. Welcome in.
+line @1 farewell : Keep a colour for yourself. | Come back by the bright way.
+line @1 farewell.return : Find the dry side home. | May the turns come clear.
+line @2 farewell.return [here.time=night] : Walk where there's a lamp still burning. | Gentle night beyond my window.
+line @1 react.news : Give me the colours true. | Let me hear the plain bits first.
+line @1 react.news.new : That shades things differently. | Fresh colour to my ear.
+line @1 react.news.known : Old stain, still showing. | I recognise that particular outline.
+line @1 react.news.doubt : I'd wait until the smudge dries before deciding. | That sounds touched up to please somebody.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, even the bright strip looks dull hearing that. | Let me take some weight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something worth saving a swatch of. | That's good light let in.
+line @1 ask.how : How's the day coloured you? | Any brightness in your pocket?
+line @1 answer.how : Still keeping a little blue back. | Some colour left under my nails.
+line @1 decline : I'd best keep this hour for mixing. | I reckon my feet need a quiet turning.
+line @1 accept_decline : Then we'll let that colour dry. | Your own shade suits you best.
+line @1 thank : I'll keep that kindness bright. | That's a fine colour you've left me.
+line @1 sympathise : Share my dry edge awhile. | I'm beside you through the dull bit.
+line @1 reassure : There'll be a kinder shade somewhere. | I've room to walk alongside.
+line @1 preclose : I must put these slips in order. | Best catch my turning now.
 scene grey
 when topic=home
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Cold in the cup means brown for the map. | Might as well dip a brush now.
 
-dlg resident.hub : Let me see your face in the good light. There, I'll know it again.
-dlg resident.hub [topic.meeting=known] : #topic.player#, a face worth saving the right colour for.
-dlg resident.job [self.job=crafter self.workplace] : I get colour on my cuffs at #self.workplace# and carry some of it home on purpose.
-dlg resident.news [world.news] : Here's the plain outline. #world.news#
-dlg resident.bye : Take the way that gives you something worth looking at.
-
+dlg @1 resident.hub : Let me see your face in the good light. There, I'll know it again.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a face worth saving the right colour for.
+dlg @1 resident.job [self.job=crafter self.workplace] : I get colour on my cuffs at #self.workplace# and carry some of it home on purpose.
+dlg @1 resident.news [world.news] : Here's the plain outline. #world.news#
+dlg @1 resident.bye : Take the way that gives you something worth looking at.
 graft resident.hub
 choice How can a piece of cloth give directions? -> cloth_road
 node cloth_road

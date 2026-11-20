@@ -1,9 +1,12 @@
+# rm365, the paper cradle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm365
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_nessa_fogton
+written_by codex
 title the paper cradle
 fits stage=adult|old
 prefers warmth=warm talk=quiet
@@ -34,45 +37,44 @@ brinefilm = a fine salt film | the faint roughness left by the bay
 bellspace = the pause after a bell | a brief interval between peals
 
 any
-opinion strangers for 2 : A strange face in a shop may belong to a wolf who had to gather courage before coming in.
-opinion newcomers for 2 : Making room for another pair of hands gives a cramped bench a surprisingly useful shape.
-opinion dole for 1 : Give a little food while the pot is still warm. A good intention takes some eating when it's cold.
-opinion houses mixed 0 : I would give a crest the same careful second look as an ordinary label.
-opinion city for 1 : In Ridgemere a quiet trade can find a place within hearing of music.
-opinion merchants mixed 0 : A good counter leaves room to set a parcel down before the money comes out.
-opinion festivals mixed 0 : I enjoy the singing after the first rush of noise has gone somewhere else.
+opinion @1 strangers for 2 : A strange face in a shop may belong to a wolf who had to gather courage before coming in.
+opinion @1 newcomers for 2 : Making room for another pair of hands gives a cramped bench a surprisingly useful shape.
+opinion @1 dole for 1 : Give a little food while the pot is still warm. A good intention takes some eating when it's cold.
+opinion @1 houses mixed 0 : I would give a crest the same careful second look as an ordinary label.
+opinion @1 city for 1 : In Ridgemere a quiet trade can find a place within hearing of music.
+opinion @1 merchants mixed 0 : A good counter leaves room to set a parcel down before the money comes out.
+opinion @1 festivals mixed 0 : I enjoy the singing after the first rush of noise has gone somewhere else.
 
 grown
-line greet : I've cleared you a bit of quiet.
-line greet [pair.band=strangers] : Come into softer light. It's easier on the eyes.
-line greet [here.time=dawn] : Frost light suits a quiet greeting.
-line greet [here.time=dusk|night] : Evening. There's time to finish a small thought.
-line greet.return : A kind voice reaches me even through the ringing.
-line greet.return [pair.band=friends|family] : Glad to hear the step that goes with your greeting.
-line greet.return [self.working=yes] : One moment for the glass. My ears are yours already.
-line greet.return [here.time=dusk|night] : We needn't let the late hour carry the sound away.
-line kin.open [pair.kin!=no] : There's room near me for a family visit.
-line again.open : The conversation had one little fold still to make.
-line hail [pair.band=friends] : Over this side, friend. There's a strip of light left.
-line farewell : Carry the warm part of the visit away.
-line farewell.return : And let the wind take the uphill walk slowly with you.
-line react.news : I can hold those words a moment.
-line react.news.new : That has only just come within earshot.
-line react.news.known : I had the beginning and the end of that earlier.
-line react.news.doubt : Let me look at the label before trusting the shape.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's a sorrow which needs careful handling.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now there's a note I could sing on gladly.
-line ask.how : Are you finding some breathing room today?
-line answer.how : I've a little quiet and useful work enough.
-line thank : Your care left me both hands free just when I needed them.
-line deflect_thanks : It was a small kindness quite within reach.
-line sympathise : There's a calm corner for whatever you'd like to say.
-line reassure : Let it come to rest before you try to pick it up.
-line decline : My hands are promised to something that won't stand another delay.
-line accept_decline : I appreciate the straight answer and the time you took.
-line preclose : I'd like to carry a little stillness into the evening.
-line accept_preclose : I'll keep a quiet welcome for another visit.
-
+line @1 greet : I've cleared you a bit of quiet.
+line @2 greet [pair.band=strangers] : Come into softer light. It's easier on the eyes.
+line @3 greet [here.time=dawn] : Frost light suits a quiet greeting.
+line @4 greet [here.time=dusk|night] : Evening. There's time to finish a small thought.
+line @1 greet.return : A kind voice reaches me even through the ringing.
+line @2 greet.return [pair.band=friends|family] : Glad to hear the step that goes with your greeting.
+line @3 greet.return [self.working=yes] : One moment for the glass. My ears are yours already.
+line @4 greet.return [here.time=dusk|night] : We needn't let the late hour carry the sound away.
+line @1 kin.open [pair.kin!=no] : There's room near me for a family visit.
+line @1 again.open : The conversation had one little fold still to make.
+line @1 hail [pair.band=friends] : Over this side, friend. There's a strip of light left.
+line @1 farewell : Carry the warm part of the visit away.
+line @1 farewell.return : And let the wind take the uphill walk slowly with you.
+line @1 react.news : I can hold those words a moment.
+line @1 react.news.new : That has only just come within earshot.
+line @1 react.news.known : I had the beginning and the end of that earlier.
+line @1 react.news.doubt : Let me look at the label before trusting the shape.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's a sorrow which needs careful handling.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now there's a note I could sing on gladly.
+line @1 ask.how : Are you finding some breathing room today?
+line @1 answer.how : I've a little quiet and useful work enough.
+line @1 thank : Your care left me both hands free just when I needed them.
+line @1 deflect_thanks : It was a small kindness quite within reach.
+line @1 sympathise : There's a calm corner for whatever you'd like to say.
+line @1 reassure : Let it come to rest before you try to pick it up.
+line @1 decline : My hands are promised to something that won't stand another delay.
+line @1 accept_decline : I appreciate the straight answer and the time you took.
+line @1 preclose : I'd like to carry a little stillness into the evening.
+line @1 accept_preclose : I'll keep a quiet welcome for another visit.
 scene glass_nest
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Wipe the rim before setting the cover back.
 
-dlg resident.hub : Come to a point where we can talk without any need to raise our voices.
-dlg resident.hub [topic.meeting=known] : #topic.player#. I'm pleased to see a familiar face within easy reach.
-dlg resident.hub [here.time=night] : There's a little lamplight here for an unhurried word.
-dlg resident.hub [pair.disposition=hostile|wary] : I'll speak civilly across the space we've left.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I like the part that leaves a caller's hands easier.
-dlg resident.job : I take time over the things that might get hurt by a hurried touch.
-dlg resident.news [world.news] : This came labelled #world.news_from#: #world.news#.
-dlg resident.gossip [here.gossip=yes] : I wouldn't lift a name out of its setting just to let the street inspect it.
-dlg resident.bye : A good quiet stretch of road to you now.
-
+dlg @1 resident.hub : Come to a point where we can talk without any need to raise our voices.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I'm pleased to see a familiar face within easy reach.
+dlg @3 resident.hub [here.time=night] : There's a little lamplight here for an unhurried word.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll speak civilly across the space we've left.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I like the part that leaves a caller's hands easier.
+dlg @2 resident.job : I take time over the things that might get hurt by a hurried touch.
+dlg @1 resident.news [world.news] : This came labelled #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I wouldn't lift a name out of its setting just to let the street inspect it.
+dlg @1 resident.bye : A good quiet stretch of road to you now.
 graft resident.hub
 choice Can the paper cradle hold anything besides a stopper? -> paper_weight
 node paper_weight

@@ -1,14 +1,17 @@
+# rm571, the soap-map swimmer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm571
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_moll_coldharbour
+written_by codex
 title the soap-map swimmer
 fits stage=young|adolescent|adult|old
 prefers talk=quiet honesty=guarded
 traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
-quirk draws_a_map_in_soap_on_a_tile_and_keeps_the_first_wet_street_to_one_side
+quirk draws_soap_maps_on_a_tile_with_the_wet_street_apart
 likes hard_cheese swimming tidy_house first_warm_day
 dislikes bad_manners cold_tea
 fears a_dry_change_of_clothes_falling_in_a_puddle a_whisper_that_leaves_the_wrong_name_behind
@@ -34,179 +37,42 @@ doorstep = a pale patch of doorstep | a sheltered step end
 puddle = the first thin puddle | a low shine of street water
 
 any
-opinion city for 1 : There are so many turns that one of them usually takes me to a street with dry feet.
-opinion watch mixed 0 : I like being told where a wet crossing starts without having to tell a whole private story in return.
-opinion houses mixed 0 : Tall doors have deep sills. A sill deep enough to keep the rain off suits me.
-opinion road mixed 0 : A road ought to keep one little dry edge until the people on it have finished getting home.
-opinion strangers mixed 0 : A stranger can ask for the way without asking where I sleep.
-opinion festivals mixed 0 : Once the final visitor goes, my street looks wide again and I can hear the gutter running.
-opinion dole for 1 : It makes sense to put a hot bowl within reach of a wolf just in from the cold.
-
-any
-line greet : There's a dry bit to stand on, here.
-line greet [pair.band=strangers] : I haven't seen those feet on my map.
-line greet [here.time=dawn] : Morning. I haven't wiped yesterday's hill off yet.
-line greet [here.time=dusk|night] : This evening drip hasn't reached my corner yet.
-line greet.return : Your greeting carried past that trickle nicely.
-line greet.return [pair.band=friends|family] : I knew your voice before I looked up.
-line greet.return [self.working=yes] : I've a thumb free to hold my place.
-line greet.return [here.time=dusk|night] : Quiet carries nicely after the light goes.
-line kin.open [pair.kin!=no] : Kin may sit by the clean corner.
-line again.open : I left the soap where our road turned.
-line hail [pair.band=friends] : Friend, you can see the secret dry square.
-line farewell : Follow the paler strip along the road.
-line farewell.return : And tuck the towel up high.
-line react.news : Tell the part that hasn't washed away.
-line react.news.new : Fresh marks to me.
-line react.news.known : I know where that telling started.
-line react.news.doubt : I don't see the bit that joins up yet.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We can leave the little lines alone a while.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such a day deserves the clean corner.
-line ask.how : How wet did you get out there?
-line answer.how : Nearly dry, apart from one patch.
-line thank : I'll remember whose hand kept my towel dry.
-line deflect_thanks : It didn't take much soap to show the way.
-line sympathise : I'll shift my bundle and sit where your voice carries.
-line reassure : One bit of street dries before the rest.
-line decline : That bit of the business can stay under my towel.
-line accept_decline : All right. I'll wipe the extra mark off.
-line preclose : I can feel the evening coming up the hill.
-line accept_preclose : We'll leave the tile clean for tomorrow.
-
-young
-
-scene soap_city
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I draw the hill on #tile# with #soap#. | #bare.capitalize# is where I put the dry clothes.
-b : Where's the river? | Are they tiny clothes?
-a : The river does itself if I tip a spoon of water at the top. | They're pretend. Very easy to fold.
-
-scene school_map
-when topic=work self.job=child self.workplace
-does tell.self / ask.detail / answer.detail
-a : At #self.workplace# I can make a line straighter than my soap streets. | I've learnt how to write the name of a street without drawing its puddles.
-b : Why don't you straighten the streets too? | Is that easier?
-a : Because I'd lose my way the moment I followed those marks. | Quicker. It won't keep your foot out of the water.
-
-scene swim_edge
-when topic=pastimes self.likes=swimming
-does tell.self / ask.detail / answer.detail
-a : #towel.capitalize# goes higher than my head when I go swimming. | My favourite moment in a swim is when the water takes my whole weight.
-b : How do you reach it again? | Is it cold?
-a : I mean higher than my head is in the water. I'm taller on the step. | A bit. That's when I feel it carry my full weight.
-
-scene hard_square
-when topic=food self.likes=hard_cheese
-does tell.self / ask.detail / answer.detail
-a : #cheese.capitalize# has the dry patch of my map. | I can nibble two streets in a piece of cheese.
-b : Is it a house? | And the third?
-a : Dinner. It is not a public building. | By the third turn there's hardly any city left.
-
-scene first_warm
-when topic=weather self.likes=first_warm_day
-does tell.self / ask.detail / answer.detail
-a : #mild.capitalize# is when I stop walking round the sunny patch and go straight into it. | A sun-warmed stone has a smell I can catch standing up.
-b : What does that feel like? | What smell comes off the stone?
-a : Like somebody put the towel out specially. | My stone. Only less wet.
-
-scene cold_cup
-when topic=food self.dislikes=cold_tea
-does tell.self / ask.detail / answer.detail
-a : #tearing.capitalize# is a shore nobody wants to swim in. | I'd like the tea before it gets all flat.
-b : What about a spoon? | Can it stand up?
-a : The spoon is allowed. It doesn't have to drink anything. | No, but hot tea makes a little cloud. Cold tea just sits.
-
-scene tidy_tile
-when topic=home self.likes=tidy_house
-does tell.self / ask.detail / answer.detail
-a : With #wipe# I can tidy a whole town before anybody knocks. | I keep my clean towel separate from the one that wipes the tile.
-b : Whose town? | Can you tell the two apart?
-a : The soap one. A real town takes a much bigger rag. | Only after one of them's got a hill all over it.
-
-adolescent
-
-scene road_secret
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : I know which street will gutter first before the first proper shower. | I used to tip the whole hill towards my favourite corner.
-b : Will you tell me how? | Have you changed the game?
-a : Look where the dry silt lies. I'd like to keep one little way home for myself. | I draw the water along the way the street really sends it.
-
-scene swim_plan
-when topic=pastimes self.likes=swimming
-does tell.self / ask.detail / answer.detail
-a : For a swim I practise putting the clothes somewhere that will stay dry through an idle shower. | My favourite finish to a swim is a stone that's kept the sun.
-b : Why practise? | Could you stay in all day?
-a : Having to walk back in a wet shirt argued the case quite effectively. | Not if I'd promised myself a proper supper.
-
-scene bad_manner
-when topic=smalltalk self.dislikes=bad_manners
-does tell.self / ask.detail / answer.detail
-a : A wolf borrowing a tile could wait to be handed it the right way up. | I mind a caller who shifts somebody's drying coat so a bag can sit there.
-b : Does it really matter? | Would you say anything?
-a : A polite borrower gets a tile I've tipped dry. Unless you wanted it down your sleeve. | I'd offer the bag a different place. The coat has already waited its turn.
-
-scene commons_map
-when topic=home self.quarter=commons
-does tell.self / ask.detail / answer.detail
-a : My Commons map is gradually losing the lines nobody needs. | I keep the bit by one Commons turn unusually clean.
-b : What did you leave off? | Do you live there?
-a : Doors I'd drawn just because I knew who lived behind them. A street is enough. | It shows a high stone. Draw enough ink there and its useful height disappears.
-
-scene soap_choice
-when topic=smalltalk
-does tell.self / ask.detail / answer.detail
-a : I used to call a blank space on a tile a secret. | #slope.capitalize# shows why the first drop chooses its direction.
-b : What is it now? | Do you tell people the rest?
-a : Somewhere I haven't had a good enough look at to draw an honest line. | If they need the crossing. I don't need to account for every journey I make.
-
-scene no_name
-when topic=lore here.region=ridgemere
-does tell.self / ask.detail / answer.detail
-a : I care about how much water's on the street more than whose fine door it reached. | My own note can stay folded when somebody comes fishing for names.
-b : Haven't you heard the names? | You keep a list?
-a : Most streets have plenty. Just the height of the sill is relevant to my drawing. | I keep a small map of wet stone. No interviews come with it.
-
-grown
-
-scene old_wash
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : Rubbing a thumb along a wet pane sometimes brings back my first little city of soap. | I still leave a corner of the map quite blank.
-b : Did it work? | For a towel?
-a : Well enough to teach me which questions needed a real walk in the rain. | Yes. I enjoy keeping the joke where only an old friend will see it.
-
-scene dry_clothes
-when topic=home
-does tell.self / ask.detail / answer.detail
-a : When somebody comes in from a swim I offer a clean high shelf before any questions. | A quiet welcome begins with somewhere dry to put what's in your arms.
-b : You swim too? | And conversation?
-a : I learnt what a wet doorstep does to an unprotected bundle at a very early age. | When both hands are free enough for a cup.
-
-scene patient_walk
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : At a flooded turn I stand and read the ripples before choosing my route. | I like a map I can rub out as the road changes.
-b : Does waiting help? | Even after a lot of work?
-a : It lets the cart splash go first. There's often a perfectly dry path once it has passed. | A day's pride is no reason to send a visitor into deep water.
-
-scene warm_wall
-when topic=season here.season=spring
-does tell.self / ask.detail / answer.detail
-a : Spring brings one moment when a stone wall stops feeling colder than the hand. | I test a folded towel for the first warmth a patch of stone can give.
-b : Can you tell when? | For the old swimming ritual?
-a : In one narrow corner, yes. I'd leave other wolves to speak for spring in their own streets. | For anybody coming in with cold shoulders.
-
-scene quiet_place
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I'd like a place where the water's close and the changing shelf is dry. | Give me a shelf the highest winter water can't reach and I'd be comfortable.
-b : How close? | Nothing on the shelf?
-a : Within a friendly walk. I'd like the walk to remain part of it. | Towel, cheese, room for a second parcel. The contents could be very modest.
-
-any
-
+opinion @1 city for 1 : There are so many turns that one of them usually takes me to a street with dry feet.
+opinion @1 watch mixed 0 : I like being told where a wet crossing starts without having to tell a whole private story in return.
+opinion @1 houses mixed 0 : Tall doors have deep sills. A sill deep enough to keep the rain off suits me.
+opinion @1 road mixed 0 : A road ought to keep one little dry edge until the people on it have finished getting home.
+opinion @1 strangers mixed 0 : A stranger can ask for the way without asking where I sleep.
+opinion @1 festivals mixed 0 : Once the final visitor goes, my street looks wide again and I can hear the gutter running.
+opinion @1 dole for 1 : It makes sense to put a hot bowl within reach of a wolf just in from the cold.
+line @1 greet : There's a dry bit to stand on, here.
+line @2 greet [pair.band=strangers] : I haven't seen those feet on my map.
+line @3 greet [here.time=dawn] : Morning. I haven't wiped yesterday's hill off yet.
+line @4 greet [here.time=dusk|night] : This evening drip hasn't reached my corner yet.
+line @1 greet.return : Your greeting carried past that trickle nicely.
+line @2 greet.return [pair.band=friends|family] : I knew your voice before I looked up.
+line @3 greet.return [self.working=yes] : I've a thumb free to hold my place.
+line @4 greet.return [here.time=dusk|night] : Quiet carries nicely after the light goes.
+line @1 kin.open [pair.kin!=no] : Kin may sit by the clean corner.
+line @1 again.open : I left the soap where our road turned.
+line @1 hail [pair.band=friends] : Friend, you can see the secret dry square.
+line @1 farewell : Follow the paler strip along the road.
+line @1 farewell.return : And tuck the towel up high.
+line @1 react.news : Tell the part that hasn't washed away.
+line @1 react.news.new : Fresh marks to me.
+line @1 react.news.known : I know where that telling started.
+line @1 react.news.doubt : I don't see the bit that joins up yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We can leave the little lines alone a while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such a day deserves the clean corner.
+line @1 ask.how : How wet did you get out there?
+line @1 answer.how : Nearly dry, apart from one patch.
+line @1 thank : I'll remember whose hand kept my towel dry.
+line @1 deflect_thanks : It didn't take much soap to show the way.
+line @1 sympathise : I'll shift my bundle and sit where your voice carries.
+line @1 reassure : One bit of street dries before the rest.
+line @1 decline : That bit of the business can stay under my towel.
+line @1 accept_decline : All right. I'll wipe the extra mark off.
+line @1 preclose : I can feel the evening coming up the hill.
+line @1 accept_preclose : We'll leave the tile clean for tomorrow.
 scene water_word
 when topic=news world.news
 does tell.news / react.self / assess
@@ -263,16 +129,15 @@ does aside
 cooldown 8h
 say One pale slab still showing above the shine.
 
-dlg resident.hub : Stand beside my tile and leave the dry part clear, please.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you remember which corner I'd like to save.
-dlg resident.hub [here.time=night] : The tile can rest face down for a quiet word.
-dlg resident.hub [pair.disposition=hostile|wary] : State your business with the map resting where it is.
-dlg resident.job [self.job=child self.workplace] : I'm at lessons at #self.workplace#. My tile is for a different kind of drawing.
-dlg resident.job : I notice the turns where a little care can keep a good bundle dry.
-dlg resident.news [world.news] : It came by way of #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That talk wants a private mark. I keep those off this tile.
-dlg resident.bye : Mind where the road rises at the bend.
-
+dlg @1 resident.hub : Stand beside my tile and leave the dry part clear, please.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you remember which corner I'd like to save.
+dlg @3 resident.hub [here.time=night] : The tile can rest face down for a quiet word.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : State your business with the map resting where it is.
+dlg @1 resident.job [self.job=child self.workplace] : I'm at lessons at #self.workplace#. My tile is for a different kind of drawing.
+dlg @2 resident.job : I notice the turns where a little care can keep a good bundle dry.
+dlg @1 resident.news [world.news] : It came by way of #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That talk wants a private mark. I keep those off this tile.
+dlg @1 resident.bye : Mind where the road rises at the bend.
 graft resident.hub
 choice Why leave a clean corner on a map? -> tile_corner
 node tile_corner
@@ -283,3 +148,135 @@ node tile_rain
 say Then a little roof would be more use than a drawing. I'd tuck the things up high and keep the map for seeing which way to come home.
 choice I'd like to see that homeward road. -> hub
 choice I'll take the high way. -> bye
+
+
+grown
+scene old_wash
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Rubbing a thumb along a wet pane sometimes brings back my first little city of soap. | I still leave a corner of the map quite blank.
+b : Did it work? | For a towel?
+a : Well enough to teach me which questions needed a real walk in the rain. | Yes. I enjoy keeping the joke where only an old friend will see it.
+
+scene dry_clothes
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : When somebody comes in from a swim I offer a clean high shelf before any questions. | A quiet welcome begins with somewhere dry to put what's in your arms.
+b : You swim too? | And conversation?
+a : I learnt what a wet doorstep does to an unprotected bundle at a very early age. | When both hands are free enough for a cup.
+
+scene patient_walk
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : At a flooded turn I stand and read the ripples before choosing my route. | I like a map I can rub out as the road changes.
+b : Does waiting help? | Even after a lot of work?
+a : It lets the cart splash go first. There's often a perfectly dry path once it has passed. | A day's pride is no reason to send a visitor into deep water.
+
+scene warm_wall
+when topic=season here.season=spring
+does tell.self / ask.detail / answer.detail
+a : Spring brings one moment when a stone wall stops feeling colder than the hand. | I test a folded towel for the first warmth a patch of stone can give.
+b : Can you tell when? | For the old swimming ritual?
+a : In one narrow corner, yes. I'd leave other wolves to speak for spring in their own streets. | For anybody coming in with cold shoulders.
+
+scene quiet_place
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a place where the water's close and the changing shelf is dry. | Give me a shelf the highest winter water can't reach and I'd be comfortable.
+b : How close? | Nothing on the shelf?
+a : Within a friendly walk. I'd like the walk to remain part of it. | Towel, cheese, room for a second parcel. The contents could be very modest.
+
+
+young
+scene soap_city
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I draw the hill on #tile# with #soap#. | #bare.capitalize# is where I put the dry clothes.
+b : Where's the river? | Are they tiny clothes?
+a : The river does itself if I tip a spoon of water at the top. | They're pretend. Very easy to fold.
+
+scene school_map
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I can make a line straighter than my soap streets. | I've learnt how to write the name of a street without drawing its puddles.
+b : Why don't you straighten the streets too? | Is that easier?
+a : Because I'd lose my way the moment I followed those marks. | Quicker. It won't keep your foot out of the water.
+
+scene swim_edge
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : #towel.capitalize# goes higher than my head when I go swimming. | My favourite moment in a swim is when the water takes my whole weight.
+b : How do you reach it again? | Is it cold?
+a : I mean higher than my head is in the water. I'm taller on the step. | A bit. That's when I feel it carry my full weight.
+
+scene hard_square
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : #cheese.capitalize# has the dry patch of my map. | I can nibble two streets in a piece of cheese.
+b : Is it a house? | And the third?
+a : Dinner. It is not a public building. | By the third turn there's hardly any city left.
+
+scene first_warm
+when topic=weather self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : #mild.capitalize# is when I stop walking round the sunny patch and go straight into it. | A sun-warmed stone has a smell I can catch standing up.
+b : What does that feel like? | What smell comes off the stone?
+a : Like somebody put the towel out specially. | My stone. Only less wet.
+
+scene cold_cup
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : #tearing.capitalize# is a shore nobody wants to swim in. | I'd like the tea before it gets all flat.
+b : What about a spoon? | Can it stand up?
+a : The spoon is allowed. It doesn't have to drink anything. | No, but hot tea makes a little cloud. Cold tea just sits.
+
+scene tidy_tile
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : With #wipe# I can tidy a whole town before anybody knocks. | I keep my clean towel separate from the one that wipes the tile.
+b : Whose town? | Can you tell the two apart?
+a : The soap one. A real town takes a much bigger rag. | Only after one of them's got a hill all over it.
+
+
+adolescent
+scene road_secret
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I know which street will gutter first before the first proper shower. | I used to tip the whole hill towards my favourite corner.
+b : Will you tell me how? | Have you changed the game?
+a : Look where the dry silt lies. I'd like to keep one little way home for myself. | I draw the water along the way the street really sends it.
+
+scene swim_plan
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : For a swim I practise putting the clothes somewhere that will stay dry through an idle shower. | My favourite finish to a swim is a stone that's kept the sun.
+b : Why practise? | Could you stay in all day?
+a : Having to walk back in a wet shirt argued the case quite effectively. | Not if I'd promised myself a proper supper.
+
+scene bad_manner
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A wolf borrowing a tile could wait to be handed it the right way up. | I mind a caller who shifts somebody's drying coat so a bag can sit there.
+b : Does it really matter? | Would you say anything?
+a : A polite borrower gets a tile I've tipped dry. Unless you wanted it down your sleeve. | I'd offer the bag a different place. The coat has already waited its turn.
+
+scene commons_map
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : My Commons map is gradually losing the lines nobody needs. | I keep the bit by one Commons turn unusually clean.
+b : What did you leave off? | Do you live there?
+a : Doors I'd drawn just because I knew who lived behind them. A street is enough. | It shows a high stone. Draw enough ink there and its useful height disappears.
+
+scene soap_choice
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I used to call a blank space on a tile a secret. | #slope.capitalize# shows why the first drop chooses its direction.
+b : What is it now? | Do you tell people the rest?
+a : Somewhere I haven't had a good enough look at to draw an honest line. | If they need the crossing. I don't need to account for every journey I make.
+
+scene no_name
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I care about how much water's on the street more than whose fine door it reached. | My own note can stay folded when somebody comes fishing for names.
+b : Haven't you heard the names? | You keep a list?
+a : Most streets have plenty. Just the height of the sill is relevant to my drawing. | I keep a small map of wet stone. No interviews come with it.

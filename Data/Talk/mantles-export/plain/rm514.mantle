@@ -1,14 +1,17 @@
+# rm514, the evening peal accountant (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm514
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_gudrun_fell_
+written_by codex
 title the evening peal accountant
 fits stage=adult|old
 prefers job=scholar honesty=plain
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk counts_the_silent_spaces_in_a_peal_with_three_seeds_and_keeps_family_letters_out_of_the_daybook
+quirk counts_the_silences_in_a_peal_with_three_seeds
 likes fried_fish roof_birds festival_bells thunder
 dislikes night_noise gulls
 fears two_accounts_added_under_the_wrong_heading private_letters_opened_as_receipts
@@ -38,52 +41,51 @@ closedbook = the book with its cover shut | my closed account book
 fishcloth = a cloth drawn over the dish | the cover for the fried fish
 
 any
-opinion houses for 1 : A House of consequence should have ready a plain answer to a small question about its accounts.
-opinion merchants mixed 0 : I give the careful merchant time to total a column. I allow the careless one exactly the same time to correct it.
-opinion city for 1 : Roofs at different heights make the bells come home from three directions.
-opinion watch for 1 : Put service dates in a readable hand. The Watch keeps duties which a merchant may have to allow for.
-opinion festivals for 2 : A good peal has a little breathing space even when all the bells seem intent on filling it.
-opinion road mixed 0 : A letter can take a circuitous route and still carry a perfectly direct answer.
-opinion drink mixed 0 : A good cellar concerns itself with measure as much as flavour. I retain my preference for the measure.
-opinion dole mixed 0 : I'd have the total of bread given and the total promised set beside each other at the close.
-opinion times mixed 0 : A year can turn upon a correction so small that the old figure still shows through.
+opinion @1 houses for 1 : A House of consequence should have ready a plain answer to a small question about its accounts.
+opinion @1 merchants mixed 0 : I give the careful merchant time to total a column. I allow the careless one exactly the same time to correct it.
+opinion @1 city for 1 : Roofs at different heights make the bells come home from three directions.
+opinion @1 watch for 1 : Put service dates in a readable hand. The Watch keeps duties which a merchant may have to allow for.
+opinion @1 festivals for 2 : A good peal has a little breathing space even when all the bells seem intent on filling it.
+opinion @1 road mixed 0 : A letter can take a circuitous route and still carry a perfectly direct answer.
+opinion @1 drink mixed 0 : A good cellar concerns itself with measure as much as flavour. I retain my preference for the measure.
+opinion @1 dole mixed 0 : I'd have the total of bread given and the total promised set beside each other at the close.
+opinion @1 times mixed 0 : A year can turn upon a correction so small that the old figure still shows through.
 
 grown
-line greet : Come beside the outside margin.
-line greet [pair.band=strangers] : A new hand. We can begin on a fresh line.
-line greet [here.time=dawn] : Morning. The upper roofs have their daylight already.
-line greet [here.time=dusk|night] : Evening. The last bell has allowed us some quiet.
-line greet.return : I heard. My finger can keep the place.
-line greet.return [pair.band=friends|family] : Yours is a return I needn't look up.
-line greet.return [self.working=yes] : One moment's pause won't injure the sum.
-line greet.return [here.time=dusk|night] : A late visitor will be heard above a settling house.
-line kin.open [pair.kin!=no] : Come to the inside chair, kin.
-line again.open : The seeds are still beside the unfinished figure.
-line hail [pair.band=friends] : Friend, put that spare chair beside the best-lit window.
-line farewell : Keep the folded page dry going home.
-line farewell.return : And allow for the turn after the last bell.
-line react.news : Give me the words in their first order.
-line react.news.new : A new figure for this reckoning.
-line react.news.known : It fell on the earlier line as well.
-line react.news.doubt : There's a difference I'd like explained before I add it in.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We'll leave a longer pause after that loss.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Those words ring as clear as a feast-day peal.
-line ask.how : Any quiet minutes you could keep for yourself today?
-line answer.how : Steady. One troublesome total has finally come home.
-line thank : You gave an honest figure room to appear. Thank you.
-line deflect_thanks : The seed was right beneath my idle fingertip.
-line sympathise : I'll leave the pause open. You can decide what goes in it.
-line reassure : One small correction now can save a tiring afternoon.
-line decline : I must reserve the rest of this page for a prior obligation.
-line accept_decline : Then no entry will be necessary between us.
-line preclose : I'd like to close one cover before another matter arrives.
-line accept_preclose : Let the last quiet stretch be yours.
-line greet [here.weather=rain] : Sheltered at this corner. Come in clear of the drip.
-line farewell [here.time=night] : A quiet landing after the stairs, I hope.
-line greet.return [pair.band=strangers] : Yes, that carried clearly across the page.
-line thank [pair.band=friends] : I know the care behind that very small adjustment.
-line greet [self.working=yes] : I'll mark the line with a seed and listen.
-
+line @1 greet : Come beside the outside margin.
+line @2 greet [pair.band=strangers] : A new hand. We can begin on a fresh line.
+line @3 greet [here.time=dawn] : Morning. The upper roofs have their daylight already.
+line @4 greet [here.time=dusk|night] : Evening. The last bell has allowed us some quiet.
+line @1 greet.return : I heard. My finger can keep the place.
+line @2 greet.return [pair.band=friends|family] : Yours is a return I needn't look up.
+line @3 greet.return [self.working=yes] : One moment's pause won't injure the sum.
+line @4 greet.return [here.time=dusk|night] : A late visitor will be heard above a settling house.
+line @1 kin.open [pair.kin!=no] : Come to the inside chair, kin.
+line @1 again.open : The seeds are still beside the unfinished figure.
+line @1 hail [pair.band=friends] : Friend, put that spare chair beside the best-lit window.
+line @1 farewell : Keep the folded page dry going home.
+line @1 farewell.return : And allow for the turn after the last bell.
+line @1 react.news : Give me the words in their first order.
+line @1 react.news.new : A new figure for this reckoning.
+line @1 react.news.known : It fell on the earlier line as well.
+line @1 react.news.doubt : There's a difference I'd like explained before I add it in.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We'll leave a longer pause after that loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Those words ring as clear as a feast-day peal.
+line @1 ask.how : Any quiet minutes you could keep for yourself today?
+line @1 answer.how : Steady. One troublesome total has finally come home.
+line @1 thank : You gave an honest figure room to appear. Thank you.
+line @1 deflect_thanks : The seed was right beneath my idle fingertip.
+line @1 sympathise : I'll leave the pause open. You can decide what goes in it.
+line @1 reassure : One small correction now can save a tiring afternoon.
+line @1 decline : I must reserve the rest of this page for a prior obligation.
+line @1 accept_decline : Then no entry will be necessary between us.
+line @1 preclose : I'd like to close one cover before another matter arrives.
+line @1 accept_preclose : Let the last quiet stretch be yours.
+line @5 greet [here.weather=rain] : Sheltered at this corner. Come in clear of the drip.
+line @2 farewell [here.time=night] : A quiet landing after the stairs, I hope.
+line @5 greet.return [pair.band=strangers] : Yes, that carried clearly across the page.
+line @2 thank [pair.band=friends] : I know the care behind that very small adjustment.
+line @6 greet [self.working=yes] : I'll mark the line with a seed and listen.
 scene three_seeds
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -346,20 +348,19 @@ does aside
 cooldown 8h
 say A cloth over that dish while the shadows circle.
 
-dlg resident.hub : Speak plainly. I can put a seed beside the current figure.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember which line was open.
-dlg resident.hub [pair.band=friends|family] : Draw up the chair inside the circle of lamplight.
-dlg resident.hub [here.time=dawn] : Morning. The clean columns will allow us a moment.
-dlg resident.hub [here.time=night] : Let the shutters do their job. We can speak quietly here.
-dlg resident.hub [pair.disposition=hostile|wary] : We'll leave the open book quite properly between ourselves.
-dlg resident.hub [self.working=yes] : I've reached a clean stopping point in the arithmetic.
-dlg resident.job [self.job=scholar self.workplace] : At #self.workplace# I see that figures entering the household books can answer for themselves.
-dlg resident.job [self.trade_words] : The work's described as #self.trade_words#. It rewards a steady hand.
-dlg resident.news [world.news] : The originating entry names #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : A private word does not constitute a household transaction.
-dlg resident.bye : Good walking. Leave yourself a quiet minute before entering the house.
-dlg resident.bye [here.time=night] : May your shutters close without a second knock.
-
+dlg @1 resident.hub : Speak plainly. I can put a seed beside the current figure.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember which line was open.
+dlg @3 resident.hub [pair.band=friends|family] : Draw up the chair inside the circle of lamplight.
+dlg @4 resident.hub [here.time=dawn] : Morning. The clean columns will allow us a moment.
+dlg @5 resident.hub [here.time=night] : Let the shutters do their job. We can speak quietly here.
+dlg @6 resident.hub [pair.disposition=hostile|wary] : We'll leave the open book quite properly between ourselves.
+dlg @7 resident.hub [self.working=yes] : I've reached a clean stopping point in the arithmetic.
+dlg @1 resident.job [self.job=scholar self.workplace] : At #self.workplace# I see that figures entering the household books can answer for themselves.
+dlg @2 resident.job [self.trade_words] : #self.trade_words.capitalize#. It rewards a steady hand.
+dlg @1 resident.news [world.news] : The originating entry names #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : A private word does not constitute a household transaction.
+dlg @1 resident.bye : Good walking. Leave yourself a quiet minute before entering the house.
+dlg @2 resident.bye [here.time=night] : May your shutters close without a second knock.
 graft @seeds resident.hub
 choice Why are there three seeds beside the ledger? -> peal_seed
 node peal_seed

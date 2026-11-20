@@ -1,9 +1,12 @@
+# rm422, the cellar-mouth star (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm422
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_magnus_tarton
+written_by codex
 title the cellar-mouth star
 fits stage=adult|old
 prefers piety=devout temper=short
@@ -17,6 +20,7 @@ topics faith +0.6 work +0.4 travel +0.3 food +0.2
 styles comfort=quiet gossip=guarded refuse=direct tease=none
 marks oath saying
 persona #self.first# looks for one patch of sky above a cellar mouth and insists on stating a fair figure just once.
+
 words
 oath! = Cork my smoke | Soot on the highest pane
 saying! = A clean window earns its light | Name the figure plainly
@@ -33,34 +37,32 @@ workrag = a small clean wiping cloth | a square of washed linen
 givemark = a low chalk line | a black crossmark
 
 grown
-
-opinion houses against 1 : A better-placed wolf can take a post without ever learning how its door sticks.
-opinion merchants mixed 1 : Ask me a price I can say in one breath. An open-ended bargain gives my temper too much room.
-opinion church for 2 : One star above the nearest roof is enough to put my evening thanks in order.
-opinion newcomers mixed 1 : No welcome requires telling a stranger the whole reason I want to move uphill.
-opinion dole for 2 : A hungry wolf gets no better dinner by offering a humiliating price for it.
-opinion city mixed 1 : In this city two windows a street apart can see quite different amounts of the sky.
-line greet : Come over where neither of us is blocking the light.
-line greet [pair.band=strangers] : We can speak plainly clear of all those elbows.
-line greet.return : You've picked a quiet opening to be heard in.
-line farewell : May you find the last bit of sky clear before bed.
-line farewell.return : Turn your clean side to the breeze.
-line ask.how : Has somebody given you space enough to speak without pressing?
-line answer.how : Fairly settled, with a few ambitious inches left to climb.
-line react.news : I'd like the words before the crowd works on them.
-line react.news.known : That reached my corner on a different breath.
-line react.news.new : There's another pin of light where I had a dark patch.
-line react.news.doubt : It smells like smoke carried a little further than the flame.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I would give thanks aloud for news like that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll stay with whoever's left standing quiet after those words.
-line decline : I gave my answer plainly and I won't start bargaining over it.
-line thank : You left enough air for me to think and speak.
-line deflect_thanks : It cost less than arguing about who should do it.
-line reassure : The whole dark doesn't have to clear for one light to show.
-line sympathise : I'll leave the price and all the measuring aside today.
-line preclose : Time to finish the part I still owe the day.
-line ack : I can see the figure without any embroidery.
-
+opinion @1 houses against 1 : A better-placed wolf can take a post without ever learning how its door sticks.
+opinion @1 merchants mixed 1 : Ask me a price I can say in one breath. An open-ended bargain gives my temper too much room.
+opinion @1 church for 2 : One star above the nearest roof is enough to put my evening thanks in order.
+opinion @1 newcomers mixed 1 : No welcome requires telling a stranger the whole reason I want to move uphill.
+opinion @1 dole for 2 : A hungry wolf gets no better dinner by offering a humiliating price for it.
+opinion @1 city mixed 1 : In this city two windows a street apart can see quite different amounts of the sky.
+line @1 greet : Come over where neither of us is blocking the light.
+line @2 greet [pair.band=strangers] : We can speak plainly clear of all those elbows.
+line @1 greet.return : You've picked a quiet opening to be heard in.
+line @1 farewell : May you find the last bit of sky clear before bed.
+line @1 farewell.return : Turn your clean side to the breeze.
+line @1 ask.how : Has somebody given you space enough to speak without pressing?
+line @1 answer.how : Fairly settled, with a few ambitious inches left to climb.
+line @1 react.news : I'd like the words before the crowd works on them.
+line @1 react.news.known : That reached my corner on a different breath.
+line @1 react.news.new : There's another pin of light where I had a dark patch.
+line @1 react.news.doubt : It smells like smoke carried a little further than the flame.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I would give thanks aloud for news like that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll stay with whoever's left standing quiet after those words.
+line @1 decline : I gave my answer plainly and I won't start bargaining over it.
+line @1 thank : You left enough air for me to think and speak.
+line @1 deflect_thanks : It cost less than arguing about who should do it.
+line @1 reassure : The whole dark doesn't have to clear for one light to show.
+line @1 sympathise : I'll leave the price and all the measuring aside today.
+line @1 preclose : Time to finish the part I still owe the day.
+line @1 ack : I can see the figure without any embroidery.
 scene work_1
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
@@ -228,13 +230,13 @@ when concept=bark
 does aside
 cooldown 8h
 say Give the doorway half a shoulder's width of air. | The crowded side of the bargain can keep itself.
-dlg resident.hub : I can hear you without both of us trying to argue above the street.
-dlg resident.job [self.job=merchant] : At #self.workplace# I prefer an examined parcel and a price that stays where the buyer heard it.
-dlg resident.news [world.news] : Here's what came clearly through the press. #world.news#.
-dlg resident.gossip [here.gossip=yes] : An account in circulation says #topic.subject# #topic.claim#. The smoke hasn't cleared enough to say more.
-dlg shop.greet [here.shop=open] : Look over the goods. I'll name a straight figure.
-dlg resident.bye : I hope there's a patch of clear sky wherever your door opens.
 
+dlg @1 resident.hub : I can hear you without both of us trying to argue above the street.
+dlg @1 resident.job [self.job=merchant] : At #self.workplace# I prefer an examined parcel and a price that stays where the buyer heard it.
+dlg @1 resident.news [world.news] : Here's what came clearly through the press. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An account in circulation says #topic.subject# #topic.claim#. The smoke hasn't cleared enough to say more.
+dlg @1 shop.greet [here.shop=open] : Look over the goods. I'll name a straight figure.
+dlg @1 resident.bye : I hope there's a patch of clear sky wherever your door opens.
 graft resident.hub
 choice Why judge a room by its window? -> sill_view
 node sill_view

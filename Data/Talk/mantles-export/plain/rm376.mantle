@@ -1,9 +1,12 @@
+# rm376, the walking dividers (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm376
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_ivar_pitchwick
+written_by codex
 title the walking dividers
 fits stage=adult|old
 prefers job=scholar
@@ -33,45 +36,44 @@ corksole = a wedge of stopper | a cork for my points
 blankturn = a clean piece of margin | an unmarked turn
 
 any
-opinion houses for 2 : A well-kept account can put a great many paws to work. I value a House prepared to set its signature below the reckoning.
-opinion dole against 1 : A list for relief ought to lead to a proper paid place where one can be found. I'd grudge seeing capable paws kept waiting on the list indefinitely.
-opinion watch for 2 : A sound witness and a clear record are easier to get in a place where the caller can come and go in safety.
-opinion festivals for 2 : An evening's dancing can get greater value out of a flat piece of ground than any calculation I've yet attempted.
-opinion city for 1 : The pleasure of these long streets is that one can get an entirely different sum by taking a different turn.
-opinion times for 1 : I have the means for a long walk and a leisurely supper after it. I'd gladly enter the present week on the credit side.
+opinion @1 houses for 2 : A well-kept account can put a great many paws to work. I value a House prepared to set its signature below the reckoning.
+opinion @1 dole against 1 : A list for relief ought to lead to a proper paid place where one can be found. I'd grudge seeing capable paws kept waiting on the list indefinitely.
+opinion @1 watch for 2 : A sound witness and a clear record are easier to get in a place where the caller can come and go in safety.
+opinion @1 festivals for 2 : An evening's dancing can get greater value out of a flat piece of ground than any calculation I've yet attempted.
+opinion @1 city for 1 : The pleasure of these long streets is that one can get an entirely different sum by taking a different turn.
+opinion @1 times for 1 : I have the means for a long walk and a leisurely supper after it. I'd gladly enter the present week on the credit side.
 
 grown
-line greet : I've marked my place. There's room for a conversation.
-line greet [pair.band=strangers] : A new face along a familiar route. Welcome to a brief halt.
-line greet [here.time=dawn] : The lines of the street come clear admirably early. Welcome.
-line greet [here.time=dusk|night] : The street's mostly outline now. I'm pleased to hear a voice.
-line greet [self.working=yes] : I'll close the dividers and give the matter my ear.
-line kin.open [pair.kin!=no] : Come to the near margin where the service is informal.
-line again.open : Our routes cross rather neatly twice in one day.
-line greet.return : A clear greeting crosses the figures quite easily.
-line greet.return [pair.band=friends|family] : My greeting to a familiar point of reference.
-line greet.return [self.working=yes] : I've heard you above the turning of the leaves.
-line greet.return [here.time=dusk|night] : I'll lend you the ear on the better-lit side.
-line farewell : May your journey give a pleasing remainder.
-line farewell.return : I'll put our meeting on the little map.
-line react.news : An account worth the length of the telling, I trust. Go on.
-line react.news.new : That belongs on a clean page of its own.
-line react.news.known : Yes, I've had a shorter reckoning of those events.
-line react.news.doubt : Was the original observation made at closer quarters?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can help with a written errand when that house is ready for company.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A pleasant result, however many figures I allow for it.
-line ask.how : Has your day taken the course you had in mind?
-line answer.how : Tolerably well. I've taken a little more air than I planned.
-line sympathise : No calculation makes a disappearance sit any easier beside the figures that remain.
-line reassure : We can trace the route back till we reach something you recognise.
-line decline : I should be anticipating permission nobody's given me to use.
-line accept_decline : I'll mark our answer as private and close the little book.
-line thank : You gave me precisely the assistance the difficulty called for.
-line deflect_thanks : Spend your gratitude on the next tired walker you encounter.
-line preclose : The dividers have got themselves just a degree out of true.
-line accept_preclose : I'll draw a mark where our ways separate.
-line ack : It tallies.
-
+line @1 greet : I've marked my place. There's room for a conversation.
+line @2 greet [pair.band=strangers] : A new face along a familiar route. Welcome to a brief halt.
+line @3 greet [here.time=dawn] : The lines of the street come clear admirably early. Welcome.
+line @4 greet [here.time=dusk|night] : The street's mostly outline now. I'm pleased to hear a voice.
+line @5 greet [self.working=yes] : I'll close the dividers and give the matter my ear.
+line @1 kin.open [pair.kin!=no] : Come to the near margin where the service is informal.
+line @1 again.open : Our routes cross rather neatly twice in one day.
+line @1 greet.return : A clear greeting crosses the figures quite easily.
+line @2 greet.return [pair.band=friends|family] : My greeting to a familiar point of reference.
+line @3 greet.return [self.working=yes] : I've heard you above the turning of the leaves.
+line @4 greet.return [here.time=dusk|night] : I'll lend you the ear on the better-lit side.
+line @1 farewell : May your journey give a pleasing remainder.
+line @1 farewell.return : I'll put our meeting on the little map.
+line @1 react.news : An account worth the length of the telling, I trust. Go on.
+line @1 react.news.new : That belongs on a clean page of its own.
+line @1 react.news.known : Yes, I've had a shorter reckoning of those events.
+line @1 react.news.doubt : Was the original observation made at closer quarters?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can help with a written errand when that house is ready for company.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A pleasant result, however many figures I allow for it.
+line @1 ask.how : Has your day taken the course you had in mind?
+line @1 answer.how : Tolerably well. I've taken a little more air than I planned.
+line @1 sympathise : No calculation makes a disappearance sit any easier beside the figures that remain.
+line @1 reassure : We can trace the route back till we reach something you recognise.
+line @1 decline : I should be anticipating permission nobody's given me to use.
+line @1 accept_decline : I'll mark our answer as private and close the little book.
+line @1 thank : You gave me precisely the assistance the difficulty called for.
+line @1 deflect_thanks : Spend your gratitude on the next tired walker you encounter.
+line @1 preclose : The dividers have got themselves just a degree out of true.
+line @1 accept_preclose : I'll draw a mark where our ways separate.
+line @1 ack : It tallies.
 scene walkingmap
 when topic=travel self.likes=long_walks
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Take the longer turning while the light allows. | Give the marked road a little room beyond the fold.
-dlg resident.hub : I may put that calculation aside at a very convenient point. How can I help?
-dlg resident.hub [topic.meeting=known] : Our routes meet on agreeable terms once again, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Let's have the precise matter before we reduce the distance between us.
-dlg resident.hub [here.time=night] : At this hour your ordinary voice will carry quite sufficiently across the paving.
-dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I like a result to be traceable as far as the first written mark.
-dlg resident.job : I take the longer way through a matter if that will establish where a mistake came in.
-dlg resident.news [world.news] : The account reaching my desk has this wording. #world.news#.
-dlg resident.bye : May the walk provide something you hadn't allowed for in the original distance.
 
+dlg @1 resident.hub : I may put that calculation aside at a very convenient point. How can I help?
+dlg @2 resident.hub [topic.meeting=known] : Our routes meet on agreeable terms once again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Let's have the precise matter before we reduce the distance between us.
+dlg @4 resident.hub [here.time=night] : At this hour your ordinary voice will carry quite sufficiently across the paving.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I like a result to be traceable as far as the first written mark.
+dlg @2 resident.job : I take the longer way through a matter if that will establish where a mistake came in.
+dlg @1 resident.news [world.news] : The account reaching my desk has this wording. #world.news#.
+dlg @1 resident.bye : May the walk provide something you hadn't allowed for in the original distance.
 graft @brasslegs resident.hub
 choice How far have those little brass feet gone? -> brasslegs
 node brasslegs

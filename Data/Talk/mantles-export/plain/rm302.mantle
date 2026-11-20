@@ -1,9 +1,12 @@
+# rm302, the ferrule turner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm302
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_oda_greywell
+written_by codex
 title the ferrule turner
 fits stage=adult|old
 prefers warmth=warm temper=calm
@@ -34,45 +37,44 @@ flysheet = a thin scrap of muslin | a cloth fine as mist
 brinegust = wind off grey water | a salt-laden gust
 
 any
-opinion road mixed 1 : There's a hard mile in almost any road. I'd sooner know where it lies than call the whole road bad.
-opinion dole for 2 : Give someone a square supper and a week later there might be another strong back in the street.
-opinion sump for 1 : You learn the ground by touching it. No map could give me the Sump under my feet.
-opinion church for 1 : I've gone into chapel too tired for a single word. Quiet serves the Bright One too.
-opinion watch against 1 : I'd see patrols better on my road if the boots made room for the wolf coming down.
-opinion strangers for 1 : A newcomer may know just the turn that'll stop a stick from sliding.
-opinion houses against 2 : Stone laid for a crest cuts the same blister as common stone.
+opinion @1 road mixed 1 : There's a hard mile in almost any road. I'd sooner know where it lies than call the whole road bad.
+opinion @1 dole for 2 : Give someone a square supper and a week later there might be another strong back in the street.
+opinion @1 sump for 1 [self.quarter=sump] : You learn the ground by touching it. No map could give me the Sump under my feet.
+opinion @1 church for 1 : I've gone into chapel too tired for a single word. Quiet serves the Bright One too.
+opinion @1 watch against 1 : I'd see patrols better on my road if the boots made room for the wolf coming down.
+opinion @1 strangers for 1 : A newcomer may know just the turn that'll stop a stick from sliding.
+opinion @1 houses against 2 : Stone laid for a crest cuts the same blister as common stone.
 
 grown
-line greet : There's room beside the planted stick.
-line greet [pair.band=strangers] : I'll set the iron sideways. Nobody need trip over it.
-line greet [here.time=dawn] : Morning. There's still dew in the grip marks.
-line greet [here.time=dusk|night] : Evening to you. Rest your balance here.
-line greet.return : Welcome like the ring of iron on firm ground.
-line greet.return [pair.band=friends|family] : Your tread would come out clear in a downpour.
-line greet.return [self.working=yes] : I'm keeping this end steady. Talk from there.
-line greet.return [here.time=dusk|night] : Hearing you saves me peering through the dusk.
-line kin.open [pair.kin!=no] : Come take the kind bend round, kin.
-line again.open : There's time for the other half of our walk.
-line hail [pair.band=friends] : Familiar feet! Hold there and I'll join you.
-line farewell : May the grit lie where you plant your heel.
-line farewell.return : And get that last corner comfortably behind you.
-line react.news : Turn it round. Let's feel its other side.
-line react.news.new : That's the first tap of that particular iron.
-line react.news.known : Had that one under my foot earlier.
-line react.news.doubt : A true account should bear a little sideways pressure.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy word. I'll stand by while it settles.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news gives a tired leg a second spring.
-line ask.how : Has your day been all slope so far?
-line answer.how : I'm keeping my shoulders level, more or less.
-line thank : That saved a stumble I'll remember.
-line deflect_thanks : It only needed my weight for a moment.
-line sympathise : Take hold here if the ground's gone uncertain.
-line reassure : Plant one foot. Everything needn't move at once.
-line decline : I've a load of my own to settle this afternoon.
-line accept_decline : Fair enough. No need to hang an excuse on it.
-line preclose : I'd like to get the far turn behind me.
-line accept_preclose : Then carry your unspent breath along.
-
+line @1 greet : There's room beside the planted stick.
+line @2 greet [pair.band=strangers] : I'll set the iron sideways. Nobody need trip over it.
+line @3 greet [here.time=dawn] : Morning. There's still dew in the grip marks.
+line @4 greet [here.time=dusk|night] : Evening to you. Rest your balance here.
+line @1 greet.return : Welcome like the ring of iron on firm ground.
+line @2 greet.return [pair.band=friends|family] : Your tread would come out clear in a downpour.
+line @3 greet.return [self.working=yes] : I'm keeping this end steady. Talk from there.
+line @4 greet.return [here.time=dusk|night] : Hearing you saves me peering through the dusk.
+line @1 kin.open [pair.kin!=no] : Come take the kind bend round, kin.
+line @1 again.open : There's time for the other half of our walk.
+line @1 hail [pair.band=friends] : Familiar feet! Hold there and I'll join you.
+line @1 farewell : May the grit lie where you plant your heel.
+line @1 farewell.return : And get that last corner comfortably behind you.
+line @1 react.news : Turn it round. Let's feel its other side.
+line @1 react.news.new : That's the first tap of that particular iron.
+line @1 react.news.known : Had that one under my foot earlier.
+line @1 react.news.doubt : A true account should bear a little sideways pressure.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy word. I'll stand by while it settles.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news gives a tired leg a second spring.
+line @1 ask.how : Has your day been all slope so far?
+line @1 answer.how : I'm keeping my shoulders level, more or less.
+line @1 thank : That saved a stumble I'll remember.
+line @1 deflect_thanks : It only needed my weight for a moment.
+line @1 sympathise : Take hold here if the ground's gone uncertain.
+line @1 reassure : Plant one foot. Everything needn't move at once.
+line @1 decline : I've a load of my own to settle this afternoon.
+line @1 accept_decline : Fair enough. No need to hang an excuse on it.
+line @1 preclose : I'd like to get the far turn behind me.
+line @1 accept_preclose : Then carry your unspent breath along.
 scene iron_turn
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Let the stick find that last dark edge.
 
-dlg resident.hub : An iron tip can hold two wolves' worth of conversation.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Enough room on this step to meet properly.
-dlg resident.hub [here.time=night] : The light's low. I'll let my ears take your measure.
-dlg resident.hub [pair.disposition=hostile|wary] : Give my stick a clear length and say what's needed.
-dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. The ferrule bears witness to every mile.
-dlg resident.job : My pride's in setting things down in good order.
-dlg resident.news [world.news] : #world.news#. I picked that up from #world.news_from#.
-dlg resident.gossip [here.gossip=yes] : I've no desire to put a neighbour's name on my load today.
-dlg resident.bye : Try the firm side going round the bend.
-
+dlg @1 resident.hub : An iron tip can hold two wolves' worth of conversation.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Enough room on this step to meet properly.
+dlg @3 resident.hub [here.time=night] : The light's low. I'll let my ears take your measure.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Give my stick a clear length and say what's needed.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. The ferrule bears witness to every mile.
+dlg @2 resident.job : My pride's in setting things down in good order.
+dlg @1 resident.news [world.news] : #world.news#. I picked that up from #world.news_from#.
+dlg @1 resident.gossip [here.gossip=yes] : I've no desire to put a neighbour's name on my load today.
+dlg @1 resident.bye : Try the firm side going round the bend.
 graft resident.hub
 choice Why turn the end of your stick? -> worn_iron
 node worn_iron

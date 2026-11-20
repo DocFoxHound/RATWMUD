@@ -1,9 +1,12 @@
+# rm405, the shore inside the hone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm405
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_rune_cinderwick
+written_by codex
 title the shore inside the hone
 fits stage=adult|old
 prefers job=merchant
@@ -68,7 +71,6 @@ line @22 deflect_thanks : The grain ran in a friendly direction. That's all. | O
 line @23 preclose : My little cape wants a look in the last light. | I ought to put another edge in order.
 line @24 accept_preclose : Go with a little calm under the keel. | Time enough to finish the rest on another shore.
 line @25 farewell [here.time=night] : Find a dry berth for the last stretch of night. | A soft place to lay your shoulders down.
-
 scene stonechart
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Let the small space betwee
 dlg @5 resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. There's work enough in keeping a small edge true.
 dlg @6 resident.job : I find a use for most of the trimmings left beside my hand.
 dlg @7 resident.bye : I hope your last landing's a dry one.
-
 graft resident.hub
 choice Where's the harbour you see on that stone? -> blue_coast
 node blue_coast

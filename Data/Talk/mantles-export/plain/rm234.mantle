@@ -1,9 +1,12 @@
+# rm234, the square of blue (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm234
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_rika_gullwell
+written_by codex
 title the square of blue
 fits stage=adult|old
 prefers temper=short drive=ambitious
@@ -34,45 +37,44 @@ splinter = a pale splinter | the tip of a wood shaving
 shopline = a length of red twine | the cord from my pocket
 
 any
-opinion dole for 2 : I've made a free bowl last through a long afternoon. Let folk have a bowl without a lecture.
-opinion city for 2 : Ridgemere can give the same bit of cloth six colours in one street. I'd miss that changing light.
-opinion houses against 3 : A fine crest needs washing like any plain front. That should tell the Houses something.
-opinion merchants against 2 : A loaf costs more each time I reach for my dry purse.
-opinion festivals against 2 : All that bunting to bring in wet afterwards. I can think of happier uses for a song.
-opinion sump for 1 : There's room for another peg on our lines if folk hang things straight.
-opinion newcomers against 1 : I wish the city put fresh jobs out with the welcome.
+opinion @1 dole for 2 : I've made a free bowl last through a long afternoon. Let folk have a bowl without a lecture.
+opinion @1 city for 2 : Ridgemere can give the same bit of cloth six colours in one street. I'd miss that changing light.
+opinion @1 houses against 3 : A fine crest needs washing like any plain front. That should tell the Houses something.
+opinion @1 merchants against 2 : A loaf costs more each time I reach for my dry purse.
+opinion @1 festivals against 2 : All that bunting to bring in wet afterwards. I can think of happier uses for a song.
+opinion @1 sump for 1 : There's room for another peg on our lines if folk hang things straight.
+opinion @1 newcomers against 1 : I wish the city put fresh jobs out with the welcome.
 
 grown
-line greet : Your face shows clear against these bricks.
-line greet [pair.band=strangers] : Clean space by the wall if you want it.
-line greet [here.time=dawn] : Morning. The blue's still grey.
-line greet [here.time=dusk|night] : Evening suits a plain dark shade.
-line greet.return : Ah, your face has come into the light.
-line greet.return [pair.band=friends|family] : Come near. I'd recognise your tread in thick fog.
-line greet.return [self.working=yes] : Mind my elbows. You've got my ears.
-line greet.return [here.time=dusk|night] : By lamplight I recognise voices sooner.
-line kin.open [pair.kin!=no] : Move close enough to share a family word.
-line again.open : Found a minute the steam hasn't swallowed yet.
-line hail [pair.band=friends] : There! Keep the blue square in sight.
-line farewell : Give your coat a shake going out.
-line farewell.return : And let your sleeves dry before you fold them.
-line react.news : Which bit reached your ears plainest?
-line react.news.new : That hasn't hung on any line I've passed.
-line react.news.known : The same account reached my ears before the cloth dried.
-line react.news.doubt : Hold it up against another account first.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Grief can wring every bit of strength away.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : The whole street looks a shade brighter for that.
-line ask.how : How's your wind holding up today?
-line answer.how : Taut as a line, but holding.
-line thank : You eased a knot I couldn't reach.
-line deflect_thanks : The dry end was handy in my paw.
-line sympathise : Sit by a little warmth. I'll see to the noise.
-line reassure : There's a breath left for the next bit.
-line decline : I'll keep my strength for the work I've taken on.
-line accept_decline : Keep your reason. Your word will do.
-line preclose : I want the good light for my next errand.
-line accept_preclose : I'll take my end of the talk in now too.
-
+line @1 greet : Your face shows clear against these bricks.
+line @2 greet [pair.band=strangers] : Clean space by the wall if you want it.
+line @3 greet [here.time=dawn] : Morning. The blue's still grey.
+line @4 greet [here.time=dusk|night] : Evening suits a plain dark shade.
+line @1 greet.return : Ah, your face has come into the light.
+line @2 greet.return [pair.band=friends|family] : Come near. I'd recognise your tread in thick fog.
+line @3 greet.return [self.working=yes] : Mind my elbows. You've got my ears.
+line @4 greet.return [here.time=dusk|night] : By lamplight I recognise voices sooner.
+line @1 kin.open [pair.kin!=no] : Move close enough to share a family word.
+line @1 again.open : Found a minute the steam hasn't swallowed yet.
+line @1 hail [pair.band=friends] : There! Keep the blue square in sight.
+line @1 farewell : Give your coat a shake going out.
+line @1 farewell.return : And let your sleeves dry before you fold them.
+line @1 react.news : Which bit reached your ears plainest?
+line @1 react.news.new : That hasn't hung on any line I've passed.
+line @1 react.news.known : The same account reached my ears before the cloth dried.
+line @1 react.news.doubt : Hold it up against another account first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Grief can wring every bit of strength away.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : The whole street looks a shade brighter for that.
+line @1 ask.how : How's your wind holding up today?
+line @1 answer.how : Taut as a line, but holding.
+line @1 thank : You eased a knot I couldn't reach.
+line @1 deflect_thanks : The dry end was handy in my paw.
+line @1 sympathise : Sit by a little warmth. I'll see to the noise.
+line @1 reassure : There's a breath left for the next bit.
+line @1 decline : I'll keep my strength for the work I've taken on.
+line @1 accept_decline : Keep your reason. Your word will do.
+line @1 preclose : I want the good light for my next errand.
+line @1 accept_preclose : I'll take my end of the talk in now too.
 scene cheap_dye
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -174,7 +176,7 @@ a : I'd stop short of blaming the whole road. | No. But I don't spend the evenin
 scene heard_work
 when topic=news world.news
 does tell.news / react.self / assess
-a : The part I heard clear out of #world.news_from# was this: #world.news#. | #world.news#. That's what reached me from #world.news_from#.
+a : The part I heard clear out of #world.news_from# was this: #world.news#. | #world.news.capitalize#. That's what reached me from #world.news_from#.
 b : Can you vouch for it? | Any more to go with it?
 a : For those words as I heard them. | I'd spoil the colour by adding another coat.
 
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say There's a light on that wall worth borrowing.
 
-dlg resident.hub : Just come where the light reaches the bricks.
-dlg resident.hub [topic.meeting=known] : #topic.player#. I'd know your outline even against the sun.
-dlg resident.hub [here.time=night] : Night plays tricks with the colours. My ears work as well as ever.
-dlg resident.hub [pair.disposition=hostile|wary] : Keep a clear yard between our elbows.
-dlg resident.job [self.working=yes self.job=laborer] : #self.trade_words.capitalize#. It pays for the next length of cloth.
-dlg resident.job : I keep a part of each day's strength towards my first counter.
-dlg resident.news [world.news] : This crossed my hearing from #world.news_from#: #world.news#.
-dlg resident.gossip [here.gossip=yes] : If you want a name, ask someone keen to leave finger marks.
-dlg resident.bye : I'll let you go while that light holds good.
-
+dlg @1 resident.hub : Just come where the light reaches the bricks.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I'd know your outline even against the sun.
+dlg @3 resident.hub [here.time=night] : Night plays tricks with the colours. My ears work as well as ever.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Keep a clear yard between our elbows.
+dlg @1 resident.job [self.working=yes self.job=laborer] : #self.trade_words.capitalize#. It pays for the next length of cloth.
+dlg @2 resident.job : I keep a part of each day's strength towards my first counter.
+dlg @1 resident.news [world.news] : This crossed my hearing from #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : If you want a name, ask someone keen to leave finger marks.
+dlg @1 resident.bye : I'll let you go while that light holds good.
 graft resident.hub
 choice May I see the blue square? -> open_square
 node open_square

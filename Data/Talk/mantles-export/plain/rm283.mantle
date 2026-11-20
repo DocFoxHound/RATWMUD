@@ -1,9 +1,12 @@
+# rm283, the graduated doorstep (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm283
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_hester_fogstack
+written_by codex
 title the graduated doorstep
 fits stage=adult|old
 prefers role=merchant talk=plain
@@ -41,56 +44,55 @@ dawnsky = a whitening patch | a pale opening
 ripple = a narrow ripple | a curl of water
 
 any
-opinion merchants mixed 0 : I judge a seller by the condition of the bottom sack. Fine grain on top proves little.
-opinion houses against 1 : Water reaches the store door long before a request for repairs reaches a House's upper rooms.
-opinion dole for 2 : A reserve has a purpose. Feeding a hungry wolf fulfils it.
-opinion sump for 1 : The lower streets know the worth of three dry boards better than a surveyor on a roof.
-opinion watch against 1 : A wet cellar wants carrying paws. A recital of the rules won't raise the sacks.
-opinion road for 1 : A road that stays dry is worth a bend or two round a hill.
-opinion festivals for 1 : The first bell of a feast makes even a quiet counter feel part of the town.
-opinion newcomers for 1 : Somebody seeing these streets afresh may notice a dip we've all grown used to stepping over.
-opinion times against 1 : If it costs more to fill a crock each month the glaze doesn't hide how low the level gets.
-opinion city for 1 : Our city enough resembles a staircase that a dry board can generally be found somewhere above the wet one.
+opinion @1 merchants mixed 0 : I judge a seller by the condition of the bottom sack. Fine grain on top proves little.
+opinion @1 houses against 1 : Water reaches the store door long before a request for repairs reaches a House's upper rooms.
+opinion @1 dole for 2 : A reserve has a purpose. Feeding a hungry wolf fulfils it.
+opinion @1 sump for 1 : The lower streets know the worth of three dry boards better than a surveyor on a roof.
+opinion @1 watch against 1 : A wet cellar wants carrying paws. A recital of the rules won't raise the sacks.
+opinion @1 road for 1 : A road that stays dry is worth a bend or two round a hill.
+opinion @1 festivals for 1 : The first bell of a feast makes even a quiet counter feel part of the town.
+opinion @1 newcomers for 1 : Somebody seeing these streets afresh may notice a dip we've all grown used to stepping over.
+opinion @1 times against 1 : If it costs more to fill a crock each month the glaze doesn't hide how low the level gets.
+opinion @1 city for 1 : Our city enough resembles a staircase that a dry board can generally be found somewhere above the wet one.
 
 grown
-line greet : Here we have reasonably level footing. Welcome. | Hello. I've just found a place to set the load.
-line greet [pair.band=strangers] : I don't believe we've shared a dry step before. | Welcome. We can make a beginning on plain ground.
-line greet [here.time=dawn] : Morning. Clear light for taking stock. | The day is open. My count can wait a moment.
-line greet.return : Hello to you in turn. I'm ready now. | Heard that plainly over the water.
-line greet.return [pair.band=friends|family] : A familiar face is welcome on this shelf of ground. | You're company I can leave a tally open beside.
-line greet.return [here.time=night] : Hello after dark. I'll shift this lamp nearer. | Night has brought us within speaking distance.
-line again.open : We've both come back to the same mark. | Another meeting above the waterline.
-line hail [pair.band=friends] : Take a moment and look at this dry mark. | Here, near the little stack of red blocks.
-line farewell : May the road keep its crown above water. | Leave with a dry load and enough slack in the ties.
-line farewell.return : Goodbye. I'll keep one place clear here. | Step carefully past the low ground.
-line react.news : Give me whatever facts are definite. | I'll put off counting till you've told me.
-line react.news.new : Nothing about that had reached my side of the counter. | I'll give that a fresh place in my reckoning.
-line react.news.known : I have that set down in my memory already. | There's the account I heard earlier.
-line react.news.doubt : I'd check against another mark before accepting the level. | Something seems to have shifted in the telling.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You've come ashore bowed under that. Let it rest here awhile. | I can stand with you while the weight of it settles.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Fine news. I'd put a little good food aside to mark it. | That's a sound place for the day to rest.
-line ask.how : How has your reserve of strength held up? | Was there any clear space left in your day?
-line answer.how : Steady enough to read a fine mark. | I've had a busy stretch and a solid meal.
-line decline : I'd be promising something already set aside for another purpose. | It would put my previous promise in doubt.
-line accept_decline : I'll record the refusal and let it rest. | That's a clear answer. My count can stand.
-line preclose : I'm coming to the last dry minute I can spare. | My rounds need finishing in an orderly fashion.
-line accept_preclose : Your account with this conversation is quite square. | I can finish the count on my own now.
-line thank : You've saved good things from going to waste. Thanks. | I appreciate the trouble it took to keep that sound.
-line deflect_thanks : I had a little in reserve to give. | It was a small enough addition to the round.
-line sympathise : Rest your load above the damp with mine. | There's no call to add hurry to what's already heavy.
-line reassure : We know how high it's come. That's a beginning. | Let's put the most necessary thing somewhere safe first.
-line ack : I'm following the mark you indicate. | That's clear upon a level reading.
-line give.advice : Check the foot of the stack before adding height. | A jar lasts longer with air underneath.
-line kin.open [pair.kin!=no] : There's a high dry spot set aside for family. | Kin can share the better end of the board.
-line greet.return [self.working=yes] : Welcome. I'll put the count aside for a word. | I've reached a convenient pause in the tally.
-line farewell.return [here.time=night] : May your lamp show up every low patch. | A dry step home through the dark.
-line ask.detail : Which level had the water reached? | What part of it would bear a closer look?
-line answer.detail : It left a mark just where the light catches the clay. | There was a dark ring under the lowest notch.
-line assess : Fine to leave on the good shelf. | That measure ought to bear another inspection.
-line react.self : I can picture the weight of that. | That describes an awkward thing to store.
-line tell.plan : I mean to save a dry board for the last bundle. | I'll take a second reading once it's settled.
-line give.opinion : A good reserve ought to be readily reached. | The clearest mark is worth the extra minute.
-
+line @1 greet : Here we have reasonably level footing. Welcome. | Hello. I've just found a place to set the load.
+line @2 greet [pair.band=strangers] : I don't believe we've shared a dry step before. | Welcome. We can make a beginning on plain ground.
+line @3 greet [here.time=dawn] : Morning. Clear light for taking stock. | The day is open. My count can wait a moment.
+line @1 greet.return : Hello to you in turn. I'm ready now. | Heard that plainly over the water.
+line @2 greet.return [pair.band=friends|family] : A familiar face is welcome on this shelf of ground. | You're company I can leave a tally open beside.
+line @3 greet.return [here.time=night] : Hello after dark. I'll shift this lamp nearer. | Night has brought us within speaking distance.
+line @1 again.open : We've both come back to the same mark. | Another meeting above the waterline.
+line @1 hail [pair.band=friends] : Take a moment and look at this dry mark. | Here, near the little stack of red blocks.
+line @1 farewell : May the road keep its crown above water. | Leave with a dry load and enough slack in the ties.
+line @1 farewell.return : Goodbye. I'll keep one place clear here. | Step carefully past the low ground.
+line @1 react.news : Give me whatever facts are definite. | I'll put off counting till you've told me.
+line @1 react.news.new : Nothing about that had reached my side of the counter. | I'll give that a fresh place in my reckoning.
+line @1 react.news.known : I have that set down in my memory already. | There's the account I heard earlier.
+line @1 react.news.doubt : I'd check against another mark before accepting the level. | Something seems to have shifted in the telling.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You've come ashore bowed under that. Let it rest here awhile. | I can stand with you while the weight of it settles.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Fine news. I'd put a little good food aside to mark it. | That's a sound place for the day to rest.
+line @1 ask.how : How has your reserve of strength held up? | Was there any clear space left in your day?
+line @1 answer.how : Steady enough to read a fine mark. | I've had a busy stretch and a solid meal.
+line @1 decline : I'd be promising something already set aside for another purpose. | It would put my previous promise in doubt.
+line @1 accept_decline : I'll record the refusal and let it rest. | That's a clear answer. My count can stand.
+line @1 preclose : I'm coming to the last dry minute I can spare. | My rounds need finishing in an orderly fashion.
+line @1 accept_preclose : Your account with this conversation is quite square. | I can finish the count on my own now.
+line @1 thank : You've saved good things from going to waste. Thanks. | I appreciate the trouble it took to keep that sound.
+line @1 deflect_thanks : I had a little in reserve to give. | It was a small enough addition to the round.
+line @1 sympathise : Rest your load above the damp with mine. | There's no call to add hurry to what's already heavy.
+line @1 reassure : We know how high it's come. That's a beginning. | Let's put the most necessary thing somewhere safe first.
+line @1 ack : I'm following the mark you indicate. | That's clear upon a level reading.
+line @1 give.advice : Check the foot of the stack before adding height. | A jar lasts longer with air underneath.
+line @1 kin.open [pair.kin!=no] : There's a high dry spot set aside for family. | Kin can share the better end of the board.
+line @4 greet.return [self.working=yes] : Welcome. I'll put the count aside for a word. | I've reached a convenient pause in the tally.
+line @2 farewell.return [here.time=night] : May your lamp show up every low patch. | A dry step home through the dark.
+line @1 ask.detail : Which level had the water reached? | What part of it would bear a closer look?
+line @1 answer.detail : It left a mark just where the light catches the clay. | There was a dark ring under the lowest notch.
+line @1 assess : Fine to leave on the good shelf. | That measure ought to bear another inspection.
+line @1 react.self : I can picture the weight of that. | That describes an awkward thing to store.
+line @1 tell.plan : I mean to save a dry board for the last bundle. | I'll take a second reading once it's settled.
+line @1 give.opinion : A good reserve ought to be readily reached. | The clearest mark is worth the extra minute.
 scene footmark
 when topic=work self.role=merchant
 does tell.self / ask.detail / answer.detail
@@ -315,8 +317,6 @@ a : A promise without a delivery date gets a blank alongside it in my account. |
 b : Is a promise worth nothing? | You always expect a change?
 a : A promise belongs on paper. You can't serve it in a stew. | I leave room, that's all. It's easier than tearing the page out afterwards.
 
-grown
-
 story misreadfoot [topic=work|memories self.role=merchant]
   : I once raised two shelves of crocks on the strength of one dark band on a clay foot.
   : Went back to find the floor bone dry. I'd put the foot upside down and read an old stain.
@@ -383,25 +383,24 @@ does aside
 cooldown 8h
 say Air space to the rear, please. A jar's got two sides. | Mind the little clay foot under that load.
 
-dlg resident.hub : I've got a level surface and a little time. State what you'd like counted.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember the last mark we reached.
-dlg resident.hub [here.time=night] : I can see the lip of the step by lamplight. Come stand on the dry part.
-dlg resident.hub [pair.disposition=wary|hostile] : Your question can be asked without disturbing any of my things.
-dlg resident.job [self.role=merchant] : #self.trade_words.capitalize#. The dampest part of the room gets my first inspection.
-dlg resident.job : I count what's sound before I promise any of it.
-dlg resident.bye : Leave your loads above the highest wet mark.
-dlg resident.gossip [here.gossip=no] : Nothing I could set down in ink from talk alone.
-dlg resident.gossip [here.gossip=yes] : What has reached my ears is that #topic.subject# #topic.claim#. That's the extent of my account.
-dlg resident.news [world.news] : There's a report from #world.news_from#. It goes like this. #world.news#.
-dlg shop.greet [here.shop=open] : Have a look at the goods. I'll tell you what each parcel weighs.
-dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a familiar customer deserves a fresh look at what's sound.
-dlg shop.greet [here.shop=bare] : Bare shelves, I'm afraid. I can still examine anything you bring to sell.
-dlg shop.greet [here.shop=asleep] : The counter's closed. I'll count nothing more till I've slept.
-dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Choose what you want with the goods in full view, please.
-dlg shop.prices [here.shop=open] : Tell me which goods interest you and I'll give the price for a sound measure.
-dlg shop.bye : I hope your purchases travel in a dry place.
-dlg shop.bye [here.shop=asleep] : No more business before I rest.
-
+dlg @1 resident.hub : I've got a level surface and a little time. State what you'd like counted.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember the last mark we reached.
+dlg @3 resident.hub [here.time=night] : I can see the lip of the step by lamplight. Come stand on the dry part.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your question can be asked without disturbing any of my things.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. The dampest part of the room gets my first inspection.
+dlg @2 resident.job : I count what's sound before I promise any of it.
+dlg @1 resident.bye : Leave your loads above the highest wet mark.
+dlg @1 resident.gossip [here.gossip=no] : Nothing I could set down in ink from talk alone.
+dlg @2 resident.gossip [here.gossip=yes] : What has reached my ears is that #topic.subject# #topic.claim#. That's the extent of my account.
+dlg @1 resident.news [world.news] : There's a report from #world.news_from#. It goes like this. #world.news#.
+dlg @1 shop.greet [here.shop=open] : Have a look at the goods. I'll tell you what each parcel weighs.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a familiar customer deserves a fresh look at what's sound.
+dlg @3 shop.greet [here.shop=bare] : Bare shelves, I'm afraid. I can still examine anything you bring to sell.
+dlg @4 shop.greet [here.shop=asleep] : The counter's closed. I'll count nothing more till I've slept.
+dlg @5 shop.greet [here.shop=open pair.disposition=wary|hostile] : Choose what you want with the goods in full view, please.
+dlg @1 shop.prices [here.shop=open] : Tell me which goods interest you and I'll give the price for a sound measure.
+dlg @1 shop.bye : I hope your purchases travel in a dry place.
+dlg @2 shop.bye [here.shop=asleep] : No more business before I rest.
 graft resident.hub
 choice May I look at one of the little clay feet? -> dryfoot
 node dryfoot

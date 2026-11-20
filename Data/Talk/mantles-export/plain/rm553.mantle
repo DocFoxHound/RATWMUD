@@ -1,9 +1,12 @@
+# rm553, the gate guard's unthrown die (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm553
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_tilde_nailby
+written_by codex
 title the gate guard's unthrown die
 fits stage=adult|old
 prefers job=guard
@@ -80,7 +83,6 @@ line @28 greet [pair.band=friends] : A known walker. I'll clear you a landing.
 line @29 preclose [here.time=dusk] : Daylight will just cover one uphill call.
 line @30 answer.how [self.working=yes] : Both heels down and the passage moving.
 line @31 farewell.return [here.weather=rain] : One step at once on wet stone, even for me.
-
 scene die
 when topic=pastimes self.likes=dice
 does tell.self / ask.detail / answer.detail
@@ -92,8 +94,8 @@ scene fish
 when topic=food self.likes=pickled_herring
 does tell.self / ask.detail / answer.detail
 a : I pack #sharpend# pointing away from #crease#.
-b : Do you expect a fish to sign your receipt?
-a : No. I expect the brine to respect its boundary inside my lunch bag.
+b : Won't the brine get at your papers?
+a : Not if I pack it right. The brine keeps to its own corner of my lunch bag.
 
 scene straw
 when topic=smalltalk self.likes=fresh_straw
@@ -372,7 +374,6 @@ dlg @11 watch.fine [here.wanted=no] : There's no fine counted against you here.
 dlg @12 watch.fine [here.wanted=yes] : The sum standing against you is #here.fine# pennies.
 dlg @13 watch.reported [topic.reported=yes] : Your report has its place in the account now.
 dlg @14 watch.bye : Give the wolf coming through a clear turn at the rail.
-
 graft resident.hub
 choice Why don't you throw that die? -> doorbone
 node doorbone

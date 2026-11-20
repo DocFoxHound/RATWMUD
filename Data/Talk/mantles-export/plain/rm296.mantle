@@ -1,9 +1,12 @@
+# rm296, the charcoal doorstep (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm296
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_percival_rustford
+written_by codex
 title the charcoal doorstep
 fits stage=adult|old
 prefers job=servant honesty=sly
@@ -35,43 +38,42 @@ shine = a narrow gleam | the polished streak
 clock = the time bell | a distant bell
 
 any
-opinion houses against 1 : A grand house in a view is very pretty. It has more sills to wipe than the painter ever suspects.
-opinion sump for 1 : A door that sticks announces itself as clearly as any polite announcement from upstairs.
-opinion merchants against 1 : Show me the good side by all means. Allow me a look at the side meant for the wall.
-opinion church for 1 : A quiet chapel keeps its thoughts between four walls. I like the courtesy of it.
-opinion road for 1 : I've a high opinion of roads that take longer than you expect, provided the choice was yours.
-opinion watch against 1 : A wet bootprint is a small thing to build a large accusation on.
+opinion @1 houses against 1 : A grand house in a view is very pretty. It has more sills to wipe than the painter ever suspects.
+opinion @1 sump for 1 : A door that sticks announces itself as clearly as any polite announcement from upstairs.
+opinion @1 merchants against 1 : Show me the good side by all means. Allow me a look at the side meant for the wall.
+opinion @1 church for 1 : A quiet chapel keeps its thoughts between four walls. I like the courtesy of it.
+opinion @1 road for 1 : I've a high opinion of roads that take longer than you expect, provided the choice was yours.
+opinion @1 watch against 1 : A wet bootprint is a small thing to build a large accusation on.
 
 grown
-line greet : There's no damp to speak of here. Hello. | I'll put the little black bit away. Welcome.
-line greet [pair.band=strangers] : A fresh bootmark on this sill, I see. | Hello. You've kept on the dry part.
-line greet [here.time=dawn] : Morning. The shine's easier to read at this hour. | Another day early enough to leave few marks.
-line greet.return : I heard. I was busy inspecting the floor. | Hello in return. You've got my attention above ground now.
-line greet.return [pair.band=friends|family] : You may safely approach on the side with the clean sleeve. | Good. There's no ceremony needed between us.
-line greet.return [here.time=night] : Quiet hello to you through the late hour. | It's dark enough to mind the edges. Hello.
-line again.open : Ah. Circling back before the mark rubbed away. | You've come round without making me wait long.
-line hail [pair.band=friends] : Stand here a breath. Look what that little line did. | Over by the dull patch, please.
-line farewell : Keep your feet where there's a little roughness. | Leave no more tracks than you care to explain.
-line farewell.return : So long till our next dry stretch. | Away you go on reliable ground.
-line react.news : I'd like the words while the memory's clear. | Tell me where the matter actually began.
-line react.news.new : I hadn't found so much as a smudge of that before. | Fresh altogether. I'll look at it twice.
-line react.news.known : There's a pattern I already know. | Yes. I've seen that much written before.
-line react.news.doubt : That's an uncommon amount of shine on an ordinary tale. | Something's been rubbed out between those two facts.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Unkind news. Let me get you a seat in peace. | Enough to make any wolf turn away a minute. Take the minute.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now that's something I would gladly hear repeated. | A proper bright patch in a grey day.
-line ask.how : Have you been left waiting about anywhere today? | How much of the day did you get for yourself?
-line answer.how : I'd welcome a brisk walk and fewer questions about the distance. | Keeping steady on a rather slippery day.
-line decline : I'd be inclined to leave that with someone who can speak freely. | I have good reasons for keeping that matter out of reach.
-line accept_decline : Then I won't waste your time standing here. | A closed door saves a good deal of knocking.
-line preclose : I'd better take my walk before somebody finds another reason to keep me. | I've a stretch of road I'd still like to enjoy.
-line accept_preclose : Clear away then. The pause has done its bit. | Glad to give you back the remaining distance.
-line thank : You've saved me both time and a clean sleeve. Thanks. | That was done discreetly. I appreciate it.
-line deflect_thanks : I was wiping the mark off anyway. | Easier to lend a cloth than fetch a mop.
-line sympathise : Leave some things unsaid and still sit here. | A little company doesn't buy me any rights over the story.
-line reassure : We can test the footing without trusting the shine. | No need to settle everything astride a wet threshold.
-line ack : That leaves a clear enough impression. | I understand which side you mean.
-line give.advice : Test one small place before you commit both boots. | Fold the black side inward before pocketing a cloth.
-
+line @1 greet : There's no damp to speak of here. Hello. | I'll put the little black bit away. Welcome.
+line @2 greet [pair.band=strangers] : A fresh bootmark on this sill, I see. | Hello. You've kept on the dry part.
+line @3 greet [here.time=dawn] : Morning. The shine's easier to read at this hour. | Another day early enough to leave few marks.
+line @1 greet.return : I heard. I was busy inspecting the floor. | Hello in return. You've got my attention above ground now.
+line @2 greet.return [pair.band=friends|family] : You may safely approach on the side with the clean sleeve. | Good. There's no ceremony needed between us.
+line @3 greet.return [here.time=night] : Quiet hello to you through the late hour. | It's dark enough to mind the edges. Hello.
+line @1 again.open : Ah. Circling back before the mark rubbed away. | You've come round without making me wait long.
+line @1 hail [pair.band=friends] : Stand here a breath. Look what that little line did. | Over by the dull patch, please.
+line @1 farewell : Keep your feet where there's a little roughness. | Leave no more tracks than you care to explain.
+line @1 farewell.return : So long till our next dry stretch. | Away you go on reliable ground.
+line @1 react.news : I'd like the words while the memory's clear. | Tell me where the matter actually began.
+line @1 react.news.new : I hadn't found so much as a smudge of that before. | Fresh altogether. I'll look at it twice.
+line @1 react.news.known : There's a pattern I already know. | Yes. I've seen that much written before.
+line @1 react.news.doubt : That's an uncommon amount of shine on an ordinary tale. | Something's been rubbed out between those two facts.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Unkind news. Let me get you a seat in peace. | Enough to make any wolf turn away a minute. Take the minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now that's something I would gladly hear repeated. | A proper bright patch in a grey day.
+line @1 ask.how : Have you been left waiting about anywhere today? | How much of the day did you get for yourself?
+line @1 answer.how : I'd welcome a brisk walk and fewer questions about the distance. | Keeping steady on a rather slippery day.
+line @1 decline : I'd be inclined to leave that with someone who can speak freely. | I have good reasons for keeping that matter out of reach.
+line @1 accept_decline : Then I won't waste your time standing here. | A closed door saves a good deal of knocking.
+line @1 preclose : I'd better take my walk before somebody finds another reason to keep me. | I've a stretch of road I'd still like to enjoy.
+line @1 accept_preclose : Clear away then. The pause has done its bit. | Glad to give you back the remaining distance.
+line @1 thank : You've saved me both time and a clean sleeve. Thanks. | That was done discreetly. I appreciate it.
+line @1 deflect_thanks : I was wiping the mark off anyway. | Easier to lend a cloth than fetch a mop.
+line @1 sympathise : Leave some things unsaid and still sit here. | A little company doesn't buy me any rights over the story.
+line @1 reassure : We can test the footing without trusting the shine. | No need to settle everything astride a wet threshold.
+line @1 ack : That leaves a clear enough impression. | I understand which side you mean.
+line @1 give.advice : Test one small place before you commit both boots. | Fold the black side inward before pocketing a cloth.
 scene tick_test
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : I'd like a whole walk with no damp patch needing my personal opinion. | Some
 b : You'd find that dull? | Could you resist a questionable sill?
 a : I should dearly love the chance to find it dull. | On a day of my own, I might just permit the sill its private affairs.
 
-grown
-
 story blackglove [topic=memories|work self.job=servant]
   : I tested a sill with a piece of clean cloth and was astonished to find black marks everywhere I rubbed.
   : It took three sills to discover I'd picked my coal up with the very paw holding the rag.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say A little longer round the shore won't hurt the road. | I'd take another turn if nobody needs the time.
 
-dlg resident.hub : I'm ready to hear anything without an elaborate prelude of guesswork.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've put the charcoal away. You can safely approach.
-dlg resident.hub [here.time=night] : A good hour for saying little and hearing it plainly.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll hear the question. Your boots can stop just there.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. You may inspect the state of the sill if you'd like a sample.
-dlg resident.job : A small hint in the right place can spare a large amount of cleaning up later.
-dlg resident.bye : Better a dry walk than a quick arrival on your back.
-
+dlg @1 resident.hub : I'm ready to hear anything without an elaborate prelude of guesswork.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've put the charcoal away. You can safely approach.
+dlg @3 resident.hub [here.time=night] : A good hour for saying little and hearing it plainly.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll hear the question. Your boots can stop just there.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. You may inspect the state of the sill if you'd like a sample.
+dlg @2 resident.job : A small hint in the right place can spare a large amount of cleaning up later.
+dlg @1 resident.bye : Better a dry walk than a quick arrival on your back.
 graft resident.hub
 choice What happens if the charcoal comes off in a smear? -> wetstroke
 node wetstroke

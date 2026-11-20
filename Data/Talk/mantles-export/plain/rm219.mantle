@@ -1,9 +1,12 @@
+# rm219, the leaf pilot (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm219
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_rika_tarnham
+written_by codex
 title the leaf pilot
 fits stage=young|adolescent|adult|old
 prefers talk=quiet humour=merry
@@ -36,41 +39,161 @@ sail = the stem sticking up | the curl of the leaf
 ford = the narrow crossing | the bit with the dry edge
 
 any
-opinion church for 1 : A chapel step makes a good landing. I like a door with room to wait beside it.
-opinion city for 1 : Here one street leans on another like bits of a puzzle. I'm still finding which fits where.
-opinion dole for 2 : A full bowl stays put. An empty one goes from door to door looking for help.
-opinion festivals for 2 : When the dancers make a ring the smallest watcher gets a whole clear space in the middle.
-opinion merchants against 1 : I like a stall where the bruised berries cost less. Some stall keepers seem quite blind to bruises.
-opinion times against 1 : From this far back even a good loaf looks small.
+opinion @1 church for 1 : A chapel step makes a good landing. I like a door with room to wait beside it.
+opinion @1 city for 1 : Here one street leans on another like bits of a puzzle. I'm still finding which fits where.
+opinion @1 dole for 2 : A full bowl stays put. An empty one goes from door to door looking for help.
+opinion @1 festivals for 2 : When the dancers make a ring the smallest watcher gets a whole clear space in the middle.
+opinion @1 merchants against 1 : I like a stall where the bruised berries cost less. Some stall keepers seem quite blind to bruises.
+opinion @1 times against 1 : From this far back even a good loaf looks small.
+line @1 greet : Here, there's a dry inch beside me. | Hello. I've made you a place on this edge.
+line @2 greet [pair.band=strangers] : A new outline on my map today. | Follow my map for an easier crossing.
+line @3 greet [here.time=dawn] : Quiet hour for a little voyage. | First feet leave such clear tracks.
+line @1 greet.return : You've found the right bank. | I heard. The leaf hardly moved.
+line @2 greet.return [pair.band=friends|family] : Best sort of company for a slow walk. | You know my favourite edges already.
+line @3 greet.return [here.time=night] : Late feet on the paving. Welcome ones. | Your voice finds me easily in the dark.
+line @1 again.open : Our tracks cross over in the middle. | There goes my first repeat visitor.
+line @1 kin.open [pair.kin!=no] : You may see the messy map too. | I've saved the clean corner for family.
+line @1 farewell : Come back by the interesting route. | Hope your return trip earns a mark.
+line @1 farewell.return : I'll put a little dot where we parted. | Fair going as far as your door.
+line @1 react.news : Which bit did you hear clearly? | Tell me where that started, please.
+line @1 react.news.new : That's fresh ink to my ears. | My chart had no such mark.
+line @1 react.news.known : That one came round the other side already. | Yes, the trail goes right back there.
+line @1 react.news.doubt : I'd trace that backwards a little further first. | Could be two stories that happened to run together.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave a blank round such a loss. | That sad bit deserves a quiet minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the very purple ink. | Nice when tidings land so gently.
+line @1 ask.how : Has today taken you a long way round? | How far's the day carried you yet?
+line @1 answer.how : Content to watch the edges move. | I've gone nowhere fast, quite happily.
+line @1 sympathise : I'll wait this one beside you. | It's a long bend to come through alone.
+line @1 reassure : There's always a little backwater for a rest. | Only solve the crossing you're at.
+line @1 decline : I'd sooner take the quiet turn by myself today. | Keep my place empty. I'm happy watching from here.
+line @1 accept_decline : I'll keep a bare patch on the chart. | That's settled without any splashing about.
+line @1 thank : That goes down in the good ink. | I appreciate a hand that steady.
+line @1 deflect_thanks : It was barely a leaf's weight of trouble. | Keep walking and call us square.
+line @1 preclose : The far edge needs a look now. | I'll be away before the ink smears.
+line @1 accept_preclose : I'll save this bend for another telling. | Take your time round the next corner.
+line @1 ack : Precisely that bend. | Yes. Quietly so.
+graft resident.hub
+choice What makes a leaf fit to steer? -> leaf_spine
+node leaf_spine
+say A spine straight down the middle and just one turned edge. Two curls look handsome but the boat goes round in circles.
+mood keen
+free
+choice Do you throw the round-going ones away? -> leaf_circles
+choice Could we talk about another thing? -> hub
+node leaf_circles
+say They're my harbour boats. They never leave the harbour. That saves a great deal of fetching.
+choice Show me the chart again. -> hub
+choice Safe sailing. -> bye
 
-any
-line greet : Here, there's a dry inch beside me. | Hello. I've made you a place on this edge.
-line greet [pair.band=strangers] : A new outline on my map today. | Follow my map for an easier crossing.
-line greet [here.time=dawn] : Quiet hour for a little voyage. | First feet leave such clear tracks.
-line greet.return : You've found the right bank. | I heard. The leaf hardly moved.
-line greet.return [pair.band=friends|family] : Best sort of company for a slow walk. | You know my favourite edges already.
-line greet.return [here.time=night] : Late feet on the paving. Welcome ones. | Your voice finds me easily in the dark.
-line again.open : Our tracks cross over in the middle. | There goes my first repeat visitor.
-line kin.open [pair.kin!=no] : You may see the messy map too. | I've saved the clean corner for family.
-line farewell : Come back by the interesting route. | Hope your return trip earns a mark.
-line farewell.return : I'll put a little dot where we parted. | Fair going as far as your door.
-line react.news : Which bit did you hear clearly? | Tell me where that started, please.
-line react.news.new : That's fresh ink to my ears. | My chart had no such mark.
-line react.news.known : That one came round the other side already. | Yes, the trail goes right back there.
-line react.news.doubt : I'd trace that backwards a little further first. | Could be two stories that happened to run together.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave a blank round such a loss. | That sad bit deserves a quiet minute.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the very purple ink. | Nice when tidings land so gently.
-line ask.how : Has today taken you a long way round? | How far's the day carried you yet?
-line answer.how : Content to watch the edges move. | I've gone nowhere fast, quite happily.
-line sympathise : I'll wait this one beside you. | It's a long bend to come through alone.
-line reassure : There's always a little backwater for a rest. | Only solve the crossing you're at.
-line decline : I'd sooner take the quiet turn by myself today. | Keep my place empty. I'm happy watching from here.
-line accept_decline : I'll keep a bare patch on the chart. | That's settled without any splashing about.
-line thank : That goes down in the good ink. | I appreciate a hand that steady.
-line deflect_thanks : It was barely a leaf's weight of trouble. | Keep walking and call us square.
-line preclose : The far edge needs a look now. | I'll be away before the ink smears.
-line accept_preclose : I'll save this bend for another telling. | Take your time round the next corner.
-line ack : Precisely that bend. | Yes. Quietly so.
+
+grown
+scene high_edge
+when topic=land|travel
+does tell.self / ask.detail / answer.detail
+a : On a new road I always look for the loose leaf's resting place. | A handful of leaves will draw the slope better than a straightedge.
+b : Do you follow it downhill? | How do leaves draw?
+a : With my eye. My feet prefer that raised strip alongside. | By collecting in one corner and leaving the rest lovely and blank.
+
+scene tide_line
+when topic=home
+does tell.self / ask.detail / answer.detail / react.self
+a : I'll sweep a dusty edge last. Sometimes there's a map in it. | The clean bit of a board interests me more than the dirty one.
+b : Of what? | Because there's less work there?
+a : Of how we move. Always the same little detour by a stool. | Because that's where everything passes and leaves nothing behind.
+b : Never thought my muddy feet left directions for anybody. | I can see the bend where the stool used to be.
+
+scene postmark
+when topic=lore|pastimes
+does tell.self / ask.detail / answer.detail
+a : My seal for a watercourse is a thumbprint. | My favourite chart has a great purple blur over one street.
+b : Why that shape? | A printing error?
+a : It has little winding tributaries all of its own. | My own fault. I remember the street especially well now.
+
+scene walk_empty
+when topic=travel self.likes=long_walks
+does tell.self / react.self / assess
+a : Give me a journey that's allowed to end anywhere. | I like walking up to a turning with no decision made.
+b : Wouldn't you want to arrive? | Who decides?
+a : I arrive quite often. It's the appointments I can spare. | The drier boot, if the two disagree.
+
+scene rain_lanes
+when topic=weather here.weather=rain here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : First water brings the dust along. Second water shows you the paving. | Watch that leaf disappear behind the kerb.
+b : Which do you draw? | Lost the little craft?
+a : Their two different edges. That's the part worth keeping. | Look two stones down. The stalk's peeping out there.
+
+scene airing
+when topic=home|health
+does tell.plan / react.self / assess
+a : I spread my papers out and let the corners curl. | A chart dries best with a little weight at each point.
+b : Doesn't that spoil the map? | What do you use?
+a : A curled corner shows which one got wet. Saves writing a date. | Four berries make a lovely pattern and a disastrous map.
+
+scene carry
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I fold the record of a journey inwards before carrying it. | My spare sheet goes round the sheet that matters.
+b : To keep it secret? | Even if it's blank?
+a : To keep the ink off my fur. Secrets are a bonus. | Blank paper's good at sacrificing itself for the written stuff.
+
+scene wallet
+when topic=prices
+does tell.self / react.self / assess
+a : A copper makes a handy round mark when you trace it. | I quite like a price I can draw round.
+b : Can you spend a tracing? | A round one, you mean?
+a : Only in the imaginary ports. Very forgiving merchants there. | A single coin. A stack looks the same from above, which misleads you.
+
+scene waking
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In my dream the river kept the leaf still and moved both banks. | I dreamt of a map that folded into the place it showed.
+b : Did you sail far? | What happened when you opened it?
+a : Apparently the town sailed past me. I was an excellent passenger. | I was home and standing on two creases.
+
+scene bad_tidings
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : Rumours divide like little streams after the first turn. | If an account has three endings I'll listen for the first place they diverge.
+b : Which fork do you trust? | Then which do you tell?
+a : The one I can walk back to its spring. | Usually I keep the beginnings and hold back the rest.
+
+scene poor_dinner
+when topic=times world.times=hard|lean
+does tell.feeling / react.self / assess
+a : Lean tables make a shared berry taste especially generous. | I don't draw feasts when the cupboard's wearing thin.
+b : Would half a berry help? | Too miserable a reminder?
+a : Only a mouthful. It's being offered the half that stays with me. | Waste of ink. I'd rather draw a path to a thicket.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : My untidiest page must still make sense to the Bright One. | A little blank space looks like kindness to me.
+b : Even your margins? | Why kindness?
+a : I rather hope the margins count. That's where the good attempts go. | It leaves room for the next wolf to set something down.
+
+story waterproof [topic=memories|pastimes]
+  : I rubbed grease all over a page to make a waterproof map. It kept the water off beautifully.
+  : Kept the ink off too. Every dot stood up round as a berry and rolled down into my lap.
+  b : Did the lap survive?
+  : Purple for days. A whole string of islands bobbed along with me everywhere.
+
+rule @margin
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Save me a margin wide enough for a bend. | Give those wet dots room to settle.
+
+rule @berry
+when concept=bark self.likes=blackberries
+does aside
+cooldown 12h
+say There goes my afternoon's ink into my breakfast. | One berry for the page this time.
+
+dlg @g1 resident.hub : I'm tracing quite a little journey. I can look up.
+dlg @g2 resident.job : I keep the useful marks and let old smudges fade.
+dlg @g3 resident.bye : Walk where the ink has dried.
+
 young
 scene crew
 when topic=pastimes|smalltalk
@@ -183,6 +306,7 @@ dlg @y3 resident.hub [here.time=night] : I can show you by touch. The berry spot
 dlg @y4 resident.hub [pair.disposition=wary|hostile] : The chart's staying folded, thanks. You can ask from there.
 dlg @y1 resident.job [self.job=child] : Lessons keep trying to lead my ink in straight lines.
 dlg @y1 resident.bye : Watch where your next foot comes down. Very small ships.
+
 adolescent
 scene scale
 when topic=pastimes|lore
@@ -211,124 +335,3 @@ story map_key [topic=memories]
   : After a week I couldn't tell them apart. Had to go out and test every single one.
   b : Found the board by falling?
   : By tapping first. My purple pen has learned a new shape since.
-
-grown
-scene high_edge
-when topic=land|travel
-does tell.self / ask.detail / answer.detail
-a : On a new road I always look for the loose leaf's resting place. | A handful of leaves will draw the slope better than a straightedge.
-b : Do you follow it downhill? | How do leaves draw?
-a : With my eye. My feet prefer that raised strip alongside. | By collecting in one corner and leaving the rest lovely and blank.
-
-scene tide_line
-when topic=home
-does tell.self / ask.detail / answer.detail / react.self
-a : I'll sweep a dusty edge last. Sometimes there's a map in it. | The clean bit of a board interests me more than the dirty one.
-b : Of what? | Because there's less work there?
-a : Of how we move. Always the same little detour by a stool. | Because that's where everything passes and leaves nothing behind.
-b : Never thought my muddy feet left directions for anybody. | I can see the bend where the stool used to be.
-
-scene postmark
-when topic=lore|pastimes
-does tell.self / ask.detail / answer.detail
-a : My seal for a watercourse is a thumbprint. | My favourite chart has a great purple blur over one street.
-b : Why that shape? | A printing error?
-a : It has little winding tributaries all of its own. | My own fault. I remember the street especially well now.
-
-scene walk_empty
-when topic=travel self.likes=long_walks
-does tell.self / react.self / assess
-a : Give me a journey that's allowed to end anywhere. | I like walking up to a turning with no decision made.
-b : Wouldn't you want to arrive? | Who decides?
-a : I arrive quite often. It's the appointments I can spare. | The drier boot, if the two disagree.
-
-scene rain_lanes
-when topic=weather here.weather=rain here.region=ridgemere
-does tell.self / ask.detail / answer.detail
-a : First water brings the dust along. Second water shows you the paving. | Watch that leaf disappear behind the kerb.
-b : Which do you draw? | Lost the little craft?
-a : Their two different edges. That's the part worth keeping. | Look two stones down. The stalk's peeping out there.
-
-scene airing
-when topic=home|health
-does tell.plan / react.self / assess
-a : I spread my papers out and let the corners curl. | A chart dries best with a little weight at each point.
-b : Doesn't that spoil the map? | What do you use?
-a : A curled corner shows which one got wet. Saves writing a date. | Four berries make a lovely pattern and a disastrous map.
-
-scene carry
-when topic=work self.working=yes
-does tell.self / ask.detail / answer.detail
-a : I fold the record of a journey inwards before carrying it. | My spare sheet goes round the sheet that matters.
-b : To keep it secret? | Even if it's blank?
-a : To keep the ink off my fur. Secrets are a bonus. | Blank paper's good at sacrificing itself for the written stuff.
-
-scene wallet
-when topic=prices
-does tell.self / react.self / assess
-a : A copper makes a handy round mark when you trace it. | I quite like a price I can draw round.
-b : Can you spend a tracing? | A round one, you mean?
-a : Only in the imaginary ports. Very forgiving merchants there. | A single coin. A stack looks the same from above, which misleads you.
-
-scene waking
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : In my dream the river kept the leaf still and moved both banks. | I dreamt of a map that folded into the place it showed.
-b : Did you sail far? | What happened when you opened it?
-a : Apparently the town sailed past me. I was an excellent passenger. | I was home and standing on two creases.
-
-scene bad_tidings
-when topic=gossip
-does tell.self / ask.detail / answer.detail
-a : Rumours divide like little streams after the first turn. | If an account has three endings I'll listen for the first place they diverge.
-b : Which fork do you trust? | Then which do you tell?
-a : The one I can walk back to its spring. | Usually I keep the beginnings and hold back the rest.
-
-scene poor_dinner
-when topic=times world.times=hard|lean
-does tell.feeling / react.self / assess
-a : Lean tables make a shared berry taste especially generous. | I don't draw feasts when the cupboard's wearing thin.
-b : Would half a berry help? | Too miserable a reminder?
-a : Only a mouthful. It's being offered the half that stays with me. | Waste of ink. I'd rather draw a path to a thicket.
-
-scene chapel
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : My untidiest page must still make sense to the Bright One. | A little blank space looks like kindness to me.
-b : Even your margins? | Why kindness?
-a : I rather hope the margins count. That's where the good attempts go. | It leaves room for the next wolf to set something down.
-
-story waterproof [topic=memories|pastimes]
-  : I rubbed grease all over a page to make a waterproof map. It kept the water off beautifully.
-  : Kept the ink off too. Every dot stood up round as a berry and rolled down into my lap.
-  b : Did the lap survive?
-  : Purple for days. A whole string of islands bobbed along with me everywhere.
-
-rule @margin
-when concept=bark self.working=yes
-does aside
-cooldown 8h
-say Save me a margin wide enough for a bend. | Give those wet dots room to settle.
-
-rule @berry
-when concept=bark self.likes=blackberries
-does aside
-cooldown 12h
-say There goes my afternoon's ink into my breakfast. | One berry for the page this time.
-
-dlg @g1 resident.hub : I'm tracing quite a little journey. I can look up.
-dlg @g2 resident.job : I keep the useful marks and let old smudges fade.
-dlg @g3 resident.bye : Walk where the ink has dried.
-any
-graft resident.hub
-choice What makes a leaf fit to steer? -> leaf_spine
-node leaf_spine
-say A spine straight down the middle and just one turned edge. Two curls look handsome but the boat goes round in circles.
-mood keen
-free
-choice Do you throw the round-going ones away? -> leaf_circles
-choice Could we talk about another thing? -> hub
-node leaf_circles
-say They're my harbour boats. They never leave the harbour. That saves a great deal of fetching.
-choice Show me the chart again. -> hub
-choice Safe sailing. -> bye

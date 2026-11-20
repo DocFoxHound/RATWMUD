@@ -1,9 +1,12 @@
+# rm281, the schoolroom coast (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm281
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_eleanor_wetby
+written_by codex
 title the schoolroom coast
 fits stage=adult|old
 prefers job=scholar
@@ -17,6 +20,7 @@ topics travel +0.6 work +0.5 pastimes +0.3 food +0.2
 styles comfort=practical gossip=oblique refuse=soft tease=dry
 marks oath saying
 persona #self.first# plots imaginary passages on the edges of lesson slates and answers intrusive questions with a better one.
+
 words
 oath! = Forge clinker and sea salt | Tide turn my inkpot
 saying! = Leave a margin for the voyage | Turn the card before you total it
@@ -39,47 +43,45 @@ broadsketch = a sweep of blue | a fine open bay
 berthline = the lower edge | a pencil-straight rail
 
 grown
-
-opinion church for 1 : A chapel can lend a small classroom enough quiet for a difficult question.
-opinion newcomers for 1 : Every arrival knows one end of a route that I've only drawn.
-opinion houses mixed 1 : A House on the map fills less space than a single muddy bank. Worth remembering.
-opinion road for 2 : I'd tolerate a great many wrong turns for one stretch where the route is mine to choose.
-opinion merchants mixed 1 : A fare is reasonable only if there's something left to spend when you land.
-opinion city mixed 1 : A good school can bring the sea indoors. I would still like to put the floor out of reach.
-opinion dole for 2 : A learner should be weighing a thought, not the chances of an evening meal.
-opinion sump for 1 : Nobody here mistakes a neat line on a plan for a crossing that'll keep your feet dry.
-line greet : Share the margin a while. Nothing on it is settled.
-line greet [pair.band=strangers] : A new arrival with room for a word. Welcome.
-line greet [here.time=dawn] : An early meeting makes the day look unexpectedly wide.
-line greet.return : You've caught me facing the right direction.
-line greet.return [self.working=yes] : I'll put a mark by my place so we can talk.
-line greet.return [pair.band=friends|family] : Familiar ground even on an overturned chart.
-line hail [pair.band=friends] : Join me here on my little frontier.
-line again.open : Round the headland and back in view.
-line kin.open [pair.kin!=no] : For family I'll shut the book completely.
-line farewell : May your route include one unplanned pleasure.
-line farewell.return : I shall leave room for another meeting.
-line ask.how : Does the way ahead look any clearer today?
-line answer.how : Restless in a fairly profitable direction.
-line answer.how.busy [self.working=yes] : Somewhere between a useful question and three fresh ones.
-line thank : You left a line clear that I meant to follow.
-line deflect_thanks : Curiosity had me halfway there before you asked.
-line accept_decline : A refused passage is one more coast to draw round.
-line decline : I couldn't promise a straight route with what I know yet.
-line react.news : Let's see where that belongs on our chart.
-line react.news.known : Someone had marked that particular shoal already.
-line react.news.new : That's a shore I hadn't allowed for.
-line react.news.doubt : The ink seems a little wet for such a settled claim.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That opens a handsome new stretch of water.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd lay my map aside to sit with the one hurt by that.
-line sympathise : You may sit by me with every question unanswered.
-line reassure : There's no shame in erasing a line that led into mud.
-line ack : I can follow that passage without sounding the depth.
-line accept_preclose : I'll give your day the width it needs.
-line preclose : I'm off to catch the question sculling round my head.
-line offer : I can put your choices on paper if seeing them would help.
-line give.advice : Leave room to write down the answer you didn't expect.
-
+opinion @1 church for 1 : A chapel can lend a small classroom enough quiet for a difficult question.
+opinion @1 newcomers for 1 : Every arrival knows one end of a route that I've only drawn.
+opinion @1 houses mixed 1 : A House on the map fills less space than a single muddy bank. Worth remembering.
+opinion @1 road for 2 : I'd tolerate a great many wrong turns for one stretch where the route is mine to choose.
+opinion @1 merchants mixed 1 : A fare is reasonable only if there's something left to spend when you land.
+opinion @1 city mixed 1 : A good school can bring the sea indoors. I would still like to put the floor out of reach.
+opinion @1 dole for 2 : A learner should be weighing a thought, not the chances of an evening meal.
+opinion @1 sump for 1 : Nobody here mistakes a neat line on a plan for a crossing that'll keep your feet dry.
+line @1 greet : Share the margin a while. Nothing on it is settled.
+line @2 greet [pair.band=strangers] : A new arrival with room for a word. Welcome.
+line @3 greet [here.time=dawn] : An early meeting makes the day look unexpectedly wide.
+line @1 greet.return : You've caught me facing the right direction.
+line @2 greet.return [self.working=yes] : I'll put a mark by my place so we can talk.
+line @3 greet.return [pair.band=friends|family] : Familiar ground even on an overturned chart.
+line @1 hail [pair.band=friends] : Join me here on my little frontier.
+line @1 again.open : Round the headland and back in view.
+line @1 kin.open [pair.kin!=no] : For family I'll shut the book completely.
+line @1 farewell : May your route include one unplanned pleasure.
+line @1 farewell.return : I shall leave room for another meeting.
+line @1 ask.how : Does the way ahead look any clearer today?
+line @1 answer.how : Restless in a fairly profitable direction.
+line @1 answer.how.busy [self.working=yes] : Somewhere between a useful question and three fresh ones.
+line @1 thank : You left a line clear that I meant to follow.
+line @1 deflect_thanks : Curiosity had me halfway there before you asked.
+line @1 accept_decline : A refused passage is one more coast to draw round.
+line @1 decline : I couldn't promise a straight route with what I know yet.
+line @1 react.news : Let's see where that belongs on our chart.
+line @1 react.news.known : Someone had marked that particular shoal already.
+line @1 react.news.new : That's a shore I hadn't allowed for.
+line @1 react.news.doubt : The ink seems a little wet for such a settled claim.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That opens a handsome new stretch of water.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd lay my map aside to sit with the one hurt by that.
+line @1 sympathise : You may sit by me with every question unanswered.
+line @1 reassure : There's no shame in erasing a line that led into mud.
+line @1 ack : I can follow that passage without sounding the depth.
+line @1 accept_preclose : I'll give your day the width it needs.
+line @1 preclose : I'm off to catch the question sculling round my head.
+line @1 offer : I can put your choices on paper if seeing them would help.
+line @1 give.advice : Leave room to write down the answer you didn't expect.
 scene work_1
 when topic=work self.job=scholar
 does tell.self / ask.detail / answer.detail
@@ -341,19 +343,19 @@ when concept=bark self.likes=cards
 does aside
 cooldown 8h
 say Nobody wins by counting the pips on the back. | Have a look at its face before boasting.
-dlg resident.hub : Lay your question along the margin here.
-dlg resident.hub [pair.disposition=hostile|wary] : We'll keep the ink dry till we understand each other.
-dlg resident.hub [topic.meeting=known] : #topic.player#, our paths have made another interesting angle.
-dlg resident.hub [here.time=dusk] : Enough light to trace one more passage.
-dlg resident.job [self.job=scholar] : At #self.workplace# I try to make a good question last beyond the lesson.
-dlg resident.job : I put uncertainty to work wherever there's room on a page.
-dlg resident.news [world.news] : Here's what's arrived from beyond my margin. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The chalk version says #topic.subject# #topic.claim#. I'll leave the ink stoppered.
-dlg resident.bye : Leave a little uncharted paper for tomorrow.
-dlg master.work : Bring a question you can explain in your own words. We can start our work from there.
-dlg master.wages : No pay for learning. Beside me your learning runs three times faster, and you're free to sell the goods you produce.
-dlg master.bye : Take a clean scrap for your next discovery.
 
+dlg @1 resident.hub : Lay your question along the margin here.
+dlg @2 resident.hub [pair.disposition=hostile|wary] : We'll keep the ink dry till we understand each other.
+dlg @3 resident.hub [topic.meeting=known] : #topic.player#, our paths have made another interesting angle.
+dlg @4 resident.hub [here.time=dusk] : Enough light to trace one more passage.
+dlg @1 resident.job [self.job=scholar] : At #self.workplace# I try to make a good question last beyond the lesson.
+dlg @2 resident.job : I put uncertainty to work wherever there's room on a page.
+dlg @1 resident.news [world.news] : Here's what's arrived from beyond my margin. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The chalk version says #topic.subject# #topic.claim#. I'll leave the ink stoppered.
+dlg @1 resident.bye : Leave a little uncharted paper for tomorrow.
+dlg @1 master.work : Bring a question you can explain in your own words. We can start our work from there.
+dlg @1 master.wages : No pay for learning. Beside me your learning runs three times faster, and you're free to sell the goods you produce.
+dlg @1 master.bye : Take a clean scrap for your next discovery.
 graft resident.hub
 choice What's beyond that little headland? -> margin_head
 node margin_head

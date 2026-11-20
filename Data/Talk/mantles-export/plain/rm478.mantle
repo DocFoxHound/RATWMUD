@@ -1,9 +1,12 @@
+# rm478, the chamber refrain (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm478
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_arne_wetworth
+written_by codex
 title the chamber refrain
 fits stage=adult|old
 prefers job=servant
@@ -35,41 +38,40 @@ hem = the chamber curtain hem | the clean hanging edge
 boot = the mud line | a sole's width of mud
 
 any
-opinion merchants against 1 : I'd like the price that was offered before my back was turned to last till my purse comes round as well.
-opinion strangers against 1 : An unfamiliar foot in a private passage needs a plain answer as to where it's going.
-opinion houses mixed 1 : A great house counts me among its people when the chambers want keeping. I attend to how broad the term is after that.
-opinion festivals mixed 0 : My enjoyment of the music depends on choosing my distance from the crush. I have other arrangements for the procession.
-opinion times mixed 0 : My own tray goes back to the right place. Whether all the business round me is as orderly I'd be slow to say.
+opinion @1 merchants against 1 : I'd like the price that was offered before my back was turned to last till my purse comes round as well.
+opinion @1 strangers against 1 : An unfamiliar foot in a private passage needs a plain answer as to where it's going.
+opinion @1 houses mixed 1 : A great house counts me among its people when the chambers want keeping. I attend to how broad the term is after that.
+opinion @1 festivals mixed 0 : My enjoyment of the music depends on choosing my distance from the crush. I have other arrangements for the procession.
+opinion @1 times mixed 0 : My own tray goes back to the right place. Whether all the business round me is as orderly I'd be slow to say.
 
 grown
-line greet [pair.band=strangers] : Speak from the passage side. Welcome. | Room beside me out of the doorway.
-line greet [self.working=yes] : Step where the tray has been cleared. | My quiet refrain leaves the ear free.
-line greet [here.time=dawn] : Morning. The first measure's all before us. | Fresh light above the low curtain.
-line greet [here.time=dusk|night] : Evening. Lower voices carry admirably here. | Come out of the door's shadow.
-line kin.open [pair.kin!=no] : There's no private passage between kin. | Family may take the humming side.
-line again.open : The spare bar brings your voice round. | Another entrance before my refrain's done.
-line greet.return : Hello. I have the note safe in my head. | Speak while the tune's still low.
-line greet.return [pair.band=friends|family] : I know that note of greeting. | Come near. Your voice is welcome in my quiet passage.
-line greet.return [self.working=yes] : My hands can brush while I hear. | I've a spare interval between chambers.
-line greet.return [here.time=dusk|night] : Evening. I'm singing only to myself now. | That's a welcome sound past the curtain.
-line farewell : A comfortable room beyond your final errand. | Leave the latch as quiet as you found it.
-line farewell.return : I'll take the next measure here. | Keep an easy rhythm past the threshold.
-line farewell.return [here.time=night] : Hush the latch and rest your feet tonight. | A careful homecoming past the late sleepers.
-line react.news : Give me the clear line of it. | What's the account beneath the noise?
-line react.news.new : New words for this passage. | That wasn't in my earlier hearing.
-line react.news.known : I've heard the start and ending of that already. | A familiar tune comes through again.
-line react.news.doubt : I'd need a steadier account before joining that chorus. | A line muffled by a curtain can change its meaning.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll keep my tune still for you. | A difficult word to carry through a quiet house.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a brighter bar to finish with. | Good. The passage sounds easier after that.
-line ask.how : Have you a quiet end in sight today? | How many rooms has the day put you through?
-line answer.how : A few more measures before I can rest. | Keeping my tune down and my hands occupied.
-line decline : I'd better leave my quieter energies for the last room. | I need a private interval before agreeing to more.
-line accept_decline : I can lower the voice on that matter. | Then the arrangement ends quite clearly.
-line thank : You've spared me a whole spare bar. | That sits well with my reckonings.
-line sympathise : Take the chair outside the noisy passage. | I can give you quiet without leaving you alone.
-line reassure : You'll find another interval after this one. | Attend to the little thing your hands can manage now.
-line preclose : I should take up the refrain again. | Time my chamber list lost another bar.
-
+line @1 greet [pair.band=strangers] : Speak from the passage side. Welcome. | Room beside me out of the doorway.
+line @2 greet [self.working=yes] : Step where the tray has been cleared. | My quiet refrain leaves the ear free.
+line @3 greet [here.time=dawn] : Morning. The first measure's all before us. | Fresh light above the low curtain.
+line @4 greet [here.time=dusk|night] : Evening. Lower voices carry admirably here. | Come out of the door's shadow.
+line @1 kin.open [pair.kin!=no] : There's no private passage between kin. | Family may take the humming side.
+line @1 again.open : The spare bar brings your voice round. | Another entrance before my refrain's done.
+line @1 greet.return : Hello. I have the note safe in my head. | Speak while the tune's still low.
+line @2 greet.return [pair.band=friends|family] : I know that note of greeting. | Come near. Your voice is welcome in my quiet passage.
+line @3 greet.return [self.working=yes] : My hands can brush while I hear. | I've a spare interval between chambers.
+line @4 greet.return [here.time=dusk|night] : Evening. I'm singing only to myself now. | That's a welcome sound past the curtain.
+line @1 farewell : A comfortable room beyond your final errand. | Leave the latch as quiet as you found it.
+line @1 farewell.return : I'll take the next measure here. | Keep an easy rhythm past the threshold.
+line @2 farewell.return [here.time=night] : Hush the latch and rest your feet tonight. | A careful homecoming past the late sleepers.
+line @1 react.news : Give me the clear line of it. | What's the account beneath the noise?
+line @1 react.news.new : New words for this passage. | That wasn't in my earlier hearing.
+line @1 react.news.known : I've heard the start and ending of that already. | A familiar tune comes through again.
+line @1 react.news.doubt : I'd need a steadier account before joining that chorus. | A line muffled by a curtain can change its meaning.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll keep my tune still for you. | A difficult word to carry through a quiet house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a brighter bar to finish with. | Good. The passage sounds easier after that.
+line @1 ask.how : Have you a quiet end in sight today? | How many rooms has the day put you through?
+line @1 answer.how : A few more measures before I can rest. | Keeping my tune down and my hands occupied.
+line @1 decline : I'd better leave my quieter energies for the last room. | I need a private interval before agreeing to more.
+line @1 accept_decline : I can lower the voice on that matter. | Then the arrangement ends quite clearly.
+line @1 thank : You've spared me a whole spare bar. | That sits well with my reckonings.
+line @1 sympathise : Take the chair outside the noisy passage. | I can give you quiet without leaving you alone.
+line @1 reassure : You'll find another interval after this one. | Attend to the little thing your hands can manage now.
+line @1 preclose : I should take up the refrain again. | Time my chamber list lost another bar.
 scene roomtune
 when topic=work self.job=servant
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Clear one little pane and leave the fronds. | First chamber gets the shortest tune.
 
-dlg resident.hub : Take a few steps clear of the closed door. Your business can have just as good a hearing without a chamberful of accidental listeners.
-dlg resident.job [self.job=servant self.trade_words] : #self.trade_words.capitalize#. I give each room its own quiet finish before I move the tray along.
-dlg resident.news [world.news] : In a plain voice the word came through thus. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've come in between the quiet verses.
-dlg resident.bye : An easy latch and a quiet interval on your own homeward way.
-
+dlg @1 resident.hub : Take a few steps clear of the closed door. Your business can have just as good a hearing without a chamberful of accidental listeners.
+dlg @1 resident.job [self.job=servant self.trade_words] : #self.trade_words.capitalize#. I give each room its own quiet finish before I move the tray along.
+dlg @1 resident.news [world.news] : In a plain voice the word came through thus. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've come in between the quiet verses.
+dlg @1 resident.bye : An easy latch and a quiet interval on your own homeward way.
 graft resident.hub
 choice Why does your sea song keep changing length? -> short_chorus
 node short_chorus

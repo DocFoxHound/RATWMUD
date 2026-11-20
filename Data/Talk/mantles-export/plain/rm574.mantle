@@ -1,14 +1,17 @@
+# rm574, the square-handed correspondent (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm574
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rmx_rupert_hatherley
+written_by codex
 title the square-handed correspondent
 fits stage=adult|old
 prefers piety=devout honesty=guarded
 traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=devout drive=steady
-quirk keeps_sealed_letters_clear_of_damp_beside_square_bale_figures
+quirk keeps_sealed_letters_clear_of_damp_by_the_bale_figures
 likes hard_cheese old_tales festival_bells thunder
 dislikes crowds haggling
 fears a_seal_broken_for_convenience
@@ -17,6 +20,7 @@ topics work +0.7 faith +0.6 memories +0.3 weather +0.3
 styles comfort=practical gossip=guarded refuse=firm tease=none
 marks oath saying
 persona #self.first# forms letters as squarely as stacked bales, keeps the sealed one clear of damp, and asks for the shortest route whose boards remain above water.
+
 words
 oath! = Blot the wrong square | Damp in the docket
 saying! = A seal has one reader | Leave the wet board blank
@@ -36,51 +40,49 @@ storystitch = a repeated old phrase | a little thread of words
 waxcrumb = a square of plain beeswax | a small hard shaving
 
 grown
-
-opinion church for 2 : The account known to the Bright One includes the good I overlooked as well as the failures I noted. I take comfort and warning in that.
-opinion strangers against 1 : An unfamiliar wolf may have directions to a dry street. A private letter stays in my own keeping.
-opinion merchants mixed 1 : I can count bales in either direction and obtain one number. I'd like to discover that property in more statements about prices.
-opinion houses mixed 1 : A House that expects its seal to carry weight might reasonably keep its intended readers within occasional reach of a doorstep.
-opinion festivals for 1 : One clear round of bells heard a street removed from the crush is my own share of a festival well begun.
-opinion road mixed 1 : I will recommend a sound route for today. Yesterday's passage is a different entry and quite properly closed.
-opinion dole for 1 : Tell me how many have eaten so that a late arrival finds something more substantial than the arithmetic.
-opinion watch mixed 1 : I would have the record taken legible to the next watch. Justice is ill served by an elegant squiggle.
-line greet : I can attend to one clearly stated matter at a time.
-line greet.return : The account is open where your last words left it.
-line greet [pair.band=strangers] : Stand clear of the wrapped paper. Your business may be spoken here.
-line greet [here.time=dawn] : The street is easy to read this early if one minds the lower boards.
-line farewell : May a sound plank answer under each of your steps.
-line farewell.return : The last line of our exchange requires no amendment.
-line ask.how : Has the day kept the wet away from what you were carrying?
-line answer.how : I have kept my hand steady and my wrapping dry.
-line thank : You spared me a second explanation of the obligation.
-line deflect_thanks : The decent thing was plain enough to set down in one line.
-line decline : No convenience of ours gives me leave to open another wolf's letter.
-line accept_decline : Your refusal has a legible place in the account.
-line sympathise : Sit where the floor is dry. I can manage the things requiring a steady hand.
-line reassure : A doubtful figure can remain blank until there is evidence to enter.
-line react.news : I will hear the account in the order you received it.
-line react.news.new : I shall rule fresh space for that report.
-line react.news.known : The first entry already shows the marks of that one.
-line react.news.doubt : I'd want more than one hasty stroke before calling that a reliable entry.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd write the good return in a hand worthy of whoever brought it about.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I shall keep the need in mind when the evening prayers begin.
-line ack : That completes both sides of the reckoning.
-line again.open : We may resume without disturbing the closed entries.
-line preclose : There's a suitable break here for putting the pen away.
-line accept_preclose : Very well. We can find this line again.
-line tell.self : I can keep faith with an obligation long after the convenient hour has passed.
-line reassure [pair.band=friends|family] : The wrapping is sound and there is time to try the proper door again.
-line decline [pair.disposition=hostile] : Your insistence supplies no signature I am authorised to recognise.
-line greet.return [here.time=night] : In this light I'll recognise a voice more readily than a written entry.
-line farewell [here.time=dusk] : Give the darker hollows an extra hand's breadth on your return.
-line ask.how [pair.band=friends|family] : Which hours have been free for your own purposes?
-line answer.how [here.time=night] : One difficult errand still open. The rest can stay squared away.
-
+opinion @1 church for 2 : The account known to the Bright One includes the good I overlooked as well as the failures I noted. I take comfort and warning in that.
+opinion @1 strangers against 1 : An unfamiliar wolf may have directions to a dry street. A private letter stays in my own keeping.
+opinion @1 merchants mixed 1 : I can count bales in either direction and obtain one number. I'd like to discover that property in more statements about prices.
+opinion @1 houses mixed 1 : A House that expects its seal to carry weight might reasonably keep its intended readers within occasional reach of a doorstep.
+opinion @1 festivals for 1 : One clear round of bells heard a street removed from the crush is my own share of a festival well begun.
+opinion @1 road mixed 1 : I will recommend a sound route for today. Yesterday's passage is a different entry and quite properly closed.
+opinion @1 dole for 1 : Tell me how many have eaten so that a late arrival finds something more substantial than the arithmetic.
+opinion @1 watch mixed 1 : I would have the record taken legible to the next watch. Justice is ill served by an elegant squiggle.
+line @1 greet : I can attend to one clearly stated matter at a time.
+line @1 greet.return : The account is open where your last words left it.
+line @2 greet [pair.band=strangers] : Stand clear of the wrapped paper. Your business may be spoken here.
+line @3 greet [here.time=dawn] : The street is easy to read this early if one minds the lower boards.
+line @1 farewell : May a sound plank answer under each of your steps.
+line @1 farewell.return : The last line of our exchange requires no amendment.
+line @1 ask.how : Has the day kept the wet away from what you were carrying?
+line @1 answer.how : I have kept my hand steady and my wrapping dry.
+line @1 thank : You spared me a second explanation of the obligation.
+line @1 deflect_thanks : The decent thing was plain enough to set down in one line.
+line @1 decline : No convenience of ours gives me leave to open another wolf's letter.
+line @1 accept_decline : Your refusal has a legible place in the account.
+line @1 sympathise : Sit where the floor is dry. I can manage the things requiring a steady hand.
+line @1 reassure : A doubtful figure can remain blank until there is evidence to enter.
+line @1 react.news : I will hear the account in the order you received it.
+line @1 react.news.new : I shall rule fresh space for that report.
+line @1 react.news.known : The first entry already shows the marks of that one.
+line @1 react.news.doubt : I'd want more than one hasty stroke before calling that a reliable entry.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd write the good return in a hand worthy of whoever brought it about.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I shall keep the need in mind when the evening prayers begin.
+line @1 ack : That completes both sides of the reckoning.
+line @1 again.open : We may resume without disturbing the closed entries.
+line @1 preclose : There's a suitable break here for putting the pen away.
+line @1 accept_preclose : Very well. We can find this line again.
+line @1 tell.self : I can keep faith with an obligation long after the convenient hour has passed.
+line @2 reassure [pair.band=friends|family] : The wrapping is sound and there is time to try the proper door again.
+line @2 decline [pair.disposition=hostile] : Your insistence supplies no signature I am authorised to recognise.
+line @2 greet.return [here.time=night] : In this light I'll recognise a voice more readily than a written entry.
+line @2 farewell [here.time=dusk] : Give the darker hollows an extra hand's breadth on your return.
+line @2 ask.how [pair.band=friends|family] : Which hours have been free for your own purposes?
+line @2 answer.how [here.time=night] : One difficult errand still open. The rest can stay squared away.
 scene work_1
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : I earn my living #self.trade_words#. I like every column square enough to rest a straightedge on it.
+a : #self.trade_words.capitalize#: that's my living. I like every column square enough to rest a straightedge on it.
 b : Will a straight column prove the count? | Do the bales themselves stack squarely?
 a : It proves only that the line can be read. I do the second count to establish whether it ought to be believed. | With rather less cooperation than figures. I remember doing the heavy work before the desk was available.
 
@@ -338,19 +340,19 @@ when concept=bark self.likes=old_tales
 does aside
 cooldown 8h
 say Give the old phrase room for its last meaning. | A familiar ending deserves a properly earned pause.
-dlg resident.hub : Keep the closed parcel where it is and let me hear your own business.
-dlg resident.job [self.trade_words] : My living comes from #self.trade_words#. I still examine the shape of a bale before settling its number on paper.
-dlg resident.quirk : I can tell which low turn will start to fill by the old stain and the present movement of the gutter.
-dlg resident.news [world.news] : The entry I can read without qualification is the account I received. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The loose account reads #topic.subject# #topic.claim#. My own square hand does not stand beneath it.
-dlg resident.hub [topic.meeting=known] : #topic.player#, the earlier entry supplies the introduction. State what has changed.
-dlg resident.bye : Keep the outside fold towards the weather on your journey.
-dlg resident.how [tired=yes] : Pen work can put weariness in the wrist just as surely as a bale can burden the back.
-dlg master.learn [here.teaches=yes] : I have a place available for a learner. I'll hear what you wish to know and then consider the usual terms.
-dlg master.takes [here.take_on=no] : I teach one trusted learner at a time. This is the present difficulty. #here.take_on_why#.
-dlg master.refused : The reason the undertaking cannot start is plain. #topic.why#.
-dlg master.bye : Try making a careful entry while the lesson is still in your head.
 
+dlg @1 resident.hub : Keep the closed parcel where it is and let me hear your own business.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#, these days. I still examine the shape of a bale before settling its number on paper.
+dlg @1 resident.quirk : I can tell which low turn will start to fill by the old stain and the present movement of the gutter.
+dlg @1 resident.news [world.news] : The entry I can read without qualification is the account I received. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The loose account reads #topic.subject# #topic.claim#. My own square hand does not stand beneath it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the earlier entry supplies the introduction. State what has changed.
+dlg @1 resident.bye : Keep the outside fold towards the weather on your journey.
+dlg @1 resident.how [tired=yes] : Pen work can put weariness in the wrist just as surely as a bale can burden the back.
+dlg @1 master.learn [here.teaches=yes] : I have a place available for a learner. I'll hear what you wish to know and then consider the usual terms.
+dlg @1 master.takes [here.take_on=no] : I teach one trusted learner at a time. This is the present difficulty. #here.take_on_why#.
+dlg @1 master.refused : The reason the undertaking cannot start is plain. #topic.why#.
+dlg @1 master.bye : Try making a careful entry while the lesson is still in your head.
 graft resident.hub
 choice Does that sealed letter really go everywhere with you? -> seal_errand
 node seal_errand

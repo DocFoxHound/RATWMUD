@@ -1,9 +1,12 @@
+# rm368, the halfway shout (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm368
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_ivo_pitchridge
+written_by codex
 title the halfway shout
 fits stage=adult|old
 prefers job=laborer
@@ -36,35 +39,34 @@ riddle = an unfinished question | a neat little riddle
 drum = a roll of thunder | a long growl overhead
 
 any
-opinion houses against 2 : I'd like a factor obliged to climb as many steps for a payment as the wolf finding it.
-opinion sump for 1 : A low room still gives a call a high roof if enough of us hear it.
-opinion merchants mixed 1 : My voice can carry the marked price. Making the price fair is a different line of work.
-opinion dole for 2 : A wolf with nothing left for supper ought to get a portion without answering a riddle.
-opinion festivals mixed 1 : A crowd can be glorious when the coin in it has already paid the night's rent.
-opinion watch against 1 : A pair of heavy feet can stop a whole stairful of quiet conversation.
+opinion @1 houses against 2 : I'd like a factor obliged to climb as many steps for a payment as the wolf finding it.
+opinion @1 sump for 1 : A low room still gives a call a high roof if enough of us hear it.
+opinion @1 merchants mixed 1 : My voice can carry the marked price. Making the price fair is a different line of work.
+opinion @1 dole for 2 : A wolf with nothing left for supper ought to get a portion without answering a riddle.
+opinion @1 festivals mixed 1 : A crowd can be glorious when the coin in it has already paid the night's rent.
+opinion @1 watch against 1 : A pair of heavy feet can stop a whole stairful of quiet conversation.
 
 grown
-line greet : There's a gap beside the calling place. | Stand clear of my market elbow.
-line greet.return : Welcome made it in one breath. Here's mine. | I heard even the low end of that greeting.
-line again.open : Back up the odd step again.
-line farewell : Take the stair by the sound edge. | Keep the rest of your day's price to yourself.
-line farewell.return : And two good steps for every tiring one. | My parting's light enough to carry.
-line react.news : Let me hear what the crowd couldn't swallow. | Tell it at the pitch it started on.
-line react.news.new : No answer for that in my pocket yet.
-line react.news.known : I've heard the return cry on that account.
-line react.news.doubt : The riddle and its answer haven't travelled together.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd drop my voice for the wolves carrying that hurt.
-line react.news.glad [topic.kind=birth|marriage|work] : That goes up the stair two steps at once.
-line ask.how : Have you bought yourself much quiet in all the noise?
-line answer.how : I've another call left. That's about my measure.
-line sympathise : Nobody else needs to hear it from me.
-line reassure : You needn't see the whole stair to step onto the first dry board.
-line refuse : There's a call I owe an answer before that one.
-line accept_decline : No sale. We can leave the price talk there.
-line preclose : I've still got the last odd step of my own errand to take.
-line accept_preclose : Go get clear before my next voice carries.
-line ack : I've caught the answer under the noise.
-
+line @1 greet : There's a gap beside the calling place. | Stand clear of my market elbow.
+line @1 greet.return : Welcome made it in one breath. Here's mine. | I heard even the low end of that greeting.
+line @1 again.open : Back up the odd step again.
+line @1 farewell : Take the stair by the sound edge. | Keep the rest of your day's price to yourself.
+line @1 farewell.return : And two good steps for every tiring one. | My parting's light enough to carry.
+line @1 react.news : Let me hear what the crowd couldn't swallow. | Tell it at the pitch it started on.
+line @1 react.news.new : No answer for that in my pocket yet.
+line @1 react.news.known : I've heard the return cry on that account.
+line @1 react.news.doubt : The riddle and its answer haven't travelled together.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd drop my voice for the wolves carrying that hurt.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That goes up the stair two steps at once.
+line @1 ask.how : Have you bought yourself much quiet in all the noise?
+line @1 answer.how : I've another call left. That's about my measure.
+line @1 sympathise : Nobody else needs to hear it from me.
+line @1 reassure : You needn't see the whole stair to step onto the first dry board.
+line @1 refuse : There's a call I owe an answer before that one.
+line @1 accept_decline : No sale. We can leave the price talk there.
+line @1 preclose : I've still got the last odd step of my own errand to take.
+line @1 accept_preclose : Go get clear before my next voice carries.
+line @1 ack : I've caught the answer under the noise.
 scene exchange1
 when topic=work self.job=laborer
 does tell.self / ask.detail / answer.detail
@@ -147,7 +149,7 @@ when topic=gossip here.gossip=yes
 does tell.self / ask.detail / answer.detail
 a : I heard #topic.subject# #topic.claim#. I could cry that quite handsomely. | A rumour runs up a crowded flight without taking a breath.
 b : Are you going to? | Do you let the rumour past?
-a : Cloth doesn't suffer from a wrong description the way a living wolf can. | I let it pass and see if any witness comes along behind.
+a : No. I cry cloth. Cloth doesn't suffer from a wrong description the way a living wolf can. | I let it pass and see if any witness comes along behind.
 
 scene exchange13
 when topic=times world.times=hard|lean
@@ -232,16 +234,16 @@ when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say Keep the lower end of the sample clear of the drip. | Dry cloth gets seen from farther off.
-dlg resident.hub : My lower voice costs nothing. You've got that one.
-dlg resident.hub [topic.meeting=known] : #topic.player#, our voices don't need their public pitch here.
-dlg resident.hub [here.time=night] : My voice works more quietly up here after dark.
-dlg resident.hub [pair.disposition=wary|hostile] : I can hear your question with the purse strings shut.
-dlg resident.job [self.job=laborer] : I cry wares where the market's at its loudest. Pattern, colour, length and price, in one lungful if possible.
-dlg resident.job : I give my paid hours the voice they bought and keep a private one for later.
-dlg resident.news [world.news] : From somewhere beyond my last call comes #world.news#.
-dlg resident.gossip [here.gossip=yes] : The claim came to my ear as #topic.subject# #topic.claim#. That isn't a sworn account.
-dlg resident.bye : Keep one good breath for the last rise.
 
+dlg @1 resident.hub : My lower voice costs nothing. You've got that one.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our voices don't need their public pitch here.
+dlg @3 resident.hub [here.time=night] : My voice works more quietly up here after dark.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can hear your question with the purse strings shut.
+dlg @1 resident.job [self.job=laborer] : I cry wares where the market's at its loudest. Pattern, colour, length and price, in one lungful if possible.
+dlg @2 resident.job : I give my paid hours the voice they bought and keep a private one for later.
+dlg @1 resident.news [world.news] : From somewhere beyond my last call comes #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim came to my ear as #topic.subject# #topic.claim#. That isn't a sworn account.
+dlg @1 resident.bye : Keep one good breath for the last rise.
 graft resident.hub
 choice Can you fit a riddle in a market cry? -> price_riddle
 node price_riddle

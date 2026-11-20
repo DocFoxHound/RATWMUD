@@ -1,14 +1,17 @@
+# rm578, the apprentice's cool stone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm578
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_ulf_kelpmarsh
+written_by codex
 title the apprentice's cool stone
 fits stage=adult|old
 prefers job=merchant honesty=guarded
 traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
-quirk keeps_a_flat_stone_beside_the_butter_to_test_the_shelf_with_the_back_of_a_finger
+quirk tests_a_shelf_with_a_flat_stone_by_the_butter
 likes barley_soup wrestling new_boots first_snow
 dislikes haggling cold_tea
 fears warm_butter_in_a_paying_customers_parcel a_familiar_step_missing_from_the_wharf
@@ -34,45 +37,44 @@ tearing = a dark ring of cold tea | a grey stain inside the cup
 coughcloth = my tucked-in cloth | a neatly hemmed square
 
 any
-opinion merchants mixed 0 : A buyer deserves a parcel that holds its shape right to the supper board.
-opinion houses against 1 : A fine mark over the wharf gate can hardly answer a question asked at ground level.
-opinion city for 1 : There's a way home through streets that remember enough of the daylight to keep a walker company.
-opinion drink mixed 0 : I'd choose a good heavy bowl of soup over a thin drink that's gone cold waiting.
-opinion strangers mixed 0 : A visitor may see the goods and hear the price. My private affairs have no label hung on them.
-opinion dole for 1 : Barley cooked right through will do a body more good than counting the grains one by one.
-opinion festivals for 1 : I'd turn out for a friendly wrestling bout, given a sheltered spot to leave my boots.
+opinion @1 merchants mixed 0 : A buyer deserves a parcel that holds its shape right to the supper board.
+opinion @1 houses against 1 : A fine mark over the wharf gate can hardly answer a question asked at ground level.
+opinion @1 city for 1 : There's a way home through streets that remember enough of the daylight to keep a walker company.
+opinion @1 drink mixed 0 : I'd choose a good heavy bowl of soup over a thin drink that's gone cold waiting.
+opinion @1 strangers mixed 0 : A visitor may see the goods and hear the price. My private affairs have no label hung on them.
+opinion @1 dole for 1 : Barley cooked right through will do a body more good than counting the grains one by one.
+opinion @1 festivals for 1 : I'd turn out for a friendly wrestling bout, given a sheltered spot to leave my boots.
 
 grown
-line greet : Put the parcel here in the cool. Welcome.
-line greet [pair.band=strangers] : A first visitor can have a clean corner.
-line greet [here.time=dawn] : Morning. The stone's still got its night chill.
-line greet [here.time=dusk|night] : Evening. Stand where the warm air goes past.
-line greet.return : I've heard you. I'll ease this wheel onto its shelf.
-line greet.return [pair.band=friends|family] : Your voice will do instead of an introduction.
-line greet.return [self.working=yes] : I can listen with the stone under my hand.
-line greet.return [here.time=dusk|night] : The quiet nearly carries your footsteps for you.
-line kin.open [pair.kin!=no] : My end of the cheese bench is yours, kin.
-line again.open : The knot's exactly where I left it.
-line hail [pair.band=friends] : Friend, here on the cool side.
-line farewell : Good footing under your heels.
-line farewell.return : And keep the cloth off the sunny side.
-line react.news : What part of it arrived intact?
-line react.news.new : A new word to set by.
-line react.news.known : Heard before. It held its shape then.
-line react.news.doubt : I'd test the middle as well as the surface.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll sit through the quiet bit beside you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good thing to bring home before supper.
-line ask.how : How have your feet held up?
-line answer.how : A steady sort of day with a catch here and there.
-line thank : That was a kind way to steady the load.
-line deflect_thanks : I was close enough to catch it.
-line sympathise : You can sit here without having to explain the whole journey.
-line reassure : Let your shoulders come down before the next turn.
-line decline : I've a load here that needs both my hands.
-line accept_decline : Fair. I'll leave the strap slack.
-line preclose : My next round won't do itself.
-line accept_preclose : Step out easy. I'll catch the panel as you go.
-
+line @1 greet : Put the parcel here in the cool. Welcome.
+line @2 greet [pair.band=strangers] : A first visitor can have a clean corner.
+line @3 greet [here.time=dawn] : Morning. The stone's still got its night chill.
+line @4 greet [here.time=dusk|night] : Evening. Stand where the warm air goes past.
+line @1 greet.return : I've heard you. I'll ease this wheel onto its shelf.
+line @2 greet.return [pair.band=friends|family] : Your voice will do instead of an introduction.
+line @3 greet.return [self.working=yes] : I can listen with the stone under my hand.
+line @4 greet.return [here.time=dusk|night] : The quiet nearly carries your footsteps for you.
+line @1 kin.open [pair.kin!=no] : My end of the cheese bench is yours, kin.
+line @1 again.open : The knot's exactly where I left it.
+line @1 hail [pair.band=friends] : Friend, here on the cool side.
+line @1 farewell : Good footing under your heels.
+line @1 farewell.return : And keep the cloth off the sunny side.
+line @1 react.news : What part of it arrived intact?
+line @1 react.news.new : A new word to set by.
+line @1 react.news.known : Heard before. It held its shape then.
+line @1 react.news.doubt : I'd test the middle as well as the surface.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll sit through the quiet bit beside you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A good thing to bring home before supper.
+line @1 ask.how : How have your feet held up?
+line @1 answer.how : A steady sort of day with a catch here and there.
+line @1 thank : That was a kind way to steady the load.
+line @1 deflect_thanks : I was close enough to catch it.
+line @1 sympathise : You can sit here without having to explain the whole journey.
+line @1 reassure : Let your shoulders come down before the next turn.
+line @1 decline : I've a load here that needs both my hands.
+line @1 accept_decline : Fair. I'll leave the strap slack.
+line @1 preclose : My next round won't do itself.
+line @1 accept_preclose : Step out easy. I'll catch the panel as you go.
 scene stone_test
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -182,8 +184,8 @@ scene parcel_news
 when topic=news world.news
 does tell.news / react.self / assess
 a : Wrapped up from #world.news_from# came this word. #world.news#. | #world.news#. It has #world.news_from# marked at the start.
-b : Did you open it yourself? | Where would you mark the end?
-a : What reached my ears is all I have. What came before that is private. | Here for now. Somebody else can answer for the next journey.
+b : Was it told you first-hand? | Where would you mark the end?
+a : No. You get it the way I got it, wrapping and all. | Here for now. Somebody else can answer for the next journey.
 
 scene shelf_gossip
 when topic=gossip here.gossip=yes
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Leave a little dry stone for the next boot.
 
-dlg resident.hub : This edge is dry. Put your things down if you choose.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's no need to stand holding that.
-dlg resident.hub [here.time=dusk] : The last turn is done. I'm listening.
-dlg resident.hub [pair.disposition=hostile|wary] : The shelf stays between us till we've finished speaking.
-dlg resident.job [self.job=merchant self.workplace] : I help keep the goods in condition at #self.workplace#. You can tell a good deal with a cool knuckle.
-dlg resident.news [world.news] : The first mark is #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That word has stood too long in the warmth for my liking.
-dlg resident.bye : I hope the last bit of your way is kind to your boots.
-
+dlg @1 resident.hub : This edge is dry. Put your things down if you choose.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's no need to stand holding that.
+dlg @3 resident.hub [here.time=dusk] : The last turn is done. I'm listening.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : The shelf stays between us till we've finished speaking.
+dlg @1 resident.job [self.job=merchant self.workplace] : I help keep the goods in condition at #self.workplace#. You can tell a good deal with a cool knuckle.
+dlg @1 resident.news [world.news] : The first mark is #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That word has stood too long in the warmth for my liking.
+dlg @1 resident.bye : I hope the last bit of your way is kind to your boots.
 graft resident.hub
 choice May I try the stone test? -> cool_knuckle
 node cool_knuckle

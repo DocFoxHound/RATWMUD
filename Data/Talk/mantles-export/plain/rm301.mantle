@@ -1,9 +1,12 @@
+# rm301, the listening brim (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm301
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_gwen_fogstack
+written_by codex
 title the listening brim
 fits stage=adult|old
 prefers job=merchant drive=restless
@@ -35,43 +38,42 @@ strip = a length of smoked eel | the dark fish slice
 reed = a damp reed | the bent stem
 
 any
-opinion houses against 1 : From below, a fine high roof looks chiefly remarkable for how far its rain can fall.
-opinion merchants against 1 : An oily shine is scarcely proof a hood will keep the neck dry.
-opinion sump for 1 : A bit of cloth has a long useful life down our way. A second crease won't kill it.
-opinion church for 1 : A chapel's quiet shuts a fair portion of the weather outside a wolf as well as outside the roof.
-opinion road for 1 : Bring the hood in case then follow the dry patches till the afternoon runs out.
-opinion watch against 1 : A quiet watcher at a shop door can see more than a whole march of loud boots.
+opinion @1 houses against 1 : From below, a fine high roof looks chiefly remarkable for how far its rain can fall.
+opinion @1 merchants against 1 : An oily shine is scarcely proof a hood will keep the neck dry.
+opinion @1 sump for 1 [self.quarter=sump] : A bit of cloth has a long useful life down our way. A second crease won't kill it.
+opinion @1 church for 1 : A chapel's quiet shuts a fair portion of the weather outside a wolf as well as outside the roof.
+opinion @1 road for 1 : Bring the hood in case then follow the dry patches till the afternoon runs out.
+opinion @1 watch against 1 : A quiet watcher at a shop door can see more than a whole march of loud boots.
 
 grown
-line greet : Hello. I had the listening side turned your way. | Good. A voice instead of a drip.
-line greet [pair.band=strangers] : First time I've caught that footfall, I think. | Welcome. The open fold carries your words well.
-line greet [here.time=dawn] : Morning. Fresh air under the fold at last. | My ears have had their first stretch of the day.
-line greet.return : Yes, I heard you knocking on the air. | Hello in return. I'm wide awake under here.
-line greet.return [pair.band=friends|family] : Good sound. I've heard that voice in all weathers. | I'm glad I turned the brim up for you.
-line greet.return [here.time=night] : Late greetings. Easier to hear footsteps when the light's gone. | Hello there across the dark.
-line again.open : You're back in range of my better ear. | Another little knock from a familiar direction.
-line hail [pair.band=friends] : Come over to the dry edge and listen. | Stand here. There's a small sound worth catching.
-line farewell : May your hood fit the weather you find. | Go enjoy the view past this bit of shelter.
-line farewell.return : I've a last listen to take before leaving too. | Away you go, well beyond the drips.
-line react.news : Let me turn this corner up and hear properly. | I'll give the whole account a quiet ear.
-line react.news.new : That hadn't made so much as a ripple round me. | Entirely new hearing under this hood.
-line react.news.known : I caught a fair version of that earlier. | Yes, that bit sounded the same on its first journey.
-line react.news.doubt : I'd listen for another sound before calling that a bite. | There's an echo in there I'm unwilling to trust.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Cruel news. I'll stop fussing with my things and sit. | You can speak quietly about that here. I'll hear you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, that's better than a sound fish taking the float. | Good news deserves both ears uncovered.
-line ask.how : Did you find a little peace anywhere today? | How's life sounding from your corner of the shelter?
-line answer.how : Restless, though I've enough sense to rest when my feet insist. | Doing well enough for an evening's cast.
-line decline : I'd be leaving something important quite unattended if I did that. | I haven't a free evening to promise for it.
-line accept_decline : That's settled. I'll leave you your own choice. | Fair enough. I'll cast elsewhere.
-line preclose : My ears are still interested but my legs want a walk. | I'll move along while there's a little dry ground.
-line accept_preclose : Off with you. Sitting forever would hardly suit either of us. | Go on to your next good prospect.
-line thank : I'll remember you held that corner for me. | You've made a wet little business a pleasure. Thanks.
-line deflect_thanks : One bit of dry cover doesn't cost much to share. | I'd already lifted the brim and seen what was needed.
-line sympathise : I've room under this bit of cover for some quiet. | Sit near me. Words needn't come straight away.
-line reassure : Turn just one corner up. Sometimes that's view enough. | There'll be an interval between the heavy drops.
-line ack : I'm hearing the distinction you mean. | That came across clean through the wind.
-line give.advice : Fasten the hood where you can undo it with one paw. | Don't let the wind take both corners at once.
-
+line @1 greet : Hello. I had the listening side turned your way. | Good. A voice instead of a drip.
+line @2 greet [pair.band=strangers] : First time I've caught that footfall, I think. | Welcome. The open fold carries your words well.
+line @3 greet [here.time=dawn] : Morning. Fresh air under the fold at last. | My ears have had their first stretch of the day.
+line @1 greet.return : Yes, I heard you knocking on the air. | Hello in return. I'm wide awake under here.
+line @2 greet.return [pair.band=friends|family] : Good sound. I've heard that voice in all weathers. | I'm glad I turned the brim up for you.
+line @3 greet.return [here.time=night] : Late greetings. Easier to hear footsteps when the light's gone. | Hello there across the dark.
+line @1 again.open : You're back in range of my better ear. | Another little knock from a familiar direction.
+line @1 hail [pair.band=friends] : Come over to the dry edge and listen. | Stand here. There's a small sound worth catching.
+line @1 farewell : May your hood fit the weather you find. | Go enjoy the view past this bit of shelter.
+line @1 farewell.return : I've a last listen to take before leaving too. | Away you go, well beyond the drips.
+line @1 react.news : Let me turn this corner up and hear properly. | I'll give the whole account a quiet ear.
+line @1 react.news.new : That hadn't made so much as a ripple round me. | Entirely new hearing under this hood.
+line @1 react.news.known : I caught a fair version of that earlier. | Yes, that bit sounded the same on its first journey.
+line @1 react.news.doubt : I'd listen for another sound before calling that a bite. | There's an echo in there I'm unwilling to trust.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Cruel news. I'll stop fussing with my things and sit. | You can speak quietly about that here. I'll hear you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, that's better than a sound fish taking the float. | Good news deserves both ears uncovered.
+line @1 ask.how : Did you find a little peace anywhere today? | How's life sounding from your corner of the shelter?
+line @1 answer.how : Restless, though I've enough sense to rest when my feet insist. | Doing well enough for an evening's cast.
+line @1 decline : I'd be leaving something important quite unattended if I did that. | I haven't a free evening to promise for it.
+line @1 accept_decline : That's settled. I'll leave you your own choice. | Fair enough. I'll cast elsewhere.
+line @1 preclose : My ears are still interested but my legs want a walk. | I'll move along while there's a little dry ground.
+line @1 accept_preclose : Off with you. Sitting forever would hardly suit either of us. | Go on to your next good prospect.
+line @1 thank : I'll remember you held that corner for me. | You've made a wet little business a pleasure. Thanks.
+line @1 deflect_thanks : One bit of dry cover doesn't cost much to share. | I'd already lifted the brim and seen what was needed.
+line @1 sympathise : I've room under this bit of cover for some quiet. | Sit near me. Words needn't come straight away.
+line @1 reassure : Turn just one corner up. Sometimes that's view enough. | There'll be an interval between the heavy drops.
+line @1 ack : I'm hearing the distinction you mean. | That came across clean through the wind.
+line @1 give.advice : Fasten the hood where you can undo it with one paw. | Don't let the wind take both corners at once.
 scene foldodd
 when topic=pastimes self.likes=evening_line
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : Hearing a noise up close is different from knowing what made it. | A flappin
 b : Would you just ignore it? | You're talking about gossip, aren't you?
 a : I'd turn and look. The sound alone proves little more. | Yes. I don't name a visitor till a face has actually come into view.
 
-grown
-
 story turnaround [topic=pastimes|memories]
   : I fished a whole quiet interval with the listening corner lifted. Heard a little knock at precisely regular intervals.
   : Turned my head and it stopped. Turned back and it began again.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say I heard a little tapping beyond the cloth. | There's a quieter sound behind that first one.
 
-dlg resident.hub : I've the brim up. An ordinary speaking voice will reach me easily.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I'd know that step through a whole thickness of oilcloth.
-dlg resident.hub [here.time=night] : I've turned my ear where my eyes won't reach. There's still room for talk.
-dlg resident.hub [pair.disposition=wary|hostile] : The dry place on the far side will serve for asking questions.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. A little warning from approaching feet is a great convenience.
-dlg resident.job : I'd like a bit of movement in my work and a chance to sit when I've had it.
-dlg resident.bye : I hope the wind hits the closed side on your walk.
-
+dlg @1 resident.hub : I've the brim up. An ordinary speaking voice will reach me easily.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'd know that step through a whole thickness of oilcloth.
+dlg @3 resident.hub [here.time=night] : I've turned my ear where my eyes won't reach. There's still room for talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : The dry place on the far side will serve for asking questions.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. A little warning from approaching feet is a great convenience.
+dlg @2 resident.job : I'd like a bit of movement in my work and a chance to sit when I've had it.
+dlg @1 resident.bye : I hope the wind hits the closed side on your walk.
 graft resident.hub
 choice How do you get an oilcloth brim to stay up? -> hornfast
 node hornfast

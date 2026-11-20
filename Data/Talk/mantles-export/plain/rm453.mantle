@@ -1,9 +1,12 @@
+# rm453, the clerk of paired cuts (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm453
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_edmund_sootcot
+written_by codex
 title the clerk of paired cuts
 fits stage=adult|old
 prefers job=official
@@ -35,41 +38,40 @@ warn = a clipped instruction | one measured word
 stamp = a plain dark seal | the cold wax mark
 
 any
-opinion houses for 1 : A House is answerable for the paper its own seal releases. That is why I look first at who carries the seal.
-opinion dole against 2 : I would count bowls before refilling a single one. Those who supply the pot are entitled to figures.
-opinion strangers against 2 : A stranger gets a civil hearing across a safely closed drawer.
-opinion festivals against 1 : I enjoy a measured dance. An undisciplined evening in the street has little to do with it.
-opinion times for 1 : I have what I need under a properly maintained roof. I needn't fabricate a grievance to make conversation.
+opinion @1 houses for 1 : A House is answerable for the paper its own seal releases. That is why I look first at who carries the seal.
+opinion @1 dole against 2 : I would count bowls before refilling a single one. Those who supply the pot are entitled to figures.
+opinion @1 strangers against 2 : A stranger gets a civil hearing across a safely closed drawer.
+opinion @1 festivals against 1 : I enjoy a measured dance. An undisciplined evening in the street has little to do with it.
+opinion @1 times for 1 : I have what I need under a properly maintained roof. I needn't fabricate a grievance to make conversation.
 
 grown
-line greet [pair.band=strangers] : Give your name at this side of the table. | Welcome within speaking distance.
-line greet [self.working=yes] : Stay clear of the uncut papers. | Stand by the visitor's edge and proceed.
-line greet [here.time=dawn] : Morning. Clean sheet, undisturbed tray. | First business of a new day.
-line greet [here.time=dusk|night] : Evening. The last receipts are within reach. | Welcome while there's still examining light.
-line kin.open [pair.kin!=no] : Family have a seat beside the inner drawer. | The domestic audience is open.
-line again.open : A second appearance on the same paper. | Another crossing of our two records.
-line greet.return : You have my ear. Proceed. | Acknowledged. I am attending.
-line greet.return [pair.band=friends|family] : I know the voice behind this request. | This greeting needs no additional seal.
-line greet.return [self.working=yes] : Speak while the page is flat. | You can have the interval between entries.
-line greet.return [here.time=dusk|night] : Evening. No need to strain your voice. | Your words carry adequately after dark.
-line farewell : Keep your half of the matter secure. | Close the document before departure.
-line farewell.return : I'll retain the corresponding edge. | Return with the same clear account.
-line farewell.return [here.time=night] : A dry road and an intelligible address tonight. | Secure the flap against the dark.
-line react.news : Which details can be matched independently? | Give me the account without the flourish.
-line react.news.new : No matching entry has reached me. | Fresh matter for the closed file.
-line react.news.known : I recognise the second edge. | That item has already been compared.
-line react.news.doubt : A prominent badge is a poor substitute for proof. | I'd want two details to coincide without pressure.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A difficult account. Sit while you deliver it. | Keep the necessary silence. I will wait.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a favourable entry clearly earned. | A pleasing outcome in proper form.
-line ask.how : Has your business been conducted to your satisfaction? | What has the day exacted from you?
-line answer.how : My affairs remain within their covers. | I have seen the right edges meet.
-line decline : I decline to connect my name to that undertaking. | My own business takes priority over that request.
-line accept_decline : I have recorded a properly declared refusal. | Then there is no agreement to attest.
-line thank : You have spared a second examination. | I record that courtesy favourably.
-line sympathise : Take the chair away from the waiting eyes. | Some accounts deserve privacy first.
-line reassure : An interval to recover will be allowed. | You can speak afresh after the pause.
-line preclose : I have two papers to reconcile. | This hearing approaches its proper close.
-
+line @1 greet [pair.band=strangers] : Give your name at this side of the table. | Welcome within speaking distance.
+line @2 greet [self.working=yes] : Stay clear of the uncut papers. | Stand by the visitor's edge and proceed.
+line @3 greet [here.time=dawn] : Morning. Clean sheet, undisturbed tray. | First business of a new day.
+line @4 greet [here.time=dusk|night] : Evening. The last receipts are within reach. | Welcome while there's still examining light.
+line @1 kin.open [pair.kin!=no] : Family have a seat beside the inner drawer. | The domestic audience is open.
+line @1 again.open : A second appearance on the same paper. | Another crossing of our two records.
+line @1 greet.return : You have my ear. Proceed. | Acknowledged. I am attending.
+line @2 greet.return [pair.band=friends|family] : I know the voice behind this request. | This greeting needs no additional seal.
+line @3 greet.return [self.working=yes] : Speak while the page is flat. | You can have the interval between entries.
+line @4 greet.return [here.time=dusk|night] : Evening. No need to strain your voice. | Your words carry adequately after dark.
+line @1 farewell : Keep your half of the matter secure. | Close the document before departure.
+line @1 farewell.return : I'll retain the corresponding edge. | Return with the same clear account.
+line @2 farewell.return [here.time=night] : A dry road and an intelligible address tonight. | Secure the flap against the dark.
+line @1 react.news : Which details can be matched independently? | Give me the account without the flourish.
+line @1 react.news.new : No matching entry has reached me. | Fresh matter for the closed file.
+line @1 react.news.known : I recognise the second edge. | That item has already been compared.
+line @1 react.news.doubt : A prominent badge is a poor substitute for proof. | I'd want two details to coincide without pressure.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A difficult account. Sit while you deliver it. | Keep the necessary silence. I will wait.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a favourable entry clearly earned. | A pleasing outcome in proper form.
+line @1 ask.how : Has your business been conducted to your satisfaction? | What has the day exacted from you?
+line @1 answer.how : My affairs remain within their covers. | I have seen the right edges meet.
+line @1 decline : I decline to connect my name to that undertaking. | My own business takes priority over that request.
+line @1 accept_decline : I have recorded a properly declared refusal. | Then there is no agreement to attest.
+line @1 thank : You have spared a second examination. | I record that courtesy favourably.
+line @1 sympathise : Take the chair away from the waiting eyes. | Some accounts deserve privacy first.
+line @1 reassure : An interval to recover will be allowed. | You can speak afresh after the pause.
+line @1 preclose : I have two papers to reconcile. | This hearing approaches its proper close.
 scene cuts
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Retain the smaller half under cover. | Final comparison before closing the drawer.
 
-dlg resident.hub : Remain on the plain side of the table and give me your business in the order it occurred.
-dlg resident.job [self.job=official self.workplace] : I attend to the direction of business at #self.workplace#. I expect an accountable beginning and a documented end.
-dlg resident.news [world.news] : I can release this account in these terms. #world.news#
-dlg resident.hub [topic.meeting=known] : Your previous appearance is recorded, #topic.player#. State the present matter.
-dlg resident.bye : Retain whatever receipt belongs to you until the business has been completed.
-
+dlg @1 resident.hub : Remain on the plain side of the table and give me your business in the order it occurred.
+dlg @1 resident.job [self.job=official self.workplace] : I attend to the direction of business at #self.workplace#. I expect an accountable beginning and a documented end.
+dlg @1 resident.news [world.news] : I can release this account in these terms. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : Your previous appearance is recorded, #topic.player#. State the present matter.
+dlg @1 resident.bye : Retain whatever receipt belongs to you until the business has been completed.
 graft resident.hub
 choice What do matching cuts prove? -> match_cut
 node match_cut

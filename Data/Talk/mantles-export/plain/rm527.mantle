@@ -1,9 +1,12 @@
+# rm527, the covered riddle (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm527
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_ivar_cinderford
+written_by codex
 title the covered riddle
 fits stage=adult|old
 prefers job=servant
@@ -67,7 +70,6 @@ line @21 thank : That takes considerable weight off my best sleeve.
 line @22 deflect_thanks : The footwork was almost entirely mine to do already.
 line @23 preclose : I ought to be heard somewhere else about now.
 line @24 accept_preclose : I'll attend to the silence after you.
-
 scene mist
 when topic=weather self.likes=misty_dawns
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Courtesy across the width 
 dlg @5 resident.job [self.job=servant self.workplace] : My hall duties take me to #self.workplace# and occasionally persuade a tray to keep its private opinions quiet.
 dlg @6 resident.job : I keep useful objects close and awkward secrets closer.
 dlg @7 resident.bye : A comfortable exit with no need to announce it.
-
 graft resident.hub
 choice What is the covered answer? -> domeriddle
 node domeriddle

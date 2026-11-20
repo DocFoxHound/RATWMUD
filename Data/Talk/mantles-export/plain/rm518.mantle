@@ -1,9 +1,12 @@
+# rm518, the clean square (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm518
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hilde_dripby
+written_by codex
 title the clean square
 fits stage=adult|old
 prefers job=none honesty=sly
@@ -35,43 +38,42 @@ bootdream = a new sole | a dry tongue
 millcloth = a sound strip | the clean scrap
 
 any
-opinion merchants against 1 : A seller quoting whole-cloth money for a square of sound rag had best offer a fine reason.
-opinion houses mixed 0 : A grand sleeve and a threadbare one can each hide a face that deserves its private moment.
-opinion dole for 2 : A dry wrap round a loaf protects the food long after the dole queue has moved.
-opinion road for 1 : I'd see the long walking road mended before the grand short cut gets a second sign.
-opinion watch mixed 0 : A witness need only give the facts a question actually concerns.
-opinion city mixed 0 : Even the best harbour view can be badly let down by the bootsole beneath it.
+opinion @1 merchants against 1 : A seller quoting whole-cloth money for a square of sound rag had best offer a fine reason.
+opinion @1 houses mixed 0 : A grand sleeve and a threadbare one can each hide a face that deserves its private moment.
+opinion @1 dole for 2 : A dry wrap round a loaf protects the food long after the dole queue has moved.
+opinion @1 road for 1 : I'd see the long walking road mended before the grand short cut gets a second sign.
+opinion @1 watch mixed 0 : A witness need only give the facts a question actually concerns.
+opinion @1 city mixed 0 : Even the best harbour view can be badly let down by the bootsole beneath it.
 
 grown
-line greet : Hello. There's a dry inch to stand on. | Come up past the loose rag.
-line greet [pair.band=strangers] : New face. Wipe your feet before judging the floor. | There's a free patch by my folded cloth.
-line greet [here.time=dawn] : First mist gives a plain harbour some manners. | Morning. Still a little white along the water.
-line greet.return : Yes, hello. My left ear's still dry. | I heard that quite clearly across the fold.
-line greet.return [pair.band=friends|family] : A familiar voice won't fray my temper today. | You've found the sound side of my morning.
-line greet.return [here.time=night] : Late. No need to air a whole length of cloth. | Evening. A short quiet word will carry.
-line again.open : Back before the crease has set. | Another visitor to this same clean inch.
-line hail [pair.band=friends] : Take this turning while the mist looks good! | There's a dry view from my side!
-line farewell : Walk till your boots have had their money's worth. | Carry one clean corner home.
-line farewell.return : I'll fold my bit of silence up again. | Go with the sound side toward the wet.
-line react.news : Give me the clean inch of the account. | I can sort the straight part from its fraying edge.
-line react.news.new : First thread of that colour I've seen. | New to my small stock of information.
-line react.news.known : I've handled a strip cut from that account. | Same old crease running down its middle.
-line react.news.doubt : That story's been washed till the useful marks are gone. | Show me the source under that splendid fold.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : A sorrow needn't be spread out for inspection. | I have a clean cloth for you if it's wanted.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. A bright strip in an old grey day. | That's a change worth turning the clean side out for.
-line ask.how : Has today rubbed a sore spot anywhere? | Still some sound walking left in your boots?
-line answer.how : Fair. Dry inside the collar so far. | Short of money, long enough on feet.
-line decline : My spare inch is carrying something I mean to protect. | That would open a fold I'd rather leave closed.
-line accept_decline : Then your reasons can stay inside the fold. | No need to air your private account.
-line preclose : The next street won't walk itself today. | Time to tuck the strip out of the wet.
-line accept_preclose : Go while your boot leather's willing. | Fair enough. Our cloth has a clean edge there.
-line thank : That was a kindness you needn't have spent. Thanks. | You've saved the last sound inch.
-line deflect_thanks : I only turned the clean bit toward you. | It took no more than one turn of cloth.
-line sympathise : Let the sore part stay wrapped today. | I'll keep the staring faces off this corner.
-line reassure : Tomorrow may give the fold a sounder face. | There's one patch still bearing weight under us.
-line ack : Yes. I'd call that cloth fit for use. | There's sound weave in your argument.
-line give.advice : Look inside a boot before blaming the road. | Never unfold a private hurt to amuse a crowd.
-
+line @1 greet : Hello. There's a dry inch to stand on. | Come up past the loose rag.
+line @2 greet [pair.band=strangers] : New face. Wipe your feet before judging the floor. | There's a free patch by my folded cloth.
+line @3 greet [here.time=dawn] : First mist gives a plain harbour some manners. | Morning. Still a little white along the water.
+line @1 greet.return : Yes, hello. My left ear's still dry. | I heard that quite clearly across the fold.
+line @2 greet.return [pair.band=friends|family] : A familiar voice won't fray my temper today. | You've found the sound side of my morning.
+line @3 greet.return [here.time=night] : Late. No need to air a whole length of cloth. | Evening. A short quiet word will carry.
+line @1 again.open : Back before the crease has set. | Another visitor to this same clean inch.
+line @1 hail [pair.band=friends] : Take this turning while the mist looks good! | There's a dry view from my side!
+line @1 farewell : Walk till your boots have had their money's worth. | Carry one clean corner home.
+line @1 farewell.return : I'll fold my bit of silence up again. | Go with the sound side toward the wet.
+line @1 react.news : Give me the clean inch of the account. | I can sort the straight part from its fraying edge.
+line @1 react.news.new : First thread of that colour I've seen. | New to my small stock of information.
+line @1 react.news.known : I've handled a strip cut from that account. | Same old crease running down its middle.
+line @1 react.news.doubt : That story's been washed till the useful marks are gone. | Show me the source under that splendid fold.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : A sorrow needn't be spread out for inspection. | I have a clean cloth for you if it's wanted.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. A bright strip in an old grey day. | That's a change worth turning the clean side out for.
+line @1 ask.how : Has today rubbed a sore spot anywhere? | Still some sound walking left in your boots?
+line @1 answer.how : Fair. Dry inside the collar so far. | Short of money, long enough on feet.
+line @1 decline : My spare inch is carrying something I mean to protect. | That would open a fold I'd rather leave closed.
+line @1 accept_decline : Then your reasons can stay inside the fold. | No need to air your private account.
+line @1 preclose : The next street won't walk itself today. | Time to tuck the strip out of the wet.
+line @1 accept_preclose : Go while your boot leather's willing. | Fair enough. Our cloth has a clean edge there.
+line @1 thank : That was a kindness you needn't have spent. Thanks. | You've saved the last sound inch.
+line @1 deflect_thanks : I only turned the clean bit toward you. | It took no more than one turn of cloth.
+line @1 sympathise : Let the sore part stay wrapped today. | I'll keep the staring faces off this corner.
+line @1 reassure : Tomorrow may give the fold a sounder face. | There's one patch still bearing weight under us.
+line @1 ack : Yes. I'd call that cloth fit for use. | There's sound weave in your argument.
+line @1 give.advice : Look inside a boot before blaming the road. | Never unfold a private hurt to amuse a crowd.
 scene foldcloth
 when topic=work self.job=none self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : One paving stone on a long road can say more about a place than six views fr
 b : What's it say? | Which stone would you choose?
 a : Whether folk have money for repairs, and whether water respects the edge. My soles can read both. | The one just before a doorway. There a street has to account for its effect indoors.
 
-grown
-
 story whiteedge [topic=work|memories]
   : I found a rag with exactly one white corner. I folded it with great care and put it aside for wiping a clean surface.
   : Reached for it later and found four equally grubby faces.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Catch the heat before a good cup loses its manners. | Cold tea sets my teeth to complaining.
 
-dlg resident.hub : I've a clean little patch of the day to spare. Speak your piece.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you know which bit of my cloth is on public view.
-dlg resident.hub [here.time=night] : Dark hides the stains without improving the material a jot.
-dlg resident.hub [pair.disposition=wary|hostile] : My pockets stay folded. You can ask your business from there.
-dlg resident.job [self.job=none self.working=yes] : I sort cloth and look for the sound bit a careless hand would put aside.
-dlg resident.job : Whatever earns a walk in boots with a clean lining interests me.
-dlg resident.bye : Save one dry square against the road's last soggy turning.
-
+dlg @1 resident.hub : I've a clean little patch of the day to spare. Speak your piece.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you know which bit of my cloth is on public view.
+dlg @3 resident.hub [here.time=night] : Dark hides the stains without improving the material a jot.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : My pockets stay folded. You can ask your business from there.
+dlg @1 resident.job [self.job=none self.working=yes] : I sort cloth and look for the sound bit a careless hand would put aside.
+dlg @2 resident.job : Whatever earns a walk in boots with a clean lining interests me.
+dlg @1 resident.bye : Save one dry square against the road's last soggy turning.
 graft resident.hub
 choice What's folded into that strip of cloth? -> inwardrag
 node inwardrag

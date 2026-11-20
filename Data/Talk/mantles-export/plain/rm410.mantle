@@ -1,9 +1,12 @@
+# rm410, the uphill edge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm410
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_jasper_coalcot
+written_by codex
 title the uphill edge
 fits stage=adult|old
 prefers job=carter
@@ -36,35 +39,34 @@ crate = a slatted crate | a short carrying box
 hinge = a worn hinge | a banded hinge
 
 any
-opinion houses against 1 : The high streets need porters as much as the low ones, however seldom the fact comes up at a fine table.
-opinion dole for 2 : A full day's carrying on an empty stomach leaves the strap doing more than its share.
-opinion merchants mixed 1 : Tell me what a bundle weighs before telling me what you might pay to see it shifted.
-opinion sump for 1 : I got my footing there. I can picture those familiar roofs below a high window I could call mine.
-opinion road for 1 : A sound road makes a heavy job honest. A bad one adds work nobody thought to price.
-opinion strangers mixed 1 : I'll carry a strange parcel after inspecting the tie and the way it hangs.
+opinion @1 houses against 1 : The high streets need porters as much as the low ones, however seldom the fact comes up at a fine table.
+opinion @1 dole for 2 : A full day's carrying on an empty stomach leaves the strap doing more than its share.
+opinion @1 merchants mixed 1 : Tell me what a bundle weighs before telling me what you might pay to see it shifted.
+opinion @1 sump for 1 : I got my footing there. I can picture those familiar roofs below a high window I could call mine.
+opinion @1 road for 1 : A sound road makes a heavy job honest. A bad one adds work nobody thought to price.
+opinion @1 strangers mixed 1 : I'll carry a strange parcel after inspecting the tie and the way it hangs.
 
 grown
-line greet : Clear of the load here. Welcome. | My quiet side's free just now.
-line greet.return : I heard that over the buckle. Welcome back in kind.
-line again.open : Back on the same patch before I've shifted much.
-line farewell : Take the easy grip up the next rise. | Don't carry a worry by its sharpest edge.
-line farewell.return : A clean road under your own weight too.
-line react.news : Put the news down slowly where I can judge it. | Tell me how the carrying has changed your tale.
-line react.news.new : That has a fresh-cut edge to it.
-line react.news.known : Same nick as the one I heard before.
-line react.news.doubt : I'd wait to feel how that claim balances.
-line react.news.sorrow [topic.kind=death|loss|assault] : I can take the parcel. Leave the hurting wolf a free paw.
-line react.news.glad [topic.kind=birth|marriage|work] : That's a piece of luck light enough to take uphill.
-line ask.how : Where's today's strap rubbing at you?
-line answer.how : Still carrying my own weight. No faster than I need.
-line sympathise : You can sit against this shoulder without telling me why.
-line reassure : Try the grip without lifting yet. There's time.
-line refuse : I'm promised to another load before the street clears.
-line accept_decline : Fair. One request ought to keep its own weight.
-line preclose : I should get the stone wet for the next errand.
-line accept_preclose : Go while your next turning's still clear to see.
-line ack : I can feel where that sits.
-
+line @1 greet : Clear of the load here. Welcome. | My quiet side's free just now.
+line @1 greet.return : I heard that over the buckle. Welcome back in kind.
+line @1 again.open : Back on the same patch before I've shifted much.
+line @1 farewell : Take the easy grip up the next rise. | Don't carry a worry by its sharpest edge.
+line @1 farewell.return : A clean road under your own weight too.
+line @1 react.news : Put the news down slowly where I can judge it. | Tell me how the carrying has changed your tale.
+line @1 react.news.new : That has a fresh-cut edge to it.
+line @1 react.news.known : Same nick as the one I heard before.
+line @1 react.news.doubt : I'd wait to feel how that claim balances.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I can take the parcel. Leave the hurting wolf a free paw.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's a piece of luck light enough to take uphill.
+line @1 ask.how : Where's today's strap rubbing at you?
+line @1 answer.how : Still carrying my own weight. No faster than I need.
+line @1 sympathise : You can sit against this shoulder without telling me why.
+line @1 reassure : Try the grip without lifting yet. There's time.
+line @1 refuse : I'm promised to another load before the street clears.
+line @1 accept_decline : Fair. One request ought to keep its own weight.
+line @1 preclose : I should get the stone wet for the next errand.
+line @1 accept_preclose : Go while your next turning's still clear to see.
+line @1 ack : I can feel where that sits.
 scene exchange1
 when topic=work self.job=carter
 does tell.self / ask.detail / answer.detail
@@ -124,7 +126,7 @@ a : Hear the job and settle the figure before the first tread. | Then we can bot
 scene exchange9
 when topic=memories
 does tell.self / ask.detail / answer.detail
-a : Food took over the markets and I found a new kind of steady weight. | I started with a worn strap and no plan beyond the next load.
+a : Once I took on food baskets the work had a weight that mattered. | I started with a worn strap and no plan beyond the next load.
 b : What was different? | What about now?
 a : A basket of food is going somewhere wolves are watching for it. | The strap's still plain. The plan runs a little farther up.
 
@@ -232,16 +234,16 @@ when concept=bark self.likes=wrestling
 does aside
 cooldown 8h
 say Low grip and soft knees over rough ground. | A good throw ought to leave room to stand again.
-dlg resident.hub : I'll rest the carrying end of my shoulder while we talk.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you'll know why I keep this little space clear for my strap.
-dlg resident.hub [here.time=night] : A late parcel gets the same care and a quieter word.
-dlg resident.hub [pair.disposition=wary|hostile] : There's room to talk without reaching for a tie or a purse.
-dlg resident.job [self.job=carter] : I porter in the market. I find out how a load hangs before promising to move it.
-dlg resident.job : I work steadily towards a landing higher than my first.
-dlg resident.news [world.news] : The report I carried away was #world.news#.
-dlg resident.gossip [here.gossip=yes] : I'm told #topic.subject# #topic.claim#. I was carrying my own business when it came by.
-dlg resident.bye : I hope your grip stays comfortable right up to your own latch.
 
+dlg @1 resident.hub : I'll rest the carrying end of my shoulder while we talk.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'll know why I keep this little space clear for my strap.
+dlg @3 resident.hub [here.time=night] : A late parcel gets the same care and a quieter word.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's room to talk without reaching for a tie or a purse.
+dlg @1 resident.job [self.job=carter] : I carry for my living. I find out how a load hangs before promising to move it.
+dlg @2 resident.job : I work steadily towards a landing higher than my first.
+dlg @1 resident.news [world.news] : The report I carried away was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I'm told #topic.subject# #topic.claim#. I was carrying my own business when it came by.
+dlg @1 resident.bye : I hope your grip stays comfortable right up to your own latch.
 graft resident.hub
 choice Why keep the stone wet? -> which_edge
 node which_edge

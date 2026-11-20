@@ -1,9 +1,12 @@
+# rm295, the swimmer's floating hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm295
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_dorcas_rainford
+written_by codex
 title the swimmer's floating hood
 fits stage=adult|old
 prefers talk=chatty humour=merry
@@ -17,6 +20,7 @@ topics pastimes +0.6 weather +0.4 travel +0.3 food +0.2
 styles comfort=practical gossip=frank refuse=plain tease=merry
 marks oath saying
 persona #self.first# turns an oilcloth hood inside out to float a pebble and chatters cheerfully until a question deserves a straight answer.
+
 words
 oath! = Float my ears | Stiffen my hoodstring
 saying! = Keep the bright patch showing | A splash wants a witness
@@ -33,35 +37,33 @@ springbit = a little spring in the weave | a yielding fold
 mudcup = a deep heel print | a cup of dark mud
 
 grown
-
-opinion houses against 2 : I'd like the Houses to count every head home from their wharf work before counting the day's coin.
-opinion strangers for 1 : Even a stranger's head is a head I'll keep in view when there's water about.
-opinion festivals for 1 : A good chorus lets me join in without anyone hearing exactly which note I missed.
-opinion watch mixed 1 : A uniform on a quay ought to be looking out towards the water as often as towards a purse.
-opinion dole for 2 : Nobody needs to beat the tide on a belly filled only with pride.
-opinion sump for 1 : I like a place where somebody'll laugh at a wet hood and still lend a dry bit of straw.
-line greet : There's room beneath this ridiculous brim for a little talk.
-line greet.return : I heard you. The hood hasn't folded over both ears yet.
-line greet [here.time=dawn] : Morning. I'll wake up when the talking gets interesting.
-line farewell : Keep something bright where a friend can spot you.
-line farewell.return : I'll wave the hood if I go past.
-line again.open : Here comes the second splash of a good conversation.
-line react.news : Set that floating where we can look properly.
-line react.news.known : That's already been bobbing about my ears.
-line react.news.new : Something new over the brim, for once.
-line react.news.doubt : I'd test whether that floats before asking anyone to sail in it.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That needs a good cheer with all the hoods thrown up.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can stop making noise and stay close for that.
-line answer.how : One ear folded flat but otherwise remarkably upright.
-line ask.how : Keeping your chin clear of the day's splashes?
-line decline : That sounds grand until somebody has to go in after the mess.
-line thank : You kept the bright bit where I could find it.
-line deflect_thanks : I'm fond of getting everybody home with the same number of toes.
-line sympathise : I'll keep the noise down till your own words come clear.
-line reassure : We can choose the shallow bit and start from there.
-line ack : I can see that above the ripples now.
-line offer : Pass me the dripping end. I'm already dressed for it.
-
+opinion @1 houses against 2 : I'd like the Houses to count every head home from their wharf work before counting the day's coin.
+opinion @1 strangers for 1 : Even a stranger's head is a head I'll keep in view when there's water about.
+opinion @1 festivals for 1 : A good chorus lets me join in without anyone hearing exactly which note I missed.
+opinion @1 watch mixed 1 : A uniform on a quay ought to be looking out towards the water as often as towards a purse.
+opinion @1 dole for 2 : Nobody needs to beat the tide on a belly filled only with pride.
+opinion @1 sump for 1 : I like a place where somebody'll laugh at a wet hood and still lend a dry bit of straw.
+line @1 greet : There's room beneath this ridiculous brim for a little talk.
+line @1 greet.return : I heard you. The hood hasn't folded over both ears yet.
+line @2 greet [here.time=dawn] : Morning. I'll wake up when the talking gets interesting.
+line @1 farewell : Keep something bright where a friend can spot you.
+line @1 farewell.return : I'll wave the hood if I go past.
+line @1 again.open : Here comes the second splash of a good conversation.
+line @1 react.news : Set that floating where we can look properly.
+line @1 react.news.known : That's already been bobbing about my ears.
+line @1 react.news.new : Something new over the brim, for once.
+line @1 react.news.doubt : I'd test whether that floats before asking anyone to sail in it.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That needs a good cheer with all the hoods thrown up.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can stop making noise and stay close for that.
+line @1 answer.how : One ear folded flat but otherwise remarkably upright.
+line @1 ask.how : Keeping your chin clear of the day's splashes?
+line @1 decline : That sounds grand until somebody has to go in after the mess.
+line @1 thank : You kept the bright bit where I could find it.
+line @1 deflect_thanks : I'm fond of getting everybody home with the same number of toes.
+line @1 sympathise : I'll keep the noise down till your own words come clear.
+line @1 reassure : We can choose the shallow bit and start from there.
+line @1 ack : I can see that above the ripples now.
+line @1 offer : Pass me the dripping end. I'm already dressed for it.
 scene pastimes_1
 when topic=pastimes self.likes=swimming
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Bright binding out before the day goes grey. | Last thing to vanish should be the swimmer's mark.
-dlg resident.hub : Any subject you like, provided you're prepared for me to have an opinion.
-dlg resident.job [self.job=laborer] : At #self.workplace# there's usually something that needs a steady pair of hands and an eye left open.
-dlg resident.news [world.news] : This washed up quite plainly. #world.news#.
-dlg resident.gossip [here.gossip=yes] : An account going round says #topic.subject# #topic.claim#. I wasn't there holding a lantern.
-dlg resident.hub [pair.disposition=wary|hostile] : I can be perfectly serious while dressed like a floating tent.
-dlg resident.bye : Come home with your ears in sight.
 
+dlg @1 resident.hub : Any subject you like, provided you're prepared for me to have an opinion.
+dlg @1 resident.job [self.job=laborer] : At #self.workplace# there's usually something that needs a steady pair of hands and an eye left open.
+dlg @1 resident.news [world.news] : This washed up quite plainly. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An account going round says #topic.subject# #topic.claim#. I wasn't there holding a lantern.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : I can be perfectly serious while dressed like a floating tent.
+dlg @1 resident.bye : Come home with your ears in sight.
 graft resident.hub
 choice Will your hood take passengers? -> hood_passage
 node hood_passage

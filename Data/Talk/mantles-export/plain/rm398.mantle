@@ -1,9 +1,12 @@
+# rm398, the stormless shelf (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm398
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_vesper_greenholt
+written_by codex
 title the stormless shelf
 fits stage=adult|old
 prefers job=woodcutter
@@ -36,35 +39,34 @@ bundle = a snug armload | a balanced bundle
 rainnoise = the first drumming | the roof chatter
 
 any
-opinion strangers for 2 : I know the price of an arrival carrying nothing. A board to sit on buys a lot of courage for the following day.
-opinion road for 1 : A road brought me within reach of a life I could put together with both paws.
-opinion dole for 2 : There was a time I'd have called one bowl a year's worth of good fortune.
-opinion houses mixed 1 : I'd sooner inspect a plain shelf built square than a whole fine roof in somebody's name.
-opinion merchants mixed 1 : Let me see the wood, name the charge, and give me time to judge the two together.
-opinion sump for 1 : The little rooms people make comfortable tell you more about a city than the view above its roofs.
+opinion @1 strangers for 2 : I know the price of an arrival carrying nothing. A board to sit on buys a lot of courage for the following day.
+opinion @1 road for 1 : A road brought me within reach of a life I could put together with both paws.
+opinion @1 dole for 2 : There was a time I'd have called one bowl a year's worth of good fortune.
+opinion @1 houses mixed 1 : I'd sooner inspect a plain shelf built square than a whole fine roof in somebody's name.
+opinion @1 merchants mixed 1 : Let me see the wood, name the charge, and give me time to judge the two together.
+opinion @1 sump for 1 : The little rooms people make comfortable tell you more about a city than the view above its roofs.
 
 grown
-line greet : Find a dry spot on the board and sit. | You're welcome beside my working coat.
-line greet.return : That greeting has a proper warm place here.
-line again.open : Back on the same plank before it cooled.
-line farewell : Get where the roof suits the weather. | Carry one good bit of this hour away.
-line farewell.return : A level floor and a kind voice at your next stop.
-line react.news : Tell me while the wood's settled. | I'll stay steady for the whole account.
-line react.news.new : First chip cut from that news for me.
-line react.news.known : I remember the grain in that telling.
-line react.news.doubt : I would look again before putting a weight on it.
-line react.news.sorrow [topic.kind=death|loss|assault] : A wolf in that sort of hurt deserves company through the long hours.
-line react.news.glad [topic.kind=birth|marriage|work] : That's a bright window opened on an ordinary day.
-line ask.how : How has your own roof held today?
-line answer.how : Sleep's a bit scant. Still enough shoulder for a fair turn.
-line sympathise : Here's a seat that doesn't ask you to explain yourself.
-line reassure : You can lay the first board and leave the rest till morning.
-line refuse : My next bit of strength is promised to another job.
-line accept_decline : We'll let that rest in its own quiet corner.
-line preclose : Best be off before my homeward strip of light goes.
-line accept_preclose : Get to your own warm room while it still feels near.
-line ack : I hear just where the grain changes.
-
+line @1 greet : Find a dry spot on the board and sit. | You're welcome beside my working coat.
+line @1 greet.return : That greeting has a proper warm place here.
+line @1 again.open : Back on the same plank before it cooled.
+line @1 farewell : Get where the roof suits the weather. | Carry one good bit of this hour away.
+line @1 farewell.return : A level floor and a kind voice at your next stop.
+line @1 react.news : Tell me while the wood's settled. | I'll stay steady for the whole account.
+line @1 react.news.new : First chip cut from that news for me.
+line @1 react.news.known : I remember the grain in that telling.
+line @1 react.news.doubt : I would look again before putting a weight on it.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A wolf in that sort of hurt deserves company through the long hours.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's a bright window opened on an ordinary day.
+line @1 ask.how : How has your own roof held today?
+line @1 answer.how : Sleep's a bit scant. Still enough shoulder for a fair turn.
+line @1 sympathise : Here's a seat that doesn't ask you to explain yourself.
+line @1 reassure : You can lay the first board and leave the rest till morning.
+line @1 refuse : My next bit of strength is promised to another job.
+line @1 accept_decline : We'll let that rest in its own quiet corner.
+line @1 preclose : Best be off before my homeward strip of light goes.
+line @1 accept_preclose : Get to your own warm room while it still feels near.
+line @1 ack : I hear just where the grain changes.
 scene exchange1
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -167,8 +169,8 @@ scene exchange15
 when topic=dreams
 does tell.self / ask.detail / answer.detail
 a : I'd like the first wolf coming up that road empty to see a light. | I want one fine calm night before the weather breaks.
-b : What can you offer? | Would a calm night suit you?
-a : A board, a dry cloth, something warming while the feet rest. | Lie perfectly still and enjoy the untidiness of the shelf.
+b : What can you offer? | And what then?
+a : A board, a dry cloth, something warming while the feet rest. | Lie still, shutter wide, and listen to nothing at all.
 
 scene exchange16
 when topic=health
@@ -232,16 +234,16 @@ when concept=bark self.likes=digging
 does aside
 cooldown 8h
 say One good spadeful and a neat place for the next. | Roots still show the way their rain went.
-dlg resident.hub : There's a sound seat here, built to have company on it.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you're as welcome as warm tea when the day's cutting is over.
-dlg resident.hub [here.time=night] : A late visitor doesn't trouble me. I have practice with wakeful hours.
-dlg resident.hub [pair.disposition=wary|hostile] : We can speak civilly from either end of a level board.
-dlg resident.job [self.job=woodcutter] : I cut coppice wood. I like finding a good use even for the little forks.
-dlg resident.job : My work buys me the right to come home and hang things where I choose.
-dlg resident.news [world.news] : The bit of news that came in from the road was #world.news#.
-dlg resident.gossip [here.gossip=yes] : Talk runs that #topic.subject# #topic.claim#. It hasn't had a fair test of its joints.
-dlg resident.bye : A warm board beside a sound roof when you next rest.
 
+dlg @1 resident.hub : There's a sound seat here, built to have company on it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're as welcome as warm tea when the day's cutting is over.
+dlg @3 resident.hub [here.time=night] : A late visitor doesn't trouble me. I have practice with wakeful hours.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can speak civilly from either end of a level board.
+dlg @1 resident.job [self.job=woodcutter] : I cut coppice wood. I like finding a good use even for the little forks.
+dlg @2 resident.job : My work buys me the right to come home and hang things where I choose.
+dlg @1 resident.news [world.news] : The bit of news that came in from the road was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Talk runs that #topic.subject# #topic.claim#. It hasn't had a fair test of its joints.
+dlg @1 resident.bye : A warm board beside a sound roof when you next rest.
 graft resident.hub
 choice Why sort a shelf when a storm's coming? -> night_shelf
 node night_shelf

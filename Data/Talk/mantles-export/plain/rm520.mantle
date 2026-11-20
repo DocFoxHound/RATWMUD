@@ -1,9 +1,12 @@
+# rm520, the garden account (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm520
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hjalte_sootby
+written_by codex
 title the garden account
 fits stage=adult|old
 prefers job=laborer
@@ -33,41 +36,40 @@ seaheap = a dry berth | my far-off bunk
 coinbed = my little hiding place | the shallow stone pocket
 
 any
-opinion dole for 2 : If there's soup to spare it ought to reach a bowl before anybody counts what the hungry wolf owes.
-opinion houses against 2 : A mark on a plank gets more respect than the sore back that fetched it. I've had cause to notice that.
-opinion merchants against 2 : One price for the timber and another for waiting for it. The timber never got any longer.
-opinion sump for 1 : A neighbour can come to a doorway here with nothing and leave with a bit of supper in a folded rag.
-opinion times against 2 : My cheapest meal still takes a whole morning of shoulder work to pay for.
-opinion watch against 1 : I've seen too much time go into asking why a tired wolf has stopped to admire the stone he's standing on.
+opinion @1 dole for 2 : If there's soup to spare it ought to reach a bowl before anybody counts what the hungry wolf owes.
+opinion @1 houses against 2 : A mark on a plank gets more respect than the sore back that fetched it. I've had cause to notice that.
+opinion @1 merchants against 2 : One price for the timber and another for waiting for it. The timber never got any longer.
+opinion @1 sump for 1 : A neighbour can come to a doorway here with nothing and leave with a bit of supper in a folded rag.
+opinion @1 times against 2 : My cheapest meal still takes a whole morning of shoulder work to pay for.
+opinion @1 watch against 1 : I've seen too much time go into asking why a tired wolf has stopped to admire the stone he's standing on.
 
 grown
-line greet : There's a strip for standing beside my row.
-line greet [pair.band=strangers] : Mind that red chip. It's standing there on purpose.
-line greet [here.time=dawn] : Morning. The frost's written on the stone again.
-line greet [here.time=dusk|night] : Sit clear of the dug earth and take the last light.
-line greet [self.working=yes] : I'm getting the weight down. Then you can have my ear.
-line again.open : Back on this row with me.
-line kin.open [pair.kin!=no] : Family can take the broad garden stone.
-line greet.return : Your call came clear across my little plot.
-line greet.return [pair.band=friends|family] : Your voice is known here without any reckoning.
-line farewell : Leave my red stone on the surface.
-line farewell.return : I'll close this furrow up before dark.
-line react.news : Which bit would stand up to being weighed?
-line react.news.new : I'll need another mark to remember that.
-line react.news.known : That entry's been made once already.
-line react.news.doubt : Did the account come straight from someone on the load?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A pot can go quietly to a grieving household.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth smoothing the soil over a good day's work.
-line answer.how : Tired in an exact number of places.
-line ask.how : Have you got your full day's due?
-line sympathise : Some aches won't come off with the yard dirt.
-line reassure : Set down what's heavy. I'll give it room.
-line decline : I'd have to owe my own supper hour twice to take that on.
-line accept_decline : Then that request can stay out of our reckoning.
-line thank : A full measure of help. I'll remember.
-line preclose : I've still one small hole to fill.
-line ack : Paid fair.
-
+line @1 greet : There's a strip for standing beside my row.
+line @2 greet [pair.band=strangers] : Mind that red chip. It's standing there on purpose.
+line @3 greet [here.time=dawn] : Morning. The frost's written on the stone again.
+line @4 greet [here.time=dusk|night] : Sit clear of the dug earth and take the last light.
+line @5 greet [self.working=yes] : I'm getting the weight down. Then you can have my ear.
+line @1 again.open : Back on this row with me.
+line @1 kin.open [pair.kin!=no] : Family can take the broad garden stone.
+line @1 greet.return : Your call came clear across my little plot.
+line @2 greet.return [pair.band=friends|family] : Your voice is known here without any reckoning.
+line @1 farewell : Leave my red stone on the surface.
+line @1 farewell.return : I'll close this furrow up before dark.
+line @1 react.news : Which bit would stand up to being weighed?
+line @1 react.news.new : I'll need another mark to remember that.
+line @1 react.news.known : That entry's been made once already.
+line @1 react.news.doubt : Did the account come straight from someone on the load?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A pot can go quietly to a grieving household.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth smoothing the soil over a good day's work.
+line @1 answer.how : Tired in an exact number of places.
+line @1 ask.how : Have you got your full day's due?
+line @1 sympathise : Some aches won't come off with the yard dirt.
+line @1 reassure : Set down what's heavy. I'll give it room.
+line @1 decline : I'd have to owe my own supper hour twice to take that on.
+line @1 accept_decline : Then that request can stay out of our reckoning.
+line @1 thank : A full measure of help. I'll remember.
+line @1 preclose : I've still one small hole to fill.
+line @1 ack : Paid fair.
 scene pebble
 when topic=land
 does tell.self / ask.detail / answer.detail
@@ -228,15 +230,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Short iron flat on its side. | Leave a red chip showing for morning.
-dlg resident.hub : My row's clear and my back could use a minute standing straight.
-dlg resident.hub [topic.meeting=known] : You've seen my marker stones before, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Leave the reckoning on my side until I've heard yours.
-dlg resident.hub [here.time=night] : The white stones show faintly from where you're standing.
-dlg resident.job [self.job=laborer] : I carry what the yard needs shifted at #self.workplace#. I've learned to give each plank its length of room.
-dlg resident.job : I'll take a sound day's load for a sum that doesn't change on the way to my pocket.
-dlg resident.news [world.news] : Here's a little piece with the weight still on it. #world.news#.
-dlg resident.bye : Stay on the firm slip beside the furrows.
 
+dlg @1 resident.hub : My row's clear and my back could use a minute standing straight.
+dlg @2 resident.hub [topic.meeting=known] : You've seen my marker stones before, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Leave the reckoning on my side until I've heard yours.
+dlg @4 resident.hub [here.time=night] : The white stones show faintly from where you're standing.
+dlg @1 resident.job [self.job=laborer] : I carry what the yard needs shifted at #self.workplace#. I've learned to give each plank its length of room.
+dlg @2 resident.job : I'll take a sound day's load for a sum that doesn't change on the way to my pocket.
+dlg @1 resident.news [world.news] : Here's a little piece with the weight still on it. #world.news#.
+dlg @1 resident.bye : Stay on the firm slip beside the furrows.
 graft @buriedcoin resident.hub
 choice What grows from a buried pebble? -> buriedcoin
 node buriedcoin

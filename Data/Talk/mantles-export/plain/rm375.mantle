@@ -1,14 +1,17 @@
+# rm375, the backlit hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm375
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_egil_brineham
+written_by codex
 title the backlit hood
 fits stage=adult|old
 prefers role=merchant job=smith
 traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
-quirk holds_an_oilcloth_hood_before_the_light_to_count_the_pinholes
+quirk holds_an_oilcloth_hood_to_the_light_to_count_pinholes
 likes mutton_stew dice sharp_knife first_warm_day
 dislikes wet_floors smoke
 fears a_pinhole_over_white_steel a_lock_without_a_next_key
@@ -83,7 +86,6 @@ line @28 farewell [here.weather=rain] : Hood down over the back seam. | Find a d
 line @29 greet [pair.band=friends] : You know the dry line by now. | Good to see the right boots at the counter.
 line @30 answer.how [self.working=yes] : Metal hot. My grip's fine. | Looking after the end left near me.
 line @31 preclose [here.time=dusk] : Only a sliver of checking light left. | I'll take my last look by the door.
-
 scene pinlight
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -375,7 +377,6 @@ dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, the bo
 dlg @13 shop.prices : Ask the price while the edge is in front of you. #shop_offer#
 dlg @14 shop.bye : Keep what you've bought out of standing water.
 dlg @15 resident.hub [here.weather=rain] : Set the wet parcel beyond the dry piece, if it's a parcel you're bringing.
-
 graft resident.hub
 choice Why hold the hood up to the light? -> dark_pin
 node dark_pin

@@ -1,9 +1,12 @@
+# rm439, the drying-line clerk (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm439
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_soren_kelpstack
+written_by codex
 title the drying-line clerk
 fits stage=adult|old
 prefers honesty=frank job=scholar
@@ -34,45 +37,44 @@ breadstone = a very firm crust | a dry chunk of loaf
 sillrag = my small drying cloth | an old strip of linen
 
 any
-opinion city for 1 : Anybody may observe Ridgemere's rain. The city is fairly democratic in its choice of observers.
-opinion dole for 1 : A bowl issued now does more for a hungry body than an estimate issued tomorrow.
-opinion road mixed 0 : I rate a road by whether the letter arrives fit to read.
-opinion merchants mixed 0 : I'll defer to a merchant about the goods. I can add the figures without further assistance.
-opinion houses mixed 0 : A House with a handsome heading still has to fit the business onto the page.
-opinion festivals mixed 0 : The parade makes a superb procession. Its applications for space make a longer one.
-opinion strangers for 1 : Anybody who knows which bit of path dries quickest is a welcome acquaintance on a wet day.
+opinion @1 city for 1 : Anybody may observe Ridgemere's rain. The city is fairly democratic in its choice of observers.
+opinion @1 dole for 1 : A bowl issued now does more for a hungry body than an estimate issued tomorrow.
+opinion @1 road mixed 0 : I rate a road by whether the letter arrives fit to read.
+opinion @1 merchants mixed 0 : I'll defer to a merchant about the goods. I can add the figures without further assistance.
+opinion @1 houses mixed 0 : A House with a handsome heading still has to fit the business onto the page.
+opinion @1 festivals mixed 0 : The parade makes a superb procession. Its applications for space make a longer one.
+opinion @1 strangers for 1 : Anybody who knows which bit of path dries quickest is a welcome acquaintance on a wet day.
 
 grown
-line greet : There's a dry margin here quite wide enough for two.
-line greet [pair.band=strangers] : A first visit. I'll leave the name column open.
-line greet [here.time=dawn] : Morning, still subject to the weather's approval.
-line greet [here.time=dusk|night] : Evening. The light gives me a legible outline of you.
-line greet.return : Yes, welcome. I've dated the interruption favourably.
-line greet.return [pair.band=friends|family] : Glad you're the one blotting out my view.
-line greet.return [self.working=yes] : I can finish this stroke while you begin.
-line greet.return [here.time=dusk|night] : At this hour the street's quiet enough to take dictation.
-line kin.open [pair.kin!=no] : Family business can use ordinary paper.
-line again.open : I have carried the unfinished portion over.
-line hail [pair.band=friends] : Here, beyond reach of that dripping sill!
-line farewell : Go before the road has a change of opinion.
-line farewell.return : And arrive with your particulars still legible.
-line react.news : Give the bare account a short space to dry.
-line react.news.new : The original has only now crossed my desk.
-line react.news.known : That appeared on an earlier page of the day.
-line react.news.doubt : One of those figures seems to be doing unpaid overtime.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put the paper aside. That's a real hurt.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd happily clear a whole line for such a notice.
-line ask.how : Has the day submitted a fair account of itself?
-line answer.how : No worse than the estimate allowed for.
-line thank : You removed a genuine difficulty. I value the distinction.
-line deflect_thanks : No difficulty left worth putting in a note.
-line sympathise : I can take the small errands off your list for a moment.
-line reassure : It won't all need an answer on the present page.
-line decline : I have another undertaking with a date rather inconveniently attached.
-line accept_decline : A definite refusal is particularly easy to file.
-line preclose : I'd best use the dry bit of afternoon before it expires.
-line accept_preclose : May your walk come in under the estimate.
-
+line @1 greet : There's a dry margin here quite wide enough for two.
+line @2 greet [pair.band=strangers] : A first visit. I'll leave the name column open.
+line @3 greet [here.time=dawn] : Morning, still subject to the weather's approval.
+line @4 greet [here.time=dusk|night] : Evening. The light gives me a legible outline of you.
+line @1 greet.return : Yes, welcome. I've dated the interruption favourably.
+line @2 greet.return [pair.band=friends|family] : Glad you're the one blotting out my view.
+line @3 greet.return [self.working=yes] : I can finish this stroke while you begin.
+line @4 greet.return [here.time=dusk|night] : At this hour the street's quiet enough to take dictation.
+line @1 kin.open [pair.kin!=no] : Family business can use ordinary paper.
+line @1 again.open : I have carried the unfinished portion over.
+line @1 hail [pair.band=friends] : Here, beyond reach of that dripping sill!
+line @1 farewell : Go before the road has a change of opinion.
+line @1 farewell.return : And arrive with your particulars still legible.
+line @1 react.news : Give the bare account a short space to dry.
+line @1 react.news.new : The original has only now crossed my desk.
+line @1 react.news.known : That appeared on an earlier page of the day.
+line @1 react.news.doubt : One of those figures seems to be doing unpaid overtime.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put the paper aside. That's a real hurt.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd happily clear a whole line for such a notice.
+line @1 ask.how : Has the day submitted a fair account of itself?
+line @1 answer.how : No worse than the estimate allowed for.
+line @1 thank : You removed a genuine difficulty. I value the distinction.
+line @1 deflect_thanks : No difficulty left worth putting in a note.
+line @1 sympathise : I can take the small errands off your list for a moment.
+line @1 reassure : It won't all need an answer on the present page.
+line @1 decline : I have another undertaking with a date rather inconveniently attached.
+line @1 accept_decline : A definite refusal is particularly easy to file.
+line @1 preclose : I'd best use the dry bit of afternoon before it expires.
+line @1 accept_preclose : May your walk come in under the estimate.
 scene dry_marker
 when topic=weather|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say One useless scrap has been promoted to a bookmark.
 
-dlg resident.hub : State your case in whatever order the rain has left it.
-dlg resident.hub [topic.meeting=known] : #topic.player#. I remember a previous entry under that face.
-dlg resident.hub [here.time=night] : My ears can manage a question the lamp can no longer read.
-dlg resident.hub [pair.disposition=hostile|wary] : Keep your present distance and your account pleasantly brief.
-dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I make uncertain matters fit legible rows.
-dlg resident.job : I prefer work whose unfinished portions I can identify without a search party.
-dlg resident.news [world.news] : My note reads #world.news#, filed under #world.news_from#.
-dlg resident.gossip [here.gossip=yes] : An unsigned report runs like this: #topic.subject# #topic.claim#. Read the lack of a signature too.
-dlg resident.bye : Choose a road that charges less for water.
-
+dlg @1 resident.hub : State your case in whatever order the rain has left it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I remember a previous entry under that face.
+dlg @3 resident.hub [here.time=night] : My ears can manage a question the lamp can no longer read.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Keep your present distance and your account pleasantly brief.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I make uncertain matters fit legible rows.
+dlg @2 resident.job : I prefer work whose unfinished portions I can identify without a search party.
+dlg @1 resident.news [world.news] : My note reads #world.news#, filed under #world.news_from#.
+dlg @1 resident.gossip [here.gossip=yes] : An unsigned report runs like this: #topic.subject# #topic.claim#. Read the lack of a signature too.
+dlg @1 resident.bye : Choose a road that charges less for water.
 graft resident.hub
 choice Can a sill really settle a question? -> sill_question
 node sill_question

@@ -1,9 +1,12 @@
+# rm292, the stair in the keel (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm292
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_mab_fogham
+written_by codex
 title the stair in the keel
 fits stage=adult|old
 prefers quarter=sump
@@ -36,35 +39,34 @@ scrap = a sound scrap | a piece without a split
 panel = a small inset panel | a hollow in the grain
 
 any
-opinion houses against 2 : I'm careful which side of a House gate I spend my better ideas on.
-opinion sump mixed 1 : I know exactly how to shut salt wind out down here. I'd like to learn a different window.
-opinion merchants against 2 : Pay for a yard of sound wood and the knot travels free.
-opinion dole for 2 : Nobody carves a future with a kitchen knife kept busy scraping an empty pot.
-opinion strangers against 1 : My first answer to a stranger is usually the width of one finger. There's time to open farther.
-opinion times against 2 [world.times=lean|hard] : A lean season shaves the same side of my savings twice.
+opinion @1 houses against 2 : I'm careful which side of a House gate I spend my better ideas on.
+opinion @1 sump mixed 1 [self.quarter=sump] : I know exactly how to shut salt wind out down here. I'd like to learn a different window.
+opinion @1 merchants against 2 : Pay for a yard of sound wood and the knot travels free.
+opinion @1 dole for 2 : Nobody carves a future with a kitchen knife kept busy scraping an empty pot.
+opinion @1 strangers against 1 : My first answer to a stranger is usually the width of one finger. There's time to open farther.
+opinion @1 times against 2 [world.times=lean|hard] : A lean season shaves the same side of my savings twice.
 
 grown
-line greet : My tune drops a note to make room for company. | Stand in the lee if you like.
-line greet.return : I heard the welcome under my humming. | And a quiet greeting from this corner.
-line again.open : My shutter opens again already.
-line farewell : Take a road the wind hasn't salted. | Keep some dry wood for your own fire.
-line farewell.return : Good wishes back, under my breath. | I'll send your farewell along quietly.
-line react.news : I'll hear the first grain of it before I judge. | Take it slowly across the knotty part.
-line react.news.new : No grooves worn in that account yet.
-line react.news.known : I've heard that one hum against the boards before.
-line react.news.doubt : A little too polished for fresh news.
-line react.news.sorrow [topic.kind=death|loss|assault] : Leave some privacy around the hurt.
-line react.news.glad [topic.kind=birth|marriage|work] : I'd open my little shutter to let that in.
-line ask.how : Much salt coming in under your door?
-line answer.how : Still making my own small openings.
-line sympathise : There's a place out of everybody's sight just here.
-line reassure : Take off a sliver. See how the next layer looks.
-line refuse : There's a job only my own hands can finish first.
-line accept_decline : Keep your good time for your own use.
-line preclose : I'd better be moving while the grain shows clear.
-line accept_preclose : Go on. My spare questions can keep.
-line ack : I hear where your meaning runs.
-
+line @1 greet : My tune drops a note to make room for company. | Stand in the lee if you like.
+line @1 greet.return : I heard the welcome under my humming. | And a quiet greeting from this corner.
+line @1 again.open : My shutter opens again already.
+line @1 farewell : Take a road the wind hasn't salted. | Keep some dry wood for your own fire.
+line @1 farewell.return : Good wishes back, under my breath. | I'll send your farewell along quietly.
+line @1 react.news : I'll hear the first grain of it before I judge. | Take it slowly across the knotty part.
+line @1 react.news.new : No grooves worn in that account yet.
+line @1 react.news.known : I've heard that one hum against the boards before.
+line @1 react.news.doubt : A little too polished for fresh news.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Leave some privacy around the hurt.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd open my little shutter to let that in.
+line @1 ask.how : Much salt coming in under your door?
+line @1 answer.how : Still making my own small openings.
+line @1 sympathise : There's a place out of everybody's sight just here.
+line @1 reassure : Take off a sliver. See how the next layer looks.
+line @1 refuse : There's a job only my own hands can finish first.
+line @1 accept_decline : Keep your good time for your own use.
+line @1 preclose : I'd better be moving while the grain shows clear.
+line @1 accept_preclose : Go on. My spare questions can keep.
+line @1 ack : I hear where your meaning runs.
 scene exchange1
 when topic=work self.job=none self.workplace self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say The window cut wants shelter now. | Damp raises the rough side of my board.
-dlg resident.hub : I can turn the carving face down while we talk.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've heard those feet approach my bench before.
-dlg resident.hub [here.time=night] : This late my hands rest and my ears may work.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep a little way from the bench. I'm listening.
-dlg resident.job [self.job=none self.working=yes self.trade_words] : #self.trade_words.capitalize#. I've a quiet way of using the scraps.
-dlg resident.job : I like work with some part of a day left over to call my own.
-dlg resident.news [world.news] : I heard this clear of the wind. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Here's the grain of it. #topic.subject# #topic.claim#. Guesswork runs through the remainder.
-dlg resident.bye : Find a sheltered turn homeward.
 
+dlg @1 resident.hub : I can turn the carving face down while we talk.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've heard those feet approach my bench before.
+dlg @3 resident.hub [here.time=night] : This late my hands rest and my ears may work.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep a little way from the bench. I'm listening.
+dlg @1 resident.job [self.job=none self.working=yes self.trade_words] : #self.trade_words.capitalize#. I've a quiet way of using the scraps.
+dlg @2 resident.job : I like work with some part of a day left over to call my own.
+dlg @1 resident.news [world.news] : I heard this clear of the wind. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Here's the grain of it. #topic.subject# #topic.claim#. Guesswork runs through the remainder.
+dlg @1 resident.bye : Find a sheltered turn homeward.
 graft resident.hub
 choice Why carve just the window? -> high_room
 node high_room

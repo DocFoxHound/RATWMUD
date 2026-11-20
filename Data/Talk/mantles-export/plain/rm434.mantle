@@ -1,9 +1,12 @@
+# rm434, the unmarked draughtsmen (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm434
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_lavinia_plankwick
+written_by codex
 title the unmarked draughtsmen
 fits stage=adult|old
 prefers job=servant talk=chatty
@@ -41,56 +44,55 @@ wax = a little seal | a thumb of wax
 stripe = a checked strip | the chequered edge
 
 any
-opinion houses mixed 0 : A House that wants to be known for courtesy must manage it even when the visitor has brought no flattering introduction.
-opinion church for 1 : The welcome I remember best from a quiet chapel belongs to a bench, a dry corner and nobody asking for credentials.
-opinion merchants mixed 0 : An explanation before the bill gives both buyer and seller a more agreeable evening.
-opinion road for 1 : It helps a host to remember the road the guest has just walked. A fine reception may begin simply with a place for wet boots.
-opinion newcomers for 2 : A new arrival may have no idea which doorway is intended. We in the hall ought to have considered that in advance.
-opinion festivals for 1 : A feast gives me scope to dispense a great deal of orderly pleasure and very little instruction once the guests are in.
-opinion dole for 1 : Setting out portions in the right order makes the last arrival no less deserving than the first.
-opinion city for 1 : An entire city has learnt to live in common on a hillside. That makes rearranging one hall seem a comfortably modest task.
-opinion watch mixed 0 : I would rather report the direction a visitor took than attach an imagined motive to the choice of doors.
-opinion times mixed 0 : Uncertain times are a sound reason to practise what can be made certain, especially where a tired arrival might sit.
+opinion @1 houses mixed 0 : A House that wants to be known for courtesy must manage it even when the visitor has brought no flattering introduction.
+opinion @1 church for 1 : The welcome I remember best from a quiet chapel belongs to a bench, a dry corner and nobody asking for credentials.
+opinion @1 merchants mixed 0 : An explanation before the bill gives both buyer and seller a more agreeable evening.
+opinion @1 road for 1 : It helps a host to remember the road the guest has just walked. A fine reception may begin simply with a place for wet boots.
+opinion @1 newcomers for 2 : A new arrival may have no idea which doorway is intended. We in the hall ought to have considered that in advance.
+opinion @1 festivals for 1 : A feast gives me scope to dispense a great deal of orderly pleasure and very little instruction once the guests are in.
+opinion @1 dole for 1 : Setting out portions in the right order makes the last arrival no less deserving than the first.
+opinion @1 city for 1 : An entire city has learnt to live in common on a hillside. That makes rearranging one hall seem a comfortably modest task.
+opinion @1 watch mixed 0 : I would rather report the direction a visitor took than attach an imagined motive to the choice of doors.
+opinion @1 times mixed 0 : Uncertain times are a sound reason to practise what can be made certain, especially where a tired arrival might sit.
 
 grown
-line greet : Welcome. I can fit you in comfortably without upsetting the board. | Hello. We've ample room on the open side of this conversation.
-line greet [pair.band=strangers] : A new arrival, always rather interesting to a student of arrangements. | Welcome. We can attend to the particulars after you're comfortable.
-line greet [here.time=dawn] : Morning. The pieces are all at their starting places. | An early arrival generally has an excellent choice of chairs.
-line greet.return : Yes, your greeting reached me. The spare piece has moved and can give you my ears. | Hello returned with proper attention now.
-line greet.return [pair.band=friends|family] : A voice I can place without a seating chart. | You're the kind of arrival that simplifies arrangements.
-line greet.return [here.time=night] : Late welcome. Let's keep the light by the step for anybody following. | The night has left a quiet place between engagements.
-line again.open : You came by a slightly different square this time. | The board appears to have brought us together twice.
-line hail [pair.band=friends] : Come find the little fault in this procession. | Here. I've arranged a welcome that might amuse you.
-line farewell : May your next arrival find a competent host. | Walk into a clear and kindly doorway when you reach it.
-line farewell.return : I'll leave a place for another conversation. Goodbye. | Go with a little evening still to spare.
-line react.news : Let any conclusions wait outside till the account arrives. | You may occupy the whole quiet space while you tell it.
-line react.news.new : A new piece entirely. I shall consider the position. | That little board afforded me no advance notice.
-line react.news.known : Yes. My previous account puts the pieces in much the same order. | I heard the substance earlier, without that last small detail.
-line react.news.doubt : One piece has moved an improbable distance in that account. | I'd like to inspect the intermediate squares before accepting the end.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll find you somewhere quiet enough to let the news settle. | A loss doesn't need to arrange itself neatly before somebody offers a chair.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : That does a great deal to brighten the arrangement of the day. | I'd quite gladly extend a summer evening to make room for news like that.
-line ask.how : Has your day left you a free square to rest on? | Have your own arrangements been reasonably kind to you?
-line answer.how : In fair order, with one small unexplained draughtsman occupying my thoughts. | Comfortably busy and extremely interested in the gaps.
-line decline : I'd have to surrender an earlier duty to give the matter its full attention. | I'd be arranging somebody else's time without the slightest right.
-line accept_decline : I shall adjust my own plans accordingly. Thank you. | The counter may remain precisely where you put it.
-line preclose : There's a small difficulty in my next arrangement that wants a second glance. | I'd like to set the board in order while I remember the sequence.
-line accept_preclose : Please attend to the next arrival in your own day. | You've made your intention clear and my arrangements will bear it.
-line thank : That was a thoughtful move, particularly from the end that couldn't see the doorway. | I noticed how neatly you made room for another. Thank you.
-line deflect_thanks : There was a spare position and I simply put it to work. | It took only the courtesy of leaving one useful square empty.
-line sympathise : You may have the outside chair if you'd like an easy departure later. | No need to speak for the whole time you sit with me.
-line reassure : Let's make space for one comfortable move before deciding the entire game. | A stiff arrangement can often be remedied by moving the least important stool.
-line ack : Yes. The next position follows quite sensibly. | I see which movement had escaped my eye.
-line give.advice : Try the arrival from the visitor's side of the door. | Always rehearse where the empty tray will return, as well as where the full one goes.
-line kin.open [pair.kin!=no] : A family occasion may dispense with the formal procession. | For kin, I'd gladly retire my practice board and make room by instinct.
-line greet.return [self.working=yes] : Hello. We are between two orderly arrivals just now. | I have only to shift this one piece and I am listening.
-line farewell.return [here.time=night] : May there be one sheltered square at your own door tonight. | Travel quietly where the household lights have gone down.
-line give.opinion : An distinguished guest and a shy arrival both deserve a clear way in. | I prefer courteous uncertainty to a splendidly certain mistake.
-line ask.detail : Where does the last arrival put a coat down? | Who has to step aside when the door swings inward?
-line answer.detail : The table on the near side takes the coat without a second crossing. | The visitor can step forward once the outer chair has shifted back.
-line react.self : A rather interesting problem for the quiet end of a room. | That would send my little board into useful rearrangement.
-line assess : A courteous course with very few unnecessary turns. | Well settled, provided the doorway actually opens that way.
-line tell.plan : I shall move the second chair before asking the guest to try the route. | I mean to leave a spare place reachable without a procession.
-
+line @1 greet : Welcome. I can fit you in comfortably without upsetting the board. | Hello. We've ample room on the open side of this conversation.
+line @2 greet [pair.band=strangers] : A new arrival, always rather interesting to a student of arrangements. | Welcome. We can attend to the particulars after you're comfortable.
+line @3 greet [here.time=dawn] : Morning. The pieces are all at their starting places. | An early arrival generally has an excellent choice of chairs.
+line @1 greet.return : Yes, your greeting reached me. The spare piece has moved and can give you my ears. | Hello returned with proper attention now.
+line @2 greet.return [pair.band=friends|family] : A voice I can place without a seating chart. | You're the kind of arrival that simplifies arrangements.
+line @3 greet.return [here.time=night] : Late welcome. Let's keep the light by the step for anybody following. | The night has left a quiet place between engagements.
+line @1 again.open : You came by a slightly different square this time. | The board appears to have brought us together twice.
+line @1 hail [pair.band=friends] : Come find the little fault in this procession. | Here. I've arranged a welcome that might amuse you.
+line @1 farewell : May your next arrival find a competent host. | Walk into a clear and kindly doorway when you reach it.
+line @1 farewell.return : I'll leave a place for another conversation. Goodbye. | Go with a little evening still to spare.
+line @1 react.news : Let any conclusions wait outside till the account arrives. | You may occupy the whole quiet space while you tell it.
+line @1 react.news.new : A new piece entirely. I shall consider the position. | That little board afforded me no advance notice.
+line @1 react.news.known : Yes. My previous account puts the pieces in much the same order. | I heard the substance earlier, without that last small detail.
+line @1 react.news.doubt : One piece has moved an improbable distance in that account. | I'd like to inspect the intermediate squares before accepting the end.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll find you somewhere quiet enough to let the news settle. | A loss doesn't need to arrange itself neatly before somebody offers a chair.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That does a great deal to brighten the arrangement of the day. | I'd quite gladly extend a summer evening to make room for news like that.
+line @1 ask.how : Has your day left you a free square to rest on? | Have your own arrangements been reasonably kind to you?
+line @1 answer.how : In fair order, with one small unexplained draughtsman occupying my thoughts. | Comfortably busy and extremely interested in the gaps.
+line @1 decline : I'd have to surrender an earlier duty to give the matter its full attention. | I'd be arranging somebody else's time without the slightest right.
+line @1 accept_decline : I shall adjust my own plans accordingly. Thank you. | The counter may remain precisely where you put it.
+line @1 preclose : There's a small difficulty in my next arrangement that wants a second glance. | I'd like to set the board in order while I remember the sequence.
+line @1 accept_preclose : Please attend to the next arrival in your own day. | You've made your intention clear and my arrangements will bear it.
+line @1 thank : That was a thoughtful move, particularly from the end that couldn't see the doorway. | I noticed how neatly you made room for another. Thank you.
+line @1 deflect_thanks : There was a spare position and I simply put it to work. | It took only the courtesy of leaving one useful square empty.
+line @1 sympathise : You may have the outside chair if you'd like an easy departure later. | No need to speak for the whole time you sit with me.
+line @1 reassure : Let's make space for one comfortable move before deciding the entire game. | A stiff arrangement can often be remedied by moving the least important stool.
+line @1 ack : Yes. The next position follows quite sensibly. | I see which movement had escaped my eye.
+line @1 give.advice : Try the arrival from the visitor's side of the door. | Always rehearse where the empty tray will return, as well as where the full one goes.
+line @1 kin.open [pair.kin!=no] : A family occasion may dispense with the formal procession. | For kin, I'd gladly retire my practice board and make room by instinct.
+line @4 greet.return [self.working=yes] : Hello. We are between two orderly arrivals just now. | I have only to shift this one piece and I am listening.
+line @2 farewell.return [here.time=night] : May there be one sheltered square at your own door tonight. | Travel quietly where the household lights have gone down.
+line @1 give.opinion : An distinguished guest and a shy arrival both deserve a clear way in. | I prefer courteous uncertainty to a splendidly certain mistake.
+line @1 ask.detail : Where does the last arrival put a coat down? | Who has to step aside when the door swings inward?
+line @1 answer.detail : The table on the near side takes the coat without a second crossing. | The visitor can step forward once the outer chair has shifted back.
+line @1 react.self : A rather interesting problem for the quiet end of a room. | That would send my little board into useful rearrangement.
+line @1 assess : A courteous course with very few unnecessary turns. | Well settled, provided the doorway actually opens that way.
+line @1 tell.plan : I shall move the second chair before asking the guest to try the route. | I mean to leave a spare place reachable without a procession.
 scene draughtarrival
 when topic=pastimes self.likes=draughts
 does tell.self / ask.detail / answer.detail
@@ -308,8 +310,6 @@ a : A loud storm brings the chairs closer without anybody having to issue a form
 b : What does it generally choose? | Would you still interfere?
 a : The seats nearer the light fill first. I see whether the quietest guest has retained a good place. | Only with some practical need. A room full of sensible wolves doesn't need directing every time the sky speaks.
 
-grown
-
 story firstdrape [topic=work|memories self.job=servant]
   : I planned two elegant files on my board and walked my splendid route through the real hall, empty dish aloft.
   : My sleeve caught the curtain as I rounded the first corner. No piece on the board had been issued a sleeve.
@@ -376,26 +376,25 @@ does aside
 cooldown 8h
 say The real guest doesn't need to know we're still moving chairs. | Quiet feet round the outside of a settled conversation, please.
 
-dlg resident.hub : I have my guests safely arranged in wood for the moment. A living question will have my full attention.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you'll recognise the layout, though the extra visitor has changed the interesting part.
-dlg resident.hub [here.time=night] : We've a quiet hour well suited to considering the day's little surprises.
-dlg resident.hub [pair.disposition=wary|hostile] : Our present distance allows an entirely civil conversation if we both choose to use it.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. My concern begins a few steps before the visitor enters and lasts till the departing feet are safely out of the weather.
-dlg resident.job : When my preparations are good, the next wolf has leisure to enjoy the occasion.
-dlg resident.bye : May your next welcome feel entirely natural, however much trouble went into planning it.
-dlg resident.gossip [here.gossip=no] : No tale from me. My little wooden guests are a credit to themselves on the matter of discretion.
-dlg resident.gossip [here.gossip=yes] : Word reached me concerning #topic.subject#. The account is that #topic.subject# #topic.claim#. A report only, not a matter I've settled by arranging a few chairs.
-dlg resident.news [world.news] : We have a report carried from #world.news_from#. The substance is this. #world.news#.
-dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can demonstrate an opening arrangement and explain the work that keeps it useful. Which arrangement interests you?
-dlg master.learn [here.teaches=no] : I've already given the learner's place to somebody, but there's still room for an interested question.
-dlg master.work : The pleasing part is receiving people. The patient part is getting very ordinary arrangements right a hundred times in advance.
-dlg master.wages : You won't receive wages simply for learning. You'll practise beside me, learn more quickly, and the value of your own completed work is yours.
-dlg master.takes [here.take_on=yes] : I have room to guide a single pupil. I'd be very comfortable taking you. Ask plainly and we can settle the arrangement.
-dlg master.takes [here.take_on=no] : I need time and trust for one learner. At present there's an obstacle. #here.take_on_why#.
-dlg master.taken : We've agreed then. I'll put an extra stool where you can observe both the guests and the service door.
-dlg master.refused : The place can't be settled that way just now. #topic.why#.
-dlg master.bye : Keep an interested eye on the next doorway you pass.
-
+dlg @1 resident.hub : I have my guests safely arranged in wood for the moment. A living question will have my full attention.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'll recognise the layout, though the extra visitor has changed the interesting part.
+dlg @3 resident.hub [here.time=night] : We've a quiet hour well suited to considering the day's little surprises.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Our present distance allows an entirely civil conversation if we both choose to use it.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. My concern begins a few steps before the visitor enters and lasts till the departing feet are safely out of the weather.
+dlg @2 resident.job : When my preparations are good, the next wolf has leisure to enjoy the occasion.
+dlg @1 resident.bye : May your next welcome feel entirely natural, however much trouble went into planning it.
+dlg @1 resident.gossip [here.gossip=no] : No tale from me. My little wooden guests are a credit to themselves on the matter of discretion.
+dlg @2 resident.gossip [here.gossip=yes] : Word reached me concerning #topic.subject#. The account is that #topic.subject# #topic.claim#. A report only, not a matter I've settled by arranging a few chairs.
+dlg @1 resident.news [world.news] : We have a report carried from #world.news_from#. The substance is this. #world.news#.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can demonstrate an opening arrangement and explain the work that keeps it useful. Which arrangement interests you?
+dlg @2 master.learn [here.teaches=no] : I've already given the learner's place to somebody, but there's still room for an interested question.
+dlg @1 master.work : The pleasing part is receiving people. The patient part is getting very ordinary arrangements right a hundred times in advance.
+dlg @1 master.wages : You won't receive wages simply for learning. You'll practise beside me, learn more quickly, and the value of your own completed work is yours.
+dlg @1 master.takes [here.take_on=yes] : I have room to guide a single pupil. I'd be very comfortable taking you. Ask plainly and we can settle the arrangement.
+dlg @2 master.takes [here.take_on=no] : I need time and trust for one learner. At present there's an obstacle. #here.take_on_why#.
+dlg @1 master.taken : We've agreed then. I'll put an extra stool where you can observe both the guests and the service door.
+dlg @1 master.refused : The place can't be settled that way just now. #topic.why#.
+dlg @1 master.bye : Keep an interested eye on the next doorway you pass.
 graft resident.hub
 choice Would you mind showing me the arrangement on the board? -> guestboard
 node guestboard

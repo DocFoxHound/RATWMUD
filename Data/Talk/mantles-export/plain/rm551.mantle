@@ -1,14 +1,17 @@
+# rm551, the cook's second stair (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm551
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_sybil_bilgeby
+written_by codex
 title the cook's second stair
 fits stage=adult|old
 prefers job=cook
 traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk tests_roast_crackling_by_ear_after_counting_the_stairs_in_pairs
+quirk tests_roast_crackling_by_ear_after_counting_stairs
 likes roast_pork digging festival_bells autumn_wind
 dislikes cold_tea drizzle
 fears cold_tea_after_a_hot_service
@@ -38,47 +41,46 @@ peg = a garden peg | a split marker
 rest = a seat off the hot floor | a pause by the garden
 
 any
-opinion houses mixed 1 : Grand colours at table don't alter the instant a roast needs turning.
-opinion merchants for 1 : A seller who lets me inspect the stalks knows I may come back for more.
-opinion church mixed 1 : I'd send a bit of supper round with any blessing intended for a hungry household.
-opinion festivals for 2 : A bell that sends everyone in to eat has understood my profession admirably.
-opinion dole for 2 : A kitchen measures generosity by portions reaching mouths while there is still heat in them.
-opinion city for 1 : Several kinds of onion reach one city pot by different stairs. That suits me nicely.
-opinion road mixed 1 : Give vegetables an easy cart ride and the kitchen spends less time on bruises.
-opinion times against 2 [world.times=lean|hard] : A thin cupboard asks for more thought from the cook and less ceremony at the table.
+opinion @1 houses mixed 1 : Grand colours at table don't alter the instant a roast needs turning.
+opinion @1 merchants for 1 : A seller who lets me inspect the stalks knows I may come back for more.
+opinion @1 church mixed 1 : I'd send a bit of supper round with any blessing intended for a hungry household.
+opinion @1 festivals for 2 : A bell that sends everyone in to eat has understood my profession admirably.
+opinion @1 dole for 2 : A kitchen measures generosity by portions reaching mouths while there is still heat in them.
+opinion @1 city for 1 : Several kinds of onion reach one city pot by different stairs. That suits me nicely.
+opinion @1 road mixed 1 : Give vegetables an easy cart ride and the kitchen spends less time on bruises.
+opinion @1 times against 2 [world.times=lean|hard] : A thin cupboard asks for more thought from the cook and less ceremony at the table.
 
 grown
-line greet : Come close enough to hear above the pans. | There's a sound seat for somebody with an errand.
-line greet.return : Welcome back across my kitchen noise.
-line again.open : Round again before I've made a second pot.
-line farewell : May supper be steaming when you reach it.
-line farewell.return : I'll take those wishes with my first hot cup.
-line react.news : What's in the account? I'm listening.
-line react.news.new : This kitchen hadn't heard a hint of that.
-line react.news.known : I know the first savour of that story.
-line react.news.doubt : I'd want to test more than the fine smell of it.
-line react.news.sorrow [topic.kind=death|loss|assault] : That's a hurt no good dinner can quite put right.
-line react.news.glad [topic.kind=birth|marriage|work] : A proper occasion to lay another plate.
-line ask.how : Did you manage a decent bite between errands?
-line answer.how : Worn out in the calves, entirely sound in the appetite.
-line sympathise : This chair wobbles least. Settle here. I'll stay.
-line reassure : Let that trouble sit outside the kitchen heat awhile.
-line refuse : I have one promise already coming up to the boil.
-line accept_decline : I'll carry the dish back without pressing you.
-line preclose : I ought to attend to the hour before it boils dry.
-line accept_preclose : Clear stairs now. Go safely.
-line ack : I hear that above every lid in the room.
-line greet [here.time=dawn] : Welcome while my first cup's still steaming.
-line greet [here.time=night] : One lamp remains and it throws a generous patch.
-line greet [pair.band=strangers] : A fresh face can stand clear of the pan handles here.
-line hail [pair.band=friends] : Over by the doubled stair, within reach of my kitchen voice!
-line greet.return [pair.band=friends] : There's a greeting worth calling back across the steam.
-line answer.how.busy [self.working=yes] : Several things at a lively heat. My ears are available.
-line thank : That's one loaded trip you've spared these arms.
-line deflect_thanks : I had an oven hot enough for another portion.
-line give.advice : Taste from the middle after inspecting the edge.
-line ask.how [pair.band=friends] : Could your day use a seat or a helping?
-
+line @1 greet : Come close enough to hear above the pans. | There's a sound seat for somebody with an errand.
+line @1 greet.return : Welcome back across my kitchen noise.
+line @1 again.open : Round again before I've made a second pot.
+line @1 farewell : May supper be steaming when you reach it.
+line @1 farewell.return : I'll take those wishes with my first hot cup.
+line @1 react.news : What's in the account? I'm listening.
+line @1 react.news.new : This kitchen hadn't heard a hint of that.
+line @1 react.news.known : I know the first savour of that story.
+line @1 react.news.doubt : I'd want to test more than the fine smell of it.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : That's a hurt no good dinner can quite put right.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A proper occasion to lay another plate.
+line @1 ask.how : Did you manage a decent bite between errands?
+line @1 answer.how : Worn out in the calves, entirely sound in the appetite.
+line @1 sympathise : This chair wobbles least. Settle here. I'll stay.
+line @1 reassure : Let that trouble sit outside the kitchen heat awhile.
+line @1 refuse : I have one promise already coming up to the boil.
+line @1 accept_decline : I'll carry the dish back without pressing you.
+line @1 preclose : I ought to attend to the hour before it boils dry.
+line @1 accept_preclose : Clear stairs now. Go safely.
+line @1 ack : I hear that above every lid in the room.
+line @2 greet [here.time=dawn] : Welcome while my first cup's still steaming.
+line @3 greet [here.time=night] : Evening. One lamp's still lit, and its patch is big enough for two.
+line @4 greet [pair.band=strangers] : A fresh face can stand clear of the pan handles here.
+line @1 hail [pair.band=friends] : Over here, by the stair! You'll hear me, everyone does!
+line @2 greet.return [pair.band=friends] : There's a greeting worth calling back across the steam.
+line @1 answer.how.busy [self.working=yes] : Several things at a lively heat. My ears are available.
+line @1 thank : That's one loaded trip you've spared these arms.
+line @1 deflect_thanks : I had an oven hot enough for another portion.
+line @1 give.advice : Taste from the middle after inspecting the edge.
+line @2 ask.how [pair.band=friends] : Could your day use a seat or a helping?
 scene exchange1
 when topic=work self.job=cook
 does tell.self / ask.detail / answer.detail
@@ -112,7 +114,7 @@ when topic=weather self.likes=autumn_wind
 does tell.self / ask.detail / answer.detail
 a : Autumn lifts the light peelings clean off my board. | I like wind that flips the leaves clean over.
 b : Out the window? | What's underneath?
-a : Only until a contrary gust corrects its work. | The damp earth that wants the spade.
+a : Out the door and halfway down the steps. I go after them with the broom. | The damp earth that wants the spade.
 
 scene exchange6
 when topic=day self.dislikes=cold_tea
@@ -147,7 +149,7 @@ when topic=work self.job=cook self.workplace
 does tell.self / ask.detail / answer.detail
 a : At #self.workplace# I start with what's ripe. | My kitchen can produce a very plain plate.
 b : Even for a grand table? | On request?
-a : A royal appetite can't make a green pear sweet. | On days when a fine ingredient asks little assistance.
+a : A grand appetite can't make a green pear sweet. | On days when a fine ingredient asks little assistance.
 
 scene exchange11
 when topic=memories
@@ -159,7 +161,7 @@ a : Weather, aching backs, the pleasure of hearing somebody is well. | Family ha
 scene exchange12
 when topic=land here.region=ridgemere
 does tell.self / ask.detail / answer.detail
-a : The long estate stairs teach a cook portions. | I like the smell of the kitchens climbing the court.
+a : Long stairs teach a cook portions. | A kitchen's smell climbs the stairs ahead of me, and I enjoy that.
 b : How so? | Does yours reach highest?
 a : On the return trip the load ought to be lighter. | My voice might. The steam can go about its own affairs.
 
@@ -181,8 +183,8 @@ scene exchange15
 when topic=newcomer
 does tell.self / ask.detail / answer.detail
 a : Visitors hear from me about the stair behind the shut door. | A newcomer asking for supper gets a plain answer.
-b : Why that one? | Before giving a name?
-a : To spare a tired wolf an entire climb in error. | Hunger has already supplied the important particular.
+b : Why that one? | Even a stranger?
+a : To spare a tired wolf an entire climb in error. | Especially a stranger. An empty belly is introduction enough for me.
 
 scene exchange16
 when topic=prices
@@ -340,22 +342,22 @@ when concept=bark here.weather=clear
 does aside
 cooldown 8h
 say Fine drying air for the board. | The garden labels are legible again.
-dlg resident.hub : I can spare a good loud answer and half a quiet minute.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've heard your step on those long stairs before.
-dlg resident.hub [here.time=night] : Late visitors get the bit of the bench furthest from the washing.
-dlg resident.hub [pair.disposition=wary|hostile] : Hot handles near your elbow. Step clear and put your question plainly.
-dlg resident.job [self.job=cook self.workplace] : I cook at #self.workplace#. The palate gets the same honest consideration wherever the diner sits at table.
-dlg resident.job : I make what I can of a larder and a stretch of unpromising daylight.
-dlg resident.news [world.news] : The account that got through the kitchen noise is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The account brought to my board is #topic.subject# #topic.claim#. Ingredients as supplied.
-dlg resident.bye : May a hot cup meet you on the proper landing.
-dlg master.learn [here.teaches=yes] : I teach #here.trade_title#. Come with clean hands and a willingness to taste your own work.
-dlg master.learn [here.teaches=no] : Somebody already occupies my teaching place. There is still room over here for a short enquiry.
-dlg master.work : You'll learn to judge heat, use a board without crowding it and leave a clean start for the cook who follows.
-dlg master.wages : Your own work can earn money as your skill grows. Lessons themselves don't carry a separate wage.
-dlg master.takes [here.take_on=no] : I can't settle that apprenticeship just now. #here.take_on_why#.
-dlg master.bye : Leave your last spoon clean for the morning.
 
+dlg @1 resident.hub : I can spare a good loud answer and half a quiet minute.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've heard your step on those long stairs before.
+dlg @3 resident.hub [here.time=night] : Late visitors get the bit of the bench furthest from the washing.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Hot handles near your elbow. Step clear and put your question plainly.
+dlg @1 resident.job [self.job=cook self.workplace] : I cook at #self.workplace#. The palate gets the same honest consideration wherever the diner sits at table.
+dlg @2 resident.job : I make what I can of a larder and a stretch of unpromising daylight.
+dlg @1 resident.news [world.news] : The account that got through the kitchen noise is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account brought to my board is #topic.subject# #topic.claim#. Ingredients as supplied.
+dlg @1 resident.bye : May a hot cup meet you on the proper landing.
+dlg @1 master.learn [here.teaches=yes] : I teach #here.trade_title#. Come with clean hands and a willingness to taste your own work.
+dlg @2 master.learn [here.teaches=no] : Somebody already occupies my teaching place. There is still room over here for a short enquiry.
+dlg @1 master.work : You'll learn to judge heat, use a board without crowding it and leave a clean start for the cook who follows.
+dlg @1 master.wages : Your own work can earn money as your skill grows. Lessons themselves don't carry a separate wage.
+dlg @1 master.takes [here.take_on=no] : I can't settle that apprenticeship just now. #here.take_on_why#.
+dlg @1 master.bye : Leave your last spoon clean for the morning.
 graft resident.hub
 choice Why do you stop halfway up those stairs? -> stair_pan
 node stair_pan

@@ -1,9 +1,12 @@
+# rm282, the pocket constellation (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm282
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hanne_sootham
+written_by codex
 title the pocket constellation
 fits stage=adult|old
 prefers job=sailor
@@ -35,35 +38,34 @@ rag = a white wiping rag | a pale cloth end
 ember = a low orange glimmer | a single red point
 
 any
-opinion church for 1 : A quiet seat costs no more because I've arrived with black on my paws.
-opinion dole for 2 : Fish and meal make a sensible answer to a hungry question.
-opinion houses against 2 : Each House may hold one end, but it's the wolf under the swinging crate I worry for.
-opinion sump for 1 : I can come home black up to my wrists without raising an eyebrow at the door.
-opinion merchants against 1 : I like weights level enough that a dock paw doesn't need to steady the buyer's side.
-opinion strangers mixed 1 : A stranger may have a new riddle or a long bill. I wait to hear which.
+opinion @1 church for 1 : A quiet seat costs no more because I've arrived with black on my paws.
+opinion @1 dole for 2 : Fish and meal make a sensible answer to a hungry question.
+opinion @1 houses against 2 : Each House may hold one end, but it's the wolf under the swinging crate I worry for.
+opinion @1 sump for 1 [self.quarter=sump] : I can come home black up to my wrists without raising an eyebrow at the door.
+opinion @1 merchants against 1 : I like weights level enough that a dock paw doesn't need to steady the buyer's side.
+opinion @1 strangers mixed 1 : A stranger may have a new riddle or a long bill. I wait to hear which.
 
 grown
-line greet : A clean end of the rail for you. | Come within easy talking distance.
-line greet.return : Kindly received. Mind the coal smudge beside me. | A steady welcome in return.
-line again.open : We haven't even rubbed the old prints off yet.
-line farewell : A gentle landing at your next stop. | May your pocket carry whatever comforts you.
-line farewell.return : My wishes for a fine unloading at day's end. | I'll keep the good part of that farewell.
-line react.news : Turn the account over once where I can see both faces. | I'm ready for the little particulars.
-line react.news.new : That makes a new spot on the page.
-line react.news.known : I've touched that account before.
-line react.news.doubt : I wouldn't put my clean thumb under it.
-line react.news.sorrow [topic.kind=death|loss|assault] : I wish I could take some weight out of that news.
-line react.news.glad [topic.kind=birth|marriage|work] : A bright mark to close out a long day.
-line ask.how : What weight have you set down today?
-line answer.how : I've a steady grip and enough time for a word.
-line sympathise : You can rest your end. No need to explain first.
-line reassure : Sometimes the sling holds after the awful creak.
-line refuse : I promised these shoulders another little job first.
-line accept_decline : Leave it down then. There's no hurry over it.
-line preclose : I'll be taking my own weight on again shortly.
-line accept_preclose : Go while the going still feels easy.
-line ack : I've got the gist and the weight of it.
-
+line @1 greet : A clean end of the rail for you. | Come within easy talking distance.
+line @1 greet.return : Kindly received. Mind the coal smudge beside me. | A steady welcome in return.
+line @1 again.open : We haven't even rubbed the old prints off yet.
+line @1 farewell : A gentle landing at your next stop. | May your pocket carry whatever comforts you.
+line @1 farewell.return : My wishes for a fine unloading at day's end. | I'll keep the good part of that farewell.
+line @1 react.news : Turn the account over once where I can see both faces. | I'm ready for the little particulars.
+line @1 react.news.new : That makes a new spot on the page.
+line @1 react.news.known : I've touched that account before.
+line @1 react.news.doubt : I wouldn't put my clean thumb under it.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I wish I could take some weight out of that news.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A bright mark to close out a long day.
+line @1 ask.how : What weight have you set down today?
+line @1 answer.how : I've a steady grip and enough time for a word.
+line @1 sympathise : You can rest your end. No need to explain first.
+line @1 reassure : Sometimes the sling holds after the awful creak.
+line @1 refuse : I promised these shoulders another little job first.
+line @1 accept_decline : Leave it down then. There's no hurry over it.
+line @1 preclose : I'll be taking my own weight on again shortly.
+line @1 accept_preclose : Go while the going still feels easy.
+line @1 ack : I've got the gist and the weight of it.
 scene exchange1
 when topic=work self.job=sailor
 does tell.self / ask.detail / answer.detail
@@ -81,9 +83,9 @@ a : The clean dots where my claws have picked pieces out. | The lucky ones have 
 scene exchange3
 when topic=food self.likes=pickled_herring
 does tell.self / ask.detail / answer.detail
-a : I like herring cut in narrow silver curls. | Brine glitters just the way coal does wet.
-b : Does it keep better? | You don't mix the two?
-a : I can make each curl a separate pleasure. | No, and I wash between subjects.
+a : I like herring cut in narrow silver curls. | Brine glitters just the way wet coal does.
+b : Does it taste better that way? | Do you see coal everywhere?
+a : It lasts longer. Each curl's a separate pleasure. | After a day of it, yes. Even my supper looks like work.
 
 scene exchange4
 when topic=pastimes self.likes=riddles
@@ -174,7 +176,7 @@ when topic=land here.region=ridgemere
 does tell.self / ask.detail / answer.detail
 a : Where the docks end the boards give way to gritty stone. | I watch the shadow in a plank gap.
 b : Which do your feet like? | Why look down there?
-a : Stone, when I'm trying to catch a riddle's final words. | The water goes on moving when the whole street seems stuck.
+a : The stone, when I'm listening for a riddle's end. Boards creak right over the best word. | The water goes on moving when the whole street seems stuck.
 
 scene exchange17
 when topic=health
@@ -231,16 +233,16 @@ when concept=bark self.likes=pickled_herring
 does aside
 cooldown 8h
 say A little vinegar would wake that bowl right up. | There's a fine silver shine in the pickle.
-dlg resident.hub : There's a puzzle in my pocket and time left over for company.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you're welcome at my clean elbow.
-dlg resident.hub [here.time=night] : Dark enough that the coal won't show even if I drop it.
-dlg resident.hub [pair.disposition=wary|hostile] : You can see both my paws. Out with your errand.
-dlg resident.job [self.job=sailor] : I unload the ships. A steady pause before lifting saves trouble later.
-dlg resident.job : I'm happiest when I can see a thing settled properly on the ground.
-dlg resident.news [world.news] : The news has landed here too. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I caught this. #topic.subject# #topic.claim#. It has somebody else's prints all over it.
-dlg resident.bye : Carry a chip of today's good luck away with you.
 
+dlg @1 resident.hub : There's a puzzle in my pocket and time left over for company.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're welcome at my clean elbow.
+dlg @3 resident.hub [here.time=night] : Dark enough that the coal won't show even if I drop it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can see both my paws. Out with your errand.
+dlg @1 resident.job [self.job=sailor] : I unload the ships. A steady pause before lifting saves trouble later.
+dlg @2 resident.job : I'm happiest once a load is settled properly on the ground.
+dlg @1 resident.news [world.news] : The news has landed here too. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I caught this. #topic.subject# #topic.claim#. It has somebody else's prints all over it.
+dlg @1 resident.bye : Carry a chip of today's good luck away with you.
 graft resident.hub
 choice Can you tell a lucky coal by its shape? -> coal_print
 node coal_print

@@ -1,14 +1,17 @@
+# rm547, the pier guard's wooden heels (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm547
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_rosamund_sootmarsh
+written_by codex
 title the pier guard's wooden heels
 fits stage=adult|old
 prefers job=guard talk=chatty
 traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk whittles_a_pair_of_little_boot_heels_to_show_callers_where_the_dry_line_begins
+quirk whittles_little_boot_heels_to_show_the_dry_line
 likes crisp_apples whittling quiet_chapel first_snow
 dislikes crowds wet_floors
 fears a_queue_pushed_onto_wet_boards a_private_debt_heard_as_an_official_order
@@ -38,52 +41,51 @@ warmrag = my dry wiping rag | a fold of sound linen
 panels = the paired cargo panels | two little cargo boards
 
 any
-opinion watch for 2 : I take pride in giving the same answer to a wolf in fine boots as to the wolf who carried those boots ashore.
-opinion houses mixed 0 : I expect a House mark to be legible and its accompanying figures equally clear. Pride won't supply a missing figure.
-opinion merchants mixed 0 : A merchant who wants haste should have the first answer ready before the first question.
-opinion city for 2 : The city has a landing for every kind of hopeful caller. My job is making sure the newcomer has sound timber underfoot.
-opinion road for 1 : Take a sound road to the head of a bad pier and you still haven't solved the last ten steps.
-opinion dole for 1 : Give a hungry queue room to be civil. I prefer to hear it called for its supper in pairs.
-opinion strangers mixed 0 : A newcomer who asks where to stand is already making a better start than some familiar faces.
-opinion festivals mixed 0 : I like a broad green outside the music. The press around a single stall can keep its distinction.
-opinion times mixed 0 : I'll tell you how this shift went. The next one is entitled to its own witnesses.
+opinion @1 watch for 2 : I take pride in giving the same answer to a wolf in fine boots as to the wolf who carried those boots ashore.
+opinion @1 houses mixed 0 : I expect a House mark to be legible and its accompanying figures equally clear. Pride won't supply a missing figure.
+opinion @1 merchants mixed 0 : A merchant who wants haste should have the first answer ready before the first question.
+opinion @1 city for 2 : The city has a landing for every kind of hopeful caller. My job is making sure the newcomer has sound timber underfoot.
+opinion @1 road for 1 : Take a sound road to the head of a bad pier and you still haven't solved the last ten steps.
+opinion @1 dole for 1 : Give a hungry queue room to be civil. I prefer to hear it called for its supper in pairs.
+opinion @1 strangers mixed 0 : A newcomer who asks where to stand is already making a better start than some familiar faces.
+opinion @1 festivals mixed 0 : I like a broad green outside the music. The press around a single stall can keep its distinction.
+opinion @1 times mixed 0 : I'll tell you how this shift went. The next one is entitled to its own witnesses.
 
 grown
-line greet : Here. The heels show where there's room to stand.
-line greet [pair.band=strangers] : New on this landing. Give yourself the dry side first.
-line greet [here.time=dawn] : Morning. You can see both heel marks quite distinctly.
-line greet [here.time=dusk|night] : Evening. The upper boards are holding the last light.
-line greet.return : Heard you plainly over the foot traffic.
-line greet.return [pair.band=friends|family] : I could put that step to the proper voice.
-line greet.return [self.working=yes] : There's work under my eye. You've room in my ear.
-line greet.return [here.time=dusk|night] : A hail in the dark still deserves a civil answer.
-line kin.open [pair.kin!=no] : Kin, step round the side with me.
-line again.open : I left the little heels facing this way.
-line hail [pair.band=friends] : Friend, come past the wet patch before we talk.
-line farewell : Keep your heels on boards that answer firmly.
-line farewell.return : And leave the turn clear for the next loaded pair.
-line react.news : Give the telling without pushing the people in it.
-line react.news.new : That's come in on this tide.
-line react.news.known : I've heard the particulars in that order before.
-line react.news.doubt : I'd ask again with both witnesses clear of the crowd.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard thing to bring ashore. Stand here in shelter.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's news fit to carry right to the topmost stair.
-line ask.how : Has the crowd given you much room today?
-line answer.how : A little hoarse. My feet have held up better.
-line thank : You left an easy path for the laden wolf. That's good work.
-line deflect_thanks : It took two quiet words and a bit of chalk.
-line sympathise : You can stand here while the first shock passes.
-line reassure : No need to take the entire pier in a single stride.
-line decline : My own duty wants both those minutes.
-line accept_decline : Fair. You've left me a definite answer.
-line preclose : I'll turn back before that line curls round the door.
-line accept_preclose : Safe away from the wet boards.
-line greet [here.weather=rain] : Rain on the quay. Step beside the groove.
-line greet.return [here.time=dawn] : Your voice carries well before the first cargo rolls.
-line thank [pair.band=friends] : A friend who leaves clear footing has my particular thanks.
-line farewell [here.time=night] : Follow the lit wall home, please.
-line greet [self.working=yes] : I'm keeping the passage. Come just far enough for a word.
-
+line @1 greet : Here. The heels show where there's room to stand.
+line @2 greet [pair.band=strangers] : New on this landing. Give yourself the dry side first.
+line @3 greet [here.time=dawn] : Morning. You can see both heel marks quite distinctly.
+line @4 greet [here.time=dusk|night] : Evening. The upper boards are holding the last light.
+line @1 greet.return : Heard you plainly over the foot traffic.
+line @2 greet.return [pair.band=friends|family] : I could put that step to the proper voice.
+line @3 greet.return [self.working=yes] : There's work under my eye. You've room in my ear.
+line @4 greet.return [here.time=dusk|night] : A hail in the dark still deserves a civil answer.
+line @1 kin.open [pair.kin!=no] : Kin, step round the side with me.
+line @1 again.open : I left the little heels facing this way.
+line @1 hail [pair.band=friends] : Friend, come past the wet patch before we talk.
+line @1 farewell : Keep your heels on boards that answer firmly.
+line @1 farewell.return : And leave the turn clear for the next loaded pair.
+line @1 react.news : Give the telling without pushing the people in it.
+line @1 react.news.new : That's come in on this tide.
+line @1 react.news.known : I've heard the particulars in that order before.
+line @1 react.news.doubt : I'd ask again with both witnesses clear of the crowd.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard thing to bring ashore. Stand here in shelter.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's news fit to carry right to the topmost stair.
+line @1 ask.how : Has the crowd given you much room today?
+line @1 answer.how : A little hoarse. My feet have held up better.
+line @1 thank : You left an easy path for the laden wolf. That's good work.
+line @1 deflect_thanks : It took two quiet words and a bit of chalk.
+line @1 sympathise : You can stand here while the first shock passes.
+line @1 reassure : No need to take the entire pier in a single stride.
+line @1 decline : My own duty wants both those minutes.
+line @1 accept_decline : Fair. You've left me a definite answer.
+line @1 preclose : I'll turn back before that line curls round the door.
+line @1 accept_preclose : Safe away from the wet boards.
+line @5 greet [here.weather=rain] : Rain on the quay. Step beside the groove.
+line @5 greet.return [here.time=dawn] : Your voice carries well before the first cargo rolls.
+line @2 thank [pair.band=friends] : A friend who leaves clear footing has my particular thanks.
+line @2 farewell [here.time=night] : Follow the lit wall home, please.
+line @6 greet [self.working=yes] : I'm keeping the passage. Come just far enough for a word.
 scene heel_pair
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -94,7 +96,7 @@ a : Heels first. The toes can manage their own accommodation. | A thumb can find
 scene pier_job
 when topic=work self.job=guard self.workplace
 does tell.self / ask.detail / answer.detail
-a : Round #self.workplace# I like a caller to hear a question before being expected to answer it. | At work around #self.workplace# the first bit of order is honest dry footing.
+a : On duty I like a caller to hear a question before being expected to answer it. | At work the first bit of order is honest dry footing.
 b : Does that prove troublesome? | What follows?
 a : Only where five callers take up the work of answering for one. | A clear word. There's little point demanding one from somebody halfway to the ground.
 
@@ -346,21 +348,20 @@ does aside
 cooldown 8h
 say Let the heel marks mind themselves now.
 
-dlg resident.hub : Stand in view of the carved heels. What's brought you to the landing?
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember your footing round this turn.
-dlg resident.hub [pair.band=friends|family] : I've saved a square of dry pier under a familiar visitor's boots.
-dlg resident.hub [here.time=dusk] : Come up to the chalk while the light still finds it.
-dlg resident.hub [pair.disposition=hostile|wary] : There's good hearing to be had with both feet behind the line.
-dlg resident.job [self.job=guard self.trade_words] : My charge is #self.trade_words#. I like a plain account given from a steady pair of feet.
-dlg resident.news [world.news] : The notice bears the place #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That's an extraordinary amount of chalk for an account without a witness.
-dlg resident.bye : Let the dry length of pier see you home.
-dlg watch.hub [here.wanted=yes] : There is an outstanding fine of #here.fine# pennies. I'll hear you where the boards are steady.
-dlg watch.hub [here.wanted=no on_watch=yes] : I'm on watch. Step beside the carvings. Tell me what needs the Watch's attention.
-dlg watch.hub [here.wanted=no on_watch=no] : My watch is over. I've time for a brief word by the rail.
-dlg watch.crime [here.witnessed!=0] : Start with your own view of the incident. We can take a second breath if you need one.
-dlg watch.bye : You've had a hearing. Watch the footing on the return.
-
+dlg @1 resident.hub : Stand in view of the carved heels. What's brought you to the landing?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember your footing round this turn.
+dlg @3 resident.hub [pair.band=friends|family] : I've saved a square of dry pier under a familiar visitor's boots.
+dlg @4 resident.hub [here.time=dusk] : Come up to the chalk while the light still finds it.
+dlg @5 resident.hub [pair.disposition=hostile|wary] : There's good hearing to be had with both feet behind the line.
+dlg @1 resident.job [self.job=guard self.trade_words] : #self.trade_words.capitalize#. I like a plain account given from a steady pair of feet.
+dlg @1 resident.news [world.news] : The notice bears the place #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That's an extraordinary amount of chalk for an account without a witness.
+dlg @1 resident.bye : Let the dry length of pier see you home.
+dlg @1 watch.hub [here.wanted=yes] : There is an outstanding fine of #here.fine# pennies. I'll hear you where the boards are steady.
+dlg @2 watch.hub [here.wanted=no on_watch=yes] : I'm on watch. Step beside the carvings. Tell me what needs the Watch's attention.
+dlg @3 watch.hub [here.wanted=no on_watch=no] : My watch is over. I've time for a brief word by the rail.
+dlg @1 watch.crime [here.witnessed!=0] : Start with your own view of the incident. We can take a second breath if you need one.
+dlg @1 watch.bye : You've had a hearing. Watch the footing on the return.
 graft resident.hub
 choice Why match the carvings to heels instead of whole boots? -> heel_shape
 node heel_shape

@@ -1,9 +1,12 @@
+# rm432, the listening smith (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm432
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_imogen_tarcot
+written_by codex
 title the listening smith
 fits stage=adult|old
 prefers job=smith
@@ -17,6 +20,7 @@ topics work +0.6 food +0.4 pastimes +0.3 weather +0.2
 styles comfort=practical gossip=plain refuse=direct tease=none
 marks oath saying
 persona #self.first# judges small household jobs by ear and has no patience for noise that does nothing useful.
+
 words
 oath! = Ring my empty pan | Scale in my apron
 saying! = Hear the change first | A pause can do a job
@@ -33,35 +37,33 @@ panrest = a flat thick tile | a plain iron trivet
 shoebox = a little nail tin | a covered wooden tray
 
 grown
-
-opinion merchants mixed 1 : The first tap on a good pan says more about its value than an expensive tag attached to the handle.
-opinion houses mixed 1 : I'd hear the quality of the piece before examining the crest somebody wanted struck in it.
-opinion city for 1 : Different work makes different sounds here. On a quiet walk I can tell where I am without reading a single sign.
-opinion church for 1 : A little silence set aside on purpose makes a better offering than all the racket I can make with a willing hammer.
-opinion dole for 2 : A pantry deserves filling for the coming week, not one showy meal under everybody's noses.
-opinion strangers mixed 1 : I'll hear a stranger's question. The mark the stranger asks me to put on my work takes more consideration.
-line greet : Come closer while neither of us is making more noise than the other.
-line greet [pair.band=strangers] : You've found a clear place for a word. Use it.
-line greet.return : I hear the change in the air when a voice I know comes back.
-line farewell : Feel the tread settle before you trust the other boot to follow.
-line farewell.return : I wish you a quiet last landing.
-line ask.how : Anything rubbing or ringing wrong in your day?
-line answer.how : Mostly in tune with the work, barring a few unnecessary noises.
-line thank : You stopped when the sound changed. That's the help I needed.
-line deflect_thanks : I heard the loose bit before the rest came apart.
-line accept_decline : Then the work can be put aside in one piece.
-line decline : I won't say a piece is sound because somebody's polished one face.
-line react.news : Let me hear that right through to the last note.
-line react.news.new : That's a sound not previously in the mixture.
-line react.news.known : I know the note this part of the tale gives back.
-line react.news.doubt : There seems a dead spot halfway along that telling.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll lower my voice. That news shouldn't have to travel alone.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Good news ought to ring a little after the telling.
-line sympathise : I can do the noisy bit of your day somewhere well out of earshot.
-line reassure : A fault noticed now hasn't yet spoiled the whole piece.
-line ack : The two ends ring alike. I understand.
-line preclose : Another small thing wants my ear before I lose the note.
-
+opinion @1 merchants mixed 1 : The first tap on a good pan says more about its value than an expensive tag attached to the handle.
+opinion @1 houses mixed 1 : I'd hear the quality of the piece before examining the crest somebody wanted struck in it.
+opinion @1 city for 1 : Different work makes different sounds here. On a quiet walk I can tell where I am without reading a single sign.
+opinion @1 church for 1 : A little silence set aside on purpose makes a better offering than all the racket I can make with a willing hammer.
+opinion @1 dole for 2 : A pantry deserves filling for the coming week, not one showy meal under everybody's noses.
+opinion @1 strangers mixed 1 : I'll hear a stranger's question. The mark the stranger asks me to put on my work takes more consideration.
+line @1 greet : Come closer while neither of us is making more noise than the other.
+line @2 greet [pair.band=strangers] : You've found a clear place for a word. Use it.
+line @1 greet.return : I hear the change in the air when a voice I know comes back.
+line @1 farewell : Feel the tread settle before you trust the other boot to follow.
+line @1 farewell.return : I wish you a quiet last landing.
+line @1 ask.how : Anything rubbing or ringing wrong in your day?
+line @1 answer.how : Mostly in tune with the work, barring a few unnecessary noises.
+line @1 thank : You stopped when the sound changed. That's the help I needed.
+line @1 deflect_thanks : I heard the loose bit before the rest came apart.
+line @1 accept_decline : Then the work can be put aside in one piece.
+line @1 decline : I won't say a piece is sound because somebody's polished one face.
+line @1 react.news : Let me hear that right through to the last note.
+line @1 react.news.new : That's a sound not previously in the mixture.
+line @1 react.news.known : I know the note this part of the tale gives back.
+line @1 react.news.doubt : There seems a dead spot halfway along that telling.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll lower my voice. That news shouldn't have to travel alone.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : Good news ought to ring a little after the telling.
+line @1 sympathise : I can do the noisy bit of your day somewhere well out of earshot.
+line @1 reassure : A fault noticed now hasn't yet spoiled the whole piece.
+line @1 ack : The two ends ring alike. I understand.
+line @1 preclose : Another small thing wants my ear before I lose the note.
 scene work_1
 when topic=work self.job=smith
 does tell.self / ask.detail / answer.detail
@@ -121,7 +123,7 @@ a : Sometimes. A workshop has fifty other sounds all making legitimate demands o
 scene smalltalk_1
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
-a : Night noises are worse when they stop just just shy of letting me forget the last one.
+a : Night noises are worse when they stop just shy of letting me forget the last one.
 b : Do you go looking? | Can you sleep through a steady sound?
 a : Only if it seems something's genuinely loose or somebody needs help. I'm not investigating every boot in town. | Generally. A regular tick hasn't taken it upon itself to keep me guessing.
 
@@ -229,13 +231,13 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say Keep the noisy jobs for somebody's waking hour. | That quiet's finally spread as far as the last roof.
-dlg resident.hub : Put the matter in reach without raising your voice.
-dlg resident.job [self.job=smith] : At #self.workplace# I notice a bad note, then use both eyes to establish what caused it.
-dlg resident.news [world.news] : This part rings distinctly. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The account I picked out says #topic.subject# #topic.claim#. That's the sound of a report, no more.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I can recognise you without having to strike a note.
-dlg resident.bye : May everything you must handle today ring true.
 
+dlg @1 resident.hub : Put the matter in reach without raising your voice.
+dlg @1 resident.job [self.job=smith] : At #self.workplace# I notice a bad note, then use both eyes to establish what caused it.
+dlg @1 resident.news [world.news] : This part rings distinctly. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account I picked out says #topic.subject# #topic.claim#. That's the sound of a report, no more.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can recognise you without having to strike a note.
+dlg @1 resident.bye : May everything you must handle today ring true.
 graft resident.hub
 choice Can you hear when a pan is done cooking? -> pan_finish
 node pan_finish

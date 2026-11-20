@@ -1,9 +1,12 @@
+# rm566, the petition loaf (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm566
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_cressida_mallory
+written_by codex
 title the petition loaf
 fits stage=adult|old
 prefers job=merchant humour=merry
@@ -35,43 +38,42 @@ drizzlespot = a wet full stop | the expanding speck
 civilsum = a courteous figure | the plain request
 
 any
-opinion merchants mixed 0 : I'd like a price a wolf can put beside a known weight and read without needing the seller's flattering interpretation.
-opinion city for 1 : A city office may mislay a request. I still value being able to go back and ask for the entry again.
-opinion houses mixed 0 : Even a handsome seal has to leave room for the words explaining the actual decision.
-opinion dole for 2 : I've learnt in a hungry season that a hurried plain loaf does much better work than a beautiful unfilled form.
-opinion festivals for 1 : A festival bell makes an excellent starting signal for a walk that requires neither paper nor scales.
-opinion newcomers for 1 : A first arrival at a customs desk should find a legible figure and a voice willing to explain it.
+opinion @1 merchants mixed 0 : I'd like a price a wolf can put beside a known weight and read without needing the seller's flattering interpretation.
+opinion @1 city for 1 : A city office may mislay a request. I still value being able to go back and ask for the entry again.
+opinion @1 houses mixed 0 : Even a handsome seal has to leave room for the words explaining the actual decision.
+opinion @1 dole for 2 : I've learnt in a hungry season that a hurried plain loaf does much better work than a beautiful unfilled form.
+opinion @1 festivals for 1 : A festival bell makes an excellent starting signal for a walk that requires neither paper nor scales.
+opinion @1 newcomers for 1 : A first arrival at a customs desk should find a legible figure and a voice willing to explain it.
 
 grown
-line greet : Hello. I've room beside my little loaf of a letter. | Come near. The scale's resting between figures.
-line greet [pair.band=strangers] : A fresh face to go with a blank margin. | Welcome. You can start in your own words here.
-line greet [here.time=dawn] : Morning. First line straight, rest permitted some crumbs. | Early light makes my square letters look almost airy.
-line greet.return : Yes, hello. I've put my pen down before it rises any farther. | My pen's poised neatly between strokes.
-line greet.return [pair.band=friends|family] : A familiar face deserves a particularly generous margin. | No form needs filling before I hear your voice.
-line greet.return [here.time=night] : Late hello. I'm down to the smallest crust of paperwork. | Evening. The ink can take a quiet rest.
-line again.open : Another enquiry at the same well-weighted counter. | Back before my square vowels have gone cold.
-line hail [pair.band=friends] : Come see two coppers balanced against pure paperwork! | Stand by me and admire this remarkably square letter!
-line farewell : An alert reader for whatever you ask next. | An easy stair and a good plum corner to you.
-line farewell.return : I'll put the loose papers back in their tin. | Take the steps in whatever size suits your errand.
-line react.news : Lay the account out where we can see its proper weight. | I can give a long report a respectable margin.
-line react.news.new : That's a fresh line in my particular baking book. | New dough for my little loaf of information.
-line react.news.known : That story has the shape of an earlier entry. | I've read those particular corners before.
-line react.news.doubt : An ounce of fact seems to have acquired a heavy wrapper. | I'd take the weight of the paper off that claim.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : My pen can sit quietly while you speak of the loss. | There's no call to make grief write a neat receipt.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Glad tidings. I'd put a purple plum beside the entry. | That's a line worth writing with my freshest nib.
-line ask.how : Has the day risen nicely or gone flat on you? | Getting a fair return for today's climbing?
-line answer.how : Cheerful within margins a clerk could sign. | Fine. My two legs are keeping my paperwork moving.
-line decline : That would spend the quiet hour I've promised to another enquiry. | I'd only give you a weight I hadn't properly checked.
-line accept_decline : Then I won't enter you against an unwanted task. | A civil refusal closes the form quite neatly.
-line preclose : Time I got this particular loaf out of the paperwork. | I have another set of figures waiting to be read straight.
-line accept_preclose : Your errand has its proper claim on your legs. | Go while the next office still has somebody listening.
-line thank : You made a square line out of a wandering one. Thank you. | That kindness took real weight off my next journey.
-line deflect_thanks : It scarcely took a copper's worth of ink. | I had room for one more clear figure.
-line sympathise : Sit where you needn't produce a written account of your hurt. | I'll hear you through the lumps and gaps in the telling.
-line reassure : Start with a small plain line before tackling the whole page. | There's more than one clear stair to a decent answer.
-line ack : Yes. That balances without a finger on the rim. | I'd sign that figure in a very steady hand.
-line give.advice : Weigh the empty wrapper before arguing over the goods. | Copy a request while the original still knows where you put it.
-
+line @1 greet : Hello. I've room beside my little loaf of a letter. | Come near. The scale's resting between figures.
+line @2 greet [pair.band=strangers] : A fresh face to go with a blank margin. | Welcome. You can start in your own words here.
+line @3 greet [here.time=dawn] : Morning. First line straight, rest permitted some crumbs. | Early light makes my square letters look almost airy.
+line @1 greet.return : Yes, hello. I've put my pen down before it rises any farther. | My pen's poised neatly between strokes.
+line @2 greet.return [pair.band=friends|family] : A familiar face deserves a particularly generous margin. | No form needs filling before I hear your voice.
+line @3 greet.return [here.time=night] : Late hello. I'm down to the smallest crust of paperwork. | Evening. The ink can take a quiet rest.
+line @1 again.open : Another enquiry at the same well-weighted counter. | Back before my square vowels have gone cold.
+line @1 hail [pair.band=friends] : Come see two coppers balanced against pure paperwork! | Stand by me and admire this remarkably square letter!
+line @1 farewell : An alert reader for whatever you ask next. | An easy stair and a good plum corner to you.
+line @1 farewell.return : I'll put the loose papers back in their tin. | Take the steps in whatever size suits your errand.
+line @1 react.news : Lay the account out where we can see its proper weight. | I can give a long report a respectable margin.
+line @1 react.news.new : That's a fresh line in my particular baking book. | New dough for my little loaf of information.
+line @1 react.news.known : That story has the shape of an earlier entry. | I've read those particular corners before.
+line @1 react.news.doubt : An ounce of fact seems to have acquired a heavy wrapper. | I'd take the weight of the paper off that claim.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : My pen can sit quietly while you speak of the loss. | There's no call to make grief write a neat receipt.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Glad tidings. I'd put a purple plum beside the entry. | That's a line worth writing with my freshest nib.
+line @1 ask.how : Has the day risen nicely or gone flat on you? | Getting a fair return for today's climbing?
+line @1 answer.how : Cheerful within margins a clerk could sign. | Fine. My two legs are keeping my paperwork moving.
+line @1 decline : That would spend the quiet hour I've promised to another enquiry. | I'd only give you a weight I hadn't properly checked.
+line @1 accept_decline : Then I won't enter you against an unwanted task. | A civil refusal closes the form quite neatly.
+line @1 preclose : Time I got this particular loaf out of the paperwork. | I have another set of figures waiting to be read straight.
+line @1 accept_preclose : Your errand has its proper claim on your legs. | Go while the next office still has somebody listening.
+line @1 thank : You made a square line out of a wandering one. Thank you. | That kindness took real weight off my next journey.
+line @1 deflect_thanks : It scarcely took a copper's worth of ink. | I had room for one more clear figure.
+line @1 sympathise : Sit where you needn't produce a written account of your hurt. | I'll hear you through the lumps and gaps in the telling.
+line @1 reassure : Start with a small plain line before tackling the whole page. | There's more than one clear stair to a decent answer.
+line @1 ack : Yes. That balances without a finger on the rim. | I'd sign that figure in a very steady hand.
+line @1 give.advice : Weigh the empty wrapper before arguing over the goods. | Copy a request while the original still knows where you put it.
 scene loafscript
 when topic=work self.job=merchant
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : When my petition finally turns up, I'd like to know exactly which innocent-l
 b : Would you celebrate the answer? | Have you a suspected shelf?
 a : I'll buy a slice with a decent plum. Whatever the decision, a clear answer ought at least to have a proper crust. | I decline to accuse furniture without a fair hearing. Besides, each week's visit discovers a whole new family of shelves.
 
-grown
-
 story roundedletter [topic=work|memories]
   : A notice asked for a round number. I bent over my pen and produced the most beautifully curved figure I'd ever written.
   : Then I reread the request and understood my admirable handwriting hadn't settled the arithmetic at all.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Keep those unhelpful wet full stops off the entry. | Paper in its pocket before the quiet drizzle notices.
 
-dlg resident.hub : There's room on this square little page for a question. A short one will even leave space for the answer.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I hope you've had a more conclusive answer than my last weekly enquiry.
-dlg resident.hub [here.time=night] : Even lamplight can find its way round my square letters. I've one clear margin left.
-dlg resident.hub [pair.disposition=wary|hostile] : You can see the pan and I can see both hands. Those positions give us a civil distance for discussion.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I began with bread before I had a desk, and a decent measure matters to both customers.
-dlg resident.job : I enjoy work where it's possible to show in a clear hand exactly what was done.
-dlg resident.bye : Here's wishing your next small errand a legible and prompt conclusion.
-
+dlg @1 resident.hub : There's room on this square little page for a question. A short one will even leave space for the answer.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I hope you've had a more conclusive answer than my last weekly enquiry.
+dlg @3 resident.hub [here.time=night] : Even lamplight can find its way round my square letters. I've one clear margin left.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can see the pan and I can see both hands. Those positions give us a civil distance for discussion.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I began with bread before I had a desk, and a decent measure matters to both customers.
+dlg @2 resident.job : I enjoy work where it's possible to show in a clear hand exactly what was done.
+dlg @1 resident.bye : Here's wishing your next small errand a legible and prompt conclusion.
 graft resident.hub
 choice Why call that square letter a little loaf? -> letterloaf
 node letterloaf

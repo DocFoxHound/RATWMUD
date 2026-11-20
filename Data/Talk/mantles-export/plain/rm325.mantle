@@ -1,9 +1,12 @@
+# rm325, the scale in the hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm325
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_corra_coalcot
+written_by codex
 title the scale in the hood
 fits stage=adult|old
 prefers role=merchant job=fisher
@@ -42,48 +45,47 @@ larder = a store of full crocks | a shelf of food
 counter = a sloping board | a lipped counter
 
 any
-opinion merchants mixed 2 : My best advertisement is a balance a stranger may inspect. A few sellers seem to advertise chiefly with noise.
-opinion watch against 2 : I can tell whether a weight has been slipped off a pan. A well-polished badge has no effect on my eyesight.
-opinion houses against 2 : Metal stamped with a grand mark still comes up short if somebody's filed the underside.
-opinion dole for 2 : Put the nourishing end of the fish into a hungry mouth. Save the argument for the bones.
-opinion city for 1 : A city built on slopes has learnt to hold a slippery dinner on a board. There's ingenuity in that.
-opinion festivals for 1 : A festival does splendid things for the appetite of an otherwise sensible purchaser.
-opinion strangers for 1 : I'll show a stranger the empty pan. The first clean look saves a deal of weary explanation.
-opinion sump for 1 : A lower street knows better than to reckon a fish by its shine alone.
-opinion drink mixed 1 : One cup can take a smoky taste off the tongue. The third is generally trying to take a price off my board.
+opinion @1 merchants mixed 2 : My best advertisement is a balance a stranger may inspect. A few sellers seem to advertise chiefly with noise.
+opinion @1 watch against 2 : I can tell whether a weight has been slipped off a pan. A well-polished badge has no effect on my eyesight.
+opinion @1 houses against 2 : Metal stamped with a grand mark still comes up short if somebody's filed the underside.
+opinion @1 dole for 2 : Put the nourishing end of the fish into a hungry mouth. Save the argument for the bones.
+opinion @1 city for 1 : A city built on slopes has learnt to hold a slippery dinner on a board. There's ingenuity in that.
+opinion @1 festivals for 1 : A festival does splendid things for the appetite of an otherwise sensible purchaser.
+opinion @1 strangers for 1 : I'll show a stranger the empty pan. The first clean look saves a deal of weary explanation.
+opinion @1 sump for 1 : A lower street knows better than to reckon a fish by its shine alone.
+opinion @1 drink mixed 1 : One cup can take a smoky taste off the tongue. The third is generally trying to take a price off my board.
 
 grown
-line greet : Here's the dry corner of my smile. | Stand where the hood won't drip.
-line greet.return : A fresh welcome off a thoroughly clean board. | Your greeting rings perfectly true in my pan.
-line again.open : Still the same hood on the same head.
-line farewell : Carry the weight by the handle, all the way home. | Take the wind on the covered side.
-line farewell.return : Smooth water under your own float too. | I'll keep that kind word dry under the brim.
-line react.news : Let the news wriggle out. I'll catch the shape of it. | I'll hear what portion of it came to you fresh.
-line react.news.new : An unfamiliar fin in these waters.
-line react.news.known : I know the outline without lifting the cloth.
-line react.news.doubt : That smells of the wrapper more than the fish.
-line react.news.sorrow [topic.kind=death|loss|assault] : No bright sales talk belongs beside a loss like that.
-line react.news.glad [topic.kind=birth|marriage|work] : I'd hang the good bit up where everybody could see it.
-line ask.how : How's the weight spread in your basket today?
-line answer.how : Comfortably under my own brim, thanks.
-line sympathise : I can turn the bright patter off while you need quiet.
-line reassure : A light basket is all the easier to carry towards the next chance.
-line refuse : I've an account halfway counted that won't keep for me.
-line accept_decline : One refusal needn't be weighed twice.
-line preclose : I ought to see after the damp end of my business.
-line accept_preclose : Get where you meant to land before the tide turns.
-line ack : Yes. I can see both ends of the reckoning.
-line greet [pair.band=strangers] : Fresh eyes are welcome to inspect.
-line greet [here.time=dawn] : A fresh start before the gulls have chosen their customers.
-line greet [here.time=night] : There are still soft words under this late brim.
-line greet.return [pair.band=friends] : For you I'd turn the dry half of the cape round.
-line hail [pair.band=friends] : Round by the bright board, you know my corner!
-line thank : I'd call that a very generous tilt in my favour.
-line deflect_thanks : It cost me only a moment and a perfectly good grin.
-line give.advice : Look underneath the first layer before you admire the arrangement.
-line answer.how.busy [self.working=yes] : I have a pan and a customer balancing rather nicely.
-line ask.how [pair.band=friends] : Anything in your basket worth bringing into the dry?
-
+line @1 greet : Here's the dry corner of my smile. | Stand where the hood won't drip.
+line @1 greet.return : A fresh welcome off a thoroughly clean board. | Your greeting rings perfectly true in my pan.
+line @1 again.open : Still the same hood on the same head.
+line @1 farewell : Carry the weight by the handle, all the way home. | Take the wind on the covered side.
+line @1 farewell.return : Smooth water under your own float too. | I'll keep that kind word dry under the brim.
+line @1 react.news : Let the news wriggle out. I'll catch the shape of it. | I'll hear what portion of it came to you fresh.
+line @1 react.news.new : An unfamiliar fin in these waters.
+line @1 react.news.known : I know the outline without lifting the cloth.
+line @1 react.news.doubt : That smells of the wrapper more than the fish.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : No bright sales talk belongs beside a loss like that.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd hang the good bit up where everybody could see it.
+line @1 ask.how : How's the weight spread in your basket today?
+line @1 answer.how : Comfortably under my own brim, thanks.
+line @1 sympathise : I can turn the bright patter off while you need quiet.
+line @1 reassure : A light basket is all the easier to carry towards the next chance.
+line @1 refuse : I've an account halfway counted that won't keep for me.
+line @1 accept_decline : One refusal needn't be weighed twice.
+line @1 preclose : I ought to see after the damp end of my business.
+line @1 accept_preclose : Get where you meant to land before the tide turns.
+line @1 ack : Yes. I can see both ends of the reckoning.
+line @2 greet [pair.band=strangers] : Fresh eyes are welcome to inspect.
+line @3 greet [here.time=dawn] : A fresh start before the gulls have chosen their customers.
+line @4 greet [here.time=night] : There are still soft words under this late brim.
+line @2 greet.return [pair.band=friends] : For you I'd turn the dry half of the cape round.
+line @1 hail [pair.band=friends] : Round by the bright board, you know my corner!
+line @1 thank : I'd call that a very generous tilt in my favour.
+line @1 deflect_thanks : It cost me only a moment and a perfectly good grin.
+line @1 give.advice : Look underneath the first layer before you admire the arrangement.
+line @1 answer.how.busy [self.working=yes] : I have a pan and a customer balancing rather nicely.
+line @2 ask.how [pair.band=friends] : Anything in your basket worth bringing into the dry?
 scene exchange1
 when topic=work self.job=fisher
 does tell.self / ask.detail / answer.detail
@@ -359,24 +361,24 @@ when concept=bark self.likes=smoked_eel
 does aside
 cooldown 8h
 say That bronze curl would suit a cold walk nicely. | A little smoke, a little silver underneath.
-dlg resident.hub : I can talk while the balance finds its middle.
-dlg resident.hub [topic.meeting=known] : #topic.player#, my memory gives your face a fair full weight.
-dlg resident.hub [here.time=night] : The late market trades chiefly in words. I've a few.
-dlg resident.hub [pair.disposition=wary|hostile] : You may watch my paws. The question's yours to set down.
-dlg resident.job [self.job=fisher] : I know fish from the line to the wrapper. The last cut ought to be as fair as the first.
-dlg resident.job : I work where a careful eye earns its keep.
-dlg resident.news [world.news] : The catch of news today is #world.news#.
-dlg resident.gossip [here.gossip=yes] : Here's what passed my board. #topic.subject# #topic.claim#. Inspect the wrapping yourself.
-dlg resident.bye : May your parcel ride snugly all the way.
-dlg shop.greet [here.shop=open] : A clean board and an empty pan to start with. Choose a cut that suits your pot.
-dlg shop.greet [here.shop=bare] : The slate's got more on it than the board. Best wait for another catch.
-dlg shop.greet [here.shop=asleep] : My weighing eye's shut. Trade can wait till it opens.
-dlg shop.prices : I'll show the figure and weigh it where your own eye can follow.
-dlg shop.bye [here.shop!=asleep] : Mind the lower corner of your wrapper. That's where the juice collects.
-dlg resident.business [business=steady] : The beam tips often enough. I'm content with its rhythm.
-dlg resident.business [business=thriving] : Even the odd little cuts find pots before the board gets warm.
-dlg resident.business [business=failing] : The ice is working harder than the scale. I'd prefer my scale to do the heavier work.
 
+dlg @1 resident.hub : I can talk while the balance finds its middle.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my memory gives your face a fair full weight.
+dlg @3 resident.hub [here.time=night] : The late market trades chiefly in words. I've a few.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You may watch my paws. The question's yours to set down.
+dlg @1 resident.job [self.job=fisher] : I know fish from the line to the wrapper. The last cut ought to be as fair as the first.
+dlg @2 resident.job : I work where a careful eye earns its keep.
+dlg @1 resident.news [world.news] : The catch of news today is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Here's what passed my board. #topic.subject# #topic.claim#. Inspect the wrapping yourself.
+dlg @1 resident.bye : May your parcel ride snugly all the way.
+dlg @1 shop.greet [here.shop=open] : A clean board and an empty pan to start with. Choose a cut that suits your pot.
+dlg @2 shop.greet [here.shop=bare] : The slate's got more on it than the board. Best wait for another catch.
+dlg @3 shop.greet [here.shop=asleep] : My weighing eye's shut. Trade can wait till it opens.
+dlg @1 shop.prices : I'll show the figure and weigh it where your own eye can follow.
+dlg @1 shop.bye [here.shop!=asleep] : Mind the lower corner of your wrapper. That's where the juice collects.
+dlg @1 resident.business [business=steady] : The beam tips often enough. I'm content with its rhythm.
+dlg @2 resident.business [business=thriving] : Even the odd little cuts find pots before the board gets warm.
+dlg @3 resident.business [business=failing] : The ice is working harder than the scale. I'd prefer my scale to do the heavier work.
 graft resident.hub
 choice Is there a pocket inside that hood? -> hood_book
 node hood_book

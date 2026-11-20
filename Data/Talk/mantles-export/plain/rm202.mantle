@@ -1,9 +1,12 @@
+# rm202, the soot silhouette (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm202
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_dirk_mallory
+written_by codex
 title the soot silhouette
 fits stage=young|adolescent|adult|old
 prefers job=scholar
@@ -35,216 +38,45 @@ still = motionless as a nail | quieter than settled dust
 smudge = a mark without a bird | a stray dash
 
 any
-opinion city for 1 : Roofs meet in long rows here. One bird can keep company with a whole street of wolves.
-opinion dole against 1 : Some in that queue could use a chance to earn. What about paying for the sweeping afterward?
-opinion festivals for 1 : Nobody counts the bells for bedtime when all the fiddles play over them.
-opinion strangers against 2 : Ask before leaning over a shoulder. Knowing my name doesn't buy a look either.
-opinion houses mixed 1 : If the Houses quarrel, every roof between gets a fine view. I'd prefer a quieter prospect.
-opinion road mixed 0 : A traveller with no luggage but a tale can still be a nuisance to carry.
-line greet : Your shadow gave you away. Come in. | You can sit within earshot.
-line greet.return : Yes. My eyes are busy but I heard you. | There's a space here.
-line again.open : Your shadow was here a little while ago. | Twice in the same space of light.
-line kin.open [pair.kin!=no] : Closer, if you like. I kept our usual gap. | Come close. I don't mind our shadows touching.
-line hail [pair.band=friends] : Here, where the eaves thin out! | I spotted you three roofs back!
-line answer.how : A little short on sleep. Most of my lines are straight enough. | I'm awake enough to spot a moving speck.
-line ask.how : Did anything today hang in your mind afterwards? | What's the one bit of your day you'd draw from memory?
-line react.news : Best say just the part you heard spoken. | Give me its outline before the little bits get smudged.
-line react.news.new : Haven't heard that from any of the windows yet. | That's an entirely new shape in my ear.
-line react.news.known : I recognise it even with that bit tacked on. | That tale's been by with different feathers.
-line react.news.doubt : You'd want a better view before committing that to paper. | I couldn't swear to that from where I'm sitting.
-line react.news.sorrow [topic.kind=loss|death|theft|assault|crime|arrest] : I'll put my things away a moment for news like that. | It feels wrong to keep drawing while that's being said.
-line react.news.glad [topic.kind=birth|work|marriage|succession|apprentice] : That leaves a lighter impression. I'm glad. | I could put a bright rim around news like that.
-line decline : I'd lose what I'm trying to remember if I went. | Some other time, once the outline is fixed.
-line accept_decline : That will do. We can leave the silence be. | I'll fold up the invitation and leave it there.
-line sympathise : We can share the seat that's hidden from view. | We can face the same direction a while. No need to look round.
-line thank : You waited till I looked up. Thank you. | You left me the choice of speaking first. I value that.
-line deflect_thanks : Just leave me a clear patch to see through. | You gave me the chance to see it too.
-line preclose : The shape I wanted is getting away from me. | The light I'm working in hasn't much longer.
-line accept_preclose : Go while there's a clear path, then. | Find your way back when the ledge is free.
-line farewell : You'll pass under that last overhang on your way. Take care. | #farewell#. I'll stay in the quiet.
-line farewell.return : Till we meet under another roof. | Go easily round the corner.
-
-grown
-
-scene eaves
-when topic=animals
-does tell.self / ask.detail / answer.detail
-a : I draw the missing piece beside a bird's head. | If a bird moves halfway through a sketch, the empty patch still has its shape.
-b : Why draw the air? | Can you draw from what's missing?
-a : One edge of that empty piece is the beak itself. | Often that's the only bit I got a good look at.
-
-
-scene light
-when topic=day here.time=dawn
-does tell.self / react.self / assess
-a : At first light the ridge tiles look soft. | Dawn gives me birds all one colour.
-b : The light softens things? | Is that any help?
-a : Their shadows haven't got long enough to point yet. | Saves an argument about the feathers. I can look at feet.
-
-
-scene wineberry
-when topic=food self.likes=blackberries
-does tell.self / ask.detail / answer.detail
-a : I can't get berry juice to dry the colour it goes on. | I pick berries by how easily they'll let go.
-b : What colour does it go? | What if one looks ready?
-a : Purple to a rusty red. Like a berry remembering the sun. | Try it. Looking ready never ripened one.
-
-
-scene rails
-when topic=land here.region=ridgemere
-does tell.self / ask.detail / answer.detail
-a : The steep streets let me see what the level ones hide. | A climb through this city is a tour of chimneys.
-b : How far? | Are they all that different?
-a : Just far enough to look down on a roof and watch its tenants. | Some lean into the roof and some lean away. I like the latter.
-
-
-scene tidy
-when topic=home self.likes=tidy_house
-does tell.self / react.self / assess
-a : A well-kept room has pale outlines wherever a tool is lifted. | I keep a box for charcoal and a different one for twigs.
-b : You'd see if one were missing. | Charcoal was a twig once.
-a : Yes. Might even remember I was holding it. | I don't need reminding. My sleeves have demonstrated.
-
-
-scene doorway
-when topic=friends
-does tell.self / ask.detail / answer.detail
-a : The company I like doesn't block the opening. | I find out who I like by going quiet.
-b : The opening in what? | Who fills the gap?
-a : The conversation. There ought to be room to say nothing. | That's what I'm finding out. I like the ones who let it be.
-
-
-scene wind
-when topic=weather here.weather=storm
-does tell.worry / react.self / assess
-a : With a gust like that the smallest wings must ache. | There's a gull holding still against all that wind.
-b : They've found shelter, surely. | It looks painted on.
-a : Most of them. I'm counting until I've seen the last pair land. | Only the tail keeps changing. That's how you spot the effort.
-
-
-scene sweets
-when topic=festival
-does tell.feeling / ask.detail / answer.detail
-a : I like my feast sweets in paper. | The quiet bit of a feast is chewing.
-b : For carrying home? | No, the quiet bit's after everyone leaves.
-a : Yes. Sometimes the wrapper smells of honey the whole next day. | That too. I like it better with honey on my teeth.
-
-
-scene mist
-when topic=weather here.weather=fog
-does tell.feeling / react.self / assess
-a : I'd leave #fogbird# exactly like that, half begun. | The fog looks heavier where birds fly through it.
-b : Without a head? | Can you see it stir?
-a : There's a head there. I don't need to supply the one I can't see. | No. I can suddenly see how much of a wing it hides.
-
-
-scene times
-when topic=times world.times=hard|lean
-does tell.worry / react.self / assess
-a : Lean times make blank paper look like a dinner I might have bought. | If paper's dear I sketch in dust instead.
-b : Does the drawing stop? | But that blows away.
-a : Walls still have spaces nobody wants. | That's the part everyone gets for free.
-
-
-scene falsefoot
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I gave a roosting bird two feet it didn't need. | I always sketch the perch before the toes.
-b : Every bird needs feet. | Even when it's only a twig?
-a : Yes, but it tucks them up. Mine looked like a pair of shears. | Especially then. Thick enough for one foot is different from two.
-
-
-scene salt
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : I think I'd travel with the wind over one shoulder. | Roads inland have birds I don't know yet.
-b : Which shoulder? | Would you want a guide?
-a : Whichever keeps salt out of my eyes. That's my whole route planned. | Someone to tell me where to sit, then go about the day's work.
-
-
-young
-
-scene crumbline
-when topic=animals|pastimes
-does tell.self / react.self / assess
-a : I made a bird out of crumbs. Then a real bird ate the tail. | I can do a sparrow with just three crumbs.
-b : Did you chase it? | I count four.
-a : No. I ate the head so the bird couldn't have all of it. | That's lunch. Leave lunch alone.
-
-
-scene thumb
-when topic=smalltalk
-does tell.self / ask.detail / answer.detail
-a : Look, my thumb has a bird on it. | I meant to draw on wood but I held the stick backwards.
-b : Looks like a smudge. | Where was the drawing?
-a : Bend it. There's its wing. Only works on my thumb. | All over my nice clean cuff, of course.
-
-
-adolescent
-
-scene school
-when topic=day|work self.job=scholar
-does tell.self / ask.detail / answer.detail
-a : The nicest line in my copybook is on the wrong page. | A neat hand earns a clean slate.
-b : Can you tear it out? | You're pleased with a clean slate?
-a : It's the binding thread. That's why it's straight. | Only if you weren't hoping to keep what you wrote.
-
-
-scene traveller
-when topic=newcomer
-does tell.self / ask.detail / answer.detail
-a : Travel talk's easier with a map between us. | A stranger asked whether I'd seen the sea.
-b : You mean you can point? | What did you say?
-a : There are roads on paper I can study without making conversation. Nobody calls that shy. | From the roofs. Left out which roof. I'd like my seat to stay mine.
-
-
-scene ink
-when topic=pastimes
-does tell.plan / react.self / assess
-a : I want to arrange a book of birds by the holes between their feet. | I'm trying one page for every kind of wing.
-b : That's a peculiar arrangement. | That sounds like a great many pages.
-a : You'll find the stilts right away. Beats remembering a name. | I can afford two at present. I'm being particular.
-
-
-scene smoke
-when topic=smalltalk
-does tell.self / ask.detail / answer.detail
-a : Somebody always asks what burned when I walk in. | I'm going to hang #roll# out till the soot smell leaves.
-b : What does burn? | What if it never does?
-a : My drawing sticks, beforehand. It's the scent I bring in afterwards. | Then it stays my drawing rag. There are worse fates.
-
-
-scene perch
-when topic=animals
-does tell.feeling / react.self / assess
-a : I'd like a seat no higher than a jackdaw wants. | The birds all face one way on that ledge.
-b : You'd have to share. | Into the breeze?
-a : Good. I want to learn why that seat's worth arguing over. | Look at the last one. It hasn't decided to join the rest yet.
-
-
-scene tale
-when topic=gossip
-does tell.self / ask.detail / answer.detail
-a : Half of a rumour has no place on my page. | I don't add tails to things I hear.
-b : What about the whole thing? | Supposing a tale wants one?
-a : Might get the back. In pencil. | A missing ending is about the only honest part of some stories.
-
-
-any
-
+opinion @1 city for 1 : Roofs meet in long rows here. One bird can keep company with a whole street of wolves.
+opinion @1 dole against 1 : Some in that queue could use a chance to earn. What about paying for the sweeping afterward?
+opinion @1 festivals for 1 : Nobody counts the bells for bedtime when all the fiddles play over them.
+opinion @1 strangers against 2 : Ask before leaning over a shoulder. Knowing my name doesn't buy a look either.
+opinion @1 houses mixed 1 : If the Houses quarrel, every roof between gets a fine view. I'd prefer a quieter prospect.
+opinion @1 road mixed 0 : A traveller with no luggage but a tale can still be a nuisance to carry.
+line @1 greet : Your shadow gave you away. Come in. | You can sit within earshot.
+line @1 greet.return : Yes. My eyes are busy but I heard you. | There's a space here.
+line @1 again.open : Your shadow was here a little while ago. | Twice in the same space of light.
+line @1 kin.open [pair.kin!=no] : Closer, if you like. I kept our usual gap. | Come close. I don't mind our shadows touching.
+line @1 hail [pair.band=friends] : Here, where the eaves thin out! | I spotted you three roofs back!
+line @1 answer.how : A little short on sleep. Most of my lines are straight enough. | I'm awake enough to spot a moving speck.
+line @1 ask.how : Did anything today hang in your mind afterwards? | What's the one bit of your day you'd draw from memory?
+line @1 react.news : Best say just the part you heard spoken. | Give me its outline before the little bits get smudged.
+line @1 react.news.new : Haven't heard that from any of the windows yet. | That's an entirely new shape in my ear.
+line @1 react.news.known : I recognise it even with that bit tacked on. | That tale's been by with different feathers.
+line @1 react.news.doubt : You'd want a better view before committing that to paper. | I couldn't swear to that from where I'm sitting.
+line @1 react.news.sorrow [topic.kind=loss|death|theft|assault|crime|arrest] : I'll put my things away a moment for news like that. | It feels wrong to keep drawing while that's being said.
+line @1 react.news.glad [topic.kind=birth|work|marriage|succession|apprentice] : That leaves a lighter impression. I'm glad. | I could put a bright rim around news like that.
+line @1 decline : I'd lose what I'm trying to remember if I went. | Some other time, once the outline is fixed.
+line @1 accept_decline : That will do. We can leave the silence be. | I'll fold up the invitation and leave it there.
+line @1 sympathise : We can share the seat that's hidden from view. | We can face the same direction a while. No need to look round.
+line @1 thank : You waited till I looked up. Thank you. | You left me the choice of speaking first. I value that.
+line @1 deflect_thanks : Just leave me a clear patch to see through. | You gave me the chance to see it too.
+line @1 preclose : The shape I wanted is getting away from me. | The light I'm working in hasn't much longer.
+line @1 accept_preclose : Go while there's a clear path, then. | Find your way back when the ledge is free.
+line @1 farewell : You'll pass under that last overhang on your way. Take care. | #farewell#. I'll stay in the quiet.
+line @1 farewell.return : Till we meet under another roof. | Go easily round the corner.
 story wingprint [topic=memories]
   : A pigeon once walked right across my drawing.
   : I'd finished the roof. I hadn't thought where to put the bird.
   b : Did it settle that for you?
   : Six times, in little black footprints. I kept every one.
 
-
 story buttongull [topic=animals]
   : I drew a gull on the underside of a button so small I couldn't give it feet.
   : Threaded it on a loose bit of string. Now two threads hang out exactly where the feet should go.
   b : Does it look alive?
   : It looks most put out about the length of its legs.
-
 
 story slateclean [topic=home]
   : Once I wiped my slate on the clean side of a rag I've kept for ages.
@@ -253,13 +85,11 @@ story slateclean [topic=home]
   b : I'd have hung it the other way up.
   : I did that first. Then I drew its reflection underneath.
 
-
 rule @drift
 when concept=bark here.weather=fog
 does aside
 cooldown 8h
 say Only a wingtip left of that whole bird now. | The whole roof swallowed up, and just that black flick to show for it.
-
 
 rule @sticks
 when concept=bark self.likes=roof_birds
@@ -267,13 +97,11 @@ does aside
 cooldown 8h
 say Hold that angle just a blink more, little beak. | One more breath of stillness, my pointed little model.
 
-
 rule @tidying
 when concept=bark self.likes=tidy_house
 does aside
 cooldown 8h
 say One spare slat here. Everything else goes back under cover. | Good. There's the board on its hook and the rag where I can reach it.
-
 
 rule @tea
 when concept=bark self.dislikes=cold_tea
@@ -281,14 +109,13 @@ does aside
 cooldown 8h
 say Another cup cooled all the way through while the tail went on. | Stone cold again. There goes the price of looking up.
 
-dlg resident.hub : I've got till the birds lift. What's the matter?
-dlg resident.hub [topic.meeting=known] : #topic.player#. I know you by the pause before you speak.
-dlg resident.hub [pair.disposition=hostile|wary] : You'll see this side of the board and no further.
-dlg resident.hub [here.time=night] : Even at this hour somebody's restless on the ridge tiles.
-dlg resident.job [self.job=scholar] : I try to catch what I ought to know on paper. It can be elusive.
-dlg resident.job : I watch first. Work's easier when I've done that.
-dlg resident.bye : I'll go back to catching outlines.
-
+dlg @1 resident.hub : I've got till the birds lift. What's the matter?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I know you by the pause before you speak.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : You'll see this side of the board and no further.
+dlg @4 resident.hub [here.time=night] : Even at this hour somebody's restless on the ridge tiles.
+dlg @1 resident.job [self.job=scholar] : I try to catch what I ought to know on paper. It can be elusive.
+dlg @2 resident.job : I watch first. Work's easier when I've done that.
+dlg @1 resident.bye : I'll go back to catching outlines.
 graft resident.hub
 choice What can you tell from a perched bird's outline? -> soot_perch
 node soot_perch
@@ -300,3 +127,149 @@ node soot_perch_more
 say Sometimes I catch where it was going. The bird is usually halfway to supper before my mark is dry.
 choice I'll keep an eye on that tile. -> hub
 choice Goodbye. -> bye
+
+
+grown
+scene eaves
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I draw the missing piece beside a bird's head. | If a bird moves halfway through a sketch, the empty patch still has its shape.
+b : Why draw the air? | Can you draw from what's missing?
+a : One edge of that empty piece is the beak itself. | Often that's the only bit I got a good look at.
+
+scene light
+when topic=day here.time=dawn
+does tell.self / react.self / assess
+a : At first light the ridge tiles look soft. | Dawn gives me birds all one colour.
+b : The light softens things? | Is that any help?
+a : Their shadows haven't got long enough to point yet. | Saves an argument about the feathers. I can look at feet.
+
+scene wineberry
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I can't get berry juice to dry the colour it goes on. | I pick berries by how easily they'll let go.
+b : What colour does it go? | What if one looks ready?
+a : Purple to a rusty red. Like a berry remembering the sun. | Try it. Looking ready never ripened one.
+
+scene rails
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The steep streets let me see what the level ones hide. | A climb through this city is a tour of chimneys.
+b : What do they hide? | Are they all that different?
+a : The tops of roofs, and whatever's sitting on them. | Some lean into the roof and some lean away. I like the latter.
+
+scene tidy
+when topic=home self.likes=tidy_house
+does tell.self / react.self / assess
+a : A well-kept room has pale outlines wherever a tool is lifted. | I keep a box for charcoal and a different one for twigs.
+b : You'd see if one were missing. | Charcoal was a twig once.
+a : Yes. Might even remember I was holding it. | And then it learned to stain. That's why it gets a box of its own.
+
+scene doorway
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : The company I like doesn't block the opening. | I find out who I like by going quiet.
+b : The opening in what? | Who fills the gap?
+a : The conversation. There ought to be room to say nothing. | That's what I'm finding out. I like the ones who let it be.
+
+scene wind
+when topic=weather here.weather=storm
+does tell.worry / react.self / assess
+a : With a gust like that the smallest wings must ache. | There's a gull holding still against all that wind.
+b : They've found shelter, surely. | It looks painted on.
+a : Most of them. I'm counting until I've seen the last pair land. | Only the tail keeps changing. That's how you spot the effort.
+
+scene sweets
+when topic=festival
+does tell.feeling / ask.detail / answer.detail
+a : I like my feast sweets in paper. | The quiet bit of a feast is chewing.
+b : For carrying home? | No, the quiet bit's after everyone leaves.
+a : Yes. Sometimes the wrapper smells of honey the whole next day. | That too. I like it better with honey on my teeth.
+
+scene mist
+when topic=weather here.weather=fog
+does tell.feeling / react.self / assess
+a : I'd leave #fogbird# exactly like that, half begun. | The fog looks heavier where birds fly through it.
+b : Without a head? | Can you see it stir?
+a : There's a head there. I don't need to supply the one I can't see. | No. I can suddenly see how much of a wing it hides.
+
+scene times
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : Lean times make blank paper look like a dinner I might have bought. | If paper's dear I sketch in dust instead.
+b : Does the drawing stop? | But that blows away.
+a : Walls still have spaces nobody wants. | So it does. Nobody charges for dust, though.
+
+scene falsefoot
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I gave a roosting bird two feet it didn't need. | I always sketch the perch before the toes.
+b : Every bird needs feet. | Even when it's only a twig?
+a : Yes, but it tucks them up. Mine looked like a pair of shears. | Especially then. Thick enough for one foot is different from two.
+
+scene salt
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I think I'd travel with the wind over one shoulder. | Roads inland have birds I don't know yet.
+b : Which shoulder? | Would you want a guide?
+a : Whichever keeps salt out of my eyes. That's my whole route planned. | Someone to tell me where to sit, then go about the day's work.
+
+
+young
+scene crumbline
+when topic=animals|pastimes
+does tell.self / react.self / assess
+a : I made a bird out of crumbs. Then a real bird ate the tail. | I can do a sparrow with just three crumbs.
+b : Did you chase it? | I count four.
+a : No. I ate the head so the bird couldn't have all of it. | That's lunch. Leave lunch alone.
+
+scene thumb
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Look, my thumb has a bird on it. | I meant to draw on wood but I held the stick backwards.
+b : Looks like a smudge. | Where was the drawing?
+a : Bend it. There's its wing. Only works on my thumb. | All over my nice clean cuff, of course.
+
+
+adolescent
+scene school
+when topic=day|work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : The nicest line in my copybook is on the wrong page. | A neat hand earns a clean slate.
+b : Can you tear it out? | You're pleased with a clean slate?
+a : It's the binding thread. That's why it's straight. | Only if you weren't hoping to keep what you wrote.
+
+scene traveller
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Travel talk's easier with a map between us. | A stranger asked whether I'd seen the sea.
+b : You mean you can point? | What did you say?
+a : There are roads on paper I can study without making conversation. Nobody calls that shy. | From the roofs. Left out which roof. I'd like my seat to stay mine.
+
+scene ink
+when topic=pastimes
+does tell.plan / react.self / assess
+a : I want to arrange a book of birds by the holes between their feet. | I'm trying one page for every kind of wing.
+b : That's a peculiar arrangement. | That sounds like a great many pages.
+a : You'll find the stilts right away. Beats remembering a name. | I can afford two at present. I'm being particular.
+
+scene smoke
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Somebody always asks what burned when I walk in. | I'm going to hang #roll# out till the soot smell leaves.
+b : What does burn? | What if it never does?
+a : My drawing sticks, beforehand. It's the scent I bring in afterwards. | Then it stays my drawing rag. There are worse fates.
+
+scene perch
+when topic=animals
+does tell.feeling / react.self / assess
+a : I'd like a seat no higher than a jackdaw wants. | The birds all face one way on that ledge.
+b : You'd have to share. | Into the breeze?
+a : Good. I want to learn why that seat's worth arguing over. | Look at the last one. It hasn't decided to join the rest yet.
+
+scene tale
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : Half of a rumour has no place on my page. | I don't add tails to things I hear.
+b : What about the whole thing? | Supposing a tale wants one?
+a : Might get the back. In pencil. | A missing ending is about the only honest part of some stories.

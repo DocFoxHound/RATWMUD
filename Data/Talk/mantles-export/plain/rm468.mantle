@@ -1,14 +1,17 @@
+# rm468, the clear approach (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm468
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_nan_ashhand
+written_by codex
 title the clear approach
 fits stage=adult|old
 prefers job=miner
 traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
-quirk turns_the_chair_towards_the_door_before_counting_the_days_savings
+quirk turns_the_chair_to_the_door_before_counting_savings
 likes crisp_apples evening_line quiet_chapel misty_dawns
 dislikes drizzle flies
 fears being_surprised_by_an_unseen_weight
@@ -36,35 +39,34 @@ mist = a low morning mist | a pale strip of haze
 lintel = a solid lintel | the high beam
 
 any
-opinion merchants mixed 1 : A wolf buying one wedge and a wolf buying ten can both be told what good metal costs.
-opinion dole for 2 : I can spare an apple without consulting anybody's plan for the months beyond today.
-opinion road mixed 1 : The last turn to a job is every bit as important as the outward road. Let me see the load before it reaches my boots.
-opinion church for 1 : When I can hear a late visitor's foot and still keep my thoughts, that's a good quiet chapel.
-opinion houses against 1 : I'd have the grand owners come and stand underneath what their orders ask to be lifted.
-opinion strangers for 1 : A new face deserves the chair in good repair, with a clear walk to the outside.
+opinion @1 merchants mixed 1 : A wolf buying one wedge and a wolf buying ten can both be told what good metal costs.
+opinion @1 dole for 2 : I can spare an apple without consulting anybody's plan for the months beyond today.
+opinion @1 road mixed 1 : The last turn to a job is every bit as important as the outward road. Let me see the load before it reaches my boots.
+opinion @1 church for 1 : When I can hear a late visitor's foot and still keep my thoughts, that's a good quiet chapel.
+opinion @1 houses against 1 : I'd have the grand owners come and stand underneath what their orders ask to be lifted.
+opinion @1 strangers for 1 : A new face deserves the chair in good repair, with a clear walk to the outside.
 
 grown
-line greet : Step into view, boots and all. | A seat for you and clear ground between us.
-line greet.return : Welcome from a wolf already turned your way.
-line again.open : Here comes that step round the door again.
-line farewell : Go out with the way in plain view. | Take an apple's worth of comfort for the road.
-line farewell.return : And a clear approach to your own fireside.
-line react.news : Begin the news on firm ground. | I can move the chair round to hear you.
-line react.news.new : A fresh cut into that day's account.
-line react.news.known : I recall the direction of the first telling.
-line react.news.doubt : I'd look at the bottom before lifting that account.
-line react.news.sorrow [topic.kind=death|loss|assault] : There's room in my sight for the hurt as well as the work.
-line react.news.glad [topic.kind=birth|marriage|work] : I'd turn the best seat towards tidings like that.
-line ask.how : How's the day looked from behind your own pair of eyes?
-line answer.how : Steady as my chair when the floor's honest.
-line sympathise : Sit here and nobody will come up behind either of us.
-line reassure : There's a safe bit of ground between one load and the next.
-line refuse : I have a matter on hand that needs my whole attention.
-line accept_decline : All right. There's always a clean way back out.
-line preclose : I'd best use what's left of daylight while I have my eye on it.
-line accept_preclose : Go while you've room to turn without squeezing anybody.
-line ack : I've seen the face of that matter now.
-
+line @1 greet : Step into view, boots and all. | A seat for you and clear ground between us.
+line @1 greet.return : Welcome from a wolf already turned your way.
+line @1 again.open : Here comes that step round the door again.
+line @1 farewell : Go out with the way in plain view. | Take an apple's worth of comfort for the road.
+line @1 farewell.return : And a clear approach to your own fireside.
+line @1 react.news : Begin the news on firm ground. | I can move the chair round to hear you.
+line @1 react.news.new : A fresh cut into that day's account.
+line @1 react.news.known : I recall the direction of the first telling.
+line @1 react.news.doubt : I'd look at the bottom before lifting that account.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : There's room in my sight for the hurt as well as the work.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd turn the best seat towards tidings like that.
+line @1 ask.how : How's the day looked from behind your own pair of eyes?
+line @1 answer.how : Steady as my chair when the floor's honest.
+line @1 sympathise : Sit here and nobody will come up behind either of us.
+line @1 reassure : There's a safe bit of ground between one load and the next.
+line @1 refuse : I have a matter on hand that needs my whole attention.
+line @1 accept_decline : All right. There's always a clean way back out.
+line @1 preclose : I'd best use what's left of daylight while I have my eye on it.
+line @1 accept_preclose : Go while you've room to turn without squeezing anybody.
+line @1 ack : I've seen the face of that matter now.
 scene exchange1
 when topic=work self.job=miner
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.dislikes=flies
 does aside
 cooldown 8h
 say The cover goes down before the flies call a meeting. | One bite of apple spared for a decent mouth.
-dlg resident.hub : I've turned the chair so we can both see who's arriving.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I knew the way your feet came round the corner.
-dlg resident.hub [here.time=night] : I'll leave the door light where a visitor can see the sill.
-dlg resident.hub [pair.disposition=wary|hostile] : You're plainly in sight. Speak just as plainly as you please.
-dlg resident.job [self.job=miner] : I oversee the quarry cuts. I want every pair of paws in view before a weight starts moving.
-dlg resident.job : My best work depends on knowing who's standing where and what each is carrying.
-dlg resident.news [world.news] : The news in clear sight is #world.news#.
-dlg resident.gossip [here.gossip=yes] : Someone reports #topic.subject# #topic.claim#. I have the account in view, not the original event.
-dlg resident.bye : May everything approaching your door come from a kindly direction.
 
+dlg @1 resident.hub : I've turned the chair so we can both see who's arriving.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I knew the way your feet came round the corner.
+dlg @3 resident.hub [here.time=night] : I'll leave the door light where a visitor can see the sill.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You're plainly in sight. Speak just as plainly as you please.
+dlg @1 resident.job [self.job=miner] : I oversee the quarry cuts. I want every pair of paws in view before a weight starts moving.
+dlg @2 resident.job : My best work depends on knowing who's standing where and what each is carrying.
+dlg @1 resident.news [world.news] : The news in clear sight is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Someone reports #topic.subject# #topic.claim#. I have the account in view, not the original event.
+dlg @1 resident.bye : May everything approaching your door come from a kindly direction.
 graft resident.hub
 choice Why move a chair that's already comfortable? -> turned_chair
 node turned_chair

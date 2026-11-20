@@ -1,9 +1,12 @@
+# rm504, the counter on the curl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm504
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_eleanor_mudworth
+written_by codex
 title the counter on the curl
 fits stage=adult|old
 prefers job=scholar
@@ -35,41 +38,40 @@ rain = a soft shower | gentle warm rain
 glass = the lower pane | the square of plain glass
 
 any
-opinion church for 1 : A petition reaches the Bright One before its clerk has finished unrolling the paper. I find considerable peace in that.
-opinion dole for 1 : We need not search a shelf for the reason to fill a hungry neighbour's bowl.
-opinion houses for 1 : Great houses keep the city's long records safe. They ought to leave a low shelf for the ordinary reader too.
-opinion strangers for 1 : A stranger needs the same sort of steady page beneath a searching finger as an old friend.
-opinion festivals for 1 : There's one wedding dance I remember whenever I sit judging a feast beside a room's quieter wall.
+opinion @1 church for 1 : A petition reaches the Bright One before its clerk has finished unrolling the paper. I find considerable peace in that.
+opinion @1 dole for 1 : We need not search a shelf for the reason to fill a hungry neighbour's bowl.
+opinion @1 houses for 1 : Great houses keep the city's long records safe. They ought to leave a low shelf for the ordinary reader too.
+opinion @1 strangers for 1 : A stranger needs the same sort of steady page beneath a searching finger as an old friend.
+opinion @1 festivals for 1 : There's one wedding dance I remember whenever I sit judging a feast beside a room's quieter wall.
 
 grown
-line greet [pair.band=strangers] : Take the chair beside the flat part of the roll. | A welcome place near the little counter.
-line greet [self.working=yes] : You have a hearing while my page stays open. | Come near my clear working corner.
-line greet [here.time=dawn] : Morning. The page lies particularly flat. | New light for a civil request.
-line greet [here.time=dusk|night] : Evening leaves room for a quieter word. | Come where the record still catches the lamp.
-line kin.open [pair.kin!=no] : Family need no counter to hold their place. | There's room beside the household paper.
-line again.open : A second visit on an open page. | We turn to our place again.
-line greet.return : I hear you, softly and clearly. | My hand can rest upon the margin.
-line greet.return [pair.band=friends|family] : A familiar voice beside my patient little weight. | This seat knows your welcome.
-line greet.return [self.working=yes] : One free ear above the open record. | Let my hand finish with this curling end.
-line greet.return [here.time=dusk|night] : Evening. Kindly voices travel quite sufficiently. | There's warmth this side of the shutter.
-line farewell : An uncrowded page in your next hour. | Keep your place easily wherever you stop.
-line farewell.return : I'll hold the curling end for the next visit. | Kind company at the far chair.
-line farewell.return [here.time=night] : A gentle lamp beyond your last turning. | May your work be closed before sleep finds you.
-line react.news : Place the matter where I may see it plainly. | Which bit belongs in the fair copy?
-line react.news.new : A line newly entered in my hearing. | That has no mark here yet.
-line react.news.known : I remember the position of that sentence. | An earlier reading brought the same account.
-line react.news.doubt : I'd allow a second look before weighting that line down. | A curling edge may have hidden one important qualification.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep the page quite still for you. | That hurt deserves a quieter hearing.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A happy addition to the household record. | My private thanks go up for that happy turn.
-line ask.how : Has the day lain quietly under your hand? | Are you wearing a heavy page today?
-line answer.how : My counter's keeping things reasonably even. | A little weariness. Room for another kind word.
-line decline : I'd best keep my calm hour free for an unfinished record. | I need my remaining breath for a little work at home.
-line accept_decline : I understand the need to leave that page closed. | Your answer has its proper place.
-line thank : You've eased my hand upon the stubborn edge. | I remember the gentle attention you brought.
-line sympathise : Sit by the quieter pane awhile. | I'll keep the place while you rest your eyes.
-line reassure : A page may be laid down without losing the line. | You may have another gentle beginning.
-line preclose : I ought to return the counter to its page. | The last quiet business wants my ear again.
-
+line @1 greet [pair.band=strangers] : Take the chair beside the flat part of the roll. | A welcome place near the little counter.
+line @2 greet [self.working=yes] : You have a hearing while my page stays open. | Come near my clear working corner.
+line @3 greet [here.time=dawn] : Morning. The page lies particularly flat. | New light for a civil request.
+line @4 greet [here.time=dusk|night] : Evening leaves room for a quieter word. | Come where the record still catches the lamp.
+line @1 kin.open [pair.kin!=no] : Family need no counter to hold their place. | There's room beside the household paper.
+line @1 again.open : A second visit on an open page. | We turn to our place again.
+line @1 greet.return : I hear you, softly and clearly. | My hand can rest upon the margin.
+line @2 greet.return [pair.band=friends|family] : A familiar voice beside my patient little weight. | This seat knows your welcome.
+line @3 greet.return [self.working=yes] : One free ear above the open record. | Let my hand finish with this curling end.
+line @4 greet.return [here.time=dusk|night] : Evening. Kindly voices travel quite sufficiently. | There's warmth this side of the shutter.
+line @1 farewell : An uncrowded page in your next hour. | Keep your place easily wherever you stop.
+line @1 farewell.return : I'll hold the curling end for the next visit. | Kind company at the far chair.
+line @2 farewell.return [here.time=night] : A gentle lamp beyond your last turning. | May your work be closed before sleep finds you.
+line @1 react.news : Place the matter where I may see it plainly. | Which bit belongs in the fair copy?
+line @1 react.news.new : A line newly entered in my hearing. | That has no mark here yet.
+line @1 react.news.known : I remember the position of that sentence. | An earlier reading brought the same account.
+line @1 react.news.doubt : I'd allow a second look before weighting that line down. | A curling edge may have hidden one important qualification.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep the page quite still for you. | That hurt deserves a quieter hearing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A happy addition to the household record. | My private thanks go up for that happy turn.
+line @1 ask.how : Has the day lain quietly under your hand? | Are you wearing a heavy page today?
+line @1 answer.how : My counter's keeping things reasonably even. | A little weariness. Room for another kind word.
+line @1 decline : I'd best keep my calm hour free for an unfinished record. | I need my remaining breath for a little work at home.
+line @1 accept_decline : I understand the need to leave that page closed. | Your answer has its proper place.
+line @1 thank : You've eased my hand upon the stubborn edge. | I remember the gentle attention you brought.
+line @1 sympathise : Sit by the quieter pane awhile. | I'll keep the place while you rest your eyes.
+line @1 reassure : A page may be laid down without losing the line. | You may have another gentle beginning.
+line @1 preclose : I ought to return the counter to its page. | The last quiet business wants my ear again.
 scene curl
 when topic=work self.job=scholar
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say Silence enough to read that difficult first name. | Wipe the sill before opening the covers.
 
-dlg resident.hub : Take the chair where my little page weight's in view. It will keep my place while I hear your business in peace.
-dlg resident.job [self.job=scholar self.trade_words] : #self.trade_words.capitalize#. I try to return a reader's particular name in its own proper form.
-dlg resident.news [world.news] : A report has reached my quiet corner of the desk. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's a free square beside the familiar papers.
-dlg resident.bye : May the Bright One allow you a quiet place to set the day's work down.
-
+dlg @1 resident.hub : Take the chair where my little page weight's in view. It will keep my place while I hear your business in peace.
+dlg @1 resident.job [self.job=scholar self.trade_words] : #self.trade_words.capitalize#. I try to return a reader's particular name in its own proper form.
+dlg @1 resident.news [world.news] : A report has reached my quiet corner of the desk. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a free square beside the familiar papers.
+dlg @1 resident.bye : May the Bright One allow you a quiet place to set the day's work down.
 graft resident.hub
 choice Is your paperweight allowed to play draughts again? -> roll_counter
 node roll_counter

@@ -1,14 +1,17 @@
+# rm342, the clean thumb (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm342
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_dagfinn_ropeby
+written_by codex
 title the clean thumb
 fits stage=adult|old
 prefers job=crafter humour=dry
 traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
-quirk keeps_one_thumb_clean_inside_a_spare_fingerstall_for_judging_dust
+quirk keeps_one_thumb_clean_in_a_fingerstall_for_judging_dust
 likes pickled_herring dice new_boots frosty_mornings
 dislikes bad_manners smoke
 fears grit_under_a_lid a_bargain_with_no_witness
@@ -34,45 +37,44 @@ newsole = a new boot sole | the thick face of a new heel
 paysack = a pouch tied twice | my buckle purse
 
 any
-opinion houses against 1 : A crest may show who ordered a job. It doesn't tell me who swept up.
-opinion dole for 3 : If one more mouth at dinner can ruin a whole town the dinner was poorly reckoned.
-opinion church for 1 : The Bright One has seen these hands with the dust on. They can go to chapel clean out of courtesy.
-opinion merchants against 2 : A price which changes when a sleeve gets dirty wasn't an honest price to begin with.
-opinion strangers for 1 : I keep a scrap of cloth clean for an unexpected guest as well as for myself.
-opinion watch mixed 0 : A marked coat still contains a wolf. I'll judge the manners when the mouth opens.
-opinion city for 1 : There's room in one city for a hundred whites between sea foam and the stone wall.
+opinion @1 houses against 1 : A crest may show who ordered a job. It doesn't tell me who swept up.
+opinion @1 dole for 3 : If one more mouth at dinner can ruin a whole town the dinner was poorly reckoned.
+opinion @1 church for 1 : The Bright One has seen these hands with the dust on. They can go to chapel clean out of courtesy.
+opinion @1 merchants against 2 : A price which changes when a sleeve gets dirty wasn't an honest price to begin with.
+opinion @1 strangers for 1 : I keep a scrap of cloth clean for an unexpected guest as well as for myself.
+opinion @1 watch mixed 0 : A marked coat still contains a wolf. I'll judge the manners when the mouth opens.
+opinion @1 city for 1 : There's room in one city for a hundred whites between sea foam and the stone wall.
 
 grown
-line greet : Welcome. There's one genuinely clean spot here.
-line greet [pair.band=strangers] : Fresh face. I haven't put a thumb mark on it yet.
-line greet [here.time=dawn] : Morning sharp enough to leave a print.
-line greet [here.time=dusk|night] : It's evening and most of my eyebrows have turned up.
-line greet.return : I heard the greeting through all this white.
-line greet.return [pair.band=friends|family] : Here's a face I'd recognise under any amount of powder.
-line greet.return [self.working=yes] : Talk across my clean shoulder. The other one's employed.
-line greet.return [here.time=dusk|night] : A good word turns up nicely against the dark.
-line kin.open [pair.kin!=no] : Family can have the clean cloth first.
-line again.open : I've marked our stopping place with a thumb.
-line hail [pair.band=friends] : Hoy, decent company! Over by the pale elbow.
-line farewell : Go home with fewer marks than I have.
-line farewell.return : And mind the dust where the sill narrows.
-line react.news : Give it a tap. See what falls off the account.
-line react.news.new : First sign of it under this roof.
-line react.news.known : There's an old mark exactly that shape in my memory.
-line react.news.doubt : I wouldn't rub my eyes with that account on my paws.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard thing to have written into anybody's day.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That leaves the place a shade brighter.
-line ask.how : Any clean sleeve left after the day you've had?
-line answer.how : Warm enough under this excellent disguise of dust.
-line thank : You saved my clean thumb for another occasion.
-line deflect_thanks : Took a dab, and I had one left.
-line sympathise : I can stay here without explaining it all to you.
-line reassure : Clear a little room round it. You'll see where to start.
-line decline : My next hour's spoken for by a job with gritty edges.
-line accept_decline : Fair answer. You needn't polish it up for me.
-line preclose : I should go and see whether my clean coat still knows me.
-line accept_preclose : Your own work can have you back with my good wishes.
-
+line @1 greet : Welcome. There's one genuinely clean spot here.
+line @2 greet [pair.band=strangers] : Fresh face. I haven't put a thumb mark on it yet.
+line @3 greet [here.time=dawn] : Morning sharp enough to leave a print.
+line @4 greet [here.time=dusk|night] : It's evening and most of my eyebrows have turned up.
+line @1 greet.return : I heard the greeting through all this white.
+line @2 greet.return [pair.band=friends|family] : Here's a face I'd recognise under any amount of powder.
+line @3 greet.return [self.working=yes] : Talk across my clean shoulder. The other one's employed.
+line @4 greet.return [here.time=dusk|night] : A good word turns up nicely against the dark.
+line @1 kin.open [pair.kin!=no] : Family can have the clean cloth first.
+line @1 again.open : I've marked our stopping place with a thumb.
+line @1 hail [pair.band=friends] : Hoy, decent company! Over by the pale elbow.
+line @1 farewell : Go home with fewer marks than I have.
+line @1 farewell.return : And mind the dust where the sill narrows.
+line @1 react.news : Give it a tap. See what falls off the account.
+line @1 react.news.new : First sign of it under this roof.
+line @1 react.news.known : There's an old mark exactly that shape in my memory.
+line @1 react.news.doubt : I wouldn't rub my eyes with that account on my paws.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard thing to have written into anybody's day.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That leaves the place a shade brighter.
+line @1 ask.how : Any clean sleeve left after the day you've had?
+line @1 answer.how : Warm enough under this excellent disguise of dust.
+line @1 thank : You saved my clean thumb for another occasion.
+line @1 deflect_thanks : Took a dab, and I had one left.
+line @1 sympathise : I can stay here without explaining it all to you.
+line @1 reassure : Clear a little room round it. You'll see where to start.
+line @1 decline : My next hour's spoken for by a job with gritty edges.
+line @1 accept_decline : Fair answer. You needn't polish it up for me.
+line @1 preclose : I should go and see whether my clean coat still knows me.
+line @1 accept_preclose : Your own work can have you back with my good wishes.
 scene clean_thumb
 when topic=smalltalk|work
 does tell.self / ask.detail / answer.detail
@@ -197,7 +199,7 @@ when topic=dreams
 does tell.self / ask.detail / answer.detail
 a : I'd like a doorstep with room for my muddy boots and another pair beside them. | Suppose the latch turned without a squeak and the floor sat properly level.
 b : Expecting company? | Your idea of grandeur?
-a : Might as well give the hope somewhere to stand. | I wasn't proposing to spend the rest of my dream footing a grand bill.
+a : Might as well give the hope somewhere to stand. | Grand enough. A quiet latch and a level floor would cost a House nothing, and me a year.
 
 story rolled_six [topic=pastimes|memories]
   : I sneezed into a handful of dice and sent a six into each of my boots.
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Clean light on a clean rim. That's a good start.
 
-dlg resident.hub : Find a patch that doesn't leave a portrait on your sleeve.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Ah, somebody who knows which end of me is clean.
-dlg resident.hub [here.time=night] : Nobody need admire the state of my cuffs by this light.
-dlg resident.hub [pair.disposition=hostile|wary] : Speak from a sensible distance and we'll both keep our coats decent.
-dlg resident.job [self.job=crafter] : #self.trade_words.capitalize#. Most of the evidence is on my clothes.
-dlg resident.job : My work shows what I've done, sometimes right up to the shoulder.
-dlg resident.news [world.news] : #world.news#. That's how the message runs out of #world.news_from#.
-dlg resident.gossip [here.gossip=yes] : I've heard that #topic.subject# #topic.claim#. That's all that'll take a clean print.
-dlg resident.bye : Give your coat the least dusty bit of road going home.
-
+dlg @1 resident.hub : Find a patch that doesn't leave a portrait on your sleeve.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Ah, somebody who knows which end of me is clean.
+dlg @3 resident.hub [here.time=night] : Nobody need admire the state of my cuffs by this light.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from a sensible distance and we'll both keep our coats decent.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. Most of the evidence is on my clothes.
+dlg @2 resident.job : My work shows what I've done, sometimes right up to the shoulder.
+dlg @1 resident.news [world.news] : #world.news#. That's how the message runs out of #world.news_from#.
+dlg @1 resident.gossip [here.gossip=yes] : I've heard that #topic.subject# #topic.claim#. That's all that'll take a clean print.
+dlg @1 resident.bye : Give your coat the least dusty bit of road going home.
 graft resident.hub
 choice Does one clean thumb tell you much? -> thumb_evidence
 node thumb_evidence

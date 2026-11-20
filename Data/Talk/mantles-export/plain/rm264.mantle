@@ -1,9 +1,12 @@
+# rm264, the high note (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm264
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_dorcas_brineley
+written_by codex
 title the high note
 fits stage=adult|old
 prefers job=laborer
@@ -35,35 +38,34 @@ wingnoise = a racket of wings | the churning above the stalls
 handmark = a sign made with one paw | a sweep of the wrist
 
 any
-opinion houses against 3 : Some loads come home in full and some leave a space at supper. I remember who counts them.
-opinion church for 2 : A market voice can find a quiet use before the Bright One.
-opinion merchants mixed 1 : I can admire a good piece of cloth without thinking the wolf who wove it got a fair share.
-opinion festivals for 1 : It's a relief singing to a street where nobody expects a list of sizes.
-opinion sump for 2 : Every low roof has a different answer to my call. I'd miss that chorus.
-opinion dole for 2 : A wolf can be too hungry to shout and still have a perfectly good claim on supper.
+opinion @1 houses against 3 : Some loads come home in full and some leave a space at supper. I remember who counts them.
+opinion @1 church for 2 : A market voice can find a quiet use before the Bright One.
+opinion @1 merchants mixed 1 : I can admire a good piece of cloth without thinking the wolf who wove it got a fair share.
+opinion @1 festivals for 1 : It's a relief singing to a street where nobody expects a list of sizes.
+opinion @1 sump for 2 [self.quarter=sump] : Every low roof has a different answer to my call. I'd miss that chorus.
+opinion @1 dole for 2 : A wolf can be too hungry to shout and still have a perfectly good claim on supper.
 
 grown
-line greet : Ease your ears. This greeting's just for you. | I'm off my high note. Welcome.
-line greet.return : A private greeting coming right back. | Glad our voices met at this softer pitch.
-line again.open : Back before the echo quite died.
-line farewell : Go with a clear throat and an easy stride. | I'll save the next cry till you're clear.
-line farewell.return : And a fair wind behind your words. | My good wishes don't need shouting after you.
-line react.news : Speak close. I'd sooner hear than carry it. | Let that news use your own voice.
-line react.news.new : That's a tune freshly come to this street.
-line react.news.known : The second hearing carries just as far.
-line react.news.doubt : Somebody's reached above the comfortable notes.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd lay my market voice aside for news so sore.
-line react.news.glad [topic.kind=birth|marriage|work] : That deserves all the lift my voice can give it.
-line ask.how : Has your own voice carried far today?
-line answer.how : A bit rubbed at the edges. I can still hum.
-line sympathise : You can whisper it if that's easier.
-line reassure : Nobody need find the high note straight away.
-line refuse : My voice is promised elsewhere before the light goes.
-line accept_decline : You needn't shout a refusal twice.
-line preclose : I have another bit of street to cover yet.
-line accept_preclose : I'll let you go without a final flourish.
-line ack : Yes, quite clear through the bustle.
-
+line @1 greet : Ease your ears. This greeting's just for you. | I'm off my high note. Welcome.
+line @1 greet.return : A private greeting coming right back. | Glad our voices met at this softer pitch.
+line @1 again.open : Back before the echo quite died.
+line @1 farewell : Go with a clear throat and an easy stride. | I'll save the next cry till you're clear.
+line @1 farewell.return : And a fair wind behind your words. | My good wishes don't need shouting after you.
+line @1 react.news : Speak close. I'd sooner hear than carry it. | Let that news use your own voice.
+line @1 react.news.new : That's a tune freshly come to this street.
+line @1 react.news.known : The second hearing carries just as far.
+line @1 react.news.doubt : Somebody's reached above the comfortable notes.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd lay my market voice aside for news so sore.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That deserves all the lift my voice can give it.
+line @1 ask.how : Has your own voice carried far today?
+line @1 answer.how : A bit rubbed at the edges. I can still hum.
+line @1 sympathise : You can whisper it if that's easier.
+line @1 reassure : Nobody need find the high note straight away.
+line @1 refuse : My voice is promised elsewhere before the light goes.
+line @1 accept_decline : You needn't shout a refusal twice.
+line @1 preclose : I have another bit of street to cover yet.
+line @1 accept_preclose : I'll let you go without a final flourish.
+line @1 ack : Yes, quite clear through the bustle.
 scene exchange1
 when topic=work self.job=laborer
 does tell.self / ask.detail / answer.detail
@@ -231,16 +233,16 @@ when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say The wet hem wants another peg. | Cloth under cover till the rain moves on.
-dlg resident.hub : My public voice is resting. This one works well enough.
-dlg resident.hub [topic.meeting=known] : #topic.player#, no need to call me over the bustle.
-dlg resident.hub [here.time=night] : The streets have stopped shouting at last.
-dlg resident.hub [pair.disposition=wary|hostile] : Say it without a sales pitch and I'll hear you.
-dlg resident.job [self.job=laborer] : I cry up wares till a scrap feels like a whole bright sleeve in the mind.
-dlg resident.job : I prefer ending the day knowing my pay was spoken plain.
-dlg resident.news [world.news] : Here's the quiet version. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I wouldn't give it a seller's guarantee.
-dlg resident.bye : May the last voice on your walk be a kind one.
 
+dlg @1 resident.hub : My public voice is resting. This one works well enough.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, no need to call me over the bustle.
+dlg @3 resident.hub [here.time=night] : The streets have stopped shouting at last.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Say it without a sales pitch and I'll hear you.
+dlg @1 resident.job [self.job=laborer] : I cry up wares till a scrap feels like a whole bright sleeve in the mind.
+dlg @2 resident.job : I prefer ending the day knowing my pay was spoken plain.
+dlg @1 resident.news [world.news] : Here's the quiet version. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I wouldn't give it a seller's guarantee.
+dlg @1 resident.bye : May the last voice on your walk be a kind one.
 graft resident.hub
 choice Can a quiet voice sell anything? -> low_note
 node low_note

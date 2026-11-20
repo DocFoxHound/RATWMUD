@@ -1,14 +1,17 @@
+# rm577, the high-water tally (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm577
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_tove_mossdale
+written_by codex
 title the high-water tally
 fits stage=adult|old
 prefers job=merchant temper=calm
 traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk rules_bale_weights_above_a_blue_line_that_marks_the_height_of_a_flood
+quirk rules_bale_weights_above_a_blue_flood_line
 likes honey_cakes stars market_bustle first_snow
 dislikes bad_manners early_bells
 fears a_ledger_left_on_a_low_sill a_figures_last_corner_pulled_by_the_damp
@@ -34,45 +37,44 @@ pensplit = the tiny slit of the nib | an open nib
 cordend = a clean end of packing cord | a short tie of cord
 
 any
-opinion merchants for 1 : If the apprentice at one end of a store can read what's written at the other, the charge is easier to explain.
-opinion city for 1 : Walk it after a heavy shower and the slopes reveal the whole town's arrangements for water.
-opinion road mixed 0 : The quickest road changes once the bottom step disappears.
-opinion houses mixed 0 : A House seal doesn't make a wet tally any easier to read.
-opinion festivals for 1 : A festival market gives a good strong voice plenty of work between the bells.
-opinion watch for 1 : I appreciate a hand at the corner that can send the carts round before the lane floods.
-opinion strangers for 1 : A stranger naming the street that soaked a boot has just given me a useful measurement.
+opinion @1 merchants for 1 : If the apprentice at one end of a store can read what's written at the other, the charge is easier to explain.
+opinion @1 city for 1 : Walk it after a heavy shower and the slopes reveal the whole town's arrangements for water.
+opinion @1 road mixed 0 : The quickest road changes once the bottom step disappears.
+opinion @1 houses mixed 0 : A House seal doesn't make a wet tally any easier to read.
+opinion @1 festivals for 1 : A festival market gives a good strong voice plenty of work between the bells.
+opinion @1 watch for 1 : I appreciate a hand at the corner that can send the carts round before the lane floods.
+opinion @1 strangers for 1 : A stranger naming the street that soaked a boot has just given me a useful measurement.
 
 grown
-line greet : Plenty of dry room above this line. Come over.
-line greet [pair.band=strangers] : I've a fresh square for a new arrival.
-line greet [here.time=dawn] : Morning. The first figures have the board to themselves.
-line greet [here.time=dusk|night] : Evening's left a blue rim on the rooftops.
-line greet.return : Your voice reached clear across the page.
-line greet.return [pair.band=friends|family] : I was keeping a dry square for the familiar voices.
-line greet.return [self.working=yes] : My pen can stop exactly at this corner.
-line greet.return [here.time=dusk|night] : A voice carries farther once the last lit window darkens.
-line kin.open [pair.kin!=no] : Kin may take the end nearest the warm cakes.
-line again.open : The count's where we left the lid.
-line hail [pair.band=friends] : Friend, there's a fine clean place for your elbow.
-line farewell : May the high road stay worth the climb.
-line farewell.return : And dry your cuffs before you pack the papers.
-line react.news : Call the place clearly along with the word.
-line react.news.new : That's a fresh number across my square.
-line react.news.known : I entered that one with an earlier hand.
-line react.news.doubt : I'd like to look where the last figure bends.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let the page lie still while we hear the hard part.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's one worth calling down the whole length.
-line ask.how : Any good high ground in your day?
-line answer.how : I've enough daylight left to finish a clear row.
-line thank : You kept that entry above water. I'm grateful.
-line deflect_thanks : I had spare paper and a sound ledge.
-line sympathise : An open square is yours to sit beside quietly.
-line reassure : One small clean entry will start a muddled sheet.
-line decline : I've already put my name above another piece of work.
-line accept_decline : Very well. A clear answer fits a small square.
-line preclose : My next figure wants what light there is.
-line accept_preclose : Take the lane where the doorsills show.
-
+line @1 greet : Plenty of dry room above this line. Come over.
+line @2 greet [pair.band=strangers] : I've a fresh square for a new arrival.
+line @3 greet [here.time=dawn] : Morning. The first figures have the board to themselves.
+line @4 greet [here.time=dusk|night] : Evening's left a blue rim on the rooftops.
+line @1 greet.return : Your voice reached clear across the page.
+line @2 greet.return [pair.band=friends|family] : I was keeping a dry square for the familiar voices.
+line @3 greet.return [self.working=yes] : My pen can stop exactly at this corner.
+line @4 greet.return [here.time=dusk|night] : A voice carries farther once the last lit window darkens.
+line @1 kin.open [pair.kin!=no] : Kin may take the end nearest the warm cakes.
+line @1 again.open : The count's where we left the lid.
+line @1 hail [pair.band=friends] : Friend, there's a fine clean place for your elbow.
+line @1 farewell : May the high road stay worth the climb.
+line @1 farewell.return : And dry your cuffs before you pack the papers.
+line @1 react.news : Call the place clearly along with the word.
+line @1 react.news.new : That's a fresh number across my square.
+line @1 react.news.known : I entered that one with an earlier hand.
+line @1 react.news.doubt : I'd like to look where the last figure bends.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let the page lie still while we hear the hard part.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's one worth calling down the whole length.
+line @1 ask.how : Any good high ground in your day?
+line @1 answer.how : I've enough daylight left to finish a clear row.
+line @1 thank : You kept that entry above water. I'm grateful.
+line @1 deflect_thanks : I had spare paper and a sound ledge.
+line @1 sympathise : An open square is yours to sit beside quietly.
+line @1 reassure : One small clean entry will start a muddled sheet.
+line @1 decline : I've already put my name above another piece of work.
+line @1 accept_decline : Very well. A clear answer fits a small square.
+line @1 preclose : My next figure wants what light there is.
+line @1 accept_preclose : Take the lane where the doorsills show.
 scene blue_line
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Tie the card on the dry loop.
 
-dlg resident.hub : I'll cap this ink first. There's elbow room across my desk.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I'll use the page where we left the earlier figures.
-dlg resident.hub [here.time=dusk] : Still a fine edge of daylight for a visitor's word.
-dlg resident.hub [pair.disposition=hostile|wary] : I can hear the particulars from well beyond the reach of this nib.
-dlg resident.job [self.job=merchant self.workplace] : At #self.workplace# I keep a square for each load and its actual weight.
-dlg resident.news [world.news] : The square marked #world.news_from# holds this notice. #world.news#.
-dlg resident.gossip [here.gossip=yes] : That tale hasn't the dry edge I'd need to put it into a clean account.
-dlg resident.bye : Leave some dry paper for the next arrival.
-
+dlg @1 resident.hub : I'll cap this ink first. There's elbow room across my desk.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'll use the page where we left the earlier figures.
+dlg @3 resident.hub [here.time=dusk] : Still a fine edge of daylight for a visitor's word.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I can hear the particulars from well beyond the reach of this nib.
+dlg @1 resident.job [self.job=merchant self.workplace] : At #self.workplace# I keep a square for each load and its actual weight.
+dlg @1 resident.news [world.news] : The square marked #world.news_from# holds this notice. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That tale hasn't the dry edge I'd need to put it into a clean account.
+dlg @1 resident.bye : Leave some dry paper for the next arrival.
 graft resident.hub
 choice Why put a blue line on a ledger? -> blue_rule
 node blue_rule

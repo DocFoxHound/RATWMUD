@@ -1,9 +1,12 @@
+# rm339, the coal behind the clock (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm339
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_vidar_ashhand
+written_by codex
 title the coal behind the clock
 fits stage=adult|old
 prefers job=servant
@@ -83,7 +86,6 @@ line @28 farewell [here.time=night] : Rest in a house with no uncertain noises. 
 line @29 greet [pair.band=friends] : Good, a step whose intention I needn't wonder about. | Here is a welcome with the cover already turned back.
 line @30 answer.how [self.working=yes] : Steady as long as what's on the tray agrees. | Seeing to a number of small things with agreeable success.
 line @31 preclose [here.time=dusk] : There is some small advantage left in the slant of this light. | The room wants putting in evening order.
-
 scene felt
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -375,7 +377,6 @@ dlg @12 master.takes [here.take_on=no] : #here.take_on_why# Those circumstances 
 dlg @13 master.refused : #topic.why# I prefer to leave no uncertainty over the reason.
 dlg @14 master.bye : Give the little lesson time to settle before trying to do it all at once.
 dlg @15 resident.hub [here.weather=rain] : Let the damp rest by the door. A folded cloth is ready in the drawer.
-
 graft resident.hub
 choice What is the little felt parcel for? -> quiet_luck
 node quiet_luck

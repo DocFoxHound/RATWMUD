@@ -1,9 +1,12 @@
+# rm523, the wooden window (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm523
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_hollis_slagwick
+written_by codex
 title the wooden window
 fits stage=adult|old
 prefers job=servant honesty=guarded
@@ -35,43 +38,42 @@ boardfloor = a straight board | the clear floor
 daylightbar = a slant of light | the pale opening
 
 any
-opinion houses mixed 0 : A fine window shows excellent taste. Where the servants sleep may show a truer account of the household.
-opinion city for 1 : A clear evening can give me the same distant hill from half a dozen different ranks of windows.
-opinion merchants against 1 : I'd inspect the frame underneath the paint before accepting anybody's price for polish.
-opinion strangers against 1 : I'd rather choose what comes into my room than leave my door to public taste.
-opinion road mixed 0 : A good view of a lane doesn't show whether its drains work.
-opinion festivals mixed 0 : Give me the bells heard at a civil distance and somebody else may take my place in the crowd.
+opinion @1 houses mixed 0 : A fine window shows excellent taste. Where the servants sleep may show a truer account of the household.
+opinion @1 city for 1 : A clear evening can give me the same distant hill from half a dozen different ranks of windows.
+opinion @1 merchants against 1 : I'd inspect the frame underneath the paint before accepting anybody's price for polish.
+opinion @1 strangers against 1 : I'd rather choose what comes into my room than leave my door to public taste.
+opinion @1 road mixed 0 : A good view of a lane doesn't show whether its drains work.
+opinion @1 festivals mixed 0 : Give me the bells heard at a civil distance and somebody else may take my place in the crowd.
 
 grown
-line greet : Hello. Stand outside the frame for a moment. | Welcome. You've caught a clear patch.
-line greet [pair.band=strangers] : A new face in this narrow prospect. | You can speak by this close corner of my sill.
-line greet [here.time=dawn] : Morning gives the carving a clean edge. | Light from the east fits this opening neatly.
-line greet.return : Yes, hello. The frame can go in my pocket. | My attention is off the sill now.
-line greet.return [pair.band=friends|family] : A known face improves an ordinary view. | You're welcome within my little rectangle.
-line greet.return [here.time=night] : Evening. Dark begins in the corners. | There's enough left in the opening for two voices.
-line again.open : Back inside the view again. | I've shifted the frame since we spoke.
-line hail [pair.band=friends] : Come see a whole roof fitted in here! | Take this exact angle before the light goes!
-line farewell : May your room have an honest window. | A smooth latch at your destination.
-line farewell.return : I'll put away my little view now. | Go before the light leaves that jamb altogether.
-line react.news : Tell me what actually stood inside your view. | A narrow account with the edges known will suit me.
-line react.news.new : That hasn't come through my opening before. | A fresh shape for the little frame.
-line react.news.known : It was in the earlier account's field as well. | I've seen that outline in a previous telling.
-line react.news.doubt : A great deal appears to be happening outside the stated view. | I'd check what the frame cuts off there.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sit clear of every watching window. | I can spare you somebody peering at a hard moment.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A fine bit of fortune inside one day's frame. | Glad news gives a dark pane some useful light.
-line ask.how : Does today give you a tolerable outlook? | Any clear patch ahead of your errands?
-line answer.how : Managing. My wood has a slight catch, that's all. | Fairly comfortable in this light.
-line decline : That would open a part of my day kept for home. | I haven't had that view myself and can't vouch for it.
-line accept_decline : Then I'll leave your shutter drawn. | Very well. A plain edge to the matter.
-line preclose : Time I put the frame back in its wrapping. | My next household duty is coming into view.
-line accept_preclose : Go while the light still serves you. | We'll leave the opening clear for another time.
-line thank : You brought the real corner into view. Thank you. | I appreciate a kindness offered without inspection.
-line deflect_thanks : I merely shifted a narrow bit of wood. | It took very little of my available light.
-line sympathise : One can draw a curtain when a day is cruel. | There's room outside other wolves' gaze over here.
-line reassure : Try a smaller opening till the whole view seems manageable. | No need to display what you're still mending.
-line ack : I see the actual corner now. | That puts the right part in view.
-line give.advice : View a promising room with every shutter open. | A polished sill may have damp under its lip.
-
+line @1 greet : Hello. Stand outside the frame for a moment. | Welcome. You've caught a clear patch.
+line @2 greet [pair.band=strangers] : A new face in this narrow prospect. | You can speak by this close corner of my sill.
+line @3 greet [here.time=dawn] : Morning gives the carving a clean edge. | Light from the east fits this opening neatly.
+line @1 greet.return : Yes, hello. The frame can go in my pocket. | My attention is off the sill now.
+line @2 greet.return [pair.band=friends|family] : A known face improves an ordinary view. | You're welcome within my little rectangle.
+line @3 greet.return [here.time=night] : Evening. Dark begins in the corners. | There's enough left in the opening for two voices.
+line @1 again.open : Back inside the view again. | I've shifted the frame since we spoke.
+line @1 hail [pair.band=friends] : Come see a whole roof fitted in here! | Take this exact angle before the light goes!
+line @1 farewell : May your room have an honest window. | A smooth latch at your destination.
+line @1 farewell.return : I'll put away my little view now. | Go before the light leaves that jamb altogether.
+line @1 react.news : Tell me what actually stood inside your view. | A narrow account with the edges known will suit me.
+line @1 react.news.new : That hasn't come through my opening before. | A fresh shape for the little frame.
+line @1 react.news.known : It was in the earlier account's field as well. | I've seen that outline in a previous telling.
+line @1 react.news.doubt : A great deal appears to be happening outside the stated view. | I'd check what the frame cuts off there.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sit clear of every watching window. | I can spare you somebody peering at a hard moment.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : A fine bit of fortune inside one day's frame. | Glad news gives a dark pane some useful light.
+line @1 ask.how : Does today give you a tolerable outlook? | Any clear patch ahead of your errands?
+line @1 answer.how : Managing. My wood has a slight catch, that's all. | Fairly comfortable in this light.
+line @1 decline : That would open a part of my day kept for home. | I haven't had that view myself and can't vouch for it.
+line @1 accept_decline : Then I'll leave your shutter drawn. | Very well. A plain edge to the matter.
+line @1 preclose : Time I put the frame back in its wrapping. | My next household duty is coming into view.
+line @1 accept_preclose : Go while the light still serves you. | We'll leave the opening clear for another time.
+line @1 thank : You brought the real corner into view. Thank you. | I appreciate a kindness offered without inspection.
+line @1 deflect_thanks : I merely shifted a narrow bit of wood. | It took very little of my available light.
+line @1 sympathise : One can draw a curtain when a day is cruel. | There's room outside other wolves' gaze over here.
+line @1 reassure : Try a smaller opening till the whole view seems manageable. | No need to display what you're still mending.
+line @1 ack : I see the actual corner now. | That puts the right part in view.
+line @1 give.advice : View a promising room with every shutter open. | A polished sill may have damp under its lip.
 scene carve
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : A crooked jamb looks straight if I turn the little frame far enough. A comfo
 b : When would you use it? | What's the limit?
 a : To see how a line might look after proper repair. Imagination has its legitimate employments. | I still have to shut the actual window. The latch has never shown any interest in my opinion.
 
-grown
-
 story berrypane [topic=pastimes|memories]
   : I used a blackberry to mark the inside of my frame and a damp thumb to turn it round. Marked all four corners in short order.
   : For a day I owned a very superior window with no outside at all.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say A purple spot to mark my frame's inner lip. | Blackberries in a covered dish will last till supper.
 
-dlg resident.hub : I've put the wooden window aside. What would you like brought into view?
-dlg resident.hub [topic.meeting=known] : #topic.player#, you still fit our last comfortable angle of conversation.
-dlg resident.hub [here.time=night] : After dark the rectangle shows mostly lantern light. I can spare it a while.
-dlg resident.hub [pair.disposition=wary|hostile] : A short clear question from your side of this carving, please.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. I keep the household's actual work in view while the finer prospect takes care of itself.
-dlg resident.job : I'm interested in duties whose boundaries can be stated before the day begins.
-dlg resident.bye : May the far wall of your room stay dry in every weather.
-
+dlg @1 resident.hub : I've put the wooden window aside. What would you like brought into view?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you still fit our last comfortable angle of conversation.
+dlg @3 resident.hub [here.time=night] : After dark the rectangle shows mostly lantern light. I can spare it a while.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : A short clear question from your side of this carving, please.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. I keep the household's actual work in view while the finer prospect takes care of itself.
+dlg @2 resident.job : I'm interested in duties whose boundaries can be stated before the day begins.
+dlg @1 resident.bye : May the far wall of your room stay dry in every weather.
 graft resident.hub
 choice Let me look through your wooden window. -> lookthrough
 node lookthrough

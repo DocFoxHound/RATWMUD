@@ -1,9 +1,12 @@
+# rm240, the landing in reserve (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm240
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ivar_nailham
+written_by codex
 title the landing in reserve
 fits stage=adult|old
 prefers job=carter
@@ -35,40 +38,40 @@ bird = a streak of grey feathers | a bird straight off a chimney
 notch = a shallow rut | a groove in the road
 
 any
-opinion road for 1 : I remember where the ruts fall. The road and I manage between us.
-opinion houses against 2 : The signatures are all in order up there. Odd how a smaller name can fall off a page.
-opinion newcomers against 1 : I'll give directions gladly enough. I do mind an extra pair of paws waiting for the same wage.
-opinion dole for 2 : A ladle came to my end of the queue when my pockets were positively echoes.
-opinion sump for 1 : I know which landing to stand on down here without blocking a whole house in.
-opinion watch against 1 : Hard to feel glad of a uniform that's usually hurrying somebody past.
+opinion @1 road for 1 : I remember where the ruts fall. The road and I manage between us.
+opinion @1 houses against 2 : The signatures are all in order up there. Odd how a smaller name can fall off a page.
+opinion @1 newcomers against 1 : I'll give directions gladly enough. I do mind an extra pair of paws waiting for the same wage.
+opinion @1 dole for 2 : A ladle came to my end of the queue when my pockets were positively echoes.
+opinion @1 sump for 1 : In the Sump you learn which landing to stand on without blocking a whole house in.
+opinion @1 watch against 1 : Hard to feel glad of a uniform that's usually hurrying somebody past.
 
 grown
-line greet : Just the one step left. There. Hello. | Give me the landing and I'll give you my ear.
-line greet [pair.band=strangers] : This stair hasn't brought us together before. Room to pass behind me. | Take the rail side. We can talk here.
-line greet.return : Welcome. You caught me between flights. | Well met on a level bit.
-line greet.return [self.working=yes] : Tell me while I've both feet down. | A short word will fit between loads.
-line greet.return [pair.band=friends|family] : That voice saves me the trouble of turning round. | Ah, you can have the rail side.
-line again.open : Back on this flight before me. | Haven't moved the landing since you left.
-line farewell : Easy going on the last stair. | Good footing round the bends.
-line farewell.return : I'll let you make the pace home. | Mind the high bit by the threshold.
-line ask.how : How much of the climb's been yours today? | Got up to anything worth the walk back?
-line answer.how : A flight or two behind where I meant to be. | Still enough wind for the single step at the top.
-line react.news : Give me the part that got here on its own legs. | I'll put a foot down and listen.
-line react.news.new : That's a turn I didn't know. | First time up this stair, for me.
-line react.news.known : I've walked over that bit of news. | Quite. Same rut as when I heard it first.
-line react.news.doubt : I reckon somebody's missed a step in that account. | Let's see it come back the other way first.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A bad jolt even to hear of it. | Ah. I'll walk beside you a way.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a pleasant weight off the axle. | I'd take two flights for another word like that.
-line decline : My own climb needs the breath I've got to spare. | I'll give that route a miss this time.
-line accept_decline : Sensible enough to know your distance. | Your word's good. I'll carry on.
-line preclose : That last stair's got my name down. | I'd better get to the other end before supper.
-line accept_preclose : Let the landing keep what's left. | Aye, we can pick up at the turn.
-line sympathise : Lean on my arm. I won't set the pace. | A pause halfway hurts nobody.
-line thank : That saves me some shoe leather. | I'll remember who took the weight there.
-line deflect_thanks : It was going my direction anyhow. | Two easy steps, that's all it cost.
-line ask.detail : Which turning was that on? | How far along had things gone then?
-line take_offence : Don't set your feet on me to reach the next rung. | There's a fair way to ask, and you went past it.
-line kin.open [pair.kin!=no] : Family get the place nearest the rail. | I'll match the family pace for a while.
+line @1 greet : Just the one step left. There. Hello. | Give me the landing and I'll give you my ear.
+line @2 greet [pair.band=strangers] : This stair hasn't brought us together before. Room to pass behind me. | Take the rail side. We can talk here.
+line @1 greet.return : Welcome. You caught me between flights. | Well met on a level bit.
+line @2 greet.return [self.working=yes] : Tell me while I've both feet down. | A short word will fit between loads.
+line @3 greet.return [pair.band=friends|family] : That voice saves me the trouble of turning round. | Ah, you can have the rail side.
+line @1 again.open : Back on this flight before me. | Haven't moved the landing since you left.
+line @1 farewell : Easy going on the last stair. | Good footing round the bends.
+line @1 farewell.return : I'll let you make the pace home. | Mind the high bit by the threshold.
+line @1 ask.how : How much of the climb's been yours today? | Got up to anything worth the walk back?
+line @1 answer.how : A flight or two behind where I meant to be. | Still enough wind for the single step at the top.
+line @1 react.news : Give me the part that got here on its own legs. | I'll put a foot down and listen.
+line @1 react.news.new : That's a turn I didn't know. | First time up this stair, for me.
+line @1 react.news.known : I've walked over that bit of news. | Quite. Same rut as when I heard it first.
+line @1 react.news.doubt : I reckon somebody's missed a step in that account. | Let's see it come back the other way first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A bad jolt even to hear of it. | Ah. I'll walk beside you a way.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a pleasant weight off the axle. | I'd take two flights for another word like that.
+line @1 decline : My own climb needs the breath I've got to spare. | I'll give that route a miss this time.
+line @1 accept_decline : Sensible enough to know your distance. | Your word's good. I'll carry on.
+line @1 preclose : That last stair's got my name down. | I'd better get to the other end before supper.
+line @1 accept_preclose : Let the landing keep what's left. | Aye, we can pick up at the turn.
+line @1 sympathise : Lean on my arm. I won't set the pace. | A pause halfway hurts nobody.
+line @1 thank : That saves me some shoe leather. | I'll remember who took the weight there.
+line @1 deflect_thanks : It was going my direction anyhow. | Two easy steps, that's all it cost.
+line @1 ask.detail : Which turning was that on? | How far along had things gone then?
+line @1 take_offence : Don't set your feet on me to reach the next rung. | There's a fair way to ask, and you went past it.
+line @1 kin.open [pair.kin!=no] : Family get the place nearest the rail. | I'll match the family pace for a while.
 scene reserve
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -158,7 +161,7 @@ when topic=smalltalk
 does tell.self / react.self / assess
 a : I can wait patiently if there's an end to wait towards. | I don't mind another pair of feet setting my pace up a stair.
 b : Most would just be patient. | You slow down then?
-a : Most haven't had to ask a bench how long it intends to keep them. | Unless I can climb through a wolf without giving offence.
+a : Most haven't had to ask a bench how long it intends to keep them. | I do. Pushing past somebody on the stairs gives more offence than it saves time.
 
 scene oldpost
 when topic=memories
@@ -237,13 +240,13 @@ does aside
 cooldown 9h
 say Leave the chimney to eat its own supper. | Eyes are for seeing the top stair coming.
 
-dlg resident.hub : I'll give you a hearing here on the flat. No climb required.
-dlg resident.hub [topic.meeting=known] : Back on my bit of road, #topic.player#?
-dlg resident.hub [pair.disposition=hostile|wary] : Room enough on the landing for two civil voices.
-dlg resident.job [self.job=carter self.workplace] : My driving starts at #self.workplace#. Some of the road follows me halfway home on my boots.
-dlg resident.job : I find out how far a pair of soles will go for a wage.
-dlg resident.news [world.news] : I picked up this word on the way. #world.news#
-dlg resident.bye : Both feet clear of the landing now.
+dlg @1 resident.hub : I'll give you a hearing here on the flat. No climb required.
+dlg @2 resident.hub [topic.meeting=known] : Back on my bit of road, #topic.player#?
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Room enough on the landing for two civil voices.
+dlg @1 resident.job [self.job=carter self.workplace] : My driving starts at #self.workplace#. Some of the road follows me halfway home on my boots.
+dlg @2 resident.job : I find out how far a pair of soles will go for a wage.
+dlg @1 resident.news [world.news] : I picked up this word on the way. #world.news.capitalize#
+dlg @1 resident.bye : Both feet clear of the landing now.
 graft resident.hub
 choice Why take the very last stair on its own? -> last_single
 node last_single

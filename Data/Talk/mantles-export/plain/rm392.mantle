@@ -1,9 +1,12 @@
+# rm392, the roof weather vane (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm392
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_aldric_thackeray
+written_by codex
 title the roof weather vane
 fits stage=young|adolescent|adult|old
 prefers humour=dry talk=quiet
@@ -33,61 +36,134 @@ roofscrap = a split shingle | a piece of roof slate
 grainbag = my tiny folded bag | a scrap full of barley
 
 any
-opinion church for 1 : I got warm soup in the chapel and enough time to wait for the bottom of the bowl to stop scalding my paws.
-opinion city for 1 : I can see one Works rooftop and seven different sorts of wing. Even the roof has company.
-opinion dole for 2 : A wolf with an empty bowl has a good reason for looking sad. Fill it and see how the face changes.
-opinion merchants against 1 : I'd pay for the soup. I didn't ask to buy all the shouting as well.
-opinion times against 1 : The bowl costs a little more every time my straw bird turns round. I'd be quite happy to leave the bird facing a wall.
+opinion @1 church for 1 : I got warm soup in the chapel and enough time to wait for the bottom of the bowl to stop scalding my paws.
+opinion @1 city for 1 : I can see one Works rooftop and seven different sorts of wing. Even the roof has company.
+opinion @1 dole for 2 : A wolf with an empty bowl has a good reason for looking sad. Fill it and see how the face changes.
+opinion @1 merchants against 1 : I'd pay for the soup. I didn't ask to buy all the shouting as well.
+opinion @1 times against 1 : The bowl costs a little more every time my straw bird turns round. I'd be quite happy to leave the bird facing a wall.
 
 grown
+line @1 greet : I've set a still moment aside for a caller.
+line @1 greet.return : Your word has come round the straw wing clearly.
+line @1 farewell.return : I'll leave the perch facing your road.
+line @1 react.news : Let me wait for the sense of it to turn my way.
+line @1 decline : I know the cost of promising a very small thing I can't deliver.
+line @1 thank : Thanks for giving that last little turn some space.
+scene goodturn
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A straw vane with a rough pin will miss a gentle change of wind.
+b : Can it be fixed? | Can you feel the roughness?
+a : Smooth the joint and put it back where it can move. An elegant wing on a rough pin has a very limited education. | Yes, if the pin'll turn in a finger away from its perch.
 
-grown
-line greet : I've set a still moment aside for a caller.
-line greet.return : Your word has come round the straw wing clearly.
-line farewell.return : I'll leave the perch facing your road.
-line react.news : Let me wait for the sense of it to turn my way.
-line decline : I know the cost of promising a very small thing I can't deliver.
-line thank : Thanks for giving that last little turn some space.
+scene roofghost
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember where a little bird perched long after the roof below has changed.
+b : Which thing do you picture first? | Has your own sightline changed?
+a : The bird, then the roof around its feet. | I've stood taller since, and found a few other corners to stand in. The memory stays near the ground.
+
+scene windfood
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I cover the soup while there's enough steam to take a straw vane round.
+b : Why use that measure? | Is the soup too hot then?
+a : It's a pleasing sight while I wait, and doesn't involve burning a tongue. | It's too hot for my tongue. I like barley when it isn't trying to scald me.
+
+scene newstraw
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I sweep old straw into little twists and take a fresh armful for the floor.
+b : Have you still a use for a good stem? | Why twist up the old stuff?
+a : Always. One straight shaft is a little new creature waiting for a pair of ten-minute wings. | Because it's easier to carry the dusty bit inside itself.
+
+scene slowanswer
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : My opinion changes rather less often than my little vane.
+b : What changes it? | Does that make you stubborn?
+a : A fresh look at a matter, close enough to get a clear answer this time. | I'd certainly be an unreliable roof ornament. As a neighbour I generally manage.
+
+scene wetfog
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A damp wing keeps a small bias towards the heavier side until it dries.
+b : Is your reading any good meanwhile? | Do real feathers suffer too?
+a : Only if I admit the bias exists and look at something else as well. | I'd expect a real bird to look after its own feathers better than I can untangle a damp straw.
+
+scene hillblue
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I pause on a rise to see how the roof vanes below agree.
+b : Do they all agree? | Can you give each one long enough?
+a : No. Which shows how far a building can turn a wind before it reaches a leaf. | I stop walking. Looking closely is a very reasonable excuse.
+
+scene sillwalk
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A small folded bird can travel in a rigid box without losing its wings.
+b : Would you really take one travelling? | How big is the box?
+a : I'd like to watch it tangle with a different breeze. A little familiarity can go far on a long road. | Wide enough for the wings to stay spread. Otherwise I'd do better with loose straw and a new start.
+
+scene starling
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In my sleep I seem to hear the rustle a straw bird would make in a real flight.
+b : Is the sound what you expected? | Would you enjoy watching that flight?
+a : Fainter; scarcely a dry stir against the window. | Yes. I'd want a good place to land before I agreed to let it out.
+
+scene birdache
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I ease the fingers out one at a time after setting a little straw shaft straight.
+b : Does it take much grip? | Why one at a time?
+a : Less than I think. Practice consists largely in letting the straw make its own bend. | To feel the ache before it turns into the whole day's companion.
+
+scene steadyweather
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A small fresh-air question is a fine way of greeting a quiet companion.
+b : What sort of question? | Need you expect an answer?
+a : Whether a thin strip of straw would turn in the patch by the door. Small enough for either ear to manage. | No. We can look and be in company without having to name a large concern.
+
+scene quietmother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : The straw bird I would pick for #self.mother# is an old shape with a new set of wings.
+b : What keeps the old shape? | Why new wings?
+a : A folded stem whose curve I've kept in my fingers. One little bend brings its own memories. | Straw wears where the wind keeps at it. A fresh wing's a rather larger gift than an old habit.
+
 
 young
-line greet : Stand where the straw beak can see you. Welcome.
-line greet [pair.band=strangers] : That's my bird up there. I'm the bit that speaks.
-line greet [here.time=dawn] : Look who came to see the first wing move.
-line greet [here.time=dusk|night] : I can hear even with the roof gone dark.
-line kin.open [pair.kin!=no] : My close ones can see the little wing from here.
-line again.open : I didn't even get a whole turn between visits.
-line greet.return : Hello. My beak isn't stuffed with straw.
-line greet.return [pair.band=friends|family] : Knew your voice before the bird twitched.
-line greet.return [self.working=yes] : I heard with one ear while I folded its leg.
-line greet.return [here.time=dusk|night] : Welcome from the end you can't see in the dark.
-line farewell : I hope you get the wind behind one ear at least.
-line farewell.return : I'll sit this bird back on its peg.
-line react.news : Say it till the little wing turns my way.
-line react.news.new : I'd draw a beak pointing somewhere new for that.
-line react.news.known : My straw bird heard the same thing yesterday.
-line react.news.doubt : Did you see which roof it came from?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm bowl might make standing in the quiet a little easier.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd give that telling both wings.
-line ask.how : Is your morning facing the way you hoped?
-line answer.how : Holding my perch. The wing's still there too.
-line sympathise : If your legs get tired you can have the sill for a while.
-line reassure : We have time. Straw waits beautifully.
-line decline : I'm keeping that quiet thought where it is.
-line accept_decline : I'll watch the roof instead of asking.
-line thank : You kept a large elbow away from a very small bird.
-line deflect_thanks : Just tell the wing when the wind's coming.
-line preclose : I haven't checked its straw feet in ages.
-line accept_preclose : Go on. I'll watch for where your shadow goes.
-line ack : Beak turned.
-
-adolescent
-line greet : I've left the high sill free for company.
-line greet.return : Heard you over the shiver in the straw.
-line farewell.return : I'll mind the perch while you go.
-line react.news : I can wait for the clear part without guessing.
-
-young
-
+line @1 greet : Stand where the straw beak can see you. Welcome.
+line @2 greet [pair.band=strangers] : That's my bird up there. I'm the bit that speaks.
+line @3 greet [here.time=dawn] : Look who came to see the first wing move.
+line @4 greet [here.time=dusk|night] : I can hear even with the roof gone dark.
+line @1 kin.open [pair.kin!=no] : My close ones can see the little wing from here.
+line @1 again.open : I didn't even get a whole turn between visits.
+line @1 greet.return : Hello. My beak isn't stuffed with straw.
+line @2 greet.return [pair.band=friends|family] : Knew your voice before the bird twitched.
+line @3 greet.return [self.working=yes] : I heard with one ear while I folded its leg.
+line @4 greet.return [here.time=dusk|night] : Welcome from the end you can't see in the dark.
+line @1 farewell : I hope you get the wind behind one ear at least.
+line @1 farewell.return : I'll sit this bird back on its peg.
+line @1 react.news : Say it till the little wing turns my way.
+line @1 react.news.new : I'd draw a beak pointing somewhere new for that.
+line @1 react.news.known : My straw bird heard the same thing yesterday.
+line @1 react.news.doubt : Did you see which roof it came from?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm bowl might make standing in the quiet a little easier.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd give that telling both wings.
+line @1 ask.how : Is your morning facing the way you hoped?
+line @1 answer.how : Holding my perch. The wing's still there too.
+line @1 sympathise : If your legs get tired you can have the sill for a while.
+line @1 reassure : We have time. Straw waits beautifully.
+line @1 decline : I'm keeping that quiet thought where it is.
+line @1 accept_decline : I'll watch the roof instead of asking.
+line @1 thank : You kept a large elbow away from a very small bird.
+line @1 deflect_thanks : Just tell the wing when the wind's coming.
+line @1 preclose : I haven't checked its straw feet in ages.
+line @1 accept_preclose : Go on. I'll watch for where your shadow goes.
+line @1 ack : Beak turned.
 scene turnwing
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -207,117 +283,6 @@ a : At dusk the real birds go dark before the straw does.
 b : Why? | Don't you take yours inside?
 a : They're further away. Mine's on the bright bit of sill by my nose. | Once they're all quiet. I like mine to get the same bedtime as the important ones.
 
-adolescent
-
-scene featherwork
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I'm learning to split the straw thin enough to flex without breaking.
-b : Does it need a blade? | Why so thin?
-a : A nail will open the end. Then I peel it until it agrees with my thumbnail. | So the smallest movement of air will have a fair chance of being noticed.
-
-scene birdsense
-when topic=animals
-does tell.self / ask.detail / answer.detail
-a : I can sometimes see a roof bird turn its tail before my little vane stirs.
-b : Is the bird more sensitive? | Which one do you trust?
-a : The bird's higher. I'd need a longer arm to make a proper comparison. | The real one's allowed to change its mind. I chose the shape the straw came with.
-
-scene dreamplan
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I might put three little vanes at different heights.
-b : What would three birds show? | Are three birds much work?
-a : Where the wind moves first when it comes round the wall. | Yes. I think I might like to spend a few evenings being that kind of busy.
-
-grown
-
-scene goodturn
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : A straw vane with a rough pin will miss a gentle change of wind.
-b : Can it be fixed? | Can you feel the roughness?
-a : Smooth the joint and put it back where it can move. An elegant wing on a rough pin has a very limited education. | Yes, if the pin'll turn in a finger away from its perch.
-
-scene roofghost
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : I remember where a little bird perched long after the roof below has changed.
-b : Which thing do you picture first? | Has your own sightline changed?
-a : The bird, then the roof around its feet. | I've stood taller since, and found a few other corners to stand in. The memory stays near the ground.
-
-scene windfood
-when topic=food
-does tell.self / ask.detail / answer.detail
-a : I cover the soup while there's enough steam to take a straw vane round.
-b : Why use that measure? | Is the soup too hot then?
-a : It's a pleasing sight while I wait, and doesn't involve burning a tongue. | It's too hot for my tongue. I like barley when it isn't trying to scald me.
-
-scene newstraw
-when topic=home
-does tell.self / ask.detail / answer.detail
-a : I sweep old straw into little twists and take a fresh armful for the floor.
-b : Have you still a use for a good stem? | Why twist up the old stuff?
-a : Always. One straight shaft is a little new creature waiting for a pair of ten-minute wings. | Because it's easier to carry the dusty bit inside itself.
-
-scene slowanswer
-when topic=gossip
-does tell.self / ask.detail / answer.detail
-a : My opinion changes rather less often than my little vane.
-b : What changes it? | Does that make you stubborn?
-a : A fresh look at a matter, close enough to get a clear answer this time. | I'd certainly be an unreliable roof ornament. As a neighbour I generally manage.
-
-scene wetfog
-when topic=weather
-does tell.self / ask.detail / answer.detail
-a : A damp wing keeps a small bias towards the heavier side until it dries.
-b : Is your reading any good meanwhile? | Do real feathers suffer too?
-a : Only if I admit the bias exists and look at something else as well. | I'd expect a real bird to look after its own feathers better than I can untangle a damp straw.
-
-scene hillblue
-when topic=land
-does tell.self / ask.detail / answer.detail
-a : I pause on a rise to see how the roof vanes below agree.
-b : Do they all agree? | Can you give each one long enough?
-a : No. Which shows how far a building can turn a wind before it reaches a leaf. | I stop walking. Looking closely is a very reasonable excuse.
-
-scene sillwalk
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : A small folded bird can travel in a rigid box without losing its wings.
-b : Would you really take one travelling? | How big is the box?
-a : I'd like to watch it tangle with a different breeze. A little familiarity can go far on a long road. | Wide enough for the wings to stay spread. Otherwise I'd do better with loose straw and a new start.
-
-scene starling
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : In my sleep I seem to hear the rustle a straw bird would make in a real flight.
-b : Is the sound what you expected? | Would you enjoy watching that flight?
-a : Fainter; scarcely a dry stir against the window. | Yes. I'd want a good place to land before I agreed to let it out.
-
-scene birdache
-when topic=health
-does tell.self / ask.detail / answer.detail
-a : I ease the fingers out one at a time after setting a little straw shaft straight.
-b : Does it take much grip? | Why one at a time?
-a : Less than I think. Practice consists largely in letting the straw make its own bend. | To feel the ache before it turns into the whole day's companion.
-
-scene steadyweather
-when topic=smalltalk
-does tell.self / ask.detail / answer.detail
-a : A small fresh-air question is a fine way of greeting a quiet companion.
-b : What sort of question? | Need you expect an answer?
-a : Whether a thin strip of straw would turn in the patch by the door. Small enough for either ear to manage. | No. We can look and be in company without having to name a large concern.
-
-scene quietmother
-when topic=family self.mother
-does tell.self / ask.detail / answer.detail
-a : The straw bird I would pick for #self.mother# is an old shape with a new set of wings.
-b : What keeps the old shape? | Why new wings?
-a : A folded stem whose curve I've kept in my fingers. One little bend brings its own memories. | Straw wears where the wind keeps at it. A fresh wing's a rather larger gift than an old habit.
-
-young
-
 story soupwind [topic=food]
   : I set a little straw beak over a bowl of soup to see if the steam could lift it.
   : The straw went soft instead and the beak pointed straight down at the barley.
@@ -335,8 +300,6 @@ story rowbird [topic=memories]
   : I gave it a second eye that wasn't exactly opposite the first.
   b : Does it still look confused?
   : Now it looks like it knows something different with each half of its head.
-
-young
 
 rule @straw
 when concept=bark self.likes=fresh_straw
@@ -362,17 +325,13 @@ does aside
 cooldown 8h
 say Leave a little barley on the spoon. | Hold the rim where it isn't steaming.
 
-young
-dlg resident.hub : You may have my left eye. That little beak has the right.
-dlg resident.hub [topic.meeting=known] : You know my little weather bird, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Please keep back. You're quite a lot bigger than my straw bird.
-dlg resident.hub [here.time=night] : Its beak's pointing at something dark. Nearly everything is.
-dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I put one wing down when a sum's done and another when I've checked it.
-dlg resident.job : I've quite enough checking to do on these straw feet.
-dlg resident.bye : Let my little vane show which way the breeze is going.
-
-young
-
+dlg @1 resident.hub : You may have my left eye. That little beak has the right.
+dlg @2 resident.hub [topic.meeting=known] : You know my little weather bird, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Please keep back. You're quite a lot bigger than my straw bird.
+dlg @4 resident.hub [here.time=night] : Its beak's pointing at something dark. Nearly everything is.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I put one wing down when a sum's done and another when I've checked it.
+dlg @2 resident.job : I've quite enough checking to do on these straw feet.
+dlg @1 resident.bye : Let my little vane show which way the breeze is going.
 graft @strawbeak resident.hub
 choice How do you make the bird face the wind? -> strawbeak
 node strawbeak
@@ -383,3 +342,30 @@ node strawbeak_more
 say Yes, if you're gentle. If you blow it into my soup I'll count that as very bad weather indeed.
 choice Let the little bird turn. -> hub
 choice Leave it on the sill. -> bye
+
+
+adolescent
+line @1 greet : I've left the high sill free for company.
+line @1 greet.return : Heard you over the shiver in the straw.
+line @1 farewell.return : I'll mind the perch while you go.
+line @1 react.news : I can wait for the clear part without guessing.
+scene featherwork
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I'm learning to split the straw thin enough to flex without breaking.
+b : Does it need a blade? | Why so thin?
+a : A nail will open the end. Then I peel it until it agrees with my thumbnail. | So the smallest movement of air will have a fair chance of being noticed.
+
+scene birdsense
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I can sometimes see a roof bird turn its tail before my little vane stirs.
+b : Is the bird more sensitive? | Which one do you trust?
+a : The bird's higher. I'd need a longer arm to make a proper comparison. | The real one's allowed to change its mind. I chose the shape the straw came with.
+
+scene dreamplan
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I might put three little vanes at different heights.
+b : What would three birds show? | Are three birds much work?
+a : Where the wind moves first when it comes round the wall. | Yes. I think I might like to spend a few evenings being that kind of busy.

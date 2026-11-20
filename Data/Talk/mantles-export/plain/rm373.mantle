@@ -1,9 +1,12 @@
+# rm373, the rest in the response (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm373
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_aldric_fogwell
+written_by codex
 title the rest in the response
 fits stage=adult|old
 prefers job=priest
@@ -42,48 +45,47 @@ dayglow = a touch of sun | a mild spring gleam
 slate = a tilted slate | a dark little roof tile
 
 any
-opinion church for 2 : There's a place in a service where a wolf can take the weight off one private hurt for a minute.
-opinion dole for 3 : Cheese and a little bread suffice for some prayers better than a second reading.
-opinion houses against 2 : I dread a quarrel between high benches that leaves the street to spend the winter in its shadow.
-opinion festivals for 2 : The first bell that puts a smile round a tired mouth has already done some good.
-opinion sump for 2 : I can pray with the low street under my paws as readily as the polished flags.
-opinion merchants against 1 : A portion for a hungry visitor should not be made smaller over three rounds of bargaining.
-opinion strangers for 1 : I can shift down a bench for a stranger who hasn't given a name.
-opinion road mixed 1 : Feet coming in off a rough road need a dry patch before anything is asked of them.
-opinion times against 1 [world.times=hard|lean] : Cold and hunger have grown loud in the response. We ought to listen before speaking over them.
+opinion @1 church for 2 : There's a place in a service where a wolf can take the weight off one private hurt for a minute.
+opinion @1 dole for 3 : Cheese and a little bread suffice for some prayers better than a second reading.
+opinion @1 houses against 2 : I dread a quarrel between high benches that leaves the street to spend the winter in its shadow.
+opinion @1 festivals for 2 : The first bell that puts a smile round a tired mouth has already done some good.
+opinion @1 sump for 2 : I can pray with the low street under my paws as readily as the polished flags.
+opinion @1 merchants against 1 : A portion for a hungry visitor should not be made smaller over three rounds of bargaining.
+opinion @1 strangers for 1 : I can shift down a bench for a stranger who hasn't given a name.
+opinion @1 road mixed 1 : Feet coming in off a rough road need a dry patch before anything is asked of them.
+opinion @1 times against 1 [world.times=hard|lean] : Cold and hunger have grown loud in the response. We ought to listen before speaking over them.
 
 grown
-line greet : Stand here in the clear strip of air. | A plain welcome and a place in the light.
-line greet.return : Welcome returned in my own quiet breath. | Glad your greeting carried so clearly.
-line again.open : Back before we've quite spent the pause.
-line farewell : Go out with room to breathe inside your coat. | May you take an easier pace on the homeward stones.
-line farewell.return : Your own breath stay free on the way. | That is a kind parting for a tired ear.
-line react.news : Let the account come through in the voice you first heard. | I can leave a proper silence for your news.
-line react.news.new : I hadn't heard even the echo of that.
-line react.news.known : Yes, that has sounded under these rafters before.
-line react.news.doubt : I'd leave a pause before giving that one an answer.
-line react.news.sorrow [topic.kind=death|loss|assault] : Dear Bright One, give the hurting somewhere gentle to rest.
-line react.news.glad [topic.kind=birth|marriage|work] : A joyful sound, even when spoken very softly.
-line ask.how : Has the damp day taken much from your breathing?
-line answer.how : One breath after another. Some of them quite easy.
-line sympathise : I'll wait quietly beside you till the words have room.
-line reassure : An answer can come on the breath after the first one.
-line refuse : I have duties awaiting the little voice I've saved today.
-line accept_decline : There's no obligation to find a different answer for me.
-line preclose : I'd better spare one good breath for what's waiting.
-line accept_preclose : Go make what use you can of a quiet interval.
-line ack : Yes. I can hear the sense inside that.
-line greet [pair.band=strangers] : A place for an unfamiliar face beside an ordinary wolf.
-line greet [here.time=dawn] : A little new light to share before the street grows loud.
-line greet.return [pair.band=friends] : That voice could find me under any height of roof.
-line hail [pair.band=friends] : Come just this side, where the air moves freely!
-line thank : My breath comes easier for your help. I am grateful.
-line deflect_thanks : You came when I had a little steadiness worth sharing.
-line give.advice : Reach for dry wood before you trust all your weight.
-line answer.how.busy [self.working=yes] : The work is moving. I've one clear moment for your words.
-line ask.how [pair.band=friends] : Have you had a chance to let a difficult day go quiet?
-line greet [here.time=night] : A late arrival may still have the lamp's better side.
-
+line @1 greet : Stand here in the clear strip of air. | A plain welcome and a place in the light.
+line @1 greet.return : Welcome returned in my own quiet breath. | Glad your greeting carried so clearly.
+line @1 again.open : Back before we've quite spent the pause.
+line @1 farewell : Go out with room to breathe inside your coat. | May you take an easier pace on the homeward stones.
+line @1 farewell.return : Your own breath stay free on the way. | That is a kind parting for a tired ear.
+line @1 react.news : Let the account come through in the voice you first heard. | I can leave a proper silence for your news.
+line @1 react.news.new : I hadn't heard even the echo of that.
+line @1 react.news.known : Yes, that has sounded under these rafters before.
+line @1 react.news.doubt : I'd leave a pause before giving that one an answer.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Dear Bright One, give the hurting somewhere gentle to rest.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A joyful sound, even when spoken very softly.
+line @1 ask.how : Has the damp day taken much from your breathing?
+line @1 answer.how : One breath after another. Some of them quite easy.
+line @1 sympathise : I'll wait quietly beside you till the words have room.
+line @1 reassure : An answer can come on the breath after the first one.
+line @1 refuse : I have duties awaiting the little voice I've saved today.
+line @1 accept_decline : There's no obligation to find a different answer for me.
+line @1 preclose : I'd better spare one good breath for what's waiting.
+line @1 accept_preclose : Go make what use you can of a quiet interval.
+line @1 ack : Yes. I can hear the sense inside that.
+line @2 greet [pair.band=strangers] : A place for an unfamiliar face beside an ordinary wolf.
+line @3 greet [here.time=dawn] : A little new light to share before the street grows loud.
+line @2 greet.return [pair.band=friends] : That voice could find me under any height of roof.
+line @1 hail [pair.band=friends] : Come just this side, where the air moves freely!
+line @1 thank : My breath comes easier for your help. I am grateful.
+line @1 deflect_thanks : You came when I had a little steadiness worth sharing.
+line @1 give.advice : Reach for dry wood before you trust all your weight.
+line @1 answer.how.busy [self.working=yes] : The work is moving. I've one clear moment for your words.
+line @2 ask.how [pair.band=friends] : Have you had a chance to let a difficult day go quiet?
+line @4 greet [here.time=night] : A late arrival may still have the lamp's better side.
 scene exchange1
 when topic=faith self.job=priest
 does tell.self / ask.detail / answer.detail
@@ -151,15 +153,15 @@ scene exchange10
 when topic=work self.job=priest self.workplace
 does tell.self / ask.detail / answer.detail
 a : At #self.workplace# the nearest wall sends a quick answer back. | I test a speaking place with a soft ordinary word.
-b : Can a wolf be mistaken for an echo? | Before a prayer?
-a : If I speak too fast I can interrupt myself. | I want the listener farthest from me to hear a blessing the first time.
+b : Does the echo get in the way? | Before a prayer?
+a : If I speak too fast, I end up talking over myself. | I want the listener farthest from me to hear a blessing the first time.
 
 scene exchange11
 when topic=faith
 does tell.self / ask.detail / answer.detail
 a : After my cough, I trust the Bright One with even a word that's half swallowed. | I don't think a quiet prayer counts for less.
 b : Even if the congregation misses it? | Why lift the voice at all?
-a : A wolf can ask me to repeat a word. Heaven needn't be my measure of volume. | So the wolf praying beside me can find where the words join.
+a : A wolf can ask me to repeat it. The Bright One won't need to. | So the wolf praying beside me can find where the words join.
 
 scene exchange12
 when topic=gossip here.gossip=yes
@@ -194,7 +196,7 @@ when topic=travel
 does tell.self / ask.detail / answer.detail
 a : I break an uphill journey into phrases. | I come down a hill looking for wet flags.
 b : Do you say them aloud? | Skidded before?
-a : I keep the punctuation under my breath until the steep bit ends. | I have a convincing imagination and a spare memory or two.
+a : I keep the punctuation under my breath until the steep bit ends. | Twice. Once ought to teach a wolf, but wet stone finds me a slow pupil.
 
 scene exchange17
 when topic=memories
@@ -359,24 +361,24 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Leave the lower light burning a moment. | Evening voices needn't strain to fill the roof.
-dlg resident.hub : I've a quieter spot at my elbow, even if the street outside is noisy.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your voice is clear to me over the sound of the rafters.
-dlg resident.hub [here.time=night] : A quiet word suits this late hour very well.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll give your words a hearing without raising mine.
-dlg resident.job [self.job=priest] : I lead prayers at #self.workplace#. I keep weary voices in mind when choosing the responses.
-dlg resident.job : I've done a good turn when somebody breathes easier after my turn at the reading.
-dlg resident.news [world.news] : This is the news that reached my ears. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I have heard that #topic.subject# #topic.claim#. Let us handle somebody else's reputation with care.
-dlg resident.bye : May the Bright One grant you a sheltered seat once your errand's done.
-dlg church.greet [here.day=rest] : On this Restday our service is #here.service#. There's a place for another voice.
-dlg church.greet [here.day!=rest] : Come into the quieter air. There's room for a question about the service.
-dlg church.service [here.day=rest] : The service today is #here.service#. Come in at whatever pace your breath allows.
-dlg church.service [here.day!=rest] : There are prayers enough for an ordinary day. The full service has its own day of rest.
-dlg church.poor : A meal left for a hungry wolf does a great deal of speaking of its own.
-dlg church.offering : An offering ought to come freely and leave the giver able to eat.
-dlg church.thanked : I am grateful. A hungry mouth will have better cause to be grateful still.
-dlg church.bye : Walk lightly where the flags have kept a little damp.
 
+dlg @1 resident.hub : I've a quieter spot at my elbow, even if the street outside is noisy.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your voice is clear to me over the sound of the rafters.
+dlg @3 resident.hub [here.time=night] : A quiet word suits this late hour very well.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll give your words a hearing without raising mine.
+dlg @1 resident.job [self.job=priest] : I lead prayers at #self.workplace#. I keep weary voices in mind when choosing the responses.
+dlg @2 resident.job : I've done a good turn when somebody breathes easier after my turn at the reading.
+dlg @1 resident.news [world.news] : This is the news that reached my ears. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I have heard that #topic.subject# #topic.claim#. Let us handle somebody else's reputation with care.
+dlg @1 resident.bye : May the Bright One grant you a sheltered seat once your errand's done.
+dlg @1 church.greet [here.day=rest] : On this Restday our service is #here.service#. There's a place for another voice.
+dlg @2 church.greet [here.day!=rest] : Come into the quieter air. There's room for a question about the service.
+dlg @1 church.service [here.day=rest] : The service today is #here.service#. Come in at whatever pace your breath allows.
+dlg @2 church.service [here.day!=rest] : There are prayers enough for an ordinary day. The full service has its own day of rest.
+dlg @1 church.poor : A meal left for a hungry wolf does a great deal of speaking of its own.
+dlg @1 church.offering : An offering ought to come freely and leave the giver able to eat.
+dlg @1 church.thanked : I am grateful. A hungry mouth will have better cause to be grateful still.
+dlg @1 church.bye : Walk lightly where the flags have kept a little damp.
 graft resident.hub
 choice Why leave a gap in a blessing? -> roof_response
 node roof_response

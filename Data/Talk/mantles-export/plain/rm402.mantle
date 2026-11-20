@@ -1,9 +1,12 @@
+# rm402, the pocket fleet in bark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm402
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_oda_slagby
+written_by codex
 title the pocket fleet in bark
 fits stage=young|adolescent|adult|old
 prefers job=child
@@ -35,43 +38,145 @@ coin = the one good copper | my cake money
 thumb = my broad thumb pad | my steady thumb
 
 any
-opinion houses for 1 : Keeping a works door open seems to me a better use of a House than painting its name over it.
-opinion festivals for 1 : A bit of sweet cake and a glimpse across the waves can make a feast my size.
-opinion times for 1 : I've somewhere dry to put a boat and enough for supper. I'd be daft to complain of that.
-opinion merchants mixed 0 : I want a figure that makes sense to me before my honey cake goes sticky in my hand.
-opinion strangers mixed 0 : I'll show a stranger my least fragile boat first. Afterwards the other ships may come out for inspection.
+opinion @1 houses for 1 : Keeping a works door open seems to me a better use of a House than painting its name over it.
+opinion @1 festivals for 1 : A bit of sweet cake and a glimpse across the waves can make a feast my size.
+opinion @1 times for 1 : I've somewhere dry to put a boat and enough for supper. I'd be daft to complain of that.
+opinion @1 merchants mixed 0 : I want a figure that makes sense to me before my honey cake goes sticky in my hand.
+opinion @1 strangers mixed 0 : I'll show a stranger my least fragile boat first. Afterwards the other ships may come out for inspection.
+line @1 greet [pair.band=strangers] : Hello. Stand where my fleet won't get squashed. | Space beside my pocket harbour.
+line @2 greet [self.working=yes] : I hear over the rasping. | I'll put the chip down.
+line @3 greet [here.time=dawn] : Morning. A clear light on the grain. | Early enough for a quiet launch.
+line @4 greet [here.time=dusk|night] : Evening. The little bows are shadows now. | Come closer as the light goes.
+line @1 kin.open [pair.kin!=no] : A family berth opens on this side. | Kin can hold my best little hull.
+line @1 again.open : My fleet sails past you twice. | Here we come alongside again.
+line @1 greet.return : Heard you. I'm on the dry shore. | I can put the boat aside for a word.
+line @2 greet.return [pair.band=friends|family] : There's room in the harbour for that voice. | Come on the side where I keep the good chips.
+line @3 greet.return [self.working=yes] : My hands can pause between little cuts. | I'll put the edge flat while you speak.
+line @4 greet.return [here.time=dusk|night] : Evening. The pocket fleet's in port. | Stand by where the boats rest.
+line @1 farewell : Mind the sort of wave a foot can make. | Dry pocket and a good walk.
+line @1 farewell.return : I'll keep the little bows pointed home. | A soft landing at your next shore.
+line @2 farewell.return [here.time=night] : Keep your fleet clear of the dark drains. | Light enough to see the doorstep home.
+line @1 react.news : What shape was the news in? | Tell me without rubbing off the edges.
+line @1 react.news.new : New boat in my head now. | Hadn't seen the nose of that one.
+line @1 react.news.known : I've seen that bow come round already. | A familiar outline to that bit.
+line @1 react.news.doubt : I'd like another look at that account's fraying corners. | I've mistaken one chipped bow for another before today.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sad weight for a small pocket. | We can sit somewhere away from the splashing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad bit to carry home. | There's room in my best pocket for that.
+line @1 ask.how : Is your cargo easy today? | What's knocking about in your pocket?
+line @1 answer.how : Going steady with a good little chip. | All my boats accounted for so far.
+line @1 decline : I'd rather stay here till my chip is finished. | I need this time to keep my hand quite steady.
+line @1 accept_decline : Your own pocket to fill. | Clear enough. I'll keep the chip.
+line @1 thank : You've saved a boat from the drain. | I'd give you the best bit of bark.
+line @1 sympathise : Sit on the dry side with me. | I can mind a small worry beside mine.
+line @1 reassure : Even a chipped bow still floats. | I'll help find a softer shore for it.
+line @1 preclose : Time to tuck the fleet away. | I'll shut the pouch before I go.
+rule @aside1
+when concept=bark self.likes=long_walks
+does aside
+cooldown 6h
+say Look for fallen bark at the far turn. | A long walk and room in the pouch.
 
-any
-line greet [pair.band=strangers] : Hello. Stand where my fleet won't get squashed. | Space beside my pocket harbour.
-line greet [self.working=yes] : I hear over the rasping. | I'll put the chip down.
-line greet [here.time=dawn] : Morning. A clear light on the grain. | Early enough for a quiet launch.
-line greet [here.time=dusk|night] : Evening. The little bows are shadows now. | Come closer as the light goes.
-line kin.open [pair.kin!=no] : A family berth opens on this side. | Kin can hold my best little hull.
-line again.open : My fleet sails past you twice. | Here we come alongside again.
-line greet.return : Heard you. I'm on the dry shore. | I can put the boat aside for a word.
-line greet.return [pair.band=friends|family] : There's room in the harbour for that voice. | Come on the side where I keep the good chips.
-line greet.return [self.working=yes] : My hands can pause between little cuts. | I'll put the edge flat while you speak.
-line greet.return [here.time=dusk|night] : Evening. The pocket fleet's in port. | Stand by where the boats rest.
-line farewell : Mind the sort of wave a foot can make. | Dry pocket and a good walk.
-line farewell.return : I'll keep the little bows pointed home. | A soft landing at your next shore.
-line farewell.return [here.time=night] : Keep your fleet clear of the dark drains. | Light enough to see the doorstep home.
-line react.news : What shape was the news in? | Tell me without rubbing off the edges.
-line react.news.new : New boat in my head now. | Hadn't seen the nose of that one.
-line react.news.known : I've seen that bow come round already. | A familiar outline to that bit.
-line react.news.doubt : I'd like another look at that account's fraying corners. | I've mistaken one chipped bow for another before today.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's a sad weight for a small pocket. | We can sit somewhere away from the splashing.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad bit to carry home. | There's room in my best pocket for that.
-line ask.how : Is your cargo easy today? | What's knocking about in your pocket?
-line answer.how : Going steady with a good little chip. | All my boats accounted for so far.
-line decline : I'd rather stay here till my chip is finished. | I need this time to keep my hand quite steady.
-line accept_decline : Your own pocket to fill. | Clear enough. I'll keep the chip.
-line thank : You've saved a boat from the drain. | I'd give you the best bit of bark.
-line sympathise : Sit on the dry side with me. | I can mind a small worry beside mine.
-line reassure : Even a chipped bow still floats. | I'll help find a softer shore for it.
-line preclose : Time to tuck the fleet away. | I'll shut the pouch before I go.
+rule @aside2
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 7h
+say Keep the sticky hand off the hull. | Little honey island, large appetite.
+
+rule @aside3
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Cake away and pouch drawn tight. | Paws off the fleet, long-whiskers.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Last check for the smallest bow. | Turn every pointed nose inside the pouch.
+
+dlg @1 resident.hub : Little boats take up less room than their keeper. I can move over a bit to let you see.
+dlg @1 resident.job [self.job=child self.workplace] : Lessons at #self.workplace#. When there's room in the margin I draw the bow of a real ship.
+dlg @2 resident.job : I take my time getting small shapes clear enough to recognise.
+dlg @1 resident.news [world.news] : This is the shape the word came in. #world.news#
+dlg @1 resident.bye : When a useful curl of bark drops, inspect its bow end before tossing it away.
+graft resident.hub
+choice Why just the bows of the ships? -> bark_bows
+node bark_bows
+say Look end on. A sharp one and a broad one are different even if both are just chips. Leave out the middle and I can keep a day's watching in one little pouch.
+free
+choice Can the little chips swim? -> bark_swim
+choice That one's got a good blunt nose. -> hub
+node bark_swim
+say On water as deep as a saucer. I've made them tiny docks out of broken cups. That's about as much sea as I feel like being responsible for.
+choice I'll stay out of your saucer sea. -> bye
+choice I'd like another look at this one. -> hub
+
+
+grown
+scene g_promise
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I find the outline before making a promise about the finished shape.
+b : Even at familiar work? | Can you promise a date?
+a : Especially then. A familiar shape can hide a small change surprisingly well. | Once I've looked at the grain. I won't put the edge ahead of my eye.
+
+scene g_window
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a window just wide enough for the fleet of a childhood.
+b : Do you still keep the boats? | How wide would that be?
+a : A few. A new one beside an old one marks a year's practice neatly. | Two ordinary palms will give each remaining hull a sufficiently proud berth.
+
+scene g_tool
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : The stroke I trust most is a cut I know I can stop.
+b : Before the knot? | Is it slow?
+a : Before the bark's natural curve begins to change. I want the curve to help me. | Slow to learn. A good clean stroke itself can be over before an eye blinks.
+
+scene g_sweet
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : When honey reaches the underside of a crust I put the whole cake down a moment.
+b : Giving the cake time to cool? | To fetch a cloth?
+a : Waiting to see where the drip intends to land. Then I turn the plate. | To keep a favourite drawing hand clean enough to go back to work.
+
+scene g_street
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor who can't remember a ship name might remember the set of its bow.
+b : And if the bow's hidden? | Would you draw it?
+a : Look for the difference in the rails. A line can be seen long after a letter has gone dark. | On any little scrap. I'd keep the drawing until the right name comes back.
+
+scene g_drain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A running gutter carries the smallest bark faster than the grandest imaginable wind.
+b : Do you still launch boats? | Which spot makes a harbour?
+a : Only where there's time to catch them. I know what even a tiny hull has cost in attention. | A bit of low stone makes a thoroughly adequate harbour arm.
+
+scene g_secret
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A hull half hidden by a wall can be given quite the wrong name.
+b : Would you correct a guess? | Even a confident one?
+a : I'd say what part was actually visible. The rest would be my own invention. | Confidence doesn't stand an extra inch higher up that wall, as far as I've seen.
+
+scene g_wait
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A weekly errand with no result still gives me one thing I didn't have earlier.
+b : What thing? | Is that enough?
+a : A look at which doors are opening easily and which have stiff hinges lately. | Not for the errand. Enough to make the return walk something other than lost time.
+
+story g_rename [topic=memories]
+  : Years after carving one small bow I forgot the original ship's name. I could remember the colour, the angle of a stay and a gull on the rail.
+  : I thought of cutting a different bow to go with a name I did recall. I hadn't the heart to shave the original line away.
+  b : Did you leave it nameless?
+  : I've given it a bit of room beside the named ones. A name's an excellent addition to knowing a shape, but the shape's worth keeping.
+
 
 young
-
 scene y_names
 when topic=travel here.region=ridgemere
 does tell.self / ask.detail / answer.detail
@@ -162,8 +267,8 @@ story y_drain [topic=memories]
   b : How did you get it?
   : A tiny dab of honey on the twig's narrow tip. I didn't let anybody eat that honey afterwards.
 
-adolescent
 
+adolescent
 scene t_pouch
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -190,111 +295,3 @@ story t_harbour [topic=pastimes]
   : I turned all the others just a little towards the same corner. Suddenly a shelf of separate toys looked quite like a fleet about to move.
   b : What was out there?
   : The bottom of a candle. I'm still pleased to be able to make so much of a little light.
-
-grown
-
-scene g_promise
-when topic=work
-does tell.self / ask.detail / answer.detail
-a : I find the outline before making a promise about the finished shape.
-b : Even at familiar work? | Can you promise a date?
-a : Especially then. A familiar shape can hide a small change surprisingly well. | Once I've looked at the grain. I won't put the edge ahead of my eye.
-
-scene g_window
-when topic=home
-does tell.self / ask.detail / answer.detail
-a : I like a window just wide enough for the fleet of a childhood.
-b : Do you still keep the boats? | How wide would that be?
-a : A few. A new one beside an old one marks a year's practice neatly. | Two ordinary palms will give each remaining hull a sufficiently proud berth.
-
-scene g_tool
-when topic=pastimes self.likes=sharp_knife
-does tell.self / ask.detail / answer.detail
-a : The stroke I trust most is a cut I know I can stop.
-b : Before the knot? | Is it slow?
-a : Before the bark's natural curve begins to change. I want the curve to help me. | Slow to learn. A good clean stroke itself can be over before an eye blinks.
-
-scene g_sweet
-when topic=food self.likes=honey_cakes
-does tell.self / ask.detail / answer.detail
-a : When honey reaches the underside of a crust I put the whole cake down a moment.
-b : Giving the cake time to cool? | To fetch a cloth?
-a : Waiting to see where the drip intends to land. Then I turn the plate. | To keep a favourite drawing hand clean enough to go back to work.
-
-scene g_street
-when topic=newcomer
-does tell.self / ask.detail / answer.detail
-a : A visitor who can't remember a ship name might remember the set of its bow.
-b : And if the bow's hidden? | Would you draw it?
-a : Look for the difference in the rails. A line can be seen long after a letter has gone dark. | On any little scrap. I'd keep the drawing until the right name comes back.
-
-scene g_drain
-when topic=weather
-does tell.self / ask.detail / answer.detail
-a : A running gutter carries the smallest bark faster than the grandest imaginable wind.
-b : Do you still launch boats? | Which spot makes a harbour?
-a : Only where there's time to catch them. I know what even a tiny hull has cost in attention. | A bit of low stone makes a thoroughly adequate harbour arm.
-
-scene g_secret
-when topic=gossip
-does tell.self / ask.detail / answer.detail
-a : A hull half hidden by a wall can be given quite the wrong name.
-b : Would you correct a guess? | Even a confident one?
-a : I'd say what part was actually visible. The rest would be my own invention. | Confidence doesn't stand an extra inch higher up that wall, as far as I've seen.
-
-scene g_wait
-when topic=day
-does tell.self / ask.detail / answer.detail
-a : A weekly errand with no result still gives me one thing I didn't have earlier.
-b : What thing? | Is that enough?
-a : A look at which doors are opening easily and which have stiff hinges lately. | Not for the errand. Enough to make the return walk something other than lost time.
-
-story g_rename [topic=memories]
-  : Years after carving one small bow I forgot the original ship's name. I could remember the colour, the angle of a stay and a gull on the rail.
-  : I thought of cutting a different bow to go with a name I did recall. I hadn't the heart to shave the original line away.
-  b : Did you leave it nameless?
-  : I've given it a bit of room beside the named ones. A name's an excellent addition to knowing a shape, but the shape's worth keeping.
-
-any
-
-rule @aside1
-when concept=bark self.likes=long_walks
-does aside
-cooldown 6h
-say Look for fallen bark at the far turn. | A long walk and room in the pouch.
-
-rule @aside2
-when concept=bark self.likes=honey_cakes
-does aside
-cooldown 7h
-say Keep the sticky hand off the hull. | Little honey island, large appetite.
-
-rule @aside3
-when concept=bark self.dislikes=rats
-does aside
-cooldown 8h
-say Cake away and pouch drawn tight. | Paws off the fleet, long-whiskers.
-
-rule @aside4
-when concept=bark here.time=dusk
-does aside
-cooldown 9h
-say Last check for the smallest bow. | Turn every pointed nose inside the pouch.
-
-dlg resident.hub : Little boats take up less room than their keeper. I can move over a bit to let you see.
-dlg resident.job [self.job=child self.workplace] : Lessons at #self.workplace#. When there's room in the margin I draw the bow of a real ship.
-dlg resident.job : I take my time getting small shapes clear enough to recognise.
-dlg resident.news [world.news] : This is the shape the word came in. #world.news#
-dlg resident.bye : When a useful curl of bark drops, inspect its bow end before tossing it away.
-
-graft resident.hub
-choice Why just the bows of the ships? -> bark_bows
-node bark_bows
-say Look end on. A sharp one and a broad one are different even if both are just chips. Leave out the middle and I can keep a day's watching in one little pouch.
-free
-choice Can the little chips swim? -> bark_swim
-choice That one's got a good blunt nose. -> hub
-node bark_swim
-say On water as deep as a saucer. I've made them tiny docks out of broken cups. That's about as much sea as I feel like being responsible for.
-choice I'll stay out of your saucer sea. -> bye
-choice I'd like another look at this one. -> hub

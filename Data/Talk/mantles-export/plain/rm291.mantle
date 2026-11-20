@@ -1,9 +1,12 @@
+# rm291, the thumbnail stall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm291
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_runa_ashridge
+written_by codex
 title the thumbnail stall
 fits stage=adult|old
 prefers job=official
@@ -69,7 +72,6 @@ line @22 deflect_thanks : It only wanted the last little shaving off. | We'll co
 line @23 preclose : There's a tiny roof waiting for a groove. | I owe a little attention to a bit of wood.
 line @24 accept_preclose : You'll know which piece needs you next. | Take your business along in good order.
 line @25 farewell [here.time=night] : Turn the printed side in against the damp. | Keep a clear bit of light for your door.
-
 scene tinyroof
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -245,7 +247,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Put the hard feelings down
 dlg @5 resident.job [self.job=official self.workplace] : I help print at #self.workplace#. Even one letter deserves a square footing.
 dlg @6 resident.job : I like a task I can turn to the light and check for myself.
 dlg @7 resident.bye : Look out for a free dry corner along your way.
-
 graft resident.hub
 choice Can that little stall really keep anything dry? -> little_roof
 node little_roof

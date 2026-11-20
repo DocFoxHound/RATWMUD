@@ -1,9 +1,12 @@
+# rm201, the high-water margin (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm201
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_grete_dunn
+written_by codex
 title the high-water margin
 fits stage=adult|old
 prefers job=scholar honesty=guarded
@@ -35,48 +38,46 @@ dryland = a chalky upland | a slope of white stone
 shut = drawn to with a click | fast against the jamb
 
 any
-opinion city for 2 : Other places put water on their maps. This one could make its map out of water.
-opinion strangers against 2 : I like an introduction better when someone stays to hear it.
-opinion dole against 1 : Those who can earn need a door onto work. Keeping a place in line is nobody's trade.
-opinion watch mixed 1 : A good description in a report is worth more than certainty in a voice.
-opinion road mixed 1 : A straight road on a soaked page goes wherever your thumb drags it.
-opinion festivals for 1 : The morning after a feast has wonderfully unambitious appointments.
+opinion @1 city for 2 : Other places put water on their maps. This one could make its map out of water.
+opinion @1 strangers against 2 : I like an introduction better when someone stays to hear it.
+opinion @1 dole against 1 : Those who can earn need a door onto work. Keeping a place in line is nobody's trade.
+opinion @1 watch mixed 1 : A good description in a report is worth more than certainty in a voice.
+opinion @1 road mixed 1 : A straight road on a soaked page goes wherever your thumb drags it.
+opinion @1 festivals for 1 : The morning after a feast has wonderfully unambitious appointments.
 
 grown
-line greet : There's a dry patch beside me. You may stand in it. | My ears are free for the present.
-line greet [here.time=dawn] : Early enough for a clean page. Come through. | A fresh margin on the day. We can start there.
-line greet.return : Duly heard, and returned. | I'm here. You have my attention for a moment.
-line greet.return [pair.band=friends] : That voice can come right past the latch. | I keep the welcome within easy reach for you.
-line again.open : Another entry for the same face today. | My list of today's encounters grows more familiar.
-line kin.open [pair.kin!=no] : Inside, then. Family needn't wait on ceremony here. | Settle in. I've no form for admitting a relative.
-line hail [pair.band=friends] : Over this way, by the unmarked step! | There's a spare foothold beside mine. Use it!
-line farewell : Keep above the tidemark on your way. | I'll put a stop after that, then.
-line farewell.return : Go on. I'll leave your space blank. | A dry journey out, if possible.
-line react.news : State the occurrence first. The guesses can come after. | Give me the version with the fewest blanks filled by fancy.
-line react.news.new : That's a clean space in my memory just filled. | Nobody has filed that particular wonder in my ears yet.
-line react.news.known : It's the same account with the margins trimmed. | Yes. A different voice has dated that tale already.
-line react.news.doubt : There's a date missing before I'd believe that account. | Where was the wolf who saw this happen?
-line react.news.sorrow [topic.kind=loss|death|arrest|crime|theft|assault] : I wish there were a way to rub that entry clean. | A very hard entry to leave standing there.
-line react.news.glad [topic.kind=birth|marriage|apprentice|succession|work] : Something cheerful enough to write in a proper hand. | That's fit to enter in my best upright letters.
-line answer.how : Perfectly legible, thank you. A trifle smudged round the edges. | In working order, though I might welcome an amendment.
-line ask.how : Anything of yours need setting straight? | Would your day read kindly if it were laid out in figures?
-line decline : I keep that sort of undertaking off my books entirely. | No, I'm keeping this hour clear on purpose.
-line accept_decline : An honest blank saves a lot of scratching out. | Very well. I'll strike out the suggestion.
-line sympathise : Tell me what needs doing first. There's room for one errand. | There's room on my list for something small and definite.
-line reassure : We'll work from the last thing you know for certain. | Begin with a single fact. We'll see how far it holds.
-line thank : I can put my name to your kindness. | You took trouble where you could have slipped quietly past. I noticed.
-line deflect_thanks : Call it an evening's small correction. | One less muddle in the world. I'm content.
-line preclose : I mean to finish a thought before the lines run together. | This is where I'd draw a neat little rule beneath things.
-line accept_preclose : I'll take that as your closing mark. | That leaves you free to attend to your other engagements.
-line ack : I've followed so far. | That's a clear account.
-
+line @1 greet : There's a dry patch beside me. You may stand in it. | My ears are free for the present.
+line @2 greet [here.time=dawn] : Early enough for a clean page. Come through. | A fresh margin on the day. We can start there.
+line @1 greet.return : Duly heard, and returned. | I'm here. You have my attention for a moment.
+line @2 greet.return [pair.band=friends] : That voice can come right past the latch. | I keep the welcome within easy reach for you.
+line @1 again.open : Another entry for the same face today. | My list of today's encounters grows more familiar.
+line @1 kin.open [pair.kin!=no] : Inside, then. Family needn't wait on ceremony here. | Settle in. I've no form for admitting a relative.
+line @1 hail [pair.band=friends] : Over this way, by the unmarked step! | There's a spare foothold beside mine. Use it!
+line @1 farewell : Keep above the tidemark on your way. | I'll put a stop after that, then.
+line @1 farewell.return : Go on. I'll leave your space blank. | A dry journey out, if possible.
+line @1 react.news : State the occurrence first. The guesses can come after. | Give me the version with the fewest blanks filled by fancy.
+line @1 react.news.new : That's a clean space in my memory just filled. | Nobody has filed that particular wonder in my ears yet.
+line @1 react.news.known : It's the same account with the margins trimmed. | Yes. A different voice has dated that tale already.
+line @1 react.news.doubt : There's a date missing before I'd believe that account. | Where was the wolf who saw this happen?
+line @1 react.news.sorrow [topic.kind=loss|death|arrest|crime|theft|assault] : I wish there were a way to rub that entry clean. | A very hard entry to leave standing there.
+line @1 react.news.glad [topic.kind=birth|marriage|apprentice|succession|work] : Something cheerful enough to write in a proper hand. | That's fit to enter in my best upright letters.
+line @1 answer.how : Perfectly legible, thank you. A trifle smudged round the edges. | In working order, though I might welcome an amendment.
+line @1 ask.how : Anything of yours need setting straight? | Would your day read kindly if it were laid out in figures?
+line @1 decline : I keep that sort of undertaking off my books entirely. | No, I'm keeping this hour clear on purpose.
+line @1 accept_decline : An honest blank saves a lot of scratching out. | Very well. I'll strike out the suggestion.
+line @1 sympathise : Tell me what needs doing first. There's room for one errand. | There's room on my list for something small and definite.
+line @1 reassure : We'll work from the last thing you know for certain. | Begin with a single fact. We'll see how far it holds.
+line @1 thank : I can put my name to your kindness. | You took trouble where you could have slipped quietly past. I noticed.
+line @1 deflect_thanks : Call it an evening's small correction. | One less muddle in the world. I'm content.
+line @1 preclose : I mean to finish a thought before the lines run together. | This is where I'd draw a neat little rule beneath things.
+line @1 accept_preclose : I'll take that as your closing mark. | That leaves you free to attend to your other engagements.
+line @1 ack : I've followed so far. | That's a clear account.
 scene flood
 when topic=land here.region=ridgemere
 does tell.self / ask.detail / answer.detail
 a : The street with the grandest gutter often goes under first. | I read the bottom step of a house before looking for a knocker.
 b : How do you tell? | For mud?
 a : Look for #witness# around the door bolts. Water signs in.  | For a pale strip where the water scoured everything off.
-
 
 scene ledger
 when topic=work self.job=scholar
@@ -85,14 +86,12 @@ a : I leave space beside each entry for a second opinion. | A drop fell square o
 b : Who gets to write there? | Lost your total?
 a : Whoever can supply the missing date. That usually narrows the field. | No. I had its neighbour's impression in the page underneath.
 
-
 scene cider
 when topic=food self.likes=spiced_cider
 does tell.self / react.self / assess
 a : A cup with #spice# buys silence right up to the last wisp of steam. | I fish out the clove before the first sip.
 b : You drink that slowly? | Don't like the taste?
 a : No. People expect you to and leave you alone. | Like the taste. Don't fancy biting a small wooden nail.
-
 
 scene dice
 when topic=pastimes self.likes=dice
@@ -101,14 +100,12 @@ a : I throw with #dicecup# so nobody watches my wrist. | I'd rather play dice wi
 b : It looks more suspicious that way. | Can't somebody be both?
 a : Excellent. They'll watch the cup instead of my face. | Certainly. That's why I play a second round.
 
-
 scene market
 when topic=pastimes self.likes=market_bustle
 does tell.feeling / react.self / assess
 a : I like a crowd that doesn't know I'm in it. | A full square leaves me room to think.
 b : Is that company? | All that noise gives you room?
 a : At the market it's practically privacy. | Every voice is busy making itself heard elsewhere.
-
 
 scene latch
 when topic=home
@@ -117,14 +114,12 @@ a : I can recognise a door by its last little click. | A door that swings silent
 b : You'd recognise one blindfolded? | Most folk oil the hinges.
 a : That's the point. That last click tells me the door caught properly. | I oil the hinge and leave the latch alone.
 
-
 scene thinrain
 when topic=weather here.weather=rain
 does tell.complaint / react.self / assess
 a : This fine rain gets further into paper than a splash. | I would like the sky to pick a proper size of drop.
 b : Can't you just shake it off? | You'd prefer a downpour?
 a : A splash, yes. This has already become part of the sheet. | I'd take an honest soaking over discovering one cuff at a time.
-
 
 scene dry
 when topic=dreams
@@ -133,14 +128,12 @@ a : I have an ambition to sit in a ditch without getting wet. | I want to see th
 b : That's your great ambition? | Would you stay there?
 a : On #dryland#, with a long view. Let's have the whole description. | Until I started missing the gutters. Could be quite a while.
 
-
 scene spouse
 when topic=family self.married=yes
 does tell.feeling / ask.detail / answer.detail
 a : Knowing #self.spouse# is home makes the sound of my latch quite different. | My private reckonings have room for #self.spouse#.
 b : Different how? | Anyone else?
 a : Like the end of a sentence with a good ending. | I said private. That was the entire public portion.
-
 
 scene friend
 when topic=friends self.friend
@@ -149,14 +142,12 @@ a : For #self.friend# I'd keep a place out of the wet. | In company with #self.f
 b : Only one place? | You consider that a virtue?
 a : If I offered more I'd have to move the hearth. | I consider it the rarest one.
 
-
 scene wage
 when topic=prices world.times=hard|lean
 does tell.worry / ask.detail / answer.detail
 a : When times tighten I start writing down the small purchases. | Lean days put nice round holes in a tidy budget.
 b : Do you stop buying them? | Nice?
 a : Some. Others look awfully dear when they're all on one page. | Nice as in exact. I'm perfectly aware they're inconvenient.
-
 
 scene workseat
 when topic=work self.apprentice=yes
@@ -165,14 +156,12 @@ a : As a learner I'm often told to watch from behind somebody's shoulder. | I le
 b : And can you see? | And if it's a dear mistake?
 a : No. I ask for a chair and suddenly I'm ambitious. | Give me a dry run on a discarded bill.
 
-
 scene gate
 when topic=travel here.region=ridgemere
 does tell.self / ask.detail / answer.detail
 a : The quickest way across the city takes longer to describe than to walk. | You can learn a road by counting how often its name changes.
 b : Can you point? | Does that help you find the end?
 a : Downhill, uphill, then ask again. That's the short edition. | Helps me find where I gave up the first time.
-
 
 scene gust
 when topic=season here.season=autumn
@@ -181,14 +170,12 @@ a : Autumn wind. Curls the leaves up like old warrants. | My favourite sound is 
 b : Shall I flatten one for you? | No broom needed?
 a : Leave it. I prefer this year's filings walking themselves out. | Somebody gets the pile at the end. May that poor soul possess a broom.
 
-
 scene rumour
 when topic=gossip
 does tell.self / ask.detail / answer.detail
 a : A rumour comes with a curious sort of receipt. | Someone always wants the name beneath the tale.
 b : Who signs it? | Would you give it?
 a : Nobody. Everybody wants a copy. | First show me the blank space where you intend to put yours.
-
 
 scene scales
 when topic=work self.job=scholar
@@ -197,14 +184,12 @@ a : A tally's useless if it's neat enough to hide its corrections. | My square h
 b : Should errors stay? | Like little windows?
 a : Thin stroke through them. Let a reader see what changed. | Exactly. Hard to add up a row of houses.
 
-
 scene sand
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
 a : I keep #sand# in a twist with its corners folded twice. | I've discovered how to get grit into everything I own.
 b : Does a pinch of sand need a lock? | How?
 a : Only if it shares a pocket with my supper. | Tell yourself the packet will hold just till you get home.
-
 
 scene advice
 when topic=health|day
@@ -213,13 +198,11 @@ a : Don't put a wet shoe too near a hot grate. | Carry one dry cloth where the d
 b : Does it split? | Why two?
 a : Worse. The sole curls so you spend tomorrow walking uphill everywhere. | Because I'd trust the first fold about as far as a damp wolf can jump.
 
-
 story bluecost [topic=memories]
   : I once drew the city in blue and the water in black. A splash joined the two.
   : I put a little frame round the blot to see if it would look intentional.
   b : Did it?
   : It looked like a portrait of a particularly rich puddle.
-
 
 story ciderpip [topic=food]
   : Once at a fair I fished a whole pip out of a cup with my teeth.
@@ -227,13 +210,11 @@ story ciderpip [topic=food]
   b : So you sent an apple pip by post?
   : It got as far as my pocket. Punctuation ought never to rattle.
 
-
 story double [topic=pastimes]
   : A dice cup stuck to the table at the very end of a close game.
   : We argued till somebody lifted the table and looked through the knot underneath.
   b : Who won the throw?
   : Nobody. Both dice had gone off through that knot.
-
 
 rule @grit
 when concept=bark self.job=scholar working=yes
@@ -241,13 +222,11 @@ does aside
 cooldown 8h
 say Mind the unsanded page. A signature should stay where it's put. | Wet ink makes remarkably quick work of a clean cuff.
 
-
 rule @mark
 when concept=bark here.region=ridgemere
 does aside
 cooldown 8h
 say See that clean edge below the dirt? Last wetting stopped precisely there. | Read the steps! The pale stripe is the city's last wet signature.
-
 
 rule @crowd
 when concept=bark here.place=market
@@ -255,22 +234,20 @@ does aside
 cooldown 8h
 say You can keep your elbow. I've got the requisite two already. | I'll thank that basket to stay in its owner's column.
 
-
 rule @draught
 when concept=bark here.season=autumn
 does aside
 cooldown 8h
 say There goes the first leaf to arrive without an appointment. | Autumn's first delivery has come loose from its enclosing branch.
 
-dlg resident.hub : You may present the matter in as much detail as it actually needs.
-dlg resident.hub [topic.meeting=known] : #topic.player#, yes. I need no reminder of the spelling.
-dlg resident.hub [here.time=night] : This hour generally comes without petitions. You've found me regardless.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your account brief and your distance ample.
-dlg resident.job [self.job=scholar] : At #self.workplace# I separate what came in from what somebody thought ought to.
-dlg resident.job : I put the muddled things in order and then somebody brings me more.
-dlg resident.news [world.news] : The entry reads as follows. #world.news#. Any embellishment is yours.
-dlg resident.bye : That concludes my copy of this conversation.
-
+dlg @1 resident.hub : You may present the matter in as much detail as it actually needs.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, yes. I need no reminder of the spelling.
+dlg @3 resident.hub [here.time=night] : This hour generally comes without petitions. You've found me regardless.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep your account brief and your distance ample.
+dlg @1 resident.job [self.job=scholar] : At #self.workplace# I separate what came in from what somebody thought ought to.
+dlg @2 resident.job : I put the muddled things in order and then somebody brings me more.
+dlg @1 resident.news [world.news] : The entry reads as follows. #world.news.capitalize#. Any embellishment is yours.
+dlg @1 resident.bye : That concludes my copy of this conversation.
 graft resident.hub
 choice Why leave so much white beside a line? -> wash_margin
 node wash_margin

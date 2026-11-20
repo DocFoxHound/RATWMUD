@@ -1,9 +1,12 @@
+# rm476, the tender for a city (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm476
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_ambrose_greatly
+written_by codex
 title the tender for a city
 fits stage=adult|old
 prefers job=official
@@ -17,6 +20,7 @@ topics work +0.7 prices +0.5 family +0.4 pastimes +0.3
 styles comfort=measured gossip=plain refuse=courteous tease=none
 marks oath saying
 persona #self.first# prices a street by the door that still opens there after rain, keeps an unmarked brick on the account table, and can wait through a very long refusal.
+
 words
 oath! = Flake my best facing brick | Lime in my tea
 saying! = Count the street standing | A promise must bear weight
@@ -36,47 +40,45 @@ oldstamp = a worn yard stamp | a faint maker's mark
 shortsum = an exact little total | a modest sum in ink
 
 grown
-
-opinion houses for 2 : A House has credit for the roofs still standing under its name. In time it must also answer for the roofs which fall.
-opinion dole against 1 : I would know the cost of the second helping before I promise the first. The kitchen may dislike the question. The grain merchant asks it.
-opinion city for 2 : A fortune spread across this desk can be carried off in sacks. A city has the advantage of requiring a good many carts.
-opinion watch for 1 : I can price a well-hung door. The peace that permits a neighbour to open it after dark is an expense I gladly support.
-opinion merchants mixed 1 : A merchant who knows the weight of the goods can spare me much of the elegant persuasion.
-opinion newcomers mixed 1 : Bring me the evidence of a craft. A place of birth has never yet kept a bead of rain from my ceiling.
-opinion church mixed 1 : I go where a question can be put without six clerks immediately laying down their views upon it.
-opinion road for 1 : Every wagon bringing sound clay adds a little to the value of a well-kept road. I should like the reverse entry made just as plainly.
-line greet : Your business may take as much time as its substance requires.
-line greet [pair.band=strangers] : Make yourself known in whatever order suits the matter.
-line greet.return : I retain the particulars. Continue from the last sound figure.
-line greet [here.time=dusk] : There is enough daylight left to distinguish pencil from ink.
-line farewell : I trust the road home will meet its obligations.
-line farewell.return : We part with the account clearly understood, I hope.
-line ask.how : Has the day proved equal to what you invested in it?
-line answer.how : Quite steady. The weight on the table has scarcely shifted.
-line thank : You supplied the missing quantity without inflating its importance.
-line decline : My answer can be delivered courteously. It remains a refusal.
-line accept_decline : Very well. You have priced your own participation.
-line deflect_thanks : I would regard a clear understanding as sufficient return.
-line sympathise : Sit where the glass will keep its warmth a little longer.
-line reassure : There is time yet to distinguish a large difficulty from two small ones.
-line react.news : I am listening for the part which alters a real obligation.
-line react.news.new : That will have to enter on a fresh docket.
-line react.news.known : My earlier entry already accommodates that piece.
-line react.news.doubt : I would hesitate to put the weight of a brick on that conclusion.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I can welcome a return that costs nobody an additional penny.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That loss deserves the dignity of a full and unhurried hearing.
-line ack : The quantity and its description agree.
-line again.open : We may leave the first page turned over.
-line preclose : I think the remaining business will keep until another sitting.
-line accept_preclose : Certainly. The pen can rest on its ledge.
-line greet.return [pair.band=friends|family] : Come sit where I usually take tea.
-line farewell [here.time=night] : May you find the lamp still answering to its wick.
-line tell.self : I inspect the thing that is offered before considering what I wish to obtain.
-line reassure [pair.band=friends|family] : Bring the smallest part to me first if the whole troubles you.
-line react.news [here.time=dawn] : Even this early I have a blank docket within reach.
-line decline [pair.disposition=hostile] : Increased volume will not purchase a different figure from me.
-line greet [here.time=night] : A late matter. Let us give it the courtesy of a chair.
-
+opinion @1 houses for 2 : A House has credit for the roofs still standing under its name. In time it must also answer for the roofs which fall.
+opinion @1 dole against 1 : I would know the cost of the second helping before I promise the first. The kitchen may dislike the question. The grain merchant asks it.
+opinion @1 city for 2 : A fortune spread across this desk can be carried off in sacks. A city has the advantage of requiring a good many carts.
+opinion @1 watch for 1 : I can price a well-hung door. The peace that permits a neighbour to open it after dark is an expense I gladly support.
+opinion @1 merchants mixed 1 : A merchant who knows the weight of the goods can spare me much of the elegant persuasion.
+opinion @1 newcomers mixed 1 : Bring me the evidence of a craft. A place of birth has never yet kept a bead of rain from my ceiling.
+opinion @1 church mixed 1 : I go where a question can be put without six clerks immediately laying down their views upon it.
+opinion @1 road for 1 : Every wagon bringing sound clay adds a little to the value of a well-kept road. I should like the reverse entry made just as plainly.
+line @1 greet : Your business may take as much time as its substance requires.
+line @2 greet [pair.band=strangers] : Make yourself known in whatever order suits the matter.
+line @1 greet.return : I retain the particulars. Continue from the last sound figure.
+line @3 greet [here.time=dusk] : There is enough daylight left to distinguish pencil from ink.
+line @1 farewell : I trust the road home will meet its obligations.
+line @1 farewell.return : We part with the account clearly understood, I hope.
+line @1 ask.how : Has the day proved equal to what you invested in it?
+line @1 answer.how : Quite steady. The weight on the table has scarcely shifted.
+line @1 thank : You supplied the missing quantity without inflating its importance.
+line @1 decline : My answer can be delivered courteously. It remains a refusal.
+line @1 accept_decline : Very well. You have priced your own participation.
+line @1 deflect_thanks : I would regard a clear understanding as sufficient return.
+line @1 sympathise : Sit where the glass will keep its warmth a little longer.
+line @1 reassure : There is time yet to distinguish a large difficulty from two small ones.
+line @1 react.news : I am listening for the part which alters a real obligation.
+line @1 react.news.new : That will have to enter on a fresh docket.
+line @1 react.news.known : My earlier entry already accommodates that piece.
+line @1 react.news.doubt : I would hesitate to put the weight of a brick on that conclusion.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I can welcome a return that costs nobody an additional penny.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That loss deserves the dignity of a full and unhurried hearing.
+line @1 ack : The quantity and its description agree.
+line @1 again.open : We may leave the first page turned over.
+line @1 preclose : I think the remaining business will keep until another sitting.
+line @1 accept_preclose : Certainly. The pen can rest on its ledge.
+line @2 greet.return [pair.band=friends|family] : Come sit where I usually take tea.
+line @2 farewell [here.time=night] : May you find the lamp still answering to its wick.
+line @1 tell.self : I inspect the thing that is offered before considering what I wish to obtain.
+line @2 reassure [pair.band=friends|family] : Bring the smallest part to me first if the whole troubles you.
+line @2 react.news [here.time=dawn] : Even this early I have a blank docket within reach.
+line @2 decline [pair.disposition=hostile] : Increased volume will not purchase a different figure from me.
+line @4 greet [here.time=night] : A late matter. Let us give it the courtesy of a chair.
 scene work_1
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -338,19 +340,19 @@ when concept=bark self.likes=mutton_stew
 does aside
 cooldown 8h
 say Let the meat come cleanly from the joint. | A stout bowl is the right partner for a long-cooked supper.
-dlg resident.hub : Set your proposal down in as few pieces as it will reasonably bear.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I recall the name accurately. The floor is yours.
-dlg resident.job [self.job=official] : My table at #self.workplace# receives estimates and sends back obligations. It is important to distinguish the two.
-dlg resident.quirk : An assertion can wait while I put my table brick on its other face.
-dlg resident.how [tired=yes] : I have spent rather too long in the company of figures today.
-dlg resident.news [world.news] : The account supplied to my table reads as follows. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody has put about that #topic.subject# #topic.claim#. I have assigned the statement no particular credit.
-dlg resident.hub [pair.disposition=wary] : I shall attend to the proposal itself before deciding whether we have business together.
-dlg resident.hub [here.time=dawn] : Morning light actually brings out the grain of this paper.
-dlg resident.bye : I believe each of us now understands the terms of the other.
-dlg resident.bye [here.time=dusk] : The evening should be yours without a further demand from this table.
-dlg resident.hub [pair.band=friends|family] : There is both a place for business and a place for tea. Choose the one your visit requires.
 
+dlg @1 resident.hub : Set your proposal down in as few pieces as it will reasonably bear.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I recall the name accurately. The floor is yours.
+dlg @1 resident.job [self.job=official] : My table at #self.workplace# receives estimates and sends back obligations. It is important to distinguish the two.
+dlg @1 resident.quirk : An assertion can wait while I put my table brick on its other face.
+dlg @1 resident.how [tired=yes] : I have spent rather too long in the company of figures today.
+dlg @1 resident.news [world.news] : The account supplied to my table reads as follows. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody has put about that #topic.subject# #topic.claim#. I have assigned the statement no particular credit.
+dlg @3 resident.hub [pair.disposition=wary] : I shall attend to the proposal itself before deciding whether we have business together.
+dlg @4 resident.hub [here.time=dawn] : Morning light actually brings out the grain of this paper.
+dlg @1 resident.bye : I believe each of us now understands the terms of the other.
+dlg @2 resident.bye [here.time=dusk] : The evening should be yours without a further demand from this table.
+dlg @5 resident.hub [pair.band=friends|family] : There is both a place for business and a place for tea. Choose the one your visit requires.
 graft resident.hub
 choice What is a whole street worth? -> brick_street
 node brick_street

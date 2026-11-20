@@ -1,9 +1,12 @@
+# rm433, the star on the whetstone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm433
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_jarl_greyford
+written_by codex
 title the star on the whetstone
 fits stage=adult|old
 prefers job=sailor
@@ -36,35 +39,34 @@ sheath = a plain sheath | the leather guard
 tallier = a nick of light | a fleck of brightness
 
 any
-opinion church for 2 : A blessing is best accompanied by a little care that actually reaches the person blessed.
-opinion dole for 2 : I can divide an oatcake evenly without asking which hungry mouth deserves to go first.
-opinion merchants mixed 1 : A clean cut and a civil word are part of the trade whether or not they're on the slate.
-opinion road for 1 : A letter that travels soundly puts two far hills within a paw's reach for a while.
-opinion strangers for 1 : A strange voice can have excellent manners. I listen to how a question's put.
-opinion houses against 1 : A House mark on a provision bag is quite a large thing next to the small fingers tying the mouths.
+opinion @1 church for 2 : A blessing is best accompanied by a little care that actually reaches the person blessed.
+opinion @1 dole for 2 : I can divide an oatcake evenly without asking which hungry mouth deserves to go first.
+opinion @1 merchants mixed 1 : A clean cut and a civil word are part of the trade whether or not they're on the slate.
+opinion @1 road for 1 : A letter that travels soundly puts two far hills within a paw's reach for a while.
+opinion @1 strangers for 1 : A strange voice can have excellent manners. I listen to how a question's put.
+opinion @1 houses against 1 : A House mark on a provision bag is quite a large thing next to the small fingers tying the mouths.
 
 grown
-line greet : My knife's sheathed. There's room for a proper greeting. | A quiet patch beside the stores for you.
-line greet.return : Your courtesy finds my ears quite open.
-line again.open : Back to inspect the same patch of light, I see.
-line farewell : Go with sound ties and an easy reach to your supper. | Good footing over the headland's outer path.
-line farewell.return : And a clear patch of sky over your way.
-line react.news : Give the news its own clean shape. | I'll lay the stone aside until you've finished.
-line react.news.new : A line of light I hadn't noticed before.
-line react.news.known : I could recognise the earlier cut of that account.
-line react.news.doubt : I'd test the strength of that before I passed it round.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'll give the hurt its quiet place in my blessing.
-line react.news.glad [topic.kind=birth|marriage|work] : A happy account merits a clear and grateful hearing.
-line ask.how : Are you finding enough ease between the day's jobs?
-line answer.how : Steady at the wrist and thankful for the rest.
-line sympathise : Sit this close. You needn't press your voice.
-line reassure : The next cut can wait till your hands feel settled.
-line refuse : I have an earlier duty needing a little careful time.
-line accept_decline : Your own decision deserves a courteous hearing too.
-line preclose : I've a quiet bit of sharpening to see through yet.
-line accept_preclose : You may take your leave without hurrying the last word.
-line ack : The meaning came through without a rough edge.
-
+line @1 greet : My knife's sheathed. There's room for a proper greeting. | A quiet patch beside the stores for you.
+line @1 greet.return : Your courtesy finds my ears quite open.
+line @1 again.open : Back to inspect the same patch of light, I see.
+line @1 farewell : Go with sound ties and an easy reach to your supper. | Good footing over the headland's outer path.
+line @1 farewell.return : And a clear patch of sky over your way.
+line @1 react.news : Give the news its own clean shape. | I'll lay the stone aside until you've finished.
+line @1 react.news.new : A line of light I hadn't noticed before.
+line @1 react.news.known : I could recognise the earlier cut of that account.
+line @1 react.news.doubt : I'd test the strength of that before I passed it round.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'll give the hurt its quiet place in my blessing.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A happy account merits a clear and grateful hearing.
+line @1 ask.how : Are you finding enough ease between the day's jobs?
+line @1 answer.how : Steady at the wrist and thankful for the rest.
+line @1 sympathise : Sit this close. You needn't press your voice.
+line @1 reassure : The next cut can wait till your hands feel settled.
+line @1 refuse : I have an earlier duty needing a little careful time.
+line @1 accept_decline : Your own decision deserves a courteous hearing too.
+line @1 preclose : I've a quiet bit of sharpening to see through yet.
+line @1 accept_preclose : You may take your leave without hurrying the last word.
+line @1 ack : The meaning came through without a rough edge.
 scene exchange1
 when topic=work self.job=sailor self.workplace
 does tell.self / ask.detail / answer.detail
@@ -232,16 +234,16 @@ when concept=bark self.dislikes=bad_manners
 does aside
 cooldown 8h
 say A civil word before putting a hand on another's load. | Give a visitor room to place the bundle properly.
-dlg resident.hub : I've set everything down. Your words can have my attention.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's a clean place by the supplies for a familiar greeting.
-dlg resident.hub [here.time=night] : At night the quiet words reach me quite distinctly.
-dlg resident.hub [pair.disposition=wary|hostile] : There's room for courtesy even where trust is thin.
-dlg resident.job [self.job=sailor] : I help at #self.workplace# and inspect every parcel before passing it along.
-dlg resident.job : I take care with the small things a hungry crew might otherwise lack.
-dlg resident.news [world.news] : The word that reached the supplies was #world.news#.
-dlg resident.gossip [here.gossip=yes] : It was said that #topic.subject# #topic.claim#. I give you the claim just at its received weight.
-dlg resident.bye : May the Bright One show you a steady patch of light on the way.
 
+dlg @1 resident.hub : I've set everything down. Your words can have my attention.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a clean place by the supplies for a familiar greeting.
+dlg @3 resident.hub [here.time=night] : At night the quiet words reach me quite distinctly.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's room for courtesy even where trust is thin.
+dlg @1 resident.job [self.job=sailor] : I help at #self.workplace# and inspect every parcel before passing it along.
+dlg @2 resident.job : I take care with the small things a hungry crew might otherwise lack.
+dlg @1 resident.news [world.news] : The word that reached the supplies was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : It was said that #topic.subject# #topic.claim#. I give you the claim just at its received weight.
+dlg @1 resident.bye : May the Bright One show you a steady patch of light on the way.
 graft resident.hub
 choice Does a star really test the blade? -> edge_star
 node edge_star

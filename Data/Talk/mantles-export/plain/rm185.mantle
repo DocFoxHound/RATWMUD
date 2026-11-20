@@ -1,10 +1,12 @@
-# rm185, the bell on the label (doc 84 P14, batch city-a3): written for rm_rupert_pitchford (Rupert Pitchford: apothecary on Market Square, Ridgemere-born). Name-free.
+# rm185, the bell on the label (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm185
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_rupert_pitchford
+written_by codex
 title the bell on the label
 fits stage=adult|old
 prefers role=merchant job=healer talk=chatty
@@ -41,64 +43,63 @@ bells = the chapel bells | the chapel's ringing
 chest = your chest | the chest
 
 any
-opinion houses mixed 1 : #houses.capitalize# bow to one another under the Rain Hall roof and whet knives below stairs. Before winter's out, one will say a thing there's no unsaying.
-opinion houses against 2 [world.times=hard|lean] : Lean times, and #houses# counting who owes whom. That's how the quarrels start, and the Commons pays for every one.
-opinion city for 1 : Born to the sound of #bells#, and I'll go to it. Rain and all, there's no city like it, and I've never wanted one.
-opinion dole for 1 : Nobody should have to pick between bread and a remedy. I've watched folk pick, and they always pick wrong.
-opinion drink against 1 : Ale's all right till it starts talking for you. Have your cup, then go home and drink water.
-opinion drink against 1 [self.job=healer] : I've cleaned more cuts from a fourth cup than from any fight sober. One's cheer. Four's my trade.
-opinion festivals for 1 : The whole city out in the street and chattering to its neighbours. Monthly, if they let me choose.
-opinion merchants for 1 [self.role=merchant] : Mine's a counter trade. I can price a sack of dried herbs before it's through the gate.
-opinion newcomers for 1 : There's room on every terrace for anyone who'll work. And they bring riddles I've never heard.
-opinion road against 1 : A late cart is a remedy I can't make. Worse roads every year, and later carts on them.
-opinion times against 1 : The square's quieter every week. Folk put off a remedy till it's a sickness, and then it costs them double.
-opinion watch mixed 0 : The Watch are civil enough to me. Whether they're as civil down the hill, I couldn't swear.
-opinion sump mixed 1 : The Sump pays what it can and owes what it can't, same as anywhere. I'll stand up for the folk; it's the damp I'd sooner see gone.
+opinion @1 houses mixed 1 : #houses.capitalize# bow to one another under the Rain Hall roof and whet knives below stairs. Before winter's out, one will say a thing there's no unsaying.
+opinion @2 houses against 2 [world.times=hard|lean] : Lean times, and #houses# counting who owes whom. That's how the quarrels start, and the Commons pays for every one.
+opinion @1 city for 1 : Born to the sound of #bells#, and I'll go to it. Rain and all, there's no city like it, and I've never wanted one.
+opinion @1 dole for 1 : Nobody should have to pick between bread and a remedy. I've watched folk pick, and they always pick wrong.
+opinion @1 drink against 1 : Ale's all right till it starts talking for you. Have your cup, then go home and drink water.
+opinion @2 drink against 1 [self.job=healer] : I've cleaned more cuts from a fourth cup than from any fight sober. One's cheer. Four's my trade.
+opinion @1 festivals for 1 : The whole city out in the street and chattering to its neighbours. Monthly, if they let me choose.
+opinion @1 merchants for 1 [self.role=merchant] : Mine's a counter trade. I can price a sack of dried herbs before it's through the gate.
+opinion @1 newcomers for 1 : There's room on every terrace for anyone who'll work. And they bring riddles I've never heard.
+opinion @1 road against 1 : A late cart is a remedy I can't make. Worse roads every year, and later carts on them.
+opinion @1 times against 1 : The square's quieter every week. Folk put off a remedy till it's a sickness, and then it costs them double.
+opinion @1 watch mixed 0 : The Watch are civil enough to me. Whether they're as civil down the hill, I couldn't swear.
+opinion @1 sump mixed 1 : The Sump pays what it can and owes what it can't, same as anywhere. I'll stand up for the folk; it's the damp I'd sooner see gone.
 
 grown
-line greet [pair.band=strangers] : #greet#! In, in. The step drops lower than you'd think. | #greet#, #address#. New to me. I'll have your name off you before you go, I promise.
-line greet [self.working=yes self.job=healer] : #greet#. Give me one breath, I'm writing a label. | #greet#! Stand by #counter#, I've salve on the warm.
-line greet [here.time=dawn] : #greet#. First bell's hardly done ringing and here's you, up and about. | #greet#! Up with the bells, both of us. Early's healthy.
-line greet [here.time=dawn here.weather=fog] : #greet#! Look at that mist. A morning like wool, and I love every inch of it. | #greet#. Fog to the rooftops. Best kind of morning there is.
-line greet [here.time=dusk|night] : #greet#. Evening bell's been and gone, and I'm still talking. | #greet#, #address#. Late, and a visitor's welcome all the same.
-line greet [pair.band=friends|family] : Ah, you! Your name was on my tongue a moment ago. | #greet#! Turn round, let me see. You look well, and I'd know.
-line greet : #greet#! A face, at last, and a good one. | #greet#, #address#. #bells.capitalize# are quiet, so I'm all yours.
-line kin.open [pair.kin!=no] : Here you are. Sit. Cheese is on the board. | In you come. Something's happened, it's on your face; let's have it.
-line again.open : Twice today! I'll be giving you your own stool. | Back already. Good; three more things came to me since.
-line hail [pair.band=friends] : Hoy! Wait there, I'm coming over. | There's a face I know. Hold up, hold up!
-line greet.return : #greet#! And a good one to you as well. | #greet#. In you come, then.
-line greet.return [pair.band=friends|family] : And there's you! I'd hoped so. | #greet#! Take the stool before your knees give.
-line greet.return [self.working=yes] : #greet#. Talk away; the paws are writing, the ears are free. | #greet#. Mind the jars, and say on.
-line greet.return [here.time=dusk|night] : Evening to you. I'll have the lamp lit in a moment. | #greet#. Late already. I never notice till the bells tell me.
-line farewell : #farewell#! And mind #chest# in this damp. | Off you go, then. #saying#.
-line farewell [here.time=dusk|night] : #farewell#. Keep your scarf up; the night air's raw. | Good night, #address#. Sleep on your side if you're wheezy.
-line farewell.return : #farewell#, and come back soon, mind. | And you. The counter misses a face.
-line farewell.return [pair.band=friends|family] : Go on. A heel of the cheese is yours next time. | Mind the step. I'll see you at the next bell, near enough.
-line react.news : Every word, now, from the start. Go on. | Wait, wait. Let me put this jar down. Now.
-line react.news.new : #oath#! Not a word of that's reached me. | Well! First I've heard, and very little gets past me.
-line react.news.known : That reached me while I was drawing water. Give me your telling anyway. | Oh, that's been round the square twice already.
-line react.news.doubt : Who saw it, though? An ear's not an eye. | Hm. News grows on its way up the terraces, like ivy.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's cruel. That's cruel to hear. | That's hard news. Kettle's on; sit a minute.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's the happiest word all week! | Oh, good! Good! I'll tell everyone I see.
-line answer.how : Hale and loud, the way I like to be. | Very well, thank you. Cheese in the larder and nobody poorly at my end.
-line answer.how.busy [self.working=yes] : Up since the first bell and not sat once. | Busy as the noon bell. Ask again after lamplighting.
-line answer.how.poorly : A bit hoarse. Too much talking, they tell me. | Under the weather, and you know I hate to say so.
-line ask.how : And you? How's #chest#? | And how's yourself? The honest answer, mind.
-line sympathise : Oh, sit down. Say what would help. | That's a weight. Leave a bit of it here with me.
-line reassure : It'll heal. Nearly everything heals, given rest and somebody fussing. | Worse has turned round, and this will.
-line decline : I'd love to, only the whole day's spoken for, and I'll not go back on it. | Not today, I'm sorry. Come back tomorrow. I'll say yes before you've finished.
-line accept_decline : Ah well. Some other day, and I'll be after you for it. | Fair enough. I'll not nag. Not much, anyway.
-line thank : Oh, that's kind. That's very kind. | #thanks#. I'll not forget that.
-line deflect_thanks : Pfft. A minute of my time, no more. | Don't thank me. Take the drops on the bell; that's thanks enough.
-line preclose [self.working=yes] : Right, I've a label wants writing before the bell. | Well. These jars won't fill themselves.
-line preclose : Listen to me prattling. Off you go. | Well, my chatter's kept you standing long enough.
-line accept_preclose : Go on, go on. Next bell, maybe. | Right you are. Off with you.
-line ack : #bc_right# | Just so.
-line give.advice : Hot water and honey, and stay off the slick cobbles. | Sleep with the window cracked. Damp air's worse when it's shut in.
-line give.advice [self.job=healer] : Take it at #dosebell# and not before. The label says so for a reason. | Rub #salve# in after a wash, never before.
-line warn [world.bandits=near] : Travelling north alone? Wait for company. Those cuts are ugly to dress. | Bide behind the wall a few days. I'd sooner sell you nothing than stitch you.
-line congratulate : Well done! Oh, well done. | That's grand. That's grand news for you.
-
+line @1 greet [pair.band=strangers] : #greet#! In, in. The step drops lower than you'd think. | #greet#, #address#. New to me. I'll have your name off you before you go, I promise.
+line @2 greet [self.working=yes self.job=healer] : #greet#. Give me one breath, I'm writing a label. | #greet#! Stand by #counter#, I've salve on the warm.
+line @3 greet [here.time=dawn] : #greet#. First bell's hardly done ringing and here's you, up and about. | #greet#! Up with the bells, both of us. Early's healthy.
+line @4 greet [here.time=dawn here.weather=fog] : #greet#! Look at that mist. A morning like wool, and I love every inch of it. | #greet#. Fog to the rooftops. Best kind of morning there is.
+line @5 greet [here.time=dusk|night] : #greet#. Evening bell's been and gone, and I'm still talking. | #greet#, #address#. Late, and a visitor's welcome all the same.
+line @6 greet [pair.band=friends|family] : Ah, you! Your name was on my tongue a moment ago. | #greet#! Turn round, let me see. You look well, and I'd know.
+line @7 greet : #greet#! A face, at last, and a good one. | #greet#, #address#. #bells.capitalize# are quiet, so I'm all yours.
+line @1 kin.open [pair.kin!=no] : Here you are. Sit. Cheese is on the board. | In you come. Something's happened, it's on your face; let's have it.
+line @1 again.open : Twice today! I'll be giving you your own stool. | Back already. Good; three more things came to me since.
+line @1 hail [pair.band=friends] : Hoy! Wait there, I'm coming over. | There's a face I know. Hold up, hold up!
+line @1 greet.return : #greet#! And a good one to you as well. | #greet#. In you come, then.
+line @2 greet.return [pair.band=friends|family] : And there's you! I'd hoped so. | #greet#! Take the stool before your knees give.
+line @3 greet.return [self.working=yes] : #greet#. Talk away; the paws are writing, the ears are free. | #greet#. Mind the jars, and say on.
+line @4 greet.return [here.time=dusk|night] : Evening to you. I'll have the lamp lit in a moment. | #greet#. Late already. I never notice till the bells tell me.
+line @1 farewell : #farewell#! And mind #chest# in this damp. | Off you go, then. #saying#.
+line @2 farewell [here.time=dusk|night] : #farewell#. Keep your scarf up; the night air's raw. | Good night, #address#. Sleep on your side if you're wheezy.
+line @1 farewell.return : #farewell#, and come back soon, mind. | And you. The counter misses a face.
+line @2 farewell.return [pair.band=friends|family] : Go on. A heel of the cheese is yours next time. | Mind the step. I'll see you at the next bell, near enough.
+line @1 react.news : Every word, now, from the start. Go on. | Wait, wait. Let me put this jar down. Now.
+line @1 react.news.new : #oath#! Not a word of that's reached me. | Well! First I've heard, and very little gets past me.
+line @1 react.news.known : That reached me while I was drawing water. Give me your telling anyway. | Oh, that's been round the square twice already.
+line @1 react.news.doubt : Who saw it, though? An ear's not an eye. | Hm. News grows on its way up the terraces, like ivy.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's cruel. That's cruel to hear. | That's hard news. Kettle's on; sit a minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Oh, that's the happiest word all week! | Oh, good! Good! I'll tell everyone I see.
+line @1 answer.how : Hale and loud, the way I like to be. | Very well, thank you. Cheese in the larder and nobody poorly at my end.
+line @1 answer.how.busy [self.working=yes] : Up since the first bell and not sat once. | Busy as the noon bell. Ask again after lamplighting.
+line @1 answer.how.poorly : A bit hoarse. Too much talking, they tell me. | Under the weather, and you know I hate to say so.
+line @1 ask.how : And you? How's #chest#? | And how's yourself? The honest answer, mind.
+line @1 sympathise : Oh, sit down. Say what would help. | That's a weight. Leave a bit of it here with me.
+line @1 reassure : It'll heal. Nearly everything heals, given rest and somebody fussing. | Worse has turned round, and this will.
+line @1 decline : I'd love to, only the whole day's spoken for, and I'll not go back on it. | Not today, I'm sorry. Come back tomorrow. I'll say yes before you've finished.
+line @1 accept_decline : Ah well. Some other day, and I'll be after you for it. | Fair enough. I'll not nag. Not much, anyway.
+line @1 thank : Oh, that's kind. That's very kind. | #thanks#. I'll not forget that.
+line @1 deflect_thanks : Pfft. A minute of my time, no more. | Don't thank me. Take the drops on the bell; that's thanks enough.
+line @1 preclose [self.working=yes] : Right, I've a label wants writing before the bell. | Well. These jars won't fill themselves.
+line @2 preclose : Listen to me prattling. Off you go. | Well, my chatter's kept you standing long enough.
+line @1 accept_preclose : Go on, go on. Next bell, maybe. | Right you are. Off with you.
+line @1 ack : #bc_right# | Just so.
+line @1 give.advice : Hot water and honey, and stay off the slick cobbles. | Sleep with the window cracked. Damp air's worse when it's shut in.
+line @2 give.advice [self.job=healer] : Take it at #dosebell# and not before. The label says so for a reason. | Rub #salve# in after a wash, never before.
+line @1 warn [world.bandits=near] : Travelling north alone? Wait for company. Those cuts are ugly to dress. | Bide behind the wall a few days. I'd sooner sell you nothing than stitch you.
+line @1 congratulate : Well done! Oh, well done. | That's grand. That's grand news for you.
 scene bell_labels
 when topic=work self.job=healer
 does tell.self / ask.detail / answer.detail / assess
@@ -239,7 +240,7 @@ a : Dried camomile, and a cheese I didn't need and bought anyway. | Loud's coin.
 scene gossip_passed
 when topic=gossip topic.subject topic.claim_kind=other|newcomer|marriage|promise_kept
 does tell.gossip / react.self / assess
-a : You'll have heard this, surely: #topic.subject# #topic.claim#. | It came over the well this morning. #topic.subject# #topic.claim#. | Here's one for you. They say #topic.subject# #topic.claim#.
+a : You'll have heard this, surely: #topic.subject# #topic.claim#. | It came over the well this morning. #topic.subject.capitalize# #topic.claim#. | Here's one for you. They say #topic.subject# #topic.claim#.
 b : I hadn't, no. | From who? | Do they, now.
 a : Well, it's yours now. Remember who told you. | From a wolf at the well, and then from two more. That's three. | That's the account I heard. My seal isn't on it.
 
@@ -247,14 +248,14 @@ scene gossip_hard
 when topic=gossip topic.subject topic.claim_kind=death|violence|theft
 does tell.gossip / sympathise / assess
 tone serious / serious / even
-a : Have you heard? #topic.subject# #topic.claim#. I've carried it since breakfast. | They're saying #topic.subject# #topic.claim#. It's a hard thing. | I'd rather not believe it, but #topic.subject# #topic.claim#, they say.
+a : Have you heard? #topic.subject.capitalize# #topic.claim#. I've carried it since breakfast. | They're saying #topic.subject# #topic.claim#. It's a hard thing. | I'd rather not believe it, but #topic.subject# #topic.claim#, they say.
 b : That's a sorry thing. | #pity#. | Let's hope it's wrong.
 a : It is. That's not one for idle chatter. | Hard. A taper goes up from me at the chapel, whatever it's worth. | Let's hope. I'll keep it behind my teeth till I'm sure.
 
 scene newcomer_welcome
 when topic=newcomer topic.subject
 does tell.news / react.self / assess
-a : #topic.subject#, newly come, I hear. Somebody ought to say where the good cheese is. | A new face, they tell me: #topic.subject#. I'll want to hear where from. | I hear #topic.subject# has settled in. I'll call round with a good day before the week's out.
+a : #topic.subject.capitalize#, newly come, I hear. Somebody ought to say where the good cheese is. | A new face, they tell me: #topic.subject#. I'll want to hear where from. | I hear #topic.subject# has settled in. I'll call round with a good day before the week's out.
 b : You'll do it yourself, I expect. | Does it matter where from? | That's kind.
 a : Somebody has to, and I've the loudest voice on the street. | Every town has its own riddles. I like to collect them. | Kind's cheap. Two words at a door cost nothing and buy a lot.
 
@@ -268,7 +269,7 @@ a : A whole one. I'll share it, before you ask. Most of it. | Everyone. Even the
 scene light_paws
 when topic=crime|gossip topic.claim_kind=theft topic.subject
 does tell.news / react.news / assess
-a : Thieves again. They say #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. I've taken to locking the larder, and I never lock the larder. | There's light paws about. #topic.subject# #topic.claim#, they're saying.
+a : Thieves again. They say #topic.subject# #topic.claim#. | They say #topic.subject# #topic.claim#. I've taken to locking the larder, and I never lock the larder. | There's light paws about. #topic.subject.capitalize# #topic.claim#, they're saying.
 b : The Watch will look into it. | Your larder? | Keep your purse close.
 a : I hope so, and I'll tell the next one I see as much. | The cheese is in it. A wolf has to guard something. | Close and buttoned. I've told everyone on my stretch of street.
 
@@ -406,34 +407,33 @@ does aside
 cooldown 12h
 say Home to the cheese, and the cheese is waiting. | Larder, chair, cheese. In that order.
 
-dlg resident.hub : #greet#! In, in. What's ailing, or what's wanted? | #greet#, #address#. Something on your mind, by your face.
-dlg resident.hub [topic.meeting=known] : #greet#, #topic.player#! You came back, good. | #topic.player#. Good. Your name was in my head this morning.
-dlg resident.hub [here.time=night] : Late, isn't it? The evening bell's long gone. Still, say on. | #greet#. Late for a visit, but I'm awake.
-dlg resident.hub [pair.disposition=hostile|wary] : You'll find I'm civil if you are. Go on. | Your business, then. Civil, mind.
-dlg resident.job [self.job=healer] : Salves, syrups and drops, with the bell to take them by on every label. | Coughs, cuts and aches. Mostly coughs, in this city.
-dlg resident.job : #self.trade_words.capitalize#. I talk while I work, and I work while I talk. | Busy paws, and the bells counted.
-dlg resident.job [self.working=yes self.job=healer] : You've caught me mid-label. Talk on; I can write and listen. | Mind the mortar. It's full.
-dlg resident.news [world.news] : Word from #world.news_from#, come in with the carts: #world.news#. | From #world.news_from#, they're saying #world.news#. I've told everyone since.
-dlg resident.news [world.event_words] : It's all #world.event_words# on the square. Not another word to be had. | Even among the stoppered jars I hear it: #world.event_words#.
-dlg resident.news [world.wagons=raided] : Some wagon was stripped by robbers, out beyond the gate. Stop home, I would. | There's a cart been stripped bare on the road. Go careful.
-dlg resident.news [world.death=recent] : Word of a death. I've no clever comfort for that. | Somebody's died. I counted the last bell without hearing a note.
-dlg resident.news [world.wedding=recent] : News of a wedding always makes my nose go red. It's gone red now. | Somebody's married. I've been humming wedding tunes to myself since I heard.
-dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Come back tomorrow; I'll have heard something by then. | Nothing new, and that's rare for me. I'll have something by the next bell.
-dlg resident.gossip [here.gossip=yes] : Well, since you ask: #topic.subject# #topic.claim#. Heard it twice. | Two mouths have told me #topic.subject# #topic.claim#, so it's going round.
-dlg resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Keep your purse close. They say #topic.subject# #topic.claim#. | Mind your pockets. #topic.subject# #topic.claim#, they're saying.
-dlg resident.gossip [here.gossip!=yes] : Not a thing, would you believe it. A quiet week. | #gossip_none# And I usually have plenty.
-dlg resident.business [business=thriving] : Run off my paws. Can't keep the jars full. | Busier than the noon bell. I'm not complaining.
-dlg resident.business [business=steady] : Steady. There's always a cough somewhere. | Steady enough. Rent paid, larder full.
-dlg resident.business [business=failing] : Poorly, I'll own it. Folk can't spare the coin for a remedy. | Badly. If it doesn't turn soon, I'll be selling the mortar.
-dlg resident.bye : #farewell#! And mind #chest# in this damp. | #saying.capitalize#. Off you go.
-dlg resident.bye [here.time=night] : Good night. Keep your scarf up. | Bed, and warm socks on, mind.
-dlg shop.greet [here.shop!=bare self.job=healer] : #greet#! Salves, syrups and drops. Tell me what ails you. | #greet#. Coughs on the left, cuts on the right, and nothing off the high shelf without asking.
-dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! Back for more, or back because it worked? | #greet#, #topic.player#. The usual, or are we trying something?
-dlg shop.greet [here.shop!=bare] : #greet#. Have a look. If a label puzzles you, ask; I'd rather you asked. | #greet#, #address#. Look all you like. #shop_offer#
-dlg shop.greet [here.shop=bare] : #greet#. Empty shelves, I'm sorry to say. Come back after the carts. | Nothing left, I'm afraid. Not a drop. I'll still buy, mind.
-dlg shop.prices : Prices are what the herbs cost me, and a penny for my trouble. | Dearer than I'd like. #shop_dear#
-dlg shop.bye : #farewell#. And take it on the bell, mind. | #shop_bye# Keep #chest# warm.
-
+dlg @1 resident.hub : #greet#! In, in. What's ailing, or what's wanted? | #greet#, #address#. Something on your mind, by your face.
+dlg @2 resident.hub [topic.meeting=known] : #greet#, #topic.player#! You came back, good. | #topic.player#. Good. Your name was in my head this morning.
+dlg @3 resident.hub [here.time=night] : Late, isn't it? The evening bell's long gone. Still, say on. | #greet#. Late for a visit, but I'm awake.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You'll find I'm civil if you are. Go on. | Your business, then. Civil, mind.
+dlg @1 resident.job [self.job=healer] : Salves, syrups and drops, with the bell to take them by on every label. | Coughs, cuts and aches. Mostly coughs, in this city.
+dlg @2 resident.job : #self.trade_words.capitalize#. I talk while I work, and I work while I talk. | Busy paws, and the bells counted.
+dlg @3 resident.job [self.working=yes self.job=healer] : You've caught me mid-label. Talk on; I can write and listen. | Mind the mortar. It's full.
+dlg @1 resident.news [world.news] : Word from #world.news_from#, come in with the carts: #world.news#. | From #world.news_from#, they're saying #world.news#. I've told everyone since.
+dlg @2 resident.news [world.event_words] : It's all #world.event_words# on the square. Not another word to be had. | Even among the stoppered jars I hear it: #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Some wagon was stripped by robbers, out beyond the gate. Stop home, I would. | There's a cart been stripped bare on the road. Go careful.
+dlg @4 resident.news [world.death=recent] : Word of a death. I've no clever comfort for that. | Somebody's died. I counted the last bell without hearing a note.
+dlg @5 resident.news [world.wedding=recent] : News of a wedding always makes my nose go red. It's gone red now. | Somebody's married. I've been humming wedding tunes to myself since I heard.
+dlg @6 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : #news_none# Come back tomorrow; I'll have heard something by then. | Nothing new, and that's rare for me. I'll have something by the next bell.
+dlg @1 resident.gossip [here.gossip=yes] : Well, since you ask: #topic.subject# #topic.claim#. Heard it twice. | Two mouths have told me #topic.subject# #topic.claim#, so it's going round.
+dlg @2 resident.gossip [here.gossip=yes topic.claim_kind=theft|wanted] : Keep your purse close. They say #topic.subject# #topic.claim#. | Mind your pockets. #topic.subject.capitalize# #topic.claim#, they're saying.
+dlg @3 resident.gossip [here.gossip!=yes] : Not a thing, would you believe it. A quiet week. | #gossip_none# And I usually have plenty.
+dlg @1 resident.business [business=thriving] : Run off my paws. Can't keep the jars full. | Busier than the noon bell. I'm not complaining.
+dlg @2 resident.business [business=steady] : Steady. There's always a cough somewhere. | Steady enough. Rent paid, larder full.
+dlg @3 resident.business [business=failing] : Poorly, I'll own it. Folk can't spare the coin for a remedy. | Badly. If it doesn't turn soon, I'll be selling the mortar.
+dlg @1 resident.bye : #farewell#! And mind #chest# in this damp. | #saying.capitalize#. Off you go.
+dlg @2 resident.bye [here.time=night] : Good night. Keep your scarf up. | Bed, and warm socks on, mind.
+dlg @1 shop.greet [here.shop!=bare self.job=healer] : #greet#! Salves, syrups and drops. Tell me what ails you. | #greet#. Coughs on the left, cuts on the right, and nothing off the high shelf without asking.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#! Back for more, or back because it worked? | #greet#, #topic.player#. The usual, or are we trying something?
+dlg @3 shop.greet [here.shop!=bare] : #greet#. Have a look. If a label puzzles you, ask; I'd rather you asked. | #greet#, #address#. Look all you like. #shop_offer#
+dlg @4 shop.greet [here.shop=bare] : #greet#. Empty shelves, I'm sorry to say. Come back after the carts. | Nothing left, I'm afraid. Not a drop. I'll still buy, mind.
+dlg @1 shop.prices : Prices are what the herbs cost me, and a penny for my trouble. | Dearer than I'd like. #shop_dear#
+dlg @1 shop.bye : #farewell#. And take it on the bell, mind. | #shop_bye# Keep #chest# warm.
 graft resident.hub
 choice Why write a bell on the label? [self.job=healer] -> bell
 node bell

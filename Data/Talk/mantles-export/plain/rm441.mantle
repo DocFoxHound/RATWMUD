@@ -1,9 +1,12 @@
+# rm441, the dark drawer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm441
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_dunstan_plankham
+written_by codex
 title the dark drawer
 fits stage=adult|old
 prefers honesty=guarded talk=quiet
@@ -33,45 +36,44 @@ mudmark = a black thumb of mud | a streak of soft clay
 saltflare = a rough white patch | a little crust of brine
 
 any
-opinion city for 1 : I can get what I need inside these walls without explaining every choice to some wolf on a distant road. I'd keep that convenience.
-opinion houses against 1 : A grand door may stay shut longer than a small one, even to an honest knock. I've no admiration for the extra lock.
-opinion strangers against 1 : A strange paw can move something by an inch and walk away. I'll put my business away before I speak.
-opinion sump for 1 : On a Sump stair, giving the next wolf one clean foothold generally says all the welcome that's needed.
-opinion watch against 1 : The Watch makes a great deal of knowing what everybody carries. I've a liking for getting home with my own small things private.
-opinion festivals against 1 : I can't keep an account of my pockets and enjoy festival music at the same time. I'll hear it from my own doorway.
+opinion @1 city for 1 : I can get what I need inside these walls without explaining every choice to some wolf on a distant road. I'd keep that convenience.
+opinion @1 houses against 1 : A grand door may stay shut longer than a small one, even to an honest knock. I've no admiration for the extra lock.
+opinion @1 strangers against 1 : A strange paw can move something by an inch and walk away. I'll put my business away before I speak.
+opinion @1 sump for 1 : On a Sump stair, giving the next wolf one clean foothold generally says all the welcome that's needed.
+opinion @1 watch against 1 : The Watch makes a great deal of knowing what everybody carries. I've a liking for getting home with my own small things private.
+opinion @1 festivals against 1 : I can't keep an account of my pockets and enjoy festival music at the same time. I'll hear it from my own doorway.
 
 grown
-line greet : Everything's put away. Speak.
-line greet [pair.band=strangers] : We may exchange ordinary words at this distance.
-line greet [here.time=dawn] : Early enough to see the drawer empty before anything's stirred.
-line greet [here.time=dusk|night] : Keep your hands there in the patch I can see.
-line greet [self.working=yes] : Just closing something. You can speak now.
-line kin.open [pair.kin!=no] : Come round to the familiar end of the table.
-line again.open : Back at the same drawer with no time to disturb it.
-line greet.return : I heard. Your greeting's accounted for.
-line greet.return [pair.band=friends|family] : Familiar voice. No need for a second call.
-line greet.return [self.working=yes] : I can answer with one hand occupied.
-line greet.return [here.time=dusk|night] : Heard from a clean patch of quiet.
-line farewell : Don't leave your loose things at the turn.
-line farewell.return : I'll do the putting away here.
-line react.news : Put down exactly what happened.
-line react.news.new : That wasn't in the place I expected.
-line react.news.known : I had the outline laid away.
-line react.news.doubt : Did the first paw actually hold the matter?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A towel and a dry seat would give that house something small to offer a caller.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A tidy piece of good news. I can spare space for that.
-line answer.how : I could find the towel with my eyes closed. Fine.
-line ask.how : Have you much left unsettled where you live?
-line sympathise : Can't put everything right by getting the drawer tidy.
-line reassure : You may sit here till your hands know where to go.
-line decline : I'd be breaking the seal on business that's not mine to open.
-line accept_decline : Good. Yours stays on your side.
-line thank : You left my things in easier reach.
-line deflect_thanks : Set any loose thing you borrow down in its proper place.
-line preclose : There's one loose end for me to attend to.
-line accept_preclose : I've no call to hold you here.
-line ack : Sits right.
-
+line @1 greet : Everything's put away. Speak.
+line @2 greet [pair.band=strangers] : We may exchange ordinary words at this distance.
+line @3 greet [here.time=dawn] : Early enough to see the drawer empty before anything's stirred.
+line @4 greet [here.time=dusk|night] : Keep your hands there in the patch I can see.
+line @5 greet [self.working=yes] : Just closing something. You can speak now.
+line @1 kin.open [pair.kin!=no] : Come round to the familiar end of the table.
+line @1 again.open : Back at the same drawer with no time to disturb it.
+line @1 greet.return : I heard. Your greeting's accounted for.
+line @2 greet.return [pair.band=friends|family] : Familiar voice. No need for a second call.
+line @3 greet.return [self.working=yes] : I can answer with one hand occupied.
+line @4 greet.return [here.time=dusk|night] : Heard from a clean patch of quiet.
+line @1 farewell : Don't leave your loose things at the turn.
+line @1 farewell.return : I'll do the putting away here.
+line @1 react.news : Put down exactly what happened.
+line @1 react.news.new : That wasn't in the place I expected.
+line @1 react.news.known : I had the outline laid away.
+line @1 react.news.doubt : Did the first paw actually hold the matter?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A towel and a dry seat would give that house something small to offer a caller.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A tidy piece of good news. I can spare space for that.
+line @1 answer.how : I could find the towel with my eyes closed. Fine.
+line @1 ask.how : Have you much left unsettled where you live?
+line @1 sympathise : Can't put everything right by getting the drawer tidy.
+line @1 reassure : You may sit here till your hands know where to go.
+line @1 decline : I'd be breaking the seal on business that's not mine to open.
+line @1 accept_decline : Good. Yours stays on your side.
+line @1 thank : You left my things in easier reach.
+line @1 deflect_thanks : Set any loose thing you borrow down in its proper place.
+line @1 preclose : There's one loose end for me to attend to.
+line @1 accept_preclose : I've no call to hold you here.
+line @1 ack : Sits right.
 scene blindrow
 when topic=home self.likes=tidy_house
 does tell.self / ask.detail / answer.detail
@@ -239,14 +241,14 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say One clean white edge left showing. | Last loose thing away before the lamp.
-dlg resident.hub : I've set my work aside. You can state your business.
-dlg resident.hub [topic.meeting=known] : I know where your voice belongs, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep outside reach of the drawer. We can speak across it.
-dlg resident.hub [here.time=night] : Your voice doesn't need a lamp. It reaches me quite clearly where you're standing.
-dlg resident.job : I keep what's given me dry and in its proper place. That's all I care to say of my work.
-dlg resident.news [world.news] : This bit is out in plain sight. #world.news#.
-dlg resident.bye : See your things home with the folds dry.
 
+dlg @1 resident.hub : I've set my work aside. You can state your business.
+dlg @2 resident.hub [topic.meeting=known] : I know where your voice belongs, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Keep outside reach of the drawer. We can speak across it.
+dlg @4 resident.hub [here.time=night] : Your voice doesn't need a lamp. It reaches me quite clearly where you're standing.
+dlg @1 resident.job : I keep what's given me dry and in its proper place. That's all I care to say of my work.
+dlg @1 resident.news [world.news] : This bit is out in plain sight. #world.news#.
+dlg @1 resident.bye : See your things home with the folds dry.
 graft @darkdrawer resident.hub
 choice What could you find without opening your eyes? -> darkdrawer
 node darkdrawer

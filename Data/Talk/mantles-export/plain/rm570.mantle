@@ -1,9 +1,12 @@
+# rm570, the berth above the stain (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm570
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_liv_tarmarsh
+written_by codex
 title the berth above the stain
 fits stage=adult|old
 prefers job=none
@@ -35,37 +38,36 @@ coat = my old sea coat | a tucked-up cuff
 wharf = a low timber landing | the landing by the ribs
 
 any
-opinion houses against 1 : A House mark dresses up a hull handsomely. It ought to weigh less on the hiring side.
-opinion merchants mixed 1 : I inspect the lining before paying for anything said to be watertight.
-opinion watch mixed 1 : An accurate report on slick boards beats a handsome notice about footing.
-opinion festivals for 1 : A bell can fill a quiet room without pushing anybody against the wall.
-opinion road mixed 1 : A road away needn't be broad if there's real work at its other end.
-opinion sump mixed 1 : Down here we know just how high a dry berth needs to be.
+opinion @1 houses against 1 : A House mark dresses up a hull handsomely. It ought to weigh less on the hiring side.
+opinion @1 merchants mixed 1 : I inspect the lining before paying for anything said to be watertight.
+opinion @1 watch mixed 1 : An accurate report on slick boards beats a handsome notice about footing.
+opinion @1 festivals for 1 : A bell can fill a quiet room without pushing anybody against the wall.
+opinion @1 road mixed 1 : A road away needn't be broad if there's real work at its other end.
+opinion @1 sump mixed 1 : Anyone raised by the water learns just how high a dry berth needs to be.
 
 grown
-line greet : Come above the wet mark. | Light shows nicely along this seam.
-line greet.return : Welcome back to my dry stretch of planking.
-line again.open : Round again before I've wetted my stone.
-line farewell : May your bedding stay out of the bilge.
-line farewell.return : Carry that good wish past the yard.
-line react.news : I'll hear what's reached this far.
-line react.news.new : Hadn't heard that against these boards.
-line react.news.known : I recognise the stain that account has left.
-line react.news.doubt : Where does that claim touch solid timber?
-line react.news.sorrow [topic.kind=death|loss|assault] : That's a heavy bit to take aboard.
-line react.news.glad [topic.kind=birth|marriage|work] : I'd spare a festival stroke for news like that.
-line ask.how : How's the shift sitting with your shoulders?
-line answer.how : Slightly worn. The edge still holds.
-line sympathise : Stay clear of the crowd here and take your time.
-line reassure : You needn't decide your whole passage today.
-line refuse : Other duties have first call on me.
-line accept_decline : Let the matter lie where we put it.
-line preclose : Something of mine still needs a last pass on the stone.
-line accept_preclose : Walk out before the landing fills.
-line ack : That rings clean enough.
-line thank : You kept me from a troublesome second pass.
-line greet [here.time=night] : There's quiet under this bit of roof tonight.
-
+line @1 greet : Come above the wet mark. | Light shows nicely along this seam.
+line @1 greet.return : Welcome back to my dry stretch of planking.
+line @1 again.open : Round again before I've wetted my stone.
+line @1 farewell : May your bedding stay out of the bilge.
+line @1 farewell.return : Carry that good wish past the yard.
+line @1 react.news : I'll hear what's reached this far.
+line @1 react.news.new : Hadn't heard that against these boards.
+line @1 react.news.known : I recognise the stain that account has left.
+line @1 react.news.doubt : Where does that claim touch solid timber?
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : That's a heavy bit to take aboard.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd spare a festival stroke for news like that.
+line @1 ask.how : How's the shift sitting with your shoulders?
+line @1 answer.how : Slightly worn. The edge still holds.
+line @1 sympathise : Stay clear of the crowd here and take your time.
+line @1 reassure : You needn't decide your whole passage today.
+line @1 refuse : Other duties have first call on me.
+line @1 accept_decline : Let the matter lie where we put it.
+line @1 preclose : Something of mine still needs a last pass on the stone.
+line @1 accept_preclose : Walk out before the landing fills.
+line @1 ack : That rings clean enough.
+line @1 thank : You kept me from a troublesome second pass.
+line @2 greet [here.time=night] : There's quiet under this bit of roof tonight.
 scene exchange1
 when topic=work self.workplace
 does tell.self / ask.detail / answer.detail
@@ -233,15 +235,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Stains show best in slanting light. | One more pass at the burr.
-dlg resident.hub : The honing water can settle while we speak.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've found my bit of dry board again.
-dlg resident.hub [pair.disposition=wary|hostile] : A question put plainly might travel further with me.
-dlg resident.job [self.workplace] : My current work takes me to #self.workplace#. I prefer to inspect the job itself before talking about its prospects.
-dlg resident.job : I take what work is offered and keep my good edge in decent shape.
-dlg resident.news [world.news] : An account made it here through the yard noise. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The story as it landed was #topic.subject# #topic.claim#. I'm slow to put my own mark on another account.
-dlg resident.bye : Dry bedding and a quieter landing to you.
 
+dlg @1 resident.hub : The honing water can settle while we speak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've found my bit of dry board again.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A question put plainly might travel further with me.
+dlg @1 resident.job [self.workplace] : My current work takes me to #self.workplace#. I prefer to inspect the job itself before talking about its prospects.
+dlg @2 resident.job : I take what work is offered and keep my good edge in decent shape.
+dlg @1 resident.news [world.news] : An account made it here through the yard noise. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The story as it landed was #topic.subject# #topic.claim#. I'm slow to put my own mark on another account.
+dlg @1 resident.bye : Dry bedding and a quieter landing to you.
 graft resident.hub
 choice Which stripe tells you about a berth? -> berth_stripe
 node berth_stripe

@@ -1,9 +1,12 @@
+# rm341, the weight of an answer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm341
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ilse_cindercot
+written_by codex
 title the weight of an answer
 fits stage=adult|old
 prefers job=scholar drive=ambitious
@@ -35,43 +38,42 @@ loose = the upper slip | a loose sheet
 mend = the double stitch | the dark seam
 
 any
-opinion city for 2 : A city ought to be able to answer a simple question without taking three copies of the question as payment.
-opinion houses against 1 : It is surprising how promptly a House can locate a missing paper when the paper happens to be worth money.
-opinion dole for 1 : An accurate distribution list is mercy in a form a tired clerk can help with.
-opinion merchants mixed 0 : Itemise the charge and I'll judge the price. A confident flourish at the bottom carries no weight with me.
-opinion church mixed 0 : A little quiet and a real answer deserve credit wherever a wolf finds them.
-opinion watch mixed 0 : I value a report that admits exactly where the witness stopped seeing things.
+opinion @1 city for 2 : A city ought to be able to answer a simple question without taking three copies of the question as payment.
+opinion @1 houses against 1 : It is surprising how promptly a House can locate a missing paper when the paper happens to be worth money.
+opinion @1 dole for 1 : An accurate distribution list is mercy in a form a tired clerk can help with.
+opinion @1 merchants mixed 0 : Itemise the charge and I'll judge the price. A confident flourish at the bottom carries no weight with me.
+opinion @1 church mixed 0 : A little quiet and a real answer deserve credit wherever a wolf finds them.
+opinion @1 watch mixed 0 : I value a report that admits exactly where the witness stopped seeing things.
 
 grown
-line greet : Hello. I've shifted the weight aside. | Welcome. The next matter has my attention.
-line greet [pair.band=strangers] : Our acquaintance starts with a clear page. | A new arrival. I can hear you at once.
-line greet [here.time=dawn] : Morning. The unanswered things have waited politely overnight. | A fresh day to get something decided.
-line greet.return : Yes, hello returned. This sheet can wait. | I'm attending. I've marked my place.
-line greet.return [pair.band=friends|family] : Your voice can go straight past the waiting pile. | A familiar interruption is very agreeable.
-line greet.return [here.time=night] : A late word can have an early place tomorrow. | Hello. No writing needed to recognise a voice.
-line again.open : Our earlier matter must have left a little room. | Another appearance before I've closed today's business.
-line hail [pair.band=friends] : Here, come see a question actually get an answer. | One moment at the edge of this desk, please.
-line farewell : Leave your questions in a place you can find them. | May your next answer arrive promptly.
-line farewell.return : I shall mark this visit concluded. Goodbye. | That settles today's conversation satisfactorily.
-line react.news : Set down the part that can be answered for. | The occurrence first. Its heading can come afterwards.
-line react.news.new : I haven't encountered that in any account yet. | News without an earlier entry. Proceed.
-line react.news.known : Yes. I remember the earlier account quite distinctly. | The essential point is already in my notes.
-line react.news.doubt : It resembles a heading in search of evidence. | I'd hesitate to sign even the margin of that.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Whatever we call that loss, somebody still has to bear it. Sit down. | I won't hurry this into a neat account. Say what needs saying.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, something worth entering in a particularly clear hand. | I'd welcome a full page of news of that quality.
-line ask.how : Does the day owe you a decent answer yet? | How much business is weighing on you today?
-line answer.how : Present, quite determined, somewhat short of unfilled hours. | Still steady. A little impatient with unfinished business.
-line decline : I haven't the authority to sign my name to that. | It would keep an earlier promise sitting unanswered.
-line accept_decline : I'll cross the request out. It needn't trouble you further. | Thank you for being definite about the limit.
-line preclose : I've a loose sheet that really requires answering. | I'd better lift the weight and see to the top sheet.
-line accept_preclose : Clear to go. I'll see the loose ends through. | You're quite entitled to close the matter there.
-line thank : You made a difficult question possible to answer. My thanks. | That saved me from burdening the wrong wolf.
-line deflect_thanks : The reply was within my reach. I gave it. | I could settle the matter and chose to do so.
-line sympathise : Your hurt doesn't need an impeccable explanation to deserve attention. | I can see the weight of it from where I'm sitting.
-line reassure : We can clear enough space to consider one question first. | Even a partial answer gives us somewhere firm to begin.
-line ack : That enters clearly on my side. | The distinction is properly made now.
-line give.advice : Put the question on top before looking for the answer. | Keep a clean corner where the next page can land.
-
+line @1 greet : Hello. I've shifted the weight aside. | Welcome. The next matter has my attention.
+line @2 greet [pair.band=strangers] : Our acquaintance starts with a clear page. | A new arrival. I can hear you at once.
+line @3 greet [here.time=dawn] : Morning. The unanswered things have waited politely overnight. | A fresh day to get something decided.
+line @1 greet.return : Yes, hello returned. This sheet can wait. | I'm attending. I've marked my place.
+line @2 greet.return [pair.band=friends|family] : Your voice can go straight past the waiting pile. | A familiar interruption is very agreeable.
+line @3 greet.return [here.time=night] : A late word can have an early place tomorrow. | Hello. No writing needed to recognise a voice.
+line @1 again.open : Our earlier matter must have left a little room. | Another appearance before I've closed today's business.
+line @1 hail [pair.band=friends] : Here, come see a question actually get an answer. | One moment at the edge of this desk, please.
+line @1 farewell : Leave your questions in a place you can find them. | May your next answer arrive promptly.
+line @1 farewell.return : I shall mark this visit concluded. Goodbye. | That settles today's conversation satisfactorily.
+line @1 react.news : Set down the part that can be answered for. | The occurrence first. Its heading can come afterwards.
+line @1 react.news.new : I haven't encountered that in any account yet. | News without an earlier entry. Proceed.
+line @1 react.news.known : Yes. I remember the earlier account quite distinctly. | The essential point is already in my notes.
+line @1 react.news.doubt : It resembles a heading in search of evidence. | I'd hesitate to sign even the margin of that.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Whatever we call that loss, somebody still has to bear it. Sit down. | I won't hurry this into a neat account. Say what needs saying.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, something worth entering in a particularly clear hand. | I'd welcome a full page of news of that quality.
+line @1 ask.how : Does the day owe you a decent answer yet? | How much business is weighing on you today?
+line @1 answer.how : Present, quite determined, somewhat short of unfilled hours. | Still steady. A little impatient with unfinished business.
+line @1 decline : I haven't the authority to sign my name to that. | It would keep an earlier promise sitting unanswered.
+line @1 accept_decline : I'll cross the request out. It needn't trouble you further. | Thank you for being definite about the limit.
+line @1 preclose : I've a loose sheet that really requires answering. | I'd better lift the weight and see to the top sheet.
+line @1 accept_preclose : Clear to go. I'll see the loose ends through. | You're quite entitled to close the matter there.
+line @1 thank : You made a difficult question possible to answer. My thanks. | That saved me from burdening the wrong wolf.
+line @1 deflect_thanks : The reply was within my reach. I gave it. | I could settle the matter and chose to do so.
+line @1 sympathise : Your hurt doesn't need an impeccable explanation to deserve attention. | I can see the weight of it from where I'm sitting.
+line @1 reassure : We can clear enough space to consider one question first. | Even a partial answer gives us somewhere firm to begin.
+line @1 ack : That enters clearly on my side. | The distinction is properly made now.
+line @1 give.advice : Put the question on top before looking for the answer. | Keep a clean corner where the next page can land.
 scene coalbag
 when topic=work self.job=scholar
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : I can pray for a patient temper without pretending the delay was reasonable.
 b : For what exactly? | Expecting a surprise?
 a : That I'll speak to the wolf waiting as civilly as to the one working at the next desk. | Only work I ought to do. It's the tone of my eventual reply that could use a little grace.
 
-grown
-
 story brownring [topic=work|memories self.job=scholar]
   : One wet morning I took my cup off a scrap and found a perfect ring. Put the cloth weight down to stop the scrap blowing away.
   : At the day's end I was convinced some weighty circular question remained to be answered.
@@ -213,8 +213,8 @@ story coalstitch [topic=memories|pastimes]
   : Admirably. It was the first evening I fished in the company of my office paperweight. I removed the pocket.
 
 story coldcake [topic=food|memories]
-  : I once left a wrapped oatcake among the open questions and took a folded petition along to eat.
-  : Noticed the difference before unwrapping either thing.
+  : I once left a wrapped oatcake on the pile of open petitions and took a folded petition along for my lunch.
+  : I noticed the mistake on the stairs, before unwrapping anything.
   b : What gave the petition away?
   : An oatcake rarely goes into my pocket sounding like a dry leaf. I'd like that counted in my favour.
 
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say A quiet stretch of cord and nobody requesting a heading. | A float needn't submit a report to earn a close look.
 
-dlg resident.hub : There's a question mark to spare. What would you like to put before it?
-dlg resident.hub [topic.meeting=known] : #topic.player#, I still have a clear recollection of our previous business.
-dlg resident.hub [here.time=night] : Late questions may be entered now and answered in better light.
-dlg resident.hub [pair.disposition=wary|hostile] : Set out the point plainly and keep your paws away from the open papers.
-dlg resident.job [self.job=scholar] : #self.trade_words.capitalize#. I'm trying to reduce the interval between a question arriving and a useful answer leaving.
-dlg resident.job : I prefer work in which somebody can point to a thing settled and say what changed.
-dlg resident.bye : May the business you take away with you be easily settled.
-
+dlg @1 resident.hub : There's a question mark to spare. What would you like to put before it?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I still have a clear recollection of our previous business.
+dlg @3 resident.hub [here.time=night] : Late questions may be entered now and answered in better light.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Set out the point plainly and keep your paws away from the open papers.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I'm trying to reduce the interval between a question arriving and a useful answer leaving.
+dlg @2 resident.job : I prefer work in which somebody can point to a thing settled and say what changed.
+dlg @1 resident.bye : May the business you take away with you be easily settled.
 graft resident.hub
 choice What exactly is wrapped in the paperweight? -> coalsquare
 node coalsquare

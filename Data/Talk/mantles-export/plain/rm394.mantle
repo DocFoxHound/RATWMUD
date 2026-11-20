@@ -1,9 +1,12 @@
+# rm394, the petition in charcoal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm394
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_nessa_slagmarsh
+written_by codex
 title the petition in charcoal
 fits stage=adult|old
 prefers job=merchant
@@ -68,7 +71,6 @@ line @22 deflect_thanks : Just a little saved from the general expense. | I walk
 line @23 preclose : Another jar due for private inspection. | I need to count what's left of the good light.
 line @24 accept_preclose : Go before another signature occurs to anybody. | Your business sets its own hours.
 line @25 farewell [here.time=night] : May the dream desk be shut till daylight. | Dry covers on whatever you leave behind.
-
 scene coalstamp
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : Please stay beside the cou
 dlg @5 resident.job [self.job=merchant self.workplace] : I tally the iron at #self.workplace#. Iron makes a gratifying effort to stay in its assigned place.
 dlg @6 resident.job : I keep track of things important people sometimes mislay.
 dlg @7 resident.bye : Take proof of your departure if you feel it necessary.
-
 graft resident.hub
 choice Where do you suppose the petition went? -> wandering_sheet
 node wandering_sheet

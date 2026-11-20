@@ -1,9 +1,12 @@
+# rm430, the hood with two brims (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm430
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_disa_millley
+written_by codex
 title the hood with two brims
 fits stage=adult|old
 prefers job=merchant
@@ -35,41 +38,40 @@ muck = the thick street mud | a layer of black mire
 oil = a drop of linseed oil | the oil on my thumb
 
 any
-opinion dole for 3 : I've tasted the use of a public pot. My hand went in shaking and came out steady enough to carry supper.
-opinion strangers for 2 : A visitor under my hood can tell me which goods last the journey after I have seen the payment.
-opinion watch against 1 : A nose inserted under an oilcloth without leave is still an impertinence when it comes with a badge.
-opinion times against 1 : I've learnt which direction a dole queue moves from a closer view than I expected.
-opinion merchants mixed 0 : If a trader keeps your paper and the parcel dry, that's some small part of the price returned already.
+opinion @1 dole for 3 : I've tasted the use of a public pot. My hand went in shaking and came out steady enough to carry supper.
+opinion @1 strangers for 2 : A visitor under my hood can tell me which goods last the journey after I have seen the payment.
+opinion @1 watch against 1 : A nose inserted under an oilcloth without leave is still an impertinence when it comes with a badge.
+opinion @1 times against 1 : I've learnt which direction a dole queue moves from a closer view than I expected.
+opinion @1 merchants mixed 0 : If a trader keeps your paper and the parcel dry, that's some small part of the price returned already.
 
 grown
-line greet [pair.band=strangers] : Come on the dry-brim side. | I can make a corner free for a new muzzle.
-line greet [self.working=yes] : Welcome as far as the good seam. | Say it across the parcel.
-line greet [here.time=dawn] : Morning. My hood's still got its shape. | Early enough to try the light side.
-line greet [here.time=dusk|night] : Evening comes beneath both brims. | Draw a little nearer the light.
-line kin.open [pair.kin!=no] : Family fit inside the widest fold. | A dry corner with the family claim on it.
-line again.open : Another walk under the same brim. | Your face appears on this side again.
-line greet.return : Here. I'd know a greeting through oilcloth. | Welcome to the covered bit.
-line greet.return [pair.band=friends|family] : I've kept the good fold towards you. | Your voice fits here pleasantly.
-line greet.return [self.working=yes] : Speak while I pin the loose end. | I'll listen across this small bit of business.
-line greet.return [here.time=dusk|night] : Evening. A little light still under the brim. | Glad of a voice at this quieter hour.
-line farewell : Dry ears to the next doorway. | Mind the paper under your coat.
-line farewell.return : I'll keep the fold turned in your favour. | May the rain fall behind your shoulders.
-line farewell.return [here.time=night] : Good lamplight and a snug collar. | A dry way past the late turnings.
-line react.news : What's travelled safely under the wrapping? | Let me hear the dry part.
-line react.news.new : New word beneath my cover. | That arrived with its fold unbroken.
-line react.news.known : I've seen under that flap already. | I know what came through in that parcel.
-line react.news.doubt : I'd check that the ink hasn't run two words together. | One wet corner can change a very tidy account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hood has enough room for quiet sorrow. | Walk easy. I'll come on the windward side.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Warm news makes a good lining. | That's a little star in a dull fold.
-line ask.how : What's been getting inside your collar? | Had any shelter in your day?
-line answer.how : Steady beneath my proper fold. | I can turn a stiff breeze out without complaint.
-line decline : I'd sooner keep this dry interval for the family. | I need my free hand for a parcel just now.
-line accept_decline : You know best where your dry ground lies. | Very well. I won't lean on the matter.
-line thank : I'll remember that welcome corner. | You've saved me a folded worry.
-line sympathise : Here, let the brim catch some of it. | My shoulder can keep that wind off you.
-line reassure : A wet page can dry if it's opened gently. | I'll wait here while you smooth the corners.
-line preclose : I've a loose fold needing a pin. | I'd best get this parcel into shelter.
-
+line @1 greet [pair.band=strangers] : Come on the dry-brim side. | I can make a corner free for a new muzzle.
+line @2 greet [self.working=yes] : Welcome as far as the good seam. | Say it across the parcel.
+line @3 greet [here.time=dawn] : Morning. My hood's still got its shape. | Early enough to try the light side.
+line @4 greet [here.time=dusk|night] : Evening comes beneath both brims. | Draw a little nearer the light.
+line @1 kin.open [pair.kin!=no] : Family fit inside the widest fold. | A dry corner with the family claim on it.
+line @1 again.open : Another walk under the same brim. | Your face appears on this side again.
+line @1 greet.return : Here. I'd know a greeting through oilcloth. | Welcome to the covered bit.
+line @2 greet.return [pair.band=friends|family] : I've kept the good fold towards you. | Your voice fits here pleasantly.
+line @3 greet.return [self.working=yes] : Speak while I pin the loose end. | I'll listen across this small bit of business.
+line @4 greet.return [here.time=dusk|night] : Evening. A little light still under the brim. | Glad of a voice at this quieter hour.
+line @1 farewell : Dry ears to the next doorway. | Mind the paper under your coat.
+line @1 farewell.return : I'll keep the fold turned in your favour. | May the rain fall behind your shoulders.
+line @2 farewell.return [here.time=night] : Good lamplight and a snug collar. | A dry way past the late turnings.
+line @1 react.news : What's travelled safely under the wrapping? | Let me hear the dry part.
+line @1 react.news.new : New word beneath my cover. | That arrived with its fold unbroken.
+line @1 react.news.known : I've seen under that flap already. | I know what came through in that parcel.
+line @1 react.news.doubt : I'd check that the ink hasn't run two words together. | One wet corner can change a very tidy account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hood has enough room for quiet sorrow. | Walk easy. I'll come on the windward side.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Warm news makes a good lining. | That's a little star in a dull fold.
+line @1 ask.how : What's been getting inside your collar? | Had any shelter in your day?
+line @1 answer.how : Steady beneath my proper fold. | I can turn a stiff breeze out without complaint.
+line @1 decline : I'd sooner keep this dry interval for the family. | I need my free hand for a parcel just now.
+line @1 accept_decline : You know best where your dry ground lies. | Very well. I won't lean on the matter.
+line @1 thank : I'll remember that welcome corner. | You've saved me a folded worry.
+line @1 sympathise : Here, let the brim catch some of it. | My shoulder can keep that wind off you.
+line @1 reassure : A wet page can dry if it's opened gently. | I'll wait here while you smooth the corners.
+line @1 preclose : I've a loose fold needing a pin. | I'd best get this parcel into shelter.
 scene fold
 when topic=weather
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A spare fold for the homeward caller. | Leave the hood over the wide chair tonight.
 
-dlg resident.hub : Step over near my shoulder and my brim can shelter us both. A civil conversation takes very little shelter.
-dlg resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. Small wares, a tidy order and parcels that can be got safely home.
-dlg resident.news [world.news] : This much has come through without getting smudged. #world.news#
-dlg resident.hub [topic.meeting=known] : It's the spare corner again for you, #topic.player#.
-dlg resident.bye : A sound seam between your business and the weather.
-
+dlg @1 resident.hub : Step over near my shoulder and my brim can shelter us both. A civil conversation takes very little shelter.
+dlg @1 resident.job [self.job=merchant self.workplace] : I help at #self.workplace#. Small wares, a tidy order and parcels that can be got safely home.
+dlg @1 resident.news [world.news] : This much has come through without getting smudged. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : It's the spare corner again for you, #topic.player#.
+dlg @1 resident.bye : A sound seam between your business and the weather.
 graft resident.hub
 choice Does that hood really shelter two? -> second_nose
 node second_nose

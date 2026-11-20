@@ -1,9 +1,12 @@
+# rm536, the steward's ashwood wedge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm536
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_millicent_rustwell
+written_by codex
 title the steward's ashwood wedge
 fits stage=adult|old
 prefers job=servant
@@ -67,7 +70,6 @@ line @21 thank : That's another burden off this poor old hinge.
 line @22 deflect_thanks : I had the knife out for a job already.
 line @23 preclose : I've a door to see to while the wood is dry.
 line @24 accept_preclose : Don't let me be what keeps you standing.
-
 scene wedge
 when topic=pastimes self.likes=whittling
 does tell.self / ask.detail / answer.detail
@@ -244,7 +246,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : The threshold will carry y
 dlg @5 resident.job [self.job=servant self.workplace] : I steward #self.workplace#. A good day leaves every latch better than it was at breakfast.
 dlg @6 resident.job : I attend to the part of a house nobody notices until it sticks.
 dlg @7 resident.bye : No banging. The joint's just been put right.
-
 graft resident.hub
 choice May I see the new wedge? -> ashheel
 node ashheel

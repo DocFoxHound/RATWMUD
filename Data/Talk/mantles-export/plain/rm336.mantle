@@ -1,9 +1,12 @@
+# rm336, the iron ear (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm336
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_edric_cindermarsh
+written_by codex
 title the iron ear
 fits stage=adult|old
 prefers job=smith
@@ -35,41 +38,40 @@ smoke = a smear of black smoke | the bitter reek
 crust = a hard bread rind | a leathery crust
 
 any
-opinion festivals for 1 : At a festival there's room for a loud wolf and a doubting wolf. Sometimes I can be both in the same coat.
-opinion houses against 1 : I'd like a House name to ring as truly under a question as a sound hoop under the lightest tap.
-opinion merchants against 1 : A copper here and another there will wear a hole clean through an honest purse.
-opinion strangers against 1 : I'd sooner learn what follows a newcomer through the gate before I leave the yard standing wide.
-opinion sump against 1 : Down by the Sump too many sounds come back from the wrong direction. My ears get little peace there.
+opinion @1 festivals for 1 : At a festival there's room for a loud wolf and a doubting wolf. Sometimes I can be both in the same coat.
+opinion @1 houses against 1 : I'd like a House name to ring as truly under a question as a sound hoop under the lightest tap.
+opinion @1 merchants against 1 : A copper here and another there will wear a hole clean through an honest purse.
+opinion @1 strangers against 1 : I'd sooner learn what follows a newcomer through the gate before I leave the yard standing wide.
+opinion @1 sump against 1 : Down by the Sump too many sounds come back from the wrong direction. My ears get little peace there.
 
 grown
-line greet [pair.band=strangers] : You have my good ear. Welcome. | Stand where a word can reach me clean.
-line greet [self.working=yes] : I'm listening across my work. | Come within the fall of my voice.
-line greet [here.time=dawn] : Morning, before the first clang. | A clear ear at this hour.
-line greet [here.time=dusk|night] : Evening. The little sounds begin to carry. | Come in where the day's last note is fading.
-line kin.open [pair.kin!=no] : I've known that family sound a long while. | There's kin inside my hearing.
-line again.open : An echo back on two feet. | Here's the answering note already.
-line greet.return : I hear both consonants. Hello. | You've a good clear carry.
-line greet.return [pair.band=friends|family] : I'd pick that voice out over a struck hoop. | Stay by the listening shoulder.
-line greet.return [self.working=yes] : Let the last note settle first. | I'll put the ring down to hear you.
-line greet.return [here.time=dusk|night] : Evening. A voice can carry further now. | The eye's tiring. My ears manage.
-line farewell : May your own gate swing sweetly. | Take the quieter turning home.
-line farewell.return : I'll hold the echo here. | Good metal beneath your latch.
-line farewell.return [here.time=night] : Hear the latch behind you tonight. | Light steps beyond the late fires.
-line react.news : What sound did the account make? | Let's hear it from the clear side.
-line react.news.new : New pitch to my ear. | That's changed my listening.
-line react.news.known : That note's been struck before. | I've heard the full account already.
-line react.news.doubt : I'd tap that tale in a different place. | Its ring doesn't quite answer the way I expected.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's an ache in hearing that. | Take my quiet corner for a rest.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A fine note in the day's noise. | That's word worth carrying home warm.
-line ask.how : How's the world sounding to you? | Much noise in your head today?
-line answer.how : I've an ordinary hum in both ears. | Holding steady, perhaps a shade too loudly.
-line decline : I'd rather rest my ears before another task. | I ought to hold my attention for this one.
-line accept_decline : Fair note. I accept it. | Then I'll let that sound die.
-line thank : You've steadied the ring considerably. | That settles a worry at my end.
-line sympathise : I'll stay within a breath of you. | Take the sheltered side of my voice.
-line reassure : Some metal rings better after resting. | No call to answer over all the noise.
-line preclose : I'll put the sample hoop away. | Time to leave my ears a pause.
-
+line @1 greet [pair.band=strangers] : You have my good ear. Welcome. | Stand where a word can reach me clean.
+line @2 greet [self.working=yes] : I'm listening across my work. | Come within the fall of my voice.
+line @3 greet [here.time=dawn] : Morning, before the first clang. | A clear ear at this hour.
+line @4 greet [here.time=dusk|night] : Evening. The little sounds begin to carry. | Come in where the day's last note is fading.
+line @1 kin.open [pair.kin!=no] : I've known that family sound a long while. | There's kin inside my hearing.
+line @1 again.open : An echo back on two feet. | Here's the answering note already.
+line @1 greet.return : I hear both consonants. Hello. | You've a good clear carry.
+line @2 greet.return [pair.band=friends|family] : I'd pick that voice out over a struck hoop. | Stay by the listening shoulder.
+line @3 greet.return [self.working=yes] : Let the last note settle first. | I'll put the ring down to hear you.
+line @4 greet.return [here.time=dusk|night] : Evening. A voice can carry further now. | The eye's tiring. My ears manage.
+line @1 farewell : May your own gate swing sweetly. | Take the quieter turning home.
+line @1 farewell.return : I'll hold the echo here. | Good metal beneath your latch.
+line @2 farewell.return [here.time=night] : Hear the latch behind you tonight. | Light steps beyond the late fires.
+line @1 react.news : What sound did the account make? | Let's hear it from the clear side.
+line @1 react.news.new : New pitch to my ear. | That's changed my listening.
+line @1 react.news.known : That note's been struck before. | I've heard the full account already.
+line @1 react.news.doubt : I'd tap that tale in a different place. | Its ring doesn't quite answer the way I expected.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's an ache in hearing that. | Take my quiet corner for a rest.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A fine note in the day's noise. | That's word worth carrying home warm.
+line @1 ask.how : How's the world sounding to you? | Much noise in your head today?
+line @1 answer.how : I've an ordinary hum in both ears. | Holding steady, perhaps a shade too loudly.
+line @1 decline : I'd rather rest my ears before another task. | I ought to hold my attention for this one.
+line @1 accept_decline : Fair note. I accept it. | Then I'll let that sound die.
+line @1 thank : You've steadied the ring considerably. | That settles a worry at my end.
+line @1 sympathise : I'll stay within a breath of you. | Take the sheltered side of my voice.
+line @1 reassure : Some metal rings better after resting. | No call to answer over all the noise.
+line @1 preclose : I'll put the sample hoop away. | Time to leave my ears a pause.
 scene cold
 when topic=work self.job=smith
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say There goes the little evening hum. | Put the hoop where it can't roll.
 
-dlg resident.hub : Stand off my shoulder a little. My voice carries quite well, particularly when I intend a particularly quiet point.
-dlg resident.job [self.job=smith self.workplace] : At #self.workplace# I work iron and listen to what the iron says afterwards.
-dlg resident.news [world.news] : The part that rang clear came to me like this. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, your voice has a familiar ring to it.
-dlg resident.bye : May the latch welcome you without waking the house.
-
+dlg @1 resident.hub : Stand off my shoulder a little. My voice carries quite well, particularly when I intend a particularly quiet point.
+dlg @1 resident.job [self.job=smith self.workplace] : At #self.workplace# I work iron and listen to what the iron says afterwards.
+dlg @1 resident.news [world.news] : The part that rang clear came to me like this. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your voice has a familiar ring to it.
+dlg @1 resident.bye : May the latch welcome you without waking the house.
 graft resident.hub
 choice Why hum back to a ring of iron? -> iron_answer
 node iron_answer

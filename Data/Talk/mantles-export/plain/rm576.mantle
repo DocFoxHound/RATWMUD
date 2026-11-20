@@ -1,9 +1,12 @@
+# rm576, the promised portion (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm576
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_tilde_slagwell
+written_by codex
 title the promised portion
 fits stage=adult|old
 prefers job=none
@@ -35,37 +38,36 @@ rest = a spell beside the hill path | a seat above the last cart
 portion = a share already wrapped | a jar for another table
 
 any
-opinion dole for 2 : Count me willing to share a jar even if the other shelf hasn't a penny on it.
-opinion houses against 1 : A different House may bring a bright label. I'd look at the seal with my own eyes.
-opinion road for 1 : A long walk takes all sorts of noise out of one's ears before supper.
-opinion strangers mixed 1 : An unknown traveller gets bread without access to my store key.
-opinion times against 1 [world.times=lean|hard] : A tight winter measures a cupboard by the mouths it actually feeds.
-opinion city mixed 1 : The Sump has food worth making and streets where a hillside would be very welcome.
+opinion @1 dole for 2 : Count me willing to share a jar even if the other shelf hasn't a penny on it.
+opinion @1 houses against 1 : A different House may bring a bright label. I'd look at the seal with my own eyes.
+opinion @1 road for 1 : A long walk takes all sorts of noise out of one's ears before supper.
+opinion @1 strangers mixed 1 : An unknown traveller gets bread without access to my store key.
+opinion @1 times against 1 [world.times=lean|hard] : A tight winter measures a cupboard by the mouths it actually feeds.
+opinion @1 city mixed 1 : The Sump has food worth making and streets where a hillside would be very welcome.
 
 grown
-line greet : I've kept a clean spot beside my shelf-end crock. | Come up beyond that salty draught.
-line greet.return : Your greeting's as welcome as a loaf fresh out.
-line again.open : Back before I tied the spare jar.
-line farewell : May your supper stretch to company.
-line farewell.return : I'll keep those wishes for the road uphill.
-line react.news : Let's hear what's come into town with the carts.
-line react.news.new : That hasn't earned a mark on my shelf before.
-line react.news.known : That account came round with an earlier lot.
-line react.news.doubt : I'd turn that jar to the light again.
-line react.news.sorrow [topic.kind=death|loss|assault] : I wish that hurt a shelter from cold tongues.
-line react.news.glad [topic.kind=birth|marriage|work] : That news deserves the lid off something good.
-line ask.how : Have today's errands sharpened your appetite?
-line answer.how : Quiet enough. I'd go a little further if I could.
-line sympathise : Stay and share something while your thoughts settle.
-line reassure : You needn't fill every empty space at once.
-line refuse : I've already promised the free part of my day.
-line accept_decline : I'll wrap up the offer without another word.
-line preclose : There is a thing still waiting under cloth for me.
-line accept_preclose : Go while the path still has its pale edge.
-line ack : Aye, that bears looking at.
-line thank : You carried the end that would have tipped.
-line greet [here.time=dusk] : Welcome as the day's last labels go on.
-
+line @1 greet : I've kept a clean spot beside my shelf-end crock. | Come up beyond that salty draught.
+line @1 greet.return : Your greeting's as welcome as a loaf fresh out.
+line @1 again.open : Back before I tied the spare jar.
+line @1 farewell : May your supper stretch to company.
+line @1 farewell.return : I'll keep those wishes for the road uphill.
+line @1 react.news : Let's hear what's come into town with the carts.
+line @1 react.news.new : That hasn't earned a mark on my shelf before.
+line @1 react.news.known : That account came round with an earlier lot.
+line @1 react.news.doubt : I'd turn that jar to the light again.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I wish that hurt a shelter from cold tongues.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That news deserves the lid off something good.
+line @1 ask.how : Have today's errands sharpened your appetite?
+line @1 answer.how : Quiet enough. I'd go a little further if I could.
+line @1 sympathise : Stay and share something while your thoughts settle.
+line @1 reassure : You needn't fill every empty space at once.
+line @1 refuse : I've already promised the free part of my day.
+line @1 accept_decline : I'll wrap up the offer without another word.
+line @1 preclose : There is a thing still waiting under cloth for me.
+line @1 accept_preclose : Go while the path still has its pale edge.
+line @1 ack : Aye, that bears looking at.
+line @1 thank : You carried the end that would have tipped.
+line @2 greet [here.time=dusk] : Welcome as the day's last labels go on.
 scene exchange1
 when topic=work self.workplace
 does tell.self / ask.detail / answer.detail
@@ -233,15 +235,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Wrap the spare before the light goes. | Tea first, labels afterwards.
-dlg resident.hub : Our voices can travel here without jarring all the crocks.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I recognise you even across a crowded shelf.
-dlg resident.hub [pair.disposition=wary|hostile] : A House mark doesn't grant a look inside a private cupboard. Give me your question plainly.
-dlg resident.job [self.workplace] : My hours at #self.workplace# go into keeping stock sound. A good seal ought to mean the same thing on a rich table as on a poor one.
-dlg resident.job : I attend to whatever stock's in reach and leave something for the next meal.
-dlg resident.news [world.news] : The public word that reached this shelf was #world.news#.
-dlg resident.gossip [here.gossip=yes] : The label on the story reads #topic.subject# #topic.claim#. The rest is still under wrap.
-dlg resident.bye : Have a warm bite before the next wind off the water.
 
+dlg @1 resident.hub : Our voices can travel here without jarring all the crocks.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I recognise you even across a crowded shelf.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A House mark doesn't grant a look inside a private cupboard. Give me your question plainly.
+dlg @1 resident.job [self.workplace] : My hours at #self.workplace# go into keeping stock sound. A good seal ought to mean the same thing on a rich table as on a poor one.
+dlg @2 resident.job : I attend to whatever stock's in reach and leave something for the next meal.
+dlg @1 resident.news [world.news] : The public word that reached this shelf was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The label on the story reads #topic.subject# #topic.claim#. The rest is still under wrap.
+dlg @1 resident.bye : Have a warm bite before the next wind off the water.
 graft resident.hub
 choice Why count the shelf after taking a jar off it? -> outgoing_jar
 node outgoing_jar

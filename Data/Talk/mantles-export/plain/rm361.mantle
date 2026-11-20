@@ -1,9 +1,12 @@
+# rm361, the dancer's extra bowl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm361
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_erland_millstack
+written_by codex
 title the dancer's extra bowl
 fits stage=adult|old
 prefers job=healer
@@ -17,6 +20,7 @@ topics faith +0.6 food +0.4 pastimes +0.4 family +0.3
 styles comfort=gentle gossip=careful refuse=soft tease=none
 marks oath saying
 persona #self.first# steps sideways as if making room in a dance and sets an extra bowl within reach of a visitor who might be too shy to ask.
+
 words
 oath! = Cloud my good spoon | Scuff my quiet step
 saying! = Keep the bowl facing up | Make the sideways step
@@ -33,35 +37,33 @@ spoonrest = a flat dish | a small piece of tile
 strawshoe = a plaited sole | a soft slipper
 
 grown
-
-opinion church for 2 : A bowl set down softly can carry my prayer farther than words said to an unwilling listener.
-opinion houses against 1 : Folk at a great wharf should remember which tables have lost a place before praising a profitable day.
-opinion strangers for 2 : An extra bowl gives a caller permission to be hungry before a word has to be found for it.
-opinion city for 1 : A crowded city gives me plenty of chances to practise moving gently through a room.
-opinion festivals for 1 : A dance that leaves a gap in the ring can turn a bystander into company at once.
-opinion dole for 2 : I prefer a pot that is replenished by several quiet hands to one guarded by a grand speech.
-line greet : I've made a little space here with good light on it.
-line greet [pair.band=strangers] : You're welcome to sit within reach of the warmth.
-line greet.return : I hear you gently enough. Come this way.
-line farewell : Save one unhurried step for the home doorway.
-line farewell.return : May the Bright One bring your feet lightly home.
-line ask.how : Has anybody thought to ask what would give you ease today?
-line answer.how : Well enough for a little turn about the room.
-line react.news : I'll listen right through before trying any answer on for size.
-line react.news.new : That's an unfamiliar step in a dance I thought I knew.
-line react.news.known : The shape of that news is already beside me.
-line react.news.doubt : I'd rather wait a measure before trusting so sharp a turn.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd set the brightest bowl out for that sort of news.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll see who needs supper without asking after the particulars.
-line decline : I can't offer that without first knowing whose comfort it may take away.
-line accept_decline : Then I'll give the decision some room of its own.
-line thank : Your kindness came within reach just where I needed it.
-line deflect_thanks : There was time to put another place in.
-line reassure : You may take just the little step you can manage.
-line sympathise : I can be here without needing you to make conversation.
-line ack : I feel where the next step goes.
-line accept_preclose : Then we'll let the quiet settle comfortably between us.
-
+opinion @1 church for 2 : A bowl set down softly can carry my prayer farther than words said to an unwilling listener.
+opinion @1 houses against 1 : Folk at a great wharf should remember which tables have lost a place before praising a profitable day.
+opinion @1 strangers for 2 : An extra bowl gives a caller permission to be hungry before a word has to be found for it.
+opinion @1 city for 1 : A crowded city gives me plenty of chances to practise moving gently through a room.
+opinion @1 festivals for 1 : A dance that leaves a gap in the ring can turn a bystander into company at once.
+opinion @1 dole for 2 : I prefer a pot that is replenished by several quiet hands to one guarded by a grand speech.
+line @1 greet : I've made a little space here with good light on it.
+line @2 greet [pair.band=strangers] : You're welcome to sit within reach of the warmth.
+line @1 greet.return : I hear you gently enough. Come this way.
+line @1 farewell : Save one unhurried step for the home doorway.
+line @1 farewell.return : May the Bright One bring your feet lightly home.
+line @1 ask.how : Has anybody thought to ask what would give you ease today?
+line @1 answer.how : Well enough for a little turn about the room.
+line @1 react.news : I'll listen right through before trying any answer on for size.
+line @1 react.news.new : That's an unfamiliar step in a dance I thought I knew.
+line @1 react.news.known : The shape of that news is already beside me.
+line @1 react.news.doubt : I'd rather wait a measure before trusting so sharp a turn.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd set the brightest bowl out for that sort of news.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll see who needs supper without asking after the particulars.
+line @1 decline : I can't offer that without first knowing whose comfort it may take away.
+line @1 accept_decline : Then I'll give the decision some room of its own.
+line @1 thank : Your kindness came within reach just where I needed it.
+line @1 deflect_thanks : There was time to put another place in.
+line @1 reassure : You may take just the little step you can manage.
+line @1 sympathise : I can be here without needing you to make conversation.
+line @1 ack : I feel where the next step goes.
+line @1 accept_preclose : Then we'll let the quiet settle comfortably between us.
 scene faith_1
 when topic=faith
 does tell.self / ask.detail / answer.detail
@@ -229,13 +231,13 @@ when concept=bark here.time=night
 does aside
 cooldown 8h
 say Let the latch make the last sound a small one. | Somebody may just be drifting off.
-dlg resident.hub : Come into the easy light. We'll take each word at its own pace.
-dlg resident.job [self.job=healer] : At #self.workplace# I try to see the whole visitor before getting caught up in the complaint.
-dlg resident.news [world.news] : This has reached the table. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The tale says #topic.subject# #topic.claim#. I'd like the kindness to hear the rest in confidence.
-dlg resident.hub [topic.meeting=known] : #topic.player#, it is good to hear your step come near the door.
-dlg resident.bye : May the quieter turn of the dance meet you next.
 
+dlg @1 resident.hub : Come into the easy light. We'll take each word at its own pace.
+dlg @1 resident.job [self.job=healer] : At #self.workplace# I try to see the whole visitor before getting caught up in the complaint.
+dlg @1 resident.news [world.news] : This has reached the table. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The tale says #topic.subject# #topic.claim#. I'd like the kindness to hear the rest in confidence.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, it is good to hear your step come near the door.
+dlg @1 resident.bye : May the quieter turn of the dance meet you next.
 graft resident.hub
 choice Why is that bowl facing up? -> bowl_up
 node bowl_up

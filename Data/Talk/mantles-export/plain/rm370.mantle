@@ -1,14 +1,17 @@
+# rm370, the three-turn storyteller (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm370
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_bettany_slagridge
+written_by codex
 title the three-turn storyteller
 fits stage=adult|old
 prefers honesty=plain talk=plain
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk keeps_three_notches_in_a_butter_paddle_for_three_favourite_stories
+quirk notches_a_butter_paddle_for_three_favourite_stories
 likes pickled_herring dancing old_maps summer_evenings
 dislikes early_bells flies
 fears a_fly_under_the_cloth losing_the_first_word
@@ -34,45 +37,44 @@ herringtail = the tapered tail piece | a narrow sliver of herring
 longdusk = the long summer dusk | that lingering summer light
 
 any
-opinion dole for 2 : I'd measure a free portion as carefully as a sold one. A hungry wolf notices short weight.
-opinion church for 1 : A welcome in a cold hour is a prayer with a sound roof on it.
-opinion houses against 1 : The folk inside a great House might learn something by carrying their own breakfast upstairs.
-opinion merchants mixed 0 : A price for the whole pat is useful. So is admitting some pockets can only buy a slice.
-opinion festivals for 1 : One tune in the late light can repay a day's hard churning.
-opinion strangers mixed 0 : I'd set a stranger a plate. Private stories come out somewhat later.
-opinion city for 1 : Ridgemere is large enough for three favourite stories to last an astonishing time.
+opinion @1 dole for 2 : I'd measure a free portion as carefully as a sold one. A hungry wolf notices short weight.
+opinion @1 church for 1 : A welcome in a cold hour is a prayer with a sound roof on it.
+opinion @1 houses against 1 : The folk inside a great House might learn something by carrying their own breakfast upstairs.
+opinion @1 merchants mixed 0 : A price for the whole pat is useful. So is admitting some pockets can only buy a slice.
+opinion @1 festivals for 1 : One tune in the late light can repay a day's hard churning.
+opinion @1 strangers mixed 0 : I'd set a stranger a plate. Private stories come out somewhat later.
+opinion @1 city for 1 : Ridgemere is large enough for three favourite stories to last an astonishing time.
 
 grown
-line greet : Come in earshot of a decent beginning.
-line greet [pair.band=strangers] : A first meeting gets the short version.
-line greet [here.time=dawn] : Morning. The first notch hasn't warmed up yet.
-line greet [here.time=dusk|night] : Day's nearly folded back on itself.
-line greet.return : I can put a greeting in between two stories.
-line greet.return [pair.band=friends|family] : Ah, company who knows when to join the chorus.
-line greet.return [self.working=yes] : There's a rhythm to this. I can talk between turns.
-line greet.return [here.time=dusk|night] : The words are easier to catch now the street's gone dim.
-line kin.open [pair.kin!=no] : Kin may choose which version to hear.
-line again.open : About time to pick the thread up by the second notch.
-line hail [pair.band=friends] : Here, good company! A little voice to spare.
-line farewell : Take an unhurried ending away with you.
-line farewell.return : And mind you keep a piece of the evening for yourself.
-line react.news : I'm listening from the very first syllable.
-line react.news.new : That one's fresh even to my worn old ears.
-line react.news.known : I've tucked that bit away once today.
-line react.news.doubt : The end of that account doesn't fit the beginning.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor news. No pleasant turn to put on it either.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That belongs with the stories one keeps for a good evening.
-line ask.how : Are the hours turning fairly for you?
-line answer.how : Still keeping time without consulting the bells.
-line thank : I'll mark that beside my better recollections.
-line deflect_thanks : It took a light touch and a spare minute.
-line sympathise : I'll sit beside you through the difficult middle bit.
-line reassure : Take another breath. Stories don't need to hurry.
-line decline : I have to finish what I've set my paw to first.
-line accept_decline : I'd sooner hear your honest refusal than an elaborate excuse.
-line preclose : Best catch the road while there is some colour left in it.
-line accept_preclose : Then that's a fitting place to put the cover on.
-
+line @1 greet : Come in earshot of a decent beginning.
+line @2 greet [pair.band=strangers] : A first meeting gets the short version.
+line @3 greet [here.time=dawn] : Morning. The first notch hasn't warmed up yet.
+line @4 greet [here.time=dusk|night] : Day's nearly folded back on itself.
+line @1 greet.return : I can put a greeting in between two stories.
+line @2 greet.return [pair.band=friends|family] : Ah, company who knows when to join the chorus.
+line @3 greet.return [self.working=yes] : There's a rhythm to this. I can talk between turns.
+line @4 greet.return [here.time=dusk|night] : The words are easier to catch now the street's gone dim.
+line @1 kin.open [pair.kin!=no] : Kin may choose which version to hear.
+line @1 again.open : About time to pick the thread up by the second notch.
+line @1 hail [pair.band=friends] : Here, good company! A little voice to spare.
+line @1 farewell : Take an unhurried ending away with you.
+line @1 farewell.return : And mind you keep a piece of the evening for yourself.
+line @1 react.news : I'm listening from the very first syllable.
+line @1 react.news.new : That one's fresh even to my worn old ears.
+line @1 react.news.known : I've tucked that bit away once today.
+line @1 react.news.doubt : The end of that account doesn't fit the beginning.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor news. No pleasant turn to put on it either.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That belongs with the stories one keeps for a good evening.
+line @1 ask.how : Are the hours turning fairly for you?
+line @1 answer.how : Still keeping time without consulting the bells.
+line @1 thank : I'll mark that beside my better recollections.
+line @1 deflect_thanks : It took a light touch and a spare minute.
+line @1 sympathise : I'll sit beside you through the difficult middle bit.
+line @1 reassure : Take another breath. Stories don't need to hurry.
+line @1 decline : I have to finish what I've set my paw to first.
+line @1 accept_decline : I'd sooner hear your honest refusal than an elaborate excuse.
+line @1 preclose : Best catch the road while there is some colour left in it.
+line @1 accept_preclose : Then that's a fitting place to put the cover on.
 scene three_cuts
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say That wheel's very nearly in time with my feet.
 
-dlg resident.hub : I'm between two turns. The words will fit here.
-dlg resident.hub [topic.meeting=known] : #topic.player#. I'll spare you the beginning you already know.
-dlg resident.hub [here.time=night] : The hour's getting thin. My ears are still fairly good.
-dlg resident.hub [pair.disposition=hostile|wary] : From that side of the table we can speak without rubbing elbows.
-dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. A light hand is useful at the finish.
-dlg resident.job : I give a job the turning it needs, even if I've turned it twice before.
-dlg resident.news [world.news] : I'm passing this on from #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : You'll get my own tales in full. Other wolves' affairs I'll generally leave covered.
-dlg resident.bye : Let the story drop into mind when the road needs shortening.
-
+dlg @1 resident.hub : I'm between two turns. The words will fit here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I'll spare you the beginning you already know.
+dlg @3 resident.hub [here.time=night] : The hour's getting thin. My ears are still fairly good.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : From that side of the table we can speak without rubbing elbows.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. A light hand is useful at the finish.
+dlg @2 resident.job : I give a job the turning it needs, even if I've turned it twice before.
+dlg @1 resident.news [world.news] : I'm passing this on from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : You'll get my own tales in full. Other wolves' affairs I'll generally leave covered.
+dlg @1 resident.bye : Let the story drop into mind when the road needs shortening.
 graft resident.hub
 choice Why is that third notch the deepest? -> last_nick
 node last_nick

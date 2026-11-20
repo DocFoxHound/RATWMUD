@@ -1,9 +1,12 @@
+# rm474, the apple with two prices (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm474
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_ulric_blossommeadow
+written_by codex
 title the apple with two prices
 fits stage=adult|old
 prefers honesty=sly talk=chatty
@@ -34,45 +37,44 @@ salttrace = fine salt on the sill | a line of white grit
 handfan = my tightly fanned hand | three cards held low
 
 any
-opinion merchants against 1 : A shiny load of fruit will fetch two prices. Everybody remembers the higher when paying the picker.
-opinion festivals for 2 : A wedding dance lets a wolf make an important promise without an audience for the words.
-opinion city mixed 0 : I like the streets well enough once I've checked where their fine new signs actually point.
-opinion church for 1 : An empty chapel offers a seat to a wolf with nothing to declare.
-opinion dole for 1 : A bread queue can start while good apples still lie in the grass. I'd put that basket somewhere sensible.
-opinion houses against 1 : A House could keep an orchard gate in better repair for the price of painting a name across it.
-opinion road mixed 0 : Dust protects a good apple's blush beautifully until somebody asks to eat it.
+opinion @1 merchants against 1 : A shiny load of fruit will fetch two prices. Everybody remembers the higher when paying the picker.
+opinion @1 festivals for 2 : A wedding dance lets a wolf make an important promise without an audience for the words.
+opinion @1 city mixed 0 : I like the streets well enough once I've checked where their fine new signs actually point.
+opinion @1 church for 1 : An empty chapel offers a seat to a wolf with nothing to declare.
+opinion @1 dole for 1 : A bread queue can start while good apples still lie in the grass. I'd put that basket somewhere sensible.
+opinion @1 houses against 1 : A House could keep an orchard gate in better repair for the price of painting a name across it.
+opinion @1 road mixed 0 : Dust protects a good apple's blush beautifully until somebody asks to eat it.
 
 grown
-line greet : Round here. I've a clean corner for company.
-line greet [pair.band=strangers] : First acquaintance buys you a look at the fruit.
-line greet [here.time=dawn] : Morning before the right bell's almost worth keeping.
-line greet [here.time=dusk|night] : Long shadows bring the bruise out on a bad apple.
-line greet.return : I've time while that last card stays down.
-line greet.return [pair.band=friends|family] : You know which side I keep the good bread on.
-line greet.return [self.working=yes] : Keep talking. My thumbs know this much.
-line greet.return [here.time=dusk|night] : Still just enough light to count a hand by.
-line kin.open [pair.kin!=no] : Sit with me, kin. No price on the seat.
-line again.open : I've held the card where we left it.
-line hail [pair.band=friends] : Friend! There was a good ear missing till now.
-line farewell : Walk away with the better half of the bargain.
-line farewell.return : Give the salt wind a wide berth.
-line react.news : Let's hear whether it's fully ripe.
-line react.news.new : Fresh enough to leave a stem on.
-line react.news.known : Heard the telling before the first apple fell.
-line react.news.doubt : A fine shine. Mind if I examine the other side?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put the cards away for a hard account like that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'd keep a whole evening for such a thing.
-line ask.how : Did the scales go easy on you today?
-line answer.how : Nothing bruised that I can't eat.
-line thank : You kept that bargain handsomely.
-line deflect_thanks : An easy kindness doesn't run up a bill.
-line sympathise : I'll listen till you get past the sore part.
-line reassure : Lay it face down until you've had some bread.
-line decline : I wouldn't play that hand at that price.
-line accept_decline : Then the offer stays in my pocket.
-line preclose : Time to see what the evening has left me.
-line accept_preclose : Deal yourself a decent journey.
-
+line @1 greet : Round here. I've a clean corner for company.
+line @2 greet [pair.band=strangers] : First acquaintance buys you a look at the fruit.
+line @3 greet [here.time=dawn] : Morning before the right bell's almost worth keeping.
+line @4 greet [here.time=dusk|night] : Long shadows bring the bruise out on a bad apple.
+line @1 greet.return : I've time while that last card stays down.
+line @2 greet.return [pair.band=friends|family] : You know which side I keep the good bread on.
+line @3 greet.return [self.working=yes] : Keep talking. My thumbs know this much.
+line @4 greet.return [here.time=dusk|night] : Still just enough light to count a hand by.
+line @1 kin.open [pair.kin!=no] : Sit with me, kin. No price on the seat.
+line @1 again.open : I've held the card where we left it.
+line @1 hail [pair.band=friends] : Friend! There was a good ear missing till now.
+line @1 farewell : Walk away with the better half of the bargain.
+line @1 farewell.return : Give the salt wind a wide berth.
+line @1 react.news : Let's hear whether it's fully ripe.
+line @1 react.news.new : Fresh enough to leave a stem on.
+line @1 react.news.known : Heard the telling before the first apple fell.
+line @1 react.news.doubt : A fine shine. Mind if I examine the other side?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll put the cards away for a hard account like that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. I'd keep a whole evening for such a thing.
+line @1 ask.how : Did the scales go easy on you today?
+line @1 answer.how : Nothing bruised that I can't eat.
+line @1 thank : You kept that bargain handsomely.
+line @1 deflect_thanks : An easy kindness doesn't run up a bill.
+line @1 sympathise : I'll listen till you get past the sore part.
+line @1 reassure : Lay it face down until you've had some bread.
+line @1 decline : I wouldn't play that hand at that price.
+line @1 accept_decline : Then the offer stays in my pocket.
+line @1 preclose : Time to see what the evening has left me.
+line @1 accept_preclose : Deal yourself a decent journey.
 scene two_prices
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -196,7 +198,7 @@ scene last_good
 when topic=dreams
 does tell.self / ask.detail / answer.detail
 a : I'd like a whole summer evening owed to nobody. | My ambition is a last good card with nobody demanding to see it.
-b : How would you spend it? | Would you ever play?
+b : What would the money go on? | Would you ever play?
 a : Slowly. Even a generous evening wants sound management. | It's remarkably pleasant to hold the choice.
 
 story stem_hat [topic=memories|work]
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Rub that white streak off the sill.
 
-dlg resident.hub : A word doesn't cost you the sight of your hand. Come along.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I remember your judgement on a fair bargain.
-dlg resident.hub [here.time=dusk] : Pull the bench into what's left of the warmth.
-dlg resident.hub [pair.disposition=hostile|wary] : Show me an empty palm and I'll hear your terms.
-dlg resident.job [self.trade_words] : The post reads '#self.trade_words#'. A good stem twists clean.
-dlg resident.news [world.news] : The mark's #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : An apple with that much handling goes into the cook pot.
-dlg resident.bye : Keep a decent card till you get indoors.
-
+dlg @1 resident.hub : A word doesn't cost you the sight of your hand. Come along.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember your judgement on a fair bargain.
+dlg @3 resident.hub [here.time=dusk] : Pull the bench into what's left of the warmth.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Show me an empty palm and I'll hear your terms.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#, in season. A good stem twists clean.
+dlg @1 resident.news [world.news] : The mark's #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An apple with that much handling goes into the cook pot.
+dlg @1 resident.bye : Keep a decent card till you get indoors.
 graft resident.hub
 choice Why keep the card face down? -> closed_hand
 node closed_hand

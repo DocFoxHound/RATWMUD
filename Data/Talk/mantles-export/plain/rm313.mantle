@@ -1,9 +1,12 @@
+# rm313, the tray of dice (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm313
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_erland_cinderridge
+written_by codex
 title the tray of dice
 fits stage=adult|old
 prefers job=servant
@@ -33,45 +36,44 @@ saltfilm = a thin white haze | a bloom of salt
 firststroke = the first cracked note | the bell's first cry
 
 any
-opinion dole for 1 : There are hungry guests at doors where there's no bell to ring. The bread finds some of those doors.
-opinion festivals for 1 : What a fine reversal when the cooks and carriers have a turn at the bright end of a table!
-opinion merchants against 1 : I'd like a cheese to weigh the same on the way home as it seemed to in that very glib sales speech.
-opinion newcomers for 1 : A newcomer at supper always has some custom to describe. How dull if everybody passed a dish in the same way.
-opinion strangers for 1 : Bring me a traveller with one good story and I'll find space for another cup on the tray.
-opinion city for 1 : Look at all the separate windows lit for supper. A little of that welcome spills out over the sill even on a cold night.
+opinion @1 dole for 1 : There are hungry guests at doors where there's no bell to ring. The bread finds some of those doors.
+opinion @1 festivals for 1 : What a fine reversal when the cooks and carriers have a turn at the bright end of a table!
+opinion @1 merchants against 1 : I'd like a cheese to weigh the same on the way home as it seemed to in that very glib sales speech.
+opinion @1 newcomers for 1 : A newcomer at supper always has some custom to describe. How dull if everybody passed a dish in the same way.
+opinion @1 strangers for 1 : Bring me a traveller with one good story and I'll find space for another cup on the tray.
+opinion @1 city for 1 : Look at all the separate windows lit for supper. A little of that welcome spills out over the sill even on a cold night.
 
 grown
-line greet : A bright tray and a bright welcome this side of it.
-line greet [pair.band=strangers] : An unfamiliar face is quite in order. Come within hearing.
-line greet [here.time=dawn] : Awake already! Allow me a less ringing welcome than the bells.
-line greet [here.time=dusk|night] : I'll give you a quieter welcome at this hour.
-line greet [self.working=yes] : The tray has a free corner and I have an ear free too.
-line kin.open [pair.kin!=no] : Come in by the easy door. My near side's free for kin.
-line again.open : We've had another turn of the dice between us.
-line greet.return : A greeting returned with both paws clear.
-line greet.return [pair.band=friends|family] : That voice deserves the first cup of the round.
-line greet.return [self.working=yes] : Thank you. I've put the heavy dish down to answer.
-line greet.return [here.time=dusk|night] : I shall answer just under the sound of that shutter.
-line farewell : May the ground rise evenly to your soles.
-line farewell.return : Do take a last quiet moment for yourself.
-line react.news : Go on. I'm very ready to hear an old account turn a new corner.
-line react.news.new : Well, that's put an unexpected face uppermost.
-line react.news.known : Yes, though I've heard that occurrence served with a different sauce.
-line react.news.doubt : Did the witness see the throw land level?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd gladly take a covered plate round and let the quiet last.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : The happy table can count on a cup from me.
-line ask.how : Had the chance of a pleasant turn lately?
-line answer.how : There's a steady place under both feet and room for a cup besides.
-line sympathise : An empty place makes itself heard at every course.
-line reassure : There's time to let the tremble travel out of your paws.
-line decline : I'd be betraying the confidence of a perfectly civil guest.
-line accept_decline : Your dish can go back with its cover in place.
-line thank : My thanks for that exceedingly steady paw.
-line deflect_thanks : Leave me the satisfaction of having been able to help.
-line preclose : I must collect my little white square before it wanders.
-line accept_preclose : Please use the way with the wider turn.
-line ack : A fair throw.
-
+line @1 greet : A bright tray and a bright welcome this side of it.
+line @2 greet [pair.band=strangers] : An unfamiliar face is quite in order. Come within hearing.
+line @3 greet [here.time=dawn] : Awake already! Allow me a less ringing welcome than the bells.
+line @4 greet [here.time=dusk|night] : I'll give you a quieter welcome at this hour.
+line @5 greet [self.working=yes] : The tray has a free corner and I have an ear free too.
+line @1 kin.open [pair.kin!=no] : Come in by the easy door. My near side's free for kin.
+line @1 again.open : We've had another turn of the dice between us.
+line @1 greet.return : A greeting returned with both paws clear.
+line @2 greet.return [pair.band=friends|family] : That voice deserves the first cup of the round.
+line @3 greet.return [self.working=yes] : Thank you. I've put the heavy dish down to answer.
+line @4 greet.return [here.time=dusk|night] : I shall answer just under the sound of that shutter.
+line @1 farewell : May the ground rise evenly to your soles.
+line @1 farewell.return : Do take a last quiet moment for yourself.
+line @1 react.news : Go on. I'm very ready to hear an old account turn a new corner.
+line @1 react.news.new : Well, that's put an unexpected face uppermost.
+line @1 react.news.known : Yes, though I've heard that occurrence served with a different sauce.
+line @1 react.news.doubt : Did the witness see the throw land level?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd gladly take a covered plate round and let the quiet last.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : The happy table can count on a cup from me.
+line @1 ask.how : Had the chance of a pleasant turn lately?
+line @1 answer.how : There's a steady place under both feet and room for a cup besides.
+line @1 sympathise : An empty place makes itself heard at every course.
+line @1 reassure : There's time to let the tremble travel out of your paws.
+line @1 decline : I'd be betraying the confidence of a perfectly civil guest.
+line @1 accept_decline : Your dish can go back with its cover in place.
+line @1 thank : My thanks for that exceedingly steady paw.
+line @1 deflect_thanks : Leave me the satisfaction of having been able to help.
+line @1 preclose : I must collect my little white square before it wanders.
+line @1 accept_preclose : Please use the way with the wider turn.
+line @1 ack : A fair throw.
 scene die
 when topic=pastimes self.likes=dice
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.time=dawn
 does aside
 cooldown 8h
 say Lower voices between the early bells. | Let a waking ear have its chance.
-dlg resident.hub : What a welcome interruption. The die and I were on our seventh practice turn.
-dlg resident.hub [topic.meeting=known] : Here's an ear at your disposal, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : There's abundant room to be civil from opposite sides of a tray.
-dlg resident.hub [here.time=night] : I'll keep my welcome low enough for anybody already asleep.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. If a guest can take a cup without reaching, I've done something right.
-dlg resident.job : I can give any table a better than even chance of keeping its cups upright.
-dlg resident.news [world.news] : This account arrived quite plainly. #world.news#.
-dlg resident.bye : May all the doorways come up wide for you.
 
+dlg @1 resident.hub : What a welcome interruption. The die and I were on our seventh practice turn.
+dlg @2 resident.hub [topic.meeting=known] : Here's an ear at your disposal, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : There's abundant room to be civil from opposite sides of a tray.
+dlg @4 resident.hub [here.time=night] : I'll keep my welcome low enough for anybody already asleep.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. If a guest can take a cup without reaching, I've done something right.
+dlg @2 resident.job : I can give any table a better than even chance of keeping its cups upright.
+dlg @1 resident.news [world.news] : This account arrived quite plainly. #world.news#.
+dlg @1 resident.bye : May all the doorways come up wide for you.
 graft @tray_die resident.hub
 choice How level is this tray of yours? -> tray_die
 node tray_die

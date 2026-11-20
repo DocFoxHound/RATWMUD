@@ -1,9 +1,12 @@
+# rm550, supper for a letter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm550
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_soren_millwell
+written_by codex
 title supper for a letter
 fits stage=adult|old
 prefers warmth=warm honesty=frank
@@ -17,6 +20,7 @@ topics food +0.7 family +0.4 weather +0.3 pastimes +0.3
 styles comfort=warm gossip=plain refuse=blunt tease=none
 marks oath saying
 persona #self.first# leaves the stew on the slow side of the hearth, judges passing showers by the gaps between drips, and will read a vineyard letter twice for anyone who missed the first helping.
+
 words
 oath! = Chill my ladle | Rain in the gravy
 saying! = Cover the dish and wait | Read the fold after supper
@@ -32,32 +36,30 @@ breadstep = a thick heel of bread | a sturdy slice
 lampside = a patch of warm light | a yellow pool on the cloth
 
 grown
-
-opinion strangers for 2 : Sit a stranger near enough to smell supper and most introductions will take care of themselves.
-opinion dole for 2 : The pot is heavy when filled. A full belly is lighter company than a street full of empty ones.
-opinion merchants against 1 : If the price takes three speeches to explain I will buy my dinner from a quieter counter.
-opinion city for 1 : I know the note rain makes on my own sill. A new roof would have to teach my ears all over again.
-opinion church for 1 : I've heard the words spoken at gravesides. I would remember the living just as plainly while there's stew left.
-line greet : Lift the fold and release the steam. You'll get a good welcome here.
-line greet.return : Here's another helping of talk, still warm for you.
-line farewell : Eat something stout before giving the road any more of yourself.
-line farewell.return : I'll keep a warm word back in case the rain returns.
-line ask.how : Have you been properly fed since the last heavy shower?
-line answer.how : Got an appetite and a dry seat. I consider that a good start.
-line thank : Your patience left me enough time for both the last sentence and a hot supper.
-line decline : I don't pass round another household's letter while the cloth is off the table.
-line accept_decline : No need to finish a helping that doesn't suit you.
-line sympathise : I can dish up something warm without asking you to talk over it.
-line reassure : A letter can be folded and read again after the hard part.
-line react.news : Bring it in off the step while there's enough light.
-line react.news.new : That's a bit of handwriting new to this table.
-line react.news.known : I remember where the paper creased on that bit.
-line react.news.doubt : A neat fold tells me precious little about who wrote the words.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd leave a whole pot warming to give those good words a proper welcome.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Close the door against the weather. I'll stay beside you till sitting ceases to help.
-line ack : Legible with a whole supper table between us.
-line deflect_thanks : It's no difficulty to shift one more dish towards the warmth.
-
+opinion @1 strangers for 2 : Sit a stranger near enough to smell supper and most introductions will take care of themselves.
+opinion @1 dole for 2 : The pot is heavy when filled. A full belly is lighter company than a street full of empty ones.
+opinion @1 merchants against 1 : If the price takes three speeches to explain I will buy my dinner from a quieter counter.
+opinion @1 city for 1 : I know the note rain makes on my own sill. A new roof would have to teach my ears all over again.
+opinion @1 church for 1 : I've heard the words spoken at gravesides. I would remember the living just as plainly while there's stew left.
+line @1 greet : Lift the fold and release the steam. You'll get a good welcome here.
+line @1 greet.return : Here's another helping of talk, still warm for you.
+line @1 farewell : Eat something stout before giving the road any more of yourself.
+line @1 farewell.return : I'll keep a warm word back in case the rain returns.
+line @1 ask.how : Have you been properly fed since the last heavy shower?
+line @1 answer.how : Got an appetite and a dry seat. I consider that a good start.
+line @1 thank : Your patience left me enough time for both the last sentence and a hot supper.
+line @1 decline : I don't pass round another household's letter while the cloth is off the table.
+line @1 accept_decline : No need to finish a helping that doesn't suit you.
+line @1 sympathise : I can dish up something warm without asking you to talk over it.
+line @1 reassure : A letter can be folded and read again after the hard part.
+line @1 react.news : Bring it in off the step while there's enough light.
+line @1 react.news.new : That's a bit of handwriting new to this table.
+line @1 react.news.known : I remember where the paper creased on that bit.
+line @1 react.news.doubt : A neat fold tells me precious little about who wrote the words.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd leave a whole pot warming to give those good words a proper welcome.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Close the door against the weather. I'll stay beside you till sitting ceases to help.
+line @1 ack : Legible with a whole supper table between us.
+line @1 deflect_thanks : It's no difficulty to shift one more dish towards the warmth.
 scene food_1
 when topic=food self.likes=mutton_stew
 does tell.self / ask.detail / answer.detail
@@ -190,12 +192,12 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Good long light to flatten a folded letter. | The second reading is the one I keep.
-dlg resident.hub : Pull the pot cloth away from the spare seat. I like company within reach of supper.
-dlg resident.job : I mind who comes in hungry and how long the rain might keep a visitor indoors.
-dlg resident.news [world.news] : The words fit to read out this evening are these. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody in from the weather had #topic.subject# #topic.claim#. I couldn't say whose hand first set that going.
-dlg resident.bye : Warm your hands round something before the evening runs out.
 
+dlg @1 resident.hub : Pull the pot cloth away from the spare seat. I like company within reach of supper.
+dlg @1 resident.job : I mind who comes in hungry and how long the rain might keep a visitor indoors.
+dlg @1 resident.news [world.news] : The words fit to read out this evening are these. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody in from the weather had #topic.subject# #topic.claim#. I couldn't say whose hand first set that going.
+dlg @1 resident.bye : Warm your hands round something before the evening runs out.
 graft resident.hub
 choice What do you look for in a vineyard letter? -> vine_fold
 node vine_fold
@@ -206,11 +208,10 @@ node vine_fire
 say Warm plate, clean fingers and light from one side. A letter from kin comes seldom enough to deserve more than a hurried glance over some washing.
 choice I'll take my time with it. -> hub
 
+
 old
-
-line greet [here.time=dusk] : At my age I'd taste the summer evening down to the last drop.
-line answer.how : Older and unequivocally in favour of a seat near the gravy.
-
+line @1 greet [here.time=dusk] : At my age I'd taste the summer evening down to the last drop.
+line @1 answer.how : Older and unequivocally in favour of a seat near the gravy.
 scene memories_1
 when topic=memories
 does tell.self / ask.detail / answer.detail

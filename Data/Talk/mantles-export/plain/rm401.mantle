@@ -1,9 +1,12 @@
+# rm401, the covered signature (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm401
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_njal_stanmore
+written_by codex
 title the covered signature
 fits stage=adult|old
 prefers job=official warmth=warm
@@ -35,43 +38,42 @@ shade = a strip of shade | the sheltered patch
 bellgap = a moment's quiet | the long interval
 
 any
-opinion houses for 1 : A House earns honour by answering a sound request even when the signature would not ordinarily be welcome.
-opinion city for 2 : A city can be judged by the courtesy of the shortest reply sent from its offices.
-opinion church for 2 : A plain request softly spoken carries even through fine doors. I hope my own ears remain as open as the chapel door.
-opinion watch mixed 0 : I prefer a clear statement from a witness to six uncertain claims arranged to look official.
-opinion dole for 2 : An explanation of hunger ought not to require the purchase of good writing paper.
-opinion newcomers for 1 : An unfamiliar writer may possess an entirely familiar need and an unfamiliar way of expressing it.
+opinion @1 houses for 1 : A House earns honour by answering a sound request even when the signature would not ordinarily be welcome.
+opinion @1 city for 2 : A city can be judged by the courtesy of the shortest reply sent from its offices.
+opinion @1 church for 2 : A plain request softly spoken carries even through fine doors. I hope my own ears remain as open as the chapel door.
+opinion @1 watch mixed 0 : I prefer a clear statement from a witness to six uncertain claims arranged to look official.
+opinion @1 dole for 2 : An explanation of hunger ought not to require the purchase of good writing paper.
+opinion @1 newcomers for 1 : An unfamiliar writer may possess an entirely familiar need and an unfamiliar way of expressing it.
 
 grown
-line greet : Welcome. I've set a place aside for a quiet exchange. | Please stand where the light falls comfortably.
-line greet [pair.band=strangers] : Our first conversation deserves an open hearing. | I do not think we have met. You are welcome here.
-line greet [here.time=dawn] : Morning. The unhurried light is an advantage to us. | A new day and room for its first request.
-line greet.return : Yes, hello. I put the letter down quite willingly. | Your greeting came through most agreeably.
-line greet.return [pair.band=friends|family] : A familiar voice may dispense with its formal heading. | I'm very glad to hear you at leisure.
-line greet.return [here.time=night] : A greeting after dark is welcome in its own right. | Late company need not be noisy company.
-line again.open : It gives me pleasure to resume our acquaintance already. | Here we have a second occasion for a civil word.
-line hail [pair.band=friends] : Come look at a small habit of mine, if you have a moment. | Here beside the window. The view is quite distinct.
-line farewell : May you find a courteous hearing wherever you next apply. | Walk in the calmer part of the light.
-line farewell.return : I will put the matter gently to rest here. | May the Bright One attend your return.
-line react.news : Say the substance and leave the flourishes for later. | I am ready to hear how the affair actually stands.
-line react.news.new : I'll need an entirely fresh heading to enter that. | It is entirely new to me and deserves consideration.
-line react.news.known : I've considered an earlier account in much the same terms. | Yes. The essential fact has reached me before.
-line react.news.doubt : I would examine what remains when the signature is covered. | The stated confidence seems in excess of the evidence.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : May those bearing this loss find real company and some relief. | Take the time you require. My attention is firmly here.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : Such news merits the warmest line on an otherwise ordinary page. | I'm heartened to hear an account with so happy a turn.
-line ask.how : Have others been generous listeners today? | Have you enjoyed a tolerably peaceful interval today?
-line answer.how : A little subdued, grateful for the company. | Quite able to attend, with several things still on my mind.
-line decline : I could not undertake that with the sincerity your request deserves. | It falls outside the responsibility I can honestly accept.
-line accept_decline : I respect the limit and appreciate your stating it. | Then the matter can rest entirely with you.
-line preclose : I must presently return to a request still awaiting consideration. | My remaining correspondence deserves a clear stretch of thought.
-line accept_preclose : I am grateful for the interval you've offered me. | Certainly. Please give your next obligation its due.
-line thank : You gave me time to reconsider a first impression. Thank you. | I value the care that went into that observation.
-line deflect_thanks : The question deserved an answer legible from your side. | I had the leisure to give it a second reading.
-line sympathise : No one requires a fair copy of grief before offering a seat. | I can hear the difficulty even when the words come slowly.
-line reassure : Let us read the simplest form of the question first. | We may find the request quite manageable beneath the elaborate beginning.
-line ack : Yes. That distinguishes the two matters clearly. | I see why that final observation is relevant.
-line give.advice : Leave a little room beneath a request for an ordinary answer. | Read a letter once for meaning and once for the person waiting.
-
+line @1 greet : Welcome. I've set a place aside for a quiet exchange. | Please stand where the light falls comfortably.
+line @2 greet [pair.band=strangers] : Our first conversation deserves an open hearing. | I do not think we have met. You are welcome here.
+line @3 greet [here.time=dawn] : Morning. The unhurried light is an advantage to us. | A new day and room for its first request.
+line @1 greet.return : Yes, hello. I put the letter down quite willingly. | Your greeting came through most agreeably.
+line @2 greet.return [pair.band=friends|family] : A familiar voice may dispense with its formal heading. | I'm very glad to hear you at leisure.
+line @3 greet.return [here.time=night] : A greeting after dark is welcome in its own right. | Late company need not be noisy company.
+line @1 again.open : It gives me pleasure to resume our acquaintance already. | Here we have a second occasion for a civil word.
+line @1 hail [pair.band=friends] : Come look at a small habit of mine, if you have a moment. | Here beside the window. The view is quite distinct.
+line @1 farewell : May you find a courteous hearing wherever you next apply. | Walk in the calmer part of the light.
+line @1 farewell.return : I will put the matter gently to rest here. | May the Bright One attend your return.
+line @1 react.news : Say the substance and leave the flourishes for later. | I am ready to hear how the affair actually stands.
+line @1 react.news.new : I'll need an entirely fresh heading to enter that. | It is entirely new to me and deserves consideration.
+line @1 react.news.known : I've considered an earlier account in much the same terms. | Yes. The essential fact has reached me before.
+line @1 react.news.doubt : I would examine what remains when the signature is covered. | The stated confidence seems in excess of the evidence.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : May those bearing this loss find real company and some relief. | Take the time you require. My attention is firmly here.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Such news merits the warmest line on an otherwise ordinary page. | I'm heartened to hear an account with so happy a turn.
+line @1 ask.how : Have others been generous listeners today? | Have you enjoyed a tolerably peaceful interval today?
+line @1 answer.how : A little subdued, grateful for the company. | Quite able to attend, with several things still on my mind.
+line @1 decline : I could not undertake that with the sincerity your request deserves. | It falls outside the responsibility I can honestly accept.
+line @1 accept_decline : I respect the limit and appreciate your stating it. | Then the matter can rest entirely with you.
+line @1 preclose : I must presently return to a request still awaiting consideration. | My remaining correspondence deserves a clear stretch of thought.
+line @1 accept_preclose : I am grateful for the interval you've offered me. | Certainly. Please give your next obligation its due.
+line @1 thank : You gave me time to reconsider a first impression. Thank you. | I value the care that went into that observation.
+line @1 deflect_thanks : The question deserved an answer legible from your side. | I had the leisure to give it a second reading.
+line @1 sympathise : No one requires a fair copy of grief before offering a seat. | I can hear the difficulty even when the words come slowly.
+line @1 reassure : Let us read the simplest form of the question first. | We may find the request quite manageable beneath the elaborate beginning.
+line @1 ack : Yes. That distinguishes the two matters clearly. | I see why that final observation is relevant.
+line @1 give.advice : Leave a little room beneath a request for an ordinary answer. | Read a letter once for meaning and once for the person waiting.
 scene linenreading
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : I'd welcome a time when an ordinary reasonable request receives a single ans
 b : No monument required? | What would you write?
 a : A lasting improvement in somebody's day seems quite sufficient remembrance. | The precise next step, the place to take it, and whose responsibility it is. Those three would do.
 
-grown
-
 story spiderwax [topic=work|memories self.job=official]
   : I once covered a seal with a strip of linen and reread a very short note with great seriousness. On lifting the linen I found a fly sitting on it.
   : For a moment the office had received a perfectly respectable request under the image of a winged insect.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say The house is quiet. A soft knock will be sufficient. | I shall put down the letter and hear the late caller.
 
-dlg resident.hub : There's room to consider your words without a formal introduction.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I recognise the voice without reading down to a signature.
-dlg resident.hub [here.time=night] : A quiet hour is no disadvantage to a question that requires thought.
-dlg resident.hub [pair.disposition=wary|hostile] : I shall give a civil hearing from where you stand.
-dlg resident.job [self.job=official] : #self.trade_words.capitalize#. I try to make each reply understandable to whoever is expecting it.
-dlg resident.job : I find satisfaction in business that concludes with a definite, civil answer.
-dlg resident.bye : May your next request find an attentive reader.
-
+dlg @1 resident.hub : There's room to consider your words without a formal introduction.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I recognise the voice without reading down to a signature.
+dlg @3 resident.hub [here.time=night] : A quiet hour is no disadvantage to a question that requires thought.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I shall give a civil hearing from where you stand.
+dlg @1 resident.job [self.job=official] : #self.trade_words.capitalize#. I try to make each reply understandable to whoever is expecting it.
+dlg @2 resident.job : I find satisfaction in business that concludes with a definite, civil answer.
+dlg @1 resident.bye : May your next request find an attentive reader.
 graft resident.hub
 choice Why read a letter twice with the crest covered? -> stripcrest
 node stripcrest

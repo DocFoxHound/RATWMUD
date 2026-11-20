@@ -1,9 +1,12 @@
+# rm310, the open floor (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm310
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_gerrit_mudhand
+written_by codex
 title the open floor
 fits stage=adult|old
 prefers job=official
@@ -19,7 +22,7 @@ marks oath saying
 persona #self.first# taps the rim of a cup once after the loudest voice has finished and waits to hear the quietest.
 
 words
-oath! = Strike the sea an interval | By the breathing space
+oath! = Hear the far chair first | By the breathing space
 saying! = Silence has a seat | A loud conclusion deserves a quiet neighbour
 rim = the lip of my cup | a thin porcelain rim
 tap = one soft knock | a single little tap
@@ -39,51 +42,50 @@ oil = a drop of lamp oil | the last clear oil
 glint = a yellow gleam | a glint of butter
 
 any
-opinion houses for 1 : The Houses can bring four sides of a question to one table. It is our business to accommodate a fifth.
-opinion watch for 1 : Footfalls by a guard I recognise let me turn over and get some sleep. I value that.
-opinion strangers for 1 : A visitor remembers exactly which customs make no sense. I like to hear that before anyone explains them away.
-opinion festivals for 1 : For one day the folk who hear my voice from the back can get near enough to interrupt.
-opinion dole mixed 1 : I value a full bowl and I'd hear the folk who empty the pot before changing the service.
-opinion times for 1 : My chair is comfortable and I eat well. I owe my own good fortune an honest accounting.
-opinion sump against 1 : Worries seem to climb our hill from the Sump. I'd rather hear what is amiss there while it is still small.
-opinion merchants mixed 0 : A courteous bargain can bear close reading. A pointed silence after the price can be another matter.
-opinion city for 1 : The stone we build on is much the same at either end of the slope. I like a town that reminds one of that daily.
+opinion @1 houses for 1 : The Houses can bring four sides of a question to one table. It is our business to accommodate a fifth.
+opinion @1 watch for 1 : Footfalls by a guard I recognise let me turn over and get some sleep. I value that.
+opinion @1 strangers for 1 : A visitor remembers exactly which customs make no sense. I like to hear that before anyone explains them away.
+opinion @1 festivals for 1 : For one day the folk who hear my voice from the back can get near enough to interrupt.
+opinion @1 dole mixed 1 : I value a full bowl and I'd hear the folk who empty the pot before changing the service.
+opinion @1 times for 1 : My chair is comfortable and I eat well. I owe my own good fortune an honest accounting.
+opinion @1 sump against 1 [self.quarter=office|heights|commons] : Worries seem to climb our hill from the Sump. I'd rather hear what is amiss there while it is still small.
+opinion @1 merchants mixed 0 : A courteous bargain can bear close reading. A pointed silence after the price can be another matter.
+opinion @1 city for 1 : The stone we build on is much the same at either end of the slope. I like a town that reminds one of that daily.
 
 grown
-line greet [pair.band=strangers] : You've been granted my full ear. | Welcome. There's a free chair on this side.
-line greet [self.working=yes] : Come within a reasonable speaking distance. | I'm attending. Carry on in an easy voice.
-line greet [here.time=dawn] : Morning. All the voices are still fresh. | Welcome to the first hearing of the day.
-line greet [here.time=dusk|night] : Evening's a fine time for an unhurried account. | Come into the soft light.
-line kin.open [pair.kin!=no] : Kin have an established right to interrupt. | Come near. Family are always within my hearing.
-line again.open : A second appearance earns another welcome. | We meet again before the echo's died.
-line greet.return : Hello. You needn't raise your voice. | I have heard the greeting and am glad of it.
-line greet.return [pair.band=friends|family] : I know this voice and welcome the speaker. | Take the chair that faces me squarely.
-line greet.return [self.working=yes] : My pen may be occupied but my ear is free. | There's an interval in the work. Speak easily.
-line greet.return [here.time=dusk|night] : Evening. I could hear that voice by lamplight. | The hour admits a quieter greeting.
-line farewell : Take the floor with you for a while. | A fair hearing wherever you go next.
-line farewell.return : The chair awaits another visit. | I leave the next word to you.
-line farewell.return [here.time=night] : Let lamplight follow your steps home. | A gentle close to your late business.
-line react.news : I'll hear it at the strength you heard it. | Which words were quite distinct?
-line react.news.new : Fresh business for these ears. | That alters the order of my thoughts.
-line react.news.known : Yes. I've had one hearing already. | That voice travelled ahead of yours.
-line react.news.doubt : I'd hear what comes after that impressive pause. | There's a quiet gap where a fact ought to sit.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Allow me to sit close and hold my tongue. | That deserves a kinder interval than words.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news has a beautiful speaking voice. | I'll gladly grant that a second hearing.
-line ask.how : Has the day given you a hearing? | Was there a little space for your own concerns?
-line answer.how : I'm scarcely finished with the smallest voice yet. | Still curious about the bit I haven't heard.
-line decline : I'd sooner keep this interval free for another hearing. | I fear my attention is pledged elsewhere.
-line accept_decline : That leaves your wishes perfectly clear. | I accept the answer at its first hearing.
-line thank : A considered kindness. I heard it clearly. | I value the attention you gave that.
-line sympathise : You may have my chair and my silence. | There's time to begin again when you're ready.
-line reassure : A pause belongs to the speaker too. | Nothing requires you to hurry the next word.
-line preclose : I should release the floor shortly. | I've another quiet matter awaiting me.
-line accept_preclose : Your time's yours to reclaim. | I'll keep the remaining question in mind.
-line deflect_thanks : That was time gladly lent. | You've discharged your thanks very handsomely.
-line ack : Clearly heard. | Indeed so.
-line give.advice : Wait for a breath before closing the matter. | Hear the whole table once before speaking twice.
-line offer : I can stay to hear the last voice. | Shall I keep this chair beside you?
-line praise : That distinction was worth waiting for. | You made the low note carry.
-
+line @1 greet [pair.band=strangers] : You've been granted my full ear. | Welcome. There's a free chair on this side.
+line @2 greet [self.working=yes] : Come within a reasonable speaking distance. | I'm attending. Carry on in an easy voice.
+line @3 greet [here.time=dawn] : Morning. All the voices are still fresh. | Welcome to the first hearing of the day.
+line @4 greet [here.time=dusk|night] : Evening's a fine time for an unhurried account. | Come into the soft light.
+line @1 kin.open [pair.kin!=no] : Kin have an established right to interrupt. | Come near. Family are always within my hearing.
+line @1 again.open : A second appearance earns another welcome. | We meet again before the echo's died.
+line @1 greet.return : Hello. You needn't raise your voice. | I have heard the greeting and am glad of it.
+line @2 greet.return [pair.band=friends|family] : I know this voice and welcome the speaker. | Take the chair that faces me squarely.
+line @3 greet.return [self.working=yes] : My pen may be occupied but my ear is free. | There's an interval in the work. Speak easily.
+line @4 greet.return [here.time=dusk|night] : Evening. I could hear that voice by lamplight. | The hour admits a quieter greeting.
+line @1 farewell : Take the floor with you for a while. | A fair hearing wherever you go next.
+line @1 farewell.return : The chair awaits another visit. | I leave the next word to you.
+line @2 farewell.return [here.time=night] : Let lamplight follow your steps home. | A gentle close to your late business.
+line @1 react.news : I'll hear it at the strength you heard it. | Which words were quite distinct?
+line @1 react.news.new : Fresh business for these ears. | That alters the order of my thoughts.
+line @1 react.news.known : Yes. I've had one hearing already. | That voice travelled ahead of yours.
+line @1 react.news.doubt : I'd hear what comes after that impressive pause. | There's a quiet gap where a fact ought to sit.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Allow me to sit close and hold my tongue. | That deserves a kinder interval than words.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news has a beautiful speaking voice. | I'll gladly grant that a second hearing.
+line @1 ask.how : Has the day given you a hearing? | Was there a little space for your own concerns?
+line @1 answer.how : Well enough, and still listening. The morning ran long. | Still curious about the bit I haven't heard.
+line @1 decline : I'd sooner keep this interval free for another hearing. | I fear my attention is pledged elsewhere.
+line @1 accept_decline : That leaves your wishes perfectly clear. | I accept the answer at its first hearing.
+line @1 thank : A considered kindness. I heard it clearly. | I value the attention you gave that.
+line @1 sympathise : You may have my chair and my silence. | There's time to begin again when you're ready.
+line @1 reassure : A pause belongs to the speaker too. | Nothing requires you to hurry the next word.
+line @1 preclose : I should release the floor shortly. | I've another quiet matter awaiting me.
+line @1 accept_preclose : Your time's yours to reclaim. | I'll keep the remaining question in mind.
+line @1 deflect_thanks : That was time gladly lent. | You've discharged your thanks very handsomely.
+line @1 ack : Clearly heard. | Indeed so.
+line @1 give.advice : Wait for a breath before closing the matter. | Hear the whole table once before speaking twice.
+line @1 offer : I can stay to hear the last voice. | Shall I keep this chair beside you?
+line @1 praise : That distinction was worth waiting for. | You made the low note carry.
 scene rim
 when topic=work self.job=official
 does tell.self / ask.detail / answer.detail
@@ -94,9 +96,9 @@ a : To give the quieter end a moment to gather courage. | Only mine. It keeps me
 scene iron
 when topic=smalltalk
 does tell.self / ask.detail / answer.detail
-a : I swear by iron for a hard question and water for the answer.
-b : Why water? | Why iron?
-a : A proper answer reaches the shape of the difficulty. | A question that holds its shape is easier to discuss.
+a : A hard question wants to be put plainly, and then left alone for a moment.
+b : Left alone? | Why plainly?
+a : Long enough for the answer to arrive without being pushed. | Dress a question up and folk answer the dressing.
 
 scene fish
 when topic=food self.likes=fried_fish
@@ -360,20 +362,19 @@ does aside
 cooldown 11h
 say Cuffs in from the dripping sill. | A decisive shower can state its business.
 
-dlg resident.hub : Come to the part of the table where you can be heard without making a speech. I'm listening.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you needn't wait on any formal recognition here.
-dlg resident.hub [pair.disposition=wary|hostile] : Courtesy's enough to begin on. We'll manage the rest as we go.
-dlg resident.hub [here.time=dawn] : There's a whole morning between this greeting and any need to hurry it.
-dlg resident.hub [here.time=night] : There's still a little lamp oil and ample listening time.
-dlg resident.hub [self.master=yes] : I learn a surprising amount from the first question. Give me yours in full.
-dlg resident.job [self.job=official self.workplace] : I give each speaker a hearing at #self.workplace#. In particular I watch the row furthest from my seat.
-dlg resident.job [self.job=official self.trade_words] : #self.trade_words.capitalize#. A noisy matter sometimes needs a quiet chair to settle it.
-dlg resident.job : I try to leave every pair of ears something worth having come to hear.
-dlg resident.news [world.news] : This reached the table in these words. #world.news#
-dlg resident.bye : May somebody grant you the same interval when you reach your next engagement.
-dlg resident.bye [here.time=night] : I release you to the quietest hour. Enjoy the way home.
-dlg resident.hub [pair.band=friends|family] : There's no speaking order among friends. Choose your moment.
-
+dlg @1 resident.hub : Come to the part of the table where you can be heard without making a speech. I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you needn't wait on any formal recognition here.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Courtesy's enough to begin on. We'll manage the rest as we go.
+dlg @4 resident.hub [here.time=dawn] : There's a whole morning between this greeting and any need to hurry it.
+dlg @5 resident.hub [here.time=night] : There's still a little lamp oil and ample listening time.
+dlg @6 resident.hub [self.master=yes] : I learn a surprising amount from the first question. Give me yours in full.
+dlg @1 resident.job [self.job=official self.workplace] : I give each speaker a hearing at #self.workplace#. In particular I watch the row furthest from my seat.
+dlg @2 resident.job [self.job=official self.trade_words] : #self.trade_words.capitalize#. A noisy matter sometimes needs a quiet chair to settle it.
+dlg @3 resident.job : I try to leave every pair of ears something worth having come to hear.
+dlg @1 resident.news [world.news] : This reached the table in these words. #world.news#
+dlg @1 resident.bye : May somebody grant you the same interval when you reach your next engagement.
+dlg @2 resident.bye [here.time=night] : I release you to the quietest hour. Enjoy the way home.
+dlg @7 resident.hub [pair.band=friends|family] : There's no speaking order among friends. Choose your moment.
 graft @floor resident.hub
 choice Why tap your cup after the room goes quiet? -> tap_floor
 node tap_floor
@@ -385,6 +386,7 @@ node tap_quiet
 say Look round the table for a paw half lifted, or a breath taken and then held. There's often a better question already on its way.
 choice I'll watch the far chairs. -> hub
 choice I'll leave you a little silence. -> bye
+
 graft @fish resident.hub
 choice How do you keep fish skin crisp while people are talking? -> fish_talk
 node fish_talk

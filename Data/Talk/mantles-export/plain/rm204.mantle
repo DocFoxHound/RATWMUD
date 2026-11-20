@@ -1,9 +1,12 @@
+# rm204, the crockery cartographer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm204
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_cressida_dripmore
+written_by codex
 title the crockery cartographer
 fits stage=adult|old
 prefers job=merchant
@@ -42,59 +45,58 @@ crack = a hair crack | a white scratch
 footing = a sound foothold | a tolerably dry landing
 
 any
-opinion city for 2 : This town has more slopes than a beetle on a cabbage. A dull spot would be wasted here.
-opinion drink for 1 : Let everybody pour a little and there's a pot worth talking over.
-opinion festivals for 2 : Give me a street full of dancers. Nobody sees the crooked bit of paving till the tune stops.
-opinion newcomers for 2 : New feet find a step old feet haven't touched in years. That's a service.
-opinion strangers for 1 : I'll draw a stranger a route just for the pleasure of hearing where it took.
-opinion houses mixed 1 : Money builds a fine wall. I'd admire it more if the drain continued out the other side.
-opinion merchants mixed 1 : Good wrapping earns my custom quicker than a speech about quality.
-opinion road for 1 : Give a road a back like a sleeping wolf and the water runs off it neatly.
-opinion watch mixed 1 : A warning before a fall is fine work. Advice from three paces behind is just conversation.
-grown
-line greet : Step over my miniature street, please. You've arrived at the uphill end. | Come round by the blue chip. Best entrance on my map.
-line greet [pair.band=strangers] : New feet! Come see where mine have been. | Hello there. You can cross my little city in one stride.
-line greet [here.time=dawn] : There's dawn enough to see the dips by. | Up at the same grey hour, I see.
-line greet [here.time=night] : Easy on that turn. Even familiar feet want light. | I'll talk you across if it's too dim to see.
-line greet.return : Hello back. Mind the arrangement down below. | Yes, I'm here. Look up from the chips.
-line greet.return [pair.band=friends|family] : A familiar nose above my little roofs! Come in. | Just the company to tell me I've got it upside down.
-line greet.return [self.working=yes] : Sorting this lot still leaves me two ears for company. | You're welcome among the bits and pieces.
-line greet.return [here.time=dusk|night] : Hard to see a raised edge at this hour. Stay there. | Evening catches me halfway through something again.
-line kin.open [pair.kin!=no] : There's family. Come put this bend to rights. | You can lean on my shoulder to see.
-line again.open : You've taken my long route and found me twice. | Here we go round the little hill again.
-line hail [pair.band=friends] : Over by the crooked pile, look! | You're just in time to settle which way's downhill.
-line farewell : May your last step be as dry as the first. | I'll draw in your route while I remember.
-line farewell.return : Pick the high paving stones for me. | Look where the water chose. Then go round.
-line react.news : Set it out so I can see where everybody stood. | Give me the shape of it, start to finish.
-line react.news.new : That's a fresh piece for the picture. | That corner of the tale was empty till now.
-line react.news.known : Already laid that one out for myself. | I've heard the turn it takes at the end.
-line react.news.doubt : That account runs uphill in a couple of places. | I'd like to see how the last bit joins the first.
-line react.news.sorrow [topic.kind=death|loss|arrest|assault|crime|theft] : I'd best put the joking away for this. | Hard news. Sit here while you finish it.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice] : Well! That's worth getting the good plates down. | A bright patch on a crowded map.
-line ask.how : Where's the rub with you today, if there's a rub at all? | Have you found a decent way through your day?
-line answer.how : Busy improving the city's drainage an inch at a time. | Feet dry, temper reasonably level. Yours?
-line answer.how.busy [self.working=yes] : I've enough to pack without wrapping myself as well. | Both paws occupied, mouth fully employed.
-line sympathise : There's a corner in every trouble where somebody can stand beside you. | I'll carry the awkward end if you like.
-line reassure : We'll find a way across. I have a reputation depending on it. | Sit a minute. Problems have a high side too.
-line decline : I'll decline while I can do it civilly. My paws are quite full. | I'd have to undo a morning's careful stacking to help with that.
-line accept_decline : Fair. I'll try the opposite direction. | Very well. Even water takes a hint eventually.
-line thank : Thanks for leaving that where I put it. | You've saved me some stooping. Much appreciated.
-line deflect_thanks : If it gets you across, that's thanks enough. | Repay me with a better route sometime.
-line preclose [self.working=yes] : Right. This crate is acquiring opinions about my absence. | I'd best count these rims before I forget which end I started.
-line preclose : I'll leave you to find your own way a while. | My map's waiting for its last bend.
-line accept_preclose : Away with you before I propose another route. | Go along, I've marked where we left off.
-line tease [pair.band=friends] : You've a fine way of being uphill in every argument. | You'd lose your footing in an empty basin.
-line tease.return : Laugh away. Water and I agree on this. | You'll want my map when the puddle gets you.
-line ack : My ear's still with you. | I can follow that bend.
-line give.advice : Try the uphill side before lifting the whole thing. | Find where it wants to go, then interfere.
+opinion @1 city for 2 : This town has more slopes than a beetle on a cabbage. A dull spot would be wasted here.
+opinion @1 drink for 1 : Let everybody pour a little and there's a pot worth talking over.
+opinion @1 festivals for 2 : Give me a street full of dancers. Nobody sees the crooked bit of paving till the tune stops.
+opinion @1 newcomers for 2 : New feet find a step old feet haven't touched in years. That's a service.
+opinion @1 strangers for 1 : I'll draw a stranger a route just for the pleasure of hearing where it took.
+opinion @1 houses mixed 1 : Money builds a fine wall. I'd admire it more if the drain continued out the other side.
+opinion @1 merchants mixed 1 : Good wrapping earns my custom quicker than a speech about quality.
+opinion @1 road for 1 : Give a road a back like a sleeping wolf and the water runs off it neatly.
+opinion @1 watch mixed 1 : A warning before a fall is fine work. Advice from three paces behind is just conversation.
 
+grown
+line @1 greet : Step over my miniature street, please. You've arrived at the uphill end. | Come round by the blue chip. Best entrance on my map.
+line @2 greet [pair.band=strangers] : New feet! Come see where mine have been. | Hello there. You can cross my little city in one stride.
+line @3 greet [here.time=dawn] : There's dawn enough to see the dips by. | Up at the same grey hour, I see.
+line @4 greet [here.time=night] : Easy on that turn. Even familiar feet want light. | I'll talk you across if it's too dim to see.
+line @1 greet.return : Hello back. Mind the arrangement down below. | Yes, I'm here. Look up from the chips.
+line @2 greet.return [pair.band=friends|family] : A familiar nose above my little roofs! Come in. | Just the company to tell me I've got it upside down.
+line @3 greet.return [self.working=yes] : Sorting this lot still leaves me two ears for company. | You're welcome among the bits and pieces.
+line @4 greet.return [here.time=dusk|night] : Hard to see a raised edge at this hour. Stay there. | Evening catches me halfway through something again.
+line @1 kin.open [pair.kin!=no] : There's family. Come put this bend to rights. | You can lean on my shoulder to see.
+line @1 again.open : You've taken my long route and found me twice. | Here we go round the little hill again.
+line @1 hail [pair.band=friends] : Over by the crooked pile, look! | You're just in time to settle which way's downhill.
+line @1 farewell : May your last step be as dry as the first. | I'll draw in your route while I remember.
+line @1 farewell.return : Pick the high paving stones for me. | Look where the water chose. Then go round.
+line @1 react.news : Set it out so I can see where everybody stood. | Give me the shape of it, start to finish.
+line @1 react.news.new : That's a fresh piece for the picture. | That corner of the tale was empty till now.
+line @1 react.news.known : Already laid that one out for myself. | I've heard the turn it takes at the end.
+line @1 react.news.doubt : That account runs uphill in a couple of places. | I'd like to see how the last bit joins the first.
+line @1 react.news.sorrow [topic.kind=death|loss|arrest|assault|crime|theft] : I'd best put the joking away for this. | Hard news. Sit here while you finish it.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice] : Well! That's worth getting the good plates down. | A bright patch on a crowded map.
+line @1 ask.how : Where's the rub with you today, if there's a rub at all? | Have you found a decent way through your day?
+line @1 answer.how : Busy improving the city's drainage an inch at a time. | Feet dry, temper reasonably level. Yours?
+line @1 answer.how.busy [self.working=yes] : I've enough to pack without wrapping myself as well. | Both paws occupied, mouth fully employed.
+line @1 sympathise : There's a corner in every trouble where somebody can stand beside you. | I'll carry the awkward end if you like.
+line @1 reassure : We'll find a way across. I have a reputation depending on it. | Sit a minute. Problems have a high side too.
+line @1 decline : I'll decline while I can do it civilly. My paws are quite full. | I'd have to undo a morning's careful stacking to help with that.
+line @1 accept_decline : Fair. I'll try the opposite direction. | Very well. Even water takes a hint eventually.
+line @1 thank : Thanks for leaving that where I put it. | You've saved me some stooping. Much appreciated.
+line @1 deflect_thanks : If it gets you across, that's thanks enough. | Repay me with a better route sometime.
+line @1 preclose [self.working=yes] : Right. This crate is acquiring opinions about my absence. | I'd best count these rims before I forget which end I started.
+line @2 preclose : I'll leave you to find your own way a while. | My map's waiting for its last bend.
+line @1 accept_preclose : Away with you before I propose another route. | Go along, I've marked where we left off.
+line @1 tease [pair.band=friends] : You've a fine way of being uphill in every argument. | You'd lose your footing in an empty basin.
+line @1 tease.return : Laugh away. Water and I agree on this. | You'll want my map when the puddle gets you.
+line @1 ack : My ear's still with you. | I can follow that bend.
+line @1 give.advice : Try the uphill side before lifting the whole thing. | Find where it wants to go, then interfere.
 scene plan_begin
 when topic=pastimes|land
 does tell.self / ask.detail / answer.detail
 a : I've got the big hill down to three chips today. | I lay a street out with crockery. Blue side means downhill.
 b : Only three? | What's the red bit?
 a : One to climb, one to slide, one to swear at from the bottom. | A roof. Best I can do with a flowerpot.
-
 
 scene tilt_test
 when topic=pastimes|smalltalk
@@ -103,14 +105,12 @@ a : One drop of water will tell you which way my map runs. | If the bead stops, 
 b : Where do you put it? | Could the street itself be wrong?
 a : Right on the join. Never flatter a map by testing only its prettiest bit. | Frequently. But it gets its way, being under my feet.
 
-
 scene misdrawn
 when topic=smalltalk|pastimes
 does tell.self / react.self / assess
 a : There was a whole alley missing from #map#. | I marked a bend where the real street runs straight.
 b : Short a piece? | Misremembered it?
 a : Short a visit. I hadn't bothered to go there. Worse. | No. Drew the route my paws take round a loose slab.
-
 
 scene mate_map
 when topic=family self.married=yes
@@ -119,14 +119,12 @@ a : I like showing #self.spouse# a map before it's finished. | A map for two nee
 b : You don't mind corrections? | What if you both want the same road?
 a : From #self.spouse# I'll consider one. From you I'd prefer a compliment first. | Then I mark two places to pause. Nobody rests at quite the same spot.
 
-
 scene honest_joint
 when topic=work self.working=yes self.job=merchant
 does tell.self / ask.detail / answer.detail
 a : Hear that tiny clack? Two rims oughtn't to be that friendly in a case. | I pack an empty space as carefully as a bowl.
 b : What do you put between? | How do you pack nothing?
 a : Fold of #straw#. Just enough to separate the gossips. | Leave room for the wrapping to give. A jammed case passes every jolt along.
-
 
 scene handle_left
 when topic=work self.job=merchant
@@ -135,14 +133,12 @@ a : Don't wrap a jug by its handle. | First thing I check in a case is where the
 b : Isn't that what a handle's for? | So all face one way?
 a : For lifting the jug. The rest of the case is none of its business. | So none is trying to poke its neighbour in the ribs.
 
-
 scene packing_crown
 when topic=work self.working=yes self.job=merchant
 does tell.self / ask.detail / answer.detail
 a : I could pack the finest crown in the land without touching the points. | A little jug can be vainer than a queen.
 b : Had much practice on crowns? | How does it show?
 a : None. Plenty on pots that thought themselves royalty. | Sticks its spout out and expects its own corner in the box.
-
 
 scene teach_feel
 when topic=work self.master=yes
@@ -151,14 +147,12 @@ a : I like to give a learner a case with one obvious wobble. | First lesson's on
 b : To see if they hear it? | What do I do with it?
 a : To see if they check the rest after putting it right. | Judge where its weight sits. You'll do less rescuing once you know that.
 
-
 scene wet_step
 when topic=weather here.weather=rain here.region=ridgemere
 does warn / react.self / assess
 a : This paving fills from below. Watch the first seam. | Water's going the long way round that stone.
 b : I thought it came from the roof. | So should we?
 a : Some does. The stuff by your heel took a shortcut through the street. | Opposite rule. Water likes the low side. Paws like the high.
-
 
 scene fog_land
 when topic=weather here.weather=fog
@@ -167,14 +161,12 @@ a : Fog turns every sloping lane into a guess. | I can lose the far end of a str
 b : How do you guess? | Even in this?
 a : I feel which way my weight settles. Then I go very slowly. | Look at the dark line on the stones. It runs down.
 
-
 scene new_snow
 when topic=weather here.weather=snow self.likes=first_snow
 does tell.feeling / ask.detail / answer.detail
 a : Good snow wipes my street plan clean. I enjoy the challenge. | Before a pawprint lands, the soft spots show as dimples.
 b : Where do you start over? | Do you have to go out to check?
 a : Where the first black stone shows through. | Naturally. I can't make a map by wishing the world nearer.
-
 
 scene late_rattle
 when topic=day here.time=night self.dislikes=night_noise
@@ -183,14 +175,12 @@ a : Rattling lids sound twice as loud after dark. | A loose shutter repeats the 
 b : Put something soft underneath. | Can you talk it down?
 a : I did. Then I lay awake waiting for the rattle. | I can outtalk it. Trouble is I'd like some sleep myself.
 
-
 scene kitchen_honey
 when topic=food self.likes=honey_cakes
 does tell.self / ask.detail / answer.detail
 a : Honey draws its own map on a cake. | I save the bit where the honey ran under.
 b : Can you follow it? | Stickiest part?
 a : Straight to my cuff. It's a route I know too well. | Yes, and nobody sees it till the thing's gone.
-
 
 scene wrist_bout
 when topic=pastimes self.likes=wrestling
@@ -199,14 +189,12 @@ a : I like the bit of wrestling before either wolf goes over. | Watch the back f
 b : Not much happening then. | I was watching the shoulders.
 a : That's where you're wrong. Both are deciding what counts as ground. | So's the other wrestler. That's what the foot is counting on.
 
-
 scene case_rain
 when topic=travel|work self.job=merchant
 does tell.self / ask.detail / answer.detail
 a : I check the side that a cart favours before loading it. | A long road wears the same dent into every bad packing job.
 b : Does it usually lean? | Where do you find it?
 a : All carts have an opinion once there's weight aboard. | At the lowest corner. I'd mark it in chalk if chalk could stay put.
-
 
 scene high_steps
 when topic=land here.region=ridgemere
@@ -215,14 +203,12 @@ a : Up in this town doesn't mean straight up. | I've counted three turns where t
 b : Can you show me? | How does a hill do that?
 a : Move the blue chip past the white. See? Longer road, easier knees. | It gives you level ground just long enough to raise your hopes.
 
-
 scene broken_uses
 when topic=home
 does tell.self / react.self / assess
 a : A broken saucer can prop a wobbly table all its life. | I keep the bits with a smooth edge.
 b : Still serving at table, then. | Why throw the points away?
 a : Yes. Underneath this time. A change of view. | My map gets walked through. I'd like my visitors to keep their pads.
-
 
 scene fresh_floor
 when topic=home self.likes=fresh_straw
@@ -231,14 +217,12 @@ a : I love the creak of clean straw underfoot. | Fresh straw smells like a room 
 b : Best before it settles? | What thought would that be?
 a : Best after, when the poky ends have accepted their lot. | That feet can come in without bringing the whole street.
 
-
 scene wrong_turn
 when topic=travel|newcomer
 does tell.self / ask.detail / answer.detail
 a : If you ask me which way, first tell me what you're carrying. | A newcomer often wants the short way. That's easy.
 b : Does my luggage make a difference? | What's the hard way?
 a : With a full pail you want more distance and fewer stairs. | Explaining why long is quicker with a sore knee.
-
 
 scene chalk_cost
 when topic=prices
@@ -247,14 +231,12 @@ a : I'd put the price of wrapping where folks can see it. | A cheap jug's dear i
 b : Even for one bowl? | The pieces do have their uses.
 a : Especially for one. No need to make a small purchase mysterious. | I make maps from them. Nobody ought to pay jug prices for a map.
 
-
 scene times_low
 when topic=times world.times=lean|hard
 does tell.worry / react.self / assess
 a : There's less going round. You feel it in what gets mended. | I'd sooner teach a repair in a lean spell.
 b : More patched handles? | Than sell a replacement?
 a : Worn ones, kept on till there's barely a finger's grip. | Yes. You'll remember who kept the old one working.
-
 
 scene wagons_out
 when topic=caravan world.wagons=late|raided
@@ -263,14 +245,12 @@ a : A late wagon leaves a hole no amount of careful stacking will hide. | Roads 
 b : Expecting something yourself? | Any word how far out?
 a : I'd like wrapping straw. There are plenty of wolves with worse needs. | No. I'd mark the spot if anybody had seen it.
 
-
 scene stand_talk
 when topic=gossip
 does tell.self / ask.detail / answer.detail
 a : I don't draw a street till I've stood in it. Gossip gets the same treatment. | There's a rumour taking shape on this tray.
 b : So you'll say nothing? | Why is there a chip missing?
 a : I could talk a day about what I actually know. Try me. | That's the bit that's meant to be true. Haven't found it yet.
-
 
 scene festival_mat
 when topic=festival
@@ -279,14 +259,12 @@ a : Before a dance I inspect the paving. | I'd mark a dance with chips just to s
 b : You afraid of a tumble? | What about the dancers?
 a : Afraid? No. Particular about which direction I tumble in. | They'd step all over it. That's why I'd draw it afterwards.
 
-
 scene early_break
 when topic=day here.time=dawn
 does tell.self / react.self / assess
 a : Early light shows every raised lip in a path. | Dawn gives my little map enormous shadows.
 b : Shadows do the work for you. | How big are the hills?
 a : Some of it. I still have to get down and look. | Tall enough to make a breakfast crumb look like the keep.
-
 
 scene old_injury
 when topic=health
@@ -295,14 +273,12 @@ a : I draw sitting upright and look at it from below when I'm done. | Stiff knee
 b : Why go down twice? | Has the ruler got it wrong?
 a : A good idea from above can be a nuisance at paw level. | No. It just never had to climb the stairs it measured.
 
-
 scene card_friend
 when topic=friends self.friend
 does tell.feeling / react.self / assess
 a : I'd trust #self.friend# with the box of little pieces. | I like a route best when I can show it to #self.friend#.
 b : Even the bits you haven't placed? | Is it a present, then?
 a : Particularly those. Takes some trust to show an untidy mind. | The walk is. I keep the chips for making the next one.
-
 
 scene dry_relief
 when topic=faith
@@ -311,14 +287,12 @@ a : A dry sill is enough to make me thank the Bright One. | I believe a prayer c
 b : A little thing to give thanks for. | Practical how?
 a : Lovely, isn't it? Don't have to wait for a miracle. | Dry somebody off first. Then there's breath for talking.
 
-
 scene dream_pour
 when topic=dreams
 does tell.self / react.self / assess
 a : I dreamt the town tilted and everything on my map stayed put. | In my dream the streets flowed and the water stood still.
 b : Which did you fix? | How did you cross?
 a : The map. Couldn't very well lift a town before breakfast. | Hopped from puddle to puddle. Best walk I've ever slept through.
-
 
 scene last_piece
 when topic=pastimes|smalltalk
@@ -327,13 +301,11 @@ a : I've one piece with no street to go with it. | A chip the colour of cream be
 b : Will you look for a new street? | Could it be a square?
 a : Yes. It's a good excuse for taking a walk. | A very small one. Room for you, me and a considerable argument.
 
-
 story bowlroute [topic=memories|land self.age>=25]
   : I once laid out a route to a wedding on a tray. Took nearly all the breakfast things to get the houses right.
   : When the guest had gone, I drank my tea round three saucers and a little hill of spoons.
   b : Did the guest find the wedding?
   : Back just after dinner, with a slice of cake. A map with a sweet return journey.
-
 
 story friedplan [topic=food|memories]
   : I tried making a little plan of a lane in sticky cake crumbs once.
@@ -341,13 +313,11 @@ story friedplan [topic=food|memories]
   b : What did you do about the landslip?
   : Ate uphill. Had the street quite stable when I finally reached the square.
 
-
 story quarrel_heel [topic=pastimes|memories]
   : I borrowed a boot to represent a great hall on my map. Good tall heel and the right shape of toe.
   : Its owner hopped up and asked what time the council rose.
   b : Did you let the council finish?
   : Sent them home early. A hop on wet paving's too high a price for civic business.
-
 
 story lime_line [topic=work|memories self.job=merchant self.age>=25]
   : My first case had a fine white line all round the lid. Very pleased with how tidy it looked.
@@ -355,13 +325,11 @@ story lime_line [topic=work|memories self.job=merchant self.age>=25]
   b : A lesson in wrapping?
   : And in judging the box after the journey. Everything looks well packed before the first jolt.
 
-
 story wrong_slope [topic=smalltalk|memories]
   : I turned my tray round to show a walker the last turn, then forgot I'd turned it.
   : Both of us stood pointing in opposite directions and both of us were right about the tray.
   b : Who gave way first?
   : Set it on the actual step. The loose pieces voted downhill. We agreed to be guided by the majority.
-
 
 rule @cratecry
 when concept=bark self.job=merchant working=yes
@@ -369,13 +337,11 @@ does aside
 cooldown 8h
 say Handle inside the wrap, please! It likes to travel attached. | Spare straw goes low. The top can look after itself.
 
-
 rule @rainrim
 when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say Brown water's on the move. Pick the high edge! | Careful at the seam. That's deeper than a shine.
-
 
 rule @chipcry
 when concept=bark
@@ -383,13 +349,11 @@ does aside
 cooldown 8h
 say There goes half my hill under that heel! | This blue chip has a whole street's work to do.
 
-
 rule @snowshard
 when concept=bark here.weather=snow
 does aside
 cooldown 8h
 say White on white! I'll need the blue pieces today. | Leave that patch smooth till I see where it sags.
-
 
 rule @matcry
 when concept=bark self.dislikes=wet_floors
@@ -397,29 +361,28 @@ does aside
 cooldown 8h
 say Wipe your pads twice if one pass leaves a print! | Dry side of the mat, if you please.
 
-
 rule @honeycry
 when concept=bark self.likes=honey_cakes
 does aside
 cooldown 8h
 say Sticky crumbs! Best sort of packing problem. | Anyone claiming the bit with the golden edge?
 
-dlg resident.hub : Tell me where you'd like to end up. I can usually find a way there.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you'll recognise the blue chip. I've moved the rest.
-dlg resident.hub [pair.disposition=hostile|wary] : Don't step on my work while we're deciding whether to be civil.
-dlg resident.hub [here.time=night] : Keep the pale bits in view as you approach. Saves a lot of crunching.
-dlg resident.job [self.job=merchant] : I help at #self.workplace#. I have opinions on every parcel that leaves.
-dlg resident.job : #self.trade_words.capitalize#. I've other accomplishments if you've the spare hour.
-dlg resident.news [world.news] : I've one piece I can place. #world.news#.
-dlg resident.gossip [here.gossip!=yes] : Empty tray, as far as other wolves' business goes.
-dlg resident.bye : Off you go. High way there, easy way home.
-dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize# takes a steady paw. Set your questions down one at a time.
-dlg master.learn [here.teaches=no] : The learning place is occupied. There's still room to ask about the work.
-dlg master.work : Keeping the sound pieces sound is most of the trick. Noise tells you when you've packed the pieces too close.
-dlg master.wages : Learning pays in what your paws can do. What you make yourself is yours to sell.
-dlg master.takes [here.take_on=no] : One learning place, filled by somebody I trust. #here.take_on_why#.
-dlg master.refused : I can only give you the actual reason. #topic.why#.
-dlg master.bye : Bring your sharp questions back another day. Blunt ones too.
+dlg @1 resident.hub : Tell me where you'd like to end up. I can usually find a way there.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'll recognise the blue chip. I've moved the rest.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Don't step on my work while we're deciding whether to be civil.
+dlg @4 resident.hub [here.time=night] : Keep the pale bits in view as you approach. Saves a lot of crunching.
+dlg @1 resident.job [self.job=merchant] : I help at #self.workplace#. I have opinions on every parcel that leaves.
+dlg @2 resident.job : #self.trade_words.capitalize#. I've other accomplishments if you've the spare hour.
+dlg @1 resident.news [world.news] : I've one piece I can place. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip!=yes] : Empty tray, as far as other wolves' business goes.
+dlg @1 resident.bye : Off you go. High way there, easy way home.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize# takes a steady paw. Set your questions down one at a time.
+dlg @2 master.learn [here.teaches=no] : The learning place is occupied. There's still room to ask about the work.
+dlg @1 master.work : Keeping the sound pieces sound is most of the trick. Noise tells you when you've packed the pieces too close.
+dlg @1 master.wages : Learning pays in what your paws can do. What you make yourself is yours to sell.
+dlg @1 master.takes [here.take_on=no] : One learning place, filled by somebody I trust. #here.take_on_why#.
+dlg @1 master.refused : I can only give you the actual reason. #topic.why#.
+dlg @1 master.bye : Bring your sharp questions back another day. Blunt ones too.
 graft resident.hub
 choice Could you show me a street in those pieces? -> chipstreet
 node chipstreet
@@ -432,6 +395,7 @@ node chipgutter
 say You've given the house beside it a cellar full of water. Architects seldom get such a prompt review.
 choice Let's put it back. -> hub
 choice I'd better go now. -> bye
+
 graft master.learn
 choice How can I tell if a case is packed well? -> testcase
 node testcase

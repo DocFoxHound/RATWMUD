@@ -1,9 +1,12 @@
+# rm498, the tide's doorstop (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm498
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_dirk_rainmore
+written_by codex
 title the tide's doorstop
 fits stage=adult|old
 prefers job=merchant
@@ -17,6 +20,7 @@ topics weather +0.6 friends +0.4 family +0.3
 styles comfort=warm gossip=plain refuse=gentle tease=none
 marks oath saying
 persona #self.first# keeps a wedge within reach, reads floodwater by the colour of a threshold, and sends wet travellers towards a seat without asking what the journey cost.
+
 words
 oath! = Soak my good soles | Wedge my supper sideways
 saying! = Let the wet arrive first | A welcome needs dry boards
@@ -33,36 +37,34 @@ doorbell = a hollow clapper | a bright little bell
 ratboard = a stout low board | a piece of sound pine
 
 grown
-
-opinion newcomers for 2 : A tired arrival won't know which paving stone tips. Give the directions before somebody's good boot fills up.
-opinion merchants mixed 1 : I approve when a customer gets a patch of shelter before being asked the size of a purse.
-opinion dole for 2 : Bread under cover has fed a good many wet wolves who couldn't have managed both the loaf and the weather outdoors.
-opinion city for 1 : I know where each puddle begins. A town where I had to learn all those hollows afresh would tire me out.
-opinion road against 1 : Ask about the return in daylight. A dry crossing can disappear between a morning errand and an evening homecoming.
-line greet : In with you. I can move the wet things over.
-line greet.return : There's a dry bit left where we were speaking.
-line farewell : Mind where the little brown stream leaves the paving stones.
-line farewell.return : Good ground and an easy hinge to you.
-line react.news : Come in range. The dripping will swallow a quiet syllable.
-line react.news.new : That came across a sill I hadn't been minding.
-line react.news.known : I've heard the bell give that particular note before.
-line react.news.doubt : There's enough daylight under that tale to slide a wedge through.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd wear a new sole out early to deliver that gladly.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Draw a seat nearer. News like that leaves a wolf slack at the knees.
-line ask.how : What sort of ground did your morning give you?
-line answer.how : Feet tired, heart reasonably dry. Glad enough of the company.
-line thank : You saved me the trouble of stooping for the wedge.
-line deflect_thanks : I've been the wet visitor often enough myself.
-line sympathise : There's a place to wring out your cuffs in private.
-line decline : I can't hold that open and still keep my footing here.
-line accept_decline : I'll take the pressure off that hinge, then.
-line reassure : Sit until the worst of the dripping's behind you.
-line ack : I heard you clearly across the boards.
-
+opinion @1 newcomers for 2 : A tired arrival won't know which paving stone tips. Give the directions before somebody's good boot fills up.
+opinion @1 merchants mixed 1 : I approve when a customer gets a patch of shelter before being asked the size of a purse.
+opinion @1 dole for 2 : Bread under cover has fed a good many wet wolves who couldn't have managed both the loaf and the weather outdoors.
+opinion @1 city for 1 : I know where each puddle begins. A town where I had to learn all those hollows afresh would tire me out.
+opinion @1 road against 1 : Ask about the return in daylight. A dry crossing can disappear between a morning errand and an evening homecoming.
+line @1 greet : In with you. I can move the wet things over.
+line @1 greet.return : There's a dry bit left where we were speaking.
+line @1 farewell : Mind where the little brown stream leaves the paving stones.
+line @1 farewell.return : Good ground and an easy hinge to you.
+line @1 react.news : Come in range. The dripping will swallow a quiet syllable.
+line @1 react.news.new : That came across a sill I hadn't been minding.
+line @1 react.news.known : I've heard the bell give that particular note before.
+line @1 react.news.doubt : There's enough daylight under that tale to slide a wedge through.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd wear a new sole out early to deliver that gladly.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Draw a seat nearer. News like that leaves a wolf slack at the knees.
+line @1 ask.how : What sort of ground did your morning give you?
+line @1 answer.how : Feet tired, heart reasonably dry. Glad enough of the company.
+line @1 thank : You saved me the trouble of stooping for the wedge.
+line @1 deflect_thanks : I've been the wet visitor often enough myself.
+line @1 sympathise : There's a place to wring out your cuffs in private.
+line @1 decline : I can't hold that open and still keep my footing here.
+line @1 accept_decline : I'll take the pressure off that hinge, then.
+line @1 reassure : Sit until the worst of the dripping's behind you.
+line @1 ack : I heard you clearly across the boards.
 scene work_1
 when topic=work self.trade_words
 does tell.self / ask.detail / answer.detail
-a : Today's occupation goes down as #self.trade_words#. I watch feet when it rains.
+a : #self.trade_words.capitalize#, today. I watch feet when it rains.
 b : Can you tell much from feet? | Do you watch them going out too?
 a : I can tell who needs the stool before the trouble of speaking. | Especially then. A loose heel can slip on that first wet step.
 
@@ -191,12 +193,12 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Look for the last dry seam in the stones. | Can't judge that puddle by its reflection now.
-dlg resident.hub : You're welcome to let the damp out of your coat while we talk.
-dlg resident.job [self.trade_words] : My occupation is #self.trade_words#. I make sure a doubtful step doesn't send a customer home wet.
-dlg resident.news [world.news] : This reached me in words clear enough to carry indoors. #world.news#.
-dlg resident.gossip [here.gossip=yes] : Somebody going by had #topic.subject# #topic.claim#. I didn't see where that started.
-dlg resident.bye : A level sill and warm socks when you reach home.
 
+dlg @1 resident.hub : You're welcome to let the damp out of your coat while we talk.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. I make sure a doubtful step doesn't send a customer home wet.
+dlg @1 resident.news [world.news] : This reached me in words clear enough to carry indoors. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody going by had #topic.subject# #topic.claim#. I didn't see where that started.
+dlg @1 resident.bye : A level sill and warm socks when you reach home.
 graft resident.hub
 choice Can you tell which street will flood first? -> sill_brown
 node sill_brown
@@ -207,11 +209,10 @@ node sill_dry
 say Look for broken reflections. Dry stone splits a puddle into little pools. A single smooth reflection can hide a whole step.
 choice I'll watch where the reflection breaks. -> hub
 
+
 old
-
-line answer.how : Older knees. Very long acquaintance with the districts they'd sooner avoid in wet weather.
-line greet [here.time=dawn] : Early enough to choose a dry route before my knees choose for me.
-
+line @1 answer.how : Older knees. Very long acquaintance with the districts they'd sooner avoid in wet weather.
+line @1 greet [here.time=dawn] : Early enough to choose a dry route before my knees choose for me.
 scene memories_1
 when topic=memories
 does tell.self / ask.detail / answer.detail

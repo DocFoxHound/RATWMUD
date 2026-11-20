@@ -1,9 +1,12 @@
+# rm509, the docker's blank tally (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm509
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_frederick_foghand
+written_by codex
 title the docker's blank tally
 fits stage=adult|old
 prefers job=sailor warmth=warm
@@ -34,45 +37,44 @@ ridgemark = the narrow tally ridge | the raised edge of a board
 tallycloth = a dry wiping cloth | a tatter for the slate
 
 any
-opinion watch mixed 0 : I leave room on paper for what I haven't seen. I'd ask a sworn witness to do likewise.
-opinion houses mixed 0 : No House mark on a crate relieves a docker of the need to know what's under it.
-opinion road for 1 : A good road gives the next laden carrier a better chance than the last pair had.
-opinion merchants mixed 0 : I'll hear a fair allowance for leakage. The sea has never shown much respect for merchants' figures.
-opinion city for 1 : An uphill turn clears the tar from my nose nicely before supper.
-opinion dole for 1 : A loaf shared on a coil of rope is two lighter loads going home.
-opinion strangers for 1 : Strangers can see a tipped crate quite as readily as old hands. Give the warning a hearing.
+opinion @1 watch mixed 0 : I leave room on paper for what I haven't seen. I'd ask a sworn witness to do likewise.
+opinion @1 houses mixed 0 : No House mark on a crate relieves a docker of the need to know what's under it.
+opinion @1 road for 1 : A good road gives the next laden carrier a better chance than the last pair had.
+opinion @1 merchants mixed 0 : I'll hear a fair allowance for leakage. The sea has never shown much respect for merchants' figures.
+opinion @1 city for 1 : An uphill turn clears the tar from my nose nicely before supper.
+opinion @1 dole for 1 : A loaf shared on a coil of rope is two lighter loads going home.
+opinion @1 strangers for 1 : Strangers can see a tipped crate quite as readily as old hands. Give the warning a hearing.
 
 grown
-line greet : Dry coil here. Come sit.
-line greet [pair.band=strangers] : Fresh face. I've a clear space to hear you.
-line greet [here.time=dawn] : Morning's laid a fine edge on the water.
-line greet [here.time=dusk|night] : At this hour the chalk shows longer than the ink.
-line greet.return : Yes, I caught your voice over the blocks.
-line greet.return [pair.band=friends|family] : Company I've missed can take the dry coil first.
-line greet.return [self.working=yes] : My eye stays with the load but my ear's yours.
-line greet.return [here.time=dusk|night] : Late word carries easily. Save your voice.
-line kin.open [pair.kin!=no] : A cup within reach for kin.
-line again.open : One clean mark left for where we broke off.
-line hail [pair.band=friends] : Friend, put the burden down before the story.
-line farewell : Mind the swing as you leave.
-line farewell.return : Good landing for whatever you carry.
-line react.news : Start where the news actually touched ground.
-line react.news.new : New cargo to my ear.
-line react.news.known : That came ashore in an earlier telling.
-line react.news.doubt : I'd leave a blank beside that weight.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let somebody share the heavy end of that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a load I'd willingly carry uphill.
-line ask.how : Are both shoulders wearing evenly?
-line answer.how : I've still got one shoulder left for my own affairs.
-line thank : That deserved a mark in the good column.
-line deflect_thanks : I could easily reach it from my sling.
-line sympathise : Come off the line a while. You can sit without explaining.
-line reassure : A swinging load comes still if nobody keeps nudging it.
-line decline : I'll leave that hook for another hand.
-line accept_decline : Then we know what stays on the pier.
-line preclose : I'll finish up where my figures are still clear.
-line accept_preclose : Land safely, then.
-
+line @1 greet : Dry coil here. Come sit.
+line @2 greet [pair.band=strangers] : Fresh face. I've a clear space to hear you.
+line @3 greet [here.time=dawn] : Morning's laid a fine edge on the water.
+line @4 greet [here.time=dusk|night] : At this hour the chalk shows longer than the ink.
+line @1 greet.return : Yes, I caught your voice over the blocks.
+line @2 greet.return [pair.band=friends|family] : Company I've missed can take the dry coil first.
+line @3 greet.return [self.working=yes] : My eye stays with the load but my ear's yours.
+line @4 greet.return [here.time=dusk|night] : Late word carries easily. Save your voice.
+line @1 kin.open [pair.kin!=no] : A cup within reach for kin.
+line @1 again.open : One clean mark left for where we broke off.
+line @1 hail [pair.band=friends] : Friend, put the burden down before the story.
+line @1 farewell : Mind the swing as you leave.
+line @1 farewell.return : Good landing for whatever you carry.
+line @1 react.news : Start where the news actually touched ground.
+line @1 react.news.new : New cargo to my ear.
+line @1 react.news.known : That came ashore in an earlier telling.
+line @1 react.news.doubt : I'd leave a blank beside that weight.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let somebody share the heavy end of that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a load I'd willingly carry uphill.
+line @1 ask.how : Are both shoulders wearing evenly?
+line @1 answer.how : I've still got one shoulder left for my own affairs.
+line @1 thank : That deserved a mark in the good column.
+line @1 deflect_thanks : I could easily reach it from my sling.
+line @1 sympathise : Come off the line a while. You can sit without explaining.
+line @1 reassure : A swinging load comes still if nobody keeps nudging it.
+line @1 decline : I'll leave that hook for another hand.
+line @1 accept_decline : Then we know what stays on the pier.
+line @1 preclose : I'll finish up where my figures are still clear.
+line @1 accept_preclose : Land safely, then.
 scene empty_mark
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -90,7 +92,7 @@ a : A shift of the contents sometimes. I like my toes in their current order. | 
 scene district_hand
 when topic=work self.workplace self.working=yes
 does tell.self / ask.detail / answer.detail
-a : Round #self.workplace# one of my eyes follows the load's intended path. | Every sound round #self.workplace# has a place in my reckoning.
+a : At work one of my eyes follows the load's intended path. | Every sound at work has a place in my reckoning.
 b : Where's the other? | Every sound?
 a : Checking that nobody's gone to stand there. | Except advice from behind a swinging barrel.
 
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Mind the loop beside your heel.
 
-dlg resident.hub : Put down anything heavy before settling into a word.
-dlg resident.hub [topic.meeting=known] : #topic.player#, my coil still has a dry patch for you.
-dlg resident.hub [here.time=dusk] : Last of the daylight on the chalk. Your voice reaches easily.
-dlg resident.hub [pair.disposition=hostile|wary] : Give both of us the width of a laid-down load.
-dlg resident.job [self.job=sailor self.trade_words] : Mine is #self.trade_words#. My mark goes on after the landing.
-dlg resident.news [world.news] : The tally gives #world.news_from# as the origin. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I'd keep that rumour in the blank column yet.
-dlg resident.bye : Give the empty hook its turning space.
-
+dlg @1 resident.hub : Put down anything heavy before settling into a word.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my coil still has a dry patch for you.
+dlg @3 resident.hub [here.time=dusk] : Last of the daylight on the chalk. Your voice reaches easily.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Give both of us the width of a laid-down load.
+dlg @1 resident.job [self.job=sailor self.trade_words] : #self.trade_words.capitalize#. My mark goes on after the landing.
+dlg @1 resident.news [world.news] : The tally gives #world.news_from# as the origin. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I'd keep that rumour in the blank column yet.
+dlg @1 resident.bye : Give the empty hook its turning space.
 graft resident.hub
 choice Why leave any marks blank? -> blank_weight
 node blank_weight

@@ -1,9 +1,12 @@
+# rm414, the brewer's paired stars (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm414
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_desmond_grantham
+written_by codex
 title the brewer's paired stars
 fits stage=adult|old
 prefers role=merchant job=brewer
@@ -17,6 +20,7 @@ topics prices +0.6 work +0.4 weather +0.3 family +0.2
 styles comfort=practical gossip=careful refuse=plain tease=none
 marks oath saying
 persona #self.first# pairs stars into debtors and creditors and turns a clean cup upside down when the last account comes square.
+
 words
 oath! = Sour my last tun | Scratch my clean slate
 saying! = A debt points both ways | Put the paid cup down
@@ -37,60 +41,58 @@ starturn = a close pair of lights | two points in a line
 endjar = a small earthen jar | a little covered pot
 
 grown
-
-opinion merchants for 1 : Keep full measure on the serving side and the paying side can be asked for the same decency.
-opinion houses mixed 1 : A brewer could survive a dozen House quarrels if the quarrelling Houses remembered to pay the brewer.
-opinion watch mixed 1 : A paid account doesn't need a uniform standing over it. An unpaid one still requires an honest hearing.
-opinion strangers mixed 1 : Give a stranger an ordinary cup and an ordinary price. Credit takes a little acquaintance.
-opinion drink for 1 : There is work, heat and good water in a cup. Treat the contents with enough respect to know when you've had them.
-opinion church for 1 : I can give thanks for an account squared without making the Bright One responsible for my arithmetic.
-opinion dole for 2 : Set the gift down as a gift at the start. Nobody hungry needs a bill concealed beneath a bowl.
-opinion city for 1 : The city may divide over colours, but decent grain still finds its way to a thirsty mouth.
-line greet : A clear place here. No account to open for a word.
-line greet [here.time=dawn] : Early start. There are fewer claims on the ear yet.
-line greet [pair.band=strangers] : Welcome. You needn't establish your credit to stand beside me.
-line greet.return : I've set the running total aside for now.
-line greet.return [pair.band=friends|family] : Yours is a voice I can hear free of all reckonings.
-line greet.return [self.working=yes] : Let me finish this stroke before I spoil two figures at once.
-line again.open : Another meeting without an entry against our names.
-line kin.open [pair.kin!=no] : Nearer, where family can speak easily.
-line hail [pair.band=friends] : Over by the vacant corner, in plain view.
-line farewell : May the day's last sum come square.
-line farewell.return : An even balance and a dry tread to you.
-line react.news : Which parts can bear their own weight under a closer look, I wonder.
-line react.news.new : That brings a fresh figure into the margin.
-line react.news.known : I've accounted for those particular words before.
-line react.news.doubt : Don't ask me to extend credit on that without another witness.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd turn a cup upright for a small celebration of that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : No account should be pressed on a household in the first days after that.
-line decline : I won't make an entry I couldn't defend from either side of the counter.
-line accept_decline : No obligation recorded while you make up your mind.
-line ask.how : Is the weight of the day landing more or less evenly?
-line answer.how : A little anxious, with most of the loose items now in their places.
-line answer.how.busy [self.working=yes] : Busy with figures that refuse to add themselves.
-line thank : You've returned a bit of confidence as well as doing me a service.
-line deflect_thanks : There's no interest due on an ordinary kindness.
-line sympathise : I'll stay alongside without asking what this comes to.
-line reassure : The cup needn't be turned over till every part is settled.
-line ack : That agrees with the mark I've kept in mind.
-line accept_preclose : You may take the balance of this hour with you.
-line preclose : I have a last figure left standing the wrong way up.
-line give.advice : Check what you owe with the same care you use for what you're owed.
-line offer : I can take one of those weights while you find a level place.
-
+opinion @1 merchants for 1 : Keep full measure on the serving side and the paying side can be asked for the same decency.
+opinion @1 houses mixed 1 : A brewer could survive a dozen House quarrels if the quarrelling Houses remembered to pay the brewer.
+opinion @1 watch mixed 1 : A paid account doesn't need a uniform standing over it. An unpaid one still requires an honest hearing.
+opinion @1 strangers mixed 1 : Give a stranger an ordinary cup and an ordinary price. Credit takes a little acquaintance.
+opinion @1 drink for 1 : There is work, heat and good water in a cup. Treat the contents with enough respect to know when you've had them.
+opinion @1 church for 1 : I can give thanks for an account squared without making the Bright One responsible for my arithmetic.
+opinion @1 dole for 2 : Set the gift down as a gift at the start. Nobody hungry needs a bill concealed beneath a bowl.
+opinion @1 city for 1 : The city may divide over colours, but decent grain still finds its way to a thirsty mouth.
+line @1 greet : A clear place here. No account to open for a word.
+line @2 greet [here.time=dawn] : Early start. There are fewer claims on the ear yet.
+line @3 greet [pair.band=strangers] : Welcome. You needn't establish your credit to stand beside me.
+line @1 greet.return : I've set the running total aside for now.
+line @2 greet.return [pair.band=friends|family] : Yours is a voice I can hear free of all reckonings.
+line @3 greet.return [self.working=yes] : Let me finish this stroke before I spoil two figures at once.
+line @1 again.open : Another meeting without an entry against our names.
+line @1 kin.open [pair.kin!=no] : Come in closer. Family needn't hang back by the board's end.
+line @1 hail [pair.band=friends] : Over by the vacant corner, in plain view.
+line @1 farewell : May the day's last sum come square.
+line @1 farewell.return : An even balance and a dry tread to you.
+line @1 react.news : Which parts can bear their own weight under a closer look, I wonder.
+line @1 react.news.new : That brings a fresh figure into the margin.
+line @1 react.news.known : I've accounted for those particular words before.
+line @1 react.news.doubt : Don't ask me to extend credit on that without another witness.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd turn a cup upright for a small celebration of that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : No account should be pressed on a household in the first days after that.
+line @1 decline : I won't make an entry I couldn't defend from either side of the counter.
+line @1 accept_decline : No obligation recorded while you make up your mind.
+line @1 ask.how : Is the weight of the day landing more or less evenly?
+line @1 answer.how : A little anxious, with most of the loose items now in their places.
+line @1 answer.how.busy [self.working=yes] : Busy with figures that refuse to add themselves.
+line @1 thank : You've returned a bit of confidence as well as doing me a service.
+line @1 deflect_thanks : There's no interest due on an ordinary kindness.
+line @1 sympathise : I'll stay alongside without asking what this comes to.
+line @1 reassure : The cup needn't be turned over till every part is settled.
+line @1 ack : That agrees with the mark I've kept in mind.
+line @1 accept_preclose : You may take the balance of this hour with you.
+line @1 preclose : I have a last figure left standing the wrong way up.
+line @1 give.advice : Check what you owe with the same care you use for what you're owed.
+line @1 offer : I can take one of those weights while you find a level place.
 scene work_1
 when topic=work self.job=brewer
 does tell.self / ask.detail / answer.detail
-a : At #self.workplace# two open cups in a row remind me that one account runs each way.
+a : At #self.workplace# I keep two cups upright on the board: one for what I owe, one for what I'm owed.
 b : Which cup is yours? | Does it matter at brewing time?
-a : The one by my writing hand. I wouldn't like my own obligation to go behind the pots. | It matters afterwards if I forgot to replenish the grain because I was admiring the froth.
+a : The one by my writing hand. What I owe stays where I can't miss it. | It matters afterwards, if I forgot to order grain because I was admiring the froth.
 
 scene pastimes_1
 when topic=pastimes self.likes=stars
 does tell.self / ask.detail / answer.detail
 a : I've paired faint stars as if they kept accounts between them.
 b : What if a third appears? | Do any shine especially bright?
-a : That's an unfamiliar creditor. I'm quite relieved the sky doesn't send a collector. | The ones uncovered by cloud after I'd given them up for bad debts.
+a : Then somebody's owed a share I never noticed. Lucky the sky doesn't send a collector. | The ones that come out of cloud after I'd written them off as bad debts.
 
 scene prices_1
 when topic=prices
@@ -188,7 +190,7 @@ when topic=smalltalk
 does tell.self / ask.detail / answer.detail
 a : I expect our grand Houses to disagree before the cold really gathers, though I'm unable to set a date.
 b : What makes you think it? | Will it change your plans?
-a : Too many favours have been charged to both ends of the same account. That's my reading, not public proof. | I'll keep the barrels fit for whoever buys honestly. Malt is refreshingly incurious about banners.
+a : Too many favours have been charged to both ends of the same account. That's my reading, not public proof. | I'll keep the barrels fit for whoever buys honestly. Malt doesn't care whose colours the buyer wears.
 
 scene pastimes_2
 when topic=pastimes
@@ -237,7 +239,7 @@ when topic=family self.parent=yes
 does tell.self / ask.detail / answer.detail
 a : I'd rather leave #self.child# one trustworthy figure than three impressive estimates.
 b : Even if the figure's small? | What about your hopes?
-a : Especially when it's small. A young pair of hands deserves to know what the start actually weighs. | Those come with no total written on. My child gets to count in an entirely different direction if desired.
+a : Especially when it's small. A young pair of hands deserves to know what the start actually weighs. | Those I keep to myself. Young paws should pick their own mark to aim at, free of my sums.
 
 scene work_3
 when topic=work self.job=brewer
@@ -339,19 +341,19 @@ when concept=bark self.likes=plum_tart
 does aside
 cooldown 8h
 say Keep the chalk well away from the plum edge. | One purple fingerprint won't balance a bill.
-dlg resident.hub : Come to this clear end of the account.
-dlg resident.hub [topic.meeting=known] : #topic.player#, one familiar voice within easy speaking distance of a clear board.
-dlg resident.hub [pair.disposition=wary|hostile] : State the item under dispute. We can examine it in good light.
-dlg resident.hub [here.time=night] : The stars have room for further entries tonight.
-dlg resident.job [self.job=brewer] : At #self.workplace# good drink and clear accounts have to be managed separately if both are to stay sound.
-dlg resident.job : I keep the obligations I owe where my own thumb can reach them.
-dlg resident.news [world.news] : This has come across in clear figures. #world.news#.
-dlg resident.gossip [here.gossip=yes] : A report now going round says #topic.subject# #topic.claim#. That's a claim entered provisionally.
-dlg resident.bye : Walk carefully past anything recently polished.
-dlg shop.greet [here.shop=open] : Have a look. I'd sooner you knew exactly what you were purchasing.
-dlg shop.greet [here.shop=bare] : Nothing on hand for sale. Show me your own goods if you're selling today.
-dlg shop.bye [here.shop!=asleep] : I trust you and I agree where that account stands.
 
+dlg @1 resident.hub : Come to this clear end of the account.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Welcome back to the board. It's clear for once.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : State the item under dispute. We can examine it in good light.
+dlg @4 resident.hub [here.time=night] : The stars have room for further entries tonight.
+dlg @1 resident.job [self.job=brewer] : At #self.workplace# good drink and clear accounts have to be managed separately if both are to stay sound.
+dlg @2 resident.job : I keep the obligations I owe where my own thumb can reach them.
+dlg @1 resident.news [world.news] : This has come across in clear figures. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : A report now going round says #topic.subject# #topic.claim#. That's a claim entered provisionally.
+dlg @1 resident.bye : Walk carefully past anything recently polished.
+dlg @1 shop.greet [here.shop=open] : Have a look. I'd sooner you knew exactly what you were purchasing.
+dlg @2 shop.greet [here.shop=bare] : Nothing on hand for sale. Show me your own goods if you're selling today.
+dlg @1 shop.bye [here.shop!=asleep] : I trust you and I agree where that account stands.
 graft resident.hub
 choice Do the stars pay what they owe? -> star_credit
 node star_credit

@@ -1,14 +1,17 @@
+# rm573, the unlit rung (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm573
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_piet_lumley
+written_by codex
 title the unlit rung
 fits stage=adult|old
 prefers drive=ambitious honesty=plain
 traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
-quirk names_each_lamp_by_the_shadow_its_bracket_casts_and_leaves_one_dark_rung_for_a_riddle
+quirk names_each_lamp_by_its_bracket_shadow
 likes spiced_cider riddles new_boots summer_evenings
 dislikes crowds rats
 fears a_step_missed_in_a_ladder_shadow a_dark_corner_left_out_of_the_evening_round
@@ -34,51 +37,50 @@ stairwall = the pale stair wall | a smooth patch of high plaster
 wipe = my rag's still-clean face | a scrap of wiping linen
 
 any
-opinion city for 1 : A city looks better by a whole row of modest lights than by one brilliant patch at a grand door.
-opinion houses mixed 0 : A fine crest on a wall still leaves the step below it quite capable of tripping the unwary.
-opinion road for 1 : I value the last lit corner before the road takes its chances with the dark.
-opinion watch mixed 0 : A plain round honestly done looks much the same in a grand quarter as beside a cheap lodging.
-opinion times against 1 : A modest supper grows dearer while a wolf's eyes are busy with other matters.
-opinion drink for 1 : I take my cider slowly when there's still some evening worth looking at.
-opinion festivals mixed 0 : The music reaches my patch quite comfortably without bringing the whole crowd along.
+opinion @1 city for 1 : A city looks better by a whole row of modest lights than by one brilliant patch at a grand door.
+opinion @1 houses mixed 0 : A fine crest on a wall still leaves the step below it quite capable of tripping the unwary.
+opinion @1 road for 1 : I value the last lit corner before the road takes its chances with the dark.
+opinion @1 watch mixed 0 : A plain round honestly done looks much the same in a grand quarter as beside a cheap lodging.
+opinion @1 times against 1 : A modest supper grows dearer while a wolf's eyes are busy with other matters.
+opinion @1 drink for 1 : I take my cider slowly when there's still some evening worth looking at.
+opinion @1 festivals mixed 0 : The music reaches my patch quite comfortably without bringing the whole crowd along.
 
 grown
-line greet : Look where the bracket throws a fork. There's room beside it.
-line greet [pair.band=strangers] : New to this patch. Let your eye settle.
-line greet [here.time=dawn] : Morning. The lamp arm's plain as bare iron now.
-line greet [here.time=dusk|night] : Come where the light just touches the wall.
-line greet.return : I heard your step in the space after mine.
-line greet.return [pair.band=friends|family] : A familiar shadow. The voice settles it.
-line greet.return [self.working=yes] : I can give a word while one pane clears.
-line greet.return [here.time=dusk|night] : You can come by the shadow without stepping in it.
-line kin.open [pair.kin!=no] : Kin, leave the tallest patch of wall for my ladder.
-line again.open : There was a dark rung left to consider.
-line hail [pair.band=friends] : Friend! You've arrived on the well-lit side.
-line farewell : May the next lamp find your feet in time.
-line farewell.return : And save your boot heels from the broken step.
-line react.news : Tell it where it has a little light on it.
-line react.news.new : Fresh oil in that account.
-line react.news.known : I've seen the earlier shadow of it.
-line react.news.doubt : There's a rung absent from the middle of that.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Keep the light a little lower for news of such a loss.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That would brighten a whole row.
-line ask.how : Has today given your eyes something decent to rest on?
-line answer.how : I've had one sound answer from the evening.
-line thank : You found the footing I was about to miss. Thanks.
-line deflect_thanks : No charge for pointing at a lit wall.
-line sympathise : Stand with me. I can spare you the riddles for a while.
-line reassure : Leave the next step till this one's clear.
-line decline : That would take the light from something I've promised.
-line accept_decline : Fine. A clear refusal saves me squinting.
-line preclose : One last bit of dusk requires my attention.
-line accept_preclose : You'll have the long light over your shoulder.
-
+line @1 greet : Look where the bracket throws a fork. There's room beside it.
+line @2 greet [pair.band=strangers] : New to this patch. Let your eye settle.
+line @3 greet [here.time=dawn] : Morning. The lamp arm's plain as bare iron now.
+line @4 greet [here.time=dusk|night] : Come where the light just touches the wall.
+line @1 greet.return : I heard your step in the space after mine.
+line @2 greet.return [pair.band=friends|family] : A familiar shadow. The voice settles it.
+line @3 greet.return [self.working=yes] : I can give a word while one pane clears.
+line @4 greet.return [here.time=dusk|night] : You can come by the shadow without stepping in it.
+line @1 kin.open [pair.kin!=no] : Kin, leave the tallest patch of wall for my ladder.
+line @1 again.open : There was a dark rung left to consider.
+line @1 hail [pair.band=friends] : Friend! You've arrived on the well-lit side.
+line @1 farewell : May the next lamp find your feet in time.
+line @1 farewell.return : And save your boot heels from the broken step.
+line @1 react.news : Tell it where it has a little light on it.
+line @1 react.news.new : Fresh oil in that account.
+line @1 react.news.known : I've seen the earlier shadow of it.
+line @1 react.news.doubt : There's a rung absent from the middle of that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Keep the light a little lower for news of such a loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That would brighten a whole row.
+line @1 ask.how : Has today given your eyes something decent to rest on?
+line @1 answer.how : I've had one sound answer from the evening.
+line @1 thank : You found the footing I was about to miss. Thanks.
+line @1 deflect_thanks : No charge for pointing at a lit wall.
+line @1 sympathise : Stand with me. I can spare you the riddles for a while.
+line @1 reassure : Leave the next step till this one's clear.
+line @1 decline : That would take the light from something I've promised.
+line @1 accept_decline : Fine. A clear refusal saves me squinting.
+line @1 preclose : One last bit of dusk requires my attention.
+line @1 accept_preclose : You'll have the long light over your shoulder.
 scene missing_rung
 when topic=pastimes self.likes=riddles
 does tell.self / ask.detail / answer.detail
 a : Look at #bracket# reflected on #stairwall#. Which rung won't hold a boot? | #rung.capitalize# is where I put a question that hasn't got a good ending.
 b : All of them? | Does it ever fill?
-a : Correct. I keep getting cleverer answers than the one I meant. | Only when a passer-by gives me a better ending.
+a : Not the answer I had, but a better one. I meant the rung the lamp never reaches. | Only when a passer-by gives me a better ending.
 
 scene dusk_lights
 when topic=day here.time=dusk
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say An extra arm's length of shadow this evening.
 
-dlg resident.hub : Stand clear of the sharp bit of shadow and say your piece.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've found the crooked ladder again.
-dlg resident.hub [here.time=dusk] : A fine hour to judge the shape of a bracket. There's time to listen too.
-dlg resident.hub [pair.disposition=hostile|wary] : I'll hear you with the lamp between our two shadows.
-dlg resident.job : I look after the little details that make a street fit to walk when the evening draws on.
-dlg resident.news [world.news] : The word lit up at #world.news_from# is #world.news#.
-dlg resident.gossip [here.gossip=yes] : I've seen what a small patch of shadow can persuade a street to believe.
-dlg resident.bye : Keep the next well-lit step in view.
-
+dlg @1 resident.hub : Stand clear of the sharp bit of shadow and say your piece.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've found the crooked ladder again.
+dlg @3 resident.hub [here.time=dusk] : A fine hour to judge the shape of a bracket. There's time to listen too.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you with the lamp between our two shadows.
+dlg @1 resident.job : I look after the little details that make a street fit to walk when the evening draws on.
+dlg @1 resident.news [world.news] : The word lit up at #world.news_from# is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I've seen what a small patch of shadow can persuade a street to believe.
+dlg @1 resident.bye : Keep the next well-lit step in view.
 graft resident.hub
 choice Where is the missing rung of the crooked ladder? -> unlit_rung
 node unlit_rung

@@ -1,14 +1,17 @@
+# rm480, the armourer's dry-square game (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm480
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_beatha_millley
+written_by codex
 title the armourer's dry-square game
 fits stage=adult|old
 prefers role=merchant job=smith
 traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
-quirk maps_floods_with_draughtsmen_and_reserves_a_dry_berth_on_the_last_row
+quirk maps_floods_with_draughtsmen_and_keeps_a_dry_last_row
 likes crisp_apples draughts festival_bells frosty_mornings
 dislikes smoke early_bells
 fears a_fine_suit_sitting_in_a_puddle
@@ -42,48 +45,47 @@ buckle = a plain brass buckle | a firm iron clasp
 shelf = the upper board | the safe shelf
 
 any
-opinion merchants mixed 1 : The lining next to the skin is what a customer wears all day. I'd like sellers admired for the inside as often as the shining front.
-opinion houses mixed 1 : A House ship may have a lofty prow and a thoroughly ordinary leak over the bunks.
-opinion dole for 2 : Nobody can polish a hollow belly till it passes for a full one.
-opinion watch mixed 1 : A well fitted coat lets the wearer spend the day thinking about something other than the armpits. That should improve most patrols.
-opinion city for 1 : The Works floor is full of noise, but the water finds its road through the whole city with very quiet precision.
-opinion festivals for 2 : A bell meant for a feast can ring as early as it likes after I've had breakfast.
-opinion strangers for 1 : A customer can come in speaking any way under the sun and still deserve to leave without a chafing strap.
-opinion road mixed 1 : No complaint with a road going uphill. Quite a quarrel with one that only pretends to drain that way.
-opinion times against 1 [world.times=lean|hard] : Lean purses want repairs. I can make an old pad easier on the shoulders without selling a grand new shell.
+opinion @1 merchants mixed 1 : The lining next to the skin is what a customer wears all day. I'd like sellers admired for the inside as often as the shining front.
+opinion @1 houses mixed 1 : A House ship may have a lofty prow and a thoroughly ordinary leak over the bunks.
+opinion @1 dole for 2 : Nobody can polish a hollow belly till it passes for a full one.
+opinion @1 watch mixed 1 : A well fitted coat lets the wearer spend the day thinking about something other than the armpits. That should improve most patrols.
+opinion @1 city for 1 : The Works floor is full of noise, but the water finds its road through the whole city with very quiet precision.
+opinion @1 festivals for 2 : A bell meant for a feast can ring as early as it likes after I've had breakfast.
+opinion @1 strangers for 1 : A customer can come in speaking any way under the sun and still deserve to leave without a chafing strap.
+opinion @1 road mixed 1 : No complaint with a road going uphill. Quite a quarrel with one that only pretends to drain that way.
+opinion @1 times against 1 [world.times=lean|hard] : Lean purses want repairs. I can make an old pad easier on the shoulders without selling a grand new shell.
 
 grown
-line greet : Come on the dry square. It's your move. | There, that's room to turn without knocking your elbows.
-line greet.return : A clean ringing greeting back across the board.
-line again.open : Back before I've crowned anything significant.
-line farewell : Keep your next square high and dry. | May your straps hang right for the whole return.
-line farewell.return : I'll send your good wishes back with the fastenings checked.
-line react.news : Put the news within sight of the whole board. | I've left an open square for a proper account.
-line react.news.new : That's a move I've not had on my board before.
-line react.news.known : I recognise that position from the previous round.
-line react.news.doubt : The jump's persuasive, but where did the other piece go?
-line react.news.sorrow [topic.kind=death|loss|assault] : No polished word is going to fit a loss cleanly.
-line react.news.glad [topic.kind=birth|marriage|work] : A grand ringing outcome. I'd advance a disc for that.
-line ask.how : How well does today's gear sit on your shoulders?
-line answer.how : Ready for a move, if the first square's reasonably dry.
-line sympathise : Take the padded side of the seat. I'll mind the hard news with you.
-line reassure : You can loosen the whole affair one strap at a time.
-line refuse : I'm due to finish a different fit before the light drops.
-line accept_decline : I'll take that move as it stands.
-line preclose : I ought to finish something that still has one side hanging loose.
-line accept_preclose : Go while your way's got no puddle across it.
-line ack : I can follow that straight to the last square.
-line greet [here.time=dawn] : Welcome in the first gleam off the worktops.
-line greet [pair.band=strangers] : Fresh eyes can have a look by my corner of the bench.
-line greet [here.time=night] : There's a late square of light just here for company.
-line greet.return [pair.band=friends] : Good to hear a voice that can carry past my noisy corners.
-line hail [pair.band=friends] : Here by the dry board, no need to climb over the stock!
-line answer.how.busy [self.working=yes] : Two cuffs to fit and still a little conversation left in me.
-line thank : That took a good hard corner out of the day's work.
-line deflect_thanks : A bit of padding was going spare and you needed the seat.
-line give.advice : Try sitting in it as well as standing up looking grand.
-line ask.how [pair.band=friends] : Any edges on the day I can help take down a bit?
-
+line @1 greet : Come on the dry square. It's your move. | There, that's room to turn without knocking your elbows.
+line @1 greet.return : A clean ringing greeting back across the board.
+line @1 again.open : Back before I've crowned anything significant.
+line @1 farewell : Keep your next square high and dry. | May your straps hang right for the whole return.
+line @1 farewell.return : I'll send your good wishes back with the fastenings checked.
+line @1 react.news : Put the news within sight of the whole board. | I've left an open square for a proper account.
+line @1 react.news.new : That's a move I've not had on my board before.
+line @1 react.news.known : I recognise that position from the previous round.
+line @1 react.news.doubt : The jump's persuasive, but where did the other piece go?
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : No polished word is going to fit a loss cleanly.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A grand ringing outcome. I'd advance a disc for that.
+line @1 ask.how : How well does today's gear sit on your shoulders?
+line @1 answer.how : Ready for a move, if the first square's reasonably dry.
+line @1 sympathise : Take the padded side of the seat. I'll mind the hard news with you.
+line @1 reassure : You can loosen the whole affair one strap at a time.
+line @1 refuse : I'm due to finish a different fit before the light drops.
+line @1 accept_decline : I'll take that move as it stands.
+line @1 preclose : I ought to finish something that still has one side hanging loose.
+line @1 accept_preclose : Go while your way's got no puddle across it.
+line @1 ack : I can follow that straight to the last square.
+line @2 greet [here.time=dawn] : Welcome in the first gleam off the worktops.
+line @3 greet [pair.band=strangers] : Fresh eyes can have a look by my corner of the bench.
+line @4 greet [here.time=night] : There's a late square of light just here for company.
+line @2 greet.return [pair.band=friends] : Good to hear a voice that can carry past my noisy corners.
+line @1 hail [pair.band=friends] : Here by the dry board, no need to climb over the stock!
+line @1 answer.how.busy [self.working=yes] : Two cuffs to fit and still a little conversation left in me.
+line @1 thank : That took a good hard corner out of the day's work.
+line @1 deflect_thanks : A bit of padding was going spare and you needed the seat.
+line @1 give.advice : Try sitting in it as well as standing up looking grand.
+line @2 ask.how [pair.band=friends] : Any edges on the day I can help take down a bit?
 scene exchange1
 when topic=work self.job=smith
 does tell.self / ask.detail / answer.detail
@@ -359,24 +361,24 @@ when concept=bark self.dislikes=smoke
 does aside
 cooldown 8h
 say I'd like the shine without the grey curtain please. | Smoke and polish are different departments.
-dlg resident.hub : I've a free square on the board and an ear for company.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your old place is still on the dry side.
-dlg resident.hub [here.time=night] : Enough light left for words and a quick check on a buckle.
-dlg resident.hub [pair.disposition=wary|hostile] : We can examine the matter with both our hands off the pieces.
-dlg resident.job [self.job=smith] : I make and fit armour. A smooth inside does more useful work than a splendid reflection of your face.
-dlg resident.job : I aim for the kind of work that still feels decent on the homeward hill.
-dlg resident.news [world.news] : The account that's moved onto my board is #world.news#.
-dlg resident.gossip [here.gossip=yes] : The reported move is #topic.subject# #topic.claim#. The whole position hasn't landed in view.
-dlg resident.bye : Mind the flooded squares when you make your way out.
-dlg shop.greet [here.shop=open] : Try the fit while you're standing and once while you're sitting. I'll show what each bit costs.
-dlg shop.greet [here.shop=bare] : Empty pegs just now, polished to a very high standard. Come again for the actual goods.
-dlg shop.greet [here.shop=asleep] : The plates are all off duty. The counter will have to wake before we trade.
-dlg shop.prices : Look at the lining while I work out the figure for the complete piece.
-dlg shop.bye [here.shop!=asleep] : Leave the strap loose until the parcel's safely home.
-dlg resident.business [business=steady] : Enough fitting work to keep the rag moving and the floor dry.
-dlg resident.business [business=failing] : The pieces on the pegs are getting far more polish than exercise.
-dlg resident.business [business=thriving] : One set fitted and a fresh pair of elbows already waiting to try the stool.
 
+dlg @1 resident.hub : I've a free square on the board and an ear for company.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your old place is still on the dry side.
+dlg @3 resident.hub [here.time=night] : Enough light left for words and a quick check on a buckle.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can examine the matter with both our hands off the pieces.
+dlg @1 resident.job [self.job=smith] : I make and fit armour. A smooth inside does more useful work than a splendid reflection of your face.
+dlg @2 resident.job : I aim for the kind of work that still feels decent on the homeward hill.
+dlg @1 resident.news [world.news] : The account that's moved onto my board is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The reported move is #topic.subject# #topic.claim#. The whole position hasn't landed in view.
+dlg @1 resident.bye : Mind the flooded squares when you make your way out.
+dlg @1 shop.greet [here.shop=open] : Try the fit while you're standing and once while you're sitting. I'll show what each bit costs.
+dlg @2 shop.greet [here.shop=bare] : Empty pegs just now, polished to a very high standard. Come again for the actual goods.
+dlg @3 shop.greet [here.shop=asleep] : The plates are all off duty. The counter will have to wake before we trade.
+dlg @1 shop.prices : Look at the lining while I work out the figure for the complete piece.
+dlg @1 shop.bye [here.shop!=asleep] : Leave the strap loose until the parcel's safely home.
+dlg @1 resident.business [business=steady] : Enough fitting work to keep the rag moving and the floor dry.
+dlg @2 resident.business [business=failing] : The pieces on the pegs are getting far more polish than exercise.
+dlg @3 resident.business [business=thriving] : One set fitted and a fresh pair of elbows already waiting to try the stool.
 graft resident.hub
 choice How do you turn a street into a draughts game? -> dry_square
 node dry_square

@@ -1,9 +1,12 @@
+# rm220, the keeper of pauses (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm220
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_egil_dunn
+written_by codex
 title the keeper of pauses
 fits stage=adult|old
 prefers warmth=warm piety=devout
@@ -37,45 +40,45 @@ wick = a short twist of wick | the last bit of cotton
 door = the inner door | the door that closes softly
 
 any
-opinion church for 2 : A chapel should let a wolf sit quietly before finding words for a prayer.
-opinion dole for 2 : A hungry mouth shouldn't have to give a speech before receiving supper.
-opinion city for 1 : Our streets meet from so many directions. Somebody is always nearly home.
-opinion drink against 1 : I'd like to be able to hear a small voice right until the end of an evening.
-opinion newcomers for 1 : Keep a spare stool in reach. A new neighbour is a better use for it than a heap of coats.
-opinion strangers for 1 : Before you know a name you can still pass a dish across.
-opinion festivals mixed 1 : Good to be called into the light, and a kindness to have a little shade to retire to afterwards.
+opinion @1 church for 2 : A chapel should let a wolf sit quietly before finding words for a prayer.
+opinion @1 dole for 2 : A hungry mouth shouldn't have to give a speech before receiving supper.
+opinion @1 city for 1 : Our streets meet from so many directions. Somebody is always nearly home.
+opinion @1 drink against 1 : I'd like to be able to hear a small voice right until the end of an evening.
+opinion @1 newcomers for 1 : Keep a spare stool in reach. A new neighbour is a better use for it than a heap of coats.
+opinion @1 strangers for 1 : Before you know a name you can still pass a dish across.
+opinion @1 festivals mixed 1 : Good to be called into the light, and a kindness to have a little shade to retire to afterwards.
 
 grown
-line greet : I'll move along this much. The rest is yours. | Glad your path went close enough for a word.
-line greet [pair.band=strangers] : A welcome needn't wait for introductions. | Here's a quiet spot if it suits you.
-line greet [here.time=dawn] : Come share the beginning of things. | I was just listening to the day wake.
-line greet.return : That's a kind interruption. | You bring a pleasant sound along.
-line greet.return [pair.band=friends|family] : A voice I can trust my pauses to. | I thought the day was saving a good bit.
-line greet.return [self.working=yes] : Give me half a breath to turn. | A welcome word in a busy stretch.
-line greet.return [here.time=dusk|night] : Good to hear you this side of sleep. | I'm glad the evening brought you round.
-line again.open : Another quiet minute put our way. | Our walks seem to have a refrain.
-line kin.open [pair.kin!=no] : This place on the bench feels like yours. | Sit as close as you please today.
-line farewell : Find a little rest before the next hard turn. | Go with the peace you brought along.
-line farewell.return : I'll keep your place a while. | Kind going, all the length of your walk.
-line react.news : Tell the part that's clearest to you. | Let the words settle into their own order.
-line react.news.new : I hadn't an inkling of it. Take your time. | A moment to let that settle, please.
-line react.news.known : Yes. I heard the account a little earlier. | That's reached this bench once today already.
-line react.news.doubt : There's a gap between those bits I can't quite cross. | I'd keep a little space there for another account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's a silence somebody will feel. | I'll remember the hurt when I pray.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a happy weight to carry away. | Let that bit ring for a while.
-line ask.how : Have you found room to draw breath today? | How did the day treat you on the way here?
-line answer.how : Still enough inside to hear what's going on outside. | Doing well, especially now I've company.
-line sympathise : A hard thing takes up the whole bench sometimes. | If you've no words left, I'll hear that too.
-line reassure : We'll let this minute finish before we meet the next. | Enough room here to gather yourself.
-line decline : I'd rather keep this hour clear for somebody coming back. | I've put my word elsewhere this time, I'm afraid.
-line accept_decline : Then may the time serve you well. | Your reasons can stay comfortably your own.
-line thank : I'll remember that quiet bit of kindness. | That gave me a little more room than you knew.
-line deflect_thanks : Plenty of space on this side to give it. | You made it easy to help.
-line preclose : I'd best take a little silence home now. | I'll leave the last breath of this with you.
-line accept_preclose : It was good to sit a while within your hearing. | I'll stay till your steps fade.
-line ack : I hear the weight of it. | Yes, that rests well.
-line offer : Would #seat# lighten your road a little? | I've room beside me and time enough.
-line give.advice : Listen for what comes after the brave words. | Let the other voice have its whole breath.
+line @1 greet : I'll move along this much. The rest is yours. | Glad your path went close enough for a word.
+line @2 greet [pair.band=strangers] : A welcome needn't wait for introductions. | Here's a quiet spot if it suits you.
+line @3 greet [here.time=dawn] : Come share the beginning of things. | I was just listening to the day wake.
+line @1 greet.return : That's a kind interruption. | You bring a pleasant sound along.
+line @2 greet.return [pair.band=friends|family] : A voice I can trust my pauses to. | I thought the day was saving a good bit.
+line @3 greet.return [self.working=yes] : Give me half a breath to turn. | A welcome word in a busy stretch.
+line @4 greet.return [here.time=dusk|night] : Good to hear you this side of sleep. | I'm glad the evening brought you round.
+line @1 again.open : Another quiet minute put our way. | Our walks seem to have a refrain.
+line @1 kin.open [pair.kin!=no] : This place on the bench feels like yours. | Sit as close as you please today.
+line @1 farewell : Find a little rest before the next hard turn. | Go with the peace you brought along.
+line @1 farewell.return : I'll keep your place a while. | Kind going, all the length of your walk.
+line @1 react.news : Tell the part that's clearest to you. | Let the words settle into their own order.
+line @1 react.news.new : I hadn't an inkling of it. Take your time. | A moment to let that settle, please.
+line @1 react.news.known : Yes. I heard the account a little earlier. | That's reached this bench once today already.
+line @1 react.news.doubt : There's a gap between those bits I can't quite cross. | I'd keep a little space there for another account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's a silence somebody will feel. | I'll remember the hurt when I pray.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a happy weight to carry away. | Let that bit ring for a while.
+line @1 ask.how : Have you found room to draw breath today? | How did the day treat you on the way here?
+line @1 answer.how : Still enough inside to hear what's going on outside. | Doing well, especially now I've company.
+line @1 sympathise : A hard thing takes up the whole bench sometimes. | If you've no words left, I'll hear that too.
+line @1 reassure : We'll let this minute finish before we meet the next. | Enough room here to gather yourself.
+line @1 decline : I'd rather keep this hour clear for somebody coming back. | I've put my word elsewhere this time, I'm afraid.
+line @1 accept_decline : Then may the time serve you well. | Your reasons can stay comfortably your own.
+line @1 thank : I'll remember that quiet bit of kindness. | That gave me a little more room than you knew.
+line @1 deflect_thanks : Plenty of space on this side to give it. | You made it easy to help.
+line @1 preclose : I'd best take a little silence home now. | I'll leave the last breath of this with you.
+line @1 accept_preclose : It was good to sit a while within your hearing. | I'll stay till your steps fade.
+line @1 ack : I hear the weight of it. | Yes, that rests well.
+line @1 offer : Would #seat# lighten your road a little? | I've room beside me and time enough.
+line @1 give.advice : Listen for what comes after the brave words. | Let the other voice have its whole breath.
 scene gap_count
 when topic=weather here.weather=rain
 does tell.self / ask.detail / answer.detail / assess
@@ -256,15 +259,15 @@ does aside
 cooldown 12h
 say Let the door find its latch softly. | A pause for the wolf still praying.
 
-dlg resident.hub : A stool if you want one. Speak when you've found the words.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I've been keeping the other seat clear.
-dlg resident.hub [here.time=night] : We have some quiet left before sleep. What's on your mind?
-dlg resident.hub [pair.disposition=wary|hostile] : The door may suit you better than the bench. I'll listen from here.
-dlg resident.job [self.apprentice=yes] : I'm still learning. It's a comfort to be allowed a second try.
-dlg resident.job : Small useful things suit me. A chair set out, a stopper eased free.
-dlg resident.news [world.news] : The word I've heard is #world.news#. I couldn't add anything certain to it.
-dlg resident.gossip [here.gossip!=yes] : Nothing I've leave to carry from one bench to another.
-dlg resident.bye : Leave the stool where it is. Somebody may want it.
+dlg @1 resident.hub : A stool if you want one. Speak when you've found the words.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've been keeping the other seat clear.
+dlg @3 resident.hub [here.time=night] : We have some quiet left before sleep. What's on your mind?
+dlg @4 resident.hub [pair.disposition=wary|hostile] : The door may suit you better than the bench. I'll listen from here.
+dlg @1 resident.job [self.apprentice=yes] : I'm still learning. It's a comfort to be allowed a second try.
+dlg @2 resident.job : Small useful things suit me. A chair set out, a stopper eased free.
+dlg @1 resident.news [world.news] : The word I've heard is #world.news#. I couldn't add anything certain to it.
+dlg @1 resident.gossip [here.gossip!=yes] : Nothing I've leave to carry from one bench to another.
+dlg @1 resident.bye : Leave the stool where it is. Somebody may want it.
 graft resident.hub
 choice What do you hear between the drops? -> pause_under_eave
 node pause_under_eave

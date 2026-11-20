@@ -1,9 +1,12 @@
+# rm510, gloves upon the shelf (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm510
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_frederick_nailgate
+written_by codex
 title gloves upon the shelf
 fits stage=adult|old
 prefers job=healer
@@ -35,41 +38,40 @@ letter = a vineyard letter | a folded square of writing paper
 wet = the soft orchard rain | a warm quiet shower
 
 any
-opinion houses mixed 1 : A House gives work and can send considerable help. I prefer to hear a caller without its colours filling my sight.
-opinion drink against 1 : I've seen what the last cup can cost a wolf who meant to stop at the first.
-opinion strangers for 1 : A hurt visitor earns the same privacy as the most familiar face on my bench.
-opinion festivals mixed 1 : Let the bells come in. The great press of shoulders can keep to the square.
-opinion merchants against 1 : I dislike finding an extra charge tucked into a sickroom bill for plain cloth.
+opinion @1 houses mixed 1 : A House gives work and can send considerable help. I prefer to hear a caller without its colours filling my sight.
+opinion @1 drink against 1 : I've seen what the last cup can cost a wolf who meant to stop at the first.
+opinion @1 strangers for 1 : A hurt visitor earns the same privacy as the most familiar face on my bench.
+opinion @1 festivals mixed 1 : Let the bells come in. The great press of shoulders can keep to the square.
+opinion @1 merchants against 1 : I dislike finding an extra charge tucked into a sickroom bill for plain cloth.
 
 grown
-line greet [pair.band=strangers] : The shelf's clear. Come through. | Welcome. We've some quiet to speak in.
-line greet [self.working=yes] : Stand by my empty hand a moment. | I can give your business a hearing here.
-line greet [here.time=dawn] : Morning. The porch has dried. | Come through in the clean morning air.
-line greet [here.time=dusk|night] : Evening. Take the sheltered end. | There's a little light at the screen.
-line kin.open [pair.kin!=no] : For family I've a chair near my own. | I hear the household voice.
-line again.open : We've cleared the shelf once already. | We have another private moment.
-line greet.return : Your return is welcome here. | A fresh hearing for a familiar voice.
-line greet.return [pair.band=friends|family] : No colours needed between us. | There's a quiet seat for a trusted visitor.
-line greet.return [self.working=yes] : I've cleared this corner for you. | Stay within reach of my ordinary speaking voice.
-line greet.return [here.time=dusk|night] : The late air suits a low voice. | Welcome back under the porch lamp.
-line farewell : Go well with both paws free. | Leave with as easy a step as you can.
-line farewell.return : Your gloves are by the latch. | Good walking after our quiet word.
-line farewell.return [here.time=night] : Easy footing beyond the last lamp. | Go softly through the darker turnings.
-line react.news : Give me the patient version first. | Tell it once in your own voice.
-line react.news.new : That hasn't reached my waiting bench yet. | I've heard no part of that till now.
-line react.news.known : That account came in before today. | I recognise the words under the embroidery.
-line react.news.doubt : I'd hear the second voice before deciding where that account belongs. | A house colour can put a surprising tint on plain words.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take the seat screened off for grief. | We have time for what hurts.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A sound note to carry out of here. | That has given my quiet day some brightness.
-line ask.how : How's your breath after the walk? | Was the journey kind to you today?
-line answer.how : My burrs have bothered me more than my work. | I've kept a level voice all day.
-line decline : I need to hold this hour for someone waiting behind the screen. | I should stay within hearing of the next quiet caller.
-line accept_decline : Then leave it lying where it is. | I can work with an honest refusal.
-line thank : Your kindness let me hear the caller clearly. | That quiet assistance was well judged.
-line sympathise : Sit on the inner side awhile. | I won't hurry you past the hard part.
-line reassure : You can ask again after you've rested. | A closed curtain can buy you some peace.
-line preclose : I ought to clear the next caller a seat. | I should go back where the quiet requests come.
-
+line @1 greet [pair.band=strangers] : The shelf's clear. Come through. | Welcome. We've some quiet to speak in.
+line @2 greet [self.working=yes] : Stand by my empty hand a moment. | I can give your business a hearing here.
+line @3 greet [here.time=dawn] : Morning. The porch has dried. | Come through in the clean morning air.
+line @4 greet [here.time=dusk|night] : Evening. Take the sheltered end. | There's a little light at the screen.
+line @1 kin.open [pair.kin!=no] : For family I've a chair near my own. | I hear the household voice.
+line @1 again.open : We've cleared the shelf once already. | We have another private moment.
+line @1 greet.return : Your return is welcome here. | A fresh hearing for a familiar voice.
+line @2 greet.return [pair.band=friends|family] : No colours needed between us. | There's a quiet seat for a trusted visitor.
+line @3 greet.return [self.working=yes] : I've cleared this corner for you. | Stay within reach of my ordinary speaking voice.
+line @4 greet.return [here.time=dusk|night] : The late air suits a low voice. | Welcome back under the porch lamp.
+line @1 farewell : Go well with both paws free. | Leave with as easy a step as you can.
+line @1 farewell.return : Your gloves are by the latch. | Good walking after our quiet word.
+line @2 farewell.return [here.time=night] : Easy footing beyond the last lamp. | Go softly through the darker turnings.
+line @1 react.news : Give me the patient version first. | Tell it once in your own voice.
+line @1 react.news.new : That hasn't reached my waiting bench yet. | I've heard no part of that till now.
+line @1 react.news.known : That account came in before today. | I recognise the words under the embroidery.
+line @1 react.news.doubt : I'd hear the second voice before deciding where that account belongs. | A house colour can put a surprising tint on plain words.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Take the seat screened off for grief. | We have time for what hurts.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A sound note to carry out of here. | That has given my quiet day some brightness.
+line @1 ask.how : How's your breath after the walk? | Was the journey kind to you today?
+line @1 answer.how : My burrs have bothered me more than my work. | I've kept a level voice all day.
+line @1 decline : I need to hold this hour for someone waiting behind the screen. | I should stay within hearing of the next quiet caller.
+line @1 accept_decline : Then leave it lying where it is. | I can work with an honest refusal.
+line @1 thank : Your kindness let me hear the caller clearly. | That quiet assistance was well judged.
+line @1 sympathise : Sit on the inner side awhile. | I won't hurry you past the hard part.
+line @1 reassure : You can ask again after you've rested. | A closed curtain can buy you some peace.
+line @1 preclose : I ought to clear the next caller a seat. | I should go back where the quiet requests come.
 scene gloves
 when topic=work self.job=healer
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A clean crack under open sky. | That apple kept its edge well.
 
-dlg resident.hub : Set down whatever makes a noise when you move. I can hear your own words well enough here.
-dlg resident.job [self.job=healer self.trade_words] : My post is #self.trade_words#. A private hearing comes into that work as much as clean linen does.
-dlg resident.news [world.news] : A word from beyond the curtain. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, you know where the colours can rest awhile. Come within speaking distance.
-dlg resident.bye : Your things are on the ledge. Easy walking.
-
+dlg @1 resident.hub : Set down whatever makes a noise when you move. I can hear your own words well enough here.
+dlg @1 resident.job [self.job=healer self.trade_words] : #self.trade_words.capitalize#. A private hearing comes into that work as much as clean linen does.
+dlg @1 resident.news [world.news] : A word from beyond the curtain. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you know where the colours can rest awhile. Come within speaking distance.
+dlg @1 resident.bye : Your things are on the ledge. Easy walking.
 graft resident.hub
 choice Why leave House colours outside the screen? -> glove_ledge
 node glove_ledge

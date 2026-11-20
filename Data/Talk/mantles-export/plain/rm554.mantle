@@ -1,14 +1,17 @@
+# rm554, the iron thumb (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm554
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_tobias_grayrock_
+written_by codex
 title the iron thumb
 fits stage=adult|old
 prefers job=sailor
 traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
-quirk adjusts_a_small_iron_book_clasp_until_it_opens_with_one_finger
+quirk adjusts_a_book_clasp_till_it_opens_with_one_finger
 likes mutton_stew stars old_maps misty_dawns
 dislikes crowds gulls
 fears a_clasp_that_tears_the_page a_promise_made_from_pride
@@ -37,50 +40,49 @@ scalemote = a rust grain | a fleck on the rubbing cloth
 windowfar = the distant dark speck | a star seen through my ring
 
 any
-opinion city for 1 : One city has use for shipwrights, clerks and the maker of a book clasp. I am relieved to live where none of those occupations requires an explanation.
-opinion houses for 1 : A house ought to keep its word long enough for a yard to finish its work. The privilege accompanies that obligation.
-opinion dole against 1 : I would rather subscribe to a funded place at a bench than give a few coins without knowing what tomorrow requires.
-opinion sump against 2 : Damp and iron make an arrangement I distrust, and the lower rooms offer too much opportunity for it.
-opinion times for 1 : I've been given tools, instruction and quite enough food. It would be a poor return simply to complain of the schedule.
-opinion watch for 1 : I'd rather let a dispute about a delivery be heard in good order than settled by the loudest voice at the pier.
-opinion road mixed 0 : A road has done its work when the goods arrive with their seals readable. I am interested in what goes towards that result.
-opinion merchants mixed 0 : The object, the stated terms and the amount paid should all agree. My opinion of the seller depends on that much.
+opinion @1 city for 1 : One city has use for shipwrights, clerks and the maker of a book clasp. I am relieved to live where none of those occupations requires an explanation.
+opinion @1 houses for 1 : A house ought to keep its word long enough for a yard to finish its work. The privilege accompanies that obligation.
+opinion @1 dole against 1 : I would rather subscribe to a funded place at a bench than give a few coins without knowing what tomorrow requires.
+opinion @1 sump against 2 : Damp and iron make an arrangement I distrust, and the lower rooms offer too much opportunity for it.
+opinion @1 times for 1 : I've been given tools, instruction and quite enough food. It would be a poor return simply to complain of the schedule.
+opinion @1 watch for 1 : I'd rather let a dispute about a delivery be heard in good order than settled by the loudest voice at the pier.
+opinion @1 road mixed 0 : A road has done its work when the goods arrive with their seals readable. I am interested in what goes towards that result.
+opinion @1 merchants mixed 0 : The object, the stated terms and the amount paid should all agree. My opinion of the seller depends on that much.
 
 grown
-line greet : The clasp is open. My attention's available.
-line greet [pair.band=strangers] : You're welcome to look at the working side.
-line greet [here.time=dawn] : The first clear light suits this small piece of iron.
-line greet [here.time=dusk|night] : A quieter hour makes a folded voice easier to hear.
-line greet [self.working=yes] : Allow me one moment to secure the warehouse entry.
-line kin.open [pair.kin!=no] : There's a patient place beside this desk for family.
-line again.open : You've found me at the same stubborn hinge.
-line greet.return : Your greeting brought my head up from the clasp.
-line greet.return [pair.band=friends|family] : I find a familiar voice much easier than a formal opening.
-line greet.return [self.working=yes] : I've heard you past the rattle of these clasps.
-line greet.return [here.time=dusk|night] : Evening carries your voice along this board.
-line farewell : May your door yield to a light touch.
-line farewell.return : I'll set the iron down beside the finished sheet.
-line farewell [here.time=dusk|night] : Choose the firm footing while there's light to choose it.
-line react.news : Which part of that account stood beside the actual consignment?
-line react.news.new : A new piece for my considered attention.
-line react.news.known : I recognise the wear on that particular account.
-line react.news.doubt : I'd inspect the joint between the evidence and that conclusion.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would wish the household quiet and leave any errand within easy reach.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome thing to preserve between sound covers.
-line answer.how : More at ease discussing a piece of iron than discussing my ease.
-line answer.how [self.working=yes] : Engaged with figures that should presently consent to balance.
-line ask.how : Did a single detail in your day work exactly as you hoped?
-line sympathise : It can be difficult to find the right pressure for a thing that hurts.
-line reassure : We can give the matter longer than its first hearing.
-line decline : My existing promise is holding down a whole book of obligations today.
-line accept_decline : My enquiry can remain closed until circumstances offer a better opening.
-line thank : You have taken a considerable strain off a small working part.
-line deflect_thanks : Offer a similarly careful hand to a piece that needs it.
-line preclose : The printed sheet is beginning to lift under my elbow.
-line preclose [self.working=yes] : I need to get the last receipts inside their cover.
-line accept_preclose : Our conversation can rest here without forcing it shut.
-line ack : Soundly joined.
-
+line @1 greet : The clasp is open. My attention's available.
+line @2 greet [pair.band=strangers] : You're welcome to look at the working side.
+line @3 greet [here.time=dawn] : The first clear light suits this small piece of iron.
+line @4 greet [here.time=dusk|night] : A quieter hour makes a folded voice easier to hear.
+line @5 greet [self.working=yes] : Allow me one moment to secure the warehouse entry.
+line @1 kin.open [pair.kin!=no] : There's a patient place beside this desk for family.
+line @1 again.open : You've found me at the same stubborn hinge.
+line @1 greet.return : Your greeting brought my head up from the clasp.
+line @2 greet.return [pair.band=friends|family] : I find a familiar voice much easier than a formal opening.
+line @3 greet.return [self.working=yes] : I've heard you past the rattle of these clasps.
+line @4 greet.return [here.time=dusk|night] : Evening carries your voice along this board.
+line @1 farewell : May your door yield to a light touch.
+line @1 farewell.return : I'll set the iron down beside the finished sheet.
+line @2 farewell [here.time=dusk|night] : Choose the firm footing while there's light to choose it.
+line @1 react.news : Which part of that account stood beside the actual consignment?
+line @1 react.news.new : A new piece for my considered attention.
+line @1 react.news.known : I recognise the wear on that particular account.
+line @1 react.news.doubt : I'd inspect the joint between the evidence and that conclusion.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would wish the household quiet and leave any errand within easy reach.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome thing to preserve between sound covers.
+line @1 answer.how : More at ease discussing a piece of iron than discussing my ease.
+line @2 answer.how [self.working=yes] : Engaged with figures that should presently consent to balance.
+line @1 ask.how : Did a single detail in your day work exactly as you hoped?
+line @1 sympathise : It can be difficult to find the right pressure for a thing that hurts.
+line @1 reassure : We can give the matter longer than its first hearing.
+line @1 decline : My existing promise is holding down a whole book of obligations today.
+line @1 accept_decline : My enquiry can remain closed until circumstances offer a better opening.
+line @1 thank : You have taken a considerable strain off a small working part.
+line @1 deflect_thanks : Offer a similarly careful hand to a piece that needs it.
+line @1 preclose : The printed sheet is beginning to lift under my elbow.
+line @2 preclose [self.working=yes] : I need to get the last receipts inside their cover.
+line @1 accept_preclose : Our conversation can rest here without forcing it shut.
+line @1 ack : Soundly joined.
 scene clasp
 when topic=work self.job=sailor self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -335,20 +337,20 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Release the iron before leaving the leather. | Make sure the last entry's dry.
-dlg resident.hub : I can put the book on its rest. There's time for a conversation.
-dlg resident.hub [topic.meeting=known] : This clasp will be familiar to you, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll hear the proposal with my book closed for the present.
-dlg resident.hub [here.time=night] : One lamp will serve our conversation with the account safely shut.
-dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. I try to keep each receipt attached to something that actually came through the warehouse.
-dlg resident.job : I do well with objects that need close attention and accounts that will stand inspection.
-dlg resident.news [world.news] : Here's the entry I could support in good light. #world.news#.
-dlg resident.news [world.event_words] : I have heard mention of #world.event_words#. I'd keep the outcome open till there are particulars.
-dlg resident.news [world.death=recent] : A recent death needs room for the living household to choose which words it wishes to offer.
-dlg resident.news [world.wedding=recent] : A wedding deserves a wish for a settled home with doors that move easily for good company.
-dlg resident.news [world.wagons=raided] : With wagons raided I'd check what's actually reached the warehouse before committing to any delivery.
-dlg resident.gossip [here.gossip!=yes] : No confidence has been left with me for a caller to take away.
-dlg resident.bye : Let the door come to rest on its own sound hinge.
 
+dlg @1 resident.hub : I can put the book on its rest. There's time for a conversation.
+dlg @2 resident.hub [topic.meeting=known] : This clasp will be familiar to you, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll hear the proposal with my book closed for the present.
+dlg @4 resident.hub [here.time=night] : One lamp will serve our conversation with the account safely shut.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. I try to keep each receipt attached to something that actually came through the warehouse.
+dlg @2 resident.job : I do well with objects that need close attention and accounts that will stand inspection.
+dlg @1 resident.news [world.news] : Here's the entry I could support in good light. #world.news#.
+dlg @2 resident.news [world.event_words] : I have heard mention of #world.event_words#. I'd keep the outcome open till there are particulars.
+dlg @3 resident.news [world.death=recent] : A recent death needs room for the living household to choose which words it wishes to offer.
+dlg @4 resident.news [world.wedding=recent] : A wedding deserves a wish for a settled home with doors that move easily for good company.
+dlg @5 resident.news [world.wagons=raided] : With wagons raided I'd check what's actually reached the warehouse before committing to any delivery.
+dlg @1 resident.gossip [here.gossip!=yes] : No confidence has been left with me for a caller to take away.
+dlg @1 resident.bye : Let the door come to rest on its own sound hinge.
 graft @ironfinger resident.hub
 choice Is the iron piece meant to look like a thumb? -> ironfinger
 node ironfinger

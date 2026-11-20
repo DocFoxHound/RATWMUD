@@ -1,9 +1,12 @@
+# rm465, the nest saucer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm465
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rmx_sigrun_mudworth
+written_by codex
 title the nest saucer
 fits stage=adult|old
 prefers job=merchant
@@ -33,45 +36,44 @@ mudrail = dry wood along my windowsill | a strip beyond the spray
 fairknife = my small keen blade | a clean bright edge
 
 any
-opinion dole for 3 : A soft crust passed along in a clean cloth can make more difference than a fine new roof to a wolf who's hungry now.
-opinion church for 1 : I appreciate any door where a quiet wolf can manage to ask for supper without having to compete with the loudest voice.
-opinion houses against 2 : A House roof is sound for the wolves it covers. That's little comfort to the door below where the water comes down in sheets.
-opinion strangers for 2 : A stranger sometimes stands very still in a doorway without wanting to say why. I have a clean seat and no need for a grand explanation.
-opinion sump for 1 : There are warm little corners under these Sump roofs. You have to look past the black on the slates to notice them.
-opinion merchants against 2 : The price of fruit has made a new luxury of what used to be one good ordinary tart. I'd rather pay for plums than for splendid claims.
+opinion @1 dole for 3 : A soft crust passed along in a clean cloth can make more difference than a fine new roof to a wolf who's hungry now.
+opinion @1 church for 1 : I appreciate any door where a quiet wolf can manage to ask for supper without having to compete with the loudest voice.
+opinion @1 houses against 2 : A House roof is sound for the wolves it covers. That's little comfort to the door below where the water comes down in sheets.
+opinion @1 strangers for 2 : A stranger sometimes stands very still in a doorway without wanting to say why. I have a clean seat and no need for a grand explanation.
+opinion @1 sump for 1 : There are warm little corners under these Sump roofs. You have to look past the black on the slates to notice them.
+opinion @1 merchants against 2 : The price of fruit has made a new luxury of what used to be one good ordinary tart. I'd rather pay for plums than for splendid claims.
 
 grown
-line greet : Come into the quieter part by the window.
-line greet [pair.band=strangers] : There's a clean corner here if you need a halt.
-line greet [here.time=dawn] : I heard the first little wing before your step. Welcome.
-line greet [here.time=dusk|night] : Stand near the light that still shows on the saucer.
-line greet [self.working=yes] : I'll lay this brush down. Your word can reach me now.
-line kin.open [pair.kin!=no] : A place close to my own wing for you.
-line again.open : You've been away just long enough for another little visitor.
-line greet.return : You spoke above that soft brush of wings.
-line greet.return [pair.band=friends|family] : A friendly voice fits nicely beside my window.
-line greet.return [self.working=yes] : Thank you. I was just folding a corner out of the wet.
-line greet.return [here.time=dusk|night] : A small clear greeting will go round the whole room now.
-line farewell : May the wet miss your collar on the way.
-line farewell.return : I'll put the saucer away after you go.
-line react.news : Lay that account before me with its corners unfolded.
-line react.news.new : That's a fresh sight from this particular sill.
-line react.news.known : I'd seen a bit of the same thing earlier.
-line react.news.doubt : Was there a clear view from either side?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A little warmth round the shoulders may help before anybody starts to speak.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright small thing to set against a long grey afternoon.
-line answer.how : Glad of the few minutes the street has left me quiet.
-line ask.how : Have you had a little time when nobody needed you to hurry?
-line sympathise : It is tiring being the strong quiet one while the rest are making noise.
-line reassure : The room and I can both keep still for a while.
-line decline : I'd be promising two pairs of paws on a morning when I've only got these.
-line accept_decline : I'll let you choose when you come near the window.
-line thank : You've given a small shy thing room to arrive.
-line deflect_thanks : A soft turn of the paw was all it took.
-line preclose : I've let one little job go just beyond my line of sight.
-line accept_preclose : Take the dry strip out past the sill.
-line ack : Soft landing.
-
+line @1 greet : Come into the quieter part by the window.
+line @2 greet [pair.band=strangers] : There's a clean corner here if you need a halt.
+line @3 greet [here.time=dawn] : I heard the first little wing before your step. Welcome.
+line @4 greet [here.time=dusk|night] : Stand near the light that still shows on the saucer.
+line @5 greet [self.working=yes] : I'll lay this brush down. Your word can reach me now.
+line @1 kin.open [pair.kin!=no] : A place close to my own wing for you.
+line @1 again.open : You've been away just long enough for another little visitor.
+line @1 greet.return : You spoke above that soft brush of wings.
+line @2 greet.return [pair.band=friends|family] : A friendly voice fits nicely beside my window.
+line @3 greet.return [self.working=yes] : Thank you. I was just folding a corner out of the wet.
+line @4 greet.return [here.time=dusk|night] : A small clear greeting will go round the whole room now.
+line @1 farewell : May the wet miss your collar on the way.
+line @1 farewell.return : I'll put the saucer away after you go.
+line @1 react.news : Lay that account before me with its corners unfolded.
+line @1 react.news.new : That's a fresh sight from this particular sill.
+line @1 react.news.known : I'd seen a bit of the same thing earlier.
+line @1 react.news.doubt : Was there a clear view from either side?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A little warmth round the shoulders may help before anybody starts to speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright small thing to set against a long grey afternoon.
+line @1 answer.how : Glad of the few minutes the street has left me quiet.
+line @1 ask.how : Have you had a little time when nobody needed you to hurry?
+line @1 sympathise : It is tiring being the strong quiet one while the rest are making noise.
+line @1 reassure : The room and I can both keep still for a while.
+line @1 decline : I'd be promising two pairs of paws on a morning when I've only got these.
+line @1 accept_decline : I'll let you choose when you come near the window.
+line @1 thank : You've given a small shy thing room to arrive.
+line @1 deflect_thanks : A soft turn of the paw was all it took.
+line @1 preclose : I've let one little job go just beyond my line of sight.
+line @1 accept_preclose : Take the dry strip out past the sill.
+line @1 ack : Soft landing.
 scene wool
 when topic=animals self.likes=roof_birds
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.weather=rain
 does aside
 cooldown 8h
 say Boot brush outside the clean sill. | Turn the damp side of that cloth downwards.
-dlg resident.hub : There is a small space to sit in comfortably. I'd hear what brings you in.
-dlg resident.hub [topic.meeting=known] : Your place by the window is clear, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I can bring a cloth over without having to stand so very close.
-dlg resident.hub [here.time=night] : The saucer's inside. We can visit while the sill dries.
-dlg resident.job [self.job=merchant] : #self.trade_words.capitalize#. I see to the clean cloths and the little things a visitor feels before noticing.
-dlg resident.job : I work best with a little space to put things in a comfortable order.
-dlg resident.news [world.news] : This reached the window quite clearly. #world.news#.
-dlg resident.bye : May the small bright things in the street be within your sight.
 
+dlg @1 resident.hub : There is a small space to sit in comfortably. I'd hear what brings you in.
+dlg @2 resident.hub [topic.meeting=known] : Your place by the window is clear, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I can bring a cloth over without having to stand so very close.
+dlg @4 resident.hub [here.time=night] : The saucer's inside. We can visit while the sill dries.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I see to the clean cloths and the little things a visitor feels before noticing.
+dlg @2 resident.job : I work best with a little space to put things in a comfortable order.
+dlg @1 resident.news [world.news] : This reached the window quite clearly. #world.news#.
+dlg @1 resident.bye : May the small bright things in the street be within your sight.
 graft @nestsoft resident.hub
 choice Are those bits of wool really meant for birds? -> nestsoft
 node nestsoft

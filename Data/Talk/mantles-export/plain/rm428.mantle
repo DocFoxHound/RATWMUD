@@ -1,9 +1,12 @@
+# rm428, the spoon star (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm428
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_berit_wickton
+written_by codex
 title the spoon star
 fits stage=adult|old
 prefers job=servant warmth=warm
@@ -35,43 +38,42 @@ tuck = a turned hem | an inward corner
 snowlight = the white glow | a pale wash
 
 any
-opinion houses mixed 0 : A fine hall is at its most gracious when a late supper gets the same clean spoon as the first fine course.
-opinion church for 1 : A little quiet reflection is a gift within reach of any ordinary kitchen.
-opinion festivals for 1 : I'll enjoy a feast through its many ordinary details, including the meal that reaches the last guest.
-opinion merchants mixed 0 : One sound spoon well polished is quite enough. I would examine the actual edge before paying for finery.
-opinion road for 1 : The quiet road out towards the hills is worth taking while there is still a patch of evening overhead.
-opinion city for 1 : A single star rising over the city can lend a blank kitchen wall the prettiest light.
+opinion @1 houses mixed 0 : A fine hall is at its most gracious when a late supper gets the same clean spoon as the first fine course.
+opinion @1 church for 1 : A little quiet reflection is a gift within reach of any ordinary kitchen.
+opinion @1 festivals for 1 : I'll enjoy a feast through its many ordinary details, including the meal that reaches the last guest.
+opinion @1 merchants mixed 0 : One sound spoon well polished is quite enough. I would examine the actual edge before paying for finery.
+opinion @1 road for 1 : The quiet road out towards the hills is worth taking while there is still a patch of evening overhead.
+opinion @1 city for 1 : A single star rising over the city can lend a blank kitchen wall the prettiest light.
 
 grown
-line greet : Welcome. I can leave the polishing by me. | Hello. There's a clear place where the tray won't be in the way.
-line greet [pair.band=strangers] : Your first visit to my little patch of shine. Welcome. | A first greeting needn't be a grand one.
-line greet [here.time=dawn] : Morning. A clean spoon shows the daylight already. | Early light at the high pane. Good morning.
-line greet.return : Hello in return. I've folded the cloth quite away. | I heard you before the little reflection left the rim.
-line greet.return [pair.band=friends|family] : A dear face just above the polished edge. | I can set a little bright place for you without ceremony.
-line greet.return [here.time=night] : An excellent hour to look up as well as speak softly. | Hello. We've some evening sky left to enjoy.
-line again.open : Back before the polish has quite lost its warmth. | Our ways have come together a second time very gently.
-line hail [pair.band=friends] : Come see a star I can hold within reach. | Here at the side of me. The light shows from this angle.
-line farewell : May your last steps take you to a bright window. | May you have clear sky above your road.
-line farewell.return : I'll put my spoon away and let you through. | A kindly evening or a kindly road, whichever comes first.
-line react.news : I'll set the shining thing down and attend to your words. | Bring the account into the light at whatever pace suits you.
-line react.news.new : I'd seen no faint reflection of that before now. | That's new enough to make me put the work aside.
-line react.news.known : Yes. I remember that piece quite distinctly. | The earlier telling caught much the same light.
-line react.news.doubt : I'd turn the words a little and see if the light goes with them. | Something in there looks more like an echo than an event.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll put a meal by and stay beside you through the telling. | Sad words have a right to be heard at their proper pace.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : There is a quite lovely glimmer in that account. | I'd treasure good news of that sort through the rest of a shift.
-line ask.how : Have you found a little clear spot in your day? | How has the work sat upon your shoulders?
-line answer.how : A little tired, enjoying what small bright things I can see. | Fairly even, with a warm corner of feeling left for company.
-line decline : I'd be failing an earlier promise if I offered my time as well. | I should like to help, but the little space I have is already claimed.
-line accept_decline : I understand. One may keep one's quiet interval. | Then I'll put that request away with no ill will.
-line preclose : There's a little stretch of light I should get to before the work resumes. | I'd best finish what was nearly bright when I set it aside.
-line accept_preclose : You can go sweetly on to your next call. | Certainly. There's no virtue in keeping you waiting.
-line thank : You kept me a little of the light. Thank you. | I appreciate a kindness done with that much care.
-line deflect_thanks : It only needed one spare corner of cloth. | There was room on the tray for another small kindness.
-line sympathise : You may sit here and let the bright chatter go past awhile. | My company is yours without requiring a cheerful expression.
-line reassure : Small bright things survive a surprisingly grey evening. | Let's put the immediate load down and find a place to sit.
-line ack : Yes, I see the light quite plainly there. | That has the shape you described.
-line give.advice : Try changing your angle before polishing a perfectly clean thing. | Make a place for the last guest before serving the first.
-
+line @1 greet : Welcome. I can leave the polishing by me. | Hello. There's a clear place where the tray won't be in the way.
+line @2 greet [pair.band=strangers] : Your first visit to my little patch of shine. Welcome. | A first greeting needn't be a grand one.
+line @3 greet [here.time=dawn] : Morning. A clean spoon shows the daylight already. | Early light at the high pane. Good morning.
+line @1 greet.return : Hello in return. I've folded the cloth quite away. | I heard you before the little reflection left the rim.
+line @2 greet.return [pair.band=friends|family] : A dear face just above the polished edge. | I can set a little bright place for you without ceremony.
+line @3 greet.return [here.time=night] : An excellent hour to look up as well as speak softly. | Hello. We've some evening sky left to enjoy.
+line @1 again.open : Back before the polish has quite lost its warmth. | Our ways have come together a second time very gently.
+line @1 hail [pair.band=friends] : Come see a star I can hold within reach. | Here at the side of me. The light shows from this angle.
+line @1 farewell : May your last steps take you to a bright window. | May you have clear sky above your road.
+line @1 farewell.return : I'll put my spoon away and let you through. | A kindly evening or a kindly road, whichever comes first.
+line @1 react.news : I'll set the shining thing down and attend to your words. | Bring the account into the light at whatever pace suits you.
+line @1 react.news.new : I'd seen no faint reflection of that before now. | That's new enough to make me put the work aside.
+line @1 react.news.known : Yes. I remember that piece quite distinctly. | The earlier telling caught much the same light.
+line @1 react.news.doubt : I'd turn the words a little and see if the light goes with them. | Something in there looks more like an echo than an event.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll put a meal by and stay beside you through the telling. | Sad words have a right to be heard at their proper pace.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : There is a quite lovely glimmer in that account. | I'd treasure good news of that sort through the rest of a shift.
+line @1 ask.how : Have you found a little clear spot in your day? | How has the work sat upon your shoulders?
+line @1 answer.how : A little tired, enjoying what small bright things I can see. | Fairly even, with a warm corner of feeling left for company.
+line @1 decline : I'd be failing an earlier promise if I offered my time as well. | I should like to help, but the little space I have is already claimed.
+line @1 accept_decline : I understand. One may keep one's quiet interval. | Then I'll put that request away with no ill will.
+line @1 preclose : There's a little stretch of light I should get to before the work resumes. | I'd best finish what was nearly bright when I set it aside.
+line @1 accept_preclose : You can go sweetly on to your next call. | Certainly. There's no virtue in keeping you waiting.
+line @1 thank : You kept me a little of the light. Thank you. | I appreciate a kindness done with that much care.
+line @1 deflect_thanks : It only needed one spare corner of cloth. | There was room on the tray for another small kindness.
+line @1 sympathise : You may sit here and let the bright chatter go past awhile. | My company is yours without requiring a cheerful expression.
+line @1 reassure : Small bright things survive a surprisingly grey evening. | Let's put the immediate load down and find a place to sit.
+line @1 ack : Yes, I see the light quite plainly there. | That has the shape you described.
+line @1 give.advice : Try changing your angle before polishing a perfectly clean thing. | Make a place for the last guest before serving the first.
 scene catchstar
 when topic=pastimes self.likes=stars
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : I'd enjoy a quiet seat high enough to see one star on the earliest clear eve
 b : For a star calendar? | Why a landing?
 a : Merely to notice how things change. A new season shouldn't have to come with paperwork. | A glimpse can belong to every wolf on the stairs there. I'm rather fond of a view one can share.
 
-grown
-
 story wrongstar [topic=pastimes|memories]
   : I tried to show a bright little star on my spoon before supper and couldn't make it follow the curve properly. It remained squarely in the middle.
   : At last I realised it was a grain of salt from the preparation board.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say The cloth can slide without a sound if the corners lie flat. | Keep one corner of the sill free for the view.
 
-dlg resident.hub : You needn't wait for me to finish polishing. There's a quiet interval now.
-dlg resident.hub [topic.meeting=known] : #topic.player#, the little prospect in the spoon has been particularly fine of late.
-dlg resident.hub [here.time=night] : A very good hour for looking upward after the last bowl has been set down.
-dlg resident.hub [pair.disposition=wary|hostile] : A civil question carries quite adequately from your side of the table.
-dlg resident.job [self.job=servant] : #self.trade_words.capitalize#. I remember the least conspicuous places as well as the grand chair at dinner.
-dlg resident.job : I try to leave a place looking as if the wolf who next uses it were actually expected.
-dlg resident.bye : I hope you look up once on your way home and find something worth the moment.
-
+dlg @1 resident.hub : You needn't wait for me to finish polishing. There's a quiet interval now.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the little prospect in the spoon has been particularly fine of late.
+dlg @3 resident.hub [here.time=night] : A very good hour for looking upward after the last bowl has been set down.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : A civil question carries quite adequately from your side of the table.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. I remember the least conspicuous places as well as the grand chair at dinner.
+dlg @2 resident.job : I try to leave a place looking as if the wolf who next uses it were actually expected.
+dlg @1 resident.bye : I hope you look up once on your way home and find something worth the moment.
 graft resident.hub
 choice Can you show me the star on the spoon? -> turnspoon
 node turnspoon

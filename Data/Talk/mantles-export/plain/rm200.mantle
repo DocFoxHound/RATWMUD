@@ -1,9 +1,12 @@
+# rm200, the folded mile (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm200
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_edda_ropeton
+written_by codex
 title the folded mile
 fits stage=adult|old
 prefers role=merchant job=merchant
@@ -38,56 +41,54 @@ oak = a lidded oak box | my square oak chest
 fat = the crisp corner of pork | the browned bit near the rind
 
 any
-opinion church for 2 : A wolf running for bread can still get a prayer out between breaths. Surely the Bright One listens between footfalls too.
-opinion houses mixed 1 : A House stamp vouches for the wax. Let the grain give its own account.
-opinion road against 1 : Walk a bad stretch with a laden sack before telling me how little a mile costs.
-opinion watch for 1 : I like to finish a dispute with the account open and a witness standing by.
-opinion newcomers for 1 : Someone passing through can tell you which bridge is really there. A map can't.
-opinion festivals against 1 : I'm usually the one who sees what the music left spilled on the ground.
-opinion dole for 2 : It's hard to reckon tomorrow's journey with today's belly empty. Feed the wolf and ask again.
-opinion drink against 1 : Spirits travel badly in a skin and worse still on an empty stomach.
-opinion merchants for 1 : An honest seller sees a journey right to its end. It starts at the parcel.
+opinion @1 church for 2 : A wolf running for bread can still get a prayer out between breaths. Surely the Bright One listens between footfalls too.
+opinion @1 houses mixed 1 : A House stamp vouches for the wax. Let the grain give its own account.
+opinion @1 road against 1 : Walk a bad stretch with a laden sack before telling me how little a mile costs.
+opinion @1 watch for 1 : I like to finish a dispute with the account open and a witness standing by.
+opinion @1 newcomers for 1 : Someone passing through can tell you which bridge is really there. A map can't.
+opinion @1 festivals against 1 : I'm usually the one who sees what the music left spilled on the ground.
+opinion @1 dole for 2 : It's hard to reckon tomorrow's journey with today's belly empty. Feed the wolf and ask again.
+opinion @1 drink against 1 : Spirits travel badly in a skin and worse still on an empty stomach.
+opinion @1 merchants for 1 : An honest seller sees a journey right to its end. It starts at the parcel.
 
 grown
-line greet : Come round to where I can look at you. | Set your bundle here and straighten up.
-line greet [pair.band=strangers] : An unfamiliar tread. There's room for it. | New to me. Make your business plain and we'll get along.
-line greet [here.time=dawn] : Light enough to read a milestone. Good travelling weather for the eyes. | Morning's unrolling nicely for your visit.
-line greet [here.time=dusk|night] : Leave the dark at the threshold. Let me see the speaker clearly. | Bring your paws into the light, late visitor.
-line greet.return : I hear your greeting clear enough. | Civilly said. Come closer.
-line greet.return [pair.band=friends|family] : I'd know that welcome folded up in six parcels. | You'd be welcome at twice this distance.
-line again.open : Short journey since we last exchanged words. | Back over your own tracks already.
-line kin.open [pair.kin!=no] : The good seat is where our family always finds it. Use it. | There's room to fold in a relation.
-line hail [pair.band=friends] : Here, by the bundle with the waxed cord! | One good friend ought to be this side of the lane!
-line farewell : Walk by your own reckoning. | May your last mile feel the shortest.
-line farewell.return : The Bright One see your next turning clear. | Take the road that feeds you well.
-line react.news : Which part came by witness and which by the long road? | Give me the tale as it first reached your ears.
-line react.news.new : First I've heard of that turn in things. | An unexpected turn. I'd better look my reckoning over.
-line react.news.known : I've had that parcel opened for me already. | Yes. That tale's been through my fingers once.
-line react.news.doubt : I'd be happier weighing it than trusting the seal. | There are still creases hiding some of that account.
-line react.news.sorrow [topic.kind=arrest|crime|assault|loss|death|theft] : That's rough travelling for those left to bear it. Bright One be near. | If anyone's short of supper after that, remember my name.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That'll put strength in a tired stride. Glad to hear it. | I could carry that bit of brightness a long way.
-line ask.how : Anything weighing more than its fair share on you? | Is anything pinching that you could set aside awhile?
-line answer.how : I've reached the first fold of what I meant to do. | No complaints worth making a second trip with.
-line answer.how.busy [self.working=yes] : My paws are a parcel ahead of my thoughts. | I've had things in both paws since the last voice called.
-line sympathise : Set the load between us before you try to say it all. | It's surprisingly heavy having to say the whole thing aloud.
-line reassure : You need see just as far as the very next turning. | We can unwrap this a corner at a time.
-line decline : That's further than I'm willing to promise at present. | I'll pass, thanks. I have a prior call on my time.
-line accept_decline : Then I'll leave that portion out of the reckoning. | A straight refusal saves the wear on both our patience.
-line thank : Your help counts for a good mile of ease. | I'd have had to make two trips without your help.
-line deflect_thanks : You'll find somebody else with a pack to lift. | If it fits the journey, keep it.
-line preclose : I ought to lay things straight for the next caller. | I have a few loose ends still to tuck away.
-line preclose [self.working=yes] : There's cord to wax before the next order comes. | My callers can't take home promises for supper. I'd best get back.
-line accept_preclose : Take your turning while the way's open. | There's a point where talk adds miles to the walk. Off you go.
-line give.advice : Keep the food closer than the things you can do without. | If you'll need it before bedtime, tie it where light can reach it.
-line ack : That measures up. | I have your meaning now.
-
+line @1 greet : Come round to where I can look at you. | Set your bundle here and straighten up.
+line @2 greet [pair.band=strangers] : An unfamiliar tread. There's room for it. | New to me. Make your business plain and we'll get along.
+line @3 greet [here.time=dawn] : Light enough to read a milestone. Good travelling weather for the eyes. | Morning's unrolling nicely for your visit.
+line @4 greet [here.time=dusk|night] : Leave the dark at the threshold. Let me see the speaker clearly. | Bring your paws into the light, late visitor.
+line @1 greet.return : I hear your greeting clear enough. | Civilly said. Come closer.
+line @2 greet.return [pair.band=friends|family] : I'd know that welcome folded up in six parcels. | You'd be welcome at twice this distance.
+line @1 again.open : Short journey since we last exchanged words. | Back over your own tracks already.
+line @1 kin.open [pair.kin!=no] : The good seat is where our family always finds it. Use it. | There's room to fold in a relation.
+line @1 hail [pair.band=friends] : Here, by the bundle with the waxed cord! | One good friend ought to be this side of the lane!
+line @1 farewell : Walk by your own reckoning. | May your last mile feel the shortest.
+line @1 farewell.return : The Bright One see your next turning clear. | Take the road that feeds you well.
+line @1 react.news : Which part came by witness and which by the long road? | Give me the tale as it first reached your ears.
+line @1 react.news.new : First I've heard of that turn in things. | An unexpected turn. I'd better look my reckoning over.
+line @1 react.news.known : I've had that parcel opened for me already. | Yes. That tale's been through my fingers once.
+line @1 react.news.doubt : I'd be happier weighing it than trusting the seal. | There are still creases hiding some of that account.
+line @1 react.news.sorrow [topic.kind=arrest|crime|assault|loss|death|theft] : That's rough travelling for those left to bear it. Bright One be near. | If anyone's short of supper after that, remember my name.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That'll put strength in a tired stride. Glad to hear it. | I could carry that bit of brightness a long way.
+line @1 ask.how : Anything weighing more than its fair share on you? | Is anything pinching that you could set aside awhile?
+line @1 answer.how : I've reached the first fold of what I meant to do. | No complaints worth making a second trip with.
+line @1 answer.how.busy [self.working=yes] : My paws are a parcel ahead of my thoughts. | I've had things in both paws since the last voice called.
+line @1 sympathise : Set the load between us before you try to say it all. | It's surprisingly heavy having to say the whole thing aloud.
+line @1 reassure : You need see just as far as the very next turning. | We can unwrap this a corner at a time.
+line @1 decline : That's further than I'm willing to promise at present. | I'll pass, thanks. I have a prior call on my time.
+line @1 accept_decline : Then I'll leave that portion out of the reckoning. | A straight refusal saves the wear on both our patience.
+line @1 thank : Your help counts for a good mile of ease. | I'd have had to make two trips without your help.
+line @1 deflect_thanks : You'll find somebody else with a pack to lift. | If it fits the journey, keep it.
+line @1 preclose : I ought to lay things straight for the next caller. | I have a few loose ends still to tuck away.
+line @2 preclose [self.working=yes] : There's cord to wax before the next order comes. | My callers can't take home promises for supper. I'd best get back.
+line @1 accept_preclose : Take your turning while the way's open. | There's a point where talk adds miles to the walk. Off you go.
+line @1 give.advice : Keep the food closer than the things you can do without. | If you'll need it before bedtime, tie it where light can reach it.
+line @1 ack : That measures up. | I have your meaning now.
 scene fold
 when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
 a : I fold away all the road I've walked. | This map makes a little paper door at every fork.
 b : To save counting it twice? | Do you open both?
 a : To give the next bit my full attention. It seldom looks as simple up close. | Only when choosing. After that I fold one shut.
-
 
 scene crest
 when topic=work self.role=merchant
@@ -96,14 +97,12 @@ a : A fine seal won't stop the meal from running out through a hole beneath. | A
 b : You inspect the underside first? | Worth a better price?
 a : Always. Nobody thinks to stamp a crest down there. | If you're buying ribbon. I buy what's wrapped.
 
-
 scene roadmeal
 when topic=food self.role=merchant
 does ask.detail / answer.detail / give.advice
 a : Would you rather carry supper in your pocket or a pot? | Which keeps better company with a steep road, cheese or onions?
 b : The pocket sounds easier. | Cheese, unless the onions are cooked.
 a : Take #rind#. Better than stew against your hip. | You and I could share a provision list.
-
 
 scene devotion
 when topic=faith self.piety=devout
@@ -112,14 +111,12 @@ a : I fold one corner plain for the Bright One. | My shortest grace is said over
 b : No sign there at all? | Why shortest?
 a : I don't presume to draw the way aid shall come from. | Whoever needs the food has waited long enough.
 
-
 scene roll
 when topic=pastimes self.likes=dice
 does tell.self / ask.detail / answer.detail
 a : One die makes a good mile marker till you need seven. | I put #die# on a route and give it a shake.
 b : Then you use another? | You travel where it lands?
 a : No, then I eat. Six miles between meals suits me. | No. I imagine what I'd pack. Costs less than the journey.
-
 
 scene cold
 when topic=weather here.time=dawn here.weather=clear here.season=winter
@@ -128,14 +125,12 @@ a : Some winter dawns sound like biting into an apple. | I like cold mornings wh
 b : When your paws crunch the ground? | Sharp to the eye?
 a : That's it. My door swings wide for one loud crunch. | Yes. As if all the city sat up to attention.
 
-
 scene rustle
 when topic=home
 does tell.complaint / ask.detail / answer.detail
 a : A noise at night always gains weight between bed and door. | I sleep badly if somebody folds paper in the next room.
 b : How heavy is a falling spool? | Worse than a shout?
 a : About the weight of a prowler till you see the thread. | A shout tells you straight off what size worry to have.
-
 
 scene saltair
 when topic=travel self.dislikes=salt_wind
@@ -144,14 +139,12 @@ a : I could take all my voyages on paper and keep the salt off my muzzle. | An o
 b : Wouldn't you miss the wind? | You like them there?
 a : The inland kind I'd miss. Salt can sit in its crock. | Exactly there. Nicely labelled, well away from my collar.
 
-
 scene stale
 when topic=work self.role=merchant
 does give.advice / ask.detail / answer.detail
 a : Press a travelling cheese low down, where it bears its own weight. | Put your soft food where the cords don't cross.
 b : What are you testing? | Even if that's right at the top?
 a : Whether you'll have supper left when the pack comes off. | Especially then. Have the first meal nearest your paw.
-
 
 scene sharedtable
 when topic=food self.likes=roast_pork
@@ -160,14 +153,12 @@ a : I save #fat# until I've finished arguing with the rest of dinner. | I judge 
 b : What's to argue with? | Like a little wall?
 a : Parsnips. I eat them because they're there. Crackling I choose. | A very temporary wall, if I'm the one dining.
 
-
 scene mapwrong
 when topic=lore self.likes=old_maps
 does tell.self / ask.detail / answer.detail
 a : The road on my nicest map goes through a wall now. | A map can lie quite beautifully in green ink.
 b : Will you scrape it out? | What did this one promise?
 a : It stays. Now I know what stood here before the wall. | A belt of orchards. I've walked the same spot. All yards and charcoal.
-
 
 scene receipt
 when topic=prices self.role=merchant
@@ -176,14 +167,12 @@ a : I'd rather have an ugly honest receipt than a speech in the finest hall. | A
 b : Do the sums differ? | What does it?
 a : They might. Only one comes home in your pocket to be checked. | That there's someone to come back to. Which is more than a flourish guarantees.
 
-
 scene waggons
 when topic=caravan world.wagons=raided
 does tell.worry / react.self / assess
 a : The wagons have been robbed. First thing I count is what'll keep. | Bad road news moves quicker than a wagon ever did.
 b : Before what you've lost? | You've heard of the raid?
 a : Before anybody buys the last of something in a fright. | The raid's all I can vouch for. I won't add another thief to it.
-
 
 scene newface
 when topic=newcomer
@@ -192,14 +181,12 @@ a : What would tell a newcomer the measure of this town? | Which welcome would y
 b : Who gives directions without asking for coin. | Depends how far I've been.
 a : Sound answer. I'd add who walks to the corner with you. | Exactly why I offer the seat before the map.
 
-
 scene gossip
 when topic=gossip
 does tell.self / react.self / assess
 a : A rumour with a wax seal is a rumour all dressed for dinner. | I won't pay for news with another mouthful of news.
 b : Does it sit at your table? | No exchange at all?
 a : Only till I find where the paper came from. | On goods, yes. On guesses, I'd sooner go hungry.
-
 
 scene flatpack
 when topic=work self.role=merchant
@@ -208,14 +195,12 @@ a : Square parcels are easy to stack and wretched to shoulder. | I put the knot 
 b : Do you round the corners? | Won't that let it undo itself?
 a : I tuck them inward. Your back deserves a little thought. | A sound knot can be easy to find and hard to undo.
 
-
 scene neighbour
 when topic=friends self.neighbour
 does tell.feeling / ask.detail / answer.detail
 a : I'd sooner trust #self.neighbour# with a key than with a guessing game. | A small gift for #self.neighbour# is a pleasure to think through.
 b : Is one worth more? | What would you choose?
 a : A key has a single plain answer. I like being able to offer that. | Something you can eat without inviting half the street to help.
-
 
 scene spice
 when topic=food
@@ -224,14 +209,12 @@ a : I keep the strong flavours at opposite ends of a pack. | A sack of oats smel
 b : Would a clove argue with a fish? | Can you read a journey off it?
 a : It'd win, unfortunately. And you'd still have a fish to eat. | Sometimes. Once I smelt harness leather in every bowl.
 
-
 scene drytimes
 when topic=times world.times=hard|lean
 does tell.worry / ask.detail / answer.detail
 a : When things turn lean it's the empty spaces in a parcel I see first. | Lean times turn a handful into a question.
 b : Can you fill them? | A question of price?
 a : Wrap it smaller, certainly. I'd rather find more supper. | Of whose open paw you put it in first.
-
 
 scene winddown
 when topic=day here.time=dusk
@@ -240,14 +223,12 @@ a : Evening light does my folding for me. Road after road shuts out of sight. | 
 b : So you put your map up? | Why those first?
 a : Yes. There's no sense arguing with the largest map of all. | I can tell the rest apart by feel.
 
-
 scene tired
 when topic=health
 does give.advice / react.self / assess
 a : Stop for your first rest before your legs make the decision. | A parcel balanced badly weighs twice as much by noon.
 b : Won't that slow me down? | Same weight either way.
 a : Try standing up after they stop you. You'll lose far longer. | Tell the shoulder that's been taking the whole argument.
-
 
 scene taste
 when topic=smalltalk
@@ -256,14 +237,12 @@ a : Pick a piece from either end, and tell me how they differ. | I'll cut #wedge
 b : Suppose the bit between them wins? | Why so thin?
 a : Then you've paid attention. That's all I wanted. | Gives the tongue first say before the teeth get involved.
 
-
 scene prayer
 when topic=faith
 does give.opinion / ask.detail / answer.detail
 a : I leave my end of a bargain out of my prayers to the Bright One. | Fair measure and a prayer sit easily together.
 b : What do you ask instead? | Is one enough?
 a : The sense to know whether I'd take the other side myself. | I'll pray and check my measure both. No sense sparing the effort.
-
 
 scene knot
 when topic=pastimes
@@ -272,14 +251,12 @@ a : I can tell how many times a string's been used by how it bends. | You can't 
 b : Does it remember every knot? | So you throw it away?
 a : The worst bends, much as we remember a nasty turn. | I tie the next knot round the same bend. It's learned the job.
 
-
 scene chapelsack
 when topic=work self.role=merchant
 does tell.self / react.self / assess
 a : I mark the charity sack on the inside. | I'd leave a measure extra on a gift.
 b : Where nobody sees? | Do you weigh gifts too?
 a : Where the person receiving it doesn't have to show the whole street. | Yes. I'm perfectly willing to know how generous I really am.
-
 
 scene festival
 when topic=festival
@@ -288,14 +265,12 @@ a : After a festival I find little flags in places flags don't belong. | I like 
 b : Like the bottom of a barrel? | And a fiddle?
 a : In a loaf, once. Terribly stirring sandwich. | Two streets. A single quiet voice can have my doorstep.
 
-
 scene rainwalk
 when topic=weather here.weather=rain
 does tell.self / ask.detail / answer.detail
 a : This rain has discovered a fold in my collar I didn't know existed. | A wet map sticks exactly where you're trying to read.
 b : Could you turn it out? | Does a dry cloth help?
 a : Now the water's found it, yes. I'd have thanked it for less information. | A little. A warm hearth and the intention of staying put help most.
-
 
 scene home
 when topic=home
@@ -304,14 +279,12 @@ a : My best drawer opens just far enough for the parcel I need. | I stack empty 
 b : It sticks? | Why upside down?
 a : Beautifully. I'd ruin it if I ever fixed it. | To remind me I've already looked in there. You only forget once.
 
-
 scene directions
 when topic=travel
 does give.advice / ask.detail / answer.detail
 a : Count turnings going out as well as coming back. | Ask two walkers about a mile and keep the slower answer.
 b : What if there's one more coming back? | Why favour the slower one?
 a : Then a yard you thought a road from this side fooled you. I know the feeling. | Arriving early with food in hand is an excellent sort of error.
-
 
 scene homeground
 when topic=land here.region=ridgemere
@@ -320,13 +293,11 @@ a : There's one part of this city my map can't pack away. | On the city map a st
 b : The steepest rise? | And on the ground?
 a : Every set of steps. On paper they're much too polite. | It can go straight up. The ink doesn't have to climb.
 
-
 story cheesemap [topic=food]
   : Once I wrapped a scrap of cheese in a worn map with a whole river drawn in blue.
   : The cheese sweated through the ink, and the river came away on the rind.
   b : Did it spoil the taste?
   : It gave me a chance to have a whole valley for supper. I peeled the ink off first.
-
 
 story sixpips [topic=pastimes]
   : An old die of mine lost its spots. The dimples wore smooth too, all except one.
@@ -335,13 +306,11 @@ story sixpips [topic=pastimes]
   b : The shortest one. More time to play before going home.
   : A fine answer. I had put down the way to chapel.
 
-
 story disputed [topic=memories self.age>=25]
   : I saw a pair of travellers dispute where to go on an old map for half an afternoon.
   : The trick of it was that one wanted the coast and one wanted company.
   b : Did either one say so?
   : At last. They folded the map and sat down right there to eat.
-
 
 story twoends [topic=work self.role=merchant]
   : Once I sold two travellers equal packs and watched one lean twice as far as the other.
@@ -349,13 +318,11 @@ story twoends [topic=work self.role=merchant]
   b : Did you get a chance to fix it?
   : Before the next door, yes. Two equal loads still need an even seat on the back.
 
-
 story bellcord [topic=memories]
   : I slept in a loft once with a bell cord wrapped about a rafter.
   : Thought it a drying line and hung my bedding off it to air.
   b : Did you wake the house?
   : Not until I hauled it back in. Then everybody learned it was time to make my bed.
-
 
 rule @scale
 when concept=bark self.role=merchant working=yes
@@ -363,13 +330,11 @@ does aside
 cooldown 8h
 say Hold the cord while I settle that last corner. Your shoulder will feel the difference. | Take a pace with that bundle before you carry it the whole way.
 
-
 rule @mark
 when concept=bark self.likes=old_maps
 does aside
 cooldown 8h
 say One mile showing. The rest can wait its turn under the fold. | Close the map on yesterday's walking. One firm crease.
-
 
 rule @dice
 when concept=bark self.likes=dice
@@ -377,13 +342,11 @@ does aside
 cooldown 8h
 say No throwing bones beside the food. Nobody orders a spotted toothache. | Keep the dice on the cloth. A six in the oats is still a nuisance.
 
-
 rule @dole
 when concept=bark world.times=hard|lean
 does aside
 cooldown 8h
 say There'll be something fit to share in this, lean days or full. | Bread goes round an extra place long before fancy food does.
-
 
 rule @frost
 when concept=bark here.season=winter here.time=dawn
@@ -391,28 +354,26 @@ does aside
 cooldown 8h
 say Cold has sharpened every edge of this morning. | That's the sort of clear winter edge I'd have on a map.
 
-
 rule @wind
 when concept=bark here.place=shore
 does aside
 cooldown 8h
 say Salt can stay on its own side of my parcel, thank you. | Every buckle gathers salt down here. Wipe it off before packing.
 
-dlg resident.hub : Give me the first stretch of the question. We'll get to the far end.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I can put away the introductions for this visit.
-dlg resident.hub [here.time=night] : You've brought a question well past its usual hour. Let's hear it.
-dlg resident.hub [pair.disposition=hostile|wary] : Keep the fine speeches folded. What business have you?
-dlg resident.job [self.role=merchant] : I send provisions out from #self.workplace#. A sound parcel should last right up to the traveller's final turn.
-dlg resident.job : I measure out what a journey needs and keep its weight bearable.
-dlg resident.news [world.news] : This is the part I have a word for. #world.news#. Ask elsewhere for guesses.
-dlg resident.bye : May you have a bite left when the last mile begins.
-dlg shop.greet [here.shop=open] : Start with the distance to your next meal. We can size the sack after that.
-dlg shop.greet [here.shop=bare] : I've cleared the last shelf for now. If you're selling, start with the contents.
-dlg shop.prices : Decide how much you can carry. The price of a load too heavy is always too high.
-dlg shop.bye [here.shop!=asleep] : Keep the knot to the outside. You'll want it handy.
-dlg resident.business [business=thriving] : There's barely time between weighing and wrapping. There's a blessing in every order just now.
-dlg resident.gossip [here.gossip=yes] : Somebody's saying #topic.subject# #topic.claim#. My mark doesn't go on that.
-
+dlg @1 resident.hub : Give me the first stretch of the question. We'll get to the far end.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can put away the introductions for this visit.
+dlg @3 resident.hub [here.time=night] : You've brought a question well past its usual hour. Let's hear it.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Keep the fine speeches folded. What business have you?
+dlg @1 resident.job [self.role=merchant] : I send provisions out from #self.workplace#. A sound parcel should last right up to the traveller's final turn.
+dlg @2 resident.job : I measure out what a journey needs and keep its weight bearable.
+dlg @1 resident.news [world.news] : This is the part I have a word for. #world.news.capitalize#. Ask elsewhere for guesses.
+dlg @1 resident.bye : May you have a bite left when the last mile begins.
+dlg @1 shop.greet [here.shop=open] : Start with the distance to your next meal. We can size the sack after that.
+dlg @2 shop.greet [here.shop=bare] : I've cleared the last shelf for now. If you're selling, start with the contents.
+dlg @1 shop.prices : Decide how much you can carry. The price of a load too heavy is always too high.
+dlg @1 shop.bye [here.shop!=asleep] : Keep the knot to the outside. You'll want it handy.
+dlg @1 resident.business [business=thriving] : There's barely time between weighing and wrapping. There's a blessing in every order just now.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody's saying #topic.subject# #topic.claim#. My mark doesn't go on that.
 graft resident.hub
 choice Why does only one strip of your map show? -> road_crease
 node road_crease
@@ -424,7 +385,6 @@ node road_crease_more
 say Stop. Eat a little. Fold to the next bit with your paws rested. You've earned the view.
 choice I think I'll try that. -> hub
 choice Goodbye. -> bye
-
 
 graft shop.greet
 choice Why tuck that corner into the bundle? [here.shop=open] -> ruck_corner

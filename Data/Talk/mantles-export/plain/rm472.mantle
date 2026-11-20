@@ -1,9 +1,12 @@
+# rm472, the late teller's place (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm472
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_senna_beechleaf
+written_by codex
 title the late teller's place
 fits stage=adult|old
 prefers job=woodcutter
@@ -35,41 +38,40 @@ latch = a worn wood latch | the crosswise bar
 step = a careful half stride | one shorter step
 
 any
-opinion festivals for 2 : At my wedding I found a dance can carry a whole story without anybody having to remember the words. I've been partial to feasts since.
-opinion houses against 1 : Timber goes up the hill in the names of folk whose faces I can scarcely picture. A proper tale would at least introduce them.
-opinion merchants against 2 : A working paw ought to bring home bread sufficient to carry it through tomorrow's work. My purse and the loaf stall disagree.
-opinion dole for 2 : A bowl from a stranger stills the gurgling that spoils a fine story. I remember a lean week when it did considerably more than that.
-opinion times against 2 : Some weeks the price of living takes up more room at table than the supper.
+opinion @1 festivals for 2 : At my wedding I found a dance can carry a whole story without anybody having to remember the words. I've been partial to feasts since.
+opinion @1 houses against 1 : Timber goes up the hill in the names of folk whose faces I can scarcely picture. A proper tale would at least introduce them.
+opinion @1 merchants against 2 : A working paw ought to bring home bread sufficient to carry it through tomorrow's work. My purse and the loaf stall disagree.
+opinion @1 dole for 2 : A bowl from a stranger stills the gurgling that spoils a fine story. I remember a lean week when it did considerably more than that.
+opinion @1 times against 2 : Some weeks the price of living takes up more room at table than the supper.
 
 grown
-line greet [pair.band=strangers] : A new listener at the latch. Welcome. | Take the stool that gives a view of the turn.
-line greet [self.working=yes] : I've room to hear while I work. | Stand where the chips aren't going.
-line greet [here.time=dawn] : Morning. Plenty of beginning left in it. | The first word hasn't grown stale yet.
-line greet [here.time=dusk|night] : Evening. Here's a chair facing the opening. | A fine hour for leaving the door ajar.
-line kin.open [pair.kin!=no] : Kin have leave to interrupt the best part. | Come round where family can see my face.
-line again.open : Another entrance before the tale's done. | The same door brings you round again.
-line greet.return : Hello. The stool's already turned. | Your footfall didn't escape me.
-line greet.return [pair.band=friends|family] : I know your step under a lively story. | There you are in time for the good bit.
-line greet.return [self.working=yes] : I can break off without losing the line. | Let me steady this wood while I listen.
-line greet.return [here.time=dusk|night] : Evening. I can still make out a listener. | There's company in the change at the sill.
-line farewell : Find a good account beyond the next door. | Take the safe turning out.
-line farewell.return : I'll leave the ending for the walk back. | Mind the raised wood of the threshold.
-line farewell.return [here.time=night] : Find your own latch in a quiet patch of night. | A lamp ahead and an easy last stair.
-line react.news : Which part arrived with the first teller? | Set the account down before I finish it for myself.
-line react.news.new : That's an entrance I hadn't counted on. | A new beginning altogether, then.
-line react.news.known : I've heard the knock from that account. | The opening came to me earlier.
-line react.news.doubt : I'd find the missing middle before telling that round. | Somebody's put a very handsome ending on a doubtful beginning.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll hear the hard part in private. | An unhappy turn to bring through the door.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a welcome ending for our trouble. | Good word. Give it the best stool.
-line ask.how : Where has your footfall taken you today? | Any bit of the day worth hearing twice?
-line answer.how : I have the beginning and enough bread for supper. | Sitting square with the way home in view.
-line decline : I'd rather use these remaining hours quietly. | I need a sound hour to give the task I have.
-line accept_decline : Your own story to tell or leave. | Then we'll let the ending stand.
-line thank : You've given the tale a little more room. | I'll recall who opened that particular door.
-line sympathise : Set your stool beside mine awhile. | Take the bit of shelter that sees the way out.
-line reassure : We don't have to get the whole ending today. | Let the first bad minute go past before taking another step.
-line preclose : My seat must turn towards home shortly. | I've a loose end of my own to attend to.
-
+line @1 greet [pair.band=strangers] : A new listener at the latch. Welcome. | Take the stool that gives a view of the turn.
+line @2 greet [self.working=yes] : I've room to hear while I work. | Stand where the chips aren't going.
+line @3 greet [here.time=dawn] : Morning. Plenty of beginning left in it. | The first word hasn't grown stale yet.
+line @4 greet [here.time=dusk|night] : Evening. Here's a chair facing the opening. | A fine hour for leaving the door ajar.
+line @1 kin.open [pair.kin!=no] : Kin have leave to interrupt the best part. | Come round where family can see my face.
+line @1 again.open : Another entrance before the tale's done. | The same door brings you round again.
+line @1 greet.return : Hello. The stool's already turned. | Your footfall didn't escape me.
+line @2 greet.return [pair.band=friends|family] : I know your step under a lively story. | There you are in time for the good bit.
+line @3 greet.return [self.working=yes] : I can break off without losing the line. | Let me steady this wood while I listen.
+line @4 greet.return [here.time=dusk|night] : Evening. I can still make out a listener. | There's company in the change at the sill.
+line @1 farewell : Find a good account beyond the next door. | Take the safe turning out.
+line @1 farewell.return : I'll leave the ending for the walk back. | Mind the raised wood of the threshold.
+line @2 farewell.return [here.time=night] : Find your own latch in a quiet patch of night. | A lamp ahead and an easy last stair.
+line @1 react.news : Which part arrived with the first teller? | Set the account down before I finish it for myself.
+line @1 react.news.new : That's an entrance I hadn't counted on. | A new beginning altogether, then.
+line @1 react.news.known : I've heard the knock from that account. | The opening came to me earlier.
+line @1 react.news.doubt : I'd find the missing middle before telling that round. | Somebody's put a very handsome ending on a doubtful beginning.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll hear the hard part in private. | An unhappy turn to bring through the door.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a welcome ending for our trouble. | Good word. Give it the best stool.
+line @1 ask.how : Where has your footfall taken you today? | Any bit of the day worth hearing twice?
+line @1 answer.how : I have the beginning and enough bread for supper. | Sitting square with the way home in view.
+line @1 decline : I'd rather use these remaining hours quietly. | I need a sound hour to give the task I have.
+line @1 accept_decline : Your own story to tell or leave. | Then we'll let the ending stand.
+line @1 thank : You've given the tale a little more room. | I'll recall who opened that particular door.
+line @1 sympathise : Set your stool beside mine awhile. | Take the bit of shelter that sees the way out.
+line @1 reassure : We don't have to get the whole ending today. | Let the first bad minute go past before taking another step.
+line @1 preclose : My seat must turn towards home shortly. | I've a loose end of my own to attend to.
 scene stool
 when topic=pastimes self.likes=old_tales
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A little tale can fill the gap under the evening door. | Turn that low stool towards the latch.
 
-dlg resident.hub : Take the place across from me. A caller can see me clearly from there while I attend to any motion at the latch.
-dlg resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. There's more than one account in a day's wood once the cutting edge is laid by.
-dlg resident.news [world.news] : The beginning I heard distinctly was this. #world.news#
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've managed a timely entrance into the story again.
-dlg resident.bye : I hope your next entrance is every bit as well timed as this one.
-
+dlg @1 resident.hub : Take the place across from me. A caller can see me clearly from there while I attend to any motion at the latch.
+dlg @1 resident.job [self.job=woodcutter self.trade_words] : #self.trade_words.capitalize#. There's more than one account in a day's wood once the cutting edge is laid by.
+dlg @1 resident.news [world.news] : The beginning I heard distinctly was this. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've managed a timely entrance into the story again.
+dlg @1 resident.bye : I hope your next entrance is every bit as well timed as this one.
 graft resident.hub
 choice How do you catch a late listener up without starting again? -> catch_listener
 node catch_listener

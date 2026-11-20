@@ -1,9 +1,12 @@
+# rm396, the skipper's unfinished plait (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm396
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for cty_kell_reedwade
+written_by codex
 title the skipper's unfinished plait
 fits stage=adult|old
 prefers job=sailor
@@ -17,6 +20,7 @@ topics pastimes +0.6 travel +0.5 work +0.4 prices +0.2
 styles comfort=practical gossip=guarded refuse=plain tease=dry
 marks oath saying
 persona #self.first# runs a thumb across a flat three-strand plait, hums a marching air under the breath, and refuses to name the thing the saved coins might buy.
+
 words
 oath! = Fray my neat plait | Sink the spare cork
 saying! = A plait has two ends | Money can keep quiet
@@ -38,47 +42,45 @@ mistdrop = a bead of fine mist | a little hanging pearl
 waitingrail = a smooth low rail | a square elbow rest
 
 grown
-
-opinion merchants mixed 1 : A seller can quote a fair figure without also requesting command of my intentions.
-opinion road mixed 1 : A route looks quite different from the end where somebody's still expecting you.
-opinion strangers mixed 1 : A stranger gets plain directions. My purse doesn't get opened as part of the demonstration.
-opinion city mixed 1 : A city gets a great deal of credit for things that came in already made aboard boats.
-opinion dole for 2 : There should be some supper to land on after a whole day's weather has taken the expected one.
-opinion church for 1 : A quiet prayer needs no more room between my teeth than the first note of an old tune.
-opinion festivals mixed 1 : Give me just enough of the music to keep time. Somebody else can have the crush.
-opinion newcomers for 1 : Every experienced pair of hands once needed to see where the first strand went.
-line greet : Take the easy side. My pockets need no introduction.
-line greet [pair.band=strangers] : There's an unclaimed slice of bench you can see.
-line greet [here.time=dawn] : Morning. Sound carries well before the day gets its boots on.
-line greet.return : I've let the tune run on inside my head.
-line greet.return [self.working=yes] : Finishing this turn before my fingers can spare a nod.
-line greet.return [pair.band=friends|family] : A known step fits the old tune nicely.
-line again.open : We've come round to the same end of the coil.
-line kin.open [pair.kin!=no] : I've a bit more room set aside for a familiar shoulder.
-line hail [pair.band=friends] : Over here by the unfinished piece.
-line farewell : Go steady where the landing changes underfoot.
-line farewell.return : I hope you come in before the last note's done.
-line react.news : I'll see where the first strand of that came from.
-line react.news.known : I recognise the lay of those words already.
-line react.news.new : Another strand where I'd only counted two.
-line react.news.doubt : That account would pull crooked with a very small weight on it.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could take a turn at whatever needs doing for the hurt household.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's a tune I could hum with a lighter foot for that.
-line answer.how : A trifle worn in the joints. They still know the figure.
-line answer.how.busy [self.working=yes] : Working, with just enough spare time for a civil sentence.
-line ask.how : Is anything chafing where the day's work pulls?
-line decline : Those savings and their purpose both belong inside my private purse.
-line accept_decline : We'll leave that end loose and come away.
-line thank : You took the pull without tightening the wrong loop.
-line deflect_thanks : I had a thumb free at the necessary moment.
-line reassure : One strand at a time will let the whole thing loosen.
-line sympathise : You needn't hold the heavy end alone until it's sorted.
-line ack : I can follow the way that piece crosses.
-line preclose : The loose ends are beginning to outnumber my fingers.
-line accept_preclose : No need to keep my tune company on your account.
-line offer : I could hold it level while you find the proper end.
-line give.advice : See where the strand first crossed before you pull on anything.
-
+opinion @1 merchants mixed 1 : A seller can quote a fair figure without also requesting command of my intentions.
+opinion @1 road mixed 1 : A route looks quite different from the end where somebody's still expecting you.
+opinion @1 strangers mixed 1 : A stranger gets plain directions. My purse doesn't get opened as part of the demonstration.
+opinion @1 city mixed 1 : A city gets a great deal of credit for things that came in already made aboard boats.
+opinion @1 dole for 2 : There should be some supper to land on after a whole day's weather has taken the expected one.
+opinion @1 church for 1 : A quiet prayer needs no more room between my teeth than the first note of an old tune.
+opinion @1 festivals mixed 1 : Give me just enough of the music to keep time. Somebody else can have the crush.
+opinion @1 newcomers for 1 : Every experienced pair of hands once needed to see where the first strand went.
+line @1 greet : Take the easy side. My pockets need no introduction.
+line @2 greet [pair.band=strangers] : There's an unclaimed slice of bench you can see.
+line @3 greet [here.time=dawn] : Morning. Sound carries well before the day gets its boots on.
+line @1 greet.return : I've let the tune run on inside my head.
+line @2 greet.return [self.working=yes] : Finishing this turn before my fingers can spare a nod.
+line @3 greet.return [pair.band=friends|family] : A known step fits the old tune nicely.
+line @1 again.open : We've come round to the same end of the coil.
+line @1 kin.open [pair.kin!=no] : I've a bit more room set aside for a familiar shoulder.
+line @1 hail [pair.band=friends] : Over here by the unfinished piece.
+line @1 farewell : Go steady where the landing changes underfoot.
+line @1 farewell.return : I hope you come in before the last note's done.
+line @1 react.news : I'll see where the first strand of that came from.
+line @1 react.news.known : I recognise the lay of those words already.
+line @1 react.news.new : Another strand where I'd only counted two.
+line @1 react.news.doubt : That account would pull crooked with a very small weight on it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could take a turn at whatever needs doing for the hurt household.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's a tune I could hum with a lighter foot for that.
+line @1 answer.how : A trifle worn in the joints. They still know the figure.
+line @1 answer.how.busy [self.working=yes] : Working, with just enough spare time for a civil sentence.
+line @1 ask.how : Is anything chafing where the day's work pulls?
+line @1 decline : Those savings and their purpose both belong inside my private purse.
+line @1 accept_decline : We'll leave that end loose and come away.
+line @1 thank : You took the pull without tightening the wrong loop.
+line @1 deflect_thanks : I had a thumb free at the necessary moment.
+line @1 reassure : One strand at a time will let the whole thing loosen.
+line @1 sympathise : You needn't hold the heavy end alone until it's sorted.
+line @1 ack : I can follow the way that piece crosses.
+line @1 preclose : The loose ends are beginning to outnumber my fingers.
+line @1 accept_preclose : No need to keep my tune company on your account.
+line @1 offer : I could hold it level while you find the proper end.
+line @1 give.advice : See where the strand first crossed before you pull on anything.
 scene pastimes_1
 when topic=pastimes self.likes=knots
 does tell.self / ask.detail / answer.detail
@@ -340,19 +342,19 @@ when concept=bark
 does aside
 cooldown 8h
 say Leave the pocket quiet a little longer. | A private purchase needn't name itself in advance.
-dlg resident.hub : I can keep one ear open while my fingers plait.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your particular step needs no introduction.
-dlg resident.hub [pair.disposition=hostile|wary] : Speak to the matter and keep the purse out of it.
-dlg resident.hub [here.time=dawn] : Soft voices carry well before the wind starts moving.
-dlg resident.job [self.job=sailor] : At #self.workplace# I prefer to test the loose end before anybody relies on the tight one.
-dlg resident.job : I do well with work that gives a steady pair of fingers a reason for showing up.
-dlg resident.news [world.news] : These words held together as far as this bench. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The strand I've heard says #topic.subject# #topic.claim#. I wouldn't call the whole rope tested.
-dlg resident.bye : Go out with a sound loop and enough slack for the turn.
-dlg master.work : Hands learn by touching the mistake and undoing it. A perfect piece kept behind glass will teach you remarkably little.
-dlg master.wages : No wages for learning. Working here beside me speeds your learning threefold. The pieces you produce are yours for selling.
-dlg master.bye : Loosen the practice knot before your fingers grow tired of it.
 
+dlg @1 resident.hub : I can keep one ear open while my fingers plait.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your particular step needs no introduction.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : Speak to the matter and keep the purse out of it.
+dlg @4 resident.hub [here.time=dawn] : Soft voices carry well before the wind starts moving.
+dlg @1 resident.job [self.job=sailor] : At #self.workplace# I prefer to test the loose end before anybody relies on the tight one.
+dlg @2 resident.job : I do well with work that gives a steady pair of fingers a reason for showing up.
+dlg @1 resident.news [world.news] : These words held together as far as this bench. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The strand I've heard says #topic.subject# #topic.claim#. I wouldn't call the whole rope tested.
+dlg @1 resident.bye : Go out with a sound loop and enough slack for the turn.
+dlg @1 master.work : Hands learn by touching the mistake and undoing it. A perfect piece kept behind glass will teach you remarkably little.
+dlg @1 master.wages : No wages for learning. Working here beside me speeds your learning threefold. The pieces you produce are yours for selling.
+dlg @1 master.bye : Loosen the practice knot before your fingers grow tired of it.
 graft resident.hub
 choice What's the plait for? -> plait_purpose
 node plait_purpose

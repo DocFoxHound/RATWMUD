@@ -1,14 +1,17 @@
+# rm505, the blackberry exchange (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm505
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_eleanor_saltcot
+written_by codex
 title the blackberry exchange
 fits stage=adult|old
 prefers role=merchant job=merchant
 traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=ambitious
-quirk measures_coins_and_blackberries_on_separate_sides_of_a_charcoal_camp_map
+quirk sorts_coins_and_blackberries_on_a_charcoal_camp_map
 likes blackberries long_walks old_maps first_warm_day
 dislikes early_bells waiting
 fears losing_the_quiet_under_the_sound_of_coin
@@ -41,48 +44,47 @@ rag = a clean wiping rag | a dry cloth
 stack = a small coin tower | a straight stack
 
 any
-opinion merchants mixed 2 : Watch the amount going into the dish and the amount coming back out. Anything taken for the trouble ought to be named.
-opinion houses against 1 : There's a great deal more House than wolf on a stamped coin. Even so, an ordinary paw has to earn it.
-opinion dole for 2 : A little food bought in company can sometimes cost less. A hungry wolf turned away still costs the street something.
-opinion road for 2 : A road that leads beyond jingling money towards honest hill quiet is worth attention.
-opinion strangers for 1 : Foreign boots can recognise an honest exchange perfectly well.
-opinion church mixed 1 : I'm fond of a quiet place where the sum on the counter isn't the measure of a welcome.
-opinion sump for 1 : The low streets teach the difference between knowing how much coin weighs and knowing what carrying it costs.
-opinion festivals for 1 : Fine occasion for giving small change a little exercise and my working ears a more tuneful sort of noise.
-opinion times against 2 [world.times=lean|hard] : Small coins ought to do a full day's work. I see them stretched these days until the rims must ache.
+opinion @1 merchants mixed 2 : Watch the amount going into the dish and the amount coming back out. Anything taken for the trouble ought to be named.
+opinion @1 houses against 1 : There's a great deal more House than wolf on a stamped coin. Even so, an ordinary paw has to earn it.
+opinion @1 dole for 2 : A little food bought in company can sometimes cost less. A hungry wolf turned away still costs the street something.
+opinion @1 road for 2 : A road that leads beyond jingling money towards honest hill quiet is worth attention.
+opinion @1 strangers for 1 : Foreign boots can recognise an honest exchange perfectly well.
+opinion @1 church mixed 1 : I'm fond of a quiet place where the sum on the counter isn't the measure of a welcome.
+opinion @1 sump for 1 : The low streets teach the difference between knowing how much coin weighs and knowing what carrying it costs.
+opinion @1 festivals for 1 : Fine occasion for giving small change a little exercise and my working ears a more tuneful sort of noise.
+opinion @1 times against 2 [world.times=lean|hard] : Small coins ought to do a full day's work. I see them stretched these days until the rims must ache.
 
 grown
-line greet : My knife's away and I've cleared space beside my coin dish. | Welcome, your first word comes without a fee.
-line greet.return : A full measure of greeting comes back to you.
-line again.open : You've come round quicker than a well-spent copper.
-line farewell : Take the longer road if it has berries along it. | Keep your best patch of quiet on the walk back.
-line farewell.return : And an easy homeward figure in your own account.
-line react.news : Tell it untied. I'll leave the cord cutter resting. | I can hear news over a great deal of small change.
-line react.news.new : My hill map bears a fresh mark.
-line react.news.known : I've changed that account into other words before.
-line react.news.doubt : Something small but important's been skimmed from the explanation.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd put every coin aside to give the hurt a little peace.
-line react.news.glad [topic.kind=birth|marriage|work] : That's the sound of luck turning over the bright side.
-line ask.how : What's the exchange been like between your feet and the road today?
-line answer.how : Lots going round in my head and enough coming back to keep me happy.
-line sympathise : Stay here a moment. Nobody's charging for the quiet.
-line reassure : A narrow purse can hold a wider hope than its owner expects.
-line refuse : I'd be promising two wolves the same quarter hour if I agreed.
-line accept_decline : Then your answer goes back to you free of any charge.
-line preclose : I'll take myself back before the next queue begins.
-line accept_preclose : Get to your own quiet patch while it's available.
-line ack : The account comes up clear in both pans.
-line greet [here.time=dawn] : A soft welcome before the bells begin trying to change it.
-line greet [pair.band=strangers] : A stranger may take an honest first look at the dish.
-line greet [here.time=night] : Late company can use my lamp's little pool of warmth.
-line greet.return [pair.band=friends] : A greeting like yours pays me back for a long noisy queue.
-line hail [pair.band=friends] : By my quieter counter corner, beside the berry stain!
-line answer.how.busy [self.working=yes] : Busy sorting the small particulars that count up into a day's wages.
-line thank : That favour's worth a whole pocketful of the nice quiet minutes.
-line deflect_thanks : There was enough room in the matter to let a second paw help.
-line give.advice : Lay out every piece before admiring how neatly the total stacks.
-line ask.how [pair.band=friends] : Did you find some hillside for yourself, or its equal in quiet?
-
+line @1 greet : My knife's away and I've cleared space beside my coin dish. | Welcome, your first word comes without a fee.
+line @1 greet.return : A full measure of greeting comes back to you.
+line @1 again.open : You've come round quicker than a well-spent copper.
+line @1 farewell : Take the longer road if it has berries along it. | Keep your best patch of quiet on the walk back.
+line @1 farewell.return : And an easy homeward figure in your own account.
+line @1 react.news : Tell it untied. I'll leave the cord cutter resting. | I can hear news over a great deal of small change.
+line @1 react.news.new : My hill map bears a fresh mark.
+line @1 react.news.known : I've changed that account into other words before.
+line @1 react.news.doubt : Something small but important's been skimmed from the explanation.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd put every coin aside to give the hurt a little peace.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's the sound of luck turning over the bright side.
+line @1 ask.how : What's the exchange been like between your feet and the road today?
+line @1 answer.how : Lots going round in my head and enough coming back to keep me happy.
+line @1 sympathise : Stay here a moment. Nobody's charging for the quiet.
+line @1 reassure : A narrow purse can hold a wider hope than its owner expects.
+line @1 refuse : I'd be promising two wolves the same quarter hour if I agreed.
+line @1 accept_decline : Then your answer goes back to you free of any charge.
+line @1 preclose : I'll take myself back before the next queue begins.
+line @1 accept_preclose : Get to your own quiet patch while it's available.
+line @1 ack : The account comes up clear in both pans.
+line @2 greet [here.time=dawn] : A soft welcome before the bells begin trying to change it.
+line @3 greet [pair.band=strangers] : A stranger may take an honest first look at the dish.
+line @4 greet [here.time=night] : Late company can use my lamp's little pool of warmth.
+line @2 greet.return [pair.band=friends] : A greeting like yours pays me back for a long noisy queue.
+line @1 hail [pair.band=friends] : By my quieter counter corner, beside the berry stain!
+line @1 answer.how.busy [self.working=yes] : Busy sorting the small particulars that count up into a day's wages.
+line @1 thank : That favour's worth a whole pocketful of the nice quiet minutes.
+line @1 deflect_thanks : There was enough room in the matter to let a second paw help.
+line @1 give.advice : Lay out every piece before admiring how neatly the total stacks.
+line @2 ask.how [pair.band=friends] : Did you find some hillside for yourself, or its equal in quiet?
 scene exchange1
 when topic=work self.role=merchant self.workplace
 does tell.self / ask.detail / answer.detail
@@ -359,30 +361,30 @@ when concept=bark self.likes=long_walks
 does aside
 cooldown 8h
 say I'd exchange a stretch of waiting for a good long hill. | A spare hour wants soles under it.
-dlg resident.hub : I can change the subject off money if you need a little quiet instead.
-dlg resident.hub [topic.meeting=known] : #topic.player#, my working memory knows where your name belongs.
-dlg resident.hub [here.time=night] : The coin rows have gone to bed. I've still a civil word left.
-dlg resident.hub [pair.disposition=wary|hostile] : You can keep your purse closed. All I'm offering is a hearing.
-dlg resident.job [self.job=merchant] : I change money at #self.workplace#. You should see the fee and the return with your own eyes.
-dlg resident.job : I like work in which a wolf goes away able to check the account alone.
-dlg resident.news [world.news] : What's come across this counter is #world.news#.
-dlg resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. A teller's figure should always be checked against the working.
-dlg resident.bye : I hope one of your homeward turnings comes with a little quiet at no extra charge.
-dlg shop.greet [here.shop=open] : Put down only the sum you wish to exchange. We can count both sides in comfort.
-dlg shop.greet [here.shop=bare] : No stock on this board just now. An empty counter can be remarkably uncommunicative.
-dlg shop.greet [here.shop=asleep] : The shutters and I are both officially resting.
-dlg shop.prices : I'll give the whole charge while your coins are still sitting in plain view.
-dlg shop.bye [here.shop!=asleep] : Check the corners of your purse before the tie goes back.
-dlg master.learn [here.teaches=yes] : Ask me about #here.trade_title#. I'll show the part that every customer deserves to understand.
-dlg master.learn [here.teaches=no] : My teaching bench already seats somebody. I can still clear a corner to explain a bit of the work.
-dlg master.work : Calm hands and a head for small differences. Several quiet habits make a busy counter look easy.
-dlg master.wages : You can sell your own work as you learn. There isn't a separate wage for taking the lessons.
-dlg master.takes [here.take_on=no] : I can't begin that agreement yet. #here.take_on_why#.
-dlg master.bye : Keep the working as tidy as the sum you put underneath.
-dlg resident.business [business=steady] : The coins move at a decent pace and I can spare each caller a proper count.
-dlg resident.business [business=thriving] : Both pans are hardly empty between callers.
-dlg resident.business [business=failing] : More eyes passing the window than purses opening on the counter.
 
+dlg @1 resident.hub : I can change the subject off money if you need a little quiet instead.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my working memory knows where your name belongs.
+dlg @3 resident.hub [here.time=night] : The coin rows have gone to bed. I've still a civil word left.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can keep your purse closed. All I'm offering is a hearing.
+dlg @1 resident.job [self.job=merchant] : I change money at #self.workplace#. You should see the fee and the return with your own eyes.
+dlg @2 resident.job : I like work in which a wolf goes away able to check the account alone.
+dlg @1 resident.news [world.news] : What's come across this counter is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. A teller's figure should always be checked against the working.
+dlg @1 resident.bye : I hope one of your homeward turnings comes with a little quiet at no extra charge.
+dlg @1 shop.greet [here.shop=open] : Put down only the sum you wish to exchange. We can count both sides in comfort.
+dlg @2 shop.greet [here.shop=bare] : No stock on this board just now. An empty counter can be remarkably uncommunicative.
+dlg @3 shop.greet [here.shop=asleep] : The shutters and I are both officially resting.
+dlg @1 shop.prices : I'll give the whole charge while your coins are still sitting in plain view.
+dlg @1 shop.bye [here.shop!=asleep] : Check the corners of your purse before the tie goes back.
+dlg @1 master.learn [here.teaches=yes] : Ask me about #here.trade_title#. I'll show the part that every customer deserves to understand.
+dlg @2 master.learn [here.teaches=no] : My teaching bench already seats somebody. I can still clear a corner to explain a bit of the work.
+dlg @1 master.work : Calm hands and a head for small differences. Several quiet habits make a busy counter look easy.
+dlg @1 master.wages : You can sell your own work as you learn. There isn't a separate wage for taking the lessons.
+dlg @1 master.takes [here.take_on=no] : I can't begin that agreement yet. #here.take_on_why#.
+dlg @1 master.bye : Keep the working as tidy as the sum you put underneath.
+dlg @1 resident.business [business=steady] : The coins move at a decent pace and I can spare each caller a proper count.
+dlg @2 resident.business [business=thriving] : Both pans are hardly empty between callers.
+dlg @3 resident.business [business=failing] : More eyes passing the window than purses opening on the counter.
 graft resident.hub
 choice Where's the charcoal hill on that map? -> berry_map
 node berry_map

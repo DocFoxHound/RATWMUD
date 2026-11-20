@@ -1,14 +1,17 @@
+# rm499, the tanner's last wet measure (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm499
+revision 1
 state ready
 dialect plain
 accent broad light
 tier full
 written_for rm_dunstan_greywick
+written_by codex
 title the tanner's last wet measure
 fits stage=adult|old
 prefers role=merchant job=crafter
 traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
-quirk waits_for_the_gap_in_rain_by_stepping_a_dance_on_the_drying_floor
+quirk steps_a_dance_on_the_drying_floor_till_the_rain_gaps
 likes mutton_stew dancing sharp_knife thunder
 dislikes drizzle waiting
 fears a_private_grief_put_on_the_price_slate
@@ -42,48 +45,47 @@ soap = a twist of soap | a cake of plain soap
 vat = a wooden tub | a round vat
 
 any
-opinion merchants mixed 1 : A sale comes with a share of the responsibility for how the hide will wear after the buyer walks out.
-opinion houses against 2 : A wharf ledger can be in perfect order while a household has everything torn across the middle.
-opinion dole for 2 : A good stew shares readily if its keeper remembers to put another bowl beside the pot.
-opinion strangers for 1 : I'll let a new face warm up in the yard without publicly enquiring where the chill came from.
-opinion watch mixed 1 : An honest inspection may have its questions answered. A private grief may choose its own company.
-opinion road mixed 1 : I don't mind a long road if it brings me back before the loosened hides take a soaking.
-opinion sump for 1 : A dry space in a wet street can be made into a considerable act of friendship.
-opinion church mixed 1 : I have little taste for a speech about grief and a great deal for the wolf who can stay beside it.
-opinion times against 2 [world.times=lean|hard] : An unsold hide hangs in the rich yard and a worn-out shoe walks past the gate. There's work in getting them to meet.
+opinion @1 merchants mixed 1 : A sale comes with a share of the responsibility for how the hide will wear after the buyer walks out.
+opinion @1 houses against 2 : A wharf ledger can be in perfect order while a household has everything torn across the middle.
+opinion @1 dole for 2 : A good stew shares readily if its keeper remembers to put another bowl beside the pot.
+opinion @1 strangers for 1 : I'll let a new face warm up in the yard without publicly enquiring where the chill came from.
+opinion @1 watch mixed 1 : An honest inspection may have its questions answered. A private grief may choose its own company.
+opinion @1 road mixed 1 : I don't mind a long road if it brings me back before the loosened hides take a soaking.
+opinion @1 sump for 1 : A dry space in a wet street can be made into a considerable act of friendship.
+opinion @1 church mixed 1 : I have little taste for a speech about grief and a great deal for the wolf who can stay beside it.
+opinion @1 times against 2 [world.times=lean|hard] : An unsold hide hangs in the rich yard and a worn-out shoe walks past the gate. There's work in getting them to meet.
 
 grown
-line greet : Rest your elbow on the dry end. | You can come in a step without explaining your business.
-line greet.return : That welcome meets a little warmth from my side.
-line again.open : This patch hasn't even dried since you went.
-line farewell : Go with a soft step and a sheltered sleeve. | Keep the weather off the part you need warm.
-line farewell.return : A clean landing under your own coat too.
-line react.news : Leave the words their own room to settle. | I'll hear it without stretching what's said.
-line react.news.new : An unfamiliar mark on the grain.
-line react.news.known : The earlier telling had much the same crease.
-line react.news.doubt : I'd want to feel the backing before I took that surface as proof.
-line react.news.sorrow [topic.kind=death|loss|assault] : I can lend the hurting a little shelter beyond the public yard.
-line react.news.glad [topic.kind=birth|marriage|work] : That's good news enough to put some lift in a tired heel.
-line ask.how : Where's the day caught on your shoulders?
-line answer.how : Fairly supple yet. A little tired at the seams.
-line sympathise : I can wait for words if waiting will ease you.
-line reassure : A stiff piece sometimes needs warmth before it can be bent.
-line refuse : I've an earlier tie on my time which I'd like to keep sound.
-line accept_decline : All right. Your answer can stay just as you gave it.
-line preclose : I ought to give my own work another turn before the light goes.
-line accept_preclose : Go on without pulling the parting any tighter.
-line ack : I can feel the sense of that.
-line greet [here.time=dawn] : A clear strip of board for early company.
-line greet [pair.band=strangers] : New boots are welcome under my cover.
-line greet [here.time=night] : Come into the lamp's reach before the night gets under your coat.
-line greet.return [pair.band=friends] : I know that greeting by the way it comes through the yard.
-line hail [pair.band=friends] : Here where the drying frame leaves a gap!
-line answer.how.busy [self.working=yes] : Busy at the fingers and not too busy at the ear.
-line thank : Your trouble's taken a hard crease out of mine.
-line deflect_thanks : The little piece of shelter was there to be used.
-line give.advice : Turn it over. A good surface deserves a look at the back.
-line ask.how [pair.band=friends] : Had a moment to let the day's work fall off your coat?
-
+line @1 greet : Rest your elbow on the dry end. | You can come in a step without explaining your business.
+line @1 greet.return : That welcome meets a little warmth from my side.
+line @1 again.open : This patch hasn't even dried since you went.
+line @1 farewell : Go with a soft step and a sheltered sleeve. | Keep the weather off the part you need warm.
+line @1 farewell.return : A clean landing under your own coat too.
+line @1 react.news : Leave the words their own room to settle. | I'll hear it without stretching what's said.
+line @1 react.news.new : An unfamiliar mark on the grain.
+line @1 react.news.known : The earlier telling had much the same crease.
+line @1 react.news.doubt : I'd want to feel the backing before I took that surface as proof.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I can lend the hurting a little shelter beyond the public yard.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's good news enough to put some lift in a tired heel.
+line @1 ask.how : Where's the day caught on your shoulders?
+line @1 answer.how : Fairly supple yet. A little tired at the seams.
+line @1 sympathise : I can wait for words if waiting will ease you.
+line @1 reassure : A stiff piece sometimes needs warmth before it can be bent.
+line @1 refuse : I've an earlier tie on my time which I'd like to keep sound.
+line @1 accept_decline : All right. Your answer can stay just as you gave it.
+line @1 preclose : I ought to give my own work another turn before the light goes.
+line @1 accept_preclose : Go on without pulling the parting any tighter.
+line @1 ack : I can feel the sense of that.
+line @2 greet [here.time=dawn] : A clear strip of board for early company.
+line @3 greet [pair.band=strangers] : New boots are welcome under my cover.
+line @4 greet [here.time=night] : Come into the lamp's reach before the night gets under your coat.
+line @2 greet.return [pair.band=friends] : I know that greeting by the way it comes through the yard.
+line @1 hail [pair.band=friends] : Here where the drying frame leaves a gap!
+line @1 answer.how.busy [self.working=yes] : Busy at the fingers and not too busy at the ear.
+line @1 thank : Your trouble's taken a hard crease out of mine.
+line @1 deflect_thanks : The little piece of shelter was there to be used.
+line @1 give.advice : Turn it over. A good surface deserves a look at the back.
+line @2 ask.how [pair.band=friends] : Had a moment to let the day's work fall off your coat?
 scene exchange1
 when topic=work self.job=crafter
 does tell.self / ask.detail / answer.detail
@@ -359,30 +361,30 @@ when concept=bark self.dislikes=waiting
 does aside
 cooldown 8h
 say There's always a minor patch to mend while rain deliberates. | Give the waiting hands a sound scrap.
-dlg resident.hub : I've swept a board dry and a wolf with a little time behind it.
-dlg resident.hub [topic.meeting=known] : #topic.player#, come where the hides aren't shutting daylight out.
-dlg resident.hub [here.time=night] : The late yard makes quiet talking very easy.
-dlg resident.hub [pair.disposition=wary|hostile] : You can see the public face of my board and ask about the goods on it.
-dlg resident.job [self.job=crafter] : I tan leather and stand behind the pieces I sell. Flex the working side before judging the finish.
-dlg resident.job : I keep a careful account of which part of the work is mine to answer for.
-dlg resident.news [world.news] : The matter that came through the open yard is #world.news#.
-dlg resident.gossip [here.gossip=yes] : I caught the claim that #topic.subject# #topic.claim#. Take it at the strength of a telling.
-dlg resident.bye : Walk easy with the grain of the leather.
-dlg shop.greet [here.shop=open] : Unfold any sample and look at its working side. Let me find the cut to suit the bend you need.
-dlg shop.greet [here.shop=bare] : The frames have been cleared and the board has no finished goods. Best wait for the next drying.
-dlg shop.greet [here.shop=asleep] : I'm asleep enough for trade to want a later hour.
-dlg shop.prices : The price follows the useful area and the grain. Let me show what both mean on this piece.
-dlg shop.bye [here.shop!=asleep] : Let the parcel breathe when you're under cover.
-dlg master.learn [here.teaches=yes] : I can show how #here.trade_title# feels in the hands. You may start by asking what the work asks of the wrist.
-dlg master.learn [here.teaches=no] : I've a learner already. There is still space for a practical question beside the frame.
-dlg master.work : It is work for an attentive grip and a patient nose. The weather has a vote on most afternoons.
-dlg master.wages : Learning earns no extra wage. What you make at the frame may be sold on your own account.
-dlg master.takes [here.take_on=no] : I can't give the place at the moment. #here.take_on_why#.
-dlg master.bye : Give the sample one more bend after you get home.
-dlg resident.business [business=steady] : The board clears regularly, with room to choose good work for the next frame.
-dlg resident.business [business=thriving] : Clean frames scarcely stand empty before the next piece is wanted.
-dlg resident.business [business=failing] : I've had the same soft samples up rather longer than I'd like.
 
+dlg @1 resident.hub : I've swept a board dry and a wolf with a little time behind it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, come where the hides aren't shutting daylight out.
+dlg @3 resident.hub [here.time=night] : The late yard makes quiet talking very easy.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can see the public face of my board and ask about the goods on it.
+dlg @1 resident.job [self.job=crafter] : I tan leather and stand behind the pieces I sell. Flex the working side before judging the finish.
+dlg @2 resident.job : I keep a careful account of which part of the work is mine to answer for.
+dlg @1 resident.news [world.news] : The matter that came through the open yard is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I caught the claim that #topic.subject# #topic.claim#. Take it at the strength of a telling.
+dlg @1 resident.bye : Walk easy with the grain of the leather.
+dlg @1 shop.greet [here.shop=open] : Unfold any sample and look at its working side. Let me find the cut to suit the bend you need.
+dlg @2 shop.greet [here.shop=bare] : The frames have been cleared and the board has no finished goods. Best wait for the next drying.
+dlg @3 shop.greet [here.shop=asleep] : I'm asleep enough for trade to want a later hour.
+dlg @1 shop.prices : The price follows the useful area and the grain. Let me show what both mean on this piece.
+dlg @1 shop.bye [here.shop!=asleep] : Let the parcel breathe when you're under cover.
+dlg @1 master.learn [here.teaches=yes] : I can show how #here.trade_title# feels in the hands. You may start by asking what the work asks of the wrist.
+dlg @2 master.learn [here.teaches=no] : I've a learner already. There is still space for a practical question beside the frame.
+dlg @1 master.work : It is work for an attentive grip and a patient nose. The weather has a vote on most afternoons.
+dlg @1 master.wages : Learning earns no extra wage. What you make at the frame may be sold on your own account.
+dlg @1 master.takes [here.take_on=no] : I can't give the place at the moment. #here.take_on_why#.
+dlg @1 master.bye : Give the sample one more bend after you get home.
+dlg @1 resident.business [business=steady] : The board clears regularly, with room to choose good work for the next frame.
+dlg @2 resident.business [business=thriving] : Clean frames scarcely stand empty before the next piece is wanted.
+dlg @3 resident.business [business=failing] : I've had the same soft samples up rather longer than I'd like.
 graft resident.hub
 choice Is the drying floor really good for dancing? -> dance_floor
 node dance_floor

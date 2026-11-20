@@ -1,9 +1,12 @@
+# rm369, the missing hammerbeat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm369
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rmx_una_toft
+written_by codex
 title the missing hammerbeat
 fits stage=adult|old
 prefers role=merchant job=smith
@@ -39,51 +42,50 @@ chalk = my shop chalk | a grey little chalk end
 wage = my day's reckoning | the steward's figure
 
 any
-opinion merchants for 1 : A figure on a small ticket has a wagon's worth of costs behind it. I don't ask admiration, just payment.
-opinion houses for 1 : Fine capital from the Houses has a familiar sound once it turns to metal on a shop floor.
-opinion watch for 2 : I value a patrol that can look along a counter and see two paws working in quite opposite interests.
-opinion strangers against 2 : Unknown paws stay outside the inner rail until we have had a little perfectly civil talk.
-opinion dole against 2 : I'd happily weigh the pot, the servings and the number of second trips. If that spoils an appetite it wasn't hunger.
-opinion festivals for 2 : I like dancing with a crowd whose intentions I wouldn't trust near an open cash drawer. Quite separate measures.
-opinion times for 1 : My figures add up without begging anybody for a kinder sort of arithmetic. I'm comfortable with that.
-opinion drink mixed 0 : A pleasant cup over supper and a notion of running an iron yard on fumes are different propositions.
-opinion road mixed 0 : A smooth delivery earns a clear receipt. I judge the road by what actually reaches my door.
+opinion @1 merchants for 1 : A figure on a small ticket has a wagon's worth of costs behind it. I don't ask admiration, just payment.
+opinion @1 houses for 1 : Fine capital from the Houses has a familiar sound once it turns to metal on a shop floor.
+opinion @1 watch for 2 : I value a patrol that can look along a counter and see two paws working in quite opposite interests.
+opinion @1 strangers against 2 : Unknown paws stay outside the inner rail until we have had a little perfectly civil talk.
+opinion @1 dole against 2 : I'd happily weigh the pot, the servings and the number of second trips. If that spoils an appetite it wasn't hunger.
+opinion @1 festivals for 2 : I like dancing with a crowd whose intentions I wouldn't trust near an open cash drawer. Quite separate measures.
+opinion @1 times for 1 : My figures add up without begging anybody for a kinder sort of arithmetic. I'm comfortable with that.
+opinion @1 drink mixed 0 : A pleasant cup over supper and a notion of running an iron yard on fumes are different propositions.
+opinion @1 road mixed 0 : A smooth delivery earns a clear receipt. I judge the road by what actually reaches my door.
 
 grown
-line greet [pair.band=strangers] : A new visitor. This side of the rail is ample. | Welcome. Keep a pleasant distance from the scale.
-line greet [self.working=yes] : Speak between the two taps. | My glance is free. Go on.
-line greet [here.time=dawn] : Morning. The weights are all in order. | A crisp start to today's accounts.
-line greet [here.time=dusk|night] : Evening. You can still make out the marked side. | The lamp lends us another measure of talk.
-line kin.open [pair.kin!=no] : Family can reach my unguarded ear. | Ah, kin. No business voice required.
-line again.open : Look what the scales have brought back. | Another hearing within the same business day.
-line greet.return : Welcome. I can hear quite distinctly. | Yes, this is my attentive look.
-line greet.return [pair.band=friends|family] : I know that voice even through a racket. | Your business is welcome once more.
-line greet.return [self.working=yes] : I'll grant the work a little pause. | Two taps and I'll listen properly.
-line greet.return [here.time=dusk|night] : Evening. One lamp across the scale. | Come closer than the shadows, please.
-line farewell : Leave clearly weighed and in good order. | A pleasant turn beyond the rail.
-line farewell.return : I'll mark this dealing amicably settled. | Enough to balance the visit.
-line farewell.return [here.time=night] : Mind what rattles behind you in the dark. | A bright yard lamp on the way back.
-line react.news : Put the account on my scales. | Give me something firmer than a pretty noise.
-line react.news.new : A fresh stamp on that figure. | That hadn't crossed my scale yet.
-line react.news.known : Yes, the same weight as before. | That total has reached my side already.
-line react.news.doubt : I'd look beneath the pan before endorsing that account. | Rather pretty noise for an amount nobody has weighed.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll have the noise knocked off awhile. | That comes down with an ugly weight.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I can sign for news of that quality. | A welcome measure over and above the day.
-line ask.how : How heavy is today's undertaking? | Any profit from your expenditure of patience?
-line answer.how : My temper's sound. My figures clearer still. | A little short of one easy breath.
-line decline : I'd rather have the time for my own account. | My good rail must stay between me and that arrangement.
-line accept_decline : A refusal clear enough for my book. | Settled then. No haggling on either side.
-line thank : That service weighs very creditably. | I'll remember who kept the measure true.
-line sympathise : You're welcome to the still end of the bench. | Take a decent interval before the next stroke.
-line reassure : Nobody has to answer two hammers at once. | A sound measure survives being tested.
-line preclose : My own figures must have me back shortly. | Time for the next knock to carry.
-line accept_preclose : Leave the interval between us unpriced. | Business may draw breath some other time.
-line deflect_thanks : The credit's been placed correctly. | I don't invoice for a civil turn.
-line ack : Verified. | Full measure.
-line give.advice : Let the seller show you both pans. | Always hear the metal after the speech.
-line offer : I can hold the rail clear awhile. | Want my second opinion of that weight?
-line praise : You found the little discrepancy neatly. | That's an answer fit to be weighed in daylight.
-
+line @1 greet [pair.band=strangers] : A new visitor. This side of the rail is ample. | Welcome. Keep a pleasant distance from the scale.
+line @2 greet [self.working=yes] : Speak between the two taps. | My glance is free. Go on.
+line @3 greet [here.time=dawn] : Morning. The weights are all in order. | A crisp start to today's accounts.
+line @4 greet [here.time=dusk|night] : Evening. You can still make out the marked side. | The lamp lends us another measure of talk.
+line @1 kin.open [pair.kin!=no] : Family can reach my unguarded ear. | Ah, kin. No business voice required.
+line @1 again.open : Look what the scales have brought back. | Another hearing within the same business day.
+line @1 greet.return : Welcome. I can hear quite distinctly. | Yes, this is my attentive look.
+line @2 greet.return [pair.band=friends|family] : I know that voice even through a racket. | Your business is welcome once more.
+line @3 greet.return [self.working=yes] : I'll grant the work a little pause. | Two taps and I'll listen properly.
+line @4 greet.return [here.time=dusk|night] : Evening. One lamp across the scale. | Come closer than the shadows, please.
+line @1 farewell : Leave clearly weighed and in good order. | A pleasant turn beyond the rail.
+line @1 farewell.return : I'll mark this dealing amicably settled. | Enough to balance the visit.
+line @2 farewell.return [here.time=night] : Mind what rattles behind you in the dark. | A bright yard lamp on the way back.
+line @1 react.news : Put the account on my scales. | Give me something firmer than a pretty noise.
+line @1 react.news.new : A fresh stamp on that figure. | That hadn't crossed my scale yet.
+line @1 react.news.known : Yes, the same weight as before. | That total has reached my side already.
+line @1 react.news.doubt : I'd look beneath the pan before endorsing that account. | Rather pretty noise for an amount nobody has weighed.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll have the noise knocked off awhile. | That comes down with an ugly weight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I can sign for news of that quality. | A welcome measure over and above the day.
+line @1 ask.how : How heavy is today's undertaking? | Any profit from your expenditure of patience?
+line @1 answer.how : My temper's sound. My figures clearer still. | A little short of one easy breath.
+line @1 decline : I'd rather have the time for my own account. | My good rail must stay between me and that arrangement.
+line @1 accept_decline : A refusal clear enough for my book. | Settled then. No haggling on either side.
+line @1 thank : That service weighs very creditably. | I'll remember who kept the measure true.
+line @1 sympathise : You're welcome to the still end of the bench. | Take a decent interval before the next stroke.
+line @1 reassure : Nobody has to answer two hammers at once. | A sound measure survives being tested.
+line @1 preclose : My own figures must have me back shortly. | Time for the next knock to carry.
+line @1 accept_preclose : Leave the interval between us unpriced. | Business may draw breath some other time.
+line @1 deflect_thanks : The credit's been placed correctly. | I don't invoice for a civil turn.
+line @1 ack : Verified. | Full measure.
+line @1 give.advice : Let the seller show you both pans. | Always hear the metal after the speech.
+line @1 offer : I can hold the rail clear awhile. | Want my second opinion of that weight?
+line @1 praise : You found the little discrepancy neatly. | That's an answer fit to be weighed in daylight.
 scene cough
 when topic=health
 does tell.self / ask.detail / answer.detail
@@ -360,20 +362,19 @@ does aside
 cooldown 11h
 say Dry cloth under the scale arm. | Nothing to remark upon in that sudden pause.
 
-dlg resident.hub : I find civil business goes best with each set of paws visible. Just there will do handsomely.
-dlg resident.hub [topic.meeting=known] : I recognise the set of those ears, #topic.player#. My own are open to some fresh business.
-dlg resident.hub [here.time=dawn] : Early enough for a fresh tally and a respectable introduction.
-dlg resident.hub [here.time=dusk] : The scale's still legible. My expression is my own concern.
-dlg resident.hub [self.parent=yes] : One moment. Family affairs occupy the front of my thoughts before public ones.
-dlg resident.job [self.job=smith self.role=merchant self.workplace] : I answer for the iron that passes through #self.workplace#. I have quite definite views on both the price and the delivery.
-dlg resident.job : I'm entrusted with more weight than one might guess from the look of my hands.
-dlg resident.news [world.news] : I'll release this bit of information without charge. #world.news#
-dlg resident.bye : May your quantity agree with your receipt all the way home.
-dlg shop.greet [self.role=merchant here.shop!=bare] : Goods on the proper surface, hands in sight, good manners plentiful. We can begin.
-dlg shop.greet [self.role=merchant here.shop=bare] : The empty surface is handsomely available for viewing but there are no goods for sale.
-dlg shop.prices [self.role=merchant here.shop!=bare] : My marks are clear and my weights answer for themselves. Inspect them at your leisure.
-dlg shop.bye [self.role=merchant] : A clear dealing, I trust. Keep the receipt within reach.
-
+dlg @1 resident.hub : I find civil business goes best with each set of paws visible. Just there will do handsomely.
+dlg @2 resident.hub [topic.meeting=known] : I recognise the set of those ears, #topic.player#. My own are open to some fresh business.
+dlg @3 resident.hub [here.time=dawn] : Early enough for a fresh tally and a respectable introduction.
+dlg @4 resident.hub [here.time=dusk] : The scale's still legible. My expression is my own concern.
+dlg @5 resident.hub [self.parent=yes] : One moment. Family affairs occupy the front of my thoughts before public ones.
+dlg @1 resident.job [self.job=smith self.role=merchant self.workplace] : I answer for the iron that passes through #self.workplace#. I have quite definite views on both the price and the delivery.
+dlg @2 resident.job : I'm entrusted with more weight than one might guess from the look of my hands.
+dlg @1 resident.news [world.news] : I'll release this bit of information without charge. #world.news#
+dlg @1 resident.bye : May your quantity agree with your receipt all the way home.
+dlg @1 shop.greet [self.role=merchant here.shop!=bare] : Goods on the proper surface, hands in sight, good manners plentiful. We can begin.
+dlg @2 shop.greet [self.role=merchant here.shop=bare] : The empty surface is handsomely available for viewing but there are no goods for sale.
+dlg @1 shop.prices [self.role=merchant here.shop!=bare] : My marks are clear and my weights answer for themselves. Inspect them at your leisure.
+dlg @1 shop.bye [self.role=merchant] : A clear dealing, I trust. Keep the receipt within reach.
 graft @signal resident.hub
 choice What happens if I hear only two beats? -> beat_two
 node beat_two
@@ -385,6 +386,7 @@ node beat_throat
 say I have several quite serviceable ways of obtaining attention. Their precise origins are of considerably less interest than their results.
 choice Then I'll watch for the result. -> hub
 choice I'll let the next beat pass quietly. -> bye
+
 graft @pan shop.greet
 choice May I look beneath the scale? [self.role=merchant] -> pan_check
 node pan_check

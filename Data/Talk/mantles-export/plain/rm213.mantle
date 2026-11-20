@@ -1,9 +1,12 @@
+# rm213, the quiet hinge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm213
+revision 1
 state ready
 dialect plain
 accent none
 tier standard
 written_for rm_theodora_wickley
+written_by codex
 title the quiet hinge
 fits stage=adult|old
 prefers talk=quiet piety=ordinary
@@ -35,41 +38,40 @@ benchend = the free end of a bench | the corner seat
 step = a careful footfall | the lightest tread
 
 any
-opinion church for 1 : A chapel door ought to open just as easily from the inside. Some prayers take less time than the service.
-opinion city for 2 : For all our noise, a wolf who listens can find a quiet room here.
-opinion festivals for 1 : Every dance has a turn when the press of shoulders falls away. I like that turn best.
-opinion houses mixed 1 : A crest on a gift can make the receiver feel watched. Send good linen with the crest cut off.
-opinion dole for 1 : Leave a portion where a hungry wolf can take it alone. The witnesses add nothing to a meal.
-opinion times for 1 : A spare cover laid by, and enough left for the next pot. Prosperity needn't rattle a purse.
+opinion @1 church for 1 : A chapel door ought to open just as easily from the inside. Some prayers take less time than the service.
+opinion @1 city for 2 : For all our noise, a wolf who listens can find a quiet room here.
+opinion @1 festivals for 1 : Every dance has a turn when the press of shoulders falls away. I like that turn best.
+opinion @1 houses mixed 1 : A crest on a gift can make the receiver feel watched. Send good linen with the crest cut off.
+opinion @1 dole for 1 : Leave a portion where a hungry wolf can take it alone. The witnesses add nothing to a meal.
+opinion @1 times for 1 : A spare cover laid by, and enough left for the next pot. Prosperity needn't rattle a purse.
 
 grown
-line greet : #greet#. Room enough beside me. | Come a little closer. I speak low.
-line greet [here.time=dawn] : Daylight's in the keyhole. Come through. | Early enough to hear a sleeve brush the wall.
-line greet [pair.band=strangers] : New voice. Welcome within hearing. | #greet#. Take your time settling before you speak.
-line greet.return : Heard you quite plainly. Welcome. | Let me turn my good ear your way.
-line greet.return [here.time=dusk|night] : Keep that low voice. It suits the hour. | Evening. I wouldn't have heard any softer footfall.
-line kin.open [pair.kin!=no] : You're one I needn't put my face straight for. | Haven't the strength for manners among kin. Sit close.
-line again.open : Still within earshot, both of us. | I've shifted all of two steps since.
-line farewell : Take a little peace away. | Easy on the latch as you go.
-line farewell.return : With you for the first step, in thought. | Off softly, then.
-line react.news.new : That's news enough to interrupt a quiet meal. | I'd set that aside for a second hearing. It's new to me.
-line react.news.known : I heard the bones of it. Yours has rather more flesh. | Somebody's spread the blanket wider. The middle's familiar.
-line react.news.doubt : I'd want a witness who could speak without looking sideways. | A tale that changes hands so often may pick up stains.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave room for the poor souls to draw breath. | Poor souls. Has anyone seen to a quiet place for them?
-line react.news.glad [topic.kind=birth|marriage|work] : Oh, there's warmth in that. Tell it again. | I'd set out the second-best cups for news as good as that.
-line answer.how : I've had time to sit through one whole thought. | My feet have stopped complaining long enough for me to think.
-line ask.how : Which would suit you better, a seat or a walk? | Would company help, or would it wear you thinner?
-line sympathise : You can be silent here and still have company. | Here, the chair by the wall. No audience.
-line reassure : I'll keep the next interruption outside. | Nobody gets past this elbow till you feel ready.
-line decline : I'd have to leave somebody waiting. Please ask elsewhere. | I've another quiet duty promised for that very hour.
-line accept_decline : Your own time belongs to you. Keep it. | An empty chair will do no harm.
-line thank : That saved me a journey on tired feet. | I shan't forget what you took off my shoulders.
-line deflect_thanks : Quietly done, quietly paid for. | You've thanked me in a perfectly audible whisper.
-line preclose : My thoughts are beginning to drift indoors. | I'd best leave you a little room for yourself.
-line accept_preclose : Go before the street snags you again. | The unlatched door's the gentlest sort of goodbye.
-line ack : Ah, that explains the pause. | Mm. I can see why.
-line give.advice : Try the smallest kindness first. Big ones take strength to receive. | A kindly question can wear a tired wolf out as fast as a rude one.
-
+line @1 greet : #greet#. Room enough beside me. | Come a little closer. I speak low.
+line @2 greet [here.time=dawn] : Daylight's in the keyhole. Come through. | Early enough to hear a sleeve brush the wall.
+line @3 greet [pair.band=strangers] : New voice. Welcome within hearing. | #greet#. Take your time settling before you speak.
+line @1 greet.return : Heard you quite plainly. Welcome. | Let me turn my good ear your way.
+line @2 greet.return [here.time=dusk|night] : Keep that low voice. It suits the hour. | Evening. I wouldn't have heard any softer footfall.
+line @1 kin.open [pair.kin!=no] : You're one I needn't put my face straight for. | Haven't the strength for manners among kin. Sit close.
+line @1 again.open : Still within earshot, both of us. | I've shifted all of two steps since.
+line @1 farewell : Take a little peace away. | Easy on the latch as you go.
+line @1 farewell.return : With you for the first step, in thought. | Off softly, then.
+line @1 react.news.new : That's news enough to interrupt a quiet meal. | I'd set that aside for a second hearing. It's new to me.
+line @1 react.news.known : I heard the bones of it. Yours has rather more flesh. | Somebody's spread the blanket wider. The middle's familiar.
+line @1 react.news.doubt : I'd want a witness who could speak without looking sideways. | A tale that changes hands so often may pick up stains.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave room for the poor souls to draw breath. | Poor souls. Has anyone seen to a quiet place for them?
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Oh, there's warmth in that. Tell it again. | I'd set out the second-best cups for news as good as that.
+line @1 answer.how : I've had time to sit through one whole thought. | My feet have stopped complaining long enough for me to think.
+line @1 ask.how : Which would suit you better, a seat or a walk? | Would company help, or would it wear you thinner?
+line @1 sympathise : You can be silent here and still have company. | Here, the chair by the wall. No audience.
+line @1 reassure : I'll keep the next interruption outside. | Nobody gets past this elbow till you feel ready.
+line @1 decline : I'd have to leave somebody waiting. Please ask elsewhere. | I've another quiet duty promised for that very hour.
+line @1 accept_decline : Your own time belongs to you. Keep it. | An empty chair will do no harm.
+line @1 thank : That saved me a journey on tired feet. | I shan't forget what you took off my shoulders.
+line @1 deflect_thanks : Quietly done, quietly paid for. | You've thanked me in a perfectly audible whisper.
+line @1 preclose : My thoughts are beginning to drift indoors. | I'd best leave you a little room for yourself.
+line @1 accept_preclose : Go before the street snags you again. | The unlatched door's the gentlest sort of goodbye.
+line @1 ack : Ah, that explains the pause. | Mm. I can see why.
+line @1 give.advice : Try the smallest kindness first. Big ones take strength to receive. | A kindly question can wear a tired wolf out as fast as a rude one.
 scene hinge
 when topic=home|pastimes
 does tell.self / ask.detail / answer.detail
@@ -244,15 +246,14 @@ does aside
 cooldown 8h
 say Quiet enough to hear a stopper lift. | Let the daylight through by inches.
 
-dlg resident.hub : Sit at this end. Nobody need lean across us.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I kept the quieter seat free.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll hear you quite well across the threshold.
-dlg resident.hub [here.time=night] : Low voices carry quite far enough now.
-dlg resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Clean cloth, a steady elbow, and time to listen.
-dlg resident.job : I generally see to the little discomforts first.
-dlg resident.news [world.news] : I can give you the words as they reached me. #world.news#.
-dlg resident.bye : There's a raised sill as you leave. Your thoughts can wait for level ground.
-
+dlg @1 resident.hub : Sit at this end. Nobody need lean across us.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I kept the quieter seat free.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll hear you quite well across the threshold.
+dlg @4 resident.hub [here.time=night] : Low voices carry quite far enough now.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Clean cloth, a steady elbow, and time to listen.
+dlg @2 resident.job : I generally see to the little discomforts first.
+dlg @1 resident.news [world.news] : I can give you the words as they reached me. #world.news.capitalize#.
+dlg @1 resident.bye : There's a raised sill as you leave. Your thoughts can wait for level ground.
 graft resident.hub
 choice How do you shut a noisy door? -> soft_catch
 node soft_catch

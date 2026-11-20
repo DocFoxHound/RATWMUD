@@ -1,9 +1,12 @@
+# rm306, the heel on account (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm306
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_leif_fogcot
+written_by codex
 title the heel on account
 fits stage=adult|old
 prefers job=innkeeper
@@ -41,48 +44,47 @@ fork = a two-tined fork | a bent table fork
 smokehaze = a hanging ribbon of smoke | a bitter grey drift
 
 any
-opinion dole for 3 : Bread I can spare ought to arrive warm enough to smell. Otherwise I've spent too long deciding who merits it.
-opinion houses against 3 : A ship's account can say that everything arrived. My table once had cause to reckon otherwise.
-opinion strangers for 2 : The shy eater and the loud one both leave a clean half-moon of crust.
-opinion church for 1 : Bless the wolf who brings another spoon along with the prayers.
-opinion watch mixed 1 : I can set a bowl down in front of a uniform and still ask what became of a neighbour.
-opinion merchants mixed 1 : A price beside a portion is a fair beginning. Let a hungry visitor see both.
-opinion festivals for 1 : The best part for me is feeding the last tired pair of dancers.
-opinion sump for 1 : I've seen a whole loaf settle into an astonishing number of small paws in the lower streets.
-opinion times against 2 [world.times=hard|lean] : When a copper buys less I cut across the loaf differently and hope nobody leaves hollow.
+opinion @1 dole for 3 : Bread I can spare ought to arrive warm enough to smell. Otherwise I've spent too long deciding who merits it.
+opinion @1 houses against 3 : A ship's account can say that everything arrived. My table once had cause to reckon otherwise.
+opinion @1 strangers for 2 : The shy eater and the loud one both leave a clean half-moon of crust.
+opinion @1 church for 1 : Bless the wolf who brings another spoon along with the prayers.
+opinion @1 watch mixed 1 : I can set a bowl down in front of a uniform and still ask what became of a neighbour.
+opinion @1 merchants mixed 1 : A price beside a portion is a fair beginning. Let a hungry visitor see both.
+opinion @1 festivals for 1 : The best part for me is feeding the last tired pair of dancers.
+opinion @1 sump for 1 : I've seen a whole loaf settle into an astonishing number of small paws in the lower streets.
+opinion @1 times against 2 [world.times=hard|lean] : When a copper buys less I cut across the loaf differently and hope nobody leaves hollow.
 
 grown
-line greet : I've a bit of table waiting for you. | Welcome on this lovely dry side.
-line greet.return : And a warmed stretch of bench from me. | Your greeting came in well ahead of the rain.
-line again.open : My table hasn't cooled from the first encounter.
-line farewell : Walk with a dry heel and supper in sight. | Keep the good end of the weather behind you.
-line farewell.return : A warm stop on your journey too. | I can take that kind parting home with my bread.
-line react.news : Serve up the news within reach of both our paws. | I'm listening right through the last course.
-line react.news.new : Unfamiliar fare. I'll taste that account slowly.
-line react.news.known : I've cut into that story once already.
-line react.news.doubt : There may be a hollow baked into that account.
-line react.news.sorrow [topic.kind=death|loss|assault] : I'd leave the grieving wolves a light at the door.
-line react.news.glad [topic.kind=birth|marriage|work] : That earns the roundest bit of crust on the loaf.
-line ask.how : How has the day gone under your soles?
-line answer.how : Still fit to lift a bowl without much spilling.
-line sympathise : I can mind the pot till your words are ready.
-line reassure : There's no rule says a weary wolf must finish standing up.
-line refuse : I owe a little time to a prior promise.
-line accept_decline : I won't press a second helping of the same question.
-line preclose : Time I turned back to the things I've left warming.
-line accept_preclose : Go get your own small comforts in order.
-line ack : I take that plain as the salt on my wrist.
-line greet [here.time=dawn] : Early feet deserve a place off the cold stone.
-line greet [pair.band=strangers] : A fresh face has the same claim on the bench.
-line greet [pair.band=friends] : Sit close. We've no ceremony to spend on each other.
-line greet.return [pair.band=friends] : You could hail me past a whole roomful sitting at supper.
-line hail [pair.band=friends] : Round my elbow here, there's the space I kept!
-line ask.how [pair.band=friends] : Had anything decent between the bustle and your bed lately?
-line answer.how.busy [self.working=yes] : Two paws moving fast enough to pass for four.
-line thank : That'll be a kindness I remember by its weight.
-line deflect_thanks : I had the room and you had the need. A good fit.
-line give.advice : Let the heat get through before you try the centre.
-
+line @1 greet : I've a bit of table waiting for you. | Welcome on this lovely dry side.
+line @1 greet.return : And a warmed stretch of bench from me. | Your greeting came in well ahead of the rain.
+line @1 again.open : My table hasn't cooled from the first encounter.
+line @1 farewell : Walk with a dry heel and supper in sight. | Keep the good end of the weather behind you.
+line @1 farewell.return : A warm stop on your journey too. | I can take that kind parting home with my bread.
+line @1 react.news : Serve up the news within reach of both our paws. | I'm listening right through the last course.
+line @1 react.news.new : Unfamiliar fare. I'll taste that account slowly.
+line @1 react.news.known : I've cut into that story once already.
+line @1 react.news.doubt : There may be a hollow baked into that account.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd leave the grieving wolves a light at the door.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That earns the roundest bit of crust on the loaf.
+line @1 ask.how : How has the day gone under your soles?
+line @1 answer.how : Still fit to lift a bowl without much spilling.
+line @1 sympathise : I can mind the pot till your words are ready.
+line @1 reassure : There's no rule says a weary wolf must finish standing up.
+line @1 refuse : I owe a little time to a prior promise.
+line @1 accept_decline : I won't press a second helping of the same question.
+line @1 preclose : Time I turned back to the things I've left warming.
+line @1 accept_preclose : Go get your own small comforts in order.
+line @1 ack : I take that plain as the salt on my wrist.
+line @2 greet [here.time=dawn] : Early feet deserve a place off the cold stone.
+line @3 greet [pair.band=strangers] : A fresh face has the same claim on the bench.
+line @4 greet [pair.band=friends] : Sit close. We've no ceremony to spend on each other.
+line @2 greet.return [pair.band=friends] : You could hail me past a whole roomful sitting at supper.
+line @1 hail [pair.band=friends] : Round my elbow here, there's the space I kept!
+line @2 ask.how [pair.band=friends] : Had anything decent between the bustle and your bed lately?
+line @1 answer.how.busy [self.working=yes] : Two paws moving fast enough to pass for four.
+line @1 thank : That'll be a kindness I remember by its weight.
+line @1 deflect_thanks : I had the room and you had the need. A good fit.
+line @1 give.advice : Let the heat get through before you try the centre.
 scene exchange1
 when topic=work self.job=innkeeper
 does tell.self / ask.detail / answer.detail
@@ -358,24 +360,24 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say The last bowl shines in a different light. | Evening makes the bread cloth look lovely and gold.
-dlg resident.hub : My ears have a little room even when the table's full.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you can leave your parcel this side again.
-dlg resident.hub [here.time=night] : Late callers can still find a corner off the cold floor.
-dlg resident.hub [pair.disposition=wary|hostile] : We can get the reckoning straight with the table between us.
-dlg resident.job [self.job=innkeeper] : I help keep wolves fed at #self.workplace#. I know which board takes the warm bowls.
-dlg resident.job : A good shift ends with another wolf comfortably fed.
-dlg resident.news [world.news] : This reached the supper end of the room. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The bit I heard was #topic.subject# #topic.claim#. It won't bear seasoning from me.
-dlg resident.bye : Dry boots and a good seat when you arrive.
-dlg inn.greet [here.inn_helper=yes] : I can clear you a corner and tell you where to ask for the rest.
-dlg inn.greet [here.shop=asleep here.inn_helper!=yes] : Even the pots are asleep. Come in with the stirring of the kitchen.
-dlg inn.greet [here.newcomer=yes here.inn_helper!=yes] : Rest the bundle over here. Everything's easier to choose with the weight off.
-dlg inn.rest [here.lodging=yes] : Your bed's accounted for. Stay on the bench until you're ready to turn in.
-dlg inn.bye [here.shop!=asleep] : Come back with the same appetite or a larger one.
-dlg resident.business [business=steady] : Enough boots come through to keep the bench worn smooth.
-dlg resident.business [business=thriving] : I've barely fetched one clean bowl before the next one's asked for.
-dlg resident.business [business=failing] : A quiet room leaves time enough to hear the cost of keeping it warm.
 
+dlg @1 resident.hub : My ears have a little room even when the table's full.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you can leave your parcel this side again.
+dlg @3 resident.hub [here.time=night] : Late callers can still find a corner off the cold floor.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can get the reckoning straight with the table between us.
+dlg @1 resident.job [self.job=innkeeper] : I help keep wolves fed at #self.workplace#. I know which board takes the warm bowls.
+dlg @2 resident.job : A good shift ends with another wolf comfortably fed.
+dlg @1 resident.news [world.news] : This reached the supper end of the room. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The bit I heard was #topic.subject# #topic.claim#. It won't bear seasoning from me.
+dlg @1 resident.bye : Dry boots and a good seat when you arrive.
+dlg @1 inn.greet [here.inn_helper=yes] : I can clear you a corner and tell you where to ask for the rest.
+dlg @2 inn.greet [here.shop=asleep here.inn_helper!=yes] : Even the pots are asleep. Come in with the stirring of the kitchen.
+dlg @3 inn.greet [here.newcomer=yes here.inn_helper!=yes] : Rest the bundle over here. Everything's easier to choose with the weight off.
+dlg @1 inn.rest [here.lodging=yes] : Your bed's accounted for. Stay on the bench until you're ready to turn in.
+dlg @1 inn.bye [here.shop!=asleep] : Come back with the same appetite or a larger one.
+dlg @1 resident.business [business=steady] : Enough boots come through to keep the bench worn smooth.
+dlg @2 resident.business [business=thriving] : I've barely fetched one clean bowl before the next one's asked for.
+dlg @3 resident.business [business=failing] : A quiet room leaves time enough to hear the cost of keeping it warm.
 graft resident.hub
 choice How do you remember a favour? -> bread_account
 node bread_account

@@ -1,9 +1,12 @@
+# rm335, the landing game (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm335
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_una_thackeray
+written_by codex
 title the landing game
 fits stage=adult|old
 prefers job=none humour=dry
@@ -35,43 +38,42 @@ cloth = the grey wrap | a folded square
 gust = an autumn gust | a hard crosswind
 
 any
-opinion houses against 1 : I'd play any House that had to show its cards by rules common to the table.
-opinion merchants against 1 : A seller ought to put the price on the visible side of the card.
-opinion sump for 1 : The low streets make good use of steps for which the builders imagined only walking.
-opinion dole for 2 : Empty paws oughtn't to exclude a wolf from dinner. It's quite a good reason to offer one.
-opinion watch against 1 : A pair of official boots in a hurry wins no special points in my game.
-opinion road for 1 : There's no admission fee for watching folk come and go. I appreciate a well-priced amusement.
+opinion @1 houses against 1 : I'd play any House that had to show its cards by rules common to the table.
+opinion @1 merchants against 1 : A seller ought to put the price on the visible side of the card.
+opinion @1 sump for 1 : The low streets make good use of steps for which the builders imagined only walking.
+opinion @1 dole for 2 : Empty paws oughtn't to exclude a wolf from dinner. It's quite a good reason to offer one.
+opinion @1 watch against 1 : A pair of official boots in a hurry wins no special points in my game.
+opinion @1 road for 1 : There's no admission fee for watching folk come and go. I appreciate a well-priced amusement.
 
 grown
-line greet : Hello. You've drawn a seat beside the dealer. | Take a seat. We're between deals.
-line greet [pair.band=strangers] : A new pair enters. Welcome. | First meeting, so I'll let the boots introduce themselves.
-line greet [here.time=dawn] : Morning. The first few pairs have a brisk look. | New deal for the day, then.
-line greet.return : Hello back. You have both my eyes now. | I heard you on the turn before you spoke.
-line greet.return [pair.band=friends|family] : Familiar tread. You're entitled to the good edge of the seat. | Here's somebody worth folding a card for.
-line greet.return [here.time=night] : Late hello. Even heels change their note after dark. | You've turned up in the quiet hand.
-line again.open : A return appearance counts double on my stair. | We seem to have shuffled into company again.
-line hail [pair.band=friends] : Over here. A rather fine pair has entered play. | Come watch while the lane deals us another.
-line farewell : Keep your soles under you and your cards dry. | May your next seat have a back to it.
-line farewell.return : I'll call that a fair withdrawal. Goodbye. | Away before the next hand claims you.
-line react.news : I've put the pack down. Let's hear it. | Deal the actual news face up.
-line react.news.new : None of that had turned up in my hand. | The stair neglected to deliver that report.
-line react.news.known : Heard that one before the tea got cold. | Yes. The first telling sounded much the same.
-line react.news.doubt : That's a lot of talk on one small card. | I wouldn't stake my last decent seat on it.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can sit the next few hands out here with me. | That news would leave the liveliest boots dragging.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd call that the best turn in an otherwise ordinary hand. | Something worth letting the tea cool to hear.
-line ask.how : What kind of hand has the day dealt you? | Did you find a perch worth the climb?
-line answer.how : Still holding a card or two. One even looks promising. | Quite still for a wolf with so many opinions about feet.
-line decline : I'd be playing a hand I haven't got if I agreed. | That's further than these boots are committed to going today.
-line accept_decline : Then I'll deal round the empty place. | Fair answer. I haven't lost a thing by asking.
-line preclose : I'll shift my seat before I begin to take root. | A fresh deal somewhere else would suit me.
-line accept_preclose : No charge for leaving the game early. | You can go without showing the rest of your hand.
-line thank : You've kept my tea warm and my temper level. Thanks. | I owe you the pick of the next seat.
-line deflect_thanks : I was sitting with a perfectly spare paw. | Hardly an undertaking to slide the pack along.
-line sympathise : Rest here without joining the game if you like. | Bad hands take time to set down too.
-line reassure : This hand's nearly over. We'll have another look then. | I can keep you company till the tea warms.
-line ack : My tally agrees with yours. | That card fits the space exactly.
-line give.advice : Choose the seat before pouring the tea. | Don't judge the whole walk by a particularly loud heel.
-
+line @1 greet : Hello. You've drawn a seat beside the dealer. | Take a seat. We're between deals.
+line @2 greet [pair.band=strangers] : A new pair enters. Welcome. | First meeting, so I'll let the boots introduce themselves.
+line @3 greet [here.time=dawn] : Morning. The first few pairs have a brisk look. | New deal for the day, then.
+line @1 greet.return : Hello back. You have both my eyes now. | I heard you on the turn before you spoke.
+line @2 greet.return [pair.band=friends|family] : Familiar tread. You're entitled to the good edge of the seat. | Here's somebody worth folding a card for.
+line @3 greet.return [here.time=night] : Late hello. Even heels change their note after dark. | You've turned up in the quiet hand.
+line @1 again.open : A return appearance counts double on my stair. | We seem to have shuffled into company again.
+line @1 hail [pair.band=friends] : Over here. A rather fine pair has entered play. | Come watch while the lane deals us another.
+line @1 farewell : Keep your soles under you and your cards dry. | May your next seat have a back to it.
+line @1 farewell.return : I'll call that a fair withdrawal. Goodbye. | Away before the next hand claims you.
+line @1 react.news : I've put the pack down. Let's hear it. | Deal the actual news face up.
+line @1 react.news.new : None of that had turned up in my hand. | The stair neglected to deliver that report.
+line @1 react.news.known : Heard that one before the tea got cold. | Yes. The first telling sounded much the same.
+line @1 react.news.doubt : That's a lot of talk on one small card. | I wouldn't stake my last decent seat on it.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can sit the next few hands out here with me. | That news would leave the liveliest boots dragging.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd call that the best turn in an otherwise ordinary hand. | Something worth letting the tea cool to hear.
+line @1 ask.how : What kind of hand has the day dealt you? | Did you find a perch worth the climb?
+line @1 answer.how : Still holding a card or two. One even looks promising. | Quite still for a wolf with so many opinions about feet.
+line @1 decline : I'd be playing a hand I haven't got if I agreed. | That's further than these boots are committed to going today.
+line @1 accept_decline : Then I'll deal round the empty place. | Fair answer. I haven't lost a thing by asking.
+line @1 preclose : I'll shift my seat before I begin to take root. | A fresh deal somewhere else would suit me.
+line @1 accept_preclose : No charge for leaving the game early. | You can go without showing the rest of your hand.
+line @1 thank : You've kept my tea warm and my temper level. Thanks. | I owe you the pick of the next seat.
+line @1 deflect_thanks : I was sitting with a perfectly spare paw. | Hardly an undertaking to slide the pack along.
+line @1 sympathise : Rest here without joining the game if you like. | Bad hands take time to set down too.
+line @1 reassure : This hand's nearly over. We'll have another look then. | I can keep you company till the tea warms.
+line @1 ack : My tally agrees with yours. | That card fits the space exactly.
+line @1 give.advice : Choose the seat before pouring the tea. | Don't judge the whole walk by a particularly loud heel.
 scene bootdeal
 when topic=pastimes self.likes=cards
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : Lift the cards before wiping a wet bench. | A card laid face down on a damp 
 b : Would a dry cloth save it? | Will it come off whole?
 a : If you use the cloth first, certainly. Order is important. | Very slowly. I've no wish to leave the face of a card on a public seat.
 
-grown
-
 story doubledeal [topic=pastimes|memories]
   : I saw a splendid clean pair come by twice and gave the pair two high cards. Came past a third time looking a little less impressive.
   : I'd been awarding points to the same circuit of a puddle.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say Sticky fingers can wait till the cards are counted. | Just a corner of cake and I'll have a clean paw again.
 
-dlg resident.hub : I've a vacant seat and a game that can spare its dealer. Speak freely.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I shall have to invent a new card for all these return appearances.
-dlg resident.hub [here.time=night] : In this quiet even distant cards make themselves heard.
-dlg resident.hub [pair.disposition=wary|hostile] : There's a whole unoccupied tread between us. Let's leave it so.
-dlg resident.job [self.job=none] : The passing world hasn't employed me, but I keep a pretty good watch on it.
-dlg resident.job : Any work that requires noticing little changes in pace is apt to hold my attention.
-dlg resident.bye : May your next hand arrive with a warm cup beside it.
-
+dlg @1 resident.hub : I've a vacant seat and a game that can spare its dealer. Speak freely.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I shall have to invent a new card for all these return appearances.
+dlg @3 resident.hub [here.time=night] : In this quiet even distant cards make themselves heard.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's a whole unoccupied tread between us. Let's leave it so.
+dlg @1 resident.job [self.job=none] : The passing world hasn't employed me, but I keep a pretty good watch on it.
+dlg @2 resident.job : Any work that requires noticing little changes in pace is apt to hold my attention.
+dlg @1 resident.bye : May your next hand arrive with a warm cup beside it.
 graft resident.hub
 choice What card do my boots get? -> bootvalue
 node bootvalue

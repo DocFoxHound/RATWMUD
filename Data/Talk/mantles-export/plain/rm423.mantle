@@ -1,9 +1,12 @@
+# rm423, the chalk stall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm423
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_ottilie_slagley
+written_by codex
 title the chalk stall
 fits stage=adult|old
 prefers job=sailor warmth=warm
@@ -35,43 +38,42 @@ mudedge = a rim of mud | the brown margin
 soundwalk = a quiet stretch of bank | my bit of shore
 
 any
-opinion houses against 2 : A House may promise a dependable delivery under an impressive seal. I still look for a sound bottom to the crate.
-opinion sump for 2 : I'd rather call a crowded low street home than have all the room on a quay and no voice there I could trust.
-opinion dole for 1 : There's no profit in making a hungry wolf carry an empty basket home with great respectability.
-opinion watch against 1 : A loud order to move along can make an already tight way too narrow for anybody to get through.
-opinion merchants mixed 0 : I judge a market counter partly by the space it leaves for a customer with a parcel already in paw.
-opinion road for 1 : Wide enough for the laden traveller is quite different from wide enough for an empty promise.
+opinion @1 houses against 2 : A House may promise a dependable delivery under an impressive seal. I still look for a sound bottom to the crate.
+opinion @1 sump for 2 : I'd rather call a crowded low street home than have all the room on a quay and no voice there I could trust.
+opinion @1 dole for 1 : There's no profit in making a hungry wolf carry an empty basket home with great respectability.
+opinion @1 watch against 1 : A loud order to move along can make an already tight way too narrow for anybody to get through.
+opinion @1 merchants mixed 0 : I judge a market counter partly by the space it leaves for a customer with a parcel already in paw.
+opinion @1 road for 1 : Wide enough for the laden traveller is quite different from wide enough for an empty promise.
 
 grown
-line greet : Hello. The chalk leaves you room beside me. | Come where a crate can pass behind you.
-line greet [pair.band=strangers] : New to my little chalk patch, I see. | Welcome. Nobody pays to stand within the line.
-line greet [here.time=dawn] : Morning. Clean boards for another set of chalk marks. | Still sufficient room in this hour to stretch our elbows.
-line greet.return : Yes, hello. I'm just stepping inside the line. | I heard. The crate can speak after you.
-line greet.return [pair.band=friends|family] : For you I've saved the least draughty corner. | There's a welcome face among all these square boxes.
-line greet.return [here.time=night] : Late hello. My chalk shows up pale even now. | Welcome through the dark patches to the lighter bit.
-line again.open : You've come round my pretend stall again already. | Back within rubbing distance of this line.
-line hail [pair.band=friends] : Come see if this will take a second basket! | Here. I'd value an opinion on this particular corner.
-line farewell : A generous gap in the next crowd for you. | Give the front edge of your parcel some air.
-line farewell.return : Off you go with both elbows to yourself. | I'll lift my chalk and let you through.
-line react.news : Say what you saw before we inspect the crate's stamp. | I'm ready for the plain load of the news.
-line react.news.new : I'd not been expecting that parcel of information at all. | First hearing for me all the way through.
-line react.news.known : Yes. It comes in much the shape I heard earlier. | That report's already passed through my bit of ground.
-line react.news.doubt : I'd look under the label before passing that as fact. | That's a surprisingly weightless crate for such a firm claim.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Put the ordinary things down here. You can have my attention for the hurt. | A hurtful discovery after a long journey. Rest here.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's news that can take up space without crowding anybody. | I'd spare my best corner for good hearing like that.
-line ask.how : How's your share of breathing room today? | Any part of your load I could shift for a spell?
-line answer.how : A little worn. Still keeping my corners square enough. | Plenty on my shoulder, with a little space for company.
-line decline : I'd be standing on somebody else's bit of ground if I promised that. | The little I have available already covers an earlier commitment.
-line accept_decline : Fair. You've drawn a line I can respect. | Then I've space enough to set my own feet down.
-line preclose : I'll rub the marks away before somebody needs the whole way clear. | Time I went and took the next weight properly.
-line accept_preclose : Use that clear stretch while it's there. | Go on with my thanks for the company.
-line thank : You saved me a sore elbow. That's worth remembering. | I noticed the care you took to leave me space. Thanks.
-line deflect_thanks : I had the loose end by me anyway. | The way became easier for both of us at once.
-line sympathise : Stand inside this patch and take a whole quiet minute. | I'll leave you breathing room without asking a word.
-line reassure : We can move one crate before assuming the whole yard's full. | The small clear bit is enough to begin from.
-line ack : Yes. That's the corner I meant. | The width makes sense now I see the mark.
-line give.advice : Try turning your shoulders before measuring a passage by sight. | Empty a crate before trying it in three different places.
-
+line @1 greet : Hello. The chalk leaves you room beside me. | Come where a crate can pass behind you.
+line @2 greet [pair.band=strangers] : New to my little chalk patch, I see. | Welcome. Nobody pays to stand within the line.
+line @3 greet [here.time=dawn] : Morning. Clean boards for another set of chalk marks. | Still sufficient room in this hour to stretch our elbows.
+line @1 greet.return : Yes, hello. I'm just stepping inside the line. | I heard. The crate can speak after you.
+line @2 greet.return [pair.band=friends|family] : For you I've saved the least draughty corner. | There's a welcome face among all these square boxes.
+line @3 greet.return [here.time=night] : Late hello. My chalk shows up pale even now. | Welcome through the dark patches to the lighter bit.
+line @1 again.open : You've come round my pretend stall again already. | Back within rubbing distance of this line.
+line @1 hail [pair.band=friends] : Come see if this will take a second basket! | Here. I'd value an opinion on this particular corner.
+line @1 farewell : A generous gap in the next crowd for you. | Give the front edge of your parcel some air.
+line @1 farewell.return : Off you go with both elbows to yourself. | I'll lift my chalk and let you through.
+line @1 react.news : Say what you saw before we inspect the crate's stamp. | I'm ready for the plain load of the news.
+line @1 react.news.new : I'd not been expecting that parcel of information at all. | First hearing for me all the way through.
+line @1 react.news.known : Yes. It comes in much the shape I heard earlier. | That report's already passed through my bit of ground.
+line @1 react.news.doubt : I'd look under the label before passing that as fact. | That's a surprisingly weightless crate for such a firm claim.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Put the ordinary things down here. You can have my attention for the hurt. | A hurtful discovery after a long journey. Rest here.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's news that can take up space without crowding anybody. | I'd spare my best corner for good hearing like that.
+line @1 ask.how : How's your share of breathing room today? | Any part of your load I could shift for a spell?
+line @1 answer.how : A little worn. Still keeping my corners square enough. | Plenty on my shoulder, with a little space for company.
+line @1 decline : I'd be standing on somebody else's bit of ground if I promised that. | The little I have available already covers an earlier commitment.
+line @1 accept_decline : Fair. You've drawn a line I can respect. | Then I've space enough to set my own feet down.
+line @1 preclose : I'll rub the marks away before somebody needs the whole way clear. | Time I went and took the next weight properly.
+line @1 accept_preclose : Use that clear stretch while it's there. | Go on with my thanks for the company.
+line @1 thank : You saved me a sore elbow. That's worth remembering. | I noticed the care you took to leave me space. Thanks.
+line @1 deflect_thanks : I had the loose end by me anyway. | The way became easier for both of us at once.
+line @1 sympathise : Stand inside this patch and take a whole quiet minute. | I'll leave you breathing room without asking a word.
+line @1 reassure : We can move one crate before assuming the whole yard's full. | The small clear bit is enough to begin from.
+line @1 ack : Yes. That's the corner I meant. | The width makes sense now I see the mark.
+line @1 give.advice : Try turning your shoulders before measuring a passage by sight. | Empty a crate before trying it in three different places.
 scene stalloutline
 when topic=dreams
 does tell.plan / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : Making room for the smaller wolf in a crowd seems to me its own little kind 
 b : A prayer with a chalk line? | Why a smaller wolf?
 a : Sometimes. May the Bright One recognise that I've paid attention to who needed a hand. | Because I can see over a shoulder. It's useful to remember some folk can't.
 
-grown
-
 story rainchalk [topic=weather|memories]
   : A sudden shower washed my imaginary counter clean off the ground except for one white corner under a crate. I looked at that corner a good while.
   : It was all the working space my original plan had actually left in dry weather too.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say The chalk still catches a little lamplight. | An evening line and no crate on my shoulder. Good.
 
-dlg resident.hub : My chalk counter is open to anybody with a question and a little standing room.
-dlg resident.hub [topic.meeting=known] : #topic.player#, the imaginary awning has moved round one corner since your last look.
-dlg resident.hub [here.time=night] : The load's set down and we needn't raise our voices to speak.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep clear of the real parcels and we can have a perfectly direct conversation.
-dlg resident.job [self.job=sailor] : #self.trade_words.capitalize#. I look for a clear landing place before worrying about what a crate's mark has promised.
-dlg resident.job : I plan for the receiver's elbows as carefully as for the weight of what's being handed over.
-dlg resident.bye : A dry landing for your next load.
-
+dlg @1 resident.hub : My chalk counter is open to anybody with a question and a little standing room.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the imaginary awning has moved round one corner since your last look.
+dlg @3 resident.hub [here.time=night] : The load's set down and we needn't raise our voices to speak.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep clear of the real parcels and we can have a perfectly direct conversation.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. I look for a clear landing place before worrying about what a crate's mark has promised.
+dlg @2 resident.job : I plan for the receiver's elbows as carefully as for the weight of what's being handed over.
+dlg @1 resident.bye : A dry landing for your next load.
 graft resident.hub
 choice Would a chalk stall tell me if my basket fits? -> chalktry
 node chalktry

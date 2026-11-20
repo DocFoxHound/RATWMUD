@@ -1,9 +1,12 @@
+# rm352, the outward-facing hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm352
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_karin_ashgate
+written_by codex
 title the outward-facing hood
 fits stage=adult|old
 prefers role=merchant job=innkeeper
@@ -17,6 +20,7 @@ topics home +0.5 pastimes +0.4 prices +0.4 food +0.3
 styles comfort=practical gossip=frank refuse=plain tease=dry
 marks oath saying
 persona #self.first# hangs an oilcloth hood facing the door and distinguishes a genuine welcome from a long description of one.
+
 words
 oath! = Crease my clean brim | Plums in the peg hole
 saying! = Hang it ready to go | A clear board can speak
@@ -39,47 +43,45 @@ panend = a spare pan lid | a flat pot cover
 greasejar = a little dressing pot | a covered grease dish
 
 grown
-
-opinion houses against 2 : A House with a wharf should be counting who came off it as carefully as what came in.
-opinion strangers for 1 : A stranger deserves to find a seat without performing gratitude for an audience.
-opinion merchants mixed 1 : I like a clearly marked price almost as much as a counter clear enough to read it.
-opinion dole for 2 : Feed the hungry one the same way you'd feed a guest with a heavy purse and a short temper.
-opinion drink mixed 1 : A cup should hold what's promised. It cannot also hold the solution to every bad day.
-opinion festivals mixed 1 : I enjoy the first quiet conversation once everyone's finished shouting what a fine festival it is.
-opinion city for 1 : A city with so many doors is bound to have one where a wet wolf feels welcome.
-opinion road mixed 1 : The road brings good visitors and more mud than I ordered with them.
-line greet : There's room under this roof for a few ordinary words.
-line greet [pair.band=strangers] : Welcome. You may set that down before we begin.
-line greet [here.time=dawn] : Morning. The day hasn't managed to clutter itself yet.
-line greet.return : I hear you across a perfectly satisfactory distance.
-line greet.return [self.working=yes] : One wipe of the board and you've got both eyes.
-line greet.return [pair.band=friends|family] : You know the unoccupied place without my pointing.
-line again.open : Back under the same bit of roof, I see.
-line hail [pair.band=friends] : Here by the peg that looks like my ears!
-line kin.open [pair.kin!=no] : I can find a place for kin without consulting any list.
-line farewell : I hope your hood does its fair part on your walk.
-line farewell.return : Carry yourself dry through the worst of it.
-line react.news : Let's put that down on a cleared patch.
-line react.news.new : Something I hadn't previously had to sweep round.
-line react.news.known : That news has left a ring here already.
-line react.news.doubt : I'd want more than the shape of the stain before naming what was in the cup.
-line react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That warrants the nice unbroken corner of the tart.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll find a private place for whoever must receive the news.
-line ask.how : Has the day left a dry corner for you yet?
-line answer.how : Upright and no longer stuck in any mud worth mentioning.
-line answer.how.busy [self.working=yes] : Busy enough to appreciate one question at a time.
-line thank : You saw what was in the way and moved it. Much obliged.
-line deflect_thanks : An empty place and somebody needing one add up simply enough.
-line decline : I won't call that fair just to make it go away.
-line accept_decline : Then we'll save the persuasion and the breath.
-line sympathise : My silence needn't stop me keeping your cup full.
-line reassure : An untidy hour can be cleared one small patch after another.
-line ack : That leaves a fairly plain mark.
-line preclose : Time to give the next small thing its proper place.
-line accept_preclose : Slip away before you acquire another errand.
-line offer : I could hold the dry corner till you've moved the heavy part.
-line give.advice : Look where the peg will drip before hanging anything below it.
-
+opinion @1 houses against 2 : A House with a wharf should be counting who came off it as carefully as what came in.
+opinion @1 strangers for 1 : A stranger deserves to find a seat without performing gratitude for an audience.
+opinion @1 merchants mixed 1 : I like a clearly marked price almost as much as a counter clear enough to read it.
+opinion @1 dole for 2 : Feed the hungry one the same way you'd feed a guest with a heavy purse and a short temper.
+opinion @1 drink mixed 1 : A cup should hold what's promised. It cannot also hold the solution to every bad day.
+opinion @1 festivals mixed 1 : I enjoy the first quiet conversation once everyone's finished shouting what a fine festival it is.
+opinion @1 city for 1 : A city with so many doors is bound to have one where a wet wolf feels welcome.
+opinion @1 road mixed 1 : The road brings good visitors and more mud than I ordered with them.
+line @1 greet : There's room under this roof for a few ordinary words.
+line @2 greet [pair.band=strangers] : Welcome. You may set that down before we begin.
+line @3 greet [here.time=dawn] : Morning. The day hasn't managed to clutter itself yet.
+line @1 greet.return : Your voice carries fine from there. Go on.
+line @2 greet.return [self.working=yes] : One wipe of the board and you've got both eyes.
+line @3 greet.return [pair.band=friends|family] : You know the unoccupied place without my pointing.
+line @1 again.open : Back under the same bit of roof, I see.
+line @1 hail [pair.band=friends] : Over here, by the hood on the peg!
+line @1 kin.open [pair.kin!=no] : I can find a place for kin without consulting any list.
+line @1 farewell : I hope your hood does its fair part on your walk.
+line @1 farewell.return : Carry yourself dry through the worst of it.
+line @1 react.news : Let's put that down on a cleared patch.
+line @1 react.news.new : Something I hadn't previously had to sweep round.
+line @1 react.news.known : That news has left a ring here already.
+line @1 react.news.doubt : I'd want more than the shape of the stain before naming what was in the cup.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That warrants the nice unbroken corner of the tart.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll find a private place for whoever must receive the news.
+line @1 ask.how : Has the day left a dry corner for you yet?
+line @1 answer.how : Upright and no longer stuck in any mud worth mentioning.
+line @1 answer.how.busy [self.working=yes] : Busy enough to appreciate one question at a time.
+line @1 thank : You saw what was in the way and moved it. Much obliged.
+line @1 deflect_thanks : An empty place and somebody needing one add up simply enough.
+line @1 decline : I won't call that fair just to make it go away.
+line @1 accept_decline : Then we'll save the persuasion and the breath.
+line @1 sympathise : My silence needn't stop me keeping your cup full.
+line @1 reassure : An untidy hour can be cleared one small patch after another.
+line @1 ack : That leaves a fairly plain mark.
+line @1 preclose : Time to give the next small thing its proper place.
+line @1 accept_preclose : Slip away before you acquire another errand.
+line @1 offer : I could hold the dry corner till you've moved the heavy part.
+line @1 give.advice : Look where the peg will drip before hanging anything below it.
 scene work_1
 when topic=work self.job=innkeeper
 does tell.self / ask.detail / answer.detail
@@ -154,7 +156,7 @@ scene memories_1
 when topic=memories
 does tell.self / ask.detail / answer.detail
 a : There are sums kept by wharf owners that don't include every loss.
-b : What would you add? | Why won't you forgive a short account?
+b : What would you add? | Can't you let an old account go?
 a : A place at a family table which no pay packet ever managed to fill again. | Because forgiving on somebody else's behalf would make me a worse accountant than I care to be.
 
 scene faith_1
@@ -260,7 +262,7 @@ when topic=prices
 does tell.self / ask.detail / answer.detail
 a : A price belongs beside the goods, clear of the part a sleeve can brush.
 b : Do you alter a price mid-sale? | Why not just tell the buyer?
-a : If I've written it wrong I point out the mistake and let the buyer choose about staying. | Because I might be answering a different question when a quiet customer needs to know.
+a : If I've written it wrong I point out the mistake and let the buyer choose about staying. | Because the quiet ones won't ask. A written figure answers them without making them say it aloud.
 
 scene newcomer_1
 when topic=newcomer
@@ -341,19 +343,19 @@ when concept=bark here.season=spring
 does aside
 cooldown 8h
 say Ready to carry this hood instead of wearing it. | Spring does fine work on a steely set of shoulders.
-dlg resident.hub : Find the place where you can reach the board comfortably.
-dlg resident.hub [topic.meeting=known] : #topic.player#, there's still a clear edge to this conversation.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll be frank with you. I expect the same allowance back.
-dlg resident.job [self.job=innkeeper] : At #self.workplace# my counter work includes trying to give a quiet guest something better than a speech.
-dlg resident.news [world.news] : Here's the news left after the talk was cleared away. #world.news#.
-dlg resident.gossip [here.gossip=yes] : There's a version about that says #topic.subject# #topic.claim#. I wouldn't sell it as firsthand.
-dlg resident.bye : I hope the peg at home has something dry waiting.
-dlg inn.greet [here.inn_helper=yes] : I'll help you settle. The beds are in #here.innkeeper#'s hands.
-dlg inn.greet [here.inn_helper=no here.shop=open] : Step in. There's drink to be had and we can see about a place upstairs.
-dlg inn.rest [here.lodging=yes] : Sit till your feet forgive the road. You've a bed upstairs when you want more rest.
-dlg inn.refused : Here's what stands in the way. #topic.why#.
-dlg inn.bye [here.shop!=asleep] : Safe walk. The mud outside hasn't signed any agreement to behave itself.
 
+dlg @1 resident.hub : Find the place where you can reach the board comfortably.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's still a clear edge to this conversation.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll be frank with you. I expect the same allowance back.
+dlg @1 resident.job [self.job=innkeeper] : At #self.workplace# my counter work includes trying to give a quiet guest something better than a speech.
+dlg @1 resident.news [world.news] : Here's the news left after the talk was cleared away. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : There's a version about that says #topic.subject# #topic.claim#. I wouldn't sell it as firsthand.
+dlg @1 resident.bye : I hope the peg at home has something dry waiting.
+dlg @1 inn.greet [here.inn_helper=yes] : I'll help you settle. The beds are in #here.innkeeper#'s hands.
+dlg @2 inn.greet [here.inn_helper=no here.shop=open] : Step in. There's drink to be had and we can see about a place upstairs.
+dlg @1 inn.rest [here.lodging=yes] : Sit till your feet forgive the road. You've a bed upstairs when you want more rest.
+dlg @1 inn.refused : Here's what stands in the way. #topic.why#.
+dlg @1 inn.bye [here.shop!=asleep] : Safe walk. The mud outside hasn't signed any agreement to behave itself.
 graft resident.hub
 choice Is that hood really worth carrying in sunshine? -> oil_sun
 node oil_sun

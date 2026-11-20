@@ -1,9 +1,12 @@
+# rm391, the returnable cloth (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm391
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_thyra_plankridge
+written_by codex
 title the returnable cloth
 fits stage=adult|old
 prefers role=merchant warmth=warm
@@ -41,56 +44,55 @@ corner = the downturned corner | the tucked flap
 tea = my freshly poured tea | the steaming cup
 
 any
-opinion merchants for 1 : A good sale sends the food out fit to eat. Counting the coin is only the first part.
-opinion houses mixed 0 : A grand name on a damp parcel won't restore the crackle to a crust.
-opinion dole for 1 : A hungry wolf deserves a sound basketful taken home with exactly the same care as paid goods.
-opinion city for 2 : The Market Hall gives a thousand ordinary dinners somewhere sheltered to begin.
-opinion strangers for 1 : A traveller can borrow cover for a meal before I know anything about the road behind.
-opinion road for 2 : Some walks are worth taking empty-handed, just to learn the way a laden customer will need.
-opinion watch mixed 0 : When the crowd is tight, directing folk to a dry exit makes better use of a strong voice than trying to frighten the lot.
-opinion festivals for 1 : A feast brings familiar faces buying for an extra place at table. I like choosing that additional portion.
-opinion newcomers for 1 : A clear explanation of a small custom saves a new arrival feeling foolish over a borrowed cloth.
-opinion church for 1 : Putting a roof between a stranger and a rough shower strikes me as a sound thing to pray about and to do.
+opinion @1 merchants for 1 : A good sale sends the food out fit to eat. Counting the coin is only the first part.
+opinion @1 houses mixed 0 : A grand name on a damp parcel won't restore the crackle to a crust.
+opinion @1 dole for 1 : A hungry wolf deserves a sound basketful taken home with exactly the same care as paid goods.
+opinion @1 city for 2 : The Market Hall gives a thousand ordinary dinners somewhere sheltered to begin.
+opinion @1 strangers for 1 : A traveller can borrow cover for a meal before I know anything about the road behind.
+opinion @1 road for 2 : Some walks are worth taking empty-handed, just to learn the way a laden customer will need.
+opinion @1 watch mixed 0 : When the crowd is tight, directing folk to a dry exit makes better use of a strong voice than trying to frighten the lot.
+opinion @1 festivals for 1 : A feast brings familiar faces buying for an extra place at table. I like choosing that additional portion.
+opinion @1 newcomers for 1 : A clear explanation of a small custom saves a new arrival feeling foolish over a borrowed cloth.
+opinion @1 church for 1 : Putting a roof between a stranger and a rough shower strikes me as a sound thing to pray about and to do.
 
 grown
-line greet : Welcome. There's a dry spot for anything you're carrying. | Hello. Set that down if it's cutting into your paw.
-line greet [pair.band=strangers] : First time this way, I believe. Make yourself easy. | Leave your basket close to your own feet and come speak.
-line greet [here.time=dawn] : Morning. Fresh covers folded and a day to fill. | A clear bit of morning between the parcels, welcome.
-line greet.return : I heard you. There's space at this end now. | Yes, hello. Come alongside where there's cover.
-line greet.return [pair.band=friends|family] : Your company doesn't need wrapping up in ceremony. | A dear voice under the awning. Come alongside.
-line greet.return [here.time=night] : Late greetings. There's time left for a quiet word. | Hello through the dark. The step's clear.
-line again.open : Here you are again with cloths still to fold. | Here's a welcome second helping of company.
-line hail [pair.band=friends] : Come share the sheltered side of this place. | Here, I've left a gap by the dry edge.
-line farewell : An easy walk with whatever you've got to carry. | Keep the cover tucked on the windy side.
-line farewell.return : Goodbye. May your dinner make the journey sound. | I'll fold the spare bit away after you.
-line react.news : Set the news where we can see it plain. | I've set aside the load to attend to the whole account.
-line react.news.new : That's the first piece of it to reach this counter. | That whole parcel of news was new to me.
-line react.news.known : Yes. I heard that much with the earlier delivery. | That account unfolds just the way I remember.
-line react.news.doubt : I'd turn back its handsome cover before believing it. | The wrapping's remarkably large for the facts in the middle.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Come under the shelter. Hard news deserves a quiet word. | That's hurtful to carry. I'll hold the ordinary parcels while you tell it.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd put a special plate out in honour of that news. | A generous piece of news to take home when work's over.
-line ask.how : How's the weight on your wrist today? | Anything the day has soaked I'd be able to help dry?
-line answer.how : I've plenty to do and a clean cloth for most of it. | Well enough. I can still carry the awkward half.
-line decline : I'd gladly oblige if one cover could travel twice, but it can't go home on two different baskets. | I can't give you a fair answer with another promise already waiting.
-line accept_decline : Then we won't count on that part. Thank you for being plain. | Fair enough. You've given me something definite to plan around.
-line preclose : I'll go before a parcel starts walking in search of me. | I'd best put the next lot under cover.
-line accept_preclose : May your load sit comfortably. | Your other business can have you back now.
-line thank : You minded the awkward corner for me. I'm obliged. | I value the care you put into bringing that back sound.
-line deflect_thanks : One clean cover was always meant for another pair of paws. | I'd have hung that cloth to dry in any case.
-line sympathise : Let's get the pressing little things out of your paws for a bit. | I'd offer a seat as readily as an answer right now.
-line reassure : We'll wrap what we can save and deal with the rest in place. | A little dry space gives the trouble somewhere to be examined.
-line ack : That fits the basket I had in mind. | Yes. The words make a very clear outline.
-line give.advice : Tuck the cover before lifting a heavy basket. | Pick a route that's still sensible with one arm occupied.
-line kin.open [pair.kin!=no] : Kin first for a bit of dry cover, though the best manners say share it about. | There's always a place beside my plate for family.
-line greet.return [self.working=yes] : I can greet you as soon as this knot's tight. Hello. | Welcome. A working paw doesn't prevent a listening ear.
-line farewell.return [here.time=night] : The lamp will catch the wet paving if you carry it low. | A safe late journey with your goods close.
-line ask.detail : Which part got wet first? | Was the basket covered while it waited?
-line answer.detail : The patch began right at the outer corner. | It was sheltered till the last few steps.
-line assess : A small drip, quite within the power of a dry cloth. | I would want a little more cover on the windy side.
-line react.self : Anyone carrying supper through that would appreciate a spare wrap. | That sounds like an awkward stretch of road for laden paws.
-line give.opinion : An honest measure deserves fair carrying home. | It is good business to make the returning journey possible.
-line tell.plan : I'll leave one cloth folded for a stranger in a hurry. | I mean to give the return hook a place all can reach.
-
+line @1 greet : Welcome. There's a dry spot for anything you're carrying. | Hello. Set that down if it's cutting into your paw.
+line @2 greet [pair.band=strangers] : First time this way, I believe. Make yourself easy. | Leave your basket close to your own feet and come speak.
+line @3 greet [here.time=dawn] : Morning. Fresh covers folded and a day to fill. | A clear bit of morning between the parcels, welcome.
+line @1 greet.return : I heard you. There's space at this end now. | Yes, hello. Come alongside where there's cover.
+line @2 greet.return [pair.band=friends|family] : Your company doesn't need wrapping up in ceremony. | A dear voice under the awning. Come alongside.
+line @3 greet.return [here.time=night] : Late greetings. There's time left for a quiet word. | Hello through the dark. The step's clear.
+line @1 again.open : Here you are again with cloths still to fold. | Here's a welcome second helping of company.
+line @1 hail [pair.band=friends] : Come share the sheltered side of this place. | Here, I've left a gap by the dry edge.
+line @1 farewell : An easy walk with whatever you've got to carry. | Keep the cover tucked on the windy side.
+line @1 farewell.return : Goodbye. May your dinner make the journey sound. | I'll fold the spare bit away after you.
+line @1 react.news : Set the news where we can see it plain. | I've set aside the load to attend to the whole account.
+line @1 react.news.new : That's the first piece of it to reach this counter. | That whole parcel of news was new to me.
+line @1 react.news.known : Yes. I heard that much with the earlier delivery. | That account unfolds just the way I remember.
+line @1 react.news.doubt : I'd turn back its handsome cover before believing it. | The wrapping's remarkably large for the facts in the middle.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Come under the shelter. Hard news deserves a quiet word. | That's hurtful to carry. I'll hold the ordinary parcels while you tell it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd put a special plate out in honour of that news. | A generous piece of news to take home when work's over.
+line @1 ask.how : How's the weight on your wrist today? | Anything the day has soaked I'd be able to help dry?
+line @1 answer.how : I've plenty to do and a clean cloth for most of it. | Well enough. I can still carry the awkward half.
+line @1 decline : I'd gladly oblige if one cover could travel twice, but it can't go home on two different baskets. | I can't give you a fair answer with another promise already waiting.
+line @1 accept_decline : Then we won't count on that part. Thank you for being plain. | Fair enough. You've given me something definite to plan around.
+line @1 preclose : I'll go before a parcel starts walking in search of me. | I'd best put the next lot under cover.
+line @1 accept_preclose : May your load sit comfortably. | Your other business can have you back now.
+line @1 thank : You minded the awkward corner for me. I'm obliged. | I value the care you put into bringing that back sound.
+line @1 deflect_thanks : One clean cover was always meant for another pair of paws. | I'd have hung that cloth to dry in any case.
+line @1 sympathise : Let's get the pressing little things out of your paws for a bit. | I'd offer a seat as readily as an answer right now.
+line @1 reassure : We'll wrap what we can save and deal with the rest in place. | A little dry space gives the trouble somewhere to be examined.
+line @1 ack : That fits the basket I had in mind. | Yes. The words make a very clear outline.
+line @1 give.advice : Tuck the cover before lifting a heavy basket. | Pick a route that's still sensible with one arm occupied.
+line @1 kin.open [pair.kin!=no] : Kin first for a bit of dry cover, though the best manners say share it about. | There's always a place beside my plate for family.
+line @4 greet.return [self.working=yes] : I can greet you as soon as this knot's tight. Hello. | Welcome. A working paw doesn't prevent a listening ear.
+line @2 farewell.return [here.time=night] : The lamp will catch the wet paving if you carry it low. | A safe late journey with your goods close.
+line @1 ask.detail : Which part got wet first? | Was the basket covered while it waited?
+line @1 answer.detail : The patch began right at the outer corner. | It was sheltered till the last few steps.
+line @1 assess : A small drip, quite within the power of a dry cloth. | I would want a little more cover on the windy side.
+line @1 react.self : Anyone carrying supper through that would appreciate a spare wrap. | That sounds like an awkward stretch of road for laden paws.
+line @1 give.opinion : An honest measure deserves fair carrying home. | It is good business to make the returning journey possible.
+line @1 tell.plan : I'll leave one cloth folded for a stranger in a hurry. | I mean to give the return hook a place all can reach.
 scene door_read
 when topic=weather here.weather=rain
 does tell.self / ask.detail / answer.detail
@@ -308,8 +310,6 @@ a : A hot dish needs a small release for steam and a dry outside against the wea
 b : How do you manage both? | Wouldn't rain get in?
 a : Set the outer wrap clear of the inner dish so the steam can move a little underneath. | The outer one hangs low on the exposed side. I don't need an opening facing directly into rain.
 
-grown
-
 story patchmap [topic=memories|weather]
   : I once showed a customer a damp cover to explain how badly it was raining, then took it to the door where the sun was shining brightly.
   : The patch had come off my own freshly washed apron.
@@ -376,25 +376,24 @@ does aside
 cooldown 8h
 say A pale end to the cover to keep that corner in view. | Low basket, slow step with the light gone.
 
-dlg resident.hub : I'll hear what you need while I make a little room for you to set things down.
-dlg resident.hub [topic.meeting=known] : #topic.player#, I'm glad you found the dry way back here.
-dlg resident.hub [here.time=night] : Late questions are welcome if you mind the dark edge of the step.
-dlg resident.hub [pair.disposition=wary|hostile] : I'll consider that question without either of us reaching across the other's parcels.
-dlg resident.job [self.role=merchant] : #self.trade_words.capitalize#. I care about the state of a meal on reaching a table as well as how it leaves my counter.
-dlg resident.job : A little care halfway through usually means a good finish to my working day.
-dlg resident.bye : May whatever you're carrying stay sound all the way home.
-dlg resident.gossip [here.gossip=no] : There's nothing I'd like to send out under the cover of somebody else's name.
-dlg resident.gossip [here.gossip=yes] : Word reaching this counter is that #topic.subject# #topic.claim#. I can only vouch for hearing it.
-dlg resident.news [world.news] : There's news carried from #world.news_from#. Here's the account I received. #world.news#.
-dlg shop.greet [here.shop=open] : Set your basket where it's comfortable. We can look at the goods and choose a dry wrapping afterwards.
-dlg shop.greet [here.shop=open topic.meeting=known] : #topic.player#, what can I send home in good order for you this time?
-dlg shop.greet [here.shop=bare] : There's very little to choose from while the shelves are bare. I'll still examine goods you wish to sell.
-dlg shop.greet [here.shop=asleep] : The wraps are folded and I've shut the counter for sleep. Come when I've opened again.
-dlg shop.greet [here.shop=open pair.disposition=wary|hostile] : Choose what you need without disturbing another order, please.
-dlg shop.prices [here.shop=open] : I'll weigh the goods themselves and tell you the sum plainly before we add the cover.
-dlg shop.bye : Thank you for the visit. Let me tuck the windward corner before you step outside.
-dlg shop.bye [here.shop=asleep] : Time to rest now. The counter keeps till I've slept.
-
+dlg @1 resident.hub : I'll hear what you need while I make a little room for you to set things down.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'm glad you found the dry way back here.
+dlg @3 resident.hub [here.time=night] : Late questions are welcome if you mind the dark edge of the step.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll consider that question without either of us reaching across the other's parcels.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. I care about the state of a meal on reaching a table as well as how it leaves my counter.
+dlg @2 resident.job : A little care halfway through usually means a good finish to my working day.
+dlg @1 resident.bye : May whatever you're carrying stay sound all the way home.
+dlg @1 resident.gossip [here.gossip=no] : There's nothing I'd like to send out under the cover of somebody else's name.
+dlg @2 resident.gossip [here.gossip=yes] : Word reaching this counter is that #topic.subject# #topic.claim#. I can only vouch for hearing it.
+dlg @1 resident.news [world.news] : There's news carried from #world.news_from#. Here's the account I received. #world.news#.
+dlg @1 shop.greet [here.shop=open] : Set your basket where it's comfortable. We can look at the goods and choose a dry wrapping afterwards.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, what can I send home in good order for you this time?
+dlg @3 shop.greet [here.shop=bare] : There's very little to choose from while the shelves are bare. I'll still examine goods you wish to sell.
+dlg @4 shop.greet [here.shop=asleep] : The wraps are folded and I've shut the counter for sleep. Come when I've opened again.
+dlg @5 shop.greet [here.shop=open pair.disposition=wary|hostile] : Choose what you need without disturbing another order, please.
+dlg @1 shop.prices [here.shop=open] : I'll weigh the goods themselves and tell you the sum plainly before we add the cover.
+dlg @1 shop.bye : Thank you for the visit. Let me tuck the windward corner before you step outside.
+dlg @2 shop.bye [here.shop=asleep] : Time to rest now. The counter keeps till I've slept.
 graft resident.hub
 choice What do those rain spots tell you? -> raingaps
 node raingaps

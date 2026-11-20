@@ -1,9 +1,12 @@
+# rm495, the hood bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm495
+revision 1
 state ready
 dialect plain
 accent none
 tier full
 written_for rm_delphine_mudwick
+written_by codex
 title the hood bell
 fits stage=adult|old
 prefers job=carter piety=devout
@@ -40,56 +43,55 @@ blackmark = an uncertain knot | the question loop
 dryhand = a clean grasp | the dry side
 
 any
-opinion church for 2 : I'd have every prayer begin by opening the door for the wolf still out in rain.
-opinion houses mixed 0 : A sealed parcel deserves careful handling. Its seal offers no proof about the private conscience inside a House.
-opinion watch mixed 0 : I set down a doubt as a doubt before permitting it to grow into a charge.
-opinion dole for 2 : Food waiting inside a doorway has done little good till every waiting shoulder fits through.
-opinion sump for 2 : A low wet quarter teaches a porter exactly how much a sheltered threshold is worth.
-opinion merchants mixed 0 : I like market noise better than the silence after a poor customer is turned away.
-opinion city for 1 : In these streets a single hood can shelter the neighbour who has to stand and ask directions.
-opinion newcomers for 1 : A stranger's bundle needs the same room to turn as a familiar one.
-opinion festivals mixed 0 : I'd lend a hand at a crowded door long before I'd go to hear another loud bell.
-opinion road for 1 : Spend a little on clear walking room and a great deal less on ruined goods.
+opinion @1 church for 2 : I'd have every prayer begin by opening the door for the wolf still out in rain.
+opinion @1 houses mixed 0 : A sealed parcel deserves careful handling. Its seal offers no proof about the private conscience inside a House.
+opinion @1 watch mixed 0 : I set down a doubt as a doubt before permitting it to grow into a charge.
+opinion @1 dole for 2 : Food waiting inside a doorway has done little good till every waiting shoulder fits through.
+opinion @1 sump for 2 : A low wet quarter teaches a porter exactly how much a sheltered threshold is worth.
+opinion @1 merchants mixed 0 : I like market noise better than the silence after a poor customer is turned away.
+opinion @1 city for 1 : In these streets a single hood can shelter the neighbour who has to stand and ask directions.
+opinion @1 newcomers for 1 : A stranger's bundle needs the same room to turn as a familiar one.
+opinion @1 festivals mixed 0 : I'd lend a hand at a crowded door long before I'd go to hear another loud bell.
+opinion @1 road for 1 : Spend a little on clear walking room and a great deal less on ruined goods.
 
 grown
-line greet : Come under the loose edge a moment. | Welcome. I heard your step through the oilcloth.
-line greet [pair.band=strangers] : First visit, I think. Here's a dry corner. | New shoulders are welcome at my door.
-line greet [here.time=dawn] : Morning. My hood's still quiet. | First light on a well-oiled seam.
-line greet.return : Yes, hello. The hood leaves room for your voice. | A greeting in return from inside the oilcloth.
-line greet.return [pair.band=friends|family] : I know that tread by the short last step. | Welcome back to my small bit of shelter.
-line greet.return [here.time=night] : Evening. A quiet tap carries a long way now. | Late visitors can share this patch of dry ground.
-line again.open : Back within hearing of my little bell. | There's still a fold of shelter going spare.
-line hail [pair.band=friends] : Come stand where the patter's clearest! | There's room beside my rain music!
-line farewell : Dry inside your collar all the way. | May the last door open wide enough.
-line farewell.return : I'll stay by the little bell awhile. | Go with a firm tie on your bundle.
-line react.news : Start with the sound you actually heard. | A quiet account carries farther with me.
-line react.news.new : A note I haven't heard through this hood before. | That's a fresh loop on my reminder string.
-line react.news.known : Same interval between the knocks as before. | I've a knot for that particular news.
-line react.news.doubt : I hear two claims and no clear witness. | That account rings strangely near the end.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'd carry a part of that sorrow if you'd let me. | You've a dry shoulder close by while you grieve.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : A cheering note. I could hear it through a storm. | Gladness this plain deserves a generous echo.
-line ask.how : Is your burden pulling squarely today? | Any chance lately of resting under a sound roof?
-line answer.how : Tired across both shoulders. Steady on my feet. | Quiet apart from the weather at my ears.
-line decline : My next clear journey is already promised elsewhere. | I'd have to let a waiting load down to take yours.
-line accept_decline : Then that knot may be undone. | I'll let your refusal stand unpulled.
-line preclose : Time to hear what my doorway needs. | My strap is settled for the next journey.
-line accept_preclose : Go quietly by the resting shoulders. | I release this end of our talk gladly.
-line thank : Your help made the narrow turning easy. Thanks. | I felt that weight go light. Much obliged.
-line deflect_thanks : I'd a dry hand free for the job. | It was one short carry within my reach.
-line sympathise : Let me stand by the loud side while you speak. | I can keep a little weather off your sorrow.
-line reassure : Undoing the straps singly eases a tangled bundle. | There's room to set the worry down briefly.
-line ack : Yes. That knock is clear enough. | I hear the sense beneath the patter.
-line give.advice : Leave the last handspan of doorway for someone wet. | Listen once with the hood tipped back.
-line kin.open [pair.kin!=no] : Come into the family fold a moment. | A little room by the shoulder for kin.
-line hail [here.time=dawn] : Daybreak gives us a clear passage! | Over here by the pale seam!
-line farewell.return [here.time=night] : An easy latch where your night walk finishes. | Leave before the lamps grow too dim for the ties.
-line assess : Sound cord, decent hearing, a clear bit of floor. | That would go through the narrow place without complaint.
-line give.opinion : A quiet knock has as good a claim as a great blow. | Shelter belongs where a wet wolf can actually reach it.
-line greet [here.weather=rain] : My little bell announces wetter company. Welcome. | Step aside from my wet brim and you're welcome.
-line again.open [pair.band=friends] : Back under the familiar fold, I see. | Your step still distinguishes itself among the drops.
-line thank [pair.band=friends] : You gave me a dry shoulder's worth of time. | I felt the difference in every step afterwards.
-line answer.how [here.time=dawn] : My oilcloth's prepared. My ears need waking. | The first load feels possible after warm food.
-
+line @1 greet : Come under the loose edge a moment. | Welcome. I heard your step through the oilcloth.
+line @2 greet [pair.band=strangers] : First visit, I think. Here's a dry corner. | New shoulders are welcome at my door.
+line @3 greet [here.time=dawn] : Morning. My hood's still quiet. | First light on a well-oiled seam.
+line @1 greet.return : Yes, hello. The hood leaves room for your voice. | A greeting in return from inside the oilcloth.
+line @2 greet.return [pair.band=friends|family] : I know that tread by the short last step. | Welcome back to my small bit of shelter.
+line @3 greet.return [here.time=night] : Evening. A quiet tap carries a long way now. | Late visitors can share this patch of dry ground.
+line @1 again.open : Back within hearing of my little bell. | There's still a fold of shelter going spare.
+line @1 hail [pair.band=friends] : Come stand where the patter's clearest! | There's room beside my rain music!
+line @1 farewell : Dry inside your collar all the way. | May the last door open wide enough.
+line @1 farewell.return : I'll stay by the little bell awhile. | Go with a firm tie on your bundle.
+line @1 react.news : Start with the sound you actually heard. | A quiet account carries farther with me.
+line @1 react.news.new : A note I haven't heard through this hood before. | That's a fresh loop on my reminder string.
+line @1 react.news.known : Same interval between the knocks as before. | I've a knot for that particular news.
+line @1 react.news.doubt : I hear two claims and no clear witness. | That account rings strangely near the end.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'd carry a part of that sorrow if you'd let me. | You've a dry shoulder close by while you grieve.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : A cheering note. I could hear it through a storm. | Gladness this plain deserves a generous echo.
+line @1 ask.how : Is your burden pulling squarely today? | Any chance lately of resting under a sound roof?
+line @1 answer.how : Tired across both shoulders. Steady on my feet. | Quiet apart from the weather at my ears.
+line @1 decline : My next clear journey is already promised elsewhere. | I'd have to let a waiting load down to take yours.
+line @1 accept_decline : Then that knot may be undone. | I'll let your refusal stand unpulled.
+line @1 preclose : Time to hear what my doorway needs. | My strap is settled for the next journey.
+line @1 accept_preclose : Go quietly by the resting shoulders. | I release this end of our talk gladly.
+line @1 thank : Your help made the narrow turning easy. Thanks. | I felt that weight go light. Much obliged.
+line @1 deflect_thanks : I'd a dry hand free for the job. | It was one short carry within my reach.
+line @1 sympathise : Let me stand by the loud side while you speak. | I can keep a little weather off your sorrow.
+line @1 reassure : Undoing the straps singly eases a tangled bundle. | There's room to set the worry down briefly.
+line @1 ack : Yes. That knock is clear enough. | I hear the sense beneath the patter.
+line @1 give.advice : Leave the last handspan of doorway for someone wet. | Listen once with the hood tipped back.
+line @1 kin.open [pair.kin!=no] : Come into the family fold a moment. | A little room by the shoulder for kin.
+line @2 hail [here.time=dawn] : Daybreak gives us a clear passage! | Over here by the pale seam!
+line @2 farewell.return [here.time=night] : An easy latch where your night walk finishes. | Leave before the lamps grow too dim for the ties.
+line @1 assess : Sound cord, decent hearing, a clear bit of floor. | That would go through the narrow place without complaint.
+line @1 give.opinion : A quiet knock has as good a claim as a great blow. | Shelter belongs where a wet wolf can actually reach it.
+line @4 greet [here.weather=rain] : My little bell announces wetter company. Welcome. | Step aside from my wet brim and you're welcome.
+line @2 again.open [pair.band=friends] : Back under the familiar fold, I see. | Your step still distinguishes itself among the drops.
+line @2 thank [pair.band=friends] : You gave me a dry shoulder's worth of time. | I felt the difference in every step afterwards.
+line @2 answer.how [here.time=dawn] : My oilcloth's prepared. My ears need waking. | The first load feels possible after warm food.
 scene twobeats
 when topic=weather here.weather=rain
 does tell.self / ask.detail / answer.detail
@@ -300,8 +302,6 @@ a : Someday I'd have a quiet receiving place with a small roof stretching past t
 b : How far past? | Why the first waiting wolf?
 a : Past two more broad shoulders and the bundle they carry between them. | Because the wolf at the door already has cover. It's the next one whose roof usually runs out.
 
-grown
-
 story bellmouse [topic=weather|memories]
   : A small tap kept following my hood on a clear afternoon. I looked down from a roof edge and back up from the paving.
   : One loose tie had a wooden bead at its tip. It was knocking against the stiff brim as I walked.
@@ -368,26 +368,25 @@ does aside
 cooldown 8h
 say Keep the last lantern clear of dangling ties. | One quiet knock will carry in this darkness.
 
-dlg resident.hub : I've tipped my hood clear to give your request a clear hearing.
-dlg resident.hub [topic.meeting=known] : #topic.player#, here's a dry patch near the hinge for another quiet word.
-dlg resident.hub [here.time=night] : I can hear the smallest knock in the folds of this evening.
-dlg resident.hub [pair.disposition=wary|hostile] : Keep your hands clear of the waiting bundles and speak from there.
-dlg resident.job [self.job=carter] : #self.trade_words.capitalize#. I carry what's given and take care to hear the direction twice.
-dlg resident.job : Work ought to end with the receiving shoulder comfortably placed.
-dlg resident.bye : May your last delivery find a wide and sheltered entrance.
-dlg resident.gossip [here.gossip=yes] : In the talk I've heard, #topic.subject# #topic.claim#. The words came to my ears without proof packed alongside.
-dlg resident.gossip [here.gossip=no] : Nothing I can fairly take out of its private wrapper today.
-dlg resident.news [world.news] : I heard word carried from #world.news_from#. #world.news#. I can pass the account in that wrapping only.
-dlg master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can teach a learner how to listen, lift and deliver without crowding a doorway.
-dlg master.learn [here.teaches=no] : My teaching time is all spoken for. A quick question about my work can still come through.
-dlg master.work : You'll learn to judge loads and turn them past awkward doors. We'll practise receiving one properly before attempting a journey.
-dlg master.wages : Learning earns no regular wage here. You'll keep what your own work brings and practise more quickly alongside me.
-dlg master.takes [here.take_on=yes] : I have a free place beside me for a learner. Ask for it plainly if that's what brought you.
-dlg master.takes [here.take_on=no] : There's something keeping me from promising you the place. #here.take_on_why#.
-dlg master.taken : You're my learner now. Set your things down clear of the passage and we'll begin by hearing an errand.
-dlg master.refused : I can't fasten our agreement at present. #topic.why#.
-dlg master.bye : Listen for the quieter request at the next busy entrance.
-
+dlg @1 resident.hub : I've tipped my hood clear to give your request a clear hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, here's a dry patch near the hinge for another quiet word.
+dlg @3 resident.hub [here.time=night] : I can hear the smallest knock in the folds of this evening.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep your hands clear of the waiting bundles and speak from there.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I carry what's given and take care to hear the direction twice.
+dlg @2 resident.job : Work ought to end with the receiving shoulder comfortably placed.
+dlg @1 resident.bye : May your last delivery find a wide and sheltered entrance.
+dlg @1 resident.gossip [here.gossip=yes] : In the talk I've heard, #topic.subject# #topic.claim#. The words came to my ears without proof packed alongside.
+dlg @2 resident.gossip [here.gossip=no] : Nothing I can fairly take out of its private wrapper today.
+dlg @1 resident.news [world.news] : I heard word carried from #world.news_from#. #world.news#. I can pass the account in that wrapping only.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can teach a learner how to listen, lift and deliver without crowding a doorway.
+dlg @2 master.learn [here.teaches=no] : My teaching time is all spoken for. A quick question about my work can still come through.
+dlg @1 master.work : You'll learn to judge loads and turn them past awkward doors. We'll practise receiving one properly before attempting a journey.
+dlg @1 master.wages : Learning earns no regular wage here. You'll keep what your own work brings and practise more quickly alongside me.
+dlg @1 master.takes [here.take_on=yes] : I have a free place beside me for a learner. Ask for it plainly if that's what brought you.
+dlg @2 master.takes [here.take_on=no] : There's something keeping me from promising you the place. #here.take_on_why#.
+dlg @1 master.taken : You're my learner now. Set your things down clear of the passage and we'll begin by hearing an errand.
+dlg @1 master.refused : I can't fasten our agreement at present. #topic.why#.
+dlg @1 master.bye : Listen for the quieter request at the next busy entrance.
 graft resident.hub
 choice Why do you call the oilcloth a bell? -> hoodchime
 node hoodchime

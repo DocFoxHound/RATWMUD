@@ -1,9 +1,12 @@
+# rm331, the envelope in suspense (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm331
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rmx_desmond_rook
+written_by codex
 title the envelope in suspense
 fits stage=adult|old
 prefers job=scholar
@@ -42,48 +45,47 @@ penrest = a notched rest | a rest of dark wood
 inkknife = a short scraping blade | a small square knife
 
 any
-opinion city for 1 : The city's records occupy less space than the grievances they have settled. I call that a modest achievement.
-opinion houses mixed 1 : A great title decides where a letter goes. It does not acknowledge delivery.
-opinion merchants mixed 1 : A fixed charge makes accounting possible. A little performance over every purchase makes it tiresome.
-opinion dole for 1 : Record what went out and whom it reached. There is no purpose in keeping a second account of their embarrassment.
-opinion road mixed 1 : A route serves only if the intended destination can receive you at its end.
-opinion festivals mixed 1 : Pleasant to attend with accounts closed. Less so when the celebration conceals an overdue signature.
-opinion church mixed 1 : A clear conscience is a better accompaniment to piety than a long list of observances.
-opinion strangers mixed 1 : A name is sufficient for the opening entry. Trust accumulates on subsequent pages.
-opinion times against 1 [world.times=lean|hard] : The sums decline. The care required to distribute the remainder increases.
+opinion @1 city for 1 : The city's records occupy less space than the grievances they have settled. I call that a modest achievement.
+opinion @1 houses mixed 1 : A great title decides where a letter goes. It does not acknowledge delivery.
+opinion @1 merchants mixed 1 : A fixed charge makes accounting possible. A little performance over every purchase makes it tiresome.
+opinion @1 dole for 1 : Record what went out and whom it reached. There is no purpose in keeping a second account of their embarrassment.
+opinion @1 road mixed 1 : A route serves only if the intended destination can receive you at its end.
+opinion @1 festivals mixed 1 : Pleasant to attend with accounts closed. Less so when the celebration conceals an overdue signature.
+opinion @1 church mixed 1 : A clear conscience is a better accompaniment to piety than a long list of observances.
+opinion @1 strangers mixed 1 : A name is sufficient for the opening entry. Trust accumulates on subsequent pages.
+opinion @1 times against 1 [world.times=lean|hard] : The sums decline. The care required to distribute the remainder increases.
 
 grown
-line greet : I can give this interview a quiet interval. | You have my attention within reasonable compass.
-line greet.return : I acknowledge the greeting and return it. | A civil beginning on both parts.
-line again.open : The earlier conversation is still to hand.
-line farewell : Go with your particulars in order. | I trust your errand finds an available recipient.
-line farewell.return : A considerate farewell duly acknowledged. | May your return require few corrections.
-line react.news : Give me what is known in its original sequence. | I am prepared to hear the complete account.
-line react.news.new : That item is entirely new to this record.
-line react.news.known : I could locate the earlier entry for that.
-line react.news.doubt : I would leave that statement unsigned.
-line react.news.sorrow [topic.kind=death|loss|assault] : There are losses that admit of no balancing entry.
-line react.news.glad [topic.kind=birth|marriage|work] : A favourable outcome deserves its own clear line.
-line ask.how : Has anything remained unsettled in your day?
-line answer.how : Quite calm. One or two matters remain open.
-line sympathise : I can make a space where the matter may be spoken privately.
-line reassure : A pending matter can be taken up again in good order.
-line refuse : I have an earlier obligation due for attention first.
-line accept_decline : Your refusal is adequately recorded without a second application.
-line preclose : I have matters to resume, all still awaiting my hand.
-line accept_preclose : I release your attention with no outstanding demand.
-line ack : The order and meaning are both clear.
-line greet [here.time=dawn] : The page is still clean enough for a civil beginning.
-line greet [pair.band=strangers] : We may start with the benefit of an unmarked account.
-line greet.return [pair.band=friends] : Familiar company requires rather less preliminary writing.
-line hail [pair.band=friends] : I have secured this spot on the dry pavement!
-line answer.how.busy [self.working=yes] : I am occupied to a quite measurable degree.
-line thank : That assistance has a precise place in my recollection.
-line deflect_thanks : I had reckoned the effort before offering it.
-line give.advice : Leave an extra line below the first account. New particulars do occur.
-line greet [here.time=night] : An informal hearing at this hour will suffice.
-line ask.how [pair.band=friends] : Have your private engagements proceeded satisfactorily?
-
+line @1 greet : I can give this interview a quiet interval. | You have my attention within reasonable compass.
+line @1 greet.return : I acknowledge the greeting and return it. | A civil beginning on both parts.
+line @1 again.open : The earlier conversation is still to hand.
+line @1 farewell : Go with your particulars in order. | I trust your errand finds an available recipient.
+line @1 farewell.return : A considerate farewell duly acknowledged. | May your return require few corrections.
+line @1 react.news : Give me what is known in its original sequence. | I am prepared to hear the complete account.
+line @1 react.news.new : That item is entirely new to this record.
+line @1 react.news.known : I could locate the earlier entry for that.
+line @1 react.news.doubt : I would leave that statement unsigned.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : There are losses that admit of no balancing entry.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A favourable outcome deserves its own clear line.
+line @1 ask.how : Has anything remained unsettled in your day?
+line @1 answer.how : Quite calm. One or two matters remain open.
+line @1 sympathise : I can make a space where the matter may be spoken privately.
+line @1 reassure : A pending matter can be taken up again in good order.
+line @1 refuse : I have an earlier obligation due for attention first.
+line @1 accept_decline : Your refusal is adequately recorded without a second application.
+line @1 preclose : I have matters to resume, all still awaiting my hand.
+line @1 accept_preclose : I release your attention with no outstanding demand.
+line @1 ack : The order and meaning are both clear.
+line @2 greet [here.time=dawn] : The page is still clean enough for a civil beginning.
+line @3 greet [pair.band=strangers] : We may start with the benefit of an unmarked account.
+line @2 greet.return [pair.band=friends] : Familiar company requires rather less preliminary writing.
+line @1 hail [pair.band=friends] : I have secured this spot on the dry pavement!
+line @1 answer.how.busy [self.working=yes] : I am occupied to a quite measurable degree.
+line @1 thank : That assistance has a precise place in my recollection.
+line @1 deflect_thanks : I had reckoned the effort before offering it.
+line @1 give.advice : Leave an extra line below the first account. New particulars do occur.
+line @4 greet [here.time=night] : An informal hearing at this hour will suffice.
+line @2 ask.how [pair.band=friends] : Have your private engagements proceeded satisfactorily?
 scene exchange1
 when topic=work self.job=scholar
 does tell.self / ask.detail / answer.detail
@@ -359,24 +361,24 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Finish the downstrokes while their edges still show. | Fading light brings the copied entries to a pause.
-dlg resident.hub : There is room in my schedule for an orderly enquiry.
-dlg resident.hub [topic.meeting=known] : #topic.player#, your earlier particulars have not been mislaid.
-dlg resident.hub [here.time=night] : This late an oral statement will serve us better than fresh ink.
-dlg resident.hub [pair.disposition=wary|hostile] : I give you a hearing. The conclusions can wait for particulars.
-dlg resident.job [self.job=scholar] : I attend to the written record at #self.workplace#. An unacknowledged item remains in my keeping.
-dlg resident.job : My concern is to leave the next pair of eyes an intelligible account.
-dlg resident.news [world.news] : The information before me runs as follows. #world.news#.
-dlg resident.gossip [here.gossip=yes] : The account reported is #topic.subject# #topic.claim#. Its source has not furnished me a signed deposition.
-dlg resident.bye : May your remaining business conclude without dispute.
-dlg master.learn [here.teaches=yes] : We can examine the practice of #here.trade_title# together. Ask which aspect requires a clearer account.
-dlg master.learn [here.teaches=no] : The present arrangement precludes another apprentice. A particular question may still be heard.
-dlg master.work : Careful observation at every stage. Errors made in haste seldom remain confined to the first sheet.
-dlg master.wages : Your learning draws no separate wage. What you produce is yours to offer for sale.
-dlg master.takes [here.take_on=no] : The conditions for taking you on remain unmet. #here.take_on_why#.
-dlg master.taken : Let us acknowledge the arrangement and set aside a clean page for the first lesson.
-dlg master.refused : The application has not been accepted. #topic.why#.
-dlg master.bye : Retain your examples. They repay a second inspection.
 
+dlg @1 resident.hub : There is room in my schedule for an orderly enquiry.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your earlier particulars have not been mislaid.
+dlg @3 resident.hub [here.time=night] : This late an oral statement will serve us better than fresh ink.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I give you a hearing. The conclusions can wait for particulars.
+dlg @1 resident.job [self.job=scholar] : I attend to the written record at #self.workplace#. An unacknowledged item remains in my keeping.
+dlg @2 resident.job : My concern is to leave the next pair of eyes an intelligible account.
+dlg @1 resident.news [world.news] : The information before me runs as follows. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account reported is #topic.subject# #topic.claim#. Its source has not furnished me a signed deposition.
+dlg @1 resident.bye : May your remaining business conclude without dispute.
+dlg @1 master.learn [here.teaches=yes] : We can examine the practice of #here.trade_title# together. Ask which aspect requires a clearer account.
+dlg @2 master.learn [here.teaches=no] : The present arrangement precludes another apprentice. A particular question may still be heard.
+dlg @1 master.work : Careful observation at every stage. Errors made in haste seldom remain confined to the first sheet.
+dlg @1 master.wages : Your learning draws no separate wage. What you produce is yours to offer for sale.
+dlg @1 master.takes [here.take_on=no] : The conditions for taking you on remain unmet. #here.take_on_why#.
+dlg @1 master.taken : Let us acknowledge the arrangement and set aside a clean page for the first lesson.
+dlg @1 master.refused : The application has not been accepted. #topic.why#.
+dlg @1 master.bye : Retain your examples. They repay a second inspection.
 graft resident.hub
 choice Why keep an unacknowledged receipt? -> blank_receipt
 node blank_receipt

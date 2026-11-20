@@ -1,9 +1,12 @@
+# rm303, the shadow cook (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm303
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rm_tobias_kelpton
+written_by codex
 title the shadow cook
 fits stage=adult|old
 prefers job=fisher humour=merry
@@ -35,45 +38,44 @@ wadeboot = a high boot | a boot with an honest sole
 roadbend = the crooked path | the lane that goes round again
 
 any
-opinion merchants mixed 0 : A good trader will let me smell what's in a parcel. A picture on a wrapper can promise anything.
-opinion dole for 3 : One more ladleful can turn a pot of fish into a street full of voices.
-opinion drink for 1 : A cup among friends puts the last curl on a story. A second can rub the curl off.
-opinion houses against 2 : Grand halls have an astonishing number of doors between a question and an answer.
-opinion strangers for 1 : I like a stranger with an appetite. We've something in common before an introduction.
-opinion sump for 1 : There are good jokes down our way too small to carry uphill without spilling.
-opinion watch against 1 : A patrol can make innocent feet feel too big for their own boots.
+opinion @1 merchants mixed 0 : A good trader will let me smell what's in a parcel. A picture on a wrapper can promise anything.
+opinion @1 dole for 3 : One more ladleful can turn a pot of fish into a street full of voices.
+opinion @1 drink for 1 : A cup among friends puts the last curl on a story. A second can rub the curl off.
+opinion @1 houses against 2 : Grand halls have an astonishing number of doors between a question and an answer.
+opinion @1 strangers for 1 : I like a stranger with an appetite. We've something in common before an introduction.
+opinion @1 sump for 1 [self.quarter=sump] : There are good jokes down our way too small to carry uphill without spilling.
+opinion @1 watch against 1 : A patrol can make innocent feet feel too big for their own boots.
 
 grown
-line greet : Come see what's cooking on the paper.
-line greet [pair.band=strangers] : First time across my line of charcoal. Welcome.
-line greet [here.time=dawn] : Morning. Even my shadow is looking for breakfast.
-line greet [here.time=dusk|night] : Good evening from the thin end of the smoke.
-line greet.return : Your greeting's made a handsome curl in the air.
-line greet.return [pair.band=friends|family] : Why, I recognise you even through all these imaginary diners.
-line greet.return [self.working=yes] : There's real work under this grubby thumb today.
-line greet.return [here.time=dusk|night] : Late light makes an excellent excuse for poor drawing.
-line kin.open [pair.kin!=no] : I'd draw a bigger table to fit the family in.
-line again.open : A second helping of conversation has just arrived.
-line hail [pair.band=friends] : Over by this outlandish drawing, friend!
-line farewell : Carry a good story home beneath your hat.
-line farewell.return : Mind which way the smoke lies on the walk.
-line react.news : Give that news a little extra space on the paper.
-line react.news.new : That catch hasn't reached my pan before.
-line react.news.known : I've seen that tail sticking out of a tale already.
-line react.news.doubt : I suspect somebody drew an extra fin on that account.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd put the drawing aside for a loss like that.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A dab of bright butter belongs on tidings like those.
-line ask.how : Has your day served up any surprises?
-line answer.how : Fed once and looking forward to the next honest occasion.
-line thank : That goes in the book under excellent company.
-line deflect_thanks : It was only one little turn of the fork.
-line sympathise : Here's a bit of shade and some company if they'll serve.
-line reassure : The first line of a drawing seldom tells its ending.
-line decline : I'd come, except I've already given those hours away.
-line accept_decline : Then keep your feet pointed where they were going.
-line preclose : I'd best put the lid on my words for today.
-line accept_preclose : I'll leave you enough breath for the walk.
-
+line @1 greet : Come see what's cooking on the paper.
+line @2 greet [pair.band=strangers] : First time across my line of charcoal. Welcome.
+line @3 greet [here.time=dawn] : Morning. Even my shadow is looking for breakfast.
+line @4 greet [here.time=dusk|night] : Good evening from the thin end of the smoke.
+line @1 greet.return : Your greeting's made a handsome curl in the air.
+line @2 greet.return [pair.band=friends|family] : Why, I recognise you even through all these imaginary diners.
+line @3 greet.return [self.working=yes] : There's real work under this grubby thumb today.
+line @4 greet.return [here.time=dusk|night] : Late light makes an excellent excuse for poor drawing.
+line @1 kin.open [pair.kin!=no] : I'd draw a bigger table to fit the family in.
+line @1 again.open : A second helping of conversation has just arrived.
+line @1 hail [pair.band=friends] : Over by this outlandish drawing, friend!
+line @1 farewell : Carry a good story home beneath your hat.
+line @1 farewell.return : Mind which way the smoke lies on the walk.
+line @1 react.news : Give that news a little extra space on the paper.
+line @1 react.news.new : That catch hasn't reached my pan before.
+line @1 react.news.known : I've seen that tail sticking out of a tale already.
+line @1 react.news.doubt : I suspect somebody drew an extra fin on that account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd put the drawing aside for a loss like that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A dab of bright butter belongs on tidings like those.
+line @1 ask.how : Has your day served up any surprises?
+line @1 answer.how : Fed once and looking forward to the next honest occasion.
+line @1 thank : That goes in the book under excellent company.
+line @1 deflect_thanks : It was only one little turn of the fork.
+line @1 sympathise : Here's a bit of shade and some company if they'll serve.
+line @1 reassure : The first line of a drawing seldom tells its ending.
+line @1 decline : I'd come, except I've already given those hours away.
+line @1 accept_decline : Then keep your feet pointed where they were going.
+line @1 preclose : I'd best put the lid on my words for today.
+line @1 accept_preclose : I'll leave you enough breath for the walk.
 scene shadow_fish
 when topic=pastimes|food
 does tell.self / ask.detail / answer.detail
@@ -107,7 +109,7 @@ when topic=weather|travel self.dislikes=salt_wind
 does tell.self / ask.detail / answer.detail
 a : Salt wind gets past a button without offering it a word. | Face into a bitter breeze and even a short story comes out dry.
 b : Could you sew a tighter coat? | Can't you turn your back?
-a : I'd still want room in it for me. | That's the cheerful part. The telling improves on the way home.
+a : Any tighter and I couldn't lift my arms. The wind would still win. | And walk home backwards? I'd sooner tell it shorter.
 
 scene first_snow
 when topic=weather here.weather=snow
@@ -242,16 +244,15 @@ does aside
 cooldown 8h
 say Supper drawn to order; smiles at no extra charge.
 
-dlg resident.hub : Come sit for my latest picture of a wolf with something to say.
-dlg resident.hub [topic.meeting=known] : #topic.player#. You'll recognise my magnificently stained drawing thumb.
-dlg resident.hub [here.time=night] : All shadows tonight. Very convenient for a charcoal artist.
-dlg resident.hub [pair.disposition=hostile|wary] : There's room for your say without either of us making a scene of it.
-dlg resident.job [self.job=fisher] : #self.trade_words.capitalize#. A good draught and a patient nose go a long way.
-dlg resident.job : I like my work to leave a sweet smell behind for whoever arrives next.
-dlg resident.news [world.news] : The words I kept alongside #world.news_from# are these: #world.news#.
-dlg resident.gossip [here.gossip=yes] : Word has it #topic.subject# #topic.claim#. I add no decoration to that.
-dlg resident.bye : Come back for the illustrated version some afternoon.
-
+dlg @1 resident.hub : Come sit for my latest picture of a wolf with something to say.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You'll recognise my magnificently stained drawing thumb.
+dlg @3 resident.hub [here.time=night] : All shadows tonight. Very convenient for a charcoal artist.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : There's room for your say without either of us making a scene of it.
+dlg @1 resident.job [self.job=fisher] : #self.trade_words.capitalize#. A good draught and a patient nose go a long way.
+dlg @2 resident.job : I like my work to leave a sweet smell behind for whoever arrives next.
+dlg @1 resident.news [world.news] : The words I kept alongside #world.news_from# are these: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Word has it #topic.subject# #topic.claim#. I add no decoration to that.
+dlg @1 resident.bye : Come back for the illustrated version some afternoon.
 graft resident.hub
 choice How do you draw a fish that smells fried? -> draw_butter
 node draw_butter

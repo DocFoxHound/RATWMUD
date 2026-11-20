@@ -1,9 +1,12 @@
+# rm250, the pencilled lookout (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm250
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_ivo_cinderham
+written_by codex
 title the pencilled lookout
 fits stage=adult|old
 prefers class=lower quarter=sump
@@ -67,7 +70,6 @@ line @22 deflect_thanks : Help the wolf coming up behind and we'll be quits. | T
 line @23 preclose : My legs are keen to go again. | Got a little daylight left to put to use.
 line @24 accept_preclose : Take the daylight while you've got it. | Your road goes on, then.
 line @25 farewell [here.time=night] : Here's to a quiet roof till morning. | Follow the lighted turnings home.
-
 scene inkeye
 when topic=travel self.likes=old_maps
 does tell.self / ask.detail / answer.detail
@@ -86,8 +88,8 @@ scene uphill
 when topic=times
 does give.opinion / disagree / concede
 a : I'll wager the Houses come to cross words before winter. | Great houses all want the first go through the same gate.
-b : There's no shortage of doors in this city. | Can you see all that from down here?
-a : True. But every one I try's shut from the other side. | It's a guess from the foot of the steps, I'll grant you.
+b : There's no shortage of doors in this city. | Can you see all that from where you stand?
+a : True. But every one I try's shut from the other side. | It's only a guess, I'll grant you. A fair one.
 
 scene crumb
 when topic=pastimes self.likes=digging
@@ -127,7 +129,7 @@ a : Hurry's earned a quick pardon often enough. A bare elbow earns nothing. | A 
 scene load
 when topic=work self.job=none self.working=yes self.trade_words
 does tell.self / ask.detail / answer.detail
-a : My work? #self.trade_words#. I like the swing before the load settles. | #self.trade_words#. There's a moment everything seems to hang on one breath.
+a : My work? #self.trade_words.capitalize#. I like the swing before the load settles. | #self.trade_words.capitalize#. There's a moment everything seems to hang on one breath.
 b : What's the first sign of that moment? | Even with a small load?
 a : Watch #hook#. The chain's gone quiet a heartbeat before the cargo is. | Especially then. Less weight means a wider swing to allow for.
 
@@ -142,7 +144,7 @@ scene firstchance
 when topic=dreams
 does tell.feeling / sympathise / assess
 a : I'd like one good chance somebody hadn't already picked over. | I've left a square of bare ground on my map.
-b : That's a familiar wish down here. | Saving space for a better road?
+b : Plenty of folk share that wish. | Saving space for a better road?
 a : Aye, and there's room on the ladder for whoever comes behind me. | For anything I get to choose for myself. Even a garden path.
 
 scene poorprice
@@ -240,11 +242,10 @@ dlg @1 resident.hub [topic.meeting=stranger] : New company. Would a bit of direc
 dlg @2 resident.hub [topic.meeting=known] : Ah, #topic.player#. Come see what the day looks like from here.
 dlg @3 resident.hub [here.time=night] : We can speak without raising the roofs. The night's fairly quiet.
 dlg @4 resident.hub [pair.disposition=wary|hostile] : Don't crowd me off my footing. I'll listen from here.
-dlg @5 resident.job [self.job=none self.trade_words] : #self.trade_words#. I'll show you a load's shadow and you'll see the sense in shifting aside.
+dlg @5 resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. I'll show you a load's shadow and you'll see the sense in shifting aside.
 dlg @6 resident.job : I'm after a chance with some height to it.
-dlg @7 resident.news [world.news] : Here's what's reached this far up the steps. #world.news#
+dlg @7 resident.news [world.news] : Here's what's reached this far up the steps. #world.news.capitalize#
 dlg @8 resident.bye : Find yourself a good view on the way.
-
 graft resident.hub
 choice What's the eye drawn on there? -> paper_eye
 node paper_eye

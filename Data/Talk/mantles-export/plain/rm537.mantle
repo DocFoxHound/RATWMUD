@@ -1,9 +1,12 @@
+# rm537, the puddle post (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm537
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_olaf_fogstack
+written_by codex
 title the puddle post
 fits stage=young|adolescent|adult|old
 prefers warmth=warm drive=steady
@@ -33,59 +36,132 @@ windhand = a push from the breeze | a little nibble of wind
 quietseat = a dark wooden end | the very still seat
 
 any
-opinion dole for 3 : A wolf who's run out of bread should get some while the bread still smells good.
-opinion newcomers for 1 : A wolf new to town can follow my finger to the link between puddles. It's a small thing I know that might be wanted.
-opinion church for 1 : A chapel can have the kind of quiet that lets somebody finish a sad thought without having to tell it.
-opinion festivals for 1 : Good to have a day for sending wishes further than the nearest puddle.
-opinion times against 1 : Some days it takes an awfully long walk to find a bit of tart that we can afford.
+opinion @1 dole for 3 : A wolf who's run out of bread should get some while the bread still smells good.
+opinion @1 newcomers for 1 : A wolf new to town can follow my finger to the link between puddles. It's a small thing I know that might be wanted.
+opinion @1 church for 1 : A chapel can have the kind of quiet that lets somebody finish a sad thought without having to tell it.
+opinion @1 festivals for 1 : Good to have a day for sending wishes further than the nearest puddle.
+opinion @1 times against 1 : Some days it takes an awfully long walk to find a bit of tart that we can afford.
 
 grown
+line @1 greet : My leaf has found an open reach. You're welcome beside it.
+line @1 greet.return : Hello again. A voice carries nicely over water.
+line @1 again.open : Back by the little current together.
+line @1 farewell : Let the folded leaf choose its last few inches.
+line @1 farewell.return : I'll see it through the final bend.
+line @1 react.news : I'd hear the part that stayed afloat on its own.
+line @1 preclose : A little thing still needs guiding out of the weeds.
+scene oldpost
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A leaf afloat on a stone channel can recall a whole private postal service to me.
+b : What did it deliver? | Who received the messages?
+a : Small marks of considerable importance to a pup with two wet socks. | Whoever happened to be watching when the leaf arrived. No signature required for receipt.
 
-grown
-line greet : My leaf has found an open reach. You're welcome beside it.
-line greet.return : A sound greeting carries beyond a small stretch of water.
-line again.open : Back by the little current together.
-line farewell : Let the folded leaf choose its last few inches.
-line farewell.return : I'll see it through the final bend.
-line react.news : I'd hear the part that stayed afloat on its own.
-line preclose : A little thing still needs guiding out of the weeds.
+scene font
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I still find a pocket of quiet between the sounds coming in from a busy street.
+b : Where would you find one? | Could I sit with you?
+a : Almost any chapel seat when the door's done swinging and my own ears have settled. | Please. A companion who sits easily can enlarge a quiet place.
 
-adolescent
-line greet : I can see right across this channel.
-line greet.return : Your voice just cleared the turning pool.
-line farewell : I'll be along after the leaf makes shore.
-line farewell.return : No parcel could ask a fairer wind.
+scene bridge
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I judge a flooded crossing by the speed of a light thing along its edge.
+b : Why the edge? | Would you step in to test it?
+a : That's the part visible from safe stone. I'm not putting either foot in to satisfy an idle question. | I'd choose a higher crossing if the answer was doubtful.
+
+scene plumready
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : The neatest way to share a plum tart is to let the second portion choose itself.
+b : How can a portion choose? | What if your cut was uneven?
+a : I cut, the guest chooses, and the half that's left becomes mine. | I've given myself an excellent reason to pay attention when dividing the next tart.
+
+scene help
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Showing a stranger dry footing is a gift which costs precisely a moment of looking.
+b : Even if either wolf's hurrying? | Which details would you show?
+a : A moment is often less than the time two wet boots would take to dry. | The shallow lip, the high step and the place where one's view of the channel is deceiving.
+
+scene flies
+when topic=food self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I've learned to cover sweet things with a cloth before letting the weather claim my attention.
+b : Does it keep every fly away? | Would a lid serve?
+a : Enough to let a guest choose a slice in peace. I ask a modest return on the effort. | Yes, if it clears the fruit without touching. My idea is protection, not a second crust.
+
+scene tone
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A report can be passed along with its dry meaning quite washed away.
+b : How can that happen? | Can it be recovered?
+a : Each teller adds a little flourish till the original mark gets hard to recognise. | Ask somebody who saw the original thing. Otherwise keep the guess at its actual size.
+
+scene springwet
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A spring shower still has the power to call me away from a very sensible indoor occupation.
+b : What would you watch? | Does the occupation wait?
+a : The first water making its own way between two separate hollows. I've always liked the instant they join. | If I've finished my share. Growing up taught me something about the price of wet sleeves.
+
+scene motherthought
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I sometimes think of the little marks I meant for #self.mother# when I address a proper sheet of paper.
+b : Do those marks still have a use? | What does a mark say?
+a : In a private margin on a suitable occasion. A serious paper is welcome to keep its proper form. | I remembered the way home, even on the days when each turning was an adventure.
+
+scene kindness
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I prefer to give a distressed wolf a useful small courtesy before asking about all the circumstances.
+b : What courtesy? | What if no account follows?
+a : A seat clear of passersby, or a little water within reach. That leaves both of us a choice. | The courtesy will still have reached the right address.
+
+scene tired
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A good long look at running water sometimes rests my eyes better than shutting them.
+b : Why would that be? | Would a trickle do?
+a : It asks my sight to follow one simple thing while everything else on today's list slips gently away. | A trickle's excellent. Its small scale was part of the original attraction.
+
+scene dicegrown
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I enjoy dice when every face can show in the same clear patch of light.
+b : Do you insist on a flat board? | What do you wager?
+a : Certainly. A sloping table can win without ever having taken a turn of its own. | A small courtesy, perhaps the choice of a filling for tomorrow's tart.
+
 
 young
-line greet : Here comes my puddle letter. There's room to watch.
-line greet [pair.band=strangers] : You're new. The broad puddle's only pretending to be deep.
-line greet [here.time=dawn] : Look how the very first light gets on my leaf.
-line greet [here.time=dusk|night] : My little letter has a shiny evening stamp.
-line greet [self.working=yes] : Let me get my lesson leaf on dry paper first.
-line kin.open [pair.kin!=no] : Family gets the good spot beside the bend.
-line again.open : My little post keeps coming back to you.
-line greet.return : I heard you over the tiny sloshing.
-line greet.return [pair.band=friends|family] : Your hello fits on my best leaf.
-line farewell : Safe home by the puddle with the shallow side.
-line farewell.return : I'll say your goodbye to the letter boat.
-line react.news : Which bit would fit on my folded leaf?
-line react.news.new : I haven't sent that news anywhere yet.
-line react.news.known : A leaf brought that bit round before.
-line react.news.doubt : Was anybody standing close enough to see it splash?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can sit quietly outside the sad place a while.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a little purple spot on a letter for that.
-line answer.how : A bit low, but there's still a leaf coming my way.
-line ask.how : Has somebody done you a little kindness today?
-line sympathise : I'd wait with you till the puddle stops shaking.
-line reassure : My sitting stone's wide enough to share.
-line decline : I promised to get this letter through the bend before taking another one.
-line accept_decline : My second letter can stay behind the saucer then.
-line thank : You gave my little thing a proper chance to float.
-line preclose : The green point has reached the last wide puddle.
-line ack : Afloat.
-
-young
-
+line @1 greet : Here comes my puddle letter. There's room to watch.
+line @2 greet [pair.band=strangers] : You're new. The broad puddle's only pretending to be deep.
+line @3 greet [here.time=dawn] : Look how the very first light gets on my leaf.
+line @4 greet [here.time=dusk|night] : My little letter has a shiny evening stamp.
+line @5 greet [self.working=yes] : Let me get my lesson leaf on dry paper first.
+line @1 kin.open [pair.kin!=no] : Family gets the good spot beside the bend.
+line @1 again.open : My little post keeps coming back to you.
+line @1 greet.return : I heard you over the tiny sloshing.
+line @2 greet.return [pair.band=friends|family] : Your hello fits on my best leaf.
+line @1 farewell : Safe home by the puddle with the shallow side.
+line @1 farewell.return : I'll say your goodbye to the letter boat.
+line @1 react.news : Which bit would fit on my folded leaf?
+line @1 react.news.new : I haven't sent that news anywhere yet.
+line @1 react.news.known : A leaf brought that bit round before.
+line @1 react.news.doubt : Was anybody standing close enough to see it splash?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can sit quietly outside the sad place a while.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a little purple spot on a letter for that.
+line @1 answer.how : A bit low, but there's still a leaf coming my way.
+line @1 ask.how : Has somebody done you a little kindness today?
+line @1 sympathise : I'd wait with you till the puddle stops shaking.
+line @1 reassure : My sitting stone's wide enough to share.
+line @1 decline : I promised to get this letter through the bend before taking another one.
+line @1 accept_decline : My second letter can stay behind the saucer then.
+line @1 thank : You gave my little thing a proper chance to float.
+line @1 preclose : The green point has reached the last wide puddle.
+line @1 ack : Afloat. I heard every bit of it.
 scene leaf
 when topic=pastimes
 does tell.self / ask.detail / answer.detail
@@ -205,117 +281,6 @@ a : I'm hoping for a letter from a puddle higher up than mine.
 b : Who would write it? | What would you send back?
 a : Some other wolf who likes fitting a message on a leaf. We could get quite friendly that way. | A leaf carried up in my pocket, with a mark saying the next shower can bring another.
 
-adolescent
-
-scene fountain
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I can guide a folded leaf round an entire little basin before the stem gets soft.
-b : How do you turn it? | Could a heavier parcel go?
-a : A breath just beyond the leaf is usually enough. Blowing down on it sinks the message. | A thread perhaps. Water has a rather strict allowance for a private post.
-
-scene longname
-when topic=work
-does tell.self / ask.detail / answer.detail
-a : I write shorter addresses now instead of trying to squeeze every letter into a small space.
-b : Which words do you leave? | Is it easier?
-a : I keep the ones the carrier needs to find a particular door. Most of my explaining can go inside. | Easier on the reader, which is an excellent return for a bit of thought.
-
-scene quietage
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : There's still a point in a quiet visit when I'd prefer company kept its questions for later.
-b : How would somebody tell? | Would you stay long?
-a : I should say so kindly. There's no great shame in asking for a little room to finish a thought. | Until I could take a cheerful interest in the walk home.
-
-grown
-
-scene oldpost
-when topic=memories
-does tell.self / ask.detail / answer.detail
-a : A leaf afloat on a stone channel can recall a whole private postal service to me.
-b : What did it deliver? | Who received the messages?
-a : Small marks of considerable importance to a pup with two wet socks. | Whoever happened to be watching when the leaf arrived. No signature required for receipt.
-
-scene font
-when topic=faith
-does tell.self / ask.detail / answer.detail
-a : I still find a pocket of quiet between the sounds coming in from a busy street.
-b : Where would you find one? | Could I sit with you?
-a : Almost any chapel seat when the door's done swinging and my own ears have settled. | Please. A companion who sits easily can enlarge a quiet place.
-
-scene bridge
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : I judge a flooded crossing by the speed of a light thing along its edge.
-b : Why the edge? | Would you step in to test it?
-a : That's the part visible from safe stone. I'm not putting either foot in to satisfy an idle question. | I'd choose a higher crossing if the answer was doubtful.
-
-scene plumready
-when topic=food self.likes=plum_tart
-does tell.self / ask.detail / answer.detail
-a : The neatest way to share a plum tart is to let the second portion choose itself.
-b : How can a portion choose? | What if your cut was uneven?
-a : I cut, the guest chooses, and the half that's left becomes mine. | I've given myself an excellent reason to pay attention when dividing the next tart.
-
-scene help
-when topic=newcomer
-does tell.self / ask.detail / answer.detail
-a : Showing a stranger dry footing is a gift which costs precisely a moment of looking.
-b : Even if either wolf's hurrying? | Which details would you show?
-a : A moment is often less than the time two wet boots would take to dry. | The shallow lip, the high step and the place where one's view of the channel is deceiving.
-
-scene flies
-when topic=food self.dislikes=flies
-does tell.self / ask.detail / answer.detail
-a : I've learned to cover sweet things with a cloth before letting the weather claim my attention.
-b : Does it keep every fly away? | Would a lid serve?
-a : Enough to let a guest choose a slice in peace. I ask a modest return on the effort. | Yes, if it clears the fruit without touching. My idea is protection, not a second crust.
-
-scene tone
-when topic=news
-does tell.self / ask.detail / answer.detail
-a : A report can be passed along with its dry meaning quite washed away.
-b : How can that happen? | Can it be recovered?
-a : Each teller adds a little flourish till the original mark gets hard to recognise. | Ask somebody who saw the original thing. Otherwise keep the guess at its actual size.
-
-scene springwet
-when topic=season
-does tell.self / ask.detail / answer.detail
-a : A spring shower still has the power to call me away from a very sensible indoor occupation.
-b : What would you watch? | Does the occupation wait?
-a : The first water making its own way between two separate hollows. I've always liked the instant they join. | If I've finished my share. Growing up taught me something about the price of wet sleeves.
-
-scene motherthought
-when topic=family self.mother
-does tell.self / ask.detail / answer.detail
-a : I sometimes think of the little marks I meant for #self.mother# when I address a proper sheet of paper.
-b : Do those marks still have a use? | What does a mark say?
-a : In a private margin on a suitable occasion. A serious paper is welcome to keep its proper form. | I remembered the way home, even on the days when each turning was an adventure.
-
-scene kindness
-when topic=smalltalk
-does tell.self / ask.detail / answer.detail
-a : I prefer to give a distressed wolf a useful small courtesy before asking about all the circumstances.
-b : What courtesy? | What if no account follows?
-a : A seat clear of passersby, or a little water within reach. That leaves both of us a choice. | The courtesy will still have reached the right address.
-
-scene tired
-when topic=health
-does tell.self / ask.detail / answer.detail
-a : A good long look at running water sometimes rests my eyes better than shutting them.
-b : Why would that be? | Would a trickle do?
-a : It asks my sight to follow one simple thing while everything else on today's list slips gently away. | A trickle's excellent. Its small scale was part of the original attraction.
-
-scene dicegrown
-when topic=pastimes self.likes=dice
-does tell.self / ask.detail / answer.detail
-a : I enjoy dice when every face can show in the same clear patch of light.
-b : Do you insist on a flat board? | What do you wager?
-a : Certainly. A sloping table can win without ever having taken a turn of its own. | A small courtesy, perhaps the choice of a filling for tomorrow's tart.
-
-young
-
 story leaflost [topic=weather]
   : I put my best leaf in a puddle and looked up to see who'd be round the corner to receive it.
   : When I looked down the leaf was gone and a little wet line went straight into the dry grass.
@@ -333,8 +298,6 @@ story chapelquiet [topic=faith]
   : A tiny grain of grit was rubbing against a wooden button every time I took a breath.
   b : Did you shake it away?
   : I took it outside in my sleeve. It was making the only noise and I didn't want to frighten it.
-
-young
 
 rule @post
 when concept=bark self.likes=warm_rain
@@ -360,18 +323,14 @@ does aside
 cooldown 8h
 say Silver stamp in the lamplight. | That's the post's last little turning.
 
-young
-dlg resident.hub : I've a leaf letter waiting for its first good puddle. You can see the mark.
-dlg resident.hub [topic.meeting=known] : The little post knows this stop, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I'd keep my leaf by the stem while we speak.
-dlg resident.hub [here.time=night] : There's just a silver edge where the water moves. We can watch it from this step.
-dlg resident.job [self.job=child] : #self.trade_words.capitalize#. I like learning words small enough for a leaf.
-dlg resident.job : I send tiny notes and look after the shallow crossing.
-dlg resident.news [world.news] : There's something to put on a new leaf. #world.news#.
-dlg resident.bye : Use our dry route for the sake of your socks.
-
-young
-
+dlg @1 resident.hub : I've a leaf letter waiting for its first good puddle. You can see the mark.
+dlg @2 resident.hub [topic.meeting=known] : The little post knows this stop, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'd keep my leaf by the stem while we speak.
+dlg @4 resident.hub [here.time=night] : There's just a silver edge where the water moves. We can watch it from this step.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I like learning words small enough for a leaf.
+dlg @2 resident.job : I send tiny notes and look after the shallow crossing.
+dlg @1 resident.news [world.news] : There's something to put on a new leaf. #world.news#.
+dlg @1 resident.bye : Use our dry route for the sake of your socks.
 graft @leafstreet resident.hub
 choice Who delivers your letters? -> leafstreet
 node leafstreet
@@ -382,3 +341,30 @@ node leafstreet_more
 say When the leaf turns in the last little pool I pick it up and deliver it overland from there. My feet finish the dry journey.
 choice Watch the leaf again. -> hub
 choice Take the high crossing. -> bye
+
+
+adolescent
+line @1 greet : I can see right across this channel.
+line @1 greet.return : Your voice just cleared the turning pool.
+line @1 farewell : I'll be along after the leaf makes shore.
+line @1 farewell.return : No parcel could ask a fairer wind.
+scene fountain
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can guide a folded leaf round an entire little basin before the stem gets soft.
+b : How do you turn it? | Could a heavier parcel go?
+a : A breath just beyond the leaf is usually enough. Blowing down on it sinks the message. | A thread perhaps. Water has a rather strict allowance for a private post.
+
+scene longname
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I write shorter addresses now instead of trying to squeeze every letter into a small space.
+b : Which words do you leave? | Is it easier?
+a : I keep the ones the carrier needs to find a particular door. Most of my explaining can go inside. | Easier on the reader, which is an excellent return for a bit of thought.
+
+scene quietage
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : There's still a point in a quiet visit when I'd prefer company kept its questions for later.
+b : How would somebody tell? | Would you stay long?
+a : I should say so kindly. There's no great shame in asking for a little room to finish a thought. | Until I could take a cheerful interest in the walk home.

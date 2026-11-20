@@ -1,14 +1,17 @@
+# rm424, the coal-map stall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm424
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_palle_brinewell
+written_by codex
 title the coal-map stall
 fits stage=young|adolescent|adult|old
 prefers quarter=sump
 traits temper=calm talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
-quirk marks_the_place_of_a_future_stall_on_the_back_of_used_wrappers
+quirk marks_a_future_stall_on_the_back_of_used_wrappers
 likes oatcakes singing old_maps warm_rain
 dislikes stale_bread haggling
 fears a_coin_dropped_downstairs a_seller_reading_the_wrong_side
@@ -40,20 +43,118 @@ opinion @2 dole for 2 : Food given quietly leaves a wolf time to think about get
 opinion @3 merchants against 1 : I'd like my stall to have one price that a nearly empty purse can still meet. I'm noting which shops manage that.
 opinion @4 city for 1 : There's nearly always a bit of Ridgemere somebody walks past without seeing how a little trade might fit.
 opinion @5 watch against 2 : A good pair of eyes has other uses besides staring after a coin all the way into my pocket.
-opinion @6 sump for 1 : One dry Sump tread can do the work of a whole table if the feet coming past are considerate.
+opinion @6 sump for 1 : Give me one dry step in the Sump and I'll sell off it, so long as the feet going past don't kick my goods.
 
 grown
-line @1 greet.return : Good to hear a quiet voice with a clear purpose. | Your word's been received square.
-line @2 farewell.return : Keep a dry fold for the next person you meet. | A fair wind off the empty corner.
+line @1 greet.return : Good to hear a quiet voice with a clear purpose. | Same to you, and gladly given.
+line @2 farewell.return : Keep a dry fold for the next person you meet. | Go well. Step wide of that puddle at the corner.
 line @3 react.news : Let's put the witnessed part on the visible side. | What did the first observer have to go on?
-line @4 answer.how : Keeping my own account current. | Nothing much out of its appointed place.
+line @4 answer.how : Keeping my own account current. | Steady. Nothing's gone missing since breakfast.
 line @5 decline : That would take hours I would have to sell a second time.
+scene marketpath
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A folded street chart kept for years will show you where you used to mean to go. | I recognise my old stall marks by the way the second upright leans.
+b : Did the real place ever quite match the plan?
+a : Not in every corner. A real street has a wolf's opinion on either side of it. | The slope I'd remembered was good. The available space changed with the weekday and the wet.
+
+scene silverrest
+when topic=dreams
+does tell.self / react.self / assess
+a : I still keep a little pile of money away from the day's general reckoning. | One small saving is a very patient piece of hope.
+b : Do you count what it's worth in other things?
+a : Mostly in days when I should be glad to have it. That's a good enough measure for a coin. | Sometimes in shaded patches of ground a buyer would willingly stand on. An old habit.
+
+scene charword
+when topic=gossip
+does give.opinion / disagree / concede
+a : I keep some accounts on a wrapper I could quite easily burn. | A wolf who wants the contents of my pocket laid out as news will have an uneventful visit.
+b : Not even a friend gets a look? | Even a decent friend asking after your day?
+a : A friend can hear about work and a song. The part marked private has a different function. | A friend will sometimes understand a pleasant answer is as much as the question requires.
+
+scene bargain
+when topic=prices
+does give.opinion / disagree / concede
+a : A straightforward price leaves room for pleasanter business at a counter. | I like the cheerful part of trading to be in the welcome and the thing handed over.
+b : Where does that leave the buyer who can't quite stretch to it?
+a : With a choice of smaller things priced just as fairly. One needn't humiliate a visitor whose purse feels thin. | Free to leave or to ask after a simpler piece. I shouldn't make a spectacle of the difference.
+
+scene honer
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I warm an oatcake just enough that the butter holds its edge. | I like one edge of an oatcake left dry, to hold it by.
+b : Doesn't the butter run off? | Why not butter all of it?
+a : Not if you tip the cake up a bit. Then it runs into the middle instead of the wrapping. | Then you've buttery fingers and a greasy wrapper, and I want the wrapper clean for drawing on.
+
+scene rainstand
+when topic=weather
+does tell.self / react.self / assess
+a : A spell of warm rain shows you where folk really walk. They cut every corner to stay dry. | Never fold a stall cover while it's wet. Wait till the outside's dried.
+b : What's the harm in it? | Does that change where you'd set up?
+a : Everything on the stall smells of last week's weather after, and nobody buys cake that smells of damp cloth. | It does. A dry corner gets busy fast in the wet. I'd want to be standing in it first.
+
+scene tunecount
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I let a song run under a count when I'm carrying things some distance. | Two notes mark each trip between a shelf and a wrapper.
+b : Isn't there a danger of losing count if the tune changes?
+a : I keep the short phrase steady until the goods are safely set down. Then the tune's free again. | I don't let the song do more work than the number can actually bear. The rest comes afterwards.
+
+scene cornerkin
+when topic=friends
+does tell.feeling / sympathise / assess
+a : There's some comfort in a wolf who understands a folded sheet may stay folded. | A good companion can stand by my work without trying every drawer.
+b : And what is the friend's share of the visit?
+a : Whatever I can offer freely: part of a cake, an unclaimed seat, a quiet song if the hour likes it. | The part that isn't in a drawer. Usually a rather larger welcome than the folk who rummage deserve.
+
+scene latewag
+when topic=travel world.wagons=late
+does tell.self / react.self / assess
+a : When a wagon's late, you see where folk stand to wait for it. | I watch where the crowd bunches up while a late cart's still on the road.
+b : What's that to you?
+a : Wherever they wait, they'll want something to eat. That's a stall's spot found for nothing. | Everything. A crowd that's waiting has nothing to do but buy a cake off somebody.
+
+scene gatequiet
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : At a Ridgemere gate a street plan changes with the width of each cart. | A quiet row after the last stall is closed has a much larger floor than the same row in full trade.
+b : Is it worth mapping such a changing thing?
+a : That's the only sort of map I regard as worth carrying. A wolf can supply the change in person. | Yes. One drawing for the stall, one for clearing the gear. An exit can be as useful as a sale.
+
+scene extrahelp
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Let me offer something already paid for. You can take it off my count. | There's an extra portion I put aside before I measured the rest.
+b : I won't have you worry what it cost you.
+a : Quite right. The figure was settled before I asked. Eat while the crust's still good. | No worry. I built a little spare room into the day's trading and this is where I want to use it.
+
+scene loyalroad
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I still want a place in the world where both counter faces are arranged to suit my own ideas. | I'd like every hand I remember putting a copper aside to see what those coppers bought.
+b : What if the shop turned out smaller than the plan?
+a : I should lay it out with a little more care. Small space doesn't mind a person thinking big inside it. | Small counters do quite respectable business all day. I'd pass a plate across it and let my guests judge.
+
 
 young
 line @7 greet.return : Hi. You can stand right on the black square. | Welcome in front of my pretend stall.
 line @8 farewell.return : Bye. I'll keep the penny I drew for you. | Go on. The little gate's open.
 line @9 react.news : I can listen from behind the paper. | What's the bit you've really got?
 line @10 answer.how : Making marks. Nice small ones. | I've enough paper for a whole square.
+scene coaldot
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put two black dots where my best things will be. | This bit of coal makes a house that fits in my paw.
+b : What are your best things? | What goes inside?
+a : A big cake and a little coin. I drew both sides of the deal. | Just me at the front. You can stand here and pretend to want something.
+
+scene crustsing
+when topic=food
+does tell.self / react.self / assess
+a : I've got a song for eating something crunchy. | I sing when I butter the soft edge of a cake.
+b : How does it go? | What's the last bit called?
+a : The bit my teeth get to do. Listen. Crunch, crunch, gone. | The small last note. It gets butter right to the end.
+
 
 adolescent
 line @12 greet [pair.band=strangers] : There's room at the bare end. Hello. | You can see what's on the front of the sheet.
@@ -81,9 +182,6 @@ line @33 deflect_thanks : I had a bit to spare on this sheet. | Enough space for
 line @34 preclose : I've a small figure to look at in private. | I want the sound of the next cart turning.
 line @35 accept_preclose : Right. Keep a piece of daylight to yourself. | Go before the corner gets busy.
 line @36 farewell [here.time=night] : Sleep with your coin and your plans in reach. | Don't let the last note out too loud.
-
-adolescent
-
 scene secret
 when topic=dreams
 does tell.self / ask.detail / answer.detail
@@ -103,7 +201,7 @@ when topic=pastimes self.likes=old_maps
 does tell.self / ask.detail / answer.detail
 a : An old map shows paths nobody's charging rent for now. | I keep #stick# where a printed market used to be.
 b : What gives that place away out in the street?
-a : Go to the bend in the ground. Roads move more often than the hill under a row of houses. | Check the nearest roof against the next roof beyond. Then I draw where they'd actually let a stall go.
+a : The way the street still bends round it. Lanes get rebuilt, but the hill underneath stays where it was. | The roofs. If two of them stop at the same line, there was a square there once. Then I draw where a stall could go now.
 
 scene song
 when topic=pastimes self.likes=singing
@@ -115,9 +213,9 @@ a : Only to a wolf who already knows the price of the last verse. | I change the
 scene warmwet
 when topic=weather self.likes=warm_rain
 does tell.self / ask.detail / answer.detail
-a : #rain# tells me which future pitch would need a deep awning. | A warm trickle on my wrapper drew a new side alley down the page.
-b : Are you going to leave that mark where it is?
-a : Yes. It's where the customers will put their wet parcels if I give them a hook. | It reminds me which counter leg ought to stand an inch higher.
+a : #rain# shows me which of my pitches would need a deep awning. | A warm trickle ran across my wrapper and drew a new side alley down the page.
+b : So what happens to that pitch then?
+a : Cross that pitch off, or draw an awning on it. Customers won't stand in a puddle to buy cake. | Left it there. It showed me where the water would really run past my counter.
 
 scene stale
 when topic=food self.dislikes=stale_bread
@@ -143,7 +241,7 @@ a : The room my stall would need. A generous picture won't make a narrow street 
 scene friendkeep
 when topic=friends self.friend
 does tell.plan / ask.detail / answer.detail
-a : One of the wrapper maps is rolled especially neatly for #self.friend#. | I'd make #self.friend# a trial perch on my stall's dry half.
+a : I'd let #self.friend# have a trial stand on my map's best corner. | I'd make #self.friend# a trial perch on my stall's dry half.
 b : Why only a trial?
 a : The paper's mine. Until the street's agreed to my having the ground I shouldn't give my friend an imaginary square. | A look from another pair of eyes might show I put the shade on the wrong side.
 
@@ -157,9 +255,9 @@ a : They can know I'm saving. No need to know which coin brought me a step neare
 scene shophope
 when topic=dreams here.region=ridgemere
 does tell.plan / ask.detail / answer.detail
-a : I should like a place beside the Commons Market where I could sell before the crowd divides. | I mean to arrive in the Commons with a counter cut to suit the gap I've chosen.
+a : I should like a place by Market Square where I could sell before the crowd divides. | I mean to arrive in the Commons with a counter cut to suit the gap I've chosen.
 b : How much of the counter have you got so far?
-a : The exact width on #wrapper#. The stack of coppers can catch up at a reasonable pace. | A little bar of coal that knows all four corners, an improvement on last winter's position.
+a : The exact width on #wrapper#. The stack of coppers can catch up at a reasonable pace. | Only the drawing so far. The coppers come slower than the plans do.
 
 scene thinfood
 when topic=times world.times=hard|lean
@@ -174,110 +272,6 @@ does tell.self / react.self / assess
 a : A new face will stand where there's room to look at the whole market before choosing. | I watch for the spot where travellers pause when they come through the last narrow turn.
 b : You think that's where a stall ought to be?
 a : Beside it. Nobody likes a counter planted right on the place a tired boot wants to rest. | Worth watching through another warm shower at least. A wolf's got a different notion of good ground when it's wet.
-
-young
-
-scene coaldot
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : I put two black dots where my best things will be. | This bit of coal makes a house that fits in my paw.
-b : What goes inside?
-a : A big cake and a little coin. I drew both sides of the deal. | Just me at the front. You can stand here and pretend to want something.
-
-scene crustsing
-when topic=food
-does tell.self / react.self / assess
-a : I've got a song for eating something crunchy. | I sing when I butter the soft edge of a cake.
-b : What's the last bit called?
-a : The bit my teeth get to do. Listen. Crunch, crunch, gone. | The small last note. It gets butter right to the end.
-
-grown
-
-scene marketpath
-when topic=travel
-does tell.self / ask.detail / answer.detail
-a : A folded street chart kept for years will show you where you used to mean to go. | I recognise my old stall marks by the way the second upright leans.
-b : Did the real place ever quite match the plan?
-a : Not in every corner. A real street has a wolf's opinion on either side of it. | The slope I'd remembered was good. The available space changed with the weekday and the wet.
-
-scene silverrest
-when topic=dreams
-does tell.self / react.self / assess
-a : I still keep a little pile of money away from the day's general reckoning. | One small saving is a very patient piece of hope.
-b : Do you count what it's worth in other things?
-a : Mostly in days when I should be glad to have it. That's a good enough measure for a coin. | Sometimes in shaded patches of ground a buyer would willingly stand on. An old habit.
-
-scene charword
-when topic=gossip
-does give.opinion / disagree / concede
-a : I keep some accounts on a wrapper I could quite easily burn. | A wolf who wants the contents of my pocket laid out as news will have an uneventful visit.
-b : Even a decent friend asking after your day?
-a : A friend can hear about work and a song. The part marked private has a different function. | A friend will sometimes understand a pleasant answer is as much as the question requires.
-
-scene bargain
-when topic=prices
-does give.opinion / disagree / concede
-a : A straightforward price leaves room for pleasanter business at a counter. | I like the cheerful part of trading to be in the welcome and the thing handed over.
-b : Where does that leave the buyer who can't quite stretch to it?
-a : With a choice of smaller things priced just as fairly. One needn't humiliate a visitor whose purse feels thin. | Free to leave or to ask after a simpler piece. I shouldn't make a spectacle of the difference.
-
-scene honer
-when topic=food self.likes=oatcakes
-does tell.self / ask.detail / answer.detail
-a : I warm an oatcake to the point the butter will just hold its edge. | I like one crisp edge to remain dry clear through a meal.
-b : What stops the heat carrying off the butter?
-a : Slant the cake up. The butter can flow towards dinner instead of into the wrapping. | I put the bare edge on the cold side of the plate while I see to the rest.
-
-scene rainstand
-when topic=weather
-does tell.self / react.self / assess
-a : A spell of warm rain gives a useful second opinion on the route to a stall. | A wet cover ought to be folded once its outer face has dried.
-b : What goes wrong when a hurried wolf folds it damp?
-a : The best dry nook turns into the busiest crossing before you have a chance to see what's changed. | A room that was dry begins to smell of the last week's weather. No benefit to the goods.
-
-scene tunecount
-when topic=pastimes self.likes=singing
-does tell.self / ask.detail / answer.detail
-a : I let a song run under a count when I'm carrying things some distance. | Two notes mark each trip between a shelf and a wrapper.
-b : Isn't there a danger of losing count if the tune changes?
-a : I keep the short phrase steady until the goods are safely set down. Then the tune's free again. | I don't let the song do more work than the number can actually bear. The rest comes afterwards.
-
-scene cornerkin
-when topic=friends
-does tell.feeling / sympathise / assess
-a : There's some comfort in a wolf who understands a folded sheet may stay folded. | A good companion can stand by my work without trying every drawer.
-b : And what is the friend's share of the visit?
-a : Whatever I can offer freely: part of a cake, an unclaimed seat, a quiet song if the hour likes it. | The part that isn't in a drawer. Usually a rather larger welcome than the folk who rummage deserve.
-
-scene latewag
-when topic=travel world.wagons=late
-does tell.self / react.self / assess
-a : A delayed wagon offers news of the street before it supplies actual goods. | I note the first cluster of waiting feet before a missing cart comes in.
-b : Have you some business in making that observation?
-a : Idle time can reveal the proper site for a fresh awning. I'd call that sensible curiosity. | I'd make the waiting place somewhere the group could still let ordinary traffic past.
-
-scene gatequiet
-when topic=land here.region=ridgemere
-does tell.self / react.self / assess
-a : At a Ridgemere gate a street plan changes with the width of each cart. | A quiet row after the last stall is closed has a much larger floor than the same row in full trade.
-b : Is it worth mapping such a changing thing?
-a : That's the only sort of map I regard as worth carrying. A wolf can supply the change in person. | Yes. One drawing for the stall, one for clearing the gear. An exit can be as useful as a sale.
-
-scene extrahelp
-when topic=times world.times=hard|lean
-does offer / accept / assess
-a : Let me offer something already paid for. You can take it off my count. | There's an extra portion I put aside before I measured the rest.
-b : I won't have you worry what it cost you.
-a : Quite right. The figure was settled before I asked. Eat while the crust's still good. | No worry. I built a little spare room into the day's trading and this is where I want to use it.
-
-scene loyalroad
-when topic=dreams
-does tell.feeling / sympathise / assess
-a : I still want a place in the world where both counter faces are arranged to suit my own ideas. | I'd like every hand I remember putting a copper aside to see what those coppers bought.
-b : What if the shop turned out smaller than the plan?
-a : I should lay it out with a little more care. Small space doesn't mind a person thinking big inside it. | Small counters do quite respectable business all day. I'd pass a plate across it and let my guests judge.
-
-adolescent
 
 story market_back [topic=dreams]
   : I drew a long row of stalls inside my oatcake wrapper. Took the coal dot at the far end for my lucky spot until I turned the paper round.
@@ -328,7 +322,6 @@ dlg @4 resident.hub [pair.disposition=wary|hostile] : That fold stays under my o
 dlg @5 resident.job [self.job=child self.workplace] : At #self.workplace# I learn the sums I'd need to keep a real counter standing.
 dlg @6 resident.job : I can find a use for a plain piece of paper after the first business is done.
 dlg @7 resident.bye : Leave a square vacant for a fortunate turn.
-
 graft resident.hub
 choice What could you sell from that black square? -> pitch_goods
 node pitch_goods

@@ -1,9 +1,12 @@
+# rm459, the axle waltz (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm459
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_petra_plankhand
+written_by codex
 title the axle waltz
 fits stage=adult|old
 prefers job=carter
@@ -33,45 +36,44 @@ sootash = a grey smudge | a trail of soft black dust
 ratboard = a clean raised board | the little stand for sacks
 
 any
-opinion houses against 3 : A sealed demand may ride in comfort all morning and my bones take the jolts for it. I know which half gets thanked.
-opinion road for 1 : I've earned hard coins on those ruts. A level surface might earn me the same coins with fewer regrets in the joints.
-opinion dole for 2 : The axle gets its grease before it complains. A hungry wolf ought to do at least as well as a bit of timber.
-opinion sump for 1 : Down here somebody understands what it means when a pair of boots comes back so dusty the owner can't be troubled to clean them.
-opinion festivals against 2 : I've a liking for a small clear spot to turn in. A crowded festival has just about everything except that.
-opinion times against 2 : The price of oats rises with remarkable ease. A load of oats seems as stubbornly heavy as ever.
+opinion @1 houses against 3 : A sealed demand may ride in comfort all morning and my bones take the jolts for it. I know which half gets thanked.
+opinion @1 road for 1 : I've earned hard coins on those ruts. A level surface might earn me the same coins with fewer regrets in the joints.
+opinion @1 dole for 2 : The axle gets its grease before it complains. A hungry wolf ought to do at least as well as a bit of timber.
+opinion @1 sump for 1 : Down here somebody understands what it means when a pair of boots comes back so dusty the owner can't be troubled to clean them.
+opinion @1 festivals against 2 : I've a liking for a small clear spot to turn in. A crowded festival has just about everything except that.
+opinion @1 times against 2 : The price of oats rises with remarkable ease. A load of oats seems as stubbornly heavy as ever.
 
 grown
-line greet : Take the still bit beyond my turning heel.
-line greet [pair.band=strangers] : A new walker. You're welcome off the wheel track.
-line greet [here.time=dawn] : You and the bell are among the few things up this early.
-line greet [here.time=dusk|night] : The day's last turn still admits a companion.
-line greet [self.working=yes] : There's a spoke to watch. You may speak from there.
-line kin.open [pair.kin!=no] : Come take the side with less road dust on it.
-line again.open : Round you come like my marked spoke.
-line greet.return : Your greeting carries a deal better than the axle.
-line greet.return [pair.band=friends|family] : A friendly voice makes an ordinary good beat for my feet.
-line greet.return [self.working=yes] : I heard between the knocks. Give the handles space.
-line greet.return [here.time=dusk|night] : There's your voice above a very quiet road.
-line farewell : Take the curve without hurrying your heel.
-line farewell.return : I'll have the last little step to myself.
-line react.news : I'd have it in the order the wheels ran.
-line react.news.new : That piece hasn't made the circuit with me yet.
-line react.news.known : Same load with a change of label, I think.
-line react.news.doubt : Who had hold of the shaft when that happened?
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd carry supper to the house before another telling of that news.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something worth putting a spring in the old suspension.
-line answer.how : A bit stiff on the turns. I still know the tune.
-line ask.how : Is your half of the street holding together today?
-line sympathise : A heavy load can carry its own little empty space about with it.
-line reassure : Take the level stretch at the pace your feet ask for.
-line decline : I'm not inclined to move anything before we're plain about where it must go.
-line accept_decline : Your parcel may stay precisely where you set it.
-line thank : That's lifted a good jolt out of my afternoon.
-line deflect_thanks : Give another wolf a clear corner one day.
-line preclose : I've kept the wheel waiting longer than it deserves.
-line accept_preclose : Go while the road's in a generous temper.
-line ack : Runs level.
-
+line @1 greet : Take the still bit beyond my turning heel.
+line @2 greet [pair.band=strangers] : A new walker. You're welcome off the wheel track.
+line @3 greet [here.time=dawn] : You and the bell are among the few things up this early.
+line @4 greet [here.time=dusk|night] : The day's last turn still admits a companion.
+line @5 greet [self.working=yes] : There's a spoke to watch. You may speak from there.
+line @1 kin.open [pair.kin!=no] : Come take the side with less road dust on it.
+line @1 again.open : Round you come like my marked spoke.
+line @1 greet.return : Your greeting carries a deal better than the axle.
+line @2 greet.return [pair.band=friends|family] : A friendly voice makes an ordinary good beat for my feet.
+line @3 greet.return [self.working=yes] : I heard between the knocks. Give the handles space.
+line @4 greet.return [here.time=dusk|night] : There's your voice above a very quiet road.
+line @1 farewell : Take the curve without hurrying your heel.
+line @1 farewell.return : I'll have the last little step to myself.
+line @1 react.news : I'd have it in the order the wheels ran.
+line @1 react.news.new : That piece hasn't made the circuit with me yet.
+line @1 react.news.known : Same load with a change of label, I think.
+line @1 react.news.doubt : Who had hold of the shaft when that happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd carry supper to the house before another telling of that news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something worth putting a spring in the old suspension.
+line @1 answer.how : A bit stiff on the turns. I still know the tune.
+line @1 ask.how : Is your half of the street holding together today?
+line @1 sympathise : A heavy load can carry its own little empty space about with it.
+line @1 reassure : Take the level stretch at the pace your feet ask for.
+line @1 decline : I'm not inclined to move anything before we're plain about where it must go.
+line @1 accept_decline : Your parcel may stay precisely where you set it.
+line @1 thank : That's lifted a good jolt out of my afternoon.
+line @1 deflect_thanks : Give another wolf a clear corner one day.
+line @1 preclose : I've kept the wheel waiting longer than it deserves.
+line @1 accept_preclose : Go while the road's in a generous temper.
+line @1 ack : Runs level.
 scene axle
 when topic=work self.job=carter self.working=yes
 does tell.self / ask.detail / answer.detail
@@ -239,15 +241,15 @@ when concept=bark here.time=dusk
 does aside
 cooldown 8h
 say Bring the wheel through one full turn. | Save the last blade of light for the rim.
-dlg resident.hub : I'm at a standstill by choice. We have a moment to talk.
-dlg resident.hub [topic.meeting=known] : Your voice rounds the bend neatly, #topic.player#.
-dlg resident.hub [pair.disposition=wary|hostile] : I'd like a cart width between us while you explain.
-dlg resident.hub [here.time=night] : A wheel and a voice both carry very well after dark. Yours is quite clear.
-dlg resident.job [self.job=carter] : #self.trade_words.capitalize#. I like the load to come home with the count and the corners entire.
-dlg resident.job : I'm useful over an uneven stretch and generally know when to set a burden down.
-dlg resident.news [world.news] : This piece came in clear over the little knocking sound. #world.news#.
-dlg resident.bye : Leave room for your far heel when you turn away.
 
+dlg @1 resident.hub : I'm at a standstill by choice. We have a moment to talk.
+dlg @2 resident.hub [topic.meeting=known] : Your voice rounds the bend neatly, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'd like a cart width between us while you explain.
+dlg @4 resident.hub [here.time=night] : A wheel and a voice both carry very well after dark. Yours is quite clear.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I like the load to come home with the count and the corners entire.
+dlg @2 resident.job : I'm useful over an uneven stretch and generally know when to set a burden down.
+dlg @1 resident.news [world.news] : This piece came in clear over the little knocking sound. #world.news#.
+dlg @1 resident.bye : Leave room for your far heel when you turn away.
 graft @yardwaltz resident.hub
 choice Can a square wheel really teach you a dance? -> yardwaltz
 node yardwaltz

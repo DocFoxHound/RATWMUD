@@ -1,9 +1,12 @@
+# rm262, the cuff of wax (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm262
+revision 1
 state ready
 dialect plain
 accent broad light
 tier standard
 written_for rmx_winifred_nailton
+written_by codex
 title the cuff of wax
 fits stage=adult|old
 prefers warmth=warm honesty=frank
@@ -34,45 +37,44 @@ quietlamp = the little side lamp | a lamp in a quiet corner
 gullwing = the white sweep of a wing | a long white wingtip
 
 any
-opinion dole for 3 : Empty bellies put a whole street in darkness. A pot set out for supper lets everybody see a little farther.
-opinion merchants against 3 : I'm tired of being charged extra for the wrapping on something my paws can carry bare.
-opinion houses against 2 : There's wax on a House seal enough to mend a dozen frayed ends. I could find good use for the lot.
-opinion city for 1 : Ridgemere taught me even a wet doorstep can be made comfortable for a caller.
-opinion church for 1 : In the little silence before a prayer I can hear what I ought to have noticed all day.
-opinion strangers for 1 : Show me an awkward buckle and I don't much mind who the coat belongs to.
-opinion sump for 1 : I'll put my best button coat against all the gleaming stairs uphill for the welcome it can give.
+opinion @1 dole for 3 : Empty bellies put a whole street in darkness. A pot set out for supper lets everybody see a little farther.
+opinion @1 merchants against 3 : I'm tired of being charged extra for the wrapping on something my paws can carry bare.
+opinion @1 houses against 2 : There's wax on a House seal enough to mend a dozen frayed ends. I could find good use for the lot.
+opinion @1 city for 1 : Ridgemere taught me even a wet doorstep can be made comfortable for a caller.
+opinion @1 church for 1 : In the little silence before a prayer I can hear what I ought to have noticed all day.
+opinion @1 strangers for 1 : Show me an awkward buckle and I don't much mind who the coat belongs to.
+opinion @1 sump for 1 : I'll put my best button coat against all the gleaming stairs uphill for the welcome it can give.
 
 grown
-line greet : Come close. I don't need a whole street to say hello.
-line greet [pair.band=strangers] : Fresh company. Good to have you handy.
-line greet [here.time=dawn] : First light and a clean start to the wick.
-line greet [here.time=dusk|night] : The air's cooled. Words still carry a bit of warmth.
-line greet.return : Hearing my name kindly saves me warming up my voice.
-line greet.return [pair.band=friends|family] : I kept a half-smile ready for you.
-line greet.return [self.working=yes] : Hang back a pace till I've both paws free.
-line greet.return [here.time=dusk|night] : I can just see who put that kindness in the dark.
-line kin.open [pair.kin!=no] : Come and let the family have a proper look at you.
-line again.open : There's another minute for the part we didn't finish.
-line hail [pair.band=friends] : Here by the bright sleeve, friend!
-line farewell : Keep some kindness tucked inside that coat.
-line farewell.return : And a clean dry step wherever you turn in.
-line react.news : Say that once with the edges left on.
-line react.news.new : That's fresh to my ears, every bit.
-line react.news.known : The same wick's been burning here a while.
-line react.news.doubt : I see daylight between those two bits of talk.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's the kind of hurt a small mending won't touch.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a light I'd be glad to pass along.
-line ask.how : Any small trouble I can ease in a minute?
-line answer.how : Warm paws and a voice just finding its strength.
-line thank : That fitted precisely where I needed help.
-line deflect_thanks : One dab of effort did the job.
-line sympathise : Sit within reach if a steady paw would help.
-line reassure : A breath first. We've time to ease the awkward bit.
-line decline : I'd come, except I've given the hour to somebody else.
-line accept_decline : A plain refusal is kinder than a slow false promise.
-line preclose : I'd best gather up the loose ends of my day.
-line accept_preclose : There's a good place to leave the stitching.
-
+line @1 greet : Come close. I don't need a whole street to say hello.
+line @2 greet [pair.band=strangers] : Fresh company. Good to have you handy.
+line @3 greet [here.time=dawn] : First light and a clean start to the wick.
+line @4 greet [here.time=dusk|night] : The air's cooled. Words still carry a bit of warmth.
+line @1 greet.return : Hearing my name kindly saves me warming up my voice.
+line @2 greet.return [pair.band=friends|family] : I kept a half-smile ready for you.
+line @3 greet.return [self.working=yes] : Hang back a pace till I've both paws free.
+line @4 greet.return [here.time=dusk|night] : I can just see who put that kindness in the dark.
+line @1 kin.open [pair.kin!=no] : Come and let the family have a proper look at you.
+line @1 again.open : There's another minute for the part we didn't finish.
+line @1 hail [pair.band=friends] : Here by the bright sleeve, friend!
+line @1 farewell : Keep some kindness tucked inside that coat.
+line @1 farewell.return : And a clean dry step wherever you turn in.
+line @1 react.news : Say that once with the edges left on.
+line @1 react.news.new : That's fresh to my ears, every bit.
+line @1 react.news.known : The same wick's been burning here a while.
+line @1 react.news.doubt : I see daylight between those two bits of talk.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's the kind of hurt a small mending won't touch.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a light I'd be glad to pass along.
+line @1 ask.how : Any small trouble I can ease in a minute?
+line @1 answer.how : Warm paws and a voice just finding its strength.
+line @1 thank : That fitted precisely where I needed help.
+line @1 deflect_thanks : One dab of effort did the job.
+line @1 sympathise : Sit within reach if a steady paw would help.
+line @1 reassure : A breath first. We've time to ease the awkward bit.
+line @1 decline : I'd come, except I've given the hour to somebody else.
+line @1 accept_decline : A plain refusal is kinder than a slow false promise.
+line @1 preclose : I'd best gather up the loose ends of my day.
+line @1 accept_preclose : There's a good place to leave the stitching.
 scene wax_cuff
 when topic=work|smalltalk
 does tell.self / ask.detail / answer.detail
@@ -167,7 +169,7 @@ a : My seeing it would make a considerable difference to my answer. | No. Pass m
 scene bare_window
 when topic=news world.news
 does tell.news / react.self / assess
-a : #world.news#. That's the bit that came from #world.news_from#. | From #world.news_from# came news of this: #world.news#.
+a : #world.news.capitalize#. That's the bit that came from #world.news_from#. | From #world.news_from# came news of this: #world.news#.
 b : You don't sound entirely sure. | Can I pass that along?
 a : Of my own words I'm sure. I didn't walk there to look. | Yes, leave the ends as plain as I gave them.
 
@@ -241,16 +243,15 @@ does aside
 cooldown 8h
 say Just light enough to find the thread by.
 
-dlg resident.hub : Put the words where I can get both ears to them.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Good, I know how you like a straight answer.
-dlg resident.hub [here.time=night] : Late's a good time for a quiet voice and a little patience.
-dlg resident.hub [pair.disposition=hostile|wary] : I'll listen. Keep enough room between us for a coat on a peg.
-dlg resident.job [self.job=crafter self.working=yes] : #self.trade_words.capitalize#. The small repairs see me through a day too.
-dlg resident.job : I like work that lets me put one crooked thing square.
-dlg resident.news [world.news] : News arrived out of #world.news_from# in these words: #world.news#.
-dlg resident.gossip [here.gossip=yes] : I'd sooner talk over something I can test with my own claws.
-dlg resident.bye : I wish you a pocket with room for the next good find.
-
+dlg @1 resident.hub : Put the words where I can get both ears to them.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good, I know how you like a straight answer.
+dlg @3 resident.hub [here.time=night] : Late's a good time for a quiet voice and a little patience.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll listen. Keep enough room between us for a coat on a peg.
+dlg @1 resident.job [self.job=crafter self.working=yes] : #self.trade_words.capitalize#. The small repairs see me through a day too.
+dlg @2 resident.job : I like work that lets me put one crooked thing square.
+dlg @1 resident.news [world.news] : News arrived out of #world.news_from# in these words: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I'd sooner talk over something I can test with my own claws.
+dlg @1 resident.bye : I wish you a pocket with room for the next good find.
 graft resident.hub
 choice What can the wax do for a bad boot? -> boot_rub
 node boot_rub

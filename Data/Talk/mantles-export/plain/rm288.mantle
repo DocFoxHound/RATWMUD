@@ -1,9 +1,12 @@
+# rm288, the diagonal walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm288
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_roald_greyham
+written_by codex
 title the diagonal walker
 fits stage=adult|old
 prefers role=civilian
@@ -35,41 +38,40 @@ step = the wide tread | a short cross step
 square = an empty dark square | the uncovered corner
 
 any
-opinion church for 2 : My own prayers fit under the same roof as a cold stranger. That's a properly useful roof.
-opinion dole for 3 : When my cupboard was nothing but wood I got hot food without giving up my last coin.
-opinion drink against 1 : A wolf should be able to remember a promise until morning. I've seen a cup undo that.
-opinion houses against 2 : They can find room for a bench longer than two carts and no space to fit me on it.
-opinion merchants against 3 : I work to bring home a hot heel and sometimes get the smell alone.
+opinion @1 church for 2 : My own prayers fit under the same roof as a cold stranger. That's a properly useful roof.
+opinion @1 dole for 3 : When my cupboard was nothing but wood I got hot food without giving up my last coin.
+opinion @1 drink against 1 : A wolf should be able to remember a promise until morning. I've seen a cup undo that.
+opinion @1 houses against 2 : They can find room for a bench longer than two carts and no space to fit me on it.
+opinion @1 merchants against 3 : I work to bring home a hot heel and sometimes get the smell alone.
 
 grown
-line greet [pair.band=strangers] : Here's your place across from me. | Welcome. I'll sit square.
-line greet [self.working=yes] : Stay by the free corner. | Speak plainly above the work.
-line greet [here.time=dawn] : Pale board to begin the morning. | You have the first daylight move.
-line greet [here.time=dusk|night] : Evening. My bench has a spare end. | Short light, clear hearing.
-line kin.open [pair.kin!=no] : I'll move over for kin. | Ah, my own family across the board.
-line again.open : Back on my diagonal again. | The second meeting's ours.
-line greet.return : Welcome. I can wait one turn. | I'll hear the full move.
-line greet.return [pair.band=friends|family] : You can keep the warm corner. | Glad of a familiar voice beside me.
-line greet.return [self.working=yes] : I've a clean moment between jobs. | Tell me before the next turn.
-line greet.return [here.time=dusk|night] : Stay in the little square of lamplight. | Evening. Set your feet here.
-line farewell : Keep a landing in reach. | Safe play all your way back.
-line farewell.return : Leave room for a good return. | I'll mind this corner.
-line farewell.return [here.time=night] : Look for the next lamp before turning. | A quiet rest when you reach home.
-line react.news : Make the account plain. | Which part came to you clean?
-line react.news.new : New square to my eyes. | I hadn't heard that move.
-line react.news.known : That piece has crossed my board. | I've already considered that word.
-line react.news.doubt : I'd see the rest of the position first. | A move like that wants a second look.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard news reaches both sides equally. | I'll sit across from you in silence.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad turn for once. | I'd make room for more word like that.
-line ask.how : How's your side of the board? | Can you find an easy move today?
-line answer.how : Making quiet progress with both feet. | Still plenty to occupy one turn.
-line decline : I'd sooner finish the task on my bench. | I need a quieter corner than that today.
-line accept_decline : Clear refusal. I can honour it. | Then your turn stands.
-line thank : I'll keep a corner open for you. | That gives my feet a rest.
-line sympathise : You needn't find a winning move straight off. | Hold steady. I'll keep the bench.
-line reassure : A pause is a proper move sometimes. | Plenty of room to consider it.
-line preclose : I'll leave my counter here. | Time to rest these jumping feet.
-
+line @1 greet [pair.band=strangers] : Here's your place across from me. | Welcome. I'll sit square.
+line @2 greet [self.working=yes] : Stay by the free corner. | Speak plainly above the work.
+line @3 greet [here.time=dawn] : Pale board to begin the morning. | You have the first daylight move.
+line @4 greet [here.time=dusk|night] : Evening. My bench has a spare end. | Short light, clear hearing.
+line @1 kin.open [pair.kin!=no] : I'll move over for kin. | Ah, my own family across the board.
+line @1 again.open : Back on my diagonal again. | The second meeting's ours.
+line @1 greet.return : Welcome. I can wait one turn. | I'll hear the full move.
+line @2 greet.return [pair.band=friends|family] : You can keep the warm corner. | Glad of a familiar voice beside me.
+line @3 greet.return [self.working=yes] : I've a clean moment between jobs. | Tell me before the next turn.
+line @4 greet.return [here.time=dusk|night] : Stay in the little square of lamplight. | Evening. Set your feet here.
+line @1 farewell : Keep a landing in reach. | Safe play all your way back.
+line @1 farewell.return : Leave room for a good return. | I'll mind this corner.
+line @2 farewell.return [here.time=night] : Look for the next lamp before turning. | A quiet rest when you reach home.
+line @1 react.news : Make the account plain. | Which part came to you clean?
+line @1 react.news.new : New square to my eyes. | I hadn't heard that move.
+line @1 react.news.known : That piece has crossed my board. | I've already considered that word.
+line @1 react.news.doubt : I'd see the rest of the position first. | A move like that wants a second look.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard news reaches both sides equally. | I'll sit across from you in silence.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad turn for once. | I'd make room for more word like that.
+line @1 ask.how : How's your side of the board? | Can you find an easy move today?
+line @1 answer.how : Making quiet progress with both feet. | Still plenty to occupy one turn.
+line @1 decline : I'd sooner finish the task on my bench. | I need a quieter corner than that today.
+line @1 accept_decline : Clear refusal. I can honour it. | Then your turn stands.
+line @1 thank : I'll keep a corner open for you. | That gives my feet a rest.
+line @1 sympathise : You needn't find a winning move straight off. | Hold steady. I'll keep the bench.
+line @1 reassure : A pause is a proper move sometimes. | Plenty of room to consider it.
+line @1 preclose : I'll leave my counter here. | Time to rest these jumping feet.
 scene stair
 when topic=travel
 does tell.self / ask.detail / answer.detail
@@ -238,12 +240,11 @@ does aside
 cooldown 9h
 say A little heat still in the middle. | Fold the wrapping over the warm heel.
 
-dlg resident.hub : Take the corner that suits you. I like folk to see who they're talking with.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you know the way across my board.
-dlg resident.job [self.job=none self.working=yes self.workplace] : There are benches and towels to see to at #self.workplace#. A dry seat's a small kindness.
-dlg resident.news [world.news] : A clear word has reached me. #world.news#
-dlg resident.bye : Keep an open square ahead as you go.
-
+dlg @1 resident.hub : Take the corner that suits you. I like folk to see who they're talking with.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you know the way across my board.
+dlg @1 resident.job [self.job=none self.working=yes self.workplace] : There are benches and towels to see to at #self.workplace#. A dry seat's a small kindness.
+dlg @1 resident.news [world.news] : A clear word has reached me. #world.news#
+dlg @1 resident.bye : Keep an open square ahead as you go.
 graft resident.hub
 choice Show me the draughts board on a stair. -> walk_board
 node walk_board

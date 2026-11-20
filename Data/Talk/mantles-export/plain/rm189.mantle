@@ -1,10 +1,12 @@
-# rm189, the one-stroke vintner (doc 84 P14, batch city-a3): written for rm_delphine_saltwick (Delphine Saltwick: vintner at The Fell Wine Vaults, Ridgemere-born). Name-free. The Commons' brisk, respectable middle register: a proud, short-tempered counter-keeper who won't haggle, cuts bottle wax with one stroke, loves a misty dawn and dances hard on a feast night.
+# rm189, the one-stroke vintner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm189
+revision 1
 state ready
 dialect plain
 accent light broad
 tier full
 written_for rm_delphine_saltwick
+written_by codex
 title the one-stroke vintner
 fits stage=adult|old
 prefers role=merchant job=merchant temper=short
@@ -42,65 +44,64 @@ stall = the counter | my counter
 steps = the cellar steps | the sixteen steps under the street
 
 any
-opinion city for 1 : I was born on these slopes and I'll be carried down them, and nobody runs the place down at my counter meanwhile. | Wet, steep and dear, and mine. I'd not swap it.
-opinion merchants for 1 : Settle one carter's bill, sweep up a broken bottle and you'll know where a price comes from. I don't grudge an honest seller the difference.
-opinion merchants for 2 [world.wagons=late|raided] : Every load that's late, the seller pays for it first. Then the buyer. Then everyone grumbles at the seller.
-opinion newcomers for 1 : New folk drink, same as old folk. I'll serve them, and I'll watch the count while I do.
-opinion road against 1 : Half of what I sell came up a road, and the road takes longer every season. I chalk the difference and I'm called greedy for it.
-opinion strangers for 1 : A traveller leaning on my counter buys a bottle and tells me what's on the road. That's a fair bargain.
-opinion watch for 1 : The Watch pass my door at midnight and again at three, and nobody's lifted a bottle off my counter in years. I'll say good morning to them for that.
-opinion festivals mixed 1 : I'll dance the fiddler into the ground, and then I'd like the city to go home quietly. It never does.
-opinion drink mixed 1 : A glass with supper is a kindness. A bottle before noon is a fool's errand, and I've sold to both.
-opinion houses mixed 0 : The Rise buys the best and pays the slowest. They get served like anyone, and their reckoning goes up twice.
-opinion dole for 1 : An empty belly in a town this rich shames every one of us. My coin goes in the chapel box, and the sum's my own affair.
-opinion times against 1 [world.times=hard|lean] : When times pinch, wine's dropped from the basket before bread is, and missed long after.
+opinion @1 city for 1 : I was born on these slopes and I'll be carried down them, and nobody runs the place down at my counter meanwhile. | Wet, steep and dear, and mine. I'd not swap it.
+opinion @1 merchants for 1 : Settle one carter's bill, sweep up a broken bottle and you'll know where a price comes from. I don't grudge an honest seller the difference.
+opinion @2 merchants for 2 [world.wagons=late|raided] : Every load that's late, the seller pays for it first. Then the buyer. Then everyone grumbles at the seller.
+opinion @1 newcomers for 1 : New folk drink, same as old folk. I'll serve them, and I'll watch the count while I do.
+opinion @1 road against 1 : Half of what I sell came up a road, and the road takes longer every season. I chalk the difference and I'm called greedy for it.
+opinion @1 strangers for 1 : A traveller leaning on my counter buys a bottle and tells me what's on the road. That's a fair bargain.
+opinion @1 watch for 1 : The Watch pass my door at midnight and again at three, and nobody's lifted a bottle off my counter in years. I'll say good morning to them for that.
+opinion @1 festivals mixed 1 : I'll dance the fiddler into the ground, and then I'd like the city to go home quietly. It never does.
+opinion @1 drink mixed 1 : A glass with supper is a kindness. A bottle before noon is a fool's errand, and I've sold to both.
+opinion @1 houses mixed 0 : The Rise buys the best and pays the slowest. They get served like anyone, and their reckoning goes up twice.
+opinion @1 dole for 1 : An empty belly in a town this rich shames every one of us. My coin goes in the chapel box, and the sum's my own affair.
+opinion @1 times against 1 [world.times=hard|lean] : When times pinch, wine's dropped from the basket before bread is, and missed long after.
 
 grown
-line greet : #greet#. Watch the doorstep, it dips in the middle. | #greet#. Plain speaking's welcome at this door.
-line greet [pair.band=strangers] : #greet#. New to this street, by the look. The counter's this way. | #greet#. Your face is a stranger to me yet. A few visits will cure that.
-line greet [self.working=yes self.role=merchant] : #greet#. One moment, I've #wax# to cut. | #greet#. I'm at the counter, so talk while I work.
-line greet [here.time=dawn] : Morning. Was it misty your way? It was thick on mine. | Morning. You're out early. So am I. I like it.
-line greet [here.time=dusk|night] : Evening. My feet have finished, even if I haven't. | Evening. A late caller. Well, so be it.
-line greet [pair.band=friends|family] : Ah. I'd begun to think the hill had eaten you. | Good. I've been short of sensible company all day.
-line greet.return : #greet#. | #greet#. Likewise, I'm sure.
-line greet.return [pair.band=friends|family] : And you. Get out of the wet. | Hello yourself. You look well.
-line greet.return [self.working=yes] : #greet#. Mind your elbows near #casks#. | #greet#. You'll forgive me working.
-line greet.return [here.time=dusk|night] : Evening. Don't keep me long. | Evening to you.
-line kin.open [pair.kin!=no] : Sit down. I'll not have you standing about. | You've eaten, I hope. Don't lie to me.
-line again.open : Twice today. My doorstep will wear thin. | Here again. The last chat's still warm.
-line hail [pair.band=friends] : Over here. I'm not shouting twice. | Hoy. Spare me a minute, you.
-line farewell : #farewell#. Mind the step going out. | #farewell#. Bring me a thirst or a decent reason for the visit.
-line farewell : #saying.capitalize#. Off you go. | That's me done. #farewell#.
-line farewell [here.time=dusk|night] : Go home before the singers start. #farewell#. | Get indoors. The night's no friend to anyone.
-line farewell.return : And you. Don't dawdle in the wet. | #farewell#. Counter and I both stay put.
-line farewell.return [here.time=dusk|night] : Night, then. Lock your door. | Sleep, if they let you.
-line react.news : Go on. And keep it short. | Tell it straight. Not the dressed-up version.
-line react.news.new : Nobody's carried that in yet. Somebody will. | First I've heard. You're sure of it?
-line react.news.known : I've had that three times today across the counter. | Old news by noon. Somebody always comes in with it.
-line react.news.doubt : Somebody who saw it will be in for a bottle soon. I'll ask them. | That's been through a few mouths. I can taste it.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard, that. It sits ill with me. | That's an ill thing. I'll send round a bottle, and no talk of paying.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That wants a glass raising. | Good news, and I'll be telling it over the counter all week.
-line answer.how : Well enough. My knees argue, I don't listen. | Steady. The till's honest and so am I.
-line answer.how.busy [self.working=yes] : Busy. Don't stand where the casks roll. | Up before the lamplighter finished, standing till he's back.
-line ask.how : You're keeping well? You look it. | How's the world with you? Honestly, now.
-line sympathise : Heavy, that. Lean on my counter a minute. | I'm sorry. Few words from me, but each one meant.
-line reassure : Give it a dry week. Most things mend in one. | You'll manage. You have that sort of face.
-line decline : I'll not. It's another's to hand over, not mine, so ask them. | Not today. The counter's mine alone and my paws are full.
-line decline [self.role=merchant] : What's on the slate stays on the slate. Not for you, not for the Rise. | I'll not knock it down. I'd rather lose the sale than start that.
-line accept_decline : Fair. Your business, not mine. | Then that's an end of it. No harm done.
-line thank : Kindly done. It's remembered, not entered. | Thank you. I'm sparing with those, so keep it.
-line deflect_thanks : It was nothing worth thanks. | Don't. It's done and dusted.
-line preclose [self.working=yes] : I've #wax# to cut and #corks# to count. | That's enough standing about for me. The counter wants me.
-line preclose : Well. That's the last inch of your morning I'll take. | Go on, your day's waiting.
-line accept_preclose : Off with you. Those racks could use my attention. | Right. Away with you.
-line take_offence : I heard that. Once was plenty. | Mind your tongue in my doorway.
-line apologise : Sharp of me. I'm sharp with the whole street; don't take it home. | That came out sharper than I meant. I'm sorry for it.
-line insist : No. Said, and meant, and that's me. | Once more, then, and then I've done with it.
-line ack : Right. | Mm. | So.
-line give.advice : Buy the second-best and drink it sooner. That's all the secret there is. | Never store a bottle standing up, and never trust a cork that squeaks.
-line warn [world.bandits=near] : After dark, keep within the walls. I've had carters at my counter shaking. | Past the gate, take company or don't go.
-line congratulate : Good. You've worked for that, plain to see. | Well done. I'll pour you something for it.
-
+line @1 greet : #greet#. Watch the doorstep, it dips in the middle. | #greet#. Plain speaking's welcome at this door.
+line @2 greet [pair.band=strangers] : #greet#. New to this street, by the look. The counter's this way. | #greet#. Your face is a stranger to me yet. A few visits will cure that.
+line @3 greet [self.working=yes self.role=merchant] : #greet#. One moment, I've #wax# to cut. | #greet#. I'm at the counter, so talk while I work.
+line @4 greet [here.time=dawn] : Morning. Was it misty your way? It was thick on mine. | Morning. You're out early. So am I. I like it.
+line @5 greet [here.time=dusk|night] : Evening. My feet have finished, even if I haven't. | Evening. A late caller. Well, so be it.
+line @6 greet [pair.band=friends|family] : Ah. I'd begun to think the hill had eaten you. | Good. I've been short of sensible company all day.
+line @1 greet.return : #greet#. | #greet#. Likewise, I'm sure.
+line @2 greet.return [pair.band=friends|family] : And you. Get out of the wet. | Hello yourself. You look well.
+line @3 greet.return [self.working=yes] : #greet#. Mind your elbows near #casks#. | #greet#. You'll forgive me working.
+line @4 greet.return [here.time=dusk|night] : Evening. Don't keep me long. | Evening to you.
+line @1 kin.open [pair.kin!=no] : Sit down. I'll not have you standing about. | You've eaten, I hope. Don't lie to me.
+line @1 again.open : Twice today. My doorstep will wear thin. | Here again. The last chat's still warm.
+line @1 hail [pair.band=friends] : Over here. I'm not shouting twice. | Hoy. Spare me a minute, you.
+line @1 farewell : #farewell#. Mind the step going out. | #farewell#. Bring me a thirst or a decent reason for the visit.
+line @2 farewell : #saying.capitalize#. Off you go. | That's me done. #farewell#.
+line @3 farewell [here.time=dusk|night] : Go home before the singers start. #farewell#. | Get indoors. The night's no friend to anyone.
+line @1 farewell.return : And you. Don't dawdle in the wet. | #farewell#. Counter and I both stay put.
+line @2 farewell.return [here.time=dusk|night] : Night, then. Lock your door. | Sleep, if they let you.
+line @1 react.news : Go on. And keep it short. | Tell it straight. Not the dressed-up version.
+line @1 react.news.new : Nobody's carried that in yet. Somebody will. | First I've heard. You're sure of it?
+line @1 react.news.known : I've had that three times today across the counter. | Old news by noon. Somebody always comes in with it.
+line @1 react.news.doubt : Somebody who saw it will be in for a bottle soon. I'll ask them. | That's been through a few mouths. I can taste it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard, that. It sits ill with me. | That's an ill thing. I'll send round a bottle, and no talk of paying.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That wants a glass raising. | Good news, and I'll be telling it over the counter all week.
+line @1 answer.how : Well enough. My knees argue, I don't listen. | Steady. The till's honest and so am I.
+line @1 answer.how.busy [self.working=yes] : Busy. Don't stand where the casks roll. | Up before the lamplighter finished, standing till he's back.
+line @1 ask.how : You're keeping well? You look it. | How's the world with you? Honestly, now.
+line @1 sympathise : Heavy, that. Lean on my counter a minute. | I'm sorry. Few words from me, but each one meant.
+line @1 reassure : Give it a dry week. Most things mend in one. | You'll manage. You have that sort of face.
+line @1 decline : I'll not. It's another's to hand over, not mine, so ask them. | Not today. The counter's mine alone and my paws are full.
+line @2 decline [self.role=merchant] : What's on the slate stays on the slate. Not for you, not for the Rise. | I'll not knock it down. I'd rather lose the sale than start that.
+line @1 accept_decline : Fair. Your business, not mine. | Then that's an end of it. No harm done.
+line @1 thank : Kindly done. It's remembered, not entered. | Thank you. I'm sparing with those, so keep it.
+line @1 deflect_thanks : It was nothing worth thanks. | Don't. It's done and dusted.
+line @1 preclose [self.working=yes] : I've #wax# to cut and #corks# to count. | That's enough standing about for me. The counter wants me.
+line @2 preclose : Well. That's the last inch of your morning I'll take. | Go on, your day's waiting.
+line @1 accept_preclose : Off with you. Those racks could use my attention. | Right. Away with you.
+line @1 take_offence : I heard that. Once was plenty. | Mind your tongue in my doorway.
+line @1 apologise : Sharp of me. I'm sharp with the whole street; don't take it home. | That came out sharper than I meant. I'm sorry for it.
+line @1 insist : No. Said, and meant, and that's me. | Once more, then, and then I've done with it.
+line @1 ack : Right. | Mm. | So.
+line @1 give.advice : Buy the second-best and drink it sooner. That's all the secret there is. | Never store a bottle standing up, and never trust a cork that squeaks.
+line @1 warn [world.bandits=near] : After dark, keep within the walls. I've had carters at my counter shaking. | Past the gate, take company or don't go.
+line @1 congratulate : Good. You've worked for that, plain to see. | Well done. I'll pour you something for it.
 scene sc_one_stroke
 when topic=work|smalltalk self.role=merchant self.working=yes
 does tell.self / react.self / tell.self / backchannel / assess
@@ -488,35 +489,34 @@ does aside
 cooldown 12h
 say Still no carts. #oath#. | Another day with a gap on the shelf.
 
-dlg resident.hub : #greet#. A straight question gets a straight answer here. | #greet#. You've caught me with a free minute. Use it.
-dlg resident.hub [topic.meeting=known] : #topic.player#. Here again. Today's want? | #greet#, #topic.player#. I'd know you anywhere. Paid without a quibble.
-dlg resident.hub [here.time=night] : It's late. Be brief and I'll be plain. | Night. I'm off up to bed shortly. What is it?
-dlg resident.hub [pair.disposition=hostile|wary] : I'll talk to you from here, thank you. Say your piece. | Liking you comes later, if it comes. Go on.
-dlg resident.job [self.role=merchant] : I keep #casks# and a counter, and I chalk the prices so nobody need ask. | #self.trade_words.capitalize#. Corks and wax and a slate, and I'll not haggle.
-dlg resident.job : I work, I count honest, I go home. | Steady work. No grumbling and no crowing.
-dlg resident.bye : #farewell#. Mind the step. | #farewell#. Bring a good story next visit.
-dlg resident.bye [here.time=night] : Get indoors. #farewell#. | Night. Lock your door.
-dlg resident.news [world.news] : Came across the counter from #world.news_from#: #world.news#. I had no more than that. | From #world.news_from#, so they say: #world.news#.
-dlg resident.news [world.event_words] : Every mouth in the street says #world.event_words#. Since dawn, nothing else. | #world.event_words.capitalize#. Everyone who buys a bottle tells me again.
-dlg resident.news [world.wagons=raided] : Word of a cart stripped out beyond the gates. Bolt up early. | A load went missing past the walls. I'm waiting to hear whose.
-dlg resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing's come across the counter worth repeating. | Quiet. The carts are the news, and they've said nothing.
-dlg resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I've told you, and that's my share done. | The cider crowd say #topic.subject# #topic.claim#. That's the lot.
-dlg resident.gossip [here.gossip!=yes] : I don't pour gossip. Ask me about the wine. | Nothing I'd repeat at my own counter.
-dlg resident.business [business=thriving] : Better than I've known it. I've a list for the next delivery. | Good. The till shuts heavy every night.
-dlg resident.business [business=steady] : Steady. The till's honest and so am I. | Steady enough. No complaints worth making.
-dlg resident.business [business=failing] : Poorly. I've dusted the same row three times this week. | Quiet. Wine keeps; I'm hoping the buyers do too.
-dlg shop.greet [here.shop!=bare] : #greet#. Prices are on the slate. Read them and then we'll talk. | #greet#. Good red, fair white, and no bargaining.
-dlg shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. There are two reds worth a look today. | You again. Good. You know how I do things.
-dlg shop.greet [here.shop=bare] : Racks near empty. Bring good stock and I'll buy it. | Thin racks until the carts arrive. Selling?
-dlg shop.prices : It's on the slate. It's the same on the slate as it is in my mouth. | Chalk's chalk. Read it and choose.
-dlg shop.bye : Carry it level. #farewell#. | Store it lying down. Off you go.
-dlg master.learn [here.teaches=yes] : You want the trade? Corks first. Then wax. Then you can look at the wine. | I'll teach anybody who can count and keep their temper. Better than I do.
-dlg master.learn [here.teaches=no] : I've a learner already. Ask me a question, though. I'll answer it straight.
-dlg master.takes [here.take_on=yes] : A single learner, and only someone I'd trust with a lamp in the cellar. You'd do. | Ask, and if I say yes, I mean it.
-dlg master.takes [here.take_on=no] : Not now. #here.take_on_why# I'll not pretend otherwise.
-dlg master.wages : No wage for learning. At my elbow you'll learn faster than alone, and that's better than coin.
-dlg master.bye : Back to the counter for me. #farewell#. | Go on. Practise the stroke.
-
+dlg @1 resident.hub : #greet#. A straight question gets a straight answer here. | #greet#. You've caught me with a free minute. Use it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Here again. Today's want? | #greet#, #topic.player#. I'd know you anywhere. Paid without a quibble.
+dlg @3 resident.hub [here.time=night] : It's late. Be brief and I'll be plain. | Night. I'm off up to bed shortly. What is it?
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll talk to you from here, thank you. Say your piece. | Liking you comes later, if it comes. Go on.
+dlg @1 resident.job [self.role=merchant] : I keep #casks# and a counter, and I chalk the prices so nobody need ask. | #self.trade_words.capitalize#. Corks and wax and a slate, and I'll not haggle.
+dlg @2 resident.job : I work, I count honest, I go home. | Steady work. No grumbling and no crowing.
+dlg @1 resident.bye : #farewell#. Mind the step. | #farewell#. Bring a good story next visit.
+dlg @2 resident.bye [here.time=night] : Get indoors. #farewell#. | Night. Lock your door.
+dlg @1 resident.news [world.news] : Came across the counter from #world.news_from#: #world.news#. I had no more than that. | From #world.news_from#, so they say: #world.news#.
+dlg @2 resident.news [world.event_words] : Every mouth in the street says #world.event_words#. Since dawn, nothing else. | #world.event_words.capitalize#. Everyone who buys a bottle tells me again.
+dlg @3 resident.news [world.wagons=raided] : Word of a cart stripped out beyond the gates. Bolt up early. | A load went missing past the walls. I'm waiting to hear whose.
+dlg @4 resident.news [!world.news !world.event_words world.wagons!=raided world.death!=recent world.wedding!=recent] : Nothing's come across the counter worth repeating. | Quiet. The carts are the news, and they've said nothing.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. I've told you, and that's my share done. | The cider crowd say #topic.subject# #topic.claim#. That's the lot.
+dlg @2 resident.gossip [here.gossip!=yes] : I don't pour gossip. Ask me about the wine. | Nothing I'd repeat at my own counter.
+dlg @1 resident.business [business=thriving] : Better than I've known it. I've a list for the next delivery. | Good. The till shuts heavy every night.
+dlg @2 resident.business [business=steady] : Steady. The till's honest and so am I. | Steady enough. No complaints worth making.
+dlg @3 resident.business [business=failing] : Poorly. I've dusted the same row three times this week. | Quiet. Wine keeps; I'm hoping the buyers do too.
+dlg @1 shop.greet [here.shop!=bare] : #greet#. Prices are on the slate. Read them and then we'll talk. | #greet#. Good red, fair white, and no bargaining.
+dlg @2 shop.greet [here.shop!=bare topic.meeting=known] : #topic.player#. There are two reds worth a look today. | You again. Good. You know how I do things.
+dlg @3 shop.greet [here.shop=bare] : Racks near empty. Bring good stock and I'll buy it. | Thin racks until the carts arrive. Selling?
+dlg @1 shop.prices : It's on the slate. It's the same on the slate as it is in my mouth. | Chalk's chalk. Read it and choose.
+dlg @1 shop.bye : Carry it level. #farewell#. | Store it lying down. Off you go.
+dlg @1 master.learn [here.teaches=yes] : You want the trade? Corks first. Then wax. Then you can look at the wine. | I'll teach anybody who can count and keep their temper. Better than I do.
+dlg @2 master.learn [here.teaches=no] : I've a learner already. Ask me a question, though. I'll answer it straight.
+dlg @1 master.takes [here.take_on=yes] : A single learner, and only someone I'd trust with a lamp in the cellar. You'd do. | Ask, and if I say yes, I mean it.
+dlg @2 master.takes [here.take_on=no] : Not now. #here.take_on_why# I'll not pretend otherwise.
+dlg @1 master.wages : No wage for learning. At my elbow you'll learn faster than alone, and that's better than coin.
+dlg @1 master.bye : Back to the counter for me. #farewell#. | Go on. Practise the stroke.
 graft resident.hub
 choice Why do you keep that little blade on your belt? -> blade
 node blade

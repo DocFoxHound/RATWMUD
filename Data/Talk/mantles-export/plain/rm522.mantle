@@ -1,14 +1,17 @@
+# rm522, the steward's landing die (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm522
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rm_hollis_nailwick
+written_by codex
 title the steward's landing die
 fits stage=adult|old
 prefers job=servant warmth=warm
 traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
-quirk places_a_die_on_the_landing_to_show_how_many_hands_a_load_will_need
+quirk sets_a_die_on_the_landing_for_the_hands_a_load_needs
 likes hard_cheese dice market_bustle misty_dawns
 dislikes crowds early_bells
 fears a_crowd_on_a_loaded_stair a_date_promised_without_asking_the_household
@@ -34,45 +37,44 @@ piped = the well-worn pip | the pip nearest the split
 sideboard = a narrow hall shelf | my little landing shelf
 
 any
-opinion houses for 1 : A household that undertakes to feed a table must allow for the backs that bring it there.
-opinion merchants mixed 0 : My kind of market calls parcel size and price in the same breath.
-opinion festivals mixed 0 : Music's very welcome, and a space kept open for the supper basket is warmer welcome still.
-opinion road for 1 : A sound step below a door is a proper end to a decent delivery road.
-opinion dole for 1 : Set the food near the door within reach of even the most tired visitor.
-opinion strangers mixed 0 : A newcomer careful of other people's footing can expect a seat at my end.
-opinion city for 1 : The streets meet at all sorts of angles. I've found a neighbour to lend a hand at most of them.
+opinion @1 houses for 1 : A household that undertakes to feed a table must allow for the backs that bring it there.
+opinion @1 merchants mixed 0 : My kind of market calls parcel size and price in the same breath.
+opinion @1 festivals mixed 0 : Music's very welcome, and a space kept open for the supper basket is warmer welcome still.
+opinion @1 road for 1 : A sound step below a door is a proper end to a decent delivery road.
+opinion @1 dole for 1 : Set the food near the door within reach of even the most tired visitor.
+opinion @1 strangers mixed 0 : A newcomer careful of other people's footing can expect a seat at my end.
+opinion @1 city for 1 : The streets meet at all sorts of angles. I've found a neighbour to lend a hand at most of them.
 
 grown
-line greet : Welcome. Give the landing a hand's breadth.
-line greet [pair.band=strangers] : First visit, I see. Easy round that basket.
-line greet [here.time=dawn] : Morning. Two on the die already.
-line greet [here.time=dusk|night] : Evening comes easier once the passage clears.
-line greet.return : Heard you. Now we can use the same landing.
-line greet.return [pair.band=friends|family] : Your voice carries its own invitation indoors.
-line greet.return [self.working=yes] : I've a hand free for listening today.
-line greet.return [here.time=dusk|night] : Move into the little pool of light to talk.
-line kin.open [pair.kin!=no] : Family comes up on the inside.
-line again.open : We kept a square empty for the second part.
-line hail [pair.band=friends] : Friend, your spot is beside the clear rail!
-line farewell : Steady on the way back down.
-line farewell.return : And let the laden feet pass first.
-line react.news : What's the word underneath all that noise?
-line react.news.new : A fresh arrival on my landing.
-line react.news.known : Earlier telling had the same number of spots.
-line react.news.doubt : One face showing. I'd look underneath it.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put that weight here a moment. I have both hands.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That news would lighten a full basket.
-line ask.how : Did the day set much on your shoulders?
-line answer.how : Steady enough to take the stairs two at once.
-line thank : You turned a two-hand job into an easy lift. Thank you.
-line deflect_thanks : Both hands came back to me in the end.
-line sympathise : I'll stay here while you gather your breath.
-line reassure : Take one landing at a time. We can see this one.
-line decline : No. Both hands are already promised.
-line accept_decline : Then we'll call the carry off.
-line preclose : I'd better clear the little shelf before night.
-line accept_preclose : Take the sheltered turn going down.
-
+line @1 greet : Welcome. Give the landing a hand's breadth.
+line @2 greet [pair.band=strangers] : First visit, I see. Easy round that basket.
+line @3 greet [here.time=dawn] : Morning. Two on the die already.
+line @4 greet [here.time=dusk|night] : Evening comes easier once the passage clears.
+line @1 greet.return : Heard you. Now we can use the same landing.
+line @2 greet.return [pair.band=friends|family] : Your voice carries its own invitation indoors.
+line @3 greet.return [self.working=yes] : I've a hand free for listening today.
+line @4 greet.return [here.time=dusk|night] : Move into the little pool of light to talk.
+line @1 kin.open [pair.kin!=no] : Family comes up on the inside.
+line @1 again.open : We kept a square empty for the second part.
+line @1 hail [pair.band=friends] : Friend, your spot is beside the clear rail!
+line @1 farewell : Steady on the way back down.
+line @1 farewell.return : And let the laden feet pass first.
+line @1 react.news : What's the word underneath all that noise?
+line @1 react.news.new : A fresh arrival on my landing.
+line @1 react.news.known : Earlier telling had the same number of spots.
+line @1 react.news.doubt : One face showing. I'd look underneath it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put that weight here a moment. I have both hands.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That news would lighten a full basket.
+line @1 ask.how : Did the day set much on your shoulders?
+line @1 answer.how : Steady enough to take the stairs two at once.
+line @1 thank : You turned a two-hand job into an easy lift. Thank you.
+line @1 deflect_thanks : Both hands came back to me in the end.
+line @1 sympathise : I'll stay here while you gather your breath.
+line @1 reassure : Take one landing at a time. We can see this one.
+line @1 decline : No. Both hands are already promised.
+line @1 accept_decline : Then we'll call the carry off.
+line @1 preclose : I'd better clear the little shelf before night.
+line @1 accept_preclose : Take the sheltered turn going down.
 scene counting_cube
 when topic=work
 does tell.self / ask.detail / answer.detail
@@ -241,15 +243,14 @@ does aside
 cooldown 8h
 say Clear light right through the carrying loop.
 
-dlg resident.hub : The die can occupy its square while we speak.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you've come to a familiar landing.
-dlg resident.hub [here.time=dawn] : Morning. A word before the big baskets arrive.
-dlg resident.hub [pair.disposition=hostile|wary] : Stay clear of the strap. We can have our difference at an ordinary distance.
-dlg resident.job [self.job=servant self.workplace] : At #self.workplace# I see that a welcome has hands enough behind it.
-dlg resident.news [world.news] : Left on the shelf from #world.news_from#. #world.news#.
-dlg resident.gossip [here.gossip=yes] : I would enter that visitor in the book under hearsay.
-dlg resident.bye : Take the easy side of the carrying stair.
-
+dlg @1 resident.hub : The die can occupy its square while we speak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've come to a familiar landing.
+dlg @3 resident.hub [here.time=dawn] : Morning. A word before the big baskets arrive.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay clear of the strap. We can have our difference at an ordinary distance.
+dlg @1 resident.job [self.job=servant self.workplace] : At #self.workplace# I see that a welcome has hands enough behind it.
+dlg @1 resident.news [world.news] : Left on the shelf from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I would enter that visitor in the book under hearsay.
+dlg @1 resident.bye : Take the easy side of the carrying stair.
 graft resident.hub
 choice Why is there a die beside the parcel? -> die_face
 node die_face

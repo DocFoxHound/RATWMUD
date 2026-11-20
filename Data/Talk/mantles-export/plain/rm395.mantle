@@ -1,9 +1,12 @@
+# rm395, the dancing fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm395
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for rmx_palle_mireby
+written_by codex
 title the dancing fleet
 fits stage=young|adolescent|adult|old
 prefers job=scholar
@@ -35,143 +38,81 @@ brush = my floor brush | a stiff broom
 strap = my old shoe strap | a worn ankle tie
 
 any
-opinion dole for 3 : Hot food gave my legs another good day in a hungry week. There's a dance that costs a decent meal to keep going.
-opinion church for 1 : A welcome dish speaks a language even a pup with a growling belly can understand.
-opinion festivals for 1 : A whole street of music puts a much larger floor under my feet.
-opinion merchants against 1 : A missing copper takes the crispest piece of fish out of my supper.
-opinion strangers for 1 : I'd learn a step from a strange pair of shoes before deciding they stood for anything bad.
+opinion @1 dole for 3 : Hot food gave my legs another good day in a hungry week. There's a dance that costs a decent meal to keep going.
+opinion @1 church for 1 : A welcome dish speaks a language even a pup with a growling belly can understand.
+opinion @1 festivals for 1 : A whole street of music puts a much larger floor under my feet.
+opinion @1 merchants against 1 : A missing copper takes the crispest piece of fish out of my supper.
+opinion @1 strangers for 1 : I'd learn a step from a strange pair of shoes before deciding they stood for anything bad.
+line @1 greet [pair.band=strangers] : Room for you outside my turning circle. | My heel's down. Welcome.
+line @2 greet [self.working=yes] : A welcome face beyond my practice boards. | Let me find the flat of my foot.
+line @3 greet [here.time=dawn] : Morning. Clear floor so far. | Early light for a little company.
+line @4 greet [here.time=dusk|night] : Evening. The heels sound clearer. | Light enough to place both feet.
+line @1 kin.open [pair.kin!=no] : Kin can interrupt the figure. | Family have leave to move me over.
+line @1 again.open : Another turn brings you into range. | We've crossed heels again.
+line @1 greet.return : I heard. My toes are quiet. | Welcome to the still bit.
+line @2 greet.return [pair.band=friends|family] : I know your step against the boards. | Stand inside my easy turning room.
+line @3 greet.return [self.working=yes] : I can talk on the straight part. | One turn to finish. I'm listening.
+line @4 greet.return [here.time=dusk|night] : Evening. The boards can hear us both. | Your voice arrives before your shoes.
+line @1 farewell : Clear sailing for both feet. | Take a turn on the stouter boards.
+line @1 farewell.return : I'll hold the last position here. | Easy ground under your heel.
+line @2 farewell.return [here.time=night] : Let the lamps pilot you home. | Mind your toes in the dim.
+line @1 react.news : Give me the whole course of it. | Let's see what direction that takes.
+line @1 react.news.new : A fresh step to learn. | My feet don't know that figure.
+line @1 react.news.known : I've crossed this piece before. | Same news coming about again.
+line @1 react.news.doubt : I think that step is turning the wrong way. | I'd hear it on the other foot before believing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy sound on the boards. | I'll make room for quiet with you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's news with a lift in the heel. | Good. My feet feel less earthbound.
+line @1 ask.how : Are your feet carrying you kindly? | How much heel have you left today?
+line @1 answer.how : A little low in the stern but moving. | Making the turns without much fuss.
+line @1 decline : I'd rather keep the room for a quieter step. | I'm saving my heels for another errand today.
+line @1 accept_decline : Your shoes have the deciding vote. | Then we'll leave that part unstepped.
+line @1 thank : A clean turn thanks to you. | That gives the heel more room.
+line @1 sympathise : I've a still foot to lend. | Stay by me till things find their pace.
+line @1 reassure : Every dance has a place to stand fast. | We can take it on an even tread.
+line @1 preclose : I'll turn the stern towards home soon. | My heels are wanted on another errand.
+rule @aside1
+when concept=bark self.likes=dancing
+does aside
+cooldown 6h
+say Bow foot forward. Stern foot round. | Leave a berth for the other heel.
 
-any
-line greet [pair.band=strangers] : Room for you outside my turning circle. | My heel's down. Welcome.
-line greet [self.working=yes] : A welcome face beyond my practice boards. | Let me find the flat of my foot.
-line greet [here.time=dawn] : Morning. Clear floor so far. | Early light for a little company.
-line greet [here.time=dusk|night] : Evening. The heels sound clearer. | Light enough to place both feet.
-line kin.open [pair.kin!=no] : Kin can interrupt the figure. | Family have leave to move me over.
-line again.open : Another turn brings you into range. | We've crossed heels again.
-line greet.return : I heard. My toes are quiet. | Welcome to the still bit.
-line greet.return [pair.band=friends|family] : I know your step against the boards. | Stand inside my easy turning room.
-line greet.return [self.working=yes] : I can talk on the straight part. | One turn to finish. I'm listening.
-line greet.return [here.time=dusk|night] : Evening. The boards can hear us both. | Your voice arrives before your shoes.
-line farewell : Clear sailing for both feet. | Take a turn on the stouter boards.
-line farewell.return : I'll hold the last position here. | Easy ground under your heel.
-line farewell.return [here.time=night] : Let the lamps pilot you home. | Mind your toes in the dim.
-line react.news : Give me the whole course of it. | Let's see what direction that takes.
-line react.news.new : A fresh step to learn. | My feet don't know that figure.
-line react.news.known : I've crossed this piece before. | Same news coming about again.
-line react.news.doubt : I think that step is turning the wrong way. | I'd hear it on the other foot before believing.
-line react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy sound on the boards. | I'll make room for quiet with you.
-line react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's news with a lift in the heel. | Good. My feet feel less earthbound.
-line ask.how : Are your feet carrying you kindly? | How much heel have you left today?
-line answer.how : A little low in the stern but moving. | Making the turns without much fuss.
-line decline : I'd rather keep the room for a quieter step. | I'm saving my heels for another errand today.
-line accept_decline : Your shoes have the deciding vote. | Then we'll leave that part unstepped.
-line thank : A clean turn thanks to you. | That gives the heel more room.
-line sympathise : I've a still foot to lend. | Stay by me till things find their pace.
-line reassure : Every dance has a place to stand fast. | We can take it on an even tread.
-line preclose : I'll turn the stern towards home soon. | My heels are wanted on another errand.
+rule @aside2
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 7h
+say One turn's width of floor, all clear. | Last chalk wake away with the broom.
 
-young
+rule @aside3
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say Walk the last step up to the cup. | Supper's tea ought to hold its warmth.
 
-scene y_boat
-when topic=pastimes
-does tell.self / ask.detail / answer.detail
-a : My left foot is a bow. Right foot's the stern.
-b : Can the ship turn? | What if you trip?
-a : Aye, and so can both knees. Watch this little bend. | Then everybody aboard gets a swim in dust.
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Level heel for the low light. | Faintest wake on the last turning board.
 
-scene y_supper
-when topic=food self.likes=fried_fish
-does tell.self / ask.detail / answer.detail
-a : I give the narrow fish ends very fast little dances.
-b : Before eating them? | How fast?
-a : Inside my head. I like my supper to reach my mouth fairly warm. | All the way from the plate on a single turn of the fork.
+dlg @1 resident.hub : Once this turn finishes I'll face you squarely. You needn't know the steps.
+dlg @1 resident.job [self.job=scholar self.workplace] : I study at #self.workplace#. I get a little extra practice by fitting difficult names into dancing measures.
+dlg @2 resident.job : I keep my figures clear enough that somebody else could follow the turn.
+dlg @1 resident.news [world.news] : Here's what reached my part of the floor. #world.news#
+dlg @1 resident.bye : Leave that last turning room for a homebound heel.
+graft resident.hub
+choice Can your heels really tell ships apart? -> toe_fleet
+node toe_fleet
+say Watch the stern foot. The bow leads straight out, then I let the other heel swing by. A long heavy ship takes a wider swing and a short name lands sharply.
+free
+choice Can you do that in a crowded street? -> toe_tight
+choice I'll keep an eye on the stern foot. -> hub
+node toe_tight
+say A heel lifted half an inch is sufficient. Nobody waiting for bread has asked me to launch a whole fleet across their toes.
+choice I'll experiment where there's room. -> hub
+choice I'll stay clear of the launch. -> bye
 
-scene y_stain
-when topic=home self.likes=tidy_house
-does tell.self / ask.detail / answer.detail
-a : Dust on a clear floor makes my pretend boat leave a wake.
-b : Isn't dust a mess? | Where does the wake go?
-a : A bit. I sweep once I've brought everybody in to harbour. | Behind my own heels. I have to turn to see how well I steered.
-
-scene y_cloud
-when topic=weather self.likes=warm_rain
-does tell.self / ask.detail / answer.detail
-a : Warm rain can be my dancing sea for a minute.
-b : Don't you get wet? | How deep is it?
-a : A little. That's the price of very shallow sailing. | No deeper than the gap under my shoes. My fleet has tiny needs.
-
-story y_chalk [topic=memories]
-  : I once drew two chalk ships under my shoes and stepped away to see the result. Both ships had no middles. My feet had stood in the way.
-  : I filled in the empty patches and found I'd made one ship a whole inch longer than the other. I had started my dance leaning sideways.
-  b : Did the bigger ship win?
-  : I made an island for the little one to visit first. Both reached somewhere worth going.
-
-adolescent
-
-scene t_dance
-when topic=pastimes self.likes=dancing
-does tell.self / ask.detail / answer.detail
-a : I dance the name before I say which ship that is.
-b : What does the name look like? | Can two ships share a step?
-a : A long step for a wide belly, a quick beat for the name's last sound. | Two may begin the same way. The heel marks the difference.
-
-scene t_school
-when topic=work self.job=scholar self.workplace
-does tell.self / ask.detail / answer.detail
-a : At #self.workplace# I make the letters of ship names turn neatly at the margin.
-b : Does that improve the lesson? | And the long names?
-a : It improves my interest in the margin, unquestionably. | They have to tack below the line. I get quite a fleet at the foot of a page.
-
-scene t_smoke
-when topic=weather self.dislikes=smoke
-does tell.self / ask.detail / answer.detail
-a : Smoke between me and a hull makes me guess at the step.
-b : Are your guesses reliable? | Why not wait?
-a : I guessed a fishing boat had three masts once. Very ambitious little boat. | I'd go and wait upwind. The eyes need a bit of space too.
-
-scene t_tea
-when topic=food self.dislikes=cold_tea
-does tell.self / ask.detail / answer.detail
-a : I forget a cup if there's room for a turn between sips.
-b : Then the tea goes cold? | What's the remedy?
-a : I have never had it turn unexpectedly hot again, no. | Leave the cup just beyond the dancing space and finish by walking to it.
-
-scene t_berth
-when topic=dreams
-does tell.self / ask.detail / answer.detail
-a : I'd like a berth aboard a ship going towards dry air.
-b : Would you miss the rain? | Are you fit to sail?
-a : Warm rain when the roof's close is a fine thing. A wet bed holds less appeal. | I've all the turns by heart. At sea, I believe the floor adds a few.
-
-scene t_coin
-when topic=prices
-does tell.self / ask.detail / answer.detail
-a : Worn dancing shoes make my purse seem lighter.
-b : Do you need both mended? | What about dancing barefoot?
-a : One heel goes across the floor faster than its proper share. That's where my coin will go. | Only on a board my own hands have swept. My toes are poor enough already.
-
-scene t_song
-when topic=festival
-does tell.self / ask.detail / answer.detail
-a : A feast dance is easier if I imagine two boats trading places.
-b : Bows towards one another? | How do they avoid a collision?
-a : Just so. At the last beat the stern swings round and both are facing clear ground. | Smile, leave elbow room and keep the middle of the floor honest.
-
-scene t_welcome
-when topic=newcomer
-does tell.self / ask.detail / answer.detail
-a : I ask visiting wolves for a step that belongs to their home.
-b : What if your visitor won't dance? | Do you learn it quickly?
-a : A finger on the tabletop will serve. I don't need a public performance. | My heels usually get the story a little later than my head.
-
-story t_plate [topic=food]
-  : A fried fish slipped across my plate once when I was practising a turn to myself. I caught the tail with my bread just before it went overboard.
-  : I had a very good laugh afterwards when the fish had been taken safely into harbour. I kept the bread to finish the oily bit.
-  b : Was it a new dance?
-  : The step was. I have left the fish-catching part out of my public performances.
 
 grown
-
 scene g_names
 when topic=travel here.region=ridgemere
 does tell.self / ask.detail / answer.detail
@@ -248,46 +189,102 @@ story g_forgot [topic=memories]
   b : Did walking round the post help?
   : The old step helped. The cart had no obligation to share in the entertainment.
 
-any
 
-rule @aside1
-when concept=bark self.likes=dancing
-does aside
-cooldown 6h
-say Bow foot forward. Stern foot round. | Leave a berth for the other heel.
+young
+scene y_boat
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My left foot is a bow. Right foot's the stern.
+b : Can the ship turn? | What if you trip?
+a : Aye, and so can both knees. Watch this little bend. | Then everybody aboard gets a swim in dust.
 
-rule @aside2
-when concept=bark self.likes=tidy_house
-does aside
-cooldown 7h
-say One turn's width of floor, all clear. | Last chalk wake away with the broom.
+scene y_supper
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I give the narrow fish ends very fast little dances.
+b : Before eating them? | How fast?
+a : Inside my head. I like my supper to reach my mouth fairly warm. | All the way from the plate on a single turn of the fork.
 
-rule @aside3
-when concept=bark self.dislikes=cold_tea
-does aside
-cooldown 8h
-say Walk the last step up to the cup. | Supper's tea ought to hold its warmth.
+scene y_stain
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : Dust on a clear floor makes my pretend boat leave a wake.
+b : Isn't dust a mess? | Where does the wake go?
+a : A bit. I sweep once I've brought everybody in to harbour. | Behind my own heels. I have to turn to see how well I steered.
 
-rule @aside4
-when concept=bark here.time=dusk
-does aside
-cooldown 9h
-say Level heel for the low light. | Faintest wake on the last turning board.
+scene y_cloud
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain can be my dancing sea for a minute.
+b : Don't you get wet? | How deep is it?
+a : A little. That's the price of very shallow sailing. | No deeper than the gap under my shoes. My fleet has tiny needs.
 
-dlg resident.hub : Once this turn finishes I'll face you squarely. You needn't know the steps.
-dlg resident.job [self.job=scholar self.workplace] : I study at #self.workplace#. I get a little extra practice by fitting difficult names into dancing measures.
-dlg resident.job : I keep my figures clear enough that somebody else could follow the turn.
-dlg resident.news [world.news] : Here's what reached my part of the floor. #world.news#
-dlg resident.bye : Leave that last turning room for a homebound heel.
+story y_chalk [topic=memories]
+  : I once drew two chalk ships under my shoes and stepped away to see the result. Both ships had no middles. My feet had stood in the way.
+  : I filled in the empty patches and found I'd made one ship a whole inch longer than the other. I had started my dance leaning sideways.
+  b : Did the bigger ship win?
+  : I made an island for the little one to visit first. Both reached somewhere worth going.
 
-graft resident.hub
-choice Can your heels really tell ships apart? -> toe_fleet
-node toe_fleet
-say Watch the stern foot. The bow leads straight out, then I let the other heel swing by. A long heavy ship takes a wider swing and a short name lands sharply.
-free
-choice Can you do that in a crowded street? -> toe_tight
-choice I'll keep an eye on the stern foot. -> hub
-node toe_tight
-say A heel lifted half an inch is sufficient. Nobody waiting for bread has asked me to launch a whole fleet across their toes.
-choice I'll experiment where there's room. -> hub
-choice I'll stay clear of the launch. -> bye
+
+adolescent
+scene t_dance
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I dance the name before I say which ship that is.
+b : What does the name look like? | Can two ships share a step?
+a : A long step for a wide belly, a quick beat for the name's last sound. | Two may begin the same way. The heel marks the difference.
+
+scene t_school
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I make the letters of ship names turn neatly at the margin.
+b : Does that improve the lesson? | And the long names?
+a : It improves my interest in the margin, unquestionably. | They have to tack below the line. I get quite a fleet at the foot of a page.
+
+scene t_smoke
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke between me and a hull makes me guess at the step.
+b : Are your guesses reliable? | Why not wait?
+a : I guessed a fishing boat had three masts once. Very ambitious little boat. | I'd go and wait upwind. The eyes need a bit of space too.
+
+scene t_tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I forget a cup if there's room for a turn between sips.
+b : Then the tea goes cold? | What's the remedy?
+a : I have never had it turn unexpectedly hot again, no. | Leave the cup just beyond the dancing space and finish by walking to it.
+
+scene t_berth
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a berth aboard a ship going towards dry air.
+b : Would you miss the rain? | Are you fit to sail?
+a : Warm rain when the roof's close is a fine thing. A wet bed holds less appeal. | I've all the turns by heart. At sea, I believe the floor adds a few.
+
+scene t_coin
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Worn dancing shoes make my purse seem lighter.
+b : Do you need both mended? | What about dancing barefoot?
+a : One heel goes across the floor faster than its proper share. That's where my coin will go. | Only on a board my own hands have swept. My toes are poor enough already.
+
+scene t_song
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A feast dance is easier if I imagine two boats trading places.
+b : Bows towards one another? | How do they avoid a collision?
+a : Just so. At the last beat the stern swings round and both are facing clear ground. | Smile, leave elbow room and keep the middle of the floor honest.
+
+scene t_welcome
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I ask visiting wolves for a step that belongs to their home.
+b : What if your visitor won't dance? | Do you learn it quickly?
+a : A finger on the tabletop will serve. I don't need a public performance. | My heels usually get the story a little later than my head.
+
+story t_plate [topic=food]
+  : A fried fish slipped across my plate once when I was practising a turn to myself. I caught the tail with my bread just before it went overboard.
+  : I had a very good laugh afterwards when the fish had been taken safely into harbour. I kept the bread to finish the oily bit.
+  b : Was it a new dance?
+  : The step was. I have left the fish-catching part out of my public performances.

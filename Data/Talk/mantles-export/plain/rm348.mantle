@@ -1,9 +1,12 @@
+# rm348, the sparrow steps (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
 mantle rm348
+revision 1
 state ready
 dialect plain
 accent light broad
 tier standard
 written_for cty_rowan_hazelfield
+written_by codex
 title the sparrow steps
 fits stage=adult|old
 prefers job=farmer warmth=warm
@@ -35,43 +38,42 @@ wax = a little warm wax | a honey-coloured curl
 share = a modest heap | a small measure
 
 any
-opinion houses against 1 : A petition unanswered is bad enough. A refusal that ignores the question is a good deal harder to lay aside.
-opinion church for 2 : The Bright One has room for creatures smaller than my thumb. I remember the small lives when filling a dish.
-opinion dole for 2 : A generous first serving should leave a real last serving. That's what I'd ask of the dole.
-opinion merchants mixed 0 : Show me the grain going into the scoop. Both of us will leave pleased with the bargain.
-opinion newcomers for 1 : A shy arrival often needs an opening more than a grand welcome.
-opinion road for 1 : I favour a road with a hedge broad enough for a small bird to travel alongside.
+opinion @1 houses against 1 : A petition unanswered is bad enough. A refusal that ignores the question is a good deal harder to lay aside.
+opinion @1 church for 2 : The Bright One has room for creatures smaller than my thumb. I remember the small lives when filling a dish.
+opinion @1 dole for 2 : A generous first serving should leave a real last serving. That's what I'd ask of the dole.
+opinion @1 merchants mixed 0 : Show me the grain going into the scoop. Both of us will leave pleased with the bargain.
+opinion @1 newcomers for 1 : A shy arrival often needs an opening more than a grand welcome.
+opinion @1 road for 1 : I favour a road with a hedge broad enough for a small bird to travel alongside.
 
 grown
-line greet : Welcome. There's a free place above the bustle. | Stand in the clearer patch beside me.
-line greet [pair.band=strangers] : A first visit deserves an easy perch. | I haven't seen you on this approach before. Welcome.
-line greet [here.time=dawn] : Morning. The little feet were here early. | Fresh day to you. I've just filled the first ledge.
-line greet.return : Yes, hello. My eyes were on a very small arrival. | Your voice reached me through the twittering.
-line greet.return [pair.band=friends|family] : I'm glad to have a dear familiar face beside the ledges. | You've a standing welcome on this patch.
-line greet.return [here.time=night] : Hello after the little wings have folded. | The night leaves us room for a quiet greeting.
-line again.open : There is still seed on the ledge from our last meeting. | You've found us receiving a second small guest.
-line hail [pair.band=friends] : Stand here and see who finds the upper shelf. | Come look quietly behind my shoulder.
-line farewell : May your road have room for little joys. | Leave with your share of the light.
-line farewell.return : A safe branch when you need one. Goodbye. | I'll leave the little place open for a return.
-line react.news : I've time for the news in its own words. | My paws are free and I can attend.
-line react.news.new : That hadn't reached even the edge of my hearing. | A new arrival in my thoughts altogether.
-line react.news.known : I've heard that account and kept it in mind. | Yes. Same shape as the earlier news.
-line react.news.doubt : I'd leave a little space open for a better account. | That seems too big a conclusion for such a little scrap.
-line react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Let me sit while you tell that. It deserves the time. | A sad empty place. I won't pretend words will fill it.
-line react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd put an extra pinch on the ledge for news like that. | That news will put real warmth into the prayer I say tonight.
-line ask.how : Has anything small and pleasant found you today? | How are you doing for quiet company?
-line answer.how : Watching a hopeful little movement over my shoulder. | Quite settled, with room for another word.
-line decline : I'd leave that duty to a wolf who can give it proper attention. | I've an earlier promise to feed before I take that on.
-line accept_decline : All right. An open place needn't be filled. | Then keep the bit of day you'd set aside.
-line preclose : I should check which ledge is still empty. | The seed won't scatter itself evenly. I'll move along.
-line accept_preclose : Of course. Go while the road looks kindly. | I'll stay and give the late arrivals a chance.
-line thank : You noticed the smallest need. I appreciate it. | That was a quiet generous thing. Thank you.
-line deflect_thanks : I had the seed and a ledge to put it on. | It was little effort to leave a share.
-line sympathise : You can stay without saying a further word. | I've a dry place for company with a heavy heart.
-line reassure : Let the smaller chance come into view first. | We've room enough to try one hopeful thing.
-line ack : Yes. That little detail shows very plainly. | I follow the path of that thought.
-line give.advice : Put one share away from the busiest spot. | Sit a moment after you've scattered the seed.
-
+line @1 greet : Welcome. There's a free place above the bustle. | Stand in the clearer patch beside me.
+line @2 greet [pair.band=strangers] : A first visit deserves an easy perch. | I haven't seen you on this approach before. Welcome.
+line @3 greet [here.time=dawn] : Morning. The little feet were here early. | Fresh day to you. I've just filled the first ledge.
+line @1 greet.return : Yes, hello. My eyes were on a very small arrival. | Your voice reached me through the twittering.
+line @2 greet.return [pair.band=friends|family] : I'm glad to have a dear familiar face beside the ledges. | You've a standing welcome on this patch.
+line @3 greet.return [here.time=night] : Hello after the little wings have folded. | The night leaves us room for a quiet greeting.
+line @1 again.open : There is still seed on the ledge from our last meeting. | You've found us receiving a second small guest.
+line @1 hail [pair.band=friends] : Stand here and see who finds the upper shelf. | Come look quietly behind my shoulder.
+line @1 farewell : May your road have room for little joys. | Leave with your share of the light.
+line @1 farewell.return : A safe branch when you need one. Goodbye. | I'll leave the little place open for a return.
+line @1 react.news : I've time for the news in its own words. | My paws are free and I can attend.
+line @1 react.news.new : That hadn't reached even the edge of my hearing. | A new arrival in my thoughts altogether.
+line @1 react.news.known : I've heard that account and kept it in mind. | Yes. Same shape as the earlier news.
+line @1 react.news.doubt : I'd leave a little space open for a better account. | That seems too big a conclusion for such a little scrap.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Let me sit while you tell that. It deserves the time. | A sad empty place. I won't pretend words will fill it.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd put an extra pinch on the ledge for news like that. | That news will put real warmth into the prayer I say tonight.
+line @1 ask.how : Has anything small and pleasant found you today? | How are you doing for quiet company?
+line @1 answer.how : Watching a hopeful little movement over my shoulder. | Quite settled, with room for another word.
+line @1 decline : I'd leave that duty to a wolf who can give it proper attention. | I've an earlier promise to feed before I take that on.
+line @1 accept_decline : All right. An open place needn't be filled. | Then keep the bit of day you'd set aside.
+line @1 preclose : I should check which ledge is still empty. | The seed won't scatter itself evenly. I'll move along.
+line @1 accept_preclose : Of course. Go while the road looks kindly. | I'll stay and give the late arrivals a chance.
+line @1 thank : You noticed the smallest need. I appreciate it. | That was a quiet generous thing. Thank you.
+line @1 deflect_thanks : I had the seed and a ledge to put it on. | It was little effort to leave a share.
+line @1 sympathise : You can stay without saying a further word. | I've a dry place for company with a heavy heart.
+line @1 reassure : Let the smaller chance come into view first. | We've room enough to try one hopeful thing.
+line @1 ack : Yes. That little detail shows very plainly. | I follow the path of that thought.
+line @1 give.advice : Put one share away from the busiest spot. | Sit a moment after you've scattered the seed.
 scene shelves
 when topic=animals
 does tell.self / ask.detail / answer.detail
@@ -198,8 +200,6 @@ a : A newcomer may like to see a place to sit before hearing all the local names
 b : You'd let introductions wait? | What if the visitor wants company?
 a : Long enough to find shelter and recover a little breath. That's no disrespect. | I'd be close enough to speak with and far enough away to leave a choice.
 
-grown
-
 story cardshelf [topic=memories|pastimes]
   : I set a bent playing card under a slightly unsteady seed dish. A gust pulled it out and carried it halfway up the hedge.
   : A sparrow settled beside it, bold as any partner I ever had.
@@ -242,14 +242,13 @@ does aside
 cooldown 8h
 say One beak more can fit on the thin perch. | A shy beak gets its own little corner.
 
-dlg resident.hub : I've just set a pinch aside for the late birds. I'll hear you gladly.
-dlg resident.hub [topic.meeting=known] : #topic.player#, you'd recognise that bold little shape in the hedge by now.
-dlg resident.hub [here.time=night] : The small wings are quiet now. Our voices can be quiet too.
-dlg resident.hub [pair.disposition=wary|hostile] : I'm willing to listen if you leave the ledges and the birds alone.
-dlg resident.job [self.job=farmer] : #self.trade_words.capitalize#. I keep the way to the blossoms clear and the little ledges for birds apart.
-dlg resident.job : I enjoy providing room for a small living thing to go on with its day.
-dlg resident.bye : I hope some small good comes looking for you on the road.
-
+dlg @1 resident.hub : I've just set a pinch aside for the late birds. I'll hear you gladly.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'd recognise that bold little shape in the hedge by now.
+dlg @3 resident.hub [here.time=night] : The small wings are quiet now. Our voices can be quiet too.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'm willing to listen if you leave the ledges and the birds alone.
+dlg @1 resident.job [self.job=farmer] : #self.trade_words.capitalize#. I keep the way to the blossoms clear and the little ledges for birds apart.
+dlg @2 resident.job : I enjoy providing room for a small living thing to go on with its day.
+dlg @1 resident.bye : I hope some small good comes looking for you on the road.
 graft resident.hub
 choice Which ledge should I watch? -> shyledge
 node shyledge
