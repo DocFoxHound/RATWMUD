@@ -1,0 +1,399 @@
+# rm487, the witness and the wind (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm487
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_cedric_mudley
+written_by codex
+title the witness and the wind
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=chatty warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk separates_ship_names_heard_from_ship_names_seen
+likes crisp_apples old_tales sharp_knife misty_dawns
+dislikes cold_tea stale_bread
+fears mistaking_a_fine_tale_for_a_firsthand_account
+hopes to_recall_every_hull_without_a_borrowed_word
+topics lore +0.4 work +0.4 memories +0.3 weather +0.2
+styles comfort=practical gossip=guarded refuse=flat tease=none
+marks oath saying
+persona #self.first# gives a ship two separate entries in memory, one for the sight of its hull and another for the voice that supplied its name.
+
+words
+oath! = Count me a second wake | By the apple's other face
+saying! = A name sails faster than a hull | Keep one eye for the unpainted side
+apple = a crisp russet | a green-skinned apple
+rind = my apple peel | a ribbon of red peel
+nick = a double nick | two shallow cuts
+hull = the boat's dark flank | a shadow under canvas
+name = the spoken name | the name somebody supplied
+eye = a clear sighting | the line my eye retained
+ear = a borrowed word | a reported sighting
+road = the broad approach | the rising stretch
+mist = a low pearl-grey bank | a streak of whitening mist
+tea = a cooling cup | the plain brown brew
+crust = a dry bread edge | a dusty crust
+knife = my fruit knife | a neat short blade
+step = my sounder foot | a firm planted boot
+book = a private list | the inner page
+gate = the high gateway | the public opening
+wake = a streak of white water | the receding furrow
+
+any
+opinion @1 strangers against 2 : An unfamiliar face is entitled to civility. Familiar treatment has rather different terms.
+opinion @1 watch for 1 : An unremarkable night on the public road has usually taken several wolves' complete attention.
+opinion @1 road for 1 : A road worth travelling is worth attending to from its first bend right down to the stones under one's foot.
+opinion @1 festivals for 1 : I like hearing the entire town speak in a single afternoon. There is much to be learnt from the different accounts.
+opinion @1 dole against 1 : A public meal ought to put a wolf on its feet again. I dislike arrangements that have no aim beyond another turn in the line.
+opinion @1 houses mixed 0 : A House can be correct in one account and magnificently mistaken in the next. I keep my judgments available.
+opinion @1 merchants mixed 0 : A quoted price heard up the street is a rumour until the seller gives the terms in person.
+opinion @1 sump against 1 : Below the Ropewalk the crowded turns and the water put too many reflections into a simple view for my preference.
+
+grown
+line @1 greet [pair.band=strangers] : Give your account in your own voice. Welcome. | A new arrival. There's space in full view.
+line @2 greet [self.working=yes] : Speak from the level ground, please. | I can hear the word over the ordinary traffic.
+line @3 greet [here.time=dawn] : Morning. The sound carries plainly. | Fresh light on the approaching road.
+line @4 greet [here.time=dusk|night] : Evening. Voices carry further than faces now. | Make yourself visible in the remaining light.
+line @1 kin.open [pair.kin!=no] : Kin can give me the informal version. | A family face scarcely needs announcing.
+line @1 again.open : A second appearance confirms the first sighting. | You come round again by the same road.
+line @1 greet.return : I hear a proper greeting. Good. | Welcome within sight as well as hearing.
+line @2 greet.return [pair.band=friends|family] : Your voice comes with an established face. | A familiar account can begin without ceremony.
+line @3 greet.return [self.working=yes] : Allow me to finish the current word. | Speak in turn. I shall hear clearly enough.
+line @4 greet.return [here.time=dusk|night] : Evening. I still know what I saw. | Come inside speaking range after dusk.
+line @1 farewell : Keep the road and your account straight. | An orderly onward journey.
+line @1 farewell.return : I'll keep the fact of your visit distinct. | Travel with the light where possible.
+line @2 farewell.return [here.time=night] : A clear path beyond the final lamp. | Watch your footing through the late mist.
+line @1 react.news : What did the speaker actually witness? | Give me the name and then the source.
+line @1 react.news.new : An unfamiliar name on that hull. | That's news my own ears haven't taken before.
+line @1 react.news.known : Yes. I retain the first account. | I've heard the name from that direction.
+line @1 react.news.doubt : I'd separate what was observed from what was supplied afterwards. | A hull without a reliable name leaves considerable room for error.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That brought a hard private memory with it. | I can attend while you take the word slowly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Pleasant word and plainly given. | That's one favourable account worth retaining.
+line @1 ask.how : How has the present stretch treated you? | Has the day required much standing?
+line @1 answer.how : Still fairly steady on the better leg. | I've had sufficient occupation for both eye and ear.
+line @1 decline : I'd reserve my attention for its present duty. | I have no reason to undertake a second obligation here.
+line @1 accept_decline : Your answer requires no further embellishment. | A plain refusal will do quite adequately.
+line @1 thank : Your attention has kept an account accurate. | I value the distinction you've drawn.
+line @1 sympathise : Stay on my sheltered side for a minute. | I can give your words a private hearing.
+line @1 reassure : Nothing requires an immediate account of a painful matter. | Leave the uncertain part unspoken awhile.
+line @1 preclose : I should resume my attention to the approach. | I'd best close this account for now.
+line @1 accept_preclose : Your departure is duly observed. | I can release the remainder of your time.
+line @1 deflect_thanks : Credit is attached to the proper act. | I require no second acknowledgment.
+line @1 ack : Clearly witnessed. | I heard.
+line @1 give.advice : Name the source before polishing the tale. | Look once more when the mast clears the mist.
+line @1 offer : I can give you another hearing in quieter air. | Shall I see you to the level bit?
+line @1 praise : You made the distinction admirably plain. | A first-rate account of a small observation.
+scene first
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I keep two memories for every named hull on the Sound.
+b : Why spend two? | What's in the second?
+a : One for what the eyes saw. A ship's paint may disappear and its distinctive squat stern remain. | The particular voice that claimed to know the ship. That can change significantly faster than a stern.
+
+scene cut
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I cut a crisp apple across its middle.
+b : To inspect the pips? | Is it easier to share?
+a : For the little star. An ordinary fruit ought to be allowed one distinction. | Two wolves may judge which portion has the better claim to being larger.
+
+scene knife
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A keen knife cuts an apple without troubling the shape of the peel.
+b : Does the shape matter? | Can't you bite it?
+a : I like an unbroken strip. It gives the fingers a harmless occupation after the fruit's eaten. | I can and frequently do. I like knowing which part of the pleasure belongs to the knife.
+
+scene story
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I enjoy a frankly impossible tale told in an entirely sober voice.
+b : Why impossible? | Doesn't that encourage rumours?
+a : Then nobody at the table can mistake the evening's pleasure for a deposition. | An apple that sailed a ship round the Sound ought to be beyond even the liveliest commercial rumour.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : Dawn mist leaves me just enough outline to test my recall of a vessel.
+b : Can you trust it? | What's the test?
+a : I trust it to give me an interesting question. Answers require a little daylight. | Estimate how high the bow rises and wait until the white air rises above it.
+
+scene teacup
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : A cold cup says the interval granted for drinking it was badly arranged.
+b : Would you reheat it? | Whose arrangement?
+a : I'd have a fresh pour if possible. A twice-boiled grievance is still a grievance. | Frequently my own. Blame needn't always be sent on an expensive journey.
+
+scene oldbread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I give dry bread a dip before it gets near a sharp apple.
+b : Why protect the apple? | Where do you dip it?
+a : I object to good apple juice being taken up by a crust that hasn't been invited. | In broth. Both ingredients then have a sound business arrangement.
+
+scene height
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : The view from the Heights includes things for which one has no name.
+b : Vessels far away? | Does that vex you?
+a : A pale sail appears through the weather, much too far off to idly call an acquaintance. | No. It's a worthwhile reminder that a good view isn't a complete education.
+
+scene gatework
+when topic=work self.job=guard self.role=guard
+does tell.self / ask.detail / answer.detail
+a : At a gate I listen for which part of a visitor's tale was volunteered.
+b : Do you treat it as truth? | Is a quiet visitor unwelcome?
+a : I treat it as a useful opening. There's time for a clear question afterwards. | A quiet clear answer is generally more manageable than a grand introduction.
+
+scene thanks
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : An account of a journey ought to say what the road felt like underfoot.
+b : Even the short ones? | Why underfoot?
+a : A short stretch of bad footing can make a very long impression on the traveller. | One wolf can forget a building's name and still remember an exact shallow patch of mud.
+
+scene badjoint
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Weather sometimes gives me two estimates of a mile.
+b : Which is correct? | Can you tell in advance?
+a : The map gives one. The leg that dislikes weather offers a more expensive personal figure. | In foul weather I know by the third step how carefully I must choose the rest.
+
+scene bereave
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A certain turn down by the wharf brings an absence to mind before it brings any ship name.
+b : Is it a private matter? | Would you like to pass quickly?
+a : Very much. I prefer to leave the particular face out of general conversation. | I'd sooner take the pace I can maintain comfortably. Memory has its own means of keeping up.
+
+scene rumour
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A ship's name may be honestly given and still be wrong.
+b : How can one be honest and wrong? | Would you correct the speaker?
+a : A good ear can hear the wrong voice very clearly through a bank of mist. | When the daylight shows enough of the hull. Before then I'd only be adding another voice.
+
+scene table
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I like a supper companion who says when a story has slipped in the telling.
+b : Doesn't that spoil it? | Which slips matter?
+a : On the contrary. A tale improved knowingly gives a second sort of pleasure. | Confusing a jest told at supper with a thing sworn to the following day. That matters considerably.
+
+scene newcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll give directions to a newcomer without inventorying my private relations.
+b : Who'd ask? | Is a warm welcome so costly?
+a : Quite a few inquisitive travellers. A surprising amount of personal information is demanded to reach an ordinary street. | Polite directions are a welcome. A reasonable guest needn't ask for the whole interior of the house.
+
+scene feast
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : Festival music lends itself to competing accounts of precisely the same tune.
+b : Would the tune change? | Why listen to the accounts?
+a : The fiddler's arm has one measure. The dance has a different length in every tired ankle. | It gives me better conversation than asking whether a wolf merely enjoyed the noise.
+
+scene prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A quiet minute can do more good than an elaborate public display of humility.
+b : Are you speaking of prayer? | What's your practice?
+a : Of addressing any listener one respects. The Bright One has no need of a grand introduction from me. | I keep it within reasonable earshot of my own conscience.
+
+scene office
+when topic=work self.role=guard self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I use my ordinary loud voice to make a routine direction intelligible.
+b : Aren't people startled? | Why not a quiet word?
+a : Some are. A missing direction can put someone in a much less comfortable position. | No need of a trumpet for the wolf beside my elbow. The road sometimes needs a longer reach.
+
+scene coin
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Once I've inspected the goods I need not buy the story that comes tied round the handle.
+b : What sort of story? | Even for an old knife?
+a : Which distinguished household once owned the item. Funny how often an extra copper appears beside that claim. | I'd look at the blade I actually have available for cutting fruit.
+
+scene dark
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : In poor light I rely on knowing exactly when an outline passed from view.
+b : What does the distance leave clear? | Would you still name it?
+a : Where the certainty ends. The mind continues seeing a shape several moments after the eye's lost it. | Only if I'd seen enough beforehand. I won't lend the night my good name for nothing.
+
+scene dawn
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Early air lets an approaching word arrive a moment before its owner's quite clear.
+b : Do you answer immediately? | Does that happen in fine weather?
+a : A greeting, yes. A business matter can wait until I know who has opened it. | Often. An ordinary turn in the road can produce the same effect as a whole morning of mist.
+
+scene queue
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I keep the number who have actually waited distinct from the number who complain they have waited.
+b : Never the same? | Which detail distinguishes them?
+a : A great deal of overlap, naturally. I value anyone who manages one thing without neglecting the other. | Enough to learn which opening ought to be dealt with next, and no more.
+
+scene station
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A stool of exactly the right height improves my patience with an imperfect world.
+b : For your leg? | Whose stool?
+a : If the knee can rest without bending tight I'm less inclined to argue with the weather than usual. | One I tried before adopting. A stool deserves as much personal examination as a reported ship.
+
+scene crunch
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : I can hear a very small creature finding a forgotten apple core.
+b : While it's out of sight? | Can you name the creature?
+a : I can hear the core moving. I reserve the identity of the mover until I see a nose. | A little brown visitor would be my first guess. I mark it as a guess.
+
+scene caravan
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A wagon reported late can produce a remarkable number of uninvited stories.
+b : Which would you credit? | Could all be mistaken?
+a : First give me the last place somebody actually saw the wheels. Other particulars can follow in good order. | Very easily. An assertion that something didn't arrive is not an assertion about where it did go.
+
+scene market
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A thin season sets me watching what a basket contains as well as how fine the handle looks.
+b : Judging the buyer? | What do you learn?
+a : Judging my own readiness to call the times tolerable. A glossy handle is no dinner. | Whether a figure quoted for ordinary provisions buys anything like an ordinary supper.
+
+scene petname
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I know a ship once given two quite affectionate names by the same confident witness.
+b : Which was correct? | Would you retain both?
+a : The name painted under the rail provided a firm third opinion. I prefer that version. | As names for a tale, certainly. Only one belongs in a formal account.
+
+scene fruit
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed every apple in a basket had a ship's name instead of a stalk.
+b : Were they ripe? | How many ships?
+a : Each ready to sail. A very pleasant piece of nonsense once I was awake to consider it. | There was no need to count. The last apple kept coming back under a slightly different name.
+
+scene raindoor
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A sheltered listener and a soaked traveller are apt to describe the weather differently.
+b : Whose report helps more? | Even with the same clouds?
+a : For road conditions I'd consult the traveller. For the state of a roof tile I'd hear the listener. | The clouds occupy the entire sky. Each wolf has considerably less ground to cover.
+
+scene discretion
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If somebody is struggling for a lost name I let the silence stand for a while.
+b : Why not supply it? | Do you always know it?
+a : I dislike putting my memory where a witness's own recollection ought to be. | No. That is an additional reason to avoid a grand display of assistance.
+
+story peel [topic=memories]
+  : I once used a long apple peel to show how a small boat had turned near the wall. I laid it carefully along the rim of a plate and started explaining the course.
+  : The peel sprang back into its coil. My brave little vessel appeared to have circled the same stone three times with exquisite determination.
+  b : Did you straighten it again?
+  : I ate the model and gave the account in words. The audience seemed pleased with this more economical method of navigation.
+
+story namemast [topic=travel]
+  : I watched a mast through mist and was certain I recognised its owner. I even recalled being given the exact name one bright evening.
+  : The mist lifted. It was a pole beside a shed, with a fine length of wash strung along it. I'd been admiring the trim of a wet sleeve.
+  b : Did you admit the mistake?
+  : Readily. I'd made the prediction only to myself, but that's the most troublesome audience to keep honest.
+
+story breadnotch [topic=food]
+  : A dry crust once made such an exact little dent in an apple that I could fit the two together. I tried the neighbouring crust. It fitted equally well.
+  : There was no mystery. Both bread ends had been cut against the same coarse basket edge before lunch.
+  b : Did you still eat the evidence?
+  : I dealt with the apple at once. The bread spent a comfortable interval in hot soup before giving its account.
+
+story voicegate [topic=work self.job=guard]
+  : On a very still day a greeting came to my ear from what I took to be the upper street. I turned my head and addressed a completely empty stretch of paving.
+  : The voice had bounced off the stone on the other side. I was soon obliged to turn again and greet the person rather than the masonry.
+  b : What did the wall say?
+  : Nothing, with admirable discretion. I now reserve the full bow for a face I can actually see.
+
+story latecount [topic=memories]
+  : Once I set out to learn the names of three small boats at once. I wrote each name beside its fellows and pocketed the scrap with an apple for the homeward walk.
+  : By supper two scraps were wet with juice and the apple bore a perfectly legible black letter. It was not the initial of any boat I'd meant to record.
+  b : Who supplied that extraordinary name?
+  : The word apple. I'd marked the parcel before setting out. There are clear limits to what a careful record can establish.
+
+rule @aside1
+when concept=bark self.job=guard self.working=yes
+does aside
+cooldown 6h
+say Wait for the speaker's own account. | Separate voices for an orderly hearing.
+
+rule @aside2
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 7h
+say Both halves examined. The apple may proceed. | A sound peel all round that one.
+
+rule @aside3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Give the white air another moment. | Mast or pole. Wait for the hull to appear.
+
+rule @aside4
+when concept=bark self.likes=old_tales
+does aside
+cooldown 9h
+say A story may borrow a sail if the teller admits it. | Keep the good ending and the good evidence separate.
+
+rule @aside5
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 10h
+say Hot at the start would have been a useful qualification. | The brew has gone quite beyond a reasonable interval.
+
+rule @aside6
+when concept=bark here.time=night
+does aside
+cooldown 11h
+say No name supplied for a vanished outline. | Steady this leg before the last dark stretch.
+
+dlg @1 resident.hub : Come to where your face and your voice give the same location. I find that a convenient beginning to civil business.
+dlg @1 resident.job [self.job=guard self.trade_words] : #self.trade_words.capitalize#. It keeps me reasonably well acquainted with the difference between a traveller and an account of one.
+dlg @2 resident.job : My attention stays with what can be properly observed. I take considerable pains over the difference.
+dlg @2 resident.hub [topic.meeting=known] : I have the voice and face on the same entry, #topic.player#.
+dlg @3 resident.hub [here.time=dawn] : There's time to provide an intelligible account before the ordinary traffic grows loud.
+dlg @4 resident.hub [here.time=night] : Speak clearly enough for a wolf who declines to identify a traveller by outline alone.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : An ordinary civil account will be heard. Nothing further is required of your manner.
+dlg @6 resident.hub [self.working=yes] : I have the road in view and sufficient hearing left for what you wish to say.
+dlg @1 resident.news [world.news] : This is the account I can attribute to a definite hearing. #world.news#
+dlg @1 resident.bye : Safe passage. Keep the names attached to their proper owners.
+dlg @2 resident.bye [here.time=night] : The road is lit well enough for a patient walker.
+dlg @1 watch.hub [self.role=guard here.wanted=no] : Stand in the ordinary light and describe precisely what you witnessed.
+dlg @1 watch.bye [self.role=guard] : You have been heard. Attend to your footing on the remainder of your business.
+graft @hull resident.hub
+choice Why remember the voice as well as the name of a ship? -> hull_voice
+node hull_voice
+say Suppose one hears three travellers name a hull. If the three heard the word at one supper, one has a single witness and a perfectly agreeable little chorus.
+free
+choice What if the chorus agrees with the paint? -> hull_paint
+choice I'll ask where a name was heard. -> hub
+node hull_paint
+say Then I am pleased for the chorus. The paint has made a separate contribution and may be credited for it.
+choice A clear distinction. -> hub
+choice I'll take my account on the road. -> bye
+
+graft @rind resident.hub
+choice What's the apple peel for? -> rind_tale
+node rind_tale
+say After the apple's eaten I can lay the peel on a board to show a vessel turning through water. It has a regrettable tendency to coil up under examination.
+free
+choice Could that improve the story? -> rind_story
+choice I can picture the turn well enough. -> hub
+node rind_story
+say I tell a tale of a ship sailing a perfect spiral. It's a tale for company who know exactly what goes on a chart and which bits belong to the storyteller.
+choice I'd hear that story over supper. -> hub
+choice I leave the apple under examination. -> bye

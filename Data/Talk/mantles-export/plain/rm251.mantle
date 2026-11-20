@@ -1,0 +1,256 @@
+# rm251, the swallowed beat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm251
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_magnus_greycot
+written_by codex
+title the swallowed beat
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk leaves_a_beat_empty_to_swallow_a_damp_cough
+likes barley_soup dancing sharp_knife first_snow
+dislikes wet_floors cold_tea
+fears a_heel_going_sideways a_voice_carrying
+hopes a_berth_in_dry_air a_floor_for_dancing
+topics pastimes +0.6 travel +0.3 dreams +0.4 food +0.2 gossip -0.6
+styles comfort=quiet gossip=guarded refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a private dance measure with one heel, leaves a beat empty when the air catches and imagines the sway of a bunk above dry sand.
+
+words
+oath! = Trip the whole measure | Slop and suds
+saying! = Leave a beat for breathing | A small step belongs in the dance
+heelbeat = a double tap | two little heel knocks
+pause = the quiet beat | the space I leave
+knifeedge = an honest sharp edge | a blade that goes through neat
+hotcup = my steaming tea | a cup warm clear to the rim
+soupgrain = a fat barley grain | one plump little grain
+drip = a cold runnel | the creeping wet line
+dryport = a harbour smelling of dry grass | a quay in the dust
+board = a level plank | a dry bit of flooring
+snowbit = a white tuft | one clean flake
+pin = a plain wooden peg | my spare clothes peg
+
+any
+opinion @1 houses against 2 : It's possible to stand on a floor all your days and never meet whoever decides whose floor it is.
+opinion @2 church for 1 : I remember the steam off a meal after a chapel door opened to me. Enough said.
+opinion @3 merchants against 2 : The price is written large where even tired eyes can read it. A pity my wages don't come in the same size.
+opinion @4 dole for 2 : Nobody picking grains from an empty bowl is in a condition to listen to a lecture.
+opinion @5 watch against 1 : Heavy feet change the whole sound of a room. I prefer the sound it makes before.
+opinion @6 city for 1 : Bits of this street come back to my feet even when I'm half asleep.
+
+grown
+line @1 greet [pair.band=strangers] : Plenty of dry floor there. Welcome. | Hello. Mind the shiny patch near my heel.
+line @2 greet [here.time=dawn] : Morning. Eyes still catching up. | A pale start. Good to have you about.
+line @3 greet [here.weather=snow] : Here's a morning worth looking up for. | Snow coming soft. Come near.
+line @4 greet.return : Mm. Glad of a quiet word. | Good of you to see me there.
+line @5 greet.return [pair.band=friends|family] : Ah. The step I was listening for. | Rest on this side with me awhile.
+line @6 farewell : Travel on the dry boards. | Sleep without a drip overhead.
+line @7 farewell.return : I'll hear your steps going a little way. | A quiet end suits me fine.
+line @8 again.open : Round we come a second time. | A familiar footfall, all of a sudden.
+line @9 kin.open [pair.kin!=no] : Easy company for a tired hour. | Family can take the closer place.
+line @10 hail [pair.band=friends] : Here, by the dry bit! | Look this way; I've a space!
+line @11 react.news : Say it slowly. I'll hear. | I'm awake enough for that.
+line @12 react.news.known : There's the sound I heard earlier. | I caught that tune the first time round.
+line @13 react.news.new : News to these sleepy ears. | That hasn't come past my corner before.
+line @14 react.news.doubt : I missed the step that joins those facts together. | There's a beat out somewhere in the telling of that.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Mm. Give the hurt room. | Sad to have that in a day's measure.
+line @16 react.news.glad [topic.kind=birth|marriage] : There's a lift to the heels. | I'd dance an extra turn to celebrate that.
+line @17 answer.how : Mostly upright, lightly tired. | Resting the talking parts today.
+line @18 accept_decline : That's settled in a quiet way. | Mm. We can leave it.
+line @19 decline : I think I'd trip over that much of a promise. | My bit of floor won't stretch to it today.
+line @20 sympathise : I can sit without talking, if that helps your trouble. | Lean back a little. You look worn through.
+line @21 thank : Felt that kindness in my tired bones. | I'm obliged for the lightening of it.
+line @22 deflect_thanks : Easy enough while I stood here. | Just a small shift of weight.
+line @23 preclose : I'll move before I doze off standing. | Time I let the talk run down.
+line @24 accept_preclose : Catch your rest when it comes past. | Aye. Finish on the soft beat.
+line @25 farewell [here.time=night] : There's a dream out there with your shape in it. | Go softly till your own door shuts.
+scene blankbeat
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : Hear #heelbeat#? Then there's #pause#. | I can dance a whole turn without leaving the spot.
+b : What goes in the quiet part? | Where does your other foot go?
+a : One breath that nobody's obliged to notice. | Takes the weight of what the first one dreams.
+
+scene badfloor
+when topic=smalltalk self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Can hardly tell water from polish till my heel shoots off. | #drip# has an ambitious look to it.
+b : Try the patch where the wood shows dull. | You're measuring the distance it'll go?
+a : That's got some tooth to it. Stay on that. | Measuring how far I'll slide if it reaches me.
+
+scene barley
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I look for #soupgrain# after the broth's all gone. | Barley at the bottom makes a little island as you drink.
+b : Doesn't it stick in a tired throat? | What becomes of your island?
+a : I keep one last swallow of broth for that. | One lift of my spoon. Tide's out.
+
+scene firstwhite
+when topic=weather here.weather=snow
+does tell.self / react.self / assess
+a : Let #snowbit# land on this dark sleeve. | I watch till a flake holds all its points.
+b : Gone before I could count the points. | Where does that one go?
+a : First snow never quite finishes the dance. | Turn my sleeve over and save its points till they melt.
+
+scene berth
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : If I get a berth, I'll ask where the dry air starts. | There's a bunk in my head that hasn't seen a damp night yet.
+b : Wouldn't there be sea between you and the dry? | Is it on some particular ship?
+a : Enough time to grow accustomed to a swinging floor. | Any hull with #dryport# waiting somewhere ahead.
+
+scene sharp
+when topic=pastimes self.likes=sharp_knife
+does tell.self / react.self / assess
+a : #knifeedge# takes a loose thread without raising a tuft. | My way of testing a knife is one strand of string.
+b : You carry a sharp thing for such small work? | You must have spoiled some string practising.
+a : Small work shows up the difference quicker. | I kept the bits. Still good for tying a button back.
+
+scene steamcold
+when topic=food self.dislikes=cold_tea
+does give.opinion / disagree / concede
+a : Cold tea tastes like a cup that forgot its reason. | Give me #hotcup# before anybody starts telling a long tale.
+b : I'd drink it cold if my throat wanted wetting. | You'd miss hearing the start of it.
+a : Water makes a better job of being water. | I can drink fast and remember better warm.
+
+scene washplace
+when topic=work self.job=laborer self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I shake a drip off before it finds my neck. | #self.workplace.capitalize# puts a slow sideways pull in my shoulders.
+b : Have you a trick for missing it? | Can you feel it after work?
+a : Look down while you lift. Water can't run uphill into a collar. | Only till I give 'em a turn to a dance measure.
+
+scene oldplace
+when topic=work self.job=laborer
+does tell.feeling / sympathise / assess
+a : I used to have a little more say where I put my feet. | Waged work gives me another wolf's rhythm to keep.
+b : Would you talk about the difference? | That can wear a wolf thin.
+a : In a room with less echo sometime. | I've kept a beat inside my head nobody can pay me for.
+
+scene currentprice
+when topic=prices self.wealth=poor|destitute
+does tell.complaint / react.complaint / assess
+a : Thin soup shows the whole bottom of a bowl. | My spoon's doing less lifting than it likes.
+b : You can still warm your paws on the sides. | Some days stretching will only go so far.
+a : I do. Keeps them from shaking while I eat. | Aye. Can't stretch the grain I didn't buy.
+
+scene friendcount
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : I'd take #self.friend# along if a dance were short one body. | I could tell #self.friend# about the missing beat.
+b : What if your friend doesn't know the steps? | Would it spoil the measure to tell?
+a : I'd leave enough quiet between the taps to learn. | Maybe. I like having one thing nobody expects a word about.
+
+scene dryline
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : This damp knows right where my breath catches. | Wet days call for a shorter dance than I remember.
+b : Share this scrap of shelter with me. | A dance is as long as the dancers make it.
+a : I'll take #pause# under cover then. | That's the first long thing all day that doesn't sound tiring.
+
+scene sumpfloor
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : Down in the Sump a dry sill is worth sitting still for. | My end of the city makes music with every kind of drip.
+b : Doesn't sound like much of a seat. | I doubt I'd know a tune in that.
+a : Wide enough for one heel to swing. That's ample. | You'd know which one was missing if the roof got mended.
+
+scene distantdust
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I picture #dryport# with a ship's rope dragged through dust. | A dry berth ought to smell of rope and sun.
+b : Why fix on the rope? | Wouldn't the name of the port matter?
+a : I can almost feel the difference between that rope and a wet one. | Less important than waking with an easy breath.
+
+scene quiethelp
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : I'll share the thicker end of the barley. | There's enough soup to let your spoon stand in mine.
+b : I won't empty it for you. | I'd take a little if you're sure.
+a : No need. Tip the bowl and pick a grain. | Take a spoonful while it knows the way in.
+
+scene woodpeg
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A peg will stand upright if its legs are cut quite level. | I carry #pin# to give my fingers something slow to do.
+b : That how you find a flat floor? | How much can you do with one peg?
+a : If it topples, I've a fair excuse to sit. | Walk it on two legs clear around the rim of a bowl.
+
+scene danceend
+when topic=pastimes
+does tell.plan / ask.detail / answer.detail
+a : One night I'll stay through the last dance and the sweeping. | I want to hear a tune after the instruments stop.
+b : Hoping for an extra turn below the broom? | What will you hear in the silence?
+a : Just want to hear the sound of the bare floor cooling down. | My own heel finishing what the tune started.
+
+scene chapelmeal
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : One smell of warm barley can put me back on a chapel step. | I like a doorway better if it's let a meal out into the cold.
+b : Must have been a kindly meal. | Wouldn't you go inside to eat?
+a : Kind enough that the bowl comes back into my mind whole. | I might. The outside's where I first tasted a hot mouthful.
+
+story floating_peg [topic=pastimes]
+  : I set a wooden peg in a wash bowl once and gave the water a slow turn. The peg danced round the edge with one leg in the air.
+  : I tried leaning that far myself and landed sitting on the folded linen.
+  b : Did the peg do any better?
+  : Came to rest on both legs, the cheeky little dancing master.
+
+story warm_bowl [topic=food]
+  : A stoneware bowl of barley was too hot to hold. I tucked my paws into the ends of my sleeves to get it to a seat.
+  : Shut my eyes between spoonfuls. When I stood up there were two round warm marks at my wrists.
+  b : Like little cuffs?
+  : Yes. Felt dressed well enough for a ball all the way home.
+
+story imagined_quay [topic=travel]
+  : One wet afternoon I dozed with my back against a shaking board. I woke convinced a ship was docking in a warm place.
+  : There was the sound of rope paying out, then a sharp flap of canvas.
+  b : What had come in?
+  : A washing line full of sheets. I stayed on that quay until I finished yawning.
+
+rule @floor
+when concept=bark self.dislikes=wet_floors
+does aside
+cooldown 8h
+say A shine where the feet go. Careful. | Short steps on the gloss.
+
+rule @sleep
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say A quiet heel can do the whole dance. | Too tired to tap the last beat.
+
+rule @line
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say Mind the wet swing coming round. | My shoulder knows that weight.
+
+rule @soup
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say Barley's the grain you can find in the dark. | A little broth gets that bit down.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Mm. I can spare you an ear if that's enough.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Come in on the soft beat.
+dlg @3 resident.hub [here.time=night] : I'm nearly dreaming on my feet. Speak close.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : No need for a push. I'll give you an ear across the gap.
+dlg @5 resident.job [self.job=laborer self.workplace] : Bending and lifting at #self.workplace#. A wet shirt weighs more than it looks.
+dlg @6 resident.job : Mostly my shoulders know the answer before my mouth does.
+dlg @7 resident.bye : Pick a dry place to stop tonight.
+graft resident.hub
+choice Is that a dance you're doing? -> heel_music
+node heel_music
+say Half of one. Heel, heel, then I leave a little room. On a dry day I can turn in that space. On a damp one I get my breath back.
+choice What becomes of the other half? -> heel_partner
+choice I'll leave you your tune. -> hub
+node heel_partner
+say Waiting for another pair of feet. There's no great hurry. A measure with room in it suits me.
+choice I might remember those steps. -> hub
+choice Good night to your heels. -> bye

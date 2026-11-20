@@ -1,0 +1,249 @@
+# rm403, the service-stair map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm403
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_orm_wickcot
+written_by codex
+title the service-stair map
+fits stage=adult|old
+prefers talk=chatty humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk adds_service_stairs_to_the_blank_spaces_of_maps
+likes mutton_stew singing old_maps first_snow
+dislikes stale_bread waiting
+fears having_a_confidence_served_up_with_dinner
+hopes learning_every_unmarked_turn
+topics travel +0.6 work +0.4 pastimes +0.3 gossip +0.2
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# draws the service stair in the blank spaces of grand maps and lowers a splendid carrying voice to talk about private accounts.
+
+words
+oath! = Salt my stair rail | Split my soup ladle
+saying! = Draw the back way too | Two stairs or a full bowl
+turnsheet = a creased old plan | a sheet of yellowed paper
+souprim = a flake of dried gravy | a bright line of broth
+traywood = a broad serving board | a light oval tray
+footdot = a pair of tiny dots | a double chalk mark
+quietgate = a curtained opening | a narrow side door
+mapseam = a blank strip | an unmarked fold
+silverbit = a little silver mark | a bright spot of ink
+bankloop = a hook of blue | a curved ink line
+bonepot = a deep mutton pot | a heavy broth crock
+songcue = a rising phrase | a quiet held note
+topstep = a shallow upper tread | a worn half step
+
+grown
+opinion @1 houses mixed 1 : A fine house may hold a hundred rooms and leave the people who carry supper out of every single drawing.
+opinion @1 watch mixed 1 : I notice when a uniform chooses the door farthest from the clerk. My noticing isn't a verdict.
+opinion @1 merchants mixed 1 : A bill that leaves half the walk out of the price can be exceedingly grand and exceedingly cheap.
+opinion @1 church for 1 : Even a servant midway up a stair can find a breath to spend in gratitude.
+opinion @1 city for 1 : Old city plans have space between their fine square blocks for another city of practical routes.
+opinion @1 dole for 2 : A full service tray can usually spare one portion without the state of the realm collapsing.
+line @1 greet : Come by the side door of the conversation. It's considerably quicker.
+line @2 greet [pair.band=strangers] : Welcome. There's a civil amount of room here for both our elbows.
+line @1 greet.return : My ears have found you on the first landing.
+line @1 farewell : May your route omit the stair with the unfortunate wobble.
+line @1 farewell.return : I'll put a dot where we last met.
+line @1 ask.how : Has the day made you carry anything particularly awkward up a flight?
+line @1 answer.how : Perfectly cheerful as long as nobody asks me to wait with the broth.
+line @1 react.news : I'll draw the way those words reached this landing.
+line @1 react.news.new : A passage I hadn't previously found on the plan.
+line @1 react.news.known : I had that marked in a different ink already.
+line @1 react.news.doubt : There's a rather convenient blank where the proof ought to be.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That deserves my carrying voice in an entirely respectable tune.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can take some small service off the shoulders dealing with that.
+line @1 thank : You moved the door instead of watching me wrestle my tray through it.
+line @1 decline : I'd prefer not to make a dining-room entertainment out of private figures.
+line @1 accept_decline : I'll carry the offer away without another flourish.
+line @1 sympathise : We can sit on this landing as long as your thoughts require.
+line @1 reassure : A wrong turn needn't be recorded in the public minutes.
+line @1 ack : I see where both those stairways meet.
+line @1 preclose : The next journey's going to require all my elbows.
+line @1 deflect_thanks : A useful route improves through being shared with the right feet.
+scene work_1
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I know ways round that no formal plan would care to acknowledge.
+b : Are they secret? | Why leave them off?
+a : No, merely useful. Secrets get much grander door furniture. | It appears soup gets to an upper room by breeding there spontaneously. I often assist at the miracle.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Two treads in a stride with an empty tray, one tread with a full bowl.
+b : You count without looking? | What if somebody keeps calling?
+a : I look at the next turn. An unexpectedly short flight can make a fine buffoon out of an expert. | I'll call back. My voice will do the journey in rather fewer stages than the soup.
+
+scene pastimes_1
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I can hear which passage I'm in by how much of a low note returns.
+b : Is the grandest passage the best? | Do you sing while working?
+a : A narrow service landing sometimes gives me two voices for my trouble. Very liberal for its station. | If it feels welcome. A loud voice needn't attend every room it's capable of reaching.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : The pot must smell of mutton before the first bowl leaves the table.
+b : Wouldn't that go without saying? | Do you taste the stew?
+a : I've met a broth that had enjoyed only a brief and formal introduction to a sheep. | If it's my business. If not, the steam gives me ample cause to make appreciative progress upstairs.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd draw #self.spouse# the pleasant route through a complicated house rather than the shortest one.
+b : What makes a pleasant route? | Would you mark your own favourite landing?
+a : A window with a view, a turn at which two can walk abreast and nobody in a spectacular hurry. | Certainly. Sharing its smallest luxury makes knowing the place worthwhile.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I sometimes make private notes on which passages are used when a uniform calls.
+b : Do you record names? | Would a note prove a payment?
+a : Only where there's a reason better than my own curiosity. A blank is cheap and often deserved. | It proves somebody had feet. The purpose of the visit does not appear conveniently stamped on the sole.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A service door feels remarkably handsome when it opens with one elbow.
+b : Better than a carved entrance? | Would you change your own door?
+a : If you've a stewpot occupying the other three imaginary hands, certainly. | I would give it a latch that understood coming home tired. Modest domestic reform.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Waiting to be admitted can cool a dish faster than a stroll round an entire wing.
+b : Couldn't you knock again? | Where do you put the tray?
+a : If the first tap has been properly heard, volume isn't likely to improve the arrangement. | On a level board, never on my opinion of the person keeping dinner outside.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : First snow draws in every little route grand maps leave blank.
+b : Because feet leave tracks? | Aren't some paths still hidden?
+a : Indeed. A grand front door receives one caller while the scullery welcomes considerably more traffic. | Only if all the people using them agree to fly home before the white settles.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : An old map's bargain price might just reflect how much road has been invented since it was drawn.
+b : Would you still buy it? | What use is an incorrect route?
+a : If there's a stretch of margin left unclaimed. I intend to contribute a few improvements. | When you know it's wrong it draws attention to exactly where people's needs changed.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Two stairs together stretch my legs. A sharp stop at the top stretches several less willing bits.
+b : Do you ever learn? | How do you avoid a collision?
+a : Enough to slow at the landing. The entirely wise version of me is still at an early stage of construction. | Sing a short low warning before turning the corner. No cause for announcing an arrival in state with the crockery.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I value friends able to pick a useful route out of an unnecessarily elaborate account. | I occasionally tell a friend rather more about a staircase than is required to climb it.
+b : Would you mind being interrupted?
+a : I would accept a discreet finger on the map at the bit we actually need. | If I've described both banisters and not yet said which way to turn, I deserve it.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't think a prayer loses dignity when it comes between two hot dishes.
+b : What would you ask in that interval? | Would you say it out loud?
+a : The kindness to notice the hungry wolf still carrying the food instead of only the one waiting to receive it. | No louder than the occasion requires. Even my voice is capable of learning restraint.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Lean stretches make stale bread a subject for invention rather than complaint.
+b : What do you invent? | Will a tired heel really soften?
+a : A layer beneath a very good gravy. The most admirable property of bread is its willingness to reconsider. | Yes. Give it steam and patience, two things I contrive to arrange rather better for bread than for myself.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I found a staircase on an old plan that ended in a perfectly sound wall.
+b : Did you trust the plan? | Was it a secret door?
+a : I trusted my nose to suggest further progress would be unwise. | It was a door which had ceased to be one. A map can sometimes be mourning something quite practical.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A secret entrusted to a loud voice needn't be a public declaration.
+b : Wouldn't you be tempted to hint? | Can you really speak softly?
+a : That would be telling only the interesting half and inviting everybody else to invent the rest. | Yes. The difficulty is persuading the room not to look so theatrically surprised when I do.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : For a visitor I draw a route wide enough to get a basket round every corner.
+b : Suppose there's no basket? | Wouldn't street names be faster?
+a : Then the visitor can enjoy the luxury of half an elbow to spare. | If the visitor knows the names. A painted door and a turn after the smell of fish tend to survive a poor introduction.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account carried up the stairs is that #topic.subject# #topic.claim#.
+b : Was it brought up privately? | Would you enter it in a ledger?
+a : It was out in the hall when I caught it. I'd still avoid serving it out on public plates. | Only on a page clearly headed as unexamined talk, with three blank lines reserved for an entirely different account.
+
+story soupmap [topic=work]
+  : I marked a turn on a disposable plan with a drop of gravy because my pencil had gone missing.
+  : I pulled it out later and found a circular chamber where my last tread had been.
+  b : Had the door moved?
+  : The gravy had spread. A useful reminder to make one's survey with a less ambitious ink.
+
+story upstairs [topic=memories]
+  : I tried my two-step stride on a staircase whose last tread was barely the height of my thumb.
+  : I reached the landing with a whole unspent leap still in reserve.
+  b : Where did you put it?
+  : In a grand little bow to an empty wall. The wall acknowledged my recovery with perfect discretion.
+
+story singing [topic=pastimes]
+  : I sang a note in a narrow passage and heard it come back from two directions.
+  : I sang it once again and got three replies this time.
+  b : A growing choir?
+  : One loose shutter, one good echo and my increasingly smug voice. We have had no further engagements as a group.
+
+rule @map
+when concept=bark
+does aside
+cooldown 8h
+say Fine gold ink for the front. I'll pencil in how the food arrived. | There's always space for the useful door.
+
+rule @pair
+when concept=bark
+does aside
+cooldown 8h
+say Two empty, one full. An excellent rule for knees and bowls. | Save the flourish till the pot's safely landed.
+
+rule @service
+when concept=bark self.job=servant
+does aside
+cooldown 8h
+say Give a burdened elbow the nearer hinge. | Service routes deserve the occasional straight line.
+
+rule @late
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A little of the stair music travels farther at dusk. | Time the lower passages had a note to themselves.
+
+dlg @1 resident.hub : Your question may use the short passage today.
+dlg @1 resident.job [self.job=servant] : I serve at #self.workplace#. It is fascinating how many stairs stand between two quite ordinary wants.
+dlg @1 resident.news [world.news] : These words have made the climb intact. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The circulating sheet would have it that #topic.subject# #topic.claim#. I've seen no signature worth showing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, an old acquaintance with excellent timing on the stairs.
+dlg @1 resident.bye : Find your intended landing with every bowl still level.
+graft resident.hub
+choice Can you really find the service stair on a plan without one? -> serving_stair
+node serving_stair
+say Look for two rooms that need to feed a third. Imagine carrying a pot by the ceremonial route and find the door somebody sensible must have insisted upon.
+choice Does that always work? -> serving_wall
+choice I'll spare your knees. -> hub
+node serving_wall
+say Not always. Occasionally the builder really did intend an entire hot dinner to march in state round three landings. My knees keep the records.
+choice I'll spare your knees. -> hub

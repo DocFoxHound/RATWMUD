@@ -1,0 +1,384 @@
+# rm514, the evening peal accountant (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm514
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_gudrun_fell_
+written_by codex
+title the evening peal accountant
+fits stage=adult|old
+prefers job=scholar honesty=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_the_silences_in_a_peal_with_three_seeds
+likes fried_fish roof_birds festival_bells thunder
+dislikes night_noise gulls
+fears two_accounts_added_under_the_wrong_heading private_letters_opened_as_receipts
+hopes a_quiet_desk_with_authority_to_close_the_final_total
+topics work +0.6 family +0.3 festival +0.5 food +0.3
+styles comfort=precise gossip=closed refuse=quiet tease=dry
+marks oath saying
+persona #self.first# moves three seeds across a ruled sheet during the pauses in a peal, works sums without an audience and reads private letters behind a closed cover.
+
+words
+oath! = Seeds in the sand shaker | Blot the red ruling
+saying! = Count what the pause holds | Close the household book before opening a letter
+seed = a hard little fruit seed | a clean pale seed
+three = my three dry seeds | the three counting seeds
+paper = a ruled reckoning sheet | the household sheet
+privatefold = an unmarked inner fold | my private folded cover
+margin = the margin reserved for adjustments | a narrow outside margin
+bellpause = the hush following a heavy bell | a clear space in the peal
+roofwing = a little wing against a ridge | a bird lifting from the slates
+gullstep = a gull's wide pacing step | a heavy webbed print
+fishpan = a shallow pan of butter | my little frying pan
+crispedge = the crisp margin of a fillet | a strip of crisp skin
+ruler = a short bone rule | the little straightedge
+inkblack = a dense black line | a clean figure in black
+rainbeat = a beat from the storm | a sudden roll of thunder
+closedbook = the book with its cover shut | my closed account book
+fishcloth = a cloth drawn over the dish | the cover for the fried fish
+
+any
+opinion @1 houses for 1 : A House of consequence should have ready a plain answer to a small question about its accounts.
+opinion @1 merchants mixed 0 : I give the careful merchant time to total a column. I allow the careless one exactly the same time to correct it.
+opinion @1 city for 1 : Roofs at different heights make the bells come home from three directions.
+opinion @1 watch for 1 : Put service dates in a readable hand. The Watch keeps duties which a merchant may have to allow for.
+opinion @1 festivals for 2 : A good peal has a little breathing space even when all the bells seem intent on filling it.
+opinion @1 road mixed 0 : A letter can take a circuitous route and still carry a perfectly direct answer.
+opinion @1 drink mixed 0 : A good cellar concerns itself with measure as much as flavour. I retain my preference for the measure.
+opinion @1 dole mixed 0 : I'd have the total of bread given and the total promised set beside each other at the close.
+opinion @1 times mixed 0 : A year can turn upon a correction so small that the old figure still shows through.
+
+grown
+line @1 greet : Come beside the outside margin.
+line @2 greet [pair.band=strangers] : A new hand. We can begin on a fresh line.
+line @3 greet [here.time=dawn] : Morning. The upper roofs have their daylight already.
+line @4 greet [here.time=dusk|night] : Evening. The last bell has allowed us some quiet.
+line @1 greet.return : I heard. My finger can keep the place.
+line @2 greet.return [pair.band=friends|family] : Yours is a return I needn't look up.
+line @3 greet.return [self.working=yes] : One moment's pause won't injure the sum.
+line @4 greet.return [here.time=dusk|night] : A late visitor will be heard above a settling house.
+line @1 kin.open [pair.kin!=no] : Come to the inside chair, kin.
+line @1 again.open : The seeds are still beside the unfinished figure.
+line @1 hail [pair.band=friends] : Friend, put that spare chair beside the best-lit window.
+line @1 farewell : Keep the folded page dry going home.
+line @1 farewell.return : And allow for the turn after the last bell.
+line @1 react.news : Give me the words in their first order.
+line @1 react.news.new : A new figure for this reckoning.
+line @1 react.news.known : It fell on the earlier line as well.
+line @1 react.news.doubt : There's a difference I'd like explained before I add it in.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : We'll leave a longer pause after that loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Those words ring as clear as a feast-day peal.
+line @1 ask.how : Any quiet minutes you could keep for yourself today?
+line @1 answer.how : Steady. One troublesome total has finally come home.
+line @1 thank : You gave an honest figure room to appear. Thank you.
+line @1 deflect_thanks : The seed was right beneath my idle fingertip.
+line @1 sympathise : I'll leave the pause open. You can decide what goes in it.
+line @1 reassure : One small correction now can save a tiring afternoon.
+line @1 decline : I must reserve the rest of this page for a prior obligation.
+line @1 accept_decline : Then no entry will be necessary between us.
+line @1 preclose : I'd like to close one cover before another matter arrives.
+line @1 accept_preclose : Let the last quiet stretch be yours.
+line @5 greet [here.weather=rain] : Sheltered at this corner. Come in clear of the drip.
+line @2 farewell [here.time=night] : A quiet landing after the stairs, I hope.
+line @5 greet.return [pair.band=strangers] : Yes, that carried clearly across the page.
+line @2 thank [pair.band=friends] : I know the care behind that very small adjustment.
+line @6 greet [self.working=yes] : I'll mark the line with a seed and listen.
+scene three_seeds
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #three.capitalize# move across #paper# during a peal. | I keep #seed# round enough to turn beneath my fingertip.
+b : One seed a bell? | Doesn't it roll?
+a : One at each silence. The bells can announce themselves. | If it rolls before I touch it, I learn the desk is crooked.
+
+scene accounting
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the books explain what was put into the cellars and what came out. | I keep a clean adjustment space in the accounts at #self.workplace#.
+b : Both in one hand? | Expecting mistakes?
+a : The figures may come from several hands. The final addition has one responsibility. | Expecting a harvest to have an opinion of its own.
+
+scene cellar_measure
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : Two equal measures on paper ought to fill two equal vessels in the cellar. | I reckon the space left in a cask as carefully as the amount sold.
+b : And if they don't? | Is empty room worth money?
+a : Start with the vessels. Ink has a tolerably steady volume. | Sometimes the difference between a safe journey and a wet cart.
+
+scene straight_rule
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #ruler.capitalize# has a nick that catches the nib on a hurried stroke. | #inkblack.capitalize# is for facts ready to stand in a settled column.
+b : Would you replace it? | Where would you enter an estimate?
+a : I'd practise a steadier stroke first. Tools can be candid company. | Give them a little space and an entirely distinct heading.
+
+scene seed_proof
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I move one seed aside while an answer needs checking. | Three objects within reach can serve as a quick second memory.
+b : And if there are four answers? | Is your own poor?
+a : I have a perfectly good sheet and a sense of proportion. | No. It appreciates having a colleague who doesn't talk.
+
+scene estate_walls
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : An Estate room can put a succession of closed doors between private words and public feet. | From a higher Estate window I can watch the little feathered heads cocked towards the peal.
+b : Are doors enough? | Does it mark time?
+a : It takes somebody willing to shut a private book as well. | I keep my conclusions about a bird's account modest.
+
+scene married_words
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I make time for #self.spouse# when the last column is closed. | I'd like a letter for #self.spouse# to arrive quite clear of the day's receipts.
+b : What if the last column is long? | Do you sort all the paper?
+a : It is within my authority to put a boundary around my work. | Only far enough to keep one wolf's privacy out of another's account.
+
+scene friend_letter
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : A personal word to #self.friend# goes in #privatefold#. | I put the salutation on an outside sheet only if #self.friend# can expect the letter to pass through several desks.
+b : Even if it concerns something practical? | Isn't that slower?
+a : A matter can be useful and private in equal measure. | Less so than wandering through the wrong bundle.
+
+scene private_post
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I enjoy tracing how a complicated household routes a letter to one particular reader. | An unmarked inner fold lets private correspondence travel with an ordinary load.
+b : With a large seal? | What goes in yours?
+a : With a legible direction. A seal of that size can be seen from the wrong corridor too. | Words addressed to a particular reader. That is the full account.
+
+scene dry_fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : #fishpan.capitalize# need not be deep if the butter's hot. | I save #crispedge# for my last mouthful.
+b : How do you tell? | Does it stay crisp?
+a : The first edge put in gives its answer with conviction. | A little attention to the pace of supper pays a quiet dividend.
+
+scene roof_watch
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : #roofwing.capitalize# changes the whole line of a house for a second. | Little roof birds can go through half a courtship on the rim of a chimney.
+b : Do you know the bird? | You can follow their whole courtship?
+a : By its manners on landing. I don't require its private history. | I can see two heads leaning together. The interpretation is mine.
+
+scene bell_ear
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : #bellpause.capitalize# tells me when a festival peal has changed its pattern. | I listen for a late bell coming into line with the early ones.
+b : What about the high notes? | Do you mind its being late?
+a : Splendid interruptions. I think of the silence as my own instrument. | A delay can be precisely what a listener remembers.
+
+scene weather_window
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : #rainbeat.capitalize# sets the gutter answering under my favourite window. | I read a low cloud for the line that will cross the city first.
+b : Why favourite? | Are you usually right?
+a : I sit in comfort while the roof answers a tremendous noise. | Thunder is quite generous in correcting me.
+
+scene late_noise
+when topic=home self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : Night noise erases the last good pause after a day's accounting. | A loose shutter offers an argument in which both sides are the same board.
+b : Can you replace it? | Would you hear it out?
+a : With a little patience and a window pushed firmly home. | Once. Then I fetch a folded rag.
+
+scene gull_table
+when topic=food self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : #gullstep.capitalize# in the dust warns me to find #fishcloth#. | A gull has the least satisfactory claim of anybody who has approached my breakfast.
+b : Has a gull examined the menu? | How much does it claim?
+a : Gulls appear to work on standing instructions concerning fish. | The lot. No calculation to speak of.
+
+scene hard_page
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : If a lean week produces no return, write a visible zero squarely beside the date. | Through lean trading I check the smallest costs first.
+b : Isn't an empty square the same? | Surely the largest matter more?
+a : An empty square leaves doubt about whether the work was done. | The large ones already have everybody's attention.
+
+scene late_cart
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Delayed wagons can leave even the best-kept book open overnight. | I mark the paper when a cart's expected and leave the cash line alone.
+b : What do you enter? | Until delivery?
+a : A date beside the expected arrival. Hope has its own column. | Until there's cash. Those can be interestingly distinct events.
+
+scene ink_dinner
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I wash #inkblack# off before sitting down to dinner. | #closedbook.capitalize# is the nicest book to have beside a place set for supper.
+b : All of it? | None at all would do?
+a : Enough to distinguish my own fingers from a row of little receipts. | A close second.
+
+scene open_seat
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd offer a visiting clerk a seat where every label can be read. | Show a newcomer the public bell and the passage that keeps private hours.
+b : Even before an introduction? | Does everybody need both?
+a : One can sit down while one's name travels across a desk. | Ask the wolf living along the passage.
+
+scene quiet_opportunity
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like final authority over a set of figures I have spent my days making reliable. | I would accept complicated work before a splendid room.
+b : A grand title? | If you had to choose?
+a : A pen that needn't go on waiting for a less informed signature. | I'd hope a good piece of work could buy me a serviceable window afterwards.
+
+scene measure_time
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A seed moved at every pause makes a different music from a line drawn at every note. | I leave #margin# just wide enough for a correction made in calm company.
+b : Can anybody hear yours? | What about a correction made in haste?
+a : I can feel it under my thumb. That's enough audience. | It can do with a second page.
+
+scene plain_reply
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A brief answer saves time if the question was clear. | I'd rather lose a minute asking why two numbers do not agree than an afternoon praising the copy.
+b : And if it wasn't? | Has anybody asked for praise?
+a : Write a better question. The length of an answer seldom repairs the wrong enquiry. | A fair amount of stationery seems designed to imply the request.
+
+scene soft_ambition
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A house wins confidence by paying attention to an unremarkable sum. | I value a fair comparison between two proposed charges.
+b : Not by settling a great dispute? | What makes one fair?
+a : A great dispute has an audience. An ordinary payment shows a habit. | Giving both the same light before deciding whose opinion is important.
+
+scene open_cost
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Price the barrel, its carriage and the space it occupies separately. | A pleasingly round price is a great temptation to a tired desk.
+b : Why separate the space? | Would you use one?
+a : Because the floor remains occupied on a day the cart does not move. | If the arithmetic had independently arrived there.
+
+scene prayer_pause
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A quiet chapel offers a pause no bell need mark for me. | I've room for a prayer at the end of one sum and before the next.
+b : How do you use such a pause? | Doesn't one distract from the other?
+a : Give thanks without measuring how long it takes. | Difficulties start when I expect the figures to answer it.
+
+scene news_slip
+when topic=news world.news
+does tell.news / react.self / assess
+a : This slip is from #world.news_from#. #world.news#. | #world.news#. Enter its origin as #world.news_from#.
+b : Which heading would you give it? | In the main account?
+a : Word received. Facts established take a separate line. | In the margin until there's enough to put a number beside.
+
+scene restricted_leaf
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Loose talk wants entry in the household book without a named payer. | There's been a rustle of leaves better kept folded.
+b : Do you refuse the entry? | How many pages?
+a : I give private talk the privacy it was originally entitled to. | I don't count the contents of correspondence meant for another reader.
+
+scene count_season
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A season can change between an estimate and the date it becomes due. | I start a new season by cleaning each seed separately in a corner of cloth.
+b : Is that an excuse? | Do the sums improve?
+a : A reason to make the date very plain on the estimate. | My pleasure in beginning them does.
+
+story silent_peal [topic=festival|memories]
+  : On a busy feast morning I moved every seed for a perfectly timed series of strokes.
+  : At the end I looked out and saw a worker setting a row of pegs into wood.
+  b : Where were the bells?
+  : Waiting for their proper hour. I'd kept a fine account of a new railing.
+
+story fish_number [topic=food|memories]
+  : A drop of butter fell on a scrap column and made the reverse side transparent.
+  : Two rows of figures appeared to be one, with a most impressive total.
+  b : Did the total stand?
+  : Until I turned the sheet. An unusual case of supper materially improving the look of a weak account.
+
+story paper_rattle [topic=memories|weather]
+  : I heard a papery rattle above my desk all through a storm.
+  : Checked each slip before opening the shutter.
+  b : What was knocking?
+  : A curled beech leaf jammed beside the hinge. The house had acquired a tree's correspondence by mistake.
+
+story seed_wrong [topic=memories|work]
+  : I moved a seed from the margin to my palm while copying a difficult entry.
+  : Finishing the sum, I found four things under my fingers despite owning a diligent little set of three.
+  b : What was the fourth?
+  : A crumb of fried fish. I ate the discrepancy and checked the addition once more.
+
+story rooftop_sum [topic=pastimes|memories]
+  : Once I counted all the birds along two adjoining ridges.
+  : They changed roofs while I bent to make a mark, and I counted a remarkably sociable population.
+  b : Was any part reliable?
+  : The existence of two sound roofs. I've seldom published a smaller conclusion with such confidence.
+
+rule @clean_rule
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Leave the outside eighth of the sheet for adjustments.
+
+rule @night_key
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Close the working cover. Enough for tonight.
+
+rule @hold_storm
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Weight the loose edge near the window.
+
+rule @settle_seed
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Last little pause and the third seed stays.
+
+rule @roof_flash
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say There went a small wing across the ridge.
+
+rule @gull_cover
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say A cloth over that dish while the shadows circle.
+
+dlg @1 resident.hub : Speak plainly. I can put a seed beside the current figure.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember which line was open.
+dlg @3 resident.hub [pair.band=friends|family] : Draw up the chair inside the circle of lamplight.
+dlg @4 resident.hub [here.time=dawn] : Morning. The clean columns will allow us a moment.
+dlg @5 resident.hub [here.time=night] : Let the shutters do their job. We can speak quietly here.
+dlg @6 resident.hub [pair.disposition=hostile|wary] : We'll leave the open book quite properly between ourselves.
+dlg @7 resident.hub [self.working=yes] : I've reached a clean stopping point in the arithmetic.
+dlg @1 resident.job [self.job=scholar self.workplace] : At #self.workplace# I see that figures entering the household books can answer for themselves.
+dlg @2 resident.job [self.trade_words] : #self.trade_words.capitalize#. It rewards a steady hand.
+dlg @1 resident.news [world.news] : The originating entry names #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : A private word does not constitute a household transaction.
+dlg @1 resident.bye : Good walking. Leave yourself a quiet minute before entering the house.
+dlg @2 resident.bye [here.time=night] : May your shutters close without a second knock.
+graft @seeds resident.hub
+choice Why are there three seeds beside the ledger? -> peal_seed
+node peal_seed
+say A place marker, a count of pauses, an outstanding question. Sometimes all three go into the same piece of work. More often one does and two enjoy the rest.
+choice Which marks my question? -> peal_answer
+choice I shall listen for a pause. -> hub
+node peal_answer
+say None now. You've put it and I've answered. This is precisely the kind of business a seed can get through without leaving a large body of paperwork.
+choice A tidy exchange. -> hub
+choice I'll leave you your quiet desk. -> bye
+
+graft @letters resident.hub
+choice How can you keep private letters out of an account book? -> closed_leaf
+node closed_leaf
+say Don't lay the two down together. A private letter goes in its own cover on arrival. I might know its addressee very well and still have no business reading it.
+choice Even if there's a figure in the letter? -> closed_figure
+choice I'll leave that cover closed. -> hub
+node closed_figure
+say A figure intended for the household should reach the household in a letter saying so. A single number cannot confer an appointment on its reader.
+choice I see where the accounts end. -> hub
+choice Thank you for the private hearing. -> bye

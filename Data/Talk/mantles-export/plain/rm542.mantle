@@ -1,0 +1,384 @@
+# rm542, the gate song's gap (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm542
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_palle_plankmore
+written_by codex
+title the gate song's gap
+fits stage=adult|old
+prefers job=guard
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk cuts_a_notch_per_verse_and_leaves_one_beat_empty
+likes plum_tart whittling festival_bells thunder
+dislikes wet_floors salt_wind
+fears an_empty_beat_echoing_off_the_wharf
+hopes one_gate_turn_with_everyone_accounted_for
+topics work +0.6 pastimes +0.5 weather +0.4 family +0.3
+styles comfort=quiet gossip=blunt refuse=frank tease=dry
+marks oath saying
+persona #self.first# whittles a notch for each verse of a sea song and lets one empty beat pass.
+
+words
+oath! = Warp my whistle | Scour my plum stone
+saying! = A gate never learns the chorus | Tune the latch before the singer
+wind = salt in the teeth | a lip-stinging gust
+rest = an uncounted beat | a breath between verses
+post = the latch side | the fixed jamb
+peg = a tapered sliver | a pale wood peg
+knife = my folding blade | a narrow work knife
+grub = a plum wedge | a sticky piece of tart
+bell = a swinging brass throat | a hollow clapper
+tune = a short hauling air | a hummed deck tune
+rain = a cold faceful | a skin of wet
+floor = a slick flag | a dark wet board
+wharf = a tarry landing | a spar-lined quay
+line = a loose refrain | a wandering melody
+hush = one silent measure | a held breath
+bone = a plum stone | a little wooden bead
+work = the next turn by the hinge | another spell beside the latch
+
+any
+opinion @1 watch for 2 : A gate guard ought to hear a tired voice before a fine coat.
+opinion @1 houses against 1 : A fine shipping emblem won't bring a lost wolf ashore.
+opinion @1 city mixed 1 : The city takes wharf work readily enough. I'd like it to listen as readily.
+opinion @1 festivals for 1 : A festival bell seldom asks what tune I've got wrong.
+opinion @1 strangers for 1 : An unfamiliar voice deserves a hearing before it gets a label.
+opinion @1 church mixed 1 : I can stand in silence for one absent voice without borrowing a sermon.
+opinion @1 road mixed 1 : The last yard near a gate ought to drain as thoroughly as a whole mile of road.
+opinion @1 times against 1 [world.times=lean|hard] : Thin purses make an already cold wind cut closer.
+
+grown
+line @1 greet : Stand on the patch my boots haven't polished. | Welcome past the noisy hinge.
+line @1 greet.return : My welcome comes with a little wood dust.
+line @1 again.open : Back inside the same short tune.
+line @1 farewell : Keep yourself on sound planks.
+line @1 farewell.return : Mind your home step too.
+line @1 react.news : Sing out the account. Plain voice will do.
+line @1 react.news.new : A new verse, that one.
+line @1 react.news.known : I know the bones of that refrain.
+line @1 react.news.doubt : There's a missing beat in that telling.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'll leave quiet room beside such grief.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That one could stand a bell or two.
+line @1 ask.how : How's the ground treating your boots?
+line @1 answer.how : Standing level. That's worth mentioning here.
+line @1 sympathise : Stay by my dry shoulder for a bit.
+line @1 reassure : One bad footing needn't choose the whole walk.
+line @1 refuse : My next turn is spoken for already.
+line @1 accept_decline : I'll let that invitation fall quiet.
+line @1 preclose : I've a small matter still catching on its hinge.
+line @1 accept_preclose : Go on. The last beat's yours.
+line @1 ack : Aye, I heard the turn.
+line @2 greet [here.time=dawn] : A pale deck of sky over us.
+line @3 greet [here.time=night] : Come level with the lamplight.
+line @4 greet [pair.band=strangers] : There's a spot clear of shavings here.
+line @1 hail [pair.band=friends] : This way, past the complaining latch!
+line @2 greet.return [pair.band=friends] : A familiar voice clears my ear nicely.
+line @1 answer.how.busy [self.working=yes] : Both eyes at work. One ear available.
+line @1 thank : That favour landed square.
+line @1 deflect_thanks : A loose peg needed making anyway.
+line @1 give.advice : Try the board with an empty foot first.
+line @2 ask.how [pair.band=friends] : Any burr on the day worth shaving down?
+scene exchange1
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : I know the gate by its complaints. | I watch elbows when a load comes through.
+b : Which complaint matters? | Why elbows?
+a : The new squeak where yesterday there was none. | They show where the weight is about to swing.
+
+scene exchange2
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : My knife likes dry wood and no hurry. | A sharp peg wants a rounded head.
+b : What does it dislike? | For the mallet?
+a : Talking with its point still in the cut. | For the next paw that catches it.
+
+scene exchange3
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I save the plum end with the cracked pastry. | A tart on watch needs good wrapping.
+b : Why that bit? | Afraid it'll escape?
+a : The juice has already told me where it went. | Afraid the filling plans to join the register.
+
+scene exchange4
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder sings without knowing the words. | I like the pause after a hard peal.
+b : Does that improve it? | For the quiet?
+a : No incorrect verse to quarrel over. | For finding out what my tune was doing underneath.
+
+scene exchange5
+when topic=pastimes self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : Festival bells take liberties with my song. | I can count a bell by its echo.
+b : Do you object? | How many then?
+a : Ten bells against one hum. I know my odds. | One. Echoes needn't get full wages.
+
+scene exchange6
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind puts a crust on my lips. | The sea breeze has opinions about my carving.
+b : Do you still hum? | Does it scatter chips?
+a : With my mouth shut it improves the sound considerably. | Straight into my collar, with remarkable judgement.
+
+scene exchange7
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I set shavings away from wet boards. | A damp floor shows the last crossing clearly.
+b : Will they spoil? | Useful to you?
+a : They hide the slick patch much too well. | A dry floor would be a kinder witness.
+
+scene exchange8
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I save #self.spouse# the unbroken end of a tart. | I'd share my unfinished song with #self.spouse#.
+b : Which end do you take? | Even the gap?
+a : The end leaking fastest. It's a demanding office. | At home a gap can stay exactly its own length.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# the peg that fits at once. | My friend can hear when the tune thins out.
+b : Why the easy one? | What ought a friend do?
+a : A friend needn't mend my workmanship as well as the chair. | Keep walking beside the quiet.
+
+scene exchange10
+when topic=work self.job=guard self.workplace
+does tell.self / ask.detail / answer.detail
+a : At my post I test my footing before settling in. | My post has its own low note.
+b : Is the stone bad? | Wind through the gate?
+a : A fine stone and a wet boot have differences. | A latch that requires oil more than admiration.
+
+scene exchange11
+when topic=work self.boss
+does tell.self / ask.detail / answer.detail
+a : I give #self.boss# a short account of an ordinary shift. | My report starts with the crossing.
+b : What if it wasn't ordinary? | Where do you end?
+a : Then the short account takes longer to get right. | Where what I saw becomes what somebody reckons.
+
+scene exchange12
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a verse I hum without words. | Certain timbers call older voices to mind.
+b : Forgotten it? | Would you name them?
+a : I remember enough to let it pass quietly. | I would stand with them for a little while.
+
+scene exchange13
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The wharf has three sounds before any cargo moves. | Low streets give a tune peculiar company.
+b : Name them? | From where?
+a : Water under wood, wood on iron, and somebody clearing a throat. | Echoes along the stair under the roofs.
+
+scene exchange14
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The claim was #topic.subject# #topic.claim#. | A juicy whisper sticks like a tart filling.
+b : Do you believe it? | What cleans it?
+a : I've heard one voice sing the verse. | Asking which part anybody actually saw.
+
+scene exchange15
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When meals get smaller I cut my tart before sharing it. | A hard week doesn't alter a fine's weight on paper.
+b : More exact portions? | Where does it alter?
+a : An uncut tart tends to vanish by hopeful estimates. | In the pocket expected to find it.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I switch hands while carving a long groove. | My boots get air before I do.
+b : Can both hands cut? | Why first?
+a : One can hold the wood and give my good wrist a spell. | Bare feet on watch haven't been requested yet.
+
+scene exchange17
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I tell a newcomer which gate board rises. | A traveller can wait beside the post.
+b : Only that? | Do you ask why?
+a : It's enough to save an introduction to wet stone. | Only if the waiting turns into a need.
+
+scene exchange18
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I choose a stair with a rail that holds. | I inspect the landing before starting down.
+b : Over a shorter path? | In a fog too?
+a : Over a shorter fall, certainly. | Then I slow till I can.
+
+scene exchange19
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : An unfinished verse still reaches the Bright One. | I don't force words into a remembrance.
+b : How unfinished? | Why leave it bare?
+a : Right down to one breath between the tunes. | The loss hasn't asked to be explained.
+
+scene exchange20
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd fit a gate that closed with a soft note. | I imagine a wharf where every worker walks home.
+b : For the music? | What about the final boat?
+a : For the ears of a wolf halfway through a long watch. | The dream can wait till the boat's tied fast.
+
+scene exchange21
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Winter stiffens a latch into peculiar manners. | Summer tar sticks to my chips.
+b : What's the cure? | Still good for carving?
+a : Oil now. Fewer complaints later. | Good for sticking to my good sleeve.
+
+scene exchange22
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I cut little bars instead of pictures into a peg. | A curl of wood shows where I pushed too hard.
+b : For ornament? | Do you keep it?
+a : For the verses I keep forgetting on purpose. | Till my next cut has a little more sense.
+
+scene exchange23
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I buy wood already too short for a plank. | A fair pastry price includes an honest plum.
+b : Why pay for scraps? | Can you see it?
+a : A straight scrap saves a lot of arguing with a bent one. | The seep of juice gives me fair warning.
+
+scene exchange24
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain runs across the gate in narrow bands. | I hum low through a shower.
+b : Like the marks on your peg? | To hear yourself?
+a : Mine stay put and ask rather less of my boots. | So the rain can take the high part without a fight.
+
+scene exchange25
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : My carving spot has a low-sided box. | I leave the peg in the jamb overnight.
+b : For finished pieces? | What for?
+a : For shavings. My floor needn't resemble a combed sheep. | To hear whether the wood wants to swell by morning.
+
+scene exchange26
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : One wolf crossing is plenty to pay attention to. | I repeat an instruction if somebody blinks.
+b : What about a crowd? | Do you say it louder?
+a : Many sets of feet still cross one at a time. | Often I find slower works better.
+
+scene exchange27
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I hum the hauling part and leave the grand chorus out. | I tap a boot for the absent note.
+b : Too grand? | Which note?
+a : Too many voices required for my single throat. | The one I can feel better than sing.
+
+scene exchange28
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : My quietest hour comes with a small knife. | I let a day end without finishing every verse.
+b : Doing what? | Do they keep?
+a : Making square wood a little rounder than duty requires. | Till breakfast, with quite enough of their manners intact.
+
+story tale1 [topic=pastimes self.likes=whittling]
+  : I made a peg for a loose seat and cut a tiny wave across the head.
+  : It fitted perfectly. The wave vanished straight under the seat cover.
+  b : Did you move the carving?
+  : I sit more comfortably knowing the sea is underneath in quite a small way.
+
+story tale2 [topic=food self.likes=plum_tart]
+  : My tart leaked a good purple line along my song peg.
+  : When it dried I could see exactly which verse had taken longest to remember.
+  b : Was that your favourite?
+  : It was certainly the stickiest. The rest were content with ordinary notches.
+
+story tale3 [topic=work self.job=guard]
+  : I oiled a gate hinge after listening to its howl all morning.
+  : The gate fell so silent that I supplied the missing squeak myself on the next opening.
+  b : Did anybody notice?
+  : I did. I retired that particular performance after one hearing.
+
+story tale4 [topic=weather self.likes=thunder]
+  : A thunderclap landed just as I reached the high bit of a hauling song.
+  : For a moment my quiet voice seemed to have acquired an entire sky.
+  b : Did you try for the same result twice?
+  : No. Good accompaniment deserves a little independence.
+
+story tale5 [topic=memories]
+  : I used to sing straight through the space after the third verse.
+  : Once I left that space empty and heard the water underneath the boards.
+  b : Did you finish the song?
+  : Beyond the quiet bit, yes. I leave that water room now.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Grey light on the latch. | Morning, keep the hinge civil.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Last low note for the night. | Lantern's making islands of the boards.
+
+rule @call3
+when concept=bark self.job=guard self.working=yes
+does aside
+cooldown 8h
+say Steady past the gatepost. | Leave that swinging load room.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Glossy board ahead. | Tuck the song under the rain.
+
+rule @call5
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Evening has its own refrain. | That's the low light on the rail.
+
+rule @call6
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Dry boards at present. | Sky's clear enough for humming.
+
+dlg @1 resident.hub : There's a dry footing here for a word with me.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your step comes back on the beat.
+dlg @3 resident.hub [here.time=night] : Late already. My tune barely lifts my lip.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can hear a plain question without anybody crowding my boots.
+dlg @1 resident.job [self.job=guard self.workplace] : You'll find me at my post most days. A clear crossing keeps me reasonably happy.
+dlg @2 resident.job : I listen to the small complaints before they turn into a crash.
+dlg @1 resident.news [world.news] : What came over the boards was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody offered #topic.subject# #topic.claim#. No signature of mine goes beneath it yet.
+dlg @1 resident.bye : Find dry planks beyond my little bit of music.
+dlg @1 watch.hub [here.wanted=yes] : There's an outstanding entry for you, #here.fine# pennies. We can speak to the matter plainly.
+dlg @2 watch.hub [here.wanted=no on_watch=yes] : I'm holding the watch. Tell me what needs entry or attention.
+dlg @3 watch.hub [here.wanted=no on_watch=no] : Between shifts, with wood chips to prove it. What's your business?
+dlg @1 watch.crime [here.witnessed=0] : Give me the part your own eyes caught. Start wherever you can place your feet.
+dlg @1 watch.fine [here.wanted=yes] : The Watch has #here.fine# pennies down against your name.
+dlg @2 watch.fine [here.wanted=no] : Your entry's clear of a fine. An admirably short account.
+dlg @1 watch.bye : Safe over the sill and the boards beyond it.
+graft resident.hub
+choice Why does that song peg have a smooth place? -> silent_notch
+node silent_notch
+say I like one sound to come from the world around me. The water usually has something sensible to put there.
+free
+choice Does the song still keep time? -> silent_notch_again
+choice Goodbye. -> bye
+node silent_notch_again
+say My heel does that bit. Quiet can keep its place without borrowing somebody's words.
+choice I'll listen for the gap. -> hub
+choice Goodbye. -> bye
+
+graft watch.hub
+choice How can a squeak help a guard? [self.job=guard] -> first_squeak
+node first_squeak
+say I know a healthy hinge by ear. A changed sound buys me a moment to look before a loaded cart comes through.
+free
+choice Do you ever just oil it? -> first_squeak_again
+choice Goodbye. -> bye
+node first_squeak_again
+say Often. That is one of the more satisfactory endings a guard can put in a report.
+choice Back to the gate business. -> hub
+choice Goodbye. -> bye

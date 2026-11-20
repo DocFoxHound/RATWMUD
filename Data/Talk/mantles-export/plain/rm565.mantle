@@ -1,0 +1,258 @@
+# rm565, a letter under oiled seams (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm565
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_bertil_coalley
+written_by codex
+title a letter under oiled seams
+fits stage=adult|old
+prefers quarter=sump
+traits temper=short talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk checks_the_letter_under_the_hood_seam_before_stepping_out
+likes crisp_apples cards quiet_chapel warm_rain
+dislikes crowds rats
+fears having_to_give_a_sealed_answer_to_the_wrong_paw
+hopes to_walk_home_with_the_inner_fold_empty
+topics home +0.4 gossip +0.4 pastimes +0.3 weather +0.2
+styles comfort=brief gossip=close refuse=blunt tease=none
+marks oath saying
+persona #self.first# pinches the inner seam of an oilcloth hood to feel for a long-undelivered letter.
+
+words
+oath! = Grease and folded wax | By my dry inner seam
+saying! = A seal goes into the intended paw | There's room inside a hood for silence
+hood = my oiled hood | a dingy oilcloth hood
+seam = the inside seam | the double cloth fold
+wax = a cold seal of wax | the hard wax disc
+letter = the folded letter | my undelivered sheet
+apple = a sour-sweet apple | a hard crisp pippin
+card = a worn black card | a card with a bent corner
+step = the upper step | the top landing
+pew = the narrow end pew | a quiet chapel seat
+rain = a fine warm rain | the mild summer shower
+rat = a dockside rat | a sleek dark rat
+knot = the hood tie | a strip of dark braid
+light = a slit of open sky | the thin outside light
+
+any
+opinion @1 houses against 1 : An important crest takes up a lot of space on a parcel nobody is quite ready to receive.
+opinion @1 dole for 1 : Give a wolf a bowl and let the wolf eat without submitting an account of home.
+opinion @1 strangers mixed 1 : A new face gets a hearing. A stranger's outstretched paw doesn't get my letter on sight.
+opinion @1 festivals against 1 : I've lost enough room for my own elbows in the ordinary market without going back for a holiday squeeze.
+opinion @1 church for 1 : An empty pew asks no questions about a traveller's pockets.
+
+grown
+line @1 greet [pair.band=strangers] : Stand outside the drip from my hood. | Welcome. Keep the stair clear.
+line @2 greet [self.working=yes] : Between errands I've a brief welcome. | A word can fit here.
+line @3 greet [here.time=dawn] : Morning. Good light past the brim. | Come into view before greeting me.
+line @4 greet [here.time=dusk|night] : Dusk. I heard your step. | A late word in plain hearing.
+line @1 kin.open [pair.kin!=no] : Family gets a place under the eave. | Home voices carry inside the hood.
+line @1 again.open : Old fold. Fresh meeting. | There's another turn round together.
+line @1 greet.return : I know that step under the hood. | Back within plain sight.
+line @2 greet.return [pair.band=friends|family] : Back where we can deal plainly. | Welcome under the cleaner eave.
+line @3 greet.return [self.working=yes] : My errand can spare a little talk. | I'll stop short of the landing for you.
+line @4 greet.return [here.time=dusk|night] : I'm hearing you clearly through the dark. | Good evening beneath the sill.
+line @1 farewell : Keep the seal you were handed. | Good footing beyond my reach.
+line @1 farewell.return : I'll know the step next time. | Bring your own word back sound.
+line @2 farewell.return [here.time=night] : Dry pillow and no scratching overhead. | Keep out of the dark press.
+line @1 react.news : Whose paw carried that one? | Give me the unembroidered bit.
+line @1 react.news.new : First hearing under this hood. | Nobody's put that in my ear before.
+line @1 react.news.known : I've heard that sheet rustle already. | The same report's been up here once.
+line @1 react.news.doubt : I'd be slow to repeat a thing carried without its source. | A loud voice in a crowd doesn't give a rumour a seal.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put that weight down for a moment if you can. | I'll hear you without passing it on.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. That word arrived where it belonged. | One account I'm glad reached my ears.
+line @1 ask.how : Did the crowd give you enough room today? | What have you had to keep dry?
+line @1 answer.how : My hood's sound. That's a start. | I've kept one thing dry all day.
+line @1 decline : I'd keep my empty hand free for the errand I already hold. | My answer has to wait till this burden reaches its door.
+line @1 accept_decline : Fold the subject closed. Understood. | No need for another refusal.
+line @1 thank : That was honest help. I noticed. | You gave the right paw a chance.
+line @1 sympathise : Take the seat away from the gathering. | I can keep the outer end clear.
+line @1 reassure : You needn't answer every paw held out. | Wait for a voice you recognise.
+line @1 preclose : My dry fold deserves a look. | My hood wants the open air again.
+scene seam
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I pinch #seam# before stepping outside. When I feel #wax#, I know what I'm carrying.
+b : Couldn't you use a pocket? | Open the fold often?
+a : A pocket empties itself on a stair. The inside of a hood has fewer ambitions. | I'd wear the paper thin. I can feel the edge through the cloth.
+
+scene letter
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : #letter.capitalize# has a perfectly good destination and an exasperatingly absent welcome.
+b : A shut door? | Can somebody else take it?
+a : Sometimes that. Other times a civil voice offers to save me another journey. | Politeness scarcely answers for the paw actually entitled to a letter.
+
+scene hood
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : #hood.capitalize# goes out with me even when there's a generous stretch of sky.
+b : Too warm? | Expecting rain?
+a : At times. I can lay the brim back. I can't conjure oilcloth from open air. | A shower or an intrusive elbow. It turns both fairly well.
+
+scene cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I mark my place at cards by the bent corner on #card# when I'm putting the pack away.
+b : Only afterwards? | Why the bend?
+a : Strictly when putting it away. I don't expect a crooked card to do my playing for me. | It belongs on the outside of the pack. There it can't give away a suit.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I want #apple# to break clean under my teeth without running down my collar.
+b : Do you eat under that hood? | Why so particular?
+a : With the brim up. I don't owe the apple complete privacy. | I've paper to keep dry. A supper can be inconveniently generous with its juice.
+
+scene quiet
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : #pew.capitalize# is where I'd put a day of being asked what's in my hood.
+b : Still wearing it? | Would you pray about the letter?
+a : Laid across my knee once the place is quiet. My quiet thoughts travel past the unworn brim. | For a decent arrival. Nothing inside the fold is mine to recite.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : I take #rain# on the outside of the oilcloth and leave my ears in the open for a minute.
+b : Why only a minute? | Do you watch the drops?
+a : Water finds the neck cord eventually. A little enjoyment needn't become a whole evening spent drying. | They travel different ways down the same old crease. Nobody's appointment gets missed on that account.
+
+scene crowd
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A crowd can put a strange shoulder under my hood before I know a face is near.
+b : Would you push back? | Why go through at all?
+a : I'd move to open ground. I'm short of temper and clear on where to keep it. | Sometimes the only available door stands past a whole squareful of people.
+
+scene rats
+when topic=home self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A scratch near #step# puts my hand straight on the hanging hood.
+b : For the letter? | Did one get at it?
+a : For the cloth. If a rat gets interested in a greasy seam, the letter won't have much shelter after that. | A braid disappeared once. I don't need a second lesson in a rat's taste for useful things.
+
+scene learn
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : An order for delivery takes few words. Learning to get the thing there has taken a great many steps.
+b : What's the difference? | Forgotten an order?
+a : Sometimes a shut door, sometimes half a day of wet feet. The space between has to belong to somebody. | I'm careful with orders. It's the part after remembering that seems to take the most practice.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : At a card game I'd give #self.friend# the keeping of my seat.
+b : Not your letter? | What sort of game?
+a : That's somebody else's trust. I don't lend what wasn't given to me to share. | Small stakes, plain rules, chairs far enough apart that elbows can stay private.
+
+scene price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I count the cost of a fruit by how much has to go round a bruise.
+b : Why not buy the perfect one? | Skin and all?
+a : A Sump purse may have a different taste from a grand display. I'm after a sound bite. | I keep the clean skin. Waste is an expensive sort of fussiness.
+
+scene street
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : My place on #self.street# puts another flight between me and a crowded door.
+b : Do you mind the climb? | Is it quiet above?
+a : Less than I mind the press. On the landing a wolf can usually choose an elbow's worth of sky. | Quieter than the street. Far from empty. I know the household sounds from the scratching in the boards.
+
+scene game
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A rumour in a card game changes suit each time it passes a chair.
+b : How can you tell? | Do you quit the table?
+a : I remember which wolf saw something and which wolf only took another card before telling it. | If the gossip swells past my appetite for company. I can always take my hood and go.
+
+scene open
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A stranger can ask me for the way without giving an account of who sent for me.
+b : Where would you point? | What do you keep private?
+a : Depends which doorway the stranger wants. I listen to the whole question before moving a finger. | All business inside my seam. No part of an ordinary direction needs the contents.
+
+scene errand
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There is a little knack to waiting for a missing recipient without looking like part of the furniture.
+b : What do you do? | Does it work?
+a : Go outside and come back after another errand. I won't have the whole doorway mistake me for a peg. | The missing wolf keeps that answer. At least my feet keep their shape.
+
+scene seals
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I look at a wax mark as a promise about who may open a page.
+b : Does the Bright One care? | Never tempted?
+a : I'd think any promise kept quietly is worth something whether or not a chapel door is near. | A little. Which is why my thumb finds only the blank side of the fold.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed the letter had delivered itself and left me a card under the seam to say thanks.
+b : Did it sign its name? | Did you miss it?
+a : A smudge of wax and a drawing of an open door. A surprisingly civil piece of work from a folded sheet. | Briefly. Afterwards I discovered how light the hood could feel.
+
+story ratbraid [topic=memories]
+  : I hung my hood low once clear of a steady roof drip. In the morning the braid was a hand shorter and the floor had a trail of dark threads.
+  : A rat had made off with the long end, leaving a perfectly serviceable knot. I'd have admired the workmanship more if my own ears hadn't been getting wet.
+  b : Do you hang it higher?
+  : High enough for a short wolf to need the top step. I'd expect a rat to supply a ladder at that price.
+
+story paint [topic=pastimes]
+  : I was playing cards when a drop rolled off my hood onto a red spot. The mark ran a little, and every wolf at the table knew that card by sight.
+  : I put the whole hand down and offered to begin again with a dry pack. A small wet mark can spoil even an honest win.
+  b : Did you win the next one?
+  : Fairly lost it, which left a better taste than the other way round.
+
+story sealed [topic=work self.apprentice=yes]
+  : I carried a sealed sheet to a door and found the latch tied with a plain grey thread. I'd walked by the same shut place three times in one week.
+  : That thread was still exactly as I remembered it. I began attending to small things at a doorway before giving my knuckles the whole errand.
+  b : Did it ever move?
+  : The thread did. The letter has farther to travel before I can say the same of its burden.
+
+rule @aside1
+when concept=bark self.apprentice=yes
+does aside
+cooldown 6h
+say Hear the whole destination before moving. | Under the seam, wax edge outward.
+
+rule @aside2
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 7h
+say A bite that doesn't run into the collar. | One bruise off and a decent supper left.
+
+rule @aside3
+when concept=bark self.likes=cards
+does aside
+cooldown 8h
+say Crooked corner to the outside of the pack. | A dry table earns a fair game.
+
+rule @aside4
+when concept=bark here.time=night
+does aside
+cooldown 9h
+say Get the hood above the scratching. | There's still a hard seal in that fold.
+
+dlg @1 resident.hub : Speak here with the doorway and your face in plain sight. The business in my hood can wait its turn elsewhere.
+dlg @1 resident.news [world.news] : A report I can pass outside the sealed fold. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your face looks familiar clear of the crowd.
+dlg @3 resident.hub [here.time=dusk] : Fewer shoulders on the landing now. Your words will carry.
+dlg @1 resident.bye : Sound seal under a dry fold wherever you go.
+graft resident.hub
+choice How do you keep a sealed letter dry all day? -> hood_fold
+node hood_fold
+say Oilcloth doubled inward, with the wax where my thumb can find it. If you're wondering who the letter's for, the cloth keeps that dry as well.
+free
+choice What will you do when the fold is empty? -> hood_empty
+choice The outside of the cloth is enough for me. -> hub
+node hood_empty
+say Take the homeward stair without once pinching my seam. Maybe buy an apple and let the juice run down my paw for once.
+choice I hope the right door opens. -> hub
+choice Keep your hood sound. -> bye

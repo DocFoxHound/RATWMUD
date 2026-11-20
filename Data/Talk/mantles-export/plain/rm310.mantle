@@ -1,0 +1,400 @@
+# rm310, the open floor (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm310
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_gerrit_mudhand
+written_by codex
+title the open floor
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk saves_the_final_word_for_the_quietest_voice
+likes fried_fish singing sharp_knife summer_evenings
+dislikes drizzle bad_manners
+fears mistaking_a_pause_for_consent
+hopes to_hear_every_place_at_the_table
+topics work +0.4 friends +0.3 pastimes +0.2 lore +0.2
+styles comfort=warm gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# taps the rim of a cup once after the loudest voice has finished and waits to hear the quietest.
+
+words
+oath! = Hear the far chair first | By the breathing space
+saying! = Silence has a seat | A loud conclusion deserves a quiet neighbour
+rim = the lip of my cup | a thin porcelain rim
+tap = one soft knock | a single little tap
+pause = a speaking pause | the breath between votes
+table = the long table | a board full of elbows
+chair = a narrow chair | the least conspicuous seat
+blade = my keen knife | a fine little blade
+fish = a butter-browned fillet | a little fried fish
+skin = a crisp golden skin | a thin crackling skin
+voice = the lowest voice | a small steady voice
+cuff = my inked sleeve | my working cuff
+page = the speaking order | a note of turns
+song = a sustained low note | the quiet refrain
+tide = a smooth tide | a little incoming wave
+iron = an iron rim | a length of bell metal
+oil = a drop of lamp oil | the last clear oil
+glint = a yellow gleam | a glint of butter
+
+any
+opinion @1 houses for 1 : The Houses can bring four sides of a question to one table. It is our business to accommodate a fifth.
+opinion @1 watch for 1 : Footfalls by a guard I recognise let me turn over and get some sleep. I value that.
+opinion @1 strangers for 1 : A visitor remembers exactly which customs make no sense. I like to hear that before anyone explains them away.
+opinion @1 festivals for 1 : For one day the folk who hear my voice from the back can get near enough to interrupt.
+opinion @1 dole mixed 1 : I value a full bowl and I'd hear the folk who empty the pot before changing the service.
+opinion @1 times for 1 : My chair is comfortable and I eat well. I owe my own good fortune an honest accounting.
+opinion @1 sump against 1 [self.quarter=office|heights|commons] : Worries seem to climb our hill from the Sump. I'd rather hear what is amiss there while it is still small.
+opinion @1 merchants mixed 0 : A courteous bargain can bear close reading. A pointed silence after the price can be another matter.
+opinion @1 city for 1 : The stone we build on is much the same at either end of the slope. I like a town that reminds one of that daily.
+
+grown
+line @1 greet [pair.band=strangers] : You've been granted my full ear. | Welcome. There's a free chair on this side.
+line @2 greet [self.working=yes] : Come within a reasonable speaking distance. | I'm attending. Carry on in an easy voice.
+line @3 greet [here.time=dawn] : Morning. All the voices are still fresh. | Welcome to the first hearing of the day.
+line @4 greet [here.time=dusk|night] : Evening's a fine time for an unhurried account. | Come into the soft light.
+line @1 kin.open [pair.kin!=no] : Kin have an established right to interrupt. | Come near. Family are always within my hearing.
+line @1 again.open : A second appearance earns another welcome. | We meet again before the echo's died.
+line @1 greet.return : Hello. You needn't raise your voice. | I have heard the greeting and am glad of it.
+line @2 greet.return [pair.band=friends|family] : I know this voice and welcome the speaker. | Take the chair that faces me squarely.
+line @3 greet.return [self.working=yes] : My pen may be occupied but my ear is free. | There's an interval in the work. Speak easily.
+line @4 greet.return [here.time=dusk|night] : Evening. I could hear that voice by lamplight. | The hour admits a quieter greeting.
+line @1 farewell : Take the floor with you for a while. | A fair hearing wherever you go next.
+line @1 farewell.return : The chair awaits another visit. | I leave the next word to you.
+line @2 farewell.return [here.time=night] : Let lamplight follow your steps home. | A gentle close to your late business.
+line @1 react.news : I'll hear it at the strength you heard it. | Which words were quite distinct?
+line @1 react.news.new : Fresh business for these ears. | That alters the order of my thoughts.
+line @1 react.news.known : Yes. I've had one hearing already. | That voice travelled ahead of yours.
+line @1 react.news.doubt : I'd hear what comes after that impressive pause. | There's a quiet gap where a fact ought to sit.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Allow me to sit close and hold my tongue. | That deserves a kinder interval than words.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news has a beautiful speaking voice. | I'll gladly grant that a second hearing.
+line @1 ask.how : Has the day given you a hearing? | Was there a little space for your own concerns?
+line @1 answer.how : Well enough, and still listening. The morning ran long. | Still curious about the bit I haven't heard.
+line @1 decline : I'd sooner keep this interval free for another hearing. | I fear my attention is pledged elsewhere.
+line @1 accept_decline : That leaves your wishes perfectly clear. | I accept the answer at its first hearing.
+line @1 thank : A considered kindness. I heard it clearly. | I value the attention you gave that.
+line @1 sympathise : You may have my chair and my silence. | There's time to begin again when you're ready.
+line @1 reassure : A pause belongs to the speaker too. | Nothing requires you to hurry the next word.
+line @1 preclose : I should release the floor shortly. | I've another quiet matter awaiting me.
+line @1 accept_preclose : Your time's yours to reclaim. | I'll keep the remaining question in mind.
+line @1 deflect_thanks : That was time gladly lent. | You've discharged your thanks very handsomely.
+line @1 ack : Clearly heard. | Indeed so.
+line @1 give.advice : Wait for a breath before closing the matter. | Hear the whole table once before speaking twice.
+line @1 offer : I can stay to hear the last voice. | Shall I keep this chair beside you?
+line @1 praise : That distinction was worth waiting for. | You made the low note carry.
+scene rim
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I tap #rim# when the loudest voice yields.
+b : To end the hearing? | For attention?
+a : To give the quieter end a moment to gather courage. | Only mine. It keeps me from filling the silence myself.
+
+scene iron
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A hard question wants to be put plainly, and then left alone for a moment.
+b : Left alone? | Why plainly?
+a : Long enough for the answer to arrive without being pushed. | Dress a question up and folk answer the dressing.
+
+scene fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I lift the fish by its browned corner.
+b : To see the underside? | Before serving it?
+a : The skin should hold together like a seal on paper. | To let the last bead of butter fall back. Then it stays crisp.
+
+scene knife
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A keen blade spares me sawing my lunch in public.
+b : Bad for appearances? | Even the bread?
+a : Worse for the lunch. Courtesy ought to include the cook. | Especially a loaf with a crisp crown. It deserves one clean slice.
+
+scene voices
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I like a song whose lowest note is given a clear place.
+b : A solo? | Do you sing it yourself?
+a : A chorus. One quiet voice steadies a chorus wonderfully. | If there isn't another candidate. I prefer to draw one out.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A summer evening lets me take the long way past an open window.
+b : For the cool air? | Looking for company?
+a : For the unprepared supper talk that floats through the air. | A voice needn't be addressed to me to make the street feel companionable.
+
+scene drip
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle gives my cuffs a fine reason for complaint.
+b : Does it get through? | Worse than a downpour?
+a : Slowly enough that I have to concede its point by degrees. | A proper shower states its business at the door.
+
+scene ill
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : The worst interruption is the one dressed as agreement.
+b : What form does that take? | Why so bad?
+a : A long yes followed by the interrupter's entire business. | The first speaker's own words get used to close the mouth that spoke them.
+
+scene office
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : In the Office quarter I sometimes take my cup away from all the speaking doors.
+b : How far? | Can you find quiet?
+a : Just around a corner that nobody can address from a desk. | Till I hear my spoon settle on the saucer.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.friend# whether my listening face looks too much like my waiting face.
+b : Is there a difference? | Why ask a friend?
+a : A listening face still has somewhere to go. A waiting one has arrived. | I need an answer that won't be improved for courtesy.
+
+scene visitor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I relish a newcomer's first ridiculous question.
+b : Would you laugh? | Why ridiculous?
+a : At our custom, possibly. A visitor generally has excellent reason to ask. | What seems quite ordinary from within often looks beautifully peculiar outside.
+
+scene learn
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : When I show a task I leave one part untold till the learner asks.
+b : Testing the learner? | Which part?
+a : Testing whether I've made it easy enough to ask. | Something visible, never anything dangerous or hidden.
+
+scene market
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'll pay a fair price for the smaller fish if the skin is unbroken.
+b : Why the smaller? | What persuades you?
+a : It gives me two crisp edges instead of one great soft middle. | Let me turn the fish. I can see enough without a sales speech.
+
+scene feast
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A feast table is a splendid place to study how talk travels.
+b : Around the bowls? | Where does it stop?
+a : Along them. Passing a bowl grants a perfect little turn to speak. | At the mouth most occupied with pudding. I approve of that interruption.
+
+scene music
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A bird never waits to be granted the floor.
+b : Do you mind? | Even during a speech?
+a : I admire an interruption that small and perfectly pitched. | I'd rather pause with the listeners than compete with a throat that size.
+
+scene sleep
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : An unfinished question keeps me longer awake than an angry answer.
+b : Why longer? | Can you put it down?
+a : Anger has already found a voice. A half question's still looking. | I write just enough on paper that morning can resume it.
+
+scene secret
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A confidence shouldn't become a performance just because I have an audience.
+b : Not even unnamed? | Would you say that to an audience?
+a : Sometimes the voice in which it's told gives the name away. | I'd say the interval was free for another question.
+
+scene light
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Early light reaches a polished table like an uninvited witness.
+b : Can you see your papers? | Do you shut it out?
+a : Often too well. Every little greasy paw mark makes a statement. | A slight turn of the chair settles matters courteously.
+
+scene late
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At dusk I turn my listening side to the window.
+b : Do you hear more? | Is that the better side?
+a : Fewer formal words and more farewells. That's a pleasant change. | At that hour both ears prefer an open sky.
+
+scene hotmeal
+when topic=home self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can afford a second helping that I don't particularly want.
+b : Would you leave it? | Does it trouble you?
+a : I'd ask where the first helping's still wanted elsewhere. | It ought to. A comfortable supper can make the world sound too contented.
+
+scene council
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I watch which chairs turn to face which speaker.
+b : Can you read a decision that way? | Would you count the chairs?
+a : I can read whose answer hasn't been sought yet. That interests me more. | Only as an invitation to ask, never as a vote.
+
+scene place
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Ridgemere can incline an argument without anybody opening a mouth.
+b : By the slope? | How?
+a : Climbing to make a request has already spent some of your breath. | A downhill invitation gives the speaker an unfairly easy start.
+
+scene waves
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A good voice rises like water against a low wall.
+b : Does it break? | What makes it good?
+a : If driven too hard. Leave an interval and the sense stays clear. | Enough strength to reach the ear without carrying the listener off.
+
+scene pair
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : Two wolves can disagree more readily walking in one direction.
+b : Less glaring across a desk? | Would you settle a quarrel on foot?
+a : Precisely. A moment looking at the street needn't be mistaken for surrender. | At least as far as finding what we disagree about.
+
+scene supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I keep a pinch of salt till the fish is actually served.
+b : For the skin? | Can't the cook do that?
+a : A small pinch on the crisp side. Butter takes care of the rest. | Indeed. Having a say in my own plate is a harmless little vanity.
+
+scene bells
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A chapel lets a half-spoken thought occupy a very large space.
+b : Do you pray aloud? | Does that help?
+a : The Bright One needn't hear my public voice on every occasion. | It keeps me aware how little voice the thought requires.
+
+scene citytimes
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In lean times I'd sooner hear the size of a loaf than the weight of a speech.
+b : What question would you start with? | From the baker?
+a : How much was left after the youngest mouth had eaten. | From somebody who divided the loaf at the table.
+
+scene load
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon brings a long tail of unanswered questions.
+b : Who should speak first? | Blame at the end?
+a : The wolf whose supper depended on the load. The others can wait a minute. | If it needs a chair at all. A good portion of delay has no ears.
+
+scene placecard
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt that every chair at the table asked for permission to speak.
+b : Even the empty ones? | What did your chair say?
+a : Particularly those. They complained their side hadn't been heard. | It asked that I stand for a little while.
+
+scene mute
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A whispered chorus is good practice for a crowded room.
+b : Can it carry? | For the singers?
+a : Once everybody has stopped trying to outsing the neighbour. | For the listeners especially. Leaning in is half the performance.
+
+story saucerrim [topic=memories]
+  : I tapped a cup with a spoon during a particularly animated meal. The cup answered beautifully and my spoon disappeared into the soup.
+  : The entire table was quiet for one collective breath. It was precisely the hearing I'd hoped to obtain.
+  b : Did you use it for a speech?
+  : I asked for a dry spoon. It seemed the most honest use for so attentively granted a silence.
+
+story butter [topic=food]
+  : I once offered the prettiest piece of fried fish to an empty chair. I'd been deep in talk and the guest had moved down to hear better.
+  : My arm extended the plate very gracefully to nobody. Then I saw a good many interested faces waiting for me to complete the gesture.
+  b : Did you move the chair?
+  : I followed the guest. The plate of fish obtained a remarkably civil passage along the table.
+
+story pupil [topic=work self.master=yes]
+  : Demonstrating a neat hand once, I managed to set my pen straight into a fold of my sleeve. I drew a very distinct line across my wrist.
+  : I took a breath to explain what ought to have happened, then thought better of it and turned my arm so it could be seen properly.
+  b : A lesson in sleeves?
+  : In the value of showing the mistake. A perfectly clean page wouldn't have held anyone's attention so well.
+
+story refrain [topic=pastimes]
+  : I wrote a song with a difficult pause in the middle. In practice I counted the pause aloud and brought everybody back in quite smoothly.
+  : At the first proper singing I kept my count to myself. Six confident voices entered at six distinct moments.
+  b : Did you abandon the pause?
+  : I gave the counting its own little melody. A practical difficulty turned out to have a very agreeable voice.
+
+story beach [topic=memories]
+  : I picked up a black stone by the water once. It rang against my knife with such a note that I carried it about for weeks trying to hear that sound again.
+  : On a dry table the stone merely clicked. I could have sworn the ring was still inside it somewhere.
+  b : Did you revisit the shore?
+  : Yes. It was the hollow under the shore board that had given it a voice. I left the stone with its instrument.
+
+rule @aside1
+when concept=bark self.working=yes self.job=official
+does aside
+cooldown 6h
+say One breath left for the quiet chair. | Close no question over a lifted paw.
+
+rule @aside2
+when concept=bark self.master=yes
+does aside
+cooldown 7h
+say Leave the learner space to interrupt. | A patient ear before the second demonstration.
+
+rule @aside3
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Give the low voice its own full note. | Silence before the new refrain.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say A moving chair and an unmoving cup. | Plenty of evening for an unhurried word.
+
+rule @aside5
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 10h
+say Clean edge, straight slice, no sawing. | Lay the blade away from the talking elbow.
+
+rule @aside6
+when concept=bark here.weather=rain
+does aside
+cooldown 11h
+say Cuffs in from the dripping sill. | A decisive shower can state its business.
+
+dlg @1 resident.hub : Come to the part of the table where you can be heard without making a speech. I'm listening.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you needn't wait on any formal recognition here.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Courtesy's enough to begin on. We'll manage the rest as we go.
+dlg @4 resident.hub [here.time=dawn] : There's a whole morning between this greeting and any need to hurry it.
+dlg @5 resident.hub [here.time=night] : There's still a little lamp oil and ample listening time.
+dlg @6 resident.hub [self.master=yes] : I learn a surprising amount from the first question. Give me yours in full.
+dlg @1 resident.job [self.job=official self.workplace] : I give each speaker a hearing at #self.workplace#. In particular I watch the row furthest from my seat.
+dlg @2 resident.job [self.job=official self.trade_words] : #self.trade_words.capitalize#. A noisy matter sometimes needs a quiet chair to settle it.
+dlg @3 resident.job : I try to leave every pair of ears something worth having come to hear.
+dlg @1 resident.news [world.news] : This reached the table in these words. #world.news#
+dlg @1 resident.bye : May somebody grant you the same interval when you reach your next engagement.
+dlg @2 resident.bye [here.time=night] : I release you to the quietest hour. Enjoy the way home.
+dlg @7 resident.hub [pair.band=friends|family] : There's no speaking order among friends. Choose your moment.
+graft @floor resident.hub
+choice Why tap your cup after the room goes quiet? -> tap_floor
+node tap_floor
+say That tap is a little guard against my own voice. I can compose another question very quickly, and that is occasionally a very considerable fault.
+free
+choice Who should get the next word? -> tap_quiet
+choice I'll listen for the interval. -> hub
+node tap_quiet
+say Look round the table for a paw half lifted, or a breath taken and then held. There's often a better question already on its way.
+choice I'll watch the far chairs. -> hub
+choice I'll leave you a little silence. -> bye
+
+graft @fish resident.hub
+choice How do you keep fish skin crisp while people are talking? -> fish_talk
+node fish_talk
+say Put the fish on the table skin uppermost and make your own point briefly. A speech ill timed can spoil more than an appetite.
+free
+choice And if somebody else is talking? -> fish_speak
+choice I can manage the plate at least. -> hub
+node fish_speak
+say Listen and eat. I can grant a thorough hearing while attending to a perfectly respectable piece of fried fish.
+choice That sounds a fair division. -> hub
+choice I release you to supper. -> bye

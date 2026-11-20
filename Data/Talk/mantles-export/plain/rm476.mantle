@@ -1,0 +1,374 @@
+# rm476, the tender for a city (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm476
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_ambrose_greatly
+written_by codex
+title the tender for a city
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk turns_a_plain_brick_on_the_account_table
+likes mutton_stew riddles quiet_chapel thunder
+dislikes flies cold_tea
+fears a_city_sold_brick_by_brick
+hopes an_heir_who_can_read_a_street
+topics work +0.7 prices +0.5 family +0.4 pastimes +0.3
+styles comfort=measured gossip=plain refuse=courteous tease=none
+marks oath saying
+persona #self.first# prices a street by the door that still opens there after rain, keeps an unmarked brick on the account table, and can wait through a very long refusal.
+
+words
+oath! = Flake my best facing brick | Lime in my tea
+saying! = Count the street standing | A promise must bear weight
+brickend = a plain brick end | a dull red face
+limewash = a wash of lime | a coat of white lime
+bluepaper = a blue account sheet | a stiff blue docket
+redpaper = a red account sheet | a thin red docket
+doorjamb = a fitted jamb | a sound upright
+archrise = the rise of an arch | the shallow brick curve
+teaheat = a curl of steam | a faint stir of warmth
+muttonbone = a clean mutton bone | a heavy white joint
+crockrim = a rough crock rim | a glazed lip
+penledge = a narrow pen ledge | a groove for a pen
+gritcloth = a stiff dust cloth | a rag flecked with grit
+weighbrick = a table brick | a plain weight of clay
+oldstamp = a worn yard stamp | a faint maker's mark
+shortsum = an exact little total | a modest sum in ink
+
+grown
+opinion @1 houses for 2 : A House has credit for the roofs still standing under its name. In time it must also answer for the roofs which fall.
+opinion @1 dole against 1 : I would know the cost of the second helping before I promise the first. The kitchen may dislike the question. The grain merchant asks it.
+opinion @1 city for 2 : A fortune spread across this desk can be carried off in sacks. A city has the advantage of requiring a good many carts.
+opinion @1 watch for 1 : I can price a well-hung door. The peace that permits a neighbour to open it after dark is an expense I gladly support.
+opinion @1 merchants mixed 1 : A merchant who knows the weight of the goods can spare me much of the elegant persuasion.
+opinion @1 newcomers mixed 1 : Bring me the evidence of a craft. A place of birth has never yet kept a bead of rain from my ceiling.
+opinion @1 church mixed 1 : I go where a question can be put without six clerks immediately laying down their views upon it.
+opinion @1 road for 1 : Every wagon bringing sound clay adds a little to the value of a well-kept road. I should like the reverse entry made just as plainly.
+line @1 greet : Your business may take as much time as its substance requires.
+line @2 greet [pair.band=strangers] : Make yourself known in whatever order suits the matter.
+line @1 greet.return : I retain the particulars. Continue from the last sound figure.
+line @3 greet [here.time=dusk] : There is enough daylight left to distinguish pencil from ink.
+line @1 farewell : I trust the road home will meet its obligations.
+line @1 farewell.return : We part with the account clearly understood, I hope.
+line @1 ask.how : Has the day proved equal to what you invested in it?
+line @1 answer.how : Quite steady. The weight on the table has scarcely shifted.
+line @1 thank : You supplied the missing quantity without inflating its importance.
+line @1 decline : My answer can be delivered courteously. It remains a refusal.
+line @1 accept_decline : Very well. You have priced your own participation.
+line @1 deflect_thanks : I would regard a clear understanding as sufficient return.
+line @1 sympathise : Sit where the glass will keep its warmth a little longer.
+line @1 reassure : There is time yet to distinguish a large difficulty from two small ones.
+line @1 react.news : I am listening for the part which alters a real obligation.
+line @1 react.news.new : That will have to enter on a fresh docket.
+line @1 react.news.known : My earlier entry already accommodates that piece.
+line @1 react.news.doubt : I would hesitate to put the weight of a brick on that conclusion.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I can welcome a return that costs nobody an additional penny.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That loss deserves the dignity of a full and unhurried hearing.
+line @1 ack : The quantity and its description agree.
+line @1 again.open : We may leave the first page turned over.
+line @1 preclose : I think the remaining business will keep until another sitting.
+line @1 accept_preclose : Certainly. The pen can rest on its ledge.
+line @2 greet.return [pair.band=friends|family] : Come sit where I usually take tea.
+line @2 farewell [here.time=night] : May you find the lamp still answering to its wick.
+line @1 tell.self : I inspect the thing that is offered before considering what I wish to obtain.
+line @2 reassure [pair.band=friends|family] : Bring the smallest part to me first if the whole troubles you.
+line @2 react.news [here.time=dawn] : Even this early I have a blank docket within reach.
+line @2 decline [pair.disposition=hostile] : Increased volume will not purchase a different figure from me.
+line @4 greet [here.time=night] : A late matter. Let us give it the courtesy of a chair.
+scene work_1
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# there is a common brick on the table. I value it more than a decorative weight.
+b : Is it a particularly good brick? | Does it hold an account down?
+a : Entirely ordinary. The difficulty in business is often remembering what the ordinary article is like. | Yes. A good many splendid undertakings have rested quite literally beneath an example of the thing proposed.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Suppose you have bought every brick in a street. What have you actually acquired?
+b : A street, surely? | A great deal of clay?
+a : Not necessarily one sound roof. There are the masons, the mortar and the willingness of someone to live there. | Quite. The clay alone will give you very little protection from a late autumn shower.
+
+scene family_1
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : A city is a more exacting inheritance than a strongbox. I'd give #self.child# opportunities to study the difference.
+b : Where would you begin? | Would you leave the strongbox empty?
+a : At a door which still shuts squarely after a wet season. Someone paid for the fitting to be done properly. | Certainly not. It is useful to own the means of repairing the thing one chiefly means to keep.
+
+scene family_2
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : For a private meal with #self.spouse#, I put the last docket face down.
+b : Why not put the dockets away? | Does turning it over really work?
+a : Because the meal is ready and I have learned that this is an excellent moment to stop arranging paper. | It prevents my eyes from returning to a figure. The rest must be managed by ordinary good manners.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : The proper return on a long-cooked joint is a stew in which the meat lifts clean.
+b : Fancy herbs as well? | Would you leave the bone in?
+a : If the herbs earn the space. Steam from a plain bowl has presented a better case than many an elaborate dinner. | For the cooking. At table I'd like my spoon to meet with fewer obstacles than my clerks do.
+
+scene pastimes_1
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I have a riddle. What grows by being distributed and shrinks when shut up?
+b : Would you accept credit? | Would goodwill do?
+a : Provided it was distributed to borrowers capable of meeting the agreed dates. I had a useful idea in mind. | A very respectable second answer. My own was knowledge of a craft. I'd accept either if the explanation were sound.
+
+scene weather_1
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Under a sound roof I like a thunderclap long enough to set the little panes humming.
+b : Doesn't that mean the frames are loose? | Would you open a window?
+a : Sometimes. I have paid for useful information delivered on considerably less imposing terms. | Only to smell the wet brick afterwards. The sound quite adequately lets itself in.
+
+scene faith_1
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : In an empty chapel I sometimes bring a difficulty into the presence of the Bright One, then wait.
+b : What answer do you expect? | Do you stay long?
+a : I do not require a voice. The question is usually better put by the time I leave. | Until I know what I have actually asked. It often proves shorter than the speech I brought in.
+
+scene work_2
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words# requires remembering who promised what even after the visitor has forgotten coming through the door.
+b : Do you forgive forgetfulness? | Would you ever change the terms?
+a : I can accept an explanation courteously. The promised sum has a remarkably independent existence. | Before the agreement, certainly. Afterwards the other party should expect me to remember the terms agreed.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend may sit near the warm pot. The account itself remains well beyond the tea things.
+b : Would you lend to a friend? | Is that an unkind arrangement?
+a : I would state the terms so plainly that friendship need have no influence on the understanding. | I have seen muddled kindness require two apologies where clarity needed none.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn #weighbrick# over when an assertion begins to sound too much like its own proof.
+b : What does the underside tell you? | Does the speaker take offence?
+a : That there is always another surface available for inspection. It has not failed me in any mechanical respect. | I give no opinion of the assertion until the visitor has finished. There is rarely any complaint about the brick itself.
+
+scene animals_1
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly upon a docket can make a remarkably persuasive extra mark beside a figure.
+b : How do you distinguish the mark? | Could a fly alter a big account?
+a : I wait for it to exercise its independent will. Real figures tend to require considerably more encouragement. | Only briefly. I have never accepted an amendment solely on the strength of its wings.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I'd like the homeward door to swing readily enough that one hand may carry a full bowl.
+b : Isn't that an unusually practical wish? | What if it drags?
+a : An estate is made habitable by practical wishes which somebody eventually sees carried out. | Have the fit examined before rasping the bottom. A door can report a fault in the house that contains it.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A hard season gives every postponed repair a much louder voice.
+b : Which one would you hear first? | Might all the repairs wait?
+a : The roof above the stores. Wet grain will turn a small delay into an enormously expensive decision. | Only on a blue sheet of estimates. The wind and damp have no obligation to read it.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I prefer walking a street under discussion before considering its worth.
+b : Apart from the houses, what merits inspection? | Would you take a clerk?
+a : Where a full cart can turn. An excellent warehouse with an impossible approach is a less excellent investment. | Someone who will notice what my eye takes for granted would be worth the shoe leather.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once set a fine red brick by a plain grey one and invited a visitor to inspect the two.
+b : Did the dearer brick win? | Was the red a better colour?
+a : The dearer one rang dull where a corner had crumbled. We bought the unremarkable grey. | For a drawing, perhaps. The wall itself was to disappear behind a wash of lime.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : The tea begins its life hot and my attention can be an unprofitable delay.
+b : Do you object to cold tea? | Why not drink before work?
+a : Most decidedly. A lukewarm cup has lost the recommendation for which I first agreed to it. | An excellent proposal that has survived many repetitions and an astonishing number of exceptions.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Lime on a brick turns a different white after a shower.
+b : Is that important to the price? | Can you match the old colour?
+a : To the final appearance, certainly. I'd examine a material in the weather it will actually occupy. | I'd compare it after rain and again when both surfaces have dried. A flattering first impression can cost a full wall.
+
+scene festival_1
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A holiday street makes the difference between building houses and building a city rather plain.
+b : Is it the music? | What do you count at a festival?
+a : It is the habit of coming out of individual doors to hear the same music together. | The doors that open without anybody having to be asked twice.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I take tea across the room so I must rise to reach the kettle.
+b : Is that a remedy? | Why put it beyond reach?
+a : An arrangement. It encourages me to stand before an entire afternoon has vanished beneath my sleeve. | Sound legs are a considerable asset to neglect over a very minor convenience.
+
+scene news_1
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : The information set before me is #world.news#.
+b : Does it change your figures? | Can you confirm it personally?
+a : I would locate the obligation affected before altering the first total. | I can distinguish accurately between what comes to my desk and what falls under my own eye.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The report in circulation has #topic.subject# #topic.claim#.
+b : Do you give the report credit? | Would it affect your price?
+a : A report is an applicant for credit. It has yet to present its references. | Only when substantiated. The account I'm entrusted with is a little too heavy to balance on an untested tale.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer with a sound sample has already made a considerably better introduction than a speaker with three empty recommendations.
+b : What do you count as a sample? | Do you always grant a hearing?
+a : Whatever shows how the work stands up after leaving the maker's hands. | I'll examine the work within a reasonable hour. Welcome needn't involve favourable terms.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can stand at prayer without estimating the material if I attend to the quiet.
+b : Is it difficult to stop reckoning? | How long can you keep it up?
+a : At first. Somebody built that floor soundly enough for me to be free to ignore it. | Long enough to notice when another set of steps arrives. Then I give the visitor the privacy I wanted myself.
+
+scene family_3
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : The heir to a house of business should know how a bad promise feels from the waiting end.
+b : Wouldn't that be uncomfortable? | What would you have an heir do?
+a : I should expect so. Comfort is a poor instructor in the price of inconvenience. | Wait for an ordinary repair, and make the plain enquiry any other customer would have to make.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A loan too useful to decline ought to be entirely intelligible before the ink dries.
+b : Even the last small clause? | What if a borrower dislikes the terms?
+a : Especially the last one. Ink costs so little that obscurity must generally be considered a choice. | There will be no unkind words from me. The offer will remain exactly as attractive or unattractive as it was.
+
+scene work_3
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I keep #bluepaper# for an estimate and #redpaper# for an undertaking.
+b : Why two colours? | Which one would you sign?
+a : A wish and a promise look disturbingly alike in ordinary ink. | The undertaking, after reading it. A signature on an estimate should acknowledge only who made the estimate.
+
+scene day_2
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : At night I lay the pen in its little groove with the nib facing away from my papers.
+b : Why that direction? | Wouldn't a cloth serve?
+a : An accidental black stroke can survive a night of perfectly blameless intentions. | It would still be my duty to remember on which side of the cloth the nib lay.
+
+story falseweight [topic=work]
+  : I set a brick on two dockets to keep a breeze off the table. One corner of the brick had a little wet lime on it.
+  : The top sheet came up with the brick as I raised it. I thought the second sheet missing.
+  b : Had the breeze caught it?
+  : It lay on the table all along. My first count had included the object in my hand as well as the impression it left.
+
+story buriedspoon [topic=food]
+  : A bowl of mutton came with the spoon hidden completely beneath the meat. I sent for a second spoon before I stirred.
+  : Two handles rose together and struck the rim quite distinctly.
+  b : Did you send the second one away?
+  : I used it to serve the next portion. A duplication paid for need not remain an error forever.
+
+story thunderlime [topic=weather]
+  : I brought two samples of lime indoors before a storm. Both had looked equally white in the yard.
+  : When a flash lit the room one showed a fine warm blush.
+  b : Which went into the wall?
+  : I waited for morning and had them both put outside again. A flash is an impressive witness with a very short memory.
+
+story archbook [topic=memories]
+  : I used a closed ledger and two bricks to demonstrate the principle of an arch to a young visitor.
+  : The ledger lay perfectly flat and bore an equally flat expression of contempt from my pupil.
+  b : Where was the arch?
+  : Nowhere at all. We found the nearest real one. A courteous correction saved an expensive course of instruction in bridges.
+
+story coldseal [topic=day]
+  : I pressed my seal on a letter and left the tea on the side until the wax had set.
+  : I admired the impression, folded the letter and encountered an entirely cold cup.
+  b : Would you reverse the order next time?
+  : I did. Hot tea first, warm wax second. No creditor has yet detected the change in my methods.
+
+rule @brick
+when concept=bark
+does aside
+cooldown 8h
+say Turn the facing side towards the natural light. | A plain brick will do for this calculation.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say The tea is still offering favourable terms. | Attend to the steam before opening another docket.
+
+rule @riddle
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say A second sound answer earns a second hearing. | A fine question ought to bear some weight.
+
+rule @storm
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say There's a figure the glass understands quite well. | Listen to the return from the far roof.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Pen on its ledge and figures under cover. | An entry made in darkness still requires daylight examination.
+
+rule @stew
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say Let the meat come cleanly from the joint. | A stout bowl is the right partner for a long-cooked supper.
+
+dlg @1 resident.hub : Set your proposal down in as few pieces as it will reasonably bear.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I recall the name accurately. The floor is yours.
+dlg @1 resident.job [self.job=official] : My table at #self.workplace# receives estimates and sends back obligations. It is important to distinguish the two.
+dlg @1 resident.quirk : An assertion can wait while I put my table brick on its other face.
+dlg @1 resident.how [tired=yes] : I have spent rather too long in the company of figures today.
+dlg @1 resident.news [world.news] : The account supplied to my table reads as follows. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody has put about that #topic.subject# #topic.claim#. I have assigned the statement no particular credit.
+dlg @3 resident.hub [pair.disposition=wary] : I shall attend to the proposal itself before deciding whether we have business together.
+dlg @4 resident.hub [here.time=dawn] : Morning light actually brings out the grain of this paper.
+dlg @1 resident.bye : I believe each of us now understands the terms of the other.
+dlg @2 resident.bye [here.time=dusk] : The evening should be yours without a further demand from this table.
+dlg @5 resident.hub [pair.band=friends|family] : There is both a place for business and a place for tea. Choose the one your visit requires.
+graft resident.hub
+choice What is a whole street worth? -> brick_street
+node brick_street
+say Let me begin with a question of my own. Can a laden cart enter and turn without a load having to go into the mud? That affects every house on it.
+choice And once the cart has come through? -> brick_door
+choice I'll inspect the street in wet weather. -> hub
+node brick_door
+say Inspect the thresholds after rain. I never thought much of a valuation which treated a flooded downstairs as merely an interesting foundation.
+choice I'll inspect the street in wet weather. -> hub
+
+graft resident.job
+choice Why have you left a common brick on the account table? -> brick_account
+node brick_account
+say A sheet can show me what a thousand are expected to cost. My hand tells me what one of them weighs. Both observations have a place here.
+choice Wouldn't a particularly fine sample do better? -> brick_common
+choice I see the value of the ordinary one. -> job
+node brick_common
+say A fine sample invites a fine expectation. Most of the wall will be ordinary work. I'd see what I am to receive a thousand times.
+choice I see the value of the ordinary one. -> job

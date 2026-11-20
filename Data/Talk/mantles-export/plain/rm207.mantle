@@ -1,0 +1,277 @@
+# rm207, the spare place (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm207
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_magda_rainmarsh
+written_by codex
+title the spare place
+fits stage=young|adolescent|adult|old
+prefers warmth=warm temper=short
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk leaves_a_gap_in_every_circle_for_the_last_arrival
+likes mutton_stew singing tidy_house warm_rain
+dislikes rats smoke
+fears a_voice_left_out
+hopes a_song_anyone_can_join
+topics friends +0.6 food +0.3 festival +0.4 smalltalk +0.2 crime -0.3
+styles comfort=make_room gossip=forthright refuse=firm tease=none
+marks oath saying
+persona #self.first# counts the silences between bells and keeps an extra space in any circle, fiercely impatient with anybody who closes it.
+
+words
+oath! = Rung copper and round bowls | Ribbons in the stewpot
+saying! = An elbow's width is enough to begin | Close a circle and somebody eats alone
+gap = the spare space | that last little gap
+mat = a square mat | a plaited mat
+stool = a low stool | the spare stool
+note = a clear note | one long note
+broom = a worn broom | a whisk of twigs
+pot = an iron pot | a deep stewpan
+ladle = a deep ladle | my wooden dipper
+chorus = the part we sing together | the returning tune
+apron = a folded cloth | a spare apron
+steam = the steam curling up | a soft puff of steam
+hush = a sudden hush | a comfortable hush
+braid = a three-strand braid | a narrow plait
+
+any
+opinion @1 newcomers for 2 : It's easy to tell a stranger there's room. Harder to move your own feet and prove it.
+opinion @1 city for 2 : I like how many different tunes a street can hold without growing any wider.
+opinion @1 dole for 2 : The bowl should be ready before the wolf has to speak. Asking twice is a mean sort of accounting.
+opinion @1 festivals mixed 1 : I love the singing till someone decides who gets the good parts.
+opinion @1 church mixed 1 : Bells that call and a door that's shut would make a poor pair.
+opinion @1 strangers for 1 : Show somebody where to put a wet coat. Introductions can wait till the dripping stops.
+line @1 greet : There's a place within earshot. Come claim it. | Come in a step. I'll give you room.
+line @2 greet [pair.band=strangers] : You can start beside me if the others are busy. | Empty spot just here. Take it, welcome.
+line @1 greet.return : You found the opening. Hello there. | I caught your very first hello. I'm glad you came.
+line @2 greet.return [pair.band=friends|family] : Right here by my elbow, as usual. | I've a hundred things saved to tell you.
+line @3 greet.return [here.time=night] : You can hear my welcome even in this dark. | Best stand close till our eyes settle.
+line @1 kin.open [pair.kin!=no] : You belong on the inside of this circle. | If anyone asks, you're standing with me.
+line @1 again.open : Back to fill the gap you left. Good. | I looked up twice after you went.
+line @1 hail [pair.band=friends] : Here! There's a space between these two. | Over beside me. We can all budge.
+line @1 thank : You moved before I had to ask. I remember that. | The next late arrival gets that kindness from me.
+line @1 react.news : Let the last wolf here listen too. | Speak up just enough for both ends to hear.
+line @1 react.news.known : I caught the first telling. Somebody else can have my place. | Yes, that reached my end earlier.
+line @1 react.news.new : Wait, that's new here. I'm all ears. | First time anybody's said that within my hearing.
+line @1 react.news.doubt : I'd leave space beside that for the other account. | It's easy to sound sure in a big voice.
+line @1 react.news.glad [topic.kind=birth|marriage|apprentice|work] : Bring another bowl out for that! | Good tidings ought to go twice round.
+line @1 react.news.sorrow [topic.kind=death|loss|arrest|theft|crime|assault] : I'll sit with whoever needs company after that. | Come sit beside me till talk feels possible.
+line @1 decline : I promised this space to whoever comes in last. | I'd help another way, but I mean to stay here.
+line @1 accept_decline : All right. There's no rule you have to join. | I'll shift back. Call out whenever the thought takes you.
+line @1 reassure : Take the first few words slowly. We've time. | Nobody gets to stop you halfway through.
+line @1 sympathise : That would sting coming from somebody close. | Have the place beside me. Talk when it suits.
+line @1 preclose : I'll have to make a start on tidying soon. | One more minute, then I'd better go.
+line @1 accept_preclose : Go along. I'll keep track of the tune. | I can finish this end. You go.
+line @1 farewell.return : Keep a space for me another time. | You'll find me near enough to hear.
+line @1 farewell : I hope there's a welcome where you're headed. | Go on ahead. I'll fall in later.
+line @1 answer.how : Feeling steady enough to keep the low part going. | Quite cheerful till people start pushing.
+line @1 ask.how : You look like you'd welcome a quieter spot. Would you? | Do you feel up to a song today?
+story upsidecup [topic=memories|food]
+  : I once set out an extra cup upside down so the dust would stay out.
+  : A visitor turned it over and slipped a button into it. Thought I was collecting for something.
+  b : Did you return the button?
+  : Straight away. It was still hanging from a thread on the visitor's coat.
+
+story bellgap [topic=memories|pastimes]
+  : I left a pause in a tune for the bell outside. It didn't ring. I waited a little longer.
+  : A little bird called instead. Same time through the tune, it called again.
+  b : Did it know the tune?
+  : I changed my tune to fit the bird. Sounded like we both knew it by then.
+
+story roundrug [topic=home|memories]
+  : I used to draw a ring in the dust and tell the dust it couldn't come back inside.
+  : My fine floor was the pride of my life till I took a step and saw my own prints.
+  b : Did you scold your paws as well?
+  : Yes. Then I put down a mat. Much less arguing.
+
+rule @stewbowl
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say A bowl's quicker than two cupped paws! | Hold the rim level and I'll pass the dipper.
+
+rule @seatcall
+when concept=bark
+does aside
+cooldown 8h
+say Shift a whisker along. There's somebody still standing. | End of the row, make a little opening!
+
+rule @beatcall
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say Give the far end a beat to catch up! | Wait for the high voice by the wall!
+
+rule @tidy
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Loose mat here! Lift your toes till I get it flat. | Watch the edge. A rug should sit still.
+
+dlg @1 resident.hub : Everybody within earshot gets a place. Come a bit closer if you like.
+dlg @2 resident.hub [topic.meeting=known] : Good, #topic.player#. I left that space on purpose.
+dlg @3 resident.hub [here.time=night] : I can see a gap in the dark. Stand by my shoulder.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You'll get your say when you stop crowding the next wolf.
+dlg @1 resident.job [self.job=child] : Lessons first. I write better with somebody's slate beside mine.
+dlg @2 resident.job : #self.trade_words.capitalize#. You can ask about the singing too.
+dlg @1 resident.bye : You were welcome here. Remember that, next time.
+graft resident.hub
+choice Who gets the empty place? -> gap_guest
+node gap_guest
+say Whoever turns up last. If nobody does, I like knowing we had enough space.
+mood warm
+choice What if two turn up together? -> gap_pair
+choice I'll shift over a little. -> hub
+node gap_pair
+say I'll stand up myself. That makes two places and it gives my legs a stretch.
+choice I'll stand with you. -> hub
+choice Time I went. -> bye
+
+
+grown
+scene lift_chair
+when topic=home
+does tell.self / react.self / assess
+a : I leave room at one end of the table on purpose. | My table's tidy even with a crooked row of chairs.
+b : Looks as if someone's just left. | That last one's a long way out.
+a : Or somebody's just coming. That's what I prefer to think. | That's where a late arrival can get in without apologies.
+
+scene deep_dip
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : If I'm serving stew I dip down before I dip across. | Broth at one end and all the mutton at the other is poor serving.
+b : What comes up that way? | So you stir for every bowl?
+a : A little meat, a little gravy. A fair start for every mouth. | I run the ladle through the bottom. Same chance of a good bite each time.
+
+scene sweep_back
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I start sweeping where the next pair of feet will land. | Give me a broom with one edge worn short.
+b : Don't they just dirty it again? | Why not a new one?
+a : Yes, but that wolf gets a clean first step. | The short side fits a corner. The long side persuades the mess to move.
+
+scene whole_beat
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I leave a breath before the first long note. | Best singing lesson I know is missing a beat on purpose.
+b : Doesn't that slow the tune? | What do you learn?
+a : A shade. Gives a soft voice time to take hold. | Whether the other voices can bridge that missed beat.
+
+scene short_temper
+when topic=health|friends
+does tell.self / react.self / assess
+a : I lose my temper when a circle shuts too tight. | Anger goes straight to my elbows.
+b : Doesn't the noise put people off? | That sounds uncomfortable.
+a : It does. I'm practising moving my chair before raising my voice. | That's why I put them flat on the table till it passes.
+
+scene low_roof
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : Shelter's a funny shape. Narrow at the edge where everyone's trying to get in. | Rain on the eaves makes a pleasant accompaniment.
+b : Wider at the back, though. | What are you singing to it?
+a : Exactly. Take two steps in and somebody stays dry. | One held note. The roof gets all the quick parts.
+
+scene walls_ring
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The hills break a bellnote into little gatherings of sound. | These streets have different listening ends.
+b : Can you tell where it began? | How do you pick yours?
+a : Sometimes. Mostly I'm pleased when I hear the farthest answer. | I stand where a low voice can reach me from either side.
+
+scene waiting_guest
+when topic=newcomer
+does give.opinion / ask.detail / answer.detail
+a : A good welcome gives a newcomer something small to do. | If I find a wolf standing alone I'll move my chair across.
+b : Such as what? | Why move yours?
+a : Pass the bread. Now the next wolf has a reason to speak. | Asking somebody to cross a full room is half a welcome.
+
+scene thread_mat
+when topic=smalltalk|pastimes
+does tell.plan / ask.detail / answer.detail
+a : I'm plaiting a mat from odds of cloth. | One strand's too short. The edge is just the place for it.
+b : Is there enough for a floor? | Why keep that bit?
+a : For a pair of cold feet. That's floor enough to start with. | It marks the place where I hand the next worker the braid.
+
+scene prayer_names
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I keep the last breath of a prayer empty. | May the Bright One hear the quiet mouths as well.
+b : Can't think of the last words? | What about the loud ones?
+a : Somebody else might need that breath more. | They'll carry well enough. Mine does, when I'm cross.
+
+scene poor_queue
+when topic=times world.times=lean|hard
+does tell.worry / react.self / assess
+a : A short pot and a long queue make me sharp. | I'd divide the stew before the shouting starts.
+b : With the ones in front? | Would that settle it?
+a : With the ones who won't look behind them. | It would settle whose bowl was empty. That's a start.
+
+scene summer_tune
+when topic=season here.season=summer
+does tell.self / ask.detail / answer.detail
+a : Summer's a good time for an outdoor chorus. | I like a song that reaches past the last open window.
+b : More room? | Do you wait for an answer?
+a : For the listeners, yes. They're usually the ones squeezed out. | Always. Even a shutter tapping back will do.
+
+
+young
+scene gap_game
+when topic=pastimes|friends
+does tell.self / ask.detail / answer.detail
+a : My game needs a hole in the middle. | Stand round the mat but leave one paw's width free.
+b : What goes in the hole? | Is that the rule?
+a : Someone who's never played. That wolf gets to choose the next game. | That's my rule. The rest we can make up together.
+
+scene count_rest
+when topic=day|faith here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I count the bits between the bells. | The small bell has a big rest after it.
+b : Isn't it easier to count the clangs? | What fits in the silence?
+a : Everybody can do those. I want to know when a shy voice can get in. | Sing one word. Try your favourite and I'll try mine.
+
+scene soup_blow
+when topic=food self.likes=mutton_stew
+does tell.self / react.self / assess
+a : I blow on the littlest spoon first. | I like the potato that's been squashed by the lid.
+b : Doesn't the whole bowl need cooling? | A flat potato?
+a : Yes, but the first taste shouldn't hurt. | More room for gravy on top. Perfect shape.
+
+scene line_lessons
+when topic=day self.job=child
+does tell.self / react.self / assess
+a : At lessons I leave a blank line under each sum. | I'd like to lend somebody half my slate.
+b : For the answer? | Wouldn't you need it back?
+a : For where I went wrong. That's the useful bit. | It's still my slate. We can sit close together.
+
+scene tidy_tails
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : Straightened all the mats. One's crooked again already. | I count cups by lining their handles up.
+b : Going to fix it? | What if a handle's broken?
+a : Later. Somebody's still sitting on it. | It gets the first spot. Can't lose count if I start with it.
+
+scene rats_scrape
+when topic=animals self.dislikes=rats
+does tell.worry / react.self / assess
+a : I heard a scrape near the bread and it wasn't me. | I don't like a rat looking straight at me.
+b : Did you look underneath? | Maybe the feeling's mutual.
+a : With a broom, yes. My nose stayed well back. | Then we can both look somewhere else. Preferably far apart.
+
+
+adolescent
+scene high_part
+when topic=pastimes self.likes=singing
+does tell.self / react.self / assess
+a : I want the part that holds two other voices together. | I'd like to start a choir where you can miss a note.
+b : Nobody hears that part much. | People miss notes in every choir.
+a : They hear it when it's gone. That's a job worth learning. | Yes. Mine will let them come back next week.
+
+scene organise
+when topic=festival
+does tell.plan / react.self / assess
+a : If I ever organise a feast I'll put the stools out first. | There's room for dancing if the tables stand on end afterwards.
+b : Before the food? | Who lifts them?
+a : Before the loudest guest chooses who gets a place. | The dancers. It's their floor they're making.

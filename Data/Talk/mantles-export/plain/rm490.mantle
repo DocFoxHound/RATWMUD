@@ -1,0 +1,374 @@
+# rm490, the square left white (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm490
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_corra_slagmore
+written_by codex
+title the square left white
+fits stage=adult|old
+prefers job=guard
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk leaves_one_white_square_beside_disputed_statements
+likes plum_tart wrestling quiet_chapel first_snow
+dislikes night_noise gulls
+fears hearing_a_verdict_before_a_witness
+hopes one_quiet_sitting_with_the_books_shut
+topics work +0.7 faith +0.4 pastimes +0.3 weather +0.2
+styles comfort=quiet gossip=guarded refuse=firm tease=none
+marks oath saying
+persona #self.first# leaves a white square beside every disputed statement and reserves the last stair of a flight for a single, unhurried step.
+
+words
+oath! = Smudge the margin | Chalk in my cuffs
+saying! = Leave white till you know | A pause belongs to both sides
+margin = a white square | the clean margin
+pairmark = two small strokes | a double notch
+reststep = the last stair | a short landing
+quietcloth = a folded wool square | a heavy piece of felt
+circle = a chalk ring | a circle of white dust
+plumhalf = a dark half plum | a little purple crescent
+glassrim = a thin glass rim | the lip of a tumbler
+moonchip = a crooked paring | a sliver of cold light
+squarebox = the unfilled square | my waiting space
+clerkstool = a stool set sideways | a seat against the light
+gullcall = a cracked shriek | a high ragged call
+softsnow = a fine white covering | a veil over the stone
+waxspot = a thumb of plain wax | a little hard wax
+foldline = a crease across the sheet | a single straight fold
+
+grown
+opinion @1 watch for 2 : A wolf waiting to speak deserves someone who can keep a face still until the account is finished.
+opinion @1 houses mixed 1 : A seal can identify the writer. It does nothing to improve what the letter actually says.
+opinion @1 strangers mixed 1 : I give an unfamiliar visitor time to find the first sentence. An introduction doesn't confer an advantage in my hearing.
+opinion @1 church for 1 : A chapel is one place where an unfinished thought can be set down without another voice supplying the ending.
+opinion @1 festivals mixed 1 : A wrestling circle takes up very little ground. The spectators ought to remember that the way home needs ground as well.
+opinion @1 merchants mixed 1 : I prefer the sum set plainly beside the article. A soft voice can still be asking more than the thing merits.
+opinion @1 dole for 1 : Eat first. A hungry visitor trying to explain a difficulty shouldn't have to divide attention between my face and the bread.
+opinion @1 city for 2 : On the familiar stairs I have breath enough to think about the wolf who'll be waiting when I reach the top.
+line @1 greet : You have my ear. Take the beginning at your own pace.
+line @2 greet [pair.band=strangers] : A name when you're ready. The matter may come first.
+line @3 greet [here.time=night] : Low voices will carry quite adequately at this hour.
+line @1 greet.return : I remember the interval where we left off.
+line @1 farewell : Leave the doubtful part open on your way out.
+line @1 farewell.return : An easy landing at the far end of your day.
+line @1 ask.how : How much quiet have you managed to keep for yourself?
+line @1 answer.how : I have heard enough today to be thankful for a short answer.
+line @1 thank : You left sufficient room for me to hear the distinction.
+line @1 deflect_thanks : A fair hearing ought to fit inside an ordinary day.
+line @1 decline : I can't give a private undertaking under the shelter of a public duty.
+line @1 accept_decline : You have said enough for me to register the refusal.
+line @1 sympathise : I'll sit quietly with you after a difficult sentence.
+line @1 reassure : You may open with whatever stands clear in your recollection.
+line @1 react.news : Tell me where a witness's own words begin.
+line @1 react.news.new : That will require a clean space of its own.
+line @1 react.news.known : I can place the earlier account beside this one.
+line @1 react.news.doubt : I would leave white beside the bit nobody actually saw.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'll permit myself the pleasure of writing that good thing in full.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Give the hurt wolf the choice of who hears the particulars.
+line @1 again.open : We can continue without reciting either introduction.
+line @1 ack : Yes. The two statements now fit together.
+line @1 preclose : I have sufficient to consider in the remaining quiet.
+line @1 accept_preclose : By all means. The margin will still be here.
+line @1 tell.self [self.dislikes=gulls] : There are days a gull could pass for a quorum.
+line @2 preclose [pair.band=strangers] : Allow me a little time to consider the second part.
+line @2 react.news [here.time=dusk] : I'll keep the substance in daylight even if we finish after dark.
+line @2 greet.return [pair.band=friends|family] : For you I have a seat clear of the office papers.
+line @2 farewell [here.time=dawn] : Take the morning before it fills with other voices.
+line @2 decline [pair.disposition=hostile] : I should not have to raise my voice to make a refusal plain.
+line @2 reassure [pair.band=friends|family] : You can spend your quiet here without spending another word.
+scene work_1
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I draw #margin# beside an account still awaiting corroboration.
+b : Why leave room for doubt? | Can the person speaking see it?
+a : A filled page looks settled even to the wolf who knows better. The blank keeps me honest. | Certainly. I mean the speaker to see precisely which part I have yet to establish.
+
+scene pastimes_1
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I like the courtesy at the edge of #circle#, before a wrestling bout has a result.
+b : Which courtesy? | Does the winner observe it too?
+a : Each competitor waits until the other is ready to begin. I have use for that practice on ordinary afternoons. | A win hardly excuses a wolf from helping sweep up the chalk.
+
+scene weather_1
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : The first small fall of snow leaves the long stairs looking like folded paper.
+b : Do you still take two at once? | Do the folds last?
+a : Only when the edges show plainly. There is little honour in ordering my ankles to uphold a reputation. | Longer from the foot than from the top. The near edge gets a mark almost as soon as the snow settles.
+
+scene faith_1
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : At an empty chapel I take one seat back from the place I instinctively choose.
+b : Why move back? | Whose place did you leave?
+a : The first choice usually puts the whole room under my eye. I can give that habit an afternoon away. | Nobody's. That is exactly the freedom I am practising.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I like a tart with its plums cut across. The filling stays where the baker meant it to go.
+b : Are the portions equal? | Do you keep the last piece?
+a : Evenly enough for pleasure, without borrowing a measuring cord from the office. | I wrap the last piece in plain paper. Private luxuries travel better without ceremony.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Silence between two replies is common property.
+b : Who gets to end it? | Doesn't it feel awkward?
+a : Whichever of us finds something worth the trouble of saying. | For the first few breaths. Awkwardness isn't an injury requiring immediate attention.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I've a private sum to settle before the new moon. The detail belongs to the private half of my desk.
+b : Will it affect your duties? | Could I be of assistance?
+a : A creditor gets the same seat I give an unknown visitor. I take considerable care over that. | Time enough to work out my figures privately. Your discretion would also be welcome.
+
+scene friends_1
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : For a private word with #self.friend#, I would lay a plain cloth across my papers.
+b : What would the cloth accomplish? | Even for a close friend?
+a : It gives us a level table where my unfinished work can't compete for attention. | Especially then. A friend ought to know which duties can join a private conversation.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I take the last stair singly even on a good morning.
+b : Saving your breath? | Is the last one taller?
+a : Arriving at full speed gives an innocent listener the impression of having been pursued. | Only in my estimation. It's the part where a flight of stairs turns back into a roomful of people.
+
+scene animals_1
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : I have heard a gull erase a perfectly intelligible sentence.
+b : Would you request a repetition? | Can you read the speaker's face?
+a : I repeat precisely what reached me and let the speaker supply the gap. I decline to promote a guess to a fact. | A surprised face suits several meanings. I wait for the words.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I set my drinking glass on #quietcloth# at night.
+b : Is the glass that loud? | Why wool?
+a : There's a thin tap it makes on bare wood. Once I hear it I start listening for the next interruption. | It takes the glass securely without telling everybody else that I'm thirsty.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The due date and the amount should fit on the first page of any private agreement.
+b : What goes on the reverse? | Would you keep a copy?
+a : Space to mark it settled when the pennies are paid. The end of a debt deserves its own entry. | Of my own promise, yes. I wouldn't borrow the public books for a private arrangement.
+
+scene work_2
+when topic=work self.job=guard
+does tell.self / ask.detail / answer.detail
+a : A captain needs a stool placed so a short speaker doesn't have to stare upwards.
+b : Would you lower your own seat? | What if the speaker prefers to stand?
+a : Certainly. Half a head of height can lend an argument a wholly unearned advantage. | Then the stool keeps its own counsel. I arranged the option, not a performance.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My preferred route has one landing where a walker can see back over the roofs.
+b : Are you checking who's behind you? | Which sight makes you pause?
+a : Sometimes I merely wish to know how the clouds moved while the stair occupied my attention. | A patch of weather still a few roofs distant. It seldom requires a decision from me.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Once I marked the end of a statement too early. The best sentence came after my hand had left the page.
+b : How did you correct it? | What made it the best?
+a : I gave the addition a whole new line, in writing as large as the rest. | The speaker replaced a guess with a recollection. That required the briefest liberty to think.
+
+scene family_1
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : What passes between a wolf and a relative has no business on a public page until it bears on the matter.
+b : Who decides what bears on it? | Can you ask in private?
+a : I ask what the detail would change. If the honest answer is nothing, my pen can rest. | I can offer that courtesy before a sensitive detail comes out. Once heard in a room it rarely goes back.
+
+scene day_2
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : I give the earliest hour the job of sitting quite still beside my cup.
+b : How long will it hold still? | What's in the cup?
+a : Until a voice really requires an answer. The cup doesn't have to be empty at that instant. | Plain water. At that hour its chief merit is that nobody has to bring a second ingredient.
+
+scene day_3
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : After dark I'd sooner hear one clear request than five competing calls from the stairs.
+b : What if it's urgent? | Can you hear a low voice?
+a : Use the few words that name the need. Urgency seldom requires an account of every preceding hour. | At speaking distance, yes. A low voice and a shut door have saved many a night's rest.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a lean spell a missing penny weighs enough to change the whole account.
+b : Do you round the figure? | Which question comes earliest?
+a : I leave it exact. A rounding that suits the comfortable can take the last bite from somebody else. | Who has already gone without to meet the sum. That matters when choosing how soon to hear a difficulty.
+
+scene news_1
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : The public account reads as follows. #world.news#.
+b : Can you add your own opinion? | Is there a shorter account?
+a : I can mark where the account ends. An opinion must stand on a fresh line. | I'd keep the words the speaker chose. An abridged statement can put quite a new complexion on an ordinary event.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. There is a wide margin beside that statement.
+b : Does that make the statement false? | Have you filled in the margin?
+a : No. It tells the next reader which degree of confidence the statement can claim. | Only with the fact that the account reached me by word of mouth.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new arrival may need the name of a place repeated after the directions are finished.
+b : Why repeat just the place? | Do you point as well?
+a : It gives a tired listener one solid thing to ask about after the first turn. | If the listener can see the same landmark. A finger aimed across three roofs is a poor guide on foot.
+
+scene festivals_1
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : Leave a strip of ground clear beyond the ring where a tired spectator can step out of the crowd.
+b : Who will want to leave early? | Will that waste a good view?
+a : The wolf who needs the space will recognise it without having to explain a private reason. | Yes. A little waste in the seating can prevent a considerable crush when the spectators disperse.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I find a short prayer suits a long stair. There is breath enough between the phrases.
+b : Does the prayer name a need? | Do you finish it at the top?
+a : Let patience be the gift of the Bright One for the next thing I don't immediately understand. | Some mornings it is enough to get there with the question still open.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A damp thumb makes a white mark on a dark sheet vanish entirely.
+b : Can the mark be recovered? | Would you trust that kind of mark?
+a : If I still remember its place I can renew the stroke. I should prefer to let the thumb dry first. | As a prompt to myself on an ordinary turn of duty. A decision deserves ink and a dry place.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can sit beside a friend as long as a tart lasts without requiring an account of the week.
+b : Is the pastry essential? | Who breaks the quiet?
+a : It need only be something neither of us feels obliged to explain. | A crumb sometimes. There is a very slight sound when the last one drops on a clean dish.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I judge the end of a bout by how the two competitors take their leave of the circle.
+b : Do they have to speak? | Do the spectators notice?
+a : A nod will do. Courtesy can bear remarkably little ornament. | Some do. The manner of leaving can stay in a younger spectator's head a good deal longer than the result.
+
+scene work_3
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words# involves choosing which questions can wait until the person answering has had a drink of water.
+b : What can wait? | What about your own questions?
+a : The long recital of times and places. An immediate need is usually possible to name in fewer words. | I write those in the margin. Thirst isn't an enemy I intend to employ.
+
+story foldedpage [topic=memories]
+  : My first neat page of notes had a crease down its middle from being carried folded in my sleeve.
+  : I read across it and turned two very different answers into one smooth sentence.
+  b : Where did you find the missing pause?
+  : In the speaker's face when I repeated the sentence. Since then I give each answer its own beginning.
+
+story blackplum [topic=food]
+  : I quartered a tart and set the dish turning to inspect what looked like an uneven division.
+  : The darkest piece remained the darkest through the full turn.
+  b : Was the slice larger?
+  : It held a plum with the skin doubled back. I ate that quarter myself and left the other three in peace.
+
+story lasttread [topic=travel]
+  : One flight had an odd number of treads. My steady pairs kept leaving the same stone for last.
+  : I tried taking the first one singly just to see the change.
+  b : Did arriving feel different?
+  : Yes. I preferred making the small deliberate choice at the end, just before I met the waiting faces.
+
+story redchalk [topic=pastimes]
+  : A line of red dust ran outside a white wrestling circle when I went to help put things away.
+  : I thought somebody had tried very hard to redraw the boundary.
+  b : What had made the second line?
+  : The red hem of my own damp coat, dragging as I walked the edge. I hung it up before I fetched the broom.
+
+story twoglasses [topic=home]
+  : I put two glasses on a shelf with a space between them and heard a tap whenever the floor shook.
+  : Neither moved close enough to touch the other.
+  b : What made the sound?
+  : One rim barely touched the wood above it. A little space was needed overhead as well as on either side.
+
+rule @margin
+when concept=bark
+does aside
+cooldown 8h
+say A white square for an unanswered part. | Keep the witness's last word on its own line.
+
+rule @stair
+when concept=bark
+does aside
+cooldown 8h
+say Two steps while there's stair to spare. | One deliberate tread before the voices begin.
+
+rule @chalk
+when concept=bark self.likes=wrestling
+does aside
+cooldown 8h
+say The chalk can be swept when both wrestlers have left. | A circle needs a way back out.
+
+rule @still
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Lower the rim gently to the cloth. | Few noises improve by repetition after dark.
+
+rule @weather
+when concept=bark self.likes=first_snow
+does aside
+cooldown 8h
+say First snow calls attention to each stair edge. | Fold after fold of white on the hill.
+
+rule @plum
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say Leave the purple crescent in the pastry. | One wrapped piece for the end of duty.
+
+dlg @1 resident.hub : I'll leave a clear square for whatever you came to say.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your reason for returning may serve as an opening.
+dlg @1 resident.job [self.job=guard] : My duty at #self.workplace# includes hearing the part that comes after a speaker finds the courage to continue.
+dlg @1 resident.news [world.news] : I've this public account in its own words. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Word reached me that #topic.subject# #topic.claim#. The blank beside it signifies doubt.
+dlg @1 resident.quirk : Two stairs at a time until the single one that brings me into company.
+dlg @1 resident.how [tired=yes] : Tired. Long sittings leave less breath for a private conversation.
+dlg @1 resident.bye : There is room to resume a statement another day.
+dlg @1 watch.hub [on_watch=no] : I am off watch. Name the matter briefly enough to know if it can wait.
+dlg @1 watch.crime [here.witnessed!=0] : Which portion did you witness yourself? We can give the rest its proper place afterwards.
+dlg @1 watch.unpaid : If the sum remains unpaid, the cells are where you wait for settlement.
+dlg @1 watch.bye : That concludes our exchange. Take the stairs in comfort.
+graft resident.hub
+choice What's the white square beside your notes? -> square_wait
+node square_wait
+say An interval I can see. Sometimes a speaker remembers the important word after the sentence appears to have ended.
+choice How much space do you leave? -> square_full
+choice I'll let the page rest. -> hub
+node square_full
+say Enough to write the correction as plainly as the original claim. Small print would make the afterthought seem less entitled to a hearing.
+choice I'll let the page rest. -> hub
+
+graft watch.hub
+choice Why is that stool turned sideways? -> hearing_stool
+node hearing_stool
+say It leaves the door in sight without placing a visitor directly under my eye. A choice of where to look helps some wolves speak.
+choice Wouldn't you rather meet their eyes? -> hearing_eyes
+choice That's all about the stool. -> hub
+node hearing_eyes
+say I need the words accurately. The visitor may inspect the boards, the door or the weather while supplying them.
+choice That's all about the stool. -> hub

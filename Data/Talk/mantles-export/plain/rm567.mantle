@@ -1,0 +1,271 @@
+# rm567, the pupil's nesting spoons (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm567
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_hester_greyby
+written_by codex
+title the pupil's nesting spoons
+fits stage=young|adolescent|adult|old
+prefers job=child
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=ambitious
+quirk keeps_two_unfinished_spoons_in_an_oilcloth_hood
+likes mutton_stew whittling sharp_knife autumn_wind
+dislikes drizzle crowds
+fears a_hole_over_the_ear a_factor_before_supper
+hopes a_nest_of_spoons a_dry_bench_for_learning
+topics pastimes +0.5 work +0.4 food +0.3 prices +0.3
+styles comfort=practical gossip=cautious refuse=quiet tease=dry
+marks oath saying
+persona #self.first# carves spoon bowls just small enough to nest, guarding each unfinished pair in the dry fold of an oilcloth hood until a buyer shows genuine interest.
+
+words
+oath! = Warp my little spoon | Split that oily seam
+saying! = A small bowl fits a larger purpose | Save the price till the bowl is hollow
+hoodlip = my stiff hood brim | the oiled edge
+spoonbig = the outer spoon | a broad spoon blank
+spoonsmall = the nesting spoon | a thumb-sized bowl
+seam = the folded oilcloth seam | my hood pocket
+curl = a tight wood curl | a pale shaving
+knifepoint = the little blade | my carving knife
+rib = the back ridge | a low curved rib
+stock = the stew liquor | the mutton broth
+split = a grain crack | a shallow split
+chalkbit = a chip of chalk | my last hard chalk
+windleaf = a dry red leaf | an autumn leaf
+chipmark = the maker's notch | a little triangular mark
+
+any
+opinion @1 city for 2 : These hills have wood scraps enough for a clever paw to turn into dinners.
+opinion @2 dole for 2 : A bit from a full kettle can keep a hungry pupil awake for the last lesson.
+opinion @3 festivals for 1 : I hear the tune from the quiet side and keep my eyes open for useful offcuts.
+opinion @4 houses against 2 : The rent counts every room down our way. A landlord could count the holes over our heads as well.
+opinion @5 watch against 3 : A paw in my hood ought to be there by my leave. A badge's no permission to rummage.
+opinion @6 times against 1 : The little bit of meat gets smaller in my bowl and nobody writes that sum on the board.
+
+grown
+line @1 greet.return : The spoons are nested and I've time to hear you.
+line @2 farewell.return : I'll put the spare tool away once you've gone.
+line @3 answer.how : Trading on what I learnt in a damp little classroom.
+line @4 react.news : Give me the marketable part of the report first.
+line @5 decline : The job would cost me more hours than I can spare.
+scene tooltrade
+when topic=work
+does give.opinion / disagree / concede
+a : I don't quote a pair of nested spoons as two bits of effortless wood.
+b : What extra work goes into the pair?
+a : The backs have to agree. A single honest spoon may have more freedom in its shape.
+
+scene oilpatch
+when topic=season
+does tell.plan / ask.detail / answer.detail
+a : I'll put a fresh strip of oiled cloth over the old hood join before autumn sets in.
+b : Still keeping the join that gave you trouble as a pupil?
+a : My hands still look there first for anything I've kept dry. There's no profit in moving a pocket that works.
+
+scene lunchroom
+when topic=food
+does offer / accept / assess
+a : Have a spoon that reaches the last of a deep stew bowl.
+b : Will you have another in that shape?
+a : I've the original tucked away. I'll mark this long handle for the next deep pot that comes my way.
+
+scene quieten
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I find a quiet bench a better introduction than a whole crowd pressing round.
+b : What do you say when you first sit down?
+a : I ask whether the empty space is free. A very small question deserves time for a proper answer.
+
+
+young
+line @7 greet.return : Hello. You can see my hood before you see my nose.
+line @8 farewell.return : Bye. The little spoon stays warm up here.
+line @9 react.news : I'll listen if my hood isn't flapping.
+line @10 answer.how : Dry inside and going to stay that way.
+scene smallhood
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I can hide a whole ear and a little spoon under this hood.
+b : Which one comes out in the sunshine?
+a : The spoon if there's stew, the ear if there's a nice noise.
+
+scene twiggle
+when topic=pastimes
+does tell.self / react.self / assess
+a : I rubbed a soft twig so long it made a little bowl.
+b : Can it hold a drop of water yet?
+a : One drop before it tips. My other paw has to keep the twig from rolling.
+
+
+adolescent
+line @12 greet [pair.band=strangers] : Welcome to the dry side of my brim.
+line @13 greet [here.time=dawn] : Morning. The early light finds every cut in the grain.
+line @14 greet [here.weather=rain] : Don't brush the front of the hood. It's shedding water.
+line @15 greet.return : Got your greeting under the brim all right.
+line @16 greet.return [pair.band=friends] : A voice I'm happy to uncover an ear for.
+line @17 farewell : Don't sell your little spoon cheap.
+line @18 farewell.return : I'll keep the blanks nested while you're away.
+line @19 again.open : A second opening in the same dry seam.
+line @20 kin.open [pair.kin!=no] : Family can see what I've set aside to finish.
+line @21 hail [pair.band=friends] : Here under the shiny brim!
+line @22 react.news : Let's pick out the good grain from the selling talk.
+line @23 react.news.new : I'd have remembered a curl of news so fresh.
+line @24 react.news.known : That piece already has my notch in one corner.
+line @25 react.news.doubt : Fine finish on the outside. Still feels hollow underneath.
+line @26 react.news.sorrow [topic.kind=death|loss|assault] : Come under the wide end of my hood a minute.
+line @27 react.news.glad [topic.kind=birth|marriage] : I'd carve a keepsake for a piece of joy like that.
+line @28 answer.how : Dry ears and enough nerve for the next lesson.
+line @29 decline : I've promised my spare hour to a piece of carving.
+line @30 accept_decline : Right. I won't keep scraping at a refusal.
+line @31 sympathise : I'll wait this side of the crowd with you.
+line @32 thank : You've given me more room than a pocketful of change.
+line @33 deflect_thanks : I could spare a curl off that particular piece.
+line @34 preclose : I need the last clean light to finish this bowl.
+line @35 accept_preclose : Clear away before the wet gets through your collar.
+scene nested
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I make #spoonsmall# sit inside #spoonbig# without a rattle.
+b : Why care how the pair sounds?
+a : I keep them in #seam#. I don't want to sound like a travelling kitchen at lessons.
+
+scene edge
+when topic=smalltalk self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I'm honing #knifepoint# to leave a single long curl under the bowl.
+b : Is a long curl proof of a good edge?
+a : If it lifts without tearing the grain. Length alone won't sell a spoon.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail / assess
+a : I like #stock# best where it gathers under a bit of mutton.
+b : Why choose that particular spoonful?
+a : The meat keeps it hot. I take a thin spoonful and let the rest sit another minute.
+b : That leaves a good last bite for a patient eater.
+
+scene autumn
+when topic=weather self.likes=autumn_wind
+does tell.plan / ask.detail / answer.detail
+a : I'll put #windleaf# under my brim and see how much wind gets in.
+b : Are you checking the fit of the hood?
+a : Exactly. If the leaf flaps beside my ear I've still a loose corner to sew.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : A fine drizzle can sneak down the seam before a shower even begins.
+b : Would more oil keep the join dry?
+a : Oil and a fold facing down. I can spare the oil more easily than a second hood.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.worry / reassure / assess
+a : In a press I've got an elbow at my cheek and a stranger against my pocket.
+b : Can you get between the barrows instead?
+a : If I turn sideways. I can keep #rib# against my own collar and know where my work is.
+
+scene pupil
+when topic=work self.job=child self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I'd sooner write sums for two spoons than sums for invisible sheep.
+b : Do the spoons give a different answer?
+a : I have good reason then to get the answer right before a real buyer tries me.
+
+scene factor
+when topic=prices self.owes=yes
+does tell.worry / reassure / assess
+a : The new moon gives me my last day to pay a House factor.
+b : Have you anybody you can bring to hear the sum with you?
+a : I'd like that. A second pair of ears might remember the terms while I count out my coppers.
+
+scene wetroof
+when topic=land
+does give.opinion / disagree / concede
+a : I'd buy oilcloth before fancy clothes on our slope.
+b : Surely a sound roof would do more?
+a : The roof belongs on the owner's bill. In the meantime I can take my dry roof to school.
+
+scene sellpair
+when topic=prices
+does ask.advice / give.advice / assess
+a : Would you show a buyer both bowls separately or let the little one sit inside?
+b : Show the grain first, then fit the pair together.
+a : Good. A bit of clever fitting can prove its worth without me asking twice.
+
+scene gift
+when topic=food world.times=hard|lean
+does offer / accept / assess
+a : There's some thick stock left if you'll share my cup.
+b : I'd take a spoonful if it leaves you supper.
+a : Take it from the side nearest the bone. I want the bone to scrape for a tool after.
+
+scene lessondream
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I dream #chalkbit# leaves a hollow in the slate every time I write a price.
+b : Do you fear writing the price too high?
+a : I fear rubbing it down to nothing before I learn what my time is worth.
+
+story spoonrest [topic=pastimes]
+  : A little spoon I made had such a broad back it could sit up on a shelf by itself.
+  : I was pleased enough to set it there full of water.
+  b : Did it stay standing with a full bowl?
+  : It sat perfectly. I had made an excellent dish and quite a poor spoon.
+
+story marketbell [topic=prices]
+  : I once mistook the knock of two spoons under my hood for a buyer tapping at a stall.
+  : I turned my best selling ear toward the sound.
+  b : Did the spoons name a price?
+  : No. They did tell me to wrap them apart before seeking an actual buyer.
+
+story chalkmarks [topic=work]
+  : I drew the shape of a spoon on a spare slate and made a chalk mark for every cut it needed.
+  : My marks reached the slate's edge half a bowl too soon.
+  b : Did the carving take that many cuts?
+  : More. I had left out all the little ones that put mistakes right. I charge myself time for those now.
+
+rule @hoodoil
+when concept=bark self.job=child self.working=yes
+does aside
+cooldown 8h
+say Tuck the blanks in before the next sum starts.
+
+rule @shavebowl
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Keep that rib. The small bowl sits on it.
+
+rule @sharpturn
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 8h
+say One clean curl all the way round.
+
+rule @autumnear
+when concept=bark self.likes=autumn_wind
+does aside
+cooldown 8h
+say Leaf just stirring beside my left ear.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #self.first#. You can see my sample if you'll keep it dry.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's something nearly finished under my hood.
+dlg @3 resident.hub [here.time=night] : I've set the blade down. A word will do in this light.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll keep my pocket buttoned while we talk.
+dlg @5 resident.job [self.job=child self.workplace] : I'm at lessons at #self.workplace#. I put my sums to work on a little wood when I can.
+dlg @6 resident.job : I turn scraps into things a hand can keep for a long time.
+dlg @7 resident.bye : Keep a bit of good grain to yourself.
+graft resident.hub
+choice Can I see the smaller spoon? -> nestingbowl
+node nestingbowl
+say Look where #rib# fits against the larger bowl. You can slip the pair into an oiled seam and have both hands free.
+choice What did the first one cost you? -> costcurl
+choice You may put it away. -> hub
+node costcurl
+say A scrap of wood and more evenings than I'd care to sell at a penny apiece. The next pair will spend some of what those evenings taught me.
+choice Another word before I go. -> hub
+choice Good luck with the sale. -> bye

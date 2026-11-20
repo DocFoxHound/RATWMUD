@@ -1,0 +1,371 @@
+# rm421, the wooden pantry (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm421
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_disa_nettleby
+written_by codex
+title the wooden pantry
+fits stage=young|adolescent|adult|old
+prefers warmth=warm talk=quiet
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk carves_tiny_loaves_to_stock_a_pocket_pantry
+likes roast_pork whittling full_larder warm_rain
+dislikes night_noise drizzle
+fears an_empty_larder_after_dark footsteps_while_everyone_sleeps
+hopes a_cupboard_with_an_extra_loaf a_quiet_dry_evening
+topics food +0.5 home +0.4 pastimes +0.4
+styles comfort=provisions gossip=gentle refuse=plain tease=none
+marks oath saying
+persona #self.first# whittles tiny wooden provisions, keeps the pantry door shut against drizzle, and says little while finding room on the shelf for an extra supper.
+
+words
+oath! = Peelings in my pocket | Splintery turnip
+saying! = Leave a loaf for the latecomer | The little shelf counts too
+pantry = my wooden pantry | a pocket cupboard
+loafchip = a tiny loaf of ashwood | my little wooden crust
+saltbeef = a dark carved joint | a bend of knotted wood
+cupboardlip = the rim of my box | a thin wooden shelf
+greaseleaf = a folded leaf for meat | my savoury wrapper
+roastend = a crisp strip from the roast | a brown corner of crackling
+roundgrain = a knot like an onion | a pale little knot
+scentcloth = a cloth with a hearth smell | a smoky sleeve corner
+shutpin = a peg for the cupboard | my tiny door pin
+quiettoe = a soft furred pad | a careful footpad
+
+any
+opinion @1 dole for 3 : An extra loaf that really goes in a belly is better than all the little wooden ones in my cupboard.
+opinion @1 church for 1 : A chapel bowl can sit by a warm hearth till a tired wolf gets in. I'd like a shelf that could do that.
+opinion @1 merchants against 1 : Some prices would make me put my last coin down for an onion hardly bigger than my wooden one.
+opinion @1 festivals for 1 : If there's food enough for the wolves who come late, that's the kind of celebration I'd like.
+opinion @1 newcomers for 1 : An unfamiliar face coming inside makes just as much sense of a good dinner as a familiar one.
+
+grown
+line @1 greet : There's room beyond my odd little shelves for a little company.
+line @1 greet.return : I'm glad to hear your voice over the settling fire.
+line @1 farewell.return : I'll close the little door after you.
+line @1 react.news : I'll hear it while my hands rest from carving.
+line @1 thank : You made more room for supper than I'd expected.
+line @1 decline : I'd sooner keep the quiet cupboard private.
+scene minitrade
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I keep a tiny shelf handy when planning how to fit the larger objects.
+b : Does the plan need to be exact? | What doesn't it show?
+a : Exact enough to tell whether the lid will come off without catching anything. | Weight. A little wooden roast weighs rather less than the pan required to hold a real one.
+
+scene saucerfood
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I serve a lean slice with a crisp edge to make a reasonably varied bite.
+b : What if there's no crisp edge? | Will a small portion do?
+a : The next bite of something plain can have a little sharp relish. There are other ways of keeping supper interesting. | It ought to be an honest portion, however nicely I happen to have arranged it.
+
+scene remnant
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember carving a loaf so small I lost it in my cuff for a season.
+b : Did it keep its shape? | Was it an improvement with age?
+a : To my surprise. Some kinds of wood take a deal of wear in a pocket. | It certainly wasn't going stale. There are certain advantages to an inedible pantry.
+
+scene raincorner
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I choose a wall where the rain runs off behind my shoulder while I work.
+b : Does even a warm rain bother the wood? | How close do you sit?
+a : More than it bothers me. A soaking changes where I can safely put a thin edge. | Close enough for shelter; far enough for a curl of shavings to fall quite free of the wall.
+
+scene darkhouse
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A house settling after dark gives me time to hear which latch could use a little care.
+b : Is a quiet board good enough? | What if the sound is outdoors?
+a : A good beginning. I like to offer the same chance of quiet to a caller who gets in late. | Then I leave the house its peace and attend to my own rather overactive ears.
+
+scene foodmoney
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : When a meal is small I prefer to know what the whole of it costs.
+b : Would you bargain over the change? | Is a small meal a disappointment?
+a : Only if the price wasn't clear in the first instance. A plain sum leaves space to talk about something nicer. | A thoughtfully chosen one may be quite enough. A bright promise can't make up for a missing bite.
+
+scene opendoor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I can recognise the hesitation at an unfamiliar pantry door.
+b : Would you help without being asked? | Did you ever find that door open?
+a : I would set an extra place where it could be seen. A plain welcome can do much of the asking. | Yes, once or twice. Those occasions have a habit of adding a place to my own arrangements.
+
+scene cloudwood
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream of a pantry in which a tree keeps on growing slowly through the dark back wall.
+b : Is the tree alive? | Would you leave it there?
+a : Yes. Every bit I take for carving is replaced by a finer branch next week. | If it gave the shelves room to open. Even a dream pantry ought to provide a useful dinner.
+
+scene otherhand
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I give my cutting paw a rest when the handle starts to feel smaller than before.
+b : How does it grow small? | Is it a long rest?
+a : My grip tightens. The wood stays just the same and the fingers are mine to do something about. | Long enough to straighten all the fingers and admire the work from somebody else's angle.
+
+scene street
+when topic=home|land
+does tell.self / ask.detail / answer.detail
+a : Little doors under outside stairs can hold all kinds of stores.
+b : Wouldn't the damp get in? | Would you trust one?
+a : It might. I'd keep nothing there that a wet afternoon could spoil. | For firewood, with a good dry pallet. I'd prefer a known roof for anything meant to be served to company.
+
+scene neighbours
+when topic=smalltalk self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I've room for one more bowl should I ever wish to set a place for #self.neighbour#.
+b : Why not set it out already? | What would you fill it with?
+a : Because a set place may seem an obligation. A bowl waiting on its shelf is a kind of possibility. | Whatever's gone best that evening. I'd like the guest to get an honest share of the success.
+
+scene oldhobby
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I sometimes carve an entire little supper for no other reason than that I enjoy seeing it finished.
+b : Where does it go? | Does it take long?
+a : Into a box until there's somebody who would like it as a gift. A little surprise takes scarcely any shelf space. | Long enough to let me put an ordinary worry down. Without that I'd want to be paid rather more for a little piece of wood.
+
+
+young
+line @1 greet : You can see into my cupboard from here. Welcome.
+line @2 greet [pair.band=strangers] : Hello to you. The wooden loaves just sit.
+line @3 greet [here.time=dawn] : The pantry opens early if my eyes do.
+line @4 greet [here.time=dusk|night] : I'll talk quietly so the little shelf can go to bed.
+line @1 kin.open [pair.kin!=no] : There's a whole spare seat in my kitchen for our own.
+line @1 again.open : It's you again. My cupboard has grown by one small loaf.
+line @1 greet.return : Hullo. I'm behind the tiny heap of turnips.
+line @2 greet.return [pair.band=friends|family] : I know that sound; the cupboard can stay open.
+line @3 greet.return [self.working=yes] : My hands are busy keeping the wood still but I heard.
+line @4 greet.return [here.time=dusk|night] : You made less noise than the cupboard latch.
+line @1 farewell : May you find a nice last piece of supper.
+line @1 farewell.return : I'll keep the little pantry home with me.
+line @1 react.news : Let me put my small things in a safe row and listen.
+line @1 react.news.new : I'd need another shelf for that story.
+line @1 react.news.known : That bit goes just where I remember.
+line @1 react.news.doubt : Was anybody near enough to see the real thing?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd save the soft piece for the house that's gone sad.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's enough good news for two extra guests.
+line @1 ask.how : Is there plenty for you at the end of today?
+line @1 answer.how : A bit tired. The little cupboard's nearly full though.
+line @1 sympathise : We can sit shoulder to shoulder while somebody else makes all the noise.
+line @1 reassure : You can have my quiet half of the doorstep.
+line @1 decline : I'd rather keep one little shelf just for my own things.
+line @1 accept_decline : I'll close that bit without asking what's in it.
+line @1 thank : You took the load off my little door hinge.
+line @1 deflect_thanks : I'll be pleased if it makes you a bit less hungry.
+line @1 preclose : I've got to put that last tiny onion away.
+line @1 accept_preclose : Go while there's still a path by the box.
+line @1 ack : Shelf holds.
+scene loaves
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I can make three little loaves from one shiver of wood.
+b : Why not four? | Could a pup eat one?
+a : Because the third has to be big enough for a hungry imaginary guest. | An imaginary pup could. For the real one I'd go and look for a real loaf.
+
+scene cupboard
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : My small wooden pantry always has the last thing you can eat after the flour's gone.
+b : What's left? | Is it hard bread?
+a : One tiny onion. It's very good at making imaginary soup taste like more than hot water. | No, then it might as well have stayed a piece of wood.
+
+scene pork
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I save my crisp bit of roast for when my teeth are expecting something soft.
+b : Can you surprise your own teeth? | What if someone asks for it?
+a : Yes. Sometimes I surprise my nose and the crust jumps up to meet it. | I'd share the loud bit and we could both get a turn at the noise.
+
+scene warmrain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : The best rain is warm enough to rinse the loose chips off my paws.
+b : What about your shirt? | Do the chips float?
+a : My shirt prefers a roof, but my paws like having a wash without a basin. | Yes. The little loaves would be a whole fleet if I didn't put them away.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle turns every wood chip at the rim of my pocket soggy.
+b : Does that spoil supper? | What if you put a flap on?
+a : For a cupboard full of wooden food, yes. A real turnip would scarcely notice. | I'd like to. The flap would be the pantry roof and the real rain would have to go somewhere else.
+
+scene clatter
+when topic=day here.time=night self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : I tell my little onions not to roll round the cupboard after dark.
+b : Do they mind you? | What do you mind about a noise at night?
+a : They mind a bit of cloth pushed under them. Words don't go far with onions. | The bit after it when I'm waiting to find out if it'll happen again.
+
+scene knots
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : An old knot in wood helps a wooden roast look done.
+b : Do you cut the knot off? | How did you find a roast in a stick?
+a : I leave it where the dark crust ought to be. That lets me keep all the good work the wood has done. | I turned it round till the knot was on top. The rest looked hungry enough to be a kitchen.
+
+scene smallsmoke
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My sleeve smells of the hearth even when I'm showing somebody a perfectly cold bit of wood.
+b : Can you make it smell like bread too? | Doesn't it make you hungry?
+a : If I put a real loaf inside the sleeve. Then I would look very strangely built. | Often. That's how I decide it's time to stop whittling supper and go to eat some.
+
+scene homeplace
+when topic=land self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : The Commons has enough little doorways for a whole army of pocket pantries.
+b : Would you leave one behind? | Which door would you choose?
+a : If it was a spare and the doorstep was dry. I'd like someone to find the tiny loaf first. | A quiet door out of the run of boots. One boot could put the whole army out of dinner.
+
+scene worklesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I do sums with two little turnips beside the slate's narrow edge and chips in the middle.
+b : What are the turnips doing? | Are the chips worth anything?
+a : Holding their places. I'd lose track of one end if I was thinking too hard about the middle. | One each. A knotty chip spends exactly as well as a smooth one in my sums.
+
+scene truestory
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I won't put a living wolf into a tale about hunger unless I'm sure the wolf wants to hear it.
+b : Can the tale still be told? | Why not use a carved wolf?
+a : Yes. I might use an empty shelf instead of pointing at a face. | That's a good idea. Though by the time I've carved enough food for it I'd quite like my own dinner.
+
+scene dolequeue
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'd like an empty soup bowl to say 'here I am' very plainly.
+b : Would it shout? | How can a bowl talk?
+a : Not loud. A little friendly clink before the full bowls go by. | The bottom shows. Surely a grown wolf can read that kind of message without help.
+
+scene pupdream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt of a cupboard where every wooden thing was real in the morning.
+b : Even the shelf? | What went into your breakfast?
+a : Oh. If that turned into bread I'd have to eat very quickly before everything fell. | A nice warm wooden pear. In the dream something went a bit wrong before I could take a bite.
+
+scene treasure
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I've a little stump in the cupboard like a big pot with a lid stuck on.
+b : What's cooking? | Will the lid open?
+a : Whatever the visitor's favourite thing is. The stuck lid means I don't have to guess every time. | You can't quite, but you can smell my sleeve and imagine a fire underneath it.
+
+scene manner
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A new wolf can share the little empty space after the whole row of wooden onions.
+b : How can a wolf fit there? | Why after the onions?
+a : Just a little face made with two dots. There's room enough if you don't give it an enormous nose. | So the new arrival doesn't have to walk past all those curious faces in a line.
+
+scene weatherbed
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I keep one dry stick for the wettest bit of a wet afternoon.
+b : For the fire? | What do you make then?
+a : For the knife first. Then the chips can do the fire part and everybody gets a turn. | A little bit of whatever I hope we'll have to eat at night. The block doesn't have room for a whole festival.
+
+scene tiltedbox
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My cupboard has a crooked leg because I made it before I knew about level floors.
+b : Do the doors swing open? | Why not cut the other leg short?
+a : Sometimes. I pretend the little kitchen is feeling particularly welcoming. | Then I'd cut another and another. In the end I'd have a box quite happily sitting on no legs at all.
+
+story tinydoor [topic=memories]
+  : I made a door for a cupboard which was quite a bit tidier than the opening I'd cut.
+  : When I tried to put it in, the whole door went straight through and landed on its back among the wooden onions.
+  b : How did you keep it shut?
+  : I gave the opening a thin wooden rim. Now that's the shelf I like knocking on best.
+
+story smokeroast [topic=food self.likes=roast_pork]
+  : I cut a wooden roast with a dark strip all down one side and hid it beside my empty plate while I waited.
+  : My coat smelt of the fire and I almost thought the roast had learnt to smell of something too.
+  b : Did you try a bite?
+  : I touched it with a fingernail. Roast pork gives a much kinder answer when you do that.
+
+story warmchip [topic=weather self.likes=warm_rain]
+  : A shaving on my sleeve caught a drop of warm rain and held it like a spoon.
+  : The whole shaving uncurling made the spoonful leak from the far end.
+  b : Did you have to carve another spoon?
+  : No, it curled back up when dry. It just won't be the first spoon I pick for any real dinner.
+
+rule @store
+when concept=bark self.likes=full_larder
+does aside
+cooldown 8h
+say Leave one bare place for the last loaf. | Cupboard pin in before running!
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Put the little flour sack under the shelf. | My wood loaf likes a dry bottom.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Ease the hinge in, there's sleeping nearby. | Even the tiny onions are quiet now.
+
+rule @slice
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say The dark knot goes against the light wood. | Leave the small crust where it curls.
+
+dlg @1 resident.hub : There's room on the doorstep if you leave the little larder beside me.
+dlg @2 resident.hub [topic.meeting=known] : I've stocked another shelf, #topic.player#. Have a good look.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : The cupboard stays on my knee. We can still hear one another.
+dlg @4 resident.hub [here.time=night] : If we whisper, even wooden food can get a good sleep.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I make a space for the last number before I start.
+dlg @2 resident.job : I stock this wooden cupboard whenever I can find something worth carving.
+dlg @1 resident.bye : Keep the smell of something nice beside you going home.
+graft @extraloaf resident.hub
+choice Why is there always one loaf left in the corner? -> extraloaf
+node extraloaf
+say Because the last wolf through the door ought to get more than the price of the meal beside a glance at its empty shelf. The loaf can wait quite a while.
+choice Will it ever be wanted? -> extraloaf_more
+choice Shut the little pantry kindly. -> hub
+node extraloaf_more
+say I hope it will. Then I'll carve two more and put one in there. It would be funny to make a whole pantry without somebody being allowed to finish the bread.
+choice Shut the little pantry kindly. -> hub
+choice Leave the loaf to wait. -> bye
+
+
+adolescent
+line @1 greet : I've a new shelf for you to come see.
+line @1 greet.return : I've set my carving down to answer.
+line @1 farewell.return : I'll pack away the small provisions behind you.
+line @1 react.news : I'd hear it before deciding how much space to give it.
+scene joint
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I am putting real joints into the shelves of my new pocket cupboard.
+b : Wouldn't a little glue do? | How do you keep them square?
+a : It would. I like learning to mate two cuts by feel. | I put a dry scrap in the slot and see whether there's daylight underneath it.
+
+scene stocktake
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's a pleasure in counting enough food to see a household comfortably through a wet spell.
+b : Are the wooden provisions practice? | Can one cupboard make a difference?
+a : They taught me how much room an extra quantity needs. The real things add the problem of spoiling. | To the wolf in the house, quite a lot. For a neighbour, sometimes a meal or two also.
+
+scene newsmells
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've had my coat aired so long I can almost choose the degree of hearth smell in it.
+b : Which would you choose? | Can you change a memory with a smell?
+a : Enough to remember home on a wet walk. Little enough not to bring the whole fire into a clean room. | Bring it to the front, at least. A good piece of warm work has that virtue.

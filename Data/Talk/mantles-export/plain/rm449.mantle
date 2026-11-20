@@ -1,0 +1,256 @@
+# rm449, the pebble roll call (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm449
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_hakon_plankcot
+written_by codex
+title the pebble roll call
+fits stage=adult|old
+prefers job=miner
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk names_pocket_stones_until_the_sound_sticks
+likes mutton_stew evening_line tidy_house misty_dawns
+dislikes crowds drizzle
+fears a_path_that_disappears_into_deep_trees
+hopes a_clear_sightline_home_from_the_last_cut
+topics work +0.6 memories +0.5 land +0.4 pastimes +0.3
+styles comfort=solid gossip=exact refuse=quiet tease=dry
+marks oath saying
+persona #self.first# turns pebbles while remembering names and keeps the quarry's clear sky in mind whenever a road begins to close with trees.
+
+words
+oath! = Mislay my vowels | File my pebble flat
+saying! = Give a name a moment to settle against a palm | Stone remembers the pressure more than the noise
+pebble = a palm-sized pebble | a little grey oval
+nick = a vowel nick | a straight notch
+chip = a sharp chip | a dark grain
+block = a pale block | a rough squared stone
+tool = my narrow chisel | a stout chisel
+edge = a clean arris | an honest corner
+line = a dull line | a fishing line
+cork = a plain quill float | a stubby cork
+stew = a brown mutton broth | a full dish of stew
+sill = a clear sill | a wide shelf
+mist = a curtain of mist | a grey wisp
+shade = deep green shade | the crowded shade
+
+any
+opinion @1 road mixed 1 : I like a road that gives you time to see the last clear stone before the trees come together.
+opinion @1 strangers for 1 : One name heard properly can make an unknown face a sensible acquaintance.
+opinion @1 dole for 2 : Stew over a bowl edge has the merit of requiring no elaborate recommendation.
+opinion @1 merchants mixed 1 : Stone priced by size ought to arrive with every corner still on it.
+opinion @1 city for 1 : A city puts a name to its turns. I know what a comfort that is when a road gets close.
+opinion @1 houses mixed 1 : I'd admire any House that remembered its cutters' names as well as the names on its buildings.
+
+grown
+line @1 greet : There's a clear bit of sky over this spot. | I can put the stone down while we speak.
+line @1 greet.return : And a good name for this meeting from me.
+line @1 again.open : Round to the same marked corner already.
+line @1 farewell : Go where the next turn shows sky. | Mind the little loose stones when the path goes quiet.
+line @1 farewell.return : A firm landing for your own boots in return.
+line @1 react.news : Give me the names as clearly as you heard them. | I have a spare bit of memory for your news.
+line @1 react.news.new : That's a fresh set of sounds to me.
+line @1 react.news.known : I've kept that account from the earlier time.
+line @1 react.news.doubt : The name and the tale don't quite line up.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Some names are better spoken very gently after news like that.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : One more name worth keeping proud under the tongue.
+line @1 ask.how : How is the day sitting in your palm?
+line @1 answer.how : Steady. A clear sky helps the reckonings.
+line @1 sympathise : I won't forget a hurt because you told it quietly.
+line @1 reassure : You needn't fit the whole block under one arm.
+line @1 refuse : I owe some care to a different bit of work just now.
+line @1 accept_decline : No need to carve the refusal twice.
+line @1 preclose : Best get my boots back on their appointed track.
+line @1 accept_preclose : Go while the stone's still good underfoot.
+line @1 ack : That's settled squarely enough in my memory.
+scene exchange1
+when topic=work self.job=miner
+does tell.self / ask.detail / answer.detail
+a : My ears find hollow stone beneath an otherwise promising face. | I square a corner only after looking at the far end.
+b : You tap it softly? | Expecting a flaw?
+a : Just enough to ask how much stone is there. | Expecting the block to continue being one whole thing.
+
+scene exchange2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I carry a pebble when a name's got a difficult middle. | I can remember a name I heard over running water.
+b : Do you write on it? | What about the face?
+a : I turn it once for each sound until my tongue's got the route. | Less reliable. Nobody's forehead has ever pronounced its vowels for me.
+
+scene exchange3
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : Deep trees make me miss a quarry wall. | I take a wide track round a stand of dark timber.
+b : A rock wall seems more confining. | Danger there?
+a : At least its far edge stays in sight. | No special danger. My feet feel better after the longer walk.
+
+scene exchange4
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : Mutton stew ought to come with a spoon you can lean on. | I save the soft bit under the bone.
+b : That thick? | Can you spot it easily?
+a : That's one of the ambitions it ought to have. | It has a fine name in my head. The portion owed to the patient eater.
+
+scene exchange5
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I name the little disturbances round the evening float. | One pebble makes an adequate line weight.
+b : Even if no fish bites? | What if you've given it a name?
+a : A quiet hour with a few good names isn't altogether empty. | I know which one I've lost if the knot goes slack.
+
+scene exchange6
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy room has one shelf left clear for a returning hand. | I like things sorted by what my fingers recognise.
+b : What comes back on it? | How do the jars fare?
+a : My coat, my stones, whatever bit of a day needs putting down. | Glass on one end. Unglazed clay on the other. My hands don't need an introduction.
+
+scene exchange7
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : Mist at dawn can make a block look almost soft. | I like the quarry rim just beginning to show through grey.
+b : Does it sound soft too? | Reminds you of morning?
+a : One touch of the chisel and the mist can keep its opinion. | Reminds me there is clear sky above the grey stretch.
+
+scene exchange8
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A crowd's full of names getting stepped on before I can catch them. | I leave space by the wall in a press of bodies.
+b : Wouldn't remember so many? | Afraid to be hemmed in?
+a : I'd rather give each one its proper clean beginning. | I'm fond of knowing which elbow's my own.
+
+scene exchange9
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle conceals the cut line without washing it clean. | I put a small stone on my chalk rag.
+b : A proper rain would do better? | Does the drizzle blow it away?
+a : A proper anything would be a relief. | I'd rather have one reliably dry corner once the drizzle's done being indecisive.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd remember #self.friend# however often the quarry changed hands. | A friend needn't point out the longer road if I choose it.
+b : The name or the wolf? | Why choose it?
+a : A friend's name brings a whole manner of standing beside me. | Because it's open enough to see where the day went.
+
+scene exchange11
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I prefer hearing the name of the turning after the trees. | A road across open stone can be read even in poor light.
+b : What if there's no name? | By the pale patches?
+a : A clear outcrop will answer. I can give it a name myself. | And by the way the sound comes back from a boot.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account I heard ran #topic.subject# #topic.claim#. A name isn't proof. | I can remember a rumour without finding it true.
+b : What would be proof? | How do you keep those apart?
+a : A clear sight of the thing itself for a start. | I remember who was repeating words and who was looking through a window.
+
+scene exchange13
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Thin times leave odd corners of stone lying useful. | Bad weeks bring names up at the meal pot that weren't there before.
+b : Normally thrown away? | Do you point them out?
+a : Normally too busy for. Now I'm making a level doorstep from one. | I move over and let the next helping find its mouth.
+
+scene exchange14
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd favour a homeward walk with the important turns all in plain sight. | I've considered naming each pebble on a sunny path.
+b : Even from the quarry? | Get very far?
+a : One visible turn at a time would do. I'm a reasonable dreamer. | Across the first doorstep if I started before breakfast.
+
+scene exchange15
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A palm can go on feeling a chisel after setting it down. | I drink slowly after a day of dust.
+b : What eases the feeling? | Washing your throat?
+a : Turn a round pebble. Another shape gets a word in. | The words seem to come out with their edges on again.
+
+scene exchange16
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I say a grateful word over the clear bit above a dark path. | A quiet prayer lies easy in memory.
+b : Does the word open the path? | Easier than a grand one?
+a : It opens my mouth enough for another steady breath. | It has fewer corners to catch on my way back to it.
+
+scene exchange17
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I mark a bad flaw before setting the price. | A square inch lost from a cut looks small on paper.
+b : Do buyers expect that? | What about the block?
+a : The flaw's going with the buyer. Better it receives an introduction. | On the block it's the corner that won't meet its neighbour.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I put the day's pebbles in a clean bowl. | I end work by standing in clear sight of my homeward track.
+b : Will the names drain away? | Still looking at cuts?
+a : No. I've got the words by then. The stones can be ordinary overnight. | Looking at everything I don't need to cut. The eye likes a change.
+
+story tale1 [topic=memories]
+  : I carried a long name home on a pebble, fitting each sound to a smooth side as I walked. At my own door I set the stone down.
+  : It rolled under the doorstep and stuck there firmly.
+  b : Did the name stick there too?
+  : I answered a visitor using every syllable correctly. The stone had earned a warm place under my threshold and there it stayed.
+
+story tale2 [topic=work self.job=miner]
+  : I cut a lovely little sample from the clear end of a block. It sat up very handsomely on the palm I used to display it.
+  : On the worktable it fell straight over. My palm, I discovered, had been supplying the missing angle.
+  b : Did you cut the bottom again?
+  : Yes. I enjoy an obliging hand, but I couldn't reasonably expect the buyer to take mine home with the sample.
+
+story tale3 [topic=pastimes self.likes=evening_line]
+  : My line once landed beyond a pale lump of stone sticking out of the water. The float disappeared and I spent a moment considering an extraordinary fish.
+  : I stepped along the bank and found it still dangling in air where the stone had hidden it.
+  b : Did you catch anything after that?
+  : My own little burst of laughter. The fish received the evening off.
+
+rule @call1
+when concept=bark working=yes self.job=miner
+does aside
+cooldown 8h
+say Listen first, then lean into the cut. | That's a clear edge for the next mark.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Grey over the stone till the sun finds an edge. | Misty light makes a lovely soft face on hard work.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Little wet dots eating into my chalk line. | Cover the stone where the cut isn't finished.
+
+rule @call4
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say One clean cork and an evening for itself. | A still float gets a very distinguished name.
+
+dlg @1 resident.hub : Speak your name or keep it in your pocket. I can hear either sort of question.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've kept the name without needing my pebble today.
+dlg @3 resident.hub [here.time=night] : Late doesn't matter if there's room to see our feet.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep your fresh marks off my stone until we're through talking.
+dlg @1 resident.job [self.job=miner] : I cut stone at the quarry. A sound face and an open exit suit me.
+dlg @2 resident.job : I remember who wanted each job and how it was meant to finish.
+dlg @1 resident.news [world.news] : The report I remember names this. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. That fixes only the words in my memory.
+dlg @1 resident.bye : Take the road with a proper name at its far turn.
+graft resident.hub
+choice How does a stone remember a name? -> vowel_pebble
+node vowel_pebble
+say The stone provides something for my thumb to do while a difficult vowel is settling. By the end the stone could roll away and the sound would stay.
+free
+choice Do you ever forget one? -> vowel_pebble_again
+choice Goodbye. -> bye
+node vowel_pebble_again
+say I might take a moment finding the right drawer in my head. I don't declare the drawer empty because the catch is stiff.
+choice I'll leave the stone handy. -> hub
+choice Goodbye. -> bye

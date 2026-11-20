@@ -1,0 +1,263 @@
+# rm479, the narrow wedge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm479
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_beatha_foggate
+written_by codex
+title the narrow wedge
+fits stage=adult|old
+prefers job=servant talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk slips_a_whittled_wedge_under_any_door_that_might_slam
+likes spiced_cider whittling old_maps misty_dawns
+dislikes waiting smoke
+fears a_shutter_banging_through_a_quiet_house a_room_full_of_smoke
+hopes a_set_of_wedges_that_fit_in_one_small_box
+topics home +0.5 work +0.5 lore +0.3 weather +0.3
+styles comfort=quiet gossip=closed refuse=formal tease=dry
+marks oath saying
+persona #self.first# carries a small wedge whittled to stop a chamber door at precisely a hand's breadth, and regards an audible hinge as a matter requiring discretion.
+
+words
+oath! = Cross the grain | Blunt my little blade
+saying! = Give the door its due inch | An obedient hinge keeps no appointment
+wedge = a smooth wedge of ash | a thumb-length wedge
+hinge = a faintly musical hinge | the small upper hinge
+blade = the shorter knife blade | a bright narrow blade
+curl = a shaving the breadth of a nail | a pale curl of wood
+gap = the hand's breadth of air | an opening just a palm wide
+mapedge = the worn margin of a map | a frayed crease in a chart
+cord = a loop of waxed cord | a little waxed loop
+throat = a tickle in my throat | a momentary catch
+cider = a little spiced cider | a warm mouthful of cider
+smudge = a grey smear of smoke | a thumbprint of soot
+fogbank = a fold of morning mist | a thin bank of mist
+
+any
+opinion @1 houses mixed 0 : A very fine door still has two sides and somebody generally has to rub the prints off both.
+opinion @1 city for 1 : The stairs suit me. I like a place with separate landings for separate thoughts.
+opinion @1 watch mixed 0 : One may share a roof with heavy boots and retain one's own opinion of the noise.
+opinion @1 drink for 1 : A small warm measure rewards the hand that has properly finished a task.
+opinion @1 festivals mixed 0 : A closed casement improves the louder portions and lets the quieter ones through.
+opinion @1 road mixed 0 : A pencilled road remains quite straight through an astonishing assortment of hills.
+opinion @1 strangers mixed 0 : A quiet knock earns an attentive ear.
+
+grown
+line @1 greet : The door will stay there. You may speak freely.
+line @2 greet [pair.band=strangers] : A visitor. I'll put my blade aside.
+line @3 greet [here.time=dawn] : Morning suits a room before the marks appear.
+line @4 greet [here.time=dusk|night] : Evening brings the grain up in the boards.
+line @1 greet.return : I heard. The hinge was quieter than you were.
+line @2 greet.return [pair.band=friends|family] : Your knock needs very little identifying.
+line @3 greet.return [self.working=yes] : This hand can listen while the other finishes.
+line @4 greet.return [here.time=dusk|night] : A voice carries some distance through an open casement.
+line @1 kin.open [pair.kin!=no] : Come in, kin. The opening is quite sufficient.
+line @1 again.open : I left a finger's width in case you wished to continue.
+line @1 hail [pair.band=friends] : Friend. I thought I recognised the rhythm.
+line @1 farewell : May your next door open quietly.
+line @1 farewell.return : And stop short of your heels.
+line @1 react.news : Set the facts down in an orderly fashion.
+line @1 react.news.new : Fresh marks on a clean page.
+line @1 react.news.known : That entry is already quite distinct.
+line @1 react.news.doubt : I'd inspect the other hinge before judging that one.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll shut the noise outside where it belongs.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Very good. Let that word reach the inner rooms.
+line @1 ask.how : Have you come across a quiet minute today?
+line @1 answer.how : I've little to put right this instant.
+line @1 thank : You spared me some stooping. My thanks.
+line @1 deflect_thanks : I had the wedge in hand already.
+line @1 sympathise : Lean here. The panel will hold.
+line @1 reassure : Leave the matter ajar till morning.
+line @1 decline : That is a larger opening than I care to leave.
+line @1 accept_decline : Then we'll let the door rest where it is.
+line @1 preclose : I ought to put these small things back.
+line @1 accept_preclose : I can see you clear of the hinge.
+scene quiet_door
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : #wedge.capitalize# prevents a wall from acquiring a handle-shaped dent. | I leave #gap# at a door I mean to revisit.
+b : What keeps the wedge still? | Is it an invitation?
+a : The door's own weight. Delightfully economical. | To the air, certainly.
+
+scene thin_slice
+when topic=work self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #blade.capitalize# makes a smoother cut if I stop hoping to finish in one. | A good wedge needn't show where #curl# came away.
+b : How many cuts then? | Does the shaving serve any purpose?
+a : One less when the last's satisfactory. | Set it down and see whether the draught moves it.
+
+scene serving_room
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : An elbow employed as a handle leaves its evidence. | Chamber work's full of small measures.
+b : By the sound? | For instance?
+a : By the crescent I find at the height of a laden elbow. | How far to push a door before it threatens a decent wall.
+
+scene place_work
+when topic=work self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a little silence is part of a job well done. | The air inside #self.workplace# changes whenever a door swings wide.
+b : Does anybody notice? | Can you feel it?
+a : Generally only when the silence fails. | Across the back of a newly washed hand.
+
+scene hill_house
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : A Heights room gives a draught plenty of height to gather itself. | A stair in the Heights can take a surprisingly long while to finish sounding.
+b : Is that a nuisance? | You stay to hear the echo?
+a : Only once it moves papers faster than I can. | A servant has no need to. The last echo usually follows.
+
+scene old_map
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #mapedge.capitalize# often carries the bit the mapmaker couldn't make fit. | My favourite map ought to be right and very plainly isn't.
+b : Which bit? | How plainly?
+a : Generally the best road for getting out of the rain. | It gets a doorway beautifully drawn on the wrong wall.
+
+scene mist_hours
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : #fogbank.capitalize# suspends the usual division between roof and sky. | I like a dawn that gives the nearest window all the view.
+b : Is that what you like? | Mist again?
+a : Yes. Nothing to clean along the join. | A perfectly private sunrise.
+
+scene spiced_cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : #cider.capitalize# makes a pleasant stop between two disagreeable flights of stairs. | I prefer a small clean cup for cider.
+b : Where does the cup go? | Why small?
+a : On whichever landing I've just managed to reach. | The last mouthful should have a recognisable relation to the first.
+
+scene smoke_cloth
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : #smudge.capitalize# will show on a cloth before I can smell a trace. | Smoke moves round a closed door with remarkable industry.
+b : Is that a complaint? | And a draught?
+a : A quite early one, yes. | A draught assists whatever work requires the most cleaning afterwards.
+
+scene small_delay
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I can whittle something while waiting if the wait's declared honestly. | Five minutes is a tolerable pause once.
+b : How long a wait? | And twice?
+a : Name a thickness of wood. | A less distinguished ten minutes.
+
+scene private_tick
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Occasionally #throat# makes some remark of its own. | The damp has opinions about my voice.
+b : Does it want an answer? | And your opinion?
+a : A warm mouthful generally ends the discussion. | I'd prefer to keep the floor.
+
+scene pencil_road
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A pencil can cross a ridge without a single rest. | I look at the blank bit behind a mapped house.
+b : Is that why maps disappoint? | A garden?
+a : Only maps drawn by well-rested pencils. | Perhaps. Perhaps the draughtsman had finished for lunch.
+
+scene lean_room
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean weeks make a useful sliver look considerably larger. | When times pinch I sharpen a wedge for a second use.
+b : Which slivers stay? | Does it lose much length?
+a : Any I can find again after sweeping. | Less than I'd lose buying a replacement.
+
+scene open_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : A report from #world.news_from#. #world.news#. | #world.news#. The place attached is #world.news_from#.
+b : Do the hinges bear it out? | Anything further written there?
+a : I wouldn't put weight on a report that way. | That is the full extent of what I can read.
+
+scene closed_talk
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A wall mark tells quite enough without a name attached. | Private talk deserves a functioning latch.
+b : Was somebody speaking of it? | Are you closing it?
+a : Somebody was. That needn't enlarge the mark. | With particular care.
+
+scene visitor
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a visitor which stair cries out under a careless tread. | A stranger looking for a door should count the hinges.
+b : A warning? | Instead of the handles?
+a : A small act of mercy to the other sleepers. | There are dummy handles on some cupboards. Less effort goes into dummy hinges.
+
+scene wedge_case
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I should like all my different wedges to fit one case. | My ideal box has no insistence in its lid.
+b : Cut smaller wedges? | What does a lid insist on?
+a : A slightly larger case seems the prudent course. | Snapping beneath my thumb whenever my attention wanders.
+
+scene prayer_gap
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : In a prayer I prefer a pause suited to the breath I need. | A gentle door suits a chapel.
+b : Does silence count? | For late arrivals?
+a : The Bright One has better ears than an impatient congregation. | For anybody coming quietly with a difficult thing to say.
+
+story door_lesson [topic=work|memories]
+  : I made a wedge slim enough to go under a stubborn cupboard door.
+  : The door swung beautifully. I put the wedge into the cupboard for safekeeping.
+  b : How did you open it next?
+  : I made another wedge. My collection began with a want of foresight.
+
+story wrong_bridge [topic=travel|memories]
+  : An old drawing promised me a bridge with three elegant arches.
+  : Found a short plank crossing a ditch and took the map out again.
+  b : What did you find on it?
+  : Beautiful penmanship. I gave the plank the respect due a bridge that was actually there.
+
+story curl_flame [topic=home|memories]
+  : One still evening I lined up five wood curls to locate a draught.
+  : All five moved when I bent down for a better look.
+  b : Was there a crack in the wall?
+  : I had been investigating my own breathing with remarkable thoroughness.
+
+rule @straight_edge
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A narrow curl. That's enough taken off.
+
+rule @clear_pane
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Bright pane, cruel to a careless cloth.
+
+rule @door_hold
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Just ease it past that projecting nail.
+
+rule @close_soft
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Keep a thumb beneath that talkative latch.
+
+dlg @1 resident.hub : There is a quiet hand's breadth left in the afternoon.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you may trust the door to remain precisely there.
+dlg @3 resident.hub [here.time=dusk] : Have a word while the room still has a little colour.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : The threshold provides a suitable interval.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#. A door should seldom announce a servant.
+dlg @1 resident.news [world.news] : This came from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That latch is closed quite deliberately.
+dlg @1 resident.bye : I'll catch the panel behind you.
+graft resident.hub
+choice How do you fit a wedge to a door? -> palm_space
+node palm_space
+say Start with the opening you want. I use a hand's breadth. Slip the wood under till the grain catches, then make a pencil mark.
+choice Why mark the wood? -> spare_wedge
+choice I'll try the hand's breadth. -> hub
+node spare_wedge
+say The mark shows how much wood can come off without spoiling a good fit. The shavings are mine. The quiet belongs to the room.
+choice A quiet room sounds good. -> hub
+choice I'll let the door rest. -> bye

@@ -1,0 +1,262 @@
+# rm423, the chalk stall (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm423
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_ottilie_slagley
+written_by codex
+title the chalk stall
+fits stage=adult|old
+prefers job=sailor warmth=warm
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk chalks_a_market_stall_around_empty_crates_to_test_the_space
+likes roast_pork evening_line market_bustle autumn_wind
+dislikes crowds deep_mud
+fears a_busy_counter_with_nowhere_to_turn
+hopes a_market_stall_bought_with_carriage_money
+topics work +0.5 dreams +0.5 prices +0.3 pastimes +0.3
+styles comfort=make_space gossip=plain refuse=measured tease=warm
+marks oath saying
+persona #self.first# chalks a market stall around an empty crate, measuring every grand promise of space by the simpler question of whether two laden wolves can pass.
+
+words
+oath! = Chalk and slats | Six narrow counters
+saying! = Leave room for the elbows | A promise takes no floor space
+chalk = my broad chalk end | a blunt white stub
+box = an empty crate | the spare case
+pitchline = the chalk boundary | the pale edge
+turnroom = the free corner | a clear square
+wrap = the pork parcel | a folded meat wrap
+float = the evening cork | my line float
+loadbar = a shoulder stick | the short pole
+scrape = a boot scuff | the rubbed mark
+gap = the passing gap | a wolf-wide opening
+crisp = the crackling strip | a crisp brown edge
+mudedge = a rim of mud | the brown margin
+soundwalk = a quiet stretch of bank | my bit of shore
+
+any
+opinion @1 houses against 2 : A House may promise a dependable delivery under an impressive seal. I still look for a sound bottom to the crate.
+opinion @1 sump for 2 : I'd rather call a crowded low street home than have all the room on a quay and no voice there I could trust.
+opinion @1 dole for 1 : There's no profit in making a hungry wolf carry an empty basket home with great respectability.
+opinion @1 watch against 1 : A loud order to move along can make an already tight way too narrow for anybody to get through.
+opinion @1 merchants mixed 0 : I judge a market counter partly by the space it leaves for a customer with a parcel already in paw.
+opinion @1 road for 1 : Wide enough for the laden traveller is quite different from wide enough for an empty promise.
+
+grown
+line @1 greet : Hello. The chalk leaves you room beside me. | Come where a crate can pass behind you.
+line @2 greet [pair.band=strangers] : New to my little chalk patch, I see. | Welcome. Nobody pays to stand within the line.
+line @3 greet [here.time=dawn] : Morning. Clean boards for another set of chalk marks. | Still sufficient room in this hour to stretch our elbows.
+line @1 greet.return : Yes, hello. I'm just stepping inside the line. | I heard. The crate can speak after you.
+line @2 greet.return [pair.band=friends|family] : For you I've saved the least draughty corner. | There's a welcome face among all these square boxes.
+line @3 greet.return [here.time=night] : Late hello. My chalk shows up pale even now. | Welcome through the dark patches to the lighter bit.
+line @1 again.open : You've come round my pretend stall again already. | Back within rubbing distance of this line.
+line @1 hail [pair.band=friends] : Come see if this will take a second basket! | Here. I'd value an opinion on this particular corner.
+line @1 farewell : A generous gap in the next crowd for you. | Give the front edge of your parcel some air.
+line @1 farewell.return : Off you go with both elbows to yourself. | I'll lift my chalk and let you through.
+line @1 react.news : Say what you saw before we inspect the crate's stamp. | I'm ready for the plain load of the news.
+line @1 react.news.new : I'd not been expecting that parcel of information at all. | First hearing for me all the way through.
+line @1 react.news.known : Yes. It comes in much the shape I heard earlier. | That report's already passed through my bit of ground.
+line @1 react.news.doubt : I'd look under the label before passing that as fact. | That's a surprisingly weightless crate for such a firm claim.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Put the ordinary things down here. You can have my attention for the hurt. | A hurtful discovery after a long journey. Rest here.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's news that can take up space without crowding anybody. | I'd spare my best corner for good hearing like that.
+line @1 ask.how : How's your share of breathing room today? | Any part of your load I could shift for a spell?
+line @1 answer.how : A little worn. Still keeping my corners square enough. | Plenty on my shoulder, with a little space for company.
+line @1 decline : I'd be standing on somebody else's bit of ground if I promised that. | The little I have available already covers an earlier commitment.
+line @1 accept_decline : Fair. You've drawn a line I can respect. | Then I've space enough to set my own feet down.
+line @1 preclose : I'll rub the marks away before somebody needs the whole way clear. | Time I went and took the next weight properly.
+line @1 accept_preclose : Use that clear stretch while it's there. | Go on with my thanks for the company.
+line @1 thank : You saved me a sore elbow. That's worth remembering. | I noticed the care you took to leave me space. Thanks.
+line @1 deflect_thanks : I had the loose end by me anyway. | The way became easier for both of us at once.
+line @1 sympathise : Stand inside this patch and take a whole quiet minute. | I'll leave you breathing room without asking a word.
+line @1 reassure : We can move one crate before assuming the whole yard's full. | The small clear bit is enough to begin from.
+line @1 ack : Yes. That's the corner I meant. | The width makes sense now I see the mark.
+line @1 give.advice : Try turning your shoulders before measuring a passage by sight. | Empty a crate before trying it in three different places.
+scene stalloutline
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I draw a stall round an empty crate whenever there's space to practise. | I can try my own market counter without owning so much as a board.
+b : What are you testing? | Is the chalk a deposit?
+a : Whether I can turn to give a customer change without knocking off the supper parcel. | No. I wipe it up before the real owner comes looking for rent.
+
+scene groundproof
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : An unloading mark is a promise to leave a place clear till the crate reaches it.
+b : What if there's something already there? | Who makes the promise?
+a : I wait till the space is actually free. Chalk will not carry a crate on its own. | Whoever sends the crate and whoever sets it down. I like to see both sides look first.
+
+scene boxmark
+when topic=work self.job=sailor self.working=yes
+does tell.self / ask.detail / answer.detail
+a : The brand on a crate's side says very little about the state of its underside.
+b : Suspect the sender? | What do you actually look at?
+a : I suspect wet boards when I've seen the rain. The brand doesn't change my mind either way. | Dark soft ends and anything liable to give when the weight shifts. I like a safe pair of paws.
+
+scene bustlebounds
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I like market bustle best where the flow has a little space to turn. | A lively market and a crush of elbows aren't quite the same pleasure.
+b : You've a favourite spot? | Where's the difference?
+a : A corner beside a widening. Plenty to see and nobody has to climb over me to see it too. | Whether somebody hemmed in can get out with a full basket. I watch the feet.
+
+scene crowdburden
+when topic=travel self.dislikes=crowds
+does warn / react.self / assess
+a : A crowded turn will narrow just when a broad load needs the space. | Leave some room on the inside if you're walking beside a laden carrier.
+b : Wouldn't it be easier outside? | What if nobody moves?
+a : Not for a sudden change in direction. The parcel's far end needs room to swing behind me. | I set it down and ask. A bumped shoulder takes longer to mend than a hurried schedule.
+
+scene windstall
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : I enjoy an autumn wind coming through an empty frame where an awning will go one day.
+b : Won't it steal the awning? | What's the pleasure in it?
+a : If I put one up poorly, yes. A trial on a bare frame is cheap instruction. | It shows where the draught runs. I can choose a welcoming side for a waiting customer.
+
+scene mudboots
+when topic=travel self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail
+a : On a muddy road a laden basket seems to grow an extra stone between each step. | I'd choose a long paved turn over a short bargain in mud.
+b : Worried about your boots? | Even on an empty journey?
+a : I can wash the boots. A missed step can empty a week's worth of provisions. | Mostly. I enjoy a good pull of fresh air rather more than a good pull of mud at my ankles.
+
+scene fishline
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : When I go out with my evening line I allow a full crate's width of room round the cork in my thoughts.
+b : Why crate width? | You measure the water too?
+a : Habit. A little patch I can watch without trying to follow the entire tide. | Only in my head. I like the idea that the float has room nobody's going to fill with a parcel.
+
+scene roastparcel
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I leave the crisp bit against the top of the pork wrapper where it won't be squashed.
+b : What's underneath? | Carrying rules even at supper?
+a : The softer slices. Anything with a beautiful snap deserves an undamaged journey. | Especially then. I want to eat my crackling as crackling after my load's safely landed.
+
+scene trustbuyer
+when topic=prices
+does give.opinion / react.self / assess
+a : Tell me the useful width and the carrying charge before praising the owner of a stall.
+b : You don't care who lets it? | Which matters most?
+a : I do. I'll learn more about that from an honest answer than a collection of fine names. | Whether a real customer can use it comfortably. A cheap narrow hole is still a narrow hole.
+
+scene barecoin
+when topic=prices self.wealth=poor
+does tell.self / ask.detail / answer.detail
+a : I set a little coin by for my own pitch when the week's work allows. | I can draw most improvements to my pretend stall without a single copper.
+b : Long time till you can afford the pitch? | Do you ever manage a real improvement?
+a : Longer if I have to spend the savings on living. I count what I can actually keep. | Yes. I can discover a poor arrangement while it costs me a chalk end instead of a month's rent.
+
+scene sharepath
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A Sump landing makes a thorough test of how big a parcel really is. | I've had my best ideas about a stall while trying to get my supper up the last Sump turn.
+b : The walls measure it for you? | Tight at home, is it?
+a : Yes. A bruise makes a very accurate report if not a particularly welcome one. | Tight enough that I appreciate an entirely empty corner.
+
+scene kinddoor
+when topic=friends self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd leave a place for #self.neighbour# to put a basket down if I got my own stall. | I would gladly hold the dry corner for #self.neighbour# on a rough day.
+b : Even without buying? | Is it good business?
+a : Certainly. The privilege of putting a load down shouldn't require buying more weight. | I hope so. It's good neighbourliness even if my account never shows a difference.
+
+scene newarrival
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I like a stranger to see how to get out of a crowd before being asked to walk into it.
+b : Why think about leaving first? | Would you go in with a stranger?
+a : It makes the welcome feel more honest. A visitor can choose the length of the stay. | As far as was welcome, yes. Company shouldn't become another elbow in the way.
+
+scene latehold
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late arrival makes a clear space look tempting for other folk's loads. | If the wagon's late, I mark the waiting space twice.
+b : Who respects a second mark? | Why not use the gap meanwhile?
+a : Somebody curious enough to ask. Then I can explain why it's being kept clear. | Because a load needs somewhere to go when it does reach us. Doubled handling takes real time.
+
+scene shortcrowd
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean week can draw a tight crowd round the cheapest provisions. | Low prices mean very little if a laden customer never reaches the counter.
+b : What would help? | Would you keep the crowd waiting?
+a : A clear return way for somebody already served. Then another buyer can step up. | I'd keep a whole row from waiting while two wolves tried to pass in too narrow a place.
+
+scene gossipcrate
+when topic=gossip
+does give.opinion / react.self / assess
+a : A fine stamp and an idle rumour can both travel round a harbour without saying what's in a box. | I don't open a personal matter because the outside mark looks interesting.
+b : What if the box is yours to land? | Never curious?
+a : Then my concern is where it belongs and whether it's safe to carry. Other business can stay shut. | Frequently. Curiosity doesn't buy a right to a private inventory.
+
+scene softtrain
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Making room for the smaller wolf in a crowd seems to me its own little kind of prayer.
+b : A prayer with a chalk line? | Why a smaller wolf?
+a : Sometimes. May the Bright One recognise that I've paid attention to who needed a hand. | Because I can see over a shoulder. It's useful to remember some folk can't.
+
+story rainchalk [topic=weather|memories]
+  : A sudden shower washed my imaginary counter clean off the ground except for one white corner under a crate. I looked at that corner a good while.
+  : It was all the working space my original plan had actually left in dry weather too.
+  b : Did you redraw it?
+  : Quite differently. A rainstorm can describe the shortcomings of a roof I haven't even purchased.
+
+story nightfloat [topic=pastimes|memories]
+  : Once I watched a cork drift by a very square patch of moonlight and immediately began planning which side would make the best counter.
+  : Noticed I'd been contemplating a trading pitch entirely surrounded by water.
+  b : A floating one, then?
+  : I drew up the line and gave the idea back to the fish. I already have one job involving wet goods.
+
+story endparcel [topic=food|memories]
+  : I wrapped two slices of roast tightly and tucked the crackling beside them. A long walk turned the bundle round in my pocket.
+  : Unwrapped it to find the prized crisp side underneath the whole dinner.
+  b : Did it survive?
+  : It kept one magnificent little corner. I stopped wrapping all three pieces on the same level after that.
+
+rule @square
+when concept=bark
+does aside
+cooldown 8h
+say Step through and turn once with the basket. That's my measure. | An empty box can tell us whether a plan has elbows.
+
+rule @work
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Make sure the landing patch is clear before moving the crate. | The mark is a place, not a substitute for looking at it.
+
+rule @wind
+when concept=bark self.likes=autumn_wind
+does aside
+cooldown 8h
+say Autumn air straight through this corner. I'll put the waiting patch there. | Let that welcome draught get round before raising a side cloth.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say The chalk still catches a little lamplight. | An evening line and no crate on my shoulder. Good.
+
+dlg @1 resident.hub : My chalk counter is open to anybody with a question and a little standing room.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the imaginary awning has moved round one corner since your last look.
+dlg @3 resident.hub [here.time=night] : The load's set down and we needn't raise our voices to speak.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep clear of the real parcels and we can have a perfectly direct conversation.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. I look for a clear landing place before worrying about what a crate's mark has promised.
+dlg @2 resident.job : I plan for the receiver's elbows as carefully as for the weight of what's being handed over.
+dlg @1 resident.bye : A dry landing for your next load.
+graft resident.hub
+choice Would a chalk stall tell me if my basket fits? -> chalktry
+node chalktry
+say Stand inside and turn towards the person coming past. If you have to shuffle the basket over the chalk, the space is too tight. Easy to move a line today.
+free
+choice What's the next thing you'd add? -> restslat
+choice I'll try standing here. -> hub
+node restslat
+say A slat to rest the basket on while a customer chooses. That keeps the door clear and the weight off a sore wrist.
+choice That fits on the drawing. -> hub
+choice I'll leave you some room. -> bye

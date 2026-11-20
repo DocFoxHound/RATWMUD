@@ -1,0 +1,407 @@
+# rm318, the returning chime (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm318
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_berit_coalworth
+written_by codex
+title the returning chime
+fits stage=adult|old
+prefers job=priest
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
+quirk traces_echoes_of_the_chapel_bell_across_a_map
+likes hard_cheese old_tales old_maps warm_rain
+dislikes drizzle deep_mud
+fears a_muddy_church_sill a_tower_out_of_hearing
+hopes a_high_room_with_an_echo a_map_of_every_listening_place
+topics lore +0.6 travel +0.5 pastimes +0.4 weather +0.3 dreams +0.3
+styles comfort=warm gossip=discreet refuse=gentle tease=none
+marks oath saying
+persona #self.first# traces the return journey of a bell stroke on a map, can make an old tale last the length of a shower and seeks a high room where the chapel may still be heard.
+
+words
+oath! = Crack the clapper  |  Rattle my hinge
+saying! = The returning note belongs to every ear  |  Listen past the first stroke
+map = a soft old map | my folded hill sheet
+ring = the returning note | a thin bronze aftersound
+mark = a crescent of chalk | my curved chalk mark
+morsel = a fine slice of hard cheese | the pale cheese shaving
+tying = a bell-rope knot | the little binding hitch
+post = the dark doorpost | the long upright
+hearth = a sun-warmed ledge | a patch of warm stone
+oldpage = the faded lane | a street in pale ink
+grain = the narrow crack | a finger of worn stone
+rag = my dry knee cloth | a folded scrap of sacking
+rind = the last cheese rind | a tough yellow edge
+wetsoft = a mean spit of rain | that floating damp
+mud = a boot-deep hollow | the clay by the lower step
+seal = a small pin mark | a map pinprick
+dayend = the late bronze stroke | an evening peal
+ledger = my pocket notebook | the little black book
+tower = the nearest tower | a high bell opening
+
+any
+opinion @1 church for 2 : A door left quiet for a grieving wolf and swept for a muddy one is one part of worship I can do well.
+opinion @2 road for 1 : A walk through a folded map always discloses something the ink couldn't make out.
+opinion @3 strangers for 1 : A new ear stands in a doorway and hears a note the regulars have stopped noticing.
+opinion @4 city for 2 : There are corners of Ridgemere where a chapel across town may as well be whispering at your shoulder.
+opinion @5 houses mixed 0 : I admire a soundly roofed hall. I also think the good dry space under it ought to welcome more feet.
+opinion @6 sump against 1 : Childhood mud catches at the heel a long time after the climbing begins. I'd keep my last shoes on higher boards.
+opinion @7 dole for 2 : A piece of bread ought to go straight to the waiting mouth. Reverence needn't slow the hand.
+opinion @8 festivals for 1 : All those bells lend the city a different set of streets to find its way along.
+opinion @9 times against 1 : When a bit of hard cheese must go three ways, the ringing grows louder at an empty table.
+
+grown
+line @1 greet [pair.band=strangers] : Your footfall's welcome inside this patch of quiet. | Come where it's easy to hear a low voice.
+line @2 greet [here.time=dawn] : Welcome as the day begins its ringing. | Morning. A fine hour for listening from a doorway.
+line @3 greet [here.weather=rain] : Leave the mud its due at the sill. Come in. | Welcome out of that spray about your ears.
+line @4 greet [self.working=yes] : Stand by me where you can watch my hands. | A welcome from the working side of the threshold.
+line @5 greet.return : Your greeting came back warm from the wall. | I heard you clearly and I'm glad.
+line @6 greet.return [pair.band=friends|family] : Familiar feet have their own little peal. | Welcome into the comfortable hearing distance.
+line @7 greet.return [here.time=night] : Good company late on a quiet round. | A voice beside the last note of the evening.
+line @8 farewell : Keep an ear out for the turn that leads home. | May the bright side of the hill be yours.
+line @9 farewell.return : I'll listen to the steps go safely out. | Carry what you need of this quiet with you.
+line @10 again.open : A second passing like a returning chime. | Our road has doubled round its fold again.
+line @11 kin.open [pair.kin!=no] : Kindred can ask their questions from the close side. | Pull the family seat round toward my good ear.
+line @12 hail [pair.band=friends] : Over here in the bell's shadow! | Look where the high note comes back!
+line @13 react.news : Set the report down where we can hear what follows it. | I shall listen for the quiet part of the account.
+line @14 react.news.new : That note has reached me for the first time. | A fresh road opening on the page.
+line @15 react.news.known : I've heard the first telling ring through already. | That account has its mark beside an earlier hearing.
+line @16 react.news.doubt : I'm hearing more of the echo than the first account. | I'd like to find the place the first clear word came from.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : A sad stroke needs a shoulder beside it. | Let's sit through the silence that follows such a word.
+line @18 react.news.glad [topic.kind=birth|marriage] : Let that sound carry to the furthest sill. | I'd set a bell swinging for news so welcome.
+line @19 answer.how : Keeping pace with my own restless feet. | Fit for another climb if the view's worth it.
+line @20 decline : I'd lose the other end of my work if I took that on. | That would leave a promise hanging with nobody to mind it.
+line @21 accept_decline : Your reasons have had a fair hearing. | A kindly limit is still a kindness.
+line @22 sympathise : Sit here. I can carry the next little duty across for you. | I'll give that ache some quiet company while you rest.
+line @23 thank : A kindness with a long sweet echo. | You've smoothed some broken paving under my feet.
+line @24 deflect_thanks : I was crossing the room that way in any case. | Let the kind word go out to somebody further off.
+line @25 preclose : I've another listening place to mark before I forget. | Time to see where my own footsteps lead next.
+line @26 accept_preclose : Go where your next clear stroke is calling. | I shall hear the ending long enough.
+line @27 farewell [here.weather=rain] : Keep the folded edge against your coat. | May the mud release your boots without argument.
+line @28 farewell.return [here.time=night] : A warm sill when the night round ends. | Rest within hearing of a kindly voice.
+line @29 greet [pair.band=friends] : Here comes a welcome sort of echo. | The map had room for a friend at this turning.
+line @30 answer.how [self.working=yes] : Enough purpose for my hands and motion for my feet. | Still sweeping in time with the stroke.
+line @31 preclose [here.time=dusk] : I should make a mark before there's too little light for chalk. | Time for the evening edge of my round.
+scene mapring
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #mark# on #map# means the bell stroke came back instead of dying there. | Every crescent on my sheet is a place with two bells for the price of one.
+b : Which was the first sound? | A second tower just out of sight?
+a : The tower's stroke. The other belongs to a stone face along the lane. | One bell and a good wall will make a proper little duet.
+
+scene cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I shave #morsel# thin enough to take light at the edge. | Hard cheese belongs in my pocket when there's walking to do.
+b : Does the taste change when it's thin? | What keeps it from oiling the map?
+a : Quite. The salt spreads up the edge before the rest has warmed. | Two separate folds. I don't care to navigate by grease marks.
+
+scene oldturn
+when topic=lore self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : A long tale needs a pause a wolf can stand in. | Old tales tell you which turning to listen at if you learn them by heart.
+b : Where do you put yours? | What do you hear there?
+a : Where the walker might go wrong. Give every ear a chance to choose. | The first little doubt that the easy road's the proper one.
+
+scene drizz
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #wetsoft# eats a chalk mark without ever washing the wall clean. | Drizzle wants to settle in every crease of my map.
+b : Would a pin hole last longer? | Why keep opening it in the rain?
+a : #seal# for position, chalk for the sound. Different witnesses. | Because I lose the precise turn once I'm two doors further on.
+
+scene warm
+when topic=weather self.likes=warm_rain
+does tell.self / react.self / assess
+a : Warm rain finds the higher notes in the paving. | I like looking up when the rain feels warmer than a dry sleeve.
+b : How can stone make a high note? | Your paper might feel otherwise about it.
+a : Strike shallow stone in small drops and there's music enough. | I wrap the map and give my face the whole shower.
+
+scene bootpull
+when topic=travel self.dislikes=deep_mud
+does ask.advice / give.advice / assess
+a : How would you free a heel from #mud# without leaving the shoe? | What is the least undignified way to get out of deep clay?
+b : Give the foot a slow twist before you lift. | Find a solid shoulder and use it. The mud feels no embarrassment.
+a : Yes. Better than tugging straight up like an impatient bell ringer. | Fair words. I'll offer my shoulder first if somebody goes in ahead.
+
+scene sexton
+when topic=work self.job=priest self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I earn the quiet by sweeping the entry before the first steps come. | I find #post# at #self.workplace# by touch and listen before I open.
+b : Why does sweeping earn quiet? | Which sound do you expect outside?
+a : Feet can settle softly when there isn't grit giving every footfall away. | A step waiting outside. I'd hate to fling a door against an early guest.
+
+scene learning
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : The first lesson is what a room sounds like before you start doing things to it. | Each learner takes a quiet moment before the work changes hands.
+b : That sounds very little like a lesson. | What happens in the interval?
+a : Few wolves ever try it on their own. Then a creak can tell you something. | You hear who's already at work beyond the door.
+
+scene higher
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I was brought up where mud gets the last word. I'd fancy a room with better acoustics. | I want to end my climbing with still a little of the hill below my window.
+b : Whose words would you hear up there? | And can you still hear your bell?
+a : A chapel voice or a passing wolf. Anything better than mud pulling at soles. | That's why I mark my map instead of choosing by the height alone.
+
+scene friendview
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'll find a listening place wide enough for #self.friend# and me. | I'd lend #self.friend# my best marked map for a quiet evening.
+b : What if your friend can't catch that second note? | Wouldn't you miss your own marks?
+a : Then I'd be interested to learn what another ear did catch. | I can verify the marks by walking those hills. I'd like the excuse.
+
+scene estate
+when topic=land self.quarter=estate
+does tell.self / react.self / assess
+a : Estate walls throw back a different sort of footfall from plain street walls. | By the Estate walks a tree can interrupt the finest echo halfway home.
+b : Does the step sound more dignified? | How does a tree get between a bell and a wall?
+a : Only if it's walking with dignity in the first place. Stone reflects what's there. | Gathers the sound among the leaves. Try again when winter has stripped it.
+
+scene oldplace
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : A black line drawn up the hill above Ridgemere can't tell you how the slope feels. | Turn the map east and a wet stair still goes stubbornly uphill.
+b : Can a mark tell you anything one's legs can't? | So why turn it at all?
+a : Where a bell will reach your ear while you're resting those legs. | I enjoy seeing the city's outline from the direction I'm bound for.
+
+scene rind
+when topic=food
+does offer / accept / assess
+a : Take #rind# with you for broth. It has one more job in it. | Try the thin shaving. I'll keep the tough rim for my pot.
+b : I'd welcome a thick taste in thin soup. | You'll want some of the good bit yourself.
+a : Scrape the dry side first. There's a comfortable mouthful waiting in it. | I've kept a fair piece. My generosity likes a sound footing.
+
+scene uncertainty
+when topic=gossip
+does give.opinion / disagree / concede
+a : A word at a distance can sound like five different mouths in agreement. | Give a rumour a fine stone wall and it comes back sounding authoritative.
+b : Wouldn't all the voices have different notes? | Then would you hush the wall?
+a : If they were really five. Listen for an identical little break in the middle. | I'd find the mouth before I gave the wall a reply.
+
+scene poorpot
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Take the warmed place while I see if the pot has another share. | There's a little space by #hearth# if supper's going to be late.
+b : Warm seating with a small crust would answer. | I'll stay till the warmth comes through my coat.
+a : Then let's begin by settling you warm and look for the bread together. | I'll sit your other side. The stone's generous for a little while.
+
+scene roadplan
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : Next walk I mean to cross the exact point where a chapel drops out of hearing. | I want to find the lane with no stroke at all on my return map.
+b : How do you know you've crossed it? | What if the whole city hears every bell?
+a : Back three paces at the next peal. The line is somewhere under my heel. | Then I've a nice day's walking before I get to prove it.
+
+scene deacon
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : I don't ask a learner to mend a hinge with a hymn. | A good keyed joint knows the difference between pressure and a prayer.
+b : Wouldn't a hymn make the work a little lighter? | Are you teaching reverence or woodwork?
+a : Certainly. But fetch the oil first and leave your other paw free. | Care. Quite a lot of care wears either set of clothes.
+
+scene priestchair
+when topic=work self.job=priest
+does tell.plan / ask.detail / answer.detail
+a : I want to place a chair where a quiet visitor can sit without being expected at the front. | I measure a swept space by what a tired guest can do with it.
+b : Near the door for a quick escape? | What else belongs beside the chair?
+a : Near enough. Rest isn't an agreement to join a procession. | Room to turn a sore knee without a whole bench getting up.
+
+scene oldink
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : #oldpage# on a map of mine ends in a curious little hook. | The page suggests a road that turns sharply toward a blank square.
+b : Did somebody mean to draw a chapel there? | Has the road actually finished?
+a : Or a tree, or a well. I enjoy going to look before I make up my story. | The end of the ink. The road may have quite a bit to say beyond.
+
+scene clayprice
+when topic=prices
+does give.opinion / disagree / concede
+a : Good boots are an expensive way of measuring the mud a whole street can hold. | I'd pay more for one sound step than for a week of promises to mend it.
+b : Somebody must promise the work before it starts. | A stone step's dear in its own right.
+a : Fair. I'd have the promise followed by a properly chosen stone. | So I'd put it where every passing sole can get some use from it.
+
+scene feast
+when topic=season
+does tell.self / react.self / assess
+a : A feast peal can bring a whole respectable street out to its windows. | I enjoy watching a crowd listen before it gets busy speaking.
+b : Who would you be watching first? | Is there much chance of that at a festival?
+a : The last wolf at the furthest window. Makes a fine end to a line. | One breath between the beginning of a peal and the first shout of recognition.
+
+scene chapelroof
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : I'm uneasy at water striking the same patch over and over by a sill. | The rain's been working its way toward my folded chart.
+b : A little can be wiped up before anybody slips. | I can hold the dry corner up for you.
+a : I'll see to it with #rag#. No use asking a foot to discover the trouble. | Kind. Hold it till the crease has a proper roof.
+
+scene quietrest
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : Can you picture a bed where the late peal comes straight through a high shutter? | My ideal room has two listening places and only one chair.
+b : What would keep the rain out of that room? | Where does the second listener sit?
+a : A slant in the slats. Sound has a kinder notion of visiting than water. | The corner that holds a standing wolf and a fine echo. I'll lend the chair.
+
+scene paperwork
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I enter #dayend# in #ledger# by the length of its tail. | I mark a faint bell return with one curve and a strong one with two.
+b : How do you measure the tail of a sound? | Which one gets the name attached?
+a : Count the breaths before ordinary street talk comes clear around it. | The faint one more often. A strong tower's easy enough to find again.
+
+scene showroute
+when topic=newcomer
+does offer / accept / assess
+a : Here, take my drawn turn if you're seeking the middle streets. | I can walk as far as the second chime with you if you like.
+b : I'd sooner have the voice of a guide at the first corner. | Two chimes would be plenty. What's the road beyond like?
+a : Then I'll come until the chalk and the paving have properly met. | Firm if you avoid the dark hollow under the broken spout.
+
+scene winterdoor
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A cold hinge can make a remarkable imitation of a much smaller bell. | I check a draught beside #post# with the lightest shaving in my pocket.
+b : How do you silence the hinge? | Does the shaving need to be wood?
+a : Oil, time and a gentle swing. It deserves to have an easy winter too. | Cheese works in a pinch, though it's a poor use of a good supper.
+
+scene handnote
+when topic=pastimes
+does tell.self / react.self / assess
+a : There's a shape you can draw for a note without knowing the least of music. | I use a hook of chalk for something the ear loses at the end.
+b : Would a singer recognise it? | Which shape would represent an endless sound?
+a : A walker who listens might. I'm not writing for a choir yet. | I wouldn't try. Bell rope wears; even the finest note takes its leave.
+
+scene bothcall
+when topic=lore
+does give.opinion / disagree / concede
+a : I like the tale where the bell answers the lost traveller twice. | A good old story can guide a wolf a little way in the dark.
+b : Some folk might say it just echoed. | The road in a story doesn't have real holes in it.
+a : Of course it echoed. The traveller still heard an answer and found the way. | Quite. Look at the real road with your other eye while you're listening.
+
+scene clearview
+when topic=travel world.wagons=late
+does tell.self / react.self / assess
+a : A wagon late on a wet afternoon can keep a whole entry full of waiting feet. | A delayed wagon gives me time to see which waiting wolf has nowhere dry to sit.
+b : Are you going to give the crowd a song? | You'd miss the wheels coming yourself.
+a : A few chairs will do more good at first. Voices will find each other. | If I'm making somebody more comfortable I can bear to be second at the door.
+
+scene laststairs
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I want to mount a final house stair and hear the low voices clearly from below. | One well-chosen upper sill would let me retain the finest thing about my beginnings.
+b : Some wolves want to leave every low sound behind. | Which part of the lower streets would you keep?
+a : That's too much leaving. I only want a bed out of the mud. | Feet coming home near enough together to see each other safe.
+
+story echo_penny [topic=lore]
+  : There's an old story of a traveller trying to pay the second chapel after hearing its bell answer the first. Couldn't find the second door.
+  : An elderly wolf pointed to a smooth wall. The traveller tapped a copper against it and the sound came back.
+  b : Was the debt reckoned paid?
+  : The traveller left the copper at the only chapel door and gave the wall a very cordial farewell.
+
+story map_rip [topic=pastimes]
+  : A map tore along the exact line where I thought the road ought to bend. I tied the halves with a slack loop of thread.
+  : Out walking, the string blew over the paper and pointed up an entirely different hill.
+  b : Which way did you go?
+  : Up the hill. My road was still marked and the weather didn't often give such explicit directions.
+
+story cheesepeal [topic=food]
+  : I shaved a hard cheese rind by a very resonant wall. Each scrape made a little chirrup behind me.
+  : I tried a different angle and got two chirrups every stroke.
+  b : Did you find out what answered?
+  : A loose pane in a wooden shutter. I ate the cheese and left the fitting a good snug wedge in payment for the music.
+
+story quiet_step [topic=work]
+  : I swept a doorstep clean enough to hear the difference when a single small stone rolled onto it. I meant to fetch the broom at once.
+  : Then a sparrow hopped down and nudged the stone three times with its bill.
+  b : Did you leave the bird to finish sweeping?
+  : Until the little seed came into view. A perfect floor can be an inconvenient thing for a hungry visitor.
+
+story upper_bowl [topic=dreams]
+  : I once carried supper up a whole hill to see whether the land looked any different with no hunger pulling at me. Sat down on a high stone.
+  : A bell reached me as I was lifting the bowl. It set a ripple going on my spoon.
+  b : Could a bell do that all the way up a hill?
+  : No. It was my own excited paw. The sound had arrived just the same.
+
+rule @echo
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Two clear returns off that wall. | There's a new little hook for my map.
+
+rule @doors
+when concept=bark working=yes self.job=priest
+does aside
+cooldown 8h
+say Hear the waiting step before you open. | That sweep leaves the chair a clean way in.
+
+rule @lesson
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say First discover the room's ordinary noise. | May I see how you set the tool down?
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Scant use putting chalk under that runnel. | The centre fold wants cover first.
+
+rule @cheese
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say Hard enough to shave clear across. | Save the rind for another mouthful.
+
+rule @road
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say The ink arrives before the walking does. | A rectangle of paper can't show that climb.
+
+dlg @1 resident.hub [topic.meeting=stranger] : There's a comfortable listening place here. You're welcome to it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a good returning sound in my day.
+dlg @3 resident.hub [here.time=night] : The evening makes a small voice audible over a long way.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Let's stand a pace apart and see whether one civil word can travel between us.
+dlg @5 resident.job [self.job=priest self.workplace] : I see to the practical needs of #self.workplace#, down to the stone under your boot.
+dlg @6 resident.job : I finish the unattended small duties before the largest crowd comes through.
+dlg @7 resident.bye : Carry the kindly sound as far as it will travel.
+dlg @8 master.learn [here.teaches=yes] : You can begin by listening to the work before you put a hand on it.
+dlg @9 master.learn [here.teaches=no] : Teaching must wait for another occasion. One small question may fit between duties.
+dlg @10 master.work : Steady handling, a sense of which thing comes first, and some attention to the wolf who comes after.
+dlg @11 master.wages : Learning brings no wages. You may sell your finished work. Learning goes faster at my elbow.
+dlg @12 master.takes [here.take_on=no] : #here.take_on_why# I like the grounds for a decision heard clearly.
+dlg @13 master.refused : #topic.why# There is the part we must attend to.
+dlg @14 master.bye : Leave your hands easy. A good lesson carries past the hour.
+dlg @15 church.greet [here.day=rest] : A welcome within these walls. The Restday service is #here.service#.
+dlg @16 church.greet [here.day!=rest] : Come in while the floor's quiet and find yourself a place.
+dlg @17 church.service [here.day=rest] : Today you can join us for #here.service#. There's a place open within hearing.
+dlg @18 church.service [here.day!=rest] : On Restday we have #here.service#. You're welcome to come and listen.
+dlg @19 church.poor : Restday bread reaches the households most in need. Come and ask about a share.
+dlg @20 church.offering : Anything freely spared can help us make another welcome.
+dlg @21 church.thanked : Your gift adds another place where someone can sit and eat.
+dlg @22 church.refused : #topic.why# The willing thought is welcome here.
+dlg @23 church.bye : May the Bright One light the part of your road I can't see.
+graft resident.hub
+choice What does the curved mark mean? -> echo_mark
+node echo_mark
+say A bell struck out of sight, a wall returning it to my ear. Come when the stroke is sounded and hear the sound come home.
+choice Are you mapping a way home too? -> echo_room
+choice Let's fold the chart for now. -> hub
+node echo_room
+say Yes. I want a room high on the hill and I'm finding where the lower city's sounds can still reach. A dry room doesn't have to be a deaf one.
+choice A good use for a map. -> hub
+choice May you find that room. -> bye
+
+graft master.learn
+choice Why listen before beginning? -> work_ear
+node work_ear
+say Any wooden joint will tell you when it has begun to carry extra weight. Listen to the empty room first and you know which creak is the new one.
+choice Then do you oil the joint? -> first_look
+choice Tell me about the lesson. -> learn
+node first_look
+say Look where the pressure came from first. There's no use quieting a good warning until you see what it warns against.
+choice I'd hear what the work involves. -> work
+choice I'll begin by listening. -> bye

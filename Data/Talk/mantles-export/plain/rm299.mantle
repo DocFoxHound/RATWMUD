@@ -1,0 +1,402 @@
+# rm299, the unpriced hour (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm299
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_lionel_ropestack
+written_by codex
+title the unpriced hour
+fits stage=adult|old
+prefers job=priest
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk keeps_one_hour_off_the_reckoning
+likes hard_cheese riddles old_maps first_snow
+dislikes deep_mud stale_bread
+fears mistaking_thanks_for_a_bill
+hopes for_a_free_hour_nobody_has_to_earn
+topics faith +0.4 pastimes +0.3 friends +0.2 memories +0.2
+styles comfort=steady gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# leaves a deliberate gap in the day's reckoning and takes offence when a kindness comes back priced.
+
+words
+oath! = By my unwritten hour | Cross out my best figure
+saying! = Thanks need no witness | A gift goes out without a tether
+hour = the unpriced hour | my blank hour
+margin = a clean span of paper | the broad white margin
+list = my private tally | a short list
+ink = my grey ink | a streak of dark ink
+card = a little blank card | a square of rough paper
+edge = the board's edge | a clean desk edge
+cloth = my soot cloth | a soft old flannel
+heel = a hard cheese heel | a dry milky corner
+path = a road inked twice | the road with two ends
+riddle = my smallest riddle | a question with a quiet answer
+flake = a flat snow crystal | a white six-pointed star
+muck = mud above the welt | a deep black rut
+crust = a dusty crust | a stale scrap of bread
+cup = a thick cup | the bowl of a little cup
+quiet = a hush before a reading | quiet under the arches
+tab = an unwritten note | a little loosened page
+
+any
+opinion @1 church for 1 : Serving the Bright One leaves me plenty of work after the candles are out. I value those hours too.
+opinion @1 city for 1 : The city's paid me back in chalk marks, sore feet and the sound of a home latch. I call it a fair account.
+opinion @1 sump for 1 [self.quarter=sump] : Down in the Sump my spare hour fills itself without my having to plan a charitable deed.
+opinion @1 times for 1 : Bread to spare and an untroubled place to eat it make my own count generous.
+opinion @1 watch against 1 : I'd remember a patrol that came down to sit awhile instead of coming to fetch somebody.
+opinion @1 dole mixed 0 : I'd serve whatever stew is there and leave the tally of deserving bowls unfinished.
+opinion @1 houses mixed 1 : A large name is just as capable as a small one of signing an honest receipt or a foolish promise.
+opinion @1 drink mixed 0 : A shared cup eases some tongues and makes another set speak carelessly. I take each cup as it comes.
+opinion @1 merchants mixed 0 : There's good reason to keep accounts at a counter. I mind when the counter follows me home.
+
+grown
+line @1 greet [pair.band=strangers] : You're welcome in this free hour. | Step where we've room for introductions.
+line @2 greet [self.working=yes] : I'll put the paper aside. | Speak while my ink is resting.
+line @3 greet [here.time=dawn] : Morning. First page still clean. | A fresh hour and a visitor.
+line @4 greet [here.time=dusk|night] : Evening. My book's nearly shut. | Welcome into the late quiet.
+line @1 kin.open [pair.kin!=no] : Kin don't need a ticket for my time. | I know that family tread.
+line @1 again.open : You've found a second blank minute. | Back within the selfsame reckoning.
+line @1 greet.return : Welcome. I'll spare the minute gladly. | You have my attention in full.
+line @2 greet.return [pair.band=friends|family] : Your name carries its own welcome. | Good company can sit both sides of my desk.
+line @3 greet.return [self.working=yes] : I can hear with the pen resting. | Room between entries. Go ahead.
+line @4 greet.return [here.time=dusk|night] : Evening. There's oil for another word. | The dark's left this chair easy to find.
+line @1 farewell : Keep something of the day unpriced. | Walk without an account to settle.
+line @1 farewell.return : I'll put away the figures. | You take the rest of the hour free.
+line @2 farewell.return [here.time=night] : May a quiet lamp meet you further on. | No reckoning till morning now.
+line @1 react.news : Let me hear the whole sum. | Set it before me in plain words.
+line @1 react.news.new : No earlier entry for that. | Something new on this quiet page.
+line @1 react.news.known : That's already under my eye. | The word reached me a little earlier.
+line @1 react.news.doubt : I'd hear the witnesses before I total that up. | That account wants another look in clear light.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : For that grief I'd leave an hour empty. | Rest here. Figures can wait.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a blessing I can remember without ink. | Good news buys its own quiet minute.
+line @1 ask.how : How much of today belonged to you? | Had an hour free to spend?
+line @1 answer.how : I've saved a little silence for myself. | Content with my account so far.
+line @1 decline : I'd rather keep this stretch free for another purpose. | I'm reluctant to spend a promise I haven't made.
+line @1 accept_decline : A clear no keeps us both honest. | We can close that page.
+line @1 thank : That hour came freely and I value it. | I'll keep that kindness in memory.
+line @1 sympathise : I've kept this chair quiet for you. | Put the figuring aside until it hurts less.
+line @1 reassure : Some reckonings can wait a whole season. | My spare minute's yours if you need longer.
+line @1 preclose : I'd best set my papers square. | Time to leave an hour open.
+line @1 accept_preclose : Take whatever time your errand needs. | I'll keep the place in our talk.
+line @1 deflect_thanks : Don't turn a gift into an invoice. | I put no price beside that favour.
+line @1 ack : Quite clear. | Duly heard.
+line @1 give.advice : Leave a margin for something unforeseen. | Spare yourself one hour's accounting.
+line @1 offer : Can I sit in while you rest? | Let my pen carry that load awhile.
+line @1 praise : A kindly piece of reckoning. | You saw the owner behind that figure.
+scene gift
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I remember favours better when I never put them in ink.
+b : Why keep them unwritten? | Do you forget small ones?
+a : No wolf should come upon an entry and think it's a bill. | Little favours are the ones that get under the skin.
+
+scene open
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep a gap on my list of things to do.
+b : For an emergency? | Where on the page?
+a : For whoever comes by with no particular emergency at all. | In the middle. An empty line at the bottom gets eaten.
+
+scene preach
+when topic=faith self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I leave a pause before I begin to speak of the Bright One.
+b : For a late arrival? | To think of the words?
+a : For whatever noise the last arrival's been carrying inside. | The words are ready. My ears take longer.
+
+scene meal
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : A hard cheese lets me measure a meal with the knife.
+b : Do you divide it evenly? | How thin can you cut?
+a : Evenly first. The hungrier mouth can ask for another sliver. | Thin enough for light to find one end of the slice.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : My favourite riddle is about a debt nobody can collect.
+b : A bad loan? | A promise?
+a : A favour freely given. It lives only in the memory that received it. | Closer to a thank-you. You owe it until somebody asks a price.
+
+scene map
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Two different roads on this map have exactly the same last bend.
+b : A drawing mistake? | Which do you trust?
+a : One copyist must have sneezed in precisely the same spot twice. | The bend with a bit of dust ground in along it. Somebody walked that one.
+
+scene snow
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : First snow covers every old footprint at once.
+b : So none remains? | What about new marks?
+a : They're all there underneath. I just like a fresh top sheet now and then. | Somebody makes one straight away. That's the pleasure of clean snow.
+
+scene mire
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : One deep mud hole collects more of my shoe than I'm willing to pay.
+b : Tried stepping wide? | What did you lose?
+a : That's what fills the second mud hole beside it. | Only polish so far, along with most of my composure.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I know stale bread by the dust it shakes onto a cuff.
+b : How can a dusty crust be saved? | Before you've bitten it?
+a : Dip it. Hunger isn't choosy about the first impression. | I'd prefer to find the dust outside my teeth.
+
+scene paws
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I carry a rag for the soot after tending lights.
+b : Can it all come off? | Why keep the soot off?
+a : Slow work. I still have clean pages still to handle. | Somebody with a pale coat may want a paw on the shoulder.
+
+scene friendname
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I've kept a whole afternoon unpriced in case #self.friend# wants to sit.
+b : Would you call it wasted otherwise? | What if there's no visit?
+a : No. There are few possessions finer than time you can give away. | Then I'll have the pleasure of expecting one.
+
+scene neighbour
+when topic=friends self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I like an ordinary bit of business with #self.neighbour#.
+b : More than a grand favour? | How ordinary?
+a : A returned jug doesn't oblige anybody to make a speech. | A cup passed over and passed back with the handle to the paw.
+
+scene chapel
+when topic=faith self.priest
+does tell.self / ask.detail / answer.detail
+a : I wonder whether #self.priest# likes the stillness after a prayer the same way I do.
+b : What can you hear in it? | Would you ask?
+a : Who's still drawing a hard breath and might want company. | Quietly, once we're outside. I wouldn't spend the stillness asking.
+
+scene breadprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : There's little pleasure in a low price if it shames the wolf paying it.
+b : Would you pay more? | How can a low price shame anyone?
+a : I would use a quieter voice at the counter. | By announcing why it was lowered across an entire room.
+
+scene lads
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I like a newcomer to take ten minutes for looking around.
+b : Before asking the way? | Even with bags to carry?
+a : Before being asked to account for the journey. | Heavy bags earn a seat, which buys an even better ten minutes.
+
+scene name
+when topic=gossip
+does tell.feeling / react.self / assess
+a : I'll admit to knowing a name without supplying a confession to go with it.
+b : That offends some wolves. | I wouldn't pry.
+a : I'd rather give offence than make currency out of a confidence. | Then you're welcome to sit beside my closed book.
+
+scene soot
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I brushed soot onto my list once and lost half the sums.
+b : Did you remember them? | Who paid for that?
+a : The things worth doing, yes. Some of the others were freed by accident. | My sleeve. A good day's service from a cheap bit of cloth.
+
+scene truth
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I dislike the phrase you owe me when spoken over a gift.
+b : Even in jest? | Would you say so?
+a : A jest can come due years later in the wrong mouth. | Fairly plainly. It isn't a favourite subject of mine.
+
+scene donor
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A candle bought by a small coin gives just as much light near its wick.
+b : Would you write down the donor? | What if it burns shorter?
+a : Only if the donor wanted to be remembered that way. | We can sit closer while it's burning. That costs nothing.
+
+scene street
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : My Sump doorstep has room for exactly one unhurried visitor.
+b : One only? | Because it's narrow?
+a : One standing. I sit sideways to make space for another. | Because somebody left room for the door to open. All to the good.
+
+scene ink
+when topic=season here.season=winter
+does tell.self / ask.detail / answer.detail
+a : Cold ink makes one's hand look very deliberate.
+b : Isn't it deliberate? | Does the pen stick?
+a : I rather hope so. A cold pot isn't an excuse for unkind words. | It drags a little. Gives the thoughts time to draw abreast.
+
+scene bag
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I pack my papers inside my spare shirt.
+b : To spare the papers? | And where does the ink go?
+a : To spare them and give a wandering cuff something useful to do. | Nowhere near the shirt. I've paid for that lesson once.
+
+scene light
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : Dusk opens the blank line in my day's list.
+b : What goes in there? | Why wait till dusk?
+a : A visitor, if one comes. Otherwise the declining light itself. | A blank line begun too early tends to get filled by somebody holding a pen.
+
+scene calm
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When a small slight gets under my fur I count the things that have gone well.
+b : Any success? | Does it cool the temper?
+a : Enough to stop me speaking quite so soon. | A little. I still have to decide what to do with what remains.
+
+scene watchword
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I remember a uniform most clearly when the wearer takes time to look at a face.
+b : Does that happen often? | Could you pick out the face afterwards?
+a : Not often enough to spoil the memory. | Sometimes. But I shouldn't care to wager another wolf's reputation on it.
+
+scene question
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a riddle with the answer entered in every margin.
+b : Could you read it? | Does that spoil the riddle?
+a : Only after I woke. The answer was to put the page down. | I didn't think so. Putting the book down was the difficult part.
+
+scene poorfood
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a lean time I like a long table with a quiet head end.
+b : Why quiet? | Who should sit there?
+a : A mouth should be able to eat without thanking every other mouthful. | Somebody willing to pass the bread before making any speech.
+
+scene caravan
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Waiting for a wagon eats up hours that won't show in the cargo.
+b : Do you count them? | Who owes those hours?
+a : I count my own before complaining about another wolf's delay. | Usually nobody able to hand them back, so I try to spend them usefully.
+
+scene handwork
+when topic=work self.job=priest self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I take time to move the heavy seats myself.
+b : To spare somebody the work? | What does a seat teach?
+a : To remember what I'm asking when I call for another row. | That sitting quietly sometimes begins with somebody lifting the furniture.
+
+scene walkpast
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once walked straight past a good turn offered without ceremony.
+b : Did you come back? | What did you miss?
+a : I did, in time to accept without making another ceremony of it. | A sheltering elbow. A wolf can be very busy composing thanks while getting wet.
+
+story receipt [topic=memories]
+  : I saved a slip of paper for years, believing it marked a small debt I had yet to settle. The ink blurred to a grey smudge in my pocket.
+  : One morning I opened it in clear light. It said that the bowl was already paid for and that I should bring the bowl itself back.
+  b : Did you have it still?
+  : I'd been using it to hold my receipts. I was able to clear two accounts with one walk.
+
+story dots [topic=pastimes self.likes=riddles]
+  : I wrote a riddle on a fresh page. The answer was a dot, so I put a single dot at the very bottom for anybody who gave up.
+  : By evening an invisible quantity of soot had come through the window and landed there. I could no longer pick out my own answer.
+  b : Was the riddle spoiled?
+  : Improved. Several dozen equally correct solutions cost me no extra ink.
+
+story mapglue [topic=pastimes self.likes=old_maps]
+  : I tried to mend a torn street on a map and gummed the two ends a finger's width apart. A blank square appeared in the busiest part of town.
+  : I could have taken the patch off. Instead I sat looking at this open space that seemed to cost nobody any rent.
+  b : What did you put there?
+  : One pencil bench. I've found no occasion to build on it since.
+
+story crumb [topic=food]
+  : I tried softening a stale crust under my cup, hoping the heat would reach it before I finished drinking. The cup leaned slowly as the crust softened.
+  : I caught the handle just before half my tea could go towards watering the cheese. The bread came out flat and very determined.
+  b : Was that fit to eat?
+  : Every bit. Warm in one corner, resolute in the other three.
+
+story list [topic=faith self.job=priest]
+  : Once I put every parish duty into my pocket in perfect order. Just beyond the last landing the wind lifted my neat little list clear of my fingers.
+  : It sailed past the landing. By the time I caught up I'd spoken to two waiting wolves and helped stand a bench on its feet.
+  b : Did you get to the duties?
+  : Those had been the duties. The list was certainly read, just in a less orderly manner.
+
+rule @aside1
+when concept=bark self.job=priest self.working=yes
+does aside
+cooldown 6h
+say Wipe the lamp soot before touching the page. | One pew clear near the entrance.
+
+rule @aside2
+when concept=bark here.time=dusk
+does aside
+cooldown 7h
+say Time for the hour I leave unwritten. | Set the pen across the spare line.
+
+rule @aside3
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say Leave the blank square its bench. | Two inked roads caught in one crease.
+
+rule @aside4
+when concept=bark self.dislikes=stale_bread
+does aside
+cooldown 9h
+say Bread for broth, dust for the cuff. | Soft corner inside the hard crust.
+
+rule @aside5
+when concept=bark self.likes=riddles
+does aside
+cooldown 10h
+say Let the question rest a moment. | There's an answer outside every margin.
+
+rule @aside6
+when concept=bark here.season=winter
+does aside
+cooldown 11h
+say Turn the inkpot's cold cheek to the lamp. | A little warm water for the stiff nib.
+
+dlg @1 resident.hub : There's an hour in my pocket that belongs to nobody. Sit down if you'd like some of it.
+dlg @2 resident.hub [topic.meeting=known] : You can spend my spare time again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Speak in your own words. I can stand a plain answer.
+dlg @4 resident.hub [here.time=night] : The lamp's trimmed. We can take a few minutes yet.
+dlg @5 resident.hub [here.time=dawn] : My list is still quite short. Bring your business in.
+dlg @1 resident.job [self.job=priest self.workplace] : I attend to the needs of #self.workplace#. Some come on a printed list and some come through the door.
+dlg @2 resident.job [self.job=priest self.trade_words] : #self.trade_words.capitalize#. The work that pleases me most comes without a bill.
+dlg @3 resident.job : I put things in order while trying to leave a little room for what I cannot reckon.
+dlg @1 resident.news [world.news] : I can pass on this much. #world.news#
+dlg @1 resident.bye : Keep a blank line somewhere in tomorrow's business.
+dlg @2 resident.bye [here.time=night] : Go home by a kind light. I've no charge for the oil.
+dlg @6 resident.hub [self.working=yes] : You have my working chair for a moment. Give me your account quietly.
+dlg @7 resident.hub [pair.band=friends|family] : Yours is a visit with a place already kept for it.
+dlg @1 church.greet [self.job=priest here.day!=rest] : Take an ordinary seat here and an ordinary breath. A quiet word reaches the Bright One here.
+graft resident.hub
+choice Is there really an hour nobody owes you? -> no_bill
+node no_bill
+say Every day I leave a line empty. If I spent it hearing another wolf out I'd hardly call that a debt. You can sit still and see what happens to the time.
+mood calm
+free
+choice What if nobody comes near it? -> no_guest
+choice I'll sit quietly for a moment. -> hub
+node no_guest
+say I can spend it on the pleasure of seeing my own pen stay still. There's room enough in a day to be both giver and receiver.
+choice That squares your book neatly. -> hub
+choice I'll give you your quiet. -> bye
+
+graft @riddle resident.hub
+choice What has two ends but no distance between them? -> ends_riddle
+node ends_riddle
+say My road on a map folded just so. One end of the sheet touches the other. I like a riddle that saves a little shoe leather.
+free
+choice What if I unfold the map? -> ends_open
+choice I'll let the ends meet. -> hub
+node ends_open
+say You get all your distance back. Sometimes that's the better gift. Not every trip is made more pleasant by cutting it short.
+choice I'll take the full walk. -> hub
+choice I've spent enough time at this end. -> bye

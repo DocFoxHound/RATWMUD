@@ -1,0 +1,413 @@
+# rm217, the sill measurer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm217
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rmx_gorm_halford
+written_by codex
+title the sill measurer
+fits stage=adult|old
+prefers role=merchant job=crafter
+traits temper=nervy talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk measures_door_sills_with_a_notched_card
+likes crisp_apples evening_line sharp_knife first_warm_day
+dislikes drizzle cold_tea
+fears an_invisible_crack missing_the_first_trickle
+hopes one_high_dry_room
+topics work +0.5 weather +0.4 home +0.2 food +0.2 gossip -0.3
+styles comfort=prepare gossip=cautious refuse=explain tease=none
+marks oath saying
+persona #self.first# measures door sills against a notched card and explains a worry down to its last fraction, with little to say about private matters.
+
+words
+oath! = Sills and splinters | Mercy on the bottom shelf
+saying! = Water keeps a better ledger | A dry mark costs nothing
+gauge = my notched card | the strip with the nicks
+crest = the highest nick | the dark notch
+chip = a nick you can feel | a bite out of the edge
+lip = the sill lip | the raised stone
+slope = the fall of the paving | the slant underfoot
+wedge = a little packing wedge | a twist of folded felt
+pane = a clear square | a sheet of window glass
+flare = a wink of reflected light | a brief white glimmer
+wrap = a straw jacket | a sleeve of dry straw
+band = a loop of stout cord | a flat binding
+fruit = a sharp green apple | an apple firm under the thumb
+skin = a ribbon of peel | the curling green skin
+float = a cork scarcely bigger than a pip | a sliver of cork
+draught = lukewarm tea | tea gone the colour of mud
+crease = the fold across the middle | the tired crease
+shelf = the upper ledge | the high board
+
+any
+opinion @1 city mixed 1 : These terraces give water somewhere to go. Unfortunate if the place it chooses happens to be your front room.
+opinion @1 drink against 1 : A careless word has no handle to catch it by. A drink loosens plenty such words.
+opinion @1 festivals for 2 : At a fair you can ask who laid a paving stone and someone will fetch the wolf who laid it.
+opinion @1 merchants for 2 : Wrap, carriage, breakage. The asking price has a long walk before it reaches a purse.
+opinion @1 road against 2 : A level mile drawn in ink can shake the contents of a cart to bits.
+opinion @1 strangers against 1 : Give a visitor a chair, certainly. I'd sooner keep the cupboard key myself.
+opinion @1 newcomers mixed 1 : A new pair of eyes might find the leak. Show me first where the buckets belong.
+opinion @1 watch for 1 : Two steady paws apart in a doorway can quiet a scramble before anything smashes.
+opinion @1 houses mixed 0 : A seal looks excellent on an order. It holds none of the weight in transit.
+
+grown
+line @1 greet : Mind #gauge#. Nearly sat on it myself. | A moment while I clear you a level spot.
+line @2 greet [pair.band=strangers] : We've yet to compare notes, I think. | Room beside me, provided you mind that ledge.
+line @3 greet [here.time=dawn] : First light shows every nick in a sill. | This early the step has scarcely a scuff.
+line @4 greet [here.time=dusk|night] : Come alongside. Shadows make a step look deeper. | Light's tricky now. There's a level patch here.
+line @1 greet.return : Heard you perfectly from here. | A welcome sound, your voice.
+line @2 greet.return [pair.band=friends|family] : Lovely. I'll finish my reckoning with company. | You've caught me fussing again, no doubt.
+line @3 greet.return [self.working=yes] : My ears are free. Both paws occupied. | Speak over this shoulder while I finish.
+line @4 greet.return [here.time=dusk|night] : Evening. Closer now, so I can see you. | I recognised the step before the greeting.
+line @1 again.open : Our paths make a tidy cross today. | Another meeting to enter on my card.
+line @1 kin.open [pair.kin!=no] : You can move my things without asking. | Sit nearest. Plenty of room for us.
+line @1 farewell : Lift your feet at the threshold. | Good going. Fold that corner in first.
+line @1 farewell.return : Off with you, on level ground. | I'll hear the rest another meeting.
+line @2 farewell.return [here.time=night] : Sleep easy above the gutter. | Take the better lamp for going home.
+line @1 react.news : Where did the first account come from? | Give me the part you're sure about.
+line @1 react.news.new : I'd missed that completely. Let me take it in. | That's another mark on today's reckoning.
+line @1 react.news.known : Yes, that squares with my first hearing. | The account got here ahead of you.
+line @1 react.news.doubt : I'd want another witness before passing that along. | A little too smooth to be the whole account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Terrible to be left counting what's gone. | I'd help put things back in order.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : My worries can make room for that news. | Tell it twice. I'll listen twice.
+line @1 ask.how : Anything weighing on you today? | You've carried something here besides yourself, perhaps?
+line @1 answer.how : All accounted for, including a little unease. | No pressing trouble I can put a measure to.
+line @1 answer.how.busy [self.working=yes] : Counting while answering makes for slow work. | I'll be easier once this lot is away.
+line @1 sympathise : A shock leaves a hairline long afterwards. | You needn't carry the whole crate alone.
+line @1 reassure : Let's see what holds before we start lifting. | I've a steady grip once the waiting ends.
+line @1 decline : Leave me out this time. I'd spend it worrying. | You need a lighter heart than mine for that.
+line @1 accept_decline : Better a plain answer than a shaky promise. | I'll strike that possibility off, then.
+line @1 thank : You've taken a real weight off my reckoning. | I'll enter that on the credit side.
+line @1 deflect_thanks : Put that kindness by for the next carrier. | I'd already brought the extra packing.
+line @1 preclose : I've one measurement left before I can settle. | My card is waiting at another door.
+line @1 accept_preclose : Go finish your reckoning. I'll finish mine. | I'll spare you the remaining figures.
+line @1 ack : Exactly that width. | Yes, I follow the distinction.
+line @1 ask.detail : Which end tipped first? | At what point did that change?
+line @1 ask.advice : Would you risk one more lift? | How would you steady this corner?
+line @1 give.advice : Check the bottom before you trust the lid. | Put a cushion under the doubtful side.
+line @1 offer : Here, use my spare strip of felt. | My shoulder's free for a moment.
+line @1 warn [world.bandits=near] : The road looks ugly. Travel with voices you know. | I'd leave that journey on the slate awhile.
+scene notch
+when topic=home|pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : My card has a nick for each sort of sill. | Run a claw across #gauge#. Little staircase, isn't it?
+b : How do you remember which is which? | Why make the cuts so deep?
+a : Anything below #crest# gets a second look. Saves remembering addresses. | Ink won't tell me a thing in a dark passage.
+b : I'll remember the card when the gutter starts muttering. | Handy when you're feeling for the latch as well.
+
+scene swell
+when topic=weather here.weather=rain
+does tell.worry / ask.detail / answer.detail
+a : Card's swollen. My measure is lying to me. | Here's the trouble with a paper gauge in rain.
+b : By much? | Going limp on you?
+a : A hair. Enough to put me below a sill I thought was safe. | Stiff enough. It's the swelling I mind.
+
+scene rolling_seed
+when topic=land|travel
+does tell.self / ask.detail / answer.detail
+a : I let an apple pip roll before I judge a lane. | That piece of paving would take a seed uphill, by the look.
+b : What does the pip know? | Uphill?
+a : More than my eye about where the water's bound. | Let one go and the paving makes a liar of your eyes.
+
+scene apple_test
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : Listen when I halve #fruit#. | I'll take a blemish on an apple over a bruise.
+b : What am I listening for? | How can you tell?
+a : A little crack before the blade gets through. There. | A blemish stays level under the thumb.
+
+scene blade
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I try a blade on #skin#. Tea can wait. | No sense in shaving the whole apple to see if a knife cuts.
+b : Doesn't it tear? | How much do you take?
+a : Only when I've been lazy with the stone. | A flap the width of my nail, then back in the drawer.
+
+scene cold_cup
+when topic=food self.dislikes=cold_tea
+does tell.complaint / react.complaint / assess / tease
+a : That's #draught#. I kept explaining and missed my cup. | I know tea's gone cold before I touch the crock.
+b : A short explanation next time? | Is the colour different?
+a : Two cups next time. I know my habits. | The smell quits climbing to meet me.
+b : Explaining two cups could take you a whole pot. | Your ears have a long wait for tea from your nose.
+
+scene cork
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : The float's the pleasure. A fish is almost a complication. | My evening line can hang perfectly still for ages.
+b : No bait, then? | Doesn't waiting bother you?
+a : A crumb. I wouldn't want to cheat either party. | Not when I've picked the thing I'm waiting for.
+
+scene pane_edge
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail / ask.detail / answer.detail
+a : Hold the sheet edgeways and #flare# tells you more. | Look sideways along #pane#. See that little bend?
+b : More than a face-on look? | Will the bend break?
+a : Face-on I see my own worried face. Edgeways I see the work. | Possibly never. I set that one aside all the same.
+b : Where would you put a mirror, then? | How would you mark the doubtful one?
+a : Across the room where it can't flatter my work. | A twist of felt through the cord. My fingers could find the mark in darkness.
+
+scene felt
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A cart can jolt and the felt gets the bruise. | I leave a little give under every cup.
+b : Felt under the base? | Why leave any play?
+a : And between the rims. Two good cups can ruin each other. | A tight wooden box passes every jolt straight through.
+
+scene binding
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Twist #band# too far and the wrapping buckles. | One loop takes the strain, the second keeps things tidy.
+b : How can you see that under the cord? | Couldn't one do both?
+a : The corner lifts just before it folds. | Until a paw catches in it, yes.
+
+scene bubble
+when topic=work|lore self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : A little bubble can make a plain cup quite dear to me. | I like a mark that's caught inside the glass.
+b : Even if a buyer objects? | Why inside?
+a : Then I'll keep that cup for cold tea, which serves us both right. | There's no scrubbing it away by mistake.
+
+scene light
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : First light travels along an edge like a messenger. | At dawn I can see every chip on the sill.
+b : What's the message? | Too much to see, perhaps?
+a : Usually that I missed a spot with the cloth. | Precisely why I have hours of daylight ahead for repairs.
+
+scene high_room
+when topic=dreams|home
+does tell.plan / ask.detail / answer.detail / assess
+a : There's a room in my head so high the gutters can't reach it. | When I imagine a fine room I start with the threshold.
+b : What shows through its window? | Before the windows?
+a : I'd trade the view for one reliably dry cupboard. | A window can face a wall. A bad threshold faces the whole street's wash.
+b : A cupboard you can trust sounds like quite a prospect. | I see. Dry paws before fine scenery.
+
+scene pour
+when topic=smalltalk|pastimes
+does tell.self / ask.detail / answer.detail
+a : I pour with my ear as much as my eye. | A cup's note climbs as it fills.
+b : Does that keep the table dry? | Could you do it blind?
+a : Except when somebody asks how I'm doing it. | Not over your good table. Over a basin, perhaps.
+
+scene warm
+when topic=season here.season=spring
+does tell.feeling / react.self / assess
+a : Spring gives me the itch to empty cupboards. | I'd like a whole warm afternoon for airing cloth.
+b : Even the high cupboards? | What would you do while waiting?
+a : Especially those. Nobody checks behind the best things. | Count it, turn it, count again. That's my idea of leisure.
+
+scene mistake
+when topic=memories|pastimes
+does tell.self / ask.detail / answer.detail
+a : I once measured my measure against itself and pronounced it perfect. | I keep two cards now. There's a reason for that.
+b : Who found the mistake? | One for company?
+a : My own door. It wouldn't shut on my fine opinion. | One indoors, one out. A comparison worth making.
+
+scene small_noise
+when topic=health|smalltalk
+does tell.worry / ask.detail / answer.detail
+a : A little tick can keep my ears up all supper. | I dislike a noise that leaves no mark.
+b : Even a clock? | Can't you leave it be?
+a : A clock I can account for. A single tick out of place troubles me. | Once I know what made it I'll overlook it gladly.
+
+scene faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks once a thing is safely down. | My prayers begin with a deep breath out.
+b : Never before lifting? | Too tired to speak?
+a : Before lifting I need every ounce of attention. | Relieved. That breath belongs to the Bright One.
+
+scene fair
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I like a fair where I can ask how every stand was made. | At a fair I end up examining the trestles.
+b : Do the wares get a glance? | Loose on their feet?
+a : Certainly. I admire anything surviving a shaky stand. | Most stand beautifully. I like to know why.
+
+scene neighbor
+when topic=friends self.neighbour
+does tell.feeling / react.self / assess
+a : I'd be easy leaving #gauge# with #self.neighbour#. | I can bear company from #self.neighbour# even while counting.
+b : That's a high honour for cardboard. | Company puts you off?
+a : Higher than for silver. Silver I can replace by weight. | Usually. There's company that lets a pause alone.
+
+scene rumour
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I put a doubtful story in an imaginary cupboard. | Every rumour wants weighing, and my scales are busy.
+b : Does it ever come out? | Busy with better goods?
+a : Only if something solid turns up to set beside it. | With my own mistakes, which are plentiful and properly mine.
+
+scene late
+when topic=caravan world.wagons=late
+does tell.worry / ask.detail / answer.detail
+a : Late wagons mean packing and unpacking my plans. | I'd like a margin wide enough to swallow a late wagon.
+b : Which plan comes first? | A margin in what?
+a : What can wait another day without spoiling. | Time. The sums in coin come afterwards.
+
+scene hard
+when topic=times world.times=hard|lean
+does tell.feeling / react.self / assess
+a : In a lean spell the mended things earn their keep. | When times pinch I unfold the old wrappings.
+b : Even old string? | For a second use?
+a : Old string gets shorter. It seldom stops being useful. | Or a fifth, provided a frayed end isn't doing the holding.
+
+scene arrival
+when topic=newcomer
+does tell.self / react.self / assess
+a : I'll show a newcomer the level way round. | My directions start with the step people trip over.
+b : How many extra turns? | Before the street name?
+a : Often. I'd sooner explain a detour than a broken load. | Nobody needs a street name while picking themselves up.
+
+scene silence
+when topic=friends|smalltalk
+does tell.self / ask.detail / answer.detail / reassure
+a : If I fall quiet I'm probably adding something up. | I don't take offence at a long pause.
+b : Should I wait? | What comes through when voices stop?
+a : Or talk. I'll remember where I lost my place. | Usually the end of whatever I was talking over.
+b : I'll keep talking. Nod when you've found your figure. | I'll leave a pause for the words I missed.
+
+scene lane
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : In this city the short way cuts across too many slopes. | I prefer a turn that keeps a load against the hill.
+b : How much longer is your way? | Doesn't that tire one side?
+a : Depends on what you're carrying home intact. | Yes. A level landing gives you room to change shoulders.
+
+scene gutter
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail / ask.detail / answer.detail
+a : A gutter changes tune when its mouth is full. | I count the beats between the drips while it's raining.
+b : Higher or lower? | Can you forecast the wet that way?
+a : Lower, then a gulp, then watch your toes. | Only a minute ahead. A useful minute for shifting a box.
+b : Is that gulp the danger sign? | Which box would you move?
+a : More of a last courtesy from a gutter about to misbehave. | Whichever bears a paper label. A wet label sends a dry load astray.
+
+scene night
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : At night the lamps put two edges on every step. | Dark makes a deep chip look perfectly flat.
+b : Which edge do you trust? | Feel it with your foot?
+a : Neither until I hold the lamp still. | With a stick. My toes deserve some consideration.
+
+scene supper
+when topic=food|home
+does tell.self / react.self / assess
+a : I set my cup inland of the plate. | My idea of a neat supper leaves a wide rim round the table.
+b : Inland? On a table? | Expecting more guests?
+a : Away from the edge. Everything has a shore, even supper. | Expecting my elbow. It travels further than my manners.
+
+scene crease
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Every fold teaches a card where to split. | See #crease#? It can wear through without tearing.
+b : Will you retire this one? | What's holding it together?
+a : One last tracing, then it retires between two pages. | Habit, I think. I'd better make a fresh one.
+
+story rolled_edge [self.job=crafter topic=work|memories]
+  : A tumbler I made kept rocking after I ground its foot flat. I chased that wobble for half a day.
+  : At supper I put my elbow down and felt the table rock.
+  b : It was the table all along?
+  : The table and a maker far too proud to look underneath.
+
+story sill_race [here.region=ridgemere topic=weather|memories]
+  : I once tried to beat a runnel down three flights. Me on the steps and the water in the gutter alongside.
+  : I was winning until the paving turned. That runnel went neatly through a hole in the wall.
+  b : A shortcut for the opposition.
+  : I walked the rest of the race. Marked the hole on my card on the way back.
+
+story pip_in_wrap [topic=food|memories]
+  : I found an apple pip in some old straw and put it in a pot. Nothing happened, week upon week.
+  : One day I emptied the pot and a thin root clung to my sleeve.
+  b : Did you manage to save it?
+  : Back it went. For once, my impatience did the digging and my patience finished up.
+
+story first_crate [self.role=merchant topic=work|memories]
+  : My first crate was packed so beautifully that I asked a carter to admire it. Every fold showed the same width.
+  : The carter picked it up and all the weight went to one end.
+  b : Was the load hurt?
+  : Only my dignity. I redid the whole thing with the heavy end nearer the wheel.
+
+story loose_cork [topic=pastimes]
+  : Once I spent a whole evening watching a cork float upstream. Thought I'd found a current nobody knew.
+  : I reeled in. My own cork was still hooked in my coat.
+  b : What had you been watching?
+  : A bit of bark on a thread of weed, nodding away like an expert.
+
+rule @pack
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 8h
+say Hold the lip by the body, away from the rim. | Fresh felt between those two before they travel!
+
+rule @carry
+when concept=bark self.working=yes self.role=merchant
+does aside
+cooldown 9h
+say Handles will take a paw apiece. Lift together. | Feel for the heavy side before you lift.
+
+rule @weather_gauge
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Up another nick. Move the loose bundles. | Water at the lower scratch already!
+
+rule @folds
+when concept=bark self.working=yes
+does aside
+cooldown 6h
+say One more fold and that corner stays covered. | Pass the wrapping with the clean edge.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 12h
+say My tea's forgotten why it came to table. | Another cup that waited out my story.
+
+rule @light_mark
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say Good light for finding yesterday's misses. | First look goes along the rim.
+
+dlg @1 resident.hub : Let me put this flat first. There. I've your whole question in mind now.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've caught me between reckonings. A particularly good moment.
+dlg @3 resident.hub [here.time=night] : Stand in the lamplight. I like a clear outline when I'm listening.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Leave a space between us, if you please. Now, what's wanted?
+dlg @1 resident.job [self.job=crafter] : Bubbles, edges, flaws. I look until my eyes need a rest, then feel along the bottom.
+dlg @2 resident.job : I take a measure twice whenever it'll matter once.
+dlg @1 resident.news [world.news] : I've one account worth repeating: #world.news#. I have no second account yet.
+dlg @1 resident.gossip [here.gossip!=yes] : My ears were full of my own voice, I fear. Try again later.
+dlg @1 resident.business [business=steady] : Outgoings and takings about level. I still count both.
+dlg @1 resident.bye : Pick a firm footing on your way.
+dlg @1 shop.greet [here.shop=open] : Set your parcel down first. That leaves both paws to look with.
+dlg @2 shop.greet [here.shop=bare] : Quite bare at present. I'd gladly look over anything you've brought.
+dlg @1 shop.prices : Carriage eats a surprising share. Mind what's wrapped inside the price.
+dlg @1 shop.bye : If anything shifts inside the wrapping, stop and settle it.
+dlg @5 resident.hub [here.region=ridgemere] : In Ridgemere a rise of two steps can mean an entirely different journey for your load.
+graft resident.hub
+choice What do the cuts in your card measure? -> card_cuts
+node card_cuts
+say The step up to a door. A high sill can buy you the length of a cup of tea when the gutter spills.
+mood keen
+free
+choice Why take a card instead of a rule? -> rule_pocket
+choice I see the nicks now. -> hub
+node rule_pocket
+say A wooden rule wants a pocket to itself. My card travels inside the folded account and adds no weight.
+choice Let's leave the measuring there. -> hub
+choice I'll mind the sills. -> bye
+
+graft shop.greet
+choice How would you wrap something hollow? [self.role=merchant] -> hollow_wrap
+node hollow_wrap
+say Start by making it a little nest. A stiff wall against a thin lip is an invitation to trouble.
+choice Would you fill the hollow? -> empty_wrap
+choice I'll look at the stock. -> greet
+node empty_wrap
+say Only with something soft enough to lift out in one pinch. A buyer shouldn't need a pick to reach the purchase.
+choice I'd like to buy. -> greet
+choice That answers it. -> bye

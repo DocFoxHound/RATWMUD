@@ -1,0 +1,264 @@
+# rm345, the carter's straw skirts (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm345
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_millicent_wickwick
+written_by codex
+title the carter's straw skirts
+fits stage=adult|old
+prefers job=carter temper=calm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk tucks_straw_pads_under_anything_that_rattles
+likes oatcakes dice fresh_straw summer_evenings
+dislikes deep_mud stale_bread
+fears a_pot_bouncing_over_the_rim a_back_wheel_sinking
+hopes a_summer_route_with_room_to_stop_for_supper
+topics travel +0.5 work +0.5 food +0.3 weather +0.2 pastimes +0.2
+styles comfort=practical gossip=plain refuse=gentle tease=none
+marks oath saying
+persona #self.first# tucks pads of straw around noisy parcels, takes stairs in pairs to catch a load before it shifts, and enjoys a journey best when there is just one small thing to deliver.
+
+words
+oath! = Axle and awning | Rattle my skirts
+saying! = Straw weighs less than a broken pot | A slow wheel leaves a whole supper
+skirt = a skirt of twisted straw | my straw wrapping
+hollow = a soft nest | a hollow in the packing
+wheelmark = a shining strip of rim | a wheel's dark tread
+twist = a handful of straw turned under | a flat straw twist
+oatround = my round oatcake | a small buttered oatcake
+bucketear = the eye of a bucket handle | a little handle ring
+uphill = the pull towards the crest | the last piece of the climb
+mudhole = the middle of a soft rut | a stretch of churned clay
+loadsong = the soft run of the load | a quiet roll of wood
+diecorner = a rounded dice corner | the small edge of a die
+settle = a little settling noise | one low wooden sigh
+
+any
+opinion @1 road for 2 : I like a road with enough life in it to ask for care and enough kindness to bring the load home.
+opinion @1 dole for 3 : I'd wedge another bowl in any cart before I'd leave a hungry wolf standing there.
+opinion @1 church for 1 : A prayer can travel wedged between quite ordinary thoughts about the road. The Bright One finds it easily.
+opinion @1 strangers for 1 : A new face on a long stretch can make the next turn worth seeing.
+opinion @1 merchants against 1 : A price set for carrying ought to stay the same when the last crate comes out.
+opinion @1 houses against 1 : I've seen a crest given a comfortable ride on a wagon that badly wanted mending.
+opinion @1 times against 1 : It seems to take a longer road each week to earn the same oatcake.
+
+grown
+line @1 greet : Come where you won't catch a sleeve on the straw.
+line @2 greet [pair.band=strangers] : A little room left for company. Welcome to it.
+line @3 greet [here.time=dawn] : Morning light, quiet wheels. Good time to meet.
+line @4 greet [here.time=dusk|night] : The evening's still wide enough to share.
+line @1 greet.return : A word from the roadside does my ears good.
+line @2 greet.return [pair.band=friends|family] : Good! I'd recognise that voice through four loose buckets.
+line @3 greet.return [self.working=yes] : There's room for talk if there's room to turn round.
+line @4 greet.return [here.time=dusk|night] : I had nearly missed your voice in the dark there.
+line @1 kin.open [pair.kin!=no] : Take the comfortable bit. Family saves trouble that way.
+line @1 again.open : I kept your last words good and snug.
+line @1 hail [pair.band=friends] : Hoy there, travelling friend! Level with my elbow.
+line @1 farewell : Go lightly over the places that shake.
+line @1 farewell.return : And let the last turn bring you somewhere pleasant.
+line @1 react.news : Let me hear what travelled in with you.
+line @1 react.news.new : Not a wheel of that has rolled past my hearing.
+line @1 react.news.known : That same load of news came by me earlier.
+line @1 react.news.doubt : Something's knocking loose beneath that account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor wolf. I wish some ordinary comfort could reach there.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Glad news will ride with me quite willingly.
+line @1 ask.how : Has the way been easy underfoot?
+line @1 answer.how : I've had more jolts than bruises. A fair return.
+line @1 thank : That's one less corner for me to worry over.
+line @1 deflect_thanks : It was no more weight than a twist of straw.
+line @1 sympathise : Lean on this till you feel the ground again.
+line @1 reassure : Let the jolt finish travelling through you. I'll wait.
+line @1 decline : I'd gladly help once my present load is safely down.
+line @1 accept_decline : Then fit the hour to your own errands.
+line @1 preclose : I mean to arrive with daylight to spare.
+line @1 accept_preclose : Here's hoping a shaded road takes you home.
+scene quiet_skirt
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : Two empty pots can make more din than a whole marriage feast. | You can hear the load settle if you leave it a moment.
+b : How do you quiet the pair? | What does settled sound like?
+a : #skirt.capitalize# round each belly. They can touch without quarrelling. | Like a wooden sigh that doesn't need an answer.
+
+scene why_two
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : I take stairs by twos only when my hands are empty. | A good stride can save a jar that's rolling loose.
+b : In a hurry to go up? | You've raced jars?
+a : In a hurry to come down where I'm wanted. | Jars go faster than you think and corner poorly.
+
+scene keep_team
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : I give a load a moment after the first pull. | On an uphill turn I listen for one rattle growing louder.
+b : Checking the team? | And if it does?
+a : Checking the load first. The team can feel its own balance better than it can feel a crate's. | Ease off, pack the loose thing, start again. A small stop for a whole delivery.
+
+scene oatpad
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : #oatround.capitalize# wraps comfortably in the heel of my paw. | I like a little butter on a travelling oatcake.
+b : Doesn't it crumble? | For flavour?
+a : I start round the rim and nibble like a very deliberate mouse. | Helps the stray crumbs stick to supper instead of to my coat.
+
+scene straw_room
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : The nicest bit of straw is just off the top, where the dusty ends haven't settled. | I can twist a pad thick enough for a whole pot with one hand.
+b : For bedding? | What occupies the other hand?
+a : For anybody I've invited to sit a moment. | Generally the pot. One day I'll have the foresight to set it down.
+
+scene dice_mat
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : Dice like level ground even more than a wheel does. | Roll on a fold of cloth and a throw stays among friends.
+b : Which bit runs truly level? | Trouble with runaway dice?
+a : Let one die run. If it comes home it wasn't level. | I've had more exercise off one six than off some whole games.
+
+scene summering
+when topic=season here.season=summer
+does tell.feeling / react.self / assess
+a : A long summer evening leaves time for the shadows to catch the cart. | Light stays beyond a high wall when my side's gone grey.
+b : Do you wait for them? | Like having a spare evening.
+a : I eat an oatcake and give them a sporting chance. | Exactly. I take the road which spends it last.
+
+scene stale_bread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : A heel of bread shouldn't knock back when you rap a board with it. | I'd sooner pack the cart with yesterday's loaf than try and chew through it.
+b : Beyond saving? | Wouldn't that waste a supper?
+a : There's usually a soup pot with an open mind about such things. | Good point. Soup gets the first bid.
+
+scene mud_course
+when topic=weather|travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : That slim dry strip between two wheel tracks is generally wishful thinking. | #mudhole.capitalize# takes a good impression of everything but good manners.
+b : Whose wish? | Did it swallow your boot?
+a : Mine. I poke it before I trust a wheel to it. | Tried. We parted with some words neither of us meant.
+
+scene works_bell
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : Around the Works you can tell how full the street is by the beat after the bell. | I like looking back from the Works at a city still lit above the smoke.
+b : Boots all together? | Why look back?
+a : First a great trampling, then a late pair hurrying along behind. | A job can fill the whole day. I enjoy being reminded there's a rest of the city.
+
+scene mother_parcel
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd pad a parcel for #self.mother# with the sweetest straw I could buy. | For #self.mother# I'd bring an oatcake home whole.
+b : Won't good straw be quite enough? | That's hard on a hungry road.
+a : Probably. Sweet straw would say something I mightn't get out of my mouth. | I'd buy two and answer the difficulty at once.
+
+scene dear_load
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A light cart can land heavily on an empty purse. | I stretch #twist# out longer in a lean week.
+b : There's less to carry? | Can a bit of packing matter?
+a : Less to be paid for at journey's end. | A cracked dish matters plenty to the wolf who can't buy a second one.
+
+scene cart_late
+when topic=travel|times world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A road looks oddly broad whenever a wagon's overdue. | I wish I could send spare patience to a delayed cart the way I send spare straw.
+b : Because you're watching it? | Wouldn't that be useful here instead?
+a : Yes. Every wagon-shaped gap suddenly has my eye. | Half the bundle for each, if you like.
+
+scene arrival_name
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer deserves to know which way the slippery cobbles run. | I give directions from a place you'd be glad to get back to.
+b : Can anybody slip correctly? | Why start there?
+a : Preferably none. A little warning comes cheaper than a new pot. | Makes a wrong turn feel less final.
+
+scene road_account
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news#. The place I got with it was #world.news_from#. | This travelled under the name of #world.news_from#: #world.news#.
+b : How did it strike you? | Could there be another bit?
+a : As a thing worth carrying in the state it reached me. | If there is, it's still on its way. My load stops here.
+
+scene loose_tongue
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard #topic.subject# #topic.claim#. It's the account I heard and no more. | Word round here is that #topic.subject# #topic.claim#. I can't swear to the road it took.
+b : Can it ride farther? | You're careful what you carry.
+a : It can, if you keep my doubts packed beside it. | Names don't come with straw skirts to protect them.
+
+scene short_errand
+when topic=dreams|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'd like one whole day with nothing to deliver but a single ripe plum. | My most pleasant road would end before my lunch got cold.
+b : A whole cart for one plum? | Rather a short road.
+a : Give everybody I met a little imaginary lift. | Good. Plenty of time to cook another lunch.
+
+scene bucket_breath
+when topic=pastimes|work
+does tell.self / ask.detail / answer.detail
+a : I can tell an empty bucket's complaint from the complaint of a lid. | Tap #bucketear# gently and the handle answers.
+b : Which is louder? | What can you learn from it?
+a : A lid, if you give the bucket a vote. | Whether it wants a twist of straw or a visit to a proper smith.
+
+story wrapped_cake [topic=food|memories]
+  : Once I packed my lunch between two very tidy pads of straw.
+  : Opened the bundle and found a perfect straw picture pressed into the butter.
+  b : Did you save the picture?
+  : Ate the field from one corner right across. Best harvest I've ever had.
+
+story road_nod [topic=travel|memories]
+  : I nodded all morning to what I thought was a very patient wolf beside a gate.
+  : Came back through in the evening and found a coat hung over a post.
+  b : Did you feel foolish?
+  : A little. Still gave it a nod in the evening. Good manners had cost me nothing so far.
+
+story sack_sound [topic=work|memories self.job=carter]
+  : Every sack on a particular run started singing on the same corner.
+  : I dropped down to listen and couldn't get another note out of them.
+  b : What ended the music?
+  : My boot had a stone in the buckle. Half a cartload of innocent sacks were discharged at once.
+
+rule @packing_edge
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Two thin twists fit a corner better than one great fistful.
+
+rule @warm_evening
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Good light enough to carry a little way inside.
+
+rule @dusty_road
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say There's almost a tune in that quiet rattling.
+
+rule @spread_straw
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Put the springy bit where the weight will come.
+
+dlg @1 resident.hub : I can make a comfortable corner for a few words.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good to have the company of that voice again.
+dlg @3 resident.hub [here.time=night] : We can speak softly. Everything carries farther after dark.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : That's room enough for two civil voices at a distance.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I listen to the load as carefully as I look ahead.
+dlg @2 resident.job : I like to finish with everything in as good a shape as when it came to me.
+dlg @1 resident.news [world.news] : The place on this account is #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : They say #topic.subject# #topic.claim#. Take care of the name if you carry that farther.
+dlg @1 resident.bye : A comfortable ride to you, or a gentle walk if that's your portion.
+graft resident.hub
+choice Why wrap an empty pot as carefully as a full one? -> empty_shape
+node empty_shape
+say The one expecting delivery has bought all the space inside that pot. A crack can lose the space just as surely as it loses a dipperful of stew.
+choice Do you listen for a crack? -> ring_and_wrap
+choice I wouldn't want a broken space. -> hub
+node ring_and_wrap
+say Before I wrap it, I give the rim a light tap. One honest ring at this end, one honest ring when it's handed over.
+choice I like the sound of that business. -> hub
+choice May the next pot ring true. -> bye

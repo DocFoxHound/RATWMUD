@@ -1,0 +1,255 @@
+# rm511, the coal impression (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm511
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_frederick_rainham
+written_by codex
+title the coal impression
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk tests_small_relief_patterns_on_a_lucky_piece_of_coal
+likes warm_bread riddles tidy_house summer_evenings
+dislikes rats early_bells
+fears a_mark_attributed_to_the_wrong_tool soot_on_a_clean_record
+hopes a_cabinet_for_unusual_impressions a_riddle_with_one_exact_answer
+topics work +0.5 lore +0.4 pastimes +0.3
+styles comfort=practical gossip=discreet refuse=firm tease=dry
+marks oath saying
+persona #self.first# keeps a pocket of lucky coal and can spend an evening studying the print of an ordinary button under angled light.
+
+words
+oath! = Soot in the catalogue | A blank under seal
+saying! = Read the shape before the signature | Let the black mark earn its keep
+luckcoal = my pocket specimen | the shiny black lump
+squareface = a fresh flat facet | my test face
+paperthin = the thin impression sheet | a pale paper skin
+dotrim = a border of tiny dents | a rim of pricks
+loopmark = the curled impression | a small running loop
+buttonbed = my button mount | a dab of soft wax
+lowlamp = a light across the face | a raking beam
+crustfoil = the bread wrapping | a clean outer sheet
+cinderbag = a little lined purse | the black drawstring bag
+goodrack = my small specimen shelf | a ledge of curiosities
+
+any
+opinion @1 church against 1 : A sermon can make a pleasing impression yet leave my original question untouched.
+opinion @1 city for 2 : It would take a very large cabinet to hold all the marks made by workers in this one city. I should like to try.
+opinion @1 dole against 1 : I'd prefer an opportunity to earn my own shelf and loaf. That judgement applies most securely to my own purse.
+opinion @1 festivals against 1 : At a busy celebration one must either look after the specimens or follow the music. I prefer quieter arrangements.
+opinion @1 houses against 1 : A lord's crest is entitled to an honest description. It isn't entitled to an additional measure of silver for its rank.
+opinion @1 newcomers for 1 : A new arrival may recognise a stamp that has puzzled the whole length of our counter.
+opinion @1 strangers for 1 : A courteous stranger should be allowed to examine the same object on the same terms.
+opinion @1 sump against 1 : A damp pocket can spoil a paper impression in moments. I choose my lower walks with that firmly in mind.
+
+grown
+line @1 greet : You may examine the clearer impression first.
+line @2 greet [pair.band=strangers] : Fresh eyes may find an interesting detail in my display.
+line @3 greet [here.time=dawn] : First light finds the high points of a stamp.
+line @4 greet [here.time=dusk|night] : The lamplight is low enough to show a raised edge.
+line @5 greet [self.working=yes] : Leave the record sheet clear till the ink has dried.
+line @1 again.open : You've returned at an interesting angle.
+line @1 greet.return : Your greeting left a recognisable impression.
+line @2 greet.return [pair.band=friends|family] : An agreeable familiar note among the day's small enquiries.
+line @1 farewell : Carry the specimen by its smooth edge.
+line @1 farewell.return : I shall put the little things in order now.
+line @1 react.news : Is there an original account I might examine?
+line @1 react.news.new : That detail would require a new space in my catalogue.
+line @1 react.news.known : It bears the same distinctive mark as an earlier account.
+line @1 react.news.doubt : Which detail could be proved without using the teller's reputation?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would offer a quiet seat while the family finds its words.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A welcome entry in a ledger of quite ordinary events.
+line @1 answer.how : Reasonably content with my present shelf. Considering the next.
+line @1 ask.how : Has anything merited a permanent place in your recollection today?
+line @1 sympathise : A private trouble needn't be brought into good light for my sake.
+line @1 reassure : You have time to turn the matter over without my interruption.
+line @1 decline : I must return a borrowed object entire before accepting another commission.
+line @1 accept_decline : I shall close the little case on that request for now.
+line @1 preclose : There's a specimen I'd like to put away with a clean label.
+line @1 ack : Distinctly marked.
+scene coal
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My lucky coal leaves remarkably delicate marks in a thin rubbing.
+b : Will any coal do? | Does the luck transfer to the paper?
+a : A fresh smooth face, yes. Crumbly coal makes a public mess of the private experiment. | I've observed no reliable evidence. It stays principally in my pocket.
+
+scene pawn
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I look at the wear round an object's edge before I accept an account of its travels.
+b : Can wear prove the story? | Would you tell the owner?
+a : It can suggest a further question. A scratch is under no obligation to support a romantic history. | If the account affects the terms. A customer's private memories can otherwise remain private.
+
+scene buttons
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A common button can be distinguished by the tiny spaces between its impressed dots.
+b : Even without colour? | Why trouble with a mere button?
+a : More readily, sometimes. A bright surface will take one's attention away from a small irregularity. | I wish to learn on objects I can afford to misunderstand.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I like a riddle whose last answer explains why the first clue chose that exact word.
+b : Can you offer a sample? | Would two answers spoil it?
+a : What borrows a face without borrowing its owner? My paper rubbing does it between one breath and the next. | If both fit, I owe the second solver a bow and the riddle a better first clue.
+
+scene bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Fresh bread and a pocket full of coal require a thoughtful distribution of my possessions.
+b : Two different pockets? | Is the bread really at risk?
+a : And a wrapping for the coal. Soot is energetic in its pursuit of clean crumbs. | Only if I grow careless. I value a good crust too highly to test the proposition twice.
+
+scene tidiness
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : In a tidy room each little object can cast its own shadow.
+b : Is that how you judge tidiness? | What about a room full of specimens?
+a : As good a test as most. Things that lean upon one another tend to migrate in my absence. | Adequate shelves make the distinction between a collection and a formidable problem for the dusting cloth.
+
+scene evening
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : In the long summer light I watch the same small impression take on several different shapes.
+b : Isn't the impression fixed? | Which view do you trust?
+a : Indeed. The lighting changes, which is the cheap and rather instructive part of the demonstration. | The one I've turned over myself. Even a tiny hollow can look raised if the light comes from below.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat would probably consider my lined specimen box an excellent start for a bed.
+b : Have you an objection besides the rat? | Would a latch help?
+a : Just the expense of rehousing everything in it, and my preference for paper without teeth marks. | If I remember to close it. There's no mechanism yet for correcting the collector's inattention.
+
+scene bells
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : The first bell is usually in advance of the first useful light for examining a mark.
+b : Would you sleep through it? | Could you light a lamp?
+a : I'd regard that as a perfectly sensible division of responsibilities. | Certainly. The coal has undertaken no obligations that urgent.
+
+scene heights
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : Up in the Heights I notice how frequently a simple chair carries an extremely complicated stamped ornament.
+b : Does ornament please you? | What about the chair itself?
+a : If the tool was made carefully. An elaborate inaccuracy is still an inaccuracy. | I should want the legs examined separately before sitting down to admire the ornament.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could set an unsigned impression before #self.friend# and enjoy an entirely fresh guess at its origin.
+b : Would you give a clue? | Does the first guess matter?
+a : One measured hint. Beyond that I should be borrowing a friend's voice to give my own answer. | A stranger to the problem often notices a feature I've treated as too ordinary to mention.
+
+scene boss
+when topic=work self.job=merchant self.boss
+does tell.self / ask.detail / answer.detail
+a : If #self.boss# asks an object's price I'd begin by examining its reverse.
+b : Why the back especially? | Could a good front be enough?
+a : The face has enjoyed a lifetime of careful polishing. The back may still give the maker's evidence. | Enough to recommend a second look. I wouldn't sign my judgement on that face alone.
+
+scene truth
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : An account can have an impressive name stamped upon it without containing a single fresh observation.
+b : What's the fresh observation worth to you? | Would you pass the story on?
+a : Enough to buy a few minutes of close attention. My judgement is priced separately. | Only the part I'd examined. Borrowed authority still belongs to the lender.
+
+scene wealth
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'd invest the price of a fine cabinet in learning what should go in it.
+b : Learning before buying? | Is a shelf enough at present?
+a : It saves costly revisions to the width of the drawers. | Enough to give my next purchase an interesting standard to meet.
+
+scene lamp
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I turn a button on its edge in the lamplight to look for a second rim.
+b : What does a second rim indicate? | Could it be the shadow?
+a : Possibly a tool struck twice. A little uncertainty is reason to keep examining it. | That's why I turn the button independently of the light. A shadow has considerable difficulty sustaining the deception.
+
+scene hand
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A soot mark on a paw persists longest in the little lines that do the hardest work.
+b : How do you remove it? | Could that make an impression too?
+a : Plain soap, patient water, and a cloth kept expressly for the purpose. | Easily, which is why I wash before touching anybody else's papers.
+
+scene freshguest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor may bring a loose clasp from a town whose tools I've never seen.
+b : Would you buy it? | What can a clasp tell you?
+a : I'd first ask whether it's actually for sale. Curiosity doesn't transfer the ownership. | How the owner chose to close a coat, certainly. I might learn the rest over a longer visit.
+
+story waxrim [topic=work self.job=merchant]
+  : I took a rubbing of a little clasp and found a double rim nowhere visible on the metal.
+  : A small curl of wax had lifted the paper at precisely the height of the original edge.
+  b : Did you keep the rubbing?
+  : I labelled the wax also. A well-documented mistake deserves a place in a working collection.
+
+story blackbread [topic=food]
+  : I once arranged a coal specimen and a bread parcel in pockets that opened through the same split seam.
+  : When I put my coat down a black corner came through onto the wrapping.
+  b : What became of your lunch?
+  : The wrapping was sound. The loaf was clean, and the tailor got a rather clear demonstration of where the seam required attention.
+
+story moonbutton [topic=pastimes]
+  : I laid a button beside a round black mark at sundown to compare their diameters.
+  : While I fetched my rule the mark had shifted, leaving the paper perfectly clean.
+  b : Was it a mark at all?
+  : A shadow cast through a small round hole. I put the rule away and studied the windowsill instead.
+
+rule @stamp
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Keep the reading face under this beam. | Turn the clasp without turning the paper.
+
+rule @coal
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say A face borrowed without a name. | One clue still has a job to do.
+
+rule @rats
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Fasten the cabinet before leaving. | Return the specimen to its lined place.
+
+rule @lamp
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Let the low beam catch the outer dots. | A different shadow for the same relief.
+
+dlg @1 resident.hub : My little specimen is in position for your inspection.
+dlg @2 resident.hub [topic.meeting=known] : You've seen the outer face before, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : The original can stay close beside me while we examine the rubbing.
+dlg @4 resident.hub [here.time=night] : This angled light will do very nicely for a small mark or a quiet conversation.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I study the condition of whatever comes across the counter.
+dlg @2 resident.job : I can identify a few overlooked differences in objects otherwise considered quite ordinary.
+dlg @1 resident.news [world.news] : One detail has made a readable impression. #world.news#.
+dlg @1 shop.greet [here.shop!=bare] : There are articles to examine. I shall be pleased to discuss the condition of a particular one.
+dlg @2 shop.greet [here.shop=bare] : No article's presently offered. A general question on condition would still be welcome.
+dlg @1 shop.prices : Select the article that interests you. Condition contributes rather specifically to its price.
+dlg @1 shop.bye : May the object stand up to the use you have in mind.
+dlg @1 resident.bye : I'll put the coal in its bag before touching anything else.
+graft @buttonprint resident.hub
+choice Is this little black circle a drawing? -> buttonprint
+node buttonprint
+say A rubbing of a button. The ring of white interruptions shows the places where the tool failed to raise a full dot.
+choice Could you recognise the real button again? -> buttonprint_more
+choice Return the rubbing. -> hub
+node buttonprint_more
+say I should ask to see the back before saying so. A second impression struck with the same tool would bear much the same little interruptions.
+choice Return the rubbing. -> hub
+choice Leave the cabinet closed. -> bye

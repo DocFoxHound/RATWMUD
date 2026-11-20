@@ -1,0 +1,258 @@
+# rm252, the unbroken seal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm252
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_maren_tarhand
+written_by codex
+title the unbroken seal
+fits stage=adult|old
+prefers job=official
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk reads_a_line_of_masts_before_checking_a_letter_seal
+likes spiced_cider dice festival_bells misty_dawns
+dislikes wet_floors waiting
+fears a_smeared_direction a_seal_come_loose
+hopes a_letter_safely_delivered an_impression_worth_keeping
+topics lore +0.4 land +0.4 pastimes +0.3 travel +0.3 gossip -0.5
+styles comfort=steady gossip=guarded refuse=firm tease=none
+marks oath saying
+persona #self.first# reads a row of masts as readily as printed letters, smooths a battered envelope against a sleeve and guards the blank side from idle fingers.
+
+words
+oath! = Salt in the ink | Crack my best type
+saying! = Read the space between the strokes | An address is enough for a carrier
+packet = the folded letter | my sealed packet
+sealwax = the hard wax | a dark lump of sealing wax
+skytype = the strokes of the masts | the slant of the spars
+spice = a curl of spice | the brown cider spice
+dicepip = the deep-cut pip | a black dimple in the bone
+mark = the straight impression | a firm clean mark
+margin = a finger of bare paper | a narrow white margin
+paving = a greasy flagstone | a treacherous square of paving
+ring = a low bronze note | the roundest bell note
+inkpad = the inked pad | a dark pad of ink
+bow = a high turned prow | a bow with a slight lift
+
+any
+opinion @1 church for 1 : Food across a chapel sill leaves a longer impression than a handsome inscription.
+opinion @2 dole for 2 : The share can be small enough to carry in one bowl and still be the difference between working tomorrow and shaking.
+opinion @3 houses against 2 : An address belonging to a House is always easy to read. Finding somebody to answer it is a different commission.
+opinion @4 merchants against 2 : Somebody prints handsome labels for goods I'd have to sell my boots to buy.
+opinion @5 city for 1 : On a clear morning I could read my own city upside down in the Sound.
+opinion @6 sump for 2 : The Sump teaches a reader two alphabets, the one on paper and the one that sails.
+
+grown
+line @1 greet [pair.band=strangers] : A civil welcome. My eyes can come off the paper while you speak. | Come within ordinary speaking distance.
+line @2 greet [here.time=dawn] : Dawn's made a fine impression. Welcome. | Good morning. There's just enough light for faces now.
+line @3 greet [here.weather=fog] : Come through the grey a little. There. | Well met in rather faint light.
+line @4 greet.return : I hear you clearly enough. Welcome in turn. | That was a decent address.
+line @5 greet.return [pair.band=friends|family] : A familiar shape against the light. Welcome. | Good, no introduction wanted for you.
+line @6 farewell : Go with the address clear in your head. | Keep something clean and dry in your pocket.
+line @7 farewell.return : Your leave's taken in good order. | I'll let you get along at your own pace.
+line @8 again.open : A second impression of a familiar face. | Back across my field of view already.
+line @9 kin.open [pair.kin!=no] : There's no seal between family. | Settle here. We know the address well enough.
+line @10 hail [pair.band=friends] : Your outline gives you away! | Over here, well within sight!
+line @11 react.news : Give the account time to settle. | Speak plainly. I'd have the proper sense of it.
+line @12 react.news.known : That account has already gone by me in clear light. | I've retained the impression from the first telling.
+line @13 react.news.new : First inkling I've had of that matter. | That throws a shape on a blank space.
+line @14 react.news.doubt : I see a break between what happened and what's being said. | That print looks a little too black around the edges.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Such news wants a decent quiet round it. | I'd fold that gently before I took it any further.
+line @16 react.news.glad [topic.kind=birth|marriage] : Set that in fine bold letters. | I'd welcome a bell to carry such a word.
+line @17 answer.how : Slow enough to keep a steady impression. | Keeping a clean margin where I can.
+line @18 accept_decline : That's a legible answer. | No reason to ask for another impression.
+line @19 decline : My word's too much like sealing wax to spend on that. | I'd be putting my mark to something beyond me.
+line @20 sympathise : Leave a little room round the hurt. I can wait. | I'll hold a quiet corner for you awhile.
+line @21 thank : I'll retain the impression of that kindness. | You've seen something safely into my keeping.
+line @22 deflect_thanks : I had the steadier paw for the moment. | A small courtesy needs no inscription.
+line @23 preclose : There's a small commission still in my pocket. | Daylight has another use for me yet.
+line @24 accept_preclose : I won't put my mark across your errands. | May the right door open easily.
+line @25 farewell [here.time=night] : Safe keeping till there's light to read by. | The lamps will pick your road out now.
+scene spars
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A ship shows part of its name before the hull comes into view. | I read #skytype# before I look for the painted name.
+b : What's in sight by then? | Do the spars spell something?
+a : One canted mast can be as plain as the first letter of a word. | Spacing's the trick. Two uprights and a gap can name a ship for me.
+
+scene sealed
+when topic=smalltalk
+does give.opinion / disagree / concede
+a : A sealed letter tells its carrier quite enough on the outside. | The blank side of #packet# is the best side to show a curious wolf.
+b : Even if you go on carrying it for weeks? | Couldn't you share who it's meant for?
+a : Time wears paper. Gives me no greater claim to what's inside. | Could. I'd gain a minute's talk and lose the quiet of my errand.
+
+scene cidersip
+when topic=food self.likes=spiced_cider
+does tell.self / react.self / assess
+a : I leave #spice# in the bottom of my cider till the last sip. | Warm cider shows you where the spice has floated if you wait a moment.
+b : Does it get very strong? | I've usually drunk half by then.
+a : Strong enough for a cold walk without a second cup. | Tip it toward the light next time. Fine brown letters, all of them.
+
+scene bonedie
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : Feel #dicepip# before rolling. Mine's worn quite flat at the centre. | A chipped die writes a crooked record of a game.
+b : Can you tell the number by touch? | Would you throw it away?
+a : From one to six without looking up from a harbour view. | Mark it for practice. I wouldn't put another wolf's stake on it.
+
+scene firstbells
+when topic=season self.likes=festival_bells
+does tell.self / react.self / assess
+a : Listen for #ring# under the high festival peal. | I can follow one deep bell clear through a whole bright jumble.
+b : What if two of them strike together? | Is it always the loudest?
+a : Wait through the next breath. The lower one hangs in the air. | Usually the last to leave. Loud's a poorer way to find it.
+
+scene mistline
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : I like my morning harbour half erased. | A little mist takes the names off the sterns.
+b : How can you name the vessels then? | Isn't that a loss for somebody who knows the fleet?
+a : #bow# briefly visible through a thinning patch will do. | A fair examination. The masts still stand plain above the page.
+
+scene slicken
+when topic=smalltalk self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : Step on #paving# and the letter in my pocket will be dipping its corner. | If I lose my feet on wet boards, my paper errand goes into the wash.
+b : Tuck it inside your sleeve. | The hem of your coat looks safer.
+a : Where sweat can lift the wax? I'll take the longer dry turn. | Higher still, if you please. I've been down on one knee in a puddle.
+
+scene dooragain
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Next time a certain grand door opens, I'd like to have #packet# ready. | My idea of satisfaction is walking home with an empty letter pocket.
+b : After all that waiting, what will you say? | You won't miss the weight?
+a : Just the direction, spoken out. No speech of mine goes under this seal. | Oddly enough I might. I'll bear the loss.
+
+scene cleanpressure
+when topic=work self.job=official self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# you can't repair a bad impression by glaring at it. | A light pull gives you a ghost instead of #mark# at #self.workplace#.
+b : What's a better remedy? | Does doubling the ink help?
+a : Begin with level type. A crooked letter keeps its own counsel under pressure. | Then you get a fat ghost. Bring up the pressure evenly.
+
+scene frienddawn
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd invite #self.friend# to guess the first mast through the mist. | I ought to take #self.friend# along on a morning I can spare.
+b : Would you give a hint? | Have you a particular errand in mind?
+a : One. Whether to look for a short slant or a tall upright. | Pleasure only. See how many bows come out of the white water.
+
+scene crowdwait
+when topic=smalltalk self.dislikes=waiting
+does tell.feeling / sympathise / assess
+a : Waiting outside a shut door gives me a fierce interest in the grain of the wood. | I can stand still for a vessel willingly. A closed door's another business.
+b : Nothing to read but knots? | The time runs as slowly for both.
+a : And whether the latch is wearing bright on either side. | The ship's doing something to reach me. The door can take all season off.
+
+scene enough
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : A label ought to show how many hours a thing costs. | Dear cider would taste just as good without the fancy mark on the jug.
+b : Whose hours do you put down? | Wouldn't you miss the work on it?
+a : Mine, privately. It keeps the wanting inside its proper margin. | I'd admire it on somebody else's table with an easier heart.
+
+scene waterfront
+when topic=land here.region=ridgemere self.quarter=sump
+does tell.self / react.self / assess
+a : By the Sump waterfront a low tide leaves a dark rule under the stones. | Ridgemere's a page you can turn with a change of tide.
+b : How far up does the writing go? | What's on the back?
+a : Only to where the last wash of water stops. That's an honest boundary. | The underside of the steps. Usually a less flattering account.
+
+scene carryseal
+when topic=gossip
+does give.opinion / disagree / concede
+a : Running a thumb over #sealwax# doesn't entitle a wolf to read the letter. | I'd rather lose a throw of dice than win a glimpse beneath a seal.
+b : You'd turn down a fine piece of talk. | Even if somebody offered the next stake?
+a : That's a small loss against a carrier's word. | Let the busy paws play on without me.
+
+scene whitemargin
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How would you keep room on a page for a second thought? | Where do you set your hand if there's fresh ink everywhere?
+b : Keep the last space empty on purpose. | Lay a strip of clean rag across the dry edge.
+a : Yes. #margin# makes even the first thought easier to read. | Better a small clean edge than a whole page of pawmarks.
+
+scene poorwinter
+when topic=times world.times=hard|lean
+does tell.feeling / sympathise / assess
+a : I can use the back of a notice twice. A loaf doesn't have a second side to eat. | Even the basket looks thinner after a week of paying these prices.
+b : You'd give folk something filling if you could. | Would you print the price for everyone to see?
+a : I'd put a warm ladle in front of a fine printed promise. | Beside the size of the loaf. That comparison does some work.
+
+scene guessedship
+when topic=lore
+does tell.self / react.self / assess
+a : Ask a carrier to name a craft and see which way the eyes go. | Some hulls have a cocked prow as distinct as a bent letter.
+b : Toward the stern for the name? | You'd know one even at dusk?
+a : That's one way. Up at the spar tells me sooner. | Best of all against the last narrow streak of sky.
+
+scene crumple
+when topic=weather here.weather=rain
+does tell.plan / ask.detail / answer.detail
+a : I'll stand upwind until I get this corner tucked away. | A sheet whistles before it tears in weather like this.
+b : Want another paw to hold the fold? | What if the seal lets go?
+a : Just shelter the air with your shoulder. The fold stays in my keeping. | Under the coat with it. I'll take a soaking before the letter does.
+
+story ship_in_type [topic=lore]
+  : I had a scrap with an inky edge. A little mast-shaped streak and a dash, all it took to make me see a ship turning.
+  : I drew a second mast where I thought it belonged and took the scrap to the shore.
+  b : Did the drawing match the vessel?
+  : From the wall, exactly. From the water stairs my second mast vanished behind the first. Even a good likeness needs an address.
+
+story cider_spill [topic=food]
+  : I tipped cider over an old throwaway bill. There was a smell of spice and the ink came up against the bottom of the cup.
+  : A whole printed word went on travelling under my drink.
+  b : Were you able to read it?
+  : In a bright window. Back to front it said fresh. I thought that was a respectable opinion for a cup to hold.
+
+story dry_seal [topic=smalltalk]
+  : A rain spot landed square in the middle of some wax on my sleeve. The water stood up like a little glass bead.
+  : I kept walking under the eaves, very level, to see which would last longer.
+  b : The wax or the water?
+  : My patience went first. One good shake, and I put the seal somewhere sensible.
+
+rule @mast
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say One glance above the roofs will do. | I'd know that rake against any kind of sky.
+
+rule @page
+when concept=bark working=yes self.job=official
+does aside
+cooldown 8h
+say Give the ink a breath before touching. | Straight from the first pressure.
+
+rule @packet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wax under wool in this weather. | Dry pocket, steady elbow.
+
+rule @roll
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say A fair bone makes a plain account. | Settle the die on the level.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You appear to have something to bring before me. Go on.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. That outline's legible in any company.
+dlg @3 resident.hub [here.time=night] : We've still light enough to make out what matters.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your business can be stated with your paws quite still.
+dlg @5 resident.job [self.job=official self.workplace] : I help put a clean impression on paper at #self.workplace#.
+dlg @6 resident.job : I like a piece of work with a distinct mark left when it's done.
+dlg @7 resident.news [world.news] : This has come into view. #world.news.capitalize#
+dlg @8 resident.bye : May your errand find its proper door.
+graft resident.hub
+choice What's worn the paper so thin? -> sealed_folds
+node sealed_folds
+say Repeated visits to a grand door. Paper's not generally made to outwait a House. The directions are plain and the seal is still mine to see safe.
+choice Would you have another wolf take it? -> sealed_handoff
+choice I'll leave your errand alone. -> hub
+node sealed_handoff
+say Into the intended paw. For something worth carrying away from this conversation, look up at the masts. That's a free page.
+choice I'll keep an eye on them. -> hub
+choice Good luck with the door. -> bye

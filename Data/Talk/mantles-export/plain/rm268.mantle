@@ -1,0 +1,258 @@
+# rm268, the pocket palette (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm268
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_vigdis_pitchmarsh
+written_by codex
+title the pocket palette
+fits stage=adult|old
+prefers job=crafter
+traits temper=even talk=plain warmth=warm humour=none honesty=sly piety=ordinary drive=steady
+quirk matches_a_street_to_a_strip_of_colour
+likes mutton_stew dancing old_maps misty_dawns
+dislikes deep_mud cold_tea
+fears forgetting_the_colour_of_clear_water
+hopes to_own_a_window_above_the_smoke
+topics work +0.4 travel +0.3 festival +0.3 food +0.2
+styles comfort=warm gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# matches scraps of colour to corners of the city and keeps the prettiest route a shade secret.
+
+words
+oath! = By hammer-red and sea-green | Strike me violet
+saying! = Blue brings my feet home | A street wears more colours than a map admits
+card = a strip of buff card | a little painted slip
+blue = slate blue | the blue of a late shadow
+red = red iron | brick powdered fine
+yellow = a turnip yellow | butter yellow
+edge = the palest edge | a washed margin
+strip = my colour scrap | a swatch of linen
+turn = a painted turning | one bright corner
+stain = a smoky smudge | a streak of ochre
+mist = a pearl of fog | low morning mist
+dance = a sliding dance step | a quick heel turn
+pot = the stew kettle | a fat brown pot
+mud = tar-dark mud | a sticky black patch
+
+any
+opinion @1 dole for 3 : Hunger bleaches the whole street. A bowl of hot food puts the colours back.
+opinion @1 merchants against 2 : Fancy wrapping never made me a larger supper.
+opinion @1 houses against 2 : I'd like to carry my shade card upstairs and see the colour of whoever sets my wage.
+opinion @1 strangers for 1 : Plenty of stew stretches a little further if the last bowl brings a fresh account of the road.
+opinion @1 sump for 1 [self.quarter=sump] : No use calling our streets all grey. Hold six greys alongside one another and look again.
+
+grown
+line @1 greet [pair.band=strangers] : Pleased to have a fresh face to remember. | Hello. There's colour in the day already.
+line @2 greet [self.working=yes] : Welcome by my elbow. | Room on the clean side here.
+line @3 greet [here.time=dawn] : Pale morning. Glad of company. | First light's good for meeting faces.
+line @4 greet [here.time=dusk|night] : Evening, with the colours settling down. | Come where the light still holds.
+line @1 kin.open [pair.kin!=no] : Kin bring their own colours. | There's the familiar outline.
+line @1 again.open : Another turn brings you back. | Same face in a different light.
+line @1 greet.return : I heard you plainly. | Here, I've a clean paw for you.
+line @2 greet.return [pair.band=friends|family] : You've brightened my corner already. | Your voice makes a comfortable shade.
+line @3 greet.return [self.working=yes] : Time enough while this dries. | I can listen over my work.
+line @4 greet.return [here.time=dusk|night] : Evening. Mind the dark patch. | The light's nearly spent. Welcome in.
+line @1 farewell : Keep a colour for yourself. | Come back by the bright way.
+line @1 farewell.return : Find the dry side home. | May the turns come clear.
+line @2 farewell.return [here.time=night] : Walk where there's a lamp still burning. | Gentle night beyond my window.
+line @1 react.news : Give me the colours true. | Let me hear the plain bits first.
+line @1 react.news.new : That shades things differently. | Fresh colour to my ear.
+line @1 react.news.known : Old stain, still showing. | I recognise that particular outline.
+line @1 react.news.doubt : I'd wait until the smudge dries before deciding. | That sounds touched up to please somebody.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah, even the bright strip looks dull hearing that. | Let me take some weight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something worth saving a swatch of. | That's good light let in.
+line @1 ask.how : How's the day coloured you? | Any brightness in your pocket?
+line @1 answer.how : Still keeping a little blue back. | Some colour left under my nails.
+line @1 decline : I'd best keep this hour for mixing. | I reckon my feet need a quiet turning.
+line @1 accept_decline : Then we'll let that colour dry. | Your own shade suits you best.
+line @1 thank : I'll keep that kindness bright. | That's a fine colour you've left me.
+line @1 sympathise : Share my dry edge awhile. | I'm beside you through the dull bit.
+line @1 reassure : There'll be a kinder shade somewhere. | I've room to walk alongside.
+line @1 preclose : I must put these slips in order. | Best catch my turning now.
+scene grey
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I have six greys for one street. | One street's worth a whole pocket of swatches.
+b : Which grey is home? | What separates the shades?
+a : Warmest one where the shutters close. | Rub the dust off. Each corner keeps its own light.
+
+scene forge
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I swear in colours at work.
+b : What colours? | When things go wrong?
+a : Iron red for temper, green for relief. | If the batch comes right I save the blue for later.
+
+scene rise
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like an upstairs window with nothing smoking in front.
+b : What sight would you want? | Facing where?
+a : The true colour of a white shirt hung out to dry. | East enough for the pale part of morning.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : The mist takes all my best colours out walking.
+b : Even the red? | Does it bring them back?
+a : Red goes a pink so thin you can see through it. | Every roof gives a little back as it lifts.
+
+scene step
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I learn a dance by looking at shoes.
+b : What about the tune? | Whose shoes?
+a : That's what keeps my ears employed. | The pair that look as if the wearer has forgotten about them.
+
+scene wrong
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : A wrong road on a map can still lead somewhere fine.
+b : Would you follow it? | What if it stops short?
+a : If I have daylight and a heel of supper. | I'd give the blank a colour of my own.
+
+scene kettle
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I know the stew's nearly ready by the fat on top.
+b : What colour? | Before you smell it?
+a : Little gold islands, splitting and meeting again. | I've generally smelt it so long my nose has stopped paying attention.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea makes a fair wash for a map.
+b : Wouldn't you drink it? | Which bit of the map?
+a : I've more use for the colour than the taste. | The road I don't particularly want anybody finding.
+
+scene heel
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : In thick mud I put my heels where another wolf's already been.
+b : To save your shoes? | Can you match every stride?
+a : To save my temper. Those dark spatters travel high. | Sometimes I have to dance to do it.
+
+scene band
+when topic=work self.job=crafter self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep a clean strip under my cuff.
+b : To test the colours? | Does the strip stay white?
+a : It tells me how far the dust has travelled. | Just the middle. The edges make a map of my work.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd pick something a touch warmer than blue for #self.friend#.
+b : Why warmer? | Would you say which?
+a : Blue's a friend seen over a shoulder. I want a face looking back. | I'd hold up the card first. A friend has a say.
+
+scene tour
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll mark a turning in colour for a newcomer.
+b : And if the paint runs? | What marks home?
+a : I can show it on foot. That's the honest map. | Whatever colour the gate looks coming back tired.
+
+scene night
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : Under a little lamp my reds begin to tell lies.
+b : Does the lamp fool you? | What do you do?
+a : Never quite the same lie twice. That's the trouble. | Sleep on a choice that has to look good in daylight.
+
+scene price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'll turn cloth over before I offer coin.
+b : To look for fraying? | What catches your eye?
+a : To see how much colour ever made it through. | The inner fold that never saw sunlight. It knows the original price.
+
+scene warmth
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : There's always a warm patch on my imaginary map.
+b : A hearth? | For bad weather?
+a : Could be the shape of a welcome on a threshold. | Especially for a day when the light shows up every hole in my coat.
+
+scene hands
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My fingers keep little crescents of yesterday's colour.
+b : Can you wash them off? | What's there now?
+a : Eventually. For two or three mornings I get reminded where I've been. | Something dark as the back of my eyelid. There's been a fair bit of work.
+
+scene secret
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I might lend you my best map without the final turning.
+b : What are you keeping? | Couldn't I guess?
+a : A patch of open sky I still have to myself. | Perhaps. I'd like the trouble of being found.
+
+scene carts
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon puts a blank in my working colours.
+b : How do you fill it? | White, then?
+a : Use a little of the colours still here and promise less. | A blank can be any colour I've used up.
+
+story green [topic=memories]
+  : I once painted a neat green path across a scrap of wrapping paper and followed it for half a morning.
+  : I arrived at the very door where I'd begun, with the paper held sideways the whole time.
+  b : Did you repaint it?
+  : I wrote my own door at both ends. A proper circular walk.
+
+story hem [topic=pastimes self.likes=dancing]
+  : I pinned a blue strip to my hem, thinking I'd watch the steps through a tune I'd never danced.
+  : A hem turns faster than an eye. All I could follow was the one blue streak.
+  b : Did you keep your footing?
+  : I looked up at a face instead. The feet managed without my help.
+
+story lid [topic=food]
+  : Once my pot lid took a strange purple stain. I scrubbed it until I could see my own nose.
+  : The purple turned up next morning just as deep. I pulled the blind across and it vanished.
+  b : What had it been?
+  : Early light travelling through a bit of coloured glass. I gave up polishing my breakfast.
+
+rule @aside1
+when concept=bark self.working=yes self.job=crafter
+does aside
+cooldown 6h
+say Keep the clean margin under the cuff. | Dark swatch before the pale one.
+
+rule @aside2
+when concept=bark self.likes=dancing
+does aside
+cooldown 7h
+say Half turn, touch heels. There's the bright step. | Plenty of tune left in these shoes.
+
+rule @aside3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Hold the swatch where morning finds it. | Pale enough light to see a thin wash.
+
+rule @aside4
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 9h
+say Cold in the cup means brown for the map. | Might as well dip a brush now.
+
+dlg @1 resident.hub : Let me see your face in the good light. There, I'll know it again.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a face worth saving the right colour for.
+dlg @1 resident.job [self.job=crafter self.workplace] : I get colour on my cuffs at #self.workplace# and carry some of it home on purpose.
+dlg @1 resident.news [world.news] : Here's the plain outline. #world.news#
+dlg @1 resident.bye : Take the way that gives you something worth looking at.
+graft resident.hub
+choice How can a piece of cloth give directions? -> cloth_road
+node cloth_road
+say There's a red wall with a blue shadow under it, and a turn where the air goes amber from a lamp. Fold three coloured bits together and that's my way home.
+free
+choice Does anyone else find the same way? -> cloth_shift
+choice I've got the red wall. -> hub
+node cloth_shift
+say Not after the light changes. That's when a little local company comes in handy. I've no objection to delaying the walk by a cup or two.
+choice I'll remember to ask you. -> hub
+choice I'll see what colour the road is now. -> bye

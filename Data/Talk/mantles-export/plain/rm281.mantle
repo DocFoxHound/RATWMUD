@@ -1,0 +1,377 @@
+# rm281, the schoolroom coast (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm281
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_eleanor_wetby
+written_by codex
+title the schoolroom coast
+fits stage=adult|old
+prefers job=scholar
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=restless
+quirk draws_imaginary_coasts_on_lesson_slates
+likes smoked_eel cards sharp_knife first_warm_day
+dislikes deep_mud smoke
+fears never_getting_past_the_last_lesson
+hopes finding_a_ship_with_room_for_a_scholar
+topics travel +0.6 work +0.5 pastimes +0.3 food +0.2
+styles comfort=practical gossip=oblique refuse=soft tease=dry
+marks oath saying
+persona #self.first# plots imaginary passages on the edges of lesson slates and answers intrusive questions with a better one.
+
+words
+oath! = Forge clinker and sea salt | Tide turn my inkpot
+saying! = Leave a margin for the voyage | Turn the card before you total it
+coastmark = a line of little inlets | three black headlands
+sleevemap = a narrow chart | a journey in the margin
+schoolbit = a stub of chalk | a splinter of drawing slate
+farebit = my hoped-for passage | a little space on a vessel
+tackbit = a slanting line | a long oblique mark
+cardpip = a single black pip | a faded red spot
+eelpiece = a smoky piece of eel | a dark bend of eel
+goodsteel = a small sharp blade | a very keen penknife
+bootpull = a heavy suck of mud | a sticky patch of ground
+latewarm = a drift of mild air | a soft spring gust
+inkpin = a reed nib | a pen with a narrow split
+bellcount = one measured stroke | a sharp little chime
+sillspot = the bit of light by a sill | a square of window light
+heelmark = a heel-long measure | one short pace
+ashbit = a soft chip of charcoal | a drawing coal
+broadsketch = a sweep of blue | a fine open bay
+berthline = the lower edge | a pencil-straight rail
+
+grown
+opinion @1 church for 1 : A chapel can lend a small classroom enough quiet for a difficult question.
+opinion @1 newcomers for 1 : Every arrival knows one end of a route that I've only drawn.
+opinion @1 houses mixed 1 : A House on the map fills less space than a single muddy bank. Worth remembering.
+opinion @1 road for 2 : I'd tolerate a great many wrong turns for one stretch where the route is mine to choose.
+opinion @1 merchants mixed 1 : A fare is reasonable only if there's something left to spend when you land.
+opinion @1 city mixed 1 : A good school can bring the sea indoors. I would still like to put the floor out of reach.
+opinion @1 dole for 2 : A learner should be weighing a thought, not the chances of an evening meal.
+opinion @1 sump for 1 : Nobody here mistakes a neat line on a plan for a crossing that'll keep your feet dry.
+line @1 greet : Share the margin a while. Nothing on it is settled.
+line @2 greet [pair.band=strangers] : A new arrival with room for a word. Welcome.
+line @3 greet [here.time=dawn] : An early meeting makes the day look unexpectedly wide.
+line @1 greet.return : You've caught me facing the right direction.
+line @2 greet.return [self.working=yes] : I'll put a mark by my place so we can talk.
+line @3 greet.return [pair.band=friends|family] : Familiar ground even on an overturned chart.
+line @1 hail [pair.band=friends] : Join me here on my little frontier.
+line @1 again.open : Round the headland and back in view.
+line @1 kin.open [pair.kin!=no] : For family I'll shut the book completely.
+line @1 farewell : May your route include one unplanned pleasure.
+line @1 farewell.return : I shall leave room for another meeting.
+line @1 ask.how : Does the way ahead look any clearer today?
+line @1 answer.how : Restless in a fairly profitable direction.
+line @1 answer.how.busy [self.working=yes] : Somewhere between a useful question and three fresh ones.
+line @1 thank : You left a line clear that I meant to follow.
+line @1 deflect_thanks : Curiosity had me halfway there before you asked.
+line @1 accept_decline : A refused passage is one more coast to draw round.
+line @1 decline : I couldn't promise a straight route with what I know yet.
+line @1 react.news : Let's see where that belongs on our chart.
+line @1 react.news.known : Someone had marked that particular shoal already.
+line @1 react.news.new : That's a shore I hadn't allowed for.
+line @1 react.news.doubt : The ink seems a little wet for such a settled claim.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That opens a handsome new stretch of water.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd lay my map aside to sit with the one hurt by that.
+line @1 sympathise : You may sit by me with every question unanswered.
+line @1 reassure : There's no shame in erasing a line that led into mud.
+line @1 ack : I can follow that passage without sounding the depth.
+line @1 accept_preclose : I'll give your day the width it needs.
+line @1 preclose : I'm off to catch the question sculling round my head.
+line @1 offer : I can put your choices on paper if seeing them would help.
+line @1 give.advice : Leave room to write down the answer you didn't expect.
+scene work_1
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I leave an edge of slate for things the lesson doesn't cover. | A pupil's margin often shows where a lesson caught hold.
+b : What do you put in yours?
+a : #coastmark#. If a question sends me far afield I like a shore handy for coming back.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I want to wake one morning with the whole street moving under me. | I'd buy a berth for the sake of seeing my own front steps disappear.
+b : You really want to live on water?
+a : For the passage, certainly. I'm rather hoping for dry warm ground at the far end.
+
+scene pastimes_1
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : A court card and a coast both look strange turned upside down. | I give my cards a second look from the other edge.
+b : Does the value change?
+a : The value's fixed. It's my confidence in a bad idea that sometimes alters.
+
+scene food_1
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : Smoked eel comes with its own instructive curve. | I'd happily plot a coast to follow the outline of my supper.
+b : And where would the harbour be?
+a : Right beside the tail where I haven't yet got any grease on the map.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My knife goes into the pen case with its edge covered. | A sharper knife does a gentler job on a reed.
+b : What's gentle about steel?
+a : One clean cut instead of five little squeezes that flatten the nib.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : The first warm day can make a familiar lane look newly discovered. | Spring feels real to me when my writing fingers stop curling for warmth.
+b : Would you spend it writing?
+a : Directions perhaps. Then I'd follow them till the daylight gave out.
+
+scene land_1
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From a high landing the Sound looks near enough to write on. | On a city slope I can find the horizon without a boat.
+b : Does that satisfy you?
+a : Until I look down and see half the city still between me and the waterside.
+
+scene work_2
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : Teaching goes better if I can ask for two wrong answers as well as one right one. | I'll have a learner draw a route that cannot work.
+b : Why spend time on a mistake?
+a : Because a reason will travel further than a correct guess.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : The most useful bit of a small room is the place by its window. | I like a chair that faces something farther off than the wall.
+b : Even if the view's nothing much?
+a : A cloud is quite enough distance. I can look at wood grain any night.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I've calculated the fare away more times than the fare back. | A one-way berth is a beautiful piece of bad arithmetic.
+b : Do you mean to stay away?
+a : I mean to keep both choices, which apparently costs twice as much.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A lesson can be a prayer if I remember to listen after putting the question. | I'd sooner thank the Bright One quietly than set the words for everybody's mouth.
+b : What would you ask?
+a : Room to be wrong without making a learner pay for keeping me right.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : My kind of friend deals the cards without watching my face. | I may keep my hand secret but I'd tell a friend what the game is.
+b : How much do you keep back?
+a : Enough to make the play honest. A game without choices has only a score.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Today's rain would wash the whole coast off an unprotected slate. | A shower can make a clumsy drawing look remarkably convincing.
+b : What does it do with the ink?
+a : Puts rivers where I hadn't budgeted for any water.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I stand up between two long thoughts. | If a calculation snarls I try walking one side of the room.
+b : Does movement supply the answer?
+a : No, but it interrupts my very accomplished way of repeating the error.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A thin week can postpone a journey by an impressive number of miles. | When coin's short I price a berth in the number of meals it'll cost.
+b : Would that keep you ashore?
+a : It puts me off going hungry. The hope still has very decent sea legs.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I won't let smoke from the hearth season the whole dinner. | A smoked eel is welcome. A mouthful of kitchen smoke is quite another lesson.
+b : How do you separate the two?
+a : Eat the eel cold and open a window. Very little scholarship required.
+
+scene travel_2
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Mud can turn a short journey into a study of lifting one's knees. | I mistrust a road that looks smooth while all the stones are under brown water.
+b : Would you walk round it?
+a : If I'd wanted my boots weighed down I'd have taken some books along.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I deal one card face down after our other cards are counted. | My favourite hand at cards is the one nobody's seen yet.
+b : Do you look at it when the others go?
+a : Only if I need persuading that an unseen possibility is usually just an ordinary card.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I use the forge for swearing and the sea for thinking ahead. | Heat and salt are the first words out when my nib splits.
+b : Quite a long way from a damaged nib, isn't it?
+a : That's the object. Give the temper somewhere distant to land.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once drew my own street from a visitor's description. | I collect directions given by those unfamiliar with the district particularly well.
+b : What do they get right?
+a : The things that make a place recognisable. A fish smell travels farther than a street name.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd ask a newcomer which way the street seemed to slope on first sight. | A fresh arrival sees a quite different city from the one I teach.
+b : Would you change a map for that?
+a : I'd add a line in the margin. Changing the middle can wait for another witness.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I don't answer every question about my plans in the order asked. | A direct question can contain a hidden little expectation.
+b : And if you spot one?
+a : Unpack the expectation first. Sometimes the questioner decides to save both of us the trouble.
+
+scene work_3
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : It's difficult to recognise the important question while sharpening a pen. | I stop my hands before passing judgment on a troublesome answer.
+b : Afraid you'll cut yourself?
+a : Afraid I'll give half an answer with the confidence of a whole one.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like an unlatched box for unfinished projects. | If I put all my scraps away too neatly I lose the route between them.
+b : Isn't that just untidiness?
+a : Some of it. I reserve one truly untidy corner to make the distinction plain.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can offer a friend an afternoon's worth of deliberately bad directions. | I'd take company on a walk where the only rule was to keep choosing the unfamiliar turn.
+b : And how would we get back?
+a : Reverse the interesting mistakes. Most adventures make a better route in reverse.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The sea looks empty only to a badly educated eye. | A blank bit on my chart may be full of lives I haven't learnt to draw.
+b : Does that worry you?
+a : It keeps my questions decent. Ignorance needn't take up the whole sheet.
+
+scene memories_2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can hear a lesson in my head and lose track of the floor beneath me. | I've reached a landing thinking about a coast that exists only on slate.
+b : Did you miss your footing?
+a : I put a hand on the rail. That's what the real world keeps it there for.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The tale afloat is that #topic.subject# #topic.claim#. | I've heard the claim that #topic.subject# #topic.claim#.
+b : Is it on your chart yet?
+a : In chalk on the frame. The inside waits for a little corroboration.
+
+story corner [topic=work]
+  : I covered my slate in figures to work out the size of a sail.
+  : I arrived at the answer just where I'd drawn the final corner of the cloth.
+  b : Was there space to write it?
+  : I turned over the slate and gave one small number an entire side to itself. Felt positively extravagant.
+
+story deal [topic=pastimes]
+  : I mistook a crumb on a card for a pip and announced a quite impossible total.
+  : My audience had the courtesy to inspect my evidence.
+  b : How did the game end?
+  : I ate the evidence and accepted a considerably more modest score.
+
+story pen [topic=memories]
+  : I trimmed a reed to the narrowest point I'd ever managed.
+  : The first letter came out so fine I spent half the morning hunting down its companions.
+  b : Had you forgotten to use ink?
+  : I'd written on the fold. I held it open to the light and the lesson came back to me.
+
+story fare [topic=travel]
+  : I counted the coins I'd need for a passage and stacked them up in buttons instead.
+  : By the time I'd reached an imaginary far shore I couldn't fasten my cuffs.
+  b : Which journey cost more?
+  : The return. I had to sew the fare back on button by laborious button.
+
+story eel [topic=food]
+  : I put a piece of cold eel beside a map and went in search of bread.
+  : The grease crept into a handsome little shape while I was gone.
+  b : Did it spoil your map?
+  : I added two headlands and a warning to mariners about setting their dinner down there.
+
+rule @margin
+when concept=bark
+does aside
+cooldown 8h
+say Room for a little uncertainty along the edge. | An empty margin never spoils a sum.
+
+rule @pen
+when concept=bark
+does aside
+cooldown 8h
+say Cap the blade before admiring the nib. | No sense cutting one's best writing finger.
+
+rule @spring
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say Spring puts a journey into every idle foot. | Good season for seeing past the last roof.
+
+rule @work
+when concept=bark self.job=scholar
+does aside
+cooldown 8h
+say Keep the rough work where you can question it. | A second answer may explain the first.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say An early light asks excellent questions. | Start with one line you can defend.
+
+rule @cards
+when concept=bark self.likes=cards
+does aside
+cooldown 8h
+say Nobody wins by counting the pips on the back. | Have a look at its face before boasting.
+
+dlg @1 resident.hub : Lay your question along the margin here.
+dlg @2 resident.hub [pair.disposition=hostile|wary] : We'll keep the ink dry till we understand each other.
+dlg @3 resident.hub [topic.meeting=known] : #topic.player#, our paths have made another interesting angle.
+dlg @4 resident.hub [here.time=dusk] : Enough light to trace one more passage.
+dlg @1 resident.job [self.job=scholar] : At #self.workplace# I try to make a good question last beyond the lesson.
+dlg @2 resident.job : I put uncertainty to work wherever there's room on a page.
+dlg @1 resident.news [world.news] : Here's what's arrived from beyond my margin. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The chalk version says #topic.subject# #topic.claim#. I'll leave the ink stoppered.
+dlg @1 resident.bye : Leave a little uncharted paper for tomorrow.
+dlg @1 master.work : Bring a question you can explain in your own words. We can start our work from there.
+dlg @1 master.wages : No pay for learning. Beside me your learning runs three times faster, and you're free to sell the goods you produce.
+dlg @1 master.bye : Take a clean scrap for your next discovery.
+graft resident.hub
+choice What's beyond that little headland? -> margin_head
+node margin_head
+say One empty space I can afford to leave empty. I've drawn too many perfectly safe channels through places I've never been.
+choice Would you sail there? -> margin_sail
+choice I'll leave the coast clear. -> hub
+node margin_sail
+say As a passenger with a pilot who'd never heard my lectures. I know precisely when to put the slate away.
+choice I'll leave the coast clear. -> hub
+
+graft master.learn
+choice Can a wrong answer be worth keeping? -> margin_error
+node margin_error
+say One that shows how you got there can be worth considerably more than a lucky guess.
+choice How long do you keep it? -> margin_keep
+choice I'll keep my working. -> learn
+node margin_keep
+say Till you can spot that same mistake wearing somebody else's very respectable coat.
+choice I'll keep my working. -> learn

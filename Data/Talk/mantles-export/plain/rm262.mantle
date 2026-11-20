@@ -1,0 +1,264 @@
+# rm262, the cuff of wax (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm262
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_winifred_nailton
+written_by codex
+title the cuff of wax
+fits stage=adult|old
+prefers warmth=warm honesty=frank
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk keeps_a_bead_of_wax_on_one_cuff_for_repairing_common_things
+likes crisp_apples old_tales quiet_chapel autumn_wind
+dislikes gulls wet_floors
+fears a_latched_door_in_smoke knocking_without_an_answer
+hopes one_warm_room_for_storytelling
+topics work +0.4 memories +0.4 faith +0.3 weather +0.2 gossip -0.4
+styles comfort=practical gossip=direct refuse=frank tease=gentle
+marks oath saying
+persona #self.first# presses spare wax into a button mould on a cuff, speaks as plainly about an ill-fitting boot as a bad bargain, and takes a special pleasure in fitting a small thing right.
+
+words
+oath! = Buckle my wick | Buttons in the tallow
+saying! = A little wax can save a sore mile | Warm it first and talk afterwards
+bead = a pea of spare wax | my spare wax button
+cuffspot = the cuff by my wrist | a stiff patch on my sleeve
+hornbutton = a horn button mould | the hollow behind a button
+bitwax = a warm smear | one thin shaving
+wispend = a twist of loose thread | a frayed end
+toolcloth = my folded rag | a little square of linen
+pippin = an apple with a sharp bite | a firm green apple
+firstpeel = the pale side of a peel | a ribbon of fresh peel
+autumngust = a leaf-scented gust | the wind that rattles a shutter
+quietlamp = the little side lamp | a lamp in a quiet corner
+gullwing = the white sweep of a wing | a long white wingtip
+
+any
+opinion @1 dole for 3 : Empty bellies put a whole street in darkness. A pot set out for supper lets everybody see a little farther.
+opinion @1 merchants against 3 : I'm tired of being charged extra for the wrapping on something my paws can carry bare.
+opinion @1 houses against 2 : There's wax on a House seal enough to mend a dozen frayed ends. I could find good use for the lot.
+opinion @1 city for 1 : Ridgemere taught me even a wet doorstep can be made comfortable for a caller.
+opinion @1 church for 1 : In the little silence before a prayer I can hear what I ought to have noticed all day.
+opinion @1 strangers for 1 : Show me an awkward buckle and I don't much mind who the coat belongs to.
+opinion @1 sump for 1 : I'll put my best button coat against all the gleaming stairs uphill for the welcome it can give.
+
+grown
+line @1 greet : Come close. I don't need a whole street to say hello.
+line @2 greet [pair.band=strangers] : Fresh company. Good to have you handy.
+line @3 greet [here.time=dawn] : First light and a clean start to the wick.
+line @4 greet [here.time=dusk|night] : The air's cooled. Words still carry a bit of warmth.
+line @1 greet.return : Hearing my name kindly saves me warming up my voice.
+line @2 greet.return [pair.band=friends|family] : I kept a half-smile ready for you.
+line @3 greet.return [self.working=yes] : Hang back a pace till I've both paws free.
+line @4 greet.return [here.time=dusk|night] : I can just see who put that kindness in the dark.
+line @1 kin.open [pair.kin!=no] : Come and let the family have a proper look at you.
+line @1 again.open : There's another minute for the part we didn't finish.
+line @1 hail [pair.band=friends] : Here by the bright sleeve, friend!
+line @1 farewell : Keep some kindness tucked inside that coat.
+line @1 farewell.return : And a clean dry step wherever you turn in.
+line @1 react.news : Say that once with the edges left on.
+line @1 react.news.new : That's fresh to my ears, every bit.
+line @1 react.news.known : The same wick's been burning here a while.
+line @1 react.news.doubt : I see daylight between those two bits of talk.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That's the kind of hurt a small mending won't touch.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's a light I'd be glad to pass along.
+line @1 ask.how : Any small trouble I can ease in a minute?
+line @1 answer.how : Warm paws and a voice just finding its strength.
+line @1 thank : That fitted precisely where I needed help.
+line @1 deflect_thanks : One dab of effort did the job.
+line @1 sympathise : Sit within reach if a steady paw would help.
+line @1 reassure : A breath first. We've time to ease the awkward bit.
+line @1 decline : I'd come, except I've given the hour to somebody else.
+line @1 accept_decline : A plain refusal is kinder than a slow false promise.
+line @1 preclose : I'd best gather up the loose ends of my day.
+line @1 accept_preclose : There's a good place to leave the stitching.
+scene wax_cuff
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've got #bead# packed against #cuffspot#. | An old cuff can carry its own repairs.
+b : For plugging a hole? | Does the wax stain it?
+a : For waxing #wispend# before pushing it through a needle. | Certainly. A stain doesn't stop a sleeve from keeping you warm.
+
+scene honest_dab
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : A wick that leans leaves a long lip at the side of a candle. | I like a candle you can use right down to a saucer.
+b : Can you straighten it afterwards? | What about a fancy candlestick?
+a : Warm the side with your palm. An impatient thumb can spoil an hour's work. | Fine. I still want a clean last inch.
+
+scene ferry_wind
+when topic=weather here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : Autumn air can make one leaf sound like a whole string of them. | A gust brings the sea right up the hill.
+b : How does it manage? | In the rain?
+a : Bangs the same one back and forth on a shutter till you go outside. | On a dry gust too. Taste the salt at the corners of your mouth.
+
+scene good_apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I'll have #pippin# even if there's a scuff on one side. | The smell off #firstpeel# brings my whole mouth awake.
+b : Won't it have softened? | Before you've eaten?
+a : A scuff is on the skin. You can feel the sound flesh with your thumb. | Long before. Keep an apple out where you can enjoy the wait.
+
+scene tale_time
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : A good old tale saves the biggest noise for a quiet moment. | A teller with a gift for silence has my ear from the start.
+b : A clap at the door? | At the ending?
+a : Much better. A tiny scratch inside the latch. | Just before. Let me feel it coming.
+
+scene small_prayer
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : An empty chapel lets me find the voice I meant to use. | I sometimes go in just to put one thing before the Bright One plainly.
+b : Is it very low? | An important thing?
+a : Low enough that a cough can't hide in it. | If it kept me awake it's quite important enough.
+
+scene gull_wait
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : I wish a gull had to ask for the crust it takes. | #gullwing.capitalize# has a funny way of showing up the instant a pie comes open.
+b : Would you give it? | Even a cold pie?
+a : Very likely. I object to the manners more than the loss. | Gulls haven't entered into a dispute with me about the temperature yet.
+
+scene slip_floor
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A wet board can undo a lifetime of sensible walking. | I move the drip dish a little farther underneath than seems necessary.
+b : Have you a remedy in that sleeve too? | For the splash?
+a : A rag and some elbow. Wax is exactly the wrong remedy here. | For the next wolf who kicks it by accident.
+
+scene damp_cough
+when topic=health|weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : A damp evening puts a rough place in my throat. | I used to pretend a cough was a word I thought better of.
+b : That last word was rather scratchy. | Did anybody believe it?
+a : It was. I'll let the next one stand on its own feet. | No, which made the pretending a touch extravagant.
+
+scene friendly_pin
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd share the last sound button on my coat with #self.friend#. | If #self.friend# needed a needle threaded I'd put my own stitching down.
+b : How do two wolves share one button? | You could finish the seam first.
+a : One keeps the coat done up. The other gets a proper welcome inside. | My seam will keep. A kindness delayed may miss its moment.
+
+scene water_yard
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A yard by the water teaches you to keep the lowest peg empty. | A Sump doorstep gets two looks from me before setting a parcel on it.
+b : What's the peg for? | Rat tracks?
+a : The coat you don't mind using as a mop. | Water creeping under. No use giving a present a wet bottom.
+
+scene tight_purse
+when topic=times|prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : You can restitch a purse till the stitches are all that's left. | Suppers get smaller where the family clock stays the same size.
+b : And if it breaks? | What good is knowing the hour?
+a : That depends what's in it. Times like these I'd have very little to pick up. | Some use. You can call a neighbour over and make one fire serve two.
+
+scene closed_book
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard a name being fastened to something ugly. I didn't see it done. | Anybody can stick a seal on a piece of talk.
+b : Do you think it's true? | Would you break it?
+a : My seeing it would make a considerable difference to my answer. | No. Pass me the plain facts when they come.
+
+scene bare_window
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news.capitalize#. That's the bit that came from #world.news_from#. | From #world.news_from# came news of this: #world.news#.
+b : You don't sound entirely sure. | Can I pass that along?
+a : Of my own words I'm sure. I didn't walk there to look. | Yes, leave the ends as plain as I gave them.
+
+scene late_road
+when topic=travel|work world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : When wagons run behind I count how many evenings the lamp can manage. | I won't put my head round the wall every time a wheel squeaks.
+b : How do you count? | Expecting a cart?
+a : One short inch for an hour I really need, less for company that likes the dark. | Yes. No good keeping my neck stretched out till it comes.
+
+scene chandler_memory
+when topic=memories|smalltalk
+does tell.self / ask.detail / answer.detail
+a : My first wax button melted in my closed paw. | There's a coat I remember entirely by the sizes of the buttons.
+b : Left a mess? | What colour was it?
+a : Left a fine model of my palm. Was nearly proud of it. | Couldn't say. I fastened it in the dark all one winter.
+
+scene proud_needle
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : One day I'd like a warm room with two chairs placed for storytelling. | My idea of wealth is a drawer of needles all sharp and straight.
+b : Why two? | How many?
+a : I'd like the teller to have somebody to look at. | Enough to give away the needle suited to that particular stitch.
+
+scene small_fault
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Tell somebody about a thread before the sleeve comes off. | I'll point out a sticking buckle no matter how fine its polish.
+b : Even a stranger? | That's a hard bargain.
+a : A moment's redness in the ears beats walking round in odd sleeves. | A plain one. It can't fasten a coat with shine.
+
+story apple_needle [topic=food|memories]
+  : I used an apple as a needle cushion once when I had no other place handy.
+  : Sorted all my needles into it in a fine rising row.
+  b : Did it spoil the apple?
+  : Lost a few bites to spots. Recovered every needle, and made the prettiest little hedgehog in town.
+
+story sleeve_light [topic=memories|work self.job=crafter]
+  : The gleam on a waxy sleeve once had me searching for a hidden flame.
+  : Kept turning round and catching the shine on my other side.
+  b : Did you finally catch it?
+  : Held still. Best bit of chasing I ever did.
+
+story scratch_tale [topic=pastimes|memories]
+  : I told a story about a scratching latch so quietly I had to lean in myself to hear it.
+  : Something scratched at the door in the pause I left.
+  b : What was on the threshold?
+  : My own bit of loose strap. Caught on the latch while I'd been leaning. Gave the strap a starring part next time.
+
+rule @button_warm
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say The mould wants warmth before it wants pressure.
+
+rule @quiet_step
+when concept=bark here.place=chapel
+does aside
+cooldown 8h
+say There's a place for my voice after the silence.
+
+rule @drain_sweep
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Someone's boot will thank that rag when the water's mopped.
+
+rule @evening_stitch
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Just light enough to find the thread by.
+
+dlg @1 resident.hub : Put the words where I can get both ears to them.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Good, I know how you like a straight answer.
+dlg @3 resident.hub [here.time=night] : Late's a good time for a quiet voice and a little patience.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll listen. Keep enough room between us for a coat on a peg.
+dlg @1 resident.job [self.job=crafter self.working=yes] : #self.trade_words.capitalize#. The small repairs see me through a day too.
+dlg @2 resident.job : I like work that lets me put one crooked thing square.
+dlg @1 resident.news [world.news] : News arrived out of #world.news_from# in these words: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I'd sooner talk over something I can test with my own claws.
+dlg @1 resident.bye : I wish you a pocket with room for the next good find.
+graft resident.hub
+choice What can the wax do for a bad boot? -> boot_rub
+node boot_rub
+say If a bit of sticking thread's rubbing you, roll a very little wax into it. If it's a tack that's rubbing, don't go pretending wax is a hammer.
+choice How do I tell the difference? -> thumb_test
+choice My boots are behaving so far. -> hub
+node thumb_test
+say Feel round with your thumb. A tack stays proud when you press it. A bit of thread bends, and a good thumb tells you which to mend.
+choice That's plain enough to remember. -> hub
+choice I'll see to my own pair. -> bye

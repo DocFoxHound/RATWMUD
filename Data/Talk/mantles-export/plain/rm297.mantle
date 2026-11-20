@@ -1,0 +1,258 @@
+# rm297, the covered ember (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm297
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_knut_sootley
+written_by codex
+title the covered ember
+fits stage=adult|old
+prefers job=sailor
+traits temper=short talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk checks_a_straw_for_smoke_before_saying_where_its_been
+likes plum_tart digging fresh_straw warm_rain
+dislikes drizzle stale_bread
+fears a_tally_rubbed_out a_rope_taking_the_weight_early
+hopes dry_straw_to_spare a_patch_of_ground_alone
+topics work +0.4 pastimes +0.4 prices +0.3 gossip -0.4 weather +0.3
+styles comfort=material gossip=secretive refuse=sharp tease=none
+marks oath saying
+persona #self.first# draws a straw from a smoke-scented cuff, can pick the sound side of a battered crate by touch and takes unkindly to questions about either talent.
+
+words
+oath! = Soot in the tally | Splinter my hoop
+saying! = A stalk remembers where the weight lay | Count the lift twice
+straw = my clean straw | a fresh yellow stalk
+stain = a black dust mark | the smoke smudge
+wedge = a loose packing wedge | the flat wood chip
+crate = the bare end board | a weathered crate end
+past = a rubbed chalk stroke | the ghost of a tally
+clod = a square clod | the heavy dirt lump
+prong = a broken digging tine | my scrap of fork
+rainbit = warm runoff | rain that's lost its chill
+pastry = a plum-dark crust | the blistered pastry corner
+bread = a sour dry heel | that brick of old bread
+fold = my inner cuff | the sleeve's turned edge
+stand = a scrap of firm ground | a square of dry boards
+
+any
+opinion @1 houses against 3 : Some debts weigh rather more than cargo. No House at the water's edge has a book large enough to enter mine.
+opinion @2 merchants against 2 : No beauty to a dear loaf when the teeth go clean through air just under the crust.
+opinion @3 dole for 1 : A free bowl can give a wolf some weight to put behind the next lift. That's good enough reason.
+opinion @4 sump for 1 : Sump folk don't object if you keep your own account of who gets the lighter end to carry.
+opinion @5 watch against 1 : I know a hard question from a heavy boot. Neither makes a light job easier.
+opinion @6 times against 2 : They say the load's the same. I've felt what went missing from my end of the bargain.
+
+grown
+line @1 greet [pair.band=strangers] : Stand in the clear if you've a word. | New face. No need to come closer yet.
+line @2 greet [here.time=dawn] : So the light got through. Welcome. | Early for asking about anything heavy.
+line @3 greet [here.weather=rain] : Wet out. Wipe before you lean. | Rain's come in along with you.
+line @4 greet.return : I heard. Here's your greeting back. | Civil words travel cheaply enough.
+line @5 greet.return [pair.band=friends|family] : There's a welcome by the board I'm minding. | A known voice. That's less work.
+line @6 farewell : Don't walk under what hasn't settled. | Keep the last dry stalk for yourself.
+line @7 farewell.return : I won't hold you at this corner. | Your side's clear to leave by.
+line @8 again.open : Back along the same set of tracks. | That's your mark past here twice.
+line @9 kin.open [pair.kin!=no] : Come where the kin can hear one another. | My end has room for the family weight.
+line @10 hail [pair.band=friends] : Here, off the chalk line! | Down by the clear corner!
+line @11 react.news : I'll want the actual weight of that account. | Don't tell me what's written over the original mark.
+line @12 react.news.known : I've seen the underside of that particular piece. | That account's got a notch in my memory.
+line @13 react.news.new : Fresh stroke on a board I knew bare. | I'd no previous mark for that one.
+line @14 react.news.doubt : Show me the stroke somebody rubbed away first. | That tale has gained some weight between the first lift and this one.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : There's a place gone empty that somebody still counts. | Leave quiet round it. I know the cost.
+line @16 react.news.glad [topic.kind=marriage|birth] : That's a mark worth leaving up on the board. | Glad there's more than bad debts to reckon.
+line @17 answer.how : Doing my own checking. Sufficient. | Still on the end I chose.
+line @18 decline : I'll need a clearer account before I put my back behind that. | My time's too dear for a promise that doesn't stand level.
+line @19 accept_decline : That's the answer as given, then. | Good. No loose end I have to mind.
+line @20 sympathise : I can put a bit of weight on my side for you. | Sit off the corner where the load can't reach.
+line @21 thank : A decent turn under a bad weight. | Mark yourself a little extra in your favour.
+line @22 deflect_thanks : I didn't fancy being under the loose end either. | You're free to repay it somewhere else.
+line @23 preclose : Time I checked what I'm standing on. | Some hours stay clear of my ledger.
+line @24 accept_preclose : Leave your chalk where it is. | You're done here. Go easy.
+line @25 farewell [here.time=night] : Don't trust a painted edge in poor light. | Keep clear of a dark overhang.
+scene cuff
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #straw# comes out of #fold# with a smell of wood smoke. | I test a bit of packing by bending it under my nose.
+b : Can you say where you've been from that? | What should decent straw smell of?
+a : I might. Doesn't follow that I care to say. | Dry sun. If I smell smoke twice I check whether it's my own sleeve.
+
+scene plumcorner
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I lift #pastry# to see if there's fruit clear underneath. | A tart with a wet bottom tells you how it was packed.
+b : You're not paying by the plum, are you? | Wouldn't it just say the plum was juicy?
+a : I'm paying for something. I like to meet it while I'm eating. | Then there's good fruit to show for it. My nose tells the rest.
+
+scene strawtest
+when topic=pastimes self.likes=fresh_straw
+does tell.self / react.self / assess
+a : Fresh straw springs twice when you squeeze a fistful. | A flattened stalk keeps its complaint to itself.
+b : Twice, specially for your private benefit? | I can hear it crack from here.
+a : Once out of my hand. Again when the next weight lands. | That's a sound answer. Straws make poor liars.
+
+scene dig
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : When I turn #clod# I study the surface that used to face downward. | One crumble of dirt shows what pressure the last boot left.
+b : After coins in the furrow? | More interest in boots than roots?
+a : No. I like knowing one square of the world all the way through. | A boot pressed hard leaves air out of a place roots need it.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : Drizzle puts #stain# halfway up my wrist before I feel wet. | There's a rain so mean you don't hear it working.
+b : Can't be much trouble if you don't feel it. | Then why give it a full hearing now?
+a : It's already under my sleeve by the time I find the trouble. | Because the straw's soaked. I heard what it failed to warn me about.
+
+scene warmrain
+when topic=weather self.likes=warm_rain
+does tell.self / react.self / assess
+a : #rainbit# running down my neck is more tolerable than a cold mist. | Warm rain releases the clean dirt smell round a struck spade.
+b : You'd still want a decent collar. | What's the value of smelling a furrow?
+a : I'll take the warmth without owing the collar an explanation. | Mine to reckon. Nobody's charging admission to it yet.
+
+scene stalebread
+when topic=food self.dislikes=stale_bread
+does give.opinion / disagree / concede
+a : A seller asks fresh coin for #bread#. I object to the difference in age. | Wouldn't trust a shop that hid a stale heel under a bright crust.
+b : Coin doesn't go stale like a loaf. | You could soak it without much trouble.
+a : And bread doesn't earn interest. Another argument against that price. | I'd like an honest price before I'm volunteered for the extra work.
+
+scene badlift
+when topic=work self.job=sailor self.working=yes self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words.capitalize#. Look at #crate# before you trust the chalk. | I listen for loose wood when the load first comes taut. #self.trade_words#.
+b : What can the chalk be hiding? | Can you hear trouble with the pier that noisy?
+a : Nothing at all. Or a board somebody's in a hurry to have carried off. | Right through the wrist. Hearing comes in more than one sort.
+
+scene lostpost
+when topic=work self.job=sailor
+does tell.feeling / sympathise / assess
+a : I have held a better place than the one my elbows know now. | I know how fast a name rubs off a tally when a better-connected one turns up.
+b : Ever put in for the old place again? | Did the work itself go anywhere?
+a : No. I want a load with room for me to look at either end. | Didn't lose an ounce. Only the old paws got put aside.
+
+scene dockdebt
+when topic=times here.region=ridgemere
+does give.opinion / disagree / concede
+a : Wharf houses can count every crate except what a load costs a household. | I take little comfort in a handsome port tally.
+b : A ledger needn't answer for every trouble. | Would a rough tally suit you better?
+a : True. Don't ask me to admire it like it made good all those debts. | One that marked the empty place at supper would be worth reading.
+
+scene sump
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : Sump rooms hold smoke after the fire's been cold a week. | Down home I hang a dry stalk high past the flood stain.
+b : Can you get the smell out with straw? | Does that do anything to the water?
+a : I'm content if fresh straw has a smell of its own for an hour. | No. Gives me a sound bit to test the rest against.
+
+scene quickcoin
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : A poor wolf ought to know which corner of a load is all packing. | I don't want a merchant's word included on the scales.
+b : Time spent testing might cost you the bargain. | What weight's the word of a decent seller?
+a : Let it cost me. A rotten purchase would cost me dearer. | Light enough to leave aside till I've seen the goods.
+
+scene pal
+when topic=friends self.friend
+does offer / accept / assess
+a : I'd save a dry sheaf for #self.friend#. Take this loose stalk. | I've got enough sound plums to put one by for #self.friend#. Want a small one?
+b : I'll twist it round the end of my wrapper. | One mouthful would do me.
+a : That's sense. Smoke on wrapping can make a parcel smell better than it is. | Try the sound side. I cut the bruised quarter out to check.
+
+scene mixedtalk
+when topic=gossip
+does give.opinion / disagree / concede
+a : I keep some facts wrapped like a plum against rough boards. | Sharing a tally with a stranger gives the stranger a lot of spare chalk.
+b : What's the bruise you're looking to spare? | Would you rub away a mark of your own?
+a : The bit where an idle thumb went through something I meant to keep. | No. But I don't leave it beside somebody else's empty figures.
+
+scene chipprong
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What would you cut a channel with if #prong# can't take the hard top off? | Where's the better spot to turn a shallow bed after heavy rain?
+b : Put the heavy spade in at a slant first. | Where you still see little dry cracks.
+a : Aye. It gives the tine something to catch hold of. | Good. A furrow with its own water is work for a ditch, not dinner.
+
+scene wrapway
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : I'll walk two streets extra if it keeps a roof load out of my sky. | I mean to walk a stretch without looking up for a falling slat.
+b : Even when the shortcut's perfectly clear? | Which way does that leave you?
+a : It looks clear till it isn't. I set my price on the extra walk. | Far side of the road where the load would have to jump. Good enough.
+
+scene bettergarden
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like #stand# wide enough for a bit of digging and a shut gate. | One day I'll plant three crops without chalking the spare inches for a landlord.
+b : Which part matters most? | What grows in those odd inches?
+a : The latch. On my side. Ground comes next. | Leave them wild to see what the ground was planning.
+
+scene weightcase
+when topic=times world.times=hard|lean
+does tell.worry / reassure / assess
+a : Seems there's a corner off every meal before I get near a knife. | #past# has almost as much meat on it as my supper.
+b : Wouldn't a shared pot make that look better? | That's a hungry sort of joke.
+a : Only if a wolf can reach the ladle too. I'd watch that part. | I wasn't offering you a laugh. Something substantial to chew would do.
+
+story straw_mark [topic=work]
+  : I packed a small crock in fresh straw and set a heavier jar beside it. Somebody wanted to know which had stood where after I took them both out.
+  : I put a thumb into the two hollows. One was shallow and had a crushed margin.
+  b : Was that the heavier jar?
+  : No, the small crock that somebody had taken up and set down twice. A weight can leave a misleading history.
+
+story clean_cuff [topic=smalltalk]
+  : A seller had two parcels of straw. Cheap and dear. I smelt the cheap parcel and it smelt of a smoky room, so I took the clean dear bunch first.
+  : Halfway home I put it up to my nose again. Same smell.
+  b : Had you picked up the wrong bunch?
+  : Right bunch. Wrong sleeve. I still think the seller charged for more sun than that straw had seen.
+
+story ground_price [topic=pastimes]
+  : I once tried to buy enough soil for a wooden box. Seller held up a handsome clod and knocked it on the board.
+  : Sounded hollow. I broke it down the seam with my thumb.
+  b : Anything hidden inside?
+  : Only air. I bought the loose dark stuff by the scoop and brought my own box.
+
+rule @sleeve
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say That's my smoke, not the bundle's. | Dry stalk first. Then the thumb test.
+
+rule @lift
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Turn the chalked board toward my nose. | I can hear that board through my wrist.
+
+rule @mist
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say No honest sound from that mean little wet. | My poor cuff caught the whole soaking.
+
+rule @dug
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say One more turn to see what's under there. | Ground hasn't made a false entry yet.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You'll get an answer that fits the business. Tell me what the business is.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. At least we know where the last conversation stood.
+dlg @3 resident.hub [here.time=night] : Speak in the open. I dislike a question hanging over me in poor light.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep your paws well on your side of that mark.
+dlg @5 resident.job [self.job=sailor self.trade_words] : #self.trade_words.capitalize#. If you need something moved, state the real weight.
+dlg @6 resident.job : I like work that shows where the weight changes hands.
+dlg @7 resident.bye : Walk wide of the next overhang.
+graft resident.hub
+choice Can straw really keep an account? -> bent_straw
+node bent_straw
+say Shows where something heavy lay. Pull the stalk up and the crease points straight at you. Much plainer to my eye than House accounts, and harder to rub out.
+choice Can it name the load? -> vague_load
+choice Close the account, then. -> hub
+node vague_load
+say I didn't say it could write a whole description. But I'd take a crease I could feel over a label somebody wants me to trust.
+choice I'll look underneath next time. -> hub
+choice Enough about the weight. -> bye

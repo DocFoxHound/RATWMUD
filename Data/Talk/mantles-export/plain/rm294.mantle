@@ -1,0 +1,379 @@
+# rm294, the petition ribbon (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm294
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_agnes_wetley
+written_by codex
+title the petition ribbon
+fits stage=adult|old
+prefers job=priest
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk marks_the_wait_for_an_answer_with_knots_in_a_ribbon
+likes smoked_eel singing festival_bells first_snow
+dislikes night_noise salt_wind
+fears a_plea_too_faint_to_read a_wakeful_house_without_quiet
+hopes an_answer_with_a_date the_low_harmony_heard
+topics faith +0.5 news +0.3 pastimes +0.4 weather +0.3
+styles comfort=company gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# measures a wait for an answer in ribbon knots and will sit unhurriedly through the silence of someone finding words.
+
+words
+oath! = Kink in the ribbon | Salt on the lampglass
+saying! = Leave the asking end loose | Hear the low part before the high
+waitcord = my knotted ribbon | my length of waiting
+weekbend = a little flat knot | a new bend in the ribbon
+bareend = the unknotted tail | the plain ribbon end
+petitionfold = one soft fold of paper | the thin folded sheet
+stain = a rime of white salt | a streak of dried brine
+deepnote = the lower harmony | a note down in my chest
+turnchord = the turn in the song | the bit where the voices meet
+eelcrumb = a flake of dark eel | one tear of smoked flesh
+platewarmth = the heat at the rim | a warm patch on the pottery
+listenplace = the driest bit of bench | a corner where a voice carries
+bellstart = the first hard stroke | a single bell note
+sillbead = a round bead of rain | one fat drop on the sill
+whitefoot = the unbroken patch of snow | a little field of white
+leafmark = the wet print of a leaf | a leaf-shaped smudge
+gathercloth = a cloth for wet ribbons | my folded drying cloth
+
+any
+opinion @1 church for 2 : A place to say a hard thing without buying the ear first is worth keeping open.
+opinion @1 dole for 2 : We ask about hungry mouths. It's too easy to overlook a quiet one when the loudest still needs a loaf.
+opinion @1 houses against 2 : High windows stay closed while a small request making the rounds in the low streets wears holes in its folds.
+opinion @1 watch against 1 : I'd like the boots that come to a door to bring an answer once in a while. Plenty of wolves here know the sound of the other sort of visit.
+opinion @1 festivals against 1 : I enjoy the stroke of a bell. The crush that hurries after it makes a poor place to bring a private sorrow.
+opinion @1 merchants against 2 : I've seen the soft grey place where the last coin lay in a purse. The price of bread puts it there early in the week.
+opinion @1 sump for 1 [self.quarter=sump] : Down our stairs a bowl can travel from one door to another and come back warm. I count that for something.
+opinion @1 times against 2 : Each week adds a knot to my ribbon. Other wolves carry a wait much heavier for no better reason.
+
+grown
+line @1 greet : This patch of quiet has room for your voice.
+line @2 greet [pair.band=strangers] : You can begin without giving me a name.
+line @3 greet [here.time=dawn] : Early light finds the ribbon still on my wrist. Welcome.
+line @4 greet [here.time=dusk|night] : I'll speak more softly in case there's an ear just settling to rest.
+line @5 greet [self.working=yes] : I can put this knot down to hear you speak.
+line @1 kin.open [pair.kin!=no] : Come close. A familiar voice needs no fine introduction.
+line @1 again.open : There's a second chance for a word we may have missed.
+line @1 greet.return : Your greeting found a listening ear.
+line @2 greet.return [pair.band=friends|family] : That voice is a welcome lower note.
+line @3 greet.return [self.working=yes] : You've reached me between one duty and the next.
+line @4 greet.return [here.time=dusk|night] : I heard your word across the dark. Welcome.
+line @1 farewell : Carry a little of this quiet into the street.
+line @1 farewell.return : May the way back give your shoulders ease.
+line @2 farewell [here.time=dusk|night] : A quiet doorstep and a peaceful bed to you.
+line @1 react.news : Give my ears time to follow it all the way round.
+line @1 react.news.new : I'd need a fresh bend of ribbon to hold that.
+line @1 react.news.known : It has come to me once in a less kindly voice.
+line @1 react.news.doubt : Has the asking gone as far as the account?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The house will need a quiet visitor after the loudest grief has passed.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A full-throated note for that occasion.
+line @1 answer.how : My ribbon still has a few good inches unknotted.
+line @2 answer.how [self.working=yes] : I've one small duty poised and both ears working.
+line @1 ask.how : Is there some part of the day you'd like another wolf to hear?
+line @1 sympathise : Grief can speak very softly when it comes back round.
+line @1 reassure : Keep the first words small. There's time for the rest to arrive.
+line @1 decline : I'd be taking somebody else's private words out without leave.
+line @1 accept_decline : Leave the ribbon loose. We'll ask no more.
+line @1 thank : That kindness reached me just when the wait felt long.
+line @1 deflect_thanks : A shared weight doesn't ask for a grand answer.
+line @1 preclose : There's an end of ribbon asking to be wound away.
+line @2 preclose [self.working=yes] : There's something unfinished that deserves my full hearing.
+line @1 accept_preclose : Go while you have the quiet to yourself.
+line @1 hail [pair.band=friends] : My friend, I've a whole free minute within earshot.
+line @1 ack : Fairly heard.
+scene knots
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can feel the weeks I've waited through this ribbon. | I leave the last inch clear even when I think I've run out of patience.
+b : Won't a knot work loose? | What goes in the last inch?
+a : Then I tie it again. The paper and I will still know the week's passed. | My fingers. I have to keep hold however cross I get.
+
+scene petition
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : Writing the question plainly has proved easier than getting a plain reply. | Each time I ask after my petition I go with just one little thing to say.
+b : What is it you put on the paper? | Wouldn't more words make your meaning clearer?
+a : That part I keep folded. I'm happy to talk about making a wolf wait. | I want a date I can bring back next week. A long speech might sound as though a speech would satisfy me.
+
+scene straysheet
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I look for the crease running through a bit of public writing. | There's a difference between a paper that's been read and one that's been put away.
+b : Why does a crease matter? | Can you see which is which?
+a : If it's worn through a word I'd like the word supplied before I judge the sentence. | Only if the reply comes back inside the fold. Finger marks alone don't give me an answer.
+
+scene harmony
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I take the low part if there's another voice willing to rise above it. | My favourite chord feels like two voices getting their shoulders under one beam.
+b : Can you hear your part clearly? | Do the voices need to be loud?
+a : Best when I listen to the other one. It gives my own voice a place to stand. | No. They need to lift at the same instant. Loud by itself just shakes the dust.
+
+scene festival
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I've a liking for the sound beneath the first great note of a festival bell. | The second bell sounds to me a good deal nearer than the first.
+b : Is there another bell down there? | Is the ringer coming to meet you?
+a : A lower note in the same metal. Give it one breath before you speak. | No. The first one just woke me up. I hear the second properly.
+
+scene hush
+when topic=day here.time=night self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : At night a little scrape in the street can find every bed in the house. | I'd make a lighter tread after the last lamp went down.
+b : Would you shut the window? | Are you a light sleeper?
+a : Sometimes the room needs the air. I'd sooner the street remembered how sound travels. | I can sleep through a long steady noise. It's the single bang and the long wait after that keep me up.
+
+scene salt
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind leaves my ribbon rough as a piece of old string. | I hold my coat collar just under one ear in a salt wind.
+b : Does it soften again? | Why leave the other ear out?
+a : In clean water, given time. Most things do, wolves included. | I'd hear a sentence out, even in rough weather.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I'd share the outside flake of an eel last. | Smoked eel tastes better to me if I cut it thick at one end.
+b : Which piece do you share first? | Which end do you eat first?
+a : The good full middle. Leave myself the smoke to remember it by. | Thin first. I like supper to improve while it lasts.
+
+scene snow
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : First snow makes a doorstep look as though a whole foot might sink into it. | I put one paw on the sill to see if the first white flakes will stay.
+b : Do you go straight out? | Doesn't your paw melt them?
+a : Not before the board shows through it. I want first snow and two sound hips to enjoy it on. | Just one patch. I watch the rest and leave the salt outside for later.
+
+scene supper
+when topic=faith self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I ask about the wolf who has not come forward for bread. | A bowl with a chip can still give a hungry wolf a full measure.
+b : How do you ask without putting a name out? | Even on the broken side?
+a : Ask for room on the bench. A space is encouragement enough for some. | Set the chip high and don't fill it to a spill. Then give another spoonful when there's room.
+
+scene dampfold
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I watch two drops on a sill to see which will give way first. | When rain settles into a hum I begin to hear a lower part.
+b : Do you always put your hopes on the bigger drop? | Rain singing to itself?
+a : The small one can run the farthest if it catches a groove. I'm for a clear place to go. | Rain on the sill, rain on the street. Two voices, whether or not the sky means to sing.
+
+scene nightquiet
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Some Sump doors shut with a cry whatever you do to the latch. | The quiet corner of my room is on a different side each night.
+b : Does that keep the neighbours awake? | Does the room turn about?
+a : If the hinges shout. I use a dab of oil as an evening kindness. | No. I listen for the side of our house where the day has finally fallen silent.
+
+scene firstprayer
+when topic=faith self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I leave a place unfilled in a prayer said with somebody I barely know. | A name that's hard to say aloud may sit very well in a silence.
+b : Something the other wolf ought to find words for? | Do you need the name before you pray?
+a : Only if there are words ready. A quiet breath reaches the Bright One in good order. | No. An offered silence costs the speaker less than a question about who's missing.
+
+scene queue
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : The copper for supper does a day's work in my thoughts before I spend it. | I can hear a hollow purse close.
+b : How much thought can a copper require? | Does it make a useful sound?
+a : What feeds one, what might feed two if somebody asks. That's a fair morning's reckoning. | A thin little slap. It usually means tomorrow's supper needs thinking about now.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : Sometimes I leave the ribbon in my pocket when I visit #self.friend#. | I'd give #self.friend# a bit of the clean end if a marker was wanted.
+b : Is your wait over on those days? | Would that shorten your count?
+a : No. I don't mean for it to visit everywhere I visit. | Only if I counted the length. I count the knots, and those I'd keep.
+
+scene lean
+when topic=faith world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I'd cut the first loaf where folk can see the slices in a lean week. | Worry about bread finds its way into every tune I hear just now.
+b : Won't the sight make a queue restless? | What does the worry sound like?
+a : Seeing a fair slice go by helps a wolf hope for another. Hiding the cutting makes a louder unease. | Like a voice that's holding back breath for fear the little it has will run out.
+
+scene memory
+when topic=memories self.age>=25
+does tell.self / ask.detail / answer.detail
+a : Once I thought a very fine heading would get a paper answered faster. | The mark that matters on a reply is often the dullest one.
+b : Did it help? | A clerk's little dot?
+a : It made the heading pleasant to look at. I was doing a lot of looking in those days. | A date, legible and complete. A fine big flourish won't tell me which day to come back.
+
+scene sillnight
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : The dusk takes the colour out of my ribbon before it takes the knots. | When evening comes I turn my ear towards home.
+b : Can you tell the count by touch? | Can you hear that far?
+a : One bend to each week. A smooth space means I put it down and did something else. | No. It's only my mind going home ahead of my feet.
+
+scene outsider
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer may hear a bell without knowing what it calls for. | I'd slow down when I give the hours to a wolf that's new here.
+b : Would you tell the meaning straight off? | Are the hours different here?
+a : If asked. Sometimes a sound heard without duties tied on is its own welcome. | It's the ways and the bells that take learning. An hour is plenty short enough already.
+
+scene unanswered
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I keep the name off the outside fold of a private question. | Some talk carries farther than the wolf who first had need of it.
+b : Will it still reach the proper ear? | Does it do harm going farther?
+a : I can put the folded part there myself. The walk costs less than the wrong ears hearing it. | Depends if it goes to fetch help or just to have itself admired.
+
+scene dreamstamp
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In my dream the answer finally came back on the ribbon itself. | Sometimes a room in my dreams repeats each question to the wolf who asks.
+b : What was the answer? | Wouldn't an echo be another question?
+a : It said to use a larger piece of ribbon. Even in sleep I have more waiting in me than I would like. | That's precisely it. Somebody must go inside and answer or the question goes on speaking to itself.
+
+scene backbenches
+when topic=work self.job=priest self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I put the quieter seats where a wolf needn't push through a row to get out. | I check the furthest seats before I take my place in front.
+b : Why think about leaving? | What is there to attend to?
+a : It's easier to come in when you know you can slip out quietly. | Whether the last seat can hear. A service has to reach farther than the first row.
+
+scene coldbowl
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : An empty bowl warms readily if you hold it on a folded cloth. | I have a liking for a bowl that fits two paws round it.
+b : Wouldn't the cloth keep the heat away? | Is that a great quantity?
+a : Warm water does the heating. The cloth keeps the bowl steady when I pour the water out. | Just a good grip. Something hot shouldn't have to balance on two fingertips.
+
+scene footprints
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : When the Sump steps glisten even the shallow marks hold water. | I like a little timber strip where my heel can find a step in the dark.
+b : Does a mark make much difference? | Won't the strip be a trip itself?
+a : Deep enough to remind a paw to turn sideways and land flat. | Kept near the edge it tells the heel where the level changes. Set it across the tread and yes, I'd curse it.
+
+scene answerwolf
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I care less for a grand answer than for a wolf who'll come and give it. | You can wait in company without asking the other wolf to solve the wait.
+b : Even with bad news? | How would you spend those hours?
+a : I'd still know where the matter stands. Waiting with no answer gets heavy enough for two. | Make tea, sing low, mend a hem if there's light. A wait can have a life alongside it.
+
+scene songroad
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can make a walk pass by giving each turn a different verse to sing. | A little singing goes a long way up a steep street.
+b : What if the verses finish before the walk? | Won't that cost you breath?
+a : Then a very long note till I reach the door. Nobody's counting the verses but me. | Take one note each time you breathe out. The street takes scarcely more from you than silence does.
+
+scene slackribbon
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I wind my ribbon on two fingers and let it spring loose. | No knot goes in a wet ribbon if there's patience left in me.
+b : Why undo the coil? | Why wait till it's dry?
+a : So none of the knots sits pressed for too long. I want it to last what remains of the waiting. | The folds tighten as it dries. I like a knot I can undo.
+
+story lostloop [topic=memories]
+  : I once put an extra knot in the ribbon for a week that hadn't happened yet.
+  : It was cold in the queue and I made a bend for something to do.
+  b : Did you leave it for the following week?
+  : I took it out. One week costs enough without paying for it ahead of time.
+
+story lownote [topic=pastimes self.likes=singing]
+  : I began a song so low that only my chest seemed able to hear it.
+  : When I eased up a little the same line came out quite clear. I could still feel that first note behind it.
+  b : Did anybody have to take the high part?
+  : The rain was drumming a quite respectable high part all by itself. I kept on singing for the pleasure of the pair.
+
+story snowroof [topic=weather self.likes=first_snow]
+  : I once watched first snow settle on a black cap of a chimney.
+  : There it sat, a fine tall white shape, till one puff of heat drew a clean hole in the middle.
+  b : Did it slide off in a ring?
+  : In two beautiful pieces, one dark underneath and the other shining. No ribbon knot for that; I can hold it without counting.
+
+story cleanmargin [topic=work self.job=priest]
+  : I folded a petition away in a coat with a bit of soap in the other pocket.
+  : All the way there the paper smelt of soap. At the door I expected to find the writing quite washed away.
+  b : Was it still legible?
+  : Clear as the day I wrote it. I kept the scented fold turned in. If the request was heard I wanted it heard on its own account.
+
+story eelpaper [topic=food self.likes=smoked_eel]
+  : I tucked some smoked eel into a cloth and sat on a step to eat it.
+  : The cloth slipped. I caught it just as the eel was about to roll onto the next stair.
+  b : Did it stain the cloth when you grabbed it?
+  : A stripe of smoke right across the cloth. It was clear which end had once held lunch however often I washed it.
+
+rule @ribbon
+when concept=bark self.job=priest self.working=yes
+does aside
+cooldown 8h
+say Leave a quiet space for the last voice. | Keep that seat within reach of the door.
+
+rule @weather
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Sit on the bit of bench the drip hasn't reached. | Two drops racing, neither in a hurry.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Lower the high part as the light goes. | There's a quiet room beyond that wall.
+
+rule @salt
+when concept=bark self.dislikes=salt_wind
+does aside
+cooldown 8h
+say Shake the salt off before it gets indoors. | Ribbon in, clean side up.
+
+rule @bowl
+when concept=bark here.day=rest
+does aside
+cooldown 8h
+say Hot bowl coming through the row. | Leave enough space for another spoon.
+
+rule @sing
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say Hold the low note till the two meet. | Not quite so loud on that high bit.
+
+dlg @1 resident.hub : Whatever brings you here can have time enough to be said.
+dlg @2 resident.hub [topic.meeting=known] : I've a piece of time to share with you, #topic.player#.
+dlg @3 resident.hub [here.time=night] : I keep my voice low at this hour. I'll listen closely to yours.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your words may be welcome without your coming any closer.
+dlg @1 resident.job [self.job=priest] : #self.trade_words.capitalize#. I try to hear the wolf at the back as clearly as the first one in.
+dlg @2 resident.job : I've patience for an honest question, even one without an answer yet.
+dlg @1 resident.news [world.news] : One scrap has arrived that I can pass on. #world.news#.
+dlg @2 resident.news [world.death=recent] : There's been a death. Spare a little quiet along the way home.
+dlg @1 resident.gossip [here.gossip!=yes] : No name has been offered me to pass round.
+dlg @1 church.greet [here.day=rest] : Welcome on Restday. Today's service is #here.service#.
+dlg @1 church.poor : The poorest households receive bread on Restday. Ask if a quiet door needs remembering.
+dlg @1 church.offering : Give only what leaves the next mouth fed as well as your own.
+dlg @1 church.thanked : That gift will give a hungry mouth a better day.
+dlg @1 church.refused : #topic.why#. There's still room for you to sit.
+dlg @1 church.bye : Go in the care of the Bright One.
+dlg @1 resident.bye : May the waiting ease before I see you again.
+graft @waitingknots resident.hub
+choice Why wear the knots where you can see them? -> waitingknots
+node waitingknots
+say One marks each week I ask for an answer. If I put them away I might tell myself the asking was finished merely because I was tired of looking at it.
+choice Won't it ever get too long? -> waitingknots_more
+choice Let the ribbon fall back. -> hub
+node waitingknots_more
+say I hope to have a proper answer before the ribbon disappears into knots. Then I mean to start at the loose end and undo them very slowly.
+choice Let the ribbon fall back. -> hub
+choice Take your leave quietly. -> bye
+
+graft @harmonybelow resident.hub
+choice Where does the lower note in a bell come from? -> harmonybelow
+node harmonybelow
+say I hear the sharp strike first. Wait with your mouth a little open. There's a second sound lower down that seems to use the whole room to ring in.
+choice Could a voice follow that one? -> harmonybelow_more
+choice Give the echo a moment. -> hub
+node harmonybelow_more
+say Yes, if you come in softly enough to keep hearing the bell above your own sound. That's good practice for listening to a roomful of wolves too.
+choice Give the echo a moment. -> hub
+choice Leave on the quiet beat. -> bye

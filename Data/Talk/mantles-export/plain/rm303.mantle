@@ -1,0 +1,265 @@
+# rm303, the shadow cook (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm303
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_tobias_kelpton
+written_by codex
+title the shadow cook
+fits stage=adult|old
+prefers job=fisher humour=merry
+traits temper=even talk=chatty warmth=warm humour=merry honesty=plain piety=ordinary drive=steady
+quirk draws_silly_shadows_with_a_pocket_coal_before_wrapping_it
+likes fried_fish long_walks fresh_straw first_snow
+dislikes night_noise salt_wind
+fears air_that_will_not_draw a_tale_without_an_ending
+hopes a_place_where_a_walker_can_always_stay_for_supper
+topics pastimes +0.5 work +0.4 food +0.4 weather +0.2 gossip -0.2
+styles comfort=cheer gossip=careful refuse=merry tease=gentle
+marks oath saying
+persona #self.first# sketches the shadows of imaginary dinners with a lump of coal, likes a long walk to build an honest appetite, and keeps the imaginary dishes spotless.
+
+words
+oath! = Blacken my butter | Smoke in the saltbox
+saying! = Draw the shadow before serving the fish | A crooked tail has room for more butter
+cinder = my pocket coal | a shiny splinter of coal
+paperfold = a folded bit of wrapping | my spare scrap of paper
+charfish = a fish drawn in coal | a little dark trout
+pancatch = the brown butter by the rim | the last curled crisp
+forked = a tail with two points | an open fish tail
+smokeline = the trail of smoke | a wavering grey line
+scalechip = a clean loose scale | a silver speck
+doorfoot = my clean doorstep | a tidy patch by the wall
+fieldsnow = snow lying smooth | the year's first white cover
+strawturn = one twist of straw | a straw ring
+wadeboot = a high boot | a boot with an honest sole
+roadbend = the crooked path | the lane that goes round again
+
+any
+opinion @1 merchants mixed 0 : A good trader will let me smell what's in a parcel. A picture on a wrapper can promise anything.
+opinion @1 dole for 3 : One more ladleful can turn a pot of fish into a street full of voices.
+opinion @1 drink for 1 : A cup among friends puts the last curl on a story. A second can rub the curl off.
+opinion @1 houses against 2 : Grand halls have an astonishing number of doors between a question and an answer.
+opinion @1 strangers for 1 : I like a stranger with an appetite. We've something in common before an introduction.
+opinion @1 sump for 1 [self.quarter=sump] : There are good jokes down our way too small to carry uphill without spilling.
+opinion @1 watch against 1 : A patrol can make innocent feet feel too big for their own boots.
+
+grown
+line @1 greet : Come see what's cooking on the paper.
+line @2 greet [pair.band=strangers] : First time across my line of charcoal. Welcome.
+line @3 greet [here.time=dawn] : Morning. Even my shadow is looking for breakfast.
+line @4 greet [here.time=dusk|night] : Good evening from the thin end of the smoke.
+line @1 greet.return : Your greeting's made a handsome curl in the air.
+line @2 greet.return [pair.band=friends|family] : Why, I recognise you even through all these imaginary diners.
+line @3 greet.return [self.working=yes] : There's real work under this grubby thumb today.
+line @4 greet.return [here.time=dusk|night] : Late light makes an excellent excuse for poor drawing.
+line @1 kin.open [pair.kin!=no] : I'd draw a bigger table to fit the family in.
+line @1 again.open : A second helping of conversation has just arrived.
+line @1 hail [pair.band=friends] : Over by this outlandish drawing, friend!
+line @1 farewell : Carry a good story home beneath your hat.
+line @1 farewell.return : Mind which way the smoke lies on the walk.
+line @1 react.news : Give that news a little extra space on the paper.
+line @1 react.news.new : That catch hasn't reached my pan before.
+line @1 react.news.known : I've seen that tail sticking out of a tale already.
+line @1 react.news.doubt : I suspect somebody drew an extra fin on that account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd put the drawing aside for a loss like that.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A dab of bright butter belongs on tidings like those.
+line @1 ask.how : Has your day served up any surprises?
+line @1 answer.how : Fed once and looking forward to the next honest occasion.
+line @1 thank : That goes in the book under excellent company.
+line @1 deflect_thanks : It was only one little turn of the fork.
+line @1 sympathise : Here's a bit of shade and some company if they'll serve.
+line @1 reassure : The first line of a drawing seldom tells its ending.
+line @1 decline : I'd come, except I've already given those hours away.
+line @1 accept_decline : Then keep your feet pointed where they were going.
+line @1 preclose : I'd best put the lid on my words for today.
+line @1 accept_preclose : I'll leave you enough breath for the walk.
+scene shadow_fish
+when topic=pastimes|food
+does tell.self / ask.detail / answer.detail
+a : A fish drawn straight on paper looks dead twice. | I drew #charfish# with a flat belly.
+b : What's the cure? | Has it been fed?
+a : Put a bend in the shadow and the fish springs up. | No. It's just landed on an imaginary frying pan.
+
+scene thumb_wash
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can keep a spotless cuff while drawing with #cinder#. | My coat is bright enough for visiting and my fingertips are ready for a chimney.
+b : How about the thumb? | Won't you mark the coat?
+a : That, my friend, is a working picture of midnight. | There's #paperfold# between me and disaster.
+
+scene fried_edge
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Give the skin a moment longer than the flesh. | I save #pancatch# for whoever did the washing up.
+b : Does it curl? | That might be you.
+a : Neatly enough to bowl a pea along. | I'd never deprive a hardworking wolf of a proper treat.
+
+scene good_draft
+when topic=work self.job=fisher
+does tell.self / ask.detail / answer.detail
+a : Smoke ought to move through a rack like a visitor looking for a seat. | Fish just up from the brine needs time to drip.
+b : Slowly? | Can't you wipe it?
+a : Slowly but not standing still. Still smoke leaves a bitter coat. | Then the cloth gets all the flavour the air ought to keep.
+
+scene wind_coat
+when topic=weather|travel self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind gets past a button without offering it a word. | Face into a bitter breeze and even a short story comes out dry.
+b : Could you sew a tighter coat? | Can't you turn your back?
+a : Any tighter and I couldn't lift my arms. The wind would still win. | And walk home backwards? I'd sooner tell it shorter.
+
+scene first_snow
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : #fieldsnow.capitalize# is better drawing paper than a prince could buy. | First snow shows who walked where the street had looked quite empty.
+b : How do you reach the middle? | Whose tracks please you?
+a : With very long lines and no ambition to get my cuffs wet. | Little bird tracks. Half the time the bird has changed its mind mid-hop.
+
+scene long_walk
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I like to walk till the thought I left with gets tired of me. | #roadbend.capitalize# always beats the shortcut for my purposes.
+b : What then? | What purposes are those?
+a : A different thought catches up and walks me home. | A comfortable appetite and a new way of describing a roof.
+
+scene clean_straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw makes an excellent frame for a nap. | I twist straw into a ring before settling it down.
+b : What goes in the picture? | Why a ring?
+a : The whole of me, if somebody would pass a little quiet. | Saves the sweetest part of the heap for my pillow.
+
+scene patter_outside
+when topic=home here.time=night
+does tell.complaint / react.self / assess
+a : A cupboard door at midnight has a tongue twice as long as mine. | Bang after bang and no tune in between. I object as a critic.
+b : I find that difficult to picture. | What if the noise rhymed?
+a : Come borrow my pillow and wait. | I'd still object, but with a better review.
+
+scene fine_friends
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# invent names for a dinner I'd drawn. | I'd walk as slow as it took to tell #self.friend# one story properly.
+b : What would you like it called? | Is it very long?
+a : Anything at all that made room for a second sitting. | It's got a lovely ending, and I'd sooner take my time getting there.
+
+scene stacked_house
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : There's enough under one Sump roof to fill three books if you sit near the stairs. | Through our low windows you catch the overlooked half of any parade.
+b : Any of that worth committing to paper? | The boots?
+a : No. My paper is for the meals nobody has actually eaten. | The stray ribbons and the disappointed pigeons.
+
+scene a_supper_short
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Drawing a dinner bigger doesn't seem to improve a lean week. | Short weeks make me glad for a good smell off somebody's pan.
+b : Have you tried drawing a smaller plate? | Doesn't that make you hungrier?
+a : Now there's a wolf I should keep on my kitchen staff. | Yes, but I've still got a good smell out of it.
+
+scene long_arrival
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : The cart's late. I've drawn a fish long enough to pull it. | A wagon behind its time has every possible excuse until a wheel shows.
+b : Where does the harness go? | Which excuse are you giving it?
+a : I haven't solved that. Keeps me entertained while we wait. | A sensible one. I wouldn't want my jokes to follow a real driver home.
+
+scene rumour_shape
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : #topic.subject.capitalize# #topic.claim#. Those were the marks on the tale when I found it. | I heard it as #topic.subject# #topic.claim#. My coal's staying in my pocket.
+b : Have you drawn any extra ones? | No illustration?
+a : I'd sooner invent a fish than a fault in a neighbour. | No. That story has a live name on it.
+
+scene posting_day
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I admire the square windows round the City Office. | I sometimes imagine documents swimming in a shoal behind a clerk's desk.
+b : Why the shape? | What would catch a document?
+a : Round windows might let an answer roll out by accident. | A very patient hook made out of a question mark.
+
+scene good_guest
+when topic=newcomer|food
+does tell.self / ask.detail / answer.detail
+a : A new face would get the wishbone at my table. | I like to offer a new arrival a little something dry for the walk.
+b : In a fish? | Cheese?
+a : It was an imaginary dinner, remember. My rules. | A scrap of clean paper. The wet world hasn't got at it yet.
+
+scene receipt_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news#. I've put #world.news_from# in the margin beside it. | I've a bit from #world.news_from# to repeat. #world.news#.
+b : To keep the account tidy? | Any picture on your paper?
+a : To keep my imagination out of the firm middle part. | Not for news. I don't know what the land there looks like at this minute.
+
+scene lucky_coal
+when topic=dreams|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I want a coal fat enough to draw supper and still warm the pan. | Suppose I could draw a way out of any trouble.
+b : You'll need a big pocket. | What would you draw first?
+a : A good enough pocket could earn me both. | A second gate. Always give a guest some choice.
+
+story white_flounder [topic=memories|food]
+  : Once I drew a flounder so flat I went straight on and drew the plate over it.
+  : Took the sketch out days later meaning to finish the fish.
+  b : Could you find it?
+  : The plate had one eye looking back at me. I gave the eye a proper forkful of butter.
+
+story paper_walk [topic=travel|memories]
+  : I went out to sketch an interesting rock and finished with more birds than I could count.
+  : The rock rose on a pair of legs after I sat down.
+  b : A bird the size of a rock?
+  : No. A bird behind the rock. I'd given an innocent pebble a very long bill by mistake.
+
+story small_rattle [topic=work|memories self.job=fisher]
+  : Once I hung an empty hook inside a rack to show the direction of the draught.
+  : It tapped out a gentle little march all afternoon.
+  b : What came marching out?
+  : Mostly me. I walked to that beat so long I took three extra turns round the yard.
+
+rule @coal_nose
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Small black mark there for the nose. Even an imaginary fish deserves breakfast.
+
+rule @hook_hear
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Leave the near edge clear so the back can breathe.
+
+rule @dry_sky
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say There's a blank square on that roof still waiting for a bird.
+
+rule @street_voice
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Supper drawn to order; smiles at no extra charge.
+
+dlg @1 resident.hub : Come sit for my latest picture of a wolf with something to say.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. You'll recognise my magnificently stained drawing thumb.
+dlg @3 resident.hub [here.time=night] : All shadows tonight. Very convenient for a charcoal artist.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : There's room for your say without either of us making a scene of it.
+dlg @1 resident.job [self.job=fisher] : #self.trade_words.capitalize#. A good draught and a patient nose go a long way.
+dlg @2 resident.job : I like my work to leave a sweet smell behind for whoever arrives next.
+dlg @1 resident.news [world.news] : The words I kept alongside #world.news_from# are these: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Word has it #topic.subject# #topic.claim#. I add no decoration to that.
+dlg @1 resident.bye : Come back for the illustrated version some afternoon.
+graft resident.hub
+choice How do you draw a fish that smells fried? -> draw_butter
+node draw_butter
+say I leave a clean white patch on the paper. That's the butter. Your nose supplies the rest before your eyes complain.
+choice What if my nose has other ideas? -> nose_right
+choice An economical supper. -> hub
+node nose_right
+say Give it a real supper. A nose with ideas of its own deserves encouragement, particularly if the ideas involve hot fish.
+choice I can picture it now. -> hub
+choice I'll go and feed my imagination. -> bye

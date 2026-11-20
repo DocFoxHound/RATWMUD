@@ -1,0 +1,238 @@
+# rm556, the wind's invoice (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm556
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_tristram_rainley
+written_by codex
+title the wind's invoice
+fits stage=adult|old
+prefers job=carter
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk invoices_the_breeze_for_its_trouble_with_a_load
+likes pickled_herring singing fresh_straw autumn_wind
+dislikes drizzle bad_manners
+fears an_unpriced_return_journey
+hopes a_cart_and_a_route_of_one_own
+topics work +0.7 prices +0.5 weather +0.4 pastimes +0.3
+styles comfort=practical gossip=plain refuse=direct tease=dry
+marks oath saying
+persona #self.first# enters imaginary charges against a troublesome breeze, remembers actual debts to the penny, and tries out carrying songs for a cart still waiting to be bought.
+
+words
+oath! = Charge it to the gust | Straw up my invoice
+saying! = Wind pays on delivery | A load has a return journey
+windbill = a bill against the wind | a breezy account
+strapseat = a dry shoulder pad | a folded bit of sacking
+parcelturn = a corner of the bundle | a bulging parcel end
+herringlid = a round tin lid | a polished pot cover
+sharpleaf = a pointed vine leaf | a dry grape leaf
+oddstraw = a single bright straw | a long yellow stalk
+autumnfee = a leaf in my pocket | a little heap of chaff
+homefare = a return penny | a penny kept for home
+wheelverse = a four-beat hauling song | a steady road chorus
+softwrap = a curled straw cushion | a soft bed of stalks
+
+grown
+opinion @1 merchants mixed 1 : The price written on a parcel rarely mentions the pair of shoulders that got it to the purchaser.
+opinion @1 road for 2 : A decent cart track can give a porter an extra delivery and still leave time to sing home.
+opinion @1 houses mixed 1 : I'd bring a great House a small load on precisely the terms I stated before I first lifted it.
+opinion @1 newcomers for 1 : A new arrival commonly sees a need for carrying before an old hand bothers to look up from the market.
+opinion @1 dole for 1 : A porter who goes hungry today won't be much company to a heavy parcel tomorrow.
+line @1 greet : Set the account down where the wind can't make off with it.
+line @1 greet.return : I have your name clear of my charges against the breeze.
+line @1 farewell : May your return journey bring you something worth carrying.
+line @1 farewell.return : I'll count this stop as company on my own account.
+line @1 ask.how : What's the wind been charging you for going about today?
+line @1 answer.how : One sound shoulder and the other ambitious enough for a cart.
+line @1 thank : I'll remember which stretch of the load your kindness carried.
+line @1 deflect_thanks : You can put a welcome word in the homeward column.
+line @1 decline : I can't accept a load with no clear understanding about the return.
+line @1 accept_decline : Fairly stated. I shall strike your share off my proposal.
+line @1 sympathise : Rest the parcel here. Nobody gives a clear account with both arms shaking.
+line @1 reassure : A small payment in plain sight beats an alarming promise somewhere down the road.
+line @1 react.news : Bring the account in before anything blows loose.
+line @1 react.news.new : A new parcel for a shoulder I thought was already occupied.
+line @1 react.news.known : That one came in with an earlier delivery.
+line @1 react.news.doubt : I should want a signature before entering that against a real debtor.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'll carry those words up the hill and count the trip as pleasure.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : That calls for a hand under the load and some uncharged company.
+line @1 ack : That matches the entry I heard coming through market.
+line @1 again.open : A second journey with the same agreeable passenger.
+scene work_1
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words.capitalize#, most days. The autumn wind is my least satisfactory customer.
+b : Doesn't it pay? | What does it ask you to carry?
+a : It settles in leaves, a currency not yet accepted towards the particular cart I have in mind. | Usually its share of a parcel. The moment I turn a corner it decides to push the other way.
+
+scene weather_1
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : I'll admit the wind earns credit for bringing me news from a whole street away.
+b : What sort of news? | Is that worth anything?
+a : A cut apple, a handful of straw or a good piece of fish in brine. A hungry nose has quite a long reading range. | If it leads me to a customer needing a load carried I shall have to credit one sensible penny.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I keep two charges in mind on every job. The delivery and the road back without a load.
+b : Do you bill for both? | Would you carry something home?
+a : I explain how the sum was reached. A hidden return charge is a poor way to begin a second engagement. | Gladly, for a stated amount. My hopes of a cart depend on getting work for both journeys.
+
+scene food_1
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : My herring goes in a lidded pot. A shoulder strap can press the most remarkable flavour into a piece of bread.
+b : Do you like the flavour? | Does the pot cost you space?
+a : Herring at dinner, yes. Herring discovered in tomorrow's dry bread is a rather less welcome arrangement. | Less space than the change of shirt a loose lid would eventually require.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : When somebody steadies a load I remember the help separately from the price I have agreed.
+b : Why keep two accounts? | What if the helper declines payment?
+a : A kindness deserves a return of its own. I don't want it disappearing into somebody else's fee. | I remember to offer my shoulder on another day. A useful memory needn't jingle when you walk.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A letter from kin out among the vines will sometimes bring me an entirely fresh idea for carrying fruit.
+b : What can paper tell you? | Are you paid for the idea?
+a : The shape a stalk leaves in the next bunch. That suggests a little straw where I hadn't thought to put any. | Not yet. I mean to become the porter who gets the next valuable basket because the first arrived fit to eat.
+
+scene pastimes_1
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : My carrying song has four steady beats and an optional one for going round a tight corner.
+b : Who sings the extra beat? | What do the words say?
+a : The wolf at the difficult end of the parcel gets to call for it. | Mind the corner. There are grander words in the middle, but those are the ones that keep a good plate in one piece.
+
+scene home_1
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : There's nothing like #softwrap# where two jars would otherwise have to become intimate on the walk home.
+b : How tight do you pack them? | Do you shake the basket?
+a : I want space enough for the straw and none for a run-up. Jars can be capable little travellers. | Gently. An argument heard on a level floor will develop considerable feeling by the time we reach the steps.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I am collecting bits of information about the cart I mean to own. So far I have an excellent knowledge of the handles.
+b : What about the wheels? | Do you have the price?
+a : The investigation is proceeding wheel by wheel. It's rather further advanced than the money. | I've acquired the first few pennies and a quite detailed opinion about what the others ought to buy.
+
+scene smalltalk_1
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : Calling a porter from behind a high load doesn't give the porter a spare hand to wave with.
+b : How ought I to greet you? | Would a nod do?
+a : Speak where I can hear without turning the whole load into a dance partner. | A nod goes down very well on the side where my eye is still free to see it.
+
+scene weather_2
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle dampens enough straw to make me charge it for spoilt packing.
+b : Can it pay in anything useful? | Would you use the straw again?
+a : I'd accept an immediate departure and a dry afternoon in full settlement. | Spread and dried if it's sound. A damp bit shut beside fruit is an outstandingly expensive way to save a stalk.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I know when to set the parcel down by the way my song starts losing its vowels.
+b : Why the vowels? | Can you hide a tired voice?
+a : A long note needs breath. If I haven't enough for a note I should consider how much is left for the climb. | Probably. Concealing it would mean hiding the trembling parcel. That's a lot of unnecessary work to avoid a rest.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I make a private estimate of whether each turn would take a cart with wheels as wide as my plan.
+b : Do you measure the turn? | Does your plan ever change?
+a : Today with my eye, eventually with a proper measure. No hurry about choosing a cart I don't yet own. | At least once for every new corner I discover. Better change a plan than break a hub.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When work is thin I try to arrange two small loads to make one paying journey.
+b : Does everybody pay the whole price? | Won't the parcels get muddled?
+a : Each pays the share agreed before I pick anything up. I don't collect a whole journey twice. | I set them on separate beds of straw and remember which one gets off first.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks for the ordinary favour of one firm step following another.
+b : What about the bad steps? | Do you sing your thanks?
+a : I give those an invoice addressed to the wind. My arrangements needn't all be strictly devotional. | Sometimes quite conversationally. I'd trust the Bright One to recognise gratitude in a porter's working voice.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I have carried the report that #topic.subject# #topic.claim#. A report pays no charge for changing hands.
+b : Do you know who sent it? | Would you sign for it?
+a : I can name the last part of the journey in private, no more. | Only as received. The truth of the contents would require a different signature.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer to market wants to know where a load will land before it is taken out of reach.
+b : What would you show first? | Does a receipt help?
+a : The clear spot I mean to put it on. A small demonstration earns more trust than a loud welcome. | If the parcel is leaving the owner's sight. Otherwise a sound arrival will usually do the talking for me.
+
+story windfee [topic=work]
+  : I wrote out a bill for one afternoon's trouble from the wind and left the paper under a stone.
+  : The paper escaped. The stone remained in excellent possession of the corner.
+  b : Did your customer settle?
+  : A dry leaf blew back and stuck beneath the stone. It was a rate of payment I was already well acquainted with.
+
+story strawletter [topic=memories]
+  : A letter from the vines arrived with a sketch of a basket and two little lines beneath the grapes.
+  : I decided these must represent an ingenious support under the load.
+  b : Was your interpretation right?
+  : They were the writer's two feet. I did get a useful idea for packing after I'd stopped laughing at my invention.
+
+story songcart [topic=pastimes]
+  : I tested a cart song by rolling a hoop to its four beats. The hoop continually got ahead of me.
+  : I added words until my song had grown quite unwieldy.
+  b : Was the hoop too quick?
+  : The slope was doing the carrying. It gave me my best argument yet for charging by the route as well as by the weight.
+
+rule @wind
+when concept=bark
+does aside
+cooldown 8h
+say One extra corner charged to the gust. | No more payments in dry leaves until further notice.
+
+rule @straw
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Soft stalks where the jar bellies come close. | Leave no room for a running start.
+
+rule @walk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Return journey still open for a modest parcel. | Four beats home unless the road bends.
+
+rule @voice
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say That vowel hasn't got a hill left in it. | Rest the load before starting the next verse.
+
+dlg @1 resident.hub : Two questions can share a single fare if you put them both down plainly.
+dlg @1 resident.job [self.job=carter] : I'm #self.trade_words#. I reckon on shoulders today and mean to put decent wheels beneath my loads eventually.
+dlg @1 resident.news [world.news] : The report has arrived with this much still attached. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The parcel of talk I was given contained #topic.subject# #topic.claim#. Nobody showed me the packing at the far end.
+dlg @1 resident.bye : Safe trip home and a properly priced load coming back.
+graft resident.hub
+choice May I see what the wind owes you? -> wind_bill
+node wind_bill
+say One slipped cloth, three parcels pushed sideways and a quantity of fresh straw scattered with remarkable thoroughness. I have not charged for my feelings.
+choice Doesn't it ever carry a load for you? -> wind_credit
+choice I hope the accounts balance by winter. -> hub
+node wind_credit
+say One time it held a loose sheet against a parcel right down to the foot of the slope. I entered a credit. An honest porter remembers favours in both directions.
+choice I hope the accounts balance by winter. -> hub

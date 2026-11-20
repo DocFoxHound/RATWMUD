@@ -1,0 +1,384 @@
+# rm440, the iron's bright corner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm440
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_wenna_mossgrave
+written_by codex
+title the iron's bright corner
+fits stage=adult|old
+prefers job=merchant temper=even
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk files_a_corner_of_an_iron_sample_before_naming_a_price
+likes blackberries dice market_bustle warm_rain
+dislikes deep_mud gulls
+fears a_cargo_sold_twice_on_the_same_paper a_good_trial_lost_to_bad_stowage
+hopes to_see_a_local_iron_mark_recognised_across_the_water
+topics work +0.8 travel +0.6 smalltalk +0.5 lore +0.4 family +0.2
+styles comfort=direct gossip=closed refuse=brisk tease=none
+marks oath saying
+persona #self.first# files one bright corner on an iron sample, sets a casting of dice beside the figures, and expects a clear answer about the weight, the route and the return.
+
+words
+oath! = Score the sample | Iron filings in the seal
+saying! = File one corner and hear the offer again | A port on paper buys no iron
+sample = my plain iron sample | a little merchant's sample
+corner = the bright filed corner | a patch of fresh metal
+file = my small flat file | a fine clean file
+touch = the testing stroke | the first stroke across iron
+seal = the soft wax seal | a square of sealing wax
+outer = the outer wrapper | the travelling wrapper
+boatspace = the space under a sound hatch | a berth for freight
+freight = the freight allowance | a charge for carrying
+dicecup = my shallow dice cup | the wooden cup
+berry = a blackberry gone full dark | a firm ripe berry
+marketnote = the opening voices of the market | the first bid over the counters
+mudheel = a platform of wet mud | a thick heel of clay
+gullcall = a gull's knife-edged cry | a gull piping off the water
+warmspot = the warm touch of rain | a patch of mild rain
+ruling = the rule across my memorandum | a fine dividing line
+
+any
+opinion @1 houses for 2 : A House that puts a durable mark into honest iron can live on its reputation two ports away.
+opinion @1 merchants for 1 : A good buyer can ask a hard question without pretending the answer was already agreed.
+opinion @1 newcomers for 2 : Give me an unfamiliar port and an accurate weight. I'll make room for that visitor.
+opinion @1 watch for 1 : A predictable watch on a busy road saves the cost of a disputed gate toll many times over.
+opinion @1 dole mixed 0 : I want the bread delivered and the costs legible. Both are practical questions.
+opinion @1 city for 2 : We can make things here that a buyer across the water will recognise by their working edges.
+opinion @1 road for 1 : A cart road that preserves the corners of a load is a piece of good iron work in its own right.
+opinion @1 festivals mixed 0 : I enjoy a feast at which the hosts remember to leave a passage for the deliveries.
+opinion @1 times for 1 : Give me a difficult market and enough reliable figures to understand what makes it difficult.
+
+grown
+line @1 greet : Good light on the sample. Take this side.
+line @2 greet [pair.band=strangers] : A fresh eye is welcome at this table.
+line @3 greet [here.time=dawn] : Morning. We can see the clean metal now.
+line @4 greet [here.time=dusk|night] : The last daylight is useful on an edge.
+line @1 greet.return : Yes, I have your words separate from your offer.
+line @2 greet.return [pair.band=friends|family] : Welcome back. Pick up the figure where we put it down.
+line @3 greet.return [self.working=yes] : Speak while I finish this stroke.
+line @4 greet.return [here.time=dusk|night] : We can hear an answer after the metal's gone dark.
+line @1 kin.open [pair.kin!=no] : Blood earns a hearing. Come beside me.
+line @1 again.open : We left the bright corner showing.
+line @1 hail [pair.band=friends] : Friend, there's still an open place on the list.
+line @1 farewell : Carry home a straight account of the bargain.
+line @1 farewell.return : May your cargo reach the port you're charging for.
+line @1 react.news : Give me a place and a definite occurrence.
+line @1 react.news.new : That has only just reached this table.
+line @1 react.news.known : The earlier account had the same mark on it.
+line @1 react.news.doubt : Turn that account unfiled side up, please.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Set the reckoning aside. Tell me what the loss demands.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's an arrival worth recording in a clear hand.
+line @1 ask.how : Did objections take up your valuable hours today?
+line @1 answer.how : I've advanced the part that was mine to advance.
+line @1 thank : You saved a second weighing. I value that.
+line @1 deflect_thanks : It was an ordinary courtesy to a careful visitor.
+line @1 sympathise : Sit down here till the number of things to attend to grows smaller.
+line @1 reassure : Choose the first sound step. The whole route can wait.
+line @1 decline : Those terms carry more weight than I intend to assume.
+line @1 accept_decline : A definite refusal lets both of us proceed.
+line @1 preclose : I'll put the sample away before the light fails.
+line @1 accept_preclose : Take your figures with you. We'll keep the opening clear.
+line @5 greet [self.working=yes] : The table's open for a short discussion.
+line @6 greet [here.weather=rain] : Dry the wrapper here. We can talk while it drains.
+line @2 farewell [pair.band=friends] : I'll save a look at the next bright edge for you.
+line @2 thank [pair.band=friends] : You knew precisely where another eye would help.
+line @5 greet.return [here.time=dawn] : That voice has beaten the first counting to the table.
+scene file_corner
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I leave #corner# showing on #sample#. | Feel the drag on #file#.
+b : Why spoil the surface? | What does a file reveal?
+a : So the buyer can examine what the surface had been covering. | An even stroke. A bump asks more questions than the shine answers.
+
+scene trade_house
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my first concern is whether the goods will answer their description. | A merchant at #self.workplace# can spend a morning waiting for a single number.
+b : Even before price? | Which?
+a : Most prices depend on what is actually for sale. | The weight of goods that arrived usable.
+
+scene mark_iron
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I'd ship a small lot first and let its quality introduce the next. | The neatest mark on a consignment belongs underneath the wrapping.
+b : Wouldn't a large order impress the buyer? | Why hide it?
+a : It would impress the wharf hands. The buyer will inspect a small corner of either. | So the buyer can compare the goods with the outside mark.
+
+scene open_ports
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A port repeated on a dozen maps has yet to pay for one bar of iron. | I'd like our iron to travel well beyond this harbour.
+b : How would you test its custom? | Have you a vessel arranged?
+a : Put a sample before a buyer and send a letter with space for an actual order. | Desire and an entry in the freight book are separate stages.
+
+scene carriage
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A delayed wagon alters #freight# before it alters the metal. | A late load warrants enquiry into exactly which stage took overlong.
+b : Who pays for waiting? | Why divide it up?
+a : That's a thing I want clear before the wagon goes out. | Otherwise the quickest carrier may have to answer for the slowest quay.
+
+scene numbers
+when topic=times
+does tell.self / ask.detail / answer.detail
+a : I keep the weight at dispatch in a separate column from weight received. | #ruling.capitalize# divides what I was told from what I could measure.
+b : Do you expect a difference? | Is there much on the first side?
+a : I expect to be able to tell. | Enough to justify the trouble of a line.
+
+scene market_call
+when topic=smalltalk self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : #marketnote.capitalize# tells me the day's begun before my ink has thawed to its work. | I enjoy a market loud enough to cover an instant of thought.
+b : Which voices interest you? | Only an instant?
+a : A bid somebody else answers with a price. Noise alone is very cheap. | Then I like to hear what the buyer says next.
+
+scene dice_table
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : #dicecup.capitalize# gives no credit for an excellent argument. | I'll shake the dice after I've closed a calculation.
+b : Does that annoy you? | Never before?
+a : Quite the reverse. A clean answer in a pleasantly small space. | I might be tempted to call the number a forecast.
+
+scene berries
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : #berry.capitalize# is best followed by a clean cloth before anybody opens the account book. | I take blackberries a small handful at a time.
+b : A purple entry? | Protecting the fruit?
+a : Worse. A persuasive purple correction. | Protecting the next page I turn.
+
+scene weather_turn
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : #warmspot.capitalize# takes the dust off a sample case very neatly. | Warm rain is a convenient time to examine a gutter over a store entrance.
+b : Leave the case open? | What do you learn?
+a : Certainly not. The wrapper and the iron have different tastes in weather. | Whether somebody has paid for the last three feet to go where intended.
+
+scene deep_way
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : #mudheel.capitalize# adds considerably to what I have to carry uphill. | A short road in deep mud makes a long day's account.
+b : Does mud count towards freight? | Would the greater distance be preferable?
+a : If a cart sinks far enough, everybody eventually does. | If it remains capable of carrying a wheel.
+
+scene cry_over_roof
+when topic=weather self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : #gullcall.capitalize# can ruin a perfectly intelligible bid. | Gulls always sound quite sure what they want.
+b : How do you recover the figure? | Have you any patience with them?
+a : I have the buyer write it. Gulls have yet to learn to hold a pen. | Less when they object to my having lunch.
+
+scene mother_link
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : If I ask #self.mother# for a view, I mean to hear it to the end. | I can take pride in a piece of work that I'd set before #self.mother#.
+b : Do you take the advice? | Do you need approval?
+a : I do the courtesy of deciding after it's been given. | I expect the work to stand up to a frank question.
+
+scene father_link
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I leave space for #self.father# to turn a sample over without a speech from me. | I'd rather explain one difficult figure to #self.father# than show a dozen easy ones.
+b : Why the silence? | Even at supper?
+a : An eye at work deserves room. | I'd leave the figures off the dishes.
+
+scene house_home
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : An Estate landing has a good quiet edge on which to read after a market morning. | I walk from the Estate with a light sample case.
+b : Always business? | So little to show?
+a : Sometimes a map with no proposed cargo on it yet. | Enough to start a conversation. An entire furnace would get me fewer invitations.
+
+scene new_face
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A stranger from another port can tell me how an unfamiliar dock works. | At a new counter I look first at where the weights are kept.
+b : Just for the asking? | Not at the price?
+a : I generally have some comparable information to offer. | The price is going to be expressed in those weights.
+
+scene lean_order
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a hard market I look for the smaller order a buyer could actually honour. | Lean times make the packing allowance particularly important.
+b : Would you take it? | Why not cut it?
+a : An honest small trade makes a better start than a magnificent default. | Because a broken load will cost far more than straw ever did.
+
+scene good_table
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A table ought to be deep enough for a sample, its wrapper and two free wrists. | I keep a bench for work that might send filings into the account book.
+b : Just two? | And the pen?
+a : Otherwise it becomes a meeting and somebody needs to fetch chairs. | Happily placed on an entirely different bench.
+
+scene wax_impress
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #seal.capitalize# takes a fine impression while the wax is just losing its shine. | The seal on #outer# is a promise about the journey.
+b : Where can you try the impression? | A promise of what's inside?
+a : On scrap. I dislike a discovery made directly on a finished agreement. | Turn the sample over before drawing that conclusion.
+
+scene load_space
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Give me #boatspace# measured when the hatch is shut. | A sensible trial cargo takes very little explaining at the far quay.
+b : What else would you measure? | How do you save explanations?
+a : The space above it when it's open makes a fine misleading offer. | Mark the units of weight on the page as carefully as the number.
+
+scene firm_word
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A brisk refusal gives me no offence. | Put a hard objection beside the exact figure it concerns.
+b : What does offend you? | Is an objection lighter in figures?
+a : A vague agreement intended as a slow refusal. | It makes it possible to address.
+
+scene short_credit
+when topic=times
+does tell.self / ask.detail / answer.detail
+a : The weight of iron is unchanged by a purchaser's courteous manner. | I'd wait a reasonable time for a reliable measurement.
+b : Does courtesy buy nothing? | And for flattery?
+a : A hearing. It's quite an important purchase. | That can wait a reasonable time for me.
+
+scene hearing_gate
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city knows where its furnaces are. I'd like it to learn where a good bar can finish its journey. | I value a dock that will name its charges before the weather turns.
+b : Some distant quay? | Even steep ones?
+a : In somebody's working tool. That's the destination that sells the next bar. | Steep charges I can discuss. Invisible ones I can only discover.
+
+scene unfamiliar_good
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A new buyer deserves the same sample I would show a returning one. | A buyer willing to name the fault is more interesting than one who merely lowers a bid.
+b : No extra shine? | Why entertain either?
+a : Both get one filed corner. My argument is under it. | I can put a named fault right.
+
+scene word_arrives
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news_from.capitalize# is the origin named in this account. #world.news#. | #world.news#. Put #world.news_from# against that report.
+b : Any addition from the desk? | Shall I enter it as settled?
+a : I can confirm receipt of the words and leave the rest provisional. | Enter what reached us. Settlement calls for another column.
+
+scene quiet_office
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I don't run a second market in private talk. | A rumour has no maker's mark I can hold responsible.
+b : None comes your way? | Will it go on the slate?
+a : There's a difference between arrival and acceptance. | I prefer to keep that slate for things somebody owns.
+
+scene bright_future
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want somebody at a distant quay to recognise our bright corner before reading the wrapper. | I'd like to quote a price delivered across the Sound without a figure guessed in haste.
+b : Just by sight? | How soon?
+a : By experience. Sight follows after a few sound cargoes. | As soon as enough modest trips earn me the figures.
+
+scene hatch_choice
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : If no suitable berth were offered I'd investigate fitting out a hold myself. | I ask a carrier to describe how iron travels when the sea turns rough.
+b : Will you own a vessel then? | What's the best answer?
+a : Investigating a cost confers remarkably little ownership. | The one that includes where it is secured and what the fastenings can bear.
+
+story berry_stamp [topic=memories|food]
+  : I once laid a berry-stained finger on a note intended for my own desk.
+  : When I picked it up again the print looked strikingly like an official seal.
+  b : Did it change the note's importance?
+  : It compelled me to buy a clean handkerchief. The rest of its authority remains doubtful.
+
+story heavy_mark [topic=memories|work]
+  : I put a little iron sample across one edge of a curling letter.
+  : Returning later, I saw somebody's figure through the page and spent a minute puzzling over it.
+  b : Was there a figure on the other side?
+  : There was a price on the iron. I'd found my own neat handwriting in an unexpected place.
+
+story round_file [topic=memories]
+  : I once tried to file a perfectly even corner by counting every stroke.
+  : After the agreed number I had a bright patch almost nowhere near square.
+  b : Was the file bad?
+  : My wrist preferred to turn on the fifth stroke. I trusted my eye again once I'd properly used it.
+
+story rolling_die [topic=memories|pastimes]
+  : A die rolled off my desk into an open tray of samples and stood on one corner.
+  : I was inclined to call that a victory till I tried to read the number.
+  b : Which number showed?
+  : Three at once. A position of great promise and no negotiable value.
+
+story wash_mark [topic=travel|memories]
+  : I inspected the water mark on a packing board and calculated how far a load had sunk.
+  : Then I saw a second mark half an inch higher at the other end.
+  b : Had the vessel been listing?
+  : The board had been drying against a tilted bucket. I have since enquired where a measurement began.
+
+rule @file_brisk
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Turn the new corner into the daylight.
+
+rule @guard_page
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Waxed side facing outwards, please.
+
+rule @late_weight
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say One clear weight before the ink goes grey.
+
+rule @heard_price
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Leave room to hear the answering bid.
+
+rule @salt_sample
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say A little glare. Tip the iron back.
+
+rule @turn_book
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Dry the last figure before closing.
+
+dlg @1 resident.hub : State what you'd have considered, and turn the sample whichever way suits you.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, we've a clean margin to resume on.
+dlg @3 resident.hub [pair.band=friends|family] : Come round to my side. The light is considerably better.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Lay the particulars in the middle. We can look at them across the table.
+dlg @5 resident.hub [here.time=dawn] : Good morning. This light will show exactly what the file took off.
+dlg @6 resident.hub [here.time=night] : Figures can wait till morning. Words carry quite well now.
+dlg @7 resident.hub [self.working=yes] : I can finish a stroke while you give me the purpose of your visit.
+dlg @1 resident.job [self.workplace self.job=merchant] : At #self.workplace# I put goods, buyers and a credible cost of carriage on one page.
+dlg @2 resident.job [self.trade_words] : #self.trade_words.capitalize#, by appointment. A route repays close attention.
+dlg @1 resident.news [world.news] : This is the latest notice marked #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An unmarked claim goes back to whoever brought it.
+dlg @1 resident.bye : Keep the sample beside the description.
+dlg @2 resident.bye [here.time=night] : I wish you enough light for the return route.
+graft @corner resident.hub
+choice What does filing a corner tell a buyer? -> sample_corner
+node sample_corner
+say It clears the surface a seller could have polished for show. Now the buyer can ask about the metal underneath, and I've agreed to the question before it comes.
+choice Why only one corner? -> sample_limit
+choice I'll examine the new surface. -> hub
+node sample_limit
+say Because I want the original surface beside the filed one. Both surfaces belong to the history of the goods.
+choice I see both finishes now. -> hub
+choice I'll leave you to the next sample. -> bye
+
+graft @voyage resident.hub
+choice Would you ever send out a vessel yourself? -> voyage_figures
+node voyage_figures
+say I'd begin with a slip for the cost of the hold. A new sail painted on paper will carry remarkably little iron. A hired space might be all I need.
+choice What would count as success? -> voyage_return
+choice I'll let the figures stand. -> hub
+node voyage_return
+say An order for a second lot at a price that pays for the first voyage. Admiration at the far quay would be pleasant in addition.
+choice A second order makes sense. -> hub
+choice Good luck with the first shipment. -> bye

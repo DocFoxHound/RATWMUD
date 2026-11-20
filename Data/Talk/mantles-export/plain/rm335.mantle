@@ -1,0 +1,262 @@
+# rm335, the landing game (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm335
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_una_thackeray
+written_by codex
+title the landing game
+fits stage=adult|old
+prefers job=none humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk deals_imaginary_cards_to_pairs_of_passing_boots
+likes honey_cakes cards new_boots autumn_wind
+dislikes cold_tea flies
+fears an_empty_seat_on_a_windy_day
+hopes one_good_hand_before_the_kettle_cools
+topics pastimes +0.6 smalltalk +0.4 weather +0.4 food +0.2
+styles comfort=seat gossip=dry refuse=blunt tease=mild
+marks oath saying
+persona #self.first# deals imaginary cards to passing pairs of boots and takes the long stairs briskly whenever the view from one landing grows dull.
+
+words
+oath! = Two left boots | Fold the landing
+saying! = The stair deals for free | No boot wins by standing still
+deck = my worn pack | the little deck
+bootpair = a smart pair | two dusty boots
+heel = the square heel | that worn heel
+card = the last card | a bent card
+stamp = a hollow tread | a solid stamp
+seat = my broad perch | the sheltered seat
+cup = the heavy cup | a chipped mug
+cake = a honey morsel | the sticky square
+brim = a tea rim | a wet circle
+pip = a faded pip | one little dot
+cloth = the grey wrap | a folded square
+gust = an autumn gust | a hard crosswind
+
+any
+opinion @1 houses against 1 : I'd play any House that had to show its cards by rules common to the table.
+opinion @1 merchants against 1 : A seller ought to put the price on the visible side of the card.
+opinion @1 sump for 1 : The low streets make good use of steps for which the builders imagined only walking.
+opinion @1 dole for 2 : Empty paws oughtn't to exclude a wolf from dinner. It's quite a good reason to offer one.
+opinion @1 watch against 1 : A pair of official boots in a hurry wins no special points in my game.
+opinion @1 road for 1 : There's no admission fee for watching folk come and go. I appreciate a well-priced amusement.
+
+grown
+line @1 greet : Hello. You've drawn a seat beside the dealer. | Take a seat. We're between deals.
+line @2 greet [pair.band=strangers] : A new pair enters. Welcome. | First meeting, so I'll let the boots introduce themselves.
+line @3 greet [here.time=dawn] : Morning. The first few pairs have a brisk look. | New deal for the day, then.
+line @1 greet.return : Hello back. You have both my eyes now. | I heard you on the turn before you spoke.
+line @2 greet.return [pair.band=friends|family] : Familiar tread. You're entitled to the good edge of the seat. | Here's somebody worth folding a card for.
+line @3 greet.return [here.time=night] : Late hello. Even heels change their note after dark. | You've turned up in the quiet hand.
+line @1 again.open : A return appearance counts double on my stair. | We seem to have shuffled into company again.
+line @1 hail [pair.band=friends] : Over here. A rather fine pair has entered play. | Come watch while the lane deals us another.
+line @1 farewell : Keep your soles under you and your cards dry. | May your next seat have a back to it.
+line @1 farewell.return : I'll call that a fair withdrawal. Goodbye. | Away before the next hand claims you.
+line @1 react.news : I've put the pack down. Let's hear it. | Deal the actual news face up.
+line @1 react.news.new : None of that had turned up in my hand. | The stair neglected to deliver that report.
+line @1 react.news.known : Heard that one before the tea got cold. | Yes. The first telling sounded much the same.
+line @1 react.news.doubt : That's a lot of talk on one small card. | I wouldn't stake my last decent seat on it.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You can sit the next few hands out here with me. | That news would leave the liveliest boots dragging.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : I'd call that the best turn in an otherwise ordinary hand. | Something worth letting the tea cool to hear.
+line @1 ask.how : What kind of hand has the day dealt you? | Did you find a perch worth the climb?
+line @1 answer.how : Still holding a card or two. One even looks promising. | Quite still for a wolf with so many opinions about feet.
+line @1 decline : I'd be playing a hand I haven't got if I agreed. | That's further than these boots are committed to going today.
+line @1 accept_decline : Then I'll deal round the empty place. | Fair answer. I haven't lost a thing by asking.
+line @1 preclose : I'll shift my seat before I begin to take root. | A fresh deal somewhere else would suit me.
+line @1 accept_preclose : No charge for leaving the game early. | You can go without showing the rest of your hand.
+line @1 thank : You've kept my tea warm and my temper level. Thanks. | I owe you the pick of the next seat.
+line @1 deflect_thanks : I was sitting with a perfectly spare paw. | Hardly an undertaking to slide the pack along.
+line @1 sympathise : Rest here without joining the game if you like. | Bad hands take time to set down too.
+line @1 reassure : This hand's nearly over. We'll have another look then. | I can keep you company till the tea warms.
+line @1 ack : My tally agrees with yours. | That card fits the space exactly.
+line @1 give.advice : Choose the seat before pouring the tea. | Don't judge the whole walk by a particularly loud heel.
+scene bootdeal
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : My boots get black cards. Passing boots earn red ones. | I can play without a pack if folk keep coming up the stair.
+b : How does a pair earn points? | And who gets to be dealer?
+a : A matched pace wins one. A squeaking sole loses it. The rules are extremely respectable. | Me. I invented the game to suit a wolf sitting down.
+
+scene oddpair
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Two steps in one make an excellent way to change where I'm sitting. | I hurry between good seats so I can take my time once there.
+b : You count sitting as an activity? | Why hurry if you're only going to sit?
+a : Watch me. I've brought it to a moderately exact science. | I'd miss half the boots if I spent my whole day on the staircase.
+
+scene deckedge
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I turn a bent card upside down in the pack before I forget where it lies. | A marked corner will tell a player too much without being asked.
+b : Isn't that still a mark? | Why keep it in the pack then?
+a : Yes, which is why I show it round the table ahead of the deal. | Because the deck's short without it. Knowing equally little is the next best plan.
+
+scene honeycut
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : Divide the cake before dealing. Sticky cards don't separate on demand. | I want my fingers clean until the last card's on the board.
+b : Can a game really wait for cake? | And your cake while you play?
+a : A cake can. A sticky deal is a long-lasting mistake. | Set aside in sight. My interest in the result will be wonderfully keen.
+
+scene teaclock
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : I have one reliable clock for a game. If the tea goes cold we've talked too long. | Cold tea counts as a defeat however well I played.
+b : Drink it halfway through then. | You blame the cards for that?
+a : Sensible suggestion. Rather spoils my excuse when the cards are poor. | I blame my inability to observe the tea and the hand simultaneously.
+
+scene pastboots
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : In the Works the rush at a shift change makes my boot game unplayably quick. | My best watching hour sits between shifts in the Works.
+b : Too many feet to count? | What's left to see in between?
+a : A whole pack's worth arrives at once. I prefer some suspense. | The late ones. More individuality in a wolf who has already missed the bell.
+
+scene poorseat
+when topic=prices self.wealth=destitute
+does tell.self / ask.detail / answer.detail
+a : I've enough coin for very little indulgence. Sitting down is still priced admirably. | New boots appeal to me especially at the moment I can't pay for them.
+b : Do you mind somebody else's fine pair? | Does the game make that better?
+a : I give it an imaginary good card. Costs less than leather treatment. | It makes an afternoon more interesting. For a pair of boots I'd still need a cobbler.
+
+scene solehope
+when topic=dreams self.likes=new_boots
+does tell.plan / ask.detail / answer.detail
+a : I'd like to enter my own new boots in the game one day. | A pair with clean heels would represent me very handsomely.
+b : Who'd award the points? | Would you automatically win?
+a : I'd ask somebody to sit in my place. I can't inspect the backs of my own heels very well. | Only if the dealer showed remarkable good taste.
+
+scene winddeck
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind is a very enthusiastic extra player. | A stiff breeze deals from the bottom, the top and the middle all at once.
+b : Does it play fair? | What keeps the cards on the table?
+a : It shows every card to everybody. I'd call that excessive fairness. | One paw on the pack. The other occupied with a cup. A game for the well-organised.
+
+scene flygame
+when topic=animals self.dislikes=flies
+does tell.complaint / ask.detail / answer.detail
+a : A fly can make a quite unearned black spot on a low card. | I count spots only after they've stopped walking.
+b : What if the fly changes the result? | Would you let it join?
+a : It has no entry fee. I shall disqualify it on a technicality. | Only if it agreed to go somewhere else for cake. I don't share on those terms.
+
+scene childlook
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd invite #self.child# to make up another rule for my boot game. | There's always room by my seat for #self.child#.
+b : Even a rule you don't like? | Does the game need two?
+a : Especially one I don't like. Gives me a decent grievance to entertain me. | No. The company improves a pastime already much improved by being free.
+
+scene ownwork
+when topic=work self.job=none
+does tell.self / ask.detail / answer.detail
+a : Observation isn't a wage-paying trade in my experience. | I watch the passing day quite carefully without charging it for the service.
+b : What does your observation earn? | A disappointing arrangement?
+a : A view and an occasional conversation. Neither boils a pot, but both matter. | I'd accept a fee, certainly. Till then at least I can set my own hours.
+
+scene lettervine
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've tried drawing vineyard rows as a pattern on a blank card. | A little account of a hillside set me thinking about a different sort of pack.
+b : Would the vines be trumps? | What did the first card look like?
+a : If I dealt there, perhaps. On a stair I favour boots. | Two green rows round a purple spot. Good enough to suggest grapes to a hungry player.
+
+scene gossipseat
+when topic=gossip
+does give.opinion / react.self / assess
+a : A seated wolf sees some remarkable boots. That's no great authority on the wearers. | I can judge a scrape of leather and still know nothing of a quarrel.
+b : You'd take no guesses? | You must overhear a lot.
+a : About the boots, certainly. Beyond the ankle my information gets thin. | I can fold a card and stop listening. It's a courtesy quite within my reach.
+
+scene drawtimes
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When the cupboard runs bare I don't risk anything on a hand. | A tight week makes a fine argument for counting boots instead of coppers.
+b : A game for nothing, then? | What do you win?
+a : For an hour's amusement. That's a thing, even if it won't go into the pot. | A good story about a squeaking heel. You could do worse for no stake.
+
+scene praybench
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A chapel bench is one place I give the boots a complete rest. | There are moments I'd rather see the floor empty and the door quiet.
+b : No cards in chapel? | Even silence gets its turn?
+a : I keep them wrapped. I've another reason for sitting there. | Yes. I rather like sitting with the Bright One without keeping score.
+
+scene nixtalk
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : At night the boot game goes entirely by sound. | I can hear an especially hollow heel from quite a distance when the lane's quiet.
+b : Can you tell which suit? | You'd know who was coming?
+a : Cloth soles play a silent suit. They're the bane of my late game. | No. Can hear a heel, can't read a name off the echoes.
+
+scene wetcards
+when topic=weather here.weather=rain
+does warn / react.self / assess
+a : Lift the cards before wiping a wet bench. | A card laid face down on a damp board develops a lasting friendship.
+b : Would a dry cloth save it? | Will it come off whole?
+a : If you use the cloth first, certainly. Order is important. | Very slowly. I've no wish to leave the face of a card on a public seat.
+
+story doubledeal [topic=pastimes|memories]
+  : I saw a splendid clean pair come by twice and gave the pair two high cards. Came past a third time looking a little less impressive.
+  : I'd been awarding points to the same circuit of a puddle.
+  b : Did you subtract them?
+  : Certainly not. Three clean crossings round that patch deserved every point.
+
+story teaace [topic=food|memories]
+  : I dealt a hand on a cloth beside my tea and couldn't find one card when the game ended.
+  : Lifted the mug and found the missing card underneath. The circle on it was remarkably neat.
+  b : Could you play with it again?
+  : It has a new rank. Highest tea cup beats any card made thirsty enough to challenge it.
+
+story windseat [topic=weather|memories]
+  : I carried a folded card to a sheltered seat because the wind had already taken one off the original bench.
+  : Found the missing card waiting there ahead of me.
+  b : A better judge of shelter than you?
+  : Better informed. It had been taken on a free tour of the available draughts.
+
+rule @heel
+when concept=bark
+does aside
+cooldown 8h
+say Square heel, low note. That pair goes in the black pile. | Two clean soles. An excellent opening bid.
+
+rule @wind
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Let the wind shuffle its own pack! | Put the mug on the cloth before the whole game sets sail.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say Still steaming round the rim. I've another hand in me. | A tepid cup means the game has gone into extra time.
+
+rule @honey
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say Sticky fingers can wait till the cards are counted. | Just a corner of cake and I'll have a clean paw again.
+
+dlg @1 resident.hub : I've a vacant seat and a game that can spare its dealer. Speak freely.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I shall have to invent a new card for all these return appearances.
+dlg @3 resident.hub [here.time=night] : In this quiet even distant cards make themselves heard.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's a whole unoccupied tread between us. Let's leave it so.
+dlg @1 resident.job [self.job=none] : The passing world hasn't employed me, but I keep a pretty good watch on it.
+dlg @2 resident.job : Any work that requires noticing little changes in pace is apt to hold my attention.
+dlg @1 resident.bye : May your next hand arrive with a warm cup beside it.
+graft resident.hub
+choice What card do my boots get? -> bootvalue
+node bootvalue
+say You came up here and stopped of your own accord. That's a high red card for manners, provided you don't ask what it will buy you.
+free
+choice Could they ever lose the card? -> mendingrule
+choice I'll keep the points for manners. -> hub
+node mendingrule
+say A heel on my toes might cost the whole thing. Apart from that the score stands until I think of a better game. An exceptionally stable arrangement.
+choice I'll stand clear of your toes. -> hub
+choice I'll play another day. -> bye

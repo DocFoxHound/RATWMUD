@@ -1,0 +1,263 @@
+# rm500, the false splice (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm500
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ebba_pitchworth
+written_by codex
+title the false splice
+fits stage=adult|old
+prefers job=crafter honesty=sly
+traits temper=even talk=chatty warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk whittles_a_smooth_toggle_with_a_dummy_knot_at_one_end
+likes spiced_cider whittling tidy_house summer_evenings
+dislikes night_noise early_bells
+fears a_knot_that_slips_under_weight a_bell_before_the_last_dark_hour
+hopes a_whole_evening_to_finish_carving_one_small_toggle
+topics work +0.6 home +0.4 smalltalk +0.4 festival -0.3
+styles comfort=practical gossip=oblique refuse=firm tease=dry
+marks oath saying
+persona #self.first# passes round a wooden toggle carved to look like a knot and can keep talking until somebody asks where the loose end went.
+
+words
+oath! = Fray my best collar | A bell in the shavings
+saying! = Follow the grain past the twist | Test the tail before boasting
+toggle = my polished toggle | a thumb-length toggle
+falseknot = the knot cut in wood | my wooden imitation
+strand = a hard-laid strand | one clean strand
+roughpiece = a scrap of pale boxwood | a billet thumbed smooth
+rattle = the rattle of a loose catch | a tap against the latch
+cordloop = a little loop of cord | a neatly seized loop
+ciderpeel = the peel in hot cider | the curl of spice in a cup
+warmlight = a bar of evening sun | long summer light
+teethmark = a tiny blade mark | a nick across the grain
+nightcord = a cloth loop for the latch | a silent loop of rag
+splicebed = the little hollow between strands | a groove in the twist
+
+any
+opinion @1 merchants mixed 0 : A clever twist increases a cord's value. I'd like the paw that made it to collect a little of the difference.
+opinion @1 city for 1 : A town that needs a thousand sorts of cord will always contain at least one interesting argument.
+opinion @1 church mixed 0 : I prefer hearing a bell when I've already had time to decide to get up.
+opinion @1 houses mixed 0 : The weight on a line is a matter of fact even if the terms were cleverly worded.
+opinion @1 times mixed 0 : Ask what length will buy a loaf. Ask it again tomorrow.
+opinion @1 festivals mixed 0 : I like the dancing before dark. Afterwards every loose shutter thinks itself a dancer.
+opinion @1 road mixed 0 : A neat roll of cord can come back from a journey with some remarkable new opinions about order.
+
+grown
+line @1 greet : Come see the neat little finish on this.
+line @2 greet [pair.band=strangers] : Fresh eyes on the carving. Just what this twist wanted.
+line @3 greet [here.time=dawn] : Morning. The wood's cool from lying still.
+line @4 greet [here.time=dusk|night] : Evening gives a knife edge a particularly good light.
+line @1 greet.return : I can keep the thread of both discussions.
+line @2 greet.return [pair.band=friends|family] : You know where I hide the cut end.
+line @3 greet.return [self.working=yes] : My hands have had all day to learn this part.
+line @4 greet.return [here.time=dusk|night] : Draw near enough to catch the pale grain.
+line @1 kin.open [pair.kin!=no] : Kin, come look from the clever side.
+line @1 again.open : I left a loop for getting back to this.
+line @1 hail [pair.band=friends] : Friend! I saved the first guess for you.
+line @1 farewell : Safe walking and a quiet latch tonight.
+line @1 farewell.return : Take the turn that doesn't snag your sleeve.
+line @1 react.news : Show me where the ends of that account meet.
+line @1 react.news.new : Nobody's tried that twist on me yet.
+line @1 react.news.known : I could put my claw on its other end.
+line @1 react.news.doubt : Somebody dressed a bare knot up rather handsomely.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Sit a while. Nobody needs to pull a grief tight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That makes a pleasant loop to close.
+line @1 ask.how : Has anything come loose on you today?
+line @1 answer.how : I've found the ends of most of my troubles.
+line @1 thank : You put a useful turn in the business. Thanks.
+line @1 deflect_thanks : No trick involved. I could reach.
+line @1 sympathise : A loose grip will do while you get your breath.
+line @1 reassure : A tangle stays the same size while you rest your paws.
+line @1 decline : My hands have a different appointment this evening.
+line @1 accept_decline : Good. A clean refusal doesn't fray.
+line @1 preclose : I'd best gather the bits before they walk off.
+line @1 accept_preclose : The passage is empty. Best take your turn.
+scene carved_knot
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Try untying #falseknot#. | #toggle.capitalize# looks lighter from the knotted end.
+b : Where's the free end? | Is it?
+a : On the tree it grew on, I imagine. | Same wood. Lost a little weight carving in the deception.
+
+scene working_twist
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : A twist that's fine for showing may be poor for loading. | I lay #strand# where my hand can follow it.
+b : What's the test? | Is that to watch for faults?
+a : Ask it to carry something you can afford to drop. | A hand sometimes finds a fault while the eye's still admiring the colour.
+
+scene workshop
+when topic=work self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like a loose sleeve fastened clear before I begin. | I listen to the work round #self.workplace#.
+b : Is it dangerous? | For a signal?
+a : A cuff joining in makes an unbecoming piece of work. | For the particular silence when everybody's found the rhythm.
+
+scene small_wood
+when topic=smalltalk self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #roughpiece.capitalize# may suggest a knot or a nose. | A slip leaves #teethmark#.
+b : Which do you carve? | Do you sand it off?
+a : The next cut usually makes its own suggestion. | I can carve another beside it and declare I meant a pair.
+
+scene spice_throat
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : #ciderpeel.capitalize# will unfold while the cup's still warm. | Cider with spice clears a bit of rope dust out of my voice.
+b : Do you watch it? | Does it always?
+a : I'd rather watch a peel than listen to anybody count my coughs. | An excuse for another taste does well enough.
+
+scene tidy_end
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I don't mind work all over a board if each bit can find its own hook afterwards. | A tidy room lets me tell exactly which thing I meant to mislay.
+b : One hook per tool? | Meant to?
+a : Per function. Some hooks undertake very delicate negotiations. | Some odd jobs will wait if you hide the proper tool.
+
+scene summer_cut
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : #warmlight.capitalize# brings a pale carving alive. | On a summer evening I take my shavings outdoors.
+b : How long do you have? | To work there?
+a : Until the imitation knot looks more convincing than my hand. | To avoid explaining indoors which shavings I'm saving.
+
+scene bell_cross
+when topic=festival self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : An early bell always sounds as though it's collecting something from me. | I can forgive a great deal of ringing at lunchtime.
+b : An unpaid hour? | Why then?
+a : Precisely. Taken before I've had the use of it. | I've had time for a little ringing of my own.
+
+scene night_quiet
+when topic=home self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : #nightcord.capitalize# keeps #rattle# from taking all my sleep. | A shutter in the night gives me a tune I never asked for.
+b : How? | Can you sing it back?
+a : A soft loop intercepts the bit that knocks. Perfectly civil arrangement. | I'd sooner give it a cloth gag.
+
+scene work_home
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : I can tell the sounds of the Works from a racket at my own window. | There's an industrial use for a quiet room near the Works.
+b : What gives your shutters away? | What's made there?
+a : Hold the shutter still and count what's left. | The fellow feeling that would otherwise have quite run out.
+
+scene spouse_turn
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I set #toggle# aside before taking a seat with #self.spouse#. | Time with #self.spouse# is better kept clear of a knife and shavings.
+b : Is the trick finished? | Even after supper?
+a : It's a matter of being selective about the company one fools. | Especially then. I'd like the bread without a wooden fringe.
+
+scene debt_mark
+when topic=times self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : A debt requires a real knot in a cord. Carved knots won't count it down. | A promise to pay wants a date you can remember.
+b : Do you untie one per payment? | Put it in a knot?
+a : I untie it once the payment's acknowledged. | Put it beside the knot in ink. Nobody can argue with both.
+
+scene poor_line
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : I keep short ends through a lean spell. | Price a fixing before a replacement during a hard week.
+b : Can you splice every bit? | Always cheaper?
+a : The ones too short for a splice still fit a latch. | Asking costs me less than assuming.
+
+scene new_loop
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : To a newcomer I'd lend a loop for fastening a pack. | When I point out a street I make the turns with cord laid flat.
+b : Would I owe you a loop? | Is that quicker?
+a : A real loop, yes. The carved one I'd like to watch being returned. | Quicker than running after somebody whose left isn't mine.
+
+scene news_tuck
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news#. It carries the twist of #world.news_from#. | From #world.news_from# comes this account. #world.news#.
+b : How did it get here? | Would you splice on an ending?
+a : By whatever route those words took. I haven't traced the cord. | Not with my mark on it.
+
+scene clever_talk
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Loose talk can look beautifully finished. | A rumour and its denial could be opposite faces of my little knot.
+b : Is it sound? | Which would you show?
+a : That's the part a good finish may conceal. | I'd invite you to inspect the grain.
+
+scene open_grain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Damp settles in #splicebed# before a whole coil shows wet. | A wet toggle swells quite honestly.
+b : How does it feel? | Does it still fool anybody?
+a : A little cold streak across the thumb. | It fools me into trying a hole it fitted yesterday.
+
+scene loose_hours
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a whole evening to carve one small thing and let it take its shape. | My best day ends with a catch that closes silently.
+b : Another knot? | Is that all?
+a : I rather fancy a buckle which has never met a belt. | There's nothing further to be heard. That's the attraction.
+
+story knot_trial [topic=memories|work]
+  : I carved a knot so convincingly that I tried to pull it tighter with my teeth.
+  : Caught the blade mark on my lip and put the thing down gently.
+  b : Did it fool anyone else?
+  : I don't recall requiring another opinion after that.
+
+story latch_hum [topic=home|memories]
+  : I wrapped a noisy latch in wool and spent a very quiet night.
+  : Woke to a room entirely too warm and tried to get the latch free.
+  b : Was the wool stuck?
+  : I'd made a very sound binding in the dark. I now tie night knots by daylight.
+
+story wrong_cup [topic=food|memories]
+  : I set down spiced cider beside some shavings curled much like the peel.
+  : Lifted one curl to examine the edge I'd achieved.
+  b : Was it smooth?
+  : Very sticky. I've used a saucer with a particularly definite rim ever since.
+
+rule @check_nick
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One tooth short of a convincing knot.
+
+rule @quiet_latch
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Let the soft loop take the tap.
+
+rule @show_grain
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Enough light to follow that grain.
+
+rule @strap_cloak
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Cuff clear of the dangling cords.
+
+dlg @1 resident.hub : Stand a little sideways to follow that pale streak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I believe you know the secret of this one already.
+dlg @3 resident.hub [here.time=dusk] : Come alongside the last strip of decent light.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Words first. My tools stay where I've set them.
+dlg @1 resident.job [self.workplace self.job=crafter] : I put twists to work at #self.workplace#. The decorative ones come home in my pocket.
+dlg @1 resident.news [world.news] : The loose end leads back to #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That's a very handsome finish on a remarkably short piece of truth.
+dlg @1 resident.bye : If your latch knocks tonight, try a turn of cloth.
+graft resident.hub
+choice Is there really no loose end? -> wooden_end
+node wooden_end
+say Trace the wood through the top of the knot. There's a little dark vein that goes straight across where a strand would have ducked below.
+choice What gave you the idea? -> toggle_shape
+choice I can see the vein now. -> hub
+node toggle_shape
+say My hands liked carving after work and my eye kept wanting to see a twist. I let the two settle it between themselves.
+choice What will you carve next? -> hub
+choice I'll leave you a quiet evening. -> bye

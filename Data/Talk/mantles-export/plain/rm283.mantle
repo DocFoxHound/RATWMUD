@@ -1,0 +1,426 @@
+# rm283, the graduated doorstep (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm283
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_hester_fogstack
+written_by codex
+title the graduated doorstep
+fits stage=adult|old
+prefers role=merchant talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk sets_marked_clay_feet_under_stores_to_read_floodwater
+likes mutton_stew swimming festival_bells frosty_mornings
+dislikes salt_wind stale_bread
+fears a_high_shelf_with_a_soft_foot
+hopes a_dry_reserve_at_every_tide
+topics work +0.6 weather +0.5 prices +0.4 home +0.2
+styles comfort=practical gossip=measured refuse=level tease=none
+marks oath saying
+persona #self.first# sets graduated clay feet under provisions, measuring a flood by the last dry notch and a good day by what remains sound.
+
+words
+oath! = Four drowned notches | By the bottom groove
+saying! = Read the dry side first | A store stands on its feet
+foot = the little clay foot | my grooved block
+notch = the second groove | a shallow mark
+shelf = the reserve shelf | a high plank
+cellar = a low store | the lower room
+sack = a sacking bundle | a bound sack
+grain = the dry meal | barley grain
+saltjar = a covered salt jar | the salt crock
+twine = the tag string | a knotted thread
+tally = the stores list | my dry tally
+stock = a little reserve | goods held back
+stew = a ladle of mutton stew | the rich end of the pot
+shore = a gravel shelf | a shallow landing
+rag = an old rag | a dry cloth
+brick = a fired block | hard red clay
+mark = a scored ring | one level groove
+hinge = the lid strap | the iron fastening
+dawnsky = a whitening patch | a pale opening
+ripple = a narrow ripple | a curl of water
+
+any
+opinion @1 merchants mixed 0 : I judge a seller by the condition of the bottom sack. Fine grain on top proves little.
+opinion @1 houses against 1 : Water reaches the store door long before a request for repairs reaches a House's upper rooms.
+opinion @1 dole for 2 : A reserve has a purpose. Feeding a hungry wolf fulfils it.
+opinion @1 sump for 1 : The lower streets know the worth of three dry boards better than a surveyor on a roof.
+opinion @1 watch against 1 : A wet cellar wants carrying paws. A recital of the rules won't raise the sacks.
+opinion @1 road for 1 : A road that stays dry is worth a bend or two round a hill.
+opinion @1 festivals for 1 : The first bell of a feast makes even a quiet counter feel part of the town.
+opinion @1 newcomers for 1 : Somebody seeing these streets afresh may notice a dip we've all grown used to stepping over.
+opinion @1 times against 1 : If it costs more to fill a crock each month the glaze doesn't hide how low the level gets.
+opinion @1 city for 1 : Our city enough resembles a staircase that a dry board can generally be found somewhere above the wet one.
+
+grown
+line @1 greet : Here we have reasonably level footing. Welcome. | Hello. I've just found a place to set the load.
+line @2 greet [pair.band=strangers] : I don't believe we've shared a dry step before. | Welcome. We can make a beginning on plain ground.
+line @3 greet [here.time=dawn] : Morning. Clear light for taking stock. | The day is open. My count can wait a moment.
+line @1 greet.return : Hello to you in turn. I'm ready now. | Heard that plainly over the water.
+line @2 greet.return [pair.band=friends|family] : A familiar face is welcome on this shelf of ground. | You're company I can leave a tally open beside.
+line @3 greet.return [here.time=night] : Hello after dark. I'll shift this lamp nearer. | Night has brought us within speaking distance.
+line @1 again.open : We've both come back to the same mark. | Another meeting above the waterline.
+line @1 hail [pair.band=friends] : Take a moment and look at this dry mark. | Here, near the little stack of red blocks.
+line @1 farewell : May the road keep its crown above water. | Leave with a dry load and enough slack in the ties.
+line @1 farewell.return : Goodbye. I'll keep one place clear here. | Step carefully past the low ground.
+line @1 react.news : Give me whatever facts are definite. | I'll put off counting till you've told me.
+line @1 react.news.new : Nothing about that had reached my side of the counter. | I'll give that a fresh place in my reckoning.
+line @1 react.news.known : I have that set down in my memory already. | There's the account I heard earlier.
+line @1 react.news.doubt : I'd check against another mark before accepting the level. | Something seems to have shifted in the telling.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : You've come ashore bowed under that. Let it rest here awhile. | I can stand with you while the weight of it settles.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Fine news. I'd put a little good food aside to mark it. | That's a sound place for the day to rest.
+line @1 ask.how : How has your reserve of strength held up? | Was there any clear space left in your day?
+line @1 answer.how : Steady enough to read a fine mark. | I've had a busy stretch and a solid meal.
+line @1 decline : I'd be promising something already set aside for another purpose. | It would put my previous promise in doubt.
+line @1 accept_decline : I'll record the refusal and let it rest. | That's a clear answer. My count can stand.
+line @1 preclose : I'm coming to the last dry minute I can spare. | My rounds need finishing in an orderly fashion.
+line @1 accept_preclose : Your account with this conversation is quite square. | I can finish the count on my own now.
+line @1 thank : You've saved good things from going to waste. Thanks. | I appreciate the trouble it took to keep that sound.
+line @1 deflect_thanks : I had a little in reserve to give. | It was a small enough addition to the round.
+line @1 sympathise : Rest your load above the damp with mine. | There's no call to add hurry to what's already heavy.
+line @1 reassure : We know how high it's come. That's a beginning. | Let's put the most necessary thing somewhere safe first.
+line @1 ack : I'm following the mark you indicate. | That's clear upon a level reading.
+line @1 give.advice : Check the foot of the stack before adding height. | A jar lasts longer with air underneath.
+line @1 kin.open [pair.kin!=no] : There's a high dry spot set aside for family. | Kin can share the better end of the board.
+line @4 greet.return [self.working=yes] : Welcome. I'll put the count aside for a word. | I've reached a convenient pause in the tally.
+line @2 farewell.return [here.time=night] : May your lamp show up every low patch. | A dry step home through the dark.
+line @1 ask.detail : Which level had the water reached? | What part of it would bear a closer look?
+line @1 answer.detail : It left a mark just where the light catches the clay. | There was a dark ring under the lowest notch.
+line @1 assess : Fine to leave on the good shelf. | That measure ought to bear another inspection.
+line @1 react.self : I can picture the weight of that. | That describes an awkward thing to store.
+line @1 tell.plan : I mean to save a dry board for the last bundle. | I'll take a second reading once it's settled.
+line @1 give.opinion : A good reserve ought to be readily reached. | The clearest mark is worth the extra minute.
+scene footmark
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I set a grooved clay foot under the lowest sack. | There's a water gauge bearing the corner of that shelf.
+b : How can a foot be a gauge? | What does the clay tell you?
+a : Where water stopped. The bottom groove stays dark after the floor looks dry. | How damp the room got while I was looking at something else.
+
+scene reserve
+when topic=work self.role=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Front sacks mustn't hide the reserve. | I leave my least convenient shelf partly empty.
+b : Why waste selling space? | Is the rest due in later?
+a : Space to shift things before water finds them pays for itself. | It's room to move goods I already have. That's its job.
+
+scene sleep_stock
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : Closing the shutters doesn't stop the stores needing air. | A closed room will quietly spoil a decent sack.
+b : Even when the floor is dry? | How do you air the back of a row?
+a : Yes. Moisture comes out of the grain as well as up through the boards. | A finger of space is enough to start with. More if the room runs close.
+
+scene swell_wood
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I leave room beside a bin lid for the wood to swell. | A tight lid can become an extraordinary lid when wet.
+b : Extraordinarily waterproof? | Would you leave a gap?
+a : Extraordinarily hard to open just when the contents need airing. | Only outside the lip. The goods are still covered.
+
+scene poor_counter
+when topic=prices self.wealth=poor
+does tell.self / ask.detail / answer.detail
+a : There's a difference between possessing goods and having money to spend. | Full shelves can belong to a thin purse.
+b : But the goods have value. | What keeps you short?
+a : Yes, and replacing goods sold has a cost. The gap is my living. | Paying for the next supply before spending the proceeds of the last.
+
+scene tally_sale
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : A small order gets its mark at the moment I set it down. | I keep two counts when there's damp about.
+b : Why write down a little order? | Two counts of the same goods?
+a : The little ones are the easiest to lose sight of on a full counter. | Dry and suspect. I price only what I can stand behind.
+
+scene show_cut
+when topic=prices
+does give.opinion / react.self / assess
+a : If a sack is suspect I want the place opened for a look. | Show me where the damp got in before we talk price.
+b : Doesn't the smell give it away? | You'd spoil a sound sack?
+a : Sometimes the surface dries first. My nose can't look round corners. | A tied mouth opens without a cut. Sound goods will come through the inspection.
+
+scene flood_rise
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : This rain will find the low door before the roof has stopped dripping. | A first puddle near the threshold is handier than a reading of the sky.
+b : Where's the next place you check? | Does one puddle mean a flood?
+a : Whether the little gutter beside it is still carrying water away. | No. If the gutter drains faster than the drops fall, the feet stay dry.
+
+scene wet_after
+when topic=weather here.weather=clear
+does tell.self / ask.detail / answer.detail
+a : The shelves want checking as soon as the sky clears. | Dry weather's a good time to read old tide marks.
+b : Why not at the height of the shower? | What's left to read?
+a : During the shower they all look equally wet. After it the dark remains low down. | The last damp groove tells you how much trouble the next shower might cause.
+
+scene wind_lid
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind puts a white edge on my jar lids. | My paws can feel a shore breeze the morning after it blows.
+b : How would a lid tell you? | Are your paws sore?
+a : A scrape of the edge leaves salt on a dark cloth. Fresh water takes it off. | Not once washed. I take better care of my skin than a tin lid can.
+
+scene cold_notch
+when topic=season self.likes=frosty_mornings
+does tell.feeling / react.self / assess
+a : A little frost picks out every line on a clay foot. | I like the clean white rings a cold morning leaves.
+b : Does it spoil the reading? | Even the shallow grooves?
+a : For a wet reading, yes. For spotting a chipped ring it's excellent. | First of all. A small scrape leaves a long thin white thread.
+
+scene stewline
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : Mutton stew keeps a serving mark round the pot wall. | The first ladle often gets a little more broth than meat.
+b : Do you keep track of the portions? | How do you put that right?
+a : So the last bowl's as good as the first. One turn of the ladle helps. | Stir from the bottom gently before you fill each bowl.
+
+scene staleheel
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : Stale bread absorbs a perfectly good stew without ever tasting fresh. | An old heel isn't made new by calling it toasted.
+b : Would you throw it out? | Nobody wants to waste a loaf.
+a : Dry it properly for crumbs. I want to taste what I'm actually eating. | Nor do I. Crumbs have an honest use without passing for a fresh loaf.
+
+scene swimline
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I choose where to get out before I begin a swim. | I like a little gravel shelf where I finish swimming.
+b : Afraid of cold water? | Why choose the end first?
+a : No. Cold water's fine with a sensible exit in reach. | Getting in is always easy. I like to give myself an equally easy way back onto land.
+
+scene light_load
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : Into the water I go with my tally left behind. | On a swim all the measuring I do is with my own reach.
+b : You don't count your strokes? | No marks for distance?
+a : Only by accident. That's how I know I'm off duty. | Just the shelf to get back to and my breath for the return.
+
+scene bellwave
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : Listen to a festival bell from low ground and you'll hear the note in layers. | I've a favourite flat wall to stand near beside a festival peal.
+b : More than one bell, then? | Do you mean its echo?
+a : One strike can reach you twice, once clean and once off stone. | Yes. Close to the wall you can almost feel it under the pads.
+
+scene low_sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I've a mark at home where a puddle stopped halfway to the wall. | In the Sump a high shelf seems to grow more valuable every winter.
+b : Do you mark every puddle? | How high would suit?
+a : Only a new high one. The floor would look ridiculous otherwise. | One notch above the worst I've seen, then another for peace of mind.
+
+scene highclass
+when topic=smalltalk self.class=upper
+does give.opinion / react.self / assess
+a : A polished counter's no reason to expect somebody else to stand. | I prefer offering a tired visitor the less wobbly stool first.
+b : Even a visitor in wet boots? | Mind the floor getting marked?
+a : Especially then. Boots dry better resting under a seat. | A scrub will do the floor more good than a speech about courtesy.
+
+scene mother_plate
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd put the soundest of the little stools by for #self.mother#. | I like keeping one really level place set for #self.mother#.
+b : Sitting down matters that much? | What makes that one soundest?
+a : At supper it does. Stew tastes better with no need to hold the bowl steady. | A little foot of clay under the short leg. Easily made, very useful.
+
+scene friendly_range
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# see a shelf looking less than orderly. | I wouldn't have to straighten every jar before welcoming #self.friend#.
+b : Why is that a kindness? | Do you mind what folk think?
+a : It saves me spending half the visit with my nose in a cupboard. | Less with a friend than a customer. Different purpose to the visit.
+
+scene hand_clear
+when topic=work self.role=merchant self.hand
+does tell.self / ask.detail / answer.detail
+a : I like to leave enough room behind the counter for #self.hand#. | I'd put my simple count where #self.hand# could read it at a glance.
+b : What's the advantage? | Couldn't you just give directions?
+a : Nobody should have to ask my leave to spot a damp parcel. | I've only one mouth. A readable tally can go on working while I'm busy.
+
+scene new_folk
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A new arrival at a low door ought to know where the water sometimes stands. | I would show a newcomer the driest stair before the grandest view.
+b : That isn't much of a welcome picture. | Even in fair weather?
+a : It's one service I can give for free. The view will still be there later. | Much easier to remember the route with dry feet on the first round.
+
+scene incoming
+when topic=caravan world.wagons=in
+does tell.self / ask.detail / answer.detail
+a : A wagon in the yard changes what can be promised. First count what actually arrived. | A good supply wagon still needs unloading before I count its goods twice.
+b : You're expecting a shortage? | You don't count a promised load?
+a : I'm expecting a number. I'd prefer to get the right one. | I count it as promised. A dry bundle on a board is a different entry.
+
+scene latewagon
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Late wagons make the space behind a shop look very spacious indeed. | A late load will leave a gap no amount of arranging quite fills.
+b : Do you spread the other sacks out? | Does it bother you to show a gap?
+a : The expected goods have their own empty space. Less bother moving goods back again. | No. A clear gap is an honest piece of information.
+
+scene leanstew
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a tight spell I mark smaller measures just as carefully as the full ones. | A half share may matter twice as much to the wolf who buys it.
+b : Do little orders slow you down? | Would it be easier to sell a whole lot?
+a : They're part of the work. I can move the measure closer if needed. | For my arm, perhaps. For a buyer counting a few coins it'd be no help.
+
+scene gossip_measure
+when topic=gossip
+does give.opinion / react.self / assess
+a : A rumour has no graduated marks. I'd hate to weigh goods by it. | Ask what's been seen before you estimate how much stock to put in a tale.
+b : And if nobody saw? | What would you pass on?
+a : Then I'd keep the space on my shelf for something more solid. | As much as I could vouch for. Quite often that leaves me pleasantly quiet.
+
+scene quietcamp
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember the hush round a little pile of charcoal on a hillside. | Sometimes a blackened stick brings back the quiet of trees.
+b : Nothing moving there? | Is it the smell you remember?
+a : Plenty moving. Just none of it shouting prices over a counter. | The hush more than anything. A wolf could hear one dry twig fall.
+
+scene store_dream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My ideal reserve has little feet under each end and space all round. | I'd like a storeroom designed from the bottom board upward.
+b : What about the roof? | Where do you begin?
+a : I'd put one on, certainly. But the floor is where my goods usually meet trouble. | With enough height to let the worst water pass clean underneath.
+
+scene lowfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A small share kept dry for a stranger is my quiet way of praying. | I try to have one sound thing to give away when a wet day turns sour.
+b : What if nothing's left? | Does the gift need to be food?
+a : I can offer a dry perch until the shower lets up. It's still something. | No. There's a deal of comfort in a folded cloth and time to sit down.
+
+scene dark_steps
+when topic=day here.time=night
+does warn / react.self / assess
+a : Mind where the bright reflection ends beyond that door. | At night a dark patch on the floor deserves a gentle test.
+b : Think it's water? | How would you try it?
+a : Quite possibly. Feel with one boot edge before shifting your weight there. | Leave my weight on the safe side and feel for the board with a toe.
+
+scene quiet_gate
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Cart wheels tell me quite a bit about the road into Northgate. | I listen for the change from a rumble to a splash.
+b : Much standing water up there? | What would a splash prove?
+a : Not everywhere. One low place is enough to give each wheel a sloppier voice. | Only that the cart found water. I'd look before calling it a flood.
+
+scene credithome
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : A promise without a delivery date gets a blank alongside it in my account. | I leave room to write in what actually came when a bargain's been struck.
+b : Is a promise worth nothing? | You always expect a change?
+a : A promise belongs on paper. You can't serve it in a stew. | I leave room, that's all. It's easier than tearing the page out afterwards.
+
+story misreadfoot [topic=work|memories self.role=merchant]
+  : I once raised two shelves of crocks on the strength of one dark band on a clay foot.
+  : Went back to find the floor bone dry. I'd put the foot upside down and read an old stain.
+  b : Did you lower the jars again?
+  : No. Liked the extra room for cleaning underneath. I turned the foot the right way.
+
+story stewstone [topic=memories|food]
+  : I used to put a clean rounded stone by each empty bowl as I filled a pot. One stone, one portion.
+  : Reached the last bowl once with two stones over and a great sense of having cheated somebody.
+  b : What was the count in the end?
+  : My little stone bag had split. The extra two had been waiting their turn since the meal before.
+
+story swimstool [topic=memories|pastimes]
+  : Made my way out of a swim at a grey shape resembling a low ledge of stone. Put both paws on it very confidently.
+  : It floated off. A piece of grey timber with a splash of light across it.
+  b : Did you get to shore?
+  : The gravel bank was only a length away. I let the timber enjoy the rest of its swim.
+
+story belljar [topic=festival|memories]
+  : On a festival morning I heard a little extra bell between the big notes. Went looking for the source.
+  : It was an empty jar quivering against the one beside it in time to the peal.
+  b : Did you stop the jars?
+  : Only after the bells were through. A small clean echo was worth a minute of shelf room.
+
+story quietpiece [topic=memories|land]
+  : I once brought a charred twig down off a hill as a reminder of a peaceful walk. Kept it wrapped in a paper scrap.
+  : Unwrapped it later and found a small quantity of very fine black powder.
+  b : Did you throw the paper out?
+  : I used the charcoal to draw the hill on the wrapper's empty inner face. Better reminder, in the end.
+
+rule @mark
+when concept=bark
+does aside
+cooldown 8h
+say Still dry at the top groove. A comfortable margin. | Read from the highest dry mark downward.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Lift the bottom corner away from the wet. | Rain's still reaching the near groove.
+
+rule @work
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Sound goods on this board. Leave the doubtful ones to me. | Keep the counting space clear for the last few sacks.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Lamp low to see the shine on standing water. | That wet patch shows up from this angle.
+
+rule @meal
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say Give the pot a slow sweep before serving. | Leave enough meat for the very last ladle.
+
+rule @back
+when concept=bark
+does aside
+cooldown 8h
+say Air space to the rear, please. A jar's got two sides. | Mind the little clay foot under that load.
+
+dlg @1 resident.hub : I've got a level surface and a little time. State what you'd like counted.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember the last mark we reached.
+dlg @3 resident.hub [here.time=night] : I can see the lip of the step by lamplight. Come stand on the dry part.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your question can be asked without disturbing any of my things.
+dlg @1 resident.job [self.role=merchant] : #self.trade_words.capitalize#. The dampest part of the room gets my first inspection.
+dlg @2 resident.job : I count what's sound before I promise any of it.
+dlg @1 resident.bye : Leave your loads above the highest wet mark.
+dlg @1 resident.gossip [here.gossip=no] : Nothing I could set down in ink from talk alone.
+dlg @2 resident.gossip [here.gossip=yes] : What has reached my ears is that #topic.subject# #topic.claim#. That's the extent of my account.
+dlg @1 resident.news [world.news] : There's a report from #world.news_from#. It goes like this. #world.news#.
+dlg @1 shop.greet [here.shop=open] : Have a look at the goods. I'll tell you what each parcel weighs.
+dlg @2 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, a familiar customer deserves a fresh look at what's sound.
+dlg @3 shop.greet [here.shop=bare] : Bare shelves, I'm afraid. I can still examine anything you bring to sell.
+dlg @4 shop.greet [here.shop=asleep] : The counter's closed. I'll count nothing more till I've slept.
+dlg @5 shop.greet [here.shop=open pair.disposition=wary|hostile] : Choose what you want with the goods in full view, please.
+dlg @1 shop.prices [here.shop=open] : Tell me which goods interest you and I'll give the price for a sound measure.
+dlg @1 shop.bye : I hope your purchases travel in a dry place.
+dlg @2 shop.bye [here.shop=asleep] : No more business before I rest.
+graft resident.hub
+choice May I look at one of the little clay feet? -> dryfoot
+node dryfoot
+say Here. The grooves go round all four sides because water sometimes creeps in from behind. I'd know if only the far side had darkened.
+free
+choice Why leave the clay plain? -> plainfoot
+choice I've seen the grooves. -> hub
+node plainfoot
+say A glaze would shed the damp and keep no trace for me. My gauge needs a little time to dry till I've read the highest wet ring.
+choice I'll remember the lowest mark. -> hub
+choice Goodbye for now. -> bye
+
+graft shop.greet
+choice How should I keep a sack dry at home? -> keepsack
+node keepsack
+say A plank off the floor and a finger of air behind it. Pull the sack out once in a while and see how the back feels, as well as the front.
+free
+choice Is cloth enough underneath? -> dampcloth
+choice I'll see the goods again. -> greet
+node dampcloth
+say A dry cloth is excellent for wiping away a spill. Under a sack it holds the trouble there. I'd use a scrap of hard wood instead.
+choice Back to the counter, please. -> greet
+choice I'll give it some air. -> bye

@@ -1,0 +1,258 @@
+# rm496, the bell between two grips (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm496
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_desmond_ashwick
+written_by codex
+title the bell between two grips
+fits stage=adult|old
+prefers job=brewer
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=restless
+quirk loosens_one_wrestling_grip_at_each_chapel_bell
+likes roast_pork wrestling fresh_straw warm_rain
+dislikes wet_floors cold_tea
+fears slippery_flags a_winter_of_crossed_orders
+hopes an_even_bout an_honest_mugful
+topics work +0.4 pastimes +0.5 season +0.2 gossip +0.3
+styles comfort=practical gossip=frank refuse=plain tease=plain
+marks oath saying
+persona #self.first# sets a heel against the nearest dry flag and practises letting go at the chapel stroke, whether holding a wrestling partner or a heavy pail.
+
+words
+oath! = Slip my heel | Crack the mash rake
+saying! = A good hold comes off clean | Find the grip before the pull
+heelset = a planted heel | my outside heel
+twist = a little turn | a short swing
+tile = the grooved flag | a ridged stone
+mat = a straw twist | a thick straw pad
+foam = a patch of froth | a head of pale foam
+lip = the dry rim | a wiped rim
+pailhook = the pail hook | a square hook
+roast = the crackling end | the brittle pork skin
+mug = a brewing mug | the blue mug
+ropeend = a coil of twine | a loose cord
+beat = the swinging note | one chapel stroke
+floorline = a wet streak | a trail of water
+
+any
+opinion @1 city for 2 : There's a place here for the heel of every working wolf. Mine fits a groove near the vats.
+opinion @2 dole for 2 : I've taken food over a counter while my wrists still shook from an empty shift.
+opinion @3 church for 1 : A bowl from the chapel put enough back in me to stand an evening turn.
+opinion @4 drink for 1 : A mug with a sound head on it has hours of straight work underneath.
+opinion @5 houses against 2 : When big households pull opposite ways the wrists in between feel it first.
+opinion @6 merchants against 3 : I'd like a pay packet that could bring back the brew I spend a morning making.
+
+grown
+line @1 greet [pair.band=strangers] : Room on the grooved stone. Give your heel a hold.
+line @2 greet [here.time=dawn] : Daylight's got a grip at last.
+line @3 greet [here.weather=rain] : Step wide of the shiny flag. Hello there.
+line @4 greet.return : Good. A straight word to start a round.
+line @5 greet.return [pair.band=friends] : I'd know that voice through a head of foam.
+line @6 farewell : Leave with a dry heel under you.
+line @7 farewell.return : Released clean. The ring is yours.
+line @8 again.open : The same feet have found their way back.
+line @9 kin.open [pair.kin!=no] : Home folk get the straw side of the flag.
+line @10 hail [pair.band=friends] : Here, just past the wet streak!
+line @11 react.news : Give me the plain happening. I'll try its footing.
+line @12 react.news.new : That's a fresh hold for my head to get round.
+line @13 react.news.known : Heard it first with both wrists in the wash water.
+line @14 react.news.doubt : That tale shifts its feet too much for my liking.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Come off the stone. I'll make room for you beside the vat.
+line @16 react.news.glad [topic.kind=birth|marriage] : I'd give a good clap if my hands were any drier.
+line @17 answer.how : Restless in the elbows. Otherwise standing square.
+line @18 decline : I've too much set against these wrists to promise that today.
+line @19 accept_decline : You said it plain and I won't pull harder.
+line @20 sympathise : The weight can rest on my shoulder for a minute.
+line @21 thank : That saved me a bad twist on the way down.
+line @22 deflect_thanks : Had the better foothold for it, that's all.
+line @23 preclose : These feet could manage another round.
+line @24 accept_preclose : All yours. I'll let the hold slip easy.
+scene bellhold
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : When the chapel rings I ease my fingers without shifting my feet.
+b : Isn't that giving the other wrestler an opening?
+a : It is. Useful to learn how to get back a hold you haven't lost in anger.
+
+scene rind
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I'll leave #roast# sitting clear of the gravy.
+b : What's a little gravy going to spoil?
+a : That sharp crack between my teeth. After that I dip the soft bit.
+
+scene straw
+when topic=smalltalk self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail / assess
+a : I lay a braid flat on #tile# before I lift.
+b : Wouldn't loose straw be quicker?
+a : Loose stalks roll like little axles. #mat# lies where I put it.
+b : No point in hauling a pail if the floor moves off first.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.plan / ask.detail / answer.detail
+a : When there's a warm shower I'm going to stand out till the malt dust comes loose.
+b : Can't the brewery give you water indoors?
+a : It can. The good part is letting the sky carry the wash water for me.
+
+scene flags
+when topic=work self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : A polished wet stone is treacherous under a full load.
+b : Can you use another path round it?
+a : I can take one extra pace by #pailhook#. I'll warn whoever comes after.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does give.opinion / disagree / concede
+a : I'd sooner see an empty cup than cold tea pretending to be a treat.
+b : Cold's still wet when a wolf is thirsty.
+a : Give me plain water then. At least it hasn't broken a hot promise.
+
+scene foam
+when topic=work self.job=brewer self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I watch #foam# crawl up #lip# before I move a mug.
+b : What does the creeping tell you?
+a : If the froth slides too fast I've tipped the mug. A steady wrist keeps an honest measure.
+
+scene rate
+when topic=prices
+does tell.self / react.self / assess
+a : Pork and my wages ought to have a friendly bout.
+b : Which one's going to end up flat?
+a : My wages if the price has another reach like last week's.
+
+scene orders
+when topic=gossip
+does tell.worry / reassure / assess
+a : I'm uneasy about the big Houses getting cross before winter.
+b : Have you actually heard orders being crossed?
+a : It's my worry, not word from a counting room. I know which part of a tale I own.
+
+scene friend
+when topic=friends self.friend
+does offer / accept / assess
+a : I'd have #self.friend# pick a footing before my turn on the green.
+b : Wouldn't you lose a little advantage?
+a : Yes. The bout improves when the offer costs me something.
+
+scene boss
+when topic=work self.job=brewer self.boss
+does tell.self / ask.detail / answer.detail
+a : I keep #floorline# plain to see until I can speak to #self.boss#.
+b : Why leave the trail wet at all?
+a : I'll lay straw over the crossing first. The streak shows where a leak begins.
+
+scene bellwalk
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : I'd like to walk till I can't hear the chapel, then turn and catch its first returning note.
+b : Will it be the same bell you hear at home?
+a : The same metal with more sky in front. That's worth a few more steps.
+
+scene quiet
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I dream a great cask has got me in a perfectly fair hold.
+b : Can it really keep you down?
+a : Only till I stop wrestling. Then I'm just asleep with my arms round a pillow.
+
+scene warmbelt
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How would you dry a wrestling belt without shrinking it round a peg?
+b : Lay it straight across a rail and keep the fire a pace away.
+a : Good. I'd sooner do the tightening myself before a bout.
+
+scene tradeoff
+when topic=prices world.times=hard|lean
+does give.opinion / disagree / concede
+a : Don't cut a short measure to cover a lean week.
+b : You'd rather put up the price where all can see?
+a : I would. Let a buyer leave my counter knowing where the price crept up.
+
+scene market
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : I've been stretching my shoulders while the malt wagon keeps us waiting.
+b : What happens once the delayed cart shows its nose?
+a : A warm pair of shoulders for the lift. That's all the time back I expect.
+
+scene sump
+when topic=land
+does tell.self / react.self / assess
+a : My heels give a different echo from one low street to another.
+b : How do your own steps sound down there?
+a : Short where it's wet. Give me a dry yard and I sound like a whole cart.
+
+scene bowl
+when topic=food
+does offer / accept / assess
+a : I've a hot shallow dish free if your pork needs somewhere to sit.
+b : Good. The rind might stay crisp on that.
+a : Put the soft side down first and #roast# can keep its crackle.
+
+story hayboot [topic=pastimes]
+  : I put straw inside a wrestling boot to make a loose heel fit.
+  : On my first quick turn the straw stuck out over the ankle.
+  b : Did the boot finally stay on?
+  : It did. It looked like a little rick with a wolf planted on top.
+
+story bellsuds [topic=work]
+  : A bell sounded while I was watching a cluster of suds along a pail rim.
+  : Three bubbles broke on three strokes.
+  b : Did the rest take a turn at ringing?
+  : The last one sat till the whole place went quiet. I had to poke it myself.
+
+story teabid [topic=food]
+  : I once made an agreement with my morning tea. I'd work a short spell and it'd keep hot.
+  : I came back and put both hands round it.
+  b : Which side had broken the bargain?
+  : Mine, by a good quarter of an hour. I gave the tea a second little fire.
+
+rule @heeltest
+when concept=bark self.job=brewer self.working=yes
+does aside
+cooldown 8h
+say Heel set. Pail can come over now.
+
+rule @ringturn
+when concept=bark self.likes=wrestling
+does aside
+cooldown 8h
+say Leave the fingers loose till the weight shifts.
+
+rule @crackskin
+when concept=bark self.likes=roast_pork
+does aside
+cooldown 8h
+say Hear that rind when the knife goes through.
+
+rule @strawtwine
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Twist the middle. Tuck those stalks flat.
+
+dlg @1 resident.hub [topic.meeting=stranger] : #self.first#. You get a dry patch to stand on and a plain answer.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my elbows know a friendly face by now.
+dlg @3 resident.hub [here.time=night] : Late enough for the pail to stand by itself.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Both our hands can stay where the other sees them.
+dlg @5 resident.job [self.job=brewer self.workplace] : I take my turn with mash and pails at #self.workplace#. There's more floor in the job than you'd suppose.
+dlg @6 resident.job : I reckon my work in fairly honest shoulder aches.
+dlg @7 resident.bye : Watch for that shine before you turn.
+graft resident.hub
+choice What's the straw braid for? -> braidset
+node braidset
+say A poor wolf's dry footing. It grips just behind the heel so there's something solid when the weight goes up.
+choice Could it do for a wrestling ring? -> ringbraid
+choice Back to our talk. -> hub
+node ringbraid
+say I'd give the other wrestler one too. Then the first to slip would know whose feet to blame.
+choice Another word before I go. -> hub
+choice I'll keep my footing. -> bye

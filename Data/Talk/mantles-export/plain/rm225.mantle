@@ -1,0 +1,295 @@
+# rm225, the watcher of the cork (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm225
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_elspet_ropewick
+written_by codex
+title the watcher of the cork
+fits stage=young|adolescent|adult|old
+prefers talk=plain warmth=reserved
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_softly_while_watching_a_fishing_cork
+likes pickled_herring evening_line fresh_straw first_warm_day
+dislikes crowds haggling
+fears mistaking_a_ripple_for_proof
+hopes to_learn_what_moves_unseen
+topics pastimes +0.6 animals +0.4 gossip +0.2 prices -0.2
+styles comfort=quiet gossip=cautious refuse=direct tease=none
+marks oath saying
+persona #self.first# hums under a closed mouth and studies the difference between a bobbing cork and a bite.
+
+words
+oath! = Snag my last hook | Pick the bones from that
+saying! = Wait for the second tug | A ripple proves water
+floatbit = my painted cork | a sliver of red float
+linebit = a hair-thin line | a length of flax
+sinker = a pinched lead bead | a bored stone
+tidebit = the smooth backwater | the dark slack water
+baitbit = a shred of herring | a fleck of soft cheese
+songbit = a hauling chorus | a low shipping tune
+reedbit = a hollow reed | a straw stem
+markbit = a neat pair of nicks | two close pencil strokes
+pagebit = a folded scrap | a bit of old wrapping
+headbit = the pink of a gill | a silvery cheek
+hookbit = a very small hook | a bent bronze hook
+saltjar = a little brine crock | a stoppered pickle jar
+
+any
+opinion @1 watch mixed 1 : I care which way a uniform is looking. I care still more whether I can prove why.
+opinion @1 merchants against 1 : It's difficult to call a price fair with three voices arguing over the buyer's head.
+opinion @1 sump for 1 : There's a ledge down our way where you can think a thought all the way through.
+opinion @1 newcomers for 1 : Someone seeing a place for the first time generally notices a thing I've missed.
+opinion @1 festivals mixed 1 : I like hearing music from the edge where the elbows have some room.
+opinion @1 dole for 2 : An empty hook comes home more days than anybody likes to admit. The pot matters.
+line @1 react.news : That detail's worth keeping for a while.
+line @1 react.news.known : I've heard an earlier telling. Some of that matches.
+line @1 react.news.new : That changes what I had pencilled in before.
+line @1 react.news.doubt : A second sign would help me settle that matter.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's no tune that'll cover a hurt like that.
+line @1 react.news.glad [topic.kind=birth|marriage|work|succession|apprentice] : That gave my humming a brighter turn.
+line @1 sympathise : Sit where there's room to breathe and I'll keep you company.
+
+grown
+line @1 greet : Pull up beside this stretch of still water.
+line @1 greet.return : I've unwound the thought I was caught on. Go ahead.
+line @1 farewell : Hope there's a little slack in your day.
+line @1 farewell.return : Come by when the crowd has thinned.
+line @1 decline : I couldn't vouch for that with what I've actually seen.
+scene most_of_fishing_s
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Most of fishing's attention and a little of it's supper. | I'd still sit with a line if the hook fell off.
+b : What would you be fishing for?
+a : That nice moment when three worries stop feeling urgent at once. | A free evening. A hook without bait generally catches me one.
+
+scene i_still_keep_my
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I still keep my guesses in a different corner from the facts. | Silence after a question can mean any number of things.
+b : Would you write the silence down?
+a : I'd note how long I waited, with no opinion about what kept the answer. | Only if I could write down the question as it was actually asked.
+
+scene a_pickle_jar_needs
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A pickle jar needs a wide mouth if you're fond of whole herring. | I like a crock I can get clean with my whole paw.
+b : Worth paying extra for?
+a : When a fat fish comes to the neck and won't go either way, yes. | The plain broad one suits me. Fancy glazing never caught a fish.
+
+scene i_ll_keep_a
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I'll keep a handful of straw for a leaking jar. | A bit of straw makes a good listening tube for a bubble in a crock.
+b : How can you trace a crack?
+a : The stalk next to it gets dark first. Quite an honest little witness. | Hold it under water first. Air coming through a pot finds a way to speak.
+
+scene my_idea_of_good
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : My idea of good company will sit without asking how many I've caught. | Best company is a storyteller who won't scare the fish.
+b : What do you offer in return?
+a : The best of anything I happen to land and one refrain if invited. | The same silence when it's wanted, and a dry seat when there's one going spare.
+
+scene a_fair_price_can
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A fair price can be stated so softly nobody else knows it. | Loud bargaining makes it harder to see what you're buying.
+b : What makes you walk out on the deal?
+a : Whenever I'm buying peace from the racket instead of wanting the thing itself. | Once my ears prick flat I know I've begun agreeing just to get clear.
+
+scene staring_hard_at_one
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Staring hard at one red speck makes the whole shoreline swim. | I stretch my eyes between bites as well as stretching my legs.
+b : How do you stretch an eye?
+a : Look at a distant eave and then at your own thumb. That's my exercise. | Let something on the other bank come clear before finding your cork again.
+
+scene sometimes_i_offer_thanks
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Sometimes I offer thanks before I've caught a thing. | I count an undisturbed evening among the Bright One's mercies.
+b : Even coming home empty?
+a : A chance to sit still isn't empty. I usually come back less sharp with people. | Provided I've another supper in mind. I'm devout enough to be honest about hunger.
+
+scene i_used_to_keep
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to keep the finest notes about things that scarcely mattered. | My oldest fishing notes show wonderful care over the wrong end of the line.
+b : What did you miss?
+a : What happened behind me while all my attention was out in the water. | The company. I could name every bait and hardly one thing we talked about.
+
+scene i_d_take_a
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd take a small landing over a great quay if I'm walking for pleasure. | A crowd makes a waterfront disappear behind a wall of backs.
+b : How would you find the quiet way?
+a : Walk against the loudest voice until there's room to hear a rope creak. | Watch the birds. A gull standing quite still is generally clear of the traffic.
+
+scene rain_makes_it_hard
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain makes it hard to pick out one rising ring from another. | I count strikes less confidently under a shower.
+b : How do you tell then?
+a : Feel the line against a wet fingertip instead of putting it all on your eyes. | I wait for the sideways pull. The drops nearly always come straight down.
+
+scene if_a_week_runs
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : If a week runs lean I keep the fish heads for broth. | Hard going makes even the pickle brine worth thinking over.
+b : How can you turn that to use?
+a : Flavour a pot of roots and leave the guest to guess what fish I haven't got. | A few drops will sharpen a flat broth. Don't pour or you'll spoil it.
+
+story pinched [topic=memories]
+  : I painted a cork with too much red and stood it on my thumbnail to dry.
+  : When I lifted it I had the neatest red moon at the end of my thumb.
+  b : Did it come off?
+  : Eventually. For a few days I pointed out every bite with a float on each end of the line.
+
+story softsong [topic=memories]
+  : A line caught my sleeve just as I was humming a particularly weighty chorus.
+  : I leaned backwards and the sleeve stretched and the note went up instead of down.
+  b : Did it tear?
+  : The seam held. The tune's never felt quite right sung the proper way since.
+
+rule @wait
+when concept=bark
+does aside
+cooldown 8h
+say Wait one ripple longer. I often learn something. | A knot can take as much thought as a fish.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Better wind in before the tail of it disappears. | Even red cork turns black before the night is through.
+
+dlg @2 resident.hub : Let's find a bit of talk that doesn't need shouting.
+dlg @1 resident.news [world.news] : Only this much stuck: #world.news#.
+dlg @2 resident.bye : Wishing you a clear view wherever you're bound.
+
+young
+line @1 greet : Hullo. I've untangled a bit of room for you here.
+line @1 greet.return : I can hum and listen at once.
+line @1 farewell : Look down for hooks before you run.
+scene my_cork_s_got
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My cork's got a red bit so I know which end is up. | If a fish sees my cork I hope it thinks it's a beetle.
+b : What if a beetle sees it?
+a : It might get on for a ride and I'd think I had a mighty fish. | It can have its ride. I've got a rule about putting beetles back.
+
+scene i_can_pick_a
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I can pick a herring bone clean if nobody watches. | I'm learning where all the pointy bits hide in a fish.
+b : Which bit is safest?
+a : The bread beside it. I'm good at eating bread already. | The bit I've already eaten. The next bit's an adventure.
+
+
+adolescent
+line @1 greet : There's space here clear of the crowd. Come share it.
+line @1 greet.return : Nearly finished that chorus. You've got my ears.
+line @1 farewell : Don't let your line knot up on the walk back.
+line @1 farewell.return : I'll be humming where you left me.
+line @1 decline : I'd want better evidence before I added my name to that.
+line @1 ask.how : Have you managed to get clear of the bustle?
+line @1 answer.how : Curious about three things and cross about one. That's manageable.
+line @1 thank : You waited while I worked that out. I value that.
+line @1 reassure : One odd sign doesn't settle anything by itself.
+line @1 accept_preclose : I can watch the water by myself a while.
+scene there_s_a_sideways
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : There's a sideways dip I trust more than a straight bob. | I'm trying to tell a nibble from a weed catching #linebit#.
+b : Do you strike straight away?
+a : Not till the water makes a second mark and the first has a direction. | Only for a steady pull. Weeds are surprisingly good at the first half.
+
+scene at_self_workplace_i
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I'd like to learn how to draw what moves. | My neatest diagram is a float tipped almost on its side.
+b : How do you draw the moving part?
+a : Three little pictures, with a speck to say which way the water went. | Put the still thing beside it. The difference does most of the explaining.
+
+scene i_mark_what_i
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I mark what I saw separately from what I think I saw. | My private notes have room for a blank beside a name.
+b : Why keep that empty space?
+a : So another explanation has somewhere to go before my guess turns hard. | Because ink shouldn't do the accusing on its own.
+
+scene a_sea_song_can
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A sea song can be sung so softly the words turn to breath. | I can feel a hauling chorus pulsing in my teeth.
+b : Does it frighten the fish?
+a : Only if I forget myself and let the chorus out loud. | I'd stop if the cork moved. I'd watch to see whether the tune or the tug finished first.
+
+scene i_like_herring_best
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I like herring best when the sharpness goes up my nose. | A sour little herring wakes my tongue right up.
+b : Would you wash it down straight away?
+a : No. I'd let my eyes stop watering first and then go back for more. | With plain water if I must. Half the point is the taste that stays.
+
+scene if_self_father_asked
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd pick the fish page to show #self.father#. My private notes stay private. | I'd sooner make #self.father# a drawing than promise a whole catch.
+b : What's on that page?
+a : A cork, a fin and some hopeful lines which are definitely mine. | The curve the line makes just before a fish gets away.
+
+scene crowds_make_me_watch
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Crowds make me watch everybody except the person talking. | We'd hear each other better someplace with fewer elbows.
+b : Where would you stand?
+a : On the edge behind the stalls. Most of the voices face the other way. | Upwind of the bartering. Haggling will drown out anything.
+
+scene fresh_straw_has_a
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Fresh straw's good for more than bedding. I twist fish shapes out of it. | I can draw a fish with a single bent straw.
+b : What do you use for its eye?
+a : A little dark knot. Look close or you'll miss the expression. | A pinched bit of leaf. It makes the fish look as if it knows something.
+
+scene my_favourite_spring_moment
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : My favourite spring moment comes when my coat feels too heavy. | I keep the first warm afternoon clear in my head all winter.
+b : What does it look like?
+a : Like an old stone I can sit on without feeling it through my clothes. | Water without a shiver running up my arm to meet it.
+
+story two_tugs [topic=memories]
+  : I once hauled in a leaf and the leaf had a beetle on it.
+  : For a moment I had two creatures in mind, the fish I wanted and the beetle I had.
+  b : Which one did you put in your notes?
+  : The beetle, sauntering off. The fish never showed up to give its version.
+
+rule @float
+when concept=bark
+does aside
+cooldown 8h
+say That wasn't a bite. The whole surface moved. | Two little rings, one red speck. Keep watching.
+
+rule @brush
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Good light to lose the line and keep the cork. | An evening chorus hardly needs words.
+
+dlg @1 resident.hub : Lower your voice a shade. I don't mind hearing but I'd rather not attract a crowd.
+dlg @1 resident.job [self.job=child] : Lessons for now. My spare pages fill up quicker than the ones I hand in.
+dlg @1 resident.bye : If you see an interesting wake, remember its shape.
+graft resident.hub
+choice What goes in your private notes? -> cork_notes
+node cork_notes
+say Two sorts of mark. A straight one for what I witnessed myself, a crooked one for what I think it meant.
+choice Which have you got more of? -> cork_marks
+choice I'll leave you some privacy. -> hub
+node cork_marks
+say Crooked ones. If it were the other way round I should worry I'd started taking myself for an authority.
+choice That seems honest. -> bye

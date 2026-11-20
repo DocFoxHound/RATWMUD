@@ -1,0 +1,264 @@
+# rm439, the drying-line clerk (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm439
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_soren_kelpstack
+written_by codex
+title the drying-line clerk
+fits stage=adult|old
+prefers honesty=frank job=scholar
+traits temper=even talk=plain warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk judges_whether_rain_has_stopped_by_one_dry_line_on_the_sill
+likes barley_soup riddles tidy_house warm_rain
+dislikes stale_bread deep_mud
+fears a_date_on_the_wrong_side an_undelivered_apology
+hopes a_desk_where_the_rain_never_reaches_the_paper
+topics work +0.5 weather +0.5 pastimes +0.3 food +0.2 gossip -0.3
+styles comfort=practical gossip=plain refuse=direct tease=dry
+marks oath saying
+persona #self.first# rules a pencil line on the sill to settle arguments about the rain, tidies a desk by working off its contents, and insists that even a riddle must give an honest account of the question.
+
+words
+oath! = Rule my rain straight | Blot the forecast
+saying! = Ask the sill for a date | A dry line settles a wet argument
+dryline = my dry mark | the thin line under the lip
+outside = the exposed end | the weather end
+inkspot = an idle spot of ink | a small dark stop
+pencilmark = a soft grey mark | a short ruling
+ledgerback = the board at the back | my hard ledger cover
+barleymeal = a bowl of barley | soup with a dozen grains to every spoon
+spoontrack = a track left by a spoon | a little furrow in soup
+wrongday = a date one day ahead | a number still waiting to happen
+mudsplash = a comma of mud | a fat brown splash
+breadstone = a very firm crust | a dry chunk of loaf
+sillrag = my small drying cloth | an old strip of linen
+
+any
+opinion @1 city for 1 : Anybody may observe Ridgemere's rain. The city is fairly democratic in its choice of observers.
+opinion @1 dole for 1 : A bowl issued now does more for a hungry body than an estimate issued tomorrow.
+opinion @1 road mixed 0 : I rate a road by whether the letter arrives fit to read.
+opinion @1 merchants mixed 0 : I'll defer to a merchant about the goods. I can add the figures without further assistance.
+opinion @1 houses mixed 0 : A House with a handsome heading still has to fit the business onto the page.
+opinion @1 festivals mixed 0 : The parade makes a superb procession. Its applications for space make a longer one.
+opinion @1 strangers for 1 : Anybody who knows which bit of path dries quickest is a welcome acquaintance on a wet day.
+
+grown
+line @1 greet : There's a dry margin here quite wide enough for two.
+line @2 greet [pair.band=strangers] : A first visit. I'll leave the name column open.
+line @3 greet [here.time=dawn] : Morning, still subject to the weather's approval.
+line @4 greet [here.time=dusk|night] : Evening. The light gives me a legible outline of you.
+line @1 greet.return : Yes, welcome. I've dated the interruption favourably.
+line @2 greet.return [pair.band=friends|family] : Glad you're the one blotting out my view.
+line @3 greet.return [self.working=yes] : I can finish this stroke while you begin.
+line @4 greet.return [here.time=dusk|night] : At this hour the street's quiet enough to take dictation.
+line @1 kin.open [pair.kin!=no] : Family business can use ordinary paper.
+line @1 again.open : I have carried the unfinished portion over.
+line @1 hail [pair.band=friends] : Here, beyond reach of that dripping sill!
+line @1 farewell : Go before the road has a change of opinion.
+line @1 farewell.return : And arrive with your particulars still legible.
+line @1 react.news : Give the bare account a short space to dry.
+line @1 react.news.new : The original has only now crossed my desk.
+line @1 react.news.known : That appeared on an earlier page of the day.
+line @1 react.news.doubt : One of those figures seems to be doing unpaid overtime.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put the paper aside. That's a real hurt.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd happily clear a whole line for such a notice.
+line @1 ask.how : Has the day submitted a fair account of itself?
+line @1 answer.how : No worse than the estimate allowed for.
+line @1 thank : You removed a genuine difficulty. I value the distinction.
+line @1 deflect_thanks : No difficulty left worth putting in a note.
+line @1 sympathise : I can take the small errands off your list for a moment.
+line @1 reassure : It won't all need an answer on the present page.
+line @1 decline : I have another undertaking with a date rather inconveniently attached.
+line @1 accept_decline : A definite refusal is particularly easy to file.
+line @1 preclose : I'd best use the dry bit of afternoon before it expires.
+line @1 accept_preclose : May your walk come in under the estimate.
+scene dry_marker
+when topic=weather|smalltalk
+does tell.self / ask.detail / answer.detail
+a : #dryline.capitalize# has not been touched yet. | One end of a sill dries much earlier than the other.
+b : You keep records of a windowsill? | Which one?
+a : Naturally. The sill seems content enough with my clerking. | The sheltered end. A surprisingly contentious discovery in some rooms.
+
+scene warm_fall
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain does little harm to anything except a timetable. | I can put my hand past #outside# and feel the exact warmth of this shower.
+b : You enjoy being late? | Why bother?
+a : I enjoy observing weather which shows no particular respect for my appointments. | My report can now be brief and accurate.
+
+scene rain_stop
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I like watching the last drop decide what to do. | A confident forecast of sunshine gets no lodging on my windowsill.
+b : Has it much choice? | What forecast does?
+a : Hang about or ruin a perfectly good announcement. | The pencil line when it starts to dry.
+
+scene barley_count
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : #barleymeal.capitalize# is the only document I prefer with fewer blank spaces. | I measure hunger by the vanishing of #spoontrack#.
+b : A very thick soup? | Does the soup run thin?
+a : Thick enough for the spoon to find a few points worth considering. | No. I take the next spoonful too quickly to see.
+
+scene honest_riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What keeps a date after a wolf has broken it? | I favour riddles whose answers require no surprise uncles.
+b : The disappointed caller? | Why an uncle?
+a : An excellent answer. I was going to say the note of the appointment. | One can find a relative for almost any solution after the question is asked.
+
+scene clean_room
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : I clear a desk by working the stray bits off it. | A tidy room tells me which things are still lost.
+b : Wouldn't a drawer save time? | Surely everything is in place.
+a : Drawers merely give disorder a private address. | If everything were in place I should scarcely call anything lost.
+
+scene bad_crust
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #breadstone.capitalize# could keep my papers flat in a gale. | I keep dry bread out of the paper drawer.
+b : Wouldn't it spoil the ink? | Who puts bread there?
+a : No worse than it threatens to spoil my teeth. | A wolf seeking a use for it that doesn't involve chewing.
+
+scene mud_papers
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : A wet boot tells you how deep a rut is once and too late. | I keep a folded paper inside the collar when the road looks doubtful.
+b : Can a stick tell it sooner? | To report the mud?
+a : Yes. A sensible arrangement between stick and boot. | To have one bit of the journey which doesn't weigh more on arriving.
+
+scene proper_forms
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : Give a question its own row before losing it inside the answer. | I balance #ledgerback# on a dry knee.
+b : Why separate them? | Working away from a desk?
+a : An answer occasionally belongs to entirely different business. | I like a record even when a table is absent.
+
+scene house_beside
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : The Commons can furnish six descriptions of one shower from six neighbouring doors. | I like watching a row of windows come open after rain.
+b : Whose would you use? | For the light?
+a : The one with a newly damp sill. | For the competition. Everybody wants to be right about the end.
+
+scene clear_confidence
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can trust a friend to let a silence go unrecorded. | A pleasant companion may correct a sum without correcting my whole character.
+b : Silence counts for something though? | A necessary skill?
+a : Of course. It needn't be itemised. | Quite necessary if the company is to remain pleasant.
+
+scene poor_paper
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Dear paper invites better handwriting and smaller mistakes. | I put the next week's dates on scraps in hard times.
+b : Smaller ones are cheaper? | And this week's?
+a : Easier to squeeze in the margin beside a perfectly large bill. | Those I'm living through. They don't need a reminder quite so badly.
+
+scene road_late
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Write the wagon down as late. Leave the column for an explanation blank. | I can account for my own waiting to the hour.
+b : How long? | And the delay on the road?
+a : Until a wheel or a witness turns up, preferably both. | The road hasn't signed a statement.
+
+scene new_names
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new resident should have some say in how the name is written down. | For somebody new I would give directions in short lines.
+b : Even an awkward spelling? | More paper?
+a : An awkward spelling is no reason to confer an entirely new name. | Less chance of following a magnificent sentence straight to entirely the wrong door.
+
+scene gossip_clause
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : About #topic.subject# the wording was #topic.claim#. I have left out any conclusion. | #topic.subject.capitalize# #topic.claim#. A report with no signature in my possession.
+b : Do you have one? | Would you repeat it?
+a : I conclude that words were spoken. The rest would need a witness. | Only with that qualification sitting on the same line.
+
+scene new_receipt
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news_from.capitalize# appears as the source beside #world.news#. | #world.news#. That gives the substance of the account from #world.news_from#.
+b : How exact is that? | Is there an appendix?
+a : As exact as the note. I could not legislate for the weather on its travels. | I sincerely hope my contribution hasn't made one necessary.
+
+scene learn_letter
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I learned my figures by counting things a rainstorm could carry away. | The first thing I wanted to write was a word proving I could write.
+b : Like fallen fruit? | A signature?
+a : Like my chalk marks. I had considerable practice making fresh ones. | A short word. I was ambitious within practical limits.
+
+scene desk_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My ideal desk faces something which occasionally changes its mind. | I'd like my last sentence to make folding the letter a pleasure.
+b : The square? | Aren't endings easy?
+a : The sky. It provides amendments without requiring me to copy them. | Closing a letter, yes. Ending it before a second sheet is the art.
+
+story dated_rain [topic=memories]
+  : I dated a note one day ahead and left it where rain could reach it overnight.
+  : The date dissolved at once. The note remained fairly readable.
+  b : Did you put today's date back?
+  : Waited overnight. First correction the weather and I ever made in agreement.
+
+story paper_crust [topic=food|memories]
+  : A dry crust once kept an open book at precisely the page I wanted.
+  : I picked the book up by a corner without removing the bread.
+  b : Where did it land?
+  : In my soup. A satisfactory conclusion for all parties except the original reader of the book.
+
+story three_roads [topic=travel|memories]
+  : I wrote the names of three dry routes on a note for myself.
+  : When I unfolded it the ink had run from one to the next.
+  b : Any route left dry?
+  : The crease, narrowly. I made a new map next morning and kept it inside my coat.
+
+rule @rain_clip
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The very last drop has filed an extension.
+
+rule @dry_grain
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say Clear writing from here to the sill edge.
+
+rule @pencil_wait
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say A short blank reserved for an actual observation.
+
+rule @tidy_time
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say One useless scrap has been promoted to a bookmark.
+
+dlg @1 resident.hub : State your case in whatever order the rain has left it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I remember a previous entry under that face.
+dlg @3 resident.hub [here.time=night] : My ears can manage a question the lamp can no longer read.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Keep your present distance and your account pleasantly brief.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I make uncertain matters fit legible rows.
+dlg @2 resident.job : I prefer work whose unfinished portions I can identify without a search party.
+dlg @1 resident.news [world.news] : My note reads #world.news#, filed under #world.news_from#.
+dlg @1 resident.gossip [here.gossip=yes] : An unsigned report runs like this: #topic.subject# #topic.claim#. Read the lack of a signature too.
+dlg @1 resident.bye : Choose a road that charges less for water.
+graft resident.hub
+choice Can a sill really settle a question? -> sill_question
+node sill_question
+say A suitably small question. I rule a short line where the roof just ceases to shelter the stone. Dry at both ends means I can carry my page out.
+choice What about the way home? -> home_forecast
+choice A useful bit of office equipment. -> hub
+node home_forecast
+say The sill has no jurisdiction over the way home. I generally keep that uncertainty folded under my coat.
+choice I appreciate its limits. -> hub
+choice I'll chance the return journey. -> bye

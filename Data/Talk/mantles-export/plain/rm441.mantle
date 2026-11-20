@@ -1,0 +1,261 @@
+# rm441, the dark drawer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm441
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_dunstan_plankham
+written_by codex
+title the dark drawer
+fits stage=adult|old
+prefers honesty=guarded talk=quiet
+traits temper=short talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk checks_a_neat_drawer_by_touch_with_eyes_shut
+likes crisp_apples swimming tidy_house warm_rain
+dislikes deep_mud salt_wind
+fears a_moved_seal a_foot_lost_in_deep_mud
+hopes a_clean_sill_after_rain a_towel_where_it_belongs
+topics home +0.5 pastimes +0.4 gossip -0.5
+styles comfort=practical gossip=withheld refuse=terse tease=none
+marks oath saying
+persona #self.first# keeps a drawer in such order that its contents can be found in darkness, guards private business carefully, and rates a dry towel above most luxuries.
+
+words
+oath! = Salt on the hinge | Anvil in the mud
+saying! = Let the hand find what the mouth won't name | A seal belongs to its errand
+drawercleat = a narrow wooden cleat | a thin stop beneath the drawer
+touchrow = my row of small ends | the loose things in their places
+towelturn = the rolled towel edge | the end turned underneath
+knifeheel = a blunt handle end | a smooth wooden heel
+applecheek = the cool apple skin | a thin red cheek
+stonepip = a dark little brown pip | a hard point of seed
+swimbend = the turn out of deep water | a sheltered bit near the bank
+sealcloth = a plain dry wrapping | an oilcloth square
+mudmark = a black thumb of mud | a streak of soft clay
+saltflare = a rough white patch | a little crust of brine
+
+any
+opinion @1 city for 1 : I can get what I need inside these walls without explaining every choice to some wolf on a distant road. I'd keep that convenience.
+opinion @1 houses against 1 : A grand door may stay shut longer than a small one, even to an honest knock. I've no admiration for the extra lock.
+opinion @1 strangers against 1 : A strange paw can move something by an inch and walk away. I'll put my business away before I speak.
+opinion @1 sump for 1 : On a Sump stair, giving the next wolf one clean foothold generally says all the welcome that's needed.
+opinion @1 watch against 1 : The Watch makes a great deal of knowing what everybody carries. I've a liking for getting home with my own small things private.
+opinion @1 festivals against 1 : I can't keep an account of my pockets and enjoy festival music at the same time. I'll hear it from my own doorway.
+
+grown
+line @1 greet : Everything's put away. Speak.
+line @2 greet [pair.band=strangers] : We may exchange ordinary words at this distance.
+line @3 greet [here.time=dawn] : Early enough to see the drawer empty before anything's stirred.
+line @4 greet [here.time=dusk|night] : Keep your hands there in the patch I can see.
+line @5 greet [self.working=yes] : Just closing something. You can speak now.
+line @1 kin.open [pair.kin!=no] : Come round to the familiar end of the table.
+line @1 again.open : Back at the same drawer with no time to disturb it.
+line @1 greet.return : I heard. Your greeting's accounted for.
+line @2 greet.return [pair.band=friends|family] : Familiar voice. No need for a second call.
+line @3 greet.return [self.working=yes] : I can answer with one hand occupied.
+line @4 greet.return [here.time=dusk|night] : Heard from a clean patch of quiet.
+line @1 farewell : Don't leave your loose things at the turn.
+line @1 farewell.return : I'll do the putting away here.
+line @1 react.news : Put down exactly what happened.
+line @1 react.news.new : That wasn't in the place I expected.
+line @1 react.news.known : I had the outline laid away.
+line @1 react.news.doubt : Did the first paw actually hold the matter?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A towel and a dry seat would give that house something small to offer a caller.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A tidy piece of good news. I can spare space for that.
+line @1 answer.how : I could find the towel with my eyes closed. Fine.
+line @1 ask.how : Have you much left unsettled where you live?
+line @1 sympathise : Can't put everything right by getting the drawer tidy.
+line @1 reassure : You may sit here till your hands know where to go.
+line @1 decline : I'd be breaking the seal on business that's not mine to open.
+line @1 accept_decline : Good. Yours stays on your side.
+line @1 thank : You left my things in easier reach.
+line @1 deflect_thanks : Set any loose thing you borrow down in its proper place.
+line @1 preclose : There's one loose end for me to attend to.
+line @1 accept_preclose : I've no call to hold you here.
+line @1 ack : Sits right.
+scene blindrow
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : My fingers can settle on the right thing in my drawer with the shutters closed.
+b : Even a small thing? | Why practise without light?
+a : Especially small things. I can feel the little wood stop where the loose ones go. | A drawer can't stay well lit all the way through a night.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I like an apple I can hear break through its own skin.
+b : Would you test it in the shop? | Does it keep as well?
+a : I'd buy it before taking a bite. Other wolves' goods stay whole in my hands. | I keep the firm ones separate from the bruised ones. Neither gets to choose its neighbours.
+
+scene linen
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I roll a dry towel with one end tucked back into its own turn.
+b : To keep the sand out? | How would you recognise it among other towels?
+a : To keep that one dry place. Cold fingers like to find something they can trust. | By the feel of the fold. I don't care to unroll somebody else's over my wet feet.
+
+scene warmrain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : A warm shower makes the dust outside the sill easy to wipe in one pass.
+b : Wouldn't you have to dry it again? | Don't you like watching the street instead?
+a : One pass now, a dry cloth after. Better than grinding at a week's worth of hardened mud. | Sometimes. I'd rather look out over a clean edge while I do it.
+
+scene deepclay
+when topic=land self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : I test a dark patch of mud before putting my heel anywhere close to its middle.
+b : With what? | Does the colour tell you enough?
+a : A loose twig. If the twig loses half its length I choose the next patch. | No. A shiny skin can look the same over a shallow scrape or mud reaching almost to my ankle.
+
+scene salt
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt gets into a drawer runner if the wind comes in sideways.
+b : Do you shut the window? | Can you hear the grit?
+a : Before a real blow, yes. A window's there to be a choice. | A scratch under the soft sound of wood. Worth wiping before it cuts a groove.
+
+scene sealedword
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : An errand can be perfectly honest without wanting anybody's nose under the fold.
+b : Would you say where a letter went? | Doesn't a seal make you curious?
+a : To the ear it was given for. The rest belongs in my pocket. | Curious enough to check it's unbroken. I need nothing further from the question.
+
+scene drywork
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : The first thing with a paper errand is getting the paper under decent cover.
+b : Before finding out the destination? | What if a stranger asks to see the seal?
+a : On a wet day, yes. An unreadable address doesn't narrow the search much. | I'd ask what business the stranger had with my fold. Then I'd decide what answer was due.
+
+scene tightroom
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In a Sump room a drawer that opens too far puts the whole household in somebody's lap.
+b : Would you shorten it? | How much should it open?
+a : I'd put a stop on the runner. Most useful things are better for knowing where to finish. | Enough to reach the last clean square of cloth without pulling all the others into the air.
+
+scene swimtime
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I keep my fingers open just before leaving the water.
+b : For balance? | To find the ledge?
+a : To see if I'm still feeling the ends properly. A numb grip is a bad thing to guess at. | That's next. First I'd check my fingers can feel what the eyes are expecting.
+
+scene cityjob
+when topic=smalltalk self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'm learning to give an answer no longer than the instruction asked for.
+b : Is that hard? | How do you ask for more detail?
+a : Easy to give too little. Easier to let out something that had no business coming into the answer. | Say what I understand and name the bit still missing. No need for noise about the rest.
+
+scene privatekin
+when topic=smalltalk self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd pass a dry packet to #self.neighbour# with the fold turned in.
+b : Doesn't the neighbour need to read it? | Would you tie the string tight?
+a : The intended reader can turn a packet over. Nobody else needs the first look on the stairs. | Securely. A desperate knot only invites somebody to take a knife to it.
+
+scene purseprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I count the small purchase in the light before it goes in the pocket.
+b : Afraid of losing a coin? | Are your pockets labelled too?
+a : Afraid of wasting somebody's evening looking for a coin I never put there. | I know what I expect on each side. A label would be more information than I mean to give.
+
+scene tidyfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : There's a clean corner in a chapel that requires nothing of me but sitting still.
+b : Do you carry anything there? | What if it's occupied?
+a : Just what I came with. No reason to put private matters on a bench. | Then the next wolf can have that quiet corner. There'll be somewhere else to sit in good time.
+
+scene rainsign
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A wet sleeve gives a clean towel a new purpose, then makes it want a place to dry.
+b : Have you always room to hang it? | Why be so exact?
+a : I've one peg kept for it. I don't want to clear a shelf with both hands full of rain. | Because it's my space to put right. A small order belongs to whoever has to live in it.
+
+scene marks
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream of opening a drawer that has kept every object exactly as I left it but shifted the drawer itself across the city.
+b : Could you find it? | Would that annoy you?
+a : I could tell you whether it was mine with one reach inside. First I'd have to get there. | Considerably. I keep some of my pleasures very near the surface.
+
+scene roadwalk
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I don't open my bag halfway along a muddy stretch.
+b : What might fall out? | Even for food?
+a : Whatever it is I least want in the mud. Bags have a very exact sense of a bad occasion. | I can wait till I reach a dry patch. A gritty apple would be a poor payment for haste.
+
+scene rimlight
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At night a bit of white cloth inside the drawer saves me looking for the handle of a dark tool.
+b : I thought you found things by touch? | What if the cloth gets moved?
+a : Most nights I do. My eyes may as well take a turn looking after the fingers occasionally. | Then the drawer feels wrong and I put it right. Quiet work for the last few minutes before bed.
+
+story wrongturn [topic=memories]
+  : I once changed the end where I kept a little bundle of cord. For a whole week my paw landed at the old place first.
+  : At last I set a clean apple in the old place. I was determined to teach my hand a useful distinction.
+  b : Did the apple cure the habit?
+  : I ate it and went back to keeping the cord there. The hand had a perfectly sound arrangement to begin with.
+
+story swimcloth [topic=pastimes self.likes=swimming]
+  : I rolled a towel tight and put it high on a dry rock. I'd forgotten to shake out a small pebble tucked inside.
+  : After swimming I rolled the towel open. The stone came out quite dry and landed straight in a puddle.
+  b : Did it give you a shower?
+  : One spatter on the sole of my foot. I put the pebble back with the bits of bank that hadn't arranged themselves a private towel.
+
+story wholepeel [topic=food self.likes=crisp_apples]
+  : I cut an apple peel in a single long piece and placed the curl on my sill.
+  : The peel tightened into a little circle. I'd been trying to leave a mark showing where the draught came in.
+  b : Did it show the draught?
+  : Showed the peel wanted to curl. I tried again with a dry thread and ate a very good apple.
+
+rule @drawer
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Runner's clear. Don't shove it past the stop. | Loose ends into their own row.
+
+rule @swim
+when concept=bark self.likes=swimming
+does aside
+cooldown 8h
+say Towel above the high wet mark. | Get a dry grip before you step up.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wrap the paper while the fold's dry. | Leave the seal inside the cloth.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say One clean white edge left showing. | Last loose thing away before the lamp.
+
+dlg @1 resident.hub : I've set my work aside. You can state your business.
+dlg @2 resident.hub [topic.meeting=known] : I know where your voice belongs, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Keep outside reach of the drawer. We can speak across it.
+dlg @4 resident.hub [here.time=night] : Your voice doesn't need a lamp. It reaches me quite clearly where you're standing.
+dlg @1 resident.job : I keep what's given me dry and in its proper place. That's all I care to say of my work.
+dlg @1 resident.news [world.news] : This bit is out in plain sight. #world.news#.
+dlg @1 resident.bye : See your things home with the folds dry.
+graft @darkdrawer resident.hub
+choice What could you find without opening your eyes? -> darkdrawer
+node darkdrawer
+say The drawer stop, then the folded towel. Behind the towel there's a row of small things. If one is out of place, my hand has to go looking, so I notice.
+choice Will you show me the whole row? -> darkdrawer_more
+choice Let the drawer close. -> hub
+node darkdrawer_more
+say The towel and the stop were what I meant to show you. You have what you need to try making a sensible drawer at your own place. Mine can close now.
+choice Let the drawer close. -> hub
+choice Leave the folds alone. -> bye

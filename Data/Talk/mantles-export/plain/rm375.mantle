@@ -1,0 +1,400 @@
+# rm375, the backlit hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm375
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_egil_brineham
+written_by codex
+title the backlit hood
+fits stage=adult|old
+prefers role=merchant job=smith
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk holds_an_oilcloth_hood_to_the_light_to_count_pinholes
+likes mutton_stew dice sharp_knife first_warm_day
+dislikes wet_floors smoke
+fears a_pinhole_over_white_steel a_lock_without_a_next_key
+hopes a_counter_that_stays_in_the_family a_room_above_the_smoke
+topics work +0.6 pastimes +0.3 food +0.4 dreams +0.3 gossip -0.6
+styles comfort=material gossip=closed refuse=curt tease=none
+marks oath saying
+persona #self.first# inspects an oilcloth hood for pinpricks of light, keeps the counter tools in a private order and judges a promise by the side most people have neglected to turn over.
+
+words
+oath! = Pierce my last cover | Pit the clean edge
+saying! = Hold a promise up to light | Mind the shine underneath
+hood = my black oilcloth hood | the oiled cover
+pin = one white pinprick | a tiny star of daylight
+iron = the test iron | my straight strip of iron
+blade = a sharp shop knife | the little skinning blade
+die = a square knucklebone | my smoked bone die
+box = my close-lidded box | the deep tray
+stew = a lump of mutton | the rich stew meat
+gravy = the thick brown liquor | the hot gravy
+floor = the dark flagstone | a slick square of flooring
+oil = a trace of clean oil | the fresh oil film
+patch = the overlapping patch | a square of dark cloth
+ash = a curl of smoke | the creeping grey reek
+wedge = the ground wedge | a steel scrap
+tongs = my holding tongs | the short curved grips
+file = a narrow file | the fine toothed strip
+strap = the hanging loop | my oilcloth strap
+sill = the dry high sill | a clean upper ledge
+shade = the dark side | the side turned from the light
+
+any
+opinion @1 merchants for 1 : A sound counter keeps its own bruises. Anybody demanding a smaller price should first look at the cost below the boards.
+opinion @2 houses against 1 : I've seen a House mark on good work and on work sent back twice. I'll look at the edge before the mark.
+opinion @3 road against 2 : Every late wagon leaves its mark on an afternoon I can't put back in the rack.
+opinion @4 strangers against 2 : An unknown wolf can speak from the outside edge of my counter. Plenty of hearing room there.
+opinion @5 watch for 1 : A regular round is cheaper than one pair of light paws under the cash box.
+opinion @6 church for 1 : A warm meal through a low door once served me better than polished speech in a big room.
+opinion @7 city for 1 : I like a city where a wolf can keep the same work and aim for a higher room to sleep in.
+opinion @8 sump against 1 : I'd sooner keep my next bed above the level where the lower stairs take water.
+opinion @9 times against 1 : A week can take the shoulders out of a worker while leaving every bit of metal in the rack still owing.
+
+grown
+line @1 greet [pair.band=strangers] : Stay in the clear patch. Welcome there. | Take the place beyond that board.
+line @2 greet [here.time=dawn] : Early. Light enough for a clean look. | Morning, all edges still showing clear.
+line @3 greet [here.weather=rain] : Keep the rain outside my dark patch. Come in. | Wet hood, dry place to stand.
+line @4 greet [self.working=yes] : Clear of the tongs. Good. | Welcome beyond the working edge.
+line @5 greet.return : Heard you through the cover. | That was a plain enough welcome.
+line @6 greet.return [pair.band=friends|family] : You'll know which hook to stand clear of. | The dry corner's good for you.
+line @7 greet.return [here.time=dusk|night] : Evening. Eyes still good for a word. | Late visit. All the loose edges put by.
+line @8 farewell : Keep your sharp things in their covers. | May the bad flagstones show while there's light.
+line @9 farewell.return : Your way out is clear. | I'll shut the cover after you.
+line @10 again.open : Come back across the lit edge again. | That's your tread a second time.
+line @11 kin.open [pair.kin!=no] : Kin get inside the turn of the counter. | I've room beside the family key.
+line @12 hail [pair.band=friends] : Down here beyond the bright steel! | Clear corner. Come this way!
+line @13 react.news : Show me the part that didn't come by guess. | Give it daylight on both sides.
+line @14 react.news.new : That's a new point of light to me. | Never saw that piece come through before.
+line @15 react.news.known : Put that account under my lamp once before. | The mark's familiar in the old account.
+line @16 react.news.doubt : I'd turn the whole report before I let that stand. | There's one pinhole letting through more light than cloth.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Set down the work. That's hard news. | No use talking over a loss that heavy.
+line @18 react.news.glad [topic.kind=birth|marriage] : Good to have a piece of news that holds water. | Put the stew on. There's cause to share.
+line @19 answer.how : Covered where it matters. | Carrying my own weight still.
+line @20 decline : I'd have to trust an edge I haven't checked for myself. | There's too much hanging on a word I can't give.
+line @21 accept_decline : Your end's quite plain then. | Right. We go on without that.
+line @22 sympathise : A dry seat's yours till the weight eases. | No questions from me while you're hurting.
+line @23 thank : Good turn when the edge was slipping. | That'll stand when other favours wear thin.
+line @24 deflect_thanks : Only shut the cover before the rain came through. | Someone had to mind that gap.
+line @25 preclose : I need my good light for an inspection. | Enough hanging about over the work.
+line @26 accept_preclose : Go while the steel's covered. | Clean end. I'll take it.
+line @27 farewell [here.time=night] : Keep clear of the glow after dark. | Shut up snug behind your own lock.
+line @28 farewell [here.weather=rain] : Hood down over the back seam. | Find a dry patch for the last turning.
+line @29 greet [pair.band=friends] : You know the dry line by now. | Good to see the right boots at the counter.
+line @30 answer.how [self.working=yes] : Metal hot. My grip's fine. | Looking after the end left near me.
+line @31 preclose [here.time=dusk] : Only a sliver of checking light left. | I'll take my last look by the door.
+scene pinlight
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I lift #hood# before my eyes every time I leave. | I know where #pin# ought to be on my hood.
+b : Looking for a leak already? | You keep a hole in it?
+a : Looking for light. A leak's rather late to discover the hole. | One in the loop for the peg. The rest get patches.
+
+scene bowl
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I keep #stew# back while the bread takes up #gravy#. | I like the mutton to lift whole off the bone.
+b : What's the advantage in waiting? | To see what you've paid for?
+a : Last thing under my teeth tastes of dinner, not a sodden crust. | To know when it's cooked right through. I'll weigh up the cost afterwards.
+
+scene die
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I throw #die# into #box# with the lid pulled clear. | A die rolling on a forge floor makes a poor wager.
+b : Why the box? | Can't you fetch it with the tongs?
+a : Keeps the die from meeting a boot on its way to a number. | Could. It'd be a wager on finding it before a hot scale set a new mark.
+
+scene knife
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I try #blade# on an oilcloth trimming before I touch a good patch. | A keen edge cuts the body of the cloth without dragging the loose fibres along.
+b : Better than showing it to the light? | Where do you feel the drag?
+a : Light tells what shines. The scrap tells what tears. | In the finger holding down the corner. A sharp blade leaves that finger still.
+
+scene spring
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : First warm day I hang my hood outside and see what winter put through it. | Early sun does a good job on the dark face of a cover.
+b : Going out bareheaded then? | Won't the oil marks show up too?
+a : Not far. Just enough dry air to see a flaw before next week's weather. | I'd like them to. A thin patch of oil will let the cloth wear through.
+
+scene slick
+when topic=smalltalk self.dislikes=wet_floors
+does tell.complaint / react.complaint / assess
+a : #floor# looks dry if you approach from the wrong end. | A wet flagstone under forge work is a very expensive joke.
+b : Where's the safe bit for a boot? | Doesn't the heat dry it off?
+a : Where the stone goes dull below my heel. You can take the same strip. | After a while. My elbow's at risk this minute.
+
+scene smoke
+when topic=weather self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : #ash# gets in under the straightest oilcloth brim. | I can take the heat better than that fine smoke that creeps along a wall.
+b : Would a tighter hood help? | It doesn't look very substantial.
+a : Only till it hides the tongs from me. Turn the draught instead. | Tell my eyes. They can see very little in its favour.
+
+scene atforge
+when topic=work self.job=smith self.role=merchant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the test mark's on the face I show to the buyer. | I lay finished work at #self.workplace# where you can look along the near edge.
+b : Even a mark that looks less than handsome? | Is the near edge the important one?
+a : Better a plain ugly test than a handsome piece nobody's checked. | Only the first to inspect. Turn it over yourself and take the far one next.
+
+scene counterhome
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I want a key that goes on fitting after my paw gives over the shop. | I'd like to put the counter where another member of the family can learn its creaks.
+b : A good lock lasts that long? | You mean for somebody else to inherit the noise?
+a : I hope so. I'd start by fitting it to a sound board at a sensible height. | The work. If you know the creaks you can tell which footing needs attention.
+
+scene makerprice
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : A knife cheap enough to turn on the second cut is a double expense. | Buyers ask after the shine. I'd have them ask what the back feels like.
+b : You could put another edge on it. | Who's paying for the bit nobody looks at?
+a : Once or twice. Bad steel goes on charging for the same small cut. | The buyer. That's why I let you inspect it before we settle.
+
+scene footwork
+when topic=land self.quarter=works
+does tell.self / react.self / assess
+a : The Works floor tells me the weather by the way grit settles at the threshold. | A Works room keeps heat in the boards late in the evening.
+b : Does it settle differently when it's dry? | You'd rather be sleeping somewhere cooler?
+a : A wet tread draws a dark stripe clear through the grit. I take warning from that. | Somewhere above the smoke. Warmth by itself's never crossed me.
+
+scene highdream
+when topic=dreams here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I'd like #sill# with all the shop smoke flattening out below it. | I'd put an upper room among the Heights on the same ring as my work key.
+b : Would you walk that far every morning? | Which key would get used most?
+a : I'd walk further for a bed where my eyes stop watering. | Both. A room in clean air won't make my work mind itself.
+
+scene friendsteel
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd show the clean test cut to #self.friend# before I'd trust a stranger with it. | I'd keep a good heel of bread near the stew for #self.friend#.
+b : Can your friend see something another wolf can't? | Just the heel for a friend?
+a : The edge is there to see. I'm more particular about who gets the first look. | There's gravy running deep underneath. It isn't a dry charity I'm saving.
+
+scene saltlock
+when topic=travel
+does tell.worry / reassure / assess
+a : I'm wary of any load tied with a loop I can't turn to inspect. | A long road doesn't make a doubtful fastening better.
+b : Can't you test it from where you stand? | Is one little loose end enough to hold a cart back?
+a : I've had worse surprises from the side I left turned away. | Depends what the other end's holding. I like to ask first.
+
+scene tighttime
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : Hard weeks make folk look at old edges a different way. | A tight purse puts a great many blunt blades on my counter.
+b : More keen to get another season out of them? | Not quite so much profit for the shop then.
+a : Yes. I'll say plainly if another season's beyond the steel that's left. | I'd rather sell an honest sharpening than a new knife the buyer can't pay for.
+
+scene roadlate
+when topic=travel world.wagons=late
+does tell.complaint / react.complaint / assess
+a : Late iron doesn't arrive any cooler for the paws working late to cover the missing hours. | I can't put a missing wagon in #tongs# and get started.
+b : Why not use the afternoon for the smaller jobs? | Would the missing load be worth searching for?
+a : I do. It's the thick work I can't turn into a spare afternoon later. | With a reliable sighting, perhaps. A smith walking the whole road doesn't make any metal appear.
+
+scene hoodstitch
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Which way would you overlap #patch# along a shoulder seam? | How do you keep #strap# from pulling a wider hole where the hood hangs?
+b : Upper edge on top. Give the falling drop a roof all the way down. | Put a washer of cloth behind the stitch.
+a : Right. Stitch it pretty the other way and the rain still gets a front door. | Good. A broad back takes wear a thin loop shouldn't be asked to take.
+
+scene honestpaper
+when topic=gossip
+does give.opinion / disagree / concede
+a : I trust no account that won't let me lift a corner of its cover. | A loud claim isn't any better tempered than the quiet kind.
+b : Would you want a name printed on the outside? | Do you doubt everybody equally?
+a : A fact inside, where I can test it. Names impress me rather less. | I look at what a wolf puts on the counter. I'll reach an opinion when I've felt its weight.
+
+scene roadstrange
+when topic=newcomer
+does tell.self / react.self / assess
+a : I'm fair to a new face. That doesn't mean the new face gets behind the counter. | A traveller may put wet goods on my dry board and we'll see what they're worth.
+b : What if the bundle's too heavy to hold up that long? | You don't mind the drip on a finished piece?
+a : I'll clear a place to put it. My key stays on my side either way. | I mind it. I also know how to place a strip of sacking underneath.
+
+scene rainwork
+when topic=weather here.weather=rain
+does tell.worry / reassure / assess
+a : The crease over my left temple's collecting a little shine from the sky. | Rain can turn a worn stitch into a steady trickle down my ear.
+b : Is there light coming through it? | A pin would make a good temporary closure.
+a : Not yet. I prefer doing the stitch before I've got water for proof. | A new hole in worn cloth would be very temporary indeed.
+
+scene stewshare
+when topic=food
+does offer / accept / assess
+a : Hold out some bread and I'll dip you out a lump with it. | There's enough brown liquor left to soften a stubborn crust.
+b : I'll take the near bit. Keep the lean meat. | That'll do me. My crust got grit on one corner.
+a : Take some meat as well. I'm particular, not skinflint. | Cut the corner off clean first. No seasoning in my pot deserves that.
+
+scene badlabel
+when topic=pastimes
+does tease / tease.return / laugh
+a : That die has a face I wouldn't want on a bill. | You've looked at the six side long enough to charge it rent.
+b : What, expecting it to ask for too much? | I thought a little respectful attention might help it land upright.
+a : Always seems to ask for a second throw on the same terms. | Respect can wait till the bone pays for itself.
+
+scene goodfit
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #wedge# will sit flat on the bench and rock in my palm. | I sometimes use #file# as a straight edge before I do anything rough with it.
+b : Does that mean the wedge is good? | Surely a straight board would settle that?
+a : It means my palm isn't a bench. I'll test the wedge against the work it has to hold. | A straight clean board, yes. A file's already in my paw.
+
+scene estateaim
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I don't mean to spend my last winter watching water creep closer to the bedding. | I'd be pleased to send one clean hood down from a house with a high window.
+b : You've a particular room picked out? | Wouldn't a dry home make the hood rather unnecessary?
+a : Only the height of it. There's comfort in asking for one precise improvement. | There's still a street between a room and a counter. I won't let either go idle.
+
+scene knifeprice
+when topic=work self.job=smith
+does tell.self / react.self / assess
+a : Even a plain table knife ought to be firm where nobody can see the iron. | A handle covers a fair length of a smith's promise.
+b : How far does the iron go in? | So the buyer can't check everything for a crack?
+a : The pressure has to reach solid material well inside the grip. I'll show a sample. | Can ask me for a cutaway scrap. There's one laid by beneath this end.
+
+scene seasonwalk
+when topic=travel self.likes=first_warm_day
+does tell.plan / ask.detail / answer.detail
+a : I'd go out in the first warmth before the dust stirs up off the roads. | One dry warm afternoon I'd take the long way uphill and look where the roofs stop smoking.
+b : Without the hood at last? | Are you inspecting all the cook fires?
+a : Carry it on #strap#. Warm air isn't a certificate of dry weather. | Only looking for the line where a wolf could breathe without tasting the street below.
+
+scene outnight
+when topic=weather
+does tell.self / react.self / assess
+a : A strong wind can make a decent fitting hood sound like an old sail. | I generally turn my covered ear into the weather to catch a customer's quiet voice.
+b : Does it catch the same way round the jaw? | Wouldn't you hear the wind as well?
+a : Only if I've left the loop flapping. Best listen before tightening it wrong. | Only in the covered ear. The other is free to hear the actual business.
+
+scene kinshop
+when topic=dreams self.role=merchant
+does tell.plan / ask.detail / answer.detail
+a : I want a counter stout enough to give my successor a working life. | I'd have the key to my shop worn smooth from use by a decent familiar hand.
+b : What if the next pair wants a different height? | Would you give it up while the lock still works?
+a : Put blocks under the legs. The wood that holds the work can still be sound. | To a wolf I trust with my good stock. The lock isn't the bit I'm worried about.
+
+scene grittray
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Where would you keep little tools in a place where grit gets in by daylight? | How would you find a dark die dropped into an even darker corner?
+b : Put the lid on before you shake out the cloth nearby. | Low light level with the floor. Look for a square shadow.
+a : Good. Easier to keep grit outside the box than get it out of a file. | That's what the pinholes in a hood teach. One clean angle of light is half an answer.
+
+scene firequiet
+when topic=lore
+does tell.self / react.self / assess
+a : There's a story of a smith who filed a tiny hole in a great lord's badge. | I heard once that a good forge fire can read the flaws in anybody's fine coat.
+b : What was the hole for? | How would it see through the good cloth?
+a : A pin to hold it on. The lord had forgotten the whole business of fastening an honour to anything solid. | Stand between the cloth and firelight. No special gift required, only a wolf willing to look.
+
+story hood_star [topic=smalltalk]
+  : I held my hood up and saw a whole little star pattern down one edge. I put my repair cloth ready beside it on the bench.
+  : When I turned toward the lamp the stars all vanished instead of growing brighter.
+  b : What were you looking at before?
+  : Tiny filings catching the light outside. I brushed them off first and spared the hood a row of entirely unnecessary needle holes.
+
+story bone_heat [topic=pastimes]
+  : I used a bone die to test whether a piece of white wrapping lay level. It ran straight under the hot side of the bench.
+  : I had to reach it with the thinnest pair of tongs. A little brown mark appeared on the four side.
+  b : Does the marked side still come up?
+  : Often enough for an honest game. I keep it for private play all the same. Nobody can be obliged to take the mark on trust.
+
+story stew_rim [topic=food]
+  : I ordered stew in a black bowl and turned it once to see if there was a crack near the lip. A fine bright line stayed right where it was.
+  : Tilted the bowl. The bright line slipped slowly toward my thumb.
+  b : What was in the bowl besides dinner?
+  : A stripe of light on the gravy. No shame in checking before I offered the good rim to somebody else.
+
+story high_lock [topic=dreams]
+  : I had a dream of a shop with a sound lock on every cupboard and a fine small room all the way upstairs. I carried my keys on a ring as wide as my wrist.
+  : At the top I tried every key on the door to my room. Not one would go in.
+  b : Had somebody already taken the room?
+  : Door stood open. I'd remembered all the work of a good life and forgotten to allow for simply walking in.
+
+story old_handle [topic=work]
+  : A worn tool once came to my counter with a handle polished hollow by years of thumbs. A shiny new handle was requested.
+  : I held the new wood beside the old bend until the light showed how much of the shape I'd be throwing away.
+  b : Was the old handle strong?
+  : Good wood under the wear. I smoothed the nick and left the honest hollow for the next thumb.
+
+rule @hood
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Narrow patch against the wind. | Check the seam over the ear.
+
+rule @forge
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 8h
+say Bright edge in the clear light. | Show me the shoulder behind the shine.
+
+rule @shop
+when concept=bark self.role=merchant
+does aside
+cooldown 8h
+say Cash box stays my side of the line. | You may turn the sound piece over.
+
+rule @stew
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say Last brown bit's still on the spoon. | Hold the bread just above the gravy.
+
+rule @early
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say First decent airing that hood's had. | Sun through anything comes to a point.
+
+rule @quiet
+when concept=bark self.quarter=works
+does aside
+cooldown 8h
+say A low curb keeps most of the grit out. | The smell doesn't need to come through the door.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Stand where the goods and the errand can both be seen.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, that parcel can go in its accustomed place. Use the clear corner.
+dlg @3 resident.hub [here.time=night] : There's enough light for a straight statement and little else.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep both paws where that stripe of light falls. Say what you're after.
+dlg @5 resident.job [self.role=merchant self.job=smith self.workplace] : I keep the smith's counter at #self.workplace#. You'll see the working surface if you ask.
+dlg @6 resident.job : I look after the true edge and the place that pays for it.
+dlg @7 resident.news [world.news] : This is what has come plainly into the light. #world.news#
+dlg @8 resident.bye : Turn your hood before the wind does it for you.
+dlg @9 shop.greet [here.shop=open] : You can examine the sound side and the rough side. I'll hold my side of this board.
+dlg @10 shop.greet [here.shop=bare] : Bare on this side. I might buy a sound piece if that's your errand.
+dlg @11 shop.greet [here.shop=asleep] : Mm. Cover's down. Eyes too.
+dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, the board's ready for the usual sort of close look.
+dlg @13 shop.prices : Ask the price while the edge is in front of you. #shop_offer#
+dlg @14 shop.bye : Keep what you've bought out of standing water.
+dlg @15 resident.hub [here.weather=rain] : Set the wet parcel beyond the dry piece, if it's a parcel you're bringing.
+graft resident.hub
+choice Why hold the hood up to the light? -> dark_pin
+node dark_pin
+say One tiny white point is enough to have a wet shoulder in an hour. I'll listen to the light's opinion before the weather says it louder.
+choice Why keep the hood on a warm day? -> warm_loop
+choice Leave the hood on its peg. -> hub
+node warm_loop
+say Long way between a good patch of sunlight and a promise of the same weather tomorrow. The thing hangs off my belt without asking a wage.
+choice That's enough reason. -> hub
+choice Here's hoping for a dry turn. -> bye
+
+graft shop.greet
+choice Why show me the rough side first? [here.shop=open] -> rough_back
+node rough_back
+say Anybody can find a bright edge in good light. I'd sell the whole piece and know you had a decent look at what lies under the shine.
+choice What if there's a dark mark? -> dark_steel
+choice Let's go back to choosing. -> greet
+node dark_steel
+say I'll show where it ends. Surface mark can be cleaned. A deep flaw comes straight off the sale board and stays off until I decide what it's fit to make.
+choice I may inspect some more. -> greet
+choice I understand the terms. -> bye

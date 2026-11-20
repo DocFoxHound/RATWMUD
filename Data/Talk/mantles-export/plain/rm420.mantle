@@ -1,0 +1,257 @@
+# rm420, the coal-stained glove (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm420
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_wynn_sootridge
+written_by codex
+title the coal-stained glove
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=warm humour=dry honesty=plain piety=ordinary drive=steady
+quirk wraps_a_lucky_coal_in_clean_linen_for_estate_doors
+likes smoked_eel singing quiet_chapel first_warm_day
+dislikes smoke salt_wind
+fears an_empty_place_going_unremembered
+hopes a_tune_that_brings_the_old_warmth_back
+topics work +0.5 faith +0.4 pastimes +0.4 memories +0.3
+styles comfort=gracious gossip=measured refuse=kind tease=dry
+marks oath saying
+persona #self.first# keeps a lucky coal in an immaculate fold of linen and has a dry word ready when a grand doorstep invites inspection.
+
+words
+oath! = Soot my visiting cuff | Stitch my coal into satin
+saying! = Luck need not dirty the host's tablecloth | Polish the glove and mind what's in it
+coal = a polished black chip | a tamed lump of coal
+linen = a square of white linen | a scrupulously clean fold
+glove = my visiting glove | a decent pair of gloves
+eel = a bronze slice of smoked eel | a thin smoked end
+plate = a little clean plate | a pale dish
+hook = a polished hook | a double hook
+note = a soft sustained note | a comfortable middle note
+shade = the edge of cool shade | a band of shade
+cinder = a cold cinder | a crumb of coal
+curl = a neat silver curl | a bronze ring
+napkin = the corner of a napkin | a little cloth
+pew = the short bench | a quiet bench
+warmth = a patch of sun | a pleasant warmth
+
+any
+opinion @1 houses against 3 : A great name over a wharf gate is very plain to read from the place left empty at supper.
+opinion @1 church for 1 : The chapel hush lets me set my grief down without first providing a suitable introduction.
+opinion @1 dole for 2 : One may arrange a portion with considerable grace while making absolutely certain it reaches the hungry.
+opinion @1 merchants mixed 1 : I approve of an honest cut and very little of the ceremony intended to conceal a poor one.
+opinion @1 sump for 1 : Visitors often notice the soot and quite overlook the hands keeping one another warm beneath it.
+opinion @1 festivals mixed 1 : Give me the good singing and allow me to leave before the smoke reaches my collar.
+
+grown
+line @1 greet : Welcome. The untidy bit is safely in my pocket. | A clean place for company this side.
+line @1 greet.return : I can return a greeting without taking off the glove.
+line @1 again.open : We seem to have turned the same corner twice.
+line @1 farewell : May the wind treat your collar courteously. | An unhurried return to your own fireside.
+line @1 farewell.return : Your good wish may travel in the cleaner fold.
+line @1 react.news : Tell it without the trimmings if you like. | A plain account will be quite presentable here.
+line @1 react.news.new : That's a fresh mark upon the linen.
+line @1 react.news.known : I recall the former impression of that news.
+line @1 react.news.doubt : I should like to turn that attractive account over and inspect the reverse.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A bereaved table wants a little space amongst the condolences.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Quite a welcome tune, that piece of news.
+line @1 ask.how : Has the day kept anything pleasant for your own use?
+line @1 answer.how : Presentable outside, comfortable enough within.
+line @1 sympathise : We can sit quietly without making a display of it.
+line @1 reassure : A little unembarrassed warmth does much to restore an afternoon.
+line @1 refuse : There is a small prior duty with a just claim on me.
+line @1 accept_decline : I shall regard your answer as perfectly sufficient.
+line @1 preclose : A more private part of my day requires attendance.
+line @1 accept_preclose : Go before courtesy begins to charge you for standing.
+line @1 ack : That is clear, even without its fine wrapping.
+scene exchange1
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my coal remains in linen. | I hang each hook where a sleeve can miss it.
+b : Does luck insist on formality? | And if the sleeve is very grand?
+a : Customers prefer their meat without a black thumbprint. | It ought to receive the same mercy as an ordinary cuff.
+
+scene exchange2
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once welcomed a wharf load with rather more hope than it brought home. | There is one name I won't trade over a counter.
+b : Was something missing? | Even with an old customer?
+a : Someone. I remember the difference whenever a ship is praised. | A private hurt is hardly improved by a good display.
+
+scene exchange3
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : Smoked eel's an exception to my rule about smoke. | I cut a smoked coil into narrow rings.
+b : What's the rule? | For the appearance?
+a : I'd rather it reached me politely attached to supper. | For the pleasure of finding an unexpectedly large number on a small plate.
+
+scene exchange4
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I like a middle note that fits comfortably behind the teeth. | I sing a harmony under my breath on the estate.
+b : Not the high finish? | Are you supposed to keep quiet?
+a : I leave high finishes to those who prefer an audience looking up. | I prefer a note that can keep somebody company without summoning the entire hall.
+
+scene exchange5
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I take the coal out of my glove before I sit in chapel. | In a quiet chapel the linen makes a remarkable noise.
+b : Leave luck outside? | Should you leave it behind?
+a : Give my paws room to rest quite open. | No. One faint rustle keeps a prayer from growing too grand.
+
+scene exchange6
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : Spring's first soft day makes a persuasive case for fewer gloves. | I borrow a warm step before the afternoon grows busy.
+b : And the coal? | Can a step be borrowed?
+a : Perfectly willing to travel in less formal quarters. | I return it just as warm. Sometimes warmer.
+
+scene exchange7
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind stiffens my little linen parcel. | A salt gust can get under the finest cuff.
+b : Will the coal object? | Does that comfort you?
+a : The coal has never lodged a single polite complaint about its accommodation. | It certainly suggests the gust is unimpressed by a pedigree.
+
+scene exchange8
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I like smoke best at a discreet distance. | Smoke on glove linen gives away my pocket's contents.
+b : Except in eel? | Why conceal something so modest?
+a : There it has been taught table manners. | Discretion is a pleasure quite apart from mystery.
+
+scene exchange9
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I can unwrap the coal in peace beside #self.spouse#. | I'd keep a little warm patch on the step for #self.spouse#.
+b : No apology for the dust? | What if the patch moves?
+a : One may still apologise for a mark on the supper cloth. | I can manage the considerable effort of shifting over.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I would trust #self.friend# with my better tune. | I enjoy an afternoon with a friend whose collar need not impress me.
+b : Better than what you sing in public? | Do collars often try?
+a : Quieter. That is generally what I mean by better. | Some arrive a minute before the wearer.
+
+scene exchange11
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I keep the portion and its wrapping quite distinct. | A clean hook has a quiet dignity.
+b : Does that concern a buyer? | As opposed to a dirty hook?
+a : Nobody has ever asked me for a slice of better paper in place of supper. | A busy hook generally needs wiping before it is fit for philosophy.
+
+scene exchange12
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep a clean linen square above the one that's done its duty. | My home smells better after the street wind's gone by.
+b : What are you saving it for? | Of the hearth?
+a : The next public appearance of my wholly disreputable lucky lump. | Of a supper that wasn't trying to smoke out the diners.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The words were #topic.subject# #topic.claim#. The report received a polite hearing. | A rumour dressed in silk may find the front door open.
+b : Will you give the report further hospitality? | Doesn't it impress you?
+a : Not without a considerably better introduction. | Silk wraps a coal quite as readily as a kindness.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In hard times an elegant little portion can look uneasily like a tiny one. | A close season makes me turn the linen over twice.
+b : Does nicety matter less? | To save on washing?
+a : A full bowl may still be beautifully presented. | To see whether a useful clean corner remains before I spend one.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : An estate door usually gives coal dust a chilly reception. | The wharf and the estate share a wind.
+b : Does every door inspect you? | Equally welcome at both?
+a : No. I've grown quite attentive on their behalf. | It makes remarkably little enquiry about that.
+
+scene exchange16
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My coal stays on the wallward hip on a narrow street. | A long walk soon tells me which glove holds the good luck.
+b : To protect it? | Is it heavier?
+a : To avoid leaving its likeness on somebody else's sleeve. | It grows warmer where my paw curls round it.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a tune fit for an empty place at table. | I imagine a coat whose pockets never show soot.
+b : Wouldn't silence do? | A fortunate bit of tailoring?
+a : Silence does a great deal. Sometimes I'd like to contribute a little sound. | Or an extraordinarily tolerant shade of black.
+
+scene exchange18
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I unwrap the coal after the harder shifts finish. | I leave my gloves apart while supper's being prepared.
+b : To thank it? | Why not fold them together?
+a : To inspect how far my good manners have penetrated the wrapping. | One is full of luck and the other is clean. A distinction worth preserving.
+
+story tale1 [topic=memories]
+  : I wrapped my coal in a length of pale ribbon for an especially fine door. It travelled there looking like a gift for somebody of delicate taste.
+  : Then I went to pick up a parcel and found two identical bows in my pocket.
+  b : Did a customer receive the coal?
+  : I weighed both bundles in my palm and presented the softer one. I have made my luck a plain square household ever since.
+
+story tale2 [topic=pastimes self.likes=singing]
+  : I sang a soft harmony beside a window with a loose catch. At a particular note the catch vibrated and contributed a sound of its own.
+  : Together we made an unusual duet for a voice and a very modest bit of iron.
+  b : Did you have the catch mended?
+  : I tucked in a scrap of linen. The harmony improved wonderfully as a solo.
+
+story tale3 [topic=food self.likes=smoked_eel]
+  : I laid out smoked eel rings by size and ended up building a handsome little tower. Its topmost slice was almost transparent.
+  : I admired my arrangement until a draught moved the plate cloth a finger's width.
+  b : Did the tower fall?
+  : It settled graciously across a piece of bread. I supported it at once in the most practical way available.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say A clean hook before the fresh parcel comes out. | Linen for the coal, a separate cloth for the board.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Some modest warmth held in the palm before the first call. | Even the grand doors still look sleepy.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Coal in its second fold today. | Rain has reached the linen but may stop at the courtesy layer.
+
+rule @call4
+when concept=bark self.likes=singing
+does aside
+cooldown 8h
+say A soft middle note won't trouble the neighbours. | Good voices leave room for a listener.
+
+dlg @1 resident.hub : I have a comfortable word and a respectable corner of linen to spare.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our acquaintance can comfortably dispense with the stiffest formalities.
+dlg @3 resident.hub [here.time=night] : A quiet visit at this hour has rather a good tune to it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Plain speech requires neither polished boots nor a raised voice.
+dlg @1 resident.job [self.job=merchant] : I help at #self.workplace#. The good cuts and the modest ones receive equally clean paper.
+dlg @2 resident.job : I do the work in reach and reserve my own opinion of the manner of its arrival.
+dlg @1 resident.news [world.news] : A report arrived without much wrapping. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I understand #topic.subject# #topic.claim#. An understanding of the words need not confer knowledge of the facts.
+dlg @1 resident.bye : May your luck leave no inconvenient marks on the way home.
+graft resident.hub
+choice Why does your luck need a glove? -> white_glove
+node white_glove
+say The luck doesn't. The linen keeps it fit for company. I like knowing a bit of rough warmth can come through the estate without leaving a stain.
+free
+choice Why keep it if it takes so much care? -> white_glove_again
+choice Goodbye. -> bye
+node white_glove_again
+say The care is part of its occupation. It gives my paws a small pleasant job while I consider what to say.
+choice I'll leave the fold tidy. -> hub
+choice Goodbye. -> bye

@@ -1,0 +1,331 @@
+# rm426, the fourth story folded shut (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm426
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_kjell_saltdale
+written_by codex
+title the fourth story folded shut
+fits stage=young|adolescent|adult|old
+prefers job=sailor
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=ambitious
+quirk tells_three_open_stories_and_keeps_a_fourth_in_a_fold
+likes barley_soup whittling tidy_house warm_rain
+dislikes night_noise cold_tea
+fears hearing_an_echo_instead_of_a_reply
+hopes a_berth_earned_by_steady_hands
+topics work +0.6 memories +0.5 pastimes +0.4 dreams +0.3
+styles comfort=plain gossip=withheld refuse=honest tease=none
+marks oath saying
+persona #self.first# cuts three notches for three oft-told stories and keeps the unspoken fourth wrapped flat against the chest.
+
+words
+oath! = Notch my last splinter | Fold the fourth corner
+saying! = Three tales fit the hand and one the pocket | A fair yarn survives being told with plain words
+notch = a short notch | a broad nick
+chip = a wedge of pine | a pale splinter
+fold = a square fold | the soft inner crease
+lash = a sailor's lashing | a short tie
+peg = a wooden peg | a whittled pin
+bowl = a brown soup bowl | a battered mug
+barley = barley thick at the bottom | a few plump grains
+tide = an easy tide | a hard-running tide
+bench = a board kept tidy | a clear bench
+mark = the fourth mark | the smallest mark
+rag = some clean rag | a scrap of cloth
+tea = a cup close to the stove | a steaming cup
+
+any
+opinion @1 road for 1 : A travelling story owes the listener an honest arrival after all the turns.
+opinion @1 houses mixed 1 : A place on a working deck should go to paws able to stay steady there.
+opinion @1 dole for 2 : A bowl of barley leaves room to think of something beyond tomorrow's first mouthful.
+opinion @1 strangers for 1 : Strangers are the only audience sure to be hearing my three regular stories for the first time.
+opinion @1 merchants mixed 1 : I'd rather hear the cost in one plain sentence than dressed up as the end of a tale.
+opinion @1 sump for 1 : A low bench can still receive a very fine story.
+line @1 greet : There's a clean corner of my bench here. | Welcome. The chips can wait in my palm.
+line @1 greet.return : Your greeting's heard and here comes mine.
+line @1 again.open : Another turn round to a story's beginning.
+line @1 farewell : Go with your own story in good order. | A smooth run under your boots.
+line @1 farewell.return : I can return that farewell without borrowing a better voice.
+line @1 react.news : Tell me the end when you've got to it. | I'll keep my own three tales shut a moment.
+line @1 react.news.new : An entirely fresh notch to cut.
+line @1 react.news.known : That's a yarn I've got a notch for.
+line @1 react.news.doubt : Show me how the grain runs inside that claim.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : There's no reason to make a tale of somebody else's hurt.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : One story more I'd gladly hear.
+line @1 ask.how : Did your day's story begin well?
+line @1 answer.how : Trying to earn my next proper chance.
+line @1 sympathise : I'm better at listening with the knife folded up.
+line @1 reassure : A wrong cut needn't take the whole piece.
+line @1 refuse : I've a job requiring my own attention before dark.
+line @1 accept_decline : All right. I'll spare you the second invitation.
+line @1 preclose : My work won't get done on the strength of storytelling.
+line @1 accept_preclose : Go on. There's room in tomorrow for a fresh encounter.
+line @1 ack : That's clear from first turn to last.
+
+grown
+line @1 greet.return : I'm glad to give a familiar kindness its proper answer.
+line @1 farewell.return : Safe passage when your own turn comes.
+line @1 react.news : Start where the account holds steady. I can follow the rest.
+scene exchange19
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I keep the deck free of ends long enough to catch a toe. | I let a beginner test a slack lashing first.
+b : Even the line in use? | Is it safe?
+a : I keep that one where its pull is visible. | With me there to show where a tightening line will run.
+
+scene exchange20
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My three old stories tell shorter now. | A fourth story still folds without a sound.
+b : Forgotten bits? | Never going to tell it?
+a : Remembered which ones mattered. | A life can have one dry pocket.
+
+scene exchange21
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : A wood shaving's a very exact account of a blade's motion. | I give a wooden peg a wider head than it needs.
+b : Can you read a bad cut in it? | A waste of timber?
+a : It breaks right where my hand got hurried. | Room for the next repair, when I may not be there.
+
+scene exchange22
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I know what belongs on my shelf by what I reach for in darkness. | One gap on my shelf has remained unfilled.
+b : A knife? | For a gift?
+a : In a sheath. A small order with a large return. | For a reply I once hoped to receive. The gap's proved a useful place for a lamp.
+
+scene exchange23
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I still give the darkest barley grain to the last spoonful. | A thick bowl tells a short tale.
+b : An old habit? | What tale?
+a : A young habit that found a living in the older mouth. | Someone let it simmer long enough. There's love in some very brief accounts.
+
+scene exchange24
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I've made journeys by counting the old stories backwards. | I prefer a road with a sightline to water.
+b : Does that help navigation? | Because you're heading for it?
+a : It makes a walk to the landing pass without worrying it to death. | Because it's a place where my eyes know what to look for.
+
+scene exchange25
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I give the cost of a handmade peg in quiet words. | I can judge whether a board's worth saving by one sound end.
+b : No exciting account of its making? | How useful is the short length?
+a : Only if the buyer wants the story too. | Make two even shorter useful bits.
+
+scene exchange26
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My hands rest from whittling against a warm soup bowl. | A good knife should allow a relaxed thumb.
+b : Do they ache? | Which part of the grip?
+a : Less if I give them their turn with the heat. | The part that used to do too much when I was trying to impress the deck.
+
+scene exchange27
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I picture a fourth story with a dry landing at last. | I'd have a bench with room for somebody to learn beside me.
+b : Will you tell that one aloud? | For a future shipmate?
+a : I may leave the landing to its rightful reader. | For any wolf ready to make an honest first mistake.
+
+scene exchange28
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't make a prayer over every cut. | A service leaves me glad of a story all the voices know.
+b : Which do you choose? | Doesn't that wear it out?
+a : A grateful word when the difficult one has held. | A response can be repeated and still mean exactly what it says.
+
+scene exchange29
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Lean days make a short scrap worth a second look. | I tell a quiet story while a thin pot thickens.
+b : For fuel? | Do you stretch the truth?
+a : For a peg that costs no supper money. | Only the wait. That deserves every honest trick it can get.
+
+scene exchange30
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I put my best old knife away clean after a long telling. | Each day ends with the fourth fold lying flat.
+b : Were you using it as you spoke? | You check every night?
+a : I like my hands to have a steady little occupation. | I take care of what was written to me. That's an entire reason.
+
+story tale1 [topic=memories]
+  : My first tale starts with a shaving I'd wound into a ring for my thumb. I held it out to admire it. A gust carried it towards water.
+  : It came down quite flat and went sailing away.
+  b : Did you try making another?
+  : Of course. The second curled the other way. I've never managed to tell the story twice without remembering that detail.
+
+story tale2 [topic=food]
+  : My other story starts with a shut pot. The smell said barley and the steam said supper, but the lid had jammed and I couldn't get at either.
+  : I turned the lid a finger's width, let the pressure ease, and had my meal.
+  b : Does the whole story hinge on that little turn?
+  : The eating did. I have since learnt when to leave the long telling for after a meal.
+
+story tale3 [topic=pastimes]
+  : The third tale begins with a toy boat running into a wall before its maiden voyage. I had put the basin too close to the wind coming in under a door.
+  : It sailed over the water before I could get my finger to the stern.
+  b : What did you learn from the grand voyage?
+  : Choose where to put the water before launching the ship. That's the ending I like and I'm keeping it.
+
+rule @call1
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Slack end in and a clear place for the next foot. | Watch the line where the pull begins.
+
+rule @call2
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say There's a whole little hull in that chip. | Three nicks first, then the harder cut.
+
+rule @call3
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Tell the short tale before the soup goes cold. | A lane gets quiet in a different order every night.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The fold inside stays dry through a warm soaking. | Wet wood shows the twist before the blade arrives.
+
+dlg @1 resident.hub : You can choose a story or bring a fresh question to my bench.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you may have heard one of the three already.
+dlg @3 resident.hub [here.time=night] : I can spare a quiet tale at this hour.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You'll get a straight answer on anything that's yours to ask.
+dlg @1 resident.job [self.job=sailor] : I'm a working pair of deck paws. I'm after the kind of experience a sound lashing shows.
+dlg @2 resident.job : I keep my own corner in order while I learn what else I'm fit to do.
+dlg @1 resident.news [world.news] : This is new talk, outside my three regular tales. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I've heard #topic.subject# #topic.claim#. I don't carry another wolf's business in my private fold.
+dlg @1 resident.bye : May your next landing give you a fresh beginning.
+graft resident.hub
+choice Why tell the same three stories? -> fourth_fold
+node fourth_fold
+say Every turn in each one is clear in my mind. I can look a listener in the face and say where my own bit comes in.
+free
+choice Have you never wanted a fourth? -> fourth_fold_again
+choice Goodbye. -> bye
+node fourth_fold_again
+say I've had more than three things happen. A fourth account can stay folded up without making the other three less true.
+choice Then keep its corners dry. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : I've swept the bench with my own sleeve.
+line @1 farewell : Don't lose the chips from your story pocket.
+scene exchange2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I cut three little marks in a twig. | I keep my very first shaving in a bag.
+b : Each got a name? | Just one?
+a : Each got a story, and stories get longer names. | It's the only one that can be first.
+
+scene exchange3
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I hunt barley grains in the dish. | I like a bowl I can see into.
+b : Caught many? | Looking for stories?
+a : I let the spoon carry a whole crew. | Looking for supper first.
+
+scene exchange4
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've told this little tale twice. | One extra tale could just squeeze into my pocket.
+b : Why start it again? | How big a tale?
+a : You haven't heard my best voice yet. | I've plenty of time to grow the pocket.
+
+
+adolescent
+line @1 greet.return : I heard you proper. Here's my answer just as plain.
+line @1 react.news : I can keep quiet through somebody else's telling.
+line @1 farewell.return : And good footing when you set about your next bit of work.
+scene exchange6
+when topic=work self.job=sailor self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I want the first turn with the lashing. | I keep the deck clear of my wood chips.
+b : Before you've learnt it? | Afraid somebody will scold?
+a : I want the chance to learn with the line in my own paws. | Afraid somebody will go down under a load. That's reason enough.
+
+scene exchange7
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I whittle little ships without tall masts. | My best peg's a bit crooked.
+b : Can't manage a mast? | Going to throw it away?
+a : I want a hull that floats before decorating the sky. | It fits a crooked hole. I've started judging the fit first.
+
+scene exchange8
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I can tell one of my stories before a bowl goes cool. | Barley thick underneath can hold a spoon upright.
+b : Which one? | Ever quite done that?
+a : The short version of the soup story. It ends in my mouth. | Once. I had been talking too long.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I know three tales anybody may hear. | I've a letter with no answering fold beside it.
+b : And the fourth? | Still expecting one?
+a : That one folds small. It lives against my coat. | I don't call it expectation in company.
+
+scene exchange10
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A clean shelf gives each carving a berth. | I straighten my bench before I try a difficult cut.
+b : Are any ready for sea? | Does that make the cut easier?
+a : One stays up in a wash basin. I'm entitled to hope. | It gets the other jobs out of my way.
+
+scene exchange11
+when topic=weather self.likes=warm_rain here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain makes new wood show its grain. | Warm drops feel pleasant between my ears.
+b : Can you carve it wet? | And the letter?
+a : I'd sooner learn the twist now and cut it dry. | Inside the inner fold. I make different arrangements for the important bits.
+
+scene exchange12
+when topic=day self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : A bang after dark puts me back on the deck in my head. | Night voices come up through the sill.
+b : Hard gaining sleep afterward? | Do you answer?
+a : I tell myself the quietest of the three stories. | Not every voice asking for an audience is entitled to my ears.
+
+scene exchange13
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Tea goes stone cold when I practise the long version. | A hot mug's an excellent excuse to stop telling.
+b : Cut the story shorter? | How so?
+a : I put the mug closer. My three endings have earned their places. | Both hands get busy and my audience gets a turn.
+
+scene exchange14
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# choose which of my tales opens the evening. | A friend can tell when I get to the folded part.
+b : Even if there's another favourite? | What folded part?
+a : Being asked for a tale feels better than always starting one myself. | Precisely. A friend can leave that question alone.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a real shipboard berth with room for my knife. | Next time I tell the deck story I want more deck in it.
+b : Only your knife? | More invention?
+a : And room above it for some decent work to come off my hands. | More time actually earning my place on one.
+
+scene exchange16
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The words are #topic.subject# #topic.claim#. That story belongs to another voice. | I can repeat how that bit of talk began.
+b : Are you adding a fourth? | Know where it ends?
+a : No. Not by taking a piece of somebody else's life unasked. | No. I won't pretend it's one of the three I can tell whole.
+
+scene exchange17
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'd like the tightening line against my palm before I'm told what it's doing. | I own the errors in my first knot.
+b : Impatient with learning? | And its good bits?
+a : Impatient with guessing when I could be learning by touch. | I'd like the next knot to show I noticed both.

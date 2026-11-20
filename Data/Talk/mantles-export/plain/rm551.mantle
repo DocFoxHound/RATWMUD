@@ -1,0 +1,383 @@
+# rm551, the cook's second stair (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm551
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_sybil_bilgeby
+written_by codex
+title the cook's second stair
+fits stage=adult|old
+prefers job=cook
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk tests_roast_crackling_by_ear_after_counting_stairs
+likes roast_pork digging festival_bells autumn_wind
+dislikes cold_tea drizzle
+fears cold_tea_after_a_hot_service
+hopes time_to_grow_something_for_the_oven
+topics food +0.7 work +0.6 pastimes +0.5 season +0.3
+styles comfort=substantial gossip=plain refuse=firm tease=mild
+marks oath saying
+persona #self.first# counts stairs in pairs and listens to the crackling before lifting a roasting pan.
+
+words
+oath! = Blunt my dibber | Flatten my rising crust
+saying! = Two stairs up and one good rest | A roast won't hurry for a crown
+grub = a slice with its shining edge | a crusted pork heel
+ladle = my long tasting spoon | a shallow serving spoon
+tin = a dark roasting pan | a deep-sided dish
+root = a well-scrubbed root | a straight garden carrot
+crumb = a little crisp corner | a nut-brown scrap
+bell = a bright kitchen echo | a market chime
+wind = a bluster through dry leaves | a cool gust at the back
+rain = the smallest soaking mist | a needling drizzle
+tea = a hot cup at last | a steaming swallow
+time = a full oven turn | an unhurried interval
+spade = a well-worn digging spade | a soil-stained blade
+tray = a warm serving board | a clean platter
+brush = my clean flour brush | a bright wisp of straw
+peg = a garden peg | a split marker
+rest = a seat off the hot floor | a pause by the garden
+
+any
+opinion @1 houses mixed 1 : Grand colours at table don't alter the instant a roast needs turning.
+opinion @1 merchants for 1 : A seller who lets me inspect the stalks knows I may come back for more.
+opinion @1 church mixed 1 : I'd send a bit of supper round with any blessing intended for a hungry household.
+opinion @1 festivals for 2 : A bell that sends everyone in to eat has understood my profession admirably.
+opinion @1 dole for 2 : A kitchen measures generosity by portions reaching mouths while there is still heat in them.
+opinion @1 city for 1 : Several kinds of onion reach one city pot by different stairs. That suits me nicely.
+opinion @1 road mixed 1 : Give vegetables an easy cart ride and the kitchen spends less time on bruises.
+opinion @1 times against 2 [world.times=lean|hard] : A thin cupboard asks for more thought from the cook and less ceremony at the table.
+
+grown
+line @1 greet : Come close enough to hear above the pans. | There's a sound seat for somebody with an errand.
+line @1 greet.return : Welcome back across my kitchen noise.
+line @1 again.open : Round again before I've made a second pot.
+line @1 farewell : May supper be steaming when you reach it.
+line @1 farewell.return : I'll take those wishes with my first hot cup.
+line @1 react.news : What's in the account? I'm listening.
+line @1 react.news.new : This kitchen hadn't heard a hint of that.
+line @1 react.news.known : I know the first savour of that story.
+line @1 react.news.doubt : I'd want to test more than the fine smell of it.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : That's a hurt no good dinner can quite put right.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A proper occasion to lay another plate.
+line @1 ask.how : Did you manage a decent bite between errands?
+line @1 answer.how : Worn out in the calves, entirely sound in the appetite.
+line @1 sympathise : This chair wobbles least. Settle here. I'll stay.
+line @1 reassure : Let that trouble sit outside the kitchen heat awhile.
+line @1 refuse : I have one promise already coming up to the boil.
+line @1 accept_decline : I'll carry the dish back without pressing you.
+line @1 preclose : I ought to attend to the hour before it boils dry.
+line @1 accept_preclose : Clear stairs now. Go safely.
+line @1 ack : I hear that above every lid in the room.
+line @2 greet [here.time=dawn] : Welcome while my first cup's still steaming.
+line @3 greet [here.time=night] : Evening. One lamp's still lit, and its patch is big enough for two.
+line @4 greet [pair.band=strangers] : A fresh face can stand clear of the pan handles here.
+line @1 hail [pair.band=friends] : Over here, by the stair! You'll hear me, everyone does!
+line @2 greet.return [pair.band=friends] : There's a greeting worth calling back across the steam.
+line @1 answer.how.busy [self.working=yes] : Several things at a lively heat. My ears are available.
+line @1 thank : That's one loaded trip you've spared these arms.
+line @1 deflect_thanks : I had an oven hot enough for another portion.
+line @1 give.advice : Taste from the middle after inspecting the edge.
+line @2 ask.how [pair.band=friends] : Could your day use a seat or a helping?
+scene exchange1
+when topic=work self.job=cook
+does tell.self / ask.detail / answer.detail
+a : I hear a roast turn ready before I see it. | I let the first slice rest on the knife.
+b : What changes? | Testing sharpness?
+a : The spit goes quiet where the skin's pulled tight. | Testing whether I've hauled the pan out too early.
+
+scene exchange2
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I give the crackling a separate corner. | The little scorched lip is mine.
+b : To keep it hot? | Isn't it spoilt?
+a : To keep the rising steam off its good snap. | Dark and sweet is quite a different matter from burnt.
+
+scene exchange3
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : My garden labels look like serving spoons. | I dig just one short row after work.
+b : Why that shape? | Too tired for two?
+a : A broad top carries a good legible word. | I like to leave something besides aching for tomorrow.
+
+scene exchange4
+when topic=pastimes self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : When festival bells ring I leave the ladle still. | A bell gets the crowd moving through the door.
+b : For a blessing? | Too quickly?
+a : To enjoy hearing something louder than my own voice. | I have a second pan for precisely that moment.
+
+scene exchange5
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn lifts the light peelings clean off my board. | I like wind that flips the leaves clean over.
+b : Out the window? | What's underneath?
+a : Out the door and halfway down the steps. I go after them with the broom. | The damp earth that wants the spade.
+
+scene exchange6
+when topic=day self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I warm the cup before pouring. | Cold tea holds a remarkable memory.
+b : To drink faster? | Of its flavour?
+a : To give myself a reasonable chance between calls. | Of every other thing I did instead of drinking it.
+
+scene exchange7
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle gets down the neck before calling itself weather. | I take a lid across the yard in fine rain.
+b : Worse than a downpour? | For your head?
+a : One knows what a downpour expects. | For the meal. I can change my collar.
+
+scene exchange8
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.friend# to choose the first slice. | A friend has leave to move my cup nearer.
+b : Any slice at all? | While you work?
+a : The point of asking is to honour the answer. | Before its contents acquire the temperature of yesterday.
+
+scene exchange9
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : My learner tastes the plain stock first. | I teach the turn of a heavy pan with a cold one.
+b : Before seasoning? | Why cold?
+a : Before hearing my opinion. It shouldn't flavour the spoon. | Two hands can learn their places without a burn to remember.
+
+scene exchange10
+when topic=work self.job=cook self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I start with what's ripe. | My kitchen can produce a very plain plate.
+b : Even for a grand table? | On request?
+a : A grand appetite can't make a green pear sweet. | On days when a fine ingredient asks little assistance.
+
+scene exchange11
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Letters from vineyard country sometimes carry no news of grapes. | I recognise one particular fold before the writing.
+b : What comes instead? | An important seal?
+a : Weather, aching backs, the pleasure of hearing somebody is well. | Family hands have less expensive ways of being known.
+
+scene exchange12
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Long stairs teach a cook portions. | A kitchen's smell climbs the stairs ahead of me, and I enjoy that.
+b : How so? | Does yours reach highest?
+a : On the return trip the load ought to be lighter. | My voice might. The steam can go about its own affairs.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : It came to table as #topic.subject# #topic.claim#. | A hot rumour smells ready before it's safe to swallow.
+b : Would you serve that account again? | How do you tell?
+a : Only if I can say whose account it was. | Ask who actually tested its centre.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When times tighten I roast the roots under the meat. | A small piece cut across the grain goes further.
+b : For the dripping? | Just looks bigger?
+a : For every morsel of it. Nobody comes to table to admire waste. | It chews easier too, which is a real improvement.
+
+scene exchange15
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Visitors hear from me about the stair behind the shut door. | A newcomer asking for supper gets a plain answer.
+b : Why that one? | Even a stranger?
+a : To spare a tired wolf an entire climb in error. | Especially a stranger. An empty belly is introduction enough for me.
+
+scene exchange16
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I weigh a root crop after shaking the loose earth off. | A dear spice had better be awake.
+b : Complaints? | How can you tell?
+a : Usually from the wolf hoping to sell expensive mud. | Warm a pinch on your palm and breathe.
+
+scene exchange17
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep my boots off near the kettle. | My little herb pot takes the best window.
+b : Expecting a spill? | Why herbs?
+a : Expecting to sit until I've finished the cup. | A handful can improve several tired evenings.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I climb two stairs when my hands are free. | I let the bench support the pot while I pour.
+b : And with the roast? | Does it slow you?
+a : One careful stair and a whole pan at supper. | It saves the shoulder I need for tomorrow.
+
+scene exchange19
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I pack a cold slice quite differently from a hot one. | I choose a road by where the cart will jolt.
+b : Thicker paper? | For your comfort?
+a : One can settle into crumbs; the other must breathe. | For the dignity of the pie lids.
+
+scene exchange20
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks when a harvest keeps its promise. | A little silence before carving steadies me.
+b : Aloud in the kitchen? | Even a noisy supper?
+a : The kitchen is where I usually receive the good news. | Especially one. The blade needn't join the conversation.
+
+scene exchange21
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd give a whole free afternoon to one small digging bed. | I can picture a bench halfway up my stairs.
+b : What would you plant? | For a rest?
+a : Something which takes its time returning the favour. | For the tea tray, so it meets me coming and going.
+
+scene exchange22
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A spring root needs a lighter seasoning. | In autumn I label the last row carefully.
+b : To spare the cost? | Afraid you'll forget?
+a : To taste the spring rather than my cupboard. | I want the first spade in winter to find supper.
+
+scene exchange23
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A learner gets to explain a familiar mess. | A pupil may take the spoon back and disagree.
+b : Why a mess? | About your seasoning?
+a : A tidy board never tells you which step went astray. | Civilly and with a fresh tasting spoon.
+
+scene exchange24
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I roll a crisp edge away from the damp filling. | The carving fork should lift without tearing.
+b : Does it stay crisp? | What if it sticks?
+a : Long enough to make the eater smile. | Give the roast a little peace and try again.
+
+scene exchange25
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : A good spade comes up almost clean in rich earth. | I tuck weeds beside the intended crop before pulling.
+b : Is that your test? | Why arrange them?
+a : Only after I've seen what's on its other side. | To be sure I recognise tomorrow's dinner.
+
+scene exchange26
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I open a shutter just enough for the steam. | A dry wind helps the last pan cool.
+b : Why not wider? | Do you leave it out?
+a : My good pepper would conduct business in the street. | Inside the sill, beyond the ambitions of the yard.
+
+scene exchange27
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I use my loud voice for timing. | A long service deserves a properly short washing stack.
+b : Calling out the hour? | What's the trick?
+a : Calling out when two different pots must arrive together. | Wash the first pot while the third still simmers.
+
+scene exchange28
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a harvest supper to begin in the garden. | One day my best serving plate may hold a letter.
+b : With muddy paws? | Which letter?
+a : With clean hands holding a root we actually watched grow. | Word that the distant vines and their keeper have both come through the frost.
+
+story tale1 [topic=work self.job=cook]
+  : I put a small roast on a large platter and disliked how lonely it looked.
+  : A ring of crisp roots reached the table with the meat and vanished before the second slice.
+  b : Did you use a smaller platter afterwards?
+  : I have used the big one with considerable confidence in roots ever since.
+
+story tale2 [topic=pastimes self.likes=digging]
+  : I marked a row with an old spoon because no garden peg was handy.
+  : After rain the clean bowl of it shone through the leaves like a tiny service laid for one.
+  b : How long did it mark the row?
+  : Till harvest. It came back more thoroughly polished than my kitchen spoons.
+
+story tale3 [topic=memories]
+  : I found a small dry leaf in a family letter. The envelope had kept its shape remarkably well.
+  : I held it above my roast and remembered in time that an enclosure needn't be a seasoning.
+  b : Where did the leaf go?
+  : Back in the fold. I already had sage and wanted to keep the letter whole.
+
+story tale4 [topic=work self.master=yes]
+  : I counted aloud while a learner beat a mixture. The strokes got faster whenever my voice rose.
+  : We repeated the exercise with me three paces further from the bowl.
+  b : Did that improve the mixture?
+  : Considerably. It also supplied a useful lesson about the carrying power of my voice.
+
+story tale5 [topic=weather self.likes=autumn_wind]
+  : A gust carried a label off my herb pot and set it against the kitchen door.
+  : For a few hours the whole building appeared to have been planted with thyme.
+  b : Did the kitchen live up to the label?
+  : That evening's roast did. The label is tied down now.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Kettle first, pan second. | Two stairs and the oven's waiting.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Let the pans cool quietly. | Only the kettle has business now.
+
+rule @call3
+when concept=bark self.job=cook self.working=yes
+does aside
+cooldown 8h
+say Handle turned clear, please. | Coming past with the hot side.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Lids across the courtyard. | Drizzle has no place in the gravy.
+
+rule @call5
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Last light on the roots. | Warm the cup before pouring.
+
+rule @call6
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Fine drying air for the board. | The garden labels are legible again.
+
+dlg @1 resident.hub : I can spare a good loud answer and half a quiet minute.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've heard your step on those long stairs before.
+dlg @3 resident.hub [here.time=night] : Late visitors get the bit of the bench furthest from the washing.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Hot handles near your elbow. Step clear and put your question plainly.
+dlg @1 resident.job [self.job=cook self.workplace] : I cook at #self.workplace#. The palate gets the same honest consideration wherever the diner sits at table.
+dlg @2 resident.job : I make what I can of a larder and a stretch of unpromising daylight.
+dlg @1 resident.news [world.news] : The account that got through the kitchen noise is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account brought to my board is #topic.subject# #topic.claim#. Ingredients as supplied.
+dlg @1 resident.bye : May a hot cup meet you on the proper landing.
+dlg @1 master.learn [here.teaches=yes] : I teach #here.trade_title#. Come with clean hands and a willingness to taste your own work.
+dlg @2 master.learn [here.teaches=no] : Somebody already occupies my teaching place. There is still room over here for a short enquiry.
+dlg @1 master.work : You'll learn to judge heat, use a board without crowding it and leave a clean start for the cook who follows.
+dlg @1 master.wages : Your own work can earn money as your skill grows. Lessons themselves don't carry a separate wage.
+dlg @1 master.takes [here.take_on=no] : I can't settle that apprenticeship just now. #here.take_on_why#.
+dlg @1 master.bye : Leave your last spoon clean for the morning.
+graft resident.hub
+choice Why do you stop halfway up those stairs? -> stair_pan
+node stair_pan
+say I test whether the juices have shifted towards the low side of the pan. A small change of grip can spare a whole landing its gravy.
+free
+choice Do you ever run up them? -> stair_pan_again
+choice Goodbye. -> bye
+node stair_pan_again
+say Empty-handed and two stairs together. A good roast travels as fast as my grasp permits.
+choice I'll mind the hot side. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice Why does a learner taste in silence? [self.master=yes] -> silent_taste
+node silent_taste
+say My opinion carries a good distance without much assistance. I'd like a pupil's own tongue to report before mine gets in the way.
+free
+choice What answer do you expect? -> silent_taste_again
+choice Goodbye. -> bye
+node silent_taste_again
+say A precise one about the taste, though it may send me back for another spoon. A cook should manage a change of judgement without spoiling a broth.
+choice Back to the teaching bench. -> learn
+choice Goodbye. -> bye

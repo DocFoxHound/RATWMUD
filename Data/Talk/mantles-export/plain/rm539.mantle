@@ -1,0 +1,398 @@
+# rm539, the tray-steadying verse (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm539
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_oskar_sootwick
+written_by codex
+title the tray-steadying verse
+fits stage=adult|old
+prefers job=servant
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_the_homeward_verse_until_the_cups_stop_ringing
+likes plum_tart evening_line fresh_straw frosty_mornings
+dislikes early_bells stale_bread
+fears carrying_an_unquiet_hand_into_a_quiet_room
+hopes to_reach_the_water_with_a_verse_left_over
+topics work +0.6 pastimes +0.4 home +0.3 food +0.2
+styles comfort=quiet gossip=close refuse=plain tease=none
+marks oath saying
+persona #self.first# finds the homeward verse of a hauling song and carries the cups between its beats.
+
+words
+oath! = Brass rim and ballast | My last unwetted cuff
+saying! = Find the carrying note | Set the tray down as the final note settles
+tray = a black serving tray | my flat rimmed tray
+rim = the brass rim | a polished brass lip
+verse = the homeward verse | a low hauling tune
+cup = a thin breakfast cup | the small blue cup
+straw = a twist of bright straw | a golden stalk
+line = my evening fishing line | the fine evening line
+plum = the purple fruit filling | a spoon of plum
+crust = a fork-marked crust | the crisp tart edge
+frost = a crust of frost | a lace of rime
+bell = the premature bell | an untimely clang
+heel = the loaf heel | a hard corner of yesterday's loaf
+boot = a soft indoor sole | the black serving shoe
+cloth = my folded serving cloth | a cloth folded in quarters
+porch = the lee of the porch | a sheltered paving stone
+coal = the charcoal scent | a faint wooded smell
+reed = the waterside reed | a long green stem
+
+any
+opinion @1 festivals against 1 : Other wolves hear a holiday band. I hear six trays needing to pass through one door.
+opinion @1 merchants against 1 : A chipped cup at a whole cup's price makes me particularly ready to read the rest of the bill.
+opinion @1 houses mixed 1 : A fine establishment can keep a sound inventory and still never learn the music of its own back stairs.
+opinion @1 city for 1 : My own city has a route from the serving door to quiet water which my feet remember through any long day.
+opinion @1 dole for 1 : I'd much sooner carry a decent meal across the street than scrape good food into a pail.
+opinion @1 road mixed 1 : Any road does well by bringing a traveller in by supper. There's small admiration left for it when the dishes wait till midnight.
+opinion @1 strangers mixed 1 : At a new arrival's elbow I like to discover whether help is wanted before flourishing a cloth.
+opinion @1 church mixed 1 : Once my humming subsides I can give my short prayer its proper breath.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome where the cups have settled. | Come inside the sweep of my tray.
+line @2 greet [self.working=yes] : There's room along my unburdened side. | Mind my elbow. Welcome.
+line @3 greet [here.time=dawn] : Morning under the cold bright eaves. | Fresh light for an orderly visit.
+line @4 greet [here.time=dusk|night] : Evening. The last verse carries. | Come towards the warmer paving.
+line @1 kin.open [pair.kin!=no] : Kin may hear the words behind my humming. | Household company, come through.
+line @1 again.open : Another visit on the return verse. | Back in step with the traffic.
+line @1 greet.return : There's your welcome on the brass rim. | Good to see you past the clattering door.
+line @2 greet.return [pair.band=friends|family] : Good company within my natural reach. | A known footfall worth looking up for.
+line @3 greet.return [self.working=yes] : Speak while the porcelain's quite still. | Another pair of ears beyond the tray.
+line @4 greet.return [here.time=dusk|night] : Evening has a kinder carrying note. | Welcome where the lamplight meets the brass.
+line @1 farewell : A quiet landing wherever you carry to. | May the last cup travel sound.
+line @1 farewell.return : I'll keep the homeward tune ready. | Good footing at the next threshold.
+line @2 farewell.return [here.time=night] : Find your bed without a bell for company. | Quiet over your roof till morning.
+line @1 react.news : I'll hear the news once the rim is clear. | Give me the part worth carrying in.
+line @1 react.news.new : New cargo for a very ordinary tray. | That hadn't made a sound here yet.
+line @1 react.news.known : I've heard that tune in spoken form. | That travelled through the serving passage already.
+line @1 react.news.doubt : I'd set that story down until somebody could account for its weight. | One ringing cup can make an entire tray sound broken.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A harsh note to carry indoors. | I'll stay till you've found your footing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That would steady a whole trayful. | Pleasant news to take to the water.
+line @1 ask.how : What tune did the day leave in your head? | Were the doors kind to your elbows today?
+line @1 answer.how : My hand is steadier than my temper. | I have most of a fishing evening left.
+line @1 decline : I need to keep an unburdened hand for the last round. | I'd best finish carrying what somebody is already waiting for.
+line @1 accept_decline : All right. I'll leave the tray where it stands. | No second summons from me.
+line @1 thank : You spared those dishes an awkward moment. | I felt the help at my sore elbow.
+line @1 sympathise : We'll put the unnecessary noise outside. | Take a sheltered moment by this wall.
+line @1 reassure : No hurry. The cups are standing level. | Let your breathing choose its own measure.
+line @1 preclose : I'll need to catch the homeward verse. | The last setting wants a clean cloth.
+line @1 accept_preclose : We've come to a decent resting note. | That makes a fair end to the round.
+line @1 deflect_thanks : There's no charge on that little round. | I'd lend that same elbow again.
+line @1 ack : I heard the word under the ringing. | That's come through quite clearly.
+line @1 give.advice : Find the level before adding the next cup. | Hear the floor before trusting a polished sole.
+line @1 offer : My free hand can steady that load. | My bench has a sheltered seat for company.
+line @1 praise : You carried that without wasting a motion. | A neat landing in very close quarters.
+scene cups
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I hum #verse# till the cups on #tray# stop answering me.
+b : Which part works? | What if a cup keeps singing?
+a : The line they used to haul home to. It's a steady rise without a sudden end. | I change the spacing. A tune can only do so much for poor arrangement.
+
+scene steps
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : My serving shoes know the height of a stair by the lift in my humming.
+b : Would you walk it blind? | Does the tune change?
+a : Certainly not with cups. I like knowing a stair enough to show it proper respect. | Down a little on the landing. Suddenly no lifting's wanted and my breath finds the difference.
+
+scene teach
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : Before I trust a learner with porcelain I set a dry plum stone on the tray.
+b : Why a stone? | What counts as passing?
+a : It tells on a tilt and it won't cost us a cup to hear the lesson. | The stone remaining a passenger instead of taking a tour of the entire brass rim.
+
+scene job
+when topic=work self.workplace self.job=servant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a carrying tune must fit between a door opening and a guest looking up.
+b : No words at all? | Can guests hear you?
+a : A word nearly always wants another word. I only need the little rise in the middle. | If a cup rings, certainly. I'd rather be noticed for bringing the right one.
+
+scene thumb
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I press my thumb into #cloth# when a crowded passage starts to make my hand anxious.
+b : Does that help? | What if the cloth's wet?
+a : It gives the thumb something definite to do besides worry at the tray edge. | I change it. A sound grip deserves its own dry square.
+
+scene temper
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I get sharp when a voice behind me tries to hurry a tray through a closing door.
+b : Say something? | Ever broken anything?
+a : After I've put it down. I mind my words better when my elbows are my own. | Enough to respect the difference between being quick and being shoved.
+
+scene fish
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I set #line# out at evening and leave the homeward verse unsung for a while.
+b : No humming by the water? | Do you expect a catch?
+a : The first few minutes belong to the little reed sounds. I've had my own tune all day. | I'd like one. An evening that gives me both quiet and fish has paid twice.
+
+scene tart
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I take the bit of tart where #plum# has caught against #crust#.
+b : Sticky? | Would a guest get that bit?
+a : Gloriously. That's why I've a napkin between my supper and my working cuffs. | If asked. I don't suppose every wolf shares my fondness for a fairly determined edge.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : After a new scattering I look for one stalk of straw lying across the others.
+b : Take it out? | Why look?
+a : Only if it will catch a sole. Otherwise it's as welcome as the rest. | My eye's used to seeing one wrong angle in a whole level tray.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #frost.capitalize# writes a white line along the paving join I usually trip over.
+b : You like the warning? | Doesn't it get slippery?
+a : I like anything which makes a nuisance show its true shape before breakfast. | Yes. I take the beauty with the sensible reduction in pace.
+
+scene bell
+when topic=weather self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : #bell.capitalize# before dawn comes ringing up both my arms as if I'd already lifted a load.
+b : What wakes first? | Can you sleep again?
+a : My shoulders rise. Then the rest of me finds out it's still dark. | Occasionally. I imagine a bank of reeds with nothing at all being served.
+
+scene oldbread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #heel.capitalize# isn't fit to stand in for a crisp tart edge.
+b : Could it go in broth? | Both crunchy though?
+a : A loaf can find useful work there. I don't want yesterday pretending to be a fresh pastry. | So is a floorboard under a bad sole. Texture alone won't recommend my supper.
+
+scene song
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I know the upward part of a hauling song far better than all its words.
+b : Ever been to sea? | What about the chorus?
+a : My hands know indoor service. A tune is allowed to travel farther than its singer. | Mostly breath, at the low volume where I use it. My dishes don't need a chorus.
+
+scene home
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : #self.street# sounds quite different with an unladen hand and a late hour to myself.
+b : What do you notice? | Even when it's busy?
+a : Steps going in different directions. On duty I mostly hear the ones converging on my tray. | A little. There's time at least to notice a voice without expecting an instruction.
+
+scene charcoal
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Sometimes #coal# catches underneath the kitchen smells and the whole house seems suddenly still.
+b : A pleasant smell? | Does it last?
+a : I remember a quiet stretch of wooded hill. That returns more readily than the memory of black dust. | Only while the door's ajar. One breath lets both shoulders settle.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.friend# to sit quite still beside my evening line for one cast.
+b : Why just one? | Supper for both of you?
+a : Company shouldn't have to agree to a whole evening of my peculiar pleasures at once. | I like the thought of dividing an actual fish better than boasting about an imaginary supper.
+
+scene neighbour
+when topic=home self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I can offer #self.neighbour# a sound cup without taking the serving stance I use on duty.
+b : What changes? | Are you less careful?
+a : The elbow comes down and I get to sit across the table. A surprisingly large change. | More careful about the welcome and less worried about the cloth facing the right way.
+
+scene crowd
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a feast I notice the spaces where two laden trays could pass.
+b : Would you mark them? | Do guests see them?
+a : Give me a clear runner the width of a chair. No paint on the floor required. | Usually when the spaces close. That's the moment when all my humming becomes audible.
+
+scene cost
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The difference between a cheap plate and a costly one isn't obvious from the crash.
+b : Could you tell afterwards? | Does the price change your grip?
+a : I could tell by the account awaiting me. The sound alone wouldn't identify the loss. | I bring every plate across sound if I can. An ordinary supper still requires a whole plate.
+
+scene stranger
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I show a first-time visitor where to stand when the inner door swings back.
+b : Does it swing far? | A name at once?
+a : Enough to surprise a perfectly dignified caller into a very undignified sidestep. | After the door has done its worst. A name shouldn't have to compete with a brass latch.
+
+scene clothwork
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A cloth folded once too often makes #rim# feel sounder than it is.
+b : What do you test? | How many folds?
+a : The rim against my bare thumb before taking weight. Loose brass can sit very prettily inside a neat napkin. | Enough for comfort without hiding the edge I have to hold.
+
+scene sound
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A sound passing through a serving door can lose its beginning before it reaches my ear.
+b : Do you guess the rest? | What if somebody asks?
+a : No. I've heard a cheerful exclamation turn solemn just by leaving the first syllable behind. | I can describe a noise. If an account is wanted, ask somebody who had the whole sentence.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : It takes me a moment at prayer to realise I'm still humming an old working line.
+b : Do you stop then? | Does it feel out of place?
+a : Let the note run to its end first. A hurried stop makes more noise inside my head. | A little. Yet the Bright One has surely heard a less deliberate prayer than that.
+
+scene map
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I plan a route with a tray by asking which door opens towards the elbow.
+b : Even on a first visit? | What about the long way?
+a : I look for the hinges and the polished patch around the latch. Most doors advertise their habits. | A few more steps on a clear passage generally beat a close argument with a chair.
+
+scene lineknot
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : My line has a serving knot tied just above the float.
+b : Does it do anything? | Why leave it?
+a : Reminds my fingers which line I'm holding. Even in poor light I'm sure this one belongs to the evening. | It's the smallest boundary I've found between work and home.
+
+scene shoes
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A learner watches my hands. My first instruction is a glance down, where my feet begin the turn.
+b : How do they turn? | Wouldn't the tray tilt?
+a : I move the inner sole first so the rest of me has somewhere to go. | Only if the hands try to finish the journey before the feet have started it.
+
+scene rain
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : There is a sound a cold drop makes on a tray that's quite different from the note of a cup.
+b : Can you copy it? | What do you do?
+a : I could spoil a nice tune trying. The drop makes one small lonely knock. | Turn the rim towards shelter. I don't want a guest credited with the weather's contribution.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt my tray had become a boat and every cup aboard it sang a separate homeward verse.
+b : Could you steer? | Was the tune any good?
+a : By shifting the saucers. It made service unusually exacting even for a dream. | It got better when I woke and found the whole fleet standing quietly in a cupboard.
+
+scene endday
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I leave #boot# beneath the seat with the toe pointing away from the door.
+b : Is it damp? | Why that direction?
+a : Often. A strip of clean straw keeps the leather from settling into a wrinkle. | A private notice to my own feet that the day's carrying has come to its end.
+
+scene reeds
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : If #reed# bends hard one way I place the line a little closer to shelter.
+b : For the fish? | Does wind carry the tune?
+a : For my own warmth mainly. A thin fishing line gives a fine excuse for a thick coat. | Not far. I usually leave it back with the blue cups.
+
+story bluecup [topic=memories]
+  : I set three cups on a tray once and got a quite respectable chord out of a turn at the landing. It was the nicest sound I'd heard that morning.
+  : I made the turn again to hear it. The smallest saucer slipped half an inch under my thumb. That ended my brief career as a musician on porcelain.
+  b : Did anything fall?
+  : My estimation of my musical skill fell considerably. A cup that goes quietly where it's wanted is music enough.
+
+story stone [topic=work self.master=yes]
+  : I used a plum stone to demonstrate how a level tray behaves. The stone made a neat turn round the lip while my hands were perfectly still.
+  : There was a little bead of fruit still clinging to one side. My learner could see at once which of us had failed to prepare properly.
+  b : Did you begin again?
+  : I wiped the tray, traded the stone for a dry one and gave the learner credit for watching closely enough.
+
+story frostwalk [topic=weather]
+  : A frost so fine I could barely see it once picked out every shoe mark on the path by the service door. I saw that mine turned sharply in the same spot.
+  : I had been making room for a barrel taken away weeks ago. The path kept a record of the patience of my feet long after the obstacle went.
+  b : Did you walk straight then?
+  : Once I'd seen my little dance. I'd still make space for a barrel without grumbling at its absence afterwards.
+
+story fishing [topic=pastimes]
+  : I left a serving cloth in my coat on a fishing evening. The float went pale in weak light and I spread the cloth on the bank to see my spare tackle.
+  : One little moth came down and rested squarely between the folds. The clean white patch had made a small porch for a stranger.
+  b : Any luck with the fish?
+  : A very small one went back. I carried my quiet visitor to the reeds before folding up the cloth.
+
+story strawsong [topic=home]
+  : I found a straw poking through a woven chair bottom. Every time I sat there it tickled the exact moment I reached the high part of my verse.
+  : I changed down to a deeper note. The chair was too persistent for that. I had to turn it over and find where the little stalk was loose.
+  b : Did you keep the chair?
+  : It's the most comfortable seat I own now I've quit asking it for the chorus.
+
+rule @aside1
+when concept=bark self.working=yes self.job=servant
+does aside
+cooldown 6h
+say Keep the brass lip clear of the jamb. | Three quiet cups past the narrow turn.
+
+rule @aside2
+when concept=bark self.master=yes
+does aside
+cooldown 7h
+say Look once where the inside foot goes. | Hear the weight before changing the pace.
+
+rule @aside3
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say Green reed, pale float, easy wrist. | No hauling chorus at this quiet cast.
+
+rule @aside4
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 9h
+say Leave a sticky purple edge on mine. | Hot filling waits for nobody's cuff.
+
+rule @aside5
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 10h
+say Rime along the paving seam today. | Mind the bright edge under a dark sole.
+
+rule @aside6
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say Homeward verse down to a murmur. | Empty hands for the last light.
+
+dlg @1 resident.hub : Stand where my elbow can take the bend. Once the tray's still, you have the whole of my hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, welcome back within easy reach of a cup.
+dlg @1 resident.job [self.job=servant self.trade_words] : #self.trade_words.capitalize#. A quietly delivered round is the one I'm happiest with.
+dlg @1 resident.news [world.news] : One report has come clear of the clatter. #world.news#
+dlg @1 resident.bye : An unhurried step past a swinging brass latch.
+dlg @3 resident.hub [self.working=yes] : Level cups leave my ears free. Keep your words this side of the rim.
+dlg @4 resident.hub [here.time=dawn] : Any morning word to shake the sleep from my shoulders?
+dlg @5 resident.hub [here.time=dusk] : Lighter traffic now. Come use the extra room.
+dlg @6 resident.hub [pair.disposition=wary|hostile] : The passage isn't wide enough for a quarrel. I'll hear plain business readily.
+dlg @2 resident.job [self.master=yes] : I have a teaching round that can go perfectly well with a dry plum stone and an empty tray.
+dlg @2 resident.bye [here.time=night] : May you hear reeds in your sleep instead of dishes.
+dlg @7 resident.hub [self.likes=evening_line] : Talk while I've my mind on company. It's apt to wander to a fishing float once the work quiets down.
+graft @tray resident.hub
+choice Could I hear the sound a tray ought to make? -> tray_quiet
+node tray_quiet
+say Stand by the landing and listen after a cup has crossed it. The nicest thing you'll hear is a voice carrying on as if nobody had come through.
+free
+choice What about the tune under your breath? -> tray_breath
+choice I'll listen for that quiet. -> hub
+node tray_breath
+say That's mine to keep the cups in company. The moment it's louder than the fellow speaking, I'm giving an unintended concert.
+choice I'd enjoy a little chorus off duty. -> hub
+choice I'll leave you your own tune. -> bye
+
+graft @line resident.hub
+choice What would you take from service to the fishing bank? -> tray_line
+node tray_line
+say My serving knot and nothing much else. My evening line has a little twist under the float that my fingers know even when I can hardly see.
+free
+choice What would you bring back from the bank? -> tray_reed
+choice I'll watch for that float. -> hub
+node tray_reed
+say Enough quiet in my shoulders to take the first turn without any assistance from the crockery. A fish for supper would do very nicely as well.
+choice I'd keep the supper and the quiet. -> hub
+choice Good evening at the water. -> bye

@@ -1,0 +1,262 @@
+# rm265, the pull of a thumb (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm265
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_finn_saltwell
+written_by codex
+title the pull of a thumb
+fits stage=adult|old
+prefers job=sailor drive=ambitious
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk trials_fancy_knots_on_a_loaf_sling
+likes warm_bread knots quiet_chapel first_snow
+dislikes haggling bad_manners
+fears a_loop_that_jams_under_a_load
+hopes a_knot_that_slips_off_neatly
+topics pastimes +0.6 work +0.5 food +0.3 prices -0.2
+styles comfort=loosen gossip=plain refuse=firm tease=none
+marks oath saying
+persona #self.first# ties elaborate bread slings and looks for the one little pull that will release each knot when a load is down.
+
+words
+oath! = Nine nipped thumbs | Hoops and hemp
+saying! = Leave a tail for the hungry | Pretty loops can do heavy work
+sling = a soft cord sling | my loaf carrier
+loop = the broad loop | a flattened eye
+tail = the loose end | my thumb-long tail
+crust = that russet crust | the upper crust
+tag = a dry wax tag | a little waxed scrap
+grip = a two-finger grip | a steady hold
+coil = a whole coil | the remaining turns
+loaf = a brown round loaf | a warm bread crown
+snowcap = a white rim | a fresh cap of snow
+mat = a braided pad | the landing mat
+spare = a short cord end | the spare string
+inkmark = my thumbprint | a faint dark smudge
+
+any
+opinion @1 houses against 1 : A House gets the credit for a full hold. The backs that emptied it deserve a mention.
+opinion @1 merchants against 1 : Name the sum for the good part. I'm tired of buying weight that gets swept off the floor.
+opinion @1 sump for 1 [self.quarter=sump] : A bit of clean rope can live seven lives down our way. Nobody looks down on the sixth.
+opinion @1 watch against 1 : Boots arriving after a load falls aren't much help keeping your feet clear.
+opinion @1 dole for 1 : An empty bread sling means an easy climb and a bad dinner. I'm for filling it.
+opinion @1 strangers for 1 : I'd give a stranger one end of a cord. You learn quite a bit about a wolf that way.
+
+grown
+line @1 greet : My cord's all paid out. Hello to you. | Here's a word while I take another turn.
+line @2 greet [pair.band=strangers] : An unfamiliar face alongside my loose end, I see. | Welcome alongside this little operation.
+line @3 greet [here.time=dawn] : Fresh light for an intricate job. Morning to you. | A decent hour to start something ambitious.
+line @1 greet.return : Yes, hello. The knot can wait while I talk. | I heard your hail over my own voice.
+line @2 greet.return [pair.band=friends|family] : Good to hear that particular voice carry. | For you I'd set down a whole armload.
+line @3 greet.return [here.time=night] : Evening to you across this snarl of string. | Night's a good time for talk and a poor time for fine knots.
+line @1 again.open : We're back at the same bight of cord. | There's a bit still to be unpicked between us.
+line @1 hail [pair.band=friends] : Come feel how clean this one runs! | Have a look at my latest little triumph.
+line @1 farewell : Leave plenty of slack for your journey. | A whole foot of spare cord go with you.
+line @1 farewell.return : I'll draw my end in now. Goodbye. | Off you go with a free swinging stride.
+line @1 react.news : Straight from your mouth to my ears. I'm listening. | Set the news down where I can consider the size of it.
+line @1 react.news.new : Even its loose ends had passed me by. | That's new enough to stop my thumb.
+line @1 react.news.known : Yes. I've had that bundle put to me once already. | Heard that exact turn earlier on.
+line @1 react.news.doubt : I'd give the middle of that yarn a firm tug. | I don't believe every turn in that account is sound.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Hard hearing. I'll put this tangle down and stay. | That's the sort of weight two ought to carry together.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now there's a piece I'd cheer from the farthest pier. | Good hearing, up and down the whole length of me.
+line @1 ask.how : Has the day left any slack in your shoulders? | How freely have things been running?
+line @1 answer.how : Full of plans and a touch short of cord. | Quite able to pull my share and an inch more.
+line @1 decline : I'd have little chance of getting that back to you sound. | There's more in my paws than I can lay down just now.
+line @1 accept_decline : Clear enough. I'll draw the offer in. | Very well. No loose obligation between us.
+line @1 preclose : I've said enough to fill a good sized hold. | There's another piece I'm keen to try before I rest.
+line @1 accept_preclose : You've hauled your end in handsomely. Go on. | We can leave this coil just as it lies.
+line @1 thank : That spared my thumb a blister. Much obliged. | I felt your share of the pull and appreciated it.
+line @1 deflect_thanks : I'd found the good end already. The rest took little effort. | Those loops would have gone to waste otherwise.
+line @1 sympathise : You can put an untidy problem down beside me. | Some things bind tighter the longer you pull. Rest here.
+line @1 reassure : We'll slacken one turn and see what gives. | It looks a worse tangle from underneath.
+line @1 ack : I can follow that strand clean through. | That's clear along its whole length.
+line @1 give.advice : Leave yourself one end longer than you think necessary. | Practise opening the knot as well as making it.
+scene loaf_trial
+when topic=pastimes self.likes=knots
+does tell.self / ask.detail / answer.detail
+a : This sling will carry a loaf without cutting the crust. | I'm inventing string handles for supper.
+b : Why bother with string for a single loaf? | What stops the cord slicing in?
+a : Wide loops. And it leaves a paw free to open doors. | I've plaited three soft ends flat where they touch the crust.
+
+scene earn_pull
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : An elegant lift isn't much use if the landing takes all morning. | I like a load to come out of its cords clean.
+b : Does the last knot take longest? | What keeps a landing slow?
+a : Usually somebody tied it for sailing all the way round the world. | A tight turn where the slack tail ought to be. Very small nuisance, very large delay.
+
+scene tailbit
+when topic=work self.job=sailor self.working=yes
+does warn / react.self / assess
+a : Leave that little tail showing. | Give the free end a bit of daylight.
+b : Looks untidy to me. | Does daylight make cord stronger?
+a : So does a long delay while we pick the whole knot out. | No, but somebody can see which end wants pulling.
+
+scene warmcargo
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I can tell how fresh the loaf is without cutting it. | Warm cargo makes a particular announcement.
+b : Does your nose do the work? | What does your sling tell you?
+a : My wrist. It warms up through the cord before the smell reaches me. | If the crust warms my wrist, I've got a good hot middle for dinner.
+
+scene snowdeck
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : New snow will show you which end of a cord moved last. | One twitch leaves a neat little drawing in this snow.
+b : Is that why you're looking down? | What drawing does a cord make?
+a : Yes. That line between the marks was made by the tail sliding. | Two little bumps with a track between. Quite a tidy signature.
+
+scene quiet_seat
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : A quiet chapel is the one place I'm glad not to hear my own voice. | Even I can put a lid on the talk for a quiet chapel.
+b : Your voice does carry. | Do the ropes get a rest too?
+a : I know. Sometimes I take a back seat and let the silence carry instead. | I keep my cord safely pocketed. Prayers needn't have knots in them.
+
+scene no_bargain
+when topic=prices self.dislikes=haggling
+does give.opinion / react.self / assess
+a : I'd pay a fair asking sum quickly and go straight to work. | A long bargain can eat the saving in lost time.
+b : Even if you could do better? | You put a price on talking?
+a : Especially then. I could spend all day beating it lower and never eat. | On standing about repeating a number, certainly.
+
+scene seal
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd carry a folded letter inside a wrap of waxed cloth. | A letter at sea ought to travel drier than the messenger.
+b : Have you tried it? | How would you wrap it?
+a : I've carried one about long enough to test my method in ordinary rain. | Fold the cloth down over the writing. Let the drops fall clear of the fold.
+
+scene share_code
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : There's a little trick with this sling I'd show #self.friend# first. | I'd save a choice scrap of cord for #self.friend#.
+b : What makes it choice? | Would you keep it secret?
+a : Soft enough for practising a new loop without fraying the pads. | Only till somebody dear to me has first go. Then I'd tell a whole pier.
+
+scene poor_end
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When coin runs thin I start inspecting every frayed end again. | A worn bit of stuff's worth unlaying if times pinch.
+b : Can any of it do a job? | What would you make from that?
+a : Plenty. A short scrap can secure a cover as well as anything fine. | A new cord plaited from the middle strands. Those keep their strength longest.
+
+scene knee_mat
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump I could do with a woven mat for a load on damp boards. | I've plans for a little raised pad outside my own door.
+b : What for? | Why raised?
+a : To keep the underside of a bundle out of standing water. | A half inch saves you wringing half your gear out again.
+
+scene gate_hours
+when topic=day here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A gate gives a town two pulses, out in the morning and in before dark. | Count the laden carts through Northgate and you'll see the day turn.
+b : You count the carts? | Which movements interest you?
+a : Only when I'm held up myself. Gives a delay some occupation. | The change from laden going out to laden coming in. Different sound to the wheels, too.
+
+scene wet_knot
+when topic=weather here.weather=rain
+does warn / react.self / assess
+a : Let a wet knot rest before you get cross with it. | Tugging at that wet cord won't teach it obedience.
+b : Am I meant to wait all afternoon? | Looks as if it's stuck.
+a : Ease it sideways. Gives the fat wet fibres a bit of room. | Press the turns apart with the heel of your paw first. See, that one's moving.
+
+scene silence
+when topic=gossip
+does give.opinion / react.self / assess
+a : I can shift news fast when it's news of my own business. | Another wolf's letter needs no extra words on the outside.
+b : Sure you haven't peeked? | You do like words, though.
+a : I like a clean reputation more than half a story. | Oh, a warehouse full. Just ones I've a right to use.
+
+scene bread_dream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My aim's a sling that opens at a brush of my thumb. | Some day I'll have supper out while everybody else is still untying the strings.
+b : Anything else going in this invention? | You'd put that much work into a bread bag?
+a : Nothing heavier than the loaf. It wants a clever shape, not more iron. | Gladly. I'd save enough time to eat my dinner warm.
+
+scene rude_arms
+when topic=smalltalk self.dislikes=bad_manners
+does tell.feeling / react.self / assess
+a : I could forgive an interruption sooner than an elbow put across my load. | I'd like folk to leave swinging space for a laden wolf to turn.
+b : The load gets manners too? | That happened before?
+a : The load has none. That's why the wolf beside it needs a few. | Often enough to put a decent swing on my elbow if I weren't careful.
+
+scene festival_coil
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A braid round a festival basket makes even ordinary bread look grand. | I like a busy festival basket to have a knot you can open one-handed.
+b : You've ambitious plans for a knot. | Do you eat the braid too?
+a : Give me enough decent cord and I'll show you. | The braid just gets you into the bread before the good pieces go.
+
+scene tall_call
+when topic=ships self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : My voice carries well, but you won't hear me shouting across a loaded sling. | Best call you can make in a noisy yard sometimes fits into two notes.
+b : Would anyone hear a quiet call? | What do the two notes mean?
+a : A call pitched high and then low cuts clean across a rumble. | Look this way. After that you can see my paw.
+
+story split_loaf [topic=memories|food]
+  : Made a fancy sling once with a double turn just where my supper lay.
+  : Brought home my loaf neatly halved and one smug-looking knot.
+  b : Was the sling any use after that?
+  : For parcelled things, yes. For supper I've given the cord new orders.
+
+story snow_letter [topic=travel|memories]
+  : On a snowy errand I had a message to carry and wrapped the writing in so much cloth it looked like a meal.
+  : Got hungry enough to open my own parcel by mistake.
+  b : Was the paper at least dry?
+  : Dry as flour. It made me all the hungrier to see it.
+
+story thumbprint [topic=pastimes|memories]
+  : I used to make a little dark mark on the end that opened a difficult knot.
+  : Rubbed my nose after marking three of them. Spent an afternoon going round with three black spots.
+  b : Did anybody mention the spots?
+  : No. That's what gets me. I lost an afternoon of good-natured boasting.
+
+rule @tail
+when concept=bark
+does aside
+cooldown 8h
+say A thumb's breadth extra at the loose end! | I'd rather see an extra tail than an extra tangle.
+
+rule @lift
+when concept=bark working=yes self.job=sailor
+does aside
+cooldown 8h
+say Hold till there's room for the sling to land! | All clear below and I'll lower it.
+
+rule @crust
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Mind that lovely thin crust under the cord. | A hot loaf's worth taking a clean sling for.
+
+rule @flakes
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say You can see every turn in the white now. | Fresh snow and a good black cord make a legible diagram.
+
+dlg @1 resident.hub : I'll give you a straight account provided you've time for both ends and the middle.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, see how neatly this bit of trouble comes apart now.
+dlg @3 resident.hub [here.time=dawn] : Good light and a clear length of day ahead. I'd call that a promising start.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll give you an answer with my belongings on this side of me.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. I always have an eye on what it'll take to get a load unwrapped.
+dlg @2 resident.job : A complicated beginning and a clean finish suit me in any work.
+dlg @1 resident.bye : There's a generous piece of daylight left for your own use.
+graft resident.hub
+choice Which end frees your bread sling? -> breadtail
+node breadtail
+say The little end folded back on itself. Catch it against your thumb first and slip the whole thing off. Doesn't take near so long as explaining it.
+free
+choice What if I pull the other one? -> shutloop
+choice That ought to save the crust. -> hub
+node shutloop
+say Then I get the interesting part. There's supper in there and an ambitious appetite makes a good knot-picker.
+choice I'll leave you the cord. -> hub
+choice Good luck with supper. -> bye

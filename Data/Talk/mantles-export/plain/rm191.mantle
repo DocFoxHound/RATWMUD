@@ -1,0 +1,266 @@
+# rm191, the spare black king (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm191
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_florence_millmarsh
+written_by codex
+title the spare black king
+fits stage=adult|old
+prefers warmth=warm talk=chatty
+traits temper=calm talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk wraps_a_lucky_coal_as_a_spare_draughts_king
+likes hard_cheese draughts new_boots thunder
+dislikes flies salt_wind
+fears an_empty_chair salt_in_the_hinges
+hopes a_game_for_every_caller
+topics pastimes +0.7 family +0.3 weather +0.2 newcomer +0.3 crime -0.4
+styles comfort=company gossip=discreet refuse=kind tease=none
+marks oath saying
+persona #self.first# carries a lump of coal wrapped in cloth for a missing draughts king and can draw a shy neighbour into the game from halfway across a room.
+
+words
+oath! = Cinders in the crown | By the crooked crown
+saying! = An empty chair costs nobody a turn | Black squares take all comers
+kingbit = a chip of bright coal | a wedge of shiny coal
+wrap = my checked rag | my bit of gingham
+board = the scuffed board | a board with a split corner
+sweep = a good wide jump | a leap across two rows
+cheese = a heel of sharp cheese | the dry end of a cheese
+boots = a pair of stiff new boots | boots still creaking in the ankle
+thump = a proper roof-rattle | a roll that shakes a latch
+stool = a stool with a rung loose | my extra seat
+dust = a little black dust | a streak of soot
+rind = the chalky rind | the last hard shaving
+salt = the sting off the bay | grit from the sea air
+turn = a turn at black | the next move
+
+any
+opinion @1 dole for 2 : A full belly lets a wolf think past supper. That alone earns the dole its keep.
+opinion @1 city for 2 : Set a stool on a city doorstep and company turns up unbidden.
+opinion @1 strangers for 1 : A stranger can take red just as well as anyone.
+opinion @1 festivals for 1 : I carry an extra wedge of cheese to a feast. There's always somebody too shy to join a table.
+opinion @1 houses against 1 : I'd hear the case for a House more gladly on an ordinary stool than from a cushioned bench.
+opinion @1 newcomers for 2 : New neighbours bring rules for games you've played your whole life. Sometimes the new rule's better.
+opinion @1 watch mixed 1 : Glad enough of a patrol until the boots scare a pup off a perfectly harmless game.
+
+grown
+line @1 greet : Sit close enough to be heard over me. | Come share my bit of quiet, such as it is.
+line @2 greet [pair.band=strangers] : A fresh face for my company. There's a seat.
+line @3 greet [here.time=dawn] : Morning's barely rubbed the sleep away. Come and lean a minute.
+line @4 greet [here.time=dusk|night] : Come into earshot before the lamps eat the last light.
+line @1 greet.return : I've an ear free and a voice to spare. | Here I am, loud as you remember.
+line @2 greet.return [pair.band=friends|family] : You found my corner again. Good.
+line @3 greet.return [self.working=yes] : Just shift to one side so folk can get past us.
+line @4 greet.return [here.time=dusk|night] : I'm still up. Even the sleepers must know that.
+line @1 kin.open [pair.kin!=no] : Come where I can make a fuss of you.
+line @1 again.open : I kept a scrap of conversation for the next time you passed.
+line @1 hail [pair.band=friends] : My favourite company, within shouting distance!
+line @1 farewell : Take my good wishes down the steps with you.
+line @1 farewell.return : And mind those slick edges, especially the last.
+line @1 react.news : Give my ears a proper account of it.
+line @1 react.news.new : Well, my ears missed that completely.
+line @1 react.news.known : I heard a little sooner than you did.
+line @1 react.news.doubt : I'd give that another hearing before I called it settled.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor folk. It must feel very empty there.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Now there's news to call through an open window.
+line @1 ask.how : Is today sitting fairly on your shoulders?
+line @1 answer.how : Fed, shod and in company. Set me down as fortunate.
+line @1 thank : That was a kindness I can feel all the way through.
+line @1 deflect_thanks : Save your breath to keep me company.
+line @1 sympathise : Pull a chair alongside mine. Say anything you like, or shut your eyes.
+line @1 reassure : We'll give the worst of it a little time to pass.
+line @1 decline : You'd tire of my grumbling soon enough. Best let me sit it out.
+line @1 accept_decline : It's an invitation you can keep in your pocket.
+line @1 preclose : I'll fold this up and clear your way.
+line @1 accept_preclose : Of course. Your own business gets first call.
+line @1 ack : So it seems from here.
+scene cloth_unfolded
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've #kingbit# in #wrap#. Take a look before you laugh. | There's a crown in my pocket and it weighs next to nothing.
+b : Why wrap a coal? | Whose crown did you pinch?
+a : Because even a lucky piece makes a filthy pocket loose. | My own. A lump of coal crowns the last king on #board#.
+
+scene spare_piece
+when topic=pastimes
+does offer / ask.detail / answer.detail
+a : I'll lend you my black king when your last piece gets across. | Shall I find you a crown for that piece?
+b : What if yours crosses too? | A real crown?
+a : Mine can be two common men put back to back. Guests get the coal. | A bit of sparkle in the coal looks grand enough from where I sit.
+
+scene teaching_jump
+when topic=pastimes
+does tell.self / challenge / answer.detail
+a : My favourite lesson's the one that costs me three pieces. | I leave a jump in plain sight for a learner.
+b : You teach by losing? | Doesn't that spoil the game?
+a : Only the first time. Come back tomorrow and see. | Half the time I forget I left it and it's a proper surprise.
+
+scene loud_kindness
+when topic=friends|smalltalk
+does tell.feeling / react.self / assess
+a : I can make myself heard through a shut door. Privacy's a harder trick. | I'd rather speak up for a shy wolf than speak over one.
+b : Do you practise whispering? | How can you tell the difference?
+a : I move the chair beside me. Less chance of telling the whole stair. | I try shutting my mouth first and seeing if the words come.
+
+scene door_company
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I like the pause a caller takes before coming through. | Some wolves go straight past if anyone calls too loud.
+b : Do you call out then? | Even your welcome?
+a : Give a nod, move my chair. Leave room for a change of mind. | Especially mine. A smile will travel quite far enough.
+
+scene salt_boots
+when topic=weather|travel
+does give.advice / ask.detail / answer.detail
+a : If there's salt on your boots, wipe the stitching first. | I hate #salt# in my coat. I carry a dry square just for my nose.
+b : Why start there? | Isn't that the cloth with your coal?
+a : A cracked seam costs a lot more than a stained toe. | Wrong pocket! A mistake I'd make exactly once.
+
+scene rind_bites
+when topic=food self.likes=hard_cheese
+does offer / ask.detail / answer.detail
+a : I'll cut off a slice of #cheese# if you're stopping. | Have #rind# if you like a proper chew.
+b : Can you cut it that thin? | Do you save it specially?
+a : If the knife comes out bent, you'll have to take a thicker piece. | I do. Soft cheese disappears before I've had a thought worth thinking.
+
+scene boot_sound
+when topic=pastimes|smalltalk self.likes=new_boots
+does tell.feeling / ask.detail / answer.detail
+a : I like listening to #boots# take possession of a stair. | The noise of new boots tells me how dear they were.
+b : Possession? | The dear ones sound different?
+a : The first squeak says the whole place belongs to you. | No. You put your feet down more carefully when you've paid too much.
+
+scene double_storm
+when topic=weather here.weather=storm
+does tell.self / react.self / assess
+a : There's #thump#. The loose rung on #stool# answered. | I'll sit through a storm quite happily with the board between us.
+b : I thought somebody knocked. | Even with the windows rattling?
+a : So did I. I was halfway through my welcome. | A good roll covers the noise when I knock all the pieces over.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.complaint / give.advice / assess
+a : A fly looks exactly like a dark piece till it moves first. | It's the circling that wears me out with flies. Pick a spot!
+b : Put a cover over the board. | You would swat it if it did.
+a : Then I'd have to play the whole game by guesswork. | Too right. It's probably been watching my temper.
+
+scene family_chairs
+when topic=family self.married=yes
+does tell.feeling / react.self / assess
+a : Sitting with #self.spouse# is the nicest sort of wasting an hour. | When I lay a board for #self.spouse#, I put a bit of cheese to one side.
+b : Doing anything special? | As a prize?
+a : An hour needn't produce a thing to be well spent. | As a precaution. Nobody should play me hungry.
+
+scene waiting_for_child
+when topic=family self.parent=yes
+does tell.feeling / ask.detail / answer.detail
+a : I'd set #cheese# by specially for #self.child#. | Before I give advice to #self.child# I practise saying it quietly.
+b : Even that rind you like? | Is the quiet the difficult bit?
+a : I'd keep it. I'd hope for a refusal, mind. | These days it's finding the point where advice ought to stop.
+
+scene market_corners
+when topic=land|travel here.region=ridgemere
+does tell.self / react.self / assess
+a : Everybody wants the middle of the square. I'm for its edges. | I navigate by doorways, never by a street name.
+b : What's to see there? | Lost much?
+a : Faces before the crowd gets hold of them, and afterwards too. | Frequently, but always outside a door where I can ask.
+
+scene uncounted
+when topic=times world.times=lean|hard
+does tell.worry / reassure / assess
+a : Hard times fold a household in on itself. I hate the hush. | I can stretch a lump of cheese so far you can see straight through it.
+b : A visit wouldn't cost much. | You'll give someone the bigger piece.
+a : That's what I'm counting on. I can bring #board#. | If times are lean we need something to be generous with.
+
+scene missing_piece
+when topic=memories|pastimes
+does tell.story / ask.detail / answer.detail
+a : I once played with a big button where the red king ought to be. | The worst substitute I ever found for a piece was a crumb.
+b : How did it go? | Blew away?
+a : Rather well until its owner wanted to fasten a coat. | I ate it halfway through a very close endgame.
+
+scene faith_coal
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I carry coal for luck. The chair under me is kindness from the Bright One. | There's a glint down the side of this little lump.
+b : You keep those things apart? | Is that where the luck is?
+a : Of course. I can find another coal by myself. | That's where I look for it. Luck can make up its own mind.
+
+scene news_kind
+when topic=gossip|crime here.gossip=yes
+does tell.gossip / ask.detail / answer.detail
+a : It's going round that #topic.subject# #topic.claim#. | I've heard this much: #topic.subject# #topic.claim#.
+b : Did it come to you straight? | Will you give that tale another airing?
+a : No, and my loud voice can't make it any truer. | Only with the same doubt it came to me with.
+
+scene returning_play
+when topic=newcomer|friends
+does invite / ask.detail / answer.detail
+a : Come sit on #stool#. I'll show you the board the right way up. | I've been waiting for someone who can stand losing at draughts.
+b : Can it go upside down? | Are you that good?
+a : Only if the split corner catches your sleeve. | I meant me. I can stand losing if the company's worth it.
+
+story torn_pocket [topic=memories]
+  : Once a coal wore a hole clear through the bottom of my pocket.
+  : I didn't know until I heard a little clack with every step.
+  b : Had it fallen in your boot?
+  : Right under my heel. I walked home luckier on one side than the other.
+
+story cheese_board [topic=food|pastimes]
+  : I tried playing draughts on a cheese board once, with the squares marked in flour.
+  : My sleeve came back white and all the squares came back wood.
+  b : Did you call it a draw?
+  : We ate the cheese and each claimed a victory in private.
+
+story two_voices [topic=memories self.age>=40]
+  : Years back I lost my voice and could scarcely get a word over my teeth.
+  : I held up a chair in the air to invite an old passer-by inside.
+  b : Did that work?
+  : Came straight in to help me carry it. Once inside, of course, there was the chair.
+
+rule @soot
+when concept=bark
+does aside
+cooldown 8h
+say A clean seat here, so long as I mind which pocket I pat. | One spare king. Two good chairs. Come and make a game.
+
+rule @windy
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Hear that latch chatter along! | I'd set a tune to that roof if I knew the notes.
+
+rule @flies
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Six legs don't entitle you to six turns. Shoo! | Off my cheese, you little black freeloader.
+
+rule @cheese
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say A wedge left for a late caller. | Who's got the appetite for this rind?
+
+dlg @1 resident.hub : Sit right here, where a word needn't go far.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my spare chair's been looking lonely.
+dlg @3 resident.hub [pair.disposition=hostile|wary] : We can both be civil at a chair's length.
+dlg @4 resident.hub [here.time=night] : Quiet voice now, for the sleepers. I'll hear you.
+dlg @1 resident.job : I like being useful at the edge of things, where the hurry thins.
+dlg @1 resident.news [world.news] : I caught this much through the chatter: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The word I heard was that #topic.subject# #topic.claim#. Mind where it travels.
+dlg @1 resident.bye : There's a whole seat kept warm against your next visit.
+graft resident.hub
+choice What makes that parcel so heavy? -> wrapped_piece
+node wrapped_piece
+say It's coal. More weight than you'd guess in such a little bit. The wrapping saves wear on the lining.
+mood warm
+choice Has it ever brought you luck? -> coal_luck
+choice I'll leave it wrapped. -> hub
+node coal_luck
+say It makes a spare king at draughts. More strangers have sat down for that coal than ever sat down for my conversation.
+choice I might be one of them. -> hub
+choice Another time, perhaps. -> bye

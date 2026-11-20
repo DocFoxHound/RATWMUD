@@ -1,0 +1,332 @@
+# rm444, the eaves arithmetic (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm444
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_orla_wetridge
+written_by codex
+title the eaves arithmetic
+fits stage=young|adolescent|adult|old
+prefers job=scholar
+traits temper=even talk=plain warmth=reserved humour=dry honesty=frank piety=ordinary drive=steady
+quirk counts_the_gaps_between_drops_against_a_private_sum
+likes honey_cakes singing sharp_knife thunder
+dislikes early_bells cold_tea
+fears an_empty_purse_under_a_new_moon
+hopes a_sum_settled_before_the_rain_stops
+topics weather +0.6 work +0.4 faith +0.3 pastimes +0.3
+styles comfort=frank gossip=plain refuse=wry tease=dry
+marks oath saying
+persona #self.first# calculates with chalk, listens to rain for the missing beat and keeps an uneasy reckoning out of the class margin.
+
+words
+oath! = Blot my eaves sum | Chalk the cloud upside down
+saying! = A drop that missed the slate still fell | No moon ever waited for the counting to finish
+sum = an awkward little sum | a column of figures
+slate = my damp slate | a clean slate
+chalk = a blunt chalk end | a short white stick
+drop = a heavy roof drop | a fine bead
+eaves = the near eaves | a lip of tiles
+cake = a sticky honey cake | a small golden cake
+knife = a neatly honed knife | a bright blade
+voice = a dry little voice | a clear singing voice
+purse = a flat purse | a stitched pouch
+bell = the early school bell | a brassy bell
+cup = a tea cup with a chip | a half-filled mug
+roll = the low thunder | a hollow roll
+fold = a damp cuff | a corner of cloth
+
+any
+opinion @1 houses against 2 : A factor can make the whole moon look very much like a bill.
+opinion @1 dole for 2 : A hungry pupil's first sum is the distance to a meal. I'd sooner supply the answer.
+opinion @1 merchants mixed 1 : I admire prices written in a hand large enough to read before the honey is in one's mouth.
+opinion @1 city for 1 : The city's kind enough to provide an entire roof's worth of figures for a small practice slate.
+opinion @1 festivals for 1 : A good song makes arithmetic of an agreeable kind. Nearly everybody comes in on the right beat.
+opinion @1 strangers mixed 1 : I can speak plainly without giving every stranger the contents of the purse.
+line @1 greet : Welcome into the gap between these two drops. | My arithmetic can spare you a minute.
+line @1 greet.return : One greeting received and one returned.
+line @1 again.open : You've come round before I've wiped the slate.
+line @1 farewell : Keep your sums and your collar reasonably dry. | May the next shower take a different street.
+line @1 farewell.return : I'll send the kind wish back under cover.
+line @1 react.news : Give me the news without rounding it up. | I'll hear the bit that wasn't worked into the sum.
+line @1 react.news.new : A fresh figure for the edge of the slate.
+line @1 react.news.known : I've already counted that particular drop.
+line @1 react.news.doubt : Somebody's carried a figure that doesn't belong there.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'll be quiet about that before I try to be clever.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That could make a respectable beginning to a song.
+line @1 ask.how : Has the day added up kindly so far?
+line @1 answer.how : Still looking for the clear bit under the cloud.
+line @1 sympathise : Here, you can put the difficult part down for a minute.
+line @1 reassure : One crooked figure won't take up the entire slate.
+line @1 refuse : I've a sum of my own needing both eyes for a bit.
+line @1 accept_decline : Understood. No advantage in asking until your answer changes.
+line @1 preclose : A calculation of a fairly private nature wants me back.
+line @1 accept_preclose : Go meanwhile. These showers still need numbering.
+line @1 ack : Quite legible, even in this light.
+
+grown
+line @1 greet.return : Your welcome makes a very creditable entry.
+line @1 farewell.return : May your errands be paid up before the street grows wet.
+line @1 react.news : Tell it in whole figures if you can. I can allow for uncertain bits.
+scene exchange19
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I keep proof under each conclusion. | I straighten a page when an argument gets difficult.
+b : Even a very obvious one? | Does that fix it?
+a : Especially when I feel unusually sure of myself. | No. It stops me blaming the angle of the writing.
+
+scene exchange20
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Rain gaps make poor clocks. | The last drop is identifiable only in hindsight.
+b : Still counting them? | How long's the necessary wait?
+a : Absolutely. A clock's allowed to be interesting as well as faulty. | Longer than a wolf trying to keep a collar dry can generally afford.
+
+scene exchange21
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I choose a song for a room by its echo. | I leave one beat empty when the rain gets loud.
+b : Does the room choose the key too? | Why leave it empty?
+a : No. I reserve one minor decision for my own throat. | A crowded song's as hard to understand as a page without margins.
+
+scene exchange22
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : A thumbful of honey goes farther when the cake is warm. | I pick the plainest cake from a showy tray.
+b : You spread it thin? | Distrust fancy stripes?
+a : I like finding it in the corners when I break the cake. | I prefer seeing my supper before paying for the decoration.
+
+scene exchange23
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I check a figure without assuming a crooked purpose. | A small loan can occupy a large part of a year.
+b : What would be the civil wording? | Even if repaid?
+a : Ask the seller to count once while I keep count alongside. | The memory of watching the moon lasts a while.
+
+scene exchange24
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put a cup under the persistent drip. | I keep the dry books on the highest shelf.
+b : Why not a pail? | That close to the roof?
+a : The cup tells me when I'm putting a repair off too long. | Under the sound bit. One should know a home well enough to make distinctions.
+
+scene exchange25
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a moon as a rather stern schoolmaster. | I used to give rain drops numbers and little names.
+b : What was its lesson? | Did that help with lessons?
+a : A due date can change the very shape of the sky. | I remember habits of the eye rather better than multiplication by recitation.
+
+scene exchange26
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I set the chalk down once my wrist begins to shake. | I warm my fingers round tea before writing fine figures.
+b : Does that happen often? | No danger of cold tea then?
+a : Only if I insist on finishing a long page without moving. | Less. I've not eliminated every mistake of youth.
+
+scene exchange27
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Commons roofs play different notes in the same rain. | I judge a climb by the dry shelter at its next bend.
+b : Are some sharper? | Weather too uncertain?
+a : Tin under a drop sings up. Stone just says its piece. | My own enthusiasm always was.
+
+scene exchange28
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I have a perfectly plain way of giving thanks. | I never try to count blessings in a downpour.
+b : A favourite prayer? | Too many?
+a : A short one. I like the room to hear its own quiet afterwards. | Too easy to spend the whole wet day refining the total.
+
+scene exchange29
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard weeks set me counting small things again. | I shorten my purchases carefully when money pinches.
+b : Only the coins? | How carefully?
+a : Dry afternoons, sound soles, enough honey to flavour a plain cake. | I keep one little thing for the wolf doing all the counting.
+
+scene exchange30
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I walk the route that shows most sky without wetting both shoulders. | A sudden storm is easier carried with a familiar tune.
+b : A difficult calculation? | Do the words keep the rain off?
+a : Splendidly. I get to make it all over again each afternoon. | They make a rather cheerful racket under the hood.
+
+story tale1 [topic=memories]
+  : I counted drips under three eaves and wrote my results along a slate. I thought the figures proved the street considerably damper up one end.
+  : On my return a bright drip had wiped the middle of each number away.
+  b : What did the remaining marks prove?
+  : That the street was at least as wet as the slate. I've kept that much of my conclusion.
+
+story tale2 [topic=pastimes self.likes=singing]
+  : A tune kept its last line from me all morning. I finally found the line while chewing a honey cake and sang it straight away.
+  : Only half the words emerged past the cake. The melody came out perfectly recognisable.
+  b : Which words did you lose?
+  : The ones about keeping a clear voice. I have rarely been edited with such precision.
+
+story tale3 [topic=weather]
+  : I once ran through a gap in a shower carrying a folded page over my head. The page stayed dry for the first three steps.
+  : The fourth step put me under a gutter that had been storing a whole separate opinion about the weather.
+  b : Was the page ruined?
+  : Only the blank side got soaked. I considered that an invitation to stop keeping accounts for five minutes.
+
+rule @call1
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Write the figure before the chalk loses its corner. | Leave room to show how the sum arrived.
+
+rule @call2
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say That gap's nearly wide enough for an imprudent dash. | One drip for the roof and one for my cuff.
+
+rule @call3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The bell's reached its conclusion ahead of breakfast. | Morning figures always look thinner.
+
+rule @call4
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say A clean little slice before the honey spreads. | It takes a practised eye to choose the stickiest bit.
+
+dlg @1 resident.hub : You'll get a frank answer here and probably a small qualification about the weather.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've arrived between two rounds of arithmetic.
+dlg @3 resident.hub [here.time=night] : Late sums deserve a lamp. Quiet talk can do without.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Give me the whole question. I can decide which part's my business.
+dlg @1 resident.job [self.job=scholar] : I take my lessons seriously enough to ask where the missing figure went.
+dlg @2 resident.job : I follow the working underneath a thing instead of simply accepting the answer.
+dlg @1 resident.news [world.news] : The report I took down was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : It came to me as #topic.subject# #topic.claim#. The answer sheet hasn't appeared.
+dlg @1 resident.bye : May there be a useful gap in the rain just when you need one.
+graft resident.hub
+choice Can you tell when the rain will stop? -> eaves_sum
+node eaves_sum
+say I can measure the widening space between drops. Assuming the next gap guarantees a dry trip home is where my calculations come to grief.
+free
+choice What use is counting it? -> eaves_sum_again
+choice Goodbye. -> bye
+node eaves_sum_again
+say It's an afternoon's practice with numbers nobody can collect from me. I value that rather highly.
+choice Keep a dry corner on the slate. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : I know where the roof makes the fewest drips.
+line @1 farewell : Save a crumb for when the counting's done.
+scene exchange2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I count the holes round a honey cake. | I can split one cake into two.
+b : Don't you eat it? | Tricky with sticky paws?
+a : I count faster when I'm hungry. | Easy. Making the two parts equal is the tricky bit.
+
+scene exchange3
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I sing to a drip in the gutter. | I can make chalk sing.
+b : Does it answer? | On the slate?
+a : Every third beat if the rain's patient. | The squeak isn't a very good song yet.
+
+scene exchange4
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A drip misses my nose every time I lean back. | I watch rain finish and start again.
+b : What happens if you stay still? | How do the two showers differ?
+a : I found that out with the first drop. | I had time to blink in between.
+
+
+adolescent
+line @1 greet.return : A good straight greeting back. No classroom flourishes.
+line @1 farewell.return : I hope your coppers match your count on the way.
+line @1 react.news : I'll hear it fairly. The slate can stay blank for now.
+scene exchange6
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I leave a clean margin for mistakes. | I count roof drops before I write a sum.
+b : Planning to make some? | Does it help?
+a : Planning to recognise them where I put them. | It's very good practice at losing count and admitting it.
+
+scene exchange7
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I watch the gap between drops get wide enough to walk through. | A clear sky would give me an afternoon away from these calculations.
+b : Ever wide enough? | Then what would you count?
+a : For the first step. The second often proves ambitious. | The minutes before the next shower. Old habits.
+
+scene exchange8
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I cut honey cake with the knife a little warm. | I always mean to keep half a cake for tomorrow.
+b : To stop it sticking? | Never manage?
+a : To make a straight line right through the sticky part. | I've kept quite a number of excellent intentions.
+
+scene exchange9
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I sing the number I keep forgetting. | I know when the high note's coming by the rain.
+b : Does it stay remembered? | Why rain?
+a : Sometimes the tune stays and the number slips off on the wrong beat. | I've practised with the same leaking eave for some time.
+
+scene exchange10
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : An early bell usually interrupts a dream in progress. | I could do without the day's first stroke.
+b : What dream? | Like the later ones better?
+a : One where I've already got dressed. It's a particularly unhelpful dream. | A small quantity of breakfast improves most public noises.
+
+scene exchange11
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : My tea goes cool while I'm balancing the figures. | The tea has a ring of cold colour round it.
+b : Why not finish the tea first? | Will you drink it?
+a : I'm good at arithmetic. Plain good sense is a second course. | I'll warm it or use a better reason than being stubborn.
+
+scene exchange12
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : I love the thunder that makes the chalk jump. | Thunder gives a tune plenty of space to stretch.
+b : Easier to make a mistake? | Do you sing inside it?
+a : Much easier to identify a blameless cause for one. | No. I listen to the tune it already owns.
+
+scene exchange13
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I want a clean slice off a chalk end. | I sharpen the blade before cutting paper.
+b : Using your knife? | Paper hardly needs it.
+a : Yes. A fresh corner makes the tiniest figures readable. | Try making two neat slips out of the same torn corner.
+
+scene exchange14
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I owe a sum before the new moon. | I keep a private figure in my head through ordinary lessons.
+b : Is it a school exercise? | Does it interfere?
+a : No. I'd be glad to rub anything so simple off a slate. | Only when every sum begins to resemble the same amount.
+
+scene exchange15
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A top floor gives the best lesson in where rain gathers. | I can hear two different drops from bed.
+b : What's the lesson? | Which keeps you awake?
+a : Put the slate away before the roof demonstrates. | The pause when I start counting what I still owe.
+
+scene exchange16
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Somebody said #topic.subject# #topic.claim#. My sums can't settle that one. | A rumour's a sum with all the working rubbed out.
+b : What could? | Would a teacher accept it?
+a : A wolf who actually saw what happened. | I'd get a fairly definite answer if I tried.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like one whole moon free of figures. | I imagine waking with just enough coin left for cake.
+b : Would the lessons stop? | How much cake?
+a : Not the lessons. The other sum. | Enough to leave my own thumb with a little honey on it.

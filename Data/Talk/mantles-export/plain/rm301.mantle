@@ -1,0 +1,262 @@
+# rm301, the listening brim (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm301
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_gwen_fogstack
+written_by codex
+title the listening brim
+fits stage=adult|old
+prefers job=merchant drive=restless
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk turns_one_corner_of_an_oilcloth_brim_up_to_hear_a_float
+likes smoked_eel evening_line quiet_chapel frosty_mornings
+dislikes salt_wind flies
+fears a_bite_lost_in_the_wind
+hopes a_quiet_cast_before_supper
+topics pastimes +0.6 weather +0.4 home +0.2 travel +0.3
+styles comfort=company gossip=plain refuse=level tease=none
+marks oath saying
+persona #self.first# turns one corner of an oilcloth brim up for sound and the other down for shelter, always alert for a fishing float rattling against a bank.
+
+words
+oath! = Holes in my brim | Seven soaked floats
+saying! = Keep one ear out of cover | Still water has little knocks
+hood = my broad oilcloth | the old hood
+brim = the stiff front fold | a corner of the brim
+earfold = a turned-up corner | the shallow ear fold
+float = my little cork | the yellow float
+linecord = the fishing cord | my evening line
+knock = a light knock | the little cork noise
+pin = a horn pin | the fastening peg
+bank = the bank edge | the low shore
+wrinkle = a sharp crease | an old wrinkle
+roofflap = the loose edge | a strip of oilcloth
+strip = a length of smoked eel | the dark fish slice
+reed = a damp reed | the bent stem
+
+any
+opinion @1 houses against 1 : From below, a fine high roof looks chiefly remarkable for how far its rain can fall.
+opinion @1 merchants against 1 : An oily shine is scarcely proof a hood will keep the neck dry.
+opinion @1 sump for 1 [self.quarter=sump] : A bit of cloth has a long useful life down our way. A second crease won't kill it.
+opinion @1 church for 1 : A chapel's quiet shuts a fair portion of the weather outside a wolf as well as outside the roof.
+opinion @1 road for 1 : Bring the hood in case then follow the dry patches till the afternoon runs out.
+opinion @1 watch against 1 : A quiet watcher at a shop door can see more than a whole march of loud boots.
+
+grown
+line @1 greet : Hello. I had the listening side turned your way. | Good. A voice instead of a drip.
+line @2 greet [pair.band=strangers] : First time I've caught that footfall, I think. | Welcome. The open fold carries your words well.
+line @3 greet [here.time=dawn] : Morning. Fresh air under the fold at last. | My ears have had their first stretch of the day.
+line @1 greet.return : Yes, I heard you knocking on the air. | Hello in return. I'm wide awake under here.
+line @2 greet.return [pair.band=friends|family] : Good sound. I've heard that voice in all weathers. | I'm glad I turned the brim up for you.
+line @3 greet.return [here.time=night] : Late greetings. Easier to hear footsteps when the light's gone. | Hello there across the dark.
+line @1 again.open : You're back in range of my better ear. | Another little knock from a familiar direction.
+line @1 hail [pair.band=friends] : Come over to the dry edge and listen. | Stand here. There's a small sound worth catching.
+line @1 farewell : May your hood fit the weather you find. | Go enjoy the view past this bit of shelter.
+line @1 farewell.return : I've a last listen to take before leaving too. | Away you go, well beyond the drips.
+line @1 react.news : Let me turn this corner up and hear properly. | I'll give the whole account a quiet ear.
+line @1 react.news.new : That hadn't made so much as a ripple round me. | Entirely new hearing under this hood.
+line @1 react.news.known : I caught a fair version of that earlier. | Yes, that bit sounded the same on its first journey.
+line @1 react.news.doubt : I'd listen for another sound before calling that a bite. | There's an echo in there I'm unwilling to trust.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Cruel news. I'll stop fussing with my things and sit. | You can speak quietly about that here. I'll hear you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, that's better than a sound fish taking the float. | Good news deserves both ears uncovered.
+line @1 ask.how : Did you find a little peace anywhere today? | How's life sounding from your corner of the shelter?
+line @1 answer.how : Restless, though I've enough sense to rest when my feet insist. | Doing well enough for an evening's cast.
+line @1 decline : I'd be leaving something important quite unattended if I did that. | I haven't a free evening to promise for it.
+line @1 accept_decline : That's settled. I'll leave you your own choice. | Fair enough. I'll cast elsewhere.
+line @1 preclose : My ears are still interested but my legs want a walk. | I'll move along while there's a little dry ground.
+line @1 accept_preclose : Off with you. Sitting forever would hardly suit either of us. | Go on to your next good prospect.
+line @1 thank : I'll remember you held that corner for me. | You've made a wet little business a pleasure. Thanks.
+line @1 deflect_thanks : One bit of dry cover doesn't cost much to share. | I'd already lifted the brim and seen what was needed.
+line @1 sympathise : I've room under this bit of cover for some quiet. | Sit near me. Words needn't come straight away.
+line @1 reassure : Turn just one corner up. Sometimes that's view enough. | There'll be an interval between the heavy drops.
+line @1 ack : I'm hearing the distinction you mean. | That came across clean through the wind.
+line @1 give.advice : Fasten the hood where you can undo it with one paw. | Don't let the wind take both corners at once.
+scene foldodd
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I pin one corner of my hood up when my float goes onto the water. | The brim looks uneven because I want it that way.
+b : Aren't you letting rain straight in? | Which corner goes up?
+a : One ear can stand a few drops if it means hearing the float. | The one facing the water. I'd hear a rattle from the cork if it catches against the bank.
+
+scene fly_rim
+when topic=animals self.dislikes=flies
+does tell.complaint / ask.detail / answer.detail
+a : A fly under a close hood can make itself quite a public nuisance. | The smallest winged thing picks the largest possible echo inside this brim.
+b : Take the hood off then? | Does turning the edge help?
+a : I do. It tends to leave at the first sign of an open audience. | Enough for an exit. I can wait for my peace to come back.
+
+scene dampnotch
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Every crease in #hood# develops a separate drip point. | A hood with one corner up drains most agreeably off the other one.
+b : Is the odd shape intentional? | And a shower driven sideways?
+a : Partly. An ear out, a shoulder wet, the neck dry. Acceptable business. | I turn. Rain has no strong claim on the direction of my nose.
+
+scene highwind
+when topic=weather self.dislikes=salt_wind
+does tell.feeling / react.self / assess
+a : A salt wind makes the edge of my hood as stiff as old fish skin. | I don't begrudge the wind its salt till it rubs into my ears.
+b : Have to wash the cloth? | Is a little salt so troublesome?
+a : A wipe with fresh water makes a new thing of the fold. | On a plate it's excellent. Between a fold and a moving ear it's abominable.
+
+scene frostcork
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : I like lifting a float from its little ring of frost. | A cold white rim shows exactly where a cork rested overnight.
+b : Does it stay white beneath? | Can the cork freeze fast?
+a : No. There's a brown circle in the white, accurate as a drawn mark. | In a wet pot, yes. I set mine on a dry board so the lift is clean.
+
+scene quiet_swim
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : Evening makes the little noises of a casting line plain. | I take more pleasure in hearing the first cast than counting the catch.
+b : A cast doesn't sound like much. | Wouldn't you rather eat the fish?
+a : A brief whistle and a quiet plop. That's quite enough noise for the occasion. | Certainly, if there's a fish to eat. The cast I'll have either way.
+
+scene smoke_eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : Smoke on eel means the fish can wait a little longer for dinner. | I like an evening meal I can carry on a line-watching walk.
+b : You'd eat what you're trying to catch? | What travels that well?
+a : Smoked eel in my pocket, live fish in the water. They occupy perfectly different places. | A folded strip of smoked fish. Better than a bowl under a flapping hood.
+
+scene quietchapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : In a quiet chapel I uncover both ears and let them do nothing for a while. | The chapel can have my whole attention if it leaves the rain outdoors.
+b : Do you listen for anything particular? | Where does the hood go?
+a : No. It's pleasant to have both ears ready without needing either one. | Fold it ready for leaving. Then I stop preparing to leave.
+
+scene childvisit
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd offer #self.child# a nice dry stretch of rail to lean on for a cast. | I'd be pleased to share a whole quiet bank with #self.child#.
+b : Would that make for much visiting? | Only one line between you?
+a : Excellent visiting. Nothing stops us speaking when we've something to say. | One line leaves one wolf free to see where the cork lands. An advantage.
+
+scene watchdoors
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A door has a way of telling you whether a visitor is coming or simply passing. | I keep the hearing corner open during work just as I would near water.
+b : You listen to the hinges? | Does every visitor knock?
+a : Footsteps. The beats get closer just before a wolf stops to enter. | No. A little slowing of the step serves much the same purpose.
+
+scene quietkin
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could share a stretch of quiet water with #self.friend# and count it a visit. | I'd set a second dry place on a bank for #self.friend#.
+b : And talk about the catch? | Are you expecting company?
+a : If there is one. With company I trust I've no need to invent a subject. | Hoping, perhaps. A dry place will keep till somebody comes.
+
+scene gatehook
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : You can wait just off the approach to Northgate and sort the carts from the walkers by ear. | Wind catches the light covered carts as they turn through Northgate.
+b : What sound does a cart make in wind? | Could you hear it under that hood?
+a : A quick flap of canvas between the wheel noises. Like a great loose brim. | On my listening side, yes. I leave the other ear some peace.
+
+scene thinwall
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I hang my oilcloth low at home so the dripping doesn't carry through the boards. | In the Sump a little drip can be quite a performance next door.
+b : How does hanging it low help? | Are your walls that thin?
+a : Set the edge close above a rag. Hardly any fall, hardly any patter. | Thin enough to make me civil about where I put a soaking piece of cloth.
+
+scene hoodprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Show me the inner join before paying for a hood. | Even cheap oilcloth ought to bend without opening a white crack.
+b : What does the crack show? | Looks sound on the outside.
+a : Where the stiff place has begun to give. Water will explore it soon enough. | Turn the fold against the light. The next shower will be rather less polite.
+
+scene hillsilence
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a quiet hillside where the smallest sound seemed to travel further than was sensible. | The smell of charred wood can bring a whole hillside back to my nose.
+b : What did you hear up there? | A quiet place, was it?
+a : A twig knocking on another twig. It would have vanished in a wash of street noise. | Quiet enough for a wolf to hear a bent branch settle back after passing.
+
+scene busytime
+when topic=times world.times=lean|hard
+does give.opinion / react.self / assess
+a : When times are thin the smallest repair to a hood earns its keep. | A bit of sound thread is an admirable thing to have in a lean week.
+b : Would you patch the brim again? | Doesn't a patch leak too?
+a : Until the old and new cloth part company quite beyond hope. Then I'll save the pins. | Not if the seam sheds water over the old piece. Direction counts as much as cloth.
+
+scene clearcast
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like enough clear evenings to try all the little banks I pass in a hurry. | I've been looking at water and thinking I might give a new spot one quiet cast.
+b : Are you hunting a famous catch? | Much to pack for that?
+a : Somewhere the cork won't get shoved against the bank by every breeze. A small ambition. | The line, my hood and supper in case the fish are too restless for my line.
+
+scene wordfloat
+when topic=gossip
+does give.opinion / react.self / assess
+a : Hearing a noise up close is different from knowing what made it. | A flapping bit of cloth can sound very much like a knock if you're expecting company.
+b : Would you just ignore it? | You're talking about gossip, aren't you?
+a : I'd turn and look. The sound alone proves little more. | Yes. I don't name a visitor till a face has actually come into view.
+
+story turnaround [topic=pastimes|memories]
+  : I fished a whole quiet interval with the listening corner lifted. Heard a little knock at precisely regular intervals.
+  : Turned my head and it stopped. Turned back and it began again.
+  b : Something on your line?
+  : The horn pin tapping the hood. The fish had spent that interval as quietly as intended.
+
+story hoodmeal [topic=memories|food]
+  : I put a wrapped bit of eel in my hood once to leave my paws free for winding a line.
+  : Rain began. Up went the hood with a perfectly executed swing.
+  b : Where'd the eel land?
+  : In my lap, fortunately. I wouldn't care to explain a smoked fish caught with my head.
+
+story frostprint [topic=weather|memories]
+  : I laid my hood on a frosty board with the little folded corner facing upward. The next time I looked there were two white triangles.
+  : For a moment I thought I'd acquired a spare oilcloth.
+  b : Was one the print of the other?
+  : Exactly. An excellent second hood for weather cool enough to let it exist and without a drop of actual rain coming down.
+
+rule @pin
+when concept=bark
+does aside
+cooldown 8h
+say Let me get this one corner turned up for hearing. | There's the fold settled. Now try that sound again.
+
+rule @cast
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say Cork free of the bank, cord clear of the reeds. | A little room for the float to turn, please.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say One crease is sending a stream down the wrong shoulder. | Turn the dripping end where it won't wet somebody else.
+
+rule @ear
+when concept=bark
+does aside
+cooldown 8h
+say I heard a little tapping beyond the cloth. | There's a quieter sound behind that first one.
+
+dlg @1 resident.hub : I've the brim up. An ordinary speaking voice will reach me easily.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'd know that step through a whole thickness of oilcloth.
+dlg @3 resident.hub [here.time=night] : I've turned my ear where my eyes won't reach. There's still room for talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : The dry place on the far side will serve for asking questions.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. A little warning from approaching feet is a great convenience.
+dlg @2 resident.job : I'd like a bit of movement in my work and a chance to sit when I've had it.
+dlg @1 resident.bye : I hope the wind hits the closed side on your walk.
+graft resident.hub
+choice How do you get an oilcloth brim to stay up? -> hornfast
+node hornfast
+say One small pin through the folded edge. Don't bother pinning the whole corner back. A little gap at ear height is enough to let the sound come in.
+free
+choice Wouldn't rain come through the pinhole? -> smallpin
+choice I can see the listening gap. -> hub
+node smallpin
+say It will if you pierce the crown. That's why my pin goes through two folds of brim. The water that comes through there is on its way down already.
+choice I'll keep the crown whole. -> hub
+choice Good fishing to you. -> bye

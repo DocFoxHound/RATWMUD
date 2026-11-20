@@ -1,0 +1,308 @@
+# rm382, the bell auction (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm382
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_wystan_wethand
+written_by codex
+title the bell auction
+fits stage=young|adolescent|adult|old
+prefers honesty=guarded humour=merry
+traits temper=even talk=chatty warmth=cold humour=merry honesty=guarded piety=ordinary drive=steady
+quirk auctions_imaginary_goods_between_two_chapel_strokes
+likes barley_soup evening_line sharp_knife misty_dawns
+dislikes cold_tea salt_wind
+fears a_bid_heard_by_the_wrong_ears
+hopes a_small_stall_and_a_good_first_sale
+topics pastimes +0.6 prices +0.5 food +0.4 dreams +0.3
+styles comfort=play gossip=guarded refuse=cheerful tease=quick
+marks oath saying
+persona #self.first# auctions impossible little luxuries in the gaps between chapel bells, keeping the prices, the bids and the real savings strictly separate.
+
+words
+oath! = My empty purse strings | Sold for a barley husk
+saying! = The bell doesn't take credit | Sell a smell and keep supper
+lot = my current lot | the prize on offer
+bid = a whole wink | the quickest grin
+jar = a sealed scent jar | the little empty jar
+pebble = a spotted pebble | the shop stone
+barley = a fat barley grain | a spoonside grain
+price = the price in winks | one entirely imaginary coin
+cloth = my counter cloth | a flat rag
+float = a bit of cork | the fishing float
+sting = a salted blast | the briny sting
+hookline = my evening cord | the short fishing line
+flake = a wood chip | a clean shaving
+token = a chalk counter | my pretend penny
+
+any
+opinion @1 church for 1 : Those bells give fine notice that time's going by. I try to put something decent in between the strokes.
+opinion @1 houses against 1 : A square of floor with no leaks sounds a splendid thing to own. I wonder if the owner ever has to stand in the wet square beside it.
+opinion @1 merchants mixed 0 : A trader's got to make a living. The customer would like to be alive when the bargaining finishes too.
+opinion @1 dole for 2 : You can't fill a hungry middle with an excellent description of barley soup. The real bowl earns my vote.
+opinion @1 sump for 1 : Even without much room for a counter the low streets have room for a good idea.
+opinion @1 festivals for 1 : A feast is my favourite kind of busy place. Everybody already decided it was worth coming out.
+
+grown
+line @1 greet : Hello. Give me one quiet interval between the bells. | Glad you came when the bargaining voice can rest.
+line @1 greet.return : Yes. Your greeting came across quite distinctly. | Hello in turn. I'm pleased to put down my count.
+line @1 farewell : A sound deal and a safe walk home. | Save one unpriced pleasure for yourself today.
+line @1 farewell.return : I'll leave the farewell itself free of charge. | Until the next fair exchange of words.
+line @1 react.news : State what's known before we attach any value to the report. | Place the account here in your own words.
+scene fairlot
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The difficulty in selling a thing is saying plainly what the buyer will actually get.
+b : You'd put the flaws first? | What counts as plain?
+a : If there's a flaw that changes its use, certainly. Gives both sides a live choice. | A description that still makes sense when the goods are unwrapped in a different room.
+
+scene lastbell
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I like an agreed sound to announce when a tricky bargain's finished.
+b : Can't you tell when it's done? | Still use the bells?
+a : I can tell I've finished. I'd rather we both knew we had. | In easy reach of a chapel, yes. Elsewhere a clear word will do.
+
+scene soup_scent
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : The scent of barley can make an ordinary supper seem an occasion. | As a pup I talked of selling a good dinner smell on its own.
+b : What's the price now? | Could you sell it to me?
+a : One guest willing to stay for an actual bowl. | I'd feel obliged to throw in a bowl. Advertising shouldn't be the only course.
+
+scene mistwalk
+when topic=weather here.weather=fog
+does tell.feeling / react.self / assess
+a : Mist makes a scarce view feel expensive and an ordinary voice feel near.
+b : Do you enjoy that? | How far can you hear?
+a : In the early part of the day, yes. By lunch I'd quite like my view back. | Somebody speaking over a rail feels close. I'm careful before putting a name to the voice.
+
+scene badtea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : Cold tea in a cup I intended to enjoy generally means I've been attending to somebody else's clock.
+b : Couldn't you take a fresh cup? | What clock of your own do you follow?
+a : Certainly. I'd wonder what distracted me from the good bit of the first one. | The steam. A home-made alarm designed to go silent just after it's too late.
+
+scene eveningcast
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : An evening by the line reminds me a fish can withdraw an offer without argument. | A cork dipping once makes no binding commitment.
+b : What if it takes your bait? | Do you mind waiting?
+a : Then I paid admission to an evening's peace. I may have overpaid by one grub. | Standing in a queue, yes. Waiting for a quiet movement in water is quite another occupation.
+
+scene lowdoor
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Down in the Sump I've seen a fine bit of trade take up no more room than a doorstep. | An empty window can become a counter without anybody moving a wall.
+b : What fits such a small shop? | Where does the stock go?
+a : Small things neatly laid out, with considerable ingenuity. | Where the weather won't reach it. A good covered basket already has most of a shop's virtues.
+
+scene viewstall
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a counter where a shy visitor can see the prices without asking. | I'm saving for the sort of stall that would have invited an eleven-year-old to come and look.
+b : What sort of stock? | Is that your test for it?
+a : Small useful goods with a price visible on each. I leave the luxuries to the imagination. | An excellent test. I remember exactly how little money and how much curiosity I had.
+
+scene taketrust
+when topic=gossip
+does give.opinion / react.self / assess
+a : A stranger can sell a tale twice. The event if it's true, the telling if it isn't. | I'd like a little honesty about what part of a story is on offer.
+b : Which would you pay for? | Can a made-up bit still have value?
+a : A good invented tale presented as one. A lie sold as fact earns no business here. | A great deal, when the ticket on it reads clearly. I used to sell moonlight quite honestly.
+
+scene shortweek
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : I've never known a run of lean days to shorten a pup's wish list.
+b : What does it do instead? | What would you have wished for?
+a : It grows the imagination and makes a real bowl of soup all the more urgent. | One dry place to put down my wares. One meal in the day I could take my time over.
+
+scene chapelinterval
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : There's a lot can go on between hearing a bell and deciding what to do about it. | I try keeping one bell stroke free of any little game of my own.
+b : What does that interval hold? | No business in it?
+a : A prayer, usually. Time for the Bright One without an amusing imaginary invoice. | One entirely unpriced thought. I seem to have survived the financial consequences so far.
+
+scene windears
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Some sea winds sting the eyes so sharply a wolf looks positively sentimental about the view.
+b : You've been weeping over scenery? | Do you move indoors?
+a : No. I wouldn't account for anybody else's tears by guessing about the wind either. | Behind a wall. The water remains audible and enjoy the part of the air without all the salt.
+
+
+young
+line @1 greet : Hello. My little market's between sales. | Welcome to the best empty counter in sight.
+line @2 greet [pair.band=strangers] : First visit. Looking's free and so is keeping your name. | Hello. I don't charge strangers till the second wink.
+line @3 greet [here.time=dawn] : Morning. The first bit of daylight's highly collectable. | New day on offer to anybody up early enough.
+line @1 greet.return : Hello back. Your voice outbid the invisible customers. | Yes, I've put a pause in this very important sale.
+line @2 greet.return [pair.band=friends|family] : A known customer gets the best invisible seat. | Ah, a face I've given excellent prices before.
+line @3 greet.return [here.time=night] : Night hello. I've a small stock of darkness left. | The late market deals chiefly in whispers.
+line @1 again.open : Back already. That's a splendid recommendation. | Here for the next impossible bargain, I see.
+line @1 hail [pair.band=friends] : Come watch this lot before the bell rings! | A very unusual thing offered for one enormous grin!
+line @1 farewell : Your attention is returned with my compliments. | Goodbye. Any unused winks remain yours.
+line @1 farewell.return : I'll draw my little market to a close. | You're departing with some extremely valuable nothing.
+line @1 react.news : I can hear a story without passing it on for profit. | Place the news gently. I won't bid till I've heard the end.
+line @1 react.news.new : Entirely fresh stock as far as my ears are concerned. | I hadn't even seen the label on that bit of news.
+line @1 react.news.known : Yes. I know what that one sounds like unpacked. | Heard it once already, in the original wrapping.
+line @1 react.news.doubt : Somebody's put an uncommonly fine label on a very small fact. | I'd give that account about half a doubtful wink.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll put the pretend shop away. You can have the whole bit of quiet. | That's a very real hurt. I'll leave games for later.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's something worth three whole imaginary pennies. | I'd take that in exchange for nearly anything except dinner.
+line @1 ask.how : Has anybody offered you anything pleasant today? | What sort of bargain did you make with the morning?
+line @1 answer.how : Rich in ideas, poor in actual stock. | A little short of good humour. Trying to make some out of scraps.
+line @1 decline : That bit's in the real cupboard and I'd rather keep it there. | I'd be paying with a promise I don't actually have to spend.
+line @1 accept_decline : Fair enough. The polite counter withdraws its offer. | You can keep that one behind your own imaginary door.
+line @1 preclose : I'd best shut up shop before the next bell catches me. | My inventory of time has almost gone.
+line @1 accept_preclose : A customer may always leave with no explanation. | I've a generous handful of your attention to spend.
+line @1 thank : Thanks. I'll set aside the best imaginary bargain for you. | That was a very real kindness in my very small shop.
+line @1 deflect_thanks : I started with nothing. I've still plenty to share. | It was a spare little idea in search of an owner.
+line @1 sympathise : I'll listen cheekily another time and seriously this time. | You can have the driest patch on the step, no price attached.
+line @1 reassure : We can begin with one good thing still in your pocket. | Here. Have a moment when nobody asks you to pay attention.
+line @1 ack : I can count the sense in that. | Quite clearly marked, that one.
+line @1 give.advice : Don't bid your own supper on an imaginary dessert. | Wait for both sides of the bell to sound.
+scene sellsmell
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I'm selling the smell of hot barley soup until the bell rings.
+b : What's the asking price? | Will it fill me up?
+a : One good sniff and a convincing nod. I keep the soup itself. | No. That's in the small writing underneath. I'd rather have a happy customer than a rich one.
+
+scene belltick
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Between two bell strokes I can sell the moon and get change.
+b : Quick customers? | Change for the moon?
+a : Quick tongue. My buyers are frequently too astonished to make a single sound. | A sliver of daylight. You need to use it before morning.
+
+scene sharpstrip
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I like a clean edge for cutting my little counter tickets. | Torn edges make my pretend tickets look properly expensive.
+b : Expensive or tidy? | Why call them expensive?
+a : Tidy when cut, expensive when torn in an interesting way. Two sorts of goods. | Otherwise they're just scraps. The price is imaginary and so is the expense.
+
+scene learncount
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : In lessons I do proper sums. On my own step I count what a smell ought to be worth.
+b : Is that the same sum? | Do you get the answer right?
+a : Not quite. A whole loaf smells bigger than two halves. I haven't got the rule for that yet. | In my own shop, every time. In lessons there's a little less room for bargaining.
+
+scene fogsale
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : I'd sell this mist in a cup if it would stay till the buyer gets here.
+b : Does the buyer get the cup? | It'd come back empty.
+a : The cup costs extra. The mist is the valuable bit, or so I'm hoping. | That proves the mist was genuine. Good honest merchandise should behave like itself.
+
+scene bowlgame
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : A single barley grain makes a very fine boat till the spoon comes through.
+b : Can you sell passage? | Does it return?
+a : No. There's a very short trip to a very warm ending. I have my scruples. | Only if it falls off the spoon. Not the route I'd take for pleasure.
+
+scene linebid
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : In the evening I offer the fish an entirely straightforward bargain.
+b : What would a fish want? | What's the bargain?
+a : A taste of bait, I hope. If it just wants to play with my cork I can't stop it. | A nibble in exchange for waking me up. I regard an actual fish as an unexpected bonus.
+
+scene sumpstall
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump my stall fits on one dry step with space left for a visitor's toes.
+b : What do you sell there? | Ever run short of space?
+a : An opinion, a view, five breaths of calm. None needs a bulky crate. | When the visitor has especially large feet I reduce my stock of views.
+
+scene teabid
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : Cold tea's a poor opening bid for anything I can think of.
+b : Not even a cold pebble? | Nobody'll take it?
+a : The pebble wouldn't mind. I happen to be representing its unhappy partner in the exchange. | It can go for nothing as long as nobody obliges me to swallow it.
+
+story jarful [topic=memories|pastimes]
+  : I capped a jarful of fog once and waited till the sun came round to show off my stock. Unscrewed the top with great care.
+  : A very little wetness on the glass was the sum of the contents.
+  b : Was the sale a failure?
+  : Not the least bit. I advertised an entire jar of morning reduced to a single convenient drop.
+
+story barleybell [topic=food|memories]
+  : I timed a spoonful of soup by the chapel. Took it at the first stroke, blew once, and was all ready to taste it at the second.
+  : The bell didn't strike twice. I waited till that spoonful actually went cold.
+  b : Did you finish dinner by the clock?
+  : No. I let my tongue attend to its own affairs after that.
+
+story wrongchange [topic=memories|prices]
+  : I charged a grin for a pretty pebble and paid it back in winks. Became so interested in balancing the exchange that my eye started twitching.
+  : By then I'd promised three more winks than I could reasonably deliver.
+  b : Did the pebble change paws?
+  : I kept it against the debt. Bank with a pebble for capital, that's me.
+
+rule @lot
+when concept=bark
+does aside
+cooldown 8h
+say For sale until the next bell, one highly desirable sunny patch! | Who'll offer a wink for a smell of warm barley?
+
+rule @bell
+when concept=bark
+does aside
+cooldown 8h
+say One stroke to open, one to close, large discounts for the imaginary! | That's the bell. The moon stays mine till the next sale.
+
+rule @fog
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say A cup of clean mist available to the first careful walker! | Best quality fog, very hard to wrap.
+
+rule @fishing
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say All reasonable nibbles considered. | I'd settle for a little pull on the cork.
+
+dlg @1 resident.hub : Have a complimentary answer on me. The first one's nearly always the most expensive.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a special rate of absolutely nothing on familiar faces.
+dlg @3 resident.hub [here.time=night] : If you want a choice bit of darkness I've plenty left over.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : My prices are visible from there. So are my perfectly empty pockets.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. In the breaks I'm rather a successful dealer in things that don't exist.
+dlg @2 resident.job : A good bargain needs an honest description, even when the whole thing is just for fun.
+dlg @1 resident.bye : Keep the change, which in this case is a very nice bit of your afternoon.
+graft resident.hub
+choice What's the strangest thing you've offered for sale? -> auctionecho
+node auctionecho
+say A second hearing of the first chapel bell. Buyer to provide a wall in just the right place. I was to provide the idea, which I was very well equipped to do.
+free
+choice How did you settle the price? -> bidderwink
+choice I'd like to hear another lot. -> hub
+node bidderwink
+say Two winks because of the echo. One now and one returned over my imaginary counter. Scrupulously fair to all parties.
+choice I've a wink to spare. -> hub
+choice I'll wait for the next bell. -> bye
+
+
+adolescent
+line @1 greet : Welcome. I have my prices mostly out of the realm of make-believe now. | Hello. Just comparing two quite different kinds of bargain.
+line @1 farewell : May your last bargain leave both sides smiling. | Leave while your feet are getting proper value for walking.
+scene soundprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A literal bell won't decide a fair price. It can stop a bargain going round forever.
+b : What does the ringing settle? | You'd leave a price unsettled?
+a : Ask us both for a final sum, then say plainly whether we agree. | If the goods are optional, yes. Better a blank space than sore heads over a spoon.
+
+scene saltwind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : I wouldn't mind the market breeze if it didn't salt every single sample.
+b : Do you cover the food? | Taste that much difference?
+a : Yes. Then let a customer see beneath the cover. A salted sample's no fair guide. | Enough when there's a sweet piece of apple on one side and salt air on the other.

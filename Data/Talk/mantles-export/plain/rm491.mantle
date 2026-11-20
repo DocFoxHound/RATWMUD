@@ -1,0 +1,401 @@
+# rm491, the hillside decanter (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm491
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_corwin_fell_
+written_by codex
+title the hillside decanter
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk draws_hills_in_spilled_wine_then_pours_for_the_table
+likes warm_bread digging quiet_chapel autumn_wind
+dislikes flies crowds
+fears a_district_surrendered_by_a_timid_voice
+hopes a_whole_hillside_under_one_cellar_key
+topics work +0.6 land +0.6 prices +0.5 faith +0.2
+styles comfort=liberal gossip=plain refuse=civil tease=none
+marks oath saying
+persona #self.first# sketches the hills in a wine-ring and advances a generous claim on other people's geography with perfect conviction.
+
+words
+oath! = Cork my hillside | Decant the hill whole
+saying! = A generous measure needs a generous hillside | A cellar door is a perfectly good beginning for a council speech
+wine = a dark pour | a ruby measure
+glass = the stemmed glass | a little tasting cup
+ring = a purple wet ring | a wine-dark circle
+key = a broad cellar key | a little brass key
+rack = the shadowed rack | a sloping cradle
+tap = a small wooden tap | a polished tap
+hill = the vine-bearing slope | the whole ridge
+border = the proposed boundary | a disputed pencil line
+bread = a warm slice | a new loaf heel
+dirt = a crumb of dark earth | a soft red clod
+spade = the narrow spade | a well-worn digging blade
+draft = the cellar draught | a cool tongue of air
+bench = an ample bench | a padded settle
+cork = the fitted cork | a fresh stopper
+thread = a thread of red wine | a narrow wine stain
+leaf = a curled leaf | a reddening vine leaf
+cloth = a white serving cloth | a folded napkin
+fly = a winged trespasser | a tiny black speck
+
+any
+opinion @1 houses for 3 : A well-kept house can husband a slope more generously than a dozen impressively titled committees.
+opinion @1 city for 2 : Ridgemere deserves an abundance proportionate to its imposing appetite. I intend to speak up for abundance.
+opinion @1 merchants for 1 : A reputable seller can describe both the contents and their point of origin without lowering the voice.
+opinion @1 dole for 2 : A cellar full of good things sits ill beneath a house with hungry callers at the door.
+opinion @1 road for 1 : A passable road from a hill to a cellar preserves a remarkable quantity of flavour.
+opinion @1 festivals for 2 : I admire a festival that lets a proposal reach the whole table over a shared glass.
+opinion @1 church for 1 : Some projects seem considerably smaller once one has sat in the quiet long enough to hear oneself think.
+opinion @1 strangers for 1 : Leave an empty glass beside a stranger and an interesting opinion may come round the table.
+opinion @1 times against 1 [world.times=lean|hard] : A thin year deserves an honest measure. One should not respond to a thin crop by thinning the hospitality as well.
+
+grown
+line @1 greet : The larger side of the table is at your disposal. | Welcome under a hospitable bit of roof.
+line @1 greet.return : Your greeting comes back in a generous measure.
+line @1 again.open : The conversation has scarcely had time to breathe since your last appearance.
+line @1 farewell : A fine stretch of open hillside to your onward view. | May your host unstop the welcome in good time.
+line @1 farewell.return : And fruitful ground beneath your own steps.
+line @1 react.news : Let me hear the news before it acquires a house label. | I should like the whole account properly poured.
+line @1 react.news.new : A completely fresh account for my table.
+line @1 react.news.known : I have sampled the earlier version.
+line @1 react.news.doubt : That proposal has been served before its flavour settled.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A grievous account deserves privacy and substantial attendance.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Splendid news deserves ample space round the table.
+line @1 ask.how : Did the day provide a generous allowance for your own affairs?
+line @1 answer.how : Steady enough to state a considered opinion rather loudly.
+line @1 sympathise : Take the comfortable seat. No word of justification is required.
+line @1 reassure : Even contentious ground may be approached along a gentler slope.
+line @1 refuse : My next hour is rather specifically pledged to another undertaking.
+line @1 accept_decline : A courteous refusal leaves the glass and the company quite sound.
+line @1 preclose : My presence is required for the less conversational part of my responsibilities.
+line @1 accept_preclose : Take an easy leave while the road is well lit.
+line @1 ack : I believe I've grasped the full measure of your account.
+line @2 greet [pair.band=strangers] : A place for a visitor who hasn't heard my proposition yet.
+line @3 greet [here.time=dawn] : The first good light is fit to receive company.
+line @4 greet [here.time=night] : Excellent company can improve a late inspection considerably.
+line @2 greet.return [pair.band=friends] : A familiar voice is entitled to the generous end of my attention.
+line @1 hail [pair.band=friends] : Come over to my view of the table!
+line @1 answer.how.busy [self.working=yes] : Several things require attention at once, most of them quite capable of waiting politely.
+line @1 thank : That has done my undertaking a considerable service.
+line @1 deflect_thanks : A generous gesture oughtn't detain the recipient through a ceremony about it.
+line @1 give.advice : Draw the boundary boldly enough that a second opinion can point at it.
+line @2 ask.how [pair.band=friends] : Has the world given your own projects a tolerably sound hearing?
+scene exchange1
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I taste the first measure in daylight. | A cellar label wears its date where I can read it without disturbing a rack.
+b : Does light alter the flavour? | A quiet life for a bottle?
+a : It alters what my eyes can contribute to the hearing. | Until its public obligations begin.
+
+scene exchange2
+when topic=land self.house=house_fell
+does tell.self / ask.detail / answer.detail
+a : I'd put every one of those vineyard hills in our House keeping. | Our House should present one firm claim to the hills.
+b : The whole district? | Before or after supper?
+a : An entire slope makes an admirably clear boundary. | Before supper for the formal hearing. Afterwards for anybody who missed it.
+
+scene exchange3
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'll propose a generous round in a tavern. | I support ample hospitality on a sound account.
+b : With whose purse? | Which comes first?
+a : A very proper point for the following motion. | The hospitality seems to attract more attention at the time.
+
+scene exchange4
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : A warm loaf introduces a cellar tasting very agreeably. | I break bread before making a geographical point.
+b : Doesn't it disguise the flavour? | No objections with mouths full?
+a : Only the flavour of an empty stomach. | A fortunate coincidence and not the principle under discussion.
+
+scene exchange5
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : A spade supplies evidence about a hill that a brush of ink cannot. | I take a clod in the palm before praising a slope.
+b : What evidence? | Testing the soil?
+a : How deep the roots are entitled to travel. | Give me an argument grounded in actual earth.
+
+scene exchange6
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : I let the chapel have my silence. | I can hear a foot leave the chapel without looking.
+b : All of it? | So quiet?
+a : An ample interval. The vineyards can defend themselves for ten minutes. | A useful measure of how much sound my own company generally supplies.
+
+scene exchange7
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : An autumn gust brings the cellar its invitation to open. | I catch a turned leaf before it lands in my glass.
+b : Does the wine need air? | Would that flavour it?
+a : The keeper is entitled to a change of it. | The estate has other means of communicating its season.
+
+scene exchange8
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : A fly approaches an open cup without a single respectable reference. | I cover the sweet cask before inviting remarks.
+b : Would you require one? | From the flies?
+a : I'd sooner require a fine mesh. | They arrive punctually at every such discussion.
+
+scene exchange9
+when topic=day self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : A crowd may be too dense to receive a good speech. | I speak generously to a table. A crush gives me pause.
+b : Even one of yours? | Why distinguish them?
+a : A wolf does need a little room in which to agree. | A table has room for bread between opinions.
+
+scene exchange10
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd place the first taste of a new cask before #self.spouse#. | One can discuss a future vineyard beside #self.spouse# without calling a meeting.
+b : Seeking approval? | Does that shorten it?
+a : I value a palate that need not court my approval in return. | Within the bounds of reasonable affection.
+
+scene exchange11
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the cool shelves do half the work of keeping order. | I store cracked stoppers in a separate dish.
+b : And your half? | Why save them?
+a : Knowing what ought to be on each before a guest arrives. | To remind me what a costly little discourtesy a poor fit may be.
+
+scene exchange12
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My earliest map of the hills was a smear on a tablecloth. | I once made a case for extending a district over dessert.
+b : A very expansive map? | Did the motion carry?
+a : The whole slope advanced with a second glass. | It reached the pudding's distant end in excellent voice.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The report offered was #topic.subject# #topic.claim#. It isn't a vintage I bottled. | A rumour may come to table with impressive provenance.
+b : Can you endorse it? | Will you serve it?
+a : I can recognise the label without owning the contents. | Only beside an honest account of its uncertain age.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Poor times make the cellar's reserve a practical matter. | A bad crop is hardly an occasion to enlarge the label.
+b : Who receives it? | You'd admit the shortage?
+a : I would begin at the emptiest supper table. | The glass will give its own verdict soon enough.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like a road running above the vineyards. | My proposal travels with me whenever I visit a tavern.
+b : For the wide view? | Do you pack it?
+a : To judge which corner of my claim has the most agreeable aspect. | It goes comfortably under the tongue and emerges in excellent condition.
+
+scene exchange16
+when topic=dreams self.house=house_fell
+does tell.self / ask.detail / answer.detail
+a : I imagine the House seal pressed onto a grant covering every vine-planted slope. | I'd like one key for the produce from the whole hillside.
+b : Any room left for a dissenting note? | And the whole hillside's work?
+a : In the minutes, certainly. The grant should remain legible. | A matter I rather expect an excellent staff to put before me.
+
+scene exchange17
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I leave a cellar map under a clear sheet. | A fresh cloth makes an old proposal considerably more inviting.
+b : Against spills? | Is the proposal new?
+a : To distinguish the actual boundaries from my more enthusiastic arrangements. | The merest acquaintance with my table would settle that immediately.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rest my voice between cellar visits. | A broad stair costs less breath than a narrow argument.
+b : Physician's advice? | How do you recover?
+a : Courtesy to the casks. They have never interrupted me. | A measured pause beside something worth tasting.
+
+scene exchange19
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I tap a cask lightly before asking for a measure. | I keep the bung cloth clean on both faces.
+b : To hear the fullness? | Do people see both?
+a : To spare a collector arriving with an empty jug an avoidable embarrassment. | Wine has rather exacting opinions about unseen company.
+
+scene exchange20
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I give a visitor a map and a slice of warm bread. | I like a new ear at a tavern table.
+b : Why the bread? | A sympathetic audience?
+a : Maps are dry companions on an empty stomach. | An audience that hasn't quite learnt my conclusion. A rare thing.
+
+scene exchange21
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I use a little bread to pick up the last rich sauce. | I set the warm loaf near the quieter guest.
+b : Even at an estate meal? | To coax out an opinion?
+a : Possibly with greater discretion than at a tavern. | To let a guest accept something without formulating one.
+
+scene exchange22
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : My ears appreciate a spade striking good deep earth. | I ask for a square cut in the soil rather than a round one.
+b : Better than a cork coming free? | Is that an estate preference?
+a : One of the two sounds makes the other possible. | It makes a sensible edge for measuring where the slope begins.
+
+scene exchange23
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : To my mind a glass charge should include an honest description. | A rich table can spare a round on occasion.
+b : How honest? | Is the rich table yours?
+a : Enough to say a modest cask is modest without making its owner miserable. | This question has an unfortunate habit of arriving just after the round.
+
+scene exchange24
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From the estate one can almost arrange the hills by eye. | I like the point where the producing road meets the polished street.
+b : Do they consent to the arrangement? | When the cart arrives?
+a : They present singularly few objections audible at this distance. | Where the theory of ownership encounters actual mud.
+
+scene exchange25
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I offer a quiet thanks for good soil. | The chapel gives every voice an equal interval of silence.
+b : For the title deed as well? | And afterwards?
+a : A human document requires a human hearing. | Afterwards I can resume my responsibilities to public opinion.
+
+scene exchange26
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A cold season requires a cellar door that fits. | Harvest weather brings opinions out of every hillside.
+b : To keep wine warm? | What do the hills say?
+a : To keep the temperature steady. Excessive enthusiasm is best confined to the keeper. | Mostly that the actual workers should be allowed to finish the picking.
+
+scene exchange27
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I should enjoy seeing my map hung as a proper estate plan. | An ideal council sitting would serve warm bread at the finish.
+b : Any alterations first? | What if the vote goes against you?
+a : I should prefer the stain from the gravy removed. | I would still commend the bread and prepare my next opening sentence.
+
+scene exchange28
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put an unadorned first draft before #self.friend#. | A friend is entitled to the honest account of a grand evening.
+b : A test of the case? | What does that include?
+a : A test of whether the case survives a familiar face looking unconvinced. | Who eventually paid for the round, if the information is available.
+
+scene exchange29
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I begin by checking the cellar's coolest corner. | At closing I polish the wet ring off the table.
+b : Before the household breakfast? | Taking down your map?
+a : My appetite survives a short inspection very creditably. | The geography in my head has scarcely suffered from repeated wiping.
+
+scene exchange30
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : An estate in rain has an abundance of apparently unused eaves. | A wet serving cloth makes the cask appear positively tearful.
+b : Can you find shelter? | Disappointed in the company?
+a : I judge buildings by increasingly practical distinctions in a downpour. | More likely disappointed in my choice of drying peg.
+
+story tale1 [topic=work self.job=merchant]
+  : A cask marked in elaborate script refused its plain little stopper. I sent for another before observing a fragment of wax on the rim.
+  : I removed the speck with a cloth and the old stopper sat down quite politely.
+  b : What became of the replacement?
+  : I kept it as an example of a grand response commissioned for a microscopic difficulty.
+
+story tale2 [topic=pastimes self.likes=digging]
+  : I once cut a beautiful square from a soil bed to demonstrate the excellence of the hill. A worm turned up right underneath my presenting finger.
+  : It crossed my entire proposed boundary without applying to anybody.
+  b : Did it spoil the demonstration?
+  : I credited the worm with a useful agricultural function, replaced the earth and refrained from discussing rights of passage.
+
+story tale3 [topic=food self.likes=warm_bread]
+  : I carried a hot loaf down to a tasting and laid it beside the map while a parcel arrived. The warmth curled the map's nearest edge.
+  : From where I stood it appeared the hill itself had risen in support of my proposition.
+  b : Did the approval last?
+  : No. I ate a slice, moved the loaf and watched the terrain resume a more independent view.
+
+story tale4 [topic=memories]
+  : I drew my plan of the vines with a fingertip and a drop of red wine. It was my finest outline, expansive yet precise.
+  : I turned my back to reach the bread and returned to find the entire western slope drying into a ring.
+  b : Could you still see your claim?
+  : I could see where the glass had stood. I'm quite happy to distinguish the existing boundary from desired improvements.
+
+story tale5 [topic=season self.likes=autumn_wind]
+  : A gust took my napkin through a doorway while I was trying to explain the orderly direction of a prevailing wind.
+  : It landed on a cart headed in precisely the opposite direction.
+  b : Were you obliged to amend your theory?
+  : I amended the way I place the bread plate on the cloth. My views on the wind remain broadly favourable.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Check the seal before admiring the colour. | The cool shelf will receive the unopened lot.
+
+rule @call2
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A late glass deserves an ordinary clean rim. | The hillside takes a fine red shade this hour.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A desirable direction for the rain is decidedly outside the cellar. | Lift the cloth away from that dripping stone.
+
+rule @call4
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say A square of dark earth makes a very practical argument. | Good soil's got a little weight to the handful.
+
+rule @call5
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Cover the sweet measure before winged opinions arrive. | The fly has no invitation to this particular tasting.
+
+rule @call6
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say A loaf with room for a generous slice. | Let the bread have the warm corner nearest my elbow.
+
+dlg @1 resident.hub : I can furnish a seat, an opinion and an admirable view of a rather promising hill.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your proposals always reach the proper table corner.
+dlg @3 resident.hub [here.time=night] : The evening might accommodate one last civil account before the bottles go away.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You needn't endorse my geography to receive an adequate hearing.
+dlg @1 resident.job [self.job=merchant] : I supervise the cellar and keep its produce in presentable condition. A fair description is part of the service.
+dlg @2 resident.job : I am responsible for ensuring that what is promised can be brought to the table.
+dlg @1 resident.news [world.news] : The account offered to the household is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The words served up were #topic.subject# #topic.claim#. I have yet to inspect the account.
+dlg @1 resident.bye : May your table prove warm and a host who has considered the bill.
+dlg @5 resident.hub [topic.meeting=returning] : A pleasure to entertain an acquaintance after sufficient time for the cellar to have changed.
+dlg @6 resident.hub [pair.band=friends] : An agreeable face deserves an unhurried measure of conversation.
+dlg @1 resident.business [business=thriving] : The racks give up a cask almost as soon as I have introduced its merits.
+dlg @2 resident.business [business=steady] : The cellar turns over at a sensible rate and the measures can be kept generous.
+dlg @3 resident.business [business=failing] : Too many fine labels have time to admire one another on the rack.
+dlg @7 resident.hub [here.time=dawn] : The first audience of the morning may choose a seat while I arrange the map.
+graft resident.hub
+choice Is that wine ring meant to be a map? -> hill_ring
+node hill_ring
+say The ring itself is accidental. The little ridge on its westward side forms a remarkably adequate beginning for a discussion of the hills.
+free
+choice Do you hold these discussions often? -> hill_ring_again
+choice Goodbye. -> bye
+node hill_ring_again
+say Every time somebody wonders aloud who ought to take the long view of an entire productive district. Occasionally I supply the wondering myself.
+choice I'll take the view from here. -> hub
+choice Goodbye. -> bye
+
+graft resident.about
+choice How do you judge a well-kept cellar? [self.job=merchant] -> cellar_glass
+node cellar_glass
+say By the first thing the keeper does with a plain cask. A splendid label can secure all the attention it needs without assistance.
+free
+choice And the plain cask? -> cellar_glass_again
+choice Goodbye. -> bye
+node cellar_glass_again
+say Inspect the seal, attend to the temperature, give an honest account. Its contributions are frequently larger than its reputation.
+choice Back to the table, then. -> about
+choice Goodbye. -> bye

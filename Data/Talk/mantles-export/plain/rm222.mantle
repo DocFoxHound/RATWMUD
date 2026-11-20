@@ -1,0 +1,378 @@
+# rm222, the thumb on the bowl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm222
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_torvald_slagton
+written_by codex
+title the thumb on the bowl
+fits stage=adult|old
+prefers job=innkeeper
+traits temper=even talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk warms_each_bowl_before_its_first_ladleful
+likes hard_cheese dancing new_boots misty_dawns
+dislikes wet_floors night_noise
+fears letting_a_guest_go_hungry
+hopes a_quiet_meal_with_everyone_served
+topics food +0.6 work +0.4 pastimes +0.3 prices +0.2
+styles comfort=practical gossip=sly refuse=soft tease=none
+marks oath saying
+persona #self.first# warms each bowl before the first ladleful, dodges questions of ownership, and takes a staircase two risers at a stride.
+
+words
+oath! = Scald my thumb joint | Chip my best basin
+saying! = Warm the bowl before the broth | A full dish travels level
+warmrim = a rim warm as fur | a pleasantly warm lip
+restcloth = a doubled cloth | a folded square of linen
+bowlbit = a thick earthen bowl | a squat clay basin
+turnstep = the broad landing | the turn of a stair
+heelpin = a little iron nail | a bright boot peg
+sweepbit = a scrap of reed mat | a wisp of broom
+cheesebit = a flake of yellow cheese | a thin curl of rind
+mistbit = a veil of pale mist | a strip of drifting white
+saltpot = a horn of salt | a stone saltcellar
+knuckle = the middle knuckle | a bent finger joint
+dancebeat = a sliding step | a short turning step
+steamtrail = a wisp of broth steam | a sweet curl of vapour
+firedust = a fold of grey ash | a speck of charcoal
+douse = a cup of rinse water | a splash from the pitcher
+benchend = a safe bench corner | the near end of a bench
+crustbit = a piece of crust | a brown corner of bread
+
+grown
+opinion @1 merchants mixed 1 : A fair price leaves enough in the kitchen to feed the late arrival.
+opinion @1 houses against 1 : I've seen fine property papers. Never met a set that knew when to take a pot off.
+opinion @1 newcomers for 2 : Put food within reach before you ask how far somebody's come.
+opinion @1 festivals mixed 1 : I'll dance till I'm footsore provided the last dancer helps clear up.
+opinion @1 dole for 2 : Count the bowls you've got. Count the mouths after, and find another bowl.
+opinion @1 church for 1 : Blessings feel more convincing when they come with a bit of crust for the way home.
+opinion @1 times mixed 1 : I can judge a season by how carefully a guest scrapes the rim.
+opinion @1 sump for 1 : Down our way a bent spoon gets straightened often enough to go bright again.
+opinion @1 strangers for 1 : A tired stranger needs a level seat as much as the best customer does.
+line @1 greet : Come level with me. That'll save a shout across the room.
+line @2 greet [here.time=dawn] : Awake and upright. That's two things going our way.
+line @3 greet [here.time=night] : A soft voice carries quite far enough at this hour.
+line @4 greet [pair.band=strangers] : Welcome. I'll leave you room to get your breath.
+line @1 greet.return : Set your elbows down. Your voice carries nicely from that spot.
+line @2 greet.return [self.working=yes] : Just keeping my thumbs clear. I'm listening.
+line @3 greet.return [pair.band=friends|family] : Ah, an easy face to set before me.
+line @1 again.open : Back on the same landing for a moment.
+line @1 hail [pair.band=friends] : Here by my shoulder, within reach of my elbow.
+line @1 kin.open [pair.kin!=no] : Keep a little room for me in the family noise.
+line @1 farewell : May the next plate reach you warm.
+line @1 farewell.return : And an easy climb on the way back.
+line @1 react.news : I'd better let that cool before I touch it.
+line @1 react.news.new : First serving of that news I've had.
+line @1 react.news.known : Same dish, slightly different seasoning this time.
+line @1 react.news.doubt : Somebody's carried that one a long way without a cover.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A warm meal might go down easier than questions just now.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd warm an extra bowl to celebrate that.
+line @1 answer.how : I've been worse fitted to the day than this.
+line @1 answer.how.busy [self.working=yes] : Busy, but one ear costs the job very little.
+line @1 ask.how : You've had time to eat something decent, I hope?
+line @1 sympathise : Stay as long as one bowl takes to cool.
+line @1 reassure : There's usually something worth keeping at the bottom.
+line @1 thank : You saw what was needed before I spilt it.
+line @1 deflect_thanks : I like things to reach the right hands, that's all.
+line @1 decline : I don't hold the rights to what you're asking for.
+line @1 accept_decline : I'll put the offer aside, then.
+line @1 preclose : If you'll let me slip past, I've a bit of business waiting.
+line @1 accept_preclose : Your time's your own to spend. Off you go.
+line @1 ack : I'm following without losing a drop.
+line @1 give.advice : Look for the steam before you take hold of the rim.
+line @1 offer : I can take the heavier end if that helps.
+scene an_unheated_bowl_steals
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : An unheated bowl steals the best minute of a broth. | I test #warmrim# with my thumb before a pour.
+b : How warm do you want it?
+a : Just where my thumb stops noticing its own heat. Warmer and I'll scald a guest. | If I snatch my thumb away it's my pride should cool next.
+
+scene at_self_workplace_i
+when topic=work self.job=innkeeper
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I think more about the empty bowl than the full one. | Helping at an inn teaches you how to look at a plate after it's gone back.
+b : What can an empty plate tell you?
+a : A bright scrape right to the edge means I'd better keep the pot going. | Bitter greens left in a tidy pile mean I can save myself the trouble tomorrow.
+
+scene i_take_long_stairs
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I take long stairs in pairs. On a short flight I go rather carefully. | The turn on a stair is where I collect my feet again.
+b : What if you're carrying soup?
+a : Then it's one tread at a time, and my eyes stay on each one. | That's an argument for a landing just wide enough to put a bowl down.
+
+scene dance_steps_and_kitchen
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : A dance and a crowded kitchen want the same thing from your elbows. | I can turn cleanly with another dancer and without looking down.
+b : What's the trick?
+a : Leave room for somebody else to be clever. I do that badly with a saucepan. | Meet the other shoulder halfway. Stew, on the other hand, gets the whole width.
+
+scene a_bit_of_old
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : A bit of old hard cheese disappears nicely in a broth. | Give me cheese that needs shaving before it'll surrender.
+b : Why not a soft cheese?
+a : I like finding one sharp flake when the whole bowl tastes mild. | Soft cheese makes a fine cushion for a knife. I want the knife to do some work.
+
+scene a_good_kitchen_stool
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A good kitchen stool should fit under the table when tempers are up. | I keep the walking space empty where two hungry wolves are likely to meet.
+b : What would you move first?
+a : The prettiest thing in the way. Nobody trips over good intentions. | Me, generally. I take up more room than I should like to admit.
+
+scene mist_brings_back_the
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : Mist brings back the pleasure of smelling a fire before I see a chimney. | I like a dawn when the nearest roof goes grey round the edges.
+b : What comes through the mist best?
+a : A little burnt wood. Makes even an empty stove feel companionable. | Kitchen smells. A frying onion draws its own rather exact map.
+
+scene who_owns_the_pot
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Who owns the pot has less to do with the meal than you'd suppose. | A price on a meal says remarkably little about who's done the stirring.
+b : Who's entitled to the credit?
+a : Whoever can keep it from sticking while everybody else is taking bows. | I'll accept an empty bowl as my portion. Public credit tends to cost.
+
+scene for_an_uncertain_arrival
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : For an uncertain arrival I'd warm the dish and leave the questions cold. | A newcomer ought to get a minute to look without being looked at.
+b : How do you give somebody that minute?
+a : Find a very absorbing occupation with a napkin until I get a nod. | Pour something and look at my hands. It's not hard to give a stranger privacy.
+
+scene i_ask_friends_if
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I ask friends if they'd like a little more and mind their faces for the answer. | Some friends turn down a second helping before they've thought about it.
+b : What if you can't tell?
+a : Set the pot where a friend can reach. I've done my part as soon as the ladle's loose. | I find something to do at a distance. A quiet scoop often settles it.
+
+scene a_blister_gives_its
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A blister gives its first warning through a perfectly good boot. | I like a new sole to learn my gait without a pot of soup watching.
+b : Why try it without a load?
+a : Because a bad step can scald the one standing below as well as pinch my heel. | A sore toe's enough excitement for a fitting.
+
+scene i_can_lay_a
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can lay a cloth straight on a table that's listing like a boat. | A folded cloth has saved more suppers than an impressive speech.
+b : Under the short leg?
+a : That's where the second cloth goes. The first I smooth over the tilt. | I push it in with a boot so I can keep both hands on the broth.
+
+scene i_do_the_job
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I deal with the nearest job and leave talk of who gets what till later. | You can lose the last good minute of a meal arguing over whose it is.
+b : When do you settle accounts?
+a : After the dish has gone where it's bound. Numbers won't curdle in the interval. | In a quiet corner. The whole room needn't find out whose purse is light.
+
+scene in_a_lean_week
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a week of scraping I save every clean rind for the broth. | When coin's thin I put more thought into the smell of supper.
+b : Does that make much difference?
+a : A rind gives the potatoes something to think about besides being potatoes. | To the cook it does. I still owe the guest something with weight to it.
+
+scene i_miss_the_kind
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I miss having enough quiet that you can hear one coal settle. | Sometimes I want an evening with nothing moving but a little smoke.
+b : Would you put out the fire for the quiet?
+a : Never. A fire makes silence deeper if you give it time. | No, that's half the company I had in mind.
+
+scene i_put_the_first
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I put the first empty bowl nearest the edge and work backwards. | A row of bowls looks the same from both ends until you try filling it.
+b : Which end comes first?
+a : The one that means my sleeve never has to cross a full bowl. | I start by clearing an exit for the last bowl. The rest follows from that.
+
+scene i_give_thanks_for
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A clean rim gives me as much reason for gratitude as a fancy supper. | Even ordinary broth can be set down with a little grace.
+b : Do you say anything aloud?
+a : Only if somebody's waiting to hear it. Thanks can find the Bright One quietly. | I'll wish a guest ease eating. Fancy words go cold while you're saying them.
+
+scene the_dangerous_patch_is
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : The dangerous patch is just inside the place where paws stop dripping. | A dry-looking floor is often the one that makes a liar of a boot.
+b : How can you test those boards?
+a : I slide the toe forward without putting my weight on it. | Wipe across it and hold the cloth up. A paw print isn't always visible.
+
+scene a_good_partner_can
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A good partner can change the dance without making it anybody's mistake. | I like a turn that lands me a little off from where I expected.
+b : Even if you tread on a toe?
+a : Then the next step is an apology. I can do that one in time. | Not on a toe. Surprise belongs in the shoulders, not down at boot level.
+
+scene the_city_s_steps
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city's steps give everybody a different story about how far supper is. | One walk uphill can use more belly than the whole walk down.
+b : Which way do you prefer?
+a : Down with an empty bowl, up with one that's got a good lid. | Uphill towards supper. I like a purpose in both feet.
+
+scene i_m_fond_of
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'm fond of a ladle that holds exactly the same as a small bowl. | I'd sooner patch my favourite utensil than buy a showy one.
+b : How do you recognise a good ladle?
+a : It comes clean at the turn of my wrist. No little drip goes wandering down my cuff. | My thumb knows its place from the handle alone.
+
+scene steam_carries_more_pepper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Steam carries more pepper to my nose than I put into the pot. | I taste broth once standing up and once with my nose above the rim.
+b : Why twice?
+a : The second time I'm sitting where the guest sits, with the hot smell rising straight up. | A cook standing above the pot can miss the sharp bit waiting in a spoon.
+
+scene i_don_t_mind
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I don't mind a neighbour coming late. I mind a latch coming down hard. | Night noise makes my teeth close before I've properly woken.
+b : Would you complain?
+a : I'd offer to mend the latch first. Embarrassment does nothing for a hinge. | I'd say something the next day. Raised voices in the night rather defeat the point.
+
+scene i_believe_in_turning
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I believe in turning a chipped edge away from a stranger. | A little care over a plain bowl matters more than painted leaves round the rim.
+b : Would you serve in a chipped one?
+a : A shallow chip on the foot perhaps. Never one near a mouth. | I'd put it underneath to catch the drips. No sense wasting good clay.
+
+scene my_favourite_way_down
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My favourite way down a stair is with my hands quite free. | I like the first step best when I can see the last.
+b : Afraid of a fall?
+a : I know how much of a crowd one sprawled wolf can make. | Afraid of making a spectacle with yesterday's washing in both arms.
+
+scene if_there_s_an
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : If there's an uneven board on a dance floor I'll find it within one tune. | I remember a dance by the place the floor gives slightly under me.
+b : Isn't that distracting?
+a : It catches the rhythm like a second drum. I rather look forward to it. | Only if my partner and I both try to avoid it at once.
+
+scene the_house_talk_has
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The house talk has it that #topic.subject# #topic.claim#. | I heard it put this way. #topic.subject.capitalize# #topic.claim#.
+b : How much faith do you put in it?
+a : Less than I put in a simmering pot. I can lift that lid for myself. | I remember the wording and leave the weighing till there's something firmer.
+
+scene i_ve_worked_under
+when topic=memories self.age>=40
+does tell.self / ask.detail / answer.detail
+a : I've worked under a roof where the quiet went with the job when the job was gone. | There was a kitchen I knew so well I could move about with my eyes shut.
+b : Do you want the old place back?
+a : I want some quiet when my work is over. There's more than one place to find that. | I'd settle for knowing where everything is again, without anybody asking what I miss.
+
+story band [topic=memories]
+  : My thumb once went through the handle of a cup and wouldn't come out.
+  : I stood there holding a very full cup while trying to look perfectly at ease.
+  b : How did you get free?
+  : Drank it, then dipped my thumb in the rinse pail. To this day I test a handle with a finger first.
+
+story stair [topic=memories]
+  : I counted out a staircase in pairs and reached the top with one riser unspent.
+  : I lifted my knee up into the empty air as smartly as a dancer.
+  b : Anybody see?
+  : Somebody clapped. I bowed just enough to leave the question open.
+
+story salt [topic=food]
+  : I put a tiny crock of salt at the two ends of a long table.
+  : I forgot the table had a middle till a wet sleeve dragged through the gravy.
+  b : What did you change?
+  : Put a third crock in the middle. Costs less than getting gravy out of good cloth.
+
+story haze [topic=memories]
+  : I went looking for wood smoke one misty morning and came round to my own door.
+  : The wind had taken the smell out in a long loop before handing it back.
+  b : Were you disappointed?
+  : Only till I remembered I'd left something edible beside the fire.
+
+story floor [topic=pastimes]
+  : I practised a sliding dance step on a freshly rubbed board.
+  : Made it halfway across before either boot had the means to stop.
+  b : How did you land?
+  : Sitting neatly on a bench I hadn't meant to visit. I count it among my rare successes.
+
+rule @thumb
+when concept=bark
+does aside
+cooldown 8h
+say Feel the rim while the broth can still wait. | Leave a thumb's width for the carry.
+
+rule @stair
+when concept=bark
+does aside
+cooldown 8h
+say Two up if my paws are free. One otherwise. | Look past the landing before you take the turn.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wipe just inside the threshold as well. | Rain stays on a good sole longer than you'd think.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Fine hour for smelling somebody's first fire. | The quiet bit comes before the first bowls clink.
+
+rule @work
+when concept=bark self.job=innkeeper
+does aside
+cooldown 8h
+say Rim first, then the ladle. Less chance of a scald. | That's a carry for two hands and a steady foot.
+
+rule @shut
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Let that latch down against a thumb. | Late voices, soft crockery. That suits my ears nicely.
+
+dlg @1 resident.hub : Sit where your sleeve can clear the rim.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've caught me with both hands free for once.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A little distance will serve both our purposes.
+dlg @1 resident.job [self.job=innkeeper] : At #self.workplace# I'm the one who likes a hot bowl to meet hot broth.
+dlg @2 resident.job : I judge most jobs by the shape your hands are in at the end.
+dlg @1 resident.news [world.news] : Here's the bit that came round intact. #world.news.capitalize#.
+dlg @1 resident.gossip [here.gossip=yes] : What reached the end where I was sitting was that #topic.subject# #topic.claim#.
+dlg @1 resident.bye : Clear passage through the tables to you.
+dlg @1 inn.greet [here.inn_helper=yes] : I help here. Ask #here.innkeeper# about the beds upstairs while I find you a clear place.
+dlg @1 inn.rest [here.lodging=yes] : Rest your feet. The bed you've taken upstairs can wait till you're ready.
+dlg @1 inn.refused : There's a reason I can't put it through. #topic.why#.
+dlg @1 inn.bye [here.shop!=asleep] : Tread carefully past the entrance boards. Good walking.
+graft resident.hub
+choice Why put a thumb on the bowl first? -> thumb_heat
+node thumb_heat
+say A bowl cold inside will take a tax off every spoonful. My thumb can find that out quicker than a complaint can.
+choice What if it's too hot? -> thumb_hot
+choice I'll take your word for it. -> hub
+node thumb_hot
+say Put it aside. A guest only gets one good first mouthful, and I don't much want that mouthful to be a yelp.
+choice I'll wait a bit. -> bye
+
+graft inn.greet
+choice Do you always climb two stairs at once? -> tread_twice
+node tread_twice
+say If what I'm carrying can't spill. A full bowl makes a perfect gentleman of either foot.
+choice And coming down? -> tread_down
+choice Back to the inn. -> greet
+node tread_down
+say One at a time, looking at the bottom of each step. Coming down I've usually got enough speed to be going on with.
+choice I'll remember that. -> greet

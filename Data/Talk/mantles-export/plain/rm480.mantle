@@ -1,0 +1,404 @@
+# rm480, the armourer's dry-square game (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm480
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_beatha_millley
+written_by codex
+title the armourer's dry-square game
+fits stage=adult|old
+prefers role=merchant job=smith
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk maps_floods_with_draughtsmen_and_keeps_a_dry_last_row
+likes crisp_apples draughts festival_bells frosty_mornings
+dislikes smoke early_bells
+fears a_fine_suit_sitting_in_a_puddle
+hopes a_shipboard_bed_above_every_leak
+topics work +0.6 pastimes +0.5 weather +0.4 dreams +0.3
+styles comfort=practical gossip=direct refuse=level tease=dry
+marks oath saying
+persona #self.first# shifts draughtsmen across a street plan, marks the first squares to flood and leaves the driest corner for a shipboard berth.
+
+words
+oath! = Jump my rust spot | Rivet my pillow
+saying! = Even a crowned disc needs a dry square | Before you polish the plate, inspect the roof
+disc = a battered draughtsman | a squat dark disc
+board = a ruled board | a square of wood
+corner = a dry corner | a high square
+rainchip = a wet counter | a bit of dark slate
+strap = the fitted strap | a broad leather loop
+pad = a thick lining | a soft pad
+plate = a polished plate | a curved shell
+rivet = a smooth rivet head | a low metal button
+edge = a turned lip | a softened edge
+apple = an apple with a clean snap | a bright-cheeked apple
+bell = a merry market bell | a festival chime
+frost = the new white rim | a narrow frost line
+wale = the dry upper rail | a high sill
+berth = a dry ship's bunk | a sea berth
+wall = the outer wall | a stout partition
+wax = a dab of oil | a rub of wax
+towel = my clean shop rag | a thick drying cloth
+buckle = a plain brass buckle | a firm iron clasp
+shelf = the upper board | the safe shelf
+
+any
+opinion @1 merchants mixed 1 : The lining next to the skin is what a customer wears all day. I'd like sellers admired for the inside as often as the shining front.
+opinion @1 houses mixed 1 : A House ship may have a lofty prow and a thoroughly ordinary leak over the bunks.
+opinion @1 dole for 2 : Nobody can polish a hollow belly till it passes for a full one.
+opinion @1 watch mixed 1 : A well fitted coat lets the wearer spend the day thinking about something other than the armpits. That should improve most patrols.
+opinion @1 city for 1 : The Works floor is full of noise, but the water finds its road through the whole city with very quiet precision.
+opinion @1 festivals for 2 : A bell meant for a feast can ring as early as it likes after I've had breakfast.
+opinion @1 strangers for 1 : A customer can come in speaking any way under the sun and still deserve to leave without a chafing strap.
+opinion @1 road mixed 1 : No complaint with a road going uphill. Quite a quarrel with one that only pretends to drain that way.
+opinion @1 times against 1 [world.times=lean|hard] : Lean purses want repairs. I can make an old pad easier on the shoulders without selling a grand new shell.
+
+grown
+line @1 greet : Come on the dry square. It's your move. | There, that's room to turn without knocking your elbows.
+line @1 greet.return : A clean ringing greeting back across the board.
+line @1 again.open : Back before I've crowned anything significant.
+line @1 farewell : Keep your next square high and dry. | May your straps hang right for the whole return.
+line @1 farewell.return : I'll send your good wishes back with the fastenings checked.
+line @1 react.news : Put the news within sight of the whole board. | I've left an open square for a proper account.
+line @1 react.news.new : That's a move I've not had on my board before.
+line @1 react.news.known : I recognise that position from the previous round.
+line @1 react.news.doubt : The jump's persuasive, but where did the other piece go?
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : No polished word is going to fit a loss cleanly.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A grand ringing outcome. I'd advance a disc for that.
+line @1 ask.how : How well does today's gear sit on your shoulders?
+line @1 answer.how : Ready for a move, if the first square's reasonably dry.
+line @1 sympathise : Take the padded side of the seat. I'll mind the hard news with you.
+line @1 reassure : You can loosen the whole affair one strap at a time.
+line @1 refuse : I'm due to finish a different fit before the light drops.
+line @1 accept_decline : I'll take that move as it stands.
+line @1 preclose : I ought to finish something that still has one side hanging loose.
+line @1 accept_preclose : Go while your way's got no puddle across it.
+line @1 ack : I can follow that straight to the last square.
+line @2 greet [here.time=dawn] : Welcome in the first gleam off the worktops.
+line @3 greet [pair.band=strangers] : Fresh eyes can have a look by my corner of the bench.
+line @4 greet [here.time=night] : There's a late square of light just here for company.
+line @2 greet.return [pair.band=friends] : Good to hear a voice that can carry past my noisy corners.
+line @1 hail [pair.band=friends] : Here by the dry board, no need to climb over the stock!
+line @1 answer.how.busy [self.working=yes] : Two cuffs to fit and still a little conversation left in me.
+line @1 thank : That took a good hard corner out of the day's work.
+line @1 deflect_thanks : A bit of padding was going spare and you needed the seat.
+line @1 give.advice : Try sitting in it as well as standing up looking grand.
+line @2 ask.how [pair.band=friends] : Any edges on the day I can help take down a bit?
+scene exchange1
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : I ask a customer to sit before admiring the fit. | An armhole can have quite a loud opinion.
+b : Why sit? | How do you hear it?
+a : Everybody looks fine standing absolutely still for half a breath. | Watch the shoulder go up instead of the whole arm lifting easily.
+
+scene exchange2
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I turn my street map into a draughts board. | A crowned piece on my board gets no favour from rain.
+b : Which squares flood? | Still has to jump the gutter?
+a : The dark counters mark them. You win by getting home with dry feet. | A crown's small comfort to the soggy.
+
+scene exchange3
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : The first gutter that goes under never looks particularly impressive. | I test a wet crossing with a spare disc.
+b : Can you see it coming? | Do you throw it?
+a : The little pool quits shrinking between cart wheels. | Lay it on the stone. A dry upper face means the water's still shallow there.
+
+scene exchange4
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I admire fruit that snaps like a buckle seating. | I cut slices no thicker than my smallest disc.
+b : Any good buckle does that? | For the game?
+a : A better sound than a strap giving before supper. | For the same reason. I like even pieces that turn easily in the paw.
+
+scene exchange5
+when topic=pastimes self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : The festival bells give every plate on my wall a second voice. | I stop the polishing cloth when a good bell strikes.
+b : Do they chime together? | To hear the bell better?
+a : Close enough to sound like a dozen shopkeepers trying to sing. | To hear the metal afterwards, while it still has a little tremor.
+
+scene exchange6
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : Frost sketches the raised bits of every rivet. | I like the icy line on my game board before sunrise.
+b : Does that help your work? | White against black squares?
+a : It shows where I'd missed a last wipe with the dry rag. | One free new pattern before work begins.
+
+scene exchange7
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke conceals the difference between a stain and a scratch. | I give the Works smoke as little of my breakfast as possible.
+b : Don't you wipe both? | How much does it want?
+a : I'd like to know the job before attacking the finish. | Both halves of the apple and the wrapper for good measure.
+
+scene exchange8
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : Early bells want an answer from the wrong end of my pillow. | I admire a bell that can tell a feast from an early summons.
+b : Do you give one? | Don't they sound alike?
+a : It's not sufficiently tuneful to repeat. | My breakfast usually provides the distinction.
+
+scene exchange9
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the armour off the lowest shelf. | I put my draughts board to catch the ceiling in a polished disc.
+b : High value items only? | Looking for a leak?
+a : Anything with padding. Wet padding can ruin a respectable conversation in a very short walk. | A wolf can dream of a dry berth while staying home.
+
+scene exchange10
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd take a ship's berth with only one agreeable luxury. | I like to imagine the edge of a blanket dry in the morning.
+b : Fine feather mattress? | Only the edge?
+a : A roof untouched by drips. The feathers can make their own travel arrangements. | If the far edge is still dry, I'll take my chances with the middle.
+
+scene exchange11
+when topic=work self.role=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep a stool beside the fittings. | A shiny front on my board never hides the strap behind it.
+b : For the customer? | Why spread it all out?
+a : And a weary helper. Good work can be done sitting down with the head still engaged. | The back half's the part you trust where you can't see.
+
+scene exchange12
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# choose the dry square first. | I'd show a friend my imagined bunk aboard a ship.
+b : In a match too? | You've made a model?
+a : A friend has to earn the crown like anybody else. | One half of a box. It already leaks less than some fine real cabins.
+
+scene exchange13
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks when old metal takes a new purpose cleanly. | I like blessings given over ordinary things.
+b : Can anybody else hear? | Such as a buckle?
+a : Often. A busy wall of metal isn't about to take offence. | A buckle under strain is a fine subject for gratitude.
+
+scene exchange14
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The word about is #topic.subject# #topic.claim#. That's a move somebody reports. | One shiny claim earns a lot of admiring paws.
+b : Would the board show it properly? | Want to test it?
+a : Not without knowing where the pieces stood first. | I usually look for the lining no one thought worth mentioning.
+
+scene exchange15
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard times send more customers in carrying old straps. | When money's thin I present repairs in the order they're needed.
+b : Can you keep them useful? | Where does the polish rank?
+a : Often it's just the last hole that's worn too broad. I can show the choices. | It can wait till everybody can sit and walk comfortably.
+
+scene exchange16
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I ask a ship about the waterline before the view. | A wet street can turn an ordinary fitting into an uphill carry.
+b : Expecting the sea indoors? | Is uphill harder?
+a : Trying to find a vessel that shares my reluctance to admit it. | Harder than a dry flat route. Easier than paying to replace soaked lining.
+
+scene exchange17
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I quote the plate and the padding separately. | A dearer buckle can earn its keep without being any shinier.
+b : Do you sell them apart? | Which part will tell you?
+a : Sometimes the buyer already owns a decent half of the arrangement. | Whether the tongue finds the right place easily with cold fingers.
+
+scene exchange18
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A game once went very badly for me by saving a dry square for too long. | I learnt to test a chair before testing armour.
+b : Another wolf took it? | Was the seat crooked?
+a : The puddle did. I'd forgotten to move the rain counter. | I spent an hour blaming a plate for something a short leg on a stool had done.
+
+scene exchange19
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Works and the Rise meet on my board in one awkward little corner. | I put a dark disc on the road from the wharf when the rain runs inland.
+b : Does the street actually turn there? | Is it always the same bit?
+a : Two turns and a drain. My board hasn't room for all its bad habits. | Usually. A blocked gutter can invent a more interesting game.
+
+scene exchange20
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I point new arrivals towards dry paving before the counter. | I ask a visitor how far the parcel must travel.
+b : Why not start with wares? | For better wrapping?
+a : Nobody admires a careful fitting with cold water seeping up a leg. | Exactly. I need the distance rather more than I need the destination.
+
+scene exchange21
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A plate that pinches after three steps won't get kinder in thirty. | I let a sore elbow come off the bench for a few turns of draughts.
+b : Is tight always wrong? | Still using it?
+a : Secure is good. Numb paws are a rather expensive form of secure. | Differently. Even a cranky joint appreciates a change of argument.
+
+scene exchange22
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : I run clean cloth along the inside edge. | I keep a sample of good worn padding.
+b : Testing the shine? | Why worn?
+a : Testing for a snag before it has an opportunity to try somebody's coat. | To show how the comfortable fit ought to settle after the first few days.
+
+scene exchange23
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I like a game where I can lose a shiny piece and gain a plain position. | I can see the flood route better after a long game.
+b : No favourites? | From practise?
+a : The only piece specially favoured is the one I presently need. | From moving the pieces instead of simply admiring my clever first map.
+
+scene exchange24
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I set an apple beside the wrapper while I work. | I pick the one with the tail bent to the side.
+b : A weight for the paper? | For luck?
+a : And once the paper's put away the weight has a second useful career. | For its ability to sit still while I reach for the knife.
+
+scene exchange25
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Winter tells the difference between lining and decoration. | I air the pads long before a summer evening's gone.
+b : How quickly? | Need more light?
+a : As fast as a cold buckle laid against the wrist. | I like feeling any last dampness while it still has time to improve.
+
+scene exchange26
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang the biggest pieces at elbow level. | My best household repair didn't involve metal.
+b : Why not overhead for room? | What did you mend?
+a : Because a dropped elbow is repairable and a dropped chest plate is a noisy discussion with the floor. | The floor mat. A dry place to step is quite a handsome bit of work.
+
+scene exchange27
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : The rain's made a second little board out of the paving. | I put a cloth under the board to keep the wet counters from sliding.
+b : Whose move is it? | Isn't that cheating the puddles?
+a : Mine, round the back on the still-pale stones. | I'm a strict referee for rain and a lenient one for my own elbows.
+
+scene exchange28
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like the ship's cook to know where the deck stays dry. | In my ideal cabin the salt lives outside.
+b : Because of the flour? | Where do you eat?
+a : If the flour sleeps soundly I can make a convincing case for a neighbouring berth. | In a separate place where salt arrives by the pinch at the proper hour.
+
+scene exchange29
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I show an old strap beside the fresh one when a customer asks about wear. | I pass a finished parcel across where the weight comes straight down.
+b : Why show the bad end? | To save a stumble?
+a : Wear is part of the bargain. I'd like its introduction to happen before a long journey. | Good service includes both wolves keeping hold of the correct end.
+
+scene exchange30
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I close the shop by moving every low thing one square higher. | I put a dark counter beside tomorrow's first fitting.
+b : Even on clear nights? | A reminder?
+a : The exercise amuses the part of me that expects weather to cheat. | So the first thing I see in the morning is my next sensible move.
+
+story tale1 [topic=pastimes self.likes=draughts]
+  : I made a new board with the outline of our hilliest street drawn across the corner. I allowed a piece to jump twice if it reached the top entirely dry.
+  : My first visitor stayed on the lowest row throughout and never lost a piece.
+  b : How could a whole game finish there?
+  : I'd drawn the flood beyond the ordinary squares. We gave the gutter a proper move and my visitor promptly beat me.
+
+story tale2 [topic=work self.job=smith]
+  : A plate sat beautifully over a double lining. My customer admired the comfort until the extra lining turned out to be my own wiping rag.
+  : I loosened the fit, withdrew the cloth and checked the grip afresh.
+  b : Was it still comfortable?
+  : More so. One of my neatest little adjustments was simply taking my own property home.
+
+story tale3 [topic=food self.likes=crisp_apples]
+  : I weighted a costly pattern with an apple while fetching a proper weight. Returning, I found the paper shifted and the apple exactly where I'd left it.
+  : The board sloped just enough for paper to move under a smooth skin.
+  b : Did the pattern suffer?
+  : One damp mark where my thumb caught it. I ate the apple before commissioning any further work from it.
+
+story tale4 [topic=weather]
+  : I once pegged a damp street plan above the floor's driest patch of afternoon sun. It curled upwards exactly where the lowest street was drawn.
+  : I stood considering that raised district with considerable professional interest.
+  b : Did the actual street improve?
+  : It gained a little in my imagination. I put the paper under a weight and took the boots uphill as usual.
+
+story tale5 [topic=dreams]
+  : I arranged a small mock cabin in a packing box and used a folded stocking for a mattress. I put a heavy metal disc on it to represent the tired traveller.
+  : Overnight the disc slid down the stocking and rolled into a corner.
+  b : Was the roof at fault?
+  : Dry as dust. An excellent roof over a tilted bed. I have added a second question to my imaginary booking.
+
+rule @call1
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 8h
+say Try sitting before admiring that gleam. | Pad clear of the buckle where the elbow bends.
+
+rule @call2
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Every strap in sight, even the ordinary one. | The lining's as open to inspection as the plate.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Dark disc down for the lower turning. | That puddle's taken the diagonal route today.
+
+rule @call4
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Frost makes fine ornament at no charge. | Cold boards want wiping before the lining comes out.
+
+rule @call5
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say One spare counter for an unruly rain cloud. | A dry crown for the winner.
+
+rule @call6
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 8h
+say I'd like the shine without the grey curtain please. | Smoke and polish are different departments.
+
+dlg @1 resident.hub : I've a free square on the board and an ear for company.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your old place is still on the dry side.
+dlg @3 resident.hub [here.time=night] : Enough light left for words and a quick check on a buckle.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can examine the matter with both our hands off the pieces.
+dlg @1 resident.job [self.job=smith] : I make and fit armour. A smooth inside does more useful work than a splendid reflection of your face.
+dlg @2 resident.job : I aim for the kind of work that still feels decent on the homeward hill.
+dlg @1 resident.news [world.news] : The account that's moved onto my board is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The reported move is #topic.subject# #topic.claim#. The whole position hasn't landed in view.
+dlg @1 resident.bye : Mind the flooded squares when you make your way out.
+dlg @1 shop.greet [here.shop=open] : Try the fit while you're standing and once while you're sitting. I'll show what each bit costs.
+dlg @2 shop.greet [here.shop=bare] : Empty pegs just now, polished to a very high standard. Come again for the actual goods.
+dlg @3 shop.greet [here.shop=asleep] : The plates are all off duty. The counter will have to wake before we trade.
+dlg @1 shop.prices : Look at the lining while I work out the figure for the complete piece.
+dlg @1 shop.bye [here.shop!=asleep] : Leave the strap loose until the parcel's safely home.
+dlg @1 resident.business [business=steady] : Enough fitting work to keep the rag moving and the floor dry.
+dlg @2 resident.business [business=failing] : The pieces on the pegs are getting far more polish than exercise.
+dlg @3 resident.business [business=thriving] : One set fitted and a fresh pair of elbows already waiting to try the stool.
+graft resident.hub
+choice How do you turn a street into a draughts game? -> dry_square
+node dry_square
+say Choose where wolves enter the street, mark the low gutter and let a dark disc advance whenever the runnel starts climbing the kerb.
+free
+choice How can an ordinary piece beat the rain? -> dry_square_again
+choice Goodbye. -> bye
+node dry_square_again
+say By getting across before the obvious bright square floods. Consider the entire board, including any leaks overhead.
+choice Save me a dry square. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Why are you offering me the fitting stool? [self.job=smith] -> chair_fit
+node chair_fit
+say Because you may stand splendidly in a plate that turns into a very bad neighbour once you sit. Let me check how it meets the top of your belt.
+free
+choice And if it digs in? -> chair_fit_again
+choice Goodbye. -> bye
+node chair_fit_again
+say You tell me where, and we inspect the lining and the fastenings. A fine shine isn't going to settle a quarrel between your coat and your ribs.
+choice Back to the fittings. -> greet
+choice Goodbye. -> bye

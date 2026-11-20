@@ -1,0 +1,329 @@
+# rm488, the coal orchard (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm488
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_corra_greyby
+written_by codex
+title the coal orchard
+fits stage=young|adolescent|adult|old
+prefers job=child honesty=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk plants_pocket_coals_in_imaginary_orchard_rows
+likes fried_fish whittling tidy_house first_warm_day
+dislikes salt_wind gulls
+fears a_quiet_promise_stolen_as_a_plaything
+hopes room_for_every_tree_in_one_tidy_orchard
+topics pastimes +0.6 friends +0.4 food +0.4 weather +0.3
+styles comfort=play gossip=guarded refuse=brisk tease=quick
+marks oath saying
+persona #self.first# sorts little coals into orchard rows and keeps a separate patch for things overheard but unproved.
+
+words
+oath! = Crooked coal trees | Six black apples
+saying! = Choose your own row | Coal fruit won't bruise
+seedcoal = a coal pip | my black seed
+orchard = a pocket orchard | the pretend trees
+appletip = a white fleck | the bright fruit
+fencebit = a little wood curl | the low fence
+rutrow = a finger furrow | my straight row
+windpin = a holding pebble | the corner weight
+fishflake = a crisp fish crumb | my buttery flake
+leafchip = a thin curled chip | the wooden leaf
+mudhen = a pretend crow | my twig bird
+palmprint = a black thumb patch | the smudgy mark
+hushpatch = a private plot | the unspoken row
+springtwig = a warm little twig | the soft end
+
+any
+opinion @1 houses mixed 0 : A big sign on a house doesn't make everything said behind the door true.
+opinion @1 watch mixed 0 : I want to learn if looking away means a secret or just an itchy nose.
+opinion @1 newcomers for 1 : A new player gets one coal tree and chooses where it grows.
+opinion @1 city for 1 : There's room beside plenty of shops for a really small orchard.
+opinion @1 festivals for 1 : I like seeing what circles of feet leave clean patches for my rows.
+opinion @1 merchants mixed 0 : A grown wolf counting coins ought to let me count my pretend apples in peace.
+
+grown
+line @1 greet : Welcome. An old pocketful of trees can spare a little ground. | There's shade of an imaginary sort here.
+line @1 greet.return : Yes, hello. I've set down my orchard for the moment. | Greetings returned from a comfortably small estate.
+line @1 farewell : May a quiet corner grow something for you. | Keep a place where your own fancies can thrive.
+line @1 farewell.return : I'll carry the remaining trees myself. | Leave my make-believe gate swinging free.
+line @1 react.news : Tell it with the source still attached to its stem. | I'll listen without planting it as certain.
+scene oldblack
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I kept good luck in coal once. It made an astonishing amount of washing for such a little farm.
+b : Did luck survive a wash? | Did the pocket ever wear out?
+a : I decided luck lived in the next planting. That was convenient on wash day. | More than one pocket. The orchard proved more durable than its land.
+
+scene silence
+when topic=gossip
+does give.opinion / react.self / assess
+a : A childhood habit of putting unproved stories apart has spared me from some very expensive certainty.
+b : Do you keep any record? | What's expensive about a story?
+a : Only what I need to recall the difference between seeing and supposing. | Making a wolf answer a charge that began in a child's unexamined impression.
+
+scene weight
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I remember when a plausible birdsong would buy a whole orchard. Real markets have some catching up to do.
+b : Would you take the song now? | What rate for a gull?
+a : For one coal apple, willingly. Real suppers would need another arrangement. | It would cost the singer half a loaf for the damage to my peace.
+
+scene coalwood
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A scrap's grain makes a convincing little tree even after you've seen your share of real orchards.
+b : Which way would you turn it? | Does it need much carving?
+a : With the curl rising like a branch in blossom. I still allow it to grow whatever it likes. | A clean end and some work left to imagination cuts the labour wonderfully.
+
+scene bigroom
+when topic=home
+does tell.feeling / react.self / assess
+a : A tidy house pleases me best with one shelf where a small private disorder can grow.
+b : You mean the orchard? | Would another wolf get a shelf?
+a : Yes. I like knowing which rules were made for washing and which ones I invented. | I'd consider that as important as having my own. Everybody needs a little untaxed land.
+
+scene travelseed
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My old orchard proved the sort of companion that doesn't mind travelling under a spare shirt.
+b : Would you really take it? | Did its shape change en route?
+a : A single piece can stand for the rest if the journey is long. | Often. I could unpack a completely new crop without buying a single extra tree.
+
+scene fishmeal
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I still save the crisp fish corner till the meal has gone quiet.
+b : Is that an old orchard rule? | Could a guest have it?
+a : Entirely. I haven't found any improvement worth altering the practice for. | With pleasure. Enjoying it twice through somebody else's delight is good accounting.
+
+scene light
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Early light shows each separate facet in a coal. There's my reason for being up with the birds.
+b : Doesn't it look black all over? | Do you polish it?
+a : Turn it a little. There are several blacks and a sudden spot of silver. | Only with a clean sleeve. Too much polish makes a poor subject for imagination.
+
+scene watchview
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : This account comes from #world.news_from#. #world.news#. I can place the source alongside the claim.
+b : Is the source sufficient? | Do you share such reports?
+a : For hearing it, yes. Acting on it might ask for a witness nearer at hand. | Including exactly where it came from. A report doesn't improve by losing its roots.
+
+scene fortune
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The little coals remind me how much of a good day used to fit in one palm. I give thanks for that.
+b : Is the coal a prayer? | Would you give one away?
+a : A reminder. I name the Bright One in prayer. A pocket's too small to measure such care. | Gladly, if an ordinary piece of a childhood pleasure might comfort somebody.
+
+scene friendgrown
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# choose the last tree for a new row. Some play deserves to last.
+b : Would you demand a straight row? | What if the tree's rather plain?
+a : A straight one indoors and a free choice outdoors. I remember my old land law. | That's a vacant invitation to imagine the crop. The best trees began that way.
+
+scene morrow
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I want a sill broad enough for a visiting pup to make a whole second orchard.
+b : Do you keep spare coals? | Would you teach the rules?
+a : Several with particularly interesting faces. A new grower chooses the best. | Only how to keep the floor clean. The actual growing ought to be a personal decision.
+
+
+young
+line @1 greet : Hello. My orchard's this big today. | Welcome to the bit with no real dirt.
+line @2 greet [pair.band=strangers] : You can look at one tree first. | Hello. Stand where your shadow misses my orchard.
+line @3 greet [here.time=dawn] : Morning. My apple coal has a shiny side. | First light reaches the whole of my farm.
+line @1 greet.return : Yes, hello. I was planting the corner. | I heard. This seed had to go in straight.
+line @2 greet.return [pair.band=friends|family] : Your place is by the bendy tree. | You know how the black apples grow.
+line @3 greet.return [here.time=night] : A late hello from my pocket trees. | Evening. You can feel the rows if you can't see them.
+line @1 again.open : Back for another small harvest. | I've moved the fence since we met.
+line @1 hail [pair.band=friends] : Come see my tree with a nose! | Look from here before I put my orchard away!
+line @1 farewell : Take a make-believe apple for the road. | Dry earth for your next row.
+line @1 farewell.return : I'll keep watering mine with pretend rain. | Goodbye from all my black trees.
+line @1 react.news : Tell it so I can plant it straight. | I'll give the real bits a separate row.
+line @1 react.news.new : That seed hasn't grown here before. | Something new for my tiny field.
+line @1 react.news.known : I know that shape of story. | Same apple in another pocket.
+line @1 react.news.doubt : I wouldn't plant that where real things grow. | Somebody's pretending a twig is a whole tree.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : There's a place by my best tree if you're sad. | I'll let the orchard be quiet with you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. I'll give that row an extra apple. | Happy news gets the bit of coal that shines.
+line @1 ask.how : Did you find any good growing places? | How tall would your day be on my hand?
+line @1 answer.how : Fine, except this fence won't stand up. | I've got two dirty fingers and a good crop.
+line @1 decline : I'm busy planting something that might fall over. | I've promised my last spare coal a place already.
+line @1 accept_decline : That's all right. Trees can't make you play. | You can leave the empty patch empty.
+line @1 preclose : I'll pick my farm up before it gets trodden on. | Time to get this black dirt off my hands.
+line @1 accept_preclose : Go on. I'll close my pretend gate. | That game has reached the fence.
+line @1 thank : You made my little orchard bigger. Thanks. | I like the bit you saved for me.
+line @1 deflect_thanks : It only cost one make-believe apple. | I had a second tree doing nothing.
+line @1 sympathise : Take the soft bit of ground beside my row. | I'll put my best shiny seed near you.
+line @1 reassure : A tree can lean and still get its pretend fruit. | I can hold your corner till you're ready.
+line @1 ack : Yes. I'd plant it just there too. | That fits between the two short rows.
+line @1 give.advice : Pick an orchard you can carry home. | Keep your real crumbs out of the coal harvest.
+scene coalgame
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : These black bits are trees when I stand them up. Flat ones get to be apples.
+b : Doesn't that make enormous apples? | Where are the branches?
+a : Yes. It's a very good orchard. | I can see them if I leave the rest of the space empty.
+
+scene secret
+when topic=gossip
+does give.opinion / react.self / assess
+a : I keep a private row for things I hear. They don't get grown into facts just because they're planted.
+b : What colour goes there? | Can I see what's in it?
+a : Grey. I haven't made up my mind either. | You can see the size. You can't ask what any one coal means.
+
+scene street
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : My work is stopping big feet from walking through my farm. I put a wood curl at the gate.
+b : Does a curl stop a boot? | Can you carry the gate?
+a : No. It shows where a careful wolf might step around it. | Yes. A whole gate in one finger. I'm good at little farms.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I like to give #self.mother# the first imaginary apple. Then I've still got all the real coal.
+b : Does a pretend apple taste good? | Do you put it on a plate?
+a : Whatever taste the other wolf wants. I like warm fried fish but that's an odd apple. | I hold my hand flat. My good plate can stay clean.
+
+scene wood
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : Curly scraps make branches if you turn the bend up instead of down.
+b : Can you make leaves too? | Doesn't it look like a fence?
+a : I find very little chips for those. A tree needs a great many, so mostly mine are winter trees. | Upside down it's a fence. I'm allowed to change the weather and the furniture.
+
+scene fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I keep the crunchy fish corner till last. It's my real prize after the pretend harvest.
+b : Wouldn't a gull take it? | What about butter?
+a : My plate covers my crunchy bit till the farm's in my pocket. | It belongs on the real fish. A greasy coal apple would be a terrible job to wash.
+
+scene warmth
+when topic=season self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : When spring warms my fingers I let my orchard have all its leaves at once.
+b : Even the tiny tree? | How does it know?
+a : The tiny one gets a particularly big leaf. I own the rules about sizes. | I stop keeping my free hand inside my sleeve. That's the signal.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.complaint / ask.detail / answer.detail
+a : Gulls want a bite of everything till I show them my black apples. Then it's all shouting.
+b : Do the apples scare them? | Would a real bird live in your tree?
+a : No. I think they really wanted my lunch and don't appreciate my offer. | Only a bird smaller than my last finger joint. Mine's a little bit of twig.
+
+scene tidy
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : At home my trees line up in order of shininess. Outdoors they can grow a bit crooked.
+b : Why so neat indoors? | Which goes in your pocket first?
+a : I like a tidy sill and there isn't much room for fruit falling off it. | The dullest. The shiny one gets to look out the top.
+
+scene saltwind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind makes my eyes water. My orchard gets rain when it doesn't need any.
+b : Why not face away? | Would you put it indoors?
+a : I do. It's just hard to turn myself and keep a whole orchard level. | Once the wind wants to play more than I do, yes.
+
+scene friendtree
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd share my orchard with #self.friend# as long as I still decide what grows on my half.
+b : Who has the gate? | Could your friend grow fish?
+a : We can put a gate in each half. It's my best idea for playing fairly. | A fish tree would be fine. Just no real fish in the pocket at the end.
+
+scene marketday
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I sell one pretend coal apple for one good bird noise. A convincing one gets two.
+b : Could I whistle badly? | What if I don't know any birds?
+a : You might get a very small apple. I like to know you tried. | Invent a tiny orchard bird. Nobody can tell you it makes the wrong noise.
+
+story palmfruit [topic=pastimes|memories]
+  : I held my hand shut to keep hold of one pretend apple. After a bit I forgot which bit was the apple.
+  : Opened my hand. There was a perfect black apple on my palm and the coal was all broken up.
+  b : Did you lose the crop?
+  : No. After that I had one apple and five seeds.
+
+story butterleaf [topic=food|memories]
+  : I put a little wooden leaf near my fish plate. It went sailing across a shiny patch of butter.
+  : I blew on it hard enough to make it sail right into my sleeve.
+  b : Did your sleeve give the leaf back?
+  : Shook my sleeve over the empty plate. I kept the wind inside my mouth that time.
+
+story gatehouse [topic=home|memories]
+  : My orchard gate kept falling flat. I put a coal on either side to hold it up. Looked grand.
+  : Then I tried walking my twig bird through. The hill on each side had the gate shut fast.
+  b : How did the bird get in?
+  : I remembered birds can fly. Lucky to have the right sort of visitor.
+
+rule @rows
+when concept=bark
+does aside
+cooldown 8h
+say Leave a path between those black trees. | One shiny pip for the orchard corner.
+
+rule @suns
+when concept=bark self.likes=first_warm_day
+does aside
+cooldown 8h
+say It's warm enough to grow wooden leaves. | That sun patch can have the blossom row.
+
+rule @wind
+when concept=bark self.dislikes=salt_wind
+does aside
+cooldown 8h
+say My little orchard doesn't need salt on it. | Turn the trees round. The wind's doing the planting.
+
+rule @fish
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say Save a little crunchy bit for my real plate. | Black apples in one hand, fish in the clean one.
+
+dlg @1 resident.hub : I've got six trees in one pocket. You can visit from just there.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the little orchard has another row since you saw it.
+dlg @3 resident.hub [here.time=night] : The shiny apple has gone dark. I can find its row by touch.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can see from outside my fence. I'll hold my pocket shut.
+dlg @1 resident.job [self.job=child] : I'm planting pretend orchards and trying to keep my hands clean till supper. Those jobs disagree.
+dlg @2 resident.job : I like doing something you can start small and still give somebody else a place in.
+dlg @1 resident.bye : Mind that gate. It's only a curl of wood.
+graft resident.hub
+choice Show me how a coal can grow apples. -> coalpips
+node coalpips
+say This bit stands up. See the white fleck up there? It shows where an apple grows. It can be green or soft or really enormous. The white shows where to start.
+free
+choice What sort of apple could I grow? -> applechoice
+choice I'll leave the white fleck where it is. -> hub
+node applechoice
+say Choose a taste you like. I had a fried-fish tree once. A gull showed too much interest and I changed it back to sour apples.
+choice I'll try the sour kind. -> hub
+choice I'm off before the gull finds us. -> bye
+
+
+adolescent
+line @1 greet : I've been thinning my pocket orchard. Come see what's left. | Good afternoon. The old trees travel more neatly now.
+line @1 farewell : May your row stay clear of trampling feet. | Take a coal apple's worth of luck along.
+scene sorting
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to think every bit of coal needed a job in my orchard. I leave a patch unplanted now.
+b : Why waste that space? | Saving it for someone?
+a : That's where a new idea can get in without pushing an old one down. | Sometimes. It's pleasant to let another voice choose a new fruit.
+
+scene readclaims
+when topic=gossip
+does give.opinion / react.self / assess
+a : I can remember a claim without turning it into an accusation. The private row taught me that much.
+b : Do you still keep it secret? | What would change your view?
+a : When a real wolf's name is concerned, certainly. | Evidence from somebody who saw what those dark marks are supposed to mean.

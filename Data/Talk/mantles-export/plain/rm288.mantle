@@ -1,0 +1,258 @@
+# rm288, the diagonal walker (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm288
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_roald_greyham
+written_by codex
+title the diagonal walker
+fits stage=adult|old
+prefers role=civilian
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=devout drive=steady
+quirk imagines_a_draughts_board_on_each_stair
+likes warm_bread draughts market_bustle misty_dawns
+dislikes waiting early_bells
+fears leaving_no_clear_move_for_a_friend
+hopes to_play_a_game_on_a_quiet_landing
+topics pastimes +0.4 faith +0.3 day +0.2 food +0.2
+styles comfort=practical gossip=quiet refuse=flat tease=none
+marks oath saying
+persona #self.first# finds the diagonal between two stair treads and considers every draughts move an occasion for plain dealing.
+
+words
+oath! = Square my stride | By the last free corner
+saying! = No prize for rushing past your turn | A good move leaves a landing
+board = my little chequerboard | a board of painted squares
+piece = a smooth white counter | a chip of black horn
+move = a diagonal pace | my sideways advance
+steam = a twist of steam | a curl of warm air
+cloth = a close-woven towel | my striped cloth
+crust = the warm heel | a crust still soft within
+bustle = the babble of stalls | a whole street calling
+mist = a mist-white corner | the pale morning wall
+bell = the waking clang | a hard early stroke
+bench = a plain oak bench | a seat with room beside me
+step = the wide tread | a short cross step
+square = an empty dark square | the uncovered corner
+
+any
+opinion @1 church for 2 : My own prayers fit under the same roof as a cold stranger. That's a properly useful roof.
+opinion @1 dole for 3 : When my cupboard was nothing but wood I got hot food without giving up my last coin.
+opinion @1 drink against 1 : A wolf should be able to remember a promise until morning. I've seen a cup undo that.
+opinion @1 houses against 2 : They can find room for a bench longer than two carts and no space to fit me on it.
+opinion @1 merchants against 3 : I work to bring home a hot heel and sometimes get the smell alone.
+
+grown
+line @1 greet [pair.band=strangers] : Here's your place across from me. | Welcome. I'll sit square.
+line @2 greet [self.working=yes] : Stay by the free corner. | Speak plainly above the work.
+line @3 greet [here.time=dawn] : Pale board to begin the morning. | You have the first daylight move.
+line @4 greet [here.time=dusk|night] : Evening. My bench has a spare end. | Short light, clear hearing.
+line @1 kin.open [pair.kin!=no] : I'll move over for kin. | Ah, my own family across the board.
+line @1 again.open : Back on my diagonal again. | The second meeting's ours.
+line @1 greet.return : Welcome. I can wait one turn. | I'll hear the full move.
+line @2 greet.return [pair.band=friends|family] : You can keep the warm corner. | Glad of a familiar voice beside me.
+line @3 greet.return [self.working=yes] : I've a clean moment between jobs. | Tell me before the next turn.
+line @4 greet.return [here.time=dusk|night] : Stay in the little square of lamplight. | Evening. Set your feet here.
+line @1 farewell : Keep a landing in reach. | Safe play all your way back.
+line @1 farewell.return : Leave room for a good return. | I'll mind this corner.
+line @2 farewell.return [here.time=night] : Look for the next lamp before turning. | A quiet rest when you reach home.
+line @1 react.news : Make the account plain. | Which part came to you clean?
+line @1 react.news.new : New square to my eyes. | I hadn't heard that move.
+line @1 react.news.known : That piece has crossed my board. | I've already considered that word.
+line @1 react.news.doubt : I'd see the rest of the position first. | A move like that wants a second look.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard news reaches both sides equally. | I'll sit across from you in silence.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A glad turn for once. | I'd make room for more word like that.
+line @1 ask.how : How's your side of the board? | Can you find an easy move today?
+line @1 answer.how : Making quiet progress with both feet. | Still plenty to occupy one turn.
+line @1 decline : I'd sooner finish the task on my bench. | I need a quieter corner than that today.
+line @1 accept_decline : Clear refusal. I can honour it. | Then your turn stands.
+line @1 thank : I'll keep a corner open for you. | That gives my feet a rest.
+line @1 sympathise : You needn't find a winning move straight off. | Hold steady. I'll keep the bench.
+line @1 reassure : A pause is a proper move sometimes. | Plenty of room to consider it.
+line @1 preclose : I'll leave my counter here. | Time to rest these jumping feet.
+scene stair
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A stair looks like half a draughts board from below.
+b : Which half? | Do you play as you go?
+a : The dark squares come in pairs where the light misses the rail. | I jump the middle tread if the landing's clear.
+
+scene bath
+when topic=work self.job=none self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# the best bench is the one with a clear way off.
+b : Not the warmest? | Why that bench?
+a : A wolf getting to hot water ought to have one free elbow. | A slippery foot and a crowded corner are poor company.
+
+scene draughts
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I won't touch a counter until I've said its next square in my head.
+b : To avoid mistakes? | What do you call the squares?
+a : To avoid nudging it backwards when the mistake shows up. | Near corner, far wall, quiet centre. Names enough for me.
+
+scene prayer
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : When I'm kept waiting, I pray for enough patience to last me.
+b : Does the prayer work? | Why patience in particular?
+a : Sometimes I get exercise for it straightaway. | I can usually supply my own impatience.
+
+scene bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I buy a loaf warm enough to soften the crust beside it.
+b : How can you tell? | Doesn't it get squashed?
+a : Give the wrapping time. The warmest part shines through. | I carry it on my palm. A loaf deserves a little ceremony.
+
+scene market
+when topic=day self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I enjoy a market most where two rows meet.
+b : Twice the noise? | Not too crowded?
+a : Twice the different accents, which is better. | I can change direction without holding up a whole row.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : A misty dawn gives every street just one square ahead.
+b : Is that enough? | Do you get lost?
+a : Enough for a careful step. I like being reminded. | My toes know where the kerb is before I see it.
+
+scene bells
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : The first bell takes my sleep without asking.
+b : Do you rise then? | What do you wish it would do?
+a : Well awake by then, even with my nose tucked under a paw. | Begin with one civil knock before emptying the whole tower.
+
+scene wait
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : Waiting's hardest with the finish hidden.
+b : A long queue? | How do you keep occupied?
+a : A closed door with no noise coming out is worse. | I play the opening of a quiet game on my palm.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd clear the whole board to sit beside #self.friend#.
+b : Even near the end? | Do you remember the position?
+a : That'd be a dearer gift, which is all to the good. | I usually do. There's no hurry to put it back.
+
+scene thin
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A thin wage won't buy another dark square to jump to.
+b : No way out? | What about a cheaper loaf?
+a : There are usually moves. Just fewer after the bread's bought. | Less of it left when the money's spent.
+
+scene chapel
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I keep a chapel seat clear beside me.
+b : For your elbows? | At the end?
+a : For the wolf that came last through the door. | Halfway down. A newcomer needn't stand where every head turns.
+
+scene steam
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A little steam makes my old cuts show pale.
+b : Do they hurt? | Every one of them?
+a : No. It's just a small map under the fur. | Just the ones my fur grows round instead of over.
+
+scene town
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump the tidy route is rarely the straight one.
+b : Where do you turn? | What makes it tidy?
+a : Where a pair of neighbours can pass abreast of a parcel. | Finishing at the door without stepping on another tail.
+
+scene charcoal
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I still like the hush of a hearth settling to coals.
+b : From a hearth? | What can you hear then?
+a : Any hearth. I needn't own it to enjoy that moment. | The slow settling before the ash gives way.
+
+scene stranger
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd play a newcomer without asking where the journey began.
+b : To spare the traveller? | How would you greet a stranger?
+a : To enjoy a game without deciding who's on which side of town. | Put the counters out. Offer the first move.
+
+scene plain
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I like my talk as visible as a board under a lamp.
+b : No secrets at all? | What's a hidden move?
+a : Plenty. I just keep them out of other wolves' business. | Repeating something softly and hoping the blame goes past you.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt the stairs had black and white treads that kept changing places.
+b : Could you get anywhere? | Any other players?
+a : Straight into the wall. The board was turned on its side. | My own feet had opposing ideas.
+
+story steamboard [topic=pastimes]
+  : I drew a draughts board with my finger on a steamed window. The first half came out beautifully, the second began running into my palm.
+  : Before my imaginary counters were in place the warm squares had gone. It was the briefest game I've ever played.
+  b : Who won?
+  : The window. I wiped it and got enough light to find my real board.
+
+story staircoin [topic=memories]
+  : I dropped a counter on a stair and watched it hop sideways down three treads. I hopped down sideways after it.
+  : At the bottom it slipped under the board where I couldn't reach. I could just see the white edge.
+  b : Did you lose it there?
+  : I came back with a strip of bread wrapper and fished it out. I've never taken that corner for granted since.
+
+story marketheel [topic=food]
+  : A loaf I carried under my arm warmed my counters so well that my fingers recognised the wooden counters with my eyes shut.
+  : The horn stayed cool. The wood took a little warm breath from the crust and gave it back into my palm.
+  b : Did that help your game?
+  : It helped remind me to eat before sitting down to one.
+
+rule @aside1
+when concept=bark self.job=none self.working=yes
+does aside
+cooldown 6h
+say Dry seat and a free way round. | Straighten that towel before someone steps on it.
+
+rule @aside2
+when concept=bark self.likes=draughts
+does aside
+cooldown 7h
+say Black on the diagonal. White bides awhile. | No jump through an occupied landing.
+
+rule @aside3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One bell would have served. | Bright One lend the next sound a softer edge.
+
+rule @aside4
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 9h
+say A little heat still in the middle. | Fold the wrapping over the warm heel.
+
+dlg @1 resident.hub : Take the corner that suits you. I like folk to see who they're talking with.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you know the way across my board.
+dlg @1 resident.job [self.job=none self.working=yes self.workplace] : There are benches and towels to see to at #self.workplace#. A dry seat's a small kindness.
+dlg @1 resident.news [world.news] : A clear word has reached me. #world.news#
+dlg @1 resident.bye : Keep an open square ahead as you go.
+graft resident.hub
+choice Show me the draughts board on a stair. -> walk_board
+node walk_board
+say Start against the rail. Look up one tread and a little to the side. That's your diagonal. When there's nobody coming down, go two at a time.
+free
+choice What if somebody is coming down? -> walk_wait
+choice I see the dark squares now. -> hub
+node walk_wait
+say Then the best move I can make is to stand still. Disliking a wait doesn't entitle me to somebody else's half of a stair.
+choice A fair rule. -> hub
+choice I'll take my turn outside. -> bye

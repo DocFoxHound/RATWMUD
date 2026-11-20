@@ -1,0 +1,400 @@
+# rm316, the fleet in four voices (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm316
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_bertil_slagley
+written_by codex
+title the fleet in four voices
+fits stage=adult|old
+prefers job=priest
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk sorts_sails_into_the_parts_of_a_choir
+likes warm_bread cards tidy_house frosty_mornings
+dislikes gulls early_bells
+fears reaching_for_a_note_beyond_the_compass
+hopes to_be_trusted_with_the_opening_pitch
+topics work +0.5 pastimes +0.4 travel +0.2 dreams +0.2
+styles comfort=practical gossip=close refuse=flat tease=none
+marks oath saying
+persona #self.first# arranges a fleet by its imaginary singing parts and quietly practises the pitch that could open a whole room of voices.
+
+words
+oath! = Pitch my mainmast true | By the fourth part
+saying! = Give a deep hull a deep note | A chorus needs room to tack
+bass = a keel-deep note | the bottom part
+high = a narrow high note | the bright upper line
+cloth = a sail against the light | a square of canvas
+chart = my little ruled chart | a pencilled fleet list
+break = a gap for breath | the silent measure
+card = a neat black card | a clean-edged card
+bread = the hot middle crumb | a steaming roll
+tidy = the clean end of a shelf | a square bare corner
+rime = a thin fern of frost | a silver rim
+gull = a gull's scrape | a ragged sea cry
+chime = the first hard peal | an early hammer stroke
+bow = a narrow bow | the pointed forepart
+choir = a rank of quiet singers | a row awaiting the pitch
+patch = a black sail patch | a dark stitched corner
+seal = my wax pellet | a red thumb of wax
+pitch = the opening pitch | my single starting note
+
+any
+opinion @1 houses against 1 : A good voice can carry all across town and still need a House's nod to find a better place to stand.
+opinion @1 dole against 1 : I prefer bread I have earned by practice. I say that for my own plate.
+opinion @1 festivals against 1 : A festival morning interrupts work without interrupting the bills. I do the arithmetic before joining in.
+opinion @1 sump against 1 : Below the Ropewalk I strain to hear my thoughts. I generally take my walk elsewhere.
+opinion @1 church mixed 1 : One uncertain voice may still address the Bright One. A choir must still answer for doing its work well.
+opinion @1 merchants mixed 0 : If the price sings true when repeated quietly a counter suits me well enough.
+opinion @1 times mixed 0 : My shelf is orderly. Whether the signs beyond the shelf are quite as tidy I couldn't venture to say.
+opinion @1 watch mixed 0 : A watchman's step has a place in the morning sounds. I judge the service by what accompanies the step.
+opinion @1 strangers mixed 0 : An unfamiliar voice can join well. I'd hear the opening interval before promising a place.
+
+grown
+line @1 greet [pair.band=strangers] : Your voice is new to me. Welcome. | Take the clear space opposite.
+line @2 greet [self.working=yes] : Room beside the score. | I hear you between phrases.
+line @3 greet [here.time=dawn] : Morning. The ear is rested. | Day's opening pitch sounds clear.
+line @4 greet [here.time=dusk|night] : Evening draws the high notes in. | Welcome into the quiet measure.
+line @1 kin.open [pair.kin!=no] : A family voice has its own clear place. | Come within our usual compass.
+line @1 again.open : The returning phrase. Welcome. | Here's our second entrance.
+line @1 greet.return : I hear you quite distinctly. | Your greeting carried true.
+line @2 greet.return [pair.band=friends|family] : A voice so familiar comes perfectly in tune. | I could pick out that timbre anywhere.
+line @3 greet.return [self.working=yes] : Speak on the breathing mark. | There's room before I take my pitch again.
+line @4 greet.return [here.time=dusk|night] : Evening. I hear the lower notes now. | My ears make out your outline well enough.
+line @1 farewell : Go in good time and tune. | Keep a breath for the return.
+line @1 farewell.return : I'll take the rest at this end. | May your last note reach you gently.
+line @2 farewell.return [here.time=night] : An easy passage beyond the late lamps. | Let the low light guide you home.
+line @1 react.news : I'll listen for the precise note. | Give me what reached your ear.
+line @1 react.news.new : A note outside my present range. | That adds a fresh line.
+line @1 react.news.known : I've the earlier phrase already. | That pitch is familiar.
+line @1 react.news.doubt : I'd compare that account with a steadier note. | The first and final parts sound oddly distant.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Ah. I'll make a space for quiet. | That word takes the breath short.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A clear and welcome interval. | News to lift the whole pitch.
+line @1 ask.how : How has your breathing been today? | Any clear note in your affairs?
+line @1 answer.how : Quiet practice. I hear small gains. | Within my range for now.
+line @1 decline : I'd rather keep my breath for the work ahead. | I should keep today's practice in proper order.
+line @1 accept_decline : That settles your part of the matter. | Your rest is properly marked.
+line @1 thank : That carries my note considerably further. | You've steadied a difficult entry.
+line @1 sympathise : I'll keep my voice beneath yours. | There's space to breathe before another word.
+line @1 reassure : Every part has a place to come back in. | You can pause without losing the line.
+line @1 preclose : I'll take the next rest now. | Time to put my parts in order.
+line @1 accept_preclose : I'll let you break off on that note. | A sensible place to leave the phrase.
+line @1 deflect_thanks : Your thanks have carried quite well. | One acknowledgement is ample.
+line @1 ack : In tune. | Distinctly so.
+line @1 give.advice : Choose the pitch you can sustain. | A rest badly placed costs a whole line.
+line @1 offer : I can hear your practice through once. | Let me leave the starting note with you.
+line @1 praise : A clean entry at precisely the right time. | You knew just where the room would carry it.
+scene fleet
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A low heavy hull on the Sound always gets #bass# in my head.
+b : Even in a stiff wind? | Who gets the high part?
+a : It can climb the scale but never loses that body of sound. | A lean mast with little sail spread. All height and a thin clear line.
+
+scene choir
+when topic=work self.job=priest self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I want to be trusted with #pitch#.
+b : Why the opening? | Is one note much work?
+a : Every other singer finds a place by hearing that one. | You hear the practice in how little effort it seems to take.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A line of frost makes my breath visible before the note comes.
+b : Does it show the note? | Why watch breath?
+a : The note's all mine to know. The air shows its support. | An uneven puff can tell me something before my ear does.
+
+scene roll
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I break warm bread in the breathing space after practice.
+b : Not before singing? | Any particular sort?
+a : A mouth full of crumb makes a poor beginning. | A roll with room for steam to lift the crust.
+
+scene cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I sort cards by their voices.
+b : How does a card sound? | Do you win that way?
+a : The low cards mutter. A court card announces itself. | I can remember a quiet card after the showy ones have gone by.
+
+scene shelf
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy room leaves the first note easier to find.
+b : What has dust to do with pitch? | Is it the sound?
+a : Nothing at all. It's my attention that wants the shelf cleared. | Partly. A loose cup on wood will sing its own little protest.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull always enters on the wrong breath.
+b : Could it join in? | Can you copy it?
+a : Not with my consent. Its tone has a splinter in it. | Uncomfortably well. I let the bird keep that accomplishment.
+
+scene peal
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : I dislike a bell that tests the voice before breakfast.
+b : Can it do harm? | Doesn't it start the day?
+a : To the temper, certainly. I leave my throat out of the contest. | A day can begin with a stretch of quiet as well.
+
+scene ambition
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like one day to give a note and feel the whole bench rise into it.
+b : For the sound? | Would you conduct?
+a : For the knowledge that the pitch I chose was useful. | One note's my present ambition. I can earn the rest afterwards.
+
+scene feud
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : If the Houses turned against one another who would keep the time?
+b : Have you heard news? | You mean in a choir?
+a : Only my own uneasiness. I see no bar of proof to point at. | I mean a city, though the question sounds very much alike.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd practise a difficult opening within earshot of #self.friend#.
+b : For encouragement? | Why invite a witness?
+a : For an honest ear, if there's one to spare. | A line sung for a friend has to find a landing outside my own head.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : Along the Estate I lower my voice rather than talk across a gate.
+b : For courtesy? | Can you still be heard?
+a : Yes. A low voice belongs to one conversation at a time. | I walk to the opening. A few steps save a lot of strain.
+
+scene keel
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Give me four bits of folded paper and I'll arrange you a singing fleet.
+b : On the table? | What counts as a ship?
+a : One fold standing. Each crease throws its own sort of shadow. | A bow you can point at and a space beneath for an imaginary note.
+
+scene sailname
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a ship by the way its name would land in a verse.
+b : What about a long name? | Can two rhyme?
+a : Give it a little opening run before the strong beat. | Easily. Then I have the shape of the stern to sort them out.
+
+scene guilt
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A good voice alone won't make a kind prayer.
+b : What would? | Would a poor voice do?
+a : Leave some of the room for a breathing neighbour. | It could be the best prayer in the building. I should still practise my scales.
+
+scene listen
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I practise listening as well as singing.
+b : What is there to practise? | Can you tell if you're improving?
+a : Following a thin line without turning the louder parts off in my mind. | When I can hum the quiet part on the journey back.
+
+scene deck
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A working sail goes dark in the middle as it fills.
+b : Can a voice do that? | What do you see in it?
+a : A good low voice can keep its edge bright as the middle fills out. | A fine curve that doesn't need a lot of flutter to make its business plain.
+
+scene bargain
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'll pay well for paper that lies flat.
+b : Too fussy? | What makes bad paper dear?
+a : A curl at one corner can steal a note by hiding it. | Having to sing a phrase twice to be sure I've read it properly.
+
+scene strange
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I tell a visitor where the echoes change along a street.
+b : Useful directions? | What does a change sound like?
+a : A covered walk sounds different underfoot. It's good to know when the light fails. | A footfall that begins following a little way behind itself.
+
+scene supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I lay the spoon well back when there's singing after supper.
+b : To keep it clean? | Out of reach?
+a : To stop my hand tapping the next tune across a civil conversation. | Not far. Just far enough that my fingers have to ask me first.
+
+scene winter
+when topic=season here.season=winter
+does tell.self / ask.detail / answer.detail
+a : In winter a stiff collar can cut the finest breath short.
+b : How do you dress then? | Do you sing outdoors?
+a : Warm about the neck and loose where the ribs have to move. | Within the range the air allows. I'm ambitious about keeping my voice too.
+
+scene night
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : After dark I can still tell which little ships I've drawn.
+b : By touch? | From the window?
+a : By the fold in each paper bow. I cut a different height for every mast. | No. These are the copies I keep in a row on my sill.
+
+scene fear
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If a note feels rough I leave that height alone awhile.
+b : Disappointed? | For how long?
+a : Yes. Disappointment's a far shorter rest than strain can require. | Till a lower phrase comes easily. Then I try only the next step.
+
+scene gossip
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A rumour can rhyme quite prettily with a true account.
+b : Would you sing it then? | How could you tell?
+a : Especially then I'd hold my tongue. A catchy thing travels far. | I ask what the speaker actually witnessed before admiring the arrangement.
+
+scene fellow
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : Two singers on one note must find room for both breaths.
+b : Does the note break? | Who gives way?
+a : Not if one holds a little while the other breathes. | The one with a convenient word boundary. An orderly arrangement.
+
+scene guest
+when topic=faith self.priest
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.priest# about the quiet just before a service.
+b : What does it mean to you? | What would you ask?
+a : The last opportunity to notice a wolf waiting for a welcome. | Whether a sung invitation could ever be as plain as a seat moved along the bench.
+
+scene fog
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : In fog I imagine a hull from the pitch of its gear.
+b : Reliable? | What can you hear?
+a : As music, perhaps. I'd never use my fancy to steer. | A low creak from weight and a light higher note where a rope pulls tight.
+
+scene wage
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean season makes a damaged shirt difficult to replace.
+b : Does the choir hear the difference? | Can you mend it?
+a : Its wearer does. I favour a seam that doesn't scrape the note book. | To a point. For the cuffs I need another eye and a finer needle.
+
+scene bird
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A flight of birds has nothing of a disciplined chorus.
+b : No arrangement at all? | Aren't you being hard on the birds?
+a : Beautiful arrangement in the wings. Considerably less in the throat. | I don't ask a ship to sing aloud either. My standards cost the wildlife little.
+
+scene map
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My sleeping fleet once took its places in four rows at a lectern.
+b : Did you hear it? | What was the conductor?
+a : All keel and sail, one grand chord, then somebody dropped an anchor. | A black gull. I knew at that point I must be dreaming.
+
+story fourslip [topic=memories]
+  : I once made four paper ships for the parts I had to learn. To keep them upright I folded each one around a different card.
+  : I could recall the entire tune by looking at my fleet. When I unfolded the boats for a game I forgot which part began.
+  b : Did the cards help?
+  : Their corners were bent like little sails. I got the whole opening back by setting them upright again.
+
+story loafnote [topic=food]
+  : A warm loaf once cooled on the sill where I'd put my pitch notes. The paper took on the curve of the bread and a faint smell of crust.
+  : I smoothed it before practice. Halfway through the hardest line my mouth filled with the expectation of supper.
+  b : Did that spoil the note?
+  : Not quite. I moved the paper to a different sill after that, and gave my supper its own saucer.
+
+story gullnote [topic=animals]
+  : I once heard an extraordinary high note just outside practice and made a careful pencil mark in the margin. I meant to try it after the room had emptied.
+  : A gull looked in through the open shutter and produced it again, with admirable certainty and very little grace.
+  b : Did you erase the mark?
+  : I drew a beak beside it instead. Some notes do belong to a particular singer.
+
+story firstbreath [topic=work self.job=priest]
+  : At practice once I drew the most magnificent breath of my life to sing a tiny little phrase. I very nearly puffed the paper off the stand.
+  : The phrase came out so short and so round that I had an entire second phrase of breath left behind my teeth.
+  b : What became of it?
+  : I used it to laugh, quietly. After that I marked breaths by the phrase that needed them.
+
+story frostchart [topic=season]
+  : I discovered a fleet on my frosted window one morning. Tall ships, deep barges, even a little narrow fishing boat, all in exquisite order.
+  : I breathed on the glass to see them more clearly. An entire squadron disappeared out of the middle at one stroke.
+  b : Did you keep any of it?
+  : I copied the two surviving masts in pencil. I prefer saving something to regretting the perfect thing that's gone.
+
+rule @aside1
+when concept=bark self.job=priest self.working=yes
+does aside
+cooldown 6h
+say Pitch clean before the second row draws breath. | A steady opening and room beneath.
+
+rule @aside2
+when concept=bark here.time=dawn
+does aside
+cooldown 7h
+say One morning bell would fill this room. | Breath first, pitch after.
+
+rule @aside3
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say Stand the folded bows in height order. | Clear sill for a clean entry.
+
+rule @aside4
+when concept=bark self.likes=cards
+does aside
+cooldown 9h
+say A low card can hold a long phrase. | Face cards close the chorus.
+
+rule @aside5
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 10h
+say Beak up, pitch down, please. | That gull has no notion of rests.
+
+rule @aside6
+when concept=bark here.season=winter
+does aside
+cooldown 11h
+say Let the collar stand off the throat. | Cold air deserves a little warming first.
+
+dlg @1 resident.hub : Come to where the walls carry your voice evenly. I like a distinctly heard introduction.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember the cadence of our last greeting.
+dlg @1 resident.job [self.job=priest self.workplace] : I sing at #self.workplace#. At the moment the first note has rather more interest for me than the highest.
+dlg @2 resident.job [self.job=priest self.trade_words] : #self.trade_words.capitalize#. A voice gets its place by keeping the pitch entrusted to it.
+dlg @3 resident.job : I put in quiet practice and wait for an opportunity to let the improvement be heard.
+dlg @1 resident.news [world.news] : One part carried quite distinctly. #world.news#
+dlg @1 resident.bye : An even phrase to finish on. Safe passage.
+dlg @2 resident.bye [here.time=night] : Go quietly through the late streets. Voices carry beyond the lamps.
+dlg @3 resident.hub [here.time=dawn] : I've not tried my highest notes yet. An ordinary speaking voice is quite ready.
+dlg @4 resident.hub [here.time=dusk] : There's time before evening practice to listen at a civil pace.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : I'll give you a clear hearing. Let each of us mind the pitch.
+dlg @6 resident.hub [self.working=yes] : The next breathing mark is mine. You can speak then.
+dlg @1 church.greet [self.job=priest here.day!=rest] : Come in and find a place where you can hear both rows. The lower line's worth attending to.
+graft @fleet resident.hub
+choice What kind of voice would you give a broad barge? -> barge_voice
+node barge_voice
+say Low, with plenty of timber in the middle. A barge should carry the weight of the other voices as easily as a deck carries sacks of flour.
+free
+choice What about an empty barge? -> light_barge
+choice I can imagine the low note. -> hub
+node light_barge
+say Higher in the water, so a little lighter in tone. Same part on the page. A wolf can be a good bass without always bringing a cargo of gloom.
+choice I'll look for that sort of barge. -> hub
+choice I'll leave the fleet to practise. -> bye
+
+graft @pitch resident.hub
+choice Why practise a single opening note for so long? -> first_pitch
+node first_pitch
+say Because there's nobody ahead of it to correct me. The first singer has to hear the whole line inwardly before another mouth opens.
+free
+choice And if the pitch is wrong? -> missed_pitch
+choice That's a considerable responsibility. -> hub
+node missed_pitch
+say Stop with good grace. A clean second beginning is better than asking a whole choir to drag a poor note up the scale by its ears.
+choice A fresh start sounds wise. -> hub
+choice I'm ready for the next rehearsal. -> bye

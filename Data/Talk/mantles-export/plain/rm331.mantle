@@ -1,0 +1,404 @@
+# rm331, the envelope in suspense (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm331
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_desmond_rook
+written_by codex
+title the envelope in suspense
+fits stage=adult|old
+prefers job=scholar
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=content
+quirk reserves_a_blank_line_for_an_unreceived_signature
+likes plum_tart dice tidy_house first_warm_day
+dislikes wet_floors haggling
+fears an_unsigned_account_mistaken_for_a_settled_one
+hopes one_acknowledgement_in_the_proper_hand
+topics work +0.6 prices +0.4 pastimes +0.4 memories +0.2
+styles comfort=orderly gossip=withheld refuse=formal tease=none
+marks oath saying
+persona #self.first# leaves room for a signature beneath every unsettled obligation and sets dice down with the faces square to the edge.
+
+words
+oath! = Blot the counterfoil | File my last pip
+saying! = A blank line weighs more than a wax impression | An answer kept waiting is still an answer owed
+counterfoil = a narrow counterfoil | a numbered stub
+mark = a small ruled box | a blank ruled line
+leaf = a sheet held in reserve | a cream leaf
+dice = a pair of bone cubes | two dark dice
+tray = a shallow felt tray | a lined square tray
+pips = a close group of pips | the dots on a die
+tartedge = a rim of brown pastry | a crisp raised rim
+plum = dark plum flesh | a sliver of baked plum
+desk = a clear desk end | a square of polished wood
+stampax = the face of a seal | the flat brass impression
+blot = a little fan of ink | a dropped spot
+balance = an unsettled entry | a debt still open
+date = a neat dated line | a plain heading
+sealwax = a stick of dark wax | a little pot of sealing wax
+drymat = the dry square of mat | a rough mat
+weights = a pair of paperweights | two smooth pebbles
+receipt = the acknowledged half | a signed slip
+penrest = a notched rest | a rest of dark wood
+inkknife = a short scraping blade | a small square knife
+
+any
+opinion @1 city for 1 : The city's records occupy less space than the grievances they have settled. I call that a modest achievement.
+opinion @1 houses mixed 1 : A great title decides where a letter goes. It does not acknowledge delivery.
+opinion @1 merchants mixed 1 : A fixed charge makes accounting possible. A little performance over every purchase makes it tiresome.
+opinion @1 dole for 1 : Record what went out and whom it reached. There is no purpose in keeping a second account of their embarrassment.
+opinion @1 road mixed 1 : A route serves only if the intended destination can receive you at its end.
+opinion @1 festivals mixed 1 : Pleasant to attend with accounts closed. Less so when the celebration conceals an overdue signature.
+opinion @1 church mixed 1 : A clear conscience is a better accompaniment to piety than a long list of observances.
+opinion @1 strangers mixed 1 : A name is sufficient for the opening entry. Trust accumulates on subsequent pages.
+opinion @1 times against 1 [world.times=lean|hard] : The sums decline. The care required to distribute the remainder increases.
+
+grown
+line @1 greet : I can give this interview a quiet interval. | You have my attention within reasonable compass.
+line @1 greet.return : I acknowledge the greeting and return it. | A civil beginning on both parts.
+line @1 again.open : The earlier conversation is still to hand.
+line @1 farewell : Go with your particulars in order. | I trust your errand finds an available recipient.
+line @1 farewell.return : A considerate farewell duly acknowledged. | May your return require few corrections.
+line @1 react.news : Give me what is known in its original sequence. | I am prepared to hear the complete account.
+line @1 react.news.new : That item is entirely new to this record.
+line @1 react.news.known : I could locate the earlier entry for that.
+line @1 react.news.doubt : I would leave that statement unsigned.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : There are losses that admit of no balancing entry.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A favourable outcome deserves its own clear line.
+line @1 ask.how : Has anything remained unsettled in your day?
+line @1 answer.how : Quite calm. One or two matters remain open.
+line @1 sympathise : I can make a space where the matter may be spoken privately.
+line @1 reassure : A pending matter can be taken up again in good order.
+line @1 refuse : I have an earlier obligation due for attention first.
+line @1 accept_decline : Your refusal is adequately recorded without a second application.
+line @1 preclose : I have matters to resume, all still awaiting my hand.
+line @1 accept_preclose : I release your attention with no outstanding demand.
+line @1 ack : The order and meaning are both clear.
+line @2 greet [here.time=dawn] : The page is still clean enough for a civil beginning.
+line @3 greet [pair.band=strangers] : We may start with the benefit of an unmarked account.
+line @2 greet.return [pair.band=friends] : Familiar company requires rather less preliminary writing.
+line @1 hail [pair.band=friends] : I have secured this spot on the dry pavement!
+line @1 answer.how.busy [self.working=yes] : I am occupied to a quite measurable degree.
+line @1 thank : That assistance has a precise place in my recollection.
+line @1 deflect_thanks : I had reckoned the effort before offering it.
+line @1 give.advice : Leave an extra line below the first account. New particulars do occur.
+line @4 greet [here.time=night] : An informal hearing at this hour will suffice.
+line @2 ask.how [pair.band=friends] : Have your private engagements proceeded satisfactorily?
+scene exchange1
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I keep an empty signature line even on my own copy. | I date the outside of a folded document.
+b : Who can sign a duplicate? | Even with a date inside?
+a : Nobody need sign it. I must see the acknowledgement is missing. | Particularly then. Unnecessary unfolding wears out good testimony.
+
+scene exchange2
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I put the heaviest weight on the sheet I'm using least. | I clear one square of desk before accepting a document.
+b : Why not keep the active file secure? | Are all documents square?
+a : My hand is already there. | No. The habit leaves room for the surprising ones.
+
+scene exchange3
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There is a packet I have presented more often than I care to total. | I know a doorplate's scratches remarkably well.
+b : Did the intended recipient refuse it? | Did you catalogue them?
+a : Absence provides no answer and no ground for that conclusion. | No. A few observations may remain entirely private.
+
+scene exchange4
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I keep the dice in a square tray. | I shake until I can't recall where the six was.
+b : To influence the tumble? | Why concern yourself with it?
+a : To prevent some interesting portion of the evidence rolling under a chair. | A fair throw begins when I surrender that information.
+
+scene exchange5
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A plum tart is easier to portion if the plums themselves can be seen. | I attend to the pastry rim before the fruit.
+b : Are unequal shares a great matter? | Is the rim better?
+a : Only if a smaller recipient was promised equality. | The evidence on that question remains deliciously inconclusive.
+
+scene exchange6
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : My house need not be silent, provided the drawers close properly. | I set out tomorrow's pen before I clear today's papers.
+b : What has one to do with the other? | Is that tidying?
+a : An overfull drawer expects attention in every quiet interval. | It prevents the return of everything I've just put away.
+
+scene exchange7
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : The first mild afternoon releases the stiffness in a pen nib. | A first warm day earns a longer interval away from my desk.
+b : Is it the nib that improves? | How much longer?
+a : Very possibly the fingers. I record the observed result. | Long enough to notice which windows have opened unprompted.
+
+scene exchange8
+when topic=day self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A washed floor can hold a credible impression of every passing heel. | One drop on a polished floor commands disproportionate attention.
+b : Useful evidence? | Because you might fall?
+a : Inconvenient decoration. I wait for the mat. | Because I would prefer not to file the explanation.
+
+scene exchange9
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : A fixed price makes a beautifully short conversation. | If a seller cuts the first price in half, I grow wary.
+b : Don't you enjoy conversation? | Of the bargain?
+a : When its subject is more interesting than a repeatedly amended figure. | Of the first figure. I was meant to believe it.
+
+scene exchange10
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : My reckoning with #self.friend# includes matters a clerk wouldn't enter. | I would lend a friend an entirely clear page.
+b : Is that inconsistent? | Not an introduction?
+a : Private gratitude and formal debt have different columns. | One should be free to choose the first words on one's own behalf.
+
+scene exchange11
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep unsettled matters on a shelf below eye level. | I resist bringing a signature sheet to table.
+b : To put them from your mind? | Why resist at all?
+a : To reach them without disturbing anything above. | Because plum juice gives an unexpectedly convincing red impression.
+
+scene exchange12
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Some gratitude is rightly left beyond reckoning. | I value a quiet moment before any solemn promise.
+b : Even by you? | To find devout words?
+a : Even by a wolf who remembers scrupulously. | To give my existing debts an opportunity to object.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account in question says #topic.subject# #topic.claim#. | An unsigned rumour ought never to be promoted by a handsome copy.
+b : Is the account attested? | Do you keep the rough one?
+a : I have no attestation to offer. | I generally decline custody.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean times make a missed payment difficult to interpret. | A small relief requires the same punctuality as a large one.
+b : Is the obligation changed? | More important in a lean week?
+a : The sum is the same. The circumstances deserve their own line. | An hour can be quite a long time to a hungry recipient.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I plot a walk according to the papers going with me. | My route has one recurring interruption.
+b : Do papers prefer a route? | The same absent dignitary?
+a : Wax prefers a level pocket and very little rain. | The same unsigned acknowledgement. I do not speculate further.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I should like an afternoon with no matter pending for want of another hand. | I picture a signature appearing cleanly on the waiting paper.
+b : What would you do? | Whose hand writes it?
+a : Take a pair of dice out of the drawer and leave the result to chance. | The right hand, in both senses that concern my office.
+
+scene exchange17
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I teach a learner the distinction between a missing receipt and a missing payment. | My first lesson begins with a clean copy and one smudge.
+b : Isn't one proof of the other? | Does the learner remove it?
+a : Precisely the error the lesson is intended to catch. | The learner identifies what evidence the smudge would take away.
+
+scene exchange18
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The middle streets lead up to signatures and down to deliveries. | The Rise looks impressively orderly on a narrow street plan.
+b : Which direction suits you? | Does the ground confirm it?
+a : The one that brings completion within the same afternoon. | The boots supply several helpful qualifications.
+
+scene exchange19
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rest my wrist between two formal copies. | A quiet hand produces a more accurate date.
+b : To avoid a tremor? | Do you have to steady it?
+a : To notice one early enough to stop. | I allow the rest of the body its turn with the chair.
+
+scene exchange20
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep the day's last entry open until the ink dries. | I complete a list by ruling a line beneath it.
+b : Isn't it already written? | A grand flourish?
+a : It can still transfer itself to the opposite page. That's open enough. | A short straight stroke. Premature celebrations do not appeal.
+
+scene exchange21
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I leave a newcomer room to correct the first entry. | An introduction made twice deserves a courteous hearing twice.
+b : An address perhaps? | Even if nothing's changed?
+a : A pronunciation. A ledger has a poor ear. | A second meeting is itself a change of circumstance.
+
+scene exchange22
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I prefer dice with pips inset to the same depth. | When a die leans against the tray edge, I roll again.
+b : Can you detect a difference? | Even if it shows six?
+a : I can detect when a claim of fairness deserves examination. | Especially then. A rule tested by disappointment has some strength.
+
+scene exchange23
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I save the darkest corner of tart for the last mouthful. | Plums stain the fingers more effectively than my working ink.
+b : Does that improve it? | Do you make use of that?
+a : It improves the anticipation precisely four times before the answer. | I make use of a clean napkin between dessert and correspondence.
+
+scene exchange24
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I fold documents towards the writing. | I can identify my oldest ledger by the curve of its spine.
+b : For secrecy? | Without reading the title?
+a : Against abrasion. Secrecy requires more than a convenient fold. | The title has nearly vanished. The spine remains unusually candid.
+
+scene exchange25
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : If a debt is paid in parts I enter every part. | I count change twice where both parties can watch.
+b : Tedious business? | Little trust in the payer?
+a : Less tedious than disagreeing over which part is missing. | It is an equal courtesy to the recipient.
+
+scene exchange26
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : I prepare a dry box for the damp season. | A winter account occupies more ink than a summer one.
+b : Papers only? | More expenses?
+a : A wool cloth for drying the paws about to touch them. | More qualifications concerning the roads.
+
+scene exchange27
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A beetle once walked the entire width of my blotter. | Bird tracks in soft earth resemble a vigorous signature.
+b : Did you remove the visitor? | Can you read whose?
+a : I drew a second line round the damp patch and allowed passage. | I have no intention of accepting it in lieu of delivery.
+
+scene exchange28
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember favours in the order they became possible to repay. | I once mistook a fly mark for a full stop.
+b : Not the order received? | Was the error consequential?
+a : I keep that list too. It is shorter than I should prefer. | One very long sentence received an unexpected interval of clarity.
+
+scene exchange29
+when topic=day self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : A copied date can be more dangerous than a blank one. | I look sideways at a newly written page.
+b : A blank demands attention? | To read the slant?
+a : A neat mistake appears already to have received it. | To see where wet ink still gleams before I fold it.
+
+scene exchange30
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I would like a tray from which dice could never escape. | The most agreeable empty drawer would hold no overdue obligations.
+b : Raised sides? | What would you put there instead?
+a : Slightly. Chance deserves freedom with a sensible boundary. | A perfectly unnecessary second packet of tart paper.
+
+story tale1 [topic=work self.job=scholar]
+  : I once copied a list so precisely that I included a speck from the original. I had mistaken it for a tiny deliberate mark.
+  : Under magnification the speck resembled a seed with admirable clerical ambitions.
+  b : Did you correct both copies?
+  : I removed the loose seed and struck the mark on the duplicate. The correction remains on record. The seed retired.
+
+story tale2 [topic=pastimes self.likes=dice]
+  : A cube escaped my tray and stopped on the folded corner of a letter. It displayed five and a fractional glimpse of two.
+  : My companion asked for an opinion on the value of a fraction of a pip.
+  b : Which number counted?
+  : Neither. I unfolded the letter, returned the cube to its proper jurisdiction and began again.
+
+story tale3 [topic=food self.likes=plum_tart]
+  : I cut a small tart into four mathematically sound quarters and then discovered nearly all the fruit had baked towards one side.
+  : My divisions looked irreproachable if inspected exclusively from above.
+  b : Could you improve the allocation?
+  : I cut each quarter across and paired rich and plain ends. The resulting portions received detailed practical examination.
+
+story tale4 [topic=travel]
+  : I took a document twice to an absent recipient, once by the short road and once the long. On the third journey I stopped at the bend between them.
+  : I realised I had been describing them as two routes to a signature. Neither had demonstrated that property.
+  b : Which did you take on the third occasion?
+  : The one with the drier paving. Terms of description should follow the evidence.
+
+story tale5 [topic=memories]
+  : My first pocket register had room for a name, a sum and a date. A wolf repaid a kindness with a fine hour of company.
+  : I spent several minutes turning that little book sideways to find a suitable fourth column.
+  b : Did you put the hour down as payment?
+  : I left the sum at zero and wrote the hour across the cover. One need not reduce everything worth remembering to a debt.
+
+rule @call1
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Leave the bottom line clear for acknowledgement. | Inspect the date before sending out the copy.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A fresh heading belongs on a dry leaf. | Early light shows yesterday's scrape marks.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say No folded sheet on a freshly wet flag. | The mat can receive the weather on my behalf.
+
+rule @call4
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say Flat in the tray or the throw must be made again. | Four clear corners round a clean result.
+
+rule @call5
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say A clear drawer is a pleasant conclusion. | Two paperweights are sufficient for this stack.
+
+rule @call6
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Finish the downstrokes while their edges still show. | Fading light brings the copied entries to a pause.
+
+dlg @1 resident.hub : There is room in my schedule for an orderly enquiry.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your earlier particulars have not been mislaid.
+dlg @3 resident.hub [here.time=night] : This late an oral statement will serve us better than fresh ink.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I give you a hearing. The conclusions can wait for particulars.
+dlg @1 resident.job [self.job=scholar] : I attend to the written record at #self.workplace#. An unacknowledged item remains in my keeping.
+dlg @2 resident.job : My concern is to leave the next pair of eyes an intelligible account.
+dlg @1 resident.news [world.news] : The information before me runs as follows. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account reported is #topic.subject# #topic.claim#. Its source has not furnished me a signed deposition.
+dlg @1 resident.bye : May your remaining business conclude without dispute.
+dlg @1 master.learn [here.teaches=yes] : We can examine the practice of #here.trade_title# together. Ask which aspect requires a clearer account.
+dlg @2 master.learn [here.teaches=no] : The present arrangement precludes another apprentice. A particular question may still be heard.
+dlg @1 master.work : Careful observation at every stage. Errors made in haste seldom remain confined to the first sheet.
+dlg @1 master.wages : Your learning draws no separate wage. What you produce is yours to offer for sale.
+dlg @1 master.takes [here.take_on=no] : The conditions for taking you on remain unmet. #here.take_on_why#.
+dlg @1 master.taken : Let us acknowledge the arrangement and set aside a clean page for the first lesson.
+dlg @1 master.refused : The application has not been accepted. #topic.why#.
+dlg @1 master.bye : Retain your examples. They repay a second inspection.
+graft resident.hub
+choice Why keep an unacknowledged receipt? -> blank_receipt
+node blank_receipt
+say It shows the difference between presenting a letter and delivering it. I have ample evidence of the first and no signature for the second.
+free
+choice Could another hand sign for it? -> blank_receipt_again
+choice Goodbye. -> bye
+node blank_receipt_again
+say Only with authority to receive the contents. A convenient signature is no substitute for a proper one.
+choice I'll leave the line clear. -> hub
+choice Goodbye. -> bye
+
+graft master.learn
+choice What makes a copy reliable? [self.master=yes] -> fair_copy
+node fair_copy
+say Set the original at a fixed distance, copy a limited portion, then check backwards from the last mark. Familiar prose conceals familiar errors very readily.
+free
+choice Why check from the bottom? -> fair_copy_again
+choice Goodbye. -> bye
+node fair_copy_again
+say Expectation leads the eye when it reads its usual route. An unfamiliar direction obliges it to attend.
+choice Let me see the work again. -> learn
+choice Goodbye. -> bye

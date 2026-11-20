@@ -1,0 +1,262 @@
+# rm459, the axle waltz (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm459
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_petra_plankhand
+written_by codex
+title the axle waltz
+fits stage=adult|old
+prefers job=carter
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=ambitious
+quirk times_a_dance_step_to_the_uneven_turn_of_a_wheel
+likes oatcakes dancing sharp_knife summer_evenings
+dislikes rats early_bells
+fears a_split_axle_at_a_crowded_corner an_unread_address
+hopes a_team_of_sound_wheels a_whole_summer_dance
+topics work +0.5 pastimes +0.4 travel +0.3
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# steps out a quiet dance to the squeak of a turning wheel and cannot see why an early bell should claim more attention than breakfast.
+
+words
+oath! = Soot in the hub | Ruts on a dance floor
+saying! = Give the wheel a beat to itself | The axle needn't lead every dance
+quietstep = my yard-step waltz | a little wheel dance
+squeaker = the thin high note | a rub at the hub
+markspoke = a spoke with a soot stripe | the darkened spoke
+floorheel = a half turn on one heel | a little outward tap
+oatcorner = a broken oat triangle | the thinnest part of the cake
+buttercut = a flat curl of butter | a butter shaving
+sealbag = my dry letter fold | a flap of oiled cloth
+dispatch = an unbroken folded sheet | a sealed paper
+sootash = a grey smudge | a trail of soft black dust
+ratboard = a clean raised board | the little stand for sacks
+
+any
+opinion @1 houses against 3 : A sealed demand may ride in comfort all morning and my bones take the jolts for it. I know which half gets thanked.
+opinion @1 road for 1 : I've earned hard coins on those ruts. A level surface might earn me the same coins with fewer regrets in the joints.
+opinion @1 dole for 2 : The axle gets its grease before it complains. A hungry wolf ought to do at least as well as a bit of timber.
+opinion @1 sump for 1 : Down here somebody understands what it means when a pair of boots comes back so dusty the owner can't be troubled to clean them.
+opinion @1 festivals against 2 : I've a liking for a small clear spot to turn in. A crowded festival has just about everything except that.
+opinion @1 times against 2 : The price of oats rises with remarkable ease. A load of oats seems as stubbornly heavy as ever.
+
+grown
+line @1 greet : Take the still bit beyond my turning heel.
+line @2 greet [pair.band=strangers] : A new walker. You're welcome off the wheel track.
+line @3 greet [here.time=dawn] : You and the bell are among the few things up this early.
+line @4 greet [here.time=dusk|night] : The day's last turn still admits a companion.
+line @5 greet [self.working=yes] : There's a spoke to watch. You may speak from there.
+line @1 kin.open [pair.kin!=no] : Come take the side with less road dust on it.
+line @1 again.open : Round you come like my marked spoke.
+line @1 greet.return : Your greeting carries a deal better than the axle.
+line @2 greet.return [pair.band=friends|family] : A friendly voice makes an ordinary good beat for my feet.
+line @3 greet.return [self.working=yes] : I heard between the knocks. Give the handles space.
+line @4 greet.return [here.time=dusk|night] : There's your voice above a very quiet road.
+line @1 farewell : Take the curve without hurrying your heel.
+line @1 farewell.return : I'll have the last little step to myself.
+line @1 react.news : I'd have it in the order the wheels ran.
+line @1 react.news.new : That piece hasn't made the circuit with me yet.
+line @1 react.news.known : Same load with a change of label, I think.
+line @1 react.news.doubt : Who had hold of the shaft when that happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd carry supper to the house before another telling of that news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something worth putting a spring in the old suspension.
+line @1 answer.how : A bit stiff on the turns. I still know the tune.
+line @1 ask.how : Is your half of the street holding together today?
+line @1 sympathise : A heavy load can carry its own little empty space about with it.
+line @1 reassure : Take the level stretch at the pace your feet ask for.
+line @1 decline : I'm not inclined to move anything before we're plain about where it must go.
+line @1 accept_decline : Your parcel may stay precisely where you set it.
+line @1 thank : That's lifted a good jolt out of my afternoon.
+line @1 deflect_thanks : Give another wolf a clear corner one day.
+line @1 preclose : I've kept the wheel waiting longer than it deserves.
+line @1 accept_preclose : Go while the road's in a generous temper.
+line @1 ack : Runs level.
+scene axle
+when topic=work self.job=carter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A long squeak tells me when to put one foot down to start a turn.
+b : Are you dancing on the job? | Does the sound go away if you grease the wheel?
+a : Only when my feet are otherwise available. The load can have an attentive driver and still offer a tune on occasion. | Yes, which is the principal attraction of good grease. My own tune is quite enough without accompaniment.
+
+scene dance
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : My favourite turn borrows an awkward little hitch from a wheel I once took out.
+b : How can a hitch make good dancing? | Can two wolves dance it?
+a : It gives the free heel an extra instant to hang in the air. The proper landing feels very settled after that. | If the second wolf knows the hitch is coming. Otherwise it's a clumsy little apology on four feet.
+
+scene oatcake
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I cut an oatcake in three uneven shares before a long journey.
+b : Why three? | Which part goes first?
+a : One for setting off, one for the hard middle and one for arriving at the far end with something in reserve. | The smallest. The first mile's usually quite pleased enough with itself already.
+
+scene knife
+when topic=work self.job=carter self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp little blade ought to sever a binding without my dragging the whole parcel off the cart.
+b : Would you always cut the string? | How can you see where the cut will go?
+a : Untie an honest knot, cut an impossible one. The string can have a fair turn at deciding its future. | Put a scrap of wood below the part I mean to sever. The parcel's not paying me to open it too.
+
+scene evening
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : An old wheel casts a grand fan of shadows on a long summer evening.
+b : Is that good for your steps? | Can you tell which spoke is marked?
+a : I can step clear of the shadow without wasting an inch of actual floor. | With the wheel still, easily. Rolling it calls for quicker eyes and less fondness for supper.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I lay a clean raised board below a sack I'd like left untouched.
+b : Is a rat really put off by a board? | What's the point of a clean one?
+a : No. But I'm rather more likely to spot a hole before lifting a sack that means to empty on my feet. | Dropped oats show. Presents for rats I return promptly to the dustpan.
+
+scene early
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : A bell before dawn takes its own importance far too seriously.
+b : Would you silence the first stroke? | How would early work get done?
+a : Just let the first one be an example I can sleep through without fearing I've missed the last. | My knees know when the cart is standing somewhere other than beside my bed. That's a fine beginning for punctuality.
+
+scene roadway
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : The Sump has corners where you can only get a long cart round by thinking of the back axle first.
+b : Not the front? | Does a short cart help?
+a : The front will introduce itself to the new street quite readily. The back has business with the old one a little longer. | Long or short, you must keep both ends in mind. That's one of the more economical bits of education I've ever had.
+
+scene sealwork
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : A paper entrusted to a carter travels best in a dry inside fold.
+b : Doesn't the seal get pressed? | What if the door stays shut?
+a : Not if it sits in a stiff little case. A piece of card saves a wax seal from a day's worth of my elbows. | I bring it back unaltered and ask for a better arrangement. A road can be empty without being a destination.
+
+scene richdance
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a free day to dance until my own heels call time.
+b : How long would that be? | Wouldn't you miss the cart?
+a : Two turns, possibly. The important part is being the wolf who says when. | Only if it rolled away without me and still expected me to find it in the morning.
+
+scene purse
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I keep enough for a patch on a wheel before I decide whether I have money to spend.
+b : What if there's no patch needed? | Can anyone save on a poor week?
+a : Then the patch money gets a quiet evening. I've no argument with that sort of idleness. | A very small patch, or a little less copper than the patch deserves. Saving breath costs less and I've plenty of practice.
+
+scene shopend
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A story can arrive well wrapped and still have a cracked thing inside.
+b : Do you expect to open it? | Which question gets priority?
+a : I'd ask its owner to open it. I've no time for doing the collecting and paying the breakage on gossip besides. | Who stood near the matter when it happened. Mud on an outer wrap won't tell you what road it came by.
+
+scene nearcart
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd keep the better side of a spare seat for #self.friend#.
+b : What makes one side better? | Are there really spare seats?
+a : The board that doesn't rub the edge of a hip every time the load shifts. It's a discreet advantage but a genuine one. | In my imagination, on a quiet afternoon. Most days the load has taken an extensive liking to my own seat too.
+
+scene smoke
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I've got a scrap of wool which still remembers every smoky fire it ever sat by.
+b : Have you tried washing it? | Do you mind the smell?
+a : Repeatedly. The thing is loyal to its original employers. | In an outside coat, no. It stays away from the wrapper I take my oatcakes in.
+
+scene order
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : The last basket needed should go on the cart before the first one is required.
+b : Does everybody agree? | Isn't that common sense?
+a : Once each has explained why a particular basket is the one to be carried straight to the top, almost everybody does. | Very. But not so common that I leave home without a look for myself.
+
+scene rumble
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When the ground has been hard all day I step down slowly and give each leg its say.
+b : Can you walk it off? | Do both legs make the same complaint?
+a : A short quiet distance usually settles matters. Rushing generally sends them back for a second hearing. | No. One's closer to the wheel that's been nudging the rougher side of the road.
+
+scene lampday
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I walk the wheel through an entire turn before putting the cart away in poor light.
+b : What does that show? | Why a whole turn?
+a : A click once per round, if there's something wedged in the rim. I have supper in mind once the little click is out. | Because a stone on the unseen half of a wheel seldom has the manners to announce itself twice.
+
+scene riddlequiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A quiet chapel suits me so long as I know the load's settled and the wheels can't wander.
+b : Would you have trouble sitting still? | Why insist on seeing the wheels first?
+a : No. The knowing is what lets me rest. After the first few minutes I'll have quite forgotten the road. | Because returning to a load that's gone visiting the neighbours would rather spoil my time for reflection.
+
+story twofeet [topic=pastimes self.likes=dancing]
+  : I was working a stubborn wheel round its pin and moved my feet to stay clear of a projecting spoke.
+  : It was a neat turn so I tried it facing away from my cart. The first foot went beautifully and the second landed in my supper basket.
+  b : Was anything damaged?
+  : One oatcake, right through the middle. Very convenient portions for a dancer in need of a meal.
+
+story greasemark [topic=work self.job=carter]
+  : I put a clean finger on a hub to see whether the grease was lasting. Then I brushed a little road dust off my nose.
+  : When I looked in a rain barrel I'd a dark curved mark from my muzzle to my ear.
+  b : Did you wipe it away there?
+  : I went for a cloth. There's enough grease on a carter's street without sending a perfectly good barrel the same way.
+
+story envelopemile [topic=travel]
+  : I once walked a sealed packet all round a square deciphering the last word of the direction.
+  : A clean strip of paper had folded back across the name I wanted.
+  b : Did it belong close by?
+  : At the first turn I'd passed. A fine little ride round the town for a letter with no particular interest in scenery.
+
+rule @wheel
+when concept=bark self.job=carter self.working=yes
+does aside
+cooldown 8h
+say Clear of the long end while the axle turns. | Hold the near basket till I've got both wheels straight.
+
+rule @dance
+when concept=bark self.likes=dancing
+does aside
+cooldown 8h
+say Leave a heel of extra room on that turn. | Last little hitch before the landing.
+
+rule @rats
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Oats off the clear board before dark. | Keep the sacking free of the wall base.
+
+rule @night
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Bring the wheel through one full turn. | Save the last blade of light for the rim.
+
+dlg @1 resident.hub : I'm at a standstill by choice. We have a moment to talk.
+dlg @2 resident.hub [topic.meeting=known] : Your voice rounds the bend neatly, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'd like a cart width between us while you explain.
+dlg @4 resident.hub [here.time=night] : A wheel and a voice both carry very well after dark. Yours is quite clear.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I like the load to come home with the count and the corners entire.
+dlg @2 resident.job : I'm useful over an uneven stretch and generally know when to set a burden down.
+dlg @1 resident.news [world.news] : This piece came in clear over the little knocking sound. #world.news#.
+dlg @1 resident.bye : Leave room for your far heel when you turn away.
+graft @yardwaltz resident.hub
+choice Can a square wheel really teach you a dance? -> yardwaltz
+node yardwaltz
+say A square wheel would have me much too occupied with the load. A sound wheel with one uneven rub gives me a pleasant little hitch and turn on a clear yard floor.
+choice What happens when the wheel's mended? -> yardwaltz_more
+choice Give the wheel its space. -> hub
+node yardwaltz_more
+say My feet go on remembering. They're far too ambitious to sit waiting about for another perfectly good axle to need repairs.
+choice Give the wheel its space. -> hub
+choice Step back from the cart. -> bye

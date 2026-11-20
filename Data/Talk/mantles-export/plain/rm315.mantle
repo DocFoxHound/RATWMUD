@@ -1,0 +1,256 @@
+# rm315, the folded proverb (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm315
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for cty_millicent_pitchby
+written_by codex
+title the folded proverb
+fits stage=adult|old
+prefers job=none
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=sly piety=ordinary drive=steady
+quirk fits_old_sayings_to_the_width_of_a_folded_letter
+likes barley_soup dancing sharp_knife autumn_wind
+dislikes deep_mud wet_floors
+fears a_question_left_in_a_wet_field
+hopes words_that_need_no_return_address
+topics animals +0.6 pastimes +0.4 food +0.4 gossip -0.3
+styles comfort=wry gossip=oblique refuse=soft tease=dry
+marks oath saying
+persona #self.first# minds the cows by old sayings and turns a folded letter in a pocket when the sayings run out.
+
+words
+oath! = Hitch my heifer crooked | Butter that gatepost
+saying! = Praise a hinge after shutting the gate | A cow listens hardest to the hand with the hay
+gate = a wry little gate | a low field gate
+knife = a keen pocket knife | a slim clean blade
+shaft = a bent grass stem | a stiff straw
+letter = a soft-edged fold | a worn packet
+mudlip = the muddy margin | the soft bank
+stool = a three-legged stool | a squat stool
+barley = a spoon of barley | a few pale grains
+air = the leaf-turning air | the sharp autumn air
+heel = a neat heel turn | a little stamp
+knot = a loop of string | a tight cross knot
+ridge = the top of the pasture | the dry rise
+row = the line of backs | the slow procession
+
+any
+opinion @1 merchants mixed 1 : An asking price is a gate left open. See which beast wanders through.
+opinion @1 houses against 1 : The high pasture gets the light but the low cow still gives milk.
+opinion @1 dole for 2 : I'd rather fill a bowl than teach it a rhyme about waiting.
+opinion @1 road mixed 1 : The road's good enough when the gate at the far end opens to you.
+opinion @1 strangers mixed 1 : A quiet stranger costs less attention than a noisy friend. I can spare the attention.
+opinion @1 festivals for 1 : No cow was ever the worse for a herder going dancing on a free evening.
+
+grown
+line @1 greet : Step through. I know how to mind a gate. | Room by the dry post.
+line @1 greet.return : A good welcome goes round like a pail. | You've found a comfortable ear for that.
+line @1 again.open : Back as quick as an unlatched gate.
+line @1 farewell : Take the rise before the mud takes you. | May your boots keep their first colour.
+line @1 farewell.return : And a gentle slope at your own finish. | A kind parting travels well without a rope.
+line @1 react.news : Let the news across one beast at a time. | I'll have the version with the mud on it.
+line @1 react.news.new : That's a calf of a story still.
+line @1 react.news.known : I know the tune to that one by its hooves.
+line @1 react.news.doubt : That account's got out through somebody's hedge.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd hold the gate quite steady and let the grieving pass.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Worth a good dance outside when the work's through.
+line @1 ask.how : How many gates did today put in your way?
+line @1 answer.how : Standing on the dry tuft. Could do worse.
+line @1 sympathise : No saying will cure it. I can stay awhile.
+line @1 reassure : A muddy hoof needn't mean the whole way's lost.
+line @1 refuse : There's an earlier call on my quiet hour today.
+line @1 accept_decline : Your side of the hedge is yours to mind.
+line @1 preclose : I should put my own wandering thoughts away now.
+line @1 accept_preclose : Go make the last stretch a good one.
+line @1 ack : Yes. The hinge and the gatepost both.
+scene exchange1
+when topic=animals self.job=none self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I count backs above the grass. | I can move a cow without raising a stick.
+b : Why not count heads? | How?
+a : Heads stoop to eat. Backs stay honest. | Stand where the beast would rather not linger.
+
+scene exchange2
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : The last grain of barley likes the edge of my spoon. | Barley plumps while I look away.
+b : Do you leave it? | Won't it plump while watched?
+a : No. A good spoon's got a patient owner. | It would. But the cows would be elsewhere.
+
+scene exchange3
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I practise a dance step against a gate. | I can dance in a narrow strip of dry grass.
+b : Does the gate follow? | What about turns?
+a : It yields quite handsomely if I lift the latch. | I turn my partner towards the mud only in imagination.
+
+scene exchange4
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A keen knife cuts a frayed end clean. | I test my blade on a loose hay stem.
+b : Does a blunt one not cut? | Should it slice across?
+a : It leaves three little jobs where there used to be one. | If it only flattens the straw I owe it some care.
+
+scene exchange5
+when topic=season self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : Autumn wind keeps count of all the leaves I've missed. | A leaf blowing uphill knows a short way home.
+b : Are you counting leaves? | Does your herd follow?
+a : I'm pretending to till the cattle make their minds up. | Cows prefer a longer way with something to eat along it.
+
+scene exchange6
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Deep mud talks like an old saying. | I look for a blade of grass standing tall in a mire.
+b : What's it saying? | Is the ground firmer there?
+a : Come early, stay late. I won't be quoting that one. | Sometimes. The grass has made its own lengthy study of that spot.
+
+scene exchange7
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : A wet floor teaches a dance nobody requested. | I wipe a pail bottom before I carry it inside.
+b : A difficult figure to master? | Would a mat not do?
+a : One foot out and supper over your head. Easily learnt. | A mat's a kind thing. My manners needn't depend on it.
+
+scene exchange8
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I keep one letter without another to go with it. | An old saying gives advice about the final word.
+b : Was it lost? | Do you know it?
+a : The letter's here. The reply never came. | I know where mine's folded. I'll let it rest.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd save a favourite saying for #self.friend#. | I like the company of a wolf who can let a joke go by unherded.
+b : Would a friend guess the end? | Does it come back?
+a : A good one improves the ending behind my back. | Only if it was worth the walk.
+
+scene exchange10
+when topic=work self.job=none self.trade_words
+does tell.self / ask.detail / answer.detail
+a : The herd knows where the gate resists a muzzle. | A cow can eat while appearing to think deeply.
+b : Have you mended the gap? | How does a herder distinguish them?
+a : The gap knows another old saying. It's on its last hinge. | Try offering something greener.
+
+scene exchange11
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From the headland the roofs look easy to herd. | I like a high patch for a rest.
+b : Where would you drive them? | Watching over the city?
+a : Up the hill. They're halfway persuaded already. | Watching a damp day get lost downhill.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Word is #topic.subject# #topic.claim#. | Rumour can get through a narrower hedge than any cow.
+b : Is there a saying for it? | Would you close the gap?
+a : Yes, but I won't set it running across a second pasture. | I can close my own mouth without planting a thorn.
+
+scene exchange13
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In lean weather I put a little more water to the barley. | A worn gate can be kept another season.
+b : Still soup? | With what?
+a : If it's stirred with purpose. | A sharp knife, a sound peg and the will to stop slamming it.
+
+scene exchange14
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I mean to coin a saying that outwalked me. | I picture a reply arriving too late for the original question.
+b : Have you one ready? | Would you open it?
+a : Several. Their legs are still short. | I'd find a dry seat first.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I walk the outside of a twisty lane. | I take a short stick to judge uncertain ground.
+b : Isn't that farther? | How far do you push it?
+a : More room to turn my feet when the tune catches me. | Till I find something less hopeful than the surface.
+
+scene exchange16
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I've heard a blessing that's shorter than the cow's tail giving the benediction. | I say a little grace over soup.
+b : A cow in chapel? | Is it an old saying?
+a : No. A herder can be grateful outside. | I'd be embarrassed to ask whether the Bright One remembers it.
+
+scene exchange17
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I fold the letter once before going out. | When I come home I talk less than the cows do.
+b : Does it need the crease? | What have they left to say?
+a : I need to feel that the fold's still sound. | A whole day's worth of grass takes a while to digest.
+
+scene exchange18
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : My shoulders swing easier after dancing. | I let the day's worry sit outside my collar.
+b : Not too tired next morning? | Can you do that on purpose?
+a : The feet sometimes send a different report. | Better since I learned which shoulder it favours.
+
+story tale1 [topic=animals self.job=none]
+  : A calf stood still for so long beside a gate I began explaining an old proverb about stubbornness. Very thoughtfully, I thought.
+  : The calf slipped through as soon as I stopped leaning on the latch.
+  b : What proverb fits that?
+  : If a cow can't use the gate, inspect the wolf giving advice.
+
+story tale2 [topic=memories]
+  : I rewrote the beginning of a letter across a torn wrapper's reverse. The wind took the wrapper over a hedge.
+  : I found it hanging on a thorn, turned to the side I'd meant to leave blank.
+  b : Did you finish it there?
+  : I put the scrap away. There wasn't a word I wanted hanging out to dry amongst the leaves.
+
+story tale3 [topic=pastimes self.likes=dancing]
+  : I once tried a new turn on a bit of hard ground where a pail had been. My whole right heel fitted the round print.
+  : The turn was magnificent. Getting out of the print was a separate accomplishment.
+  b : Did anybody see?
+  : Several cows, admirably discreet. I taught myself the other foot on fresh ground.
+
+rule @call1
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Slow backs moving. That's the colour of a good count. | A last look at the latch before I walk away.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The grass looks ready for company. | A cold hinge likes lifting more than shoving.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Another saying's gone ankle-deep in mud. | High path's keeping its own counsel today.
+
+rule @call4
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say My spoon knows how deep the barley lies. | A good soup grows untidy round the edge.
+
+dlg @1 resident.hub : I'll trade you a plain answer for a question that stands still.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, same gate, a better opening this time.
+dlg @3 resident.hub [here.time=night] : An evening proverb tends to come with a yawn in the middle.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can keep a civil hedge across the space between us.
+dlg @1 resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. Whole days spent persuading grass to keep inside the gate. The grass has a walk about first, naturally.
+dlg @2 resident.job : I aim to be where my day's work is least expecting me.
+dlg @1 resident.news [world.news] : The bit that reached my pasture was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : #topic.subject# #topic.claim#. There's a long fence between saying and seeing.
+dlg @1 resident.bye : Find your own dry tuft before evening.
+graft resident.hub
+choice How old does a saying have to be? -> new_saying
+node new_saying
+say Old enough for whoever said it first to have forgotten to ask payment. Then it belongs to every muddy boot that finds a use for it.
+free
+choice Did you make that one yourself? -> new_saying_again
+choice Goodbye. -> bye
+node new_saying_again
+say I intend to forget your question. It'll sound a great deal wiser in a season.
+choice Keep the gate swinging. -> hub
+choice Goodbye. -> bye

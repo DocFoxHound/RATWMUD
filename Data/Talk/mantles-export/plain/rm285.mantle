@@ -1,0 +1,258 @@
+# rm285, the skipped tread (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm285
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_theodora_fogdale
+written_by codex
+title the skipped tread
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=chatty warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk counts_the_steps_left_untouched_by_a_double_stride
+likes smoked_eel long_walks new_boots first_warm_day
+dislikes stale_bread wet_floors
+fears a_false_board an_unseen_hand_on_a_load
+hopes a_fast_dry_road a_count_that_comes_right
+topics travel +0.6 work +0.4 weather +0.3 food +0.3 gossip -0.4
+styles comfort=brisk gossip=guarded refuse=sharp tease=none
+marks oath saying
+persona #self.first# takes stairs in pairs, counts the treads left untouched and demands the missing part of any story told down by the water.
+
+words
+oath! = Crack the stair nose | Rot in the landing
+saying! = Count the step you miss | Speed needs a sound board
+skip = the skipped tread | my spare step
+stride = a doubled stride | my long lift
+landing = a small landing | the square between flights
+toecap = a firm leather toe | the bright toe cap
+heel = a solid heel | the dry heel edge
+eelwrap = a dark bit of eel | my smoked eel twist
+badloaf = a hatchet-hard heel of bread | that grey dry crust
+cloth = a dripping bundle | the heavy wet fold
+suds = a cloudy patch of suds | the froth behind a heel
+count = my second tally | the number unstepped
+warm = a stripe of sun | a warm dry streak
+peg = the upright peg | the long rail post
+
+any
+opinion @1 houses against 3 : Nobody with the use of a dock gets to shrug off what the work costs in flesh. I haven't forgotten that bill.
+opinion @2 strangers against 2 : A stranger can have directions and a word about the broken step. The latch stays put.
+opinion @3 dole for 2 : Send a bowl down a stair and it reaches good use at once. There's no mystery about that account.
+opinion @4 merchants against 2 : That loaf sat going hard while the buyer counted out the price. Someone got better value than the eater.
+opinion @5 sump for 2 : Down the Sump folks know to shout a warning about bad boards. Learned that much decency there.
+opinion @6 times against 2 : Two steps for the effort of one sounds fine till you find the price of dinner has gone up three.
+
+grown
+line @1 greet [pair.band=strangers] : Stand clear of the turn and we'll talk. | I can see you there. Welcome that far.
+line @2 greet [here.time=dawn] : Up before the stair dried. Hello. | Morning. Room on the top tread.
+line @3 greet [here.weather=rain] : Come on the dull patch. Shine means slippery. | A wet entrance. Wipe your feet now.
+line @4 greet.return : Your voice got all the way through. Hello. | Fair greeting. Here's mine in return.
+line @5 greet.return [pair.band=friends|family] : That's a voice worth stopping halfway for. | Here's the inside corner for you.
+line @6 farewell : Clear every tread you mean to clear. | Keep your business on the dry boards.
+line @7 farewell.return : I'll listen for you getting safely round the turn. | Away with you while it's quiet.
+line @8 again.open : Another pass down the same flight. | You found the returning step quickly enough.
+line @9 kin.open [pair.kin!=no] : Family needn't shout clear up the entire flight. | Closer. We've had enough distance between our own.
+line @10 hail [pair.band=friends] : Two treads higher! | Up here beside the post!
+line @11 react.news : Leave the missing bit in plain hearing. | Tell me where the account changes hands.
+line @12 react.news.new : New to me even at that volume. | Nobody counted that one out for me before.
+line @13 react.news.known : I knew the count up to that point. | That tread's got familiar wear on it.
+line @14 react.news.doubt : There's a deal too much jumping from hearing to knowing. | I'd like the step between those two claims explained.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : A whole household feels a missing footfall. | Give the loss its due before anybody puts blame about.
+line @16 react.news.glad [topic.kind=marriage|birth] : Nice to hear the boards carrying a glad word. | I'll give that happy news a shout of its own.
+line @17 answer.how : Going by twos on a sound flight. | My legs haven't put in a grievance.
+line @18 decline : I'd rather account for my own footing before I promise yours. | I know too little about what waits on that landing.
+line @19 accept_decline : Keep your decision in your own pocket. | A straight refusal makes a decent rail.
+line @20 sympathise : Lean on the post. The next bit can wait. | A hurt like that can take the lift out of both knees.
+line @21 thank : You warned me before I put weight there. | Good. Somebody minded the missing detail.
+line @22 deflect_thanks : My voice carries. Costs me no extra. | Only pointed where a wolf could land.
+line @23 preclose : I've a whole run of treads ahead. | Time I put some space behind my heels.
+line @24 accept_preclose : Go on. Keep the rail within reach. | You've a clear turn from here.
+line @25 farewell [here.time=night] : Take the dark flight single. | Count twice when the light goes.
+scene double
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I count #skip# with every second lift. | My feet go two while my mind takes the other stair.
+b : How many do you miss at a landing? | Doesn't it get confusing at the turn?
+a : An odd last tread can't be helped. I step on that one. | I start both counts fresh from #landing#.
+
+scene shut
+when topic=newcomer
+does give.opinion / disagree / concede
+a : A wolf asking directions gets precisely that. | I don't have to show my latch to a face wanting a stair.
+b : What if your door's on the way? | Might be honest business waiting outside.
+a : Then I'll point past it. No business naming every hinge. | Then an honest answer through the boards will do.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : #eelwrap# will stand up to a steep climb without spilling. | I fold the eel tail to the inside of my parcel.
+b : Does supper stay warm that way? | Why put the narrow bit in first?
+a : Warm was never the point. Supper still shows up whole. | Keeps a loose bit of skin from snagging the paper.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.complaint / react.complaint / assess
+a : #badloaf# takes half a day to break and the other half to swallow. | I've eaten bread the price ought to include a hammer with.
+b : You'd do better soaking it. | Then get some broth to go alongside.
+a : I know. I'd sooner hear what kept it waiting that long. | I'd sooner pay for one decent thing than have to buy two dinners.
+
+scene warmslab
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : #warm# across the stair tells me spring has got legs at last. | First warm day I sit at the turn and count the dry treads.
+b : Wouldn't you sooner take the sun outdoors? | More dry ones than wet?
+a : I like to know it reaches the place I've got to stand. | Soon as they're in the lead I'll take a long walk.
+
+scene working
+when topic=work self.job=laborer self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I turn my heel so #cloth# stays clear of my knee. | #self.workplace# gives every shortcut a good long test.
+b : Did you learn that turn the easy way? | Which one's failed its test?
+a : Wet knee all winter's an education in where to put a bundle. | Taking a turning without checking the next wolf can see you.
+
+scene learner
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : Give me a sideways look at a task I've seen once already. | A learner ought to ask about the part the teacher skipped.
+b : Wouldn't the first demonstration do? | Is there always a part missing?
+a : From the front I miss where the weight's gone. I want that answered. | Something feels so easy to a practised paw it slips by without a word.
+
+scene sump
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : Echo can guide me to our Sump stairway by the change of echo. | Home in the Sump there's nowhere to hide a heavy tread.
+b : Would you know a stranger by that? | Must hear every quarrel through the wall.
+a : I'd know I'd missed counting an extra pair of heels. | It's the quiet after a shout I don't care for.
+
+scene longwalk
+when topic=pastimes self.likes=long_walks
+does tell.plan / ask.detail / answer.detail
+a : I fancy a long stretch where a stride can go its full length. | I'm after a walk that takes my boots beyond the smell of suds.
+b : Looking to wear out new leather? | What makes you turn for home?
+a : The opposite. Let it bend once on a sound bit of road. | When I can smell the weather itself. Then I've gone far enough.
+
+scene price
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : New boots cost twice over if the first sole lets water in. | I'll take no seller's word for what's under #toecap#.
+b : Most folk would take the maker's mark. | You mean to pick stitches apart before paying?
+a : A mark doesn't put my heel back on a wet step. | Just bend the toe. A poor job will speak for itself.
+
+scene drywarn
+when topic=weather here.weather=rain
+does offer / accept / assess
+a : Take my wrist at this turn if you've a slippery sole. | I can call out the shiny treads if you give me the near rail.
+b : I'll grip your sleeve then. | Rail's yours, call them clear.
+a : Short grip. You're making common cause with dry leather now. | Second and fourth. The close-set pair shines worst.
+
+scene wharfcost
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd like one House tally to show what's left out when a worker never comes home. | I remember an empty place better than a proud name on a quay.
+b : Hard counting a thing like that. | Is it the name that sticks hardest?
+a : Easy to leave it out. That's the omission that sticks. | No. All the steps somebody used to take with us.
+
+scene favour
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd check the top board on a visit from #self.friend#. | I'd take the hindmost place in a race against #self.friend#.
+b : You make a friend wait on the safe board? | And give your friend the first step?
+a : For one breath. I won't give false assurances even to a friend. | For certain. I see the feet ahead and can judge my own pace.
+
+scene suds
+when topic=smalltalk self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : There's water you see and there's the greasy stuff that looks like wood. | #suds# tells me the boards have had one wipe too few.
+b : What gives away a concealed slick patch? | Can it be more than a bubble?
+a : Slide #heel# with no weight on it. The slide's your answer. | One bubble's enough. Nobody meant to leave soap for the next sole.
+
+scene gossip
+when topic=gossip
+does give.opinion / disagree / concede
+a : I won't carry a half account across a whole landing. | Gossip's remarkably keen to get past a shut door.
+b : Couldn't you mark the doubtful bit? | So you'd leave it waiting on the steps?
+a : By the next turn the mark's rubbed off and my name's still on it. | Yes. A real piece of business can call out.
+
+scene hardstep
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : Bread's dear enough to leave a mark in the food money for days. | There's more stale crusts going upstairs than there used to be.
+b : What becomes of those marks? | Must be harder on the teeth than the pocket.
+a : Count them. Remind myself it's the loaf that's changed. | You haven't seen what the merchant took first.
+
+scene post
+when topic=travel
+does ask.advice / give.advice / assess
+a : How would you get a wet bundle past #peg# on a narrow turn? | What's the least foolish way to take loose boards in bad light?
+b : Raise the near corner before you turn your shoulders. | One step, then test the next with your heel.
+a : Yes. Give the post the cloth edge instead of my knuckles. | I'd go single for that. Speed's no kind of witness in the dark.
+
+scene ownstep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want a boot that lands quiet without hiding where it's going. | There's a decent reason to leave half the steps untouched.
+b : And what reason's that? | Saving wear on the wood?
+a : When a family listens for feet, I like mine to have a sound everybody knows. | Saving attention for the place both feet must come down.
+
+story missing_board [topic=travel]
+  : I took a short flight in pairs for months. Came down it one evening with a bundle so wide I had to go single.
+  : Found a tread that rocked right under my heel.
+  b : Was that one you'd usually skipped?
+  : Yes. I made a proper noise about that board. Somebody else was taking the stairs by ones.
+
+story eel_corner [topic=food]
+  : I carried my eel with a crust of loaf wrapped together. The bread came out with a dark curve on one side.
+  : I took a bite of the mark. Tasted better than the rest of the loaf.
+  b : Did you eat the fish too?
+  : The fish came home. I pressed it against the other side first. That crust needed every advantage.
+
+story wet_race [topic=pastimes]
+  : I thought I could bound to the top of a stair before a drop of rain reached the edge of the rail.
+  : I got to the turn and the drop was still hanging. Came back down to have a look.
+  b : Did you nudge the drop loose?
+  : It wasn't rain. Old polish. I kept the exercise and left the contest.
+
+rule @flight
+when concept=bark self.likes=long_walks
+does aside
+cooldown 8h
+say Other tread, other foot. | Count the quiet boards as well.
+
+rule @active
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say Turn the weight off the knee. | Wet bundle wants a dry landing.
+
+rule @sun
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say That stripe could dry two treads. | Nearly warm enough for fresh leather.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Single file where the lamp gives out. | There's no merit in guessing at a stair.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Speak plainly from that square of floor.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your step introduced you ahead of your voice.
+dlg @3 resident.hub [here.time=night] : Speak from the lamp side. I need a look at the speaking face.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Whatever you want, ask without your hand on that latch.
+dlg @5 resident.job [self.job=laborer self.workplace] : I'm a washer at #self.workplace#. If you're carrying anything, let me see where it's going.
+dlg @6 resident.job : I take my share of the weight. I'm particular about knowing which share it is.
+dlg @7 resident.bye : Step wide of the wet patch and we've no more business.
+graft resident.hub
+choice Why count the steps behind you? -> missing_count
+node missing_count
+say Only half my soles land on. If the count of untouched steps comes up wrong, I've missed something worth seeing.
+choice What could be worth turning back for? -> stair_mark
+choice We'll leave the count there. -> hub
+node stair_mark
+say A rotten board I cleared without looking. Next wolf might be carrying a load and going single. I like a proper warning given.
+choice That's accounted for it. -> hub
+choice I'll check my landing. -> bye

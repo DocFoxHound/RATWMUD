@@ -1,0 +1,262 @@
+# rm376, the walking dividers (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm376
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ivar_pitchwick
+written_by codex
+title the walking dividers
+fits stage=adult|old
+prefers job=scholar
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk measures_a_walk_on_paper_with_a_hinged_pair_of_dividers
+likes hard_cheese long_walks sharp_knife summer_evenings
+dislikes gulls waiting
+fears a_wrong_total_inked_in a_quay_mark_hidden_in_fog
+hopes a_walk_that_outlasts_the_paper a_whole_clear_evening
+topics travel +0.5 work +0.4 pastimes +0.4
+styles comfort=company gossip=precise refuse=polite tease=none
+marks oath saying
+persona #self.first# walks a paper route with dividers, discusses a discrepancy at length and with relish, and draws a quiet breath before opening an account.
+
+words
+oath! = Dented pivot | Chalk in the hinge
+saying! = Walk the figure twice | A turn is a distance too
+legs = my little brass legs | my walking dividers
+pivot = a tiny brass pivot | the pin at the join
+paperroad = a route in pencil | my little road on paper
+splitmile = a remaining scrap of distance | a half pace on paper
+oldfold = a soft crossing crease | a white wrinkle
+cheesewedge = a fine wedge of hard cheese | my walking slice
+knifecloth = a narrow blade cover | a sheaf of oiled cloth
+pausemark = a little square in pencil | an open square
+corksole = a wedge of stopper | a cork for my points
+blankturn = a clean piece of margin | an unmarked turn
+
+any
+opinion @1 houses for 2 : A well-kept account can put a great many paws to work. I value a House prepared to set its signature below the reckoning.
+opinion @1 dole against 1 : A list for relief ought to lead to a proper paid place where one can be found. I'd grudge seeing capable paws kept waiting on the list indefinitely.
+opinion @1 watch for 2 : A sound witness and a clear record are easier to get in a place where the caller can come and go in safety.
+opinion @1 festivals for 2 : An evening's dancing can get greater value out of a flat piece of ground than any calculation I've yet attempted.
+opinion @1 city for 1 : The pleasure of these long streets is that one can get an entirely different sum by taking a different turn.
+opinion @1 times for 1 : I have the means for a long walk and a leisurely supper after it. I'd gladly enter the present week on the credit side.
+
+grown
+line @1 greet : I've marked my place. There's room for a conversation.
+line @2 greet [pair.band=strangers] : A new face along a familiar route. Welcome to a brief halt.
+line @3 greet [here.time=dawn] : The lines of the street come clear admirably early. Welcome.
+line @4 greet [here.time=dusk|night] : The street's mostly outline now. I'm pleased to hear a voice.
+line @5 greet [self.working=yes] : I'll close the dividers and give the matter my ear.
+line @1 kin.open [pair.kin!=no] : Come to the near margin where the service is informal.
+line @1 again.open : Our routes cross rather neatly twice in one day.
+line @1 greet.return : A clear greeting crosses the figures quite easily.
+line @2 greet.return [pair.band=friends|family] : My greeting to a familiar point of reference.
+line @3 greet.return [self.working=yes] : I've heard you above the turning of the leaves.
+line @4 greet.return [here.time=dusk|night] : I'll lend you the ear on the better-lit side.
+line @1 farewell : May your journey give a pleasing remainder.
+line @1 farewell.return : I'll put our meeting on the little map.
+line @1 react.news : An account worth the length of the telling, I trust. Go on.
+line @1 react.news.new : That belongs on a clean page of its own.
+line @1 react.news.known : Yes, I've had a shorter reckoning of those events.
+line @1 react.news.doubt : Was the original observation made at closer quarters?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can help with a written errand when that house is ready for company.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A pleasant result, however many figures I allow for it.
+line @1 ask.how : Has your day taken the course you had in mind?
+line @1 answer.how : Tolerably well. I've taken a little more air than I planned.
+line @1 sympathise : No calculation makes a disappearance sit any easier beside the figures that remain.
+line @1 reassure : We can trace the route back till we reach something you recognise.
+line @1 decline : I should be anticipating permission nobody's given me to use.
+line @1 accept_decline : I'll mark our answer as private and close the little book.
+line @1 thank : You gave me precisely the assistance the difficulty called for.
+line @1 deflect_thanks : Spend your gratitude on the next tired walker you encounter.
+line @1 preclose : The dividers have got themselves just a degree out of true.
+line @1 accept_preclose : I'll draw a mark where our ways separate.
+line @1 ack : It tallies.
+scene walkingmap
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I can walk a week's favourite turn on a small sheet with #legs#.
+b : Do you shorten the brass steps on a curve? | Are you measuring pleasure or distance?
+a : Quite considerably. Taking one long cut across a bend leaves out exactly the bit I might have gone for. | Distance first. Pleasure still defeats my attempts to choose a unit for it.
+
+scene accounts
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail
+a : When a row of little sums looks identical I cover each one before reading the next.
+b : Does it keep your place? | Wouldn't a straightedge do?
+a : Yes. More importantly it stops my eye lending next door's amount to a figure of less generous appearance. | A straightedge with a broad enough back, certainly. I prefer the thing that hides the neighbouring answer.
+
+scene picnic
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : A very hard cheese makes an excellent companion on a long walk.
+b : Doesn't it weigh you down? | How far does one slice go?
+a : With every stop the burden grows less. A pleasant improvement on carrying a book of figures. | Considerably farther if I keep the first stop till after a steep climb.
+
+scene edge
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp knife cuts a pencil without wrenching the lead inside.
+b : Can you tell when a pencil has cracked? | What shape do you leave the point?
+a : Only when the lead begins to come away in little pieces. I'd prefer the benefit of prevention. | A small flat on one side. It will make a fine line turned edge-on and a soft shade on a route worth remembering.
+
+scene gulls
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull has the most disconcerting effect on the scale of an outdoor plan.
+b : By landing on it? | Does the bird mistake it for food?
+a : Precisely. Across the paper a gull covers several streets. Then I find it necessary to redraw my route. | I suspect the bird mistakes me for an inattentive owner of cheese and is looking for its proper opportunity.
+
+scene wait
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I can reckon a delay quite contentedly once somebody has told me how long it will be.
+b : What if you are offered an estimate? | Why not wait without counting?
+a : A labelled guess is a useful starting point. An impatient certainty is less so. | I could. I'd gain no pleasure from the delay and considerably less knowledge of the time.
+
+scene summerweather
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A long summer evening gives a walker a piece of road as a gift.
+b : Which piece? | Does it have to be a new road?
+a : The turn beyond the one where a winter walker would have started back. | No. A familiar walk in a new sort of light makes a different entry.
+
+scene squareroute
+when topic=land self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : In the Office I measure a corner by the width of the doorstep at its turn.
+b : Why measure an office street at all? | Are all the steps the same?
+a : Because of all the places that handle a number, that one's especially entitled to have its own affairs measured precisely. | Far from it. That's the interest in taking an actual walk once the little plan looks finished.
+
+scene spousewalk
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd choose a return with a comfortable seat if I were walking with #self.spouse#.
+b : Does the length of the route matter? | How would you pick the seat?
+a : Less than the pleasure of having room to stop by consent. Two walkers make a different arithmetic from one. | By looking at it from the seated side. A handsome bench not quite deep enough is poor planning.
+
+scene privatewater
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A grievous event along the water is no better accounted for by repeating a familiar name beside it.
+b : Could you put the name on record? | What would be fair to say?
+a : Only if a witness could speak to the actual matter. Grief is quite heavy enough without a conjecture to carry. | How great the loss is to the house at that door. The rest must wait for evidence.
+
+scene learnfig
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I get more use out of a correction with the original marks still visible alongside it.
+b : Can a clean copy show that? | What if the correction proves wrong?
+a : No. I like the untidy working leaf beside it until I can tell why my first calculation failed. | Then the working leaf gets another line demonstrating it, and the clean copy waits for a sound result.
+
+scene richwalk
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : The privilege of buying good shoes is being able to go the long way simply because I wish to.
+b : Would a shorter walk waste them? | Would you record what the shoes cost?
+a : No. I'd only like to notice the choice before talking as though everybody had it. | Yes, including the occasional repair. Good leather's still entitled to expect that much consideration.
+
+scene perfectleg
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put a scrap of cork over the divider points before returning them to my pocket.
+b : One for each tip? | To keep the steel from scratching?
+a : One piece for both. It fixes the width of a particular walk until I need to resume measuring it. | Also to keep the paper below quite clear of unplanned holes. Very few of my walks end in a tunnel.
+
+scene newfriend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I keep a little space on my plan for the walks I might share with #self.friend#.
+b : Would you let company choose the direction? | Would the outcome be worth writing down?
+a : I'd mark the start and put away the pencil until I knew if keeping a plan was part of the pleasure. | Most certainly. A place which was worth stopping to talk has a distinct value, regardless of distance.
+
+scene oldpolicy
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A figure repeated on three papers may still come from the same hurried mark.
+b : Wouldn't the repetition reassure you? | How do you verify the first mark?
+a : Only if somebody looked afresh between the three copies. Agreement without an independent look is very cheap. | Find the count it was meant to record. The original goods or the first witness will do much more than a fourth copy.
+
+scene dampthroat
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Moist air sometimes makes my first few words feel rather rough.
+b : Does the walk make things worse? | Would a quiet minute help?
+a : Usually I take a gentler pace till I can speak comfortably. I'd rather not devote the conversation to my throat. | Particularly one in which nobody stands waiting to see how I shall sound once it ends.
+
+scene lostturn
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I've dreamt of a whole city folded up inside the joint of my dividers.
+b : How would you get in? | Could the legs still move?
+a : Through whichever turn somebody has measured most recently. I'd hope the last walk ended near a decent inn. | Very slowly. I disliked the thought of upsetting all those tiny chairs for the sake of one figure.
+
+scene dusk
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : Once darkness hides the chalk marks I put my little instruments away.
+b : Do you enjoy a walk with no record? | Could you work by lamplight?
+a : Extremely. My feet do a fair amount of their own reckoning, and a sight worth keeping will occur to me again later. | Next day, certainly. I'd rather keep the evening long than turn it into the start of another day's accounts.
+
+story cheaproute [topic=memories]
+  : I measured a crooked lane with my brass legs opened to their widest span. The answer looked remarkably short.
+  : When I walked the lane I found I'd measured straight through the corner of a house and out over a stair.
+  b : Was there a shortcut after all?
+  : On paper only. I shortened the brass stride, used the whole lane and enjoyed the full value of my supper.
+
+story paperpicnic [topic=food self.likes=hard_cheese]
+  : A piece of cheese once left a beautifully translucent mark in a plan I'd brought on my walk.
+  : I turned the sheet to the light. The marks on the far side showed through across exactly one narrow street.
+  b : Was the plan spoiled?
+  : No. I labelled that particular stop with the smallest drawing of a cheese. A quite accurate account of its use.
+
+story pencilpoint [topic=pastimes]
+  : I spent a long while honing a penknife and a correspondingly short while admiring a very fine pencil point.
+  : My first line folded over into a neat little hook. I had shaved away too much of the wood supporting the lead.
+  b : Did you keep the line?
+  : It made an excellent mark for the first turn. I took the lesson as well and gave the next pencil a broader shoulder.
+
+rule @number
+when concept=bark self.job=scholar self.working=yes
+does aside
+cooldown 8h
+say Lift the corner and read the original figure, please. | Give each entry its own clean space.
+
+rule @blades
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 8h
+say The little point belongs in the cork before the pocket. | Keep the pencil wood round the lead.
+
+rule @gulls
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Cheese beneath the paper until the wing passes. | Bring the lunch back from the outer edge.
+
+rule @evening
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Take the longer turning while the light allows. | Give the marked road a little room beyond the fold.
+
+dlg @1 resident.hub : I may put that calculation aside at a very convenient point. How can I help?
+dlg @2 resident.hub [topic.meeting=known] : Our routes meet on agreeable terms once again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Let's have the precise matter before we reduce the distance between us.
+dlg @4 resident.hub [here.time=night] : At this hour your ordinary voice will carry quite sufficiently across the paving.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I like a result to be traceable as far as the first written mark.
+dlg @2 resident.job : I take the longer way through a matter if that will establish where a mistake came in.
+dlg @1 resident.news [world.news] : The account reaching my desk has this wording. #world.news#.
+dlg @1 resident.bye : May the walk provide something you hadn't allowed for in the original distance.
+graft @brasslegs resident.hub
+choice How far have those little brass feet gone? -> brasslegs
+node brasslegs
+say They've gone about a whole little city without getting past the edge of a sheet. Look at the points. A bit of paper fibre has lodged right up against the joint.
+choice Could you measure a walk before taking it? -> brasslegs_more
+choice Rest the brass feet. -> hub
+node brasslegs_more
+say I can estimate it. Then I reserve the freedom to take an unscheduled turn. A plan which prevents all pleasure in a walk has been drawn to quite the wrong scale.
+choice Rest the brass feet. -> hub
+choice Leave the paper city. -> bye

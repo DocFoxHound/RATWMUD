@@ -1,0 +1,262 @@
+# rm233, the landing hook (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm233
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_sybil_tardale
+written_by codex
+title the landing hook
+fits stage=adult|old
+prefers job=smith warmth=warm
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk takes_two_steps_and_rest_hooks_a_bundle
+likes honey_cakes riddles festival_bells warm_rain
+dislikes bad_manners early_bells
+fears a_load_slipping_on_a_crowded_stair
+hopes a_rest_hook_at_each_landing
+topics work +0.6 home +0.3 pastimes +0.4 gossip -0.3
+styles comfort=carry gossip=close refuse=gentle tease=none
+marks oath saying
+persona #self.first# takes the stairs in pairs, with a spare carrying hook for a bundle and a quiet eye for anybody tiring on the climb.
+
+words
+oath! = Cold rivets | My climbing knee
+saying! = Leave the top step free | A hook earns its bend
+hook = my landing hook | the blunt hook
+bundle = a tied bundle | a cloth parcel
+stair = the long climb | the worn stair
+rail = a steady rail | the wall bracket
+bend = a broad turn | the inside curve
+heelmark = the dark scuff | a half-moon scrape
+landing = the level place | a flat landing
+share = the softer half | a honeyed corner
+striker = the little clapper | a tongue of iron
+weight = an awkward weight | a shifting load
+ring = a closed ring | the round link
+cake = a sticky cake | a little honey round
+
+any
+opinion @1 houses against 2 : A House can put its mark on every bar. I'd like to mark the wage with my own mark and see which lasts longer.
+opinion @1 merchants against 2 : Iron goes out cheap at one door and comes back dear at the next. Somebody in between must have a very comfortable chair.
+opinion @1 dole for 2 : Hunger makes stairs steeper. A fair share of bread helps more than a lecture on climbing.
+opinion @1 sump for 1 : Down in the Sump there's always room for one more parcel on a landing.
+opinion @1 times against 2 : When the loaf shrinks the sack it goes home in feels heavier, somehow.
+opinion @1 strangers for 1 : I'll hold a rail steady for an unfamiliar face. Knowing the name can wait.
+opinion @1 watch against 1 : I'd like to hear boots come running down a Sump stair for the sake of somebody in trouble.
+
+grown
+line @1 greet : Here, a level place where we both fit. | Hello. Set down anything you need to.
+line @2 greet [pair.band=strangers] : I'll leave a gap for you to pass or stop. | First meeting. A proper welcome to you.
+line @3 greet [here.time=dawn] : Good morning. Those bells drove sleep clear off. | Early feet abroad today. Welcome.
+line @1 greet.return : I heard you coming. Glad of the company. | That was a welcome sound. Hello back.
+line @2 greet.return [pair.band=friends|family] : A dear face where the stair turns. | I'd know your step in a hundred.
+line @3 greet.return [self.working=yes] : Heard you through the clatter. Good to see you. | I've a greeting to spare while this cools.
+line @4 greet.return [here.time=night] : Hello. I've a steadier footing now my eyes are used to the dark. | Night notwithstanding, glad to see you.
+line @1 hail [pair.band=friends] : Come share this easy stretch with me. | Over here. I've saved a spot against the rail.
+line @1 again.open : We've come level for another bit of the way. | Glad the road twisted back to you.
+line @1 farewell : Rest wherever you need it on the way. | May your bundle sit comfortable.
+line @1 farewell.return : Away with you, and an easy last step. | Mind your feet at the turn.
+line @1 react.news : Go on. I've set everything down to listen. | Take the time the telling needs.
+line @1 react.news.new : I hadn't the first inkling till you said. | That's a new weight to take into account.
+line @1 react.news.known : The shape was familiar from the first few words. | Yes, it bears a second hearing.
+line @1 react.news.doubt : I'd like to feel whether that holds weight before I lean on it. | There's a bit in there that shifts when I listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Ah, that lifts some weight from a tired day. | Good hearing indeed. I could climb another flight on it.
+line @1 react.news.sorrow [topic.kind=loss|death|assault|arrest|theft] : I can carry the rest of your things while you tell it. | Heavy to hear. I'm here beside you.
+line @1 ask.how : Anything dragging at your shoulder today? | Has it been a long climb for you?
+line @1 answer.how : An ache or two, with room for a kind word. | On my feet. A rest would finish the picture.
+line @1 sympathise : Some burdens you can only stand beside. I'm staying. | That would take the spring out of anybody's step.
+line @1 reassure : Slow the climb. Nobody's marking your time. | One level place is enough to start again from.
+line @1 decline : That's one burden I can't honestly take. | Ask me for company and you've got it. That other thing I can't give.
+line @1 accept_decline : Then I'll take the weight back. Fair enough. | Right. I like a limit I can see.
+line @1 thank : You gave my shoulder a holiday. I'm grateful. | I felt that lift. My thanks for it.
+line @1 deflect_thanks : Half a load apiece suited me fine. | There was room in the crook of my arm.
+line @1 preclose : My feet have had their rest. I'll move along. | I'd best get those steps behind me before I cool off.
+line @1 accept_preclose : Off you go while there's strength in your legs. | Plenty of talk can wait for another landing.
+scene steps_two
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I stride across two risers at once till I catch up with somebody. | I like a pair of steps under each stride. On a clear stair, anyway.
+b : What happens if the way is busy? | Do you try to pass?
+a : I shorten my step. Nobody needs a great knee appearing beside one ear. | I wait for a landing. A little less haste is good manners in a narrow place.
+
+scene hook_end
+when topic=work self.job=smith
+does tell.self / ask.detail / answer.detail
+a : I give a carrying hook a broad blunt nose. | The nicest hook for a bundle is a bit clumsy to look at.
+b : Why make it broad? | Wouldn't a sharp end catch better?
+a : A point takes the load on one thread and ruins the wrapping. | Too well. I want it to lift cloth, not put its nose through.
+
+scene cool_ear
+when topic=work self.job=smith self.working=yes
+does tell.self / react.self / assess
+a : A dropped cold ring makes a colder note than a hot one. | Listen to that little ring as it settles on the bench.
+b : You can tell the heat by ear? | What's a note tell you?
+a : Very little by itself. Enough to keep me looking properly before I reach. | What to pay attention to. I leave the temperatures to a better test.
+
+scene bells_waken
+when topic=day self.dislikes=early_bells
+does tell.complaint / react.self / assess
+a : An early bell seems to hang only a foot above my pillow. | Why do I hear the early bells clearer than any others?
+b : They sound much the same outside. | Ever tried covering your ears?
+a : Outside I can walk away. Under a blanket it's a contest of wills. | I've tucked the blanket over both. It made a very warm poor answer.
+
+scene festival_low
+when topic=festival self.likes=festival_bells
+does tell.feeling / ask.detail / answer.detail
+a : I stand near a wall when the festival bells are going. | There's twice as much tune right by a blank wall.
+b : Don't you find that loud? | Do you mean the echo?
+a : I stand just where the return is softer than the bell itself. That's the sweet bit. | Yes. One note comes straight and one comes back a little older.
+
+scene honey_divide
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : You can't split a honey cake fairly with a knife. | Pick your half of a sticky cake only after it's been pulled apart.
+b : Why does it matter how you split it? | Think I'd pick the bigger bit?
+a : The honey stretches. Let the other wolf choose which side got the long thread. | Wouldn't blame you. Both bits taste better if one does the breaking and one the choosing.
+
+scene riddle_rest
+when topic=pastimes self.likes=riddles
+does ask.detail / answer.detail / assess
+a : What has a shoulder to lean on but never walks a step? | What lifts nobody and still helps carry a load?
+b : Give us a hint. | Something you find on the stairs?
+a : The rail. Let a heavy parcel rest on it till you feel that idle shoulder earn its keep. | Yes, a rail. The feet do all the moving but the wood earns a share of the credit.
+
+scene landingmanners
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / react.self / assess
+a : If two laden wolves meet on a narrow stair, words first. | There's no prize for a wolf who pushes through on the stairs.
+b : Somebody has to give way. | What would you say?
+a : I ask which direction the harder load is headed. I can usually make room for it. | First I'd offer to share that level patch. Nobody likes to be ordered about while balancing.
+
+scene weather_coat
+when topic=weather here.weather=rain self.likes=warm_rain
+does tell.feeling / ask.detail / answer.detail
+a : A mild rain after a dry stretch leaves me easier in the shoulders. | I like the weight of a little warm rain just below my collar.
+b : Doesn't it soak through? | You'd leave your collar open?
+a : If it grows cold I'll turn the collar up. For now let it do its bit. | Till the first drop runs right down my spine. That's usually a fair stopping place.
+
+scene heavy_coin
+when topic=prices
+does give.opinion / ask.detail / answer.detail
+a : I weigh a purchase against the climb home with it. | Nobody puts the last three flights of stairs on a price board.
+b : What does climbing cost? | Would you leave a bargain?
+a : Another trip if I can't carry it safely. That comes into my reckoning before I pay. | I've left cheap weight where it stood. Cost me less than missing work with a sore back.
+
+scene neighbour_ring
+when topic=home self.neighbour
+does tell.plan / ask.detail / answer.detail
+a : I've a spare little hook I'd offer #self.neighbour#. | I'd show #self.neighbour# the spot where I keep it.
+b : Just in case there's a load to carry? | Don't you need it yourself?
+a : Aye. It's spare because I've already got the one I need. | I'd fetch it back when I needed the second. Most days one hook does me.
+
+scene parcel_confide
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# with a tied bundle and never mention what it held. | I'm comfortable sharing the carrying with #self.friend#.
+b : It might be heavy. | Trust matters even with an ordinary parcel?
+a : I'd say what it weighed, of course. The contents are the bit I needn't explain. | Aye. It's a comfort to keep my own business even when someone does me a kindness.
+
+scene sour_stair
+when topic=gossip
+does give.opinion / react.self / assess
+a : A rumour likes a stair. Every landing gives it a fresh start. | A stair with six doors on it is a poor place for a confidence.
+b : Perhaps no one's listening. | Folk have their own worries.
+a : More reason to keep their landing quiet. I can bring the talk indoors if I must. | Indeed. No kindness in piling somebody else's story on top of them.
+
+scene fear_slip
+when topic=weather here.weather=snow
+does warn / react.self / assess
+a : Give that white rim another look before putting your weight on it. | A frosty step can hide its worst patch in the shade.
+b : You'd go slower here? | Even with good boots?
+a : Single steps now and a free paw on the rail. Two at a stride can wait. | Even then. The cold has very little respect for leather.
+
+scene riddle_smile
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My favourite riddles are the kind that make a very ordinary thing feel strange. | A good riddle should give you your old kitchen back a little altered.
+b : How altered? | You mean one about a pot or a spoon?
+a : Ask what has a mouth that holds a whole supper. Your pot will grin at you next time. | A pot, yes. All mouth and belly, no appetite to speak of.
+
+scene hooks_dream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I've often wished for blunt rest hooks at every turn. | I'd like a laden wolf to see a safe place to rest before feeling for one.
+b : Wouldn't a hook stick out in the way? | Where would you fit it?
+a : Behind the post, on the inside of the turn. I'd try the place with an empty sack first. | Where a bundle could hang well clear of moving feet. Each turn's a different problem.
+
+scene cheap_spare
+when topic=times world.times=hard|lean
+does tell.worry / react.self / assess
+a : When things get tight every basket gets worked past the strength of its handle. | A handle made for a loaf can end up carrying half the house.
+b : A little string might hold it. | That's how it goes, sometimes.
+a : Tie round the body of the basket before the handle tears off. I've spare cord. | Yes. I'd sooner offer help while the bottom is still in it.
+
+scene lending
+when topic=faith
+does give.opinion / ask.detail / answer.detail
+a : I'd like to be remembered by the Bright One with my paws already lending a lift. | To my mind a kind prayer is something you ought to feel in the shoulders.
+b : You mean bowing down? | Can a prayer weigh anything?
+a : I was thinking of stooping for the other end of a sack. Nothing wrong with bowing too. | Try saying a prayer for a tired wolf while taking up a little of the load.
+
+story crooked_hook [topic=work|memories self.job=smith]
+  : Made a handsome little hook once, about as graceful as a twig over water. I stood admiring the curve till I missed my dinner.
+  : At the first proper weight it opened as sweetly as a flower in the sun.
+  b : Did you keep it?
+  : Yes. It holds a cloth now. All the grace in the world and exactly one cloth's worth of strength.
+
+story stair_cake [topic=food|memories]
+  : I've carried a honey cake up a flight of stairs perfectly level. All my attention on saving that glossy top.
+  : At the landing I tipped it to show how well I'd done. The honey went straight onto my wrist.
+  b : What a waste.
+  : Not much of one. There was nobody there to object to my table manners.
+
+story iron_orchard [topic=memories|pastimes]
+  : I saw a drawing of a vineyard once and tried to make a riddle about the long rows down the hill.
+  : Came up with that old one about a comb. Every time I got close to a fresh answer I ended up back at the comb.
+  b : Ever settle on a better one?
+  : Kept the drawing instead. I can look at a vine without needing it to be something else.
+
+rule @hook
+when concept=bark
+does aside
+cooldown 8h
+say Here's a blunt nose to take the weight off that cord. | Use the landing to put your bundle straight.
+
+rule @work
+when concept=bark working=yes self.job=smith
+does aside
+cooldown 8h
+say Mind the room round a swinging piece! | Hold the tongs steady till the ringing stops.
+
+rule @two
+when concept=bark
+does aside
+cooldown 8h
+say Two risers to the stride while the way is clear. | There's level ground just round that turn.
+
+rule @late
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Keep one paw free to reach for that railing after dark. | Whoever's climbing, take the side with the sound footing.
+
+dlg @1 resident.hub : No rush to speak. Get the weight comfortable first.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, come up even with me a minute.
+dlg @3 resident.hub [here.time=dawn] : I heard the early bell all too clearly. Happy to hear a voice now.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll give you room to stand and I'd like the same.
+dlg @1 resident.job [self.job=smith] : There's a deal of patient holding behind every smart stroke you hear from #self.workplace#.
+dlg @2 resident.job : Plenty of work that calls for a sound back and a steady pair of paws.
+dlg @1 resident.bye : I hope the last stretch is the gentlest.
+graft resident.hub
+choice How do you carry an awkward parcel up the long stairs? -> parcelrest
+node parcelrest
+say I try it on level ground before I take it up the first step. It may want turning round, and it's a mercy to find that out with both feet on the same level.
+free
+choice What about a round parcel? -> roundload
+choice I'll mind the first step. -> hub
+node roundload
+say A strip of cloth round its belly, tied above. Then a hook through the knot, well away from the contents. If it swings against my knee I'll shorten the cloth.
+choice I can picture the knot. -> hub
+choice I'll let you get on up. -> bye

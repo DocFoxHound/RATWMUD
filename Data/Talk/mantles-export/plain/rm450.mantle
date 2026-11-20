@@ -1,0 +1,262 @@
+# rm450, the crust country (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm450
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_aldric_rainmarsh
+written_by codex
+title the crust country
+fits stage=adult|old
+prefers job=baker warmth=warm
+traits temper=even talk=chatty warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk maps_new_countries_in_cooling_crusts_while_a_cough_subsides
+likes pickled_herring cards old_maps autumn_wind
+dislikes stale_bread waiting
+fears a_good_loaf_mistaken_for_yesterdays
+hopes a_table_where_every_guest_can_name_a_road
+topics food +0.6 pastimes +0.5 travel +0.3 health +0.2
+styles comfort=feed gossip=curious refuse=gentle tease=kind
+marks oath saying
+persona #self.first# finds roads and little inlets in the cracks of cooling loaves, pausing over the map until a catch in the throat passes.
+
+words
+oath! = Ten crooked crusts | A valley of crumbs
+saying! = Read the road before the slice | A small crack makes a harbour
+crustmap = my little crust country | the baked landscape
+ridge = the brown ridge | a crisp rise
+inlet = the small inlet | a bent harbour
+roadcrack = a branching crack | the crooked road
+herring = a curl of pickled fish | the sharp herring slice
+butt = a bread heel | the round crust end
+flap = a clean square | the wiping cloth
+deck = my playing pack | the flour-free cards
+hill = the high hump | a rounded shoulder
+score = a shallow line | the long cut
+board = the cooling board | a bare bread board
+wetair = a close dampness | a wet little draught
+
+any
+opinion @1 merchants mixed 0 : A loaf can be a handsome picture and still deserve opening before its price is taken on trust.
+opinion @1 sump for 1 : Low streets have taught me a broken end can be the most interesting piece on the board.
+opinion @1 church for 1 : A prayer said over bread is particularly well placed to be followed up by sharing the bread.
+opinion @1 road for 2 : Give me a road with a welcoming bend and a savoury dish to discover round the turn.
+opinion @1 festivals for 1 : A few real tables full of ordinary appetites make an excellent reason for giving the ovens a busy day.
+opinion @1 dole for 2 : There's room at a trough for one more small loaf when enough care has gone into counting the mouths.
+
+grown
+line @1 greet : Hello. A harbour's appeared in this crust. | Welcome. I've room at the edge where the land starts to cool.
+line @2 greet [pair.band=strangers] : A fresh face on the border of my little country. | I'd offer a proper welcome before asking your opinion of the hills.
+line @3 greet [here.time=dawn] : Morning. First light turns every crack into a good deep valley. | The crust country looks particularly spacious this early.
+line @1 greet.return : Yes, hello. I was almost lost in a rather narrow road. | I've finished with my geography and can listen now.
+line @2 greet.return [pair.band=friends|family] : There's an agreeable companion for an entirely imaginary walk. | I know that step across my cooling country.
+line @3 greet.return [here.time=night] : Late hello. The dim light suits a country made mostly of shadows. | Glad you came while the day's last hills are still visible.
+line @1 again.open : You find me at another bend across yesterday's board. | Back before the map has been eaten, I see.
+line @1 hail [pair.band=friends] : Come see whether you make that an inlet or a river mouth! | Try standing here to look along this valley.
+line @1 farewell : May your next walk end pleasantly beside a table. | A clear route among the crumbs and corners to you.
+line @1 farewell.return : I'll guard the remaining hills till the next slice. | Get out before the weather spoils an actual walk.
+line @1 react.news : I'm happy to hear a real story after these invented roads. | Tell it as far as you followed it yourself.
+line @1 react.news.new : I hadn't found even the first little turning of that news. | Oh, a completely new country to my ears.
+line @1 react.news.known : Yes. The earlier story followed that same bend. | I've heard its shape described in much the same words.
+line @1 react.news.doubt : That road grows a little misty between event and claim. | I'd look again before making a whole country out of that rumour.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Come rest by me while the world feels so rough underfoot. | I can leave these little distractions aside for your sorrow.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good news warms a room without borrowing anything from the oven. | I'd put a particularly fine bread end by to mark that happy news.
+line @1 ask.how : How has the road over today's hills been for you? | Have you found a pleasant stopping place anywhere?
+line @1 answer.how : A little short of clear breath and quite full of ideas. | Easy enough if I give myself an occasional pause between sentences.
+line @1 decline : That hillside wants company. I'd be claiming more time than is left in my day. | I'd have to make the road up beyond this point and that wouldn't serve you.
+line @1 accept_decline : Then we've come to a perfectly civil boundary. | Fair. I shan't send the request on another little journey.
+line @1 preclose : Time to descend these floury hills to what the day asks of me. | I'd best see how the last few pieces are cooling.
+line @1 accept_preclose : Go and enjoy a stretch of road I can't draw for you. | Our short halt has been a pleasant one.
+line @1 thank : You pointed out a comfortable way through. Thank you. | You've given me an idea to carry round a good while.
+line @1 deflect_thanks : I had a spare crust and a story to go with it. | It was easy to make a corner by shifting a little flour.
+line @1 sympathise : Sit here beside my folded map with no need to travel anywhere. | I'll listen as long as the words want to come slowly.
+line @1 reassure : Not every road needs covering before supper. | We can look for a shallow turning before trying the highest ridge.
+line @1 ack : Yes, those lines would meet rather neatly. | I see the bit of country you mean.
+line @1 give.advice : Let a loaf settle before cutting straight across its finest view. | Move away from the food when your throat asks for a pause.
+scene firstbreak
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Each loaf cools into a country I've never seen before. I watch for the first branching crack.
+b : Wouldn't it always be much the same? | What country is this one?
+a : There's usually a broad road, yes. It's where all the little lanes wander off that entertains me. | A narrow one with an impressive bay. I might add a harbour after deciding which end gets cut first.
+
+scene breathstop
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : If a damp draught catches my throat I step off a few lengths to study the bread from there.
+b : You'd sooner look at bread than admit to coughing? | Can't somebody take over for a minute?
+a : I can do both at a civil distance. No customer has paid for my whole weather report. | Yes. I find a small pause generally saves everyone a long fuss about a small cough.
+
+scene boardcool
+when topic=work self.job=baker
+does tell.self / ask.detail / answer.detail
+a : I leave space around each cooling loaf so the little sides don't steam each other soft.
+b : Even when the board's crowded? | How much space is enough?
+a : Particularly then. It's easier to find a second board than to return a crisp edge to a soft side. | Just a little gap air can move through. My imaginary roads need not be wide enough for carts.
+
+scene slicefirst
+when topic=work self.job=baker self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I like seeing a crust country reach the customer whole before anyone cuts into it. | I won't press a hot loaf flat to fit a smaller bit of paper.
+b : Would they notice a little dent? | Which wrapping would preserve the shape?
+a : Somebody expecting a sound round loaf might notice a deep dent. I mean to deliver the intended shape. | Choose the larger sheet or wait till it's cool and firmer. Paper can make allowances bread shouldn't have to.
+
+scene herringharbour
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : A curve of pickled herring makes an excellent harbour wall on a bread heel. | Give me herring bent enough to keep its own crumbs in.
+b : You're planning a meal or a whole village? | Wouldn't the brine soften the crust?
+a : A meal, served with the possibility of a little conversation about the view. | Only where the fish rests. A little soft and a little crisp in one bite quite suit me.
+
+scene cardwalk
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I draw a card to choose which road to follow round an imaginary loaf.
+b : High for a hill? | How do you play against somebody?
+a : High for a hill and low for a river. I'd like the rules short enough not to delay lunch. | We each draw one. Whoever gets to a crumb first has accurately foretold what's for dinner.
+
+scene backwardsheet
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I cherish old maps where the road is plainly wrong but drawn with great personal conviction.
+b : A wrong map's a nuisance. | Which crack gives it away?
+a : For an actual delivery, yes. For imagining how different a journey might have been, excellent company. | Walk the road if I need a certainty. On bread I'm content to let the map have a little independence.
+
+scene stableslips
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : A stale loaf shows a very fine landscape with very little pleasure inside it. | I object to ancient bread being praised chiefly for the sturdiness of its crust.
+b : Couldn't you toast it? | Can a good end still be used?
+a : I can find it a second honest use. I won't call that a first bite of fresh bread. | Yes. Toast and crumbs have dignified places at the table once they're called by their names.
+
+scene gustdraw
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : I love a blustery day when a market wrapper tries to draw the map in the air for me.
+b : Wouldn't it blow away? | What direction does it choose?
+a : Not if I've a good grip. The turning corners do an enthusiastic job of the hills. | The direction away from my dinner, usually. I exercise a little authority when the herring gets involved.
+
+scene nearbywork
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : Round the Commons I take a walk past real shop windows and come back seeing the same shapes on a bread board.
+b : Which shops look like loaves? | The same whole street?
+a : A curved awning, a little notch round a door. I borrow the lines rather than the whole trade. | Only to a hungry imagination. It's generally a much quieter place before I cut the loaf.
+
+scene rainhills
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I look at the pattern of rain on a high window while the wet air eases out of my throat.
+b : Does that really help? | Like another map?
+a : Pausing does, and I prefer to give my eyes some decent occupation while I pause. | Very much. Rivers running the improper way down a country made mostly of reflected sky.
+
+scene charcoalhill
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The black rise on a loaf's far edge recalls a particular charcoal slope I knew in the hills. | I remember how quiet a hillside felt above the bustle below.
+b : Did you burn the bread? | What brings the hill back?
+a : No. Light across a brown crust makes a dark profile. Memory puts the last brown on it. | A dark sloping edge with quiet behind it. My nose almost expects wood smoke when I see one.
+
+scene waitpatience
+when topic=day self.dislikes=waiting
+does tell.complaint / ask.detail / answer.detail
+a : Waiting for an order can be tiresome. Waiting for a crust to show where it's going is quite another matter.
+b : Aren't you doing the same thing? | Why not just come back later?
+a : I know the loaf is working. With a closed door and no word it's sometimes difficult to feel as charitable. | Whenever possible. More often I find a smaller task and give the wait an agreeable use.
+
+scene slowfair
+when topic=prices
+does give.opinion / react.self / assess
+a : A price should tell you how much bread you can take home, not how splendid its coastline happens to look.
+b : Could I have the map thrown in? | Doesn't the outside matter?
+a : I'm positively lavish with that part of the stock. Take an imaginary walk and cut your real supper. | Yes. I like a handsome loaf with the proper weight inside it. Both can be inspected.
+
+scene goodevil
+when topic=gossip
+does give.opinion / react.self / assess
+a : Two wolves can trace quite different roads in the same crack. That's why I hesitate over a story with one dramatic witness.
+b : Would a second witness settle it? | Isn't there one real road?
+a : I'd listen before deciding. Two accounts could both contain a little imagination. | In bread there isn't a road at all. In a serious matter I'd keep the difference firmly in mind.
+
+scene leanbread
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : I take extra care with the smallest loaf when money runs thin. | A bit of good shaping goes quite a way with a very modest piece of dough.
+b : Will the shape feed more? | Dressing up a small share?
+a : No. The loaf must satisfy the promised weight. A pleasant shape is something I can still give besides. | Serving it with attention. I hope to leave the buyer satisfied rather than fooled.
+
+scene faithwarm
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The Bright One might appreciate my pause before the first bite. I'm grateful for the whole loaf. | I sometimes let the bread's little geography stand still for a short prayer.
+b : Is the prayer about maps too? | Doesn't the meal grow cold?
+a : Rather about all the actual journeys that got the grain and fish to the table. | In a few breaths, no. My appetite has proved admirably capable of waiting that long.
+
+scene moreroom
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd enjoy a table long enough for everybody to take a road into the same large loaf. | Someday I'd like to serve a bread country nobody has to explore alone.
+b : Who names the rivers? | Would you let anyone cut a mountain?
+a : Whoever gets to sit by them. A good generous map has enough jobs for all the guests. | Gladly. I'm making a dinner in this dream. It'd be a poor one if nobody were allowed a slice.
+
+story wholekingdom [topic=food|memories]
+  : I decided an exceptionally wide loaf looked like three little islands barely touching. Turned it on the board to show the bright side of each.
+  : The three islands came cleanly apart. I'd been admiring three rolls quite skilfully stuck together.
+  b : Did you claim a discovery?
+  : Of an excellent and remarkably convenient way to serve supper, yes.
+
+story highmap [topic=memories|travel]
+  : I drew a bread map on an old wrapper, folded it and carried it for days meaning to give the landscape one proper street name.
+  : By the time I opened it again I'd forgotten which edge was sea and which was hills.
+  b : How did you remedy that?
+  : Ate a new loaf and made a better map from life. That's the advantage of my line of geography.
+
+story bentfish [topic=food|memories]
+  : I once laid a slice of herring along the deepest channel in a piece of bread. A very good fit, till the oil ran down one little track and onto my cuff.
+  : I should have paid more attention to my own map.
+  b : What happened to the fish?
+  : Entirely successful delivery to its intended destination. My sleeve went into a neat fold for that journey.
+
+rule @hills
+when concept=bark
+does aside
+cooldown 8h
+say There's a lovely turn in the far shoulder of that loaf. | Point where you would put the bridge. We'll cut there later.
+
+rule @work
+when concept=bark working=yes self.job=baker
+does aside
+cooldown 8h
+say Leave the cooling edge open to the air, please. | Fresh board for those loaves. They need travelling room for the steam.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Give me a moment out of this wet draught. | That little pause just took me round an entire coast.
+
+rule @herring
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say A curved strip of fish round a bread heel. Fine lunch. | Keep the little bit of brine on the dinner side, please.
+
+dlg @1 resident.hub : I've found a pleasant turning in the crust and can leave it there while we speak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a new country on the board since last we stopped for a look.
+dlg @3 resident.hub [here.time=night] : The hills on my smallest map stand out handsomely in lamplight. There's plenty left to see.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's a fair gap in the board between us. You can ask quite plainly from there.
+dlg @1 resident.job [self.job=baker] : #self.trade_words.capitalize#. The little uplands on a loaf are my own private reward for watching it cool.
+dlg @2 resident.job : I enjoy making something that can be shared even while it's giving folk a story to tell one another.
+dlg @1 resident.bye : I hope you find the pleasant way round the last ridge on your road.
+graft resident.hub
+choice How do you find a road on an ordinary loaf? -> findcrack
+node findcrack
+say Look for where a long crack forks. One end will run right down one shoulder, the other will stop at a brown rise. You've got a harbour road and a hill walk.
+free
+choice Where do you put the first bridge? -> crustbridge
+choice I'd choose the hill walk. -> hub
+node crustbridge
+say Usually across the slice I mean to eat first. I'm a fairly public-spirited mapmaker but a hungry wolf gets a certain say in town planning.
+choice I'll plan the next slice. -> hub
+choice I must take a real road now. -> bye

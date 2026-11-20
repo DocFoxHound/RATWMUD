@@ -1,0 +1,259 @@
+# rm253, the windfall holes (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm253
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_disa_bilgemarsh
+written_by codex
+title the windfall holes
+fits stage=adult|old
+prefers quarter=sump
+traits temper=nervy talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk tests_the_wind_with_two_apple_pips_in_a_shallow_hole
+likes crisp_apples digging quiet_chapel autumn_wind
+dislikes haggling drizzle
+fears drizzle_in_the_last_room a_quarrel_over_a_penny
+hopes a_garden_high_above_the_flood a_quiet_ending
+topics pastimes +0.5 dreams +0.4 weather +0.4 travel -0.4 gossip +0.2
+styles comfort=anxious gossip=guarded refuse=worried tease=none
+marks oath saying
+persona #self.first# collects pips in a knotted scrap, wants to know just how deep every doorstep floods and has picked a spot for an apple tree somewhere high above the Sound.
+
+words
+oath! = Tongs in the tide | By the scorched shore
+saying! = Ask the hollow where the wind went | Two pips give the earth a choice
+pips = my two apple pips | a dark pair of seeds
+rag = the little knotted rag | my scrap of apple cloth
+highplot = a high bed of good earth | a garden above flood level
+shovel = my narrow spade | the short digging blade
+hollow = a fresh hollow | a dent in the earth
+blow = a leaf-stripping gust | a fine clean blow
+bite = the sharp first bite | that crack under the teeth
+softwet = the mean small drizzle | a wet too fine to see
+entry = a quiet chapel door | the empty chapel entry
+twig = a forked marker | a small pronged stick
+
+any
+opinion @1 church for 2 : You can bring a bellyache or a worry in through that door and come out without quite so much of either.
+opinion @2 dole for 2 : I've seen what a meal looks like with no dealings or loud voices attached. I'd keep that pot filled.
+opinion @3 houses against 2 : I'd like the upper air without having to carry anybody's colours to get a breath of it.
+opinion @4 festivals for 1 : I can sit at the edge and ask where everybody's going. They come back past me full of gossip about the whole affair.
+opinion @5 road against 2 : A road's got no edge you can come to and say there, the next part's had its rain for the day.
+opinion @6 newcomers against 2 : I like knowing which faces belong at which doors. A sudden stranger gives me three nights of listening.
+opinion @7 city for 1 : I'd like to finish my days further up the very hill I started on.
+
+grown
+line @1 greet [pair.band=strangers] : Come where I can size you up in decent light. Welcome there. | An unfamiliar brow. Let me hear the voice that comes with it.
+line @2 greet [here.time=dawn] : Morning, just as I thought. Good to have it confirmed. | Up to see what blew down, I see.
+line @3 greet [here.weather=rain] : Come under here. I'm counting the little drops. | Welcome to what dry ground's left to stand on.
+line @4 greet.return : A civil answer gives a wolf something to go on. | Mm, that's a steady sort of greeting.
+line @5 greet.return [pair.band=friends|family] : Oh, you. A whole scrap of worry gone. | I can stop straining my ears, then.
+line @6 farewell : Keep your best ground under you. | Good luck finding the top of the rise.
+line @7 farewell.return : I'll see which way the wind takes you. | Go with your pockets done up against the gusts.
+line @8 again.open : Back, and with both ears. Good. | That turn of the path's brought you by me twice.
+line @9 kin.open [pair.kin!=no] : Nearer in, family. No need to call across the weather. | Here's a bit of shelter for a familiar face.
+line @10 hail [pair.band=friends] : Come tell me which way you felt that gust! | Here's the place I said I'd stand!
+line @11 react.news : Start where somebody saw it plain. I'll hear the rest after. | I should like to know how far that word has blown.
+line @12 react.news.new : Hang on. This is the first I've heard about it. | I've no hole in my head made ready for that yet.
+line @13 react.news.known : I'd planted that particular word in my mind already. | That's the same account I heard downwind.
+line @14 react.news.doubt : I can't tell which part grew after it left the first mouth. | I should want to know who had eyes on it.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Dear. There's a weight a wolf can't dig out alone. | Sit a moment. The trouble can settle before anybody speaks.
+line @16 react.news.glad [topic.kind=birth|marriage] : Save that news like a pip from a sweet apple. | I'd walk uphill just to give that word to somebody.
+line @17 answer.how : Wondering how the ground's taking the wet. Otherwise steady. | Better when the door fits close to the jamb.
+line @18 accept_decline : Plain enough. I'll do my fretting elsewhere. | At least I know what answer to take with me.
+line @19 decline : I'm afraid I'd be awake three nights over having promised that. | I shouldn't care to undertake it with this weather hanging about.
+line @20 sympathise : I know the sort of worry that outstays a candle. | We'll give the hurt a quiet place to sit for once.
+line @21 thank : You've tied one of my loose ends tight for me. | I'll wrap that kindness with the good things.
+line @22 deflect_thanks : Just keep an eye open for good earth above the roofs. | Plenty of time to thank me when it sprouts.
+line @23 preclose : I've a scrap to check for stray pips. | Wind's shifting. I'll look where the leaves went.
+line @24 accept_preclose : Go along while the path shows plain. | I'll keep that little question till you come back.
+line @25 farewell [here.time=night] : Set the latch before you dream. | Have a roof that can see the night through.
+scene windtest
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I put #pips# into #hollow# and wait to see which rolls. | A pair of pips tells me how the ground lies.
+b : The wind can move something that small? | Couldn't you just look down?
+a : It gets under the fat end. That tells me which edge needs building up. | My eyes like a second opinion, especially on a slope.
+
+scene twist
+when topic=food self.likes=crisp_apples
+does tell.self / react.self / assess
+a : #bite# says how much wind an apple's had. | Listen. A good apple comes apart like a twig.
+b : I'd have said it tells you how sharp your teeth are. | What does a poor one sound like?
+a : That too. No harm in hearing two bits of news together. | A sigh. You could swallow it while you were still waiting for the crack.
+
+scene chapelstill
+when topic=pastimes self.likes=quiet_chapel
+does tell.feeling / sympathise / assess
+a : I like #entry# when you can't hear so much as a heel beyond it. | There's a hush that takes the hurry clean out of my thinking.
+b : You'd be glad of a whole morning there. | Would more silence keep you steady?
+a : Till I started wondering why nobody else had come through. | A little goes far. After a while I have questions again.
+
+scene wetfine
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #softwet# gets inside a knot without ever looking like rain. | A drop big enough to count has the decency to fall.
+b : Sounds as if your parcel needs a second wrap. | It's the hanging damp that goes through sleeves.
+a : I'll turn the knot underneath. Keep the seeds dry till I choose a place. | And down between the spade and the palm. I'd sooner take a soaking.
+
+scene betterend
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I mean to get #highplot# with room for a tree and a seat. | I've a mind to own a door high enough that gulls look level with it.
+b : Would the tree be for fruit or for shade? | What'll you look for first from up there?
+a : Both. I've done plenty of settling for one good thing out of two. | How a line of rain looks when it's going under my floor.
+
+scene haggle
+when topic=prices self.dislikes=haggling
+does give.opinion / disagree / concede
+a : Tell me what the apple costs and keep all the singing about it. | I'd take a smaller apple if the asking price would stand still.
+b : Some folk enjoy the back and forth. | Who judges whether the smaller apple's fair value?
+a : Let 'em sing at one another while I take my apple elsewhere. | I'll judge the fruit. No stomach for judging the seller's patience too.
+
+scene newdoor
+when topic=newcomer
+does tell.worry / reassure / assess
+a : A new foot outside my latch sets all the questions off at once. | When a stranger goes by twice I start wondering where the third pass will end.
+b : Might simply be looking for a way home. | A greeting might settle which door's wanted.
+a : That's the first question I'd like to stop having to ask. | From the sill, perhaps. That's a comfortable distance for an opening word.
+
+scene autumnsign
+when topic=season here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : #blow# has put all the fallen fruit on one side of the path. | Autumn shakes the tree till the solid apples show up among the soft ones.
+b : Which side do you take? | How can you tell without picking them up?
+a : The side the leaves come from. A sound one's heavy enough to stay there. | Listen to the falls. A soft one drops as quiet as a wet glove.
+
+scene friendpips
+when topic=friends self.friend
+does offer / accept / assess
+a : I'd save a sound windfall for #self.friend#. Have this other one if you fancy. | I've kept my good seeds for #self.friend#. The crisp part's still to share.
+b : I'd take a slice to save my teeth an argument. | I'll put the core by for you.
+a : Slice it across. I want the little star left in the middle. | That's the heart of the whole transaction, as it happens.
+
+scene lowground
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : The Sump is rich ground for knowing how deep a doorstep can flood. | From a Sump doorstep you feel every step of wanting something higher.
+b : How would you put that knowledge to use on a hill? | You'd leave the folk down there behind?
+a : I'd set a sill an inch higher than any sense says it needs to be. | With a bit of luck I'd have a kettle going when they came up.
+
+scene mealplain
+when topic=times world.times=hard|lean
+does give.opinion / disagree / concede
+a : When times get thin, a hot meal should come before bargaining over who deserves it. | It would be a shame to leave a full pot arguing with empty bowls.
+b : Somebody has to fetch the fuel. | There's always a wolf to mind the queue.
+a : That much is work worth arguing a decent wage for. | Fine. Set that wolf to ladling too.
+
+scene whisperseed
+when topic=lore
+does tell.self / react.self / assess
+a : Old tale says a buried pip knows the last question asked over it. | I heard once that an apple tree grows crooked to listen for its planter.
+b : What would you ask your pip then? | A fine tale for somebody who's always asking.
+a : I'd ask where the water goes when the whole town's sleeping. | Aye, though I'd prefer a stout tree to an attentive one.
+
+scene steptop
+when topic=travel here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I might go partway up toward the Heights to see where the drying starts. | I'm counting high doors with a sheltered patch beside them.
+b : What marks one worth keeping on your list? | What's your test for a sound patch?
+a : Look for tired leaves that have come there to rest. Loose wind can't find them. | A pinch of soil pressed in the palm. If it falls apart my spade will turn it easily.
+
+scene streetname
+when topic=land self.street
+does tell.self / ask.detail / answer.detail
+a : #self.street#. Does the wind get a whole run at a name that long? | I say #self.street# aloud to see where my breath runs out.
+b : Is the road as long as the name? | Do you leave a bit unsaid?
+a : Long enough if I'm carrying something I can't afford to drop. | No. I like a name that tells you there's land standing out against the water.
+
+scene marktwig
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Where would you put #twig# so I'd see it before I trampled my little hole? | How can I mark the place without offering the seeds to every bird?
+b : A handbreadth to the windward side. | Set the stick three paces off and remember the direction.
+a : That's right. Let the stick take the first shove from the weather. | Good. I'll scratch an arrow into the stick where a beak can't read it.
+
+story core_star [topic=food]
+  : I cut an apple across by accident and found the little star in its belly. Thought I'd better count all the pips before I ate the rest.
+  : A gust put one straight up my sleeve. I walked half the afternoon with a little hard nagging under the fur.
+  b : Did you ever plant it?
+  : When I got my sleeve inside out. I'd about decided a whole tree meant to come up at my elbow.
+
+story quiet_earth [topic=pastimes]
+  : I once marked a hole with two sticks crossed. The next visit found one laid flat, the other standing three paces off.
+  : I looked for pawprints before I looked for the shape the wind had left in the dust.
+  b : Which had moved them?
+  : The scrape in the dust said wind. No excuse to accuse the first wolf I saw, though I'd had a speech all ready.
+
+story high_dinner [topic=dreams]
+  : I carried an apple up a hill in my pocket to see if dinner tasted better with the roofs down below. Wind got underneath the peel as I cut.
+  : It went twisting down like the skin had decided to live somewhere else.
+  b : Was the apple any sweeter?
+  : Same sour mouthful. But I had a view clear to the water while I ate it. That counted.
+
+rule @pip
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Two pips, room between. | Who's had wind enough to move the marker?
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Slippery little weather for keeping a knot done up. | Big drops I'd have known how to dress for.
+
+rule @fall
+when concept=bark here.season=autumn
+does aside
+cooldown 8h
+say Look where the heavy fruit's stayed. | That'll shake an answer loose.
+
+rule @home
+when concept=bark self.quarter=sump
+does aside
+cooldown 8h
+say Deep enough down here to grow a wish. | Higher sill the next time, higher hill if I can.
+
+dlg @1 resident.hub [topic.meeting=stranger] : A steady voice will get an unfamiliar face a little nearer. Go on.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've brought me your face in daylight enough times to earn a word.
+dlg @3 resident.hub [here.time=night] : Speak softly. I like to hear whatever's going by outside as well.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : There's a gap between us that's doing a fine job where it is.
+dlg @5 resident.job [self.job=none] : I spend a deal of time seeing what's blown this way and working out where it came from.
+dlg @6 resident.job : I've good eyes for what the ground's up to.
+dlg @7 resident.bye : If you see a dry garden well up the hill, remember me.
+graft resident.hub
+choice Why the two pips? -> seed_pair
+node seed_pair
+say One might be a dud. Two give me twice the reason to keep asking after a bit of earth. Any small sunny patch if it's high enough.
+choice How high are you aiming? -> better_patch
+choice Let's leave them wrapped. -> hub
+node better_patch
+say Up where I could look down on the rain for once. I'd like to watch a young tree worry about its roots and let my own rest easy.
+choice I'll keep my eyes on the uphill gardens. -> hub
+choice A good wind to you. -> bye
+
+
+old
+scene slowhand
+when topic=pastimes self.age>=55
+does tell.self / ask.detail / answer.detail
+a : At my age the ground's quite a way from where my eyes remember it. | I've kept #shovel# short. Less earth to lift with each year in my wrists.
+b : How do you get a good look down there? | Doesn't that make the digging take longer?
+a : I bring a clod up. Dirt travels better than knees do. | Enough longer to notice where a nice seed might take.
+
+scene betterroof
+when topic=dreams self.age>=55
+does tell.feeling / sympathise / assess
+a : I've fewer winters to spare on a low ceiling than I once had. | I don't mean my last glimpse of sky to be down a wet stairwell.
+b : A high window sounds a reasonable thing to want. | A perch where the first rain shows up miles away?
+a : I'd take a small one, provided the bottom of the frame stayed dry. | Yes, and watch it pass beneath me for a blessed change.
+
+scene memorywind
+when topic=weather self.age>=55
+does tell.self / react.self / assess
+a : Years teach you which draughts to ask after and which to let pass. | My old ears know the autumn wind before the leaves begin to show it.
+b : Which sort's worth asking after? | What do your ears hear first?
+a : The little one by the floor. That's how winter learns where you sleep. | A fine dry scratching. Rather as if the sky had taken up digging.

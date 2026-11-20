@@ -1,0 +1,382 @@
+# rm454, the empty garden perch (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm454
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_halvard_mossgrave
+written_by codex
+title the empty garden perch
+fits stage=adult|old
+prefers job=servant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_the_empty_perches_after_the_birds_land
+likes mutton_stew roof_birds tidy_house first_warm_day
+dislikes deep_mud rats
+fears mistaking_agreement_for_honest_counsel
+hopes hearing_one_voice_before_the_others_join
+topics animals +0.6 home +0.4 family +0.3 friends +0.2
+styles comfort=quiet gossip=exact refuse=plain tease=none
+marks oath saying
+persona #self.first# reserves a little space on a wall for the bird that hangs back and listens for the voice missing from an easy agreement.
+
+words
+oath! = Crack my coping stone | Bend the garden latch
+saying! = Count the perch left bare | Give the last voice the path
+wallperch = a bare length of coping | a clean light stone
+gardenstaff = a smooth walking stick | a plain hazel staff
+birdpause = a gap between wings | the space beside a tail
+bededge = a square-cut border | a neat bed corner
+mudtest = a dark soft patch | a deep shining footprint
+herbsprig = a sprig of thyme | a stem of winter savoury
+stewrim = a brown edge of gravy | a little shining fat
+tilepatch = a worn edge of tile | a crooked chimney lip
+bowltick = a gentle tap on clay | a little hollow note
+openbench = a clear span of bench | a narrow clear seat
+woodmark = a split in smooth oak | a faintly raised grain
+earlybud = a bud like a bead | a blunt green tip
+ratproof = a broad stone lid | a thick fitted plate
+hingepeg = a simple hardwood peg | a thumb-sized wedge
+leafpath = a curve of small leaves | a scattered line of leaf mould
+cleanstep = a dry square of paving | a broad pale flag
+quietsill = a shaded sill | a lower window stone
+
+grown
+opinion @1 houses mixed 1 : A well-run House ought to know when apparent agreement is costing it an unheard truth.
+opinion @1 church for 1 : A few words said over an absent place can matter longer than a long address to a crowded room.
+opinion @1 city for 1 : Every roof of this city is somebody's view. I'd like the one beneath each roof to have a voice in its care.
+opinion @1 merchants mixed 1 : Ask the maker what the piece will bear before asking whose name will appear upon it.
+opinion @1 newcomers for 1 : A resident newly arrived may see a trip in the path that we have all grown accustomed to stepping over.
+opinion @1 festivals mixed 1 : I take most pleasure in watching which friends seek each other out when the ceremonial part is over.
+opinion @1 dole for 2 : A bowl of real stew does not grow less nourishing because it goes to a wolf whose name is new to me.
+opinion @1 strangers mixed 1 : A polite beginning to a visit need not include admitting a stranger to every matter under the roof.
+line @1 greet : There is a clear seat here and no occasion to hurry towards it.
+line @2 greet [pair.band=strangers] : Welcome. I'd welcome hearing your voice at its ordinary pace.
+line @3 greet [here.time=dawn] : The early garden gives an introduction a little quiet.
+line @1 greet.return : I leave that sentence unfinished for your own telling.
+line @2 greet.return [pair.band=friends|family] : Come alongside. A familiar voice is pleasant on this stretch of path.
+line @3 greet.return [self.working=yes] : I need only set this down to attend to you properly.
+line @1 again.open : Our paths have returned us to a comfortable distance.
+line @1 kin.open [pair.kin!=no] : A family visit deserves a place in the shade beside me.
+line @1 hail [pair.band=friends] : This path has an unoccupied half if you care to share it.
+line @1 farewell : May your next resting place afford a pleasant view.
+line @1 farewell.return : I shall keep the best part of our conversation near.
+line @1 react.news : I would hear the version that did not get to speak first.
+line @1 react.news.known : There is a familiar shape among the words you bring.
+line @1 react.news.new : A new outline has come up beside the chimney.
+line @1 react.news.doubt : Agreement among several good voices may still leave an empty place for fact.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I would be glad to keep quiet company with the household that has heard this.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : One could make a very pleasant small occasion of that news.
+line @1 ask.how : Did you find an unoccupied seat today and stop without explaining?
+line @1 answer.how : Fairly steady where the path is firm.
+line @1 answer.how.busy [self.working=yes] : There are small matters in hand. They can endure a civil interruption.
+line @1 decline : I would sooner leave you an honest silence than an agreeable wrong answer.
+line @1 accept_decline : We may let that branch grow where it chooses.
+line @1 thank : You allowed the quieter part of the matter to be heard.
+line @1 deflect_thanks : The place was already open. You have made it useful.
+line @1 sympathise : We can take the little path and leave the need for conversation behind.
+line @1 reassure : There is no loss of standing in looking once more before speaking.
+line @1 ack : I recognise the distinction you have drawn.
+line @1 preclose : There is a turn of the path I wish to examine in daylight.
+line @1 accept_preclose : Go when it suits your feet. The gate will wait for mine.
+line @1 give.advice : Leave the least certain voice enough time to finish without help.
+line @1 offer : You may use this steady side of the bench if it serves.
+scene animals_1
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I look for the empty place after a row of birds lands.
+b : Why count the one that isn't there? | Does the last bird always come in?
+a : The gap shows me how the first five have arranged themselves. A simple head count would miss the little politics of that. | Sometimes a bird finds quite a different perch. Waiting is a choice I wish to notice as well.
+
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words.capitalize#, these days. It allows a good deal of unobtrusive observation.
+b : What do you watch? | Do people notice you watching?
+a : A gate that takes force to shut, a step avoided by every caller. Small things no one has yet thought worth a report. | If they do I hope I look like a wolf attending to the ground, since that is usually what I am doing.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A tidy room needs one place where a visitor may set down an untidy bundle.
+b : Does that spoil the appearance? | Why leave the spot empty?
+a : A neat room unable to receive a guest is little better than a display of boxes. | Most households own objects enough to fill every space. Keeping one truly usable takes deliberate care.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I would share a bench with #self.spouse# before filling its last place with papers.
+b : Is that a special occasion? | Would you speak of the papers?
+a : I hope it remains common enough to be a familiar pleasure. | If we wished. A household needs at least a little time that does not arrive marked for duty.
+
+scene family_2
+when topic=family self.parent=yes
+does tell.self / ask.detail / answer.detail
+a : I would give #self.child# the chance to ask a question others have quietly decided is unnecessary.
+b : Even in company? | Suppose the answer seems obvious?
+a : If the question needs an audience. Some matters grow better heard at a smaller table. | An answer cannot lose its truth through having to be stated to a thoughtful young ear.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A good mutton stew will put its own case without a parade of expensive additions.
+b : No herbs at all? | How tender should the meat be?
+a : A sprig or two. The point of a herb is to make the stew more distinctly itself. | I ask a spoon where a knife would be more flattering to the cook.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I like the first mild spring day for the way it steals into a quiet courtyard. | Stillness in a warm garden lasts until the first bird has made the discovery.
+b : What breaks the silence?
+a : A wing from the roof and a second wing answering. That is all the announcement we require. | One bright little voice that appears quite certain the sunshine was intended for its individual use.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I prefer a path that allows me to step out of somebody else's hurry.
+b : Are you shy of being passed? | Would you broaden a narrow walk?
+a : Quite content to be passed. I do not want the passing to involve an apology at every pace. | Give it a bay every few yards. The narrowness sometimes belongs to the garden.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A wooden rail can lend a little discretion to an unreliable leg.
+b : Would you rather take an arm? | Does the rail hurt your pride?
+a : An arm offered without ceremony is a kindness. Offered as a public event, it can be more weight than help. | Not in the least. I rather admire sound work doing exactly what the body asks of it.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A quiet prayer may be the only uncrowded part of a very agreeable day.
+b : Do you seek solitude? | Would a friend be in the way?
+a : A little quiet without anybody preparing an answer for me. One can sometimes find it sitting close to others. | A friend willing to leave the company as quiet as the prayer would be perfectly welcome.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I trust a maker who tells me precisely where a good piece may fail.
+b : Wouldn't you prefer a guarantee? | Even if the piece is dear?
+a : A guarantee is another piece of work with limits of its own. I'd ask about those limits too. | Particularly then. An expensive mistake seems to attract a great many expensive explanations.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I am wary of a room in which every voice repeats the same opinion quite perfectly.
+b : Isn't agreement useful? | Who would you listen to instead?
+a : Particularly when it follows real disagreement. Without that I cannot tell whether anyone has weighed the matter. | The wolf who looked ready to speak and settled for a polite movement of a cup.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend may say something I do not wish to hear and still be worth inviting back.
+b : Would you ask for proof? | What would help a friend say it?
+a : Possibly, but only after hearing the entire account. Interrupting a difficult confidence can close a door very neatly. | By changing my mind in public on one occasion when the facts warrant it.
+
+scene home_2
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I cover each pantry crock and check the gap behind it.
+b : Looking for rats? | Is there room for anything else back there?
+a : Looking for the little door a rat would find more promptly than any of us. Better to see it in daylight. | Dust and a very expensive sort of optimism. A small gap worth cleaning is usually large enough to inspect.
+
+scene work_2
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I set a short walk aside for seeing how a thing operates when no one is arranging a formal demonstration.
+b : What does that show? | Would you call what you saw to account?
+a : Which door the carriers use, which hinge needs a shoulder behind it. A demonstration often tidies difficulties away. | If there's a hinge to mend, I'd request a hinge. I have no particular desire to summon a culprit as well.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A hard season is a poor time to ask the least prosperous table to set the example of restraint.
+b : Where would you begin? | Might quiet generosity go unnoticed?
+a : With the cupboard I have the clearest right to open. A full pot has persuasive powers of its own. | That's no fault in a meal. I'd like a hungry wolf to remember the stew long after forgetting the giver.
+
+scene animals_2
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A roof bird will give a good view of its reasoning simply by declining to land.
+b : How so? | Could it just dislike that roof?
+a : There may be a loose tile or a cat in deep shadow. I follow the direction of its eye before my own first guess. | Certainly. Another reason for waiting a little while before announcing that I've understood a bird.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I find it useful to take one turn of the garden without a destination in mind.
+b : Where does an aimless turn finish? | Wouldn't you waste a morning?
+a : The first thing I've been walking past for a fortnight without noticing will generally do. | A morning spent finding a bad step before somebody turns an ankle has been well enough employed.
+
+scene travel_2
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The city's eaves are arranged like a second plan of the streets, made for wings.
+b : Which plan is straighter? | Would you prefer to travel up there?
+a : The birds cut all the corners our more immediate duties oblige us to respect. | My imagination will do admirably. My legs have a long professional attachment to the paving.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember good metalwork by the hand's judgement rather than the maker's grandest account of it.
+b : What does a hand remember? | Would you recognise a maker's work?
+a : A latch that gives without biting the skin. A small pleasure can be remembered with remarkable precision. | Sometimes. I prefer asking to attaching a famous name to a quiet wolf's competent piece.
+
+scene smalltalk_2
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I'd rather be credited with hearing slowly than be admired for an answer I gave too soon.
+b : Do you use silence on purpose? | Does it make people uneasy?
+a : To let someone finish, yes. It need not be an instrument for making the speaker uncomfortable. | An easy glance at the company usually tells me when a pause has changed from shelter into pressure.
+
+scene food_2
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I set a stew aside a little while before serving it. | A pot brought hard to the boil needs a gentler moment before meeting a table.
+b : What does that accomplish?
+a : The fat has time to settle, the steam to quit scalding noses. Very little festival is required. | It replaces an impressive quantity of noisy water with a smell that invites the first spoonful.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Deep mud at a gateway reveals which direction most of the load has been travelling.
+b : Does a print identify its maker? | Would you fill the hollows?
+a : No, and I'd never give an uncertain heel print the force of a named accusation. The traffic is visible enough. | Yes, after noticing why that route was chosen. Filling holes can take much longer than moving one small obstacle.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I value knowing a wolf's name above being told the wolf would agree to anything for me.
+b : What about loyalty? | Would you welcome a public contradiction?
+a : A loyal wolf can say the useful difficult word and still turn up to help the following morning. | If a public wrong needed correction. We should all do the correction a service by keeping our pride on a short lead.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd direct a new caller to the door by which an ordinary visitor is best heard.
+b : Isn't a great front gate enough? | Would you arrange an introduction?
+a : A beautiful entrance can delay a simple errand if no one within knows the right way to listen. | Where I could do so truthfully. A useful introduction names the need and lets the visitor speak.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The words currently carried are that #topic.subject# #topic.claim#.
+b : Is that the usual view? | Would you act on that?
+a : Possibly the view of the wolves who are speaking. The quiet ones are not counted by an echo. | I would inquire, discreetly, if the matter touched my duty. That is not the same as treating a report as proven.
+
+story birdseat [topic=animals]
+  : I set an empty cup on a garden wall to see whether the rooftop birds would approach it.
+  : They used the space on either side with exquisite consideration and gave the cup no attention at all.
+  b : What kept the birds away?
+  : The birds had an excellent view of an entirely adequate puddle. I had neglected to consult the people for whom the provision was intended.
+
+story ratstone [topic=home]
+  : I set a weight on the pantry lid and returned at dusk to discover a neat trail behind the crock.
+  : The weight had been quite sufficient and the bottom shelf quite otherwise.
+  b : Where was the actual opening?
+  : I moved the crock at last. A powerful defence had been guarding the particular approach that no visitor needed.
+
+story sprig [topic=food]
+  : I put a small sprig aside for a stew and left it between two pieces of writing paper.
+  : A few days later the paper gave out a remarkably appetising smell.
+  b : Did you ever put it in the pot?
+  : I used a fresh sprig. A message prepared at lunchtime need hardly be required to serve as supper too.
+
+story silent [topic=memories]
+  : I asked three opinions on the placement of a bench and received three very handsome little speeches.
+  : The fourth visitor just steadied a palm against the wall to steady a tired knee.
+  b : Where did the bench go?
+  : Beside the wall. I was grateful for all four answers, and particularly for the one I had very nearly failed to request.
+
+rule @perch
+when concept=bark
+does aside
+cooldown 8h
+say Count the unoccupied part of the ridge as well. | A second thought would fit nicely on that stone.
+
+rule @route
+when concept=bark
+does aside
+cooldown 8h
+say A well-kept path can still decline to be the useful one. | Look at the heel marks beside the formal paving.
+
+rule @garden
+when concept=bark self.trade_words
+does aside
+cooldown 8h
+say Leave a place to stand aside on the quiet turn. | A gate should welcome a tired hand without an announcement.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The earliest birds haven't formed a committee yet. | One may hear the individual voices quite well at this hour.
+
+dlg @1 resident.hub : You may speak here without first considering who else expects an answer.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there is a familiar shape missing from the company until you take a seat.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I shall hear what you say. We need make no larger agreement to begin.
+dlg @4 resident.hub [here.time=dusk] : The garden is at its most considerate volume this hour.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#, as a rule. A careful eye on a path will find quite enough real work.
+dlg @2 resident.job : I try to notice the small arrangements by which several lives manage to move together.
+dlg @1 resident.news [world.news] : This part has reached a clear hearing. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The account in company is that #topic.subject# #topic.claim#. The account in confidence may have quite a different shape.
+dlg @1 resident.bye : Walk by whichever stretch of the path gives you most ease.
+graft resident.hub
+choice Why look at the empty place on a roof? -> perch_space
+node perch_space
+say An occupied place tells me something arrived. An empty one may be offered, defended or simply overlooked. I like to wait and see which.
+choice How long would you wait? -> perch_wait
+choice I shall leave the space open. -> hub
+node perch_wait
+say Until I had something to go on beyond my own first impression. A bird does not owe me an immediate explanation.
+choice I shall leave the space open. -> hub
+
+graft resident.job
+choice What does a path tell you about a household? -> garden_route
+node garden_route
+say Where the gate is opened and who must take an unnecessarily long route. A clever arrangement on paper can show a quite foolish turn on a tired ankle.
+choice Would you alter the path? -> garden_alter
+choice I'll keep an eye on the paving. -> hub
+node garden_alter
+say I'd ask who walks it in rain while carrying something heavy. The answer might cost no more than moving a latch.
+choice I'll keep an eye on the paving. -> hub
+
+
+old
+line @1 greet : There is a restful width of bench here. I'd be glad of civil company on it.
+line @1 farewell : May your feet enjoy the stretch my knees have just considered declining.
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A long acquaintance with my knees has taught me which one speaks first on a damp morning.
+b : Does it settle the day's business? | Would you still go round outside?
+a : It advises. I value the advice and retain a small right of appeal to the sunshine. | A shorter circuit provides much the same territory for the mind.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : With time I have come to prefer the awkward truth told softly to an agreeable chorus.
+b : Has that cost you friendships? | Is it easier to hear the truth now?
+a : Possibly a few acquaintances. It has done no great harm to the friendships worth giving the name to. | Only when I remember that my own certainty once wore a much younger and louder coat.
+
+story staff [topic=memories]
+  : I lent my walking stick against a wall one warm day and looked up to find a small bird on its handle.
+  : It held the perch as though I'd ordered the thing specially made to measure.
+  b : Did you have to wait long?
+  : Through a most persuasive demonstration that the world continued quite competently without my oversight. A useful return on the loan of some wood.
+
+rule @warm
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say Spring offers the knees a slightly larger territory. | I shall take the circuit with the bench still in view.
+
+rule @stew
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A small pot at the close of a considered day. | Now for a good plain seat with no fresh demands on its occupant.
+
+dlg @5 resident.hub : I can take the time for a more deliberate hearing now.
+dlg @3 resident.job : A good many years have not exhausted the useful matters visible from a single garden turn.
+dlg @2 resident.bye : Leave us a little daylight to find our own way home.

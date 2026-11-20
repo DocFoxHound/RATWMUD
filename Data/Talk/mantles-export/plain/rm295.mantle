@@ -1,0 +1,249 @@
+# rm295, the swimmer's floating hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm295
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_dorcas_rainford
+written_by codex
+title the swimmer's floating hood
+fits stage=adult|old
+prefers talk=chatty humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=frank piety=ordinary drive=steady
+quirk floats_a_pebble_in_an_upturned_oilcloth_hood
+likes roast_pork swimming fresh_straw misty_dawns
+dislikes deep_mud early_bells
+fears losing_sight_of_a_swimmer
+hopes keeping_a_bright_mark_above_water
+topics pastimes +0.6 weather +0.4 travel +0.3 food +0.2
+styles comfort=practical gossip=frank refuse=plain tease=merry
+marks oath saying
+persona #self.first# turns an oilcloth hood inside out to float a pebble and chatters cheerfully until a question deserves a straight answer.
+
+words
+oath! = Float my ears | Stiffen my hoodstring
+saying! = Keep the bright patch showing | A splash wants a witness
+hoodbowl = my upturned hood | a pocket of oilcloth
+trim = a pale stitched rim | a bright strip of binding
+tiebit = a long hood string | my good chin tie
+carryrock = a flat grey stone | a water-smoothed pebble
+oilmark = a dark oily trace | a speck of dressing
+strawend = a twisted straw | a golden stalk
+porkbit = a crisp curl of pork | a strip of roast rind
+waterstep = a shallow ledge | a flat wading stone
+knotbit = a loose running loop | an easy bow
+springbit = a little spring in the weave | a yielding fold
+mudcup = a deep heel print | a cup of dark mud
+
+grown
+opinion @1 houses against 2 : I'd like the Houses to count every head home from their wharf work before counting the day's coin.
+opinion @1 strangers for 1 : Even a stranger's head is a head I'll keep in view when there's water about.
+opinion @1 festivals for 1 : A good chorus lets me join in without anyone hearing exactly which note I missed.
+opinion @1 watch mixed 1 : A uniform on a quay ought to be looking out towards the water as often as towards a purse.
+opinion @1 dole for 2 : Nobody needs to beat the tide on a belly filled only with pride.
+opinion @1 sump for 1 : I like a place where somebody'll laugh at a wet hood and still lend a dry bit of straw.
+line @1 greet : There's room beneath this ridiculous brim for a little talk.
+line @1 greet.return : I heard you. The hood hasn't folded over both ears yet.
+line @2 greet [here.time=dawn] : Morning. I'll wake up when the talking gets interesting.
+line @1 farewell : Keep something bright where a friend can spot you.
+line @1 farewell.return : I'll wave the hood if I go past.
+line @1 again.open : Here comes the second splash of a good conversation.
+line @1 react.news : Set that floating where we can look properly.
+line @1 react.news.known : That's already been bobbing about my ears.
+line @1 react.news.new : Something new over the brim, for once.
+line @1 react.news.doubt : I'd test whether that floats before asking anyone to sail in it.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That needs a good cheer with all the hoods thrown up.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can stop making noise and stay close for that.
+line @1 answer.how : One ear folded flat but otherwise remarkably upright.
+line @1 ask.how : Keeping your chin clear of the day's splashes?
+line @1 decline : That sounds grand until somebody has to go in after the mess.
+line @1 thank : You kept the bright bit where I could find it.
+line @1 deflect_thanks : I'm fond of getting everybody home with the same number of toes.
+line @1 sympathise : I'll keep the noise down till your own words come clear.
+line @1 reassure : We can choose the shallow bit and start from there.
+line @1 ack : I can see that above the ripples now.
+line @1 offer : Pass me the dripping end. I'm already dressed for it.
+scene pastimes_1
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : My hood can swim with a pebble for a passenger. | Turn #hoodbowl# like this. Now it's a little boat.
+b : How long before your passenger gets soaked?
+a : Till I sneeze, usually. The captain's breath is the worst weather we get.
+
+scene work_1
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I watch for a greasy grip before lifting anything. | I've a flap of oilcloth between a slippery job and my sleeve.
+b : Does it stay clean?
+a : Certainly one side does. I've been searching for that side most of the week.
+
+scene work_2
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : Learning goes better if I ask my question while the lesson's still warm. | I've been known to ask why the answer smells the way it does.
+b : Ever get a straight answer?
+a : Often. My trick is letting the person who's teaching me finish it.
+
+scene weather_1
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : My bright binding earns its keep when mist puts every coat in the same grey. | Morning mist delights me so long as my friends stay in sight.
+b : Why keep a bright mark on you?
+a : A voice can come from any part of the water. A mark puts a head at that exact spot.
+
+scene food_1
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : The roast's best bit could just about mend a little hole in this hood. | I like crackling as stiff as the edge of a new brim.
+b : Wouldn't that be rather greasy?
+a : Gloriously. That's why the hole stays open and the pork goes in my mouth.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Fresh straw belongs underfoot, except for one clean stalk I can chew. | I'm fond of the scratch of new bedding before it lies down and minds its manners.
+b : Does that go with a wet coat?
+a : Hang the coat up first, unless you want to wear it stuffed like a cushion.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can take a long swim cheerfully and still balk at six inches of mud. | Deep mud can have my footprint. It can't have the boot too.
+b : How do you get free?
+a : Wait till the ground's finished making that horrible sucking noise, then pull very slowly.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I think giving thanks for coming ashore ought to include counting who came with you. | A blessing can wait while you make sure all the swimmers have landed.
+b : Even if you came in first?
+a : Especially then. That's the swimmer with enough puff left to count.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can fit a day's worth of bad weather inside one rolled hood. | I never leave the hood behind just because the sky looks innocent.
+b : What if it stays clear?
+a : Then I've brought a cushion. A sensible garment can afford two occupations.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'll laugh at a friend's wet backside after I know the rest of my friend is sound. | Getting somebody out of the water comes before naming the splash.
+b : And after everybody's dry?
+a : Then I'll give a perfectly fair account of how silly I looked getting in.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : An early bell preys on the tender part of my ear beneath the brim. | You couldn't make a bell gentle by wrapping my head in another hood.
+b : How would you wake folk instead?
+a : Send a whiff of pork crackling up the stairs. I'd reach the bottom very briskly.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A damp tie pulled too tight will rub under the jaw. | After swimming I turn #tiebit# outside to air.
+b : Would you leave it untied?
+a : Only on land. A loose cord catching underwater would spoil an excellent afternoon.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'm frank with anyone selling me a patch. It needs to float more than a sales pitch. | A cheap patch is expensive if I keep putting new ones over it.
+b : How do you judge a patch?
+a : Fold it twice, spring it open and look along the crease. A hole tells the truth promptly.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Poor weeks see my hood patched in three different colours. | When coin's narrow I make each scrap do its turn in the weather.
+b : Mind wearing a bright patchwork?
+a : It keeps me visible. I'm the only swimmer improving my outfit by running short of money.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A quiet moment at the wharf can hit me harder than a cold swim. | I don't laugh at folk counting who comes back up the quay.
+b : Something happened there?
+a : There's a loss I won't pretend away. I keep the sharp part out of a stranger's coat.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A bird afloat gives me an unattainable example of looking composed. | I can keep my hood bobbing more neatly than my own head.
+b : Is elegance important to a swimmer?
+a : Only after breathing. I've been contentedly stuck on the first exercise for some time.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a visitor the shallow approach first, even one who boasts a fine stroke. | A strong swimmer from elsewhere doesn't know our turns in the water.
+b : Would you go in too?
+a : If invited and if it's safe. Sometimes the better company is on shore with a good eye.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The words afloat are that #topic.subject# #topic.claim#. | I heard a roundabout claim that #topic.subject# #topic.claim#.
+b : Would you swear to the story?
+a : Only to having ears. The event never introduced itself to me.
+
+story stone [topic=pastimes]
+  : I set a pebble in my upturned hood and gave it a noble send-off.
+  : The thing swung round in a circle till the pebble was looking straight back at me.
+  b : Was the wind against it?
+  : My chin string was still round my wrist. A short voyage with excellent arrangements for coming home.
+
+story straw [topic=memories]
+  : I stuffed the hood with straw to see how high it would ride.
+  : It rode beautifully and strewed bright stalks halfway across a puddle.
+  b : How did you recover your ship?
+  : Followed the trail in very undignified little steps, collecting my bedding as I went.
+
+story knot [topic=weather]
+  : I pulled my hood tight against a mist and marched straight past my turning.
+  : The air was quite clear by then, but I'd drawn the brim over both eyes.
+  b : Any harm done?
+  : Three paces. A wall acquainted itself with my nose and I reconsidered my arrangements.
+
+rule @boat
+when concept=bark
+does aside
+cooldown 8h
+say A passenger that size can sit right in the fold. | My hood takes a remarkably small fare.
+
+rule @wake
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say If the bell's waiting for me it can have a long wait. | Good hour for looking at the light through one eye.
+
+rule @work
+when concept=bark self.apprentice=yes
+does aside
+cooldown 8h
+say I've a question somewhere under this hood. | Let me try that while the lesson's still in my fingers.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Bright binding out before the day goes grey. | Last thing to vanish should be the swimmer's mark.
+
+dlg @1 resident.hub : Any subject you like, provided you're prepared for me to have an opinion.
+dlg @1 resident.job [self.job=laborer] : At #self.workplace# there's usually something that needs a steady pair of hands and an eye left open.
+dlg @1 resident.news [world.news] : This washed up quite plainly. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : An account going round says #topic.subject# #topic.claim#. I wasn't there holding a lantern.
+dlg @2 resident.hub [pair.disposition=wary|hostile] : I can be perfectly serious while dressed like a floating tent.
+dlg @1 resident.bye : Come home with your ears in sight.
+graft resident.hub
+choice Will your hood take passengers? -> hood_passage
+node hood_passage
+say One pebble, sometimes two if both can be persuaded to sit in the middle. Nothing living till I've improved my seamanship.
+choice What do you charge? -> hood_fee
+choice I'll wave for it. -> hub
+node hood_fee
+say A cheerful wave from the bank. Nobody has yet persuaded a pebble to pay the fare.
+choice I'll wave for it. -> hub

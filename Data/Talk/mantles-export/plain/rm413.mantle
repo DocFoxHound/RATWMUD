@@ -1,0 +1,264 @@
+# rm413, the last hoof through (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm413
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_varg_barleyfield
+written_by codex
+title the last hoof through
+fits stage=adult|old
+prefers temper=short talk=quiet
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk counts_hooves_passing_a_gate_on_each_knuckle
+likes roast_pork digging fresh_straw warm_rain
+dislikes flies gulls
+fears a_catch_that_feels_fast_and_isnt an_empty_straw_stack
+hopes a_patch_of_dark_earth_for_winter_roots
+topics animals +0.6 work +0.5 food +0.2 home +0.2 gossip -0.3
+styles comfort=steady gossip=closed refuse=blunt tease=none
+marks oath saying
+persona #self.first# counts on knuckles under a closed fist, leaves the final count until the gate catches, and puts a high value on company that can share a quiet piece of work.
+
+words
+oath! = Horn and knuckle | Knot the last straw
+saying! = Shut the gate before you claim the count | Mud keeps the honest tally
+joint = the first joint of my finger | a blunt knuckle
+hoofmark = a cloven print | a fresh split print
+gatecatch = a straight iron catch | a square latch
+strawheel = a pressed heel of straw | a pad from the clean side
+goodloam = earth that breaks by touch | a dark crumb of soil
+rootrow = my short planting row | a row kept narrow
+crackle = a strip of pork crackling | a curled crisp edge
+warmdrip = a fat warm drop | rain the warmth of the yard
+whitefly = a bright-winged fly | a flickering little fly
+soiltest = the little ball of soil | a lump moulded in my paw
+shadeedge = a slim line of shade | the shadow by the post
+
+any
+opinion @1 dole for 2 : A count of mouths should help fill the pot. It should never be used to shame the last one.
+opinion @1 church for 1 : In chapel I can open my fist. Nothing goes missing because I stopped counting.
+opinion @1 houses against 1 : A line of closed gates makes no wolf's work easier, however fine the arms on top.
+opinion @1 strangers mixed 0 : I'll give a stranger directions after the last hoof goes past. The wait harms nobody.
+opinion @1 merchants against 1 : Weigh the whole piece before announcing the cost. I'd prefer less cleverness at the scales.
+opinion @1 city for 1 : Even muddy boots can find a city doorstep willing to admit them.
+opinion @1 newcomers mixed 0 : An unfamiliar face beside a gatepost soon settles into my daily tally.
+
+grown
+line @1 greet : Here. Dry strip by the post.
+line @2 greet [pair.band=strangers] : We haven't stood on the same side before. Welcome.
+line @3 greet [here.time=dawn] : Day's up and I'm already counting.
+line @4 greet [here.time=dusk|night] : Evening. Good shade left here.
+line @1 greet.return : A greeting's worth looking up for.
+line @2 greet.return [pair.band=friends|family] : Know that voice. Come clear of the way.
+line @3 greet.return [self.working=yes] : After the next count you've got my eyes as well.
+line @4 greet.return [here.time=dusk|night] : I heard you pass the quiet bit.
+line @1 kin.open [pair.kin!=no] : Family's welcome without a tally.
+line @1 again.open : I saved the rest of that word.
+line @1 hail [pair.band=friends] : Over here. I've one hand clear.
+line @1 farewell : Go clear of the softest ground.
+line @1 farewell.return : And pull the catch to after you.
+line @1 react.news : I can hear the account from here.
+line @1 react.news.new : First hoof of that news through my gate.
+line @1 react.news.known : That's been counted in already.
+line @1 react.news.doubt : I'd like another look before I call that settled.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd set my count aside on hearing of such a loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Makes the long day feel properly spent.
+line @1 ask.how : Still some strength in your legs today?
+line @1 answer.how : I'm up and the count hasn't got away yet.
+line @1 thank : I'll remember what your hand saved mine doing.
+line @1 deflect_thanks : It was only a turn at the catch.
+line @1 sympathise : You may have my end. There's less disturbance there.
+line @1 reassure : Easy awhile. Let the whole day pass before counting the damage.
+line @1 decline : I'd better keep my head on a job I've promised.
+line @1 accept_decline : Your own job gets your word first. Fair.
+line @1 preclose : My soil needs an inspection while there's daylight on the roots.
+line @1 accept_preclose : Go on while you've got good ground ahead.
+scene closed_fist
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : See this fist? Count's safe till I open it. | I count a gateful out and back before I call it done.
+b : Do the fingers stand for numbers? | Even if it takes all day?
+a : Joints do. Fewer flapping bits to distract me. | An extra minute now beats a day looking later.
+
+scene catch_sound
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : Don't shut a gate against the last rump. | #gatecatch.capitalize# is square for a reason.
+b : Afraid of giving offence? | To sit flat?
+a : Afraid of letting an animal think the wrong side's more comfortable. | To fall true. You know by ear when it's landed on a corner.
+
+scene two_tracks
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : #hoofmark.capitalize# gets longer as the ground gets softer. | Look for a broken straw across a track.
+b : Does it change the count? | To tell how old it is?
+a : No. Makes a tired wolf think a bigger beast went by. | If the straw's under the print that's one question about its age already settled.
+
+scene spade_turn
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I can spend an hour digging half a row. | Roll #soiltest# against your palm.
+b : Hard soil? | What if it holds together?
+a : Good soil. I stop to look at it. | Keep a bit for another day. See how the weather alters it.
+
+scene pork_crisp
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : Give me #crackle# before the steam has at it. | I like supper with two sorts of bite.
+b : Before the meat? | Tender and tough?
+a : Meat keeps. A good snap's over quickly. | Tender and crisp. Tough's what you get for talking while the pork cooks.
+
+scene straw_pile
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : #strawheel.capitalize# likes shaking out before it's laid. | Clean straw makes my hands smell better than any costly soap.
+b : You want it loose? | Will that smell linger?
+a : I'd have it dry right down to the last stalk. Tight straw can keep a secret wet patch. | About till the next gate needs fixing.
+
+scene mild_rain
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : If the rain's warm I put my hat under my coat. | Rain gives every leaf a bowed head for a moment.
+b : That keeps the wrong bit dry. | Can it flatten a bed?
+a : The hat knows when to come back out. | If the soil drinks slowly. Patience is easier in rain that doesn't chill you.
+
+scene gull_supper
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull's welcome to count its own supper, some way off from mine. | Let one white wing cross the yard and my eye goes after it.
+b : Ever feed one? | Waste of your time?
+a : Not deliberately. That fact seems lost on gulls. | One glance has cost me a whole recount.
+
+scene fly_ear
+when topic=weather self.dislikes=flies
+does tell.complaint / react.self / assess
+a : A fly inside an ear stays louder in memory than a whole herd passing. | I wipe the rim of a bucket even when it's going back empty.
+b : That sounds like a bad afternoon. | Because of flies?
+a : It was. This is the calm account of it, a long while after. | Empty isn't clean. Tell that to a fly and see what happens.
+
+scene spouse_side
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd share the springiest straw with #self.spouse# and consider that half a very fine evening. | My #self.spouse_word# has a place kept in my thoughts when the gate's quiet.
+b : What's the other half? | And while it's busy?
+a : Not having anywhere to go till morning. | Then I do the work that keeps a supper going.
+
+scene quiet_pride
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Some days my boots disagree about the distance home. | Tired feet aren't much for explaining themselves.
+b : Whose guess at the distance counts? | Wants a rest?
+a : Whichever wants the slower pace. It has to come home too. | Wants to finish a particular bit and then rest.
+
+scene pinch_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A hungry week I like to turn earth before supper. | The last fine straw in a pile goes further in lean times.
+b : Work up an appetite? | Why further?
+a : No need of that. It puts my mind on another season. | Folk sweep the corner. In rich weeks it gets left where it falls.
+
+scene late_feet
+when topic=times|travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A wheel can run late and still leave a good straight mark. | The wagons should have come by now. I'm keeping the gate clear anyway.
+b : You mind delays? | What if there's no cart today?
+a : I mind guesses about a delay before a wheel's in sight. | Then it's been one small well-kept gate all day.
+
+scene family_future
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : A choice of posts for a youngster in my family would please me. | A dry patch for roots would suit me well.
+b : A House job among them? | Whereabouts?
+a : If the post is good. A grand yard has mud like any other. | Within an hour's walk. I'd expect to inspect my own crop.
+
+scene no_extra
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news_from.capitalize# is where this started: #world.news#. | The certain part in my hearing was #world.news#. From #world.news_from#.
+b : Would you call that the whole count? | Did you see it?
+a : All the part within my reach. | Heard it. That's why I gave the place.
+
+scene shut_gate
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Talk comes easier through a gate than a stubborn beast. I closed mine in time. | I've heard what's making the rounds. There's no need of another round from me.
+b : Before you heard a name? | You'd usually speak plain.
+a : Before I passed one on. | I have. I won't carry it.
+
+scene wrong_corner
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Stand quietly in a corner and you'll see which way a busy yard leans. | I'm uneasy when an ordinary latch looks newly bright.
+b : A yard can lean? | Been tampered with?
+a : It empties fastest through a familiar door. Folk as much as beasts. | Could be somebody did a good cleaning. I'd check the fit all the same.
+
+scene thin_noise
+when topic=pastimes|home
+does tell.self / ask.detail / answer.detail
+a : A quiet bit of digging has plenty of sounds. | I count straight beds by working across the ends of the rows.
+b : Hardly a conversation. | Could count them from a window.
+a : Exactly. That's part of the comfort. | Could. Couldn't spare the weeds a little attention from there.
+
+story last_print [topic=memories]
+  : Once I counted an extra pair of prints across a wet yard with no extra animal to answer for them.
+  : Chewed that over till dusk. Then I happened to inspect my boots.
+  b : You'd grown hooves?
+  : Split the heel on the left one. I had an extra young cow walking behind me at every other step.
+
+story spade_ribbon [topic=pastimes|memories]
+  : Tied a rag round the spade handle so I could find it in long grass.
+  : Wind untied the rag and took it to a quite different patch.
+  b : Did you keep digging there?
+  : Found better soil. Recovered the spade and let the rag choose the next row.
+
+story snap_supper [topic=food|memories]
+  : My best piece of crackling once made such a noise that I looked round for a loose latch.
+  : Left the rest of the meal while I went to try the door.
+  b : Was the door sound?
+  : It was. Supper was still good too, and I heard the latch a second time when I sat down.
+
+rule @straw_low
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Loose ends turned down. Now to clear the centre.
+
+rule @firm_fist
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say One more through. Leave that thumb where it is.
+
+rule @rain_heel
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Soft bed for the roots if the drops don't beat it flat.
+
+rule @fly_cloth
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Draw the cloth tight. Flies can go hungry elsewhere.
+
+dlg @1 resident.hub : Stay on the near side. It's easier hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I'd have missed a familiar foot if you hadn't stopped.
+dlg @3 resident.hub [here.time=night] : I'm keeping my voice down. The latch makes noise enough.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : You've my ear. That distance is plenty.
+dlg @1 resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. It keeps all the joints in this paw employed.
+dlg @2 resident.job : I do what needs a steady count and a sound finish.
+dlg @1 resident.news [world.news] : #world.news# came into my ear with #world.news_from# attached.
+dlg @1 resident.gossip [here.gossip=yes] : Names aren't mine to drive. I'm leaving that one where it stands.
+dlg @1 resident.bye : Pull till the latch answers. Then you're properly through.
+graft resident.hub
+choice What happens if you forget a number? -> count_again
+node count_again
+say Open the fist. Begin at the hoof I last saw go through. I remember a shape in the mud longer than I remember an uncertain number.
+choice Why not guess? -> count_guess
+choice That's a firm place to begin. -> hub
+node count_guess
+say A guess earns a moment's peace by borrowing an hour of searching. I prefer to pay in the smaller coin.
+choice I'll wait for the proper figure. -> hub
+choice Good counting to you. -> bye

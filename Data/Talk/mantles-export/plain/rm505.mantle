@@ -1,0 +1,410 @@
+# rm505, the blackberry exchange (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm505
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_eleanor_saltcot
+written_by codex
+title the blackberry exchange
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=plain piety=ordinary drive=ambitious
+quirk sorts_coins_and_blackberries_on_a_charcoal_camp_map
+likes blackberries long_walks old_maps first_warm_day
+dislikes early_bells waiting
+fears losing_the_quiet_under_the_sound_of_coin
+hopes a_little_patch_of_hill_that_belongs_to_the_family
+topics prices +0.6 travel +0.5 memories +0.4 work +0.3
+styles comfort=warm gossip=considered refuse=light tease=wry
+marks oath saying
+persona #self.first# carries a wet stone, changes money with a ready grin and can still pick a charcoal camp out by the quiet round the trees.
+
+words
+oath! = Split my berry penny | Black my silver thumb
+saying! = A berry can't pay its own exchange fee | Keep the good edge for paper and the clean fingers for coin
+coin = a dull penny | a bright little coin
+berry = a plump blackberry | a black soft berry
+map = a charcoal-marked map | an old hillside chart
+hinge = the bent margin | a soft fold
+camp = the still hill camp | a smoky clearing
+ash = a dusting of ash | a grey sprinkle
+steel = a short keen knife | a bright knife
+stone = my damp stone | a smooth sharpening stone
+cord = a tight cord | a thick parcel tie
+dish = a low coin dish | a little round tray
+mark = a violet spot | a purple print
+change = a handful of change | a row of coppers
+hedge = the blackberry hedge | a thorny edge
+warmth = mild light | the first bare warmth
+road = the winding ascent | a long hill road
+reed = a short counting stick | a neat tally
+rag = a clean wiping rag | a dry cloth
+stack = a small coin tower | a straight stack
+
+any
+opinion @1 merchants mixed 2 : Watch the amount going into the dish and the amount coming back out. Anything taken for the trouble ought to be named.
+opinion @1 houses against 1 : There's a great deal more House than wolf on a stamped coin. Even so, an ordinary paw has to earn it.
+opinion @1 dole for 2 : A little food bought in company can sometimes cost less. A hungry wolf turned away still costs the street something.
+opinion @1 road for 2 : A road that leads beyond jingling money towards honest hill quiet is worth attention.
+opinion @1 strangers for 1 : Foreign boots can recognise an honest exchange perfectly well.
+opinion @1 church mixed 1 : I'm fond of a quiet place where the sum on the counter isn't the measure of a welcome.
+opinion @1 sump for 1 : The low streets teach the difference between knowing how much coin weighs and knowing what carrying it costs.
+opinion @1 festivals for 1 : Fine occasion for giving small change a little exercise and my working ears a more tuneful sort of noise.
+opinion @1 times against 2 [world.times=lean|hard] : Small coins ought to do a full day's work. I see them stretched these days until the rims must ache.
+
+grown
+line @1 greet : My knife's away and I've cleared space beside my coin dish. | Welcome, your first word comes without a fee.
+line @1 greet.return : A full measure of greeting comes back to you.
+line @1 again.open : You've come round quicker than a well-spent copper.
+line @1 farewell : Take the longer road if it has berries along it. | Keep your best patch of quiet on the walk back.
+line @1 farewell.return : And an easy homeward figure in your own account.
+line @1 react.news : Tell it untied. I'll leave the cord cutter resting. | I can hear news over a great deal of small change.
+line @1 react.news.new : My hill map bears a fresh mark.
+line @1 react.news.known : I've changed that account into other words before.
+line @1 react.news.doubt : Something small but important's been skimmed from the explanation.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd put every coin aside to give the hurt a little peace.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's the sound of luck turning over the bright side.
+line @1 ask.how : What's the exchange been like between your feet and the road today?
+line @1 answer.how : Lots going round in my head and enough coming back to keep me happy.
+line @1 sympathise : Stay here a moment. Nobody's charging for the quiet.
+line @1 reassure : A narrow purse can hold a wider hope than its owner expects.
+line @1 refuse : I'd be promising two wolves the same quarter hour if I agreed.
+line @1 accept_decline : Then your answer goes back to you free of any charge.
+line @1 preclose : I'll take myself back before the next queue begins.
+line @1 accept_preclose : Get to your own quiet patch while it's available.
+line @1 ack : The account comes up clear in both pans.
+line @2 greet [here.time=dawn] : A soft welcome before the bells begin trying to change it.
+line @3 greet [pair.band=strangers] : A stranger may take an honest first look at the dish.
+line @4 greet [here.time=night] : Late company can use my lamp's little pool of warmth.
+line @2 greet.return [pair.band=friends] : A greeting like yours pays me back for a long noisy queue.
+line @1 hail [pair.band=friends] : By my quieter counter corner, beside the berry stain!
+line @1 answer.how.busy [self.working=yes] : Busy sorting the small particulars that count up into a day's wages.
+line @1 thank : That favour's worth a whole pocketful of the nice quiet minutes.
+line @1 deflect_thanks : There was enough room in the matter to let a second paw help.
+line @1 give.advice : Lay out every piece before admiring how neatly the total stacks.
+line @2 ask.how [pair.band=friends] : Did you find some hillside for yourself, or its equal in quiet?
+scene exchange1
+when topic=work self.role=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I lay the exchange out in plain light. | My own purse stays off the counter.
+b : Every little coin? | For appearance?
+a : Especially the smallest. It's often the one someone's depending on. | For a perfectly visible separation between two wolves' business.
+
+scene exchange2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I turn an old coin on its edge first. | A small fee should have a large clear explanation.
+b : Does it speak from the side? | Isn't that backwards?
+a : Only to say how much of its face is still there. | The smaller the figure, the easier to hide what it was taken for.
+
+scene exchange3
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : A long walk spends nothing but soles. | I walk till the money noise drops out of my ears.
+b : What about the berries? | How far?
+a : They've never yet produced an invoice, though the thorns collect something. | Longer after a busy week. The hills have generous opening hours.
+
+scene exchange4
+when topic=land self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My old map still has a charcoal track running into a bank of ink. | I can fold a street away and leave open hills.
+b : Does the track end there? | Don't the coins slip out?
+a : It runs into the part my feet remember better than the mapmaker. | My walk map isn't my purse. They do occasionally share a pocket.
+
+scene exchange5
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I like a blackberry that comes off without a tug. | I divide berries without weighing when I can.
+b : Look at the colour? | A moneychanger guessing?
+a : Feel it give. By then my fingers have become a small map of the hedge. | I offer the other wolf first choice. That concentrates the eye.
+
+scene exchange6
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : First mild day and the coin dish loses its icy nip. | I carry the stone in an outer pocket on a warm walk.
+b : Are your fingers grateful? | Why outside?
+a : They can count and bend a berry branch in the same hour. | More room inside for the first green-smelling bits of hill air.
+
+scene exchange7
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : The early bell asks the whole street to pay attention on credit. | I like quite a bit of a bell except its timing.
+b : When do you settle? | Which bit?
+a : After a proper morning bite. Not a stroke before. | The silence once it's finished introducing the dawn.
+
+scene exchange8
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : A long queue can make two coppers feel like a substantial fortune. | I count a wait by the errands I could have done walking.
+b : Worth the wait? | How large a figure?
+a : Worth having the figure ready so the next wolf gets a shorter one. | Enough of a size that I'll choose my hour more wisely tomorrow.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I grew up where the charcoal burners listened to the hill breathing. | I miss the camp in odd corners of my day.
+b : What sound did that make? | Even indoors?
+a : A small settling sound under hours of leaves. The bank seldom manages it. | Especially indoors when two bits of charcoal knock like old company in the grate.
+
+scene exchange10
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.child# the different marks made by charcoal and berry juice. | For #self.child# I'd make a clear count an act of kindness.
+b : For keeping accounts? | How kindly?
+a : For knowing which marks wash out of a shirt and which will acquire stories. | Give each little coin its place without making its owner seem small.
+
+scene exchange11
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A learner begins by inspecting two equal rows of unequal looking coppers. | I teach the amount coming back before the clever shorthand.
+b : Is one row worth more? | To slow the learner?
+a : Quite. To answer, we must inspect every piece. | To keep speed from hiding an error in a very tidy row.
+
+scene exchange12
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd take a long walk with #self.friend# before setting a great private sum right. | I'd willingly show a friend my empty palm.
+b : Because a friend can count? | What's private about that?
+a : Because a quiet head can. Good company helps me find one. | A wolf handling other wolves' money needn't pretend to own it.
+
+scene exchange13
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I flex my thumb after tying each pouch. | When my shift closes I set down the coin weights carefully.
+b : Does it get stiff? | Too heavy?
+a : I can count all morning without realising I have been holding it crooked. | Small weights carried all day deserve the same respect as a large one.
+
+scene exchange14
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I check the map with the clean hand after picking berries. | A path uphill keeps my eyes far from the counter.
+b : How much good does that do? | Planning to leave the trade?
+a : Less with each mile. I call the purple stains newly discovered settlements. | Planning to return with fresh country in mind.
+
+scene exchange15
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The account being passed on is #topic.subject# #topic.claim#. I'd ask to see the original sum. | Hearsay's got a remarkably generous exchange rate.
+b : What would that be? | What's your rate?
+a : A first-hand description with the guesswork kept to one side. | I give change only for pieces I can inspect myself.
+
+scene exchange16
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Hard days make everyone attentive to the last small coin. | When a purse is light its owner hears each clink more plainly.
+b : Does that slow the counter? | Do you lower your voice?
+a : I count it clearly. A careful second saves an anxious minute. | Yes. The figure's between the two wolves at the dish.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a little patch of hill to show the next generation. | I can picture an account book with my own field at the top.
+b : How large? | What would the entries look like?
+a : Enough that a wolf can stand still and hear a leaf land. | One hedge, three quiet mornings, a great many berries consumed before measuring.
+
+scene exchange18
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can give thanks with blackberry juice on my cuffs. | When a chapel falls quiet, I remember the charcoal camp.
+b : Do you clean them first? | Smoke?
+a : Good fortune needn't be rubbed off before it's acknowledged. | The wonderful absence of people trying to calculate my time.
+
+scene exchange19
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I cut pouch string by drawing the loose end across one sharp edge. | My knife goes into its sheath before counting change.
+b : Why save the edge clean? | Isn't it always in use?
+a : So it will do the work without an anxious customer needing to pull. | Only for a tie. A paying wolf deserves two clearly empty hands.
+
+scene exchange20
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A large coin can make the whole street seem cheap. | I put the last copper in the nearest corner of the dish.
+b : An illusion? | A habit?
+a : It's still large till it gets changed. Then the small costs are right there looking back. | So a wolf with tired eyes doesn't have to hunt for change.
+
+scene exchange21
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : I leave a blank strip for the paths I can't find twice. | An old map can survive a new border drawn on top.
+b : Are they still worth marking? | Do you trust the old line?
+a : Some lead to a perfectly lovely hedge just once. | I trust my walking feet before the pride of either pen.
+
+scene exchange22
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I like a berry crushed into warm porridge. | I count berries in pairs until one starts leaking.
+b : Just one? | Then what?
+a : One good dark berry can colour a very respectable part of breakfast. | I eat the troublesome entry. A little more latitude than at work.
+
+scene exchange23
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the wet stone in a shallow dish, facing the window. | A scrubbed knife shelf and a clean square for my numbers.
+b : For the light? | Could they share?
+a : So I can see whether it's actually wet before putting a sleeve down. | They've already shared my pocket since breakfast. Let them have a free evening.
+
+scene exchange24
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Commons doesn't sound like the hill even at dawn. | I set an extra hour aside for a walk from town.
+b : Is it the traffic? | That's generous.
+a : One voice trying a shutter, then a dozen following. The hill didn't take suggestions in such quick order. | It's my hour. A valuable holding, by my reckoning.
+
+scene exchange25
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A stranger sometimes puts the whole purse on the board. | I ask a visitor which coin feels familiar.
+b : Can be safer than guessing? | Why?
+a : I show how to count the needed bit, then put the rest away privately. | An exchange is much clearer once we've found a piece we both recognise.
+
+scene exchange26
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Autumn makes the hill roads look edged in copper. | A winter pocket wants a dry purse and a covered stone.
+b : Do you pick any up? | Same side?
+a : I'd look an odd moneychanger collecting leaves by the hundredweight. | Separate corners. Silver deserves a better home than a whetting rag.
+
+scene exchange27
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : The learner must name the fee while the coins are still in view. | I leave one deliberate gap in a training row.
+b : Before taking any? | For the learner to find?
+a : A fair explanation needs something the customer can point at. | For me to learn whether I've actually taught looking, not just chanting the count.
+
+scene exchange28
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : My mind holds a hillside more readily than a newly minted face. | A piece of camp charcoal has travelled for years in my box.
+b : Hard to admit at your counter? | Does it still smudge?
+a : A coin has most of the working written round the rim. A hill asks more of the eye. | Very obligingly whenever I'm forgetting it.
+
+scene exchange29
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Warm rain turns the berry hedge from dusty to brilliant. | A slow wet afternoon goes well with a rag and a knife that's lost its edge.
+b : Out you go straight away? | A whole afternoon of work?
+a : After changing out of the coat with the careful sums tucked inside. | Some sharpening and considerable peering through the window for a clear turn.
+
+scene exchange30
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I close the exchange dish with a cloth across it. | I like the last walk home after a busy counter.
+b : To exclude dust? | Because nobody's waiting?
+a : To show my own eyes the counting is finished. | Because I can choose to pause over something without a price.
+
+story tale1 [topic=work self.role=merchant]
+  : Once I arranged a perfect exchange of six pieces in two rows. The last piece bore a glorious purple smudge from fruit eaten on a walk.
+  : I'd kept that particular coin in my own purse; it had fallen into the empty dish when I turned the pouch out to inspect it.
+  b : How did the account fare?
+  : I took my own berry back out and made the exchange from the proper funds. My two purses now never meet on the working side.
+
+story tale2 [topic=memories]
+  : We laid sticks in the charcoal camp in such an even slope that dew ran off three sides. I kept one small diagram of the stack and carried it into town.
+  : A visitor at the counter took it for a drawing of a crown.
+  b : Did you make the correction?
+  : I said it represented something which could keep a roof warm. The answer satisfied both of us and left my hill where it belonged.
+
+story tale3 [topic=food self.likes=blackberries]
+  : I once tried valuing an entire berry hedge by the weight of the first handful. A perfectly sensible estimate if nothing moved and nobody grew hungry.
+  : I had eaten part of my evidence by the third bush.
+  b : How much was the hedge worth?
+  : A long warm afternoon with no sound of the bank and a very cheerful walk home. My working book has no suitable column for that.
+
+story tale4 [topic=pastimes self.likes=old_maps]
+  : An old street plan unfolded into a fine square of hill paths once the top layer got out of the light. It had been drawn on both sides.
+  : I spent an hour working out which bit of countryside lay exactly behind my counter.
+  b : Which bit was it?
+  : A patch of trees. I can now clear my mind while the rush is on merely by thinking what's on the reverse.
+
+story tale5 [topic=work self.master=yes]
+  : I set a student the task of explaining an exchange without naming any numbers.
+  : An impossible request, I was quite sure, and a good introduction to exact figures.
+  : The learner pushed one little row towards me and drew the matching heap away, leaving a single plain fee on the board.
+  b : Where did that leave the lesson?
+  : In better hands for the moment. I added the spoken numbers afterwards and kept the clear arrangement.
+
+rule @call1
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Two rows in view before anything changes paws. | A little coin gets a whole clear spot in the dish.
+
+rule @call2
+when concept=bark working=yes self.master=yes
+does aside
+cooldown 8h
+say Name the fee before the next clever step. | Don't hide the working under the edge of the purse.
+
+rule @call3
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Early bell, my ears caught your first stroke easily. | The hill's likely a deal quieter at this hour.
+
+rule @call4
+when concept=bark self.likes=blackberries
+does aside
+cooldown 8h
+say A blackberry has no business sitting amongst the coppers. | A very cheerful purple all along my fraying cuff.
+
+rule @call5
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wet stone on its own rag. Paper stays apart. | The clear way to the hills can wait a little.
+
+rule @call6
+when concept=bark self.likes=long_walks
+does aside
+cooldown 8h
+say I'd exchange a stretch of waiting for a good long hill. | A spare hour wants soles under it.
+
+dlg @1 resident.hub : I can change the subject off money if you need a little quiet instead.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, my working memory knows where your name belongs.
+dlg @3 resident.hub [here.time=night] : The coin rows have gone to bed. I've still a civil word left.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can keep your purse closed. All I'm offering is a hearing.
+dlg @1 resident.job [self.job=merchant] : I change money at #self.workplace#. You should see the fee and the return with your own eyes.
+dlg @2 resident.job : I like work in which a wolf goes away able to check the account alone.
+dlg @1 resident.news [world.news] : What's come across this counter is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. A teller's figure should always be checked against the working.
+dlg @1 resident.bye : I hope one of your homeward turnings comes with a little quiet at no extra charge.
+dlg @1 shop.greet [here.shop=open] : Put down only the sum you wish to exchange. We can count both sides in comfort.
+dlg @2 shop.greet [here.shop=bare] : No stock on this board just now. An empty counter can be remarkably uncommunicative.
+dlg @3 shop.greet [here.shop=asleep] : The shutters and I are both officially resting.
+dlg @1 shop.prices : I'll give the whole charge while your coins are still sitting in plain view.
+dlg @1 shop.bye [here.shop!=asleep] : Check the corners of your purse before the tie goes back.
+dlg @1 master.learn [here.teaches=yes] : Ask me about #here.trade_title#. I'll show the part that every customer deserves to understand.
+dlg @2 master.learn [here.teaches=no] : My teaching bench already seats somebody. I can still clear a corner to explain a bit of the work.
+dlg @1 master.work : Calm hands and a head for small differences. Several quiet habits make a busy counter look easy.
+dlg @1 master.wages : You can sell your own work as you learn. There isn't a separate wage for taking the lessons.
+dlg @1 master.takes [here.take_on=no] : I can't begin that agreement yet. #here.take_on_why#.
+dlg @1 master.bye : Keep the working as tidy as the sum you put underneath.
+dlg @1 resident.business [business=steady] : The coins move at a decent pace and I can spare each caller a proper count.
+dlg @2 resident.business [business=thriving] : Both pans are hardly empty between callers.
+dlg @3 resident.business [business=failing] : More eyes passing the window than purses opening on the counter.
+graft resident.hub
+choice Where's the charcoal hill on that map? -> berry_map
+node berry_map
+say Under the inked street, if I fold the sheet once and use the old roads. It's a small reminder that the city's loudest coin dish has living soil underneath.
+free
+choice Do you miss the quiet now? -> berry_map_again
+choice Goodbye. -> bye
+node berry_map_again
+say Most in the moment after a long count finishes. For half a breath the town could be my old hill, then the next purse opens.
+choice Keep the hill folded close. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Can you show the fee separately? [self.role=merchant] -> fee_rows
+node fee_rows
+say I prefer to. Your sum goes here. The exchange goes there. The little charge sits on its own until we're both content with what we're seeing.
+free
+choice Why the empty space around it? -> fee_rows_again
+choice Goodbye. -> bye
+node fee_rows_again
+say Because a small charge shouldn't be allowed to hide among bigger coins while we're talking. Put your paw where mine is and check the whole arrangement.
+choice Back to the exchange. -> greet
+choice Goodbye. -> bye

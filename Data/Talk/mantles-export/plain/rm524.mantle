@@ -1,0 +1,251 @@
+# rm524, the bell float (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm524
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ilse_coalley
+written_by codex
+title the bell float
+fits stage=adult|old
+prefers job=laborer
+traits temper=nervy talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk moves_a_cork_along_a_fishing_line_to_count_the_chapel_bells
+likes warm_bread evening_line sharp_knife warm_rain
+dislikes rats cold_tea
+fears an_unlit_lamp_in_mist a_good_cork_broken_by_a_knot
+hopes a_quiet_pier_at_supper a_warm_roll_after_a_wet_round
+topics work +0.5 pastimes +0.4 faith +0.3
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# moves a small cork along a line at each chapel bell and enjoys the curious extra distance a sound can travel across water.
+
+words
+oath! = Wick in the waves | Cork on the cobbles
+saying! = Let the last bell finish ringing | A cork knows when the line has gone taut
+bellfloat = my moving cork | the bell counter
+knottedline = the rough little cord | my six knots
+blackline = a wick gone sooty | the dark lamp tail
+tincover = the tin snuffer | the little dark cap
+loafcrack = the oven seam | the split in a hot roll
+wetcircle = the ring from my cork | a ripple by the wall
+doublering = a stroke with its echo | a chapel bell twice heard
+dryiron = my sharp small blade | the clean edge
+teasound = the mug against the rail | an impatient little knock
+windhook = a hook in the box | the inward pointing tip
+
+any
+opinion @1 church for 1 : One chapel's peal is more familiar than some voices I've been hearing all my life. It keeps me company either way.
+opinion @1 dole for 2 : Hot bread should go round even if a wolf's purse hasn't got the price of keeping a lamp alight.
+opinion @1 houses against 2 : Can a house put a street lamp alight in wet weather without somebody else's old feet going through the puddles?
+opinion @1 merchants against 2 : A lamp glass costing double still needs wiping just as often. I should like that pointed out when the price is named.
+opinion @1 sump for 1 : These streets look considerably more loved once the lamps come on. I take a little interest in their looking that way.
+opinion @1 times against 2 : My mug loses its warmth as I count a handful of small coins. That's not the fault of the tea.
+opinion @1 newcomers against 2 : A caller who hasn't yet learned the bells should listen a while before making plans for all our evenings.
+
+grown
+line @1 greet : Give the cork a quiet minute. My ear's free.
+line @2 greet [pair.band=strangers] : Welcome from there. The wild bit of line's at your feet.
+line @3 greet [here.time=dawn] : The first chapel sound goes far this morning.
+line @4 greet [here.time=dusk|night] : Evening's the hour when every bit of glass remembers me.
+line @5 greet [self.working=yes] : Let me get the glass seated and I'll hear you properly.
+line @1 kin.open [pair.kin!=no] : Come beside my covered lamp, family.
+line @1 again.open : Another voice returning to this familiar sliver of shoreline.
+line @1 greet.return : Your call got through the ring of the last stroke.
+line @2 greet.return [pair.band=friends|family] : I'd know that familiar note over a whole peal of bells.
+line @1 farewell : Take the lit paving if the mist comes low.
+line @1 farewell.return : I'll keep the last little glow on my side.
+line @1 react.news : I'd hear the first stroke before you give me the echo.
+line @1 react.news.new : That's an additional knot my cord wasn't expecting.
+line @1 react.news.known : An echo can carry a proper distance round here.
+line @1 react.news.doubt : How close was the teller to the source of all that sound?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can carry a little warm food and leave the questions outside.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright small note among a great many ordinary ones.
+line @1 answer.how : I've a good wick and the usual collection of questions.
+line @1 ask.how : Which sound has stayed with you from this morning?
+line @1 sympathise : Hard to keep one's thoughts from going round the same empty place.
+line @1 reassure : A quiet minute here needn't cost you any explanation.
+line @1 decline : I'd be listening for the lamp round while you wanted my whole attention.
+line @1 accept_decline : I'll wind that request in and save the cord.
+line @1 preclose : There's glass to inspect before the air cools.
+line @1 ack : Rang clear.
+scene count
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I push a cork along the knots for the chapel bells.
+b : Do you lose count without it? | Why use cork?
+a : If a cart goes past I tend to count the stroke and its echo. My finger makes one move for each real blow. | It was handy after an evening with a line. Cork will sit quietly in a pocket too.
+
+scene lamps
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A clean lamp glass makes a flame look noticeably steadier from the street.
+b : Does cleaning really steady it? | When are you satisfied with the glass?
+a : It removes the smears that dance across my eye as I step by. The flame may have been steady all along. | A clear edge and no cloud when I bring the light up. Then I can close the frame.
+
+scene line
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I like an evening line best while the cork is thinking about moving.
+b : Can a cork think? | Must a fish actually bite?
+a : It will certainly take as long as it pleases before making a decision. | Not for a comfortable evening. A catch is an extra item which the water supplies at its convenience.
+
+scene loaf
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I take the split edge of a hot roll first. It's usually just cool enough for a bite.
+b : Would you eat while walking? | What's left for last?
+a : Only along a little stretch of sound stones. My boots and my supper can each have their proper attention. | A soft warm bit to soak in tea, provided the tea's attended to its own temperature.
+
+scene knife
+when topic=work self.job=laborer self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A clean keen edge cuts a loose fibre off a wick without pulling the rest out of shape.
+b : Do you carry a large blade? | What happens to the loose fibre?
+a : A small blade for a small lamp task. My pocket is occupied by quite enough equipment. | Away in a scrap, clear of the lamp. I'd like it to finish shedding in my bin.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain makes all the bright circles round the lamps stretch down towards my boots.
+b : Are the stones bright enough to see? | Does the sound change?
+a : Yes, with lovely long spaces between where a wolf should still pay close attention. | I can hear the tapping on glass while the thicker sounds are all going on overhead.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat can get a perfectly good supper by waiting below a loaf that's been cut in a hurry.
+b : Do you feed it? | Why cut the loaf slowly?
+a : No. My little brush generally reaches the crumbs first and I prefer that order of business. | Fewer crumbs, and both slices come out fit to present to a guest.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : After my tea's gone cold it shows a very good picture of the nearest lamp. A poor exchange.
+b : Would you drink it anyway? | Can't you keep the mug covered?
+a : Sometimes. I'm aware of the difference between thrift and pleasure. | Yes, with a saucer, if I can keep from putting my cork and cord in the saucer first.
+
+scene purse
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : A sound cork will go through a year's evenings quite nicely without presenting a bill.
+b : Don't you need other tackle? | What happens when it gives out?
+a : I have line as well. I like my pleasures to occupy a shallow pocket if possible. | I cut the sound end off another cork. A retired stopper has a surprisingly active later life.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could share a bench with #self.friend# while the last sounds from the chapel come across.
+b : Would you count the strokes aloud? | Would you bring food?
+a : No. I've six handy knots for keeping my little occupation out of a friend's ears. | A hot roll if I could manage it. Two wolves can have a word while each is chewing.
+
+scene quiet
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's one wharf sound I'd just as soon leave to the gulls.
+b : You'd prefer a different subject? | Would the chapel bells help?
+a : Yes. Ask about the line or the lamp, two things I'm always curious about. | Some evenings. I decide how long to stay for myself.
+
+scene workwage
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : When I start a round I count the lamps needing attention, and I count what's left coming back.
+b : Do you keep a book? | Why make the return count?
+a : I've got a mind and a stout length of cord. That's enough for my own reckoning. | Because there's a real difference between having visited a lamp and having left it burning.
+
+scene mist
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Sound can find the edge of the headland before a walker sees anything there in the mist.
+b : Would you walk by sound alone? | Is the sound always the same?
+a : No. I still require a firm path and a little visibility about the toes. | Depends on the air. A bell that rang close yesterday needn't do the same this evening.
+
+scene sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I like the little islands of lamplight along a wet Sump walk.
+b : Are the gaps difficult? | Why call them islands?
+a : I take the gaps slowly. The lit bits give my eyes time to find the next sound footing. | A boot heel on a bright stone looks almost as though it's come ashore.
+
+scene sleep
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : After an evening round my ears go on counting in the quiet of my room.
+b : Do you hear a real bell? | How do you let it go?
+a : Not always. A very ordinary cup against a shelf may do duty for a chapel. | I lay the cord flat and set the cork back at the beginning. I've given the day a proper ending.
+
+scene future
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a covered seat where a wolf could watch a float and eat one warm roll entirely at leisure.
+b : Would you want a broad view? | Why covered?
+a : Just the patch that contains the cork. Anything grander might interfere with my attention to supper. | Warm showers agree with me but haven't yet met a bread roll improved by one.
+
+scene nightquiet
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At the last light my float's white tip stays visible after my reflection is lost.
+b : Do you stay until it vanishes? | Why a white tip?
+a : I prefer to wind in while there's something to wind towards me. | A little pale paint shows against the dark water without requiring a lamp of its own.
+
+story echo [topic=faith]
+  : I once counted an extra stroke across the bay and moved the cork farther along than the knots allowed.
+  : A moment later the same echo came back from a wall behind me, weaker but just as clear.
+  b : Did you correct the hour?
+  : I corrected the cork. The hour had been keeping itself with no particular difficulty.
+
+story lampcrumb [topic=work self.job=laborer]
+  : I set my roll on a covered lamp box while I wiped a cloudy glass.
+  : When I'd finished, a tiny shower of crumbs stood out like bright islands on the dark tin.
+  b : Did you leave them there?
+  : Brushed them into my palm. A little clear glass and a tidy supper from a single stop.
+
+story fishtin [topic=pastimes]
+  : My line once pulled strongly enough to promise a handsome supper before going slack.
+  : Up came an empty round tin with a hole in both ends and a thread of weed trailing behind it.
+  b : Was it worth keeping?
+  : The tin stayed out of the water. It had given one honest cork quite enough employment.
+
+rule @round
+when concept=bark self.job=laborer self.working=yes
+does aside
+cooldown 8h
+say Glass settled before I go on. | Raise the wick just enough to read the edge.
+
+rule @line
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say There's a small judgement due from the cork. | Wind before that pale tip goes.
+
+rule @warm
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Look at the lamp pools running along the stone. | Rain sounds sharp on that glass.
+
+rule @mug
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say A saucer over my second cup. | Cold enough for a whole reflection again.
+
+dlg @1 resident.hub : I've a quiet ear between the bells. Take your time here.
+dlg @2 resident.hub [topic.meeting=known] : A voice I've heard carried across my line before, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Leave the lamp box closed and we'll keep our conversation in clear light.
+dlg @4 resident.hub [here.time=night] : One small flame is plenty for a patient word.
+dlg @1 resident.job [self.job=laborer] : #self.trade_words.capitalize#. A clean lamp glass and a steady little walk hold the round together.
+dlg @2 resident.job : I notice when a glow is missing from a familiar evening walk.
+dlg @1 resident.news [world.news] : Here is what came through before the echo. #world.news#.
+dlg @1 resident.bye : Walk where the little pools of lamplight touch.
+graft @bellcork resident.hub
+choice Why has a fishing line got knots beside the float? -> bellcork
+node bellcork
+say It does duty between fishing evenings. I move the cork at each chapel bell and pin the knot under my thumb while I listen for the stroke to die away.
+choice What if an echo fools you? -> bellcork_more
+choice Listen for the next stroke. -> hub
+node bellcork_more
+say Keep still till it passes. The next stroke sets out cleanly from the chapel, while the echo comes in weak from somewhere along the wall.
+choice Listen for the next stroke. -> hub
+choice Leave the float to its keeper. -> bye

@@ -1,0 +1,371 @@
+# rm452, the bread route (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm452
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_ebba_slagstack
+written_by codex
+title the bread route
+fits stage=young|adolescent|adult|old
+prefers warmth=warm drive=restless
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
+quirk lays_out_walks_with_a_crust_and_a_few_crumbs
+likes warm_bread long_walks full_larder thunder
+dislikes salt_wind gulls
+fears a_walk_with_no_supper a_gull_over_the_last_piece
+hopes a_road_that_reaches_a_warm_loaf a_place_under_a_thundering_roof
+topics travel +0.5 food +0.4 weather +0.3
+styles comfort=provisions gossip=plain refuse=firm tease=none
+marks oath saying
+persona #self.first# plans walks with crust and crumbs, welcomes a new walking companion readily, and insists that the last stop of a journey should smell of warm bread.
+
+words
+oath! = Crumbs up my cuff | Hole in the loaf
+saying! = Leave a crust where the road comes home | Walk till the loaf smells different
+breadroad = my trail of crumbs | my bread map
+endcrust = the big home crust | the knob at the last turn
+turnbit = a bent corner of bread | a curly crust end
+darkseed = one dark seed | a little black grain
+walkbag = my lunch twist | the spare bread cloth
+flagpiece = a crumb with a point | a sharp little roof of crust
+dryband = the hem below the grain | my dry cloth band
+thundershelf = the rumbling bit of roof | the loud board overhead
+gullnose = a greedy white head | a yellow beak and whiskers of wind
+saltwrap = the turned-in hood fold | my rolled neck cloth
+
+any
+opinion @1 city for 2 : I can make three crumb roads from one doorstep and they all get to somewhere nice for a lunch.
+opinion @1 dole for 1 : I like a loaf that somebody's already left where a hungry walk finishes. Not every wolf has a lunch twist in a pocket.
+opinion @1 festivals for 1 : I don't mind getting tired at a festival. There's usually a fair place to sit with a bit of bread and a song.
+opinion @1 newcomers for 2 : A newcomer can show me which roads have good bread somewhere else. I don't like using the same crumbs every time.
+opinion @1 road for 1 : A road is a whole story you can go and be inside if you have a bit of food and don't miss the turn back.
+
+grown
+line @1 greet : You're welcome at the bend where lunch goes on the map.
+line @1 greet.return : A clear greeting gets its proper place on my route.
+line @1 farewell.return : I'll wrap up the last little piece here.
+line @1 react.news : I'd hear which road the word took to reach us.
+line @1 thank : That put a warm end on a long walk.
+line @1 decline : I'd need to know the return way before I promised the whole outing.
+scene crumbmemory
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's one walk I'd lay out in crumbs as accurately as a land survey.
+b : Do the crumbs keep their scale? | Which walk is that?
+a : Only with memory for company. I enlarge the pleasant corners considerably. | A short walk from a warm door to a dry shelter before a storm. It seemed a great adventure in early life.
+
+scene larderfull
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A stocked cupboard gives a long walk an easy beginning and a kind ending.
+b : Which is more important? | Would you stock for visitors?
+a : The beginning. On a difficult day I can think of supper ahead and remember I had the freedom to choose that walk. | I leave something that can be served without knowing exactly when the caller might arrive.
+
+scene hotbread
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I listen for a small crackle from a loaf that's just come out.
+b : Would you cut it at once? | Does sound tell you much?
+a : I'd wait until the soft middle begins to hold its shape. Waiting a little with food in sight is pleasant work. | It tells me I haven't come in so late that the best heat has already left the kitchen.
+
+scene courtstorm
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I like a sheltered courtyard for the first heavy roll of thunder.
+b : Doesn't it echo there? | Is that better than a roofed room?
+a : Gloriously. The little return stroke is my favourite part of the weather. | If there's a dry edge and room to sit, yes. I'm curious about the source of such a noise.
+
+scene windcloth
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Folded cloth keeps a travel loaf from taking on all the salt in a long coastal wind.
+b : Could you wrap it tighter? | What's wrong with a salted crust?
+a : Only after it's cooled. A warm loaf wrapped too close turns itself into a disappointing parcel. | A little salt belongs in a loaf. Wind offers no terms about how much extra goes in.
+
+scene ordinaryfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : It makes my afternoon when there's a loaf to share and another wolf who'll sit to eat it.
+b : Do you need to say much? | What if the bread's small?
+a : Not once we've both broken off a piece. A meal can make a decent blessing of its own. | I cut it once before offering it. It's easier to take a small share when it looks like a meal meant for two.
+
+scene walkpace
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : For a good long walk I choose the pace of whichever foot has stiffened more overnight.
+b : Will it ease with distance? | Doesn't that make you late?
+a : Usually, after the first little turn. Once it's been heard from the foot may put its complaint away. | Only if I promised a time without consulting the feet that had to keep it.
+
+scene newsroad
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : I like a report about the road to name a stretch I could actually point to.
+b : What if there is no sign? | Where does a doubtful report belong?
+a : I'd ask about the bends and whether the ground rises. A sign can get lost much faster than a hill. | Treat it as a reason to look, not as a reason to frighten everybody planning a walk.
+
+scene quartergood
+when topic=land self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : The Commons changes underfoot before you can see a whole change of street.
+b : What first catches your notice? | Is it something you can hear?
+a : A flatter patch at a shop entrance, then a stretch where carts have made two low grooves. | Yes. A quiet walker can tell by the heels moving differently even without looking down.
+
+scene happynewcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new arrival reminds me of the first time I drew a road and had to choose what to leave off the cloth.
+b : What might a stranger find? | Why leave anything out?
+a : Food, a dry place and the far turn. Most of the rest starts making sense after an unhurried meal. | Because an exact list of every window can make the turn that's needed almost impossible to see.
+
+scene pocketdream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In dreams the crumb trail stretches on by the width of one new street every time I look away.
+b : Can you keep laying it? | Do you ever get home?
+a : Yes, as long as I'm asleep there's no end to the loaf. That's the really splendid part of the dream. | If I stop to eat. Nothing can take one past the last mouthful without a proper pause.
+
+scene timehouse
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A warm doorstep with a clear view of the road is often enough for company.
+b : Wouldn't you rather walk with a guest? | What passes for conversation?
+a : If that's what the guest came for. Some wolves have done their travelling before they've reached my doorstep. | A question about the last turn followed by the courtesy of hearing the answer. Everything else will keep till supper.
+
+
+young
+line @1 greet : Bring your nose over here. The whole road smells of lunch.
+line @2 greet [pair.band=strangers] : You're new. There's still bread on my bit of map.
+line @3 greet [here.time=dawn] : A walk can start before the sun has finished getting up.
+line @4 greet [here.time=dusk|night] : I've tucked the last crumb in before it gets dark.
+line @1 kin.open [pair.kin!=no] : Come as close as you like to our home crust.
+line @1 again.open : You made it the long circuit round to my bread road.
+line @1 greet.return : Hello from the cook and the traveller. Both me.
+line @2 greet.return [pair.band=friends|family] : You know my crumb roads already. Welcome.
+line @3 greet.return [self.working=yes] : Let me keep this one corner still and hear you.
+line @4 greet.return [here.time=dusk|night] : I heard your hello before my eyes found your ears.
+line @1 farewell : I hope supper knows the way to find you too.
+line @1 farewell.return : I'll save a little crust to show you the turn.
+line @1 react.news : Tell it slowly enough for me to follow with a crumb.
+line @1 react.news.new : My old map didn't go there at all!
+line @1 react.news.known : I've found the bend where that happened before.
+line @1 react.news.doubt : Did the teller walk there or just draw a line?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave the soft bit for a wolf who hasn't much wish to chew.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's the nicest stop on today's whole road.
+line @1 ask.how : Did you get to have a good long turn outside today?
+line @1 answer.how : I'm looking for my next little way round. My feet like that.
+line @1 sympathise : There is room to sit on my cloth without saying anything.
+line @1 reassure : I'll keep a finger on the place we left in the story.
+line @1 decline : I'd rather have the last crumb left for the road home.
+line @1 accept_decline : Your half can stay folded if you want.
+line @1 thank : You didn't step on all my little roads.
+line @1 deflect_thanks : A real walk together would do me instead.
+line @1 preclose : This little trail needs packing before somebody tidies it up.
+line @1 accept_preclose : You can go round by my cloth's plain corner.
+line @1 ack : Found the turn.
+scene crumbs
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : My biggest bit of crust is home and those three crumbs make the walk.
+b : Only three? | What if you eat home?
+a : Three turns. The spaces can be as long as I want if I imagine hard enough. | I eat it last. I'm allowed to have supper once I've got home.
+
+scene warmloaf
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : When a loaf's warm the inside makes a better hill than the outside.
+b : Won't it squash? | Can you draw a path on it?
+a : Just enough to give my little hill a proper top. My prize is an edible landscape. | With my finger. The path smells better than stone streets usually smell.
+
+scene stormroof
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder can follow a walk all round the map while I stay nice and dry.
+b : What if a crumb goes flying? | Are there puddles?
+a : Then I'll give the thunder a less noisy table to stand on. | Only from my wet cuff. They dry up much faster than a real hole in the square.
+
+scene saltear
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : I fold one ear inside my hood and leave the other out to see where the wind's poking.
+b : Can you see with an ear? | Why not tuck both in?
+a : I can feel which side of me wants to turn back towards home. Easier than looking at salt with my eyes. | I need to hear somebody coming round a corner. My nose can't look both ways at once.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : My map's got only one enemy with real wings.
+b : Which part would the gull steal? | Don't pigeons like crumbs too?
+a : All the important turns. It would leave me holding a cloth showing a much shorter return walk. | Yes. They're smaller enemies. A gull can eat my entire neighbourhood in one bite.
+
+scene larder
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : When the larder is full I like opening the door by inches.
+b : As a surprise? | What if it isn't full?
+a : Yes. First you smell the bread and then there's plenty of it waiting to be seen. | I look properly first. You shouldn't make lunch maps out of the only bread there's going to be.
+
+scene father
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd offer #self.father# the first go at choosing a crumb to walk to.
+b : What would the darkest crumb mean? | Could the walk go uphill?
+a : A good shady place where the bread doesn't go dry while we look round. | If the last crumb fits on the table edge, yes. It would have a lovely view of both our knees.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd lay the softest piece on the home end of a map for #self.mother#.
+b : Why softest? | What's on the way home?
+a : It's easier to eat after a day of telling your feet where to go. | A bridge about a thumb long, and a turn you can walk twice if daylight hasn't gone.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could give #self.friend# three crumbs and keep three for myself.
+b : Who gets home first? | How do you play?
+a : That isn't the game. We make our roads meet in a nice place in the middle. | Each picks a turn and then we have to agree what the last little bit is. It takes a while.
+
+scene lesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : Maps in a lesson have names on the rivers and no room to sit down.
+b : Does yours have seats? | Why not draw some in?
+a : Every large crumb is a perfectly fine low seat so long as you only sit there inside your head. | I'd use a copy of my own. It would be poor manners to put lunch on somebody's good writing.
+
+scene commons
+when topic=land self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : Walking the Commons on foot can last longer than nearly a whole loaf.
+b : Can you measure a street in bread? | When do you start to count?
+a : I say how many bites till I feel ready to turn back. You might have a different sort of street in your belly. | After I leave the door. It doesn't count when I'm standing there trying to remember where I put my lunch.
+
+scene newroad
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : If I met a wolf from a different town I'd ask for a map made with just three crumbs.
+b : Could anybody do it? | Why only three?
+a : If there's no bread I'd let the wolf point with a finger. I want the way home, not somebody else's last lunch. | So I have to remember the important turns and get told the rest as a proper story.
+
+scene flagtime
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I keep moving the little pointed crumb farther round my map.
+b : What does that mean? | Where does it sleep afterwards?
+a : It shows the place my toes are asking to visit next. They ask a lot on a quiet day. | Right up against the home crust. My pocket's all tidied up by morning if I'm hungry.
+
+scene flaghouse
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I don't put a grand House mark over the best bit of my bread map.
+b : What's missing from that spot? | Doesn't your map need gates?
+a : A broad bench for anybody who comes by hungry. I made the crusts and I get to decide. | One gate is enough. It can open both ways all afternoon without getting a title for doing it.
+
+scene shelter
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want to go on a walk where a nice dry roof comes down just before the first big bang.
+b : Would it land on your ears? | Where would the next bang go?
+a : Only if it was a very silly roof. I had a good careful one in mind. | Along the boards above me. I get the noise and my lunch gets the dry seat.
+
+scene squarearms
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can mark a turning with my arm where two crumb roads meet.
+b : Which way do you point? | Would you rather go right or left?
+a : I point my elbow up. Then the roads get to take opposite sides and I can be the hill. | Whichever side a friend isn't using already. Then I have a new bit to tell about.
+
+scene getback
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I always put the lump of bread where the walk begins before I go wandering.
+b : Might you forget where you started? | Don't you end there too?
+a : Some roads look just the same sideways. My own loaf has a little brown ear on it that I can find again. | Yes. A round walk is very clever about giving the last stop to the first one for nothing.
+
+story gullstory [topic=animals]
+  : I put my little bread road on a cloth where I could reach it and a gull could see it.
+  : One sharp white head came down and the first three turns vanished.
+  b : Did the gull come all the way home?
+  : No, I wrapped the home crust away. I like my visitors better when they use their feet at the door.
+
+story doublehome [topic=memories]
+  : I drew a walk that took one crumb round to its original curve of crust where it had started.
+  : I thought I'd got it wrong till I put a finger inside the circle and spun the cloth.
+  b : Why was it the right way after all?
+  : A circle lets you wave to all the same doors without ever turning your nose to point backwards. That's a good thing about going out.
+
+story quietbang [topic=weather self.likes=thunder]
+  : I saved the biggest bit of bread for the biggest roll of thunder.
+  : The noise went on so long my paw got tired holding the bit in midair.
+  b : What did you do when it finally stopped?
+  : Ate it just before the little echo. I think the echo was my own belly clapping.
+
+rule @loaf
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Cloth loose where the steam comes off! | Big brown crust keeps our home place.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Hide the turns, there's a gull. | Leave that bird a view of empty cloth.
+
+rule @dark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Home crust in my pocket, walk finished. | Keep the last gap clear on the step.
+
+rule @storm
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say Room for my bread beneath the roof! | Wait for the echo before the next bite.
+
+dlg @1 resident.hub : Ask me something over this way. The other way's the river on my bread map.
+dlg @2 resident.hub [topic.meeting=known] : I know where your turn goes, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Every corner of my map is visible from outside the cloth.
+dlg @4 resident.hub [here.time=night] : I've eaten most of the road already. There's still home to find.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I like a lesson where there's a real direction to follow.
+dlg @2 resident.job : Making the ways out and making sure they all have a way back.
+dlg @1 resident.bye : Don't let a gull follow the part of your walk that smells of lunch.
+graft @crumbroutes resident.hub
+choice Can you really walk on that road of bread? -> crumbroutes
+node crumbroutes
+say A little finger can. I put the big crust down for home, spread out the three turns and let my finger feel its way. Mind you don't squash the bridge.
+choice What do you do if a crumb goes missing? -> crumbroutes_more
+choice Give the little finger a rest. -> hub
+node crumbroutes_more
+say That's a good time to ask a friend for the next turn. I don't mind a different road so long as the big crust stays for bringing our feet safely home.
+choice Give the little finger a rest. -> hub
+choice Go back past the home crust. -> bye
+
+
+adolescent
+line @1 greet : Your feet will fit nicely beyond my lunch cloth.
+line @1 greet.return : Yes, I hear you. My map doesn't generally interrupt.
+line @1 farewell.return : I'll keep my own route home in mind.
+line @1 react.news : Let me follow the start of the matter through to the turn.
+scene mapfacts
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to plan long routes on the strength of about three crumbs. Now I take note of the actual turn as well.
+b : Did imagination get you lost? | Are there still crumbs?
+a : Once in a while. I always had enough sense to put the bread away and ask someone walking towards my destination. | Certainly. A growing wolf needs more lunch to get to a proper destination.
+
+scene firstreturn
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : A return time agreed with #self.mother# gives me more freedom to enjoy the outward walk.
+b : Do you always come straight back? | What if you want to go farther?
+a : Straight enough to meet the time. If there's room for another turn I take it with pleasure. | I'd choose a day when I could tell the longer plan before setting out.
+
+scene windroad
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Through the salt weather I choose the side with an inland wall if I have the choice.
+b : Does a wall make such a difference? | Doesn't it spoil the view?
+a : It breaks the sharp part of the wind. I can walk hungry without walking half blind as well. | For part of the way, yes. The gap where it ends becomes a rather better view for the wait.

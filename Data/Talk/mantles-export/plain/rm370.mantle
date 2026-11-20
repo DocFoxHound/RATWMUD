@@ -1,0 +1,264 @@
+# rm370, the three-turn storyteller (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm370
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_bettany_slagridge
+written_by codex
+title the three-turn storyteller
+fits stage=adult|old
+prefers honesty=plain talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk notches_a_butter_paddle_for_three_favourite_stories
+likes pickled_herring dancing old_maps summer_evenings
+dislikes early_bells flies
+fears a_fly_under_the_cloth losing_the_first_word
+hopes a_summer_table_with_room_for_a_dance_afterwards
+topics memories +0.5 work +0.4 food +0.3 pastimes +0.3 gossip -0.2
+styles comfort=steady gossip=careful refuse=plain tease=none
+marks oath saying
+persona #self.first# rubs one of three notches in a paddle to bring back a story, takes an exact view of a butter pat, and treasures a little extra daylight for the walk home.
+
+words
+oath! = Three nicks and a knot | Paddle and parchment
+saying! = A story needs a clean edge | Better a fresh turn than a fourth notch
+paddle = my smooth little paddle | a flat stick of pear wood
+thirdnick = the third notch | the deepest nick
+firstnick = my first shallow notch | the faint first cut
+buttercurl = a curl of yellow butter | a shave from the golden edge
+saltpinch = a pinch of fine salt | salt no coarser than flour
+fishlid = a vinegar-scented lid | the stopper from a pickle pot
+mapfold = an old map fold | a crease where the road turns
+danceheel = the dancing heel | a heel which keeps good time
+strawcover = a light woven cover | a close plait of reeds
+herringtail = the tapered tail piece | a narrow sliver of herring
+longdusk = the long summer dusk | that lingering summer light
+
+any
+opinion @1 dole for 2 : I'd measure a free portion as carefully as a sold one. A hungry wolf notices short weight.
+opinion @1 church for 1 : A welcome in a cold hour is a prayer with a sound roof on it.
+opinion @1 houses against 1 : The folk inside a great House might learn something by carrying their own breakfast upstairs.
+opinion @1 merchants mixed 0 : A price for the whole pat is useful. So is admitting some pockets can only buy a slice.
+opinion @1 festivals for 1 : One tune in the late light can repay a day's hard churning.
+opinion @1 strangers mixed 0 : I'd set a stranger a plate. Private stories come out somewhat later.
+opinion @1 city for 1 : Ridgemere is large enough for three favourite stories to last an astonishing time.
+
+grown
+line @1 greet : Come in earshot of a decent beginning.
+line @2 greet [pair.band=strangers] : A first meeting gets the short version.
+line @3 greet [here.time=dawn] : Morning. The first notch hasn't warmed up yet.
+line @4 greet [here.time=dusk|night] : Day's nearly folded back on itself.
+line @1 greet.return : I can put a greeting in between two stories.
+line @2 greet.return [pair.band=friends|family] : Ah, company who knows when to join the chorus.
+line @3 greet.return [self.working=yes] : There's a rhythm to this. I can talk between turns.
+line @4 greet.return [here.time=dusk|night] : The words are easier to catch now the street's gone dim.
+line @1 kin.open [pair.kin!=no] : Kin may choose which version to hear.
+line @1 again.open : About time to pick the thread up by the second notch.
+line @1 hail [pair.band=friends] : Here, good company! A little voice to spare.
+line @1 farewell : Take an unhurried ending away with you.
+line @1 farewell.return : And mind you keep a piece of the evening for yourself.
+line @1 react.news : I'm listening from the very first syllable.
+line @1 react.news.new : That one's fresh even to my worn old ears.
+line @1 react.news.known : I've tucked that bit away once today.
+line @1 react.news.doubt : The end of that account doesn't fit the beginning.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Poor news. No pleasant turn to put on it either.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That belongs with the stories one keeps for a good evening.
+line @1 ask.how : Are the hours turning fairly for you?
+line @1 answer.how : Still keeping time without consulting the bells.
+line @1 thank : I'll mark that beside my better recollections.
+line @1 deflect_thanks : It took a light touch and a spare minute.
+line @1 sympathise : I'll sit beside you through the difficult middle bit.
+line @1 reassure : Take another breath. Stories don't need to hurry.
+line @1 decline : I have to finish what I've set my paw to first.
+line @1 accept_decline : I'd sooner hear your honest refusal than an elaborate excuse.
+line @1 preclose : Best catch the road while there is some colour left in it.
+line @1 accept_preclose : Then that's a fitting place to put the cover on.
+scene three_cuts
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #paddle.capitalize# carries three tiny cuts. | I'll rub #thirdnick# when I want a different ending.
+b : Why stop at three? | Does the story change itself?
+a : Because I know three stories worth the cleaning of this stick. | No. It reminds me to let somebody else tell that part.
+
+scene cream_sound
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : A change in the sound's worth a look under the churn lid. | A butter pat takes a light last touch.
+b : What change? | Not a hard press?
+a : A slap where there was only a swish. Both paws can hear it. | The shaping's done then. I'm only taking the working marks off it.
+
+scene three_versions
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I tell one tale about a shoe and two about things that wouldn't stay where I'd put them. | Don't interrupt my second story at the fourth line.
+b : Which tale's longest? | Why that line?
+a : The shoe by a mile. It had further to come home. | The third and fourth are nearly alike. I've twice spent an evening trying to get past them.
+
+scene herring_end
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : Leave me #herringtail#. Has more bite than a fat middle slice. | Herring needs a separate pot from butter, for the good of both.
+b : Skin or no skin? | Which comes off worse?
+a : Skin, and enough vinegar to blink at once. | Depends whether you ordered bread or fish for dinner.
+
+scene map_wrong
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : An old map of a crooked road can be right twice in the wrong places. | #mapfold.capitalize# puts a road where I never saw a gate.
+b : At either end? | Would you follow it?
+a : Exactly. You do a deal of walking to prove the point. | To see which has moved, the gate or the ink.
+
+scene dancing_turn
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I like a dance that brings everybody back to the corner they started from. | I'd have the longest sweep round a turning dance.
+b : So you can't get lost? | More room there?
+a : So you can see what else has happened in the corner since you left. | A longer journey on the same bit of music.
+
+scene long_after
+when topic=season here.season=summer
+does tell.self / ask.detail / answer.detail
+a : When #longdusk# arrives I walk home by some bit I don't have to walk. | A summer light can turn a pat almost white at the edge.
+b : Just to stay out? | Doesn't that spoil the good colour?
+a : To get a look at a street when I don't need anything from it. | Carry it inside. All the yellow comes back in an instant.
+
+scene early_crack
+when topic=smalltalk here.time=dawn
+does tell.complaint / react.self / assess
+a : I'd like a bell with eyes for the sky and a sense of occasion. | Three rings before a decent glimmer and I've forgotten which foot comes first.
+b : What if nobody woke? | I can wait.
+a : Then it could have the satisfaction of being needed. | Thanks. They usually sort it out between them.
+
+scene cloth_mesh
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : I weave the edge of #strawcover# rather closer than the middle. | Waving at flies makes everybody else think you're pleased to see them.
+b : Why the edge? | Are you pleased?
+a : A fly walks round a rim as if looking for its own front door. | Better pleased to see the visitors when the flies are gone.
+
+scene even_portion
+when topic=prices|times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : I cut smaller pats in a lean week. They get the same careful corners. | There's comfort in a tidy portion even on a cramped plate.
+b : Does that make them last longer? | Where do your uneven bits go?
+a : Enough to let a small purchaser go away pleased as a large one. | Cook with them. Most things have a proper place in supper.
+
+scene single_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put #self.friend# right where a story carries warmest and leave the worst draft near me. | I'd send #self.friend# the end piece of a map that showed a road home.
+b : Don't you mind a draft? | Only the end piece?
+a : Not when I've got a decent reason to talk through it. | I'd send the rest as soon as I found how to fold it small.
+
+scene unclaimed_ink
+when topic=memories|home
+does tell.self / ask.detail / answer.detail
+a : A single sheet once sat all winter waiting for the words I'd meant it to carry. | I'd rather put a letter away than fetch a loud answer out of silence.
+b : A story? | Is silence always an answer?
+a : Something rather shorter than a story and far harder to write. | No. But I needn't keep asking the same closed door.
+
+scene cart_cream
+when topic=times world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : If flour is late the dough has to wait. Butter takes no instruction from a road. | A late cart makes a table full of people look towards whichever road stays empty.
+b : How can you tend to both? | Why the wrong end?
+a : I attend to the one that won't wait and save a clean plate for the other. | Every empty road looks wrong when there's a cart expected.
+
+scene new_table
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I like a visitor who can supply one unfamiliar line of a familiar song. | A newcomer needn't sit through the whole set of tales straight off.
+b : You don't lose the rhythm? | Just two at a sitting?
+a : Puts me onto a new foot. I enjoy that in company. | One and an invitation to come again by choice.
+
+scene close_seal
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A name somebody put to a story made a suspiciously tidy fit. | I've saved the beginning of that rumour and discarded the rest.
+b : Doesn't that make it true? | What beginning?
+a : A well-cut lid doesn't tell you what's in the jar. | That somebody was speaking. No mistake about that much.
+
+scene straight_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news_from.capitalize# figures in the account. #world.news#. | #world.news#. The telling started in #world.news_from#.
+b : Do you tell it the same each time? | Where do your three notches fit in?
+a : Precisely the same. It isn't one of my own stories. | Elsewhere. I keep the day's news clear of my favourite flourishes.
+
+scene late_tune
+when topic=weather|pastimes here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : Evening gives an ordinary clopping hoof a little grace. | I listen for the small noises work leaves behind.
+b : You hear a dance in it? | An empty yard can make noises?
+a : Half a dance. Naturally the hoof is going about its own business. | A door settles. A pot cools. Plenty to mark time with.
+
+scene map_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I should like a table big enough to dance round with a map spread over it. | Let me keep the last warm hour of the day for my own route.
+b : Supper on the map? | To somewhere particular?
+a : No. Supper under a cover till the road and the dance are settled. | A favourite route needn't go anywhere in particular.
+
+story paddle_shoe [topic=memories]
+  : I once left a shoe with loose stitching to dry by the back step.
+  : Spent half the evening looking for the paddle I'd laid across it to hold the seam flat.
+  b : You had been holding the other shoe?
+  : Better still. Walked a good part of the yard on a piece of perfectly serviceable kitchen wood.
+
+story round_walk [topic=pastimes|memories]
+  : An old map once led me round a circle that looked like three different lanes.
+  : A loose tile at each corner seemed like a remarkable local custom.
+  b : The same tile again?
+  : Three times. I marked it on the paper. Only proper landmark on the whole blessed thing.
+
+story cloth_turn [topic=food|memories]
+  : I danced a pot of herring clear off a wobbly table with a well-timed step.
+  : A folded cloth under the table caught the pot.
+  b : Had you set it there especially?
+  : No, but I have put one there ever since. It's improved my enjoyment of dancing no end.
+
+rule @grease_smooth
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Turn the edge under and smooth it away from the light.
+
+rule @three_turn
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Third notch. Pleasant time for a tale to come round.
+
+rule @flies_off
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Mesh flat to the rim, all round.
+
+rule @music_lane
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say That wheel's very nearly in time with my feet.
+
+dlg @1 resident.hub : I'm between two turns. The words will fit here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I'll spare you the beginning you already know.
+dlg @3 resident.hub [here.time=night] : The hour's getting thin. My ears are still fairly good.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : From that side of the table we can speak without rubbing elbows.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. A light hand is useful at the finish.
+dlg @2 resident.job : I give a job the turning it needs, even if I've turned it twice before.
+dlg @1 resident.news [world.news] : I'm passing this on from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : You'll get my own tales in full. Other wolves' affairs I'll generally leave covered.
+dlg @1 resident.bye : Let the story drop into mind when the road needs shortening.
+graft resident.hub
+choice Why is that third notch the deepest? -> last_nick
+node last_nick
+say That's the tale I have most difficulty bringing to a close. I rub the notch until the right words turn up.
+choice How do you recognise the right words? -> last_word
+choice I'll let the third tale wait. -> hub
+node last_word
+say They make me put the stick down of my own accord. Anything that leaves me talking with the stick still in my paw hasn't finished the business.
+choice A sensible test of an ending. -> hub
+choice Here is a place to put it down. -> bye

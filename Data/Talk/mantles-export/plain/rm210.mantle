@@ -1,0 +1,262 @@
+# rm210, the bell notch carver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm210
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_magda_rustham
+written_by codex
+title the bell notch carver
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk cuts_a_walking_map_in_notches_timed_by_bells
+likes plum_tart whittling old_maps first_warm_day
+dislikes waiting gulls
+fears roads_rubbed_out cold_stoops
+hopes a_map_read_by_touch a_peaceful_landing
+topics travel +0.4 pastimes +0.4 memories +0.3 family +0.2 quarrel -0.3
+styles comfort=quiet gossip=slow refuse=settled tease=none
+marks oath saying
+persona #self.first# measures a walk in chapel strokes, whittles directions in spare sticks and takes the long way whenever the company looks promising.
+
+words
+oath! = Twist my hazel | Chips in the bell rope
+saying! = Near isn't measured from the same doorstep twice | A road can outlive every sign
+stickmap = my pocket route | the little notched stick
+nick = a shallow nick | a mark just deep enough to feel
+sliver = one thin shaving | a curl of pale wood
+thumbmap = the road under my thumb | my little road in relief
+rim = the tart's burnt lip | the corner piece
+hingepin = a polished hinge pin | the pin in the hinge
+turnoff = a turn off the road | an easy turning
+gullfoot = a splay of webbed toes | that ridiculous webbed foot
+chime = a stroke of brass | a deep bell note
+lostlane = an unfinished lane | a road that stops at paper
+nooning = a slow midday pause | a seat at midday
+
+any
+opinion @1 church for 2 : A bell can gather a crowd without demanding a single word from the grief in it.
+opinion @2 houses for 1 : A yard that pays steady wages has my vote long before a grand name does.
+opinion @3 newcomers mixed 1 : I'm curious about the place a stranger calls the beginning of a road. I mind being told that mine begins there too.
+opinion @4 road against 1 : A road that eats a wheel is expensive whatever the toll board says.
+opinion @5 strangers for 2 : Show me where your coat hem picked up those seeds and you've given me a place I can picture.
+opinion @6 times for 1 : A dry sill, a heel of pastry and somebody due home. There's prosperity enough for one evening.
+opinion @7 city for 1 : There are streets here I can follow in my sleep and corners that'll still surprise me on waking.
+
+grown
+line @1 greet [pair.band=strangers] : There's a spot beside me if you're going slowly. | A new step on the stones. Welcome.
+line @2 greet [here.time=dawn] : Early feet. The road's yours a while yet. | Dawn makes a grand clean sheet of the street.
+line @3 greet [here.time=dusk|night] : Evening. Pick a seat with a back to it. | Glad of a familiar shape at this hour.
+line @4 greet.return : I heard you coming and I'm glad I did. | A welcome's a thing worth stopping for.
+line @5 greet.return [pair.band=friends|family] : Come alongside, you know my pace. | Saving a little wood for you to cut.
+line @6 greet.return [self.working=yes] : Room enough beyond this hinge to take you in. | Call through if you need a second hearing.
+line @7 kin.open [pair.kin!=no] : Here, our two shadows fit alongside. | Give those travelling feet a family rest.
+line @8 again.open : Another turn brought you back. Good. | My thumb hadn't reached the next notch yet.
+line @9 hail [pair.band=friends] : Wave when the road lets you! | Familiar coat ahead, hold up a breath!
+line @10 farewell : Give the far end my regards. | Walk whatever length pleases you.
+line @11 farewell.return : So long across the paving. | There's another visit marked for later.
+line @12 react.news : Set that on the map for me. Who's nearest to it? | I'll give that a proper hearing.
+line @13 react.news.new : That belongs in the blank space on my map. | There's a corner of things I hadn't seen.
+line @14 react.news.known : Same account reached this sill. It has kept its shape. | I heard the bones; that's the flesh.
+line @15 react.news.doubt : The distance in that story seems to change with the telling. | I'd trust a coat wet from the actual road.
+line @16 react.news.sorrow [topic.kind=loss|death|assault] : I'd sit beside that sorrow till company came. | No direction I could give for that. Just company.
+line @17 react.news.glad [topic.kind=marriage|birth] : That's a fine reason for setting out with a parcel. | A pleased household worth a visit.
+line @18 answer.how : Steady with an itch to go round one more corner. | Quite content, provided the door opens once in a while.
+line @19 ask.how : Has the road treated your soles kindly? | Are you wanting a seat or a little company walking?
+line @20 decline : I'd sooner keep this bit of the afternoon empty. | Leave me out today; I've promised myself a quiet hour.
+line @21 accept_decline : Fair journey on your own terms. | I'll put that errand aside for now.
+line @22 thank : You've spared me a needless turn. | Thank you for waiting out my pause.
+line @23 deflect_thanks : There was space by me anyway. | It's a small thing to point a direction.
+line @24 preclose : Time I gave these feet a change of stones. | That leaves me exactly one turn to go.
+line @25 accept_preclose : Off while the notion's with you. | I know the pull of an unfinished walk.
+line @26 sympathise : Sit a bit. The road can wait on both of us. | I can spare a whole bell's length for this.
+line @27 ack : My thumb's on it. | That much follows.
+scene stick_scale
+when topic=pastimes|travel
+does tell.self / ask.detail / answer.detail
+a : #stickmap.capitalize# begins at the fat end. | My map has no writing and my pocket makes a perfectly good reading room.
+b : Why start there? | How do I read a corner?
+a : That's where I set out with a whole day's strength. | Roll it. The notch points which way your feet should turn.
+
+scene bells_distance
+when topic=travel|day
+does tell.self / react.self / assess
+a : I count a walk by #chime#, which is no use to a wolf that trots. | There are roads that feel longer coming home.
+b : What about a wolf who runs? | Because you're tired?
+a : Runs clean off my stick before I've cut the first mark. | Because I've got something waiting. I get impatient with the corners.
+
+scene missing_bridge
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My favourite map carries a bridge drawn over solid ground. | I keep the wrong maps. A correct one feels finished.
+b : Did the water move? | What good is a wrong lane?
+a : Maybe. Or the pen slipped. It's having both answers that I like. | Makes me look up before I turn.
+
+scene grip_smooth
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What would you use for a handle that fits a stiff paw? | I'm wondering whether to smooth #nick# away.
+b : An extra thumb's width of wood. | Does it catch your skin?
+a : That's my thinking. A grip should ask very little. | Only my attention. In that case it can stay.
+
+scene three_sounds
+when topic=smalltalk
+does tell.self / react.self / assess
+a : A door gives three bits of news: the step, the latch, the breath coming in. | Somebody longing to leave has quite a different step.
+b : Which news do you trust? | Could you imitate it?
+a : The breath. A wolf can make a latch sound any way at all. | As though the heel has gone ahead of the toes.
+
+scene plum_edge
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : Leave me #rim#. It keeps its shape on a walk. | There's a trick to pocketing a slice of tart.
+b : Doesn't the fruit fall out? | Fold it in paper?
+a : I set out with an edge and usually arrive with only the crumbs. | Fold it in pastry. Then eat it while the pocket's still clean.
+
+scene gull_print
+when topic=animals self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull walked over my scrap map once and put a harbour on the hill. | There isn't a single direction a gull won't give loudly.
+b : A webbed cartographer? | You take advice from birds?
+a : An ambitious one. Added three little islands with the other foot. | Only on which windows to shut.
+
+scene door_day
+when topic=work self.job=merchant self.working=yes
+does tell.self / react.self / assess
+a : The first thing I learn on a doorstep is which way a basket swings. | I can hold a door with my back without ever looking put upon.
+b : So you can duck? | You've practised a pleasant expression?
+a : So I can move the stool before it gets a wicker beard. | No. I'm looking outwards. There's usually something worth the looking.
+
+scene north_turn
+when topic=land|lore self.quarter=commons here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : I'm marking a walk through the Commons with nowhere to buy anything on it. | I should like a little map made of the places one can sit.
+b : Is there such a walk? | Even the low walls?
+a : Possibly not. I keep coming home with pastry. | Especially those. A proper bench might be occupied.
+
+scene warm_sleeve
+when topic=season here.season=spring
+does tell.feeling / sympathise / assess
+a : That first mild day I leave one sleeve rolled, to make the feeling last. | In spring I start carrying a larger stick.
+b : Why only one? | For longer walks?
+a : So the other arm can discover it all over again. | More places to pause. Cold days don't tempt me to linger over a mark.
+
+scene patient_friend
+when topic=friends self.friend
+does tell.self / react.self / assess
+a : With #self.friend# I'd go the same little circuit twice for the talk alone. | I want no shortcuts on a visit to #self.friend#.
+b : Wouldn't the view be the same? | You enjoy getting there so much?
+a : Not if you look up while the other wolf speaks. | Looking forward to a visit is a small visit in itself.
+
+scene child_route
+when topic=family self.parent=yes
+does tell.feeling / sympathise / assess
+a : I'd like to leave #self.child# a route with all my favourite resting places on it. | There's room on this stick for a new mark from #self.child#.
+b : What about your favourite destinations? | Will you copy it?
+a : Any child of mine can pick a destination without my help. | Only if I'm asked. I should like to be surprised by the turning.
+
+scene raided_road
+when topic=caravan world.wagons=raided
+does tell.news / react.news / assess
+a : If a wagon's been robbed, send the news back down the road as well as ahead. | I don't like these reports of raided wagons.
+b : Wouldn't everybody hear soon enough? | Would you turn back?
+a : Not the one who's just set out. That's the one I worry for. | I'd wait beside somebody. Fright makes a poor travelling companion on its own.
+
+scene mislaid_mark
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's #nick# I no longer recognise. I won't carve over it. | I found a route in a drawer this week that I could walk by touch.
+b : What if it means nothing? | Could you say where it went?
+a : Then it makes a fine reminder that not all things have to. | Not till my feet joined in. Funny what's stored in an ankle.
+
+scene map_seller
+when topic=prices|pastimes
+does give.opinion / disagree / concede
+a : I'd give more for a map that came with a little grease on it. | A tidy map worries me.
+b : Isn't dirt a fault? | It's easier on the eye.
+a : Shows somebody thought it worth taking out at supper. | True. I prefer evidence of an actual outing.
+
+scene story_of_news
+when topic=news world.news
+does tell.news / react.news / assess
+a : This is what reached me: #world.news#. | I can place this much: #world.news_from# sent word. #world.news.capitalize#.
+b : Will you carry it further? | Do you know the rest?
+a : To the next doorstep where somebody's listening. | I'd leave a patch of paper blank there.
+
+scene wood_choice
+when topic=pastimes|smalltalk self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : A scrap with a knot gives me a destination before I've even started cutting. | I save #sliver# when it comes away tightly curled.
+b : What destination? | What for?
+a : Somewhere the path has to go round. That's a destination in my book. | To hold a scrap of paper shut. Saves a bit of string.
+
+scene soft_part
+when topic=health self.stage=old
+does tell.self / react.self / assess
+a : I sit on the soft part of a bell note now. | My longest walks start with an excellent sit.
+b : Where is the soft part? | Why rest first?
+a : Right at the end, when you can feel the quiet return. | Then I'm in no hurry to find another one.
+
+story false_turn [topic=memories self.age>=35]
+  : A map once sent me straight into a yard full of table linen.
+  : I bowed to three hanging sheets before I found a wolf behind them.
+  b : Did you ever find the right street?
+  : Just out the other side. For once I had directions immaculately laundered.
+
+story first_wood [topic=pastimes|memories]
+  : I started with a scrap too short to hold an entire journey. Halfway through a village my thumb came off the end.
+  : It was that or shorten the village, so I stopped.
+  ask : Would that shortfall have spoiled it for you?
+  b : Seems quite long enough for half an outing.
+  : Exactly. Still have the thing, and a second scrap for coming back.
+
+story slow_clock [topic=lore self.age>=45]
+  : I once spent an afternoon watching a clock being carried to be mended. We made one street in an hour.
+  : At the shop it struck. The bearers both folded up laughing on the kerbstones.
+  b : Had it mended itself?
+  : No. It was striking breakfast. Slowest journey I ever took by its reckoning.
+
+rule @sill
+when concept=bark self.job=merchant working=yes
+does aside
+cooldown 8h
+say Swing the basket clear of this sill. | Easy passage in both directions.
+
+rule @cutting
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say There's the next fork in the wood. | That's a whole bend off in one curl.
+
+rule @turning
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Walk past your turning once and discover a street. | These stones will wait if I sit.
+
+rule @springrest
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say Time to find a perch with a little warmth in it. | One more turn before the day's spent.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Coming through or coming to see me? Room for either.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, take the seat that doesn't rock. I know its ways.
+dlg @3 resident.hub [here.time=night] : Just time enough for a doorstep word before turning in.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'd like the width of a street between us. Speak from there.
+dlg @5 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I've learnt a great deal about comings and goings.
+dlg @6 resident.job : Whatever the work, I like a spot where I can see a bit of road.
+dlg @7 resident.news [world.event_words] : Put a mark against #world.event_words#. That's what folk here have been hearing.
+dlg @8 resident.bye : Go whichever way offers the nicest stretch of quiet.
+graft resident.hub
+choice Can you read those scratches without looking? -> roadthumb
+node roadthumb
+say Try it. Feel the difference between the square cut for a turning and the round hole where I sat awhile.
+choice What's the long smooth bit? -> smoothmile
+choice Let's talk of something else. -> hub
+node smoothmile
+say A road so pleasant I forgot I meant to measure it. Couldn't bring myself to add a mark afterwards.
+choice I'll remember that road. -> hub
+choice A pleasant walk to you. -> bye

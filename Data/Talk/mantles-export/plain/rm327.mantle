@@ -1,0 +1,373 @@
+# rm327, the spoon fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm327
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_maren_brineford
+written_by codex
+title the spoon fleet
+fits stage=young|adolescent|adult|old
+prefers talk=plain drive=ambitious
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk carves_spoons_whose_bowls_float_like_little_boats
+likes oatcakes whittling festival_bells warm_rain
+dislikes drizzle rats
+fears a_split_across_the_grain a_private_matter_on_public_tongues
+hopes a_spoon_that_rides_a_whole_wave a_chest_of_sound_wood
+topics pastimes +0.5 land +0.4 weather +0.3
+styles comfort=practical gossip=discreet refuse=firm tease=none
+marks oath saying
+persona #self.first# carves little spoons to float upright, tests each bowl in a washbasin, and dislikes anybody mistaking patience with wood for patience with interruptions.
+
+words
+oath! = Split spoon | Knots in my soup
+saying! = Float it before you praise it | Hollow at a promise's pace
+spoonfleet = my basin fleet | a row of floating scoops
+waterboat = a broad spoon hull | my newest floating spoon
+shavinghook = a curled shaving | a bent chip
+notchline = a shallow witness mark | a scratched waterline
+testpenny = a brass washer | my little round weight
+rindboard = the serving board | the pale bread board
+butterwell = a spoonful's hollow | a small round dip
+floatend = a blunt wooden bow | a square handle end
+backedge = the bowl's outer curve | the spoon's round back
+ratring = a tin collar | a close metal rim
+
+any
+opinion @1 city for 2 : I can watch hulls passing and try the same shapes on my spoon. No other schoolroom looks half so wide.
+opinion @1 houses against 1 : I'd like to earn a fine bench by what I can carve. A crest stamped on the bench shouldn't decide who sits there.
+opinion @1 festivals mixed 1 : I love the bells and dislike the shove around the front to see who swung first.
+opinion @1 road mixed 0 : Some timber comes off a cart sound. Some gets wet on the way and splits while I'm looking at it. I'd ask about the load.
+opinion @1 merchants mixed 0 : I'd pay for good grain and take my own look at the bad stuff. Fancy wrapping is wasted on a spoon blank.
+
+grown
+line @1 greet : I've set the spoon down. You have a clear hearing.
+line @1 greet.return : A civil greeting reaches me over any basin.
+line @1 farewell : May your next day float a trifle easier.
+line @1 farewell.return : I'll bring this little fleet indoors behind you.
+line @1 react.news : Let me hear what held up under a second look.
+line @1 thank : A good turn from you. I felt the difference.
+line @1 decline : I'd sooner honour the silence somebody chose.
+scene misshape
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A crooked spoon of mine turned into the finest flour scoop I've kept. | I remember being angry with a knot underneath a spoon handle.
+b : What saved it? | Did the knot come out?
+a : The crooked bit rested on a jar rim. Somebody should have told me a mistake could earn its supper. | It became the rest for a thumb. I'd hold on to a knot in that place deliberately now.
+
+scene drywood
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I leave newly cut wood in shade till the ends settle. | A wet blank will change its mind as it dries.
+b : How do you judge the ends? | Which piece changes most?
+a : A split opens up like a narrow mouth. I wait till it's quite finished talking before I start. | A flat bowl with one thick side. The heavy side keeps its wet and tips the rest askew.
+
+scene knifecheck
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A worn grip asks me to pause long before a worn edge does. | I shake my wrist free after each group of cuts.
+b : Isn't an edge more dangerous? | Does that improve the work?
+a : If the handle slips the finest edge I own won't know which way I'd meant the cut to go. | It improves the wolf doing the work, which generally comes to the same thing.
+
+scene hottea
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A wooden spoon doesn't ask for a mitten after it's stood in hot tea. | I leave one long spoon by the kettle.
+b : Does it take up the taste? | Is that one for stirring?
+a : Some. A stirring spoon for cider oughtn't go straight into a broth. | Yes. The handle should reach beyond the steam before the paw has to hold it.
+
+scene housecorner
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : My testing basin keeps its own corner near a door. | I like my simple tools close to the light.
+b : What makes the corner right? | And where does the basin live?
+a : I can carry it outside without stepping over anybody's meal. That's consideration enough. | Off to one side. A nicely sharpened edge doesn't need the mud off my boots for company.
+
+scene settleday
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I do one little piece of work between deciding the day is spoiled and saying so. | A day can turn on a very small scrap of wood.
+b : One shaving can help? | How small a scrap?
+a : Sometimes I can finish a spoon. Sometimes I just get a breath before using a harsh word. Either's an improvement. | Enough for two careful cuts instead of one hasty answer.
+
+scene oldgame
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I still dream a spoon fleet all riding the same wave. | An unexpected current figures in my dreams of a quiet harbour.
+b : What if one ship capsizes? | Is it the tide?
+a : Waking up, I try to recall which handle looked too heavy. | It's the current from my enormous dream spoon stirring up all that nice orderly water.
+
+scene freshcut
+when topic=land self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : The Wharf has great quantities of wood nobody sees when looking at the ships. | I'd recognise the Wharf just by all the different edge shapes in the timber.
+b : Where do you look? | What shapes?
+a : At the seating blocks, cleats and chocks. Fine short lessons for a worker with a small blank. | A round worn edge beside a freshly broken sharp one. Work leaves quite a readable hand.
+
+scene unpanicked
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : Some private things wear a better face when left alone. | I'd hear an account twice before I troubled somebody for a name.
+b : Isn't that letting the story spread? | Why hear it again?
+a : I needn't carry it myself. Sitting on gossip is easier than sitting on a splinter. | To find out if there's anything to do besides repeat it. There's seldom a good reason for that.
+
+scene shortgear
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Cheap tools can earn their keep if a worker knows the limits. | I don't choose an edge by the polish on a handle.
+b : Can a blunt tool earn anything? | What would you examine first?
+a : A blunt bit of hard steel will take a new edge. Rotten wood won't grow sound because it cost so little. | Where the steel meets the grip. Bright polish under the lamp can't fill a missing sliver.
+
+scene weightfill
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : When I balance a spoon I fill it with water, leave a moment and look again. | A good basin gives a wooden hull a chance to settle.
+b : Why wait? | Must the water be still?
+a : Because my paw can leave a ripple. I want the answer from the spoon once the ripple goes. | For the first try. I like to earn a calm-water reading before making waves.
+
+scene givepiece
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : A spoon for #self.mother# ought to have an ordinary useful life. | I'd give #self.mother# whichever spoon fit easiest in the hand.
+b : Wouldn't you want it kept safe? | Even before the prettiest?
+a : Safe in the kitchen drawer, getting used with the others. It was meant to take part in a meal. | I'd save the fancy one for a shelf and call that one a different sort of work.
+
+
+young
+line @1 greet : Come see the spoon standing up in the water.
+line @1 greet.return : Hullo. Only my paws are busy.
+line @1 farewell.return : I'll mind the little boat till next time.
+line @1 react.news : Tell me and I'll hold the spoon still.
+scene smallboat
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put a spoon in my bowl of water like a boat. | My littlest spoon goes round and round.
+b : Where's it sailing? | Is the water moving it?
+a : Up to the edge for one crumb and then back to my nose. | My paw's pushing. I only said it goes, I didn't say it goes alone.
+
+scene oatbits
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I like oat crumbs that won't fit through the holes in a cloth. | I gave my little boat some cake.
+b : Do you keep them? | Did it eat it?
+a : Till I've balanced some butter on top. | No. I ate its share when the boat made it home.
+
+scene puprains
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain taps all across the bowl of my spoon. | I want a drop on every spoon.
+b : Can you hear it? | Even the big one?
+a : Put your ear beside mine. The tiny one does have a very tiny noise. | Two on that one, because it has a bigger mouth.
+
+
+adolescent
+line @1 greet : I'll move the basin to leave room for you beside it.
+line @2 greet [pair.band=strangers] : You may watch. The tools stay on my side.
+line @3 greet [here.time=dawn] : Light's reached my first pencil mark. Welcome.
+line @4 greet [here.time=dusk|night] : There's light enough left for another caller.
+line @5 greet [self.working=yes] : I'm setting this sharp bit down first.
+line @1 kin.open [pair.kin!=no] : Come near. You may try the boat after me.
+line @1 again.open : I got another shaving off before you came round.
+line @1 greet.return : I heard you. Even a basinful of slapping water couldn't bury your greeting.
+line @2 greet.return [pair.band=friends|family] : A familiar voice doesn't need to compete with the bell.
+line @3 greet.return [self.working=yes] : I'm occupied, but you've reached my ear.
+line @4 greet.return [here.time=dusk|night] : You've reached the ear I wasn't sleeping on.
+line @1 farewell : May your feet find a sound board.
+line @1 farewell.return : I'm staying till the little boat settles.
+line @1 react.news : Give the thing a chance to lie level in my mind.
+line @1 react.news.new : I hadn't cut a space for that yet.
+line @1 react.news.known : That bit keeps coming up the same way round.
+line @1 react.news.doubt : Who saw what it carried the first time?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd set down my work and give a hand with supper.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll cut a brighter curl for that.
+line @1 ask.how : Got an hour you'd like to spend on something of your own?
+line @1 answer.how : Making very small headway, which is how I choose to make it.
+line @1 sympathise : It hurts the more for being yours alone to see.
+line @1 reassure : Keep your seat. I can move the load back a little.
+line @1 decline : No. I'd only be carving a hole through somebody's privacy.
+line @1 accept_decline : Nobody will hear me splashing about in your business.
+line @1 thank : You steadied that far end beyond my reach.
+line @1 deflect_thanks : Bring me the next good offcut you happen across.
+line @1 preclose : My good light's sliding across the wall.
+line @1 accept_preclose : I'll keep your place if you want it later.
+line @1 ack : Even waterline.
+scene hull
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I float a new spoon before I eat with it. | This spoon has had more sea trials than suppers.
+b : Do you expect it to sink? | What goes in the bowl for a test?
+a : To turn over, if the handle's wrong. I can eat with a failure after it's dried. | #testpenny#. If the spoon can hold that without listing I try a little more.
+
+scene basin
+when topic=land self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : A spoon's wake looks grand curling off a washbasin wall. | I study hull shapes above the Wharf waterline.
+b : Does it travel far? | Do you draw them?
+a : As far as the opposite side. For a spoon that's a perfectly respectable passage. | In my head, then on offcuts. A flattish spoon can take a surprising bit of weight.
+
+scene sharpen
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I run the wet stone flat over the worn patch of the edge. | When the edge drags I stop before I make a brave mess.
+b : What tells you it's worn? | Can't you just press harder?
+a : A shaving that's thick at one side. Good wood doesn't deserve a lopsided spoon. | Yes. Then the knot gives way and I take out my finest bit of spoon bowl.
+
+scene oatcake
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : My smallest spoon is the measure for butter on an oatcake. | I scrape a little hollow in a warm oatcake.
+b : Is that enough butter? | Won't the cake break?
+a : If not, I've the spoon for another trip. Very useful bit of design. | With practice it only bends. Then there's a pool in the middle and a crisp edge to dip.
+
+scene bell
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I count strokes of the festival bell while I rub a spoon smooth. | I put the tools away when I hear the bell start up.
+b : Do the strokes help? | To go to the festival?
+a : A little. If the bell has done all its work before I finish, I feel in better company. | Sometimes. Mostly because the next great noise might make my thumb jump.
+
+scene wetwind
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : A soft warm rain can fill my test basin without my lifting it. | I prefer rain I can actually see reach the wood.
+b : Does it drown your fleet? | Does the wood change colour?
+a : The spoons ride up. I go and find them if the basin overflows. | Yes. A dark line all round and there's my waterline, drawn free.
+
+scene drip
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle spoils a dry grip without so much as filling the basin. | A steady wet is more honest than a damp hanging in the air.
+b : Couldn't you collect it in a bigger dish? | More honest how?
+a : Then I'd need a fleet big enough for the dish. I have my limits. | I know when the tools ought to come inside. Drizzle keeps making exceptions.
+
+scene lesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I can sketch two spoon sides before the lesson slate fills. | In a sum I picture one washer in each little bowl.
+b : Are the sides the same? | What if the sum is very big?
+a : If I do it right. I turn the slate upside down to check the second against the first. | Then I've an excuse to carve myself more spoons. The real arithmetic's quicker.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I want to carve a good straight-grained spoon as a gift for #self.mother#. | I practise my best finish for #self.mother#.
+b : Would it have to float? | Can you feel a good finish?
+a : No. But I'd be glad to say it could before I hand it over. | Try the back edge with one pad. If there's a ridge the pad will find it before the eye.
+
+scene antirat
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I keep eaten-out shells away from the clean wood. | I don't leave butter standing on a spoon in the dark.
+b : What have shells to do with spoons? | Would it soak into the wood?
+a : Enough old food and a rat comes sniffing. I'd rather choose which teeth marks go on my work. | Yes. A rat's nose would get some say about where the spoon was in the morning.
+
+scene private
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : What somebody does in a quiet moment needn't go in anybody's mouth. | I've had a perfectly good look and still chosen to forget a thing.
+b : Even if it makes a fine story? | Can you choose to forget?
+a : I'd make my own fine story out of a spoon if I wanted applause that badly. | I can choose not to set it down in words. That's a start.
+
+scene twoends
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I'm trying one spoon with a narrow handle like the tail of a fish. | I leave the ends of the handle until I'm sure of the bowl.
+b : Which end rides high? | Why do the ends last?
+a : The tail has to reach behind just far enough to trim the hull. I'm working out how far. | If it's too narrow the spoon tips. Can't put a lost tip back with a word.
+
+scene steadyfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : My best quiet is the breath before a shaving comes free. | A quiet seat suits me when a hard request has to be made to the Bright One.
+b : What's quiet about that? | To get the words exactly right?
+a : I know where the edge is for that one breath. Nothing else need push in. | To see if I could earn it by doing a bit myself. I'd be ashamed to ask for idle wishes.
+
+scene dreams
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : Once I'd like to launch a spoon wide enough for a cupful of rain. | I dream of a great chest of offcuts with the knot marked on each.
+b : Would you still call it a spoon? | Why have the knot marked?
+a : If I can eat with it. If it grows much beyond my elbow it'll have to call itself something finer. | Then I can start at the interesting part. I'm ambitious about making a good thing of the awkward grain.
+
+scene price
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A twist in the grain can make an ugly stick worth buying. | I'd offer less for a blank split right up the middle.
+b : Wouldn't you want plain straight wood? | Can't you use the halves?
+a : For the first few tries. Then I'd like a shape nobody else could get from a straight stick. | Yes, as little spoons. Half a mouthful is worth half a price when I'm doing the buying.
+
+scene dusk
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I do the smoothing when there's more shadow than shape on the bench. | Even one tiny hollow stands out under a finger.
+b : Why change jobs at dusk? | What if it's rough inside?
+a : Because I can feel a lip with my paw. I won't guess where an edge is from the shadow of it. | Then the paw ought to tell me. If I wanted only to admire it I'd let the lamplight glance off it.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd lend a tester to #self.friend# before I put it on show. | There's space left round my basin for #self.friend#.
+b : What if the test fails? | Will you both be needed?
+a : Then nobody needs to buy a spoon with an unfortunate tendency to stand on its nose. | Two spoons can make quite a swell in a small basin. I want to see mine keep its feet.
+
+story wrongend [topic=memories]
+  : I tested a spoon with an oatcake crumb right in the bowl.
+  : The crumb went soft and rolled forward. The whole boat dived nose first.
+  b : Did you change the bowl?
+  : Changed the cargo. A larger dry crumb stayed put, and I ate the soggy evidence.
+
+story bigbell [topic=festival]
+  : I was rubbing a wooden bowl while a great bell sounded and missed a flaw in the edge.
+  : My thumb found it exactly when the bell stopped ringing. I'd scraped my skin on the rough lip.
+  b : Did it sting?
+  : A bit. The spoon got a finer edge afterwards. I put it away the next time the bells began.
+
+story drymark [topic=pastimes]
+  : I drew a waterline on a spoon, then lowered it into the basin to see how true it was.
+  : The mark melted down the side and left me with a basinful of faint grey water.
+  b : What makes the mark now?
+  : A tiny nick where the water came to. It doesn't go for a swim on its own.
+
+rule @wood
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say Leave a little fibre at the handle. | Test it before trimming the tail.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Basin out from under the lip of the roof! | That's water enough for three spoons.
+
+rule @oat
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Butter in the little hollow, please. | Save me a corner for the test.
+
+rule @rat
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Cloth round the crusts, tight on both corners. | Clean scraps off the bench now.
+
+dlg @1 resident.hub : The basin's settled. I've a moment to spare.
+dlg @2 resident.hub [topic.meeting=known] : Stand by the shallow end again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : You may look from over there. I'd rather the tools kept their places.
+dlg @4 resident.hub [here.time=night] : I work by feel at night. That leaves my ears quite free.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I keep the hard sums beside my drawings.
+dlg @2 resident.job : I'm finding out how much a calm paw can do with a small bit of wood.
+dlg @1 resident.bye : Look for the waterline when you come back.
+graft @testspoon resident.hub
+choice Can I try floating the new spoon? -> testspoon
+node testspoon
+say Put it down bowl first, very lightly. Wait for the wake to reach the basin edge. If the handle goes under water after that, the weight's in the wrong place.
+choice Why not pull a bit off the handle now? -> testspoon_more
+choice Let the ripple pass. -> hub
+node testspoon_more
+say Then we wouldn't know whether we'd needed to do it. A cut's a long way of going back to ask a question. I'll give the spoon its little while.
+choice Let the ripple pass. -> hub
+choice Move away from the basin. -> bye

@@ -1,0 +1,252 @@
+# rm489, the damp deck (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm489
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_corra_ropewell
+written_by codex
+title the damp deck
+fits stage=adult|old
+prefers job=sailor
+traits temper=even talk=quiet warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk slips_paper_scraps_under_a_card_box_to_test_for_damp
+likes crisp_apples cards full_larder misty_dawns
+dislikes drizzle cold_tea
+fears a_last_good_card_curling an_unmarked_wet_board
+hopes a_dry_supper_shelf a_hand_played_out_quietly
+topics weather +0.5 pastimes +0.4 food +0.3
+styles comfort=quiet gossip=discreet refuse=firm tease=dry
+marks oath saying
+persona #self.first# watches a scrap of paper curl before trusting a shelf with the cards and has a private scale of what news is worth.
+
+words
+oath! = Spots on the court cards | Damp under the deal
+saying! = Let scrap paper take the first turn | Curling corners cost the player
+fishpaper = the thin grey square | my practice scrap
+testing = the first little lift | the damp corner rising
+flatcase = my shallow card case | the box with brass corners
+queenred = the red queen | a queen with a crooked crown
+crossmark = a small crossed nib | my discreet ink sign
+appleear = the first crisp snap | the loud white bite
+boatheels = the pale rubbed boards | the worn landing planks
+cratecheek = my side of the crate | the near wooden face
+mugmat = a scrap of old hide | a brown cup mat
+cutberry = a dried red pip | my little red counter
+
+any
+opinion @1 church against 1 : A counsel to bear loss patiently can sound quite different on a pier than from a warm seat.
+opinion @1 city for 1 : I know a place for every hour within these walls, including the hour when I'd prefer my own company.
+opinion @1 festivals for 1 : I enjoy the music one hears while walking away quite as well as the opening tune at the gathering.
+opinion @1 houses against 1 : A house mark can appear on all the cargo and still have very little to say when a family has suffered.
+opinion @1 merchants against 1 : A swept counter may conceal a damp shelf. I turn the parcel over before offering the seller money.
+opinion @1 sump against 1 : I have had sufficient knowledge of wet streets to know when I should prefer a dry return.
+opinion @1 watch against 1 : It would take a good bit more than the sight of a uniform to persuade me that my concern had been heard.
+
+grown
+line @1 greet : There's a clean side of my table for you.
+line @2 greet [pair.band=strangers] : Leave your name until we've found a dry seat.
+line @3 greet [here.time=dusk|night] : Evening suits a quiet hand.
+line @4 greet [here.time=dawn] : You've come with the first grey light.
+line @5 greet [self.working=yes] : Mind the crate's projecting corner.
+line @1 again.open : My table knows the sound of that footfall.
+line @1 kin.open [pair.kin!=no] : You're welcome here by the case's polished edge.
+line @1 greet.return : Your voice carries across a table without effort.
+line @2 greet.return [pair.band=friends|family] : I'd know your greeting under a whole roomful of talk.
+line @1 farewell : Leave the red queen facing in.
+line @1 farewell.return : The way alongside the higher wall looks passable.
+line @1 react.news : Which part of that would you stake a good card on?
+line @1 react.news.new : I've no such mark in my present reckoning.
+line @1 react.news.known : An old hand laid in a new order.
+line @1 react.news.doubt : I'd hesitate to play that account face upwards.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the household space to name its own loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Worth keeping a clean corner for this occasion.
+line @1 answer.how : Quietly employed, with a little patience in reserve.
+line @1 ask.how : Is there a comfortable side to your afternoon?
+line @1 sympathise : Some losses leave a hollow even at a full table.
+line @1 reassure : Rest here while the rest settles for itself.
+line @1 decline : My hands are engaged and neither task would receive a proper share.
+line @1 accept_decline : That errand can wait for a less occupied day.
+line @1 thank : You've kept a private trouble off the table.
+line @1 preclose : My case is waiting to be shut against the damp.
+line @1 ack : Nicely dealt.
+scene curl
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A scrap under the card case tells me whether the shelf's damp.
+b : Does it change colour? | Why use a scrap?
+a : A lifted corner's quite sufficient evidence. | Better a ruined scrap than a permanently recognisable queen.
+
+scene cards
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : I like a deck in which the least interesting card has a sound back.
+b : How would a back become interesting? | Is it really important in a friendly game?
+a : A folded corner can tell a player the face without an invitation. | Particularly then. I should hate to wonder whether my good fortune had offended a friend.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I shall choose an apple for its firmness before looking at the bloom.
+b : Do you squeeze it? | Would you refuse a bruised apple?
+a : A light touch only. Other shoppers deserve apples that haven't yet been tested to destruction. | Not if I meant to cook it that evening. I prefer my noon bite audibly crisp.
+
+scene pier
+when topic=work self.job=sailor self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A crate comes off the ship with the lift, the pause and the landing all accounted for.
+b : Why allow a pause? | Which part belongs to you?
+a : So the receiving pair of arms can settle under the weight. | Whichever side I'm given. I watch for my partner's paws before beginning my end.
+
+scene pantry
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A well-filled shelf comforts me most when I can inspect the back of it.
+b : Why the back? | What about a long shelf?
+a : An unseen damp patch can take more supper than the hungriest guest. | Leave a little gap wide enough for my extended paw. That's all the inspection door I require.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : At a misty dawn the outline of a mooring post comes clear a little before the grain of its wood.
+b : Can you work with the outline? | Is it lovely to look at?
+a : I can wait for both before putting a heavy load beside it. | Lovely for a minute's quiet looking. A full basket will recall one's attention.
+
+scene tea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea leaves its little skin round the cup as though to prove one has kept it waiting.
+b : Would you reheat it? | When does a cup please you best?
+a : A fresh little serving is worth more to me, and I waste less if I pour less. | When I can feel its warmth through the handle without having to hurry the first sip.
+
+scene wetstreet
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My rule for crossing a wet street begins by inspecting the high sides of the doorframes.
+b : What have the doors to say? | Could the marks be old?
+a : The bottom paint often remembers which direction the last overflow took. | Certainly. I compare the dry stain to the moving water before trusting a direction.
+
+scene rest
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I turn the last card face down even when I'm playing alone.
+b : Why hide it from yourself? | Will the game resume tomorrow?
+a : That turns the game into something finished. I dislike carrying half a move to bed. | Perhaps. The evening may have a quite different hand to offer.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I like bringing a sound apple home to share with #self.spouse#.
+b : Which half would you take? | Does it need peeling?
+a : The one with the little blemish, if I spotted one while buying it. I know the fruit's history. | A fine crisp apple scarcely needs a knife except to share it.
+
+scene house
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : An estate cupboard can look handsome for long after an inner shelf has started to sag.
+b : What gives it away? | Is a sag such a concern?
+a : A jar that slowly makes its way towards the door. | I should prefer to find the trouble before the best jar chooses to introduce itself to my foot.
+
+scene mate
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could sit across a quiet table from #self.friend# and find the time well spent.
+b : Without conversation? | Would cards help?
+a : A word now and then. Peace doesn't require us to earn it by an hour's performance. | Provided nobody's obliged to finish the hand. One should be able to leave a pleasant evening exactly there.
+
+scene loss
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There is a wharf sound I find more difficult to hear than most.
+b : Would it ease you to name it? | Would you welcome some company?
+a : No. I prefer to keep certain things under their own dry cover. | Quiet company, if you've no task waiting.
+
+scene saving
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A box with sound corners is worth the extra copper if it saves the cards inside it.
+b : Do you give the lid a test? | Would cloth serve?
+a : I lift it by one edge and see if it still sits square afterwards. | For a dry afternoon. A cloth can wick up the whole stain overnight.
+
+scene wind
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : A loose door that claps in a wind makes a poor partner at cards.
+b : Does it turn the pages? | Would you wedge it?
+a : It turns my attention. I've laid down a very good card while listening to a thoroughly bad hinge. | With a proper wedge, clear of anyone coming through. No game is worth a stubbed toe.
+
+scene lunch
+when topic=work self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I keep my apple in a little case well away from any ship's tally.
+b : For the apple's sake? | Could you eat before unloading?
+a : For the tally's, mainly. A spot of juice can turn a number into a small and unhelpful cloud. | Sometimes. I prefer to eat when the next load is a comfortable distance from my elbows.
+
+scene stories
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : News improves a little if the teller lays down the first thing witnessed before all the guesses.
+b : What if there's only a guess? | Do you tell everything yourself?
+a : I keep my cards. A guess won't buy inspection of my own affairs. | I keep some things face down, but the face I do show is the one you'll find underneath.
+
+story softqueen [topic=pastimes]
+  : I once saw a queen begin to curl while the rest of my cards stayed flat.
+  : I took the deck apart and found a copper lodged under that one corner of the case.
+  b : Was the queen spoiled?
+  : No. Its temporary elevation had cost precisely one copper, recoverable on the spot.
+
+story appleecho [topic=food]
+  : I carried an apple into a very quiet room and tried to take one discreet bite.
+  : The apple made such a fine sharp noise that I sat and laughed with my mouth still full.
+  b : Did you finish it?
+  : Every bite. Once an introduction has been made so publicly there's little point in affected secrecy.
+
+story paperboat [topic=weather]
+  : I folded one of my damp test scraps into a tiny hull and set it in the gutter.
+  : It promptly sailed into a crack and unfolded over the gap like a drop of grey paint.
+  b : Was it good paper wasted?
+  : It had served me twice by then. I only ask a single service of a good card.
+
+rule @load
+when concept=bark self.job=sailor self.working=yes
+does aside
+cooldown 8h
+say The crate is yours when both corners settle. | Hands ready under the near face.
+
+rule @mist
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Another post appearing in the grey. | The card box stays closed till sunrise.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say Pour a little less while it's hot. | The cup's been waiting quite long enough.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Look for the first curled corner. | Keep the case away from that wet sill.
+
+dlg @1 resident.hub : The table is dry. I have tested it.
+dlg @2 resident.hub [topic.meeting=known] : There's an old place for your elbow, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll keep both sides of this deck in view for the present.
+dlg @4 resident.hub [here.time=night] : Just enough light for the red and the black. Sit a moment.
+dlg @1 resident.job [self.job=sailor] : #self.trade_words.capitalize#. My share is to see the crate settled before letting its weight go.
+dlg @2 resident.job : I have a steady hold and know how much a damp board will bear.
+dlg @1 resident.news [world.news] : One card in the hand is showing. #world.news#.
+dlg @1 resident.bye : Double back if the lower boards are wet.
+graft @curlqueen resident.hub
+choice What does that scrap of paper tell you? -> curlqueen
+node curlqueen
+say It's lifting off the shelf by one corner. The polished wood looks dry, but I wouldn't put good playing cards there for a night.
+choice Could you put the paper somewhere else? -> curlqueen_more
+choice Return to the dry table. -> hub
+node curlqueen_more
+say I shall move the case instead. The paper has earned a quiet retirement after giving such inexpensive notice.
+choice Return to the dry table. -> hub
+choice Leave the cards face down. -> bye

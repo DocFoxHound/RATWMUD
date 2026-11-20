@@ -1,0 +1,264 @@
+# rm378, the space beside the sum (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm378
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_petra_vance
+written_by codex
+title the space beside the sum
+fits stage=adult|old
+prefers piety=devout talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=devout drive=steady
+quirk leaves_an_empty_square_beside_each_private_reckoning
+likes hard_cheese wrestling sharp_knife first_warm_day
+dislikes stale_bread night_noise
+fears taking_a_confidence_for_a_pledge an_unclean_cut
+hopes a_voyage_with_no_account_to_settle_at_the_end
+topics work +0.5 faith +0.5 family +0.2 travel +0.2 gossip -0.6
+styles comfort=quiet gossip=closed refuse=formal tease=none
+marks oath saying
+persona #self.first# leaves one little square blank beside every sum, takes the stairs briskly to protect private time, and dislikes any bargain which puts a price on a confidence.
+
+words
+oath! = Spare the blank square | By the unwritten figure
+saying! = Leave space beside the sum | A private kindness needs no entry
+square = a small unruled square | my reserve of blank paper
+edge = a straight cut edge | the neat side of the sheet
+settled = a fine horizontal stroke | my quiet closing mark
+cheeseface = the firm face of a cheese | a close pale grain
+bladecloth = a folded scrap for the blade | a clean cutting cloth
+watchpoint = the instant before a throw | that small shift of balance
+warmrail = the sunward rail | the rail out of the shadow
+crustend = the stubborn end of a loaf | a heel gone hard
+quietspan = the length of a private prayer | a pause without an entry
+dryline = the distant dry line | land pale beyond the water
+clearcup = a little cup of water | plain water
+
+any
+opinion @1 church for 2 : Before the Bright One even the blank space can be read. I value that privacy.
+opinion @1 houses for 1 : It is easier to plan over a long term where a House takes a long view of its word.
+opinion @1 strangers against 1 : A first request need not be refused to be considered in silence.
+opinion @1 dole mixed 0 : An open hand and a sound account can belong to the same wolf. I would consider each case on its merits.
+opinion @1 road mixed 0 : I have seen a road cost more in delay than it ever cost in stone.
+opinion @1 watch for 1 : The peace of an uneventful night is difficult to price and easy to lose.
+opinion @1 city for 1 : A city offers a place for the solitary as well as the sociable. I am grateful for both provisions.
+
+grown
+line @1 greet : We may speak here. I have a little room.
+line @2 greet [pair.band=strangers] : I will hear your reason for coming.
+line @3 greet [here.time=dawn] : Early light makes a clean beginning possible.
+line @4 greet [here.time=dusk|night] : The light remaining is quite sufficient for a word.
+line @1 greet.return : I heard and acknowledge your welcome.
+line @2 greet.return [pair.band=friends|family] : Your voice may dispense with formalities.
+line @3 greet.return [self.working=yes] : I can keep your question beside my work a moment.
+line @4 greet.return [here.time=dusk|night] : Quiet suits an evening introduction.
+line @1 kin.open [pair.kin!=no] : A family call has its own place in the day.
+line @1 again.open : I have kept a little space since our last meeting.
+line @1 hail [pair.band=friends] : Across here, if you are free for a quiet word.
+line @1 farewell : I trust you will reach home comfortably.
+line @1 farewell.return : And may the street allow you an easy passage.
+line @1 react.news : You may put the facts in your own order.
+line @1 react.news.new : I have only just received notice of that.
+line @1 react.news.known : The matter has already occupied my thoughts.
+line @1 react.news.doubt : That would require a more exact account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I will remember that loss quietly before the Bright One.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives me something generous to remember in prayer.
+line @1 ask.how : Has the day made a reasonable demand on you?
+line @1 answer.how : I have managed to preserve an hour of my own.
+line @1 thank : A kindness for which you have my private thanks.
+line @1 deflect_thanks : There was time in reserve for a small service.
+line @1 sympathise : I can remain beside you with my questions folded away.
+line @1 reassure : It may be left unanswered until you feel steady.
+line @1 decline : I have reserved those particular hours to fulfil another obligation.
+line @1 accept_decline : I accept your preference. The reason belongs to you.
+line @1 preclose : I should like the remainder of this hour to myself.
+line @1 accept_preclose : Then let us preserve a little leisure on either side.
+scene reserve_square
+when topic=smalltalk|work
+does tell.self / ask.detail / answer.detail
+a : I set #square# beside a completed sum. | My private pages carry more white than ink.
+b : For a correction later? | An economical ledger?
+a : Sometimes. Usually to show the sum is not the whole matter. | Quite the contrary. White paper has its value.
+
+scene lend_word
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A promise sounds rather different before and after a number is spoken. | I ask for a term to be stated in ordinary language.
+b : Which do you attend to? | Does writing not suffice?
+a : Both. The silence between them is also instructive. | Either party ought to recognise what was written when the terms are spoken.
+
+scene pair_stairs
+when topic=travel|health
+does tell.self / ask.detail / answer.detail
+a : I go up by two and come down by one. | A flight of steps can give an excellent interval of privacy.
+b : Is the descent less urgent? | Between what and what?
+a : Less forgiving. A minute is a small saving beside a sound ankle. | Between hearing an answer and having to reply to it.
+
+scene bright_empty
+when topic=faith
+does confide / react.self / assess
+a : What I leave unrecorded is still quite visible to the Bright One. | A prayer of mine sometimes contains no request.
+b : Does that worry you? | Merely thanks?
+a : It relieves me of the obligation to explain every kindness to the world. | Even thanks can be very quiet indeed.
+
+scene supper_slice
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I would like a thin slice from #cheeseface#. | The proper cutting cloth must be clean at the fold.
+b : Thin enough to see through? | Why at the fold?
+a : A slice should keep its flavour and still justify the use of a careful blade. | The rest shows dirt readily. A hidden patch is more likely to be missed.
+
+scene careful_knife
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A sharp blade is a kindness to a sound apple. | I store #bladecloth# quite apart from my good linen.
+b : What kindness does an apple require? | Are they of different quality?
+a : A clean cut leaves the other half presentable to a guest. | They serve different purposes. Confusing them would be expensive.
+
+scene given_ground
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : The wrestler who steps back an inch usually claims my attention. | I take more interest in #watchpoint# than in the fall itself.
+b : Does that one lose? | Surely the fall settles the match?
+a : Occasionally it wins by making a larger concession seem available. | Precisely. The interesting question has been decided a little earlier.
+
+scene spring_sun
+when topic=season here.season=spring
+does tell.self / ask.detail / answer.detail
+a : On a mild day a rail in shadow stays colder than one expects. | I like to meet the year's first warmth quite without an appointment.
+b : Do you take the sunny side? | You could go out looking for it.
+a : Yes. I permit myself the small preference. | That would lessen the courtesy of its arrival.
+
+scene late_racket
+when topic=home here.time=night
+does tell.complaint / react.self / assess
+a : The difficulty with a noise at night is the expectation of its return. | I sometimes hear a latch fail to catch on the first attempt.
+b : One sound can keep you awake? | An irritating interruption.
+a : The sound takes an instant. Expectation is remarkably tenacious. | I am more troubled when the second attempt never comes.
+
+scene young_kin
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : There is space in my day for #self.child#, however full the page looks. | I hope #self.child# can distinguish a gift from an advance.
+b : You keep a place blank? | What sets an advance apart?
+a : More than one. The page is private, so I may say that much. | An expectation of return. I give very little weight to the wrapping.
+
+scene quiet_floor
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : In the Heights a runner laid on the stairs keeps several conversations separate. | A pleasant view downhill has another function.
+b : It muffles the voices? | Which is?
+a : The footsteps. One need not know the business of everybody who comes and goes. | It gives a few minutes at the window the appearance of purpose.
+
+scene way_dry
+when topic=dreams|travel
+does tell.self / ask.detail / answer.detail
+a : I would take a berth from which the morning showed a pale dry coast. | I have contemplated a voyage on which a ledger would be quite inconvenient.
+b : For business? | You sound almost tempted.
+a : I would prefer a journey my accounts could manage in my absence. | Temptation is a reasonable purpose for a private thought.
+
+scene grateful_plate
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A hard season changes what a full plate means. | Some accounts in a lean week deserve an empty margin wider than the figures.
+b : For the hungry? | For an explanation?
+a : For anybody sitting in sight of the hungry. | For consideration. An explanation may never be mine to have.
+
+scene wagon_notice
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : I can allow for a late arrival without making any assumption about its cause. | A missing time is worth recording as carefully as an actual one.
+b : Can you alter the terms? | Why enter a blank?
+a : I can begin by allowing the facts to arrive with the cart. | Tomorrow one may otherwise mistake a guess for yesterday's appointment.
+
+scene welcomed_name
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I aim to make a new acquaintance only once. | A visitor may be offered a chair without being offered the contents of my desk.
+b : You have a good memory? | A cautious welcome.
+a : I have the ordinary courtesy to make an effort. | A real seat. A visitor may judge which aspect is more useful.
+
+scene closed_margin
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : That account involves a confidence I do not possess. | A private story has been put into circulation. I have marked no copies.
+b : You heard the name, though? | What would you mark?
+a : I did. Possession of a name confers very little right over its owner. | Nothing here. A clean margin is a satisfactory answer.
+
+scene report_word
+when topic=news world.news
+does tell.news / react.self / assess
+a : I received this under #world.news_from#: #world.news#. | #world.news#. I distinguish the source, #world.news_from#, from my own view.
+b : Will you act upon it? | May one hear the latter?
+a : First I would establish whether any action is called for. | The former is the portion that has actually arrived.
+
+scene stale_table
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #crustend.capitalize# can spoil even an excellent piece of cheese. | I would not press a guest to take the least desirable slice.
+b : Would you discard the bread? | A fault in the order of serving?
+a : I would soften it in broth and serve the cheese on its own. | A fault easily remedied by attending to one's own plate last.
+
+story shadow_sum [topic=memories]
+  : I once spent a considerable interval correcting an extra stroke beside a number.
+  : Each time I lifted the page the stroke disappeared.
+  b : A fault in the ink?
+  : The shadow of a thread from my cuff. I have been kinder to the light in my accounts ever since.
+
+story hollow_rind [topic=food|memories]
+  : A rind of very hard cheese once cooled into a perfect cup on my plate.
+  : I was sufficiently curious to test it with water.
+  b : Did it hold?
+  : For just long enough to encourage a second quite unnecessary experiment. A useful lesson concerning success.
+
+story unpaid_view [topic=travel|memories]
+  : One spring I climbed the longest stair I could find to study the view from its head.
+  : The upper wall was quite high enough to obscure everything.
+  b : A wasted climb, then?
+  : Each step of my descent brought the city into full view. The better view had required no final step at all.
+
+rule @margin_clear
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say The writing stops where the fold begins. I am content with that.
+
+rule @rail_warm
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say A square of sunshine can warm a surprising length of rail.
+
+rule @kind_silence
+when concept=bark here.place=chapel
+does aside
+cooldown 8h
+say A prayer need not be audible to one's neighbours.
+
+rule @shut_press
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Time for the sheet that covers today's business.
+
+dlg @1 resident.hub : The business which brought you here has my attention.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I recall the voice without consulting a note.
+dlg @3 resident.hub [here.time=night] : At this hour I prefer to attend to one voice at a time.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I should be obliged if you would speak from the farther side.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#, at present. I keep particular accounts private.
+dlg @2 resident.job : I prefer my work to permit some attention to my other obligations.
+dlg @1 resident.news [world.news] : The report is attributed to #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : No entry in my possession gives me leave to distribute a private name.
+dlg @1 resident.bye : May you have sufficient light for the return.
+graft resident.hub
+choice What might go in that blank square? -> private_square
+node private_square
+say A correction, or a reminder for the morning. I prefer to reserve the space until I have a figure worth putting there.
+choice Does the blank signify an unpaid debt? -> unvalued_space
+choice That answers my question. -> hub
+node unvalued_space
+say A debt would have its own entry. There are matters between two wolves which deserve more exact handling than a figure can supply.
+choice I understand the distinction. -> hub
+choice I will leave the page in order. -> bye

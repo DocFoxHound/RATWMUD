@@ -1,0 +1,374 @@
+# rm574, the square-handed correspondent (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm574
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rmx_rupert_hatherley
+written_by codex
+title the square-handed correspondent
+fits stage=adult|old
+prefers piety=devout honesty=guarded
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=devout drive=steady
+quirk keeps_sealed_letters_clear_of_damp_by_the_bale_figures
+likes hard_cheese old_tales festival_bells thunder
+dislikes crowds haggling
+fears a_seal_broken_for_convenience
+hopes a_receipt_in_the_proper_hand
+topics work +0.7 faith +0.6 memories +0.3 weather +0.3
+styles comfort=practical gossip=guarded refuse=firm tease=none
+marks oath saying
+persona #self.first# forms letters as squarely as stacked bales, keeps the sealed one clear of damp, and asks for the shortest route whose boards remain above water.
+
+words
+oath! = Blot the wrong square | Damp in the docket
+saying! = A seal has one reader | Leave the wet board blank
+squarehand = a square upright hand | a little row of block letters
+wrapfold = a fold of oiled cloth | a square of waxed linen
+sealridge = a narrow wax ridge | a raised edge of wax
+nearcount = the near column | the count by my thumb
+farcount = the second column | the farther line of chalk
+baleear = a folded cloth corner | a stiff edge of sacking
+hardheel = a solid wedge of cheese | a firm sliver of cheese
+waterstep = a clear high board | a raised edge of planking
+quillrest = a grooved pen block | a little fork of wood
+bluecord = a loop of blue string | a short dark cord
+bellspace = a space between strokes | a quiet after ringing
+dryrule = a dry straightedge | a ruler of plain oak
+storystitch = a repeated old phrase | a little thread of words
+waxcrumb = a square of plain beeswax | a small hard shaving
+
+grown
+opinion @1 church for 2 : The account known to the Bright One includes the good I overlooked as well as the failures I noted. I take comfort and warning in that.
+opinion @1 strangers against 1 : An unfamiliar wolf may have directions to a dry street. A private letter stays in my own keeping.
+opinion @1 merchants mixed 1 : I can count bales in either direction and obtain one number. I'd like to discover that property in more statements about prices.
+opinion @1 houses mixed 1 : A House that expects its seal to carry weight might reasonably keep its intended readers within occasional reach of a doorstep.
+opinion @1 festivals for 1 : One clear round of bells heard a street removed from the crush is my own share of a festival well begun.
+opinion @1 road mixed 1 : I will recommend a sound route for today. Yesterday's passage is a different entry and quite properly closed.
+opinion @1 dole for 1 : Tell me how many have eaten so that a late arrival finds something more substantial than the arithmetic.
+opinion @1 watch mixed 1 : I would have the record taken legible to the next watch. Justice is ill served by an elegant squiggle.
+line @1 greet : I can attend to one clearly stated matter at a time.
+line @1 greet.return : The account is open where your last words left it.
+line @2 greet [pair.band=strangers] : Stand clear of the wrapped paper. Your business may be spoken here.
+line @3 greet [here.time=dawn] : The street is easy to read this early if one minds the lower boards.
+line @1 farewell : May a sound plank answer under each of your steps.
+line @1 farewell.return : The last line of our exchange requires no amendment.
+line @1 ask.how : Has the day kept the wet away from what you were carrying?
+line @1 answer.how : I have kept my hand steady and my wrapping dry.
+line @1 thank : You spared me a second explanation of the obligation.
+line @1 deflect_thanks : The decent thing was plain enough to set down in one line.
+line @1 decline : No convenience of ours gives me leave to open another wolf's letter.
+line @1 accept_decline : Your refusal has a legible place in the account.
+line @1 sympathise : Sit where the floor is dry. I can manage the things requiring a steady hand.
+line @1 reassure : A doubtful figure can remain blank until there is evidence to enter.
+line @1 react.news : I will hear the account in the order you received it.
+line @1 react.news.new : I shall rule fresh space for that report.
+line @1 react.news.known : The first entry already shows the marks of that one.
+line @1 react.news.doubt : I'd want more than one hasty stroke before calling that a reliable entry.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd write the good return in a hand worthy of whoever brought it about.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I shall keep the need in mind when the evening prayers begin.
+line @1 ack : That completes both sides of the reckoning.
+line @1 again.open : We may resume without disturbing the closed entries.
+line @1 preclose : There's a suitable break here for putting the pen away.
+line @1 accept_preclose : Very well. We can find this line again.
+line @1 tell.self : I can keep faith with an obligation long after the convenient hour has passed.
+line @2 reassure [pair.band=friends|family] : The wrapping is sound and there is time to try the proper door again.
+line @2 decline [pair.disposition=hostile] : Your insistence supplies no signature I am authorised to recognise.
+line @2 greet.return [here.time=night] : In this light I'll recognise a voice more readily than a written entry.
+line @2 farewell [here.time=dusk] : Give the darker hollows an extra hand's breadth on your return.
+line @2 ask.how [pair.band=friends|family] : Which hours have been free for your own purposes?
+line @2 answer.how [here.time=night] : One difficult errand still open. The rest can stay squared away.
+scene work_1
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : #self.trade_words.capitalize#: that's my living. I like every column square enough to rest a straightedge on it.
+b : Will a straight column prove the count? | Do the bales themselves stack squarely?
+a : It proves only that the line can be read. I do the second count to establish whether it ought to be believed. | With rather less cooperation than figures. I remember doing the heavy work before the desk was available.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A sealed letter gives me an ordinary test of faithfulness nearly every day.
+b : What is there to test? | Who would know if you failed?
+a : Whether my private impatience has any authority over someone else's purpose. It has none. | The Bright One. I find that answer perfectly sufficient when the door is shut.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My errand for a House has brought me often to a door whose proper reader is away.
+b : Will you leave the letter with a servant? | Do you plan the same route each time?
+a : When the instruction permits it. This particular instruction names one reader, and I can live with the inconvenience. | Only on paper. The lower streets can make a beautifully ruled plan a very damp piece of fiction.
+
+scene pastimes_1
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I like an old tale in which a repeated phrase changes its meaning at the last telling.
+b : Will you give the ending first? | Do you mind knowing what's coming?
+a : I would sooner give away the corner of the page. You ought to hear the words earn the change. | It's hearing where the teller pauses this time that interests me. A familiar line needn't be a dead one.
+
+scene food_1
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I carry a hard cheese heel in a different fold from the letter.
+b : Could a firm cheese hurt the paper? | Why bring it on an errand?
+a : A little grease is surprisingly industrious. A hard surface doesn't entitle a food to a place among documents. | Because the recipient's absence can outlast a reasonable allowance for lunch.
+
+scene work_2
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : When I got a desk at #self.workplace#, I kept my habit of inspecting the tired corners of a bale.
+b : Does that help at a desk? | Did you miss the carrying?
+a : It returns my attention to what the strokes represent. A fine count of spoiled goods is a discouraging achievement. | The straightforwardness of it, sometimes. A bale seldom asks you to amend a sentence.
+
+scene weather_1
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : A rumble above dry rafters allows me to test how firmly my quill is supported.
+b : Will a clap knock it over? | Why pay attention to the storm?
+a : I know little about the clap's intentions. I have seen a table shake quite enough to set a loose pen rolling. | I enjoy a good rumble when my sheets are dry and damp boards aren't asking me to shift the entire bottom row.
+
+scene land_1
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I recognise a street that takes water early by the old line on the stone and by what the next gutter does.
+b : Which sign matters more? | Can you name a dry street?
+a : The present flow deserves attention even when it contradicts a remarkably neat piece of old evidence. | One I have seen that day. A name from memory is not a promise about the boards round the corner.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A friend is welcome at my desk while an undelivered letter lies there, provided the wrapping receives no special attention.
+b : Don't you trust a friend? | Why leave it visible?
+a : Trust and a plain direction can sit together. I keep the same rule on a day of doubt and a day of confidence. | I can keep it dry and in sight. Covering it further often invites more speculation than plain cloth warrants.
+
+scene family_1
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I would write #self.mother# a private letter in the same careful square hand I give the most formal account.
+b : Doesn't that look a little stiff? | Would you add anything to it?
+a : A familiar reader can hear the voice through the square strokes. I wouldn't want the greeting to become illegible for affection's sake. | A little ordinary news from my table. A private letter needn't travel with an inventory in its pocket.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep the oiled cloth folded with the damp face always to the outside.
+b : Can you recognise the outer face? | Would two layers be better?
+a : There's a blue stitch on the corner. A small clear mark prevents a considerable private argument in poor light. | Only if the inner one starts dry. Enclosing a mistake closely seldom makes it go away.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : The difference between two square letters can rest on one little open corner.
+b : Which corner? | Do you insist on perfect shapes?
+a : Whichever one lets the reader distinguish the figure meant from its nearest neighbour without guessing. | I'd insist on writing that can be understood after a damp journey. Beauty can follow if time permits.
+
+scene prices_1
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : Name a sum for the work and a sum for the wrapping. I'll consider the total in peace.
+b : What if the wrapping is free? | Do you never bargain?
+a : Then put nothing beside it. I like an honest blank in a line that could have contained a charge. | I make a plain offer if invited. Repetition at a higher pitch rarely improves either figure.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I take my unanswered letter out before starting for the proper door, chiefly to inspect the condition of the seal.
+b : Is the seal damaged? | Do you read the outside again?
+a : The ridge is why I use #wrapfold#. A sound seal is a better report of my care than an account of my intentions. | Yes. A familiar obligation deserves the courtesy of having its actual direction observed.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : When I carried loads myself, I learnt a corner can give way while the middle appears perfectly sound.
+b : What brought that back? | Has the desk made you forget the weight?
+a : A badly wrapped account with a beautiful centre and an edge turned to pulp. The two occupations met over that page. | My shoulders have their own ledger. It isn't easily persuaded to write off a full bale.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I try to say the evening prayer as clearly as I would ask someone to count a second row.
+b : Why speak so plainly? | Do you count the prayers?
+a : A plain petition suits my worship of the Bright One perfectly. I need to understand my own petition while I am making it. | No. My attention belongs with the words I'm saying. A count would prove little about that.
+
+scene festival_1
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I can hear the feast bells without joining the crowd under them.
+b : Do they sound different at a distance? | Would you still call that joining in?
+a : The hard edge softens, and the gap between strokes is audible until it gives way to ordinary street noise. | My portion has reached me. I'd leave the busiest ground to whoever wants that sort of holiday.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I stand up from my desk to check a bale I could count quite satisfactorily sitting down.
+b : Why make extra work? | What if the floor is wet?
+a : The legs that used to carry a full load deserve a little more to do than keep a place under a desk. | Then I attend to the floor. A correct tally is a small comfort to a wolf sitting unexpectedly in a puddle.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When goods run short I make a special point of recording the date on any amount set aside.
+b : Who checks the date? | Why would a date matter?
+a : The next reader should see precisely what I have done without a private explanation from me. | To distinguish a proper commitment from something simply forgotten in a corner while a neighbour went short.
+
+scene news_1
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : The account presently available for inspection is #world.news#.
+b : Do you enter it immediately? | Have you checked it yourself?
+a : I distinguish the arrival of a report from the arrival of the thing it reports. Both can be recorded. | What reached me is what I've spoken. I won't stamp a second-hand account with a witness's mark.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The words in circulation run that #topic.subject# #topic.claim#. That is the extent of the record I possess.
+b : Would you add it to a letter? | Is it worth repeating?
+a : I would not enlarge an undelivered letter under any circumstances. My own correspondence would require a considerably better source. | Only with the degree of doubt intact. An often-carried rumour doesn't graduate into evidence by wearing out a pair of boots.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I direct an unfamiliar traveller towards one dry step, then the place to ask about the second one.
+b : Why not give the whole route? | Would you trust a newer arrival's account?
+a : When the gutters are moving fast it is fairer to say where my knowledge actually ends. | About a board just crossed, yes. A fresh observation can have more value than an old claim of familiarity.
+
+scene work_3
+when topic=work self.trade_words
+does tell.self / ask.detail / answer.detail
+a : A count entered in #squarehand# can be read upside down well enough for a colleague to spot an error.
+b : Do you resent the interference? | Does it change which side counts first?
+a : A correction before goods leave the floor is cheaper than maintaining injured dignity afterwards. | I still set down my own count first. A second eye should have a genuinely separate figure to offer.
+
+scene day_2
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : I like a dawn surface on which the first stroke dries without running sideways.
+b : Is the room ever that damp? | Why begin so early?
+a : If a window has admitted rain the desk will let me know. A scrap is cheaper than an amended first page. | The boards speak more plainly before a day's traffic has tracked moisture into every corner.
+
+scene weather_2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I watch a thunder shower running towards a drain with more pleasure when the bottom bales are already raised.
+b : How high ought they to be? | Does moving them spoil the count?
+a : High enough for the brown line I can see, with a sensible allowance for the approach of darker weather. | Only if the movement goes unrecorded. Let the position change without requiring the number to change with it.
+
+scene pastimes_2
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A well-told messenger's tale has a particular interest for a wolf carrying an unusually patient letter.
+b : How does the tale end? | Does the letter grow impatient?
+a : There are several endings. I am fond of the one which allows the messenger a good meal before the final journey. | The letter is admirably calm. Most of the impatience seems to have come along in my own coat.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I respect a friend who will read one of my tired figures aloud before guessing which number I intended.
+b : Is the figure often tired? | What if the number is important?
+a : It can lean a little to the right after a long day. The square hand has an ordinary wrist behind it. | Then the need to ask is greater. A moment's plain speaking can protect a much larger obligation.
+
+scene prices_2
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A damaged corner on a bale is a point for inspection, not an automatic deduction of the whole value.
+b : How much would you deduct? | What if it's only wrapping?
+a : The amount shown by the actual damage. I prefer the figures after the inspection to the figures supplied before it. | Then allow for the wrapping. I see no profit in pretending an entire sound load has vanished with a piece of string.
+
+story waxlight [topic=work]
+  : I held a sealed letter towards a window to inspect the ridge of wax. A crack appeared straight across it.
+  : I turned the letter to see just how deep the damage went.
+  b : Did the crack turn too?
+  : It remained in the glass. I gave both the window and the seal a second inspection before making an entry against either.
+
+story cheeseedge [topic=food]
+  : I ruled a new tally sheet against a stiff wrapper that had once enclosed cheese.
+  : The line came out admirably square and faintly translucent at the foot.
+  b : Could it still be read?
+  : It could, for practice. I made the fair copy on a clean sheet and gave the cheese a separate, well-marked resting place.
+
+story fourbells [topic=festival]
+  : I counted four festival strokes under a doorway where I could avoid the busiest part of the street.
+  : The last was lighter and landed a shade too early for the measure.
+  b : Was there another bell?
+  : A loose ring on the doorway tapped the wood after the third stroke. I gave the extra voice credit under its own description.
+
+story wetboard [topic=travel]
+  : I showed a visitor a board above the gutter where I myself had crossed without wetting my boots an hour earlier.
+  : In that hour the board had turned and given a wholly different edge to the water.
+  b : Did the visitor get across?
+  : After we inspected the next step. I am grateful the correction reached me before my visitor took my word for solid ground.
+
+story barepage [topic=memories]
+  : A long day's tallies once ended in a whole blank page. I had intended to enter a short private prayer there.
+  : On reflection I closed the book and made the prayer standing by the open window.
+  b : Why leave so much paper unused?
+  : It was a business book. My petition was heard without being charged to anyone's account.
+
+rule @seal
+when concept=bark
+does aside
+cooldown 8h
+say Keep the wax from touching the damp fold. | A proper reader has yet to receive this.
+
+rule @tally
+when concept=bark
+does aside
+cooldown 8h
+say Second column first on the return count. | A square stroke won't excuse an incorrect figure.
+
+rule @cheese
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say The cheese belongs in its own dry wrapper. | Grease has a quicker hand than ink.
+
+rule @thunder
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say Let the quill rest in its groove for that one. | A sound roof can enjoy a considerable report.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Leave some dry boards for the late return. | A letter can bear a second journey quite well.
+
+rule @story
+when concept=bark self.likes=old_tales
+does aside
+cooldown 8h
+say Give the old phrase room for its last meaning. | A familiar ending deserves a properly earned pause.
+
+dlg @1 resident.hub : Keep the closed parcel where it is and let me hear your own business.
+dlg @1 resident.job [self.trade_words] : #self.trade_words.capitalize#, these days. I still examine the shape of a bale before settling its number on paper.
+dlg @1 resident.quirk : I can tell which low turn will start to fill by the old stain and the present movement of the gutter.
+dlg @1 resident.news [world.news] : The entry I can read without qualification is the account I received. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The loose account reads #topic.subject# #topic.claim#. My own square hand does not stand beneath it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the earlier entry supplies the introduction. State what has changed.
+dlg @1 resident.bye : Keep the outside fold towards the weather on your journey.
+dlg @1 resident.how [tired=yes] : Pen work can put weariness in the wrist just as surely as a bale can burden the back.
+dlg @1 master.learn [here.teaches=yes] : I have a place available for a learner. I'll hear what you wish to know and then consider the usual terms.
+dlg @1 master.takes [here.take_on=no] : I teach one trusted learner at a time. This is the present difficulty. #here.take_on_why#.
+dlg @1 master.refused : The reason the undertaking cannot start is plain. #topic.why#.
+dlg @1 master.bye : Try making a careful entry while the lesson is still in your head.
+graft resident.hub
+choice Does that sealed letter really go everywhere with you? -> seal_errand
+node seal_errand
+say Everywhere I have a chance of finding the intended reader. The last few journeys have given me considerable knowledge of dry thresholds.
+choice Do you ever wonder what the letter says? -> seal_inside
+choice I'll leave the seal as it stands. -> hub
+node seal_inside
+say Occasionally. The answer to idle curiosity is a fresh wrapping, a little patience and one more journey to the proper door.
+choice I'll leave the seal as it stands. -> hub
+
+graft master.work
+choice What would you have a learner count first? -> square_row
+node square_row
+say A single short row, twice, from opposite ends. Write the two figures separately. Carry both marks back separately, even when they disagree.
+choice What if they differ by one? -> square_check
+choice I'll check the position before changing the figure. -> work
+node square_check
+say Find the bale with its folded end pointing towards the other row. A difficult position can lend one object two quite convincing appearances.
+choice I'll check the position before changing the figure. -> work

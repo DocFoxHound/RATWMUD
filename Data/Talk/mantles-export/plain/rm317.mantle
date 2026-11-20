@@ -1,0 +1,262 @@
+# rm317, the riddle of the cover (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm317
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_mab_coalridge
+written_by codex
+title the riddle of the cover
+fits stage=adult|old
+prefers job=servant honesty=guarded
+traits temper=nervy talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk turns_serving_covers_and_asks_what_they_keep_in
+likes fried_fish riddles quiet_chapel misty_dawns
+dislikes night_noise haggling
+fears an_answer_given_in_the_wrong_room
+hopes a_dry_cabin_with_a_closing_door
+topics work +0.5 pastimes +0.5 food +0.4 gossip -0.6
+styles comfort=shelter gossip=sealed refuse=cool tease=none
+marks oath saying
+persona #self.first# turns a serving cover over to catch its last drops and devises riddles about what a lid will keep out and what it ought to let go.
+
+words
+oath! = Loose pot ears | Three rattling covers
+saying! = The lid keeps its own counsel | A clean drop needs no witness
+lid = the shallow cover | my turned lid
+drip = a clear drop | a little bead
+lip = the rolled rim | the folded lip
+pan = a low pan | a shallow dish
+butter = the yellow butter | a dab of butter
+fish = a crisp fish tail | the folded fillet
+hinge = a little loop | the loose ring
+mist = a strip of mist | the grey dawn veil
+cot = a narrow cot | a dry bunk
+blanket = my folded blanket | the warm cover
+towel = a clean wiping cloth | a striped rag
+closh = a tin dome | the hollow cover
+
+any
+opinion @1 houses against 1 : Ask what's under a rich cover and see how quickly a servant's voice becomes unwelcome.
+opinion @1 church for 1 : A chapel that doesn't demand my whole history is somewhere I can rest.
+opinion @1 merchants against 1 : I won't pay for food whose good smell is doing most of the work.
+opinion @1 watch against 1 : Suspicion has a respectable jacket on when it walks beside a uniform. Still suspicion.
+opinion @1 times against 1 : Even when the same dishes go out, the portions on them seem to keep shrinking.
+opinion @1 sump for 1 : The low streets understand the difference between a door closed for warmth and a door closed for spite.
+
+grown
+line @1 greet : I've a moment while the lid cools. Hello. | Stand clear of the dripping edge. Welcome.
+line @2 greet [pair.band=strangers] : I don't recognise that voice yet. | Hello. We can speak here in the open.
+line @3 greet [here.time=dawn] : Morning. Steam hangs about before the air warms. | A quiet early word is welcome.
+line @1 greet.return : I heard. I'm drying my paws first. | Hello to you. The drop's fallen now.
+line @2 greet.return [pair.band=friends|family] : A familiar voice through all the clatter. | I know you well enough to sit a moment.
+line @3 greet.return [here.time=night] : Late words carry far. I'll keep mine low. | Hello. The night's quiet enough to hear through tin.
+line @1 again.open : We've met twice without the lid going cold. | Here again while there's a little warmth left.
+line @1 hail [pair.band=friends] : Come hear what that loose ring's doing. | Over here beside the quiet part.
+line @1 farewell : Keep well covered on the way. | Safe out and dry home.
+line @1 farewell.return : I'll tip the last drop away and follow presently. | A little quiet on your journey.
+line @1 react.news : Tell me only the part that's yours to tell. | I shall keep still while you explain.
+line @1 react.news.new : No trace of that had reached this room. | That's entirely new to my hearing.
+line @1 react.news.known : I know the matter. Your version is close. | Yes. I've heard that lid lifted already.
+line @1 react.news.doubt : That seems a confident account of a covered dish. | I'd want more than a convincing smell.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I won't make a noise over it. Sit here as long as needed. | A poor end to a hard matter. I'll listen.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That's a welcome reason to lift the cover. | I could set out a clean plate to honour news like that.
+line @1 ask.how : Any chance to sit away from the noise today? | How have you stood the heat?
+line @1 answer.how : Quite able to work. A shade more tired than I sound. | Steady, so long as nobody rattles things.
+line @1 decline : I'm too closely involved to give you an idle answer. | I intend to preserve a confidence that hasn't been returned to me.
+line @1 accept_decline : I'll leave that question where it is. | You weren't obliged to let me in.
+line @1 preclose : The work will cool if I leave it longer. | I've a quiet errand coming due.
+line @1 accept_preclose : Go while there's a little space to move. | I can take care of the remaining drops.
+line @1 thank : You've prevented quite an unnecessary fuss. Thanks. | That was a quiet kindness. I did notice.
+line @1 deflect_thanks : A cloth was within reach already. | There wasn't a need for two of us to get splashed.
+line @1 sympathise : You're welcome to sit without carrying on a conversation. | Quiet does a little good when words have done enough.
+line @1 reassure : Let the worst of the steam clear first. | It's a little easier once you can see the rim.
+line @1 ack : I can follow that without guessing. | I heard the small distinction there.
+line @1 give.advice : Tilt a cover away from the waiting dish. | Speak when you know what room you're in.
+scene turnriddle
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : What gathers supper without ever tasting the salt? | On the top it's dry. On the bottom it's all broth.
+b : A hungry serving cloth? | Some sort of dish?
+a : The lid. Steam condenses there and falls back wholly unseasoned. | A cover seen from below. The droplets are clear, whatever's in the pot.
+
+scene dripaim
+when topic=work self.job=servant self.working=yes
+does warn / react.self / assess
+a : Hold the rim over the pot another moment. | Turn the cover away from the plate.
+b : Does that one drop matter? | It looks dry from here.
+a : To a crisp piece of fish, yes. Best to keep the good surface as it is. | The wet side's underneath. That's the part I have in mind.
+
+scene riddletime
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : My favourite riddles yield their answer to a neatly inverted question. | Some riddles have a plain side and a polished one.
+b : Which is the true answer? | An example, then?
+a : Ask what holds a bowlful upside down. A cover does, a bowl would lose the lot. | What vessel travels empty on its belly and full on its back? My little lid in the wash pan.
+
+scene butterfish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Fish done in butter deserves a short trip to the table. | I try to put the crisp side uppermost.
+b : Does the underside suffer? | What if it has a cover?
+a : A little. An upper surface gives its steam somewhere to go. | Lift it promptly. A whole good crust can disappear in its own damp.
+
+scene quietdoors
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / react.self / assess
+a : In chapel when it's quiet I listen for the moment the door stops moving. | A closing chapel door is a fine sound to me.
+b : Why the door? | What happens after that?
+a : Kitchen doors go on swinging. This one comes to rest. | A silence that isn't waiting for me to fill it with work.
+
+scene mistdawn
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : I quite like a morning when the roof edge disappears into mist. | Mist gives an ordinary sill a private little world.
+b : Doesn't it make you uneasy? | What can you see from there?
+a : Less than being plainly visible to everybody in the street. | A few drops, the sill, my own paws. Plenty for a short pause.
+
+scene shifts
+when topic=home self.quarter=works
+does tell.self / ask.detail / answer.detail
+a : In the Works the change of shift is plain from the pace of the feet. | My street has a different note going to work from coming home.
+b : Which sound is quicker? | You listen to all that?
+a : Going in. Coming home some feet have bags and aching backs to consider. | It's hard not to. I'm most interested in the interval between.
+
+scene nonnoise
+when topic=day here.time=night self.dislikes=night_noise
+does tell.complaint / ask.detail / answer.detail
+a : A lid dropped after dark seems to ring along every cupboard. | I want the little pot rings set flat at night.
+b : Do they really make such a racket? | All neatly packed away?
+a : One ring against tin, then another. It's like a whole table clearing its throat. | I'd settle for quiet. My eyes are generally shut at that hour.
+
+scene nohaggle
+when topic=prices self.dislikes=haggling
+does give.opinion / react.self / assess
+a : Say the price, let me choose, keep the dish covered in the meantime. | Bargaining over hot food does neither party much good.
+b : What if the first price is high? | You'd leave it on the fire?
+a : Then I'll go hungry a little longer. The fish won't improve while I argue. | Away from the heat, under a loose cover. I've a sensible limit to my patience.
+
+scene parcel_sense
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Wrapping can tell a great deal about a parcel without giving away what's inside. | A turned-in corner says whoever did the folding expected damp.
+b : Do you guess the contents? | More than a label tells you?
+a : Sometimes. I know enough to keep a guess in its proper place. | About the wrapping, certainly. The label is its own separate question.
+
+scene dry_berth
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : A dry sleeping place afloat appeals more than a grand cabin ashore. | I'd take a cabin small enough to touch both walls if the roof held.
+b : Don't you mind the rocking? | And the closeness?
+a : Rocking won't wet a blanket of its own accord. That's my main stipulation. | Less than a long cold drip on my ear. Small can be restful.
+
+scene bad_faith
+when topic=gossip
+does give.opinion / react.self / assess
+a : A crest on the cover doesn't vouch for anything inside. | Good manners can conceal a contrary purpose rather effectively.
+b : You distrust all fine manners? | Would you look under the cover?
+a : Not all. I simply keep their merits apart from the merits of the contents. | If it was my duty. Otherwise it could keep its mystery and its praise.
+
+scene friend_gift
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put aside the driest crisp corner for #self.friend#. | I could share a plate with #self.friend# without explaining why I'm quiet.
+b : Only a small share? | Would you make a visit of it?
+a : Of the best bit, yes. There's more of the ordinary part to divide. | A meal together would do. No ceremony is needed to taste well-cooked fish.
+
+scene heat_rag
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : A wet cloth can carry heat through to the paw unpleasantly quickly. | I keep a dry cloth separate from the cloth meant for wiping.
+b : They look alike. | Which one are you reaching for?
+a : They feel different. I make certain of the difference before lifting a warm dish. | The dry one if I'm lifting. I'd like my paws to see another day of work.
+
+scene leanplate
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When food's scant I arrange a small helping so it won't go cold straight away. | What there is should arrive as well as it can.
+b : Could a bigger cover help? | Trying to disguise the size?
+a : A warm plate beats even a tremendous empty dome. | No. A small true portion is better than an elaborate disappointment.
+
+scene shipview
+when topic=ships here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I'm content to admire a ship without naming its owner. | A boat seen from here is simply a place that may go elsewhere.
+b : Is the owner a secret? | Do you want to go too?
+a : I've no reason to suppose so. I just haven't inquired. | Sometimes. I'd enquire about the roof before the destination.
+
+scene stormvoice
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder makes an iron kitchen seem a surprisingly small instrument. | A long roll outside puts my nuisance of a loose ring in its place.
+b : Is that comforting? | D'you like a storm then?
+a : In a sound room, yes. I prefer noise without an intention behind it. | Under cover, certainly. Much of my good temper depends on a sound roof.
+
+scene festivaldoor
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a feast I'm happiest just inside the service door. | A festival sounds better within reach of a quiet room.
+b : Can you have any fun there? | Keeping away from the crowd?
+a : I can hear the singing and still taste my supper. It suits me. | Keeping a choice. I can join in when the time is agreeable.
+
+story fourthcalm [topic=memories|work self.job=servant]
+  : I once lined three lids up, each wider than the one before. Tried them all and still had an uncovered pot.
+  : The right lid was beneath it serving as a stand.
+  b : Who put it there?
+  : Me. I recognised the little bit of cloth I'd put under it to keep the table plain.
+
+story buttermark [topic=food|memories]
+  : A drop of butter made a perfect bright circle on a lid. I polished round it before noticing the trouble.
+  : The butter was a reflection from the dish beside me.
+  b : Did you finish polishing?
+  : Yes. One corner of that lid has never been so needlessly clean.
+
+story tinrain [topic=weather|memories]
+  : I took a cover onto a dry sill to cool and heard what might have been the first few raindrops.
+  : The sky was clear. A wet hem I'd hung above it was doing an excellent imitation.
+  b : How long did it rain?
+  : Just as long as it took me to move the cover. Very local weather.
+
+rule @rim
+when concept=bark
+does aside
+cooldown 8h
+say Turn the rim away before you lift. | Let that last bead drop back.
+
+rule @pot
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say Dry cloth for the hot cover, please. | Keep the loose rings from knocking on the tray.
+
+rule @mist
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say The spout's tip has almost vanished through this grey. | Mist outside and steam within. I'm between them.
+
+rule @pause
+when concept=bark
+does aside
+cooldown 8h
+say Let me hear whether that ring settles. | Better set down than left balanced on an edge.
+
+dlg @1 resident.hub : I can leave this covered while I hear what brings you.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've kept a quiet corner free.
+dlg @3 resident.hub [here.time=night] : A low voice will carry far enough. The clatter's died down.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stay in sight and leave my things where they are, please.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. Every dish has its own convenient time for taking the cover off.
+dlg @2 resident.job : I try to leave things quiet, clean and ready for whoever follows.
+dlg @1 resident.bye : May your roof keep its promises.
+graft resident.hub
+choice What does the ring on a serving cover tell you? -> coverring
+node coverring
+say If it rattles against the tin I've tilted too far for carrying. That's a remarkably useful little warning for something that wasn't made to give one.
+free
+choice Do you ever still the ring? -> stillring
+choice I can hear it tapping now. -> hub
+node stillring
+say After setting down, certainly. Everything that might topple is now at rest. The ring is quite entitled to rest with it.
+choice I'll leave the cover alone. -> hub
+choice Time to take my leave. -> bye

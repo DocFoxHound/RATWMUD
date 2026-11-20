@@ -1,0 +1,257 @@
+# rm404, the dry berth clause (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm404
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_percival_thornbury
+written_by codex
+title the dry berth clause
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk drafts_a_berth_clause_while_taking_the_stairs_in_pairs
+likes mutton_stew roof_birds fresh_straw thunder
+dislikes rats early_bells
+fears a_promise_that_names_no_dry_destination
+hopes a_berth_with_an_enforceable_roof
+topics work +0.6 dreams +0.5 travel +0.4 weather +0.2
+styles comfort=reserved gossip=qualified refuse=formal tease=none
+marks oath saying
+persona #self.first# takes stairs in pairs and reserves one exacting question for the terms of an imagined passage.
+
+words
+oath! = Qualify my berth | Strike my stair allowance
+saying! = A good clause reaches the landing intact | Dry is an agreeable term to put in writing
+clause = the dry-berth clause | a qualifying line
+berth = a berth above spray | a sheltered bunk
+hat = a formal hat | a dark felt hat
+case = a folded case sheet | a brief tied in cord
+stair = the double tread | a broad landing
+straw = fine clean straw | a bright new twist
+bowl = a deep mutton dish | a covered stew bowl
+bird = a watchful roof bird | a small gutter visitor
+proof = a little evidence | a precise observation
+sum = a stated sum | an agreed figure
+letter = the sealed passage terms | a neat written offer
+cloud = a shelf of cloud | a low black margin
+rat = a whiskered intruder | a silent little trespasser
+
+any
+opinion @1 houses mixed 1 : A useful vessel and an illustrious owner are two separate propositions. I should enquire about the vessel first.
+opinion @1 road mixed 1 : An excellent departure tells us little concerning conditions at the proposed destination.
+opinion @1 watch mixed 1 : A uniform may establish authority to ask. It does not, by itself, establish the answer.
+opinion @1 merchants mixed 1 : The obligation is to deliver what was actually described, including any dryness expressly promised.
+opinion @1 strangers mixed 1 : I receive an unfamiliar account without attaching either prejudice or unwarranted credit.
+opinion @1 city for 1 : This steep town provides admirable exercise and an ample supply of disputes concerning shared walls.
+
+grown
+line @1 greet : The landing permits us room to converse. | You may stand on the level portion.
+line @1 greet.return : Your courtesy is duly met with mine.
+line @1 again.open : The earlier encounter has a second sitting.
+line @1 farewell : May your outward route give effect to your intentions. | Travel to the place actually promised.
+line @1 farewell.return : I acknowledge your good wishes and return them.
+line @1 react.news : Confine the account to what has reached you directly. | I can hear a preliminary account before seeing documents.
+line @1 react.news.new : An item not previously before me.
+line @1 react.news.known : The essential account is already familiar.
+line @1 react.news.doubt : I would reserve my view pending a clearer statement.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Those injured by such news deserve to decide who hears the particulars.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A happy outcome merits an unqualified acknowledgement.
+line @1 ask.how : Have the practical terms of your day proved acceptable?
+line @1 answer.how : I have reached the landing without undue expense of breath.
+line @1 sympathise : We can keep the particulars within this conversation.
+line @1 reassure : Some matters improve when considered seated and without an audience.
+line @1 refuse : I am committed to an earlier matter which still requires attendance.
+line @1 accept_decline : I accept the stated disposition without further argument.
+line @1 preclose : My engagement requires my presence on a higher landing.
+line @1 accept_preclose : Proceed while you have the necessary interval free.
+line @1 ack : The material point has come across with sufficient clarity.
+scene exchange1
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I prefer a plea that can survive the stairs. | I set out the remedy before polishing the argument.
+b : Meaning a short one? | Why begin with the end?
+a : Meaning I should remember its object by the time I reach the hearing. | To ascertain whether victory would be of any actual use.
+
+scene exchange2
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I take two treads when the height permits. | A ship's companion stair invites a narrower stride.
+b : For speed? | Are you considering passage?
+a : For a deliberate rhythm. A trip is a poor opening statement. | No. I only note how a ship asks for shorter steps than a city does.
+
+scene exchange3
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My desired berth would have a dry ceiling in writing. | I should ask where a ship proposes to put me ashore.
+b : Does ink stop water? | Wouldn't you know before boarding?
+a : It makes the promise easier to identify when the first drop falls. | I should also ask what they mean by the word 'dry'.
+
+scene exchange4
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A good mutton stew need not recite its contents. | I keep the lid on while a visitor is speaking.
+b : You can tell by taste? | To keep the stew warm?
+a : The spoon returns evidence of considerable weight. | Also to prevent the visitor's attention straying towards the gravy.
+
+scene exchange5
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I watch a bird inspect a wet rail before committing both feet. | Roof birds can occupy a magnificent seat for very little expense.
+b : A model witness? | Do you envy the position?
+a : A model of reasonable caution, which is quite a different office. | I should require a substantially wider sill.
+
+scene exchange6
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw makes a small lodging quite serviceable. | I favour new straw matting under a case basket.
+b : Even in a ship's berth? | Why underneath?
+a : Provided the straw remains fresh on the second morning. | Because the floor may make representations of dryness it cannot sustain.
+
+scene exchange7
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder puts an end to a muddled sentence. | I like the roll that travels past after a flash.
+b : By frightening the speaker? | A rival advocate?
+a : By furnishing an inconvenient opportunity to begin it properly. | An emphatic speaker whose brief is admirably short.
+
+scene exchange8
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : Rat teeth do not distinguish an important document from kindling. | A rat in the dry straw ends my admiration for the arrangement.
+b : Do you file the papers high? | Mere presence sufficient?
+a : I take the further precaution of a solid lid. | I require no damage report before moving the mat.
+
+scene exchange9
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : An early bell is too quick to assume public agreement. | I prefer the morning announced after I've assembled my thoughts.
+b : What remedy do you seek? | Do the bells consult you?
+a : My pillow reinstated for a modest additional interval. | The record of consultation is exceedingly thin.
+
+scene exchange10
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I'd want #self.child# to examine both ends of a promise. | I would reserve a sound berth for #self.child#.
+b : Even one you made? | Is this a family voyage?
+a : Particularly a promise made by a parent. Affection can obscure weak wording. | An imagined voyage, presently. One may still think ahead about who stays dry.
+
+scene exchange11
+when topic=work self.job=official self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I request a plain account before a polished one. | I never assume the most neatly folded statement is the best.
+b : Can polish do harm? | What do you inspect first?
+a : It may take off the edge on which a matter turns. | The part the writer least wanted to explain.
+
+scene exchange12
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I should trust #self.friend# with the frank version of a disputed matter. | A familiar voice may ask a pointed question in private.
+b : No qualifications? | How pointed?
+a : The qualifications are part of being frank. | Sharp enough to reveal what a public argument has concealed.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The statement reported was #topic.subject# #topic.claim#. I have heard no testimony myself. | A rumour is a document with its signature in the wrong place.
+b : What may be inferred? | Where ought it to be?
+a : At present, that words have circulated. | With the original speaker. Its last carrier can only identify the journey.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A shorter purse makes an imprecise contract still more dangerous. | When money is scarce I ask exactly when a promised meal will arrive.
+b : Because an appeal is dear? | A trivial detail?
+a : Because a mistaken first purchase may exhaust the entire sum. | Not to the person waiting for it.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Heights gives a view of several courts, physical and otherwise. | A steep street separates a considered promise from a casual one.
+b : Any you prefer? | How?
+a : The outdoor kind when I've concluded my business. | One must decide whether to climb it again to make good the words.
+
+scene exchange16
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A profession of gratitude need not be elaborate. | I allow a silence after a solemn undertaking.
+b : Why keep it short? | Expecting an objection?
+a : The object is acknowledgement, not an exhibition of the speaker. | So the one who made the promise hears exactly what was promised.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I wait a moment after a double flight before opening a case. | A measured pace preserves more dignity than an ambitious stumble.
+b : A little short of wind? | Then why two treads?
+a : I prefer my first sentence unbroken by the staircase. | Two is my measured pace on a familiar stair.
+
+scene exchange18
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I recall an argument carried cleanly up three flights. | I used to judge berths by the appearance of a blanket.
+b : Did it prevail? | And now?
+a : The fourth flight furnished an objection I had overlooked. I was fortunate to walk it. | I inspect the boards directly above it. Experience improves one's questions.
+
+story tale1 [topic=dreams]
+  : I drafted terms for an imaginary voyage while waiting for a hearing. In my draft the berth was described as entirely beyond the reach of seawater.
+  : On rereading, I discovered I had been offered a bed in a warehouse some distance from the ship.
+  b : Did you amend the proposal?
+  : I inserted 'aboard the vessel'. Imagination deserves the same supervision as ordinary contracting.
+
+story tale2 [topic=work self.job=official]
+  : I once put the decisive phrase of a plea on a small separate slip, intending to produce it at precisely the right moment.
+  : The slip attached itself to a damp fold and made its entrance when I shut the papers.
+  b : What did you say without it?
+  : The substance, with much less ceremony. I kept the slip as a warning against elaborate entrances.
+
+story tale3 [topic=pastimes self.likes=roof_birds]
+  : A bird stood on the ridge directly above my window while a shower passed, showing every sign of being quite at ease in the weather.
+  : I watched it shake itself and discovered that a higher eave had screened the entire ridge.
+  b : What did the observation prove?
+  : Only the desirable position of the eave. I had been on the point of crediting the bird with a remarkable personal constitution.
+
+rule @call1
+when concept=bark working=yes self.job=official
+does aside
+cooldown 8h
+say State the remedy before multiplying the adjectives. | A clear example may remain after an impressive argument has vanished.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say The bells have reached a conclusion remarkably early. | The first flight requires a little consideration.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Precisely the weather in which to inspect a proposed berth. | A wet landing favours a considered concession.
+
+rule @call4
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say That little observer occupies a very favourable aspect. | A wing grants considerable freedom in the choice of accommodation.
+
+dlg @1 resident.hub : We may consider a discrete question at this landing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your previous appearance remains a matter of recollection.
+dlg @3 resident.hub [here.time=night] : At this hour a short statement will generally be the more effective one.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : State your purpose. I shall judge what particulars it requires.
+dlg @1 resident.job [self.job=official] : I plead cases. A statement ought to reach the remedy it asks for without losing its footing halfway.
+dlg @2 resident.job : I attend carefully to the precise promise anyone has made.
+dlg @1 resident.news [world.news] : The report as received is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim put about is #topic.subject# #topic.claim#. I decline to certify it on that basis.
+dlg @1 resident.bye : I hope the remainder of your passage is properly arranged.
+graft resident.hub
+choice What would you ask before taking a berth? -> berth_clause
+node berth_clause
+say First, whether it is under cover. Second, what that cover has been known to do in rain. A description of the canvas alone is insufficient.
+free
+choice Would a promised dry shore settle it? -> berth_clause_again
+choice Goodbye. -> bye
+node berth_clause_again
+say Only if the ship goes there and I can sleep tolerably on the passage. One must examine the intervening terms.
+choice I'll investigate the roof first. -> hub
+choice Goodbye. -> bye

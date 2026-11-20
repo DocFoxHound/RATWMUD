@@ -1,0 +1,262 @@
+# rm228, the wind stitch (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm228
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_ivo_fogstack
+written_by codex
+title the wind stitch
+fits stage=adult|old
+prefers job=laborer talk=quiet
+traits temper=calm talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk sews_a_loose_thread_to_read_the_air
+likes honey_cakes stars new_boots autumn_wind
+dislikes cold_tea early_bells
+fears air_that_stands_still
+hopes a_window_above_the_smoke
+topics weather +0.5 work +0.4 pastimes +0.3 gossip -0.3
+styles comfort=patient gossip=measured refuse=courteous tease=none
+marks oath saying
+persona #self.first# leaves a bright stitch hanging free to show where air moves, with a quiet eye for discomfort and scrupulous manners even on a bad stair.
+
+words
+oath! = Frayed silk and chimney brick | Looped linen burn me
+saying! = Give air an end to lift | The free stitch gets the news first
+tagend = my scarlet tag | my loose red thread
+hem = a narrow turned hem | the folded edge
+tack = a long white stitch | a loose tack
+square = a folded square | a square of clean linen
+gasp = a small catch | a rough breath
+draught = a finger of wind | a thin current
+boot = a boot with a sound sole | a boot that bends properly
+treat = a cake glazed with honey | a sticky round cake
+cup = a steaming little cup | a hot drink
+star = the first white spark | a point of clean light
+line = a length of cord | a taut line
+dryside = the sheltered fold | the inner fold
+
+any
+opinion @1 church for 1 : A dry cloth offered without ceremony says all I need to hear about mercy.
+opinion @1 merchants against 1 : A polite demand for more coin is still a demand. I wish courtesy had some purchasing power.
+opinion @1 dole for 2 : Hunger's already taken a bite from a wolf's pride. Don't collect what remains at the bread queue.
+opinion @1 houses mixed 1 : High windows catch clean air. A pity good air travels by rank before coming down to us.
+opinion @1 city for 1 : None of the streets here is altogether still. Air finds a way through even where a cart couldn't.
+opinion @1 times against 2 [world.times=lean|hard] : Everything shrinks in a bad season except the decent appearance we're asked to keep.
+
+grown
+line @1 greet : You've found the airy corner. You're welcome to half. | Please, there's a tolerable place to stand just here.
+line @2 greet [here.time=dawn] : Fresh hour, clean edges. I like to meet a day before it creases. | Dawn suits this bit of quiet very well.
+line @3 greet [pair.band=strangers] : We haven't shared a draughty doorway before, I believe. | No introductions needed for a rest here.
+line @1 greet.return : Quite well met. I had my eyes on the thread. | Thank you. It's a pleasure to hear a considerate voice.
+line @2 greet.return [here.time=dusk|night] : Dimming light makes the red on my cuff look brown. | Good of you to hail me in the dark.
+line @3 greet.return [pair.band=friends|family] : I recognise a certain tread when it pauses beside me. | Delighted to have your company at this end.
+line @1 hail [pair.band=friends] : Here at the free end of the line! | Come and take the second best bit of breeze.
+line @1 kin.open [pair.kin!=no] : You can dispense with asking leave to stop here. | Come right in close. There's room for kin.
+line @1 again.open : The wind brings you back quite promptly. | Twice our threads have crossed this day.
+line @1 farewell : A little breathing room to you between here and home. | Take the easier stretch. I seldom grudge the extra distance.
+line @1 farewell.return : Those kind words will fold up nicely to carry. | Travel gently. There's no prize for arriving breathless.
+line @1 react.news : Unfold that a little so I can see it properly. | I'd rather hear your own careful account.
+line @1 react.news.new : You bring a colour I hadn't seen in the cloth. | Entirely news to these quiet ears.
+line @1 react.news.known : Yes. The outline's as I first heard it. | Somebody else has aired that piece already.
+line @1 react.news.doubt : I think one thread of that has come loose in the telling. | Does the account hold at both ends?
+line @1 react.news.glad [topic.kind=marriage|birth|work|apprentice] : That's worth opening a window to tell. | That gives the day a little fresh air.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|arrest|crime|assault] : I wish the weight of that were mine to lighten. | I'll stand by you while you finish.
+line @1 ask.how : Is the day lying easily across your shoulders? | You look as if a short rest wouldn't go amiss.
+line @1 answer.how : A little thin in the breath. Quite composed otherwise. | Very well once I've had a quiet minute.
+line @1 decline : I should leave that to somebody with breath to spare. | I'm afraid the promised work comes first with me.
+line @1 accept_decline : I respect anybody who knows where to stop. | Keep your own time, then. It's yours.
+line @1 preclose : I'd like a moment with my thread before the air shifts. | I'll gather these loose ends and go presently.
+line @1 accept_preclose : No call for a long ceremony between us. | I'll let you get ahead of the crowd.
+line @1 sympathise : Holding your face quiet takes real effort. | We could look at something ordinary together for a minute.
+line @1 thank : Much obliged. That little breathing space did wonders. | That kindness came without a fuss. I appreciate it.
+line @1 deflect_thanks : I had a quiet minute and put it to use. | One day somebody may fold a clean corner for me.
+line @1 reassure : I'm quite able to wait out a difficult minute with you. | There's nothing to explain till you feel ready.
+line @1 ack : I take your meaning perfectly. | Yes, that follows neatly.
+scene hemometer
+when topic=pastimes|weather
+does tell.self / ask.detail / answer.detail
+a : I've a bit of red sewn to my cuff at one end only. | It isn't a loose stitch by mistake.
+b : Why leave it dangling? | Doesn't it catch?
+a : What I like to know is which side the air comes from. It points away. | Frequently. Then I have to ask my sleeve to tell the truth again.
+
+scene turning_air
+when topic=weather here.weather=fog
+does tell.self / react.self / assess
+a : Even in fog my red thread has an opinion. | My whiskers say still air. My cuff disagrees.
+b : Which way is it pointing? | Which one wins?
+a : Towards my elbow. Some faint current has found a way between the walls. | I'll trust the cuff. It's had fewer disappointments.
+
+scene fold_stack
+when topic=work self.job=laborer self.working=yes
+does tell.self / ask.detail / answer.detail
+a : When I lay folded linen down I change the direction every few pieces. | You can lift a stack clean if you find the open edge first.
+b : Doesn't that spoil the look? | Why does the edge matter?
+a : On the contrary. Each change of direction marks one bundle. | It tells my paw exactly where one ends. No tugging required.
+
+scene steam_wait
+when topic=work self.job=laborer self.working=yes
+does tell.self / react.self / assess
+a : I step clear of thick steam to get a proper breath. | There's a little breeze just below the level of a washboard.
+b : Hurts your chest? | An odd place to find one.
+a : The steam can have that corner. I'd prefer to discuss the cloth. | I dropped something. I had time to notice while I was down there.
+
+scene tea_hold
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I'll drink my tea in halves if it means both halves go down hot. | A tepid cup might as well contain yesterday's bathwater.
+b : Wouldn't one small cup do? | Still you drank it.
+a : Exactly what I mean. I fill it twice. | Courtesy occasionally prevails over taste.
+
+scene boot_mark
+when topic=pastimes self.likes=new_boots
+does tell.self / react.self / assess
+a : A good new boot creases right where the toes bend. | I like the first outing of a pair of boots.
+b : A boot meant to wrinkle? | Before the scuffs?
+a : A clean fold. The crushing of a poor fit is quite another matter. | For the scuffs. Once the first is over they feel like mine.
+
+scene honey_white
+when topic=food self.likes=honey_cakes
+does tell.self / react.self / assess
+a : Honey's a considerable risk to a clean cuff. | The smallest cake often has the most glaze for its size.
+b : Do you forgo it? | Been measuring?
+a : No. My cuffs roll up. | Quietly. It's the sort of knowledge I prefer to put to private use.
+
+scene sump_ladder
+when topic=home self.quarter=sump
+does tell.feeling / ask.detail / answer.detail
+a : On these stairs I seldom hurry the wolf ahead. | Here a clean collar is quite an achievement in itself.
+b : Patient disposition? | Because of the stairs?
+a : Self-interest. I'd like the same favour on the upper flights. | Because you're pressed against wet coats on every landing.
+
+scene window_wish
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My ideal room needn't be large if the window opens at both ends. | I can picture my future house down to the latch.
+b : How would you manage that? | Just one latch?
+a : One sash at the top and one at the bottom. Air in and air out. | Yes. I haven't thought past the satisfaction of opening it.
+
+scene family_seat
+when topic=family self.mother
+does tell.feeling / react.self / assess
+a : I save a draught-free place for #self.mother#. | Someday I might have my own room to show #self.mother#.
+b : You usually want moving air. | Proud of a place of your own?
+a : For myself. A guest has leave to differ. | More of being able to offer a chair at last.
+
+scene stars_step
+when topic=pastimes here.time=night here.weather=clear self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I pick one white point above the roof and watch till my breath settles. | The gap between those two stars looks like a needle's eye.
+b : Always the same one? | Could you sew with it?
+a : Whichever comes clear first. Seems a shame to turn it into a duty. | Perhaps the sky could. My paws fall a little short.
+
+scene autumn_strings
+when topic=season here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : Autumn makes a brave show of my poor little thread. | My cuff turns on me in the autumn gusts.
+b : Is it trying to leave you? | How does it do that?
+a : Quite. I'm obliged to provide a firmer stitch. | The free end slaps me. A discourteous little instrument, sometimes.
+
+scene door_guest
+when topic=newcomer
+does give.opinion / react.self / assess
+a : There's no reason to greet a visitor with a list of rules. | Offer someone the drier side of the door first.
+b : A few rules might save trouble. | Even before you know the name?
+a : Certainly. They'll hear them better once the welcome's settled. | I'd hardly forget my manners for want of a name.
+
+scene spread_word
+when topic=gossip
+does tell.self / react.self / assess
+a : A tale aired too long acquires a curious stiffness. | I like to know who was near enough to hear a remark.
+b : You mean it's been repeated? | Is there such a difference?
+a : Repeated till every wrinkle of doubt has vanished. | Yes. Otherwise one ends by believing an echo had ears.
+
+scene narrow_lane
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Two lanes here run alongside each other with quite different air. | Ridgemere can make a corner breathe like a bellows.
+b : How can you tell? | Where does it all come out?
+a : I wore my red stitch down both lanes. It lay flat in the first. | Around the paving stones, often. Your cuffs know before your ears.
+
+scene lean_bundle
+when topic=times world.times=lean|hard
+does tell.worry / react.self / assess
+a : In a lean week the cloth is folded just as carefully. There simply isn't as much underneath. | The smallest decent luxury I know is a warm heel of bread.
+b : It still looks respectable. | Is that really a luxury?
+a : That's the idea. There's no wish in me to deceive anybody but the eye. | Ask after six lean days. I'm afraid you'll understand.
+
+scene sore_breath
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I count a breath by what I can say without interrupting myself. | If I go quiet suddenly, allow me one stitch's worth of silence.
+b : How was that one? | Shall I fetch water?
+a : Entire sentence and a little left over. Very satisfactory. | Let me ask if I want it. I like the choice.
+
+scene coloured_end
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : The thread has to be red. A white one goes missing against the sky. | I considered blue thread for a change.
+b : And against a red wall? | Did it do as well?
+a : I step aside. Walls rarely find it worth following me. | It disappeared against a dark cuff. Red still holds the post.
+
+story staircup [topic=memories]
+  : I once carried a full cup up a turning stair with my eyes fixed on the rim.
+  : Arrived without losing a drop. I'd passed the landing I wanted and had to carry it back down.
+  b : Did it arrive hot?
+  : Warm enough to reward the effort. Which is seldom true of an unnecessary journey.
+
+story sleevecloud [topic=pastimes|memories]
+  : My first weather thread was so long it snagged behind a shutter. For an hour I believed there was a strong wind due east.
+  : Then I stepped away and nearly took the shutter along.
+  b : Was there any wind at all?
+  : None. An enterprising shutter had set up in its own right.
+
+story two_wraps [topic=food|memories]
+  : I bought a little cake in a paper twist. The honey stuck to the paper so firmly I opened the wrapping inside out.
+  : Looked like the world had clothed itself in cake and left the honey out in the weather.
+  b : Did you save it?
+  : A good warm drink helped me separate matters. I never lost respect for that bit of paper.
+
+rule @air
+when concept=bark
+does aside
+cooldown 8h
+say There, a little life in the thread at last. | Red end pointing outward. A breeze has entered quietly.
+
+rule @folded
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say Clear a dry place for the folded lot. | Loose corners inwards, please. Mind those folds.
+
+rule @breezy
+when concept=bark here.season=autumn
+does aside
+cooldown 8h
+say Autumn will pull a stitch clean out if given leave. | Thread wants to fly thither, sleeve and all.
+
+rule @night
+when concept=bark here.time=night here.weather=clear
+does aside
+cooldown 8h
+say Just visible past the chimney. The first star, I think. | A single spark held quite still above the roof.
+
+dlg @1 resident.hub : We've each got time to say a little in peace.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're exactly the company this corner needed.
+dlg @3 resident.hub [here.time=night] : Let your eyes settle on the red tag. You'll find my sleeve underneath.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I prefer a civil distance from a sharp voice.
+dlg @1 resident.job [self.job=laborer] : #self.trade_words.capitalize#. Patient turning and a steady lift save a deal of trouble.
+dlg @2 resident.job : I attend to what requires doing. It seldom draws a crowd.
+dlg @1 resident.bye : You've given me an agreeable break. Safe roads.
+graft resident.hub
+choice Why have you missed a stitch? -> scarlet_end
+node scarlet_end
+say It's the one stitch on my sleeve that has a job of its own. Watch the end lift when I turn into the current.
+free
+choice Can it tell when the air is bad? -> scarlet_air
+choice I can see it lift. -> hub
+node scarlet_air
+say Only whether the air is moving. The rest I still have to judge with my own lungs, unfortunately.
+choice That seems a fair division. -> hub
+choice I must get along. -> bye

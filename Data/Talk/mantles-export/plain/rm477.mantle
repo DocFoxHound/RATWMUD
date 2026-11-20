@@ -1,0 +1,252 @@
+# rm477, the boot ladder (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm477
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ansel_tarley
+written_by codex
+title the boot ladder
+fits stage=adult|old
+prefers job=servant
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk marks_the_depth_of_street_water_on_one_old_boot
+likes fried_fish dice quiet_chapel summer_evenings
+dislikes stale_bread drizzle
+fears a_serving_tray_tipping_at_a_threshold a_wet_return_in_drizzle
+hopes a_dry_walk_uphill a_jointed_model_stair
+topics home +0.5 weather +0.4 food +0.2
+styles comfort=practical gossip=discreet refuse=firm tease=dry
+marks oath saying
+persona #self.first# will walk an extra street for a dry boot and measures a flood against three old stains before offering an opinion.
+
+words
+oath! = Wet to the buckle | Silt in a good seam
+saying! = Read the boot before choosing the street | Take the stair that keeps your socks
+firststep = the faint brown stitch | my first watermark
+midrise = the welt beside the buckle | my middle stain
+highstep = the black mark below the cuff | the high tide on my boot
+littleflight = my folding stair | a stair of three wooden treads
+soleplate = the little flat base | a palm of plain wood
+hinges = a twist of tinned wire | two soft iron loops
+crumbbed = the crust underneath | a sprinkling of fresh crumbs
+fishskin = the browned outside | the buttery edge
+dicecup = a little horn shaker | the neat yellow cup
+summerstone = a warm outside step | the sunlit corner stone
+
+any
+opinion @1 city for 2 : Within these walls I can make a fresh start on a high landing with yesterday's mud still clinging to my boot. I value that.
+opinion @1 merchants against 1 : I've heard a fine upper sold as a dry boot. I care a great deal more about the seam where the two prices meet.
+opinion @1 newcomers for 1 : The courtesy a new arrival can use is the name of one street that will still be passable on the wet walk home.
+opinion @1 road for 1 : I'd pay my copper for a dry approach and call the expense by its proper name.
+opinion @1 sump against 1 : There's a taint at the base of my old boot that I can trace to one ordinary crossing down there. It never entirely came out.
+
+grown
+line @1 greet : Leave the worn boot upright and there's a seat for you.
+line @2 greet [pair.band=strangers] : Welcome. The shallow crossing is clear today.
+line @3 greet [here.time=dawn] : Morning. The stone's almost the colour of my last mark.
+line @4 greet [here.time=dusk|night] : Take the upper step while the light holds.
+line @5 greet [self.working=yes] : Let the dish pass your sleeve, then speak.
+line @1 kin.open [pair.kin!=no] : You've seen this old boot in worse trim.
+line @1 again.open : Good. I've got a second dry step handy.
+line @1 greet.return : Your greeting managed the climb quite comfortably.
+line @2 greet.return [pair.band=friends|family] : I'd know that voice halfway down a flooded lane.
+line @3 greet.return [here.time=dusk|night] : The sound reaches this high after sundown.
+line @1 farewell : May your return crossing come below the first stitch.
+line @1 farewell.return : My socks and I wish you dry stones.
+line @1 react.news : Which part of the account touched ground?
+line @1 react.news.new : A fresh mark for this day's measures.
+line @1 react.news.known : I recognise the account by its muddy lower edge.
+line @1 react.news.doubt : I'd ask whether the teller walked that particular crossing.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave the threshold free for a wolf coming home tired.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something there worth climbing home a little quicker for.
+line @1 answer.how : Rested above the knees, restless from there down.
+line @1 ask.how : Has your day reached a comfortable level?
+line @1 reassure : That upper seat will keep your clothes clean.
+line @1 sympathise : A dry sleeve goes a remarkably short way towards a whole wet afternoon.
+line @1 decline : I'd put your errand behind the dishes I owe the hall, which wouldn't serve you.
+line @1 accept_decline : I'll set my request aside before it starts gathering dust.
+line @1 thank : That saves me coming up with water squelching at every step.
+line @1 deflect_thanks : An accurate report of a wet street will settle us.
+line @1 preclose : Time I found where this day's damp ends.
+line @1 ack : Below the stitch.
+scene boot
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I've kept an old boot for the little ladder of stains on the side.
+b : Can you read each one? | Why not use a stick?
+a : The lowest shows where the seam begins to let water in. The next tells me I've stayed to gather nearly too much information. | I don't put a stick on before walking to work. The boot was collecting its facts well before I thought of keeping them.
+
+scene serving
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A laden dish and a wet threshold make an awkward introduction.
+b : Which takes your attention first? | Could you call for another server?
+a : I learn about the threshold on my outward trip. Coming back with the dish, I already know which foot goes down on dry stone. | Yes. I'll share a dish too heavy for one pair of arms without making the guest share the accident.
+
+scene fish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Fried fish tastes especially good off a hot plate on a cool stone step.
+b : Doesn't the stone take the heat? | What goes underneath the fish?
+a : I use my knees for the plate. The stone can have the leisure of cooling me from below. | Some fresh crumbs to catch the butter. I mean to eat those too when the fish is done.
+
+scene dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I can hear if a die is caught in the lip of a horn cup.
+b : What's different about the noise? | Would you count that throw?
+a : One knock carries on after all the dice ought to be on the table. A loose pip would give more trouble to diagnose. | Only when every die's finished rolling in plain sight. That's a rule I can remember even when I'm losing.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : A quiet chapel has very little call on a hall servant's ears.
+b : When do your ears relax? | Are you waiting for anything there?
+a : For a while I listen for dishes and footsteps. Then I can hear a sleeve brushing a seat, and there's no errand in it. | I leave my errands at the door. The pleasure lies in letting one little stretch of daylight pass without any.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : On a summer evening there can be a strip of warmth on the upper stair long after the yard goes grey.
+b : How wide a strip? | Will you follow it higher?
+a : Wide enough for one unhurried pair of heels and a cup beside them. | Only if the next tread has a dry patch. I conduct my pursuit of the sun on reasonable terms.
+
+scene bread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : Bread that knocks against a plate has passed the point where I'd set it by a guest.
+b : Could it still go to use? | Is the sound your whole test?
+a : Grate it and cook it. A bit of work can give a hard heel a purpose in a decent meal. | I pinch the middle too. A good outer crust deserves to make a little noise.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle leaves a boot looking perfectly respectable until you bend it.
+b : What shows then? | Would heavy rain be better?
+a : A wet shine where the leather folds. By then the lining's made firm arrangements with my left sock. | As a warning, certainly. I prefer the clear information of an actual downpour.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : I know an estate threshold so well that I can tell how near I am by the change in the echoes.
+b : How near is useful? | Why listen for it?
+a : Near enough to slow a step before the dishes start to jump. I'm fond of doing the quiet part of service in quiet. | I have ears free even when both paws are carrying supper. I've learned to give them a share.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : When I'm taking something home for #self.spouse#, I carry it on the uphill side in a wet lane.
+b : Does a slope make such a difference? | What if the parcel's large?
+a : A passing splash goes downhill of its own accord. There's no need to help it to a place inside a paper fold. | I bring cloth for it. I would sooner turn up looking properly equipped than dripping with explanations.
+
+scene priest
+when topic=faith self.priest
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.priest# whether a service to a stranger can be as small as pointing to a loose tread.
+b : What would your own answer be? | Would you do more?
+a : A stranger can reach home with a sound ankle by no greater gift. That seems considerable from ankle height. | Yes, if more were wanted. I'm careful about the point at which a useful guide becomes an unwanted escort.
+
+scene joint
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd build myself a folding flight of three little steps that fits my palm.
+b : Can such a small thing help with real water? | Why hinge it?
+a : Only as a reminder. I can point to one tread and remember a particular crossing much more readily than by memorising heights. | So I can put it away once I've finished comparing. Nothing dries a wolf's patience quicker than a talk about old floods.
+
+scene money
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A cobbler who shows me the stitching beside the sole can hold my interest for a considerable time.
+b : More than a polished toe? | What's a stitch supposed to stand up to?
+a : Polish I can supply for myself after supper. I'm buying the part that keeps supper out of the gutter. | No little gap when I flex the boot. A gap the size of a pin will admit an afternoon's drizzle if given time.
+
+scene oldwork
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once learned to balance an empty plate on a landing that sloped slightly outwards.
+b : Who held it for you? | Any benefit to an empty dish?
+a : I kept my own thumb against the rim. The landing was quite willing to provide correction without another teacher. | It made an inexpensive lesson. I need considerably less concentration now to keep gravy inside its proper border.
+
+scene wetcloth
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A wet stocking should come off promptly once a wolf's under cover.
+b : Is there a spare pair handy? | Where can you dry it?
+a : Yes. One dry pair in a cloth roll is worth considerably more at dusk than its morning weight might suggest. | On a rail in moving air. A smell of singed wool beside a warm meal is a poor exchange for haste.
+
+scene dark
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : After dusk a puddle can take the colour of a sound paving stone.
+b : Would you prod each stone? | What tells you a crossing's familiar?
+a : A slow toe at the uncertain edge does the work. I would hardly make an evening expedition of crossing one lane. | I count the landings from a familiar door. I've done the walk often enough to manage a little darkness.
+
+scene visit
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A visitor who asks for a dry path has given me a question I can honestly answer.
+b : Can you promise the whole path? | Would you draw it?
+a : As far as I walked it today. Beyond that I'll give the last reliable turn with my doubts attached. | Three steps and an arrow on a scrap are generally quite sufficient. I'd rather send a walker off with a clear mark than a pocket of damp paper.
+
+story blueboot [topic=weather]
+  : I marked a boot in blue chalk after crossing a strip of water on my way home.
+  : The chalk vanished under the next wash and left a much clearer brown stripe at precisely the proper height.
+  b : Did you take the hint?
+  : Yes. I finished my blue chalk on clean shelves, where it could reasonably expect to stay.
+
+story cups [topic=work self.job=servant]
+  : I tried to carry two empty cups down the stair by their handles so I could hear the evening bell.
+  : The porcelain chimed with each descending step until I'd made myself an auxiliary bell down the full flight.
+  b : Did you repeat the performance?
+  : I put a clean napkin between them for the return. The chapel conducts its own music quite adequately.
+
+story flatdie [topic=pastimes]
+  : One evening a die stopped on the joint between two boards and showed me half of two faces.
+  : I slid an old copper under the short leg of the table and rolled again on the level wood.
+  b : Was the throw better?
+  : Decidedly worse for me, but all six little spots had the grace to show at once.
+
+rule @guest
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 8h
+say Leave the dry edge for the supper dish. | Hold the door clear of the turning plate.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The brown stitch is taking water. | Use the upper crossing with those shoes.
+
+rule @dice
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say All the spots in plain view, please. | No leaning dice on the sloping board.
+
+rule @even
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Last warm place on the high tread. | Lift the boot out of the creeping shade.
+
+dlg @1 resident.hub : I'm keeping this step for a moment's rest. You may take the dry half.
+dlg @2 resident.hub [topic.meeting=known] : This landing suits your feet, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Stay below the top tread while you explain the business that brought you here.
+dlg @4 resident.hub [here.time=night] : The stair keeps very little light. A still voice will carry from where you are.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. A dish should reach a guest just as it left the hearth.
+dlg @2 resident.job : I can carry a dinner above the splash of a busy threshold.
+dlg @1 resident.news [world.news] : I'd put this account beside a fairly fresh watermark. #world.news#.
+dlg @1 resident.bye : Try the upper stones when you reach the crossing.
+graft @bootladder resident.hub
+choice Why is one old boot standing there? -> bootladder
+node bootladder
+say Those little marks show where three different streets flooded over my boot. For directing a stranger home in drizzle they're better than a guess.
+choice Which mark is most useful? -> bootladder_more
+choice Return to the dry step. -> hub
+node bootladder_more
+say The lowest. That's the depth at which a wolf can still change course and arrive with dry socks.
+choice Return to the dry step. -> hub
+choice Take the higher crossing. -> bye

@@ -1,0 +1,262 @@
+# rm209, the threshold listener (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm209
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_corra_coldridge
+written_by codex
+title the threshold listener
+fits stage=adult|old
+prefers talk=chatty temper=even
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk turns_a_coal_chip_to_its_shiny_face_before_speaking
+likes plum_tart roof_birds fresh_straw frosty_mornings
+dislikes gulls drizzle
+fears calling_the_wrong_guest an_empty_pocket
+hopes a_room_that_carries_every_word
+topics smalltalk +0.4 lore +0.3 pastimes +0.3 festival +0.3 gossip -0.2
+styles comfort=company gossip=discreet refuse=patient tease=none
+marks oath saying
+persona #self.first# studies the carrying power of a voice and turns a chip of coal bright side up before speaking, with ample breath for directions and very little for indiscretion.
+
+words
+oath! = Pocketful of embers | Soot on my best collar
+saying! = A threshold has two audiences | A whisper travels on borrowed legs
+chip = the bright-faced chip | my little black mirror
+lintbit = a ball of pocket lint | a dusty bit of fluff
+seam = the folded hem | the innermost seam
+turn = a single turn | one small twist
+crowcall = the chimney chatter | that clamour on the tiles
+tartedge = the brittle edge | the dark baked rim
+pause = a good speaking pause | a beat for breath
+latch = the tongue of the latch | the brass tongue
+draft = a draught at ankle height | a little lick of cold
+echo = the second sound | the smaller voice that comes back
+fold = a neat paper fold | a sharp crease
+
+any
+opinion @1 city for 2 : There's a spot in almost every street where a voice carries beautifully. I could live a lifetime finding them.
+opinion @2 festivals for 2 : A procession has a front and a back and scarcely anybody thinks to cheer the back.
+opinion @3 houses mixed 1 : Velvet makes a grand curtain. Hard on a petitioner whose answer gets lost in it.
+opinion @4 newcomers for 1 : Tell somebody where to go once without sighing and tomorrow you'll have another wolf who knows the way.
+opinion @5 strangers mixed 1 : I'll say where a door leads. Who went through before you is between that wolf and the hinge.
+opinion @6 watch mixed 1 : A clear call to stand back saves a great many elbows. A second call just makes everybody look behind.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome within speaking distance. | A face I haven't placed yet. There's time.
+line @2 greet [here.time=dawn] : First light, and here's company already. | Dawn does wonders for the sound of a voice.
+line @3 greet [here.time=dusk|night] : Evening company. Nearer, please. Your voice carries better here. | You've found me before I've run out of breath.
+line @4 greet.return : Heard you beautifully from here. | Welcome right back across the gap.
+line @5 greet.return [pair.band=friends|family] : That voice I could pick out through plaster. | There you are, clear as ever.
+line @6 farewell : May all the doors swing easily. | Saving half my speech for another meeting.
+line @7 farewell.return : A clean parting, then. | My last word can wait for your return.
+line @8 kin.open [pair.kin!=no] : Here, there's no ceremony wanted between us. | You get the short welcome and the long visit.
+line @9 again.open : We could have kept talking after all. | That's two meetings on a single breath.
+line @10 hail [pair.band=friends] : I've saved up something for your ears! | Catch my voice before it sails past!
+line @11 react.news : Wait while I take the weight of that. | That's quite a thing to be carrying about.
+line @12 react.news.new : That hasn't crossed my hearing till this instant. | You've brought it to the right pair of ears.
+line @13 react.news.known : Yes, that part reached me. Did anything follow? | I've caught the words before, in another voice.
+line @14 react.news.doubt : The telling sounds more certain than the teller could be. | I should like to hear the first account.
+line @15 react.news.sorrow [topic.kind=loss|death|crime] : I'll keep my voice down for this. | Ah. Let it be told with some kindness.
+line @16 react.news.glad [topic.kind=marriage|birth] : That deserves a room big enough for cheering. | I'd hear that twice gladly.
+line @17 answer.how : Plenty to say and a pocket to fiddle with. | In excellent voice and reasonable spirits.
+line @18 ask.how : Much to hear about in your day? | Has anybody let you finish a sentence today?
+line @19 decline : I'd lose my place if I went along just now. | I'd rather stay and see this matter through.
+line @20 accept_decline : Very clear. I can leave that door shut. | No second invitation till you give the word.
+line @21 preclose : There's my pause for departure. | I had better let the next voice in.
+line @22 accept_preclose : You've listened most patiently. Off you go. | I'll leave a little quiet behind you.
+line @23 thank : You let me finish. That's a courtesy I notice. | Much obliged for such careful hearing.
+line @24 deflect_thanks : It cost me a breath and I had one spare. | Keep the thanks for the next patient listener.
+line @25 sympathise : I'd offer you quiet if you've had enough questions. | Speak at whatever pace comes easily.
+line @26 reassure : The pause feels longer from your side, that's all. | Nobody expects a whole speech in one breath.
+line @27 ack : Within my hearing. | Perfectly audible.
+scene bright_side
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I turn #chip# before I speak to anybody new. | Look at the black dust in this hem. There's my luck.
+b : Does it have to turn a certain way? | Luck looks a little grubby.
+a : Shiny side upward. I like to begin with a glimpse of light. | It does when you've been carrying it all day.
+
+scene name_pause
+when topic=work self.working=yes self.job=none
+does tell.self / react.self / assess
+a : I leave #pause# before I call anybody in. | The hardest part of a summons is the silence afterwards.
+b : Gives you time to remember the words. | Are you afraid nobody heard?
+a : Gives the last wolf time to leave, too. | Quite the reverse. Everybody heard and all the heads turn.
+
+scene roof_parliament
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : The small birds go quiet all at once. That interests me more than their noise. | I tried to count #crowcall# by separate voices.
+b : Something startled them? | How many voices could you distinguish?
+a : Something below our hearing. I envy them the first word. | Three, then one sneezed. I had to start again.
+
+scene black_dust
+when topic=smalltalk
+does ask.advice / give.advice / assess
+a : How do I get a coal print off a folded letter without tearing it? | My pocket has worn into the shape of #chip#. Any remedy?
+b : Brush the page with soft bread. | Put something rounder in with it.
+a : I'll keep a little crust for that purpose. | An acorn would give the seam a rest.
+
+scene plum_rim
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I'd like a tart made entirely of #tartedge#. | I can tell a plum tart by the way the crust has lifted.
+b : Where would the fruit go? | Even under a cloth?
+a : Little pockets all along it. No centre to argue over. | No, I should have to cheat and sniff.
+
+scene sound_step
+when topic=lore|day here.region=ridgemere
+does tell.self / react.self / assess
+a : Half a stair up, my voice comes back to me much smaller. | Two steps under an arch and a whisper will cross the street.
+b : Maybe the stone has manners. | That could be awkward for secrets.
+a : It waits for me to finish. That's more than some company does. | Exactly why I try a cough before saying anything delicate.
+
+scene apprentice_listen
+when topic=work self.apprentice=yes
+does tell.feeling / sympathise / assess
+a : I'm still learning how much of an instruction to repeat back. | There's a moment when I've nodded and still haven't understood.
+b : I usually want to hear the difficult bit twice. | Hard to admit once you've nodded.
+a : Yes. That's the bit I swallow when I repeat it. | I've learnt to say the nod meant I was listening.
+
+scene feast_tail
+when topic=festival
+does tell.plan / ask.detail / answer.detail
+a : I want to meet the last marchers with a full water cup. | There should be applause left over for whoever clears the feast away.
+b : All of them? | Who'd see you?
+a : For the one calling the turns. A dry throat cuts the route short. | The sweeper would. That's sufficient audience.
+
+scene visitors
+when topic=newcomer here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Directions through our city come best in pairs. | I point travellers toward a sound before I point up a street.
+b : Two streets at once? | Which sound?
+a : A turn and a place to stop if you've missed it. | Whatever's carrying. Bells can get you further than a finger.
+
+scene gull_voice
+when topic=animals self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull can make my best carrying voice sound like a sigh. | I dislike a gull chiefly because it never draws breath where I expect.
+b : You sound almost admiring. | You've been waiting for a word in edgeways.
+a : Envious of the volume. Not of what gets said. | Precisely. All I wanted was my own thought back.
+
+scene frost_print
+when topic=weather here.weather=clear here.season=winter
+does tell.self / ask.detail / answer.detail
+a : I like a cold morning when you can see your speech. | On a cold morning I watch a breath till it thins out.
+b : Can you tell a long word from a short one? | Trying to see how far?
+a : No, but you can tell who hasn't stopped for breath. | Where it would reach somebody else's ear.
+
+scene waiting_seat
+when topic=smalltalk|work
+does give.opinion / disagree / concede
+a : Nobody waiting should have to guard a place with an elbow. | A proper queue starts at the back.
+b : How else could you keep it? | Surely the front matters more.
+a : Remember the face just ahead. That leaves two free paws for the waiting. | The front looks after itself. It's the newcomer who needs to find the back.
+
+scene friend_confidence
+when topic=friends self.friend
+does tell.feeling / sympathise / assess
+a : I could sit beside #self.friend# without a word and still feel heard. | There's a pause I would trust to #self.friend#.
+b : That must be a restful thing. | A pause needs trusting?
+a : Yes. Even a mouth as busy as mine wants a holiday. | Some folk will fill one with anything. I'd rather have it empty.
+
+scene rain_sleeve
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : A little rain catches every strand of the coat. Hard rain drains away much more obligingly. | My cuffs have drunk all this weather.
+b : You'd sooner have a downpour? | Wring them out.
+a : On this coat, yes. Drizzle settles in and won't be shown out. | Then my boots will have the same complaint.
+
+scene news_two_ears
+when topic=news world.news
+does tell.news / react.news / assess
+a : The words I heard were these: #world.news#. | Here's the message from #world.news_from#: #world.news#.
+b : Do you believe the telling? | Do you add anything?
+a : I can promise I heard those words. The rest needs a better witness. | A pause at the end for somebody else's opinion.
+
+scene clean_straw
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : I like fresh straw because it gives my steps a voice. | There's a particular rustle under a clean bed.
+b : What does it say? | You actually listen to your bedding?
+a : Usually that I haven't been as quiet as I meant to be. | Only when sleep has turned its back.
+
+scene pocket_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt my pocket had a staircase in it. | In my sleep I opened a door onto another identical door.
+b : Did you go down? | How many did you open?
+a : All the way to a tiny black furnace. Warmest pocket I've owned. | Just two. A third seemed too much like work.
+
+scene quiet_retreat
+when topic=health|pastimes
+does tell.self / react.self / assess
+a : When my throat feels tired I fold paper instead of talking. | Try keeping silent for the length of #fold#.
+b : What do you make? | That isn't very long.
+a : A little box. It gives my words somewhere to wait. | Not by a clock. By my usual measure it's a rest.
+
+story coal_and_linen [topic=memories]
+  : I once sewed my luck inside the lining to keep the cloth white.
+  : Next washing there was a grey cloud in the basin and a chip rattling in the bottom.
+  b : How did the coal get out?
+  : My stitches had washed out too. Very clean thread it was.
+
+story lost_syllable [topic=lore|memories]
+  : An empty room with a curved wall took the last sound of each word I said.
+  : I tried a long speech and a short one. Both came back a syllable light.
+  ask : Would you have kept testing?
+  b : Till I knew what it did with the pieces.
+  : That was my thought. A narrow crack into the next room finally explained it.
+
+story absent_tart [topic=food]
+  : I packed a tart upright once in a folded paper sleeve.
+  : By supper the pastry looked like a purse with nothing left in it.
+  b : Where was the plum?
+  : In the fold. Ate that first and saved the purse for last.
+
+rule @audible
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say One clear call, then space to answer. | There's room to pass if you turn a little.
+
+rule @lint
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say Another fleck on the cuff. Pocket luck costs washing. | Black dust under the claw again.
+
+rule @bird
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say Three chirps and the chimney's quiet. | That's a new note up on the tiles.
+
+rule @feast
+when concept=bark here.day=festival
+does aside
+cooldown 8h
+say Leave a cheer over for the last in line. | Voices to the far end, please!
+
+dlg @1 resident.hub [topic.meeting=stranger] : You're within easy earshot. Begin where you like.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember just where you paused last time.
+dlg @3 resident.hub [here.time=night] : Carry your voice softly this late. It'll reach me.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep this short and audible to everyone present.
+dlg @5 resident.job [self.working=yes self.job=none self.workplace] : I see folk across the threshold at #self.workplace#. There's a knack to an audible welcome.
+dlg @6 resident.job : A fair bit of my day goes on hearing people properly.
+dlg @7 resident.news [world.news] : I caught the words entire: #world.news#.
+dlg @8 resident.bye : Take your time getting through the doorway. I'm finished.
+graft resident.hub
+choice Why turn that chip over? -> coal_faces
+node coal_faces
+say Hold it to the light and one side shines like black glass. I decide what to say while I'm finding that side.
+mood calm
+choice And if there isn't any light? -> coal_ridge
+choice I'll leave you to it. -> hub
+node coal_ridge
+say I know the ridge under my thumb. It takes longer. Sometimes that improves the speech.
+choice Back to my other question. -> hub
+choice Farewell. -> bye

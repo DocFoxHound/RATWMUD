@@ -1,0 +1,282 @@
+# rm220, the keeper of pauses (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm220
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_egil_dunn
+written_by codex
+title the keeper of pauses
+fits stage=adult|old
+prefers warmth=warm piety=devout
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk listens_for_the_gap_between_two_drops
+likes fried_fish riddles quiet_chapel misty_dawns
+dislikes flies salt_wind
+fears hurrying_a_confidence
+hopes to_make_a_quiet_seat_for_two
+topics faith +0.5 friends +0.3 weather +0.3 pastimes +0.2 quarrel -0.3
+styles comfort=companionship gossip=gentle refuse=patient tease=none
+marks oath saying
+persona #self.first# follows the hush between falling drops, brings even a complicated riddle to rest, and keeps an empty seat close for company.
+
+words
+oath! = Mercy between the beats | Bright One shelter the waiting
+saying! = Even a drip must draw breath | A pause is part of the welcome
+pause = the little hush | the breathing space
+drip = a drop from the spout | the bead under the lip
+seat = the spare stool | the seat by my elbow
+space = a paw's width of room | room for another
+morsel = the flaky middle | a soft piece of fish
+plate = the second dish | the plate held in reserve
+mesh = a square of fine netting | a little mesh cover
+fly = a meddling fly | a whiskered nuisance of a fly
+riddle = a puzzle for quiet ears | a question with a turn in it
+mist = the grey between the roofs | a soft veil off the hill
+cuff = the edge of a sleeve | my turned cuff
+bench = the plainest bench | an unpolished seat
+wick = a short twist of wick | the last bit of cotton
+door = the inner door | the door that closes softly
+
+any
+opinion @1 church for 2 : A chapel should let a wolf sit quietly before finding words for a prayer.
+opinion @1 dole for 2 : A hungry mouth shouldn't have to give a speech before receiving supper.
+opinion @1 city for 1 : Our streets meet from so many directions. Somebody is always nearly home.
+opinion @1 drink against 1 : I'd like to be able to hear a small voice right until the end of an evening.
+opinion @1 newcomers for 1 : Keep a spare stool in reach. A new neighbour is a better use for it than a heap of coats.
+opinion @1 strangers for 1 : Before you know a name you can still pass a dish across.
+opinion @1 festivals mixed 1 : Good to be called into the light, and a kindness to have a little shade to retire to afterwards.
+
+grown
+line @1 greet : I'll move along this much. The rest is yours. | Glad your path went close enough for a word.
+line @2 greet [pair.band=strangers] : A welcome needn't wait for introductions. | Here's a quiet spot if it suits you.
+line @3 greet [here.time=dawn] : Come share the beginning of things. | I was just listening to the day wake.
+line @1 greet.return : That's a kind interruption. | You bring a pleasant sound along.
+line @2 greet.return [pair.band=friends|family] : A voice I can trust my pauses to. | I thought the day was saving a good bit.
+line @3 greet.return [self.working=yes] : Give me half a breath to turn. | A welcome word in a busy stretch.
+line @4 greet.return [here.time=dusk|night] : Good to hear you this side of sleep. | I'm glad the evening brought you round.
+line @1 again.open : Another quiet minute put our way. | Our walks seem to have a refrain.
+line @1 kin.open [pair.kin!=no] : This place on the bench feels like yours. | Sit as close as you please today.
+line @1 farewell : Find a little rest before the next hard turn. | Go with the peace you brought along.
+line @1 farewell.return : I'll keep your place a while. | Kind going, all the length of your walk.
+line @1 react.news : Tell the part that's clearest to you. | Let the words settle into their own order.
+line @1 react.news.new : I hadn't an inkling of it. Take your time. | A moment to let that settle, please.
+line @1 react.news.known : Yes. I heard the account a little earlier. | That's reached this bench once today already.
+line @1 react.news.doubt : There's a gap between those bits I can't quite cross. | I'd keep a little space there for another account.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh, that's a silence somebody will feel. | I'll remember the hurt when I pray.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a happy weight to carry away. | Let that bit ring for a while.
+line @1 ask.how : Have you found room to draw breath today? | How did the day treat you on the way here?
+line @1 answer.how : Still enough inside to hear what's going on outside. | Doing well, especially now I've company.
+line @1 sympathise : A hard thing takes up the whole bench sometimes. | If you've no words left, I'll hear that too.
+line @1 reassure : We'll let this minute finish before we meet the next. | Enough room here to gather yourself.
+line @1 decline : I'd rather keep this hour clear for somebody coming back. | I've put my word elsewhere this time, I'm afraid.
+line @1 accept_decline : Then may the time serve you well. | Your reasons can stay comfortably your own.
+line @1 thank : I'll remember that quiet bit of kindness. | That gave me a little more room than you knew.
+line @1 deflect_thanks : Plenty of space on this side to give it. | You made it easy to help.
+line @1 preclose : I'd best take a little silence home now. | I'll leave the last breath of this with you.
+line @1 accept_preclose : It was good to sit a while within your hearing. | I'll stay till your steps fade.
+line @1 ack : I hear the weight of it. | Yes, that rests well.
+line @1 offer : Would #seat# lighten your road a little? | I've room beside me and time enough.
+line @1 give.advice : Listen for what comes after the brave words. | Let the other voice have its whole breath.
+scene gap_count
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail / assess
+a : I listen harder after a drop falls than before. | There's a little clear patch between those two drips.
+b : How long can the quiet last? | Clear patch in the sound?
+a : Long enough to hear your coat brushing the wall. | Yes. For a blink I could hear the street behind it.
+b : I'd missed the coat entirely. | There it is again. A cart turning.
+
+scene empty_seat
+when topic=friends|home
+does tell.self / ask.detail / answer.detail / ack
+a : I like to keep #seat# unclaimed until it's wanted. | I keep a stool clear even when the floor's piled with things.
+b : Don't you put your feet on it? | For a visitor?
+a : Sometimes. My feet understand somebody might take precedence. | For the possibility. I enjoy that almost as much.
+b : I'll take their place while the offer's good. | Here's a possibility ready to sit down.
+
+scene long_prayer
+when topic=faith
+does tell.feeling / ask.detail / answer.detail / assess
+a : I bring the Bright One a pause halfway through praying. | My prayer sometimes begins in earnest when I forget the next word.
+b : Why a pause? | Doesn't that put you off?
+a : In case I've been speaking over an answer. | Quite the opposite. I notice what I meant in the first place.
+b : I'll give my next prayer room for a reply. | That sounds like a word worth forgetting.
+
+scene chapel_bench
+when topic=faith self.likes=quiet_chapel
+does tell.self / react.self / assess
+a : In chapel I choose the bench that complains least. | My favourite sound in chapel's a door shutting gently.
+b : One squeak spoils a prayer? | Coming in or going out?
+a : Hardly. But my troubles oughtn't to interrupt another prayer. | Either way. A wolf taking care of the quiet for another wolf.
+
+scene salt_air
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : The salt wind sets my eyes weeping before I've heard a sad thing. | A seawind leaves its trace on my lip all day.
+b : A ready supply of tears. | Can't you wash it off?
+a : I'd sooner shed them for something deserving. | I can. I forget and drink salted tea instead.
+
+scene fish_cover
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I save #morsel# under #mesh# until I've settled in my seat. | A fish supper is worth fetching another plate for.
+b : Keeping it from the flies? | For the bones?
+a : And a little from my own greed. I like a fine last bite. | For half the fish. Supper's nicer when the other half might find company.
+
+scene riddle_seat
+when topic=pastimes self.likes=riddles
+does ask.detail / answer.detail / assess / tease
+a : A thing in my room grows more useful when somebody covers it. What is it? | Something I own looks loneliest when every inch of it shows.
+b : A cushion? | An empty plate?
+a : Near enough. The stool under the cushion, with a guest on top. | A stool. I like it better when a visitor hides the seat.
+b : I'll let the stool take the credit. The cushion helped. | I could hide it very well by resting my feet up.
+
+scene kind_riddle
+when topic=pastimes self.likes=riddles
+does tell.self / react.self / assess
+a : A good riddle ought to leave the guesser pleased with a wrong answer. | I keep the early guesses as well as the last.
+b : Even if I'm miles off? | Why keep the misses?
+a : Especially then. You may have found the beginning of a better riddle. | They make a nice crooked road to the answer.
+
+scene morning_veil
+when topic=day|weather here.weather=fog here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : When #mist# comes down I hear which streets are near me. | A foggy dawn draws the world in close for a visit.
+b : Hear a street? | Nothing to see beyond the step.
+a : The footfalls. Cobbles have a different answer from packed dirt. | A whole step's worth seeing. I generally overlook the edge.
+
+scene married_hush
+when topic=family self.married=yes
+does tell.feeling / ask.detail / answer.detail
+a : I treasure a silence I can share with #self.spouse#. | My idea of a fine supper has a place for #self.spouse#.
+b : No talk at all? | What would you serve?
+a : Talk in a moment. The quiet says I've come home. | Almost anything. It's that second place that matters to me.
+
+scene tender_hands
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : Learning a task is mostly knowing when to let another pair of paws show you. | I take a breath before trying a new movement.
+b : Even if you're nearly there? | To remember how?
+a : Especially then. One small detail can be the whole task. | To look once more while my paws are still empty.
+
+scene threshold
+when topic=newcomer|travel
+does tell.self / react.self / assess
+a : I'd show a newcomer a place to rest before the sights. | A stranger's first question sometimes comes out as a sigh.
+b : Even if there's plenty to see? | What do you answer to that?
+a : Let the sights wait till the traveller has the strength to enjoy them. | Shift my stool and leave a space. The next question may have words.
+
+scene price_pause
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I count my money before I go near a counter. | An empty purse likes a quiet walk home.
+b : To be ready for a bargain? | Embarrassed?
+a : To be ready to walk on without making a seller feel unkind. | A little. Mostly I'm thinking how to make the next meal stretch.
+
+scene evening_gate
+when topic=day here.time=dusk here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : At dusk in Ridgemere the returning feet have a sound all their own. | I like to stand aside for the ones coming home.
+b : Slower than in the morning? | Why stand aside?
+a : Some, yes. Others walk faster the nearer they get to a door. | That last little bit of road can feel very long at supper.
+
+scene gentle_gossip
+when topic=gossip
+does tell.self / react.self / assess / assess
+a : When somebody lowers a voice I ask if the words are mine to carry. | I prefer to offer a rumour a pillow. It might settle for a nap.
+b : You ask every time? | Won't it get up again?
+a : When I remember. Better than wondering after the telling. | Possibly. It can use some other pair of feet.
+b : That question would have saved me a few uneasy walks. | I can leave it here without adding my tracks.
+
+scene lean_bowl
+when topic=times world.times=hard|lean
+does tell.feeling / ask.detail / answer.detail
+a : When times bite I put an extra dish out even for a small supper. | I would sooner break a little loaf twice than eat it looking at the door.
+b : Does it make the food go further? | Expecting a knock?
+a : It tells a hungry guest somebody already thought to make room. | I might be. I'd like it to be welcome if it comes.
+
+scene flies
+when topic=animals self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : A fly lands on a prayer book as if the ink had been an invitation. | Flies appear to think I'm appointed to mind their supper.
+b : Do you move the book? | And do you?
+a : Put a slip of paper underneath the visitor and take it to the door. | I keep it under netting. The appointment has its limits.
+
+scene rain_sleep
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt the city roofs all dripped in the same instant. | I dreamt I kept a jar for putting quiet by.
+b : An almighty splash? | Did it hold much?
+a : A faint plip. After that a silence wide enough to wake in. | Only while the lid was off. Dream jars have peculiar ways.
+
+scene borrowed_stool
+when topic=home|friends
+does tell.self / react.self / assess
+a : That stool fits under my arm so well I could take it visiting. | I'd gladly lend my spare stool to somebody expecting a shy caller.
+b : To sit on yourself? | Why a shy one?
+a : For the host. We always assume a host has somewhere left to sit. | No need to ask where to go if there's a seat waiting already.
+
+story rain_beat [topic=memories|weather]
+  : Under a long eave I used to try to guess which drop would come last. I picked a bead swelling on the end nail.
+  : It hung on and on. I had my ear up waiting when a smaller one tapped me right between the eyes.
+  b : Did the big one ever fall?
+  : I missed it when I blinked. I've been less sure of endings since.
+
+story two_dishes [topic=memories|food]
+  : I once laid two dishes out by mistake for a meal alone. I filled them both and ate the first slowly.
+  : By the time I lifted the cover on the second, the fish had cooled and a little cat had appeared at the door.
+  b : A guest to suit the meal.
+  : Exactly. I picked the bones from that half much more carefully than from my own.
+
+story quiet_closure [topic=memories|faith]
+  : A door used to slam wherever I tried to sit and think. I was forever asking for peace in my prayers.
+  : One day I took a folded scrap and put it round the latch. There was my peace, in a bit of worn cloth.
+  b : Was that the answer to your prayer?
+  : I can't say whose answer. I can say it let the next wolf sit in peace as well.
+
+rule @mesh
+when concept=bark self.dislikes=flies
+does aside
+cooldown 9h
+say On goes the cover before an extra guest lands. | Netting over the dish till we're settled!
+
+rule @seat_clear
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Room at this end if your feet need it. | That bit of bench can take another traveller.
+
+rule @drip_count
+when concept=bark here.weather=rain
+does aside
+cooldown 10h
+say Wait for the little silence under the eave. | The thin drop has the softer voice.
+
+rule @chapel_rest
+when concept=bark here.place=chapel
+does aside
+cooldown 12h
+say Let the door find its latch softly. | A pause for the wolf still praying.
+
+dlg @1 resident.hub : A stool if you want one. Speak when you've found the words.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've been keeping the other seat clear.
+dlg @3 resident.hub [here.time=night] : We have some quiet left before sleep. What's on your mind?
+dlg @4 resident.hub [pair.disposition=wary|hostile] : The door may suit you better than the bench. I'll listen from here.
+dlg @1 resident.job [self.apprentice=yes] : I'm still learning. It's a comfort to be allowed a second try.
+dlg @2 resident.job : Small useful things suit me. A chair set out, a stopper eased free.
+dlg @1 resident.news [world.news] : The word I've heard is #world.news#. I couldn't add anything certain to it.
+dlg @1 resident.gossip [here.gossip!=yes] : Nothing I've leave to carry from one bench to another.
+dlg @1 resident.bye : Leave the stool where it is. Somebody may want it.
+graft resident.hub
+choice What do you hear between the drops? -> pause_under_eave
+node pause_under_eave
+say Try listening past one of them. First you hear just the gap. Then there's a voice far down the lane, and a little scuff almost beside your paw.
+mood warm
+free
+choice Why wait for wet weather to listen? -> pause_without_rain
+choice I'll listen from here. -> hub
+node pause_without_rain
+say You can do it in dry weather too. A drop simply gives a busy ear somewhere to begin.
+choice I've another question now. -> hub
+choice I'll listen on the walk home. -> bye

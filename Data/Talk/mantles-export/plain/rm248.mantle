@@ -1,0 +1,264 @@
+# rm248, the high shelf (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm248
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_isolde_brineton
+written_by codex
+title the high shelf
+fits stage=adult|old
+prefers job=merchant honesty=guarded
+traits temper=even talk=plain warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk marks_the_height_of_safe_shelves_with_an_apple_leaf
+likes crisp_apples stars tidy_house first_snow
+dislikes wet_floors deep_mud
+fears sacks_going_musty a_lock_swollen_shut
+hopes a_pantry_dry_in_any_weather
+topics home +0.5 weather +0.4 food +0.3 friends +0.3 gossip -0.4
+styles comfort=shelter gossip=withhold refuse=quiet tease=none
+marks oath saying
+persona #self.first# marks the safe height for provisions with a dried apple leaf, shifts a chair towards every guest, and turns private questions aside with the offer of something crisp to eat.
+
+words
+oath! = Sills and pippins | Soak my last shelf
+saying! = Keep the bottom shelf for stone | An apple keeps its pips inside
+leafmark = a pressed apple leaf | a russet leaf under clear wax
+topshelf = my high shelf | the board above splash height
+stonejar = a low crock | a pot with a heavy base
+sackcloth = a rough sack end | a square of clean sacking
+lift = two brick heights | the height of a crouching pup
+pip = the dark apple pip | a single glossy seed
+crunch = a brittle crack | the snap of a good apple
+shorewind = a breath across the headland | a gust straight off the bay
+starband = that scattering of pale stars | the close-set stars
+dripledge = a bit of pointed slate | an angled drip stone
+drysalt = salt loose as fine sand | a dry pinch of salt
+
+any
+opinion @1 dole for 3 : I'd rather see a loaf lifted out of damp than see a hungry face go past it.
+opinion @1 church for 1 : The Bright One left room for warm hospitality in a little place. I like to find that room in mine.
+opinion @1 houses against 2 : Grand roofs throw the rain clear of their own walls. Somebody else still lives where it lands.
+opinion @1 merchants against 2 : A sound apple shouldn't go past ten hungry doors because the buyer at the eleventh has a deeper purse.
+opinion @1 strangers for 1 : A traveller brings word of the roads and needs somewhere decent to sit. That trade suits both.
+opinion @1 sump for 1 : Folk who keep their salt dry with water at the lintel have earned some respect.
+opinion @1 newcomers for 1 : Another pair of eyes may see the leak the rest of us learned to live with.
+
+grown
+line @1 greet : Come in reach of a civil word.
+line @2 greet [pair.band=strangers] : A dry patch and a welcome, if you want them.
+line @3 greet [here.time=dawn] : Morning's washed the whole headland colour out of the sky.
+line @4 greet [here.time=dusk|night] : Let me put some room between you and the dark.
+line @1 greet.return : That's a welcome sound across a wet street.
+line @2 greet.return [pair.band=friends|family] : Glad you turned in by me again.
+line @3 greet.return [self.working=yes] : Give me time to clear this elbow.
+line @4 greet.return [here.time=dusk|night] : Good to be hailed while a lamp's still lit.
+line @1 kin.open [pair.kin!=no] : A family voice needn't carry far to reach me.
+line @1 again.open : There's still room on the shelf for that unfinished word.
+line @1 hail [pair.band=friends] : Come over by the dry stones!
+line @1 farewell : Keep your hems clear going home.
+line @1 farewell.return : And a decent roof over your next stop.
+line @1 react.news : Give me the bit that's held up in the rain.
+line @1 react.news.new : That account hasn't reached my shelf before.
+line @1 react.news.known : I've had the shape of that already.
+line @1 react.news.doubt : I'd press that telling gently before trusting the skin.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Makes me want to put a door between those folk and the weather.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's worth taking the best apples down for.
+line @1 ask.how : Is the world keeping you tolerably dry?
+line @1 answer.how : As comfortable as a little bit of tilting and shifting can make me.
+line @1 thank : I'll put that down among the favours to remember.
+line @1 deflect_thanks : It cost one small shift, that's all.
+line @1 sympathise : I can offer a seat well clear of the splash.
+line @1 reassure : Let's get one little corner right and start there.
+line @1 decline : I would, but I've a promise stacked ahead of it.
+line @1 accept_decline : Leave it with me. I can think around a refusal.
+line @1 preclose : I'd like to look in on my stores before the light turns.
+line @1 accept_preclose : I'll leave a little brightness for your walk.
+scene leaf_height
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : You can ask what that waxed leaf is for. | I mark a good shelf with #leafmark#.
+b : I wondered why it was stuck so high. | Why a leaf?
+a : Below it, stone jars. Above it, anything hurt by water. | A painted line would show a stranger every place I keep things.
+
+scene north_wind
+when topic=weather|travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Look at the grass on the headland. Even the tips lean inland. | I like the walk where you can hear surf before you see water.
+b : The wind's that constant? | Why stop short of the view?
+a : Constant enough to write a direction you can read without a map. | Chose a windy spot for the sound. The view can wait.
+
+scene apple_crack
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I get more pleasure from #crunch# than from the next three bites. | I save the peels if the apples are sound.
+b : How can you tell before you bite? | For a pie?
+a : Tap an apple with your claw. A soft skin keeps the answer to itself. | To dry in a warm place. The room smells like a whole orchard.
+
+scene tidy_room
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy room leaves one seat showing. | If I have to hunt for salt, my day starts two inches out of true.
+b : Why only one? | Does everything have its place?
+a : I want a caller to see where to go, without asking. | Everything I can persuade to stay there.
+
+scene night_sky
+when topic=pastimes self.likes=stars here.time=night
+does tell.self / ask.detail / answer.detail
+a : #starband.capitalize# looks like salt flung across dark stone. | I like the pause between the first star and its nearest neighbour.
+b : Do you know the stars' names? | How long is the pause?
+a : A name wouldn't help me look any longer. | Just long enough to feel glad I stayed.
+
+scene first_flake
+when topic=weather here.weather=snow
+does tell.self / ask.detail / answer.detail
+a : A flake that lasts on a wall means something. | I'll watch snow out of a door till it crosses the sill.
+b : What does it mean? | Then you shut it?
+a : That the wall has gone cold too. Time to lift the pots. | I brush the sill first. All that beauty goes to water.
+
+scene mud_help
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Deep mud wants your boot badly enough to take it. | Saw the marks a cart left in mud. Nearly enough to plant a crop in.
+b : What's your trick for keeping it? | Would anything grow?
+a : Rise sideways. Break the seal before you lift the heel. | Reeds. Nothing a sensible wolf could sell for supper.
+
+scene work_order
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A sack goes on boards, however dry the stones look. | I leave finger space behind goods.
+b : Even if it's leaving soon? | To reach what's hidden?
+a : That's when you want the bottom of it to hold. | To feel whether the wall's sweating. It gives warning.
+
+scene pay_weeks
+when topic=prices|times world.times=hard|lean
+does tell.worry / sympathise / assess
+a : Too much bare board between the things I can afford. | I made my coins lie flat today.
+b : I know that look. | More room than money?
+a : I'll fill a little space each week if I can. | You feel the gaps more keenly when they jingle.
+
+scene on_time
+when topic=times|travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : I like the word late better than the word lost. | Delay makes everybody guess at something.
+b : Is there any good in waiting? | What's your guess?
+a : The cart that's late could still turn up. I've set a shelf aside. | None. I wait till each sack is plain in view.
+
+scene ask_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could give #self.friend# my driest chair without looking round for a second one. | I'd keep a crisp apple back for #self.friend#.
+b : Where would you sit? | The biggest?
+a : On the threshold. Good for seeing both the weather and a face you like. | The one without a thumb mark. Size hardly enters into it.
+
+scene city_light
+when topic=home|travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : From far enough off, Ridgemere looks like the contents of a nail tin spilled uphill. | Light on the hillside guides me better than echoing bells.
+b : Is that fondness or complaint? | Bells are easier to hear.
+a : Fondness. I pick a roof out every time as if it were mine. | The wind can put those in entirely the wrong place.
+
+scene held_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news_from.capitalize# is the place on the account I heard: #world.news#. | #world.news.capitalize#. That's the news as it travelled from #world.news_from#.
+b : You're holding something back? | What difference will it make?
+a : Only a guess. You're welcome to every word I heard. | Ask tomorrow. I'll have given it some shelf space by then.
+
+scene closed_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : My ears heard the name. My mouth needn't. | I'm keeping this account wrapped.
+b : Not even a hint? | You wrap talk as well as food?
+a : Especially not a hint. A hint can point at the wrong door. | No damp gets in and no goodness gets out.
+
+scene water_marker
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : A wet stripe creeps upwards faster than you think. | When a shower passes I smell wet stone beginning to steam.
+b : How fast? | Does it smell different?
+a : I was only gone long enough to split an apple once. Came back to a floating core. | Warmer. Then I know it's worth opening things up again.
+
+scene newcomer_seat
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd give a stranger directions with a dry rag under the map. | I remember trying to buy supper somewhere unfamiliar.
+b : So the map stays clean? | Was it hard?
+a : So a strange set of paws doesn't have to hold it steady in the rain. | Hardest part was knowing which door to push. I point that out now.
+
+scene hidden_pip
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : Hold #pip# end up. It looks ready for a journey. | There's the start of an entire tree on my thumbnail.
+b : Like a boat? | Would you plant it?
+a : More like a little travelling cloak with the hood pulled tight. | I'd rather find somebody who can spare it a sunny wall.
+
+scene snow_stores
+when topic=season here.season=winter
+does give.opinion / react.self / assess
+a : I'd put boots before preserves on the last bit of dry shelf in winter. | Winter brightness goes such a short way indoors.
+b : Expecting a flood? | You're cross with the season?
+a : Expecting feet to need boots whether the water rises or stays put. | No. I carry the best colours up to the window.
+
+story the_flat_apple [topic=food|memories]
+  : I dried one apple slice inside a very dull book.
+  : The juice ran through five pages about tolls on wool.
+  b : Did anybody mind?
+  : It was my book. Only regret I've got is that the other pages still smell of tolls.
+
+story gull_post [topic=memories|travel here.region=ridgemere]
+  : Once on the headland I took a fence post for a gull in the fog.
+  : Walked a little closer. The post spread two great wings.
+  b : So you were right?
+  : Half right. The gull and the post had made an arrangement about the view.
+
+story heart_shelf [topic=home|memories]
+  : Set a newly made shelf up with a little lip to catch the round things.
+  : Halfway through supper I heard a tapping like impatient claws.
+  b : Had something come loose?
+  : Two apples knocking together. I packed a folded rag between the pair and my shelf went off to sleep.
+
+rule @salt_draw
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A pinch that clings to a spoon can forecast a wet cupboard.
+
+rule @stars_upper
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say That little row of lights has had a good polish.
+
+rule @crease_paper
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Turn the fold inside. A fold outside catches the water.
+
+rule @kin_apple
+when concept=bark self.likes=crisp_apples
+does aside
+cooldown 8h
+say Sweet enough in the middle to excuse a sour coat.
+
+dlg @1 resident.hub : There's room in the dry if you come a little closer.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. I know where to put the chair now.
+dlg @3 resident.hub [here.time=night] : Step into lamplight. I'd like to see who is keeping me company.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : From there we can each see what the other means to do.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. The goods which mind the wet get my attention first.
+dlg @2 resident.job : I leave a decent place behind for whoever takes the next turn.
+dlg @1 resident.news [world.news] : I can place that at #world.news_from#: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I won't do a neighbour the injury of repeating something I can't personally vouch for.
+dlg @1 resident.bye : Go by the stones that are lightest in colour. They're dry.
+graft resident.hub
+choice Is there anything good about a wet floor? -> wet_test
+node wet_test
+say If the water all gathers in one corner you know exactly where to start mopping. A level floor keeps you there twice as long.
+choice What goes in that corner afterwards? -> stone_only
+choice I'll keep my boots on. -> hub
+node stone_only
+say The empty stone jar. When water comes back it hasn't spoiled anything, and I've got a jar beside me to tip it into.
+choice I'd take your word about a floor. -> hub
+choice I'll try the trick at home. -> bye

@@ -1,0 +1,261 @@
+# rm258, the paper fringe (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm258
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_lars_wickwell
+written_by codex
+title the paper fringe
+fits stage=adult|old
+prefers job=merchant
+traits temper=nervy talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk carries_a_paper_fringe_for_testing_an_edge
+likes fried_fish long_walks full_larder warm_rain
+dislikes gulls salt_wind
+fears a_torn_packet a_claim_without_a_receipt
+hopes a_well_oiled_lock a_walk_with_an_empty_bag
+topics pastimes +0.5 travel +0.3 home +0.4 gossip -0.4 work +0.2
+styles comfort=provisions gossip=evasive refuse=terse tease=none
+marks oath saying
+persona #self.first# cuts little fringes in scrap paper to test an edge, answers cautiously, and prefers an empty pocket on a long walk to a full pocket requiring constant attention.
+
+words
+oath! = Bent tip and burr | Paper teeth bite back
+saying! = Let the paper take the risk | Leave enough margin to mend
+fringe = a row of paper teeth | a ragged paper fringe
+slip = a scrap of pale paper | a folded blank slip
+burr = a turned edge | a tiny bright lip
+oilrag = my scrap of oily wool | a little oiled rag
+strip = a clean shaving of paper | a curling white shred
+binding = the back binding | a strip of dull leather
+roadfood = fried fish in a twist | a crisp fish tail
+bit = a square of dry biscuit | the end of my walking biscuit
+gullprint = a splayed mark | one spidery gull track
+tinlid = a tight cover | the metal lid
+tape = a twisted cotton tie | a knotted tape end
+wave = a small wriggle | a ripple down the edge
+
+any
+opinion @1 strangers against 2 : A stranger can leave a question behind like a foot in a door. I'd like the door free.
+opinion @1 church for 1 : The chapel loaf came wrapped. Whoever tied the cloth spared us the neighbours' arithmetic.
+opinion @1 road against 1 : There's a stretch of road between the last two lights that I don't care to describe or walk.
+opinion @1 dole for 2 : Pay attention to the hungry jaws behind the first one. A dole line extends past the last visible wolf.
+opinion @1 drink against 1 : Drink opens mouths that sober wolves have good reason to close.
+opinion @1 houses against 1 : Somebody signed to have the roof built. I'd like that signature still attached when it leaks.
+
+grown
+line @1 greet : That's close enough for a greeting. Welcome. | A greeting will do between us for now.
+line @2 greet [pair.band=strangers] : I haven't placed your face. You can say your business plainly.
+line @3 greet [here.time=dawn] : Light enough to count the teeth on a key. Welcome.
+line @1 greet.return : Hullo. Your greeting reached me. | Yes. Civil enough of you.
+line @2 greet.return [here.time=dusk|night] : That voice sounds near. Don't come any closer in the dark.
+line @1 kin.open [pair.kin!=no] : You may put a parcel down. Nobody's counting.
+line @1 again.open : Same errand still following you, I take it.
+line @1 hail [pair.band=friends] : Turn this way briefly. No need to shout back.
+line @1 farewell : Keep the fold shut till you're home. | Go with your parcel entire.
+line @1 farewell.return : Mind whatever's loose in your pockets.
+line @1 react.news : Leave me something I can verify afterwards.
+line @1 react.news.new : That's not a mark I've seen on the paper before.
+line @1 react.news.known : Yes. That bit's on my receipt, overleaf.
+line @1 react.news.doubt : I'd need to know whose paw made the first mark.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Enough of the telling. What's wanted at the house?
+line @1 react.news.glad [topic.kind=marriage|birth|work] : That's a scrap I should like to keep.
+line @1 answer.how : My pockets weigh as they did when I left. Fair enough.
+line @1 ask.how : Anything loose or worrying at your end?
+line @1 sympathise : Hard to shut a lid on a hurt of that size.
+line @1 reassure : We can test one little piece before you risk the whole.
+line @1 decline : That's more of my business than I care to share.
+line @1 accept_decline : Understood. Your fold stays shut.
+line @1 thank : One thing fewer to watch, thanks to you.
+line @1 deflect_thanks : Keep your part dry. That will serve.
+line @1 preclose : I've a tie to check before I move on.
+line @1 accept_preclose : Carry on. I don't need the route.
+line @1 ack : Right. Square edge to that.
+scene testslip
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I put a single cut across the end of #slip#. | My pocket has teeth. Paper ones, fortunately.
+b : To see if the edge is keen? | Why keep all those little teeth?
+a : To feel exactly where it drags. A keen tip can hide a rough middle. | Look along the fringe and you'll see where one stroke tore instead of cutting.
+
+scene returnloop
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I turn a parcel's loose tie in toward the folded edge. | I leave one short tail outside a knot.
+b : Wouldn't it open faster facing out? | So the customer can pull it?
+a : So fast it might open in a stranger's sleeve. | Yes. A decent parcel should resist the road and yield to its owner.
+
+scene panfish
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I leave a small opening in the paper for #roadfood#. | A single good crack from the crisp bit pleases me.
+b : Won't the juices run out? | Only once?
+a : At the top, the opening. You've been handed some remarkable parcels. | If it's crushed in the parcel it only sighs. I paid for the crack.
+
+scene walklight
+when topic=pastimes self.likes=long_walks
+does tell.self / challenge / assess
+a : I take almost nothing when I'm out for a long walk. | A walk without errands lets me look at shop windows from farther away.
+b : Nothing to eat? | Surely you could look closer.
+a : One biscuit. I said almost, and I mean to come back. | Certainly. I'd sooner see whether the whole frame sits square.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : I fold paper twice when I hear gulls. | The bird gets a look and I get a meal. That's my arrangement.
+b : Do gulls appreciate careful wrapping? | Has the gull agreed?
+a : They do. It takes them longer to confirm they're disappointed. | The bird declined to sign. I've strengthened the wrapping.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I can set the day's last worry down beside #self.spouse#. | I'm particular about making a promise to #self.spouse#.
+b : You leave it there all night? | More than to a stranger?
+a : If I can. Sometimes the thing crawls back onto my shoulders. | Yes. A stranger might forget what I said; I'd remember.
+
+scene salt
+when topic=weather here.weather=storm|overcast self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : This air puts little white stars along an edge. | I turn a blade against my dark sleeve before it goes away.
+b : Salt finding the metal? | For the shine?
+a : Yes. An oily wipe now or a weary polish later. | For the smear. On a bright sky you can miss the start of it.
+
+scene pantry
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I like shelves with one clear space among the tins. | I keep the oldest meal in the easiest reach.
+b : Saving it for something? | Why make age a privilege?
+a : For lifting off what I need. A packed shelf traps things at the back. | Because an old thing gets quite unpleasant if it has to wait forever.
+
+scene gossip
+when topic=gossip
+does give.opinion / disagree / assess
+a : An account can be folded to hide half the lines. | Whoever repeats a rumour takes possession of a wet parcel.
+b : You can always open it. | Somebody might be trying to warn you.
+a : If you know it's folded. That's why I'm slow to read aloud. | Then name the danger and spare me the dripping wrapping.
+
+scene rainwalk
+when topic=weather here.weather=rain self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : This is a rain I'd go out in for the smell of soaked lime. | I put the paper high inside my coat on a wet walk.
+b : Even if it soaks you? | You'll get wet all the same.
+a : If it's cold I'll turn at the first corner. My taste's quite definite. | I dry. A bill with its ink run is harder to put right.
+
+scene lockcheck
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I give a door one pull after I turn the key. | I like keys you can tell apart with your eyes shut.
+b : Only one pull? | You mean by the teeth?
+a : One. Otherwise I'd be forever on my doorstep practising worry. | By the bow. I want the teeth wrapped, not wearing at the pocket.
+
+scene spare_edge
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : For a torn seam I find the first stitch still holding. | I like mends which show where the work began.
+b : Why not start at the hole? | Isn't a hidden mend better?
+a : A hole won't bear a stitch. A sound bit on each side does the keeping. | Not if I've to undo it later. I can spare myself a search.
+
+scene father
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : Of all the questions a clerk might dismiss, I've two saved for #self.father#. | I'd trust #self.father# with an unopened letter.
+b : Which questions? | Doesn't the seal do that job?
+a : Whether I was ever so small, and whether I worried then as well. | A seal proves the meddling afterwards. I prefer trust beforehand.
+
+scene loose_mark
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : I scratch expected loads in chalk while the wagon's late. | Delay makes some people want to sign for a load yet to arrive.
+b : Why chalk? | To get the paperwork over with?
+a : So I can rub it off when I see what really comes. | That's when paper outruns the cart. No signature from me.
+
+scene rundry
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt I owned a drawer so deep no hand reached the bottom. | I dreamt of an empty road rolled up like a length of cloth.
+b : What was in it? | Could you take it with you?
+a : I was quite happy thinking there was nothing. Then I heard it rattle. | I did. Didn't get any walking done that night.
+
+scene open_space
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : One advantage of the narrow Sump stairs is knowing exactly who can get past you. | I'd count my steps in a strange house before I set down a heavy parcel.
+b : Is it an advantage if you're trying to pass? | In case you have to carry it back?
+a : No. The arrangement has its disadvantages when I'm behind. | Precisely. It lets me judge how heavily I can afford to lean against it.
+
+scene poor_cloak
+when topic=smalltalk self.wealth=poor|destitute
+does offer / refuse / assess
+a : I could show you the join in this patched cuff. | There's enough cord for another knot if you need one.
+b : I'd hate to put your clothes under a lens. | I'll manage; you may need yours later.
+a : A patched cuff survives a look. That's part of the test. | Very well. I'll wind it up while I'm still feeling agreeable.
+
+scene shop_end
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I count shop shutters as I walk home. | Night puts a very sharp edge on a scrap of white paper.
+b : What purpose does your count serve? | Till you come out of lamplight?
+a : Check tomorrow's against it. Some streets change almost silently. | Yes, and then an edge of any colour is the edge of nowhere. Pocket it.
+
+story three_cuts [topic=memories self.age>=25]
+  : A mender once gave me a blade to try and a great sheet to try it on.
+  : I made one long splendid cut. The middle snagged so the sheet tore into scraps.
+  b : Could you use the scraps?
+  : I've tested on little pieces ever since. Cost me a fine sheet to learn the size of a test.
+
+story walking_pie [topic=pastimes self.likes=long_walks]
+  : I once packed a pie so tightly into my coat there wasn't room for my fist.
+  : Halfway home I wanted to pay a toll. The purse was beneath the pie.
+  b : Did you pay in pastry?
+  : I paid in coin, once I'd eaten a hole big enough to reach it.
+
+story caught_latch [topic=home]
+  : I tied a bell to a window latch so I'd hear if it came open.
+  : I lay awake counting every time the wind shook it without opening anything.
+  b : How long did that last?
+  : One very secure night. I've slept better since I untied it.
+
+rule @edge
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Paper scrap before good cloth. | Keep that edge folded in the wrapper!
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Cover the fish before the sky comes asking. | Parcel tails in, lids tight!
+
+rule @ties
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say Draw the loop out, leave the knot seated. | No torn string across the walkway.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Count the pieces under the lamp! | Loose things find holes in the dark.
+
+dlg @1 resident.hub : Plain business first. I decide the rest when I've heard it.
+dlg @2 resident.hub [topic.meeting=known] : I've kept your name, #topic.player#. You can supply the rest.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : You can set the parcel down before either of us says more.
+dlg @4 resident.hub [here.time=night] : Come under the bit of lamp. I prefer callers with visible faces.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I look first at what's worth keeping.
+dlg @2 resident.job : A steady paw at a troublesome join, when wanted.
+dlg @1 resident.news [world.news] : This is what I can repeat exactly. #world.news.capitalize#.
+dlg @1 resident.bye : Check your ties before you take the road.
+graft resident.hub
+choice Why the cuts along that scrap of paper? -> ragged_margin
+node ragged_margin
+say Run your eye along the fringe. The fine cuts show an even edge. That ragged bit means I have more work to do.
+choice What happens to the scraps? -> kept_margin
+choice Leave it folded. -> hub
+node kept_margin
+say I leave the uncut bit attached till the last test is done. A fringe on one scrap takes less sweeping than a floorful of little teeth.
+choice Return the scrap. -> hub
+choice Leave. -> bye

@@ -1,0 +1,262 @@
+# rm523, the wooden window (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm523
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_hollis_slagwick
+written_by codex
+title the wooden window
+fits stage=adult|old
+prefers job=servant honesty=guarded
+traits temper=even talk=quiet warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk looks_through_a_small_carved_frame_before_choosing_a_view
+likes blackberries whittling festival_bells summer_evenings
+dislikes stale_bread rats
+fears a_wet_wall_hidden_behind_a_fine_prospect
+hopes a_high_window_shared_with_a_trusted_wolf
+topics home +0.6 pastimes +0.5 dreams +0.3 work +0.3
+styles comfort=quiet gossip=guarded refuse=measured tease=dry
+marks oath saying
+persona #self.first# frames a narrow view in a rectangle of carved wood, setting it down whenever damp air catches in the throat.
+
+words
+oath! = Four damp corners | My missing shutter
+saying! = Frame the view yourself | Check the inner sill
+framebit = a pocket window | my little rectangle
+deepedge = a slim bevel | the shadow edge
+burrchip = a rough corner | the last splinter
+glassnone = the open pane | my empty glazing
+windowleg = a carved upright | the narrow jamb
+berrydot = a purple spot | the berry stain
+clapper = a far bell note | the little chime
+drythroat = a bad catch | my dry pause
+sillview = a long prospect | the upper view
+lowplaster = a damp patch | the low stain
+boardfloor = a straight board | the clear floor
+daylightbar = a slant of light | the pale opening
+
+any
+opinion @1 houses mixed 0 : A fine window shows excellent taste. Where the servants sleep may show a truer account of the household.
+opinion @1 city for 1 : A clear evening can give me the same distant hill from half a dozen different ranks of windows.
+opinion @1 merchants against 1 : I'd inspect the frame underneath the paint before accepting anybody's price for polish.
+opinion @1 strangers against 1 : I'd rather choose what comes into my room than leave my door to public taste.
+opinion @1 road mixed 0 : A good view of a lane doesn't show whether its drains work.
+opinion @1 festivals mixed 0 : Give me the bells heard at a civil distance and somebody else may take my place in the crowd.
+
+grown
+line @1 greet : Hello. Stand outside the frame for a moment. | Welcome. You've caught a clear patch.
+line @2 greet [pair.band=strangers] : A new face in this narrow prospect. | You can speak by this close corner of my sill.
+line @3 greet [here.time=dawn] : Morning gives the carving a clean edge. | Light from the east fits this opening neatly.
+line @1 greet.return : Yes, hello. The frame can go in my pocket. | My attention is off the sill now.
+line @2 greet.return [pair.band=friends|family] : A known face improves an ordinary view. | You're welcome within my little rectangle.
+line @3 greet.return [here.time=night] : Evening. Dark begins in the corners. | There's enough left in the opening for two voices.
+line @1 again.open : Back inside the view again. | I've shifted the frame since we spoke.
+line @1 hail [pair.band=friends] : Come see a whole roof fitted in here! | Take this exact angle before the light goes!
+line @1 farewell : May your room have an honest window. | A smooth latch at your destination.
+line @1 farewell.return : I'll put away my little view now. | Go before the light leaves that jamb altogether.
+line @1 react.news : Tell me what actually stood inside your view. | A narrow account with the edges known will suit me.
+line @1 react.news.new : That hasn't come through my opening before. | A fresh shape for the little frame.
+line @1 react.news.known : It was in the earlier account's field as well. | I've seen that outline in a previous telling.
+line @1 react.news.doubt : A great deal appears to be happening outside the stated view. | I'd check what the frame cuts off there.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Sit clear of every watching window. | I can spare you somebody peering at a hard moment.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : A fine bit of fortune inside one day's frame. | Glad news gives a dark pane some useful light.
+line @1 ask.how : Does today give you a tolerable outlook? | Any clear patch ahead of your errands?
+line @1 answer.how : Managing. My wood has a slight catch, that's all. | Fairly comfortable in this light.
+line @1 decline : That would open a part of my day kept for home. | I haven't had that view myself and can't vouch for it.
+line @1 accept_decline : Then I'll leave your shutter drawn. | Very well. A plain edge to the matter.
+line @1 preclose : Time I put the frame back in its wrapping. | My next household duty is coming into view.
+line @1 accept_preclose : Go while the light still serves you. | We'll leave the opening clear for another time.
+line @1 thank : You brought the real corner into view. Thank you. | I appreciate a kindness offered without inspection.
+line @1 deflect_thanks : I merely shifted a narrow bit of wood. | It took very little of my available light.
+line @1 sympathise : One can draw a curtain when a day is cruel. | There's room outside other wolves' gaze over here.
+line @1 reassure : Try a smaller opening till the whole view seems manageable. | No need to display what you're still mending.
+line @1 ack : I see the actual corner now. | That puts the right part in view.
+line @1 give.advice : View a promising room with every shutter open. | A polished sill may have damp under its lip.
+scene carve
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : This scrap has a rectangle where a knot fell out. I carved the edges till it became a travelling window.
+b : Does it magnify a hill? | Why leave the hole empty?
+a : No. It just puts an end to the rest of the landscape. Occasionally a great improvement. | A little glass would add glare and weight. I want the hole to do the viewing.
+
+scene lowbirth
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The rooms I knew in the Sump had windows that admitted a great deal besides the outlook.
+b : Water, you mean? | Would a higher floor have helped?
+a : Water and remarks from the street. Neither asked whether the room was ready. | With the water. For the remarks I'd prefer a good thickness of wall.
+
+scene highwish
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I measure a high room in private, holding the window to the sky above a low roof.
+b : What would go below it? | Would you always keep it open?
+a : A dry bed. After that I'd consider a chair and what the view might be worth. | Only when the weather justified the opening. A fine prospect needn't be allowed to soak my floor.
+
+scene service
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I begin a household task by looking at the space someone else needs after I've gone.
+b : Can a clear space be work? | Who notices the result?
+a : A tray set out of the passage can be worth more than another ten minutes of polishing. | Ordinary arrangements suit me. Nobody should need to stop and work out what I meant.
+
+scene learner
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'm learning how a household's working day looks once a door opens inward.
+b : Can't you just walk through? | What's different there?
+a : I'd rather understand whose work I'd interrupt first. A learner can afford to wait at the jamb. | Usually the light and the number of things a pair of arms can reach. Both matter in actual service.
+
+scene spouse
+when topic=family self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd share a high window with #self.spouse# before I'd show it to any curious visitor.
+b : Which side would you take? | Is that the reason for wanting one?
+a : Whichever leaves both chairs with a decent outlook. I can give that some thought before we move. | One reason. A good private room ought to belong to the lives actually lived inside it.
+
+scene berry
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I stain one corner of my frame with a blackberry. It's how I tell the side that goes toward my eyes.
+b : Doesn't it stay sticky? | Could you use a notch instead?
+a : Only a thin stain after I've finished eating the berry. It dries on my sill. | I could. The berry gives me a good reason to stop and eat something I like.
+
+scene rasp
+when topic=health here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Damp gives my voice a rough grain. I put the carving down a moment when that happens.
+b : Is the wood to blame? | Would you like some quiet?
+a : I prefer to discuss the grain in the frame. It can stand being inspected. | For the length of one comfortable breath. Then we can carry on as usual.
+
+scene summer
+when topic=weather self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : Summer evening has just the light I want to keep inside the frame.
+b : What colour suits the frame? | Can you hold it steady?
+a : The pale band above the darkest roof. The colours need each other to look right. | With my elbow against a dry jamb. Several fairly modest things make possible a comfortable view.
+
+scene bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : A bright bell note travels farther than a festival banner can be seen. I can frame the source in an empty sky.
+b : Why watch an empty square? | Would you rather be at the bell?
+a : It's a pleasure to have a private little piece of all that noise. | No. I like the sound after it's lost the sharp part and found a useful distance.
+
+scene bread
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : Stale crust scrapes where damp has already caught my throat. I wait for something warm to take with it.
+b : Would broth do? | Why keep the crust?
+a : Very well. Then the two can make a meal together without an argument. | Bread has a cost. My preference for a smooth swallow won't bring back the money.
+
+scene rats
+when topic=animals self.dislikes=rats
+does warn / react.self / assess
+a : Put berries in a covered dish. A rat doesn't need a grand prospect to find a supper.
+b : Does a high shelf work? | Could you leave it by the frame?
+a : A tight cover works better. I'd give a rat credit for knowing how to climb. | My carved window is remarkably deficient as a barrier. Air and appetites can both get through.
+
+scene working
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : An Office quarter window can show a great deal of paper moving without showing a decision.
+b : Do you watch often? | Would you take a desk there?
+a : Only in passing. I've plenty to form an opinion of this side of my particular pane. | I'd ask what the duties involve first. A comfortable seat scarcely makes a trade worth learning.
+
+scene quietfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : In prayer I picture a clear opening with room for one honest hope. A very small frame is enough.
+b : Does the hope need words? | Which way does it face?
+a : A few. I'd rather make the request plainly than bury it in grand scenery. | Toward the Bright One. The wood is just how my hands remember to hold still.
+
+scene shopview
+when topic=prices
+does give.opinion / react.self / assess
+a : I'd price a room in hard rain and again when dry. The second price owes the first an explanation.
+b : Would a fine view count? | What about a little drip?
+a : After the bedding stays dry, yes. One can spend a handsome rent on a poor night's sleep. | A drip over empty paving is weather. A drip through my blanket is a faulty room.
+
+scene friendhush
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : With #self.friend# I can put the little frame down and let an evening look after itself.
+b : Do you usually need it? | Would you lend it?
+a : No. I enjoy choosing the view. With good company I can let the whole prospect come at once. | If I trusted the hand. A fragile corner ought to be returned still fit for viewing.
+
+scene heardnews
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : I heard the following from #world.news_from#. #world.news#. I'm keeping the source inside the frame.
+b : Are the edges certain? | Would you act upon that?
+a : The edges of what I heard, yes. A view from the actual spot might include things I don't know. | I'd want an account from nearer the event if any household depended on my decision.
+
+scene crookwall
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A crooked jamb looks straight if I turn the little frame far enough. A comforting trick with very limited uses.
+b : When would you use it? | What's the limit?
+a : To see how a line might look after proper repair. Imagination has its legitimate employments. | I still have to shut the actual window. The latch has never shown any interest in my opinion.
+
+story berrypane [topic=pastimes|memories]
+  : I used a blackberry to mark the inside of my frame and a damp thumb to turn it round. Marked all four corners in short order.
+  : For a day I owned a very superior window with no outside at all.
+  b : How did you settle its direction?
+  : Cut a tiny groove in one stained corner. I prefer berries in a bowl now.
+
+story wetview [topic=home|memories]
+  : A clear opening above a lengthy stairway once seemed to show a beautiful blue hillside. I took two extra steps to see it better.
+  : A blue apron had been hung across the outside. The hill was a crease in the cloth.
+  b : Was there a view behind it?
+  : A perfectly serviceable brick wall. The hill wanted a little more laundry, not a more fortunate tenant.
+
+story lastbell [topic=festival|memories]
+  : I held the frame around a patch of sky while the last festival bell sounded. Lowered it when the note ran out.
+  : There was another little note quite near my hand. My own metal button had caught on the wooden edge.
+  b : Did you take an encore?
+  : I freed the button. A household servant is entitled to one accidental performance per evening.
+
+rule @corners
+when concept=bark
+does aside
+cooldown 8h
+say Hold it level. The roof will supply its own slope. | Fine prospect through one empty scrap.
+
+rule @work
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say Put the tray where the door can clear its corner. | Let the household have all the walking room past that doorway.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A moment for this rough grain to settle. | Damp air has given that last syllable an extra edge.
+
+rule @berry
+when concept=bark self.likes=blackberries
+does aside
+cooldown 8h
+say A purple spot to mark my frame's inner lip. | Blackberries in a covered dish will last till supper.
+
+dlg @1 resident.hub : I've put the wooden window aside. What would you like brought into view?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you still fit our last comfortable angle of conversation.
+dlg @3 resident.hub [here.time=night] : After dark the rectangle shows mostly lantern light. I can spare it a while.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : A short clear question from your side of this carving, please.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. I keep the household's actual work in view while the finer prospect takes care of itself.
+dlg @2 resident.job : I'm interested in duties whose boundaries can be stated before the day begins.
+dlg @1 resident.bye : May the far wall of your room stay dry in every weather.
+graft resident.hub
+choice Let me look through your wooden window. -> lookthrough
+node lookthrough
+say Hold it closer for a broad prospect. At arm's length you can fit the highest corner of one roof exactly inside. For a moment that's your room's view.
+free
+choice And what do you imagine behind the window? -> backroom
+choice I'll take the wide prospect for now. -> hub
+node backroom
+say Dry plaster, a sound sill and two chairs with equal claims on the light. Rank comes well behind those on my list of desirable fittings.
+choice I see why you left the frame empty. -> hub
+choice I'll find my own view. -> bye

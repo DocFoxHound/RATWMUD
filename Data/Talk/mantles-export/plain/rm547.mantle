@@ -1,0 +1,385 @@
+# rm547, the pier guard's wooden heels (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm547
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_rosamund_sootmarsh
+written_by codex
+title the pier guard's wooden heels
+fits stage=adult|old
+prefers job=guard talk=chatty
+traits temper=short talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk whittles_little_boot_heels_to_show_the_dry_line
+likes crisp_apples whittling quiet_chapel first_snow
+dislikes crowds wet_floors
+fears a_queue_pushed_onto_wet_boards a_private_debt_heard_as_an_official_order
+hopes a_pier_where_every_caller_can_hear_a_repeated_question
+topics work +0.7 weather +0.4 smalltalk +0.5 faith +0.3
+styles comfort=practical gossip=plain refuse=brisk tease=dry
+marks oath saying
+persona #self.first# sets two carved heels facing the dry stretch of the pier, speaks loudly enough for a whole queue and has a different tone ready for a quiet chapel.
+
+words
+oath! = Knock my two heels | A wet boot on a smooth board
+saying! = The queue begins on dry feet | Stand on the mark before naming the cargo
+heels = my pair of wooden heels | the carved heel marks
+groove = the notch across the heel | my shallow guide groove
+apple = a crisp apple quarter | the sharp end of an apple
+blade = a short whittling blade | the knife for my carvings
+wood = a scrap of poplar | a smooth narrow offcut
+snowrim = a pale stripe of first snow | the first white lip of snow
+chapel = the sheltered chapel seat | a quiet place by the nave
+slippery = a green shine on the board | a wet streak in the timber
+sill = the raised threshold | my dry sill
+burdock = a burr on a cuff | a burr caught in a seam
+pencase = a little dry pen case | a narrow case for a pen
+chalk = the chalk heel mark | a stroke of pale chalk
+hingelip = the little lip of the hinge | its raised knuckle
+warmrag = my dry wiping rag | a fold of sound linen
+panels = the paired cargo panels | two little cargo boards
+
+any
+opinion @1 watch for 2 : I take pride in giving the same answer to a wolf in fine boots as to the wolf who carried those boots ashore.
+opinion @1 houses mixed 0 : I expect a House mark to be legible and its accompanying figures equally clear. Pride won't supply a missing figure.
+opinion @1 merchants mixed 0 : A merchant who wants haste should have the first answer ready before the first question.
+opinion @1 city for 2 : The city has a landing for every kind of hopeful caller. My job is making sure the newcomer has sound timber underfoot.
+opinion @1 road for 1 : Take a sound road to the head of a bad pier and you still haven't solved the last ten steps.
+opinion @1 dole for 1 : Give a hungry queue room to be civil. I prefer to hear it called for its supper in pairs.
+opinion @1 strangers mixed 0 : A newcomer who asks where to stand is already making a better start than some familiar faces.
+opinion @1 festivals mixed 0 : I like a broad green outside the music. The press around a single stall can keep its distinction.
+opinion @1 times mixed 0 : I'll tell you how this shift went. The next one is entitled to its own witnesses.
+
+grown
+line @1 greet : Here. The heels show where there's room to stand.
+line @2 greet [pair.band=strangers] : New on this landing. Give yourself the dry side first.
+line @3 greet [here.time=dawn] : Morning. You can see both heel marks quite distinctly.
+line @4 greet [here.time=dusk|night] : Evening. The upper boards are holding the last light.
+line @1 greet.return : Heard you plainly over the foot traffic.
+line @2 greet.return [pair.band=friends|family] : I could put that step to the proper voice.
+line @3 greet.return [self.working=yes] : There's work under my eye. You've room in my ear.
+line @4 greet.return [here.time=dusk|night] : A hail in the dark still deserves a civil answer.
+line @1 kin.open [pair.kin!=no] : Kin, step round the side with me.
+line @1 again.open : I left the little heels facing this way.
+line @1 hail [pair.band=friends] : Friend, come past the wet patch before we talk.
+line @1 farewell : Keep your heels on boards that answer firmly.
+line @1 farewell.return : And leave the turn clear for the next loaded pair.
+line @1 react.news : Give the telling without pushing the people in it.
+line @1 react.news.new : That's come in on this tide.
+line @1 react.news.known : I've heard the particulars in that order before.
+line @1 react.news.doubt : I'd ask again with both witnesses clear of the crowd.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A hard thing to bring ashore. Stand here in shelter.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's news fit to carry right to the topmost stair.
+line @1 ask.how : Has the crowd given you much room today?
+line @1 answer.how : A little hoarse. My feet have held up better.
+line @1 thank : You left an easy path for the laden wolf. That's good work.
+line @1 deflect_thanks : It took two quiet words and a bit of chalk.
+line @1 sympathise : You can stand here while the first shock passes.
+line @1 reassure : No need to take the entire pier in a single stride.
+line @1 decline : My own duty wants both those minutes.
+line @1 accept_decline : Fair. You've left me a definite answer.
+line @1 preclose : I'll turn back before that line curls round the door.
+line @1 accept_preclose : Safe away from the wet boards.
+line @5 greet [here.weather=rain] : Rain on the quay. Step beside the groove.
+line @5 greet.return [here.time=dawn] : Your voice carries well before the first cargo rolls.
+line @2 thank [pair.band=friends] : A friend who leaves clear footing has my particular thanks.
+line @2 farewell [here.time=night] : Follow the lit wall home, please.
+line @6 greet [self.working=yes] : I'm keeping the passage. Come just far enough for a word.
+scene heel_pair
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #heels.capitalize# face where I want two real heels to stop. | I put #groove# on the back of each carving.
+b : Suppose a caller has long feet? | Why a groove?
+a : Heels first. The toes can manage their own accommodation. | A thumb can find the right end even after dark.
+
+scene pier_job
+when topic=work self.job=guard self.workplace
+does tell.self / ask.detail / answer.detail
+a : On duty I like a caller to hear a question before being expected to answer it. | At work the first bit of order is honest dry footing.
+b : Does that prove troublesome? | What follows?
+a : Only where five callers take up the work of answering for one. | A clear word. There's little point demanding one from somebody halfway to the ground.
+
+scene customs_voice
+when topic=work self.role=guard
+does tell.self / ask.detail / answer.detail
+a : I ask for the particulars in an ordinary loud voice. | A good customs question wants one answer at a time.
+b : Ordinary and loud? | What if the second answer is urgent?
+a : Loud enough for the caller. Ordinary enough for the caller to answer without feeling on trial. | I have two ears and some responsibility for their order of use.
+
+scene carve_small
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : #blade.capitalize# takes a neat heel from #wood#. | The first carved heel I made was handsome from either end.
+b : Does it need a whole boot? | A success then?
+a : No. I stopped carving at the part I actually needed. | A poor direction marker. I now consider the ankle before the polish.
+
+scene apple_quiet
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : #apple.capitalize# gives a good clean snap on a quiet landing. | I cut apples in quarters and lay the seeds on the paper.
+b : Hard to hear at work? | To count the crop?
+a : That's my excuse for taking another bite when the noise settles. | To keep them out of my pen case. I keep finding surprises in there.
+
+scene first_snow
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : #snowrim.capitalize# shows where the timbers lie one slightly higher than the next. | I enjoy the first snow before a cart puts yesterday's earth back on top.
+b : Does that help a guard? | Do you come out early?
+a : Helps a pair of feet. I take a general interest in those. | Earlier than the cart is quite sufficient.
+
+scene chapel_voice
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : In #chapel# I can give my ordinary voice the afternoon off. | After hailing strangers all day a whispered prayer serves me well.
+b : Do you whisper instead? | Which word?
+a : I sit quiet. A chapel can last several minutes without my directions. | The private one I came there to say.
+
+scene crowd_turn
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I mind a crowd most when its centre has nowhere to go. | A shout can get a crowd's attention.
+b : What do you like at a feast? | Can it make room?
+a : A line of stalls with a way through at either end. | Only if whoever shouts already knows where to put the first pair of feet.
+
+scene wet_board
+when topic=weather self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : #slippery.capitalize# at a doorstep means slow down before lifting the parcel. | I keep #warmrag# over the worst part of a dripping sill.
+b : Isn't that obvious? | Does it dry the whole board?
+a : To a wolf whose eyes are above the parcel, yes. | No. The first safe place for a heel is an excellent beginning.
+
+scene spouse_hear
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I remind myself that #self.spouse# is just inside our door, well within ordinary speaking distance. | With #self.spouse# I'd sooner have a quiet walk than an evening full of admiring salutes.
+b : Still calling too loudly? | As quiet as chapel?
+a : My supper doesn't need announcing from the street. | Quiet enough for an ordinary answer to reach my ears.
+
+scene sump_turn
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : On a Sump stair the safest landing can be scarcely broader than #sill#. | I like hearing the roof above a room in the Sump while my boots dry beside the door.
+b : How do you manage the parcel? | Why listen to a roof?
+a : Set the parcel inside first. Keep the elbows where the feet already are. | It lets me enjoy the weather at a happy remove.
+
+scene case_clean
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #pencase.capitalize# goes up under my sleeve when a squall starts. | I draw #chalk# so the toe end points away from the worst splash.
+b : Why that spot? | Can everybody read a heel?
+a : A high cuff dries sooner than a low pocket. | More wolves know a boot than know my handwriting.
+
+scene house_mark
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A fine House stamp inclines me to study the legibility of the little figures beneath it. | I can salute a recognised mark and still ask the ordinary question.
+b : You mistrust the House? | Does that cause offence?
+a : I mistrust any paper that asks me to stop reading after the first word. | A sound account generally outlasts a little injured dignity.
+
+scene due_bill
+when topic=times self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : A private debt belongs in my own case away from anything carrying a public seal. | If money's due from me I want to say so with my working badge put away.
+b : Are you keeping two records? | Why bother?
+a : Keeping two duties from borrowing each other's voice. | A caller should be quite sure whether I'm speaking for myself.
+
+scene lean_lift
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When the loads grow small, an idle hand at a rope may be in real need of a duty. | When times pinch the little deliveries warrant particular attention.
+b : Would you offer any job? | Why pick those out?
+a : A straight word about anything that actually needs doing. | A sack that looks small from here might be the whole of somebody's return.
+
+scene rack_chalk
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put #panels# against the wall with their smooth sides facing in. | I sweep the dry place around #hingelip# before judging how a door hangs.
+b : To keep off dust? | Does a little dirt count?
+a : To stop a curious elbow changing the figures before they're needed. | A surprising amount, when it's directly beneath a hinge.
+
+scene new_face
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd help a newcomer find the start of the queue and a ledge where a bundle could sit flat. | If a caller's new to the pier I show which way the first cart will turn.
+b : Free of charge? | Must everybody watch it?
+a : The amount the city pays me ought to cover pointing at a shelf. | Everybody who wishes to stand on that corner.
+
+scene twice_ask
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I don't mind an honest request for a repeated question. | If I give the same answer twice I try to keep my voice on the same step.
+b : Even on a busy shift? | Is that always possible?
+a : Waiting for a wrong answer takes considerably longer. | Not always. I still reckon a wolf ought to make the attempt.
+
+scene empty_line
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like enough room at the pier for the quietest caller to be heard without being pushed to the front. | My dream line has two clean turns, dry boards and nobody who needs to explain a bruised ankle.
+b : A wider pier? | Is that a modest dream?
+a : A little more room between questions would be a start. | Having dealt with real queues, I'd call it ambitious.
+
+scene two_windows
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A wet crescent on a high step shows me where a walker paused. | #burdock.capitalize# can travel the entire length of a pier without paying a penny.
+b : Is it a reliable direction? | Is it due to declare itself?
+a : It tells me a heel was there. I've seen plenty of boots pointing backwards. | I'd accept being brushed off before it reaches my own cuff.
+
+scene quiet_after
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A loud day leaves the throat wanting a plain hot drink. | I can tell when my voice is wearing at the edges.
+b : And the ears? | Does it crack?
+a : They might enjoy two minutes without attending a general meeting. | I run out of patience just before my supply of words fails.
+
+scene foot_time
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : If I've a clean spare minute I use it to inspect the heel marks from a visitor's height. | An approaching stranger should see the mark quite early.
+b : Aren't your eyes usually there? | No need to ask directions?
+a : My eyes generally know where to look. A stranger must examine several patches of board. | Plenty may ask. A good mark will answer while I'm elsewhere.
+
+scene keep_fair
+when topic=times
+does tell.self / ask.detail / answer.detail
+a : A public charge needs a public figure a caller can repeat. | I record the sum before I ask whether it's convenient.
+b : Even if nobody likes it? | What if it isn't?
+a : Especially then. Objections are much easier to hear when everybody names the same amount. | Then we can discuss the actual question, not a number I've accidentally altered.
+
+scene family_wait
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : Sometimes I go home wanting to tell #self.spouse# an entire shift from the first heel to the last. | I'd give an evening at home the same care I give a quiet interval on duty.
+b : Do you? | By keeping clear space?
+a : Sometimes I manage to ask how the other day went first. | Yes. Work can wait outside without a great deal of encouragement.
+
+scene snow_road
+when topic=season here.season=winter
+does tell.self / ask.detail / answer.detail
+a : Two carved heels make excellent little stamps in the first thin snow. | A wet board under snow deserves an actual look before anybody calls the pier clear.
+b : Is that serious duty? | Do you uncover the whole quay?
+a : It amuses me considerably while showing callers where to stand. | I start at the greeting place. A real visitor's boots will land right there.
+
+scene heard_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : Notice has come from #world.news_from#. #world.news#. | #world.news#. Its stated landing is #world.news_from#.
+b : Do you give it out on duty? | Does the heel mark confirm it?
+a : I give it the status of a received notice and no more. | The mark confirms where I stood to hear it.
+
+scene crowd_voice
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Pier gossip wants six voices to stand on one pair of heels. | Idle words can get a House mark chalked on them as easily as a barrel.
+b : Which voice do you trust? | Is a mark proof?
+a : I'd hear one witness in clear air before pronouncing. | It's a reason to read carefully, which brings us right back to the beginning.
+
+scene after_pier
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like somebody to follow the carved heels correctly without ever learning my name. | A whole shift without having to shout twice would give me a surprisingly pleasant memory.
+b : No credit? | Where would the spare breath go?
+a : Plenty of credit in a safe pair of ankles reaching dry land. | Use it to thank the last caller in a particularly civil tone.
+
+story wrong_boot [topic=memories|work]
+  : I carved the first two little heels facing each other and set them down at the entrance.
+  : A caller tried very hard to stand exactly as the models directed.
+  b : What did that look like?
+  : A wolf preparing to dance with an invisible partner. I turned the carvings round before the next arrival.
+
+story apple_case [topic=food|memories]
+  : I put a small apple in the pocket where my spare chalk usually rides.
+  : Reached down for a fresh mark and drew a very respectable arc of apple juice on the board.
+  b : Did it show?
+  : For a moment. I ate the faulty chalk and found the proper piece in my other pocket.
+
+story chapel_heel [topic=faith|memories]
+  : After a noisy shift I sat quite still in chapel until something under my seat made a hard, wooden knock.
+  : I waited a little before disturbing my very solemn neighbours.
+  b : Was the bench loose?
+  : One heel had fallen from my pocket. It had apparently finished its shift ahead of its owner.
+
+story wind_stroke [topic=weather|memories]
+  : One morning I drew a chalk line on fresh snow and wondered why every caller took an odd little turn at its end.
+  : The wind had pushed the powder in a neat curl.
+  b : Did you have to put it right?
+  : I thanked the first visitor who pointed it out. My accidental procession had been remarkably well behaved.
+
+story borrowed_mark [topic=memories]
+  : I tested a new carving against a patch of soft clay and left the impression to dry.
+  : Later I came on a much bigger heel placed squarely inside my little trial.
+  b : Whose boot was that?
+  : My own. I'd stepped back to admire the workmanship and delivered a very thorough second opinion.
+
+rule @turn_heel
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Two straight heels for the first caller.
+
+rule @lift_case
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Pen case up. Dry space by the groove.
+
+rule @leave_lane
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Keep one clear turn beside that wheel.
+
+rule @last_mark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Chalk fresh before the light goes.
+
+rule @snow_edge
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Even a little light shows that wet board.
+
+rule @home_word
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Let the heel marks mind themselves now.
+
+dlg @1 resident.hub : Stand in view of the carved heels. What's brought you to the landing?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember your footing round this turn.
+dlg @3 resident.hub [pair.band=friends|family] : I've saved a square of dry pier under a familiar visitor's boots.
+dlg @4 resident.hub [here.time=dusk] : Come up to the chalk while the light still finds it.
+dlg @5 resident.hub [pair.disposition=hostile|wary] : There's good hearing to be had with both feet behind the line.
+dlg @1 resident.job [self.job=guard self.trade_words] : #self.trade_words.capitalize#. I like a plain account given from a steady pair of feet.
+dlg @1 resident.news [world.news] : The notice bears the place #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That's an extraordinary amount of chalk for an account without a witness.
+dlg @1 resident.bye : Let the dry length of pier see you home.
+dlg @1 watch.hub [here.wanted=yes] : There is an outstanding fine of #here.fine# pennies. I'll hear you where the boards are steady.
+dlg @2 watch.hub [here.wanted=no on_watch=yes] : I'm on watch. Step beside the carvings. Tell me what needs the Watch's attention.
+dlg @3 watch.hub [here.wanted=no on_watch=no] : My watch is over. I've time for a brief word by the rail.
+dlg @1 watch.crime [here.witnessed!=0] : Start with your own view of the incident. We can take a second breath if you need one.
+dlg @1 watch.bye : You've had a hearing. Watch the footing on the return.
+graft resident.hub
+choice Why match the carvings to heels instead of whole boots? -> heel_shape
+node heel_shape
+say The tall and short need an equal place to start. If two heels are clear of the splash, each pair of toes can find its own comfortable direction.
+choice Do you make the little heels yourself? -> heel_wood
+choice I'll stand on the dry side. -> hub
+node heel_wood
+say A sound little offcut is all I need. I smooth the rear edge so a wolf searching with a toe won't catch a boot on my good intentions.
+choice That explains the rounded edge. -> hub
+choice Safe footing to you too. -> bye
+
+graft watch.hub
+choice Why do you ask for one account at a time? [self.job=guard] -> single_caller
+node single_caller
+say A loud witness and a quiet one can have equally sharp eyes. I can't tell whether their accounts agree if I only ever hear the louder voice.
+choice What if I have to think a moment? -> clear_pause
+choice I'll give you my own account. -> hub
+node clear_pause
+say Take your moment. A pause is less trouble than a brave guess that somebody else has to untangle. I'll keep the place by the heels clear.
+choice Back to the Watch business. -> hub
+choice I'll take the clear way out. -> bye

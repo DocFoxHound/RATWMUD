@@ -1,0 +1,258 @@
+# rm250, the pencilled lookout (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm250
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ivo_cinderham
+written_by codex
+title the pencilled lookout
+fits stage=adult|old
+prefers class=lower quarter=sump
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=ambitious
+quirk draws_a_view_mark_where_a_wolf_can_stop_for_breath
+likes fried_fish digging old_maps summer_evenings
+dislikes night_noise bad_manners
+fears a_locked_gate_winter a_stair_without_a_rest
+hopes a_plot_in_sunlight a_first_chance
+topics travel +0.5 land +0.4 work +0.3 times +0.4 gossip -0.4
+styles comfort=practical gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# marks good views on a battered map, finds an excuse to stop and admire each one in the damp and means to leave a clear road for the next climber.
+
+words
+oath! = Split the pulley | Sound take the chain
+saying! = A stop can belong on a route | Draw in the next rise
+sightmark = my little pencilled eye | a lookout mark
+paper = the folded headland map | my square of road paper
+climb = the long uphill pull | the stiff rise
+crust = that crisp fish skin | the brown buttery edge
+slice = a piece off my fish | a hot forkful
+soil = the dark garden crumb | that loose ground
+hook = the empty hook | a dangling load hook
+whitebit = a pale rooftop | a distant white gable
+breather = a quiet standing place | a sheltered landing
+beds = a couple of narrow beds | two rows of digging space
+twinkle = a glint on the water | one flash of sun
+
+any
+opinion @1 houses against 3 : Put four wolves round a locked door and give each one a key. I'd lay odds on a quarrel about who goes first.
+opinion @2 dole for 3 : Fed paws can lift something again. I'd make room at the pot before I preached hard work.
+opinion @3 city for 2 : I can name a good view on every miserable stretch of climbing here. That's a sort of riches.
+opinion @4 strangers for 1 : A wolf asking the way has given me an opening to do something decent.
+opinion @5 merchants against 2 : I can feel what an extra copper for supper weighs in my palm. Does the wolf taking it ever wonder?
+opinion @6 times against 2 : A day's pulling still takes a day. The supper at the far end keeps dwindling.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome. There's a good perch on this side. | Come round where we can see each other clearly.
+line @2 greet [here.time=dawn] : Plenty of day above us yet. | Morning. It feels like the foot of a new hill.
+line @3 greet [here.weather=rain] : Welcome into the little dry patch. | Good timing. The worst just went over.
+line @4 greet.return : You've a civil way of starting. | There's room for a word with you.
+line @5 greet.return [pair.band=friends|family] : Glad it's your step catching mine. | A friendly face makes the rise shorter.
+line @6 farewell : Here's wishing you a clear turning. | Rest when there's something good to look at.
+line @7 farewell.return : I'll watch you as far as the bend. | Home safe with those good legs.
+line @8 again.open : Our routes keep crossing in the margins. | Back for a fresh look round, I see.
+line @9 kin.open [pair.kin!=no] : Pull up alongside, family. We've ground to cover. | No introductions for us two.
+line @10 hail [pair.band=friends] : Up this way! Look where the light catches! | There you are, just below the skyline!
+line @11 react.news : Let's take the account one turn at a time. | Hang on while I find a place for that in my head.
+line @12 react.news.known : That bit reached my ear from another direction. | I've heard the broad outline drawn already.
+line @13 react.news.new : Fresh ground from where I'm standing. | Nobody brought me that particular word before.
+line @14 react.news.doubt : That last turn sounds a bit too convenient to me. | I want another look at how that tale fits together.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Come sit. Sad news can leave your legs hollow. | I'd sooner stand with somebody over a hurt like that.
+line @16 react.news.glad [topic.kind=birth|marriage] : Good news deserves carrying uphill twice. | That's cleared me a view of something worth celebrating.
+line @17 answer.how : Able for the next little rise. | Doing well wherever there's room to draw breath.
+line @18 accept_decline : Right, I'll try a different turning. | No trouble. You've spoken straight.
+line @19 decline : I'd be promising from further up the hill than I've got. | I haven't the reach for that particular favour yet.
+line @20 sympathise : Put the weight down here a moment and talk. | Here's a shoulder while you find your footing.
+line @21 thank : That's a kindness I'll mark down. | You made the next part easier on my legs.
+line @22 deflect_thanks : Help the wolf coming up behind and we'll be quits. | The chance came within my reach. That's all.
+line @23 preclose : My legs are keen to go again. | Got a little daylight left to put to use.
+line @24 accept_preclose : Take the daylight while you've got it. | Your road goes on, then.
+line @25 farewell [here.time=night] : Here's to a quiet roof till morning. | Follow the lighted turnings home.
+scene inkeye
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Each eye on #paper# means you ought to stop. | I add #sightmark# where the printed road gets steep.
+b : Something worth seeing there? | Is it a warning for the climb?
+a : Even one patch of sun will do. It's enough excuse for getting your breath. | A promise. There's somewhere to stand and look back.
+
+scene fishpiece
+when topic=food self.likes=fried_fish
+does offer / accept / assess
+a : Have #slice# while the butter shines. | Try #crust# before the steam gets to it.
+b : That's kind. I'll catch the drips. | Only if you keep an edge too.
+a : Turn the paper up and you've made us both a little dish. | I set the second-best edge aside for company and you found it.
+
+scene uphill
+when topic=times
+does give.opinion / disagree / concede
+a : I'll wager the Houses come to cross words before winter. | Great houses all want the first go through the same gate.
+b : There's no shortage of doors in this city. | Can you see all that from where you stand?
+a : True. But every one I try's shut from the other side. | It's only a guess, I'll grant you. A fair one.
+
+scene crumb
+when topic=pastimes self.likes=digging
+does tell.self / react.self / assess
+a : Nothing takes a thumbprint quite like #soil#. | You can tell yesterday's digging by the way rain goes in.
+b : I'd be tempted to plant something in it. | Does it drink that much faster?
+a : Soon as I get #beds# together, you'll see what I can grow. | Goes down instead of following me into my boots. A start.
+
+scene quietnight
+when topic=smalltalk self.dislikes=night_noise
+does tell.complaint / react.complaint / assess
+a : One banging shutter can take a whole night's sleep off me. | Shouting after dark sets my ears climbing while my legs are still in bed.
+b : There's a wedge of old leather that'd silence the shutter. | A little noise travels over roofs, doesn't it?
+a : I'd sooner nail a kindness up there before the next windy night. | Clear into a bed that never asked to hear it.
+
+scene summerspan
+when topic=season here.season=summer
+does tell.plan / ask.detail / answer.detail
+a : After supper I'll walk toward the last patch of sun. | Summer gives me a whole little afternoon after work.
+b : How far will you go on that? | What are you doing with the extra light?
+a : Only as far as #twinkle# keeps ahead of me. | Digging until the earth quits showing me the stones.
+
+scene missingbend
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : These old ink roads never account for the hill under them. | I found a bend the size of my thumbnail that took an hour to walk.
+b : How would you draw the height in? | What slowed you down so much?
+a : Three scratches to a hard climb. The fourth scratch would be #breather#. | All the up in between the two ends of the bend.
+
+scene polite
+when topic=smalltalk self.dislikes=bad_manners
+does give.opinion / disagree / concede
+a : A wolf who elbows ahead owes a word to every rib in the queue. | An offered place deserves an answer even if you keep walking.
+b : Some folk are in a frightful hurry. | Even if you're halfway up a hill?
+a : Hurry's earned a quick pardon often enough. A bare elbow earns nothing. | A nod will travel quite a distance downhill, come to that.
+
+scene load
+when topic=work self.job=none self.working=yes self.trade_words
+does tell.self / ask.detail / answer.detail
+a : My work? #self.trade_words.capitalize#. I like the swing before the load settles. | #self.trade_words.capitalize#. There's a moment everything seems to hang on one breath.
+b : What's the first sign of that moment? | Even with a small load?
+a : Watch #hook#. The chain's gone quiet a heartbeat before the cargo is. | Especially then. Less weight means a wider swing to allow for.
+
+scene sightline
+when topic=weather here.weather=rain
+does tell.plan / ask.detail / answer.detail
+a : See #whitebit#? Let's wait here until the rain puts it out. | Give the wet air another moment. There's a shape trying to show above that wall.
+b : Quite a lookout you've picked. | What shape do you mean?
+a : Anywhere with a rail for my elbow counts as a lookout. | Just the point of a roof. There. I can keep up again now.
+
+scene firstchance
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd like one good chance somebody hadn't already picked over. | I've left a square of bare ground on my map.
+b : Plenty of folk share that wish. | Saving space for a better road?
+a : Aye, and there's room on the ladder for whoever comes behind me. | For anything I get to choose for myself. Even a garden path.
+
+scene poorprice
+when topic=prices self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : A fish gets smaller each time I open my fist to pay. | Count the supper missing from a weekly basket. There's the price of waiting.
+b : Hard luck when you have a taste for the skin. | And what's the cost of moving ahead?
+a : The pan can't put an edge back on an empty tail. | A first chance. That's dearer than fish to come by.
+
+scene friendplace
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd save the sunny side of a climb for #self.friend#. | One copy of these pencilled views I'd keep for #self.friend#.
+b : Even if you got the shade? | Think your friend would understand?
+a : I've got the whole view. Sun enough in that. | Well enough to stop with me without making a business of it.
+
+scene district
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : The Sump is always drawn at the bottom, even if you turn the paper sideways. | Home feels nearer with a bit of dock mud underfoot.
+b : Is there a map you'd draw differently? | Doesn't it drag your soles down?
+a : Put my doorstep in the middle and let the streets fan out. Let the fancy houses come last for once. | Better than a polished step somebody can bar you from.
+
+scene soup
+when topic=times world.times=hard|lean
+does give.opinion / disagree / concede
+a : If I had the pot, the waiting line would get a taste before speeches started. | A dole queue's a kind of map showing who needs a kinder road.
+b : You'd still want the shares measured fairly. | You can't feed a wolf with a map.
+a : Measure while the first ladleful cools. I'm happy with that. | No, but you can use it to take a pot where it belongs.
+
+scene headland
+when topic=travel self.street
+does tell.self / react.self / assess
+a : #self.street#. Try folding a road that size into a decent pocket. | I tell folk to keep #self.street# in mind if the sea looks near.
+b : You must go through a lot of paper. | Is it easy to find?
+a : Worse trouble where the folds wear out right across a turning. | Best to ask for the headland while there's light to see it.
+
+scene pocketgarden
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : What could I grow in an earth patch scarcely wider than a shovel? | How do you keep a seed bed flat on a slope?
+b : Something that grows down can steal all the room below. | Give it a low edge on the downhill side.
+a : I'll be digging deep for my narrow supper then. | Like a little terrace for my own poor roots. That's worth trying.
+
+scene skyline
+when topic=weather
+does tell.self / react.self / assess
+a : Give me the gust that sweeps a distant roof into view. | Fog makes a hillside look like a map rubbed bare.
+b : I usually just notice my ears getting cold. | Can you still find your stopping places?
+a : Cold ears with a whole headland to show for it seems an even exchange. | The good ones have a rail. A paw will read that much.
+
+story wrong_road [topic=travel]
+  : I bought a map with a fat black road running straight into the Sound. I thought the rest of it must be worthless too.
+  : Then I took it digging as a wrapper for my dinner. Looking over the fish, I found a pencilled stair under a butter stain.
+  b : Was the stair where the pencil said?
+  : Every step. I quit trusting the printer and started looking for the last owner's marks.
+
+story two_mouths [topic=food]
+  : I had my fish wrapped in a paper cone once when a hard wind drove the whole smell along a queue.
+  : A pup at the other end kept opening a mouth every time the gust came round.
+  b : Getting much dinner that way?
+  : I walked my parcel to that end. We decided to give the wind a smaller share of the fish.
+
+story high_patch [topic=dreams]
+  : First garden I tried was a heap of earth in the corner of a broken box. The rain ran down the seam and left a bare strip.
+  : One seed caught halfway down that seam and the root showed through like a pencil line.
+  b : Did anything come of it?
+  : Three leaves. I count that as proof a narrow beginning needn't stay narrow.
+
+rule @crane
+when concept=bark working=yes self.job=none self.trade_words
+does aside
+cooldown 8h
+say Leave a load room to finish swinging. | Eyes on the empty hook as well.
+
+rule @air
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Fine view where that rain thins. I'll stand here. | I make a point of looking back on wet climbs.
+
+rule @fish
+when concept=bark self.likes=fried_fish
+does aside
+cooldown 8h
+say That smell could take my legs straight downhill. | One crisp tail's worth letting cool.
+
+rule @even
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Do a bit with what's left of the light. | Still a shine to the tops of things.
+
+dlg @1 resident.hub [topic.meeting=stranger] : New company. Would a bit of direction do you any good?
+dlg @2 resident.hub [topic.meeting=known] : Ah, #topic.player#. Come see what the day looks like from here.
+dlg @3 resident.hub [here.time=night] : We can speak without raising the roofs. The night's fairly quiet.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Don't crowd me off my footing. I'll listen from here.
+dlg @5 resident.job [self.job=none self.trade_words] : #self.trade_words.capitalize#. I'll show you a load's shadow and you'll see the sense in shifting aside.
+dlg @6 resident.job : I'm after a chance with some height to it.
+dlg @7 resident.news [world.news] : Here's what's reached this far up the steps. #world.news.capitalize#
+dlg @8 resident.bye : Find yourself a good view on the way.
+graft resident.hub
+choice What's the eye drawn on there? -> paper_eye
+node paper_eye
+say A spot where it's worth standing still. If my chest finds the damp a bit heavy, I get to show some company the view.
+choice And if the fog comes down? -> fog_eye
+choice Let's go back a step. -> hub
+node fog_eye
+say Then I tell the company what's usually visible, slowly enough to see it. Most wolves will lend you the time if you lend them the view.
+choice I'll remember that mark. -> hub
+choice I'll leave you the view. -> bye

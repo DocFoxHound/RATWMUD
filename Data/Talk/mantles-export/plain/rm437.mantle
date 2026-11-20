@@ -1,0 +1,400 @@
+# rm437, smoke above ruled water (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm437
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_rune_gullwell
+written_by codex
+title smoke above ruled water
+fits stage=adult|old
+prefers job=scholar
+traits temper=even talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk rules_a_swimming_distance_in_the_margin_and_burns_the_scrap
+likes warm_bread swimming tidy_house misty_dawns
+dislikes smoke stale_bread
+fears a_smoky_reading_room an_unchecked_double_entry
+hopes a_quiet_hillside_pool a_ledger_closed_at_dawn
+topics work +0.5 pastimes +0.5 dreams +0.3 food +0.3 gossip -0.6
+styles comfort=formal gossip=closed refuse=cool tease=none
+marks oath saying
+persona #self.first# measures a swimming distance in the blank edge of a working slip, feeds the used paper to a clean fire and notices at once if anyone has been rearranging the desk.
+
+words
+oath! = Char the straightedge | Sink the ruled line
+saying! = Know the depth before signing | The margin is not public water
+line = the ruled distance | my thin black rule
+slip = the used working slip | my narrow paper strip
+cuff = the smoked inner cuff | the inner coat seam
+lane = the open reach | a long quiet stretch
+bank = the green bank | a ledge of sheltered stone
+loaf = the still-warm loaf | a small hot round
+crust = the crisp lower crust | a warm brown corner
+mist = a low mist bank | the soft white veil
+soot = a feather of soot | the oily black dust
+hook = the pen hook | my plain wooden holder
+clear = the space for the closed book | the exact bare rectangle
+marker = a narrow yard mark | the short distance mark
+ember = a dark orange cinder | the last red point
+leaf = the pencil leaf | my scratch page
+rind = the stale bread rind | a grey hard strip
+float = a piece of floating bark | the pale wood scrap
+cloth = a dry linen square | a clean narrow towel
+depth = the pencil sounding | the depth figure
+
+any
+opinion @1 houses for 1 : The security of a House ought to be worth the trouble of checking every transfer. I see no merit in saving face at the expense of a future loss.
+opinion @2 dole against 2 : Before authorising a second round I should certainly require a clear count of the households overlooked in the first.
+opinion @3 city for 1 : One can find quiet water within reach of a great many active streets in this city, if one keeps the location judiciously private.
+opinion @4 watch for 1 : A regular quiet round allows a late clerk to finish a page without looking up at every passing footstep.
+opinion @5 merchants for 1 : I respect the trader who places the complete figure in view before asking the purchaser to express enthusiasm.
+opinion @6 road mixed 0 : An expense road and a pleasure road are different entries even if the same pair of boots travels both.
+opinion @7 strangers against 1 : A new acquaintance needn't inspect the books to establish that a civil greeting has taken place.
+opinion @8 times for 1 : I have a quiet desk, a sound latch, and bread that can be eaten before it goes cold. A tolerable private reckoning.
+opinion @9 festivals against 1 : A day when the street is full offers a remarkably good occasion to occupy one of the emptier rooms.
+
+grown
+line @1 greet [pair.band=strangers] : A civil introduction may take place here beside the closed book. | That is a suitable distance from which to introduce your errand.
+line @2 greet [here.time=dawn] : Morning. A legible hour before the crowds arrive. | The first of the light is very well suited to short business.
+line @3 greet [here.weather=fog] : Ah, a shape in the fog turns into a visitor. Welcome. | Closer is better in this murk. Welcome.
+line @4 greet [self.working=yes] : Take the clear place at the desk's outer corner. | I have reached an appropriate break in the account.
+line @5 greet.return : And to you. Briefly, if it suits. | Yes, yes. Yours is noted, and here's mine.
+line @6 greet.return [pair.band=friends|family] : A known visitor may have the quieter chair. | I can set my pencil down for that voice.
+line @7 greet.return [here.time=dusk|night] : An evening call, with the books already shut. Welcome. | Good. The lamps need serve only our faces for the moment.
+line @8 farewell : Keep a sound margin between your boots and the water. | May any remaining business be efficiently concluded.
+line @9 farewell.return : Go carefully, then. | I'll put the chair back as it was. Farewell.
+line @10 again.open : A second meeting so soon. I shall note it as a coincidence. | You again. The day is running to pattern.
+line @11 kin.open [pair.kin!=no] : The private seat is open to our family. | Come to the side reserved for matters of the household.
+line @12 hail [pair.band=friends] : The quiet chair at this end! | Over at the clear patch of bank!
+line @13 react.news : I should like the particulars without the smoky embellishment. | State the known depth before estimating the whole reach.
+line @14 react.news.new : That has not appeared in the preceding pages. | There is a fresh figure for my private reckoning.
+line @15 react.news.known : I have the entry in a somewhat earlier hand. | The original report had much the same dimensions.
+line @16 react.news.doubt : The claim appears to rest on rather shallower evidence than advertised. | I should decline to sign for that total on the material offered.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Let the account rest. There is a living grief to attend to. | A seat is available. No particulars need accompany the taking of it.
+line @18 react.news.glad [topic.kind=birth|marriage] : That is welcome news and may quite properly stay in the light. | An entry worth maintaining in a clear and permanent hand.
+line @19 answer.how : Calm enough. The figures are behaving, for now. | Well enough, within my usual tolerances.
+line @20 decline : I am already committed to an undertaking that occupies my available margin. | There is insufficient clarity for me to make that an acceptable obligation.
+line @21 accept_decline : Then the proposed entry may stay blank. | Understood. I shan't press it.
+line @22 sympathise : There is a dry seat here where no one need state a reason for resting. | The room has a sheltered corner you may occupy awhile.
+line @23 thank : The assistance was precise and well timed. | I'll keep a quite distinct record of that kindness.
+line @24 deflect_thanks : It was a small correction to an untidy arrangement. | My part may be left out of the public account.
+line @25 preclose : I must secure my final working sheet. | There is a short distance of private daylight left to me.
+line @26 accept_preclose : Take your leave while our arrangement is quite clear. | Go on, then. Your other business is waiting.
+line @27 farewell [here.weather=rain] : Protect the bound edge from the damp outdoors. | I wish your papers a clean dry passage.
+line @28 answer.how [self.working=yes] : The day and its figures are behaving with reasonable decorum. | Occupied. One column is refusing to agree with the other.
+line @29 greet [pair.band=friends] : Here is a voice for whom the desk can be closed. | The chair has been kept in its accustomed place.
+line @30 preclose [here.time=dusk] : I prefer to finish the fine strokes before artificial light is necessary. | I'll place the pen in its proper hook now.
+line @31 farewell [here.time=night] : Good night. May your room be quieter than the street. | Sleep well, and check the latch.
+scene waterline
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I rule #line# along #slip# to mark how far I mean to swim. | I make room to mark a private swimming reach below the most tedious calculation.
+b : How do you translate the ink into water?
+a : From the willow shade to #bank#. The length of the mark corresponds to a count of easy strokes. | I use the reach I know. One short division allows for turning without putting a foot down.
+
+scene ashpaper
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A completed working slip can go into the fire after the settled entry is dry. | I prefer #leaf# absent from the desk once the last transfer has been checked.
+b : Do you mean to destroy the record?
+a : The record stays in the book. Errors and preliminary divisions have no business circulating as facts. | Not a single recorded sum. A private working scrap and a final receipt have rather different uses.
+
+scene warmbread
+when topic=food self.likes=warm_bread
+does offer / accept / assess
+a : #loaf# can be divided while the crust is quite warm. You may take this end. | Please try #crust# while it still has the character that recommends it.
+b : I should like a small share without upsetting your table.
+a : I have a separate plate for exactly that contingency. | Place the torn side on #cloth#. It will leave no butter beside the accounts.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does give.opinion / disagree / concede
+a : I should never list #rind# as fresh merely because its wrapping has been replaced. | A loaf is best judged before it acquires the texture of a well-seasoned ledger board.
+b : Could the older bread serve another purpose?
+a : Quite readily in broth, at an honestly adjusted price. | Possibly as a paper weight, but I prefer to take my breakfast before starting the office work.
+
+scene tidy
+when topic=pastimes self.likes=tidy_house
+does tell.self / react.self / assess
+a : #clear# says exactly which book has gone out without leave. | I put #hook# unwritten-side up when work is put away for the evening.
+b : Can you really tell if another paw has visited the room?
+a : I can tell a book has shifted. I prefer conclusions that go no further than the evidence. | A hook turned the other way would give me a sensible first question. The visitor might be entirely authorised.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : #mist# is a particularly courteous screen between a swimmer and speculative eyes. | In morning mist the familiar bank takes on the aspect of an entirely unexamined page.
+b : What ensures the reach remains as you remember?
+a : I sound it separately. The pleasant appearance has no authority over the depth. | I enter from the same ledge and use a shorter reach, with no occasion to consult the surface about its assurances.
+
+scene smoke
+when topic=weather self.dislikes=smoke
+does tell.complaint / react.complaint / assess
+a : #soot# can travel a surprising distance alongside a formally clean visitor. | A little smoke in the eyes makes the difference between six and eight rather costly.
+b : Where does the smoke remain longest?
+a : In #cuff#. A properly washed exterior can still produce evidence at the seam. | Near the lamp. The numbers can wait for a clean wick rather more safely than a signature can be erased.
+
+scene campquiet
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I can recall the quiet after a charcoal fire dies more easily than the silence of a clerk's room. | A faint smell of cut wood under the smoke can transport me to hillside air.
+b : Would you choose to go back to the fire?
+a : To the stillness round it, yes. I have sufficient smoke in my cuff already. | I prefer the memory dry and unhurried. No need to feed the fire to remember the hill.
+
+scene countjob
+when topic=work self.job=scholar self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep the money copy separate from what I calculate before setting it down. | I re-add a doubtful figure at #self.workplace# working from the final figure toward the heading.
+b : Why not rely on what a practised eye sees?
+a : A practised eye has several comfortable ways of repeating its own mistake. | Reading upwards removes the small influence of the result I expected. Then I inspect the original receipt.
+
+scene masterjob
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : For learners the first question concerns a figure's origin before asking what it adds up to. | I would have a learner fetch the original once rather than copy the error into three more books.
+b : Suppose the final total comes out correct anyway.
+a : Two errors can make an extremely civil agreement to conceal each other. I should test both entries. | Good luck is of limited use in teaching someone to identify a copied mistake. A true source remains true on a wet afternoon.
+
+scene spouseswim
+when topic=family self.spouse
+does tell.plan / ask.detail / answer.detail
+a : I would mark a quiet sitting place for #self.spouse# beside the end of my swim. | I mean to give #self.spouse# one morning in which no visitor need set a figure in front of us.
+b : What replaces the office work that morning?
+a : A loaf which could be shared without weighing each slice. Familiar company makes the arrangement practicable. | A walk through the thinning mist. I should prefer the distance determined by our own choice of turning.
+
+scene homeaccount
+when topic=family self.married=yes
+does tell.self / react.self / assess
+a : A shared house ought to allow a private desk and a quite unreserved supper table. | I like everything from the office put away before two places are set for dinner.
+b : What is the difficulty in maintaining that division?
+a : An open page invites a late solution. The temptation is quite adequately dealt with by closing the cover. | A stain of smoke on one's cuff can cross the table without asking. I generally attend to the sleeves as well.
+
+scene palfold
+when topic=friends self.friend
+does offer / accept / assess
+a : A clean towel by the bank would be my first provision for #self.friend#. This dry corner is yours for the present. | I can set aside #loaf# for #self.friend#. There is enough remaining for you to try the near end.
+b : I should not like to intrude upon the reserved portion.
+a : It is quite separate. There's a second towel for the bank, and this one is yours. | It is a loaf and not a loan. Take the near end, and nobody need keep count.
+
+scene office
+when topic=land self.quarter=office
+does tell.self / react.self / assess
+a : In the Office the pause before the first pen begins may be the last wholly clear sound of the day. | My Office desk appears to have a remarkable appetite for stray sheets.
+b : Does that not make you want to stay in the room all evening?
+a : No. I also value the silence after the final cover closes. That one travels outside with me. | Quite the contrary. An empty desk is a very creditable end to the day and can remain so till morning.
+
+scene richquiet
+when topic=prices self.wealth=rich
+does give.opinion / disagree / concede
+a : I am able to pay for quiet conditions. That does not make quiet a trivial part of the working expense. | I should rather pay for a properly fitted sash once than for three sets of watermarked volumes.
+b : Can everybody afford such an arrangement?
+a : No. The ordinary account should note that advantage, instead of attributing every clear line to cleverness. | The point is precisely that I can make the investment. I object to calling it mere ornament.
+
+scene cityreach
+when topic=travel here.region=ridgemere
+does tell.self / react.self / assess
+a : Ridgemere rises so quickly that a swimmer looking from the water might mistake several streets for one room. | The upper paths above the Sound offer a remarkably clear view of where a watercourse began to widen.
+b : Do you take your observations back to the desk?
+a : Only far enough to remember that a table of measurements is not the whole field of view. | Sometimes. A widening line on paper no longer looks purely decorative once one has tried swimming across it.
+
+scene watchcalm
+when topic=smalltalk
+does tell.worry / reassure / assess
+a : An unexplained smell of smoke near a closed cupboard makes an enquiry worth the interruption. | I am not at ease when a working page has shifted by quite the width of a nail.
+b : What would you check before calling anybody to account?
+a : My own cuff, my lamp, the room outside. An innocent explanation costs less to inspect than an allegation costs to repair. | The fastening at the sash. Damp air can lift a sheet without a single intruding paw.
+
+scene discretion
+when topic=gossip
+does give.opinion / disagree / concede
+a : I see no use in making a public entertainment out of an entry which is still being examined. | A correctly closed ledger is no invitation to guess what's on its last leaf.
+b : Would you say anything if a rumour had already started?
+a : I'd correct a definite falsehood in the hearing of the interested parties. I should not circulate the rest. | I would direct the enquirer toward an authorised account and let speculation find its own fuel.
+
+scene thinstock
+when topic=times world.times=hard|lean
+does give.opinion / disagree / concede
+a : In a lean week accurate supply entries matter more, since there is less room for an error to fall harmlessly. | A shortfall should be measured before the confident voices begin assigning blame.
+b : Would you delay a meal to get the last digit quite right?
+a : No. Record the portion that actually passes and make the correction afterward in a visible hand. | I'd have the cook feed the waiting mouth while the desk examines why the count was short. Those paws can work independently.
+
+scene hillstory
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I heard once of a charcoal burner who could tell how the wood had been cut by listening to the last ember. | There's an old explanation for the way a cleared fire can leave a perfect black rim on a stone.
+b : What does the old story claim?
+a : That a tree remembers its last blow. I rather suspect a distinction in the way a knot contracts. | That the wood once tried to draw a map of its own canopy. A pretty drawing, but I would still ask how the air moved round it.
+
+scene riverrest
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I should like one morning to swim until a book is no longer the first object in my mind. | I would quite willingly go some way inland for a pool where the only marks on the water are my own.
+b : Wouldn't you find yourself counting the strokes just the same?
+a : Certainly. The pleasure would be deciding which count deserved recording afterward. | Very probably. A familiar practice can be a liberty when one chooses both ends of the reach.
+
+scene wetpages
+when topic=work
+does ask.advice / give.advice / assess
+a : Half of today's receipts came in with the damp through them. How would you recover a figure that's gone entirely? | The rain lifted a corner clean off a receipt this morning, figure and all. Where would you look for it?
+b : Look for the same entry in somebody else's book.
+a : The merchant's copy, yes. Better to ask for it than guess the missing numeral. | Sensible. A partial match can point to the likely entry, then the original can confirm the sum.
+
+scene breadshape
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A loaf left beside an open volume can curl the page without shedding a crumb. | I never place warm bread under the shelf where the newest paper is stored.
+b : What passes from the bread to the page?
+a : A very modest amount of steam. Quite sufficient to make a fine sheet curl against the binding. | Heat and a little damp. Neither belongs in the same morning routine as fresh corrections.
+
+scene mistfloat
+when topic=pastimes self.likes=swimming
+does tell.self / react.self / assess
+a : I put #float# out before I put my own weight in a dark reach. | I prefer a swimming place that has a clearly recognisable dry exit on either side.
+b : Do you regard a pleasant swim as something needing an audited route?
+a : I regard cold water as admirably indifferent to a swimmer's confidence. The floating scrap tells me the current first. | Only in advance. Once I am in the water I should prefer to give the actual movement my undivided attention.
+
+scene fingermark
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A single thumb mark seen under #marker# can tell me where a column was held down and reread. | A hand resting in the same place for several minutes leaves a patch distinct from a passing touch.
+b : Would you pretend to identify the reader by that?
+a : Certainly not. It tells me where somebody had occasion to pause. The reason remains quite open. | No. My own sleeve is capable of producing a sufficiently misleading impression without any accomplice.
+
+scene firstlesson
+when topic=work self.master=yes
+does tell.plan / ask.detail / answer.detail
+a : My next exercise for a learner is a page containing two perfectly offsetting errors. | I should like a learner to test #depth# before trusting a neat row of corresponding marks.
+b : Are you trying to catch the learner out?
+a : I am trying to make a handsome total an insufficient reason for putting down the pencil. | No. I would like a prudent question at the point where the figures appear easiest to accept.
+
+scene strangerdesk
+when topic=newcomer
+does tell.self / react.self / assess
+a : An unfamiliar reader is quite welcome to inspect a blank practice sheet. | A visitor's question occasionally shows me where an accepted custom has gone unexplained.
+b : Do you let that visitor inspect a household book as well?
+a : A practice page is the more suitable material. It offers every rule without disclosing anybody's business. | Not without the household's authority. An explanation of the method ought to be sufficient.
+
+scene coldroad
+when topic=travel world.wagons=late
+does tell.self / react.self / assess
+a : A late wagon can be entered as late without appointing a theory about the road responsible. | I note a delay in pencil until I know how much time was actually lost.
+b : Could you make a reasonable estimate?
+a : Certainly. I should label it an estimate. Those words are considerably cheaper than a second cart. | I could, but the final entry deserves the measured arrival. A guess can serve the working schedule quite adequately.
+
+scene tidyloan
+when topic=smalltalk
+does offer / accept / assess
+a : Take the blotting square while I turn the leaf. The empty desk space below it is quite dry. | I can lend #cloth# to keep the damp from your working page.
+b : Wouldn't the trace of ink make a nuisance of my paper?
+a : Use the folded side. That one is still clean. | It's an unused square. I prefer not to invite anyone to repeat yesterday's mistake in another hand.
+
+scene homehill
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : A hillside at dawn would permit me to distinguish the scent of clean ash from the fumes still in my own collar. | I should like one drawer that holds no reminder of a room full of firewood.
+b : Is the old smell an unwelcome memory?
+a : The smoke in the eyes, certainly. A quiet hill and the warmth inside a coat are rather more complicated matters. | Only the persistent part. A memory I may take out at will would be quite another object to store.
+
+story empty_margin [topic=work]
+  : I laid a doubtful total beside a clean slip and went down to the water before revisiting it. On my return the slip bore a small dark upright near the bottom.
+  : My thumb lifted the entire stroke. A little soot from my cuff, exactly the height and width of the numeral one.
+  b : Was the doubtful total off by one?
+  : No. That much good fortune would have made the inquiry unsafe. I changed the cuff and began the addition again.
+
+story bridge_swim [topic=pastimes]
+  : I once swam between the two shadows cast by a footbridge and discovered I had covered very little distance despite a steady effort.
+  : The shadow on the far side had been shortening in the moving light.
+  b : Did you keep the measurement?
+  : I kept the exercise. The book received only the distance between two fixed stones measured after I had dried.
+
+story loaf_ruling [topic=food]
+  : A new loaf left a fine damp crescent on the paper beneath it. When the paper dried the crescent disappeared unless I held it at a low angle.
+  : I drew a line nearby and watched the fresh ink bend slightly as the nib crossed the warped paper.
+  b : What was the lesson of that breakfast?
+  : That the clean-looking page was not in fact flat. I make no wider claims about the wisdom of bread.
+
+story coal_lane [topic=lore]
+  : In an old hill story a charcoal burner set a straight row of dark stones across a little stream. Any swimmer could count off the distance by sight.
+  : The stream swelled one spring and spread the stones in an elegant curve.
+  b : Did the burner straighten the row?
+  : Moved to another reach. What a careful person does with a mistaken arrangement depends on the cost of correcting it.
+
+story ash_sill [topic=dreams]
+  : I dreamed once that a millpond had a neat black border round it like a closed book. I tried to lift the corner before stepping into the water.
+  : My fingers came away smelling of old firewood and there was no book at all.
+  b : What was the pond resting on?
+  : Nothing I ever reached. I woke with my wrist against my collar and a perfectly clear recollection of the hill.
+
+rule @desk
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say The clean rectangle belongs to the closed volume. | Work from the receipt, then upwards from the lower ruling.
+
+rule @training
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say An agreeable sum can still be entirely wrong. | Test the transfer before admiring the neat hand.
+
+rule @swim
+when concept=bark self.likes=swimming
+does aside
+cooldown 8h
+say Fixed point on the bank first. | A short sound reach is quite sufficient.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Mist keeps an early appointment admirably private. | One quiet pass while the early lamps retain their glow.
+
+rule @loaf
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Keep the hot bread below the papers. | A clean crust beside a closed ledger.
+
+rule @ash
+when concept=bark self.dislikes=smoke
+does aside
+cooldown 8h
+say The seam holds the older trace. | Check the cuff before accusing the wick.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Place your question where I can hear it. The book may remain closed.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I can make a private interval for your business.
+dlg @3 resident.hub [here.time=night] : At this hour I require only a clear statement and a civil voice.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Nothing on this desk requires you to approach any nearer.
+dlg @5 resident.job [self.job=scholar self.workplace] : I keep accounts at #self.workplace#. A correct transfer is more valuable than a persuasive description of one.
+dlg @6 resident.job : I compare what has actually arrived with what a neat account would have me believe.
+dlg @7 resident.news [world.news] : The account reaches me in this form. #world.news#
+dlg @8 resident.bye : Farewell. I trust you have what you came for.
+dlg @9 master.learn [here.teaches=yes] : A place is open to learn the work. Begin by stating which part of a simple entry you can verify.
+dlg @10 master.learn [here.teaches=no] : I cannot undertake a fresh pupil under the current arrangement. A precise question can still be heard.
+dlg @11 master.work : Following sources, maintaining an orderly copy and correcting a discrepancy without concealing the original entry.
+dlg @12 master.wages : Learners receive no wages. What you produce may be sold; working in my company allows the skill to develop faster.
+dlg @13 master.takes [here.take_on=no] : #here.take_on_why# That is the operative limit at present.
+dlg @14 master.refused : #topic.why# I should prefer the reason understood in its precise form.
+dlg @15 master.bye : Put the practice sheet apart from anything that will be entered as a final account.
+graft resident.hub
+choice Does the margin really show a swimming place? -> ruled_lane
+node ruled_lane
+say A private one. Two short marks for the banks, one rule for the intended length. A clean reach of water is a pleasant thing to keep beside a long column.
+choice Why burn the working slip afterwards? -> burnt_lane
+choice I'll leave the bank unmarked. -> hub
+node burnt_lane
+say It has done its work. The office account belongs in the permanent book. My morning exercise need not be entered beside the price of an unrelated cargo.
+choice I understand why you keep the two apart. -> hub
+choice May the water be quiet. -> bye
+
+graft master.learn
+choice If the final total agrees, why go through it again? -> offset_entries
+node offset_entries
+say Two different mistakes may cancel each other out. A flawless total may therefore sit above a pair of very badly served customers.
+choice Where should I look first? -> due_source
+choice Back to the terms of learning. -> learn
+node due_source
+say At each source and at the line where each transfer belongs. Let both customers receive the right thing instead of congratulating the total on its appearance.
+choice I should like to hear the working duties. -> work
+choice I shall remember the two customers. -> bye

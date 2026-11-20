@@ -1,0 +1,270 @@
+# rm236, the skyline carver (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm236
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ansel_wickdale
+written_by codex
+title the skyline carver
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk cuts_mast_profiles_into_scrap_wood
+likes oatcakes whittling fresh_straw thunder
+dislikes salt_wind drizzle
+fears losing_a_familiar_outline
+hopes to_fit_a_harbour_in_a_drawer
+topics ships +0.5 pastimes +0.4 land +0.2 gossip -0.4
+styles comfort=quiet gossip=withhold refuse=soft tease=none
+marks oath saying
+persona #self.first# pares scrap wood into the outlines of distant ships, a patient observer with small, exact answers.
+
+words
+oath! = Tar on the thumbnail | Splinter catch it
+saying! = Shave away the sky | Leave the grain its sea room
+scrap = a scrap of pale wood | a slip of dry deal
+cutout = a narrow wooden skyline | my little cutout
+slot = the nick for a mast | the slot at the stern
+hull = the dark undercurve | the long belly of a boat
+chine = the turn of the side | the lower bend
+sky = the light behind it | the bright strip behind the hull
+blade = my little paring blade | the small worn cutter
+chips = the pale rubbish | a scatter of curls
+thumb = my measuring thumb | a thumbnail at arm's length
+bag = the pocket for offcuts | my bag of useful ends
+straw = a fresh straw twist | a pale stem
+supper = an oat round | my flat little cake
+
+any
+opinion @1 city for 1 : From low down even an ordinary roof makes a grand line against the sky.
+opinion @1 houses against 2 : I'd be glad if some rent collectors would come down and count the loose steps too.
+opinion @1 dole for 2 : There's precious little carving to be done with a belly biting itself. Feed folk first.
+opinion @1 merchants against 1 : The curl of wood costs nothing and the finished thing costs dear. Somebody's paws are paying for the difference.
+opinion @1 church for 1 : There's room on a chapel bench for a quiet wolf with empty pockets.
+opinion @1 watch against 1 : A patrol sees a row of faces. I wonder how many faces see a helping paw.
+
+grown
+line @1 greet : Good to see a shape I recognise. | Move over a shaving's width. There's space.
+line @2 greet [pair.band=strangers] : Hello there. I'm making nothing urgent. | Mind this curl underfoot. Bit slippery.
+line @1 greet.return : Quite clear from where I'm sitting. | I heard. Welcome alongside.
+line @2 greet.return [self.working=yes] : One slip, then I'm listening. | You caught me mid-cut. Nearly there.
+line @3 greet.return [pair.band=friends|family] : I'd know that outline anywhere. | Your shadow fell just right for recognition.
+line @4 greet.return [here.time=night] : Dark round the edges, but I know that voice. | Evening to your shadow too.
+line @1 again.open : Our two outlines match up again. | Another glimpse of the familiar.
+line @1 kin.open [pair.kin!=no] : Come close. You can look over my shoulder. | I kept a smooth bit for family.
+line @1 farewell : Keep the light behind the thing you're looking for. | I'll clear the chips after you go.
+line @1 farewell.return : Straight walking and no splinters. | I'll mark the last cut in our conversation.
+line @1 react.news : Which part could you see from there? | Give me the outline first.
+line @1 react.news.new : I had no shape for that in mind. | That's a cut I'd never have guessed at.
+line @1 react.news.known : I know that silhouette well enough. | I've heard the edges of that account already.
+line @1 react.news.doubt : There's a piece missing from that outline. | Let me see it from one other angle first.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard news to mark on wood. | I'll lay my work aside to hear you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A pleasing turn there. Worth remembering. | That'll keep its shape a long while.
+line @1 ask.how : Has your day gone with the grain? | How's the view from where you stand?
+line @1 answer.how : Quietly pleased with a small thing. | Busy fingers and a quiet head.
+line @1 decline : I'd rather finish the curve before the light changes. | Another occasion might suit the work better.
+line @1 accept_decline : Fair. Leave it rough this time. | I'll find a use for the spare space.
+line @1 thank : You spared me a nasty split there. | Much appreciated. That edge will keep now.
+line @1 deflect_thanks : It only wanted a gentle touch. | Save the praise till it fits.
+line @1 preclose : I've the last sliver to take off. | I'll turn back to this scrap before it splits.
+line @1 accept_preclose : Leave me with the shavings. Go easy. | I'll see your outline on another day.
+line @1 sympathise : I won't ask you to put a shape on it yet. | I'll sit and take none of the quiet.
+line @1 ack : The bend, yes. | Just so. A finer line.
+scene pier_cut
+when topic=pastimes|ships
+does tell.self / ask.detail / answer.detail
+a : I've cut away half the sky. Now you can see a stern. | Hold #cutout# against the window and tilt it.
+b : Why cut the sky away? | Is that a vessel turning?
+a : Because it's the part of a ship the wood can spare. | It will be once I pare the nose down a shade.
+
+scene thumb_scale
+when topic=land|travel
+does tell.self / ask.detail / answer.detail
+a : My thumb covers a ship if I stand far enough off. | I measure tall things by a thumbnail held sideways.
+b : How can that help you? | Always the same thumb?
+a : Gives me the size of the scrap I need. | I tried changing paws. My whole harbour listed.
+
+scene pocket_sound
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Two wooden hulls in one pocket make a very quiet collision. | I put felt between the finished boats before I walk.
+b : Damaged at sea? | You mind the paint?
+a : Only by a vigorous walk across a landing. | I leave them plain. It's their delicate ends I'm saving.
+
+scene wick
+when topic=work self.working=yes self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : I like laying things out by thickness before carrying them. | A fine stem folded under a heavy coil comes out crooked.
+b : Is it quicker your way? | Can you straighten it?
+a : Slower to begin and much quicker to put away. | Mostly. A better use of time is packing it high.
+
+scene straw_bed
+when topic=home self.likes=fresh_straw
+does tell.plan / ask.detail / answer.detail
+a : I'll bed a little hull down on #straw#. | Good straw earns its keep at both ends of a trip.
+b : Instead of floating it? | How's that?
+a : It's made to sit in a drawer and remember floating things. | Packing there, a clean floor covering at the far end.
+
+scene oats
+when topic=food self.likes=oatcakes
+does tell.self / react.self / assess
+a : One bite from an oat round makes a crescent shore. | I break my oatcake above a dish these days.
+b : Going to carve that as well? | Saving the crumbs?
+a : Not if my appetite gets there first. | Saving the hulls. Crumbs get into the little nicks for rigging.
+
+scene storm_roof
+when topic=weather here.weather=storm
+does tell.feeling / ask.detail / answer.detail
+a : Thunder leaves me perfectly content to be under a sound roof. | Each peal rattles the drawer in a different key.
+b : Don't you jump? | Is there music in it?
+a : First one, yes. After that it's fine company. | More of a working harbour all grumbling together.
+
+scene drizzle
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Fine rain rubs the outline away before I can set it down. | In this wet every boat looks cut from the same grey slat.
+b : Then invent one. | No difference left?
+a : I'll wait. An invention never surprises me by turning broadside. | A deeper grey for the nearest. That's about my tool kit today.
+
+scene grain
+when topic=pastimes
+does tell.self / ask.detail / answer.detail / assess
+a : The grain bent before I ever took a blade to it. | This curve already knew what it was to become.
+b : You just follow it? | And what if you wanted it straight?
+a : Far as it'll put up with company, yes. | Then I'd have picked a much less interesting scrap.
+b : That's a courteous way of cutting. | I see why you've so many crooked ships.
+
+scene offcut
+when topic=smalltalk
+does tell.self / react.self / assess
+a : Give me a waste end and I'm supplied for an afternoon. | My bag has a separate corner for plain ugly wood.
+b : Satisfied with very little. | Saving it for uglier boats?
+a : Not little. Look how much mast is hiding in that pointed bit. | For testing a cut before trying it on a handsome one.
+
+scene recognise
+when topic=ships|memories
+does tell.self / ask.detail / answer.detail
+a : Take away the colour and a ship can still be familiar. | A name's easy enough to forget. A mast set too far back stays put.
+b : What gives it away? | Wouldn't the name be tidier?
+a : The rise between the two ends, even if the rigging's down. | Certainly. But the shape would have to be wrong to fit in a name.
+
+scene honesty
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A story without a clear edge stays out of my pocket. | My rule about a private matter is to leave it uncarved.
+b : Unclear how? | In case somebody finds it?
+a : Where seeing ends and guessing begins. | In case I start thinking it's mine to display.
+
+scene home_quarter
+when topic=home self.quarter=sump
+does tell.self / react.self / assess
+a : Down my way a landing serves as a workshop if you tuck both elbows in. | Sump stairs take an offcut up and bring the shavings back down.
+b : People can get by? | Sweeping them down?
+a : Sideways. I pick my elbows up on hearing a footfall. | In my own sack. Nobody asked for a drift outside their door.
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : I'd lend #self.friend# a finished boat without needing a pledge. | If #self.friend# wanted the best one, I'd struggle to refuse.
+b : Even the one you keep by you? | What would be hard about giving it?
+a : Most of all that one. It belongs where I'd miss it. | Choosing, I mean. I think highly of several.
+
+scene narrow_days
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : When money's scant a strip of waste timber makes a handsome evening. | Lean days leave a wolf looking hard at the sweepings.
+b : I should think firewood comes first. | Anything useful?
+a : It does. That's why my boats are so small. | Light for the hearth and a hull besides if luck holds.
+
+scene first_look
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a newcomer the city's shape from a landing first. | Better go up a little before trying to find your road.
+b : Why the height? | To see over the smoke?
+a : You can remember a roof even when the alleys tangle. | Over the first row of doors at least. A modest view's useful.
+
+scene salt_air
+when topic=land|travel
+does tell.feeling / ask.detail / answer.detail
+a : The bay's got a fine outline. I'd take the smell from further off. | My lips know when the sea wind's paid a visit.
+b : Tired of the salt? | Can you taste the harbour?
+a : Yes. It salts an oatcake before I get a say. | Enough to wish I'd wrapped supper better.
+
+scene quiet_prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I take a plain scrap to chapel in my pocket sometimes. | A clean bit of wood makes a fair resting place for worry.
+b : Do you carve on the bench? | How do you leave it?
+a : No. I hold it still, which takes a different sort of patience. | Hold it and pray till I can let go.
+
+scene empty_drawer
+when topic=dreams|home
+does tell.plan / ask.detail / answer.detail
+a : I'd like a drawer deep enough for a whole Sound of little hulls. | One day I'll arrange the cutouts by the height of their masts.
+b : Wouldn't you rather have a shelf? | Tall ones in front?
+a : Dust is a terrible tide on a shelf. | Only if the low ones feel bashful.
+
+story chip_fleet [topic=memories|pastimes]
+  : My first little vessel snapped clean across the middle. I was about to burn both ends when I noticed they sat quite level.
+  : I turned one round, laid both under the sill and got two small boats instead.
+  b : Did they look alike?
+  : One sailed off with all the cabins. Its partner had rather too many bows.
+
+story shadow_reversed [topic=memories]
+  : I cut a hull from the shadow cast on a piece of scrap. Come daylight, the bow pointed where I remembered the stern.
+  : I carried it round a post, grumbling at the shape. Then I saw the vessel from the other side.
+  b : There was your carving after all.
+  : Exactly. I've walked round things before taking offence ever since.
+
+story crumbs [topic=food|pastimes]
+  : I once packed my supper in a nest of chips and a new cutout in a napkin. In a poor light I unwrapped the wrong one.
+  : There was my supper sailing out of sight into the chips while the cutout settled nicely on the plate.
+  b : Tough pastry?
+  : Beautiful crust. Needed a lifetime's soaking.
+
+rule @curl
+when concept=bark self.likes=whittling
+does aside
+cooldown 9h
+say Save that curled end. There's a stern in it. | Small shavings wanted for a very small fleet.
+
+rule @packing
+when concept=bark self.working=yes self.job=laborer
+does aside
+cooldown 8h
+say Leave the light twists above the coil. | Fine end up so it won't crease.
+
+rule @straw
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Straight straw for packing, broken for sweeping! | Lay those pale stems out to air.
+
+rule @view
+when concept=bark here.region=ridgemere
+does aside
+cooldown 12h
+say That's a bold line against the Sound. | Room for another mast on my scrap.
+
+dlg @1 resident.hub : Take up a corner of this light with me. I'll put the blade down.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'd recognise this shape. Turn it over.
+dlg @3 resident.hub [here.time=night] : Better sit still. Loose chips on a dark floor can catch one out.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Keep a paw's distance from the little carvings. Go ahead.
+dlg @1 resident.job [self.job=laborer self.workplace] : #self.workplace.capitalize# keeps my paws occupied. Fine things need carrying too.
+dlg @2 resident.job : I work quietly enough to see each change of outline.
+dlg @1 resident.news [world.news] : #world.news.capitalize#. There's the news without my guesses added.
+dlg @1 resident.bye : I'll put the spare bit by for you.
+graft resident.hub
+choice Why are the ships all flat on one side? -> flat_hulls
+node flat_hulls
+say They sit against the back of a drawer. Look at the face with the light behind it and all the depth you need comes back.
+mood calm
+free
+choice Can you tell two ships apart like that? -> mast_spacing
+choice Let's put the drawer back. -> hub
+node mast_spacing
+say One's got a little waist between the masts, another a nose like an upturned spoon. I'd know them in a row of kitchen knives.
+choice I'll look at the outlines. -> hub
+choice Good luck with the fleet. -> bye

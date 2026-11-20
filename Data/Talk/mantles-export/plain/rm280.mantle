@@ -1,0 +1,376 @@
+# rm280, the roof flock ledger (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm280
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_sigrun_mudmore
+written_by codex
+title the roof flock ledger
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk scores_rooftop_perches_on_a_used_cheese_board
+likes hard_cheese roof_birds festival_bells summer_evenings
+dislikes drizzle gulls
+fears the_last_empty_roof soft_rind_under_a_firm_thumb
+hopes a_window_above_the_flock a_bell_clear_across_the_water
+topics animals +0.5 pastimes +0.4 food +0.4 dreams +0.3
+styles comfort=practical gossip=measured refuse=soft tease=none
+marks oath saying
+persona #self.first# keeps a map of roof perches on an old cheese board and lets a flock settle before making another mark.
+
+words
+oath! = Brass beak | Rind and rafters
+saying! = Count the perch after the wings fold | No flock stands still for a second count
+birdboard = my perch board | the slate of wood
+eavesmark = the hooked roof scratch | a groove for a gutter
+gritspot = a dark knot in the wood | a brown knot
+scraper = my old rind scraper | a little blunt scraper
+flake = a brittle cheese flake | a chip of hard cheese
+underwing = a pale wing lining | a flash of cream feathers
+bellgap = the quiet after the bell | a stretch of quiet air
+crowdmark = a row of cuts | a cluster of nicks
+flightline = a shallow diagonal | a sloping score
+perchend = the highest notch | the nick near the rim
+scrapring = the ragged outside piece | a narrow ring of rind
+sleevewipe = a clean cuff patch | my cuff turned in
+ridgevent = a little gap in the tiles | an open seam beneath a ridge
+quietroost = a blank patch of roof | an empty ridge
+countercloth = the plain counter cloth | a square of washed grey linen
+
+any
+opinion @1 church for 1 : There's a meal set out when little else comes within reach. More gets done with a cut loaf than a fine speech.
+opinion @1 dole for 2 : A full stomach lets me look up instead of down for dropped coppers. Plenty in the Sump could do with that much room in a day.
+opinion @1 houses against 2 : On a House's business I'd consult the roofs. Every high roof seems to take the sun off a lower one.
+opinion @1 sump for 1 : A Sump roof has a story in every odd tile. Start again with new slates and I'd have to learn a whole city.
+opinion @1 merchants against 2 : A thin shaving weighed with a great deal of wrapping starts out rather dear for a mouthful.
+opinion @1 strangers for 1 : The best thing a stranger can bring me is a description of a bird I've never marked.
+opinion @1 watch against 1 : My old board has a good many more marks for passing boots than for boots that stopped to lend a paw.
+opinion @1 festivals mixed 0 : A clear bell and a vacant roof for the birds make a fine festival. For the rest I can take my chances.
+
+grown
+line @1 greet : There's a place by the board. Come and share the view.
+line @2 greet [pair.band=strangers] : Welcome. Keep a little clear of my sightline.
+line @3 greet [here.time=dawn] : Light under the birds' wings. A good start between us.
+line @4 greet [here.time=dusk|night] : Evening gives us a quiet ridge to talk beside.
+line @5 greet [self.working=yes] : Hello from behind the cloth. One moment for the loose rind.
+line @1 kin.open [pair.kin!=no] : You know the open side of my board. Come as near as you like.
+line @1 again.open : The flock's settled since I last saw you.
+line @1 greet.return : I heard. I was counting the gaps between calls.
+line @2 greet.return [pair.band=friends|family] : Your voice is one I'd always pick out of the flock.
+line @3 greet.return [self.working=yes] : Your word's got through to this side of the counter.
+line @4 greet.return [here.time=dusk|night] : I hear a caller where I can barely see a muzzle.
+line @1 farewell : Keep an eye up when the bells go.
+line @1 farewell.return : I'll keep the board steady. Go well.
+line @2 farewell [here.time=dusk|night] : Leave a little twilight for the birds.
+line @1 react.news : Give me the first mark to start from.
+line @1 react.news.new : I'd never have put a nick there before.
+line @1 react.news.known : I had a little sign of that already.
+line @1 react.news.doubt : Just how near a view did anyone get?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Cut a decent piece for that door. A thin scraping wouldn't say much.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : There's room along my top row for a bit of happy news.
+line @1 answer.how : Content enough where the roosts show clear.
+line @2 answer.how [self.working=yes] : I've work in both paws and a corner in sight for later.
+line @1 ask.how : What's taken your eye of late?
+line @1 sympathise : An empty place keeps drawing a wolf's eye back.
+line @1 reassure : I'll stay till you can lift your head again.
+line @1 decline : I'd sooner leave an empty mark than promise what I can't deliver.
+line @1 accept_decline : No score on the board for that, then.
+line @1 thank : I could feel the difference when you helped.
+line @1 deflect_thanks : You've settled the account by making use of it.
+line @1 preclose : I'm losing the shape of that roof in my head.
+line @2 preclose [self.working=yes] : There's a cut face waiting for its cloth.
+line @1 accept_preclose : Go on, I've kept your way clear.
+line @1 hail [pair.band=friends] : Up here by the board! I saved you a look.
+line @1 ack : Marked clear.
+scene roofs
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : Each nick along this old board is a perch. | A smooth patch here means a busy sky.
+b : Where are the birds? | How can an empty bit be busy?
+a : In the air when they're not in the cuts. I only mark places a foot can settle. | If the birds never land, I can't mark where they were.
+
+scene hardbite
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I shave cheese across the corner instead of slicing from the flat. | A good cheese breaks just ahead of my thumb.
+b : Won't the corner disappear? | Does that spoil the slice?
+a : It makes a new corner. Useful creatures, corners. | It gives the slice two shapes. Both fit in my mouth.
+
+scene longstair
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I come up the Sump stairs quickly for a sight of wings. | I take the upper turn in two strides if it's clear.
+b : Which wings make it worth the climb? | Why the upper turn?
+a : Small ones at rest. A gull I can see with both feet plastered in mud. | Because you start seeing rooftops there. The first turn has a beautiful view of damp stone.
+
+scene bellbirds
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : The first bell lifts the flock. The next lets me count the bare chimney pots. | I wait for the flock to settle before I go inside after the bells.
+b : Why count empty pots? | Do the birds take long?
+a : Often a pair looked like one bird till I saw how close two pots stood. | The sound's usually still in my bones when the birds touch down.
+
+scene rainflag
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : In drizzle a folded wing looks heavy enough to slip off a roof. | A long drizzle blunts all my roof scratches.
+b : Do you ever see a bird slip? | Why bring the board into rain?
+a : No. I reckon there's work in those little feet I can't see from here. | Because it doesn't start out as rain seems to me. Just a damp wool drawn over the sky.
+
+scene gull
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : I don't mark the gulls on the cheese board. | Gulls have white enough backs to write a whole roof for themselves.
+b : Haven't you room? | Don't you like seeing them?
+a : One mark would turn into a hundred crossovers. Too much argument for a tidy little board. | I'm waiting for the small grey fellow under the gutter. The gull usually wants my lunch.
+
+scene shopcloth
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I fold #countercloth# so a clean face comes uppermost. | I'd hate to put my thumb on all that's clean on a cloth.
+b : What if the cheese leaves an oily circle? | Where does your thumb go?
+a : Fold again. Trying to scrub a circle away with your sleeve gives it four corners and a tail. | Underneath, in the previous fold. It holds the good side for the customer.
+
+scene offcut
+when topic=prices self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I like to weigh the crooked pieces before I wrap them up. | I always lift the paper off the scale before I quote for a wedge.
+b : Do crooked pieces weigh differently? | Does the paper weigh enough to matter?
+a : They look lighter than they are. I'd like an honest measure for wolf and wedge alike. | The customer pays for cheese. I'm not in the trade of selling oily paper.
+
+scene trainee
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I'd teach a beginner to lay the cloth out before touching a knife. | An honest first cut is more use than a pretty show of speed.
+b : Even on a tiny piece? | Does speed come later?
+a : Especially then. A tiny piece can skip over the edge of an empty table. | Yes. Usually the moment the beginner stops trying to show it.
+
+scene view
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My dream room overlooks the small birds from above. | In my high room the seat will go right against the sill.
+b : Would you still use the board? | What sort of seat?
+a : I'd need to turn it right round. A whole new map from the same bit of wood. | One wide enough for my board and my elbows. I didn't climb all that way to stand.
+
+scene summer
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Let summer stretch out till the last lingering bird comes home. I'd gladly watch the whole while. | The evening sun runs down my board till only one bright line is left.
+b : What decides which bird comes last? | Which line lasts?
+a : I don't. I wait till I can't see whether another has come. | Whichever deep scratch caught the light. I turn it once before putting it away.
+
+scene closedwings
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Closed wings have a different shape on every perch. | I can leave a bird uncounted that I've seen quite plain.
+b : Even on the same bird? | What did it do wrong?
+a : Especially then. I know the body hasn't altered, only the way the wind sits on it. | Nothing. It passed behind another and counting it twice would be my mistake.
+
+scene kinless
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I've room for #self.friend# beside the board. | I'd let #self.friend# put the first scratch on a new map.
+b : Would company be helpful for keeping count? | Is the first scratch so important?
+a : If we're looking at the same roof, yes. Otherwise I'd like a second board as well. | It'll be there for every mark that comes after. That's plenty of reason to give it away once.
+
+scene rindpot
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A clean rind can spend its old age in a pot. | The hard bit round a wedge is worth wrapping on its own.
+b : What do you want out of it? | Why separate wrapping?
+a : One good last flavour. After that it's done a decent turn and may go. | I may give the wedge away. The soup's my business.
+
+scene quietfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : When the chapel quiets I still hear the last sound from the roof above it. | I save my thanks till the bowl is scraped clean.
+b : Can you hear a bird through the tiles? | Why wait so long?
+a : No. I remember the call. Quiet gives it space to come back. | A whole bowl's worth of gratitude is more than a spoonful. My thanks should cover those.
+
+scene sillymap
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've made a roof map so small I can hide it under my thumbnail. | The knot in this board is the only landmark that cost me no work.
+b : What can you fit there? | Does it represent something so dark?
+a : One chimney and half its neighbour, if neither has much to say for itself. | An open loft. Sometimes what the wood offers is exactly what I want.
+
+scene lowerroom
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A Sump window can give a better view than its floor would suggest. | I turn a stool sideways for an extra inch of view.
+b : A view of roofs from down here? | Doesn't the stool stand equally high either way?
+a : Of one point of roof. There's usually a bird just small enough to fit the point. | But it fits closer to the sill. An inch at my knee can mean a whole yard up the street.
+
+scene otherquarter
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like strange streets for the neat way they give my eyes work. | I'd recognise my own way home by the tilts of the guttering.
+b : Which thing catches your eye soonest? | Could you walk it with your eyes shut?
+a : Somewhere a bird could settle beyond a cat's reach. A roof looks different once that's found. | That would spoil the whole point of recognising guttering.
+
+scene plainanswer
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A patch of grey on a roof could be a bird, a mitten or a dirty tile. | I take care to say how far away I stood when I tell what I saw.
+b : How do you settle it? | Does distance change the story?
+a : Wait for it to fly. The tile and mitten can quarrel about second place. | Down here a wing and a sleeve can make the same shape against white sky.
+
+scene smallloss
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A splinter in the board's edge can spoil a whole hour of watching. | I'll lay down a knife when the light's too poor to see its shadow.
+b : Does the splinter stop you counting? | Can you still watch a roof?
+a : No. It gets counted every time my thumb goes past. That's enough counting for me. | A broad outline, yes. My fingers deserve a clearer view than that for cutting.
+
+scene pricedcut
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I put the best-looking face of a small wedge towards me. | A little hard cheese feeds quite a gathering sliced fine.
+b : Does a better face change the taste? | Can they be too thin?
+a : No. It gives my eyes plenty when supper's short. | Yes. When the candle shines right through, the candle's getting most of supper.
+
+scene narrowgut
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : There's a roof gap only big enough for a sparrow to peek through. | A gutter curves instead of running true on my map.
+b : Do you mark such a little hole? | Did your paw slip?
+a : Yes. Something has gone to the trouble of looking out of it. | No. The roof's settled. A straight line there would be the mistake.
+
+scene newswings
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A raised flock can mean a thousand things to wolves below. | Somebody always looks up when the first wing goes over.
+b : Is it alarming? | What else should a wolf do?
+a : Depends what follows. Sometimes it's just another wing. | Look at what's underfoot after. Cobbles aren't going to move out of politeness.
+
+scene memory
+when topic=memories self.age>=30
+does tell.self / ask.detail / answer.detail
+a : Years back I made every bird on a board the same size. | My earliest map still has marks underneath the marks.
+b : What changed? | Can you read the first scratches?
+a : I learned I was marking perches. Two wings might fit the same ridge a week apart. | Only in slant light. Brush a paw over it and all you feel is a lifetime's splinters.
+
+scene hush
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : When I lose sight of the roof edges I close the board inside a cloth. | The last evening call gets no mark on my board.
+b : Why wrap it for the night? | Do you know which bird calls?
+a : To keep cheese off one side and roof dust off the other. Took me some time to notice it has two faces. | I'd need a sight of the bird first. I like a little blank for the things I can only hear.
+
+scene tradeafter
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I like a counter clear enough that you can see what's left. | An empty space between two wedges gives each a fair hearing.
+b : Can a customer tell how something sold? | What do wedges have to say?
+a : Only what stands there now. I'd sooner sell a customer today's piece than last week's triumph. | Hardly a sound, unless I've dropped one. I meant a fair look.
+
+scene rival
+when topic=dreams|smalltalk
+does tell.self / ask.detail / answer.detail
+a : The fanciest bit of my future high room is the windowsill. | I might do without a painted ceiling if I get a clear look at the sky.
+b : Would you paint the sill? | What about at night?
+a : Oil it smooth. The wings will put the colour there when they pass. | The sky has plenty of work of its own to show me after dark.
+
+story knifeecho [topic=food]
+  : I cut a hard wedge on a board set across a hollow box.
+  : The board gave a fine deep note. I made a second cut just to hear it again.
+  b : Did the second cut sound any different?
+  : The cheese was lighter by a slice. My second note was a little higher and my supper was generous that night.
+
+story shadowwing [topic=memories]
+  : I counted a pale bird every time a cloud moved off one ridge.
+  : The cloud went and came; the bird never moved a feather.
+  b : Was it a pale tile all along?
+  : A folded bit of sailcloth snagged on a nail. If I'd waited for a flap I'd have counted just one.
+
+story mute_bell [topic=festival]
+  : I slept through the first strokes of a bell and woke to a scatter of shadows on the ceiling.
+  : The flock had gone up and broken the light from my window into a hundred bits.
+  b : Did the next stroke sound louder?
+  : It had my whole attention. I had my head through the window before the last bit of light came together again.
+
+story saltgrain [topic=work self.job=merchant]
+  : I used an apparent scrap of rind alongside a wedge to keep my place.
+  : It was a chip off the very board I was cutting on. It fitted the corner beautifully.
+  b : Wouldn't the colour give it away?
+  : Only after I'd wiped the board. You can see why I'm careful with the cloth now.
+
+story sparehook [topic=pastimes]
+  : I put a lovely scratch on my board for a roof I'd glimpsed sideways through a gap.
+  : When I looked straight at it there were two ridges crossing, neither shaped like the scratch.
+  b : Could you scrape the mark away?
+  : Left it. I call it the perch where my eye went before I did.
+
+rule @wedge
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Paper clear of the cutting line! | Keep a little space between the wedges.
+
+rule @birds
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say Hold the count; a second wing is coming. | Let the little feet settle first.
+
+rule @sun
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say That last edge shows up beautifully. | Board away when the ridge disappears.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Fold the map inwards. | Rain will darken every hollow on the board.
+
+rule @bell
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say Keep the narrow way beside the stall clear! | Mind the open cloth over there.
+
+rule @gulls
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Cover the rind till the white wings pass. | That gull has an eye on my cuttings.
+
+dlg @1 resident.hub : We can speak till those birds come down again. Plenty of time.
+dlg @2 resident.hub [topic.meeting=known] : I've kept you a clear sightline, #topic.player#.
+dlg @3 resident.hub [here.time=night] : There's more to hear than see this late. Come near enough to speak.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Board on my side, paws on yours. We can talk.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I keep the cloth clean and the cut face where a customer can see it.
+dlg @2 resident.job : A sound eye for edges earns its keep.
+dlg @1 resident.news [world.news] : Here's the part I can see plain. #world.news#.
+dlg @2 resident.news [world.event_words] : Everybody below the eaves has heard of #world.event_words#.
+dlg @3 resident.news [world.wagons=raided] : Robbing a cart takes dinner off the board a long way beyond the driver.
+dlg @4 resident.news [world.death=recent] : A death changes which window we look towards when the street goes quiet.
+dlg @5 resident.news [world.wedding=recent] : If there's a wedding there's cause to open up the room and give a pair a proper view.
+dlg @1 resident.gossip [here.gossip!=yes] : Plenty of wings in sight. Not a scrap of gossip caught in those feathers.
+dlg @1 resident.bye : May the next turn show you a clear stretch of sky.
+graft @birdgrooves resident.hub
+choice Can I trace the roof on your board? -> birdgrooves
+node birdgrooves
+say Use one pad. Start at the dark knot and feel the line turn sharp. That's the broken run of tiles where the littlest birds can sit clear of the rain.
+choice Why leave the knot where it is? -> birdgrooves_more
+choice Let the board rest. -> hub
+node birdgrooves_more
+say There's a square dark loft there on the real roof. I'm lucky the tree thought to grow a knot just where I needed one.
+choice Let the board rest. -> hub
+choice Follow the ridge with your eye. -> bye
+
+graft @rindface resident.hub
+choice Show me where you start a wedge.  -> rindface
+node rindface
+say The flat side goes down. Turn the narrow end till it points away from the foot that sticks out. I'd like the cheese to be the only thing losing a slice.
+choice What happens to that first bit of rind? -> rindface_more
+choice Fold the clean cloth. -> hub
+node rindface_more
+say It goes in a small pot. Heat draws the last of the flavour from it. I'd as soon eat my dinner as sweep it away.
+choice Fold the clean cloth. -> hub
+choice Leave the cheese in peace. -> bye

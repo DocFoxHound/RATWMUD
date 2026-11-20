@@ -1,0 +1,270 @@
+# rm485, bells on purple fingers (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm485
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_brand_fogworth
+written_by codex
+title bells on purple fingers
+fits stage=young|adolescent|adult|old
+prefers job=child
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk counts_chapel_bells_on_berry_stained_fingers
+likes blackberries long_walks market_bustle summer_evenings
+dislikes flies cold_tea
+fears the_last_fly_in_the_cup a_count_stopped_short
+hopes a_whole_evening_walk both_paws_full_of_bells
+topics pastimes +0.4 season +0.3 family +0.2 dreams +0.2
+styles comfort=quiet gossip=frank refuse=plain tease=none
+marks oath saying
+persona #self.first# listens for chapel bells with one hand held open, reserving a berry-dark finger for each stroke.
+
+words
+oath! = Squash my berry | Bother that last buzz
+saying! = No bell without a finger | A walk goes both ways
+berry = one squashy blackberry | a fat purple berry
+palm = my open hand | my berry hand
+spot = a purple dot | one little stain
+cup = the yellow mug | a little tin mug
+fly = the blue fly | a shiny fly
+cloth = a clean bit of cloth | a cloth lid
+basket = a basket rim | the wicker edge
+shade = a cool patch | the shade of a barrow
+stepstone = a striped step | a smooth step
+finger = my shortest finger | my littlest finger
+leaf = a folded leaf | a curly leaf
+stroke = a deep round note | a slow bell stroke
+
+any
+opinion @1 city for 1 : There are enough steps for a walk even if I never go outside town.
+opinion @2 festivals for 1 : My ears get music and my tongue gets sugar on the very same day.
+opinion @3 houses for 1 : Somebody has to put those tall walls up. I couldn't reach halfway.
+opinion @4 merchants against 1 : A whole penny seems a lot for berries that grow for nothing.
+opinion @5 times for 1 : A little supper and somebody home to hear my count will do.
+opinion @6 strangers mixed 0 : I watch a stranger's ears while I'm counting the bell notes.
+
+grown
+line @1 greet.return : Welcome. I'm old enough to keep my count while talking now.
+line @2 farewell.return : I'll walk a while after the bells fall quiet.
+line @3 answer.how : Finding a decent stretch of evening for myself.
+line @4 react.news : Some words are worth hearing twice before I count them.
+line @5 decline : I'm afraid I've set that part of my day aside already.
+scene echo
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : There's a corner where the last chapel note comes back quite clear.
+b : Did you ever count that echo twice?
+a : I made a business of it once. Now I keep a finger folded for the wall.
+
+scene barrows
+when topic=land
+does tell.plan / ask.detail / answer.detail
+a : I'd put a lower shelf on a market barrow for children to look along.
+b : What would you keep down there?
+a : Fallen apples with the bruises in view. Nobody should have to guess what a copper buys.
+
+scene evenfall
+when topic=weather
+does tell.self / react.self / assess
+a : A long light evening still gives me the urge to go out and count something.
+b : Bells or berries these days?
+a : Doorsteps mostly. I count how many I pass before the light goes.
+
+scene days
+when topic=prices world.times=hard|lean
+does tell.worry / reassure / assess
+a : Market talk is harder to listen to when every price hurts.
+b : There's still a street out beyond the costliest stalls.
+a : I walk it and look along each wall for brambles. That's one supper I can gather.
+
+
+young
+line @12 greet [pair.band=strangers] : Hello. I can still hear with my hand up.
+line @13 greet [here.time=dawn] : Morning. No purple on this paw yet.
+line @14 greet [here.weather=rain] : You can stand under this fat leaf with me.
+line @15 greet.return : Hi. That greeting didn't count as a bell.
+line @16 greet.return [pair.band=friends] : It's you. I know even before I turn.
+line @17 farewell : Take a berry for the way out.
+line @18 farewell.return : Bye. My free paw's waving.
+line @19 again.open : You're round my step again.
+line @20 kin.open [pair.kin!=no] : Family can see the marks on my hand.
+line @21 hail [pair.band=friends] : Here by the basket, down low!
+line @22 react.news : I'll hold my finger still while you talk.
+line @23 react.news.new : I'd have remembered a noise like that.
+line @24 react.news.known : That bit was here before my berry got squashed.
+line @25 react.news.doubt : I didn't hear it. I can only say that much.
+line @26 react.news.sorrow [topic.kind=death|loss|assault] : I'll leave my nice soft berry here for you.
+line @27 react.news.glad [topic.kind=birth|marriage] : That makes both my ears stand up.
+line @28 answer.how : Purple on one side, happy on the rest.
+line @29 decline : I can't do it and still be home in time.
+line @30 accept_decline : All right. You keep your own bit.
+line @31 sympathise : You can stay on my step till it feels better.
+line @32 thank : My nicest berry would be about right for you.
+line @33 deflect_thanks : I picked it myself. There's lots.
+line @34 preclose : I want to hear if another one's coming.
+line @35 accept_preclose : Go on before the evening shrinks.
+scene purple
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I tuck #berry# under my tongue.
+b : How long before you eat it?
+a : Till the next bell. Sometimes I can't wait that long.
+
+scene finger
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can count five chapel strokes with #palm# open.
+b : What happens after five?
+a : I get the other hand dirty too.
+
+scene wheels
+when topic=smalltalk self.likes=market_bustle
+does tell.self / react.self / assess
+a : From down here every basket looks like a moving roof.
+b : A whole little roofed street for you.
+a : Some roofs smell of cheese. I walk close behind those.
+
+scene walk
+when topic=pastimes self.likes=long_walks
+does tell.plan / ask.detail / answer.detail
+a : I want to walk from this step until my legs ask for supper.
+b : Will you know how to get back?
+a : I'll keep all the doors on one side going out and the other coming home.
+
+scene summer
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Evening stays so long it fits two walks.
+b : Where does your second walk go?
+a : Round the same houses. I see new shadows.
+
+scene flycup
+when topic=food self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : #fly# thinks this berry is a stool.
+b : Can you cover the berry till you need it?
+a : I'll put #leaf# over the top like a little tent.
+
+scene coldcup
+when topic=food self.dislikes=cold_tea
+does give.opinion / disagree / concede
+a : Cold tea looks like a puddle in #cup#.
+b : It might still taste of leaves.
+a : It does. Wet ones. I'd like mine warm.
+
+scene mama
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I leave #spot# by my place so #self.mother# can see which cup is mine.
+b : Wouldn't a clean cup do as well?
+a : Then I'd have to sit right by it all the time.
+
+scene dad
+when topic=family self.father
+does tell.plan / ask.detail / answer.detail
+a : I've got a counting trick to show #self.father# once the chapel starts ringing.
+b : What part needs showing?
+a : This little claw goes across my palm to mean one whole hand.
+
+scene moon
+when topic=dreams self.owes=yes
+does tell.worry / reassure / assess
+a : I owe a copper, and I'm meant to find it before the moon's gone dark.
+b : Would it help if a grown wolf heard what you owe?
+a : Yes. Saying it out loud already makes it feel smaller.
+
+scene stall
+when topic=prices
+does ask.advice / give.advice / assess
+a : How do I tell a whole basket price from a price for one berry?
+b : Ask what you'd get for the coin in your hand.
+a : That's good. I can show one copper without letting it go.
+
+scene sleep
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I dreamed a bell came into bed and rolled under my back.
+b : That must have made a racket when you turned.
+a : No sound at all. A waking bell would have made my ears jump.
+
+story stuckfive [topic=pastimes]
+  : I once counted six bells and only saw four fingers.
+  : Two fingers were stuck with berry juice.
+  b : Did the bells have to start over?
+  : No. I licked between the fingers and got both counts back.
+
+story leafboat [topic=travel]
+  : I put a blackberry on a leaf boat in the gutter.
+  : The boat tipped and the water came up purple.
+  b : Did the berry go sailing away?
+  : Only to my foot. I rescued it with a spoon and gave the boat a lighter passenger.
+
+story quietfly [topic=food]
+  : A fly sat on top of my cup cloth and never moved.
+  : I lifted the cloth very slowly to scare it.
+  b : Did it fly up into your nose?
+  : It was a berry seed. I gave it a good scare anyway.
+
+rule @bellpaw
+when concept=bark self.job=child
+does aside
+cooldown 8h
+say One up. Two up. Still got fingers.
+
+rule @purplelip
+when concept=bark self.likes=blackberries
+does aside
+cooldown 8h
+say Purple tongue. The berry's really gone.
+
+rule @farwalk
+when concept=bark self.likes=long_walks
+does aside
+cooldown 8h
+say Another doorstep and then another.
+
+rule @buzzlid
+when concept=bark self.dislikes=flies
+does aside
+cooldown 8h
+say Sit on the lid if you must.
+
+dlg @1 resident.hub [topic.meeting=stranger] : I'm #self.first#. You can see my bell count from here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've a finger free for waving.
+dlg @3 resident.hub [here.time=night] : I can still count the bells if it's too dark to count the spots.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You stand up there. I hear you fine from my step.
+dlg @5 resident.job [self.job=child] : I walk and listen. A pup's legs get busy enough.
+dlg @6 resident.job : Leave me a shred of daylight for walking after my shift ends.
+dlg @7 resident.bye : Bye from my clean hand.
+graft resident.hub
+choice What do the purple marks mean? -> berryhand
+node berryhand
+say One spot for every bell I heard while I sat picking by the bramble bush. The spots last a lot longer than the bells do.
+choice Which one lasts longest? -> deepmark
+choice We can talk about something else. -> hub
+node deepmark
+say The one under my claw. I can go to sleep and wake with yesterday's berry still saying hello.
+choice I'll listen a little longer. -> hub
+choice Good evening, then. -> bye
+
+
+adolescent
+line @7 greet.return : My ears can pick your voice out beside a rattling cart.
+line @8 farewell.return : I'll take the long steps out behind you.
+line @9 react.news : Got the words clear despite the whole market.
+line @10 answer.how : Taller than the low barrows. Good for seeing past.
+scene scrape
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I mark longer walks with little chalk strokes inside the gate.
+b : How do you keep another walker from spoiling the count?
+a : I mark the height too. The old ones come halfway up my arm.
+
+scene carry
+when topic=family
+does offer / accept / assess
+a : I can carry the berries in a proper bowl these days.
+b : I'll let you have the fuller bowl then.
+a : Leave me #cloth#. I don't fancy feeding the flies on the way.

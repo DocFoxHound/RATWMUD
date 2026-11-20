@@ -1,0 +1,258 @@
+# rm383, the barley-grain wager (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm383
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_ludo_chalkham
+written_by codex
+title the barley-grain wager
+fits stage=adult|old
+prefers class=lower
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=steady
+quirk wagers_one_grain_on_the_first_change_in_the_market_sound
+likes barley_soup long_walks market_bustle thunder
+dislikes early_bells stale_bread
+fears a_letter_gone_astray a_roof_talking_in_thunder
+hopes a_postmark_from_far_off a_market_meal_shared
+topics pastimes +0.3 food +0.5 travel +0.3 dreams +0.4 weather +0.3
+styles comfort=quiet gossip=careful refuse=cautious tease=none
+marks oath saying
+persona #self.first# risks a barley grain on changes in the market sound, loves a storm from a firm roof and starts a letter on every walk as if an answer might be waiting at the last turning.
+
+words
+oath! = Sour my measure | Rain down the churn
+saying! = A grain wager keeps the pot safe | Walk a thought to the next stile
+grain = a dry barley grain | the pale little wager
+bowl = my warm barley bowl | a deep brown mug
+board = the butter board | the cold working slab
+roll = a new pat of butter | a firm yellow curl
+heel = a sorry heel of bread | that old grey crust
+sound = the walking hum | a brush of street noise
+bolt = a long thunder clap | the heavy sky roll
+roof = a properly snug roof | a sound shelter
+fold = the corner for the address | the letter flap
+mile = a stretch of idle road | my unhurried turning
+pinch = a small pinch of salt | the few salt flakes
+spoon = my worn spoon | the smooth little dipper
+
+any
+opinion @1 church for 2 : It helps to put a worry into words before the Bright One and come away with free hands for a neighbour.
+opinion @2 dole for 1 : The first ladle into an empty bowl is a small taste of what the Bright One asks us to give.
+opinion @3 houses against 1 : A House has more sorts of duty to fill than a well-swept bench is ever allowed to show.
+opinion @4 merchants against 1 : I notice what the extra coin does to a barley portion. The sound of the pot changes when it's thin.
+opinion @5 road against 1 : An aimless walk within sight of a roof suits me. A road that disappears over a strange hill makes poor company.
+opinion @6 city for 1 : Ridgemere can give me the sound of warm kitchens and a storm passing all in one little turn of a street.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome to the quiet space before sellers open up again. | I can hear folk clearly from that spot.
+line @2 greet [here.time=dawn] : Morning. Earlier than I'd have wagered. | Another light arriving nice and softly.
+line @3 greet [here.weather=rain] : Right under cover if you like. Welcome. | Damp roads bring company in together.
+line @4 greet.return : A steady greeting. I'll take that good beginning. | I'm grateful for a civil start.
+line @5 greet.return [pair.band=friends|family] : A known voice puts the day back in order. | I've a comfortable stake in seeing you well.
+line @6 farewell : May something good be waiting at the next turn. | Keep a sound roof within a short walk.
+line @7 farewell.return : I'll mark the passing of a friendly voice. | Go safe with the pot still singing at home.
+line @8 again.open : A second turn quite worth making. | That little sound has drawn us round again.
+line @9 kin.open [pair.kin!=no] : Little need to call out names among our own. | The home bowl's near at hand for you.
+line @10 hail [pair.band=friends] : There's shelter and a scoop over here! | Listen this way a moment!
+line @11 react.news : I'll hear it through before I stake a thought on it. | Give me the part a careful ear can keep.
+line @12 react.news.new : I hadn't a grain down on news of that sort. | There's a sound I hadn't picked out myself.
+line @13 react.news.known : The report already had a place in my thoughts. | That particular word has been home and out already.
+line @14 react.news.doubt : I wouldn't put a whole grain down on that account. | The loudest part seems to have been added on the road.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I'll put down the guessing and sit a moment. | That calls for something warmer than a passing word.
+line @16 react.news.glad [topic.kind=birth|marriage] : Glad tidings enough to set a second place. | I'd give a whole little pot for more news like that.
+line @17 answer.how : Kept steady by small undertakings. | A trifle watchful, still warm at heart.
+line @18 decline : I'd lose the good sense of my own limits if I promised that. | I should like rather more certainty before I undertook the matter.
+line @19 accept_decline : The wager's off, with no harm done. | I'll think of some other small arrangement.
+line @20 sympathise : I'll keep the soup warm till talking gets easier. | You can lay the worry down where my hands can reach it.
+line @21 thank : You've given my mind an easier road for a while. | That's a solid kindness in an uncertain hour.
+line @22 deflect_thanks : A grain of help doesn't need weighing out. | I'd have had to keep the bowl warm for myself anyway.
+line @23 preclose : I have a walk I ought to begin in decent light. | There's a little matter I must see settled.
+line @24 accept_preclose : Go where the next good piece of light falls. | May the day's other business be kind to you.
+line @25 farewell [here.time=night] : A quiet hour before the first bell, at least. | Put the dark part of the road behind you soon.
+scene stake
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : #grain# says the wheels at market will stop before the calling does. | I stake a barley grain on the next new sound I hear.
+b : And if you're wrong about the wheels? | Who pays you when you've guessed it?
+a : Into the pot it goes. An edible loss is barely a loss. | Nobody. I count a good ear as an agreeable profit.
+
+scene cream
+when topic=work self.job=none self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : I hear the butter gathering under the lid at #self.workplace# before looking. | The cream at #self.workplace# tells me how soon to get #board# ready.
+b : Can you hear the change through the lid? | What happens to the sound?
+a : A liquid splash becomes a soft bump. You want the bump to stay regular. | It quits sloshing and starts knocking. Enough time then to cool the board.
+
+scene soup
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I watch the final pair of barley grains to meet in #spoon#. | I cool #bowl# by walking it gently round the table.
+b : Trying to make a wager on which one you eat first? | Wouldn't setting it down be easier?
+a : No need. They come as a comfortable little pair. | I'd spend the waiting fretting about whether I'd forgotten a thing. Walking settles that.
+
+scene thunder
+when topic=weather self.likes=thunder
+does tell.self / react.self / assess
+a : I'd let #bolt# take the house in its teeth if I were sure of #roof#. | A thunderclap heard under sound boards goes along my ribs like a slow cart.
+b : Sure you just want to hear it? | That doesn't sound entirely pleasant.
+a : I'd sooner fear a fine loud thing from safety than wonder about an unnerving little creak in a quiet room. | There's comfort in hearing the far wheel pass off at the end.
+
+scene market
+when topic=pastimes self.likes=market_bustle
+does tell.plan / ask.detail / answer.detail
+a : I'd like to walk right across a busy market with my ears in charge for once. | I mean to name three different trades in the crowd by their small noises.
+b : You'll watch those cart shafts, won't you? | Which one's the easiest to miss?
+a : Certainly. An ear gets a poor report from under a wheel. | The seller who stacks empty baskets. There's a hollow knock like a loaf against the wrong crust.
+
+scene early
+when topic=smalltalk self.dislikes=early_bells
+does tell.complaint / react.complaint / assess
+a : The bell before dawn takes the first line of my day without asking. | Morning has a perfectly usable quiet voice before the metal starts.
+b : What would you put in that line instead? | You'd get up without a bell?
+a : A little thanks for a warm bed. Then a thought about bread. | Often enough. Worry keeps quite respectable hours.
+
+scene crust
+when topic=food self.dislikes=stale_bread
+does give.opinion / disagree / concede
+a : A dry crust isn't made young by calling it well kept. | I prefer bread that yields under its own weight against the spoon.
+b : Wouldn't you use stale bread in soup? | How can you tell whether the bread will soften?
+a : I do. Soup's the generous party in that arrangement. | Put it to #bowl# and see whether it drinks. Old crust floats with a long memory.
+
+scene farletter
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I still turn #fold# up first whenever a new packet's about. | I have a great many greetings rehearsed for a letter that hasn't got here.
+b : Hoping for correspondence from a distance? | Would you really send all of them?
+a : A few plain words. Distant family leave questions enough to fill the whole packet. | One warm sentence would probably do. The rest are there to fill my empty walks.
+
+scene brightstep
+when topic=dreams self.piety=devout
+does tell.plan / ask.detail / answer.detail
+a : I'd like to take #mile# with the Bright One alone and quit filling it with questions. | I should like the courage to set a small worry down on the road for good.
+b : Would you turn back when the silence got long? | What if somebody else picked it up?
+a : I'd try to keep walking and listening. Good answers don't have to sound like words. | I'd pray for it to wear down before it ever troubled another wolf.
+
+scene nobets
+when topic=prices
+does give.opinion / disagree / concede
+a : A supper coin should remain within stove reach, whatever exciting price walks through the door. | I have a mind for wagers but not with the bread pile.
+b : Is it still a wager if nothing much can be lost? | Who stops you getting carried away?
+a : You can lose an afternoon's claim to a clever guess. Quite a tolerable cost. | I leave the supper coin beside its own little note. I'd be obliged to shift those words before the money.
+
+scene pal
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd save the first bit of fresh butter for #self.friend#. | One unhurried afternoon I'd take a turn round the market with #self.friend#.
+b : Would you keep the nicest shape for a friend? | Must the pair of you buy anything?
+a : Only the cleanest edge. I'd flatten the fancy bit on warm bread as soon as look at it. | No. There's plenty of pleasure choosing what one would like without troubling the purse.
+
+scene salt
+when topic=food
+does tell.self / react.self / assess
+a : #pinch# seems a small amount till it meets a little butter. | A piece of dry bread comes quite alive if #roll# will stretch along it.
+b : How do you choose how much salt goes in? | Does the butter afford a whole extra length?
+a : Tasting. Wagers get one grain. Dinner gets a proper trial. | Enough for an extra bite at the end, which is a long way at dinner.
+
+scene oldroad
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : In Ridgemere I can choose a long walk without being very far from a lighted window. | I walk the rise by the changing noise behind the walls.
+b : How does that suit your nerves? | Wouldn't the change be better felt under your knees?
+a : If I choose a little more distance I can always turn toward a familiar roof. | The knees carry on with their work. Ears enjoy a little diversion.
+
+scene latecart
+when topic=travel world.wagons=late
+does tell.worry / reassure / assess
+a : An overdue wagon puts a betting itch in my fingers. My grain stays clear from other wolves' worries. | I'd have no patience with a guess that worried a waiting family.
+b : What can you do while nobody knows where it is? | Can a small harmless wager really hurt?
+a : Keep the broth hot. There's usually somebody to whom that matters right now. | If the wrong ears catch it. I save mine for ordinary market noises.
+
+scene share
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : I have a small ladleful from the thicker side ready if you'd take it. | There's a bit of butter kept for a crust that's had a rough week.
+b : Thick barley would sit well today. | I'll fetch the dry piece I'd set aside.
+a : Good. Tip the bowl on your side and the best of the grain comes over. | Warm it first so the butter can run down past the hard edge.
+
+scene thundercount
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I count three slow breaths when the first rumble leaves the sky. | Storm weather can change #sound# in the market before anybody sees a cloud.
+b : Which sound matters after the rumble? | How does it go different?
+a : The ordinary noise coming back. Then I know where the storm is headed. | All the basket covers slap down together. A wolf's ears could bet on that.
+
+scene softjob
+when topic=work
+does ask.advice / give.advice / assess
+a : How would you carry a smooth piece of cold butter across a warm dish? | What's the neatest way to find a stray hull among a bowlful of barley?
+b : Slip a cold flat bit underneath the pat. | Let the water lift the hull before the rest goes into the pot.
+a : There. A cold surface takes a light touch. That's much better than pushing. | A little patience in the washing saves an unkind mouthful at supper.
+
+scene hushfriend
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I can wager on a stranger's cart noise without pretending to know the cargo. | A good stranger's greeting is as plain as the sound of a loaf being cut.
+b : You miss a chance to show off your clever ear. | Have you never heard a greeting go stale?
+a : The fact it's a cart and not a sudden collapse of the sky is clever enough for the day. | Frequently. A little warmth makes a surprising difference to the first word.
+
+story grain_race [topic=pastimes]
+  : I set two barley grains on a wet board and wagered with myself which would reach the edge. Both stayed still a long time.
+  : Then one grain swelled enough to catch one thread hanging off my sleeve. It came with me instead.
+  b : What counted as winning?
+  : The grain went into supper. I decided the prize ought to be a warm bowl and took it myself.
+
+story lost_address [topic=dreams]
+  : I began a letter on family matters on a little scrap and laid the page near the sill to dry. A rain spot took up the ink and ran into the fold.
+  : The first word ended up on the part where the address belonged.
+  b : Was there any sense in that new address?
+  : The word was dear. I've wished more than once that a carrier could find a door by that word alone.
+
+story storm_pot [topic=food]
+  : One storm I left a spoon upright in a thick pot of barley. The first clap tipped it over with a dull whack against the lid.
+  : I righted it and listened for another heavy peal. It went over again in silence.
+  b : Was the soup getting thinner?
+  : The spoon had a bent handle. I gave the sky the credit for a trick I had been doing myself.
+
+rule @listen
+when concept=bark self.likes=market_bustle
+does aside
+cooldown 8h
+say Wheels first, then the shut basket. | A dry grain on the next barrel sound.
+
+rule @butter
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Slosh going soft now. | Keep the board cold at this end.
+
+rule @soup
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say A little grain left where the spoon can find it. | Warm twice round the rim.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say That bell could wait the rest of the dark. | A walk shortened by a light at home.
+
+dlg @1 resident.hub [topic.meeting=stranger] : There's time to state an errand while the pot cools.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'm relieved to hear your familiar voice above the market noise.
+dlg @3 resident.hub [here.time=night] : I shall speak quietly till the night's had its proper innings.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can make the whole account from your side of that little gap.
+dlg @5 resident.job [self.job=none self.workplace] : I see to the churning at #self.workplace#. A steady ear's nearly as useful as practised paws.
+dlg @6 resident.job : I make my hands do something useful while my thoughts go wandering.
+dlg @7 resident.bye : May the next turn bring a word you wanted.
+graft resident.hub
+choice What can you stake on that sound? -> grain_bet
+node grain_bet
+say A single barley grain, which will join my pot whether I guess right or wrong. An anxious wolf doesn't need to put dinner in doubt as well.
+choice Then what's at risk at all? -> warm_guess
+choice Leave the wager for another ear. -> hub
+node warm_guess
+say A certain opinion of my own cleverness. If the carts or the weather prove me wrong, I can afford to be a little humbler and just as well fed.
+choice That's an affordable stake. -> hub
+choice I hope the pot comes right. -> bye

@@ -1,0 +1,267 @@
+# rm213, the quiet hinge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm213
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_theodora_wickley
+written_by codex
+title the quiet hinge
+fits stage=adult|old
+prefers talk=quiet piety=ordinary
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk tests_a_hinge_before_letting_a_door_swing
+likes mutton_stew dice full_larder frosty_mornings
+dislikes crowds early_bells
+fears waking_a_sleeper indiscreet_visitors
+hopes a_door_that_shuts_quietly supper_for_two
+topics health +0.5 home +0.4 pastimes +0.3 faith +0.1 gossip -0.5
+styles comfort=practical gossip=reticent refuse=firm tease=none
+marks oath saying
+persona #self.first# tests a latch before closing a door, speaks softly enough to let a visitor choose who hears, and enjoys a fiercely contested game of dice.
+
+words
+oath! = Crooked hinge pins | Sweet oil wasted
+saying! = Let the door go when the latch has caught | A whisper travels as far as you allow
+latch = the latch tongue | that small iron lip
+cloth = a turn of rag | folded tow
+stewbone = a knuckle of mutton | the bone out of the stew
+cup = a shallow drinking cup | my little glazed cup
+hush = a breath between bells | the quiet after a bell
+tally = the score on my cuff | a chalk sum on my cuff
+bones = my pair of dice | two worn dice
+cork = a shaved cork | a stopper worn thin
+press = the linen press | our tall cupboard
+potlid = the brown pot lid | my chipped lid
+benchend = the free end of a bench | the corner seat
+step = a careful footfall | the lightest tread
+
+any
+opinion @1 church for 1 : A chapel door ought to open just as easily from the inside. Some prayers take less time than the service.
+opinion @1 city for 2 : For all our noise, a wolf who listens can find a quiet room here.
+opinion @1 festivals for 1 : Every dance has a turn when the press of shoulders falls away. I like that turn best.
+opinion @1 houses mixed 1 : A crest on a gift can make the receiver feel watched. Send good linen with the crest cut off.
+opinion @1 dole for 1 : Leave a portion where a hungry wolf can take it alone. The witnesses add nothing to a meal.
+opinion @1 times for 1 : A spare cover laid by, and enough left for the next pot. Prosperity needn't rattle a purse.
+
+grown
+line @1 greet : #greet#. Room enough beside me. | Come a little closer. I speak low.
+line @2 greet [here.time=dawn] : Daylight's in the keyhole. Come through. | Early enough to hear a sleeve brush the wall.
+line @3 greet [pair.band=strangers] : New voice. Welcome within hearing. | #greet#. Take your time settling before you speak.
+line @1 greet.return : Heard you quite plainly. Welcome. | Let me turn my good ear your way.
+line @2 greet.return [here.time=dusk|night] : Keep that low voice. It suits the hour. | Evening. I wouldn't have heard any softer footfall.
+line @1 kin.open [pair.kin!=no] : You're one I needn't put my face straight for. | Haven't the strength for manners among kin. Sit close.
+line @1 again.open : Still within earshot, both of us. | I've shifted all of two steps since.
+line @1 farewell : Take a little peace away. | Easy on the latch as you go.
+line @1 farewell.return : With you for the first step, in thought. | Off softly, then.
+line @1 react.news.new : That's news enough to interrupt a quiet meal. | I'd set that aside for a second hearing. It's new to me.
+line @1 react.news.known : I heard the bones of it. Yours has rather more flesh. | Somebody's spread the blanket wider. The middle's familiar.
+line @1 react.news.doubt : I'd want a witness who could speak without looking sideways. | A tale that changes hands so often may pick up stains.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave room for the poor souls to draw breath. | Poor souls. Has anyone seen to a quiet place for them?
+line @1 react.news.glad [topic.kind=birth|marriage|work] : Oh, there's warmth in that. Tell it again. | I'd set out the second-best cups for news as good as that.
+line @1 answer.how : I've had time to sit through one whole thought. | My feet have stopped complaining long enough for me to think.
+line @1 ask.how : Which would suit you better, a seat or a walk? | Would company help, or would it wear you thinner?
+line @1 sympathise : You can be silent here and still have company. | Here, the chair by the wall. No audience.
+line @1 reassure : I'll keep the next interruption outside. | Nobody gets past this elbow till you feel ready.
+line @1 decline : I'd have to leave somebody waiting. Please ask elsewhere. | I've another quiet duty promised for that very hour.
+line @1 accept_decline : Your own time belongs to you. Keep it. | An empty chair will do no harm.
+line @1 thank : That saved me a journey on tired feet. | I shan't forget what you took off my shoulders.
+line @1 deflect_thanks : Quietly done, quietly paid for. | You've thanked me in a perfectly audible whisper.
+line @1 preclose : My thoughts are beginning to drift indoors. | I'd best leave you a little room for yourself.
+line @1 accept_preclose : Go before the street snags you again. | The unlatched door's the gentlest sort of goodbye.
+line @1 ack : Ah, that explains the pause. | Mm. I can see why.
+line @1 give.advice : Try the smallest kindness first. Big ones take strength to receive. | A kindly question can wear a tired wolf out as fast as a rude one.
+scene hinge
+when topic=home|pastimes
+does tell.self / ask.detail / answer.detail
+a : I listen to #latch# before I take my weight off the door. | I can close a door with both paws full of towels.
+b[old] #turn : Can you feel the spring with a stiff paw? | And what stops the latch barking at the end?
+b : With your ear against it? | What's left to push with?
+a@turn : Turn your paw sideways so the tongue rests against a knuckle. | Fold a corner of towel against the strike plate as the latch goes in.
+a : With a fingertip. The tongue settles against the frame. | A hip for the push and my heel to check the swing.
+
+scene visiting
+when topic=health
+does tell.worry / give.advice / assess
+a : Everybody brings advice to a sickbed. Hardly anyone brings a clean cup. | I hate having to be pleasant when my head aches.
+b : Bring both and leave the advice in the hall. | Put a chair outside and ask the callers to sit there.
+a : I'd like a whole peg rail for unwanted advice. | A chair does soften a closed door.
+
+scene dice_cuff
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I chalk #tally# where my opponent can see it. | I play with a saucer under #bones#.
+b[friends] #turn : What about that chalk smudge beside your elbow? | Could I use a cup instead?
+b : Don't the marks rub out? | Why keep the throw in a saucer?
+a@turn : That's the score I lost, of course. All my best throws rub off. | Give me a rim low enough to see over. I know you keep a good tally.
+a : When I roll my sleeves up, yes. A good moment to quit. | No chasing a six under somebody else's feet.
+
+scene lantern
+when topic=home
+does tell.plan / offer / accept
+a : I'd like a lamp with a sliding shade. | I want a wick I can trim without a climb.
+b : I could bend a screen from old tin. | Could you use a lower hook?
+a : Leave a finger's breadth for the heat. That'd be lovely. | That would save me a chair and one loud fall.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I let #stewbone# cool before I lift the fat. | My favourite part of a thick stew comes the next day.
+b[job=cook] #turn : Do you skim while the top is still soft? | Do you boil the bread in it?
+b : You keep the fat? | Even colder than it was?
+a@turn : Cold, if I can wait that long. I like the fat to come free in one piece. | Pour it over just before we sit down. I want the middle to have a little bite.
+a : A spoonful goes under onions for tomorrow. | Hot over a heel of bread. Yesterday paid for today's supper.
+
+scene lost_sleep
+when topic=health|day
+does tell.feeling / sympathise / assess
+a : The noise that wakes me always stops before I can name it. | If I wake before my time I start counting chores.
+b : A noise with no owner keeps you listening. | That's a sure way to lose sleep.
+a : Exactly. A cart can rattle on and let me rest. | I count them twice and do precisely none.
+
+scene two_cups
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : Two cups on a tray say something I find hard to put into words. | I leave a space for #self.spouse# beside my elbow.
+b : An invitation? | Even when you're cross?
+a : Yes. Sit as long as the cup takes. | Especially then. An elbow speaks without picking a quarrel.
+
+scene bolts
+when topic=home|smalltalk self.quarter=commons
+does tell.self / challenge / concede
+a : I'll lift a latch for a plain coat before a fine badge. | A stamped invitation makes me read the little letters twice.
+b : A plain coat can hide a rogue. | Anybody can write small.
+a : That's fair. Best hear both voices at the door. | Yes. It's my eye that tightens at a crest.
+
+scene corner
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I like #benchend# because I can see a way out. | In a crowd I watch the shoulders ahead.
+b : You expect trouble? | Which way do shoulders point?
+a : Usually just another six wolves wanting the same seat. | Where a space is about to open. Feet tell you too late.
+
+scene frost
+when topic=weather here.time=dawn here.weather=clear here.season=winter
+does tell.self / ask.detail / answer.detail
+a : At winter dawn I'd read the iron latch before the sky. | A wool wrap over a latch is a mercy on a cold morning.
+b : Iron tells the weather? | Worth wasting a wrap?
+a : A white skin on the bolt is warning enough for bare pads. | Put your paw on bare metal once and you'll remember your wrap.
+
+scene gifts
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd take #self.friend# a gift that could be used up. | I've thought of something kind for #self.friend# that takes no wrapping.
+b : Something to eat? | What can you carry bare?
+a : A pat of soap. One less thing to dust a year from now. | A turn at the heavy end of a job.
+
+scene drawn
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream about a door with the hinge on the wrong side. | Last night in my dream the keyhole kept moving.
+b : How do you get through it? | Did you catch it?
+a : By walking round it. There's never a wall. | I sat down. If it wanted to move, it could come to me.
+
+scene linen
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I fold cloth so the first corner is easy to find. | There's a way of piling clean cloth that lets one piece come free.
+b : By feel alone? | From the very bottom?
+a : Yes. A little tab for a groping paw. | From the top. I haven't found a way to repeal weight.
+
+scene whisper
+when topic=gossip
+does tell.worry / reassure / assess
+a : I've heard a whisper swell as it crossed a room. | A closed door makes some folk listen harder.
+b : It can stop here with us. | We can talk about the latch instead.
+a : I like where you've put the full stop. | The latch could use more attention than the tale.
+
+scene late_wagon
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : Late wagons have one effect I welcome. | When the wagons run late I shift my errands round.
+b : What's pleasant about a delay? | Which goes first?
+a : The little streets stay quiet a while longer. | I use up whatever I can mend. The buying keeps.
+
+scene chapel
+when topic=faith
+does give.opinion / disagree / concede
+a : A prayer is easier when there are no listeners. | I prefer the hush just after a service.
+b : Some voices steady one another. | I like the singing better.
+a : I can understand that. I'd stand at the edge and hear you. | I'll keep my seat while you finish the verse.
+
+scene pots
+when topic=food|home
+does tell.self / ask.detail / answer.detail
+a : I put #potlid# upside down while I serve. | A boiled rag can make an ill-fitting lid sit still.
+b : So the table stays clean? | Between lid and rim?
+a : So the spoon can rest in its hollow. | Around the handle. It's the handle that rattles.
+
+scene mistaken
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Once I oiled a hinge three times before I worked out what squeaked. | I used to walk sideways past one loose floorboard.
+b : Was it another door? | To miss it altogether?
+a : My left boot. I'll spare you what I said to it. | Yes. Then I discovered the board beside it sang in a different key.
+
+story blanket [topic=memories self.age>=25]
+  : Once I folded a blanket into a bolster for an old traveller.
+  : Back it came with a hollow worn just where a neck would rest.
+  b : Sounds a comfortable fit.
+  : I nearly shook it smooth. Then I kept the hollow for the next tired neck.
+
+story dice_lost [topic=pastimes self.likes=dice]
+  : One of my dice fell down a drain in a practice game.
+  : I counted the throw as nothing. The other player offered to count it as six.
+  b : That was generous.
+  : That was a wolf who wanted the game to go on. I made another die.
+
+story the_knock [topic=memories self.age>=25]
+  : I spent a night in a room where the door knocked with each breath of wind.
+  : I wedged a stocking under it and lay there smiling.
+  b : You got the night back.
+  : Half of it. Then my bare foot woke me.
+
+rule @catch
+when concept=bark working=yes
+does aside
+cooldown 8h
+say Catch the latch before it claps. | Someone's resting. A soft step costs little.
+
+rule @broth
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say Leave the lid tilted till the first heat goes. | A bowl ought to warm the paws as well.
+
+rule @bones
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say A saucer here for wandering dice! | Clear the crumbs before the throw.
+
+rule @dawn
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Quiet enough to hear a stopper lift. | Let the daylight through by inches.
+
+dlg @1 resident.hub : Sit at this end. Nobody need lean across us.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I kept the quieter seat free.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll hear you quite well across the threshold.
+dlg @4 resident.hub [here.time=night] : Low voices carry quite far enough now.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. Clean cloth, a steady elbow, and time to listen.
+dlg @2 resident.job : I generally see to the little discomforts first.
+dlg @1 resident.news [world.news] : I can give you the words as they reached me. #world.news.capitalize#.
+dlg @1 resident.bye : There's a raised sill as you leave. Your thoughts can wait for level ground.
+graft resident.hub
+choice How do you shut a noisy door? -> soft_catch
+node soft_catch
+say Hold the latch down until the door rests in its frame. Now let the spring rise against your paw.
+mood calm
+choice What if it still rattles? -> soft_shim
+choice I'll give it a try. -> hub
+node soft_shim
+say A little rag on the jamb, about as thick as a barley husk. That saves waking a house at the cost of one rag.
+choice I'll look for a scrap. -> hub
+choice Leave quietly. -> bye

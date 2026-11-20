@@ -1,0 +1,301 @@
+# rm329, the shaving judge (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm329
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rmx_oda_cinderby
+written_by codex
+title the shaving judge
+fits stage=young|adolescent|adult|old
+prefers honesty=frank temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk drops_wood_curls_on_water_to_judge_a_cut
+likes hard_cheese whittling fresh_straw warm_rain
+dislikes night_noise crowds
+fears a_pretty_surface_hiding_a_splinter
+hopes one_clean_continuous_shaving
+topics pastimes +0.6 work +0.3 weather +0.4 gossip -0.4
+styles comfort=direct gossip=shut refuse=plain tease=slight
+marks oath saying
+persona #self.first# floats little wood shavings to see whether a cut held true and objects to any verdict given before the last curl settles.
+
+words
+oath! = A bucket of crooked curls | Wet shavings
+saying! = Let the shaving give evidence | A lump gets no vote
+curl = a narrow shaving | the last wood curl
+watercup = a shallow saucer | the water dish
+stick = a straight offcut | the carving stick
+edge = a curled lip | the thin edge
+brim = the saucer rim | a raised side
+grain = the dark streak | a line of grain
+straw = a fresh straw | the hollow stalk
+cheese = my wedge of cheese | the firm yellow piece
+stripe = a bare stripe | the pale band
+groove = a long groove | the narrow channel
+knot = a tight knot | the little hard eye
+crumb = a yellow crumb | a white chip
+
+any
+opinion @1 houses mixed 0 : A straight grain should get the same hearing whether the wood grew in a fine garden or a ditch.
+opinion @1 sump for 1 : The low streets are quite good at putting scraps to worthwhile use.
+opinion @1 merchants against 1 : After seeing the polished sample I'd examine the rough end before paying.
+opinion @1 watch mixed 0 : Seeing a mark is one thing. Knowing whose paw made it is a different matter.
+opinion @1 church for 1 : I believe a prayer may be plain enough to fit into the time a shaving takes to uncurl.
+opinion @1 festivals against 1 : What good is a grand view if twelve shoulders have already got between it and your nose?
+
+grown
+line @1 greet : Hello. A new face over a very old habit. | There's still room beside the water dish.
+line @1 greet.return : My ears were free even with my eyes on the curl. | Hello returned. The little piece can settle on its own.
+line @1 farewell : Leave me the last of the light to judge this by. | Goodbye. I hope the road lies straight ahead.
+line @1 farewell.return : Yes. I'll put my things in order here. | Away you go. The curls are in no danger.
+line @1 react.news : Lead with what was actually seen. | I'd like the facts before they're smoothed for presentation.
+scene deepcut
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A long thin shaving holds the record of one whole stroke. | I read a cut backwards, starting where the shaving came away.
+b : What shows up? | Why look at the waste?
+a : A thick end means I pressed harder than I meant. The wood shows the consequence too. | It shows half the story of that stroke. Smooth on the stick can still be lumpy in the shaving.
+
+scene warmpour
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Fresh wood gives off its scent in a warm shower. | I don't mind a little shower reaching my shavings.
+b : Does it spoil the trial? | Different from a dry one?
+a : Changes it. I let the piece soak evenly before drawing conclusions. | It opens in a new shape. Worth looking at both before saying what wood does.
+
+scene oldstick
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The first bit I thought perfectly smooth had a splinter underneath. | I once pronounced on a piece while it was still face up on a bench.
+b : How did you discover the fault? | Without turning it?
+a : Caught a sleeve picking it up. The cloth made a better critic than I had. | That was the mistake. A quick touch below would have changed my grand opinion.
+
+scene watergossip
+when topic=gossip
+does give.opinion / react.self / assess
+a : A claim about a concealed fault is worth a look if the piece can actually be inspected. | I don't take delight in a flaw described at a distance.
+b : What if inspection's impossible? | Rather praise everything then?
+a : Then the claim can stay unconfirmed. That's an honest position. | Rather look myself than borrow somebody else's bad temper.
+
+scene rightwood
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A little block with straight grain can be worth an elaborate polished length. | I'm buying the useful part of the wood.
+b : What shows you the useful part? | Wouldn't you pay for finishing?
+a : Look along the cut end before admiring the shiny face. | If I needed another wolf to finish it. For carving I'd prefer an honest scrap.
+
+scene roofsettle
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : I'll settle a night-time rattle promptly, even if it's scarcely audible. | Quiet wood will change shape overnight and click again in the morning.
+b : How do you quiet it? | Would you blame the board?
+a : Sometimes a fold of cloth under a loose end is the whole repair. | Hardly. I like knowing what the noise is before spending anger on it.
+
+scene outsideshelter
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like a roadside seat with a shallow hollow in the arm. | A dry piece of fallen timber has its own small map of the weather.
+b : What does a hollow tell you? | Does rain leave a date mark?
+a : Where water lay and where somebody's elbow rested often enough to smooth the edge. | Not the hour. Only where it would collect after a shower.
+
+scene kinkeep
+when topic=family self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd keep a particularly handsome curl aside for #self.neighbour#. | I'd show #self.neighbour# how one thin shaving holds its shape.
+b : Why that piece? | Isn't it quite fragile?
+a : It came off the wood in a continuous loop. An ordinary thing done especially neatly. | Yes. All the more reason for a look now while the piece is sound.
+
+scene citygreen
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The hill gardens above Ridgemere look level until you try setting a saucer on a wall. | I prefer testing a surface before I trust a sweeping view.
+b : Does water show the slope? | You carry the saucer everywhere?
+a : A little of it, yes. I can spot its upper edge shift before my eyes recognise a tilt. | No. Sometimes a puddle on a broad stone provides the demonstration quite freely.
+
+scene shopdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like one unbroken shaving longer than my reach. | My private ambition has absolutely no weight to it.
+b : How would you measure it? | You mean a very fine curl?
+a : Lay a string beside the curl, then stretch the string. No need to break the piece to measure it. | A continuous one. I can afford a bit more thickness if the shape survives.
+
+scene emptymeal
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When money thins out I save even the little straight offcuts. | A small piece of decent wood has more than one day's usefulness in it.
+b : Would you sell the curls? | What's the second use?
+a : I'd make something a wolf actually needed. The curls are the evidence I tried hard. | A thin wedge, something to prop a loose leg. I like things that earn their room.
+
+scene speaksoft
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I offer a short prayer before pronouncing on something I haven't examined. | A grand smooth surface hides little from the Bright One.
+b : And can you? | Asking what's hidden?
+a : By turning it over, if it's a piece of wood. If it's a wolf I show rather more restraint. | Asking for patience with what I can't see. A particularly necessary prayer some days.
+
+
+young
+line @1 greet : Hello. I've a wooden curl small enough to show you. | Come look where the little stick is floating.
+line @1 farewell : I'll keep the curl from blowing away. | Goodbye. I'm giving this one more try.
+scene smallcup
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can make a stick roll over without touching it. | Look at this little yellow curl on the water.
+b : You're blowing on it? | Is that the top side?
+a : Only at the saucer. One little wave makes the curl show its belly. | It was. Watch how the belly comes round when I tap the rim gently.
+
+scene shaverain
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : One drop in my cup sent both shavings swimming together. | Rain can mix the whole game up for you.
+b : Now which is which? | Are you going to start again?
+a : The crooked one's mine. That makes it easy to recognise. | After I carry the cup under cover. I'd rather make the waves myself.
+
+
+adolescent
+line @1 greet : Hello. Watch where you put your elbow. | Here. There's room to look without leaning.
+line @2 greet [pair.band=strangers] : First meeting. I prefer speaking plainly. | You look new to this little experiment.
+line @3 greet [here.time=dawn] : Morning. The light reaches the bottom of the saucer now. | Early enough to see a fresh cut properly.
+line @1 greet.return : Hello. I let the curl settle before replying. | Yes, hello. It's settled now.
+line @2 greet.return [pair.band=friends|family] : A familiar face at my little trial. Good. | I'd let you hold the saucer without fussing.
+line @3 greet.return [here.time=night] : Late greetings. I'll use the smooth side my paw can feel. | Hello. The light's gone but I can talk.
+line @1 again.open : You can see where the last one landed now. | Back while the evidence is still floating.
+line @1 hail [pair.band=friends] : Look now, before that curl opens out. | Here. This one came off particularly well.
+line @1 farewell : Take a straightforward way when you go. | Mind the sharp turn at the very end.
+line @1 farewell.return : I'll keep my own corner for a while then. | Goodbye. I'll see this shaving through.
+line @1 react.news : Tell the actual bit before adding a verdict. | Tell me how you first came across it.
+line @1 react.news.new : Nobody had mentioned so much as a splinter of that. | That's quite a new bit of evidence.
+line @1 react.news.known : I've heard the plain version already. | Yes. I recognise the way that one curves.
+line @1 react.news.doubt : Something about that doesn't follow the grain. | I'd want a look underneath before forming an opinion.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll stay here with you. It doesn't require clever talk. | That leaves an ugly split. I'm listening.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : What clean bright news to take away. | I'd take that as a very good sign.
+line @1 ask.how : Did the day go straight enough for you? | Anything cutting across the grain today?
+line @1 answer.how : I'm cross about a few things and perfectly clear about which. | Steady enough for a small precise job.
+line @1 decline : I'd be pretending to know the answer if I agreed. | I couldn't manage it without leaving my own bit half done.
+line @1 accept_decline : Good. Plainly answered. I can leave it there. | No need to give a crooked reason for a straight refusal.
+line @1 preclose : I'm going before my patience wears any thinner. | There's daylight enough to try a second cut.
+line @1 accept_preclose : Go on. You've stood still long enough. | That seems a perfectly sensible place to stop.
+line @1 thank : You let me finish a thought. I appreciate that. | You held the saucer steady. That matters.
+line @1 deflect_thanks : It made sense to give you a good clear look. | A bit of light was all it wanted.
+line @1 sympathise : Don't feel obliged to fill a silence for my benefit. | I'd listen without trying to smooth the hurt away.
+line @1 reassure : We haven't seen how it settles yet. | One awkward shaving doesn't spoil a whole stick.
+line @1 ack : Exactly. The curl comes round like that. | I can see which mark you're pointing to.
+line @1 give.advice : Watch the shaving where it leaves the wood. | A judgement made while the water's moving is usually a poor one.
+scene testcut
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I float a shaving to find out whether I've cut it evenly. | The little saucer's for judging my work.
+b : Judging whether it floats? | And what does the water judge?
+a : Whether it floats level. A lump at one end tips it over. | Nothing. It lets me see the heavy bit, then I can judge for myself.
+
+scene studentnote
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : My lesson margin's got a shaving curled between two lines. | A long wood curl makes a better mark for my place than a thumb smudge.
+b : Won't it break? | What if it rolls away?
+a : I tuck it under the folded corner. Survives surprisingly well. | Then I'll reread a line. I'd call that an affordable experiment.
+
+scene strawrow
+when topic=pastimes self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I use #straw# as the starting line for a floating curl. | A clean cut stalk will float across the whole width of my saucer.
+b : Do the shavings race? | What do you measure?
+a : No. I want them to start straight. After that I let them show their own shape. | How far one end dips. The straw gives me a level mark to look against.
+
+scene cheesewood
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : That firm yellow cheese wedge will shave quite neatly too. | I like food you can take a deliberate little slice from.
+b : Do those curls go in the saucer? | What about crumbs?
+a : Absolutely not. My cheese goes straight to my mouth, odd angles and all. | They're edible evidence of what a sharp edge might have improved.
+
+scene noiseafter
+when topic=day here.time=night self.dislikes=night_noise
+does tell.complaint / ask.detail / answer.detail
+a : At night even one bouncing bit of wood can set my teeth on edge. | My saucer doesn't rattle if folk let the table be.
+b : What bounced? | It's such a little noise.
+a : Never mind what. I'd like the next thing to be put down gently. | Small enough to avoid making. That's just what annoys me.
+
+scene estateways
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : Where I live a clean shaving on a tidy sill looks like an offence against ceremony. | On the Estate I take my scraps away after looking at them.
+b : Nobody likes a mess. | Do you leave no sign?
+a : Quite. I do like being allowed time to see the work before sweeping it up. | A smooth piece of wood and a clean sill. That's sign enough.
+
+scene franktest
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd ask #self.friend# to look at the two ends before saying the cut was fine. | I like a fair verdict from #self.friend#.
+b : Will you admit the cut is poor? | Would you believe a friend?
+a : I'd rather hear that than a lovely false description of it. | I'd believe a close look. Friendship is extra.
+
+scene crowdbowl
+when topic=festival self.dislikes=crowds
+does tell.complaint / ask.detail / answer.detail
+a : I can't run my shaving trial with a dozen noses over the saucer. | At a feast I'd take my bit to a quiet end of a bench.
+b : Entertaining the crowd's not the idea? | Afraid to be watched?
+a : No. I'd entertain one pair of eyes that actually wants to see. | Of being jostled and then told my hand shook. That would be extremely irritating.
+
+story ripcurl [topic=memories|pastimes]
+  : I boasted of a shaving that would go round my wrist. Put it in water and it uncurled straight across the saucer.
+  : It did fit my wrist. All the proof was sinking slowly at one end.
+  b : Did you make another?
+  : Yes. I kept the next one dry till I'd tried the claim I actually meant to make.
+
+story cheesecup [topic=food|memories]
+  : I once mixed a shaving of cheese and one of pale wood on a clean board. They looked much alike.
+  : I was spared the indignity of testing the wrong one with my teeth.
+  b : How did you sort them?
+  : With my nose. It's a very old and perfectly respectable measuring instrument.
+
+story breathwave [topic=pastimes|memories]
+  : I've taken great care over a water test and had the piece turn against all expectation.
+  : I leaned closer to see. A second curl went straight over too.
+  b : Had you found a new current?
+  : The current was my own breathing. I moved my nose and the laws of nature settled back down.
+
+rule @cup
+when concept=bark
+does aside
+cooldown 8h
+say Level saucer first. Put the curls in afterwards. | Don't stir till the little piece has found its balance.
+
+rule @clearsky
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Good light across that edge. You can see the change of thickness. | Set it where the curl will show a shadow.
+
+rule @cheesetip
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 8h
+say That's cheese on the near corner, wood beyond. | No mixing the shavings and the supper.
+
+rule @strawrun
+when concept=bark self.likes=fresh_straw
+does aside
+cooldown 8h
+say Straight straw across the rim. Now we can judge it. | Keep the hollow end out of the water.
+
+dlg @1 resident.hub : Speak while I'm letting this sample settle.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you might find this newest curl worth the look.
+dlg @3 resident.hub [here.time=night] : A quiet voice, if you like. The last rattle was quite sufficient.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Look where you stand, and leave the dish where I set it.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I like the sort of question you can test without guessing what the teacher wants.
+dlg @2 resident.job : I like work that will show me what I did well and what I ought to change.
+dlg @1 resident.bye : Let the water settle before you leave the dish.
+graft resident.hub
+choice What makes a good shaving for your trial? -> curltrial
+node curltrial
+say A single continuous curl. Lay it on water without pressing. A heavy end tips. If it stays level I inspect the wood it came from.
+free
+choice Why look at the wood afterwards? -> pairedresult
+choice I'll watch the heavier end. -> hub
+node pairedresult
+say Because the shaving can't tell me everything. I'd like the thing I set out to make to be useful. A beautiful scrap is only one piece of evidence.
+choice That seems an honest test. -> hub
+choice I'll leave the saucer quiet. -> bye

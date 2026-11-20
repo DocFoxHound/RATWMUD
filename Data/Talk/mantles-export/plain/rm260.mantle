@@ -1,0 +1,259 @@
+# rm260, the sail sampler (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm260
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_ansel_kelpford
+written_by codex
+title the sail sampler
+fits stage=adult|old
+prefers job=crafter
+traits temper=short talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk stitches_ships_from_memory_on_one_long_scrap
+likes smoked_eel swimming old_maps frosty_mornings
+dislikes stale_bread bad_manners
+fears a_missing_landing_rung debt_on_a_blank_page
+hopes a_strip_long_enough_for_the_whole_sound a_clear_swimming_channel
+topics land +0.4 work +0.3 pastimes +0.5 gossip -0.5
+styles comfort=practical gossip=blunt refuse=terse tease=none
+marks oath saying
+persona #self.first# stitches the outlines of passing ships on a long scrap, goes quiet when the shore comes in sight, and has little patience with an elbow in the ribs.
+
+words
+oath! = Bent eye and split thread | Rot in the seam
+saying! = Let the outline earn the name | Slack for a bend, tight for a spar
+sampler = my rag fleet | a sail roll of my own making
+mastmark = a long grey stitch | a tall red stitch
+hullmark = a crooked row of blue | a dark running stitch
+tack = a single pale tack | a short holding stitch
+breadheel = a heel like a clog | a scuffed-looking crust
+eelpiece = a thumb of smoked eel | a dark strip of eel
+watermark = a bleached stripe on the stone | a greenish line along the wall
+chartfold = a bald crease in the paper | a white fold worn smooth
+rolltie = a double length of thread | a tie from the selvedge
+mapweight = a thick button | a chipped flat bead
+seamend = a knotted tail | a turned-back stitch
+frostleaf = a silver leaf on the sill | a leaf stiff as tin
+
+any
+opinion @1 dole for 2 : Give a wolf bread while there's still strength to chew it. Forms and questions can wait till the second slice.
+opinion @1 church for 1 : At the chapel I got a bowlful right down to the bottom. Some places the serving spoon just skims the broth.
+opinion @1 houses against 2 : We have to stand clear when a House boat comes in. I've been waiting to hear where the rest of us should land.
+opinion @1 festivals against 1 : Somebody always takes a nice plain ship and hangs flags everywhere till you can't see how it's made.
+opinion @1 watch against 1 : A Watch shoulder feels just as sharp as any other in a crowd, whatever's on the badge.
+opinion @1 merchants against 2 : Smoked eel gets thinner and dearer going up the street. Only thing growing on the way is the price.
+
+grown
+line @1 greet : Give me a breath to lay my thread aside. Welcome. | There's room on my seaward side.
+line @2 greet [here.time=dawn] : Frost or no frost, you're early. I like that.
+line @1 greet.return : A straight greeting. I'll answer it gladly. | Aye, I've a moment between stitches.
+line @1 again.open : Got a little further on my strip since we spoke.
+line @1 kin.open [pair.kin!=no] : You're near enough to put your coat on mine.
+line @1 hail [pair.band=friends] : Over by the rolled cloth! Here.
+line @1 farewell : Go easy by the landing steps. | Give yourself a little slack going home.
+line @1 farewell.return : You're clear of my loose thread. Go well.
+line @1 react.news : Speak so I can see the shape of what happened.
+line @1 react.news.new : That puts a different ship in the picture.
+line @1 react.news.known : I had the outline. Now it's got some colour on it.
+line @1 react.news.doubt : Who had a clear sight of it?
+line @1 react.news.sorrow [topic.kind=loss|death|crime|assault|theft] : I can put this roll away and walk beside you for a bit.
+line @1 react.news.glad [topic.kind=work|birth|marriage] : Worth a bright stitch to remember it by.
+line @1 ask.how : How's the day wearing against you?
+line @1 answer.how : Settled. There's thread enough here to finish today's stitching.
+line @1 sympathise : A rough thing rubbed in the same place makes one mighty sore.
+line @1 reassure : You could sit on my coat till the shaking eases.
+line @1 decline : No. Please keep your paws off my roll.
+line @1 accept_decline : Fair. I leave your things in your keeping.
+line @1 thank : You left me room to do it properly. Much obliged.
+line @1 deflect_thanks : Mind the next wolf has room as well.
+line @1 preclose : My loose end's trailing. Better see to that.
+line @1 accept_preclose : I'll let you by without a fuss.
+line @1 ack : Clear as a mast against snow.
+scene sampler
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can pick a boat off #sampler# just by feeling for the spars. | I can carry half the Sound inside my cuff.
+b : Even if the sails are down? | That's a curious claim for one small cuff.
+a : Especially then. Sailcloth flaps about and hides the interesting bit. | Look at the stitching. There's the low one with the mast set well forward. Plenty more rolled up.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : I put #eelpiece# between slices so soft the eel leaves a mark. | I save the smoky outside for the last bite.
+b : Why does the mark matter? | Stronger taste at the edge?
+a : When the eel's finished, I still have the bread it touched. | Yes. The middle's all rich and mild. I want smoke to be the taste that lingers.
+
+scene frostleaf
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : I pick up #frostleaf# by its stalk. | Frost sets all the lines of a cobweb out plain.
+b : What for? | Till something blunders through?
+a : To see the shape whole before it goes limp. Back to its sill before the frost thaws. | Yes. That's the moment to look, from a little distance.
+
+scene seamtug
+when topic=work self.job=crafter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I draw a stitch up till the cloth just begins to object. | One tight stitch can spoil a long tidy seam.
+b : How can you feel that? | How would I see which one?
+a : The cloth loses its give. Let half a breath out of the thread and it lies flat again. | Run the seam between your pads. The hard little ridge is your culprit.
+
+scene rudeeye
+when topic=smalltalk self.dislikes=bad_manners
+does tell.feeling / sympathise / assess
+a : I don't care for somebody reading a map over my elbow without a word. | If you need to get past me, say so before the shove.
+b : Hard to read with somebody breathing on the page. | A word takes less room than an elbow.
+a : Exactly. Ask and I'll hold it wide. Breathe down my neck and it goes straight in my coat. | That's my point. I'd sooner move willingly.
+
+scene boxchart
+when topic=land self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : An old map puts water where I can stand dry now. | Here's #chartfold#, right through the drawn coast.
+b : Is it any use if it's wrong? | Is the coast entirely rubbed out?
+a : Yes. It lets me picture the ground twice over without shifting my feet. | A little bay might be lost there. A patch of mystery suits me.
+
+scene swimpath
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I choose where I'll get out before I choose where I'll go in. | From the water a perfectly good landing looks like one long wall.
+b : Don't those places tend to be the same? | Where do you look for the steps?
+a : On a calm day, perhaps. Water has business of its own. | Beside the post I picked when my eyes were still above the quay.
+
+scene nobread
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : I've had #breadheel# try to fight its way out of my bowl. | A loaf ought to bend a little under my thumb.
+b : Did the bread win? | Even if it has a stiff crust?
+a : It got a fair knock at my chin. Eventually I drowned it in broth. | Under the crust, yes. I want to eat lunch without a hammer.
+
+scene sparline
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I save long bits of cloth, whatever colour I'm offered. | I'd exchange a square scrap for a narrower, longer piece.
+b : Have you no liking for one colour? | What good is a long thin scrap?
+a : For stitching, plenty. But I'm running out of water to put my ships on. | It rolls up. A square would have me folding a mast in half.
+
+scene thinwall
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : The Sump gives me a fair chance of hearing the water through a shut door. | I've got used to putting my good things on pegs.
+b : Wouldn't it be quieter inland? | Higher than the floor?
+a : Quiet isn't everything. I like knowing the world's still moving beyond the boards. | Higher than a wet coat swinging off somebody's shoulder.
+
+scene coin
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : When I count my coins I lay them out like boats waiting for a berth. | I leave enough money for thread before I think about fish.
+b : Which one gets a berth first? | Wouldn't fish make a better supper?
+a : The broad one for bread. The smaller ones come in if there's room. | Tonight, yes. Next week I'd have supper and no cuff left on my coat.
+
+scene finish
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I'd sooner leave a little marker than lose my place in my work. | A mark in pale thread will come out clean when it's done its job.
+b : What marker goes there? | Why go to that trouble?
+a : A loose cross in another colour. I know where I was without guessing wrong. | Because a black thumbprint won't come out just because I'm finished with it.
+
+scene friendroll
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I wouldn't mind #self.friend# seeing the length of this roll. | #self.friend# can hold one end if I take it outside.
+b : Is the length a secret? | Does it take two wolves now?
+a : No. I just don't want a row of strangers guessing what I meant by every knot. | If there's wind, yes. I'm making ships. I'd sooner the cloth didn't try to set sail.
+
+scene figurewake
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A gull's shadow makes a fine little sail on quiet water. | I'd know a swimming bird a long way off by the way the wake widens.
+b : Till the gull turns? | Wouldn't a boat make the same shape?
+a : Till the gull lands. Then I've got a boat with feathers that keeps trying to eat things. | Longer cut at the front. Watch the water at the bows next time.
+
+scene quiet
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I stitch in one colour at a time. | Once the horizon goes I roll the ships up for the night.
+b : Why change how you do it? | Can't you do another from memory?
+a : Because blue and soot look alike by poor light. Nobody wants an unplanned black cloud on a fine day. | I've done a fair few that way. But it's pleasant to end the work when the last real mast goes dark.
+
+scene repaired
+when topic=home|work
+does tell.self / ask.detail / answer.detail
+a : I turn a worn cuff round so the good edge takes its share. | One new button makes the rest of a coat seem a little weary.
+b : Does the turn show? | Would you change all the buttons then?
+a : Yes. Shows I've got some more useful life out of it. | I'd use an odd one and let it be odd. The coat's still warm.
+
+scene dreamwater
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : In a dream the whole Sound lay in a basin with a smooth blue rim. | I dreamt a needle could move ships about on my sampler.
+b : Did you put your paw in? | Where did you send them?
+a : A little boat showed just below the surface. I was afraid of upsetting it. | Home, every last one. Which left a very dull view at sea.
+
+scene excuses
+when topic=gossip
+does tell.self / challenge / assess
+a : I can put a name to a ship from shore. Recognising everybody aboard is another matter. | I don't stitch a wolf on deck because I saw a patch of brown there.
+b : You can't even make a guess? | Could be a coat, all the same.
+a : I could make a dozen. You'd carry away the one that suited you. | Or a coil of rope. That's why I leave the deck plain.
+
+story rollwind [topic=memories]
+  : I took my strip of sewn boats up where I could see the originals.
+  : A gust got under the cloth. I caught the far end with my teeth and the whole fleet filled my mouth.
+  b : Were the stitches all right?
+  : Perfect. My tongue tasted of cheap blue dye for a morning.
+
+story wrongroad [topic=land self.likes=old_maps]
+  : I followed a lane on an old map till I came up against a fine high wall.
+  : I laid the map across my knees. The wall was younger than the road, and the map older than both my knees.
+  b : How did you finish your walk?
+  : Walked the length of the wall and back. I've drawn myself a thin line on the map, in pencil.
+
+story notmycap [topic=pastimes self.likes=swimming]
+  : I'd put my cap on a landing post while I swam. Coming back, I picked out the post by the shape on top.
+  : It wasn't a cap. A fat gull got up and gave me its full opinion of swimmers.
+  b : Where was your cap?
+  : One post farther down. No opinion of me whatsoever, which suited me better.
+
+rule @hem
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say Leave the last seam loose a moment. | That's a fold for turning, keep it flat!
+
+rule @landing
+when concept=bark self.likes=swimming
+does aside
+cooldown 8h
+say Landing rung's wet, get a proper grip. | Don't set a bundle on the step out.
+
+rule @map
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say One thumb holds the map in this wind. | Corners down or you'll lose the coast.
+
+rule @streets
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say A word before the elbow, please. | Room enough if you ask for it.
+
+dlg @1 resident.hub : I'm rolling up some cloth. There's an ear free if you've business.
+dlg @2 resident.hub [topic.meeting=known] : You remember my fleet, #topic.player#. I've found another mast for it.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Stand there and I'll hear you. This much room suits me.
+dlg @4 resident.hub [here.time=dusk] : Nearly too dull to thread a needle. Speak while I've still light to see your face.
+dlg @1 resident.job [self.job=crafter] : #self.trade_words.capitalize#. There's a place for a steady stitch and I know where to take one.
+dlg @2 resident.job : Give me the loose end and I'll see where I can help.
+dlg @1 resident.news [world.news] : Here's what came through clearly enough. #world.news.capitalize#.
+dlg @1 resident.bye : May you find a sound foothold at the water.
+graft resident.hub
+choice Unroll a little of that fleet for me. -> narrow_fleet
+node narrow_fleet
+say See that short blue line with two little uprights? Look back towards the water and you'll know the shape before you can read what's on the bow.
+choice How did you choose where to start? -> first_vessel
+choice Let the roll close. -> hub
+node first_vessel
+say The boat passing when I had spare cloth and a free paw. Look how big I made it. Hadn't reckoned on giving its neighbours room.
+choice Help wind the roll up. -> hub
+choice Keep walking. -> bye

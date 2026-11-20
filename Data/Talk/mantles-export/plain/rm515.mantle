@@ -1,0 +1,282 @@
+# rm515, the straw price tag (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm515
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hakon_grantham
+written_by codex
+title the straw price tag
+fits stage=young|adolescent|adult|old
+prefers drive=restless honesty=plain
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk ties_straw_price_tags_to_pretend_ships
+likes barley_soup old_tales fresh_straw summer_evenings
+dislikes waiting drizzle
+fears a_boat_sold_before_its_name_is_read a_stall_with_nobody_at_it
+hopes a_small_market_stall_under_an_awning_of_its_own
+topics smalltalk +0.6 travel +0.5 home +0.3 food +0.3
+styles comfort=gentle gossip=plain refuse=quick tease=none
+marks oath saying
+persona #self.first# twists straw into ship tags, counts imaginary customers twice and keeps careful count of the real coins saved towards a stall.
+
+words
+oath! = Split my little straw flag | A hole in the penny bag
+saying! = Name the boat before pricing the berth | Two straws make a decent mast
+strawtag = a loop of yellow straw | my straw ticket
+coinwell = a hollow for one penny | my little penny hollow
+mast = a tall straw stem | a straw with a bent tip
+soupbit = a round grain of barley | a fat little soup grain
+storyend = the end of an old yarn | the last turn of the tale
+floorstraw = fresh crackly straw | a clean scatter of straw
+rainline = a fine line of drizzle | a tickle of little drops
+slate = my narrow tally slate | a little square of slate
+fleetbit = a boat shaped like a slipper | the one with a high bow
+goldedge = the gold rim on a cloud | the last gold on the roof
+clothstall = a folded square of cloth | my miniature awning
+
+any
+opinion @1 city for 1 : There's a harbour for spotting boats and a market for finding out what they bring in.
+opinion @1 merchants for 1 : A good seller waits long enough for a small customer to sort the pennies properly.
+opinion @1 houses mixed 0 : A large house makes a splendid pretend shop up to the moment everything needs carrying upstairs.
+opinion @1 road for 1 : My favourite stretch of road comes out by the market.
+opinion @1 festivals for 1 : The feast stalls bring out strange little goods and put them all on show.
+opinion @1 newcomers for 1 : New faces see things in my little ships that nobody at home has spotted.
+opinion @1 times mixed 0 : A lot can happen while you're waiting to find out what your first penny will buy.
+line @1 greet : Come see the boat with the straw price.
+line @2 greet [pair.band=strangers] : A visitor I haven't counted yet.
+line @3 greet [here.time=dawn] : Morning. That mast has a gold tip.
+line @4 greet [here.time=dusk|night] : Evening makes the little fleet look nearly real.
+line @1 greet.return : I heard you through all my counting.
+line @2 greet.return [pair.band=friends|family] : I know where you fit in the row.
+line @3 greet.return [self.working=yes] : My fingers can finish this twist on their own.
+line @4 greet.return [here.time=dusk|night] : Even in the dark I remember which tag is yours.
+line @1 kin.open [pair.kin!=no] : Come and have the corner berth, kin.
+line @1 again.open : The last penny hasn't moved away.
+line @1 hail [pair.band=friends] : Friend, be the first customer again!
+line @1 farewell : Go home with a good wind in your sleeves.
+line @1 farewell.return : And a dry corner for the pennies.
+line @1 react.news : Tell it where I can hear each part.
+line @1 react.news.new : That's another ship for the first-time list.
+line @1 react.news.known : I could count that one with my eyes shut.
+line @1 react.news.doubt : I want a closer look at the odd bit.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll move the little boats aside so you can tell it quietly.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That gives my biggest straw flag something to do.
+line @1 ask.how : Did something good arrive for you?
+line @1 answer.how : I've still got the important penny.
+line @1 thank : You spotted the dropped price tag. Thank you.
+line @1 deflect_thanks : It wasn't a bother to shift a straw.
+line @1 sympathise : I'll keep a place for you while you rest.
+line @1 reassure : We can count again if we need to.
+line @1 decline : I've already put my good straw to another use.
+line @1 accept_decline : All right. Nobody has to buy a boat.
+line @1 preclose : I'd better tie up the fleet before supper.
+line @1 accept_preclose : Best take that boat before the price goes up.
+scene gather_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : #world.news#. The tag on that word is #world.news_from#. | #world.news_from.capitalize# is where this came from. #world.news#.
+b : Would you move the tag? | Shall we count it twice?
+a : No. I'd like the next listener to see the tag on the original account. | Once is plenty till there's something more to add.
+
+scene gossip_buy
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A bit of chatter's trying to sell itself as a whole story. | Some words arrive with a fancier flag than the ship underneath.
+b : Would you pay much? | Is that one of those?
+a : I'd keep the penny. | I didn't see enough hull for my liking.
+
+story straw_soup [topic=memories|food]
+  : I once balanced a straw ship across the lip of a soup bowl to show how big a harbour ought to be.
+  : The straw bent in the steam and the bow went straight down.
+  b : Was the crew lost?
+  : The crew consisted entirely of a grain of barley. I sent my spoon down for the rescue.
+
+story price_mark [topic=memories|work]
+  : I chalked a fine large price on a scrap board and leant it against a model.
+  : Standing opposite the board, I hardly recognised my own figure.
+  b : What had you charged?
+  : One upside-down hook. I'd never considered the view a customer gets until then.
+
+story sail_case [topic=memories|travel]
+  : I put my favourite bit of straw in a box and carried it about for luck.
+  : Opened the lid to show a visitor and found a very ordinary stem.
+  b : Had you taken the wrong one?
+  : I turned the box round. It had merely sailed to the other end and faced the opposite way.
+
+rule @count_tags
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One dry flag for each little hull.
+
+rule @end_tale
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Plenty of evening for the last boat.
+
+rule @drip_wrap
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Turn the prices under cover.
+
+rule @straw_clear
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Mind the low straw mast.
+
+dlg @1 resident.hub : Look from this end. The little flag points towards you.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you can have your old place by the awning.
+dlg @3 resident.hub [here.time=dusk] : Evening. The fleet still has its bright edges.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Leave my tags where they are and I'll listen from here.
+dlg @1 resident.job [self.job=child] : I've lessons to attend to. Putting prices on my pretend ships makes the numbers more interesting.
+dlg @2 resident.job : I mind my figures and try to keep the prices clear enough to read.
+dlg @1 resident.news [world.news] : On this word the place is #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Somebody's made that story a wonderfully tall mast. I'd sooner inspect the hull.
+dlg @1 resident.bye : Watch for a little gold sail on your way.
+graft resident.hub
+choice How do you write a price on straw? -> bend_price
+node bend_price
+say A bend for one penny and a nick across it for another. I wouldn't ask a stranger to guess. I say the price very clearly too.
+choice What happens when prices get bigger? -> many_straws
+choice I can see the bend. -> hub
+node many_straws
+say I'll need a chalk board then. That's one of the things the savings are meant for. A stall with no prices might as well be a collection of my favourite things.
+choice A chalk board sounds useful. -> hub
+choice I'll leave your pennies in their hollow. -> bye
+
+
+grown
+scene look_again
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I can still pick a ship out across the Sound by the line of its bow. | The little fleets of straw have a way of coming back to mind at a busy harbour.
+b : What else do you see now? | Does one help with the other?
+a : The long day's work that will come off by the sling once it's moored. | It taught me to notice a small difference in two similar outlines.
+
+scene ticket_back
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A straw price tag could be changed merely by turning its bent end over. | I once believed owning the counter was the great part of keeping a stall.
+b : Handy for a seller? | And now?
+a : Handy for a child. In grown company I name the price before the goods move. | I'd want the custom that keeps a counter worth opening.
+
+scene hands_quiet
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : A Heights window can put an entire street's activity into a quiet frame. | A quiet landing in the Heights has room for an imaginary stall.
+b : Is that enough bustle? | Do you still set it up?
+a : Often I prefer to go down to it. But I like choosing where to begin. | In my head occasionally. Even the rent there is quite plausible.
+
+scene shared_story
+when topic=memories self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I enjoy hearing a familiar tale open slowly enough to include a new listener. | My favourite ship stories are the ones with a price to pay on landing.
+b : Even if everybody else knows? | A fee?
+a : Especially then. It's nice to hear a familiar ending reach one fresh pair of ears. | Sometimes just a promise to come home in time.
+
+scene trade_space
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : A space of my own in the market remains a pleasing prospect. | My ideal awning keeps two heads dry in a shower.
+b : What would make it yours? | Why just two?
+a : I could decide for myself which price goes at a height a young customer can read. | The seller and the customer are a sensible place to start.
+
+
+young
+scene name_hull
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : This one's #fleetbit#. I know the real one by its nose. | I give each ship #strawtag#.
+b : Can you know a boat's nose? | What does the tag say?
+a : Yes. Even when the rest of its face is round the corner. | Where I ought to put it back. I can read a bent straw.
+
+scene single_penny
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My stall pennies fit inside #coinwell#. | One day my shop will have #clothstall# over it.
+b : Is there room for a whole stall? | What if it rains?
+a : The stall doesn't go inside. I only need to fit the money. | I shall put my own head under the best part.
+
+scene lessons_line
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I can make a counting lesson out of five ships arriving. | I put #slate# down beside my pretend stall.
+b : What if one sails away? | For the sums?
+a : Then I have a taking-away lesson as well. | So my customers can't say I charged twice. I look very carefully.
+
+scene fresh_bed
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : #floorstraw.capitalize# makes a splendid market when nobody's stepped on it yet. | I pick my mast out before the straw goes down.
+b : Where are the stalls? | Why before?
+a : Anywhere I can draw a square without breaking a stem. | After that a mast may have had a boot directly on its head.
+
+scene soup_boats
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : #soupbit.capitalize# has floated up beside my spoon. | I can wait for barley to cool if I blow on the biggest grain.
+b : Is it a ship? | Why pick the biggest?
+a : It was. I've just eaten it. | I'll certainly know when that one reaches the other bank.
+
+scene tale_again
+when topic=memories self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I like #storyend# even when I've heard it plenty. | Tell me a tale with a ship in it and I'll put the right one on my knee.
+b : Why does it help to know the ending? | What if the ship sinks?
+a : I get to wait for the exact good bit. | Then my knee will make an excellent island.
+
+scene father_straw
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd like #self.father# to be my first proper customer. | I put my best ship where #self.father# can see it.
+b : What would you sell? | What's the best part?
+a : I'll decide once I've counted enough actual money for the stall. | Finding out if anybody can tell which one's best without being told.
+
+
+adolescent
+scene fair_pricing
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I used to give the fanciest hull the highest price. | The straw tag goes on the model till the figure's been agreed.
+b : Has that changed? | Who takes it off?
+a : Now I ask what the customer needs to carry. A pretty bow can be a nuisance to a crate. | Whoever has counted the payment. I'm learning not to rush that bit.
+
+scene count_heads
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I can recognise a real ship before I can count the customers along its side. | I used to call every tall mast important.
+b : Which interests you more? | What catches your attention nowadays?
+a : The ship first. Then I'm curious which cargo drew the crowd. | What the hull does when a load's lifted out of it.
+
+scene warm_close
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : #goldedge.capitalize# makes a fine signal to begin packing a practice stall. | In the hush of a summer evening I try calling a price out loud.
+b : Why so early? | To whom?
+a : I like finishing in daylight, with all my best scraps still in view. | To my own ears first. They spot a silly figure remarkably quickly.
+
+scene drizzle_tags
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : #rainline.capitalize# can blur a price without washing the old one off. | Drizzle softens straw till the little bows all lose their shape.
+b : Can you trace over it? | Do you still make those?
+a : I'd start with a dry tag. Two prices on one card do very little for a seller's credit. | I like owning a fleet I can dry on a plate.
+
+scene waiting_place
+when topic=smalltalk self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : Standing still by the market space is harder than carrying the board there. | Promise me noon and I'd take that over a whole morning of being nearly next.
+b : What helps? | Even for good ground?
+a : Counting how many buyers stop short because a stall has left no room. | Good ground will be there at noon. My morning will have gone.
+
+scene open_counter
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want a counter wide enough for two hands to meet across it. | Saving towards a stall takes longer now I know what the cover costs.
+b : Just two? | Will you give up the cover?
+a : One pays and one returns change. That's business enough to begin. | Never. I've read what drizzle can do to arithmetic.

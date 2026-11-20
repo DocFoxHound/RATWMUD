@@ -1,0 +1,411 @@
+# rm540, the tart on the landing (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm540
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_oskar_wickmarsh
+written_by codex
+title the tart on the landing
+fits stage=adult|old
+prefers job=servant humour=dry
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk imagines_a_plum_tart_banking_at_each_turn_of_the_stair
+likes plum_tart evening_line market_bustle summer_evenings
+dislikes cold_tea rats
+fears the_house_factors_claim_swallowing_the_last_slice
+hopes an_evening_landing_with_time_for_two
+topics work +0.6 food +0.5 prices +0.4 pastimes +0.3
+styles comfort=share gossip=reserved refuse=measured tease=dry
+marks oath saying
+persona #self.first# calculates stair turns by imagining a plum tart balanced on the landing, reserving one slice for the closing hour.
+
+words
+oath! = Four runaway plums | A tart on a tilt
+saying! = Corner before speed | Leave a slice for the landing
+tartbank = a modest tilt | the pastry's bank
+plumeye = the dark plum centre | a glistening purple spot
+slicemoon = a pastry crescent | a short curved slice
+doubletread = a double stride | the paired rise
+levelstop = a quiet landing | the level breath
+traylip = a raised rim | the modest edge
+wetshoe = a wet sole | the glossy tread
+duepiece = a slice spoken for | the factor's portion
+marketroar = a busy hum | the crowded music
+lastcast = a still evening cast | the quiet line
+coldercup = a stagnant cup | the lukewarm insult
+sometrim = a careful cuff | the folded linen
+paststrip = a dry edge | a little rim of crumbs
+upperend = the last rise | the final high turn
+balancepoint = a level moment | the lifted pause
+latchspace = a door's swing | the free arc
+
+any
+opinion @1 houses mixed 0 : A factor's due date descends the stairs rather faster than wages climb them.
+opinion @1 merchants mixed 0 : My price for a tart concerns the quantity of plum and let the gilding on the window pay for itself.
+opinion @1 newcomers for 1 : A new servant ought to hear about the awkward turn before attempting the stairs under observation.
+opinion @1 road for 1 : Walking on a surface someone has kept level can be a remarkable act of public generosity.
+opinion @1 church for 1 : A peaceful bench where no one needs serving gives me time to return thanks properly.
+opinion @1 dole for 1 : A warm portion can give a tired wolf much more than its weight on paper suggests.
+opinion @1 city for 1 : From a landing in this city one can hear both the very fine bells and the ordinary business that feeds them.
+opinion @1 festivals for 1 : I'd gladly carry a tray down to a festival as long as somebody saves a level spot for my slice.
+opinion @1 watch mixed 0 : A clear account delivered soberly beats an impressive race down a staircase.
+opinion @1 sump mixed 0 : Low doors can be as carefully attended as high ones. The rain just gives the low ones extra work.
+
+grown
+line @1 greet : Welcome to this level patch. | A greeting from a wolf briefly at rest.
+line @2 greet [pair.band=strangers] : A fresh arrival may claim the unoccupied side. | Come inside the arc of this door.
+line @3 greet [here.time=dawn] : Morning. The first rise still has a little novelty. | Daylight has inspected the trays before me.
+line @1 greet.return : Yes, hello. My imaginary tart is steady now. | There's one interval between my actual errands.
+line @2 greet.return [pair.band=friends|family] : A friend is always welcome on this landing. | Your arrival improves the prospect from the turn.
+line @3 greet.return [here.time=night] : An evening greeting from the last level patch. | At this hour I can take the single treads.
+line @1 again.open : Another lap of the same civil staircase. | Back before my imaginary plum has shifted.
+line @1 hail [pair.band=friends] : Come see the bend from this angle! | A free space for you on the level end!
+line @1 farewell : A level road for whatever you're carrying. | May the last stair treat your tired foot kindly.
+line @1 farewell.return : I'll steward the remains of the landing. | Step away before the next tray arrives.
+line @1 react.news : A measured account will come up quite comfortably. | Tell the part that survived the turn intact.
+line @1 react.news.new : That's a new slice on my plate. | I'd allotted no place to that item till now.
+line @1 react.news.known : I've had a portion just that shape. | It reached my landing on an earlier journey.
+line @1 react.news.doubt : That account leans heavily to one side. | I'd put it level before deciding how much it weighs.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I can stand by while you set that weight down. | Take the seat where no other errand need pass you.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Excellent. A plum landed exactly where it belonged. | Good news deserves the unbroken piece of pastry.
+line @1 ask.how : Has today given you anywhere level to pause? | How is your share of the day's climbing?
+line @1 answer.how : Upright with the filling still inside. | Moderately rested by my own generous reckoning.
+line @1 decline : I'd have to put two trays on a single hand for that. | What you're asking exceeds my remaining clear portion.
+line @1 accept_decline : Then your business stays upon its own plate. | A refusal needn't be carried through another turn.
+line @1 preclose : My imaginary tart can wait. The real tasks can't. | The next rise is beginning to look impatient.
+line @1 accept_preclose : Your own staircase has a claim on you. | Very well. I'll keep the passage free.
+line @1 thank : You saved me an entire extra climb. Much obliged. | I felt the benefit just where the tray changed hands.
+line @1 deflect_thanks : It was a very shallow rise to spare. | I'd already brought a little extra all that way.
+line @1 sympathise : Come out of the household traffic while you grieve. | Nobody needs the chair by my landing so much as you do.
+line @1 reassure : Reach the first level place before measuring the whole ascent. | I'll take a spare edge if it helps your breathing.
+line @1 ack : Yes. That settles level in my hand. | A well-proportioned slice of sense.
+line @1 give.advice : Arrange the landing before attempting the grand entrance. | Never judge a stair with both hands full.
+line @1 kin.open [pair.kin!=no] : Family can take the unreserved side of my tray. | A household turn I need no directions for.
+line @2 hail [here.time=night] : Stand here above the lamplit tread! | The last bright patch is wide enough for company!
+line @2 farewell.return [here.time=dawn] : Fresh light for the first turn of your walk. | Go while the morning has plenty of room.
+line @1 assess : The filling stayed within bounds. I'd accept the result. | That judgement will carry past the awkward corner.
+line @1 give.opinion : Time for the turn belongs in every estimate of a journey. | A pleasing entrance starts with an uneventful arrival.
+line @4 greet [here.weather=rain] : Welcome. The dry portion begins past that tread. | Come off the glazed paving a moment.
+line @2 again.open [pair.band=friends] : A second little helping of your company. | Welcome again to my entirely unofficial landing.
+line @2 thank [pair.band=friends] : You've earned the slice with the best plum in it. | That favour will travel very comfortably in my memory.
+line @2 answer.how [here.time=night] : Tired enough to let the tart carry me upstairs. | Ready for a last slice and the end of my errands.
+scene flyingtart
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I judge a turn by what a plum tart would do on a plate carried round it.
+b : Why plum in particular? | Are real tarts always available?
+a : A plum may shift while the pastry stays put. A very exacting test if you're fond of both. | Only in my imagination. Considerably easier on the household expenses.
+
+scene doublestair
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : Unladen, I take two stairs together. With a loaded tray I respect the claims of each individual tread.
+b : Doesn't the trick get you there quicker? | Why hurry when empty?
+a : The feet arrive quickly. The contents can take an independent route which most households discourage. | I enjoy it. It leaves time at the top to look composed about the whole performance.
+
+scene masterturn
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : My learner starts by holding an empty plate and one loose plum. It is a perfectly candid instructor.
+b : Does the plum fall? | Who retrieves it?
+a : On the first quick turn, quite often. We practise over a cloth so tuition remains affordable. | Usually the learner, having discovered that a small plum can make a considerable return journey.
+
+scene pieturn
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : The best slice has one plum almost at the point. You know at once whether your plate is level.
+b : Wouldn't it roll off? | Do you eat that bit first?
+a : Not in a well-set tart. The movement is slight and altogether sufficient for my calculation. | At home, yes. A serving plate deserves to reach its owner with all its surveying equipment attached.
+
+scene spousecorner
+when topic=family self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd save #self.spouse# a spot on the landing with room for two plates and two unoccupied hands.
+b : Why the emphasis on hands? | Who gets the outer seat?
+a : Serving is a great deal about getting one hand free. I'd like an evening entirely exempt from the rule. | Whichever of us wants a better look at the passing market traffic.
+
+scene debt
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A House factor expects payment when the new moon arrives. I put the amount aside before calculations about luxuries.
+b : Even before the tart? | Do you count the days?
+a : The saved copper does come out before the pastry. Imaginary slices bear no charge whatsoever. | Evenings, mostly. Wages have an end and a moon has a date, and I need the two to meet.
+
+scene highhouse
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : Here in the Heights a stair can make magnificent demands on the very person meant to appear effortless at its summit.
+b : Who gets to appear effortless? | Is a high house always like that?
+a : Anyone entering with a dish, apparently. The dish should look as though it met no obstacles whatever. | Only a house with stairs and an audience. The hills supply the first part quite freely.
+
+scene workplace
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I check each door's swing while I have an unoccupied hand.
+b : What's your test? | Would another hand help?
+a : Open it while empty. An inexpensive piece of research frequently overlooked by an eager learner. | When it's available. A sound working method ought also to function on an ordinary day with one servant.
+
+scene evenline
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : An evening float is the exact opposite of a service tray. I want it to move when I'm looking away.
+b : Why look away? | Does it usually oblige?
+a : To enjoy the rest of the water. The line is a reason for a halt as much as a request for fish. | Seldom when observed. My imaginary floating tart would no doubt be more cooperative.
+
+scene marketday
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I like the market when every purchase has found its own voice. There's a lovely traffic to an open row.
+b : Can you carry things there? | Does all that noise tire you?
+a : Quite well if I take my turns early. A straight path belongs only to someone travelling empty. | I can leave it when I like. Noise chosen in leisure feels different from an unexpected household crash.
+
+scene summerend
+when topic=weather self.likes=summer_evenings
+does tell.feeling / react.self / assess
+a : Summer light lingers on the top tread long after the low door has gone into shade.
+b : Would you sit there? | Which light do you prefer?
+a : Beside it, certainly. I prefer to let other people's journeys continue over the actual stairs. | The narrow bright line along the rim. It lends an ordinary ending a respectable finish.
+
+scene coldtea
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : Cold tea is what happens when a little refreshment has been made to wait like an unpaid invoice.
+b : Should cold tea be returned? | How do you take a cup gone cold?
+a : As a guest I'd decline a second cup. As the servant I'd prefer to notice before anybody needed to comment. | Drink it when necessary. An entirely justified grievance can still be rather a small one.
+
+scene rats
+when topic=animals self.dislikes=rats
+does warn / react.self / assess
+a : A plum left under a pantry shelf asks the wrong kind of audience to come in.
+b : Do rats really care for plums? | Who should look underneath?
+a : They needn't have sophisticated tastes. I'd sooner deny them the opportunity to improve them. | Whoever carried the plate and noticed it had become lighter. That's a short list in my case.
+
+scene roofprayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I spare the Bright One my estimates of the stair. A quiet thank-you at the end seems suitable.
+b : Do the figures never falter? | What do you give thanks for?
+a : Often. A prayer for patience goes down better than an elaborate excuse for my arithmetic. | A day in which the things I carry arrive intact and the shoulders doing the carrying still feel my own.
+
+scene training
+when topic=work self.master=yes
+does tell.plan / ask.detail / answer.detail
+a : I'd like a learner to see the room as the guest sees it, then again as the wolf who must remove everything.
+b : What's different on a second look? | Who has the better view?
+a : A graceful chair becomes a narrow passage, a polished jug a weight with a slippery handle. | Both are indispensable. A beautiful arrangement can be generous toward either pair of eyes.
+
+scene nightstairs
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : At night I slow on the turn even if there's nothing in my hands. An empty plate can be replaced more readily than an ankle.
+b : Would an extra lamp help? | Why not count the stairs?
+a : In a place where it lights the risers instead of casting my own shadow across them. | Because a foot arriving from the other direction hasn't read my calculations.
+
+scene rainstep
+when topic=weather here.weather=rain
+does warn / react.self / assess
+a : Wet stone will give my imaginary plum quite an ambitious notion of travel.
+b : Could a mat fix that? | Would you use the rail?
+a : A flat one that actually lies still, yes. A moving mat adds a second independent passenger. | With an empty hand. I put the load down to get that hand free if I must.
+
+scene oldrule
+when topic=lore
+does give.opinion / react.self / assess
+a : A rule of service worth teaching ought to hold with an ordinary dish on an ordinary evening.
+b : What about a state dinner? | Doesn't rank change service?
+a : More attention, more hands, the same opinion of gravity. A plum is no respecter of formal occasions. | It changes how many wolves can afford to be offended. It doesn't change how to reach a sound landing.
+
+scene plateprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'd price a tray by its loaded balance before asking who polished the rim.
+b : Could a cheap tray pass? | What does bad balance cost?
+a : Certainly. Give it a decent bread heel alongside a brimming cup to prove the point. | Two journeys, a damp floor and the sort of delayed apology that can occupy a whole morning.
+
+scene poorcredit
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : My easiest economies begin with the errand that can share another trip. Pairing rises saves less coin than time but both count.
+b : Could you carry two loads? | Where might the saved time go?
+a : I might take a message in my pocket. I wouldn't use a narrow stair to make a point about my arms. | Find out what the next week's payment really amounts to. An unexplained figure tends to grow in the dark.
+
+scene bossquiet
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# judge my imaginary tart's balance. I need an opinion from outside my own wrist.
+b : Would a friend be too kind? | What's the verdict worth?
+a : I trust a familiar eye to enjoy the joke and still notice a tilted plate. | More than an empty compliment when there might be a very real plum to recover.
+
+scene apronwork
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I fold one cuff back when serving the tart. Plum filling travels farther than a clerk could reasonably enter in a household account.
+b : Do you make the tart too? | Why just one cuff?
+a : My present concern is how it reaches the plate. Every household has its own arrangements before that moment. | One carries, one serves. Each hand has a department to supervise.
+
+scene returnnews
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : Here's an account brought from #world.news_from#. #world.news#. I carried the words without adding to the portion.
+b : Can you promise it's complete? | Would you repeat it upstairs?
+a : Complete as delivered to me. I'd require a better view before promising anything further. | With its origin. A household hearing the report deserves to see the whole label.
+
+scene courtgossip
+when topic=gossip
+does give.opinion / react.self / assess
+a : A small remark carried through four doorways is apt to gain the polish of important news.
+b : Should a servant keep silent? | Can the account be delivered unpolished?
+a : About private household matters, ordinarily. Genuine public news can readily have a source attached. | Pass on the necessary fact and the source, then keep the decorative dish at home.
+
+scene newstaff
+when topic=newcomer
+does give.opinion / react.self / assess
+a : A stranger in service ought to be shown the return route first. Most hosts demonstrate only the magnificent approach.
+b : Why the return route? | Is the front door grander?
+a : It's often the route a tired learner takes with an armful of empty dishes. A few clear directions earn their time. | Often. The return can be a good deal more inventive in its use of very little space.
+
+scene supperhour
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : My own supper tastes best on a plate that has no further appointment elsewhere.
+b : Does that change the taste? | Would you eat in the kitchen?
+a : It changes how long I give myself to notice the plums. I'd call that a real alteration. | With pleasure if it has a clear seat and no summons attached to my portion.
+
+scene payplan
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : My first clear evening after that factor's sum is settled will be spent at a genuinely level table.
+b : No grand celebration? | Why not the landing?
+a : A quiet tart divided without first subtracting anybody else's due seems celebration enough. | A landing encourages the idea that supper intends to go somewhere. I'd prefer it to stay put.
+
+scene measure
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : A city's rise is easier to understand after one journey with a full dish and a cup near the rim.
+b : Would an empty hand miss it? | What does the cup show?
+a : An empty walker can admire the roofline. I rather enjoy that version of the city too. | The exact place where a handsome paved turn slopes toward the drain. Tea has a fine eye for civil works.
+
+scene sorereach
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I change hands when an empty tray begins to feel heavier at one end. My wrist sometimes reports tiredness while my legs still consider the matter open.
+b : Would you carry less? | Does a different grip cure it?
+a : Yes. A full load poorly held is less useful than two ordinary journeys made safely. | Sometimes rest is the proper answer. No skill in the grip confers an entirely new wrist.
+
+scene latchdream
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : If tarts could complain, I suspect the sharpest objection would concern a door which opens toward the carrier.
+b : Wouldn't the carrier object first? | Could you blame the door?
+a : Possibly. I like to grant the filling an independent view in these discussions. | Only if the hinges changed their minds since morning. More honest to examine my approach.
+
+story fallenplum [topic=work|memories]
+  : I practised my grand entrance with one plum on an empty plate. It sat still through the bend and rolled off when I stopped to admire the result.
+  : It went straight back downstairs. I made a considerably less grand exit.
+  b : Did you recover the plum?
+  : Unhurt. Once washed, it earned a retirement more peaceful than its brief career in service.
+
+story firstcast [topic=pastimes|memories]
+  : I took a little spare line out one evening and parked the float on a wall and surveyed the water. It remained admirably steady.
+  : I'd already spent a good while congratulating myself on the calmness of the surface.
+  b : Did the fish oblige?
+  : I gave the float a chance to meet a real fish before making further claims about the evening.
+
+story billing [topic=prices|memories]
+  : I tried dividing a tart on paper so every share was the same size. My sums came out precisely.
+  : The real thing had one plum twice as generous as any of the others. Its prospective owner found my arithmetic wanting.
+  b : Which slice settled the question?
+  : Turned the dish round and let somebody else choose first. A different and cheaper department of mathematics.
+
+story twostep [topic=memories|work]
+  : I swept up a fine stair two rises at once and arrived at the top in excellent time. Admired the clear landing, then looked over my shoulder.
+  : I'd carefully swept only the even steps.
+  b : How was the descent?
+  : Slow, comprehensive, and admirably free from any further temptation to demonstrate my efficiency.
+
+story cupsign [topic=food|memories]
+  : A little cold tea in a white cup showed me a clear purple streak on the rim. I imagined I'd solved the mystery of a missing plum.
+  : The stain was on my own thumb. I'd touched the cup while peering into it.
+  b : Did your plum ever appear?
+  : It was still on the plate. I was investigating an entirely self-supporting case.
+
+rule @corner
+when concept=bark
+does aside
+cooldown 8h
+say Level through the turn. Let the plum keep its dignity. | One extra breath for the lip of the tray.
+
+rule @serve
+when concept=bark self.job=servant working=yes
+does aside
+cooldown 8h
+say Check the swing before bringing the plate forward. | Two stairs when empty, one for a loaded dish.
+
+rule @teaching
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Give that plum enough space to state its objection. | A clear view from the receiver's side first.
+
+rule @supper
+when concept=bark self.likes=plum_tart
+does aside
+cooldown 8h
+say A purple eye just shy of the point. Excellent slice. | Set the best filling on a properly level plate.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say The tread's edge deserves a little lamplight. | Slower round the far turn this late.
+
+rule @fish
+when concept=bark self.likes=evening_line
+does aside
+cooldown 8h
+say An evening float has quite different duties from a serving dish. | Rest the line where there's room to watch the water.
+
+dlg @1 resident.hub : I've brought my imaginary tart to a level pause. You'll find me available here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's still a seat beside our previous landing.
+dlg @3 resident.hub [here.time=night] : The late turn is best taken gently. The approaching turn affords me a short interval.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand beyond the tray's swinging room. I'll be quite civil from here.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. A level dish, an unblocked door and no impression of excessive haste.
+dlg @2 resident.job : I enjoy duties where small matters of balance visibly contribute to somebody's comfort.
+dlg @1 resident.bye : May the last turn take nothing from what you're carrying.
+dlg @1 resident.gossip [here.gossip=yes] : This household heard that #topic.subject# #topic.claim#. I set it before you as a received remark.
+dlg @2 resident.gossip [here.gossip=no] : Household confidence isn't a dish for me to set out on an empty table.
+dlg @1 resident.news [world.news] : From #world.news_from# I received this account. #world.news#. I'll leave the words in their original portion.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can demonstrate why a good servant first looks at where a journey finishes.
+dlg @2 master.learn [here.teaches=no] : I already have a learner beside me. A brief question about a level arrival still has room.
+dlg @1 master.work : You'll carry, arrange and observe. You'll also receive what somebody else carries so both sides of a service become clear.
+dlg @1 master.wages : Training itself doesn't pay wages. It speeds your learning, and anything earned by your completed work stays yours.
+dlg @1 master.takes [here.take_on=yes] : I've room to show one learner the turns. Make the request and we'll give it a proper beginning.
+dlg @2 master.takes [here.take_on=no] : I can't put you beside me as a learner under the present conditions. #here.take_on_why#.
+dlg @1 master.taken : You're taken on. We'll begin with a bare plate and a plum that hasn't learnt discretion.
+dlg @1 master.refused : I can't take that arrangement through to the landing today. #topic.why#.
+dlg @1 master.bye : Try noticing which way the next service door swings.
+graft resident.hub
+choice Why do you picture a plum tart on every landing? -> tartangle
+node tartangle
+say A plate can look quite level until the first turn. A tart has a dark plum at the centre. Picture that moving and you see exactly where to ease your pace.
+free
+choice What happens when the filling moves in your imagination? -> hiddenplum
+choice I can picture the plate now. -> hub
+node hiddenplum
+say I slow before the real thing shifts. One of the few domestic mishaps it's possible to enjoy in full without troubling the wolf who washes the linen.
+choice I hope the linen stays clean. -> hub
+choice I'll take my turn carefully. -> bye
+
+graft master.learn
+choice Show me how a single plum can teach service. -> plumtrial
+node plumtrial
+say Centre a plum on a dish. Carry it to a level table and stop. Watch especially what the plum does in the instant you decide the job is finished.
+free
+choice Why watch after I stop? -> plumfinish
+choice I'd like to hear about the work. -> learn
+node plumfinish
+say Your feet have stopped. The dish may have stopped. A plum that still has a little journey in mind teaches you to finish all three movements together.
+choice Let's discuss the learner's place. -> learn
+choice I'll try the level table. -> bye

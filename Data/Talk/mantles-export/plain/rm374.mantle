@@ -1,0 +1,262 @@
+# rm374, the paper shoal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm374
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_delphine_dripham
+written_by codex
+title the paper shoal
+fits stage=adult|old
+prefers job=scholar warmth=warm
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk folds_unsaid_oaths_into_little_paper_fish
+likes barley_soup cards tidy_house misty_dawns
+dislikes cold_tea gulls
+fears loose_words_in_a_permanent_record
+hopes a_window_with_room_for_every_paper_fish
+topics work +0.6 pastimes +0.3 home +0.3 gossip -0.3
+styles comfort=warm gossip=plain refuse=direct tease=small
+marks oath saying
+persona #self.first# folds spare paper into little fish whenever an oath nearly slips out and sometimes gives away an entire afternoon's temper as a cheerful bookmark.
+
+words
+oath! = A shoal in my sleeve | Black fins and blue ink
+saying! = Fold the sharp word inward | A hot word makes poor copy
+fishfold = a folded fish | my flat paper fish
+tail = the little forked tail | a split paper end
+fin = a turned fin | the raised corner
+back = a plain back | the clean fold
+oatline = a barley grain | a swollen grain
+bowl = a plain soup bowl | the deep little bowl
+cardpack = the tied pack | my playing cards
+scrap = a margin scrap | a spare paper strip
+string = a short grey string | the binding thread
+nib = the worn pen point | my broad point
+weightchip = a flat chip | a little stone
+boil = a soft simmer | the small rolling boil
+
+any
+opinion @1 houses against 1 : By the time a little request reaches a House, no amount of elegant folding is going to make it a large one.
+opinion @1 church for 1 : A kind answer fits on as little paper as a sharp one. Good practice for anybody near a chapel.
+opinion @1 sump for 1 : A good clean page can come from a wet street. I dislike the assumption that ink knows an address.
+opinion @1 merchants against 1 : Show me the sum on the wrapping while my purse is still tied up.
+opinion @1 dole for 2 : I'd give the last name just as much soup as the first and let the writing be as small as needed.
+opinion @1 watch against 1 : On the low streets official boots knocking rarely mean a visit to admire the penmanship.
+
+grown
+line @1 greet : Hello. A clean strip here for a new exchange. | Welcome. Mind that little school of paper on the sill.
+line @2 greet [pair.band=strangers] : First time you've caught me between folds. | I haven't seen your face above this particular bit of paper before.
+line @3 greet [here.time=dawn] : Morning. The first fish of the day still lies flat. | Good light and a tolerably civil temper to you.
+line @1 greet.return : Yes, hello back. My paws were finishing a tail. | I heard you quite well through the rustling.
+line @2 greet.return [pair.band=friends|family] : Your voice can usually keep my shoal from growing. | A friend gets the best of the uncreased paper.
+line @3 greet.return [here.time=night] : Hello late. A whisper and a rustle will carry. | The fins are all folded away for night.
+line @1 again.open : Another meeting before the fresh folding has settled. | Here again as I start the tail fold.
+line @1 hail [pair.band=friends] : Look, I've made one with a particularly grand tail. | Come see how peaceful a bad temper can look.
+line @1 farewell : May your scraps turn out more agreeable than the words behind them. | Go with something worth keeping in your pocket.
+line @1 farewell.return : I'll keep my temper occupied here. Goodbye. | The little fleet sends you its respects.
+line @1 react.news : Tell the news in words you'd keep on paper. | I'll leave the strip unfolded till I've heard you.
+line @1 react.news.new : I haven't tucked a word of that away before. | An entirely new fish in my bit of water.
+line @1 react.news.known : Yes. I'd already got the whole little shape of that. | That report came to my desk earlier.
+line @1 react.news.doubt : A corner's been folded over something in that account. | I'd like to read the part somebody's turned inside.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : We're in no hurry to turn that hurt into a tidy story. | I'll sit and hear it. There's quite enough comfort in staying sometimes.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : An occasion for a particularly cheerful bookmark. | I'd give that news the best position in a clean window.
+line @1 ask.how : Had cause for many sharp words today? | Is the world treating you any more gently than a stiff page?
+line @1 answer.how : Not entirely serene. The evidence is on the windowsill. | Warm enough in the heart and a bit hot in the ears.
+line @1 decline : I'd be tempted to say something sharp and spoil the whole business. | I won't sign an answer that properly belongs elsewhere.
+line @1 accept_decline : You've left the answer quite plain. I'll take it. | That refusal can remain a plain sheet.
+line @1 preclose : My ink needs me back while it's still reasonably fluid. | I've more fins than useful words at present. Time for work.
+line @1 accept_preclose : Off you go while we both have an agreeable word left. | Fine. The remainder of your day is yours.
+line @1 thank : You saved me from making an extremely irritable paper trout. Thanks. | I appreciate the clean edge you gave that answer.
+line @1 deflect_thanks : One fold and a little patience. Hardly a costly gift. | It used a scrap I would have swept away.
+line @1 sympathise : I can hear the hurt underneath the sharp part. | You can set the creased bit down by me.
+line @1 reassure : One bad word needn't take up an entire page. | Give it one fold's worth of time before you answer.
+line @1 ack : That's the shape I meant exactly. | Yes. The little points meet now.
+line @1 give.advice : Fold the word away until it feels less hot. | Hold the corner still before making a crease.
+scene fishoath
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I turn one scrap into a fish each time there's a sharp word I shouldn't use.
+b : Always a fish? | Does that improve the temper?
+a : A fish can't repeat what I nearly said. A clever choice, I think. | It keeps my paws busy till my mouth has another idea.
+
+scene scrapwork
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I use the trimming strip for a paper tail before sweeping the desk clear.
+b : No use for the strip as a pen test? | Why save a tail?
+a : Some strips take a test stroke first. Gives the fish a pleasing black stripe. | Because I can give a reading wolf a bookmark for the price of the day's sweepings.
+
+scene quietabbey
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A silent room gives an ordinary oath a dreadful distance to travel.
+b : Is that why you're folding paper? | What if someone drops a whole pot of ink?
+a : In a room like this I make the crease very softly too. | First a cloth. Then quite possibly a paper whale during the cleanup.
+
+scene thinpage
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : A stiff pen can catch paper halfway through a perfectly inoffensive word.
+b : How do you free a caught point? | Do you blame the word?
+a : Lift it, ease the fibre back, check that the ink won't spread. Temper comes later. | Not unless it's already a troublesome word and I need an excuse for a little quiet.
+
+scene barleymeal
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : Barley grains have a pleasing habit of staying where the spoon puts them.
+b : Thicker than a thin broth then? | Is that why you eat them?
+a : I like to feel the little shapes against my tongue. A clear bowl's for a different appetite. | Partly for that. Also for a wholly unremarkable ambition to keep warm.
+
+scene teatime
+when topic=food self.dislikes=cold_tea
+does tell.complaint / ask.detail / answer.detail
+a : Cold tea beside a finished copy means my attention has been badly divided. | A tepid mug is usually evidence of an overlong sentence.
+b : Which half needed more attention? | Reheat the tea then.
+a : The tea. The writing got all it asked for and possibly more. | Gladly. I'd also cut three unnecessary words out while it's warming.
+
+scene cardmark
+when topic=pastimes self.likes=cards
+does tell.self / ask.detail / answer.detail
+a : A paper fish does a fine job of pointing to the dealer. | Set the fish near the pack and I needn't try to recollect the next dealer.
+b : What if we forget to move it? | Why not use a plain mark?
+a : Then we get to argue whether the dealer or the fish was asleep. I'd blame the fish. | Because I've a number of fish and absolutely no shortage of plain paper marks.
+
+scene gullsnatch
+when topic=animals self.dislikes=gulls
+does tell.complaint / ask.detail / answer.detail
+a : A gull once made an appraising noise in the direction of my paper fish. | I dislike a gull inspecting my windowsill as if it were a lunch counter.
+b : Could it tell the difference? | Ever lost one to a beak?
+a : Not by the expression on its face. I removed my folding before the final verdict. | Happily no. One would scarcely enjoy explaining a mouthful of badly chosen words to a bird.
+
+scene tidy_house
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A tidy windowsill admits precisely as many paper fish as its owner chooses. | I don't count a neat little shoal as disorder.
+b : How many is too many? | What if they fall about?
+a : When the jar of water has to sit on the floor I've folded quite enough for one week. | I press the tails under a flat chip in weather. No use multiplying the mess to prove a point.
+
+scene mornmist
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : On a misty morning my sill seems to face a sea of entirely appropriate size.
+b : For the paper fish? | Any real water below?
+a : Yes. Those little backs above the grey look remarkably plausible for a moment. | I'd rather keep the sea imaginary. My little school isn't made for a soaking.
+
+scene spousegift
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd choose a particularly daft-looking paper fish for #self.spouse#. | I've a bookmark I'd like #self.spouse# to have solely for its ridiculous tail.
+b : Wouldn't a smart one do? | You don't keep the best?
+a : Perfectly. There's more warmth in sharing the one that gives me a smile. | Depends what best means. For a weary reader I favour a bit of amusement.
+
+scene homehope
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump my window admits more weather than I generally need for writing. | I fancy a dry window ledge and another little foot of space beyond it.
+b : Moving up the hill then? | What's the foot of space for?
+a : I'd take a sound roof wherever it stood. A higher view would be no hardship either. | Room for a serious book and an absurd little row of fish. I see no harm in wanting both.
+
+scene wordsfaith
+when topic=faith
+does give.opinion / react.self / assess
+a : A sharp word caught before it leaves my mouth feels rather like a practical prayer. | I don't imagine a chapel requires my temper to vanish entirely.
+b : What does it require? | All those fish answered prayers?
+a : I'd settle for remembering the other wolf has a tender ear. The Bright One may ask more of me yet. | Some are merely evidence that I ought to get some supper before the next conversation.
+
+scene tidalgossip
+when topic=gossip
+does give.opinion / react.self / assess
+a : Ink makes a foolish rumour harder to scrub away than it deserves. | I'd rather fold a scrap than pass on an accusation with a pretty turn of phrase.
+b : What's a pretty phrase worth? | You never repeat a rumour?
+a : As decoration, quite a bit. As evidence, nothing at all. | I'd identify the hearing of it as such. Quite often I'd rather just change the subject.
+
+scene roughweeks
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When paper runs dear I learn to make a very small fish. | A narrow strip is a useful cure for an extravagant outburst.
+b : Still looks like a fish? | What else would you save?
+a : Usually. When the strip's very thin we agree to call it an eel. | Ink. A great oath needn't be written down for me to know it was there.
+
+scene marketprice
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Some scraps sell as good stationery from a distance of several paces. | I'd inspect the whole width offered for a page.
+b : What if it's just for a note? | Would you buy the trimming?
+a : A note needs room too. I'd call it a note-sized price and pay with pleasure. | At a trimming price. My fish wouldn't object to a modest origin.
+
+scene newdesk
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a dry writing place where an ordinary visitor could sit without surrendering a knee to the desk leg. | I'd take a larger room for the sake of another chair.
+b : You'd have a long queue for that seat. | And where would the fish go?
+a : A queue of one would quite fill my ambitions on a working day. | Up on a dry sill as usual. The chair would be rather wasted on them.
+
+scene dawnstill
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : I like to make one unhurried fold before a new day makes suggestions for sharper ones. | The first fish of a quiet morning needn't represent a word at all.
+b : What would it represent? | Why make it then?
+a : The possibility of leaving a little space where a word might have gone. | Because I like making them. A temper needn't have exclusive rights to a pleasant occupation.
+
+story fishledger [topic=work|memories self.job=scholar]
+  : I used a long paper tail to mark an unfinished copy and stopped work quite satisfied with my clever arrangement.
+  : Opened the book next day and found the tail in one place and the fish just inside my sleeve.
+  b : Which one remembered your place?
+  : The tail. I entered the rest of the fish in my private account as a remarkably unhelpful assistant.
+
+story barleyfleet [topic=food|memories]
+  : Once I had three fish on the sill and steam rising from barley broth below them. A remarkable little mist rose through the fleet.
+  : I let the arrangement stay till I'd taken the first spoonful.
+  b : Did the paper get wet?
+  : Enough for a single fin to droop. It looked wonderfully dignified till it began to lean.
+
+story tightword [topic=memories|pastimes]
+  : One troublesome afternoon produced a fish so tightly folded I couldn't show anybody how I'd made it. I kept it as a warning.
+  : When I finally opened it I found a little shopping list inside.
+  b : Was that the cause of the temper?
+  : No. I'd been giving a very grand expression of displeasure to a reminder about butter.
+
+rule @fin
+when concept=bark
+does aside
+cooldown 8h
+say A square little tail. That was a fairly small annoyance. | Watch the crease. There goes the sharp word safely inward.
+
+rule @work
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say Don't crowd the ink. A clean edge can still be saved. | One more copy line before I allow myself a paper fish.
+
+rule @sill
+when concept=bark
+does aside
+cooldown 8h
+say Those are temper fish. Quite harmless once folded. | A little space in that dry corner, along the ledge, please.
+
+rule @meal
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say Steam off the page and over the bowl, where it belongs. | Leave a spoonful of the good grains for last.
+
+dlg @1 resident.hub : You find me in possession of several unsaid words and enough good humour for a conversation.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I might let you choose the most preposterous fin today.
+dlg @3 resident.hub [here.time=night] : The ink's put away. I can fold a credible fish without seeing it.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'd let that particular remark stay folded while we see what you're here for.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. I keep my unprofessional observations in the form of small folded fish.
+dlg @2 resident.job : I do the necessary thing and try not to lose anybody's good temper on the way.
+dlg @1 resident.bye : May you find a kind word where a sharp one almost came out.
+graft resident.hub
+choice Can I use one of those fish as a bookmark? -> markfish
+node markfish
+say Pick a thin tail. Tuck it in at a page corner and let the head look out. It'll seem to have read ahead and discovered something curious.
+free
+choice How do I keep the nose from bending? -> fishnose
+choice I'll find it a good page. -> hub
+node fishnose
+say Keep it below the cover's edge. If the nose droops a little don't worry. It may simply disapprove of the passage you left it to look at.
+choice I'll let it judge the writing. -> hub
+choice Thanks for the bookmark. -> bye

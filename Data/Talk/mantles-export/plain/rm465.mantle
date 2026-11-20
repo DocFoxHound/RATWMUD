@@ -1,0 +1,262 @@
+# rm465, the nest saucer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm465
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_sigrun_mudworth
+written_by codex
+title the nest saucer
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk puts_small_tufts_of_clean_wool_on_a_saucer_for_roof_birds
+likes plum_tart roof_birds sharp_knife first_snow
+dislikes deep_mud gulls
+fears mud_in_a_clean_brush a_nest_torn_down_in_rain
+hopes a_sparrow_at_the_saucer a_warm_plum_slice_to_share
+topics animals +0.5 work +0.3 weather +0.3 home +0.3
+styles comfort=practical gossip=gentle refuse=plain tease=none
+marks oath saying
+persona #self.first# leaves small tufts of clean wool on a saucer for roof birds and speaks softly enough to let a shy visitor come within reach of the window.
+
+words
+oath! = Mud on the clean cape | Stone in the last plum
+saying! = Give the small wings first choice | A soft lining earns its place
+nestsaucer = my nest saucer | a plain chipped saucer
+shorttuft = a pinch of loose wool | a soft wisp
+brushbed = the soft middle of my brush | the clean brush face
+capeedge = the smooth cloth hem | an edge of cape cloth
+trimplum = a dark curl of plum skin | a thin plum slice
+seedcup = a brown plum stone | a clean hard kernel
+brownspar = a little quick roof bird | a roof sparrow
+snowrim = the thin white rim | a white border on the tile
+mudrail = dry wood along my windowsill | a strip beyond the spray
+fairknife = my small keen blade | a clean bright edge
+
+any
+opinion @1 dole for 3 : A soft crust passed along in a clean cloth can make more difference than a fine new roof to a wolf who's hungry now.
+opinion @1 church for 1 : I appreciate any door where a quiet wolf can manage to ask for supper without having to compete with the loudest voice.
+opinion @1 houses against 2 : A House roof is sound for the wolves it covers. That's little comfort to the door below where the water comes down in sheets.
+opinion @1 strangers for 2 : A stranger sometimes stands very still in a doorway without wanting to say why. I have a clean seat and no need for a grand explanation.
+opinion @1 sump for 1 : There are warm little corners under these Sump roofs. You have to look past the black on the slates to notice them.
+opinion @1 merchants against 2 : The price of fruit has made a new luxury of what used to be one good ordinary tart. I'd rather pay for plums than for splendid claims.
+
+grown
+line @1 greet : Come into the quieter part by the window.
+line @2 greet [pair.band=strangers] : There's a clean corner here if you need a halt.
+line @3 greet [here.time=dawn] : I heard the first little wing before your step. Welcome.
+line @4 greet [here.time=dusk|night] : Stand near the light that still shows on the saucer.
+line @5 greet [self.working=yes] : I'll lay this brush down. Your word can reach me now.
+line @1 kin.open [pair.kin!=no] : A place close to my own wing for you.
+line @1 again.open : You've been away just long enough for another little visitor.
+line @1 greet.return : You spoke above that soft brush of wings.
+line @2 greet.return [pair.band=friends|family] : A friendly voice fits nicely beside my window.
+line @3 greet.return [self.working=yes] : Thank you. I was just folding a corner out of the wet.
+line @4 greet.return [here.time=dusk|night] : A small clear greeting will go round the whole room now.
+line @1 farewell : May the wet miss your collar on the way.
+line @1 farewell.return : I'll put the saucer away after you go.
+line @1 react.news : Lay that account before me with its corners unfolded.
+line @1 react.news.new : That's a fresh sight from this particular sill.
+line @1 react.news.known : I'd seen a bit of the same thing earlier.
+line @1 react.news.doubt : Was there a clear view from either side?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A little warmth round the shoulders may help before anybody starts to speak.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright small thing to set against a long grey afternoon.
+line @1 answer.how : Glad of the few minutes the street has left me quiet.
+line @1 ask.how : Have you had a little time when nobody needed you to hurry?
+line @1 sympathise : It is tiring being the strong quiet one while the rest are making noise.
+line @1 reassure : The room and I can both keep still for a while.
+line @1 decline : I'd be promising two pairs of paws on a morning when I've only got these.
+line @1 accept_decline : I'll let you choose when you come near the window.
+line @1 thank : You've given a small shy thing room to arrive.
+line @1 deflect_thanks : A soft turn of the paw was all it took.
+line @1 preclose : I've let one little job go just beyond my line of sight.
+line @1 accept_preclose : Take the dry strip out past the sill.
+line @1 ack : Soft landing.
+scene wool
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : Only little pinches of wool go on my nest saucer.
+b : Why little ones? | Do all the birds come?
+a : I don't want long bits wound round a leg. A tuft light enough to carry off whole is all I leave. | Sometimes no bird comes. Then I put the wool back dry and the saucer hasn't minded.
+
+scene cape
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I fold the smooth part of a clean cape over the back of a chair.
+b : Why that way round? | Does the fold make a seat welcoming?
+a : So the next neck rests against a clean face without a ridge. A wolf can be tired well before reaching this doorway. | It lets the caller see the cloth is fresh. After that I'll leave the welcome to a quiet word.
+
+scene plum
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : I like the thin dark line where a slice of plum has coloured the pale pastry.
+b : Do you save that side? | Does it taste different there?
+a : I eat it first. An important pleasure shouldn't always have to wait till the last mouthful. | A little sharper than the bit the juice didn't reach. Then the plain crust gives the tongue a rest.
+
+scene sharpedge
+when topic=pastimes self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : A clean sharp edge takes the plum skin off without making a puddle under the fruit.
+b : Do you peel the whole plum? | Is the skin worth keeping?
+a : A strip or two. I like a little red left beside the flesh on a pale plate. | Warmed in a little water, yes. It leaves a lovely colour behind.
+
+scene snowwhite
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : First snow makes the quick bird feet stand out so distinctly.
+b : Which bird left those tracks? | Is it worth keeping the marks?
+a : Not for certain. I can tell where one landed, and see where the next turned aside. | I can remember the shape. I won't cover the step just to hold onto an earlier sight.
+
+scene mud
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : I put a brush for boots on the outer side of the sill when the street's deep in mud.
+b : Doesn't it bring dirt inside? | Why not let the boots dry first?
+a : Outside brush, inside brush. I'd rather keep my two trades from getting too well acquainted. | A wolf wanting a moment under cover shouldn't have to wait out a whole afternoon for the mud to harden.
+
+scene gulls
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull on a roof can make every little sparrow appear to have gone out of the world.
+b : Do they actually go far? | Do you chase the gull?
+a : Usually just down under the roof edge. I like leaving the saucer where the small feet can reach from the shelter. | I take in whatever the big bird wants to snatch. There's a great deal less commotion once it goes to look elsewhere.
+
+scene sumpedge
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : The view from a Sump sill runs close along the eaves before it takes in any grand building.
+b : Is that enough to look at? | Could you get a wider view?
+a : A bit of roof that changes with every wing is more than enough for a quiet set of eyes. | Certainly. I'd miss a small visitor if I went very far and I don't feel pressed for a grander horizon.
+
+scene rainstop
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I watch the dark patches below the roof line when a shower begins to ease.
+b : How can you tell it's easing? | Is the saucer getting wet?
+a : Little dry wedges start opening up where the tiles stick over. At first the rain has been hitting every edge. | I keep it under the overhang, and take it inside if the wind has a different plan.
+
+scene workear
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : A pair of ears under a fresh cape may want more quiet than the room expects.
+b : Would you ask what happened? | How do you know whether to speak?
+a : I'd see the collar was comfortable. Anything worth sharing can find its own way past that small opening. | I offer a small word first. It's easy to wave a small word past without an answer.
+
+scene friendlace
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : For #self.friend# I'd keep the brightest spot by the window clear.
+b : Even on a busy morning? | What if the view's mostly rain?
+a : I'd do my best. Company should be a choice with enough space to settle into. | Then the glass makes a very agreeable moving picture and we each get free admission.
+
+scene richprice
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : A few small fruit pieces can give a great many tastes in a thin tart.
+b : Would you buy the broken ones? | Do you add anything else?
+a : If the price recognises the broken part. I'd rather a fair small price than a generous description. | A little sugar if I've got that far in the shopping. A little warmth does much of the work.
+
+scene quietcustom
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A stranger may ask which corner of a little shop is for a caller to sit down in.
+b : Would you point? | Don't all shops make it plain?
+a : I'd put a clean hand on the seat and leave the caller room to come forward. Shyer wolves appreciate rather little ceremony. | Not to the wolf seeing the door just once. I like to stand at the front and look in with fresh eyes sometimes.
+
+scene letterwant
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I favour letters that carry a small piece of another place in its fold.
+b : What would you want inside? | Wouldn't words be enough?
+a : A little pressed leaf or the colour of a fruit in a few careful words. Nothing that could go bad halfway along the road. | Yes, if they smelt a little of the place they came from. I don't mean any particular letter, just the pleasure of it.
+
+scene faithvisit
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I would rather sit in a quiet chapel while a wolf has a rest than fill the quiet with busy words.
+b : Wouldn't you have to say why you're there? | What if the other wolf wants to talk?
+a : To be company. There's only so many ways to say that before it begins to sound like the visitor's own worry. | Then I can hear perfectly well. A quiet room makes the asking easier.
+
+scene clothblow
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I shake the wool saucer out before dark.
+b : Why put it away? | Do you keep the little bits that come off?
+a : Night air makes the wool wet. The birds can have it back in a more useful state in the morning. | Clean soft bits, yes. A wet tangle makes an uncomfortable offering to any bird that wants to keep dry.
+
+scene counterlook
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : When a caller looks into a bright mirror there isn't any reason for me to be watching the same face.
+b : Are you never curious? | Where do your eyes settle?
+a : Sometimes. But an idle fancy of mine deserves a very short moment compared with somebody else's privacy. | The roof beyond the reflected window or whether there's a free clean cape. Both useful things to know.
+
+scene tiredfloor
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I prefer a low work stool when I'm putting the cloths in order.
+b : Does sitting save much strength? | Would you stand for a caller?
+a : Enough that I'll have something left for a little walk afterwards. A tired wolf can do a neat job sitting down. | Yes. I haven't tied myself to the stool by admitting to a pair of tired legs.
+
+story roofgift [topic=animals self.likes=roof_birds]
+  : A small sparrow once carried a tuft from my saucer in a full circle to my saucer.
+  : It put the tuft down, turned it about several times and took the whole soft thing away again.
+  b : Had it chosen the wrong piece at first?
+  : It had chosen the wrong end to carry. A small sensible change of mind brought the nesting place nearer.
+
+story tartpaper [topic=food self.likes=plum_tart]
+  : I folded my wedge of plum tart into a white cloth and turned it over to keep the pastry from sliding.
+  : At home the cloth had the outline of three thin plum slices printed on its inside.
+  b : Did you try to keep the picture?
+  : I admired it long enough to eat the tart warm, then put the cloth to soak. A good lunch may go back to being a clean square afterwards.
+
+story rainless [topic=weather]
+  : Once the rain eased, I set the saucer out and went to fetch some fresh wool.
+  : A single large drop stored beneath a loose tile edge hit the centre like a paw in a washbasin.
+  b : Did the wool get wet?
+  : It was still safe in my hand. I turned the saucer over first and gave the roof time to finish its delayed opinion about the weather.
+
+rule @cape
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Soft clean edge to the caller's neck, please. | Let the cape settle before the collar turns.
+
+rule @wool
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say A little tuft only. | One quiet moment at the roof edge.
+
+rule @snow
+when concept=bark self.likes=first_snow
+does aside
+cooldown 8h
+say Give those tiny prints a minute before sweeping. | There's a whole pair beyond the white patch.
+
+rule @slip
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Boot brush outside the clean sill. | Turn the damp side of that cloth downwards.
+
+dlg @1 resident.hub : There is a small space to sit in comfortably. I'd hear what brings you in.
+dlg @2 resident.hub [topic.meeting=known] : Your place by the window is clear, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I can bring a cloth over without having to stand so very close.
+dlg @4 resident.hub [here.time=night] : The saucer's inside. We can visit while the sill dries.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I see to the clean cloths and the little things a visitor feels before noticing.
+dlg @2 resident.job : I work best with a little space to put things in a comfortable order.
+dlg @1 resident.news [world.news] : This reached the window quite clearly. #world.news#.
+dlg @1 resident.bye : May the small bright things in the street be within your sight.
+graft @nestsoft resident.hub
+choice Are those bits of wool really meant for birds? -> nestsoft
+node nestsoft
+say Yes. Short pieces, only just enough to make a soft lining. If they get wet I change them. Each little option should suit a small beak.
+choice Do you ever see one inside a nest? -> nestsoft_more
+choice Leave the wool on the saucer. -> hub
+node nestsoft_more
+say Not clearly, and I wouldn't trouble the nest to find out. A bird going home with a little softness in its beak is a good enough sight for me.
+choice Leave the wool on the saucer. -> hub
+choice Step gently past the window. -> bye

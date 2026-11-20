@@ -1,0 +1,385 @@
+# rm549, the letter's closing bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm549
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_solveig_tarwell
+written_by codex
+title the letter's closing bell
+fits stage=adult|old
+prefers job=priest
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk counts_chapel_strokes_against_the_fold_of_a_letter
+likes fried_fish dancing market_bustle thunder
+dislikes gulls waiting
+fears a_private_message_losing_its_way
+hopes a_proper_delivery_and_a_quiet_walk_home
+topics faith +0.6 work +0.6 weather +0.4 pastimes +0.3
+styles comfort=measured gossip=discreet refuse=plain tease=soft
+marks oath saying
+persona #self.first# counts chapel strokes against a folded letter, stopping before the seal creases.
+
+words
+oath! = Jar my little clapper | Bend my letter board
+saying! = A pause has musical duties too | A sound address saves an anxious mile
+ring = a chapel stroke | a measured chime
+fold = a doubled edge | a deep crease
+wax = a hard bead of wax | a clean impression
+post = a folded message | a sealed leaf
+grub = a crisp fish portion | a fish heel
+dance = a close turn | a simple measure
+wind = a draught off the Sound | a high cool breeze
+gull = a brash white beak | a ragged white wing
+rain = silver drops | a veil of water
+rest = the peace after a chime | a still interval
+bustle = a pleasant market stir | the business of many small voices
+ink = fine dark ink | a brown fluent hand
+seal = a small impression | a private device
+board = a slim writing board | a smooth slip of wood
+count = a measured interval | an exact span
+
+any
+opinion @1 church for 2 : A service should leave one opening where a private worry can be brought without introduction.
+opinion @1 merchants for 1 : I admire a market seller who can hold a price steady amid such a chorus.
+opinion @1 houses mixed 1 : The grandest address still requires somebody at home to open a door.
+opinion @1 dole for 2 : A loaf given at the proper hour is finer than a promise of three loaves tomorrow.
+opinion @1 festivals for 1 : At a dance the quietest wolf can answer with a turn.
+opinion @1 strangers for 1 : Unfamiliar hands may still carry a letter faithfully.
+opinion @1 watch mixed 1 : A record that distinguishes a report from a judgement has done part of its duty.
+opinion @1 road mixed 1 : A road is forgiving about delays. The message in one's pocket sometimes is less so.
+
+grown
+line @1 greet : Come within the space between those sounds. | Welcome. The bell has finished its say.
+line @1 greet.return : Your greeting reaches me quite distinctly.
+line @1 again.open : Still the same fold in my letter since we last spoke.
+line @1 farewell : May your message reach a door that opens.
+line @1 farewell.return : Your farewell will travel with my quiet wishes.
+line @1 react.news : I'll give the account an uninterrupted hearing.
+line @1 react.news.new : I hadn't counted that among today's reports.
+line @1 react.news.known : I recognise that particular sequence of events.
+line @1 react.news.doubt : I hear a missing interval in the account.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : May some small kindness reach the heart of that sorrow.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : A happy announcement. Let the quiet enjoy it too.
+line @1 ask.how : Has the day permitted you an easy interval?
+line @1 answer.how : A little subdued. My counting remains quite accurate.
+line @1 sympathise : Sit near me without explaining the whole silence.
+line @1 reassure : Give the troubled thought a moment to find its address.
+line @1 refuse : I'm already carrying one obligation requiring my attention.
+line @1 accept_decline : I shall make no further entry for it.
+line @1 preclose : There is business I would like to finish before another chime.
+line @1 accept_preclose : I hope your remaining errands go straight home.
+line @1 ack : That comes through with a clean note.
+line @2 greet [here.time=dawn] : Welcome into the thin light before the first errands.
+line @3 greet [here.time=night] : I can make you out between the lamplight and the dark.
+line @4 greet [pair.band=strangers] : My writing board leaves a visitor some space.
+line @2 greet.return [pair.band=friends] : Your familiar company has a particularly clear ring.
+line @1 hail [pair.band=friends] : Here beside the narrow board, between errands!
+line @1 answer.how.busy [self.working=yes] : Careful work, though it leaves an interval for speech.
+line @1 thank : Your kindness arrived at precisely the needed moment.
+line @1 deflect_thanks : I had a free interval when you needed precisely that.
+line @1 give.advice : Read the address before examining the handwriting.
+line @2 ask.how [pair.band=friends] : Did the day show you an unexpected kindness?
+scene exchange1
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I pause after announcing the service. | I keep a bare space on my board.
+b : For the late arrivals? | For petitions?
+a : For the words to reach the back before I add more. | For any wolf unable to name the matter at first.
+
+scene exchange2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I count the quieter chime with precisely the louder one's care. | My elaborate address contributes little when I approach the Bright One.
+b : Why particularly? | What do you offer?
+a : A tired voice deserves the same attention as a strong one. | The plain words I can honestly mean.
+
+scene exchange3
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder makes a second roof above the chapel. | I count between flash and thunder.
+b : Which roof holds the sound? | Does that settle you?
+a : The stone one gives it back. The sky takes it further. | Knowing the length of one interval does.
+
+scene exchange4
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I like the turn just after the music pauses. | I learn a new step beside the musicians.
+b : Is that still dancing? | To hear better?
+a : The waiting foot is part of the dance. | To see the instant the bow goes up.
+
+scene exchange5
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : Fried fish makes an excellent market supper. | I save the last crisp corner.
+b : Which piece? | For another wolf?
+a : The one handed across while the paper is still dry. | For the short walk after finishing the soft middle.
+
+scene exchange6
+when topic=day self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : Market voices reach me in a pleasing disorder. | A busy square can offer more privacy than an empty room.
+b : Can you count those too? | For confidences?
+a : I try to follow just the seller I'm visiting. | For enjoying one's fish in peace.
+
+scene exchange7
+when topic=day self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull attended the market with extremely fixed opinions. | I decline to count gull cries.
+b : About a sermon? | Too many?
+a : About my fish paper, and the contents thereof. | None keeps the least regard for intervals.
+
+scene exchange8
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I give waiting a small task to do. | An unanswered knock has a very long echo.
+b : What sort? | Do you knock again?
+a : Smoothing the board without smoothing away the address. | Once, after enough time for slow feet.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd share the unwritten half of an afternoon with #self.friend#. | A friend can help carry a difficult interval.
+b : No arrangements? | By talking?
+a : A walk whose destination can remain unstated. | Sometimes simply by hearing its far end with me.
+
+scene exchange10
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I leave my writing board against a sheltered wall. | A narrow drawer keeps my folding paper flat.
+b : Why standing upright? | No letters in it?
+a : To catch the morning light on any smudge. | Those belong on their way to a door.
+
+scene exchange11
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Office hears bells across more than one roof. | I walk towards the wharf by the descending pitches.
+b : Do they arrive together? | Which pitches?
+a : Slightly apart. It is easy to count the echo twice. | Market calls grow sharper and the water sounds deeper.
+
+scene exchange12
+when topic=work self.job=priest self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I listen until the last note lets go. | My working day includes several kinds of silence.
+b : Before speaking? | Which do you like?
+a : A word underneath a chime must do its work twice. | The one in which a worried wolf finally rests.
+
+scene exchange13
+when topic=faith self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I give an offering time to be anonymous. | A service begins even before the first word.
+b : How? | With a bell?
+a : I step back before naming its kindness. | With finding a seat for the wolf still looking.
+
+scene exchange14
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A dear meal ought at least to satisfy a hungry stomach. | I pay the price plainly marked when it is fair.
+b : And a cheap one? | No haggling?
+a : That standard applies quite generally. | I prefer listening to three market voices behind me.
+
+scene exchange15
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : An account reached me saying #topic.subject# #topic.claim#. | A whisper can arrive at the wrong address.
+b : Has it a proper seal? | What does one do then?
+a : Only the speaker's assurance has reached me. | Refrain from opening it further.
+
+scene exchange16
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I tell a visitor which bell is near and which is reflected. | I ask a newcomer which errands have dates.
+b : To spare confusion? | What about the rest?
+a : To spare a second walk to precisely the same doorway. | Those can afford a more leisurely set of directions.
+
+scene exchange17
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When times are thin an offering may be a small one. | I keep service times especially clear in a hard week.
+b : Is that enough? | Why changes then?
+a : A genuine gift never requires an excuse for its size. | Time lost waiting can swallow a whole dinner.
+
+scene exchange18
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've spent a very long while with an unopened letter. | Some seals leave an impression on their bearer's pocket.
+b : Do you know its contents? | A lasting mark?
+a : I know the address and my duty. Quite sufficient. | Longer than one would wish when delivery is overdue.
+
+scene exchange19
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a door to open just before my second knock. | I can imagine setting an empty writing board down.
+b : Which door? | With relief?
+a : One whose address has occupied quite enough of my thoughts. | And a very pleasant appetite for something fried.
+
+scene exchange20
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A sealed message travels in my more sheltered pocket. | I choose my return road after delivering a message.
+b : Always the same pocket? | Why wait?
+a : Weather changes sides when a walker turns. | An empty pocket makes certain uphill walks appealing.
+
+scene exchange21
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rest my hand between long passages of writing. | A slow dance can loosen tired shoulders.
+b : Does the ink dry? | Even without music?
+a : Exactly enough for a safer turn of the sheet. | I usually have a recent bell in mind.
+
+scene exchange22
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Winter letters grow stiff at the fold. | Summer opens chapel doors to the sound of the square.
+b : What helps them? | A distraction?
+a : A board under the paper until it reaches warm air. | Quite a pleasant reminder of whom we serve.
+
+scene exchange23
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : My favourite dance has a quiet second figure. | I count the steps beneath my breath.
+b : Does the music stop? | What if you lose one?
+a : Only the feet. Then everyone begins together. | There is usually a friendly boot to show the return.
+
+scene exchange24
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Wet wax keeps a letter closed perfectly well. | I shelter my board in a dry corner.
+b : Where's the danger? | What of your sleeve?
+a : The address can wash away while the secret stays admirably safe. | The sleeve already knows how to dry at home.
+
+scene exchange25
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : A good fish supper needs two papers. | I stand well away from the gulls to eat.
+b : One for the scraps? | Do they respect the distance?
+a : One to hold supper and one to guard a precious seal. | It buys me approximately three untroubled bites.
+
+scene exchange26
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I ask for patience in quantities I can actually use. | A prayer can end in quiet relief.
+b : How much at once? | Without a reply?
+a : Enough for the time from knuckle tap to opening door. | An answer needn't always make a noise.
+
+scene exchange27
+when topic=work self.job=priest
+does tell.self / ask.detail / answer.detail
+a : I keep the centre of the aisle open. | I name a service clearly before beginning.
+b : For ceremony? | Why so deliberate?
+a : For anyone who might wish to leave quietly. | A visitor ought to know what welcome is being extended.
+
+scene exchange28
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : My errands travel in the order of their promises. | I leave an unscheduled pause before supper.
+b : Do you ever reverse them? | For a late letter?
+a : A genuine need may jump the queue without ceremony. | Ideally for chewing my supper without consulting the sky.
+
+story tale1 [topic=memories]
+  : I copied an address onto a scrap so the original need not face the rain.
+  : At the door I unfolded the copy and found my careful directions still entirely legible.
+  b : Did that please you?
+  : Very much, until the unanswered knock reminded me that legibility was only half my errand.
+
+story tale2 [topic=pastimes self.likes=dancing]
+  : I mistook a market cry for the opening call of a dance.
+  : I took two excellent steps towards a seller who had only meant to advertise fresh fish.
+  b : Did you complete the figure?
+  : I completed the purchase. The return journey had a jaunty measure.
+
+story tale3 [topic=faith]
+  : I once counted a bell stroke twice when a shutter threw the sound back across the aisle.
+  : For a moment I imagined that my ear and the chapel had settled on different hours.
+  b : Which hour turned out right?
+  : By waiting quietly. The next stroke explained the position without my assistance.
+
+story tale4 [topic=weather self.likes=thunder]
+  : I was folding a sheet when thunder rolled over the chapel roof.
+  : My fingers jumped, giving the paper an entirely unnecessary corner.
+  b : Did you begin a fresh sheet?
+  : I used the odd corner to mark where the dry edge belonged. Weather had done a little office work.
+
+story tale5 [topic=food self.likes=fried_fish]
+  : I set a clean paper under my supper beside a neatly addressed wrapper.
+  : A gull swooped for the wrapper and discovered a thoroughly unappetising scrap.
+  b : Was anything lost?
+  : My dignity in laughing and a little daylight spent rewriting an address punctured by a beak.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Count the pale strokes first. | A clean board for the early round.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say The last chime stays with me. | Mind the seal in the dark.
+
+rule @call3
+when concept=bark self.job=priest self.working=yes
+does aside
+cooldown 8h
+say Leave the aisle breathing room. | One clear interval before we begin.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Dry side towards the paper. | Water travels across ink very readily.
+
+rule @call5
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say A low note after sunset. | Evening folds over the board.
+
+rule @call6
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Sound carries over the roofs. | Fine light for reading an address.
+
+dlg @1 resident.hub : You have my attention until this folded errand resumes.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I remember your voice quite separately from the bells.
+dlg @3 resident.hub [here.time=night] : A late enquiry will carry clearly in this air.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I shall answer what concerns me. The seal on a private matter stays whole.
+dlg @1 resident.job [self.job=priest self.workplace] : I serve at #self.workplace#. The bell tells you when to gather and each arrival has a seat within hearing.
+dlg @2 resident.job : My work takes careful listening and an exact memory for promised errands.
+dlg @1 resident.news [world.news] : The public account brought this far is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I can say precisely where my knowledge ends.
+dlg @1 resident.bye : I wish you an open door at your intended address.
+dlg @1 church.greet [here.day=rest] : We gather for #here.service# today. A sheltered seat is within earshot.
+dlg @2 church.greet [here.day!=rest] : Welcome inside the interval between the full services.
+dlg @1 church.service [here.day=rest] : Today's observance is #here.service#. I can make room along the aisle.
+dlg @2 church.service [here.day!=rest] : Today has its ordinary prayers. The announced service comes with Restday.
+dlg @1 church.poor : A gift works best when it reaches a hungry wolf before another bell has to be counted.
+dlg @1 church.offering : Give what you choose in peace. Even a small amount can arrive exactly when needed.
+dlg @1 church.thanked : Your offering has arrived. I will see it goes where it can serve.
+dlg @1 church.bye : Carry some of this quiet beyond the doorway.
+graft resident.hub
+choice Why carry a little board beneath the folded paper? -> fold_board
+node fold_board
+say Firm sealing wax guards the contents while a careless fold makes the address unreadable. The board keeps both obligations in view.
+free
+choice May I ask whose letter it is? -> fold_board_again
+choice Goodbye. -> bye
+node fold_board_again
+say You may. I can tell you that a particular door should receive it and that I should carry it there still sealed.
+choice I shall wish your errand well. -> hub
+choice Goodbye. -> bye
+
+graft church.greet
+choice Why wait when the bell has stopped? [self.job=priest] -> last_echo
+node last_echo
+say Near the back wall the note is still arriving when my own ear hears quiet. I give the far seats their full share of the chime.
+free
+choice How do you know when to begin? -> last_echo_again
+choice Goodbye. -> bye
+node last_echo_again
+say I watch for the last few ears to turn forwards again. Then an ordinary voice can reach all the way.
+choice Let us have that quiet. -> greet
+choice Goodbye. -> bye

@@ -1,0 +1,262 @@
+# rm290, the ladle rest (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm290
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_osric_wetford
+written_by codex
+title the ladle rest
+fits stage=adult|old
+prefers job=merchant drive=ambitious
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk taps_a_ladle_to_bridge_a_catch_in_a_tune
+likes plum_tart singing new_boots warm_rain
+dislikes salt_wind flies
+fears losing_the_place_in_a_long_chorus
+hopes a_supper_song_every_table_knows
+topics food +0.6 work +0.4 pastimes +0.5 gossip -0.3
+styles comfort=serve gossip=short refuse=brisk tease=none
+marks oath saying
+persona #self.first# keeps supper songs going with two taps on a ladle whenever damp catches in the throat, with strong opinions about the proper time to join in.
+
+words
+oath! = Two hollow taps | Crust on my sleeve
+saying! = Serve the pause hot | A beat kept is a breath saved
+rest = the quiet beat | a gap in the tune
+ladle = my round ladle | a deep-bowled spoon
+tap = a double tap | two little knocks
+boot = the new boot | my clean sole
+flour = a puff of flour | the white dust
+plum = the warm plum half | a purple slice
+crust = a short pastry edge | the crisp brown corner
+mute = a folded cloth | a little pad
+pot = the supper pot | a deep iron pot
+breath = a clean breath | a little air
+chorus = the returning line | the low chorus
+peg = a spare peg | the free hook
+
+any
+opinion @1 houses against 1 : Big doors keep a lot of steam and several dinners on the comfortable side of the street.
+opinion @1 merchants against 1 : Charging for thin broth as though a whole joint were swimming in it. That's what I object to.
+opinion @1 sump for 1 [self.quarter=sump] : Down my end folk appreciate a supper still sending up steam.
+opinion @1 times against 1 : Prices go up quick enough. Getting a bigger spoonful for your work takes a deal longer.
+opinion @1 watch against 1 : I'll believe in the value of a uniform when it carries a hot supper up a wet stair.
+opinion @1 festivals for 1 : I'd like a whole square singing a line I made up while serving supper.
+
+grown
+line @1 greet : Heard those taps, good. Hello. | Hello. Come in between beats.
+line @2 greet [pair.band=strangers] : No need to know the tune for an introduction. | New voice by my elbow. Welcome.
+line @3 greet [here.time=dawn] : Morning. Steady light for a first verse. | Time for an opening note or two.
+line @1 greet.return : Yes, hello. You caught my voice in working order. | I'll answer you on my next good breath.
+line @2 greet.return [pair.band=friends|family] : Ah, a voice I could sing against. | You'll know where to come into the tune.
+line @3 greet.return [here.time=night] : Late hello. I'll keep the time quietly. | Hushed greetings at this hour, certainly.
+line @1 again.open : Back already. Here's another measure. | Didn't even miss a whole chorus.
+line @1 hail [pair.band=friends] : Come catch this little bit of time with me! | Over here where the tune picks up.
+line @1 farewell : Take the last beat with you. | Walk off while there's still spring in the tune.
+line @1 farewell.return : I'll keep time from here. Goodbye. | Your going falls tidily on the beat.
+line @1 react.news : Let's have the words without a great flourish. | Quiet with the ladle. I want to hear this.
+line @1 react.news.new : First scrap of that song I've heard. | That's news clean through to the handle.
+line @1 react.news.known : I'd heard that before you reached the middle. | Recognised it by the first few words.
+line @1 react.news.doubt : A bit of that sounds beaten out of shape. | Somebody has added a verse without knowing the tune.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That story wants quiet. I'll put the spoon down. | I can make time to hear you through the hard bit.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Yes, there ought to be a chorus to mark news like that. | My feet are quite ready to take that up.
+line @1 ask.how : Is there any spring in your stride today? | How's your own breath been holding up?
+line @1 answer.how : I've a short supply of patience and a long list of intentions. | Room enough for one good tune in me.
+line @1 decline : I haven't breath for that as well as what's promised. | That'd mean dropping the work somebody's already counting on.
+line @1 accept_decline : Clear refusal. I'll get on with my end. | The beat won't stop because you sit out.
+line @1 preclose : I'm near the scrape at the bottom of this talk. | It's time I found something for these paws to do.
+line @1 accept_preclose : You may go easy on the last few steps. | We've talked through a whole decent measure.
+line @1 thank : You came in where I needed another voice. Thanks. | That's a service worth a fine hot supper.
+line @1 deflect_thanks : I knew that bit of the tune already. | No extra work to pass a bowl sideways.
+line @1 sympathise : Stand near the warm side and catch your breath. | I hear how hard you had to push the words out.
+line @1 reassure : Take the rest where the words leave room. | I can go on tapping till your voice is steady.
+line @1 ack : That's on the beat as I hear it. | Yes, I know the sound you mean.
+line @1 give.advice : Breathe before the long note, not halfway through it. | Keep the portion level until the bowl is in reach.
+scene tap_catch
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I put two knocks in a tune wherever I need a breath. | Hear #tap# and you'll know the singing hasn't stopped.
+b : That's deliberate then? | Why a pair of knocks?
+a : Of course. It reserves my place while I catch breath. | One can sound accidental. Two ask the rest of the singers to carry on.
+
+scene dampcatch
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Damp mornings give my throat some curious ideas about notes. | Sometimes a note comes out rather less neatly than I planned.
+b : Hurt to sing? | Do you mind folk hearing?
+a : Only if I force the note. I set the time with my paw instead. | I mind a pitying face more than the sound itself.
+
+scene suppertime
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : Hot suppers ought to arrive in the order the bowls are set out. | I use a short tune to remember which bowl was filled first.
+b : How many bowls per tune? | Does singing make things quicker?
+a : Depends how far the table stands from the pot. I don't serve cold food to finish a verse. | Serving in order does. The tune keeps my two paws in agreement.
+
+scene deep_ladle
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I rather like a pot that speaks up near the bottom. | Last bit of supper makes a different note under a ladle.
+b : Can you tell when there's a bowl left? | How different a note?
+a : I can tell there's little left. For the exact portion I still use my eyes. | A scrape instead of a slosh. Quite a deep thought from a pot.
+
+scene tart_end
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : A plum tart needs a pastry edge wide enough to hold. | Best kind of tart goes into your paw without a plate.
+b : What if the plum runs out? | Don't you mind missing some filling?
+a : Hold the crust level till the first bite. There's a trick to nearly everything good. | I like the crust too. Made properly it's worth its share of the space.
+
+scene flies_cover
+when topic=animals self.dislikes=flies
+does warn / react.self / assess
+a : Put that cover back before the flies get ideas. | A cloth belongs over the tart whenever the knife's away.
+b : Couldn't you swat them? | Why so quick with the cloth?
+a : With my bare paw over the plum? I've more respect for supper than that. | Because it'll save a considerable amount of angry waving later.
+
+scene newheels
+when topic=pastimes self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : New heels make an agreeable note on a hollow stair. | I try new boots by the sound as much as the fit.
+b : Would you buy a squeaking pair? | How's a good fit sound?
+a : I already sing. Don't need my feet taking the high part. | Even. Fairly brisk. Without one long squeak answering the other.
+
+scene warmrinse
+when topic=weather here.weather=rain
+does tell.feeling / react.self / assess
+a : A little warm rain settles flour dust beautifully. | I like rain best before it gets down the collar.
+b : What happens after that? | Even if your boots are new?
+a : Then I get indoors while I can still enjoy watching it fall. | I'd rather wipe leather than spend a whole walk swallowing grit.
+
+scene salthum
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / ask.detail / answer.detail
+a : A shore wind leaves a taste on the note I'm trying to sing. | There's a salt rasp to the air I could cheerfully do without.
+b : Have a drink? | Does facing the other way help?
+a : Yes, a plain one. I've no desire to season the salt. | A wall helps more. I finish the tune out of the wind.
+
+scene longstairs
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : By the time a hot bowl reaches the upper Sump stairs the steam's done most of the climbing. | I pay attention to the top landing when I've something hot to carry home.
+b : What happens there? | That's where you'd like a seat?
+a : That's where I take the cover off. I want steam left under it then. | I'd like a dry place to stand till I've got the door open. A seat could come later.
+
+scene friend_song
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# the first hearing of a chorus before the whole street gets it. | I can stand a doubtful look from #self.friend# when a song's new.
+b : Do you want a compliment? | Would you change the song?
+a : A fair hearing. I can flatter my own singing without an audience. | If the tune won't carry the words, yes. I'll grumble, then mend it.
+
+scene vineletter
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can picture a vineyard slope from a very few lines of writing. | Words about a warm hillside make me think of purple fruit and pastry.
+b : Grapes in a plum tart? | You like the food more than the view?
+a : No. I'm quite capable of imagining two good things one after the other. | I've only words for the view. Tart I can actually bite.
+
+scene pricesupper
+when topic=prices
+does give.opinion / react.self / assess
+a : I'd like to see good portions priced in bowls, not rumours about the cook. | A full spoon leaves less room for argument than a showy name.
+b : You'd skip a famous dish? | Surely a name costs nothing.
+a : I'd take one look in the pot before paying for the name. | Not on the sign. On the bill it sometimes has an astonishing value.
+
+scene lean_tune
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : There's a mean trick to keeping a ladle looking full with broth alone. | A thin time is exactly when I'd rather see into the pot.
+b : Can you tell a poor portion? | Do you think someone's cheating?
+a : Lift from the bottom. If there's anything good in there you'll bring it up. | What I think is I'd like the food and the asking price to match.
+
+scene marketdream
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like my supper chorus to go round a whole room before I reach the last bowl. | Someday I'll hear a tune of mine carried back from the farthest table.
+b : Do folk need to know the words? | How will you know it's yours?
+a : Three plain words and a double knock. Plenty to start with. | By the pause. I've no wish to claim the work of a different troublesome throat.
+
+scene bellsong
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a festival I'd sing the parts between bell strokes. | A big bell is a difficult partner for a quiet voice.
+b : You'd sing louder? | Which partner gives way?
+a : I'd save the breath and come in after the ringing starts to die. | The one with ears. No good getting offended at a quantity of brass.
+
+scene gossip_scrape
+when topic=gossip
+does give.opinion / react.self / assess
+a : Talk travels up a thin wall whether the words are true or not. | At a shared table I keep other folk's names out of my singing.
+b : Would it make a good verse? | Afraid of being overheard?
+a : Could make a grand verse and a rotten thing to have done. | I'm afraid of being just plain inconsiderate. Takes very little effort.
+
+scene evening_rail
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : After dark I tap the handle against my soft cuff. | A beat needn't travel through six rooms full of sleeping folk.
+b : Can you still hear it? | Don't you lose some of the sound?
+a : Just me, which is exactly the size of the audience I want. | Yes. I keep the time and lose the clatter. A civil arrangement.
+
+story mutecloth [topic=memories|pastimes]
+  : I wrapped a ladle handle in cloth once to practise the supper beat quietly. Worked beautifully till I put it down.
+  : Couldn't remember which cloth I'd put it in and spent part of a morning hunting under every folded towel.
+  b : How'd you find it?
+  : Pulled a cloth down and heard one terrific knock. My quietest instrument announcing itself.
+
+story bootplum [topic=food|memories]
+  : I ate a tart leaning over my new boots and watched a purple drop fall all the way down.
+  : Did a splendid piece of footwork, slid clear of the drip and landed both boots in muddy water.
+  b : Were the boots ruined?
+  : Wet and purple would have been worse. I choose to remember a victory.
+
+story threebowls [topic=work|memories self.job=merchant]
+  : I took three trial bowls along an empty table, timing my serving song to the walk.
+  : Didn't spill a drop till I had to turn back and put the bowls away.
+  b : Hadn't got a verse for that?
+  : I have one now. It's rather slow and leaves time to change paws.
+
+rule @double
+when concept=bark
+does aside
+cooldown 8h
+say Two quiet taps and the tune's still travelling. | Pick up the verse after the little double knock.
+
+rule @meal
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Clear the rim so the hot bowl can come through. | No pointing over the steam, please.
+
+rule @weather
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A little rain, a little catch in the throat. On with it. | Listen for the handle if the words go missing.
+
+rule @boot
+when concept=bark self.likes=new_boots
+does aside
+cooldown 8h
+say That's a clean heel note on a sound board. | One good stamp and that sole sits right.
+
+dlg @1 resident.hub : I can talk through a rest in the song. You've found one.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're in good time to hear the altered bit.
+dlg @3 resident.hub [here.time=night] : I'll give you words without the tapping. Some folk have gone to bed.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand well clear of my serving arm if you're about to take offence.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. I mean every supper I handle to reach its table hot.
+dlg @2 resident.job : I'd like my next piece of work to reach more folk than the last.
+dlg @1 resident.bye : Keep enough breath for the climb home.
+graft resident.hub
+choice Where do those two taps come in? -> ladletime
+node ladletime
+say On the beat after the long line. Sometimes my throat catches there, sometimes it doesn't. I put the taps in either way and nobody has to stop singing.
+free
+choice Could a second singer take that line? -> songshare
+choice I'll listen for the rest. -> hub
+node songshare
+say Gladly, if the singer waits for the first knock and comes straight in on the second. What bothers me is folk leaping in halfway through a perfectly sound word.
+choice I'll wait for the signal. -> hub
+choice I should save my voice. -> bye

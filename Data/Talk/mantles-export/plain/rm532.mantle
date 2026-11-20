@@ -1,0 +1,287 @@
+# rm532, the apple orchard afloat (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm532
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_kjell_saltcot
+written_by codex
+title the apple orchard afloat
+fits stage=young|adolescent|adult|old
+prefers talk=chatty honesty=guarded
+traits temper=even talk=chatty warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk sends_apple_quarters_to_imagined_harbours_in_a_basin
+likes crisp_apples swimming full_larder first_warm_day
+dislikes gulls night_noise
+fears another_absent_place_at_the_water
+hopes a_spring_voyage_in_the_washbasin
+topics pastimes +0.6 food +0.5 weather +0.3 home +0.2
+styles comfort=practical gossip=guarded refuse=plain tease=none
+marks oath saying
+persona #self.first# launches apple quarters in a basin, assigns each pip a destination, and keeps the name of one little harbour folded under the rim.
+
+words
+oath! = Sink my apple | Pips in the keel
+saying! = Keep a harbour dry | A pip travels light
+pipboat = a green apple boat | a quarter with a high prow
+pipmate = a pointed brown pip | a shiny little seed
+fleetbowl = a broad shallow bowl | a white water basin
+coremast = a curl of apple core | a stout piece of core
+pocketstone = a smooth wet stone | a small dark whetstone
+shipflag = a narrow leaf pennant | a bit of curled leaf
+dryharbour = a folded dry cloth | a little shelf of folded cloth
+gullshadow = a pointed grey shadow | a flying patch of shade
+basintide = a swirl of water | a wavering little current
+brownbeach = a line of apple skin | a brown peel beach
+
+any
+opinion @1 houses against 1 : I know what a quay looks like with one place empty. A grand seal doesn't make me forget that.
+opinion @1 dole for 2 : A pantry full enough to share should manage one apple for a hungry visitor without taking a vote.
+opinion @1 city for 1 : There's room in one ordinary basin to imagine an expedition much bigger than the whole street.
+opinion @1 merchants mixed 1 : I'd choose the seller who doesn't hide the soft side of an apple against the straw.
+opinion @1 church for 1 : I've reason to remember a meal made available just when our shelf needed filling.
+line @1 greet : Come see how very far a quarter of an apple can go.
+line @1 greet.return : There's still water enough for another sailing.
+line @1 farewell : Keep the dry bit of your pocket uppermost.
+line @1 farewell.return : I'll save a little piece of harbour for later.
+line @1 ask.how : Did your day float the way you wanted?
+line @1 answer.how : A little thirsty from giving all the water to my fleet.
+line @1 thank : Now the little one can get properly away from the side.
+line @1 decline : I won't give away the name I've kept folded under the rim.
+line @1 accept_decline : All right. I'll send the pip on a different voyage.
+line @1 reassure : Even a very short sailing brings you to another edge.
+line @1 sympathise : We can keep a place clear with nothing said over it.
+line @1 react.news : Give me a look at what is coming across the water.
+line @1 react.news.new : That's a new arrival in a very small harbour.
+line @1 react.news.known : That one has been round my basin already.
+line @1 react.news.doubt : That story leans over farther than an apple full of water.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd put the biggest green leaf up to celebrate that news.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Leave some room round whoever must carry the message home.
+line @1 ack : Yes. I see which way you're pointing now.
+line @1 deflect_thanks : The little boat only needed a nudge.
+
+grown
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I choose my landing before I go in for a swim.
+b : Do you swim very far? | Why pick it in advance?
+a : As far as feels good on the day. A pleasant swim doesn't require a witness with a measure. | Then I can spend the time in the water attending to the actual pleasure of swimming.
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I can still float a quartered apple on a bowl and get the crisp part to supper in good order.
+b : Is that your serving dish? | Why put it in water?
+a : Only briefly. A dry plate earns its keep very handsomely when bread comes to the table. | For the pleasure of seeing a childhood idea stand up to a grown hand.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd welcome a friend who can sit by a bowl of water without demanding an explanation of its whole history.
+b : Is there a story? | Does anything else make good conversation?
+a : Yes. The mark of a friend is sometimes leaving room for it to be told on another day. | The little change in colour where an apple meets water would do for a beginning.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember a loss by the water without giving the shore possession of every happy morning.
+b : How can you keep the two apart? | Does returning help?
+a : By choosing a place for pleasure as deliberately as I choose a place for remembering. | On some days. On others I'd rather bring a basin indoors and leave the great view to somebody else.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep sound apples apart from the ones meant for cooking down.
+b : How far apart? | Could you make a good dish of the bruised ones?
+a : Enough space to tell what will keep till next week. A pantry should be readable without moving six baskets. | A bruise can be cut away. I judge the rest before making any promises about the dish.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Warmth in early spring lends a distinct smell to water in a shallow dish.
+b : Is it a pleasant smell? | Is the water fit to drink?
+a : Mostly it tells me that the stone where I've put the dish is warming through. It pleases me to notice the change. | I'd draw fresh for a guest. A little experiment doesn't require anybody to drink its conclusion.
+
+scene animals_1
+when topic=animals
+does tell.self / ask.detail / answer.detail
+a : A gull can assess the size of a lunch remarkably well from a disobliging distance.
+b : Do you believe it can count? | Where are the good pieces kept?
+a : Only on its own chances of a meal. I haven't yet persuaded one to divide an apple fairly. | I keep the meal under a cloth. The gull is welcome to its own opinion of my hospitality.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I like having a simple weight in one pocket when my mind is too busy for a rest.
+b : Doesn't it pull the coat? | Must the weight be stone?
+a : Enough to remind me of the weight and the floor underneath my feet. That's sufficient. | Anything smooth that belongs in the hand. I wouldn't trouble everyone else present with a noisy remedy.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I can arrange an entire morning round a pantry and still find the best moment was sharing one apple.
+b : Would you cut it equally? | How can a cut surface stay fresh?
+a : I'd ask which bit each person wanted. Equal appetite isn't a condition of eating in company. | Bring the knife to the table and cut when everyone is there. An apple keeps nicely inside its own skin.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean shelf can still offer an apple in a few carefully thought-out portions.
+b : Who gets the largest? | Can that be a meal?
+a : The one whose last proper meal was longest ago, if the fact can be learned with a little discretion. | It's the beginning of one. I'd like enough bread alongside to make it an honest offer.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A shiny apple with a rotten patch is no bargain at the price of a sound one.
+b : Would you take a cheaper bruised one? | Would you ask to turn it?
+a : For immediate cooking, if the price allowed for what was going to the scrap bowl. | I'd hope the seller had already set the doubtful side in sight. That makes for easier dealings next time.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer to water can have the first choice of where to sit beside it.
+b : Even if you have a favourite place? | Wouldn't you prefer to choose?
+a : I can find another good patch for the morning. Familiar ground is generous in that respect. | I remember being taken to water I would never have chosen myself.
+
+story core [topic=food]
+  : I thought I could count all the pips in an apple by dividing it neatly into quarters.
+  : A little dark crescent was still showing from one wall of the core.
+  b : One more pip?
+  : Half of one. An exact division had made my count look more generous than the original apple.
+
+rule @cloth
+when concept=bark
+does aside
+cooldown 8h
+say Some dry folded linen for a green boat at rest. | A basin is large enough for some good memories.
+
+rule @warm
+when concept=bark self.likes=first_warm_day
+does aside
+cooldown 8h
+say Sun on the rim before water inside. | A modest voyage in welcoming weather.
+
+dlg @2 resident.hub : An ordinary bowl can hold a surprisingly long history. We can begin at whichever end suits.
+dlg @1 resident.news [world.news] : This was carried to shore in recognisable words. #world.news#.
+dlg @2 resident.bye : A dry landing and a little sun over the last stretch.
+
+young
+line @1 greet [pair.band=strangers] : You can watch from here. Don't blow on my apples yet.
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've made #pipboat# for a pip that's never even seen the floor of our basin.
+b : Which end goes first? | Is the pip allowed to swim?
+a : The pointy end, except when it goes backwards. Then that's the pointy end coming home. | It's a passenger until it falls out. Then it's a very small brown swimmer who needs my spoon.
+
+scene food_1
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : A crisp apple makes such a good noise I eat one of the boats before we launch.
+b : Which boat do you eat? | Can you race with one missing?
+a : The one with the biggest sail. I like the leaves but the sweet bite is underneath. | I can race the other one against my thumb. My thumb has to go outside the bowl.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I've invented a complete street voyage between two doorsteps without putting any water on the street.
+b : How's that a voyage? | Do I have to carry a boat?
+a : I've got the apple here. The voyage is just thoughts until some water shows up. | You can carry the thought of an enormous wave. It's very light until I tell you to put it in.
+
+scene family_1
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I want to show #self.mother# the little harbour before the apple gets all brown.
+b : What if it goes brown first? | Why not show the whole fleet?
+a : I shall say it's changed into a harbour made of brown bricks. That happens very quickly in my water. | One boat is lunch in a moment. It would be sad to introduce a friend just before eating it.
+
+scene weather_1
+when topic=weather self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : When spring first feels warm I want the boats in water that's been out in the sun.
+b : Will the pips feel warm? | Are you going in too?
+a : I don't know. I shall tell them where the sunny bit is so they can find out. | My hand is. The whole rest of me won't go in this basin unless I come apart.
+
+scene animals_1
+when topic=animals self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : There's #gullshadow# over the admiral's lunch. The admiral's lunch is the admiral.
+b : Your admiral is an apple? | Would a gull eat an admiral?
+a : It's a quarter with a pip that gives very quiet orders. You don't get such a nice crunchy lunch from a proper admiral. | Gulls can't read the little flag that says it's busy. I keep my hand between the beak and the boats.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A proper harbour needs a pantry. Mine has another apple in it, behind a cloth.
+b : Why behind the cloth? | Can the ships go inside?
+a : It's a secret apple till supper. It stops being secret when I give it to somebody. | They have to be carried over the edge. My harbour hasn't solved that yet.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : One place down by the real water is empty in a way my boats can't make right.
+b : Do you need another boat? | Would you like somebody beside you?
+a : Not for that. A real wolf can't be replaced by an apple, no matter how good its leaf is. | Yes, if the missing name can stay tucked under my hand for now.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My pocket stone makes a good weight to stop my little flag from getting up and walking off.
+b : Is it wet? | Does a flag walk?
+a : Yes, and my pocket knows it. The other pocket is where the apple goes. | Only with a little wind carrying all of its feet. This flag hasn't got any proper legs.
+
+story drysail [topic=pastimes]
+  : I stood a curled leaf up on a quarter and left the new boat overnight on my shelf.
+  : In the morning the sail was flat on its back beside the bowl.
+  b : Did the boat go down?
+  : Not a bit. The boat remained quite dry and got itself included in breakfast before I remembered its voyage.
+
+rule @apple
+when concept=bark
+does aside
+cooldown 8h
+say Little brown passenger aboard the green one. | That curl of leaf wants to be a sail.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say Cover the quarter before the shadow comes back. | You can't be admiral if a gull eats you.
+
+dlg @1 resident.hub : Here is the sailing bowl. You can see every bit except the name tucked underneath.
+dlg @1 resident.job [self.job=child] : I'm playing at a very busy little port. The next ship must sail before I eat its bow.
+dlg @1 resident.bye : Mind my fleet if you see any very small waves.
+graft resident.hub
+choice How far can your apple boat sail? -> pip_sail
+node pip_sail
+say All round the bowl and past the worst whirl on the spoon side. It needs a good big rest after that.
+choice What does it get for a rest? -> pip_rest
+choice I won't tell the cook. -> hub
+node pip_rest
+say A nice dry place and a leaf for shade. I have to keep the cook from looking into the harbour before supper.
+choice I won't tell the cook. -> hub
+
+
+adolescent
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I still like a fruit boat, though I'm interested now in which shape displaces more water.
+b : Have you measured it? | Would you eat the experiment?
+a : A mark on the basin ought to show the change. It works better when I haven't been leaning on the table. | The sound pieces, yes. Knowledge needn't leave a perfectly good apple to spoil.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : There's a difference between choosing a dry seat near water and deciding never to go near it again.
+b : Which would you choose? | Is a basin enough water?
+a : I'd like to make each choice for myself, on the particular day. | It can be. A little model allows room to think without the smell of the quay getting in the way.
+
+story sunmark [topic=weather]
+  : A length of peel floated there all afternoon and marked the water level in chalk.
+  : By dusk the mark was well above the peel.
+  b : Where had the water gone?
+  : Into the warm air. My model was showing me a much bigger voyage than the one I had arranged.

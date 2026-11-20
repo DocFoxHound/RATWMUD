@@ -1,0 +1,402 @@
+# rm525, the road between two letters (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm525
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_ingrid_grayrock_
+written_by codex
+title the road between two letters
+fits stage=young|adolescent|adult|old
+prefers job=scholar
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk marks_a_weekly_letter_with_the_passing_cart
+likes warm_bread wrestling old_maps autumn_wind
+dislikes smoke stale_bread
+fears a_familiar_hand_fading_from_memory
+hopes to_put_a_real_journey_between_two_letters
+topics home +0.5 work +0.4 pastimes +0.4 memories +0.3
+styles comfort=plain gossip=close refuse=plain tease=none
+marks oath saying
+persona #self.first# dates a weekly letter by the cart seen beyond the lesson window.
+
+words
+oath! = Cartwheel and clear glass | By the last unfolded sheet
+saying! = Leave me one road out of the margin | A sealed page still wants a carrier
+cart = the tall blue cart | a high wheeled wagon
+window = my roadward window | the plain lower pane
+letter = a weekly folded sheet | a letter creased in thirds
+ink = my brown ink | the last ink drop
+loaf = a little warm loaf | the day's first bread
+crumb = a crust crumb | a soft bread crumb
+map = a folded road map | a crooked inked route
+road = the road beyond the sill | the road under my window
+wrestle = a fair wrestling hold | a fair turn at wrestling
+gust = a crisp autumn gust | a leaf-carrying draught
+pin = a dull brass pin | my little paper pin
+lace = a strip of blue lace | the thin window tie
+shadow = the cart's narrow shadow | the shadow of a wheel
+reply = the longed-for answer | a letter coming home
+wax = a chip of yellow wax | my small seal lump
+ridge = a ridge in the page | the high letter fold
+
+any
+opinion @1 houses mixed 1 : A House can lend a sheet a fine seal. Somebody still has to write something worth sending.
+opinion @1 road for 2 : Every set of wheels passing a window is bound for an actual door. I'd willingly visit several of those doorways myself.
+opinion @1 dole for 1 : Warm bread divided between two paws makes a better lesson than a fine account of hunger.
+opinion @1 festivals for 1 : The green ought to have room for wrestling even when the stalls have done well.
+opinion @1 city for 1 : I could recognise my native streets by the silhouettes traffic makes on a lesson wall.
+opinion @1 strangers for 1 : A traveller can describe the view of my pane from the road. That's reason to give a civil greeting.
+opinion @1 church mixed 1 : A quiet chapel is pleasant when the answer one is waiting for can take another day.
+opinion @1 merchants mixed 1 : I like a trader who can describe the road the goods travelled. Sometimes that journey interests me more than my purchase.
+line @1 greet [pair.band=strangers] : Hello. Step nearer the window, out of the glare. | Welcome. You're very nearly in my view of the road.
+line @2 greet [self.working=yes] : Come where the ink can't splash. | My page has reached a stopping place.
+line @3 greet [here.time=dawn] : Morning. First wheel past already. | Welcome by the new-lit glass.
+line @4 greet [here.time=dusk|night] : Evening brings the slow carts home. | The pane's still clear enough for company.
+line @1 kin.open [pair.kin!=no] : A family voice goes straight inside my fold. | Welcome to the household side.
+line @1 again.open : Another pass beneath the same window. | The wheels have brought us together again.
+line @1 greet.return : Hello again. I was only watching the carts. | Back again, and in good time.
+line @2 greet.return [pair.band=friends|family] : Familiar feet under my favourite pane. | This is a welcome return in good light.
+line @3 greet.return [self.working=yes] : My ink can wait on the nib. | One fresh face between two columns.
+line @4 greet.return [here.time=dusk|night] : There's a road light left for you. | Late visitors show up best against glass.
+line @1 farewell : Carry a letter somewhere worth reaching. | Go past a window that knows you.
+line @1 farewell.return : I'll listen for that wheel again. | Hope the road turns kindly under you.
+line @2 farewell.return [here.time=night] : Good rest beyond the darkened pane. | Find a lamp that's waiting for you.
+line @1 react.news : Put the incident in one clear sentence. | Where would that fit on my sheet?
+line @1 react.news.new : A fresh cart on a familiar road. | I've no earlier ink on that.
+line @1 react.news.known : Yes. That has passed this pane before. | My earlier page has the same account.
+line @1 react.news.doubt : I'd hold my pen still till another witness comes through. | A wheel in shadow can look like a very different wheel.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can sit here through the quiet answer. | Keep the worst sentence folded awhile.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That deserves the middle of a clean sheet. | An answer worth opening at once.
+line @1 ask.how : Have you seen anything worth writing home today? | What came past your window lately?
+line @1 answer.how : I'm halfway down one page and looking outward. | Enough ink left to make another start.
+line @1 decline : I'd sooner keep my remaining hour for the letter I've begun. | I've a particular journey to finish on paper first.
+line @1 accept_decline : All right. We can seal that subject up for now. | Then I'll let that cart go by without me.
+line @1 thank : I can finish my page more easily now. | Your kindness could go home in a letter.
+line @1 sympathise : Sit with me facing the traffic awhile. | There's no need to construct a bright answer.
+line @1 reassure : An empty page leaves all its room for tomorrow. | I'll stay here beside your unopened sheet.
+line @1 preclose : I ought to catch the last clean light. | That opening down there wants my attention.
+line @1 accept_preclose : We can put a fold in our talk. | Keep a clear view till next time.
+line @1 deflect_thanks : Nobody owes me for a little ink. | I'd spend that kindness a second time gladly.
+line @1 ack : I see the direction your thought took. | That sentence has somewhere to go.
+line @1 give.advice : See who's driving before guessing at the load. | Leave space below the last sentence.
+line @1 offer : I have a small blank sheet to spare. | You may take the clearer part of the sill.
+line @1 praise : You gave that thought a clean arrival. | Such a sentence would grace my next letter.
+rule @aside1
+when concept=bark self.likes=old_maps
+does aside
+cooldown 6h
+say Pin the old bend beside the present one. | Road ends at the fold again.
+
+rule @aside2
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 7h
+say Steam makes a square of glass into drawing paper. | A little spring left under the brown crust.
+
+rule @aside3
+when concept=bark self.likes=wrestling
+does aside
+cooldown 8h
+say Keep the landing clear round the green. | A good hold leaves room for breath.
+
+rule @aside4
+when concept=bark self.likes=autumn_wind
+does aside
+cooldown 9h
+say Hold down the addressed end. | That gust could post a whole letter badly.
+
+rule @aside5
+when concept=bark here.time=dawn
+does aside
+cooldown 10h
+say First shadow beneath the sill. | New paper for this week's passing cart.
+
+rule @aside6
+when concept=bark here.time=dusk
+does aside
+cooldown 11h
+say One line left before sealing. | The wheels cast longer shadows than the wagons.
+
+dlg @1 resident.hub : Come where that patch of window light misses the ink. I can put the next wheel into my letter after we've spoken.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, here's a face that needn't pass the window twice to be remembered.
+dlg @1 resident.job [self.job=scholar self.workplace] : I do my reading at #self.workplace#. The window adds a little geography on its own account.
+dlg @1 resident.news [world.news] : There's room beneath the drawing for something new. #world.news#
+dlg @1 resident.bye : An interesting view on the way to your next door.
+dlg @3 resident.hub [here.time=dawn] : Come watch the first sets of wheels get their shadows.
+dlg @4 resident.hub [here.time=dusk] : Light's gone from the paper but the road's still showing.
+dlg @5 resident.hub [self.working=yes] : I may pause between sentences. I've brought the page to a clean stop.
+dlg @6 resident.hub [pair.disposition=wary|hostile] : I'll give your own account the space of a sentence.
+dlg @7 resident.hub [self.likes=warm_bread] : There's bread near the sill. Mind the warm cut edge if you're setting down a sheet.
+dlg @2 resident.bye [here.time=night] : May your letter reach a lighted window.
+dlg @2 resident.job [self.job=scholar] : I practise saying what's actually visible before filling the page with what I imagine.
+graft @cart resident.hub
+choice Which cart goes in the next letter? -> letter_cart
+node letter_cart
+say Whichever passes when the first line goes down. If I pick the most handsome one you learn my taste, but nothing about the ordinary view from here.
+free
+choice Would a reader recognise a returning wheel? -> letter_wheel
+choice I'll take a look along the road myself. -> hub
+node letter_wheel
+say I'd mention a pale spoke or a heavy hub. A real letter lets its reader choose the important detail.
+choice I'll look for that pale spoke. -> hub
+choice Clear light on your page. -> bye
+
+graft @fold resident.hub
+choice Can you show me the road on the fold? -> letter_ridge
+node letter_ridge
+say Fold the paper once, upright like a hill. A cart can have a splendid climb in a drawing that looked completely flat before.
+free
+choice Can the road come down again? -> letter_flat
+choice I'll leave the hill standing. -> hub
+node letter_flat
+say Press here. Now the same cart has a level journey home. Sometimes I'd like an actual road to take that little account of my wishes.
+choice I'd draw a doorway at the end. -> hub
+choice I'll travel by the level road. -> bye
+
+
+grown
+scene g_weeks
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I could lay out a year by a run of old wheel shadows in my letters.
+b : Would the reader remember? | Do you keep copies?
+a : Different things, I hope. That's the pleasure of a letter having two ends. | Only scraps. I can tell the season from the angle at which I drew the wheel.
+
+scene g_bout
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : For a bout I like level turf with just enough spring to spare a hard landing.
+b : Still care who wins? | Which hold works best?
+a : While we're standing, certainly. Afterwards I care who's limping home. | The one I can release without either wrestler disputing its fairness.
+
+scene g_wax
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I use little more #wax# than will hold down one fold.
+b : Isn't the crest important? | What if it opens?
+a : The reader will recognise the hand inside. I'd sooner spend effort on that. | I tuck the point well in. A handsome seal on a badly folded sheet won't travel farther.
+
+scene g_track
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : One wheel out of true writes a distinct repeating mark on a wet road.
+b : Followed one far? | What do you learn?
+a : I followed that mark to the next stop and warned its driver. Curiosity needn't go beyond the next stop. | Sometimes only that a wagon needs repair. A track isn't the whole traveller.
+
+scene g_delayed
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : An unanswered letter isn't proof of a silence freely chosen.
+b : Have you waited? | Suppose a rumour reached you?
+a : Long enough to invent six explanations and live to be embarrassed by five. | Ask the traveller who carried it. Paper travelling in a bag can't bear witness to its own arrival.
+
+scene g_newcomer
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd offer a visitor the chair nearest my window.
+b : For the view? | Would you draw a map?
+a : Partly. From there my finger can show that bend without trying to name every wall between us. | Gladly, leaving a blank where I haven't actually walked.
+
+scene g_smoke
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : There's a particular hour when the wind folds smoke back against this pane.
+b : Have you marked it down? | Does it change?
+a : On three sheets. Comparing them gave me more than complaining at each separate grey morning. | With the wind, yes. The sash gets set differently every month.
+
+scene g_supper
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I score the crust before sharing so the two pieces each retain some soft bread.
+b : Who gets first choice? | Must they match?
+a : My guest, since my paw made the cut. The view is mine for every supper anyway. | Enough to please me, never enough to prevent an argument over who got the better steam.
+
+scene g_post
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : A letter asks for enough space above the address for a carrier's thumb.
+b : How did you learn? | Do you leave extra now?
+a : A damp thumb once made my careful destination look like a cottage halfway up a tree. | A whole clear finger. I prefer a sheet read at the right door to a crowded masterpiece.
+
+scene g_bell
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I like to look down when bells set the whole street looking up.
+b : Something special? | Who's moving then?
+a : For a breath all the wagon tops pause at different heights. It's a page I could almost read. | The latecomers. You can tell which door the crowd came out of by watching against the flow.
+
+scene g_road
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : On #self.street# my window used to seem the one fixed point in a moving world.
+b : Has that changed? | Do you miss it?
+a : I've been a shape in somebody else's glass since then. It gives a much larger sense of the street. | I can still come home and be glad to see movement beyond the frame.
+
+scene g_fold
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : A paper road once unfolded so far in a dream I saw the whole city astride a lump of wax.
+b : Did you find your house? | What broke the spell?
+a : By the small square window with someone at the sill watching for wheels. That felt like a fair signature. | A crust crumb in my sleeve. Even a grand imaginary journey needs a breakfast stop.
+
+story g_pin [topic=memories]
+  : I brought a map outdoors to match an old ink curve to the actual bend. The wind pegged it against my vest and left me looking at the countryside.
+  : I saw the bend clearly once nothing was in front of my eyes. It turned out the old map had been held upside down.
+  b : Did you tell anybody?
+  : I sent the true shape home in a letter. I put the little brass pin in the top edge so I could tell that end again.
+
+story g_return [topic=memories]
+  : A wheel with one pale spoke passed my window all one autumn. I thought I could recognise its owner at any distance.
+  : One day the wheel appeared on a new smaller cart. I'd been watching a good bit of work change hands and imagining a single unchanging journey.
+  b : What goes on today's sheet?
+  : Which wheel I actually saw, and which driver when the face came clearly into view. A reader deserves their own guesses.
+
+
+young
+scene y_smudge
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I got #ink# on the very spot where my drawing needed a wheel.
+b : Can you use it? | Which way will it roll?
+a : Best wheel on the page. I'll add the cart round it. | Down to the bottom corner so the horse won't have to climb.
+
+scene y_bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : A crust pressed flat in my paw fits the shape of the sill.
+b : Will you eat it? | Does it leave a mark?
+a : While it's warm. I only needed to see how well it fitted. | A little crumb trail from my paw to my mouth.
+
+scene y_hide
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I watch #shadow# run ahead of a wagon and try to guess what will pass.
+b : Can you tell a cart? | What if it's cloudy?
+a : Sometimes, by the high handle. I've guessed baskets and got barrels more than once. | Then I get the whole surprise in one go.
+
+scene y_fold
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I make #ridge# in a sheet and pretend the road goes over it.
+b : Where does it go next? | Can you flatten it?
+a : Under the bread plate and right out of the room. I haven't been told where to stop drawing. | Yes. Then the cart gets an easier journey home.
+
+story y_cart [topic=memories]
+  : I drew a wagon too big for my page. Its front wheels ran clean off the sheet before I could give it anything to pull it.
+  : I folded the edge over and gave it a horse on the back. Only I knew how very long that animal was.
+  b : Did anyone see the whole thing?
+  : You had to hold it open against the light. I quite liked being the one who could show how.
+
+
+adolescent
+scene t_week
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : The letter dated each week is for #self.father#. I give the shape of whichever cart passed my window that hour.
+b : Even in rain? | Why the carts?
+a : Wet wheels throw a lovely pale fan. That's still something to write. | I want a week to have a shape when somebody opens the paper.
+
+scene t_map
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #map.capitalize# shows a road passing straight through the frame of #window#.
+b : Do you trust it? | Would you correct it?
+a : For a reminder to look up before taking directions from a piece of paper. | I'll put the true road on a slip beside it. The old mistake amuses me.
+
+scene t_green
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I leave my head full of lessons beside the grassy wrestling ground.
+b : What do you carry back? | Are you strong?
+a : Grass on my knees and a clear idea how close the ground is. Both are quite useful. | Strong enough to need a partner who minds my pride as little as the ground does.
+
+scene t_loaf
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I tear #loaf# along its split and let the steam spend a little time against the window.
+b : Can you draw in it? | Why wait?
+a : A cart with one finger. Then the wheel goes transparent and I can see the real one. | The first mouthful's less likely to burn me after that little journey.
+
+scene t_ash
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I shut the lower pane when smoke hangs over the road.
+b : Spoils the view? | Does the upper one help?
+a : Much less than watering eyes. I can still count wheels through glass. | Just a crack if the draught's good. Otherwise all I learn that morning is smoke.
+
+scene t_lesson
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I practise making a sentence long enough to carry an actual thought.
+b : About your studies? | Who reads it?
+a : The road outside generally volunteers a subject before I'm ready. | I might send a fair copy in a letter. It ought to survive being read in another room.
+
+scene t_purse
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I can have fresh paper without calculating the cost of spoiling a corner.
+b : Do you waste much? | Does wasting matter?
+a : Too often once. These days I turn the sheet over for a rough map before letting it go. | A sheet I hardly notice buying might carry somebody else's only chance to write.
+
+scene t_mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I keep the start of a letter plain enough that I'd read it aloud to #self.mother#.
+b : What gets left out? | Would you read it all?
+a : The lordly little phrases that arrive when there's a seal within reach. | The start is for practice. The rest still belongs to its reader.
+
+scene t_weather
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : An autumn gust can lift my sheet and show me the writing from underneath.
+b : Backwards? | Catch it in time?
+a : Yes. A familiar name looks oddly far away seen that way through the light. | With #pin# through the blank corner when I remember.
+
+scene t_stale
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : Stale crust makes such a racket against a plate you miss the next passing cart.
+b : Soak it? | Would the crust go unused?
+a : If there's broth. I'd sooner hear my own thoughts than a crust arguing with my teeth. | No. Yesterday's loaf may yet find a decent supper to go with.
+
+scene t_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd like #self.friend# to guess a wagon's trade from the way its shadow crosses the steps.
+b : Is there a prize? | Do you know the trades?
+a : The bigger half of my warm loaf. I'll count that a serious wager. | Enough to know a tall load of wicker casts a particularly lovely confusion.
+
+scene t_dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt #reply# drove itself down the letter paper on four little wheels.
+b : Who was driving? | Did you read it?
+a : Nobody. It knew exactly who had been waiting all week. | I was holding down one corner when the cart went under my paw and woke me.
+
+scene t_sill
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I turn my chair a finger's width between lessons so the frame gives me another slice of road.
+b : Do you miss your place? | Is there much new?
+a : Only till I see the mark my elbow makes on the paper. Then I'm home. | A door I've never watched before is quite a large new territory.
+
+scene t_faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I can be quiet for a whole unanswered question if there's sky showing through chapel glass.
+b : Praying for something? | Does quiet help?
+a : For patience to write again without knowing if the last sheet got there. | It gives the question a place to sit outside my own head.
+
+story t_reply [topic=family self.father]
+  : One week I had almost nothing to tell #self.father#. I put down the shadow of a cart in the margin and copied the outline of the load.
+  : Halfway down I realised I hadn't seen what was in it. I wrote exactly that. All at once it sounded as though I were actually present on the paper.
+  b : Did you send the drawing?
+  : I sent the whole page. It was the first letter I wanted to read again before folding it.
+
+story t_bread [topic=food]
+  : A hot loaf left a round mist on my pane when I held it up to draw the crust. A real wagon rolled past behind its ghostly outline.
+  : For a moment I saw enough bread on the road to feed every wolf at the next market. I drew that too.
+  b : Did the picture keep?
+  : The paper did. The glass was plain again before my warm slice ran out.

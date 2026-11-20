@@ -1,0 +1,262 @@
+# rm296, the charcoal doorstep (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm296
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_percival_rustford
+written_by codex
+title the charcoal doorstep
+fits stage=adult|old
+prefers job=servant honesty=sly
+traits temper=short talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk draws_a_charcoal_tick_under_a_door_to_test_for_damp
+likes barley_soup long_walks quiet_chapel first_warm_day
+dislikes waiting wet_floors
+fears a_polished_floor_still_wet
+hopes one_uninterrupted_walk
+topics work +0.5 travel +0.4 weather +0.2 gossip -0.5
+styles comfort=practical gossip=guarded refuse=short tease=none
+marks oath saying
+persona #self.first# saves flat charcoal flakes for testing the damp on a sill and keeps private conclusions well out of sight.
+
+words
+oath! = Soot up my cuff | A dozen black sills
+saying! = Wipe your own mark away | A polished lie still slips
+flake = my flattened cinder | a charcoal flake
+tick = a short black stroke | my little test mark
+sill = the dry sill | the inner ledge
+rag = my damp cloth | the wiping rag
+seam = the sill joint | the narrow crack
+walk = my long circuit | an unhurried ramble
+bowl = a barley bowl | the soup dish
+barley = a tender grain | a swollen barleycorn
+paper = a folded square | the little paper wrap
+sole = a dry sole | the boot heel
+shine = a narrow gleam | the polished streak
+clock = the time bell | a distant bell
+
+any
+opinion @1 houses against 1 : A grand house in a view is very pretty. It has more sills to wipe than the painter ever suspects.
+opinion @1 sump for 1 : A door that sticks announces itself as clearly as any polite announcement from upstairs.
+opinion @1 merchants against 1 : Show me the good side by all means. Allow me a look at the side meant for the wall.
+opinion @1 church for 1 : A quiet chapel keeps its thoughts between four walls. I like the courtesy of it.
+opinion @1 road for 1 : I've a high opinion of roads that take longer than you expect, provided the choice was yours.
+opinion @1 watch against 1 : A wet bootprint is a small thing to build a large accusation on.
+
+grown
+line @1 greet : There's no damp to speak of here. Hello. | I'll put the little black bit away. Welcome.
+line @2 greet [pair.band=strangers] : A fresh bootmark on this sill, I see. | Hello. You've kept on the dry part.
+line @3 greet [here.time=dawn] : Morning. The shine's easier to read at this hour. | Another day early enough to leave few marks.
+line @1 greet.return : I heard. I was busy inspecting the floor. | Hello in return. You've got my attention above ground now.
+line @2 greet.return [pair.band=friends|family] : You may safely approach on the side with the clean sleeve. | Good. There's no ceremony needed between us.
+line @3 greet.return [here.time=night] : Quiet hello to you through the late hour. | It's dark enough to mind the edges. Hello.
+line @1 again.open : Ah. Circling back before the mark rubbed away. | You've come round without making me wait long.
+line @1 hail [pair.band=friends] : Stand here a breath. Look what that little line did. | Over by the dull patch, please.
+line @1 farewell : Keep your feet where there's a little roughness. | Leave no more tracks than you care to explain.
+line @1 farewell.return : So long till our next dry stretch. | Away you go on reliable ground.
+line @1 react.news : I'd like the words while the memory's clear. | Tell me where the matter actually began.
+line @1 react.news.new : I hadn't found so much as a smudge of that before. | Fresh altogether. I'll look at it twice.
+line @1 react.news.known : There's a pattern I already know. | Yes. I've seen that much written before.
+line @1 react.news.doubt : That's an uncommon amount of shine on an ordinary tale. | Something's been rubbed out between those two facts.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : Unkind news. Let me get you a seat in peace. | Enough to make any wolf turn away a minute. Take the minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Now that's something I would gladly hear repeated. | A proper bright patch in a grey day.
+line @1 ask.how : Have you been left waiting about anywhere today? | How much of the day did you get for yourself?
+line @1 answer.how : I'd welcome a brisk walk and fewer questions about the distance. | Keeping steady on a rather slippery day.
+line @1 decline : I'd be inclined to leave that with someone who can speak freely. | I have good reasons for keeping that matter out of reach.
+line @1 accept_decline : Then I won't waste your time standing here. | A closed door saves a good deal of knocking.
+line @1 preclose : I'd better take my walk before somebody finds another reason to keep me. | I've a stretch of road I'd still like to enjoy.
+line @1 accept_preclose : Clear away then. The pause has done its bit. | Glad to give you back the remaining distance.
+line @1 thank : You've saved me both time and a clean sleeve. Thanks. | That was done discreetly. I appreciate it.
+line @1 deflect_thanks : I was wiping the mark off anyway. | Easier to lend a cloth than fetch a mop.
+line @1 sympathise : Leave some things unsaid and still sit here. | A little company doesn't buy me any rights over the story.
+line @1 reassure : We can test the footing without trusting the shine. | No need to settle everything astride a wet threshold.
+line @1 ack : That leaves a clear enough impression. | I understand which side you mean.
+line @1 give.advice : Test one small place before you commit both boots. | Fold the black side inward before pocketing a cloth.
+scene tick_test
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I make one small charcoal tick where the light doesn't reach a sill. | A floor can look bone dry and still be damp by the door.
+b : How do you read a tick in the dark? | Is the black stroke a warning?
+a : Rub it with a pale rag. Dry powder comes away clean, damp makes a smear. | Just a test. The warning comes from me after I've wiped the sill clean again.
+
+scene coal_paper
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : My coal flake travels wrapped like a fine sweet. | I've a little packet one shouldn't eat even by mistake.
+b : For luck, is it? | What's in the wrapper?
+a : For keeping black off my lining. That amounts to a fair bit of luck. | Flat charcoal. Good crisp edges and a quite dreadful flavour, I imagine.
+
+scene wetfloor
+when topic=home self.dislikes=wet_floors
+does tell.complaint / ask.detail / answer.detail
+a : A freshly washed floor wants a word hung up beside it. | I object to taking the shine off a polished floor with my backside.
+b : No use polishing it, then? | What word would you hang up?
+a : Polish it by all means. Tell folk before a fall gives them the news. | Wet. Admirably brief. No room in it for a misunderstanding.
+
+scene waiting_work
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I like an instruction to contain somewhere I can go now. | The hardest errand is the one you have to stand still to begin.
+b : Why should waiting be hard? | You'd rather climb stairs?
+a : I can walk a mile while folk are still debating which door wants opening. | At least a stair shows up where the time went.
+
+scene souptemp
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : Barley soup should reach my spoon with its grains still distinct. | I'd rather find barley beneath the steam than flour made to look useful.
+b : Are you very particular? | What distinguishes flour from good barley?
+a : Only where dinner's concerned. And floors. And a few other ordinary things. | By giving one grain a bite. I trust my teeth to make the distinction.
+
+scene longturn
+when topic=travel self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I'm fond of turning a necessary walk into a much less necessary long one. | An errand done leaves a bit of room in the day for a turning with no purpose.
+b : Do you walk slower at the end? | What if somebody wants you?
+a : No. I walk just as quickly in a more interesting direction. | If the errand's finished all that's left to deliver is me. I'll take a sensible detour.
+
+scene sunstep
+when topic=season self.likes=first_warm_day
+does tell.feeling / react.self / assess
+a : First warm day lets you stand on a step without borrowing the stone's whole winter. | I look for real warmth in the stone before trusting spring.
+b : You test it with charcoal too? | How long do you stand there?
+a : With my own backside, judiciously. There are limits to my grey little friend. | Long enough to tell sun on my coat from actual warmth in the step.
+
+scene privatework
+when topic=gossip
+does give.opinion / react.self / assess
+a : A floor polisher has a splendid view of boots. The rest is none of my concern. | An open door does not commission me to repeat whatever I see beyond it.
+b : Surely you notice more than boots? | What if the tale is interesting?
+a : I notice where the traffic's wearing the boards. Everything else is badly lit. | Then the owner of the tale may take the pleasure of telling it.
+
+scene spouse_walk
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd enjoy getting mildly lost on a walk with #self.spouse#. | I'd let #self.spouse# pick the road beyond the last errand.
+b : Why only mildly lost? | You'd give up the choice?
+a : Because I like barley soup indoors as well as long roads outdoors. | Happily. I'd still be choosing the company.
+
+scene littlebay
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The stretch beyond the wall gets quieter with every turn toward a cove. | Go out where the sea takes over and even a loud boot becomes a small affair.
+b : Isn't the shore noisy? | You like that better than the town?
+a : Steady noise. No voices calling you back just as you get your stride in. | For one walk, certainly. At the end I'd still prefer a sound roof.
+
+scene sumpwipe
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : In the Sump my habit is to test the inside of a sill when I get home. | A door that keeps out the view doesn't necessarily keep out water.
+b : What do you find in there? | Do you stand testing even when tired?
+a : Usually a dry streak. When it's wet I move whatever's on the floor beside it. | Less bother than finding a wet sack when I have my boots off.
+
+scene chapelquiet
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : A quiet chapel will generally hear me without requiring full particulars. | I like to sit by a chapel wall and keep my paws open for once.
+b : Nothing in your pocket then? | What particulars do you keep back?
+a : The charcoal stays pocketed. I can do without my own little test there. | Those that are mine only to hold. The Bright One needs no gossip.
+
+scene greymarket
+when topic=prices
+does give.opinion / react.self / assess
+a : If rags were sold by how white they start, a buyer would never know what a good one costs. | I'd pay for a wiping cloth that lasted a lot of hard rubbing.
+b : Not for fine linen? | Aren't old scraps enough?
+a : Not to clean a sill. I can bedazzle an audience another time. | Certainly if they're sound. I'd like to feel the worn place before paying for the rest.
+
+scene roughspell
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : In a bare week I keep using the black flake till I've hardly anything left to pinch. | I fold a rag four ways before I call it spent.
+b : Does saving so little really help? | A whole rag for one flake?
+a : It's small enough to do daily. That's where the value builds up. | Old paper for the flake. The rag has its own four lives.
+
+scene chapelbell
+when topic=day here.time=night
+does tell.self / ask.detail / answer.detail
+a : I can tell when I'm near a sheltered wall at night by the sound of a footfall. | A night walk wants more ear and less boot leather than folk imagine.
+b : More ear for what? | Do you like the dark then?
+a : For the sound coming back. A wall at your elbow makes a close reply. | Dark's fine when you listen. It's a puddle in the dark I could do without.
+
+scene clearwipe
+when topic=weather here.weather=rain
+does warn / react.self / assess
+a : Mind the threshold after a wet coat comes through. | Rain doesn't stop indoors if the coat's come with it.
+b : Would you hang the coat outside? | One coat does all that?
+a : Under cover, over a tray. Saves the coat as well as the sill. | One coat shaken hard, certainly. Most of a shower fits into good wool.
+
+scene nearfriend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I could walk with #self.friend# without reporting the purpose of the journey. | I'd feel no call to make excuses for a long silence beside #self.friend#.
+b : Is there a purpose? | Does that make a good visit?
+a : To have the walk. If there's a better one we'll meet it on the way. | Makes an excellent couple of miles. Talk can arrive of its own accord.
+
+scene sparemark
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a whole walk with no damp patch needing my personal opinion. | Someday I'll put a clean square in my pocket and bring it home still clean.
+b : You'd find that dull? | Could you resist a questionable sill?
+a : I should dearly love the chance to find it dull. | On a day of my own, I might just permit the sill its private affairs.
+
+story blackglove [topic=memories|work self.job=servant]
+  : I tested a sill with a piece of clean cloth and was astonished to find black marks everywhere I rubbed.
+  : It took three sills to discover I'd picked my coal up with the very paw holding the rag.
+  b : How did you put it right?
+  : Washed my paw, dried the sills and made precisely no public announcement.
+
+story coldsoup [topic=food|memories]
+  : I've gone on a walk with a jar of barley soup tucked in my coat. For a while it made the coat wonderfully warm.
+  : I decided to make a circuit of the cove before opening it.
+  b : How was the soup?
+  : Cold enough to cure me of confusing a pleasure in the present with a meal for the future.
+
+story blacksea [topic=travel|memories]
+  : I tried to draw the outline of a rocky inlet with my coal. Made a very decent likeness on a handy scrap.
+  : Folded the paper and opened it later to find a second inlet facing the first.
+  b : Did the drawing survive?
+  : There is now a little inland sea on that scrap. No strong resemblance to any coast I've walked.
+
+rule @wrap
+when concept=bark
+does aside
+cooldown 8h
+say Black side wrapped inward. That's a clean pocket. | No need to mark the whole plank to test it.
+
+rule @work
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say Give that last patch a minute off your boots. | Dry board this side, uncertain shine past the door.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say A shower's coming inside one hem at a time. | Little dark mark under the sill. Time for the rag.
+
+rule @walk
+when concept=bark self.likes=long_walks
+does aside
+cooldown 8h
+say A little longer round the shore won't hurt the road. | I'd take another turn if nobody needs the time.
+
+dlg @1 resident.hub : I'm ready to hear anything without an elaborate prelude of guesswork.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've put the charcoal away. You can safely approach.
+dlg @3 resident.hub [here.time=night] : A good hour for saying little and hearing it plainly.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll hear the question. Your boots can stop just there.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. You may inspect the state of the sill if you'd like a sample.
+dlg @2 resident.job : A small hint in the right place can spare a large amount of cleaning up later.
+dlg @1 resident.bye : Better a dry walk than a quick arrival on your back.
+graft resident.hub
+choice What happens if the charcoal comes off in a smear? -> wetstroke
+node wetstroke
+say I wipe that little patch and try beside it. If the second one runs too, I get the floor dried before somebody puts a confident foot on it.
+free
+choice Why not warn everyone at once? -> beforecry
+choice I'll keep a boot on the rough part. -> hub
+node beforecry
+say I generally do both. For the warning I like to know whether the problem is damp boards or an observer going about with dirty paws.
+choice That seems a fair distinction. -> hub
+choice I'll walk carefully. -> bye

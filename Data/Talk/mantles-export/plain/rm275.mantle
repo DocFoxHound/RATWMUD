@@ -1,0 +1,249 @@
+# rm275, the awning in the apron (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm275
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_frida_kelpford
+written_by codex
+title the awning in the apron
+fits stage=adult|old
+prefers warmth=warm honesty=frank
+traits temper=even talk=plain warmth=warm humour=none honesty=frank piety=ordinary drive=steady
+quirk carries_a_canvas_sample_for_a_future_stall
+likes plum_tart evening_line full_larder thunder
+dislikes rats night_noise
+fears rent_coming_due_before_opening
+hopes enough_canvas_for_a_market_stall
+topics prices +0.5 food +0.4 weather +0.4 work +0.3
+styles comfort=practical gossip=plain refuse=direct tease=none
+marks oath saying
+persona #self.first# carries a scrap of canvas for a future stall and always asks where the rain will run off.
+
+words
+oath! = Peel my plums | Stitch my thumb
+saying! = Price the roof as well | Rain runs somewhere
+canv = a rough canvas square | a scrap of striped cloth
+edge = a doubled hem | a folded seam
+potcoin = my next stall penny | a copper for canvas
+pieheel = a corner of tart | a strip of plum crust
+dripline = one dark track | a wandering drip
+postbit = a short ash peg | a little wooden upright
+reed = a split reed | a reed no thicker than twine
+spout = a pinched corner | a little cloth gutter
+rod = my evening rod | a supple switch
+pegline = a length of good string | a brace of stout cords
+measures = a span of linen tape | a marked scrap of webbing
+
+grown
+opinion @1 merchants mixed 1 : Put the full price where a short customer can see it without standing on tiptoe.
+opinion @1 houses against 1 : A great roof can keep one family dry and send a river onto its neighbours.
+opinion @1 festivals for 1 : Give me the bit where a shy singer can hear a whole street take up the song.
+opinion @1 strangers for 1 : A stranger holding the corner of a cloth deserves to stand underneath too.
+opinion @1 dole for 2 : A good pantry ought to make an empty pantry less likely on the next landing.
+opinion @1 sump for 1 [self.quarter=sump] : We know which gutters overshoot a waiting customer's neck down here.
+line @1 greet : Here, step under the bit of cover I've got in mind.
+line @1 greet.return : Glad you came within ordinary speaking range.
+line @2 greet.return [here.time=night] : Easy voices now. Night racket's worn my ears quite thin.
+line @1 farewell : May you get home ahead of the next drop.
+line @1 farewell.return : Take your bundle by the dry end.
+line @1 ask.how : Keeping a little by for yourself these days?
+line @1 answer.how : One copper nearer my hope if I mind what I buy.
+line @1 thank : You held that corner square when it wanted to twist.
+line @1 decline : I won't take coin for a promise I can't keep.
+line @1 deflect_thanks : You'll hold the high corner for me another time.
+line @1 accept_decline : I'll leave that piece on the counter, then.
+line @1 sympathise : I can share whatever shelter my own shoulders get.
+line @1 reassure : A roof starts with a piece small enough to fold.
+line @1 react.news : Come round the counter with the whole story.
+line @1 react.news.new : That hit a patch I hadn't covered.
+line @1 react.news.known : I'd already put that piece away.
+line @1 react.news.doubt : I'd see what leaked through before I bought that account.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : There's cause to cut a generous slice today.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I wish I could keep that much hurt from falling.
+line @1 again.open : There's a familiar face beside my little awning.
+line @1 ack : That would keep the worst off, yes.
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I've worked out the price of a stall roof in tart slices. | Every plum tart I don't buy gives me another finger of canvas.
+b : Will you ever eat another tart?
+a : Certainly. The point of having a stall isn't to forget what a customer wants.
+
+scene work_1
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I pay attention to where a buyer sets a wet bundle. | Working a counter gives you a fine view of dripping sleeves.
+b : Where would you put those bundles?
+a : A low board to one side. No customer should have to buy the price of a puddle.
+
+scene work_2
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'm learning the difference between a bargain and a cheap mistake. | When I'm shown a price I ask what came out of the purse first.
+b : Is that part of learning a trade?
+a : It's part of learning to keep practising it after you've made your first sale.
+
+scene weather_1
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Look at the bend in that falling water. It's nearly gone straight. | I'm seeing whether these drops are getting farther apart.
+b : Tired of rain?
+a : Interested in when to take the roof down. I can wait, but wet canvas won't fold kindly.
+
+scene weather_2
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : Thunder makes me grateful for a tongue that doesn't have to outshout it. | I like a proper rumble from the dry side of a plank.
+b : Worried about the roof?
+a : I like knowing where the shelter ends. The noise can have everything beyond.
+
+scene food_1
+when topic=food self.likes=plum_tart
+does tell.self / ask.detail / answer.detail
+a : My favourite corner of a plum tart leaks a little. | I look for a dark patch where the juice came through.
+b : Why pick the untidiest bit?
+a : A tidy crust might be all crust. I prefer some evidence of a plum.
+
+scene pastimes_1
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I'll take a bent rod out at evening just to see who's hungry. | I put a line out when I've quite had enough of counting coins.
+b : Do you count the fish?
+a : Only once they're in the pan. Anything before that is a boast waiting to spoil.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I leave one small shelf open for the very thing I hadn't planned on. | A full cupboard still needs room for a surprise.
+b : Like a gift?
+a : Or a catch worth sharing. I'd hate to rearrange jars with a fish in each hand.
+
+scene animals_1
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat can find the one lid I haven't weighted. | I like a crock that sits too high for little scratching toes.
+b : How high would you go?
+a : I'd sooner have a sound lid than trust a rat to have short legs.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can decline a bad deal and still want the seller's company. | If a friend's bought poor canvas I'd say so before anybody put up the posts.
+b : Even after the coin has changed hands?
+a : That's when a friend wants an honest finger on the hole and help stitching it.
+
+scene travel_1
+when topic=travel here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : If I could sell from my own Commons stall I'd stand outside it first. | I picture my own counter from the muddy side.
+b : What catches a buyer's eye?
+a : A corner I could reach with a basket under one arm and nobody getting dripped on.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I've turned #canv# over so often both sides look like the outside. | I keep this cloth for thinking about my roof.
+b : Wouldn't paper do?
+a : Paper never showed me where a hem would rub my ear.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I wear my worries in the joint beside my thumb. | A sore thumb's usually been counting the same coin too often.
+b : What gives it a rest?
+a : A walk with both hands open and not a copper in either one.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I'm a poor sleeper with a loose shutter anywhere near. | I can stand thunder much better than one board tapping all night.
+b : Why the board?
+a : Each tap reminds me somebody could fold a rag under it and end the performance.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When the week pinches my roof money looks a lot like supper. | A hard week's a poor time to treat a saving as untouchable.
+b : Would you spend it?
+a : To eat, yes. Canvas needs a living wolf to put it up.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't ask for rain to stop just because I'm standing where it falls. | Cheap cloth turns a shower. The Bright One knows how little cloth it takes to keep me grateful.
+b : What else counts as a kindness?
+a : The extra width of shelter that means I can beckon somebody in.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I made a little market roof out of two pins and a folded scrap. | My earliest shop would have comfortably fitted three plum stones.
+b : Was it profitable?
+a : A breeze flattened it before the first sale. Valuable lesson about pegs.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll tell a newcomer if a shop's dear even if I like the owner. | There's no loyalty in letting somebody unwittingly empty a purse.
+b : Wouldn't that lose you friends?
+a : A price worth charging can stand being seen in daylight.
+
+story spout [topic=weather]
+  : I propped a scrap over an empty bowl and poured water on to test an awning.
+  : The bowl didn't catch a drop. My ankle caught the lot.
+  b : What did you change?
+  : Raised my ankle out of range and turned the seam round. Remarkably dry ankle on the next attempt.
+
+story purple [topic=food]
+  : I wrapped a coin in a cloth that had held plum tart.
+  : At the market it came out shiny purple and stuck to my middle finger.
+  b : Did you part with it?
+  : I ate the crumbs, washed the copper, and counted it straight back into my canvas fund.
+
+story slope [topic=memories]
+  : I laid a board on two crates for an imaginary counter.
+  : A plum stone rolled off before I'd finished admiring my work.
+  b : Did you make the board level?
+  : First I marked the direction. Nothing like knowing where lunch will go if you sneeze.
+
+rule @roof
+when concept=bark
+does aside
+cooldown 8h
+say Give the water a corner of its own. | That's another finger's width of roof.
+
+rule @thunder
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say Now that's a voice that needs no market cry. | Stay under the good boards while that passes.
+
+rule @evening
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say I could stand to exchange a counter for a fishing rod. | Quiet end of the day for a bit of line.
+
+rule @learn
+when concept=bark self.apprentice=yes
+does aside
+cooldown 8h
+say Add the cost of the string before naming a price. | A learner does well to look at both sides of a deal.
+
+dlg @1 resident.hub : Come look at something I mean to have full size one day.
+dlg @1 resident.job [self.job=merchant] : At #self.workplace# I watch how buying feels on both sides of a counter.
+dlg @1 resident.news [world.news] : This is the bit in clear view. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Talk round here says #topic.subject# #topic.claim#. I didn't put a price on the truth of it.
+dlg @1 shop.greet [here.shop=open] : Take a look. You'll know the price before you part with a penny.
+dlg @1 resident.bye : Hope the next purchase leaves you something to keep.
+graft resident.hub
+choice How wide will that roof be? -> stripe_roof
+node stripe_roof
+say Wide enough for the buyer too. A stall that soaks whoever comes to shop will do a brisk trade exactly once.
+choice What happens to the run-off? -> stripe_run
+choice Good luck with the canvas. -> hub
+node stripe_run
+say Down a cord at the back into a bucket. I mean to find another use for the very thing that tries to drown me.
+choice Good luck with the canvas. -> hub

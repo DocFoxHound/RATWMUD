@@ -1,0 +1,263 @@
+# rm447, the caller above the watermark (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm447
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_solveig_nailstack
+written_by codex
+title the caller above the watermark
+fits stage=adult|old
+prefers job=laborer talk=chatty
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk measures_a_puddle_against_the_height_of_a_tray
+likes smoked_eel stars festival_bells warm_rain
+dislikes drizzle cold_tea
+fears a_wet_bottom_in_a_full_tray a_voice_drowned_by_wheels
+hopes a_dry_board_wide_enough_for_two_trays
+topics weather +0.7 work +0.5 food +0.4 festival +0.3 smalltalk +0.2
+styles comfort=practical gossip=plain refuse=direct tease=none
+marks oath saying
+persona #self.first# can project the price of a button above a passing wagon, and has the patience to sort a tray by touch while the wagon rolls past.
+
+words
+oath! = Split my last eyelet | Bother this wet baize
+saying! = Water starts at the cheap end | Count the holes before threading
+tray = the board against my ribs | my shallow tray
+buttonrow = a line of pale buttons | the bone buttons
+eyelet = a little brass eyelet | the round brass hole
+waterlip = a shiny tongue of water | the first shine of a puddle
+dryledge = a sill above splash height | a handy dry shelf
+eelbit = a smoky strip of eel | a mouthful of smoked eel
+halflight = a star above the roof tiles | the first visible star
+strapbit = the square of felt under my strap | my shoulder pad
+tealeaf = a stranded tea leaf | a soft brown leaf
+bellgap = the hush between two bells | the gap in the pealing
+cordtip = a waxed lace tip | the end of a stiff lace
+
+any
+opinion @1 sump for 2 : A neighbour down here knows which doorstep to put a parcel on while the gutter runs high.
+opinion @1 houses against 1 : Let's see a fine cuff mend itself without a penny finding its way down to the button seller.
+opinion @1 merchants against 1 : I can quote a price over six wagons. Getting a fair one takes longer.
+opinion @1 festivals for 1 : You get a fine clear answer to a call in the spaces between bells.
+opinion @1 times against 1 : A purse wears thin enough. Folk have begun turning the thin part inwards to make it last.
+opinion @1 dole for 2 : Much better to cry a price with something under the ribs.
+opinion @1 city for 1 : Every incline changes how far a call can carry. I could walk those slopes with my eyes shut.
+
+grown
+line @1 greet : Come round on the dry side. Plenty of room for talk.
+line @2 greet [pair.band=strangers] : I don't know that voice yet. Give it another word.
+line @3 greet [here.time=dawn] : Morning. Dry cuffs this early are a pleasure.
+line @4 greet [here.time=dusk|night] : A little light on the brass still. Come closer.
+line @1 greet.return : Heard you fine the first time. I've a selling voice, not a selling ear.
+line @2 greet.return [pair.band=friends|family] : You can come close enough to save us both the shouting.
+line @3 greet.return [self.working=yes] : I can work by touch while you speak.
+line @4 greet.return [here.time=dusk|night] : Evening to you. Last of the light's on the brass.
+line @1 kin.open [pair.kin!=no] : Kin can reach round and straighten that strap.
+line @1 again.open : That wheel went by and took my last sentence with it.
+line @1 hail [pair.band=friends] : Friend, here's a dry bit wide enough for your feet.
+line @1 farewell : Keep the laces out of the puddles.
+line @1 farewell.return : And mind that second gutter. It runs across.
+line @1 react.news : Give it enough voice to reach me.
+line @1 react.news.new : That's a fresh call on this street.
+line @1 react.news.known : Heard it cross the market earlier.
+line @1 react.news.doubt : I'd want somebody who was close enough to see.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Hard word to carry above a crowd. Come under cover.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Give a little air to a happy report like yours.
+line @1 ask.how : Keeping dry, are you?
+line @1 answer.how : I've voice enough left to answer civilly.
+line @1 thank : You saved a trayful there. Much obliged.
+line @1 deflect_thanks : I could spare that length without unrolling another.
+line @1 sympathise : There's room under my awning for a quiet minute.
+line @1 reassure : A raised edge will turn a surprising lot of water.
+line @1 decline : I've already promised the time that would take.
+line @1 accept_decline : All right. I'll wind that length back on.
+line @1 preclose : I'd best gather in the dangling ends.
+line @1 accept_preclose : Good. We can finish while our feet are dry.
+scene first_flood
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : #waterlip.capitalize# comes round the corner before the rain's properly started. | When it rains I watch uphill for the gutter's first trickle.
+b : Which corner gets it first? | Why uphill?
+a : Look for a button lodged high between the stones. That's how far the last lot came. | Because every drop of it is headed for my feet. Better to see it coming.
+
+scene felt_strap
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #strapbit.capitalize# makes a long day bearable. | I save the good felt for shoulders.
+b : Why square instead of long? | Yours only?
+a : Turn it round at noon and you get four fresh corners in a day. | Offer another carrier a scrap and see how quickly it finds a home.
+
+scene finding_holes
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : In a tray on the move I can tell a four-hole button by touch. | #cordtip.capitalize# makes a better pointer than a claw when someone's looking for a match.
+b : Does two feel much different? | What if you haven't one?
+a : Try threading four in a hurry and you'll feel each one separately. | I show the nearest shade against the cuff. That usually settles it.
+
+scene short_call
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I'm trying out a new call this week. Nobody pays extra for the singing. | I've learnt more by pausing a sales call than by shouting it through.
+b : What sort of call? | Who speaks while you're quiet?
+a : Two low notes and the price high enough to clear the wheels. | A customer trying to tell me the size.
+
+scene smoke_lunch
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : #eelbit.capitalize# leaves enough salt to have the water taste sweet afterwards. | I bite the thin end of a strip of eel first.
+b : Does it keep on a board? | Saving the thicker bit?
+a : Wrapped by itself. A button oughtn't to smell like anybody's dinner. | It's easier to hold. A tray gives me very little lap.
+
+scene first_star
+when topic=weather self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : #halflight.capitalize# generally catches me with my chin still tucked down over a knot. | I find the first stars through the buttonholes of a dark cuff.
+b : Do you stop to look? | Can you see four at once?
+a : For a breath. The tray's been my whole view all day; the sky gets a turn. | No, but the first one looks worth the trouble.
+
+scene bell_practice
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : I wait for #bellgap# to call out anything with a price. | A festival bell has a fine reach.
+b : What if there's hardly a gap? | Better than your call?
+a : Just give the price. Anybody who wants to pay it will ask for particulars. | It carries further, I'll give it that. But a bell can't tell anybody what a lace costs.
+
+scene warm_rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Rain that falls warm lets you keep sorting on the way up to cover. | I know the warm rain by the way my shoulders stay down.
+b : Even little things? | Do you let it wet your wares?
+a : The little things go in the apron fold closest to my ribs. | Not the laces. My shoulders can have the rain; the laces stay under the flap.
+
+scene mean_drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle will spot every button on a board and pay for none. | Three drops here, two there.
+b : Can a button spoil? | You're counting rain now?
+a : Its shine does the selling. The button can afford to wait longer than I can. | I'm counting how many times I've had to move one dry parcel.
+
+scene cold_cup
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : #tealeaf.capitalize# sticks to the lip when neglected tea has gone cold. | I like a cup small enough to finish between customers.
+b : Can't you wipe it off? | Surely a big one lasts longer?
+a : I can also remember to drink hot tea when I get it. | That's how the cold part gets in.
+
+scene home_water
+when topic=home self.quarter=sump here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A doorstep in the Sump wants a place for wet straps to hang free. | The best mark on a Sump wall is the one a flood didn't reach.
+b : Hang them doubled? | What mark's that?
+a : Hang the lowest tip out over a crock. Saves kneeling down with a rag later. | A pencil line by the stairs. Every flood that stops short of it, I count a good year.
+
+scene dry_work
+when topic=work self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : Working round #self.workplace# I've learnt every slope in the street. | I can find a scrap of cover around #self.workplace# without going far.
+b : Is much of it level? | Just for yourself?
+a : Not a yard. Put a button down flat and watch it roll off to the gutter. | Me and the tray. The tray gets the dry side first; it earns more than I do.
+
+scene new_feet
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I tell a newcomer to mind the stretch where the paving goes dark first. | New ears are best for trying a fresh call.
+b : Why not just go round? | Would you tell a newcomer that?
+a : Because there's another just round the corner. Learn one and you'll recognise both. | Why not? They'll tell me straight if it's no good. Folk who know me just nod.
+
+scene hard_ends
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a lean week nobody minds two laces coming from different lengths. | I save the bits that want an inch spliced on.
+b : Do the colours have to match? | Do those sell?
+a : People still have a bit of pride under the mud. | These days a sound splice is often what somebody's looking for.
+
+scene wind_route
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'll carry #tray# edge-on to a gust for a few steps. | Narrow lanes can catch a cry and throw it back a street away.
+b : How do you stop things sliding? | Good for selling?
+a : Turn my whole self. The tray stays level against my ribs. | I have to make myself visible before somebody tries to buy buttons off a wall.
+
+scene news_carry
+when topic=news world.news
+does tell.news / react.self / assess
+a : The call from #world.news_from# goes like this. #world.news#. | #world.news#. I heard the place given as #world.news_from#.
+b : Is that all of it? | Will you cry that out?
+a : All the words I got. I don't add any, not to news. | Not before I'm sure who can hear within the crowd.
+
+scene small_gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : There's a little more going round than ribbon today. | I'd sell a button without enquiring why the last one came off.
+b : Are you taking up the cry? | Even if you knew?
+a : Not me. A word won't wind back on the spool once it's out. | No. Knowing why is no part of the price.
+
+scene shelf_wish
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a dry board wide enough to turn a second tray round beside mine. | I want to hear somebody call for another row of good bright buttons.
+b : For another seller? | Why that in particular?
+a : For another set of shoulders to get a rest. | I'd know I'd shifted the first lot without the gutter taking any.
+
+story brass_pool [topic=memories|weather]
+  : Once I saw a brass eyelet glittering in a clear puddle.
+  : Reached in and came up with my hand full of water.
+  b : Did somebody get there first?
+  : The eyelet was in my own hanging strap. Reflection got the shine exactly right and the position badly wrong.
+
+story two_prices [topic=memories|work]
+  : I tried to beat a cart for noise and called two prices in one breath.
+  : A listener standing at each wheel said I'd promised something different.
+  b : Which price did you take?
+  : The lower one, twice. Paid less than lessons and taught me where to stand.
+
+story dry_string [topic=home|memories]
+  : I tied my tea rag to the end of a high cord to dry.
+  : Proud of the knot, I hung a weight on the other end and watched the rag climb.
+  b : How did you reach it again?
+  : By untying the weight. An answer that took considerably longer once I was standing there liking the knot.
+
+rule @pull_level
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Lift the left strap. Level again.
+
+rule @touch_brass
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A wet shine already? No, just brass.
+
+rule @spool_last
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Wind the loose length towards the light.
+
+rule @street_dry
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say That corner's dry all the way across.
+
+dlg @1 resident.hub : Join me behind the board. Saves me shouting over the carts.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, give that corner of the board a little space and come through.
+dlg @3 resident.hub [here.time=dawn] : You're out early. First call's still to come.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I hear just as well with my tray between us.
+dlg @1 resident.job [self.job=laborer self.trade_words] : #self.trade_words.capitalize#. I carry enough on a strap to make a difference to a day's pay.
+dlg @1 resident.news [world.news] : Here's what reached me from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : There's talk going cheap. Save your lace money for a thing you can actually tie.
+dlg @1 resident.bye : Keep the wet part of the street below your cuffs.
+graft resident.hub
+choice How do you tell which street will flood? -> water_level
+node water_level
+say One scrap of thread in a crack could be from a cuff. Three scraps caught level across a wall? That's how high the water got.
+choice What height is safe for a tray? -> clear_board
+choice I'll look at the cracks. -> hub
+node clear_board
+say Judge the board with the strap fully let out. Then allow for a wheel splash. A dry board in a quiet street is only half the measurement.
+choice I'll remember the wheels. -> hub
+choice Time to find a dry crossing. -> bye

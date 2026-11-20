@@ -1,0 +1,262 @@
+# rm471, the orchard of three tales (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm471
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_rue_sheafley
+written_by codex
+title the orchard of three tales
+fits stage=adult|old
+prefers talk=chatty drive=content
+traits temper=calm talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk keeps_three_dried_apple_rings_to_choose_a_story
+likes barley_soup long_walks full_larder warm_rain
+dislikes night_noise smoke
+fears a_smoky_storecupboard a_noisy_night_after_a_long_walk
+hopes a_quiet_route_past_full_shelves coins_enough_for_a_private_wish
+topics lore +0.5 travel +0.4 home +0.3
+styles comfort=provisions gossip=measured refuse=plain tease=none
+marks oath saying
+persona #self.first# keeps three dry apple rings in a cloth, turns the one in front to choose a tale, and has quite a different version of each for a listener willing to take a long walk.
+
+words
+oath! = Pips in the bedtick | Smoke in the store
+saying! = A different hole makes a different tale | Leave the last apple hanging in the story
+ringcloth = my cloth for three rings | a square of fruit cloth
+fatcircle = the roundest apple ring | my broad yellow circle
+splitring = the ring with a gap | the open apple curl
+thinring = the narrowest apple slice | a thin dried ring
+soupseed = one plump barley grain | one pale bit of barley
+storepeg = the plain clean hook | a shelf-end peg
+softbag = a loose cloth purse | my little folded purse
+rainstem = a wet leaf stalk | a beaded twig
+walkstop = my little wayside rest | a pause by a dry stone
+warmstew = the steam above the soup | a warm curl from the bowl
+
+any
+opinion @1 dole for 2 : A given bowl of thick soup is an excellent reason to stay on your feet another afternoon. That's quite a lot to give anybody.
+opinion @1 festivals for 2 : I can hear five new endings to the same old song before the last dance. I'd go just for the company the words carry home.
+opinion @1 houses against 1 : I can see the owner's mark on a full barrel very plainly. When the barrel's empty I generally see who must go and find the next load.
+opinion @1 merchants against 2 : A seller who tells me about bruises before I pay gets more respect than one who has a cleverer story ready after the purchase.
+opinion @1 church for 1 : I've eaten a quiet meal under a chapel roof while the wind made a performance of itself outside. I keep the warm part of that memory.
+opinion @1 times against 2 : The money I've managed to put aside keeps wanting to turn into the price of an ordinary week's food. I'd prefer a greater distance between those two piles.
+
+grown
+line @1 greet : There's a short walk's worth of time to share here.
+line @2 greet [pair.band=strangers] : A new face may choose whichever story ring looks right.
+line @3 greet [here.time=dawn] : The air's just cool enough to keep the apples sweet. Welcome.
+line @4 greet [here.time=dusk|night] : A soft time of day to listen before turning home.
+line @5 greet [self.working=yes] : One piece of fruit to put down safely and I'm yours to hear.
+line @1 kin.open [pair.kin!=no] : Come have the inner bit of the cloth. That's for our own.
+line @1 again.open : Around you come with quite a different afternoon behind you.
+line @1 greet.return : A welcome word's as good as a bite on a long walk.
+line @2 greet.return [pair.band=friends|family] : That voice would bring me back from a complicated ending.
+line @3 greet.return [self.working=yes] : You've got an answer over my gathering basket.
+line @4 greet.return [here.time=dusk|night] : Softly back across the dark. I heard you.
+line @1 farewell : Carry one agreeable thought into the next turning.
+line @1 farewell.return : I'll wrap the last little piece and follow in my own time.
+line @1 react.news : I'd hear that from the part where a real pair of feet first came across it.
+line @1 react.news.new : This puts a fourth bend in a familiar road.
+line @1 react.news.known : I've a version of that which still smells of the first telling.
+line @1 react.news.doubt : Is there a wolf who could point out the spot where it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I could spend a fair afternoon walking a proper meal to that door.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Such news leaves the last mouthful sweet.
+line @1 ask.how : Is there anything beyond your day's errands worth taking a slightly longer road to?
+line @1 answer.how : There's soup ahead of me and something interesting just behind my last turning.
+line @1 sympathise : A tired mind can carry an old piece of sorrow a considerable way.
+line @1 reassure : A rest in the story won't spoil where you intended to go with it.
+line @1 decline : I'll tell you a long tale but I'm keeping the object of my savings quiet.
+line @1 accept_decline : A closed fold in a story needs no further poking.
+line @1 thank : You've left me enough free hands to carry the whole good thing home.
+line @1 deflect_thanks : We may yet manage to spend an afternoon passing the kindness about.
+line @1 preclose : I have let my feet wait patiently through quite a fair stretch of talking.
+line @1 accept_preclose : Go with the turn the light is giving you.
+line @1 ack : Fine ending.
+scene threerings
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I carry three dried apple rings because I've three tales that fit into most walks.
+b : Which gives the longest tale? | Do you ever eat one?
+a : The one with the gap. I put an extra turn into it to make up for the missing bit. | Sometimes. The tale in that ring has to live in my head till another apple has dried.
+
+scene soup
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I like a spoonful of barley soup that can hold a little grain above the rest.
+b : To cool faster? | Where does the top grain go?
+a : Partly. I like seeing what this long hot story of a pot has been about. | I let it cool and find out whether the rest of the bowl is likely to reward a patient mouth.
+
+scene longway
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : I choose a long way round even when the most comfortable spot in sight is where I've just stopped.
+b : Why set out again? | Doesn't the choice tire you?
+a : Because knowing you can sit where a walk ends makes the middle of it a pleasure. | My legs sometimes think so. My curiosity has an excellent working arrangement with a hot bowl later.
+
+scene storedfood
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : I count a spare place on a shelf as part of a full larder.
+b : Surely a full one hasn't any room? | Which thing gets the spare space?
+a : It ought to have room to move a full jar without having another fall on the floor. | Nothing permanently. It earns its keep by being somewhere to set a parcel opening into several little things.
+
+scene warmrain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : A warm shower on a hard skin of fruit draws every bead up separately.
+b : Would you leave the drops there? | Does the fruit feel warm when you lift it?
+a : Long enough for a look. Then I'd dry it before packing the fruit against its neighbour. | A little. Usually the air is kindest and the fruit keeps a last small bit of shade inside it.
+
+scene quietnight
+when topic=day here.time=dusk|night self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : After a long walk I'm pleased to let the night tell its part of the tale in a very small voice.
+b : What part does the night get? | What if the lane won't be quiet?
+a : The ending, of course. A loud ending makes a poor sort of sleep for a traveller. | Shut the shutter on the nearest part and leave a little gap where the air still comes through.
+
+scene smokeshelf
+when topic=home self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I let a cloth air in a clear patch before I put it near dried fruit.
+b : Can an old smell get into an apple? | Wouldn't smoke help it keep?
+a : The cut side seems to remember everywhere it has been. I prefer a piece with memories mostly of fruit. | Perhaps if I meant to smoke something. A bit of old wool with a smoky night behind it is not quite the same art.
+
+scene spousewalk
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : This apple ring needs a better ending. I'd welcome an evening of shared tales with #self.spouse#.
+b : For eating? | Could a companion finish it better?
+a : If the story won't earn its keep, the ring may still be a very welcome bite. | I should like to find out. A different wolf can see a particularly fine ending round a corner I've passed ten times.
+
+scene marketwalk
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I carry two small coins rolled out of sight while I go looking at a price.
+b : Afraid of thieves? | When is spending it worth your while?
+a : I'm cautious about the respectable shopper telling herself she needs just one more fine apple. That's the wolf within paw's reach. | Those coins are already promised. Silence about my purpose won't set the money loose.
+
+scene orchardwork
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : An apple lifted from below may come away much more readily than one tugged from the side.
+b : Can you tell it's ready that way? | Does it keep longer without a bruise?
+a : Often. There's a little motion that says it's quite prepared to leave and another that says I've come before it meant to go. | Yes, especially for carrying a distance. A light touch at the beginning gives the end of a journey a better flavour.
+
+scene drytest
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I hold a drying ring up to a clear patch of light to see what's still heavy in it.
+b : Do the thicker bits shine? | Would you cut the thick end off?
+a : They make a darker patch. I put that side where the moving air can spend more time on it. | Not necessarily. Time can take care of some of the slicing if the shelf's not needed for something else.
+
+scene donttell
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : There's a difference between offering a well-used story and passing on a confidence that wants no journey.
+b : What if the private part makes the story better? | Won't the two get mixed?
+a : Then I've selected the wrong tale. My three modest old ones provide enough scope without going through a neighbour's drawers. | Ask myself who gave me the ending and whether the owner knows it's in my pocket.
+
+scene friendring
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# put the three rings in a different order before an evening walk.
+b : Would that really change a tale? | Is one ring best left for last?
+a : You'd be surprised how the same footpath feels with a different beginning. Hearing a short story first makes room for a long one to come after. | The one that smells strongest. A good smell tends to carry us the final few paces back to supper.
+
+scene restfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A chapel bench can give a repeated old worry the chance to come out in fresh words.
+b : Do you go there for the words? | Would plain silence do?
+a : For the space to find them, and the hope of being heard when I do. That's a fair reason for a small visit. | Frequently. Some things I set down without having to put an exact name on the weight.
+
+scene pastgift
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've been given food tied so tightly it seemed I was expected to live chiefly off the smell.
+b : Did you cut the cord? | What wrap would suit it?
+a : I persevered. It seemed discourteous to undo a good dinner by flinging the whole bundle across a room. | A loop with a tail worth finding, or a light fold if it's not going far. I like the eating to be as practical as the carrying.
+
+scene longdream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I imagine a pantry shelf round as a road, so every jar comes back to where there's room for it.
+b : Can you reach the far side? | Wouldn't the jars slide about?
+a : In my dream the shelf carries each one past my nose on request. I've allowed myself a very agreeable improvement on reality. | I give them a little wooden lip each and no sudden turns. A dream larder is still subject to the law of mopping up afterwards.
+
+scene wetstep
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : A damp sole reads the surface of a step differently from a dry one.
+b : How do you adjust? | Does walking slowly lose you an afternoon?
+a : Make a short test step and give it a full foot before moving the other. A basket of apples prefers a quiet passage. | Less of one than sitting rubbing my knee at the bottom. Give me a pleasant pace and all my parcels upright.
+
+scene threeends
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Of my three familiar tales, one ends in a kitchen, one ends outdoors and one can end wherever we've got to.
+b : Is that cheating? | Which one do callers like?
+a : It's a rather generous convenience for listeners with a door of their own coming into sight. | The one that's the right length for the company. A good story has room to put away its pride.
+
+story applewheel [topic=memories]
+  : I left three apple rings to dry on one peg, each just touching the next. They stuck together into a chain.
+  : When I lifted the chain the smallest one swung into the soup bowl waiting underneath.
+  b : Did you save it?
+  : I ate it with the barley. One apple had been impatient to hear a different kitchen story and I don't think it regretted the change.
+
+story slowwalk [topic=travel]
+  : I tried telling my shortest tale for every turn of one particularly winding walk.
+  : By the sixth turning I was giving the same sentence to a hedge I'd already told it to earlier.
+  b : Had you been going in circles?
+  : Round one small orchard wall. I turned back and gave all the hedges in the opposite direction a chance at the ending.
+
+story clothsaver [topic=food]
+  : I tucked a copper inside my napkin's corner and forgot the other corner held a bit of dry apple.
+  : An afternoon later I had a sweet-smelling copper and a slightly bitter bite of fruit.
+  b : Did you have to spend it at once?
+  : The coin kept very nicely, wrapped by itself after that. I ate the apple and counted the experience as a modest part of my savings.
+
+rule @fruit
+when concept=bark self.likes=full_larder
+does aside
+cooldown 8h
+say Leave the thick slice room for air. | One empty place beside the jars!
+
+rule @soup
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say Give the top grain a breath to cool. | Deep bowl for the bit at the bottom.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Cover the fruit that ought to stay dry. | Some wet can stay on the road where it belongs.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Quiet end to a well-walked day. | Let the last hinge down gently.
+
+dlg @1 resident.hub : I've got time for one question or one rather long answer, as you prefer.
+dlg @2 resident.hub [topic.meeting=known] : Let's choose a different apple ring today, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll keep my savings rolled and hear your account with the cloth lying between us.
+dlg @4 resident.hub [here.time=night] : A small voice will carry a surprisingly long story this late.
+dlg @1 resident.job [self.job=none] : #self.trade_words.capitalize#. I give each sound piece room enough to arrive that way.
+dlg @2 resident.job : Whatever I put aside for tomorrow, I make sure I could still take it out in good condition.
+dlg @1 resident.news [world.news] : Here's how the news has come round to my bit of the road. #world.news#.
+dlg @1 resident.bye : May you find a full shelf after the last turn.
+graft @rings_choice resident.hub
+choice What are those rings tied into the cloth for? -> rings_choice
+node rings_choice
+say They stand for three old tales. Choose the one that curls inwards and we end at a kitchen door; the one with the gap takes us on a lengthy outdoor excursion.
+choice And the one that looks perfectly ordinary? -> rings_choice_more
+choice Lay the ordinary ring back. -> hub
+node rings_choice_more
+say That one ends wherever a listener wants to stop. An ordinary apple has room for the good sort of courtesy a clever story sometimes forgets.
+choice Lay the ordinary ring back. -> hub
+choice Set off towards the next turn. -> bye

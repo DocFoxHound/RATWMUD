@@ -1,0 +1,257 @@
+# rm298, the bell after the bell (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm298
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hollis_greydale
+written_by codex
+title the bell after the bell
+fits stage=adult|old
+prefers job=merchant
+traits temper=calm talk=quiet warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk counts_the_silent_interval_after_the_last_bell
+likes warm_bread roof_birds market_bustle summer_evenings
+dislikes deep_mud early_bells
+fears giving_a_private_sorrow_public_feet
+hopes warm_bread_when_the_roof_birds_settle
+topics day +0.5 home +0.4 food +0.4 gossip -0.6
+styles comfort=discreet gossip=withheld refuse=kind tease=none
+marks oath saying
+persona #self.first# counts the hush after the chapel bell and warms a space for company without asking what brought the visitor there.
+
+words
+oath! = Crumb my bell rope | Ring my bread board
+saying! = The hush belongs to whoever heard the bell | A warm crust keeps its own counsel
+hushgap = a whole small hush | a quiet space
+crumb = a soft little crumb | a warm white crumb
+crustedge = the brittle lip | a glossy edge
+sparrow = a brown roof bird | a quick little hopper
+rooftile = a warm red tile | a loose slate
+shelf = a clean shelf end | a level ledge
+bag = a parcel bag | a brown wrapper
+bellair = a trembling note | a hanging tone
+hollow = the hollow ring | the deep note
+mudskin = a wet grey crust | a skin of mud
+mark = a pinhead of chalk | a little white fleck
+cloudedge = the whitening edge | the last lit rim
+lint = a loose thread | a white wisp
+
+any
+opinion @1 church for 1 : The sound can get where a sermon never would, right in through the bread cloth on my lap.
+opinion @1 sump for 2 : Down here silence doesn't last long, but it belongs to everybody while it lasts.
+opinion @1 strangers for 2 : There's a whole portion of bread in the space between strangers if one breaks the loaf.
+opinion @1 dole for 2 : Warm bread's at its best in a hungry paw. No point telling it to wait for an explanation.
+opinion @1 houses mixed 1 : A grand collar still goes round a throat that can tighten unexpectedly.
+opinion @1 festivals for 1 : A whole market in good voice makes a fine high roof over my head.
+
+grown
+line @1 greet : Welcome. I've left a comfortable pause for you. | Stand where you can hear the farthest bell.
+line @1 greet.return : And the soft end of a greeting back. | Two friendly voices in the same pause.
+line @1 again.open : That little hush brought you back already.
+line @1 farewell : Take a pleasant quiet bit of the way for yourself. | May warm bread be by your plate when you arrive.
+line @1 farewell.return : And a sheltered corner when your feet stop. | That's one kindness worth adding to my collection of sounds.
+line @1 react.news : Tell it at whatever pitch the matter wants. | My ears can wait through the pauses.
+line @1 react.news.new : A sound I've never counted before.
+line @1 react.news.known : That note has been round the roofs once.
+line @1 react.news.doubt : I wouldn't ring the whole town up on that account.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Some grief deserves a shutter pulled gently across.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd gladly let that sound reach the whole market.
+line @1 ask.how : Has the noise let you finish a thought today?
+line @1 answer.how : The part of my head I prize is wonderfully quiet.
+line @1 sympathise : I've room to sit beside you without looking too closely.
+line @1 reassure : Something warm can be held while the words come.
+line @1 refuse : I'd like to keep a small promise made earlier today.
+line @1 accept_decline : There's a kindness in saying plainly what you can spare.
+line @1 preclose : I should go before the next bell finds me standing idle.
+line @1 accept_preclose : I'll keep a quiet corner for a later meeting.
+line @1 ack : Yes. I heard the last little bit of it.
+scene exchange1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I count one extra after the chapel bells finish. | A cloth seems to hold the bell's last hum.
+b : An imaginary bell? | What sort of cloth?
+a : The breath it takes to notice the ringing has stopped. | Bread cloth over a warm loaf. Sit still enough and it seems to stir.
+
+scene exchange2
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : A loaf stays warm best with a little room to breathe. | I break bread with my eyes shut sometimes.
+b : Under the cloth? | To judge the smell?
+a : I let the steam round the ends first. | To feel which bit goes soft under my thumb.
+
+scene exchange3
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : A bird fluffing out on a tile can look as large as two. | I watch roof birds until one looks back.
+b : How many on that roof? | How do you recognise the moment?
+a : I'll count after the feathers settle. | The little head tilts and suddenly I'm the one being studied.
+
+scene exchange4
+when topic=prices self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I like a market with too many greetings to answer singly. | There's a quiet place in the thickest market noise.
+b : How do you answer them all? | Where's it hiding?
+a : Smile and send the same bit of warmth both ways. | Between two sellers drawing breath together.
+
+scene exchange5
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer light stays on the breadboard after supper. | I like the last roof bird to finish calling.
+b : Do you leave the board out? | Don't you enjoy the noise?
+a : I sit with my feet in the same patch. | I enjoy hearing a whole busy evening settle.
+
+scene exchange6
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Mud has drawn a border round my ankles. | I test a muddy street by the little stones it shows.
+b : Decorative? | Are those dry?
+a : No. Though I'll have quite a handsome basin after washing. | Not necessarily. A visible place to land is a comfort.
+
+scene exchange7
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : I love hearing the bell once my eyes are open. | An early bell has no sympathy for warm bedding.
+b : And before that? | Can you ignore it?
+a : Our acquaintance is considerably cooler. | I count its strokes and imagine each one stepping farther off.
+
+scene exchange8
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I make space for a customer's parcel. | I measure out goods in a corner clear of the talk.
+b : Even if it came from elsewhere? | Why leave the talk behind?
+a : Especially then. It can't easily be tucked under an elbow. | So the weight in a customer's bag is precisely what I heard asked for.
+
+scene exchange9
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang a bread cloth where daylight shows the thin patches. | A warm roof gives its own signal.
+b : Do you replace it? | By the smell?
+a : I turn the patch over the hot end so steam can slip out. | By the birds choosing the shady tiles.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once saw sorrow in a place where wolves went to be grand. | One sight has stayed safely out of my public news.
+b : What was the sorrow? | Why keep it?
+a : Private. I let it stay there. | It belonged to the face it happened on.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd share a loaf heel first with #self.friend#. | I prefer a friend who leaves me time to finish a silence.
+b : Isn't that the tough part? | Does it take long?
+a : Fresh out, it's the sweetest and the loudest. | Just one more count than the bells.
+
+scene exchange12
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A bell can serve as prayer for a tired listener. | I count the notes without trying to count blessings.
+b : No words of your own? | Why not both?
+a : There's gratitude in turning an ear to it. | Blessings can crowd together. Bells give notice.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. | Some talk sounds better left in a closed room.
+b : Are you telling me all of it? | What would you let out?
+a : I'm telling you what's been said aloud. I'll add no guesses. | The noise of good news somebody wanted shared.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In hard times a smaller loaf still smells marvellous. | Thin times set a hush over part of the market.
+b : Enough to lift your spirits? | Which part?
+a : For a moment. I'd like the moment to last through supper. | Where the last coins come out before all the errands are finished.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like to approach the headland listening over my shoulder. | The quiet side of a lane can be warmer than the sunny one.
+b : Won't you miss the view? | How's that?
+a : I want to hear where the last bell gives out. | Somebody's oven wall has kept yesterday's heat.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I cup warm bread against cold finger joints. | I rest my ears by listening beyond the nearest sound.
+b : Doesn't that flatten it? | What for?
+a : Only a little. It forgives me when I tear it open. | The faintest little chirp that bustle hasn't covered yet.
+
+scene exchange17
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My perfect evening has enough bread to invite another mouth. | I'd like a window where the last note comes to rest.
+b : And enough seats? | A particularly quiet street?
+a : Knees have held a good many suppers. | Quiet just long enough to hear an ending.
+
+scene exchange18
+when topic=work self.job=merchant self.boss
+does tell.self / ask.detail / answer.detail
+a : I'd tell #self.boss# if my measure had a nick. | I leave a shelf as I'd want to find it half asleep.
+b : Even a little nick? | How tidy is that?
+a : Especially one I'd be tempted to let pass. | Enough that my hand finds the right packet without an argument.
+
+story tale1 [topic=memories]
+  : An unfamiliar bell once kept me counting long after the usual number of strokes. It was quieter than any chapel bell.
+  : I followed it to a breadboard with a metal spoon propped against its rim.
+  b : What was ringing the spoon?
+  : A little bird, pecking crumbs off the handle. I put out another crumb and let the service continue.
+
+story tale2 [topic=pastimes self.likes=roof_birds]
+  : I watched a roof for an age because a bird on it hadn't stirred. My neck was telling me the bird had uncommon patience.
+  : A breeze came, rolled the thing over and showed the ragged end of a bit of wool.
+  b : Were you put out?
+  : A real bird carried it off before I'd straightened my neck. I may have watched the beginning of a nest.
+
+story tale3 [topic=food self.likes=warm_bread]
+  : I wrapped a hot loaf in a cloth embroidered round the edge. By the time I unwrapped it, the damp crust had taken the pattern.
+  : There were little petals going all around my supper.
+  b : Which bit did you eat first?
+  : The plain middle. I went on admiring the flowers till the crust was cool enough to crackle.
+
+rule @call1
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Clear shelf here for your parcel. | That wrapping's snug without squeezing.
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Let my eyes finish opening before the next stroke. | The first bell's found both my ears.
+
+rule @call3
+when concept=bark self.likes=roof_birds
+does aside
+cooldown 8h
+say A whole row settling, one tail out of time. | Those little feet can hear the bell through the tiles.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Good long hush coming over the headland. | There's a warm end to the light.
+
+dlg @1 resident.hub : I've got time to listen through a pause or two.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a familiar sound to put beside the bells.
+dlg @3 resident.hub [here.time=night] : Late hours carry soft words very nicely.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll keep a private bit of silence and hear you from there.
+dlg @1 resident.job [self.job=merchant] : I'm a helping pair of paws at #self.workplace#. I leave the scales clean.
+dlg @2 resident.job : I enjoy work with sufficient bustle to make coming home a pleasure.
+dlg @1 resident.news [world.news] : This is the note that's reached us. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I heard #topic.subject# #topic.claim#. I'd leave the rest of somebody's business in peace.
+dlg @1 resident.bye : Go where you can hear the hush behind the last note.
+graft resident.hub
+choice How long does the last bell take? -> last_hush
+node last_hush
+say Longer than the stroke before. It's still at work in your ears after the metal's given up moving.
+free
+choice What if the market's noisy? -> last_hush_again
+choice Goodbye. -> bye
+node last_hush_again
+say Then the silence belongs inside my head for a count or two. I can usually keep a little bit of that space tidy.
+choice I'll listen for it myself. -> hub
+choice Goodbye. -> bye

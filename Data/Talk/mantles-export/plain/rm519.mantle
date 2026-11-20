@@ -1,0 +1,399 @@
+# rm519, the star in glass (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm519
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_hilde_greyby
+written_by codex
+title the star in glass
+fits stage=adult|old
+prefers role=merchant job=crafter
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=devout drive=steady
+quirk sights_a_star_through_the_bottom_of_every_tumbler
+likes pickled_herring stars sharp_knife frosty_mornings
+dislikes flies rats
+fears a_smiling_rival a_blank_vineyard_letter
+hopes a_childs_clear_cup a_star_seen_whole
+topics work +0.5 prices +0.3 family +0.3 lore +0.2
+styles comfort=practical gossip=frank refuse=firm tease=none
+marks oath saying
+persona #self.first# holds a tumbler up to a single bright star, finding a bubble at once and leaving room for one under the foot if the rim is true.
+
+words
+oath! = Cloud my furnace | Crack the cooling shelf
+saying! = Let the star go through whole | An even rim has no favourite side
+starpoint = one white point | the sharp star
+footring = a clear foot ring | the thick glass foot
+speck = a pin bubble | a silver speck
+reeds = the packing reeds | our dry rushes
+shear = the hot shears | the clean shears
+wheel = a small grinding wheel | my foot wheel
+knife = the clean packing knife | a narrow packing blade
+sleeve = the straw sleeve | a padded rush case
+purple = a wine-coloured streak | a twist of purple
+shard = a flawed scrap | one cloudy shard
+seal = a knotted seal | a wax tag
+herring = my vinegar fish | the pickled fillet
+frostpane = a frost flower | a white star of ice
+ledge = the cooling ledge | a brick shelf
+lipglass = a thin drinking edge | the finished lip
+crossbar = a wooden division | a light crate rail
+strawhole = a gap in the packing | a little chink in the reeds
+
+any
+opinion @1 church for 1 : The Bright One gave light enough for finding flaws; a plain admission of one is the least I owe.
+opinion @2 dole for 1 : Hungry hands shouldn't have to earn the first mouthful by proving how low they have fallen.
+opinion @3 drink against 1 : I can make a clean cup without praising everything a wolf chooses to pour into it.
+opinion @4 merchants for 1 : A cup costs me rushes and a crate before it costs anybody at market a penny.
+opinion @5 road against 1 : A rut gets paid for at my counter in broken feet and chipped rims.
+opinion @6 watch for 1 : I can look steadily through a glass while the street patrol gives its attention to the door.
+opinion @7 city for 1 : There's enough fire in our city for my work and enough night above it for my own pleasure.
+opinion @8 houses mixed 0 : A seal on a crate settles the sender's name. It doesn't settle the quality of the goods.
+opinion @9 strangers mixed 0 : A stranger may examine exactly the same tumbler I'd show a cousin.
+
+grown
+line @1 greet [pair.band=strangers] : Come where the pane is clearest.
+line @2 greet [here.time=dawn] : A white morning for seeing the fine scratches.
+line @3 greet [here.weather=rain] : Room here beyond the darkest wet patch.
+line @4 greet [self.working=yes] : Keep back a wrist's width from the ledge. Welcome.
+line @5 greet.return : A greeting plainly given and plainly received.
+line @6 greet.return [pair.band=friends] : A known face through a clear pane.
+line @7 farewell : Carry the fragile end high.
+line @8 farewell.return : May good light go with you.
+line @9 again.open : The same star comes back into my sight.
+line @10 kin.open [pair.kin!=no] : A family face belongs beside the good light.
+line @11 hail [pair.band=friends] : Look this way through the clear bottom!
+line @12 react.news : Say which detail you yourself could hold to the light yourself.
+line @13 react.news.new : I haven't seen that glint on the shelf before.
+line @14 react.news.known : A second view of a familiar outline.
+line @15 react.news.doubt : Too many wavering edges to be sure of the middle.
+line @16 react.news.sorrow [topic.kind=death|loss|assault] : I'll set everything fragile aside and stay with you.
+line @17 react.news.glad [topic.kind=birth|marriage] : A bright piece of word. I'll carry that with care.
+line @18 answer.how : Steady at the rim and warm in the middle.
+line @19 decline : I couldn't put my mark on that promise with a clear mind.
+line @20 accept_decline : A straightforward refusal won't crack anything between us.
+line @21 sympathise : No call to look straight into the strongest light just now.
+line @22 thank : That gives my work a sounder footing.
+line @23 deflect_thanks : I'd sooner see the cup arrive whole than be thanked for the packing.
+line @24 preclose : The light's shifting off my best testing place.
+line @25 accept_preclose : I'll make a clear passage between the crates.
+line @26 farewell [here.time=night] : Look up once if the street gives you room.
+line @27 answer.how [self.working=yes] : Heat in the wrists and a steady breath so far.
+line @28 greet [pair.band=friends] : Leave a little thumb mark where I'll know it's yours.
+line @29 greet.return [here.time=night] : There's a face the night hasn't dimmed much.
+line @30 preclose [here.time=dusk] : My first testing star will soon be out.
+line @31 farewell.return [here.weather=rain] : Wrap the reeds before you cross the square.
+scene star
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I sight #starpoint# through #footring# once the ware is cool.
+b : What if you see two lights?
+a : Turn the cup. If one point travels there's #speck# in the foot.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : I've tried to copy #frostpane# in a plain drinking glass.
+b : Did you manage the fine twigs?
+a : Only the thick stem. The frost writes smaller than my shears ever will.
+
+scene knife
+when topic=smalltalk self.likes=sharp_knife
+does tell.self / react.self / assess
+a : I like #knife# to go clean through the rush without bending it.
+b : Would a bent rush really cost you a cup?
+a : A kink won't spring back after a jolt. I want the spring left in #sleeve#.
+
+scene pickle
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail / assess
+a : #herring# looks finer to me in plain glass than on bright tin.
+b : For the gleam of the silver skin?
+a : For the brine going clear at the edge. Then I can see any stray scale.
+b : You've set the dish to work as hard as the fish.
+
+scene fly
+when topic=food self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : A fly under a glass cover is more vexing than one outside.
+b : At least the cover makes it easy to find.
+a : Yes. There I am on one side of good glass watching a fly eat my meal on the other.
+
+scene rats
+when topic=work self.dislikes=rats
+does tell.worry / reassure / assess
+a : Something has chewed one corner of #reeds# down to a brush.
+b : Is the ware packed already?
+a : Only the lower course. I'll lift it out before a loose glass finds its neighbour.
+
+scene job
+when topic=work self.job=crafter self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I draw the last bit of extra glass away with #shear#.
+b : Does that leave a nick in the mouth?
+a : Unless I turn the lip in the heat. The last slow turn is what the drinker feels.
+
+scene breath
+when topic=work
+does ask.advice / give.advice / assess
+a : Where should I mark a place in a long count of turns?
+b : Use a mark you can hear while your eyes stay on the heat.
+a : I can tap the iron against the rest lightly. Once a turn without a glance away.
+
+scene duty
+when topic=family self.child
+does tell.feeling / sympathise / assess
+a : I want to give #self.child# a cup shaped for a small hand.
+b : Does it need a handle?
+a : A thick low foot first. There's less to pull over and a better chance for a second drink.
+
+scene cousin
+when topic=family
+does tell.self / ask.detail / answer.detail
+a : When I get a letter out of the vineyards I often see #purple# on the outer fold.
+b : Can you read over the stain?
+a : I can read what's inside. The outside sometimes brings me a whole hillside's scent.
+
+scene rival
+when topic=gossip
+does give.opinion / disagree / concede
+a : I weigh rival-house assurances on my own counter.
+b : A good seal can protect both sides.
+a : Protection starts when I've seen what's under #seal#. I don't claim to see through wax.
+
+scene prayer
+when topic=lore
+does tell.self / react.self / assess
+a : Before gathering glass I give thanks for my sight. The Bright One deserves that pause.
+b : Is sight so much of a gift at the furnace?
+a : If you catch a thin spot before the glass cools you can spare somebody a nasty break.
+
+scene crate
+when topic=travel
+does tell.plan / ask.detail / answer.detail
+a : I'm going to move #crossbar# two fingers inward on my carrying crate.
+b : What will that do for the journey?
+a : Stop the short cups leaning on the taller row. I'd rather every rim travelled alone.
+
+scene road
+when topic=travel world.wagons=late
+does tell.worry / reassure / assess
+a : A cart overdue leaves me wondering what happened to the packing on the way.
+b : Can you check anything before the ropes come off?
+a : I can listen for a loose foot against a rail as the load settles.
+
+scene lean
+when topic=prices world.times=hard|lean
+does give.opinion / disagree / concede
+a : I'd sell a small plain cup during lean trading, keeping the price readable.
+b : Couldn't you pass a faulty one off a little cheaper?
+a : If the flaw stays in the foot I'll mark it for a buyer to judge. A sharp lip stays with me.
+
+scene offer
+when topic=food
+does offer / accept / assess
+a : There's room for another piece of herring in this glass dish.
+b : I'll take a little from the thin end.
+a : The brine runs downhill there. Good place for a piece to pick up flavour.
+
+scene starnest
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a star had made a nest inside a flawed tumbler.
+b : Did you try to let it out?
+a : I turned the rim to heaven. There were so many lights I could no longer tell which was mine.
+
+scene support
+when topic=work self.hand
+does tell.plan / ask.detail / answer.detail
+a : I'd lay #shard# by the door for #self.hand# to compare with the new batch.
+b : Why show a poor piece alongside a sound one?
+a : It's an easier lesson when both feet are cooled and nobody has a crate waiting.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd know a cup gone home with #self.friend# by a tiny low swirl.
+b : Couldn't another cup have the same mark?
+a : Very nearly. I'm thinking of a particular turn I'd be pleased to see used at a familiar table.
+
+scene market
+when topic=prices
+does tell.self / react.self / assess
+a : A buyer ought to feel #lipglass# with a clean finger before any price is agreed.
+b : No fear the nicest cup will be marked?
+a : A thumb mark washes off. A bad sale stays after every washing.
+
+scene shelf
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I space each warm foot on #ledge# apart from the rest.
+b : Are you afraid a row will stick?
+a : Afraid one will cool faster on the outside than on the crowded side. Uneven cooling opens cracks.
+
+scene chapel
+when topic=lore
+does tell.plan / ask.detail / answer.detail
+a : I'd put a simple pane somewhere a chapel seat can catch the early sky.
+b : Would it have a colour?
+a : No colour from me. The dawn can furnish that part without a bill.
+
+scene lantern
+when topic=smalltalk
+does give.opinion / disagree / concede
+a : A crooked reflection doesn't make the face crooked.
+b : It might be comforting to blame every blemish on the pane.
+a : Take the pane away. That's a fair test for both the face and the blower.
+
+scene smoke
+when topic=land
+does tell.feeling / sympathise / assess
+a : I have to walk past the roof smoke to get a clean sight of the stars.
+b : Do you mind walking so far after the day's heat?
+a : The walk's part of cooling. When that testing star comes clear my wrists have stopped aching.
+
+scene seam
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : My first glass dish had a foot too grand for its little body.
+b : Did it at least stand up well?
+a : Like a stump. You needed two hands for a dish that held three spoonfuls.
+
+scene quote
+when topic=prices
+does ask.advice / give.advice / assess
+a : What would you want on a bill for a single glass?
+b : A plain total and a warning if the crate has to come back.
+a : I'll put the returnable crate on a separate line. A buyer may have a sleeve already.
+
+scene quiet
+when topic=smalltalk
+does offer / accept / assess
+a : Hold this cooled scrap up to the light if you'd like.
+b : I can see the edge of the window twice.
+a : That's the flaw I've been describing. The glass tells it more plainly than I could.
+
+scene riddle
+when topic=pastimes
+does tease / tease.return / laugh
+a : I see a star in my hand nearly every fine night.
+b : I'd call that a poor handful if I couldn't put it in a pocket.
+a : Right. The glass fits a pocket but stars prefer their own lodgings.
+
+scene woodbox
+when topic=season
+does tell.worry / reassure / assess
+a : Wet autumn rushes worry me more than frost on the road.
+b : Can't you dry a stack in the furnace room?
+a : At the distant wall, leaving air between the bundles. I want springy rushes, not tinder.
+
+scene fare
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I wonder if the vineyard stars seem closer above the last row.
+b : Would a letter carry an answer?
+a : A line describing one clear night might get nearer than a choice of distances.
+
+story twinpoint [topic=pastimes]
+  : I tested a new tumbler on a point that refused to look properly single.
+  : I turned the glass twice. The lights stayed a pair.
+  b : Had your eyes grown tired?
+  : One was a lamp in an upper window. The star was innocent and so was my tumbler.
+
+story fishscale [topic=food]
+  : I kept a fine glass dish back from market because a silver flake clung to its foot.
+  : Scrubbing took the flake right off.
+  b : A fish scale from dinner?
+  : Exactly. I had condemned a good dish for keeping the same company as its maker.
+
+story firstfoot [topic=work]
+  : My first attempt at a little drinking glass had a solemn great foot fit for a lamp.
+  : I set it sideways to inspect the proportion.
+  b : What happened to the big foot?
+  : Held the whole thing tipped up like a wheelbarrow. I kept it for my little tools.
+
+story reedwind [topic=travel]
+  : A gust once blew through a crate and made a sound like a glass lip struck by iron.
+  : I unwrapped the entire top row.
+  b : How many cups had broken?
+  : None. One hollow reed had learnt to whistle. I cut it shorter for the next journey.
+
+story cousinleaf [topic=family]
+  : Vineyard news once reached me with a leaf pressed into the fold.
+  : I traced the outline on waste glass and held it to the sun.
+  b : Was the leaf green in the copy?
+  : Clear. It filled itself with whatever colour I let behind it. Quite a travelled leaf by dusk.
+
+rule @turntest
+when concept=bark self.job=crafter self.working=yes
+does aside
+cooldown 8h
+say One more turn on the rest. Let the lip come round.
+
+rule @carton
+when concept=bark self.role=merchant self.working=yes
+does aside
+cooldown 8h
+say Each foot apart. Listen while the crate rocks.
+
+rule @starpin
+when concept=bark self.likes=stars
+does aside
+cooldown 8h
+say That point moves with the pane. A bubble then.
+
+rule @cutrush
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 8h
+say Rush cut square with all its spring left.
+
+rule @coldglass
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say Ice has the finest hand at the window again.
+
+rule @vinegarmeal
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say Brine clear round the little silver edge.
+
+dlg @1 resident.hub [topic.meeting=stranger] : My name is #self.first#. You can look through either end of the tumbler.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've caught a decent slant of daylight.
+dlg @3 resident.hub [here.time=night] : Come far enough from the glare to see the test star.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll keep the ware on the ledge while we speak.
+dlg @5 resident.job [self.job=crafter self.workplace] : I work glass at #self.workplace#. Sight down a foot if you'd like to know what my day is worth.
+dlg @6 resident.job : I choose work whose flaws I can actually point to.
+dlg @7 resident.bye : Keep a soft space between the cups on your way.
+dlg @8 shop.greet [here.shop=open] : Light on the counter for inspecting the ware. I'll say which marks are flaws.
+dlg @9 shop.greet [here.shop=bare] : Rush sleeves here and nothing left to put inside one.
+dlg @10 shop.greet [here.shop=asleep] : The light on this counter is out for now.
+dlg @11 shop.prices : The price includes an even rim. I'll quote the packing separately.
+dlg @12 shop.bye : Carry a single glass in the middle of its rush sleeve.
+dlg @13 resident.hub [here.weather=rain] : There are worse things than rain for looking through clean glass.
+dlg @14 resident.job [self.role=merchant] : I count the ware sound only after it's been packed and carried.
+graft resident.hub
+choice Can a cup really hold a star? -> cuplight
+node cuplight
+say Hold #footring# between yourself and a single point of light. If the star stays sharp, the cup has passed one of my tests.
+choice What if I see a pair? -> doublelight
+choice I'll take your word for now. -> hub
+node doublelight
+say Turn the foot slowly. If the twin travels with your hand, you're holding the cause of its existence.
+choice There was something else. -> hub
+choice Clear skies to you. -> bye
+
+graft shop.greet
+choice How should I pack a pair? [here.shop=open] -> rushpair
+node rushpair
+say Each foot gets a separate little sleeve. I'll slip #crossbar# between them if you mean to go by cart.
+choice How can I check the packing? -> rushmusic
+choice Let's see the counter. -> greet
+node rushmusic
+say Give the crate a gentle shift with both hands under it. The only sound you ought to hear is dry rush moving against the wood.
+choice Back to the ware. -> greet
+choice Good trading. -> bye

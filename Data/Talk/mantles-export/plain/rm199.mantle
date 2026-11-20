@@ -1,0 +1,400 @@
+# rm199, the last warm saucer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm199
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_clemence_rustham
+written_by codex
+title the last warm saucer
+fits stage=adult|old
+prefers role=merchant job=cook
+traits temper=calm talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk chalks_a_coal_ring_under_the_last_saucer
+likes crisp_apples riddles quiet_chapel autumn_wind
+dislikes early_bells rats
+fears a_place_that_cools_unnoticed
+hopes a_bowl_for_the_late_arrival
+topics food +0.7 newcomer +0.5 work +0.4 pastimes +0.2 gossip -0.4
+styles comfort=food gossip=reserved refuse=gentle tease=none
+marks oath saying
+persona #self.first# keeps a coal nub for marking the last warm saucer and receives strangers with quiet, unhurried pride.
+
+words
+oath! = Blacken the trivet | By my last blue saucer
+saying! = Welcome fits a shallow dish | The last bowl is a promise
+coal = my lucky coal nub | the bit of black in my pocket
+ring = a broken circle | my mark underneath
+saucer = a blue saucer | the thin blue dish
+spoon = a polished horn spoon | the blunt little dipper
+hearth = the warm lip of the hearth | the edge of the firebed
+skin = a long narrow apple shaving | a curly strip of peel
+steam = a veil off the pot | that breath above the broth
+apple = an apple that snaps | a firm sharp apple
+napkin = a square of soft linen | the folded cloth
+thumbmark = the black print of my thumb | a sooty whorl
+riddle = a puzzle for after supper | a small knot of a question
+wait = time enough for two long breaths | a decent interval
+clove = a dry clove bud | the clove with the crooked stem
+cover = a snug little lid | the saucer upside down
+bench = the seat nearest the heat | the inner stool
+scrap = the little heel of onion | an end of sweet root
+
+any
+opinion @1 city for 2 : Whatever hour your fire goes out, there's another bright window in the city.
+opinion @1 merchants for 1 : A decent trader counts the ones who leave empty as well as the ones who pay.
+opinion @1 road against 1 : A rut asks the same toll of a barrow carrying supper as a coach carrying velvet.
+opinion @1 watch for 1 : When two angry customers want the same place, I appreciate a quiet uniform nearby.
+opinion @1 dole for 1 : Some hunger can wait for an answer. A hungry pup can't.
+opinion @1 church mixed 1 : My thoughts carry better under a chapel roof. The sermons vary.
+opinion @1 festivals mixed 1 : I like the part where everyone sits to eat and nobody has to carry a banner.
+opinion @1 newcomers for 2 : A stranger knows the trick I missed because I've done a thing the same way all my life.
+opinion @1 drink mixed 1 : Wine in a stew has all evening to improve its manners.
+
+grown
+line @1 greet : Pull a little space towards you. There's enough warmth to go round. | Come through. Crowding won't spoil the welcome.
+line @2 greet [pair.band=strangers] : A first visit gets the comfortable seat. | Settle before you say what brought you.
+line @3 greet [here.time=dawn] : There's a good clean light on everything yet. | There's the first light. Bring yourself in with it.
+line @4 greet [here.time=dusk|night] : Come clear of the dark first. I can see you now. | I have a welcome left even at this hour.
+line @1 greet.return : Yes, I'm quite at liberty to listen. | Hello there. You've caught a quiet moment.
+line @2 greet.return [pair.band=friends|family] : Your familiar face warms up the whole place. | Ah, the very face I was saving a smile for.
+line @1 again.open : There's a second helping of your company today. | Plenty of day for us to meet twice in it.
+line @1 kin.open [pair.kin!=no] : Come take the close seat. A relation fits in the small gap. | I'd squeeze in a relation even if only the narrow stool were left.
+line @1 hail [pair.band=friends] : This way. I've room for the whole of you. | A friendly face at that distance ought to be nearer.
+line @1 farewell : Carry a little warmth along with you. | Go when it suits you. Nobody's counting mouthfuls.
+line @1 farewell.return : May supper meet you halfway home. | A kind evening where your road ends.
+line @1 react.news : Start with what happened. We can decide how it tastes afterwards. | Let me get the plain account before anyone spices it.
+line @1 react.news.new : I haven't served that piece of news before. | Fresh to my ears. I'll let it settle.
+line @1 react.news.known : Yes, that one's cooled a little since first hearing. | That news and I have already sat together once.
+line @1 react.news.doubt : I'd leave that covered till a witness comes in. | A bold tale needs something solid underneath.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll make room for whoever needs to sit with it. | May nobody have to go back to an empty room after that.
+line @1 react.news.glad [topic.kind=birth|work|marriage|succession|apprentice] : That's news I'd lay the good cloth out for. | That leaves a lovely taste long after the words have gone.
+line @1 ask.how : Have you had an hour to call your own yet? | Has this day fed you or eaten you up?
+line @1 answer.how : I can stand my own company today. That usually does it. | As patient as I need to be, which is a blessing.
+line @1 answer.how.busy [self.working=yes] : There's an order to this rush. I'm still on top of it. | I've near enough fingers for everything that needs attending.
+line @1 sympathise : You're entitled to be tired before you start explaining. | There's no charge for sitting without a single word to say.
+line @1 reassure : One thing you can lay down already. I'll remember that bit. | A slow breath comes first. Explanations can have the second.
+line @1 decline : Leave me out, please. Somebody may still need my place. | I'd best stay within earshot a little longer.
+line @1 accept_decline : Then we'll take the spare setting back. | I can take no for a courteous answer.
+line @1 thank : You noticed without my having to ask. Much appreciated. | You made something easier without making a show of it. Thank you.
+line @1 deflect_thanks : Nothing was spoilt by sharing it. | It's a poor kindness that expects to be repaid at once.
+line @1 preclose : I'll gather my thoughts before they boil right over. | Seems I've another place to be before I forget it.
+line @1 accept_preclose : Take a good breath before you stand. | Let's get you on your feet by degrees.
+line @1 check_in : Comfortable where you are, or shall we make a little space? | Anything you can't get at from that seat?
+line @1 give.advice : Do the waiting part before you call somebody over. | Don't keep a guest watching while you try to hurry what can't hurry.
+line @1 ack : I'm quite with you. | That part's clear enough.
+scene lastdish
+when topic=work self.job=cook
+does tell.self / ask.detail / answer.detail
+a : See the dark arc under #saucer#? | I turn one dish upside down before service.
+b : Doesn't the scullery scrub it off? | Is that dish chipped?
+a : Every time. I put it back myself. That's how I remember the last portion. | It's keeping the place for whoever comes too late.
+
+scene latewolves
+when topic=newcomer self.job=cook
+does tell.self / react.self / assess
+a : A late arrival looks at the benches before the menu. | I offer the last bowl without asking where a stranger's been.
+b : Afraid of missing dinner? | You must wonder.
+a : More afraid of being the reason somebody has to get up. | Of course. Curiosity can wait through supper.
+
+scene appletest
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : I listen for the snap when I cut #apple#. | I leave the best side of an apple till last.
+b : You judge with your ears? | How do you pick the best side?
+a : A clean snap means eat it raw. A sigh means stew it gently. | Take two bites. You'll find your jaw has decided already.
+
+scene blackthumb
+when topic=smalltalk
+does tell.complaint / ask.detail / answer.detail
+a : I put #thumbmark# on my nose again. | I've a perfect whorl in black on this linen.
+b : Want a cloth? | How do you know whose?
+a : Yes, but hand it to my clean side or we'll be here all night. | It matches the gap where my pocket coal rubs my thumb bare.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does ask.detail / answer.detail / assess
+a : I vanish in a ladle and reappear in six bowls. Guess. | When does a cook prefer a poor memory?
+b : A promise of dinner? | When the soup burns?
+a : That's better than my answer. My answer was a pinch of pepper. | Exactly. Particularly in the customers.
+
+scene chapel
+when topic=faith self.likes=quiet_chapel
+does tell.feeling / ask.detail / answer.detail
+a : When the last hymn stops I like to stay in my seat. | I like a chapel where the door shuts softly.
+b : Waiting for another? | Why the door particularly?
+a : Waiting to hear what else is in the room besides us. | You can take your place without everybody turning to measure your faith.
+
+scene wind
+when topic=season here.season=autumn
+does tell.self / react.self / assess
+a : Autumn lifts the leaves like lids off little invisible pots. | I've a taste for autumn wind after a close room.
+b : You see a kitchen everywhere. | You look quite pink about it.
+a : The whole city has an appetite. I reckon I'm in good company. | Good. I was afraid I'd come out looking boiled.
+
+scene bells
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.complaint / ask.detail / answer.detail
+a : I'd like a bell to wake up as gradually as a kettle. | The first bell takes up all the room in my head.
+b : Start with a murmur? | What does the second do?
+a : Yes. Give a sleeping wolf one breath to decide to be civil. | Finds me awake enough to object.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I don't mind a clever beast until it gets ideas about supper. | I'd make a dreadful rat.
+b : What kind of ideas? | Too big for the hole?
+a : Private dining in my oatmeal bin, chiefly. | Too proud to eat what's been dropped. I'd want a plate.
+
+scene potquiet
+when topic=work self.job=cook
+does give.advice / ask.detail / answer.detail
+a : If you have to shout over a simmer you've turned it up too high. | Tip the lid and wait for #steam# to choose a side.
+b : Even with dried peas? | Then lift from the other?
+a : Especially peas. They'll turn your nice lid into a drum. | Precisely. Keep your face for something better than testing soup.
+
+scene roads
+when topic=caravan world.wagons=late
+does tell.worry / react.self / assess
+a : A late wagon gives you two suppers to think about. | Late wagons are easier on a pantry than on a promise.
+b : The one you planned and the one you'll manage? | Does a promise run out sooner?
+a : Exactly. And never tell a hungry table the first one. | It starts running the moment you give it.
+
+scene debt
+when topic=prices self.owes=yes
+does tell.worry / ask.detail / answer.detail
+a : My debt's got a place at table ahead of me. | I don't call borrowed money an ingredient.
+b : Do you feed it first? | Why would anyone?
+a : A little each time. I shan't let it take the entire dish. | Some reckon a meal made cheap when someone else paid for the fire.
+
+scene hardtimes
+when topic=times world.times=hard|lean
+does tell.self / react.self / assess
+a : When things grow lean, a thin onion sliced thin goes further still. | There's a shame about asking for the heel when times turn.
+b : It doesn't grow any bigger. | Could you offer it first?
+a : No. But every spoon gets a strip of it. | That's my practice. I say I'd be grateful for help finishing it.
+
+scene door
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a door to swing both ways when my paws are full. | A proper hook for a cloth is just high enough to keep the ends clean.
+b : Don't you get hit coming through? | How do you measure?
+a : Once. After that you announce your elbows. | Hang the longest cloth, then lift the hook a little if you must.
+
+scene table
+when topic=friends
+does tell.feeling / react.self / assess
+a : I like the company that can sit through the scraping of plates. | A long table gives a shy guest two possible neighbours.
+b : It's a dismal noise. | Might they both talk?
+a : Yes. It means everybody ate. | Perhaps. Then there's company without the burden of starting it.
+
+scene coalstory
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : #coal.capitalize# has a worn white stripe. | I carry a coal nub past all the handsome stones on the road.
+b : Through the black? | Even a smooth piece of quartz?
+a : Just on one side, where I've polished it against a seam. | Quartz can't mark a place for someone. Mine earns its keep.
+
+scene bread
+when topic=food
+does tell.self / react.self / assess
+a : For a crusty top I leave a little space where the lid sits. | If the crust cracks before the knife touches it, somebody's been patient.
+b : Won't the heat escape? | And if the middle's raw?
+a : A little. It's the damp I'm showing out. | Somebody's been patient outside the wrong oven.
+
+scene counter
+when topic=prices self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I give a buyer one number and let the face answer. | Counting coin across food makes me twitch.
+b : What if the answer's a frown? | In case it falls in?
+a : Then I ask what size would suit the purse. | Worse to think of where it's been before it falls.
+
+scene hours
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I mark an hour by the number of times my tea has been warmed. | Three scraps of quiet make me a good long hour.
+b : Does it keep accurate time? | By adding them?
+a : It keeps an excellent account of interruptions. | By doing the same pleasure in all three and keeping my place.
+
+scene mending
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A clean darn around a scorch can make it look intended. | My sewing's too tight when I'm cross.
+b : Like a flower? | Can you tell afterward?
+a : Like a ring where a flower might have been. I'm no embroiderer. | I can date my quarrels by the puckers in a hem.
+
+scene goodbatch
+when topic=work self.job=cook
+does tell.feeling / react.self / assess
+a : My best seasoning today was leaving the pot alone. | A meal with just enough salt makes everybody thirsty later.
+b : Hard to leave well enough? | Isn't that too much?
+a : Hard when one's paid to look busy. | No. Too much makes them thirsty before the second spoon.
+
+scene gossip
+when topic=gossip here.gossip=yes
+does tell.gossip / ask.detail / answer.detail
+a : The talk is that #topic.subject# #topic.claim#. | I've heard it said that #topic.subject# #topic.claim#.
+b : How much of that will you repeat? | Is that your own account?
+a : That much. I wasn't given a second helping. | No. It came to me in words and that's how it leaves.
+
+scene friend
+when topic=friends self.friend
+does tell.feeling / react.self / assess
+a : I'd trust #self.friend# with the quiet end of an afternoon. | For #self.friend# I'd keep #bench# by the fire.
+b : Does quiet take trust? | That's a comfortable compliment.
+a : Quite a lot if you mean to keep it. | The kind I'd choose to receive myself.
+
+scene injury
+when topic=health
+does give.advice / ask.detail / answer.detail
+a : Use a dry cloth to pick up anything hot. | When your feet ache, sit before setting the chair exactly straight.
+b : Why especially dry? | I could have thought of that.
+a : Steam goes through a wet cloth faster than a shout travels. | So could I. You'd think I'd do it sooner.
+
+scene feast
+when topic=festival
+does tell.plan / ask.detail / answer.detail
+a : I'd like the best of the feast served to whoever washes up. | Set a place for the music once the tunes run out.
+b : Before or after? | All the musicians?
+a : Before. No feast survives the washing in decent shape. | Yes. They need room for their elbows without their instruments, too.
+
+scene distant
+when topic=travel
+does tell.self / react.self / assess
+a : I find the first meal in a strange place worth remembering. | I don't ask a carter how far till I've asked where supper lies.
+b : The food tells you where you've arrived? | You'd travel by the plate?
+a : The asking tells me how long I want to stay. | By the welcome. A cold plate in kind company counts too.
+
+scene weather
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain on a lid sounds remarkably like impatient claws. | I'm fond of the little streams this rain runs down the glass.
+b : Did you think you had company? | You don't mind the view going?
+a : I opened up twice. After that I left the rain to entertain itself. | It brings the window closer. I notice the woodwork.
+
+scene empty
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like one evening when nothing's waiting for another five minutes. | I've a dream of a cupboard with a single bowl in it.
+b : What would fill your evening? | Only one?
+a : Taste the first mouthful at exactly the right moment. | Just one with a chip. All the good ones are out being used.
+
+scene fire
+when topic=work self.job=cook
+does tell.self / ask.detail / answer.detail
+a : A dying fire'll sometimes cook an egg better than a fierce one. | I move a hot pot by the tune it sings.
+b : Is there a trick to it? | Are you listening to the lid?
+a : Knowing exactly when the egg wants no more attention. | To the base. A dry patch hisses sharper than the rest.
+
+scene seat
+when topic=smalltalk
+does offer / react.self / assess
+a : Try #bench# before you decide on a better seat. | If a seat wobbles, turn it first.
+b : That's quite a short seat. | Why not wedge the foot?
+a : A short one lets your heels rest while you eat. | Might be the floor that's tired. Try it two boards over.
+
+story saucerfray [topic=memories]
+  : I once laid a blue saucer on a frayed white cuff without looking. Thought I'd chipped the edge.
+  : Turned it round and the chip stayed exactly where it was.
+  b : Your cuff was the one that needed mending?
+  : Yes. I had corrected my table manners at the expense of my sleeve.
+
+story turnip [topic=food]
+  : I scooped a little turnip out to make a cup for pepper.
+  : A hungry guest took the whole thing in one bite.
+  ask : Could you have kept a straight face?
+  b : I'd have passed the water first.
+  : I did. Only then did I permit myself a very small smile.
+
+story widebench [topic=memories self.age>=25]
+  : At a fair I once bought a stool so wide I couldn't reach its ends.
+  : By the time I'd turned to pay, a pair of tired travellers had settled on it.
+  b : Did you claim your seat?
+  : No. I booked my passage on my own stool for when they'd finished their rest.
+
+story halfmeal [topic=work self.job=cook]
+  : I once tried to divide a beautiful small pie into seven portions.
+  : I spent so long measuring that it cooled and came out of its crust quite whole.
+  b : Did you still make seven slices?
+  : Seven spoons. The crust was my share.
+
+story littlecoal [topic=lore]
+  : An old pot with a pinhole once let a tiny bead of gravy harden on my hearth.
+  : I kept it for luck a day. It melted into somebody's apron.
+  b : So luck needs a sounder case?
+  : That's when I took to carrying the coal. An equally good reminder and it minds the laundry better.
+
+rule @ring
+when concept=bark working=yes self.job=cook
+does aside
+cooldown 8h
+say One last blue dish warming. There's time yet for somebody. | Keep the rim hot for the one who'll turn up just after we clear.
+
+rule @slice
+when concept=bark working=yes self.job=cook
+does aside
+cooldown 8h
+say Cut the apple across. Fine little star in the heart of it. | Seeds lie crosswise like a little flower in that half. Pass it over.
+
+rule @late
+when concept=bark world.wagons=late
+does aside
+cooldown 8h
+say Late goods, long thoughts. What'll stretch till the carts arrive? | If the wagons mean to take all day, the onions can have their time too.
+
+rule @crumb
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Sweep the corners twice. Whiskers attend to what the broom overlooks. | There's a sharp little nose that knows every crumb I've missed.
+
+rule @season
+when concept=bark here.season=autumn
+does aside
+cooldown 8h
+say What a lovely rustle on the step. Autumn's spreading out the cloth. | Crisp underfoot. I'll have leaves in my cuffs by supper.
+
+rule @sole
+when concept=bark here.time=dusk|night
+does aside
+cooldown 8h
+say Feet up for just a moment. Even a hearth brick gets to lie down. | A chair at dusk is almost a second pair of shoes.
+
+dlg @1 resident.hub : Rest your paws. I'll listen once you've found a comfortable spot.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's room at this side again.
+dlg @3 resident.hub [here.time=night] : On a late visit like this a low voice carries plenty.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : If you're after an argument, let everybody else get seated first.
+dlg @1 resident.job [self.job=cook] : At #self.workplace# my favourite order is for something a traveller hasn't eaten since coming away.
+dlg @2 resident.job : I try to leave enough over for a latecomer.
+dlg @1 resident.news [world.news] : What reached my ears was this. #world.news.capitalize#. Take a moment with it.
+dlg @1 resident.gossip [here.gossip=yes] : I hear that #topic.subject# #topic.claim#. I add nothing of my own to a tale already seasoned.
+dlg @1 resident.bye : Take the warmth you came in for. Leave the dish here.
+dlg @1 shop.greet [here.shop=open] : Come find what your appetite meant when it sent you.
+dlg @2 shop.greet [here.shop=bare] : Nothing to go out today. I'll hear what you've brought in.
+dlg @1 shop.prices : Name the sum you've set aside and we'll start from that end.
+dlg @1 shop.bye [here.shop!=asleep] : May what you carry be just the thing when you get there.
+dlg @1 resident.business [business=steady] : Enough to keep the lids in motion. I'm content with that.
+graft resident.hub
+choice What do you mark with that bit of coal? -> black_saucer
+node black_saucer
+say A small open circle under a saucer. The missing piece stands for someone who hasn't come in yet.
+free
+choice Why bother to rub it off? -> black_saucer_more
+choice Goodbye. -> bye
+node black_saucer_more
+say So the next circle has to be made on purpose. An old mark won't remind me half so well.
+choice I'll look for the open part. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice Where should I set this down while I talk? [here.shop=open] -> warm_corner
+node warm_corner
+say By the warm corner. The draught misses it and your purchase can wait there till we're done.
+free
+choice Do you keep a corner for everything? -> warm_corner_more
+choice Goodbye. -> bye
+node warm_corner_more
+say Just one for things that ought to wait. Saves setting them somewhere they oughtn't.
+choice I'll leave it there. -> greet
+choice Goodbye. -> bye

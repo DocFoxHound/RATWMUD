@@ -1,0 +1,384 @@
+# rm475, the divided tide book (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm475
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_aldric_grayrock_
+written_by codex
+title the divided tide book
+fits stage=adult|old
+prefers job=sailor temper=even
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk rules_a_tide_book_for_promised_and_actual_arrivals
+likes smoked_eel roof_birds new_boots warm_rain
+dislikes stale_bread bad_manners
+fears a_safe_berth_promised_to_two_hulls a_door_at_home_that_ceases_to_expect_a_knock
+hopes a_week_at_home_with_the_tide_book_closed
+topics travel +0.7 family +0.4 work +0.6 home +0.3
+styles comfort=practical gossip=reserved refuse=courteous tease=dry
+marks oath saying
+persona #self.first# carries a tide book ruled for promises on the left and arrivals on the right and keeps one return journey out of the figures.
+
+words
+oath! = Ink overboard | Barnacles on the margin
+saying! = The tide signs only on arrival | A berth will hold exactly one full promise
+book = the narrow tide book | my pocket book of tides
+leftcol = the column for promises | my ruled left margin
+rightcol = the arrival column | the page for actual landings
+wetmark = a faint print of wet leather | a mark left by a boot
+bootjack = a broad wooden bootjack | the boot pull by the wall
+eelwrap = a parcel of smoked eel | an eel strip in paper
+roofbird = a dark wing above the slates | a roof bird settling
+rainbead = a warm bead on the buckle | a little mild rain
+draft = the space under a keel | the depth a hull requires
+hookline = a line for drawing in the hook | the hook's hauling line
+berthslip = a slip for one berth | the printed berth paper
+drycrumb = the heel of yesterday's bread | a broken dry crust
+quaystep = the first step up from the landing | a narrow wharf stair
+homekey = a well-oiled door key | a key warm from my pocket
+redge = the page's rough edge | a deckled edge of paper
+
+any
+opinion @1 houses for 2 : A House with a long memory can see what the cost of a neglected pier becomes after a few rough seasons.
+opinion @1 watch for 1 : I'd have a watch patrol visible from the water and able to answer a civil hail.
+opinion @1 road for 2 : A cart that can meet a rising tide is as much part of a voyage as the vessel.
+opinion @1 city for 2 : I like a city that gives a returning sailor three different heights at which to stop and watch a landing.
+opinion @1 merchants mixed 0 : A merchant may offer the soundest intention in the world. I'd still like the date written out.
+opinion @1 strangers for 1 : A stranger with an unfamiliar chart can improve the afternoon considerably.
+opinion @1 dole mixed 0 : Count what reached the hungry household before congratulating the shipper on a generous load.
+opinion @1 times for 1 : I can see openings for steady work if folk will agree to put their promises in legible hands.
+opinion @1 festivals mixed 0 : I approve of any feast that leaves its visitors a clear road down to the last boat.
+
+grown
+line @1 greet : A place on the rail for a civil visitor.
+line @2 greet [pair.band=strangers] : A new arrival. I'll leave a clear space for the name.
+line @3 greet [here.time=dawn] : Morning reaches this landing before most of the street.
+line @4 greet [here.time=dusk|night] : Evening. Still daylight on the higher roofs.
+line @1 greet.return : I caught your hail between the cart wheels.
+line @2 greet.return [pair.band=friends|family] : An arrival I could have marked by voice alone.
+line @3 greet.return [self.working=yes] : There's a hand for the book and an ear for your business.
+line @4 greet.return [here.time=dusk|night] : A returning voice carries particularly well across dark water.
+line @1 kin.open [pair.kin!=no] : Family needn't wait for a place on the public list.
+line @1 again.open : Here we were, with the return still to enter.
+line @1 hail [pair.band=friends] : Friend, come look from the landward side.
+line @1 farewell : May the promised space still be clear when you reach it.
+line @1 farewell.return : Keep the tide on the useful side of your keel.
+line @1 react.news : At which landing did this story first put in?
+line @1 react.news.new : A fresh entry for this page.
+line @1 react.news.known : I can turn straight to the earlier account.
+line @1 react.news.doubt : I'll keep that in the promised column for now.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll close the book. A loss can have the full hearing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A safe arrival wants a proper welcome.
+line @1 ask.how : What's found its way home to you today?
+line @1 answer.how : I've enough of myself ashore for this conversation.
+line @1 thank : You spared a late arrival some very wet boots. My thanks.
+line @1 deflect_thanks : No extraordinary service. I had the rail in hand.
+line @1 sympathise : Stay by my elbow until the first noise passes.
+line @1 reassure : A route survives a missed tide. Let the next one present itself.
+line @1 decline : I'd have to promise away a berth already spoken for.
+line @1 accept_decline : Then we'll close that item with our courtesies intact.
+line @1 preclose : I've one more journey to set down before I go.
+line @1 accept_preclose : We can count that conversation safely landed.
+line @5 greet [here.weather=rain] : Take the sheltered edge. A page dries quicker than a collar.
+line @6 greet [pair.band=friends] : The homeward place on the bench has your name today.
+line @5 greet.return [here.time=dawn] : First tide or second, your arrival improves the forecast.
+line @2 farewell [here.time=night] : Let somebody see your lamp across the water.
+line @2 thank [self.working=yes] : A clean arrival earns its line. You have my thanks for yours.
+scene twin_columns
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #leftcol.capitalize# takes the date somebody gives me. | I rule #book# even on the shortest trip.
+b : And if the vessel is late? | Why trouble for one landing?
+a : An exact date in #rightcol# makes its own reply. | One promised landing and one actual landing. There are my two entries.
+
+scene dry_foot
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #wetmark.capitalize# is an excellent receipt for a certain kind of journey. | I inspect the damp boards for a footprint after a visitor has sailed.
+b : Which kind? | What survives?
+a : One that ended right here under my own boots. | A dark print for a moment. A reminder to enter one more departure.
+
+scene wharf_work
+when topic=work self.job=sailor self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like a berth paper to give one ship a clear priority. | Before I leave #self.workplace# I see which expected landings have an answer beside them.
+b : Even when both are early? | What if there's none?
+a : Particularly then. Courtesy has been known to acquire elbows. | Somebody has a useful question waiting on the morning page.
+
+scene deck_choice
+when topic=travel self.job=sailor
+does tell.self / ask.detail / answer.detail
+a : I put a boot aboard when I can. Looking down from a quay makes very flat sailors of us all. | Offer a vessel with a decent hold and I'll enquire about the approach.
+b : Which detail stands out from aboard? | Before you see the hold?
+a : How much of the promised landing is actually reachable with a line. | A fine hold stuck outside the harbour earns remarkably little.
+
+scene keel_space
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Measure #draft# with a loaded hull. | Clear water under an empty keel gives an optimistic account of a quay.
+b : Can it change so much? | Who's most optimistic?
+a : It need only change by the amount between touching and floating. | The wolf charging for the berth.
+
+scene slip_ink
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : #berthslip.capitalize# ought to survive a damp thumb. | A paper signed under a good dry roof has a career ahead of it.
+b : Do you test it? | What would you wish it?
+a : My thumb goes out in all weathers. It seldom needs encouragement. | Ink legible even to the last porter.
+
+scene house_cost
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I'd welcome a House rival at a sound quay under plainly written terms. | Every warehouse looks like an asset when drawn from across the water.
+b : Would you extend a favour? | What do you inspect close up?
+a : A published rate is the best favour a stranger can recognise. | The join beneath the sill. Rot rarely announces a change in ownership.
+
+scene roof_wings
+when topic=smalltalk self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : #roofbird.capitalize# draws my eye sooner than a flag. | Birds on a warm roof turn their heads like a row of harbour officials.
+b : Looking for wind? | Are you fond of them?
+a : Sometimes for a decent landing made without paperwork. | Very. I have yet to be charged a fee for standing underneath.
+
+scene eel_paper
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : #eelwrap.capitalize# will see me through an awkward gap between tides. | I keep the eel parcel and the berth notes in different pockets.
+b : Do you eat standing up? | A regret behind that rule?
+a : Only if the gap proves less generous than it looked. | A borrower once complimented the remarkable character of my paper.
+
+scene boots
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : #bootjack.capitalize# has some strenuous evenings until new boots know my heels. | New boots leave beautifully precise prints on a damp quay.
+b : Do they learn quickly? | What do those tell you?
+a : My opinion of the cobbler rises with every easier evening. | Here stood a wolf who hadn't yet met the next patch of mud.
+
+scene warm_quay
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : #rainbead.capitalize# is a pleasant way to discover that a day has turned mild. | I like warm rain falling on an empty landing.
+b : Can you still work? | Why empty?
+a : Neither the tide nor my handwriting has shown any wish to stop. | Each plank makes its own distinct answer to the rain.
+
+scene bad_manner
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A hail can be answered without making its owner come three steps farther into the wet. | A visitor who steps across a loaded line is taking too much for granted.
+b : And a bad hail? | What courtesy would you ask?
+a : Receive it civilly and let the visitor earn a second answer. | Wait till the hand on the line can acknowledge you with a nod.
+
+scene stale_heel
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : #drycrumb.capitalize# will travel all day in a pocket without improving a bit. | I'd choose a small warm loaf over a large one of uncertain age.
+b : A sound provision then? | Even for a long trip?
+a : A beautifully stable disappointment. | Yes. I'd arrange another welcoming oven farther along.
+
+scene spouse_return
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : An expected arrival matters to #self.spouse# as well as to the wharf book. | I'd like an evening with #self.spouse# that needs no tide calculation.
+b : Do you enter home on the page? | What stands in its way?
+a : I should do so more often. A word can be due in two places. | The ease of calling the next departure necessary.
+
+scene child_boot
+when topic=family self.parent=yes self.child
+does tell.self / ask.detail / answer.detail
+a : I should like #self.child# to remember the dry print of my boot indoors too. | I'd give #self.child# my full attention with the book safely on a high shelf.
+b : Why a dry print? | A whole tide's business out of reach?
+a : It means I stayed long enough to take a wet pair off. | A few minutes' worth of divided attention put right.
+
+scene estate_home
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : #homekey.capitalize# has travelled an extravagant distance to open one Estate door. | A landing in the Estate remains still when I put a foot on it.
+b : Does it still fit? | Does the wharf move then?
+a : Yes. I look forward to putting the matter to the test again. | In me, sometimes, after a good long walk inland.
+
+scene rain_cloak
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang my travelling coat where the wet can drop quietly into something meant for it. | A map hung in a bedroom can be a nuisance.
+b : Like a harbour? | Keeps you awake?
+a : Very small dues and a regular visitor. | It persuades the eyes to leave before the body has had its rest.
+
+scene travel_contract
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like a route with the return date written by a hand I can consult again. | Give me two copies of the terms and keep whichever one you prefer.
+b : You distrust a spoken date? | Why let me choose?
+a : I distrust the astonishing ease with which a date learns to move. | Both ought to bind in exactly the same fashion.
+
+scene newcomer_trial
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : First visit to a quay? Follow the end of #hookline# before finding a place to stand. | I'd show an arriving stranger where to leave baggage without blocking a door.
+b : Follow it where? | Free advice?
+a : With your eye. Your feet can safely stay beyond its sweep. | Indeed. You've no idea how much time a clear doorway saves me.
+
+scene small_landing
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : On #quaystep# a messenger can deliver a paper without putting boots on deck. | I like a messenger who looks for the hand that is actually free.
+b : A formality? | Whose hand?
+a : Some days the best way of keeping two dry copies. | Mine if possible. Whoever has a taut rope should retain the use of both.
+
+scene lean_rate
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean weeks are a poor occasion for an unexpected landing charge. | When trade thins I ask which promised repairs still preserve a usable berth.
+b : Would you waive it? | And the others?
+a : I would like it to have been visible before the voyage. | A proper timetable can be an honest kindness to the workers.
+
+scene cart_delay
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon and a rising tide can both be perfectly punctual according to their owners. | If the wagons are late, keep the loaded step clear.
+b : Whose time do you keep? | Shouldn't the hands sit there?
+a : The point at which cargo can pass between a cart and a hull. | Sit just beyond it. A delayed arrival needn't be made later.
+
+scene day_not_home
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A long journey can shorten surprisingly when I try to count its days at home. | I've heard a household door close quite differently after one night in and after several.
+b : Do you regret the journey? | Why differently?
+a : I regret counting the days only afterwards. | I listened better once I stopped listening for the next departure.
+
+scene first_words
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I enjoy a bargain where each party can repeat the other's first sentence accurately. | My most civil objection consists of a finger beside a clause.
+b : And the last? | No words?
+a : That's generally the one we write down. | After a pause. Some difficulties resolve upon being seen.
+
+scene news_tide
+when topic=news world.news
+does tell.news / react.self / assess
+a : A notice came in from #world.news_from#. #world.news#. | #world.news#. The stated place is #world.news_from#.
+b : Mark it under arrivals? | Do you know the vessel?
+a : The notice, yes. Its particulars may call for separate confirmation. | I have the words on the quay. They brought no passenger list.
+
+scene low_talk
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A whisper wants a berth without a name on the slip. | The quay's talk has overtaken an expected arrival.
+b : Will you let it in? | Is it reliable?
+a : It may wait outside the book. | Reliability improves when the hull comes into sight.
+
+scene homeward_week
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like one week whose chief arrivals come through a household door. | I'd make time to watch a nesting bird from the very first twig.
+b : Who keeps the tide book? | You could watch between journeys.
+a : If I've made the arrangements properly I needn't know at supper. | Between journeys I've generally seen the empty roof and the completed nest.
+
+scene paper_edge
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : #redge.capitalize# lets me find the back of a book with a wet thumb. | A strip of cloth would mark the page as well as a rough edge.
+b : How do the other pages feel? | Why don't you use cloth?
+a : Smoother. Home dates have a section to themselves. | Nothing loose to blow out over the rail this way.
+
+story wet_contract [topic=work|memories]
+  : It was raining when I unwrapped a dry, signed berth slip and spread it across one knee.
+  : One drop landed just where the two figures had a space between.
+  b : Did you take the larger figure?
+  : I asked for the second copy. An excellent way of deciding for a smaller argument.
+
+story bird_boot [topic=memories|smalltalk]
+  : A new boot of mine lay on its side in full view of the upper deck.
+  : From above, a roof bird peering into the shaft looked like my foot trying to come home on its own.
+  b : Did it carry anything away?
+  : My confidence in a view from the upper deck. The boot stayed obligingly where it was.
+
+story way_home [topic=family|memories]
+  : I once put a return date in a cramped corner beside some cargo weights.
+  : At week's end I found the corner folded over it much too neatly.
+  b : Did you sail on the right day?
+  : I unfolded the page that morning and made a quite necessary detour through my own front door.
+
+story eel_seal [topic=food|memories]
+  : I opened a paper parcel with the solemnity due a sealed contract.
+  : Found a very fine strip of eel and a little pile of salt.
+  b : Did you find the contract?
+  : Precisely where I'd meant my supper to be. Luckily I'd drawn no pepper on the signatures.
+
+story boot_depth [topic=travel|memories]
+  : I measured a step against the top of my boot and judged a landing just possible.
+  : Aboard again I looked at the water mark and remembered the cobbler had altered my heels.
+  b : Had you stepped in?
+  : One shallow bootful. Cheap enough for a permanent correction to a measuring instrument.
+
+rule @home_column
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Start with the date of the return.
+
+rule @dry_thumb
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Give this slip the inside of the coat.
+
+rule @clear_step
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Keep the bag off the narrow step.
+
+rule @far_bird
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say A wing turns before any flag stirs.
+
+rule @last_hull
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Leave that narrow line open for a late hull.
+
+rule @quiet_key
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Book away. Key at the ready.
+
+dlg @1 resident.hub : We'll have room for your arrival and your business on the same page.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, a returning name takes very little ink.
+dlg @3 resident.hub [pair.band=friends|family] : Come round to the homeward side of the book.
+dlg @4 resident.hub [here.time=dawn] : Good morning. This tide has brought a visitor within easy hearing.
+dlg @5 resident.hub [here.time=night] : A word in lamplight still binds in daylight.
+dlg @6 resident.hub [pair.disposition=hostile|wary] : The rail may divide us quite pleasantly while you speak.
+dlg @7 resident.hub [self.working=yes] : I have this much daylight to attend to both arrivals.
+dlg @1 resident.job [self.workplace self.job=sailor] : Around #self.workplace# I see that what was promised on paper has a place to land.
+dlg @2 resident.job [self.trade_words] : #self.trade_words.capitalize#. That is my charge. One sees more of it on foot than from a chair.
+dlg @1 resident.news [world.news] : The arrival notice comes from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : It's come in as talk, and talk is the entry it deserves.
+dlg @1 resident.bye : Go under terms that suit the homeward journey too.
+dlg @2 resident.bye [here.time=dusk] : A little tide light remains to see you away.
+graft @book resident.hub
+choice Why give every arrival two columns? -> promised_date
+node promised_date
+say One is for what I undertook to provide. The other is for what came ashore. If they differ we can examine the difference without quarrelling over the promise.
+choice Which one does a visitor sign? -> visitor_mark
+choice I'll leave a margin for the difference. -> hub
+node visitor_mark
+say The promise, if it belongs to the visitor. I enter the actual arrival myself, once there is somebody here to offer a seat.
+choice I'm glad to take the seat. -> hub
+choice You've my departure too. -> bye
+
+graft @key resident.hub
+choice Do you enter the journey home too? -> homeward_mark
+node homeward_mark
+say Inside the back cover. A dozen business calls can look like good grounds for delay. Seen afterwards, none of them seems quite sufficient.
+choice What would a good entry look like? -> homeward_answer
+choice I'll let you keep the place private. -> hub
+node homeward_answer
+say A firm day of arrival, followed by enough empty pages to please the people at the door.
+choice I'd like to see such a page too. -> hub
+choice May the key turn easily. -> bye

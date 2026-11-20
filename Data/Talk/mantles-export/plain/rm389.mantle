@@ -1,0 +1,400 @@
+# rm389, the pot turned inward (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm389
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_signe_mossgrave
+written_by codex
+title the pot turned inward
+fits stage=adult|old
+prefers job=official
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk turns_the_teapot_handle_in_to_mark_a_break
+likes barley_soup evening_line tidy_house first_warm_day
+dislikes smoke cold_tea
+fears allowing_a_day_to_pass_without_a_proper_meal
+hopes to_keep_a_quiet_interval_even_on_a_voting_day
+topics family +0.4 work +0.4 home +0.3 pastimes +0.2
+styles comfort=practical gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# turns a teapot handle towards the table to mark a break in business and gives practical comforts without fuss.
+
+words
+oath! = Turn the good handle in | By the untouched bowl
+saying! = A chair may hold a tired argument | Tea has no interest in rank
+pot = the stout teapot | my brown pot
+handle = the ear of the pot | a little curved handle
+bowl = a deep barley bowl | a warm bowl
+grain = a plump barley grain | a pale split grain
+cloth = my table square | a clean folded cloth
+float = a dark cork float | my little cork
+bank = a low dry bank | the shelf above water
+line = my evening line | a bit of waxed line
+smoke = an acrid curl | a smear of hearth smoke
+tea = tea drawn too long | a lukewarm brew
+seat = a low backed chair | the quiet seat
+tray = the warmed tray | a smooth wooden tray
+board = the broad table | my scrubbed board
+pan = a small stew pan | a deep iron pan
+light = a spring gleam | a thin warm beam
+window = the open upper sash | the window by my table
+
+any
+opinion @1 houses for 1 : A House's public voice ought to remember where its wood, iron and bread actually come from.
+opinion @1 watch for 1 : When the street is quiet enough for a weary head to stay down, somebody has done a night's work well.
+opinion @1 times for 1 : There is plenty under my roof. I try to let that fact govern my manners as well as my opinions.
+opinion @1 dole against 1 : I'd rather see an empty bowl filled first than a full one offered a second ladle. I do ask how it's managed.
+opinion @1 festivals mixed 0 : A good occasion makes room for the wolf that stays an hour and the wolf that leaves before music.
+opinion @1 strangers mixed 0 : A stranger may sit by my table for a cup without being offered the keys to the cupboard.
+opinion @1 church mixed 0 : Faith's a private duty, like cleaning one's own bowl before passing it to another pair of paws.
+opinion @1 merchants mixed 0 : I prefer a trader who will say what the weight contains and allow me to examine the wrapping.
+opinion @1 city for 1 : With all its steep public steps the city still makes a thousand private places to sit down.
+
+grown
+line @1 greet [pair.band=strangers] : You may take the chair on the quiet side. | Welcome. The table has room.
+line @2 greet [self.working=yes] : Set your business down for a moment. | Speak across my tray, please.
+line @3 greet [here.time=dawn] : Morning. The tray is still warm. | Early enough to take our time.
+line @4 greet [here.time=dusk|night] : Evening. Pull the nearer chair round. | A late arrival needn't make a formal entrance.
+line @1 kin.open [pair.kin!=no] : For family the handle turns inward. | Kin can settle before giving an account.
+line @1 again.open : The same day brings another sitting. | We're at the table together again.
+line @1 greet.return : You're heard quite clearly. | Hello. I'll set the pot down.
+line @2 greet.return [pair.band=friends|family] : You may leave ceremony outside our circle. | I'd recognise that comfortable voice in any room.
+line @3 greet.return [self.working=yes] : A little business can rest while I listen. | Let me leave this page safely facedown.
+line @4 greet.return [here.time=dusk|night] : Evening. Choose the lamp side. | I can hear from either end after dark.
+line @1 farewell : Allow a decent interval for steep ground. | May your meal begin before it grows cool.
+line @1 farewell.return : I'll turn the handle back when you're gone. | A quiet return to your own concerns.
+line @2 farewell.return [here.time=night] : May your journey finish at a lit window. | Go with the street still quiet about you.
+line @1 react.news : Tell me which details you have considered. | Lay the account before me quietly.
+line @1 react.news.new : A fresh matter for the table. | I've had no previous word of that.
+line @1 react.news.known : That question has been served already. | The earlier account reached my chair.
+line @1 react.news.doubt : I would leave some space between report and fact. | There are grounds for waiting before I give that credence.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll clear the table of everything less pressing. | That news deserves some unhurried company.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A bright word to bring into a house. | I'm glad to have that matter settled so well.
+line @1 ask.how : Have you taken a proper rest today? | Did you secure a quiet meal for yourself?
+line @1 answer.how : Steady enough when I remember to sit. | My breath comes easier away from the papers.
+line @1 decline : I should leave this interval free for a duty at home. | I'd rather give a smaller task my full attention.
+line @1 accept_decline : Your preference is plainly understood. | That settles the invitation without offence.
+line @1 thank : That made an ordinary hour much gentler. | I'll keep that care in mind.
+line @1 sympathise : Sit here until you're ready to go on. | I'll take some smaller concern off your hands.
+line @1 reassure : There is time to lift one burden at a time. | We can let a little quiet do its work.
+line @1 preclose : I'll see to the tray now. | There are some small household matters calling.
+line @1 accept_preclose : I'll release you before your tea cools. | A convenient pause for us both.
+line @1 deflect_thanks : A practical kindness needs little ceremony. | A quiet word is ample repayment.
+line @1 ack : Understood well. | Entirely clear.
+line @1 give.advice : Leave a hand free to take the cup. | Sit long enough to feel the chair beneath you.
+line @1 offer : I can set that out where it will be ready. | Shall I bring a chair closer?
+line @1 praise : A measured word delivered with care. | I value the plain sense in that.
+scene handle
+when topic=work self.job=official
+does tell.self / ask.detail / answer.detail
+a : I turn #handle# inward when a discussion ought to pause.
+b : Does everyone know the sign? | Why inward?
+a : Anyone is entitled to ask. It means that the hands at this table can rest. | Nobody reaches for the next pour without considering whether to stop.
+
+scene spouse
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I like to see #self.spouse# sitting entirely clear of business.
+b : Do you plan the interval? | Does supper help?
+a : I can make the seat inviting. The decision to sit belongs elsewhere. | Especially hot supper. Even a very grand duty can wait for a spoonful.
+
+scene child
+when topic=family self.parent=yes self.child self.job=official
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.child# see exactly why I chose a difficult vote.
+b : Every detail? | Why explain it at home?
+a : The reasons that belong to me. A confidence entrusted to me calls for discretion. | A child can learn a great deal from a parent's willingness to be questioned.
+
+scene meal
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : Barley soup buys a short interval by being too hot to swallow.
+b : What happens in that interval? | Do you stir it?
+a : A busy wolf has to stay beside the bowl a moment. That's an excellent beginning. | Once to bring the grain up. After that the soup can set its own pace.
+
+scene angler
+when topic=pastimes self.likes=evening_line
+does tell.self / ask.detail / answer.detail
+a : I like my fishing line light enough to feel the float shift in a breeze.
+b : Can you tell a fish? | Why keep the line light?
+a : A fish seldom moves with quite the same patient rhythm as the air. | A small visitor deserves an attentive hand on the line, even if it slips away.
+
+scene house
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : My measure of a tidy room is whether a visitor knows where to put a cup.
+b : How do you arrange that? | What if the table's full?
+a : One folded cloth in clear sight. The furniture needn't give an instruction. | Then I believe we have more objects than present business requires.
+
+scene spring
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : One warm day is enough to draw the big chair away from the hearth.
+b : Where to? | Even if the cold comes back?
+a : Near the window. Something ought to be easier about seeing the season arrive. | I'll move it back. Moving a chair scarcely requires a public resolution.
+
+scene smell
+when topic=weather self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : Smoke finds its way into the best broth if you leave it unveiled.
+b : Can you taste a little? | What's your remedy?
+a : I can smell it before it arrives at the tongue. An unfortunate introduction. | Mind the draw, skim the surface, cover the bowl while the hearth settles.
+
+scene coldtea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea is often the sign of a meeting that needed a better chair arrangement.
+b : Too comfortable? | Would you pour it away?
+a : Too much space between the question and the answer. Everybody speaks for several chairs. | After tasting it. Waste spoils my appetite nearly as thoroughly as cold tea.
+
+scene seat
+when topic=work self.house self.job=official
+does tell.self / ask.detail / answer.detail
+a : A House seat belongs to more than the wolf that keeps it warm.
+b : Who else belongs there? | Can you represent every worry?
+a : Everyone whose fire depends on what the House does next. | No. I can ask which worry has still to be heard.
+
+scene estate
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : The Estate has doors that take longer to approach than to open.
+b : Formality? | Do you mind the walk?
+a : Sometimes a long garden path. It gives an anxious caller time to lose the first sentence. | I do mind it for weary legs. A small bench can make an invitation honest.
+
+scene wealth
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : A good meal shouldn't require its recipient to admire the quality of my spoons.
+b : Are they very fine? | Would you use plain ones?
+a : Serviceable enough to balance a mouthful. The rest is a private purchase. | For barley, with pleasure. Thick soup is profoundly indifferent to engraving.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I offer a newcomer the seat that faces the room.
+b : To examine the visitor's face? | Is the view so good?
+a : So the visitor doesn't have to turn twice to understand who has entered. | A first visit calls for a little certainty, however plain the furniture.
+
+scene public
+when topic=work self.job=official self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I notice the point when a long meeting stops making new sense.
+b : How do you recognise it? | Do you end the sitting?
+a : The same example begins travelling in several mouths with different flourishes. | If I can. Otherwise I ask whether anybody has found time for a meal.
+
+scene faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : Before eating I put down my spoon in gratitude to the Bright One.
+b : And then a prayer? | Only before eating?
+a : Often just the quiet. Gratitude can arrive without an elaborate invitation. | It's particularly easy to forget the gift when I'm deciding where to put the dishes.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I value the company of #self.friend# in an hour where I needn't make decisions.
+b : Does that happen often? | A whole hour?
+a : Often enough to know its value. I set aside a fresh hour whenever I can. | A quarter will serve if we aren't interrupted to discuss the other three.
+
+scene street
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I like routes with a seat midway to welcome a weary walker.
+b : Even if you don't stop? | Where would you put one?
+a : A choice is often enough to ease that early stretch of road. | Under shelter where the view makes sense to a wolf sitting lower than the street.
+
+scene nap
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Tired wolves can take a very long time to admit to a short rest.
+b : Do you tell them? | How can you tell?
+a : I set a second cup nearby. A quiet invitation is less work to accept. | A familiar word repeated without being heard. A hand left against the upright chair back.
+
+scene argument
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I never ask to discuss a quarrel over a boiling pot.
+b : For fear of spilling it? | When would you ask?
+a : Partly. An ear already attending to a hiss can't give a hurt much justice. | After the bowls are filled and the cook has taken a seat too.
+
+scene festival
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I like a guest who leaves a feast by inclination rather than exhaustion.
+b : Would you stop one leaving? | What about the host?
+a : Never. I think a pleasant early farewell has something of a compliment in it. | A good host can rest a moment instead of insisting nobody needs rest.
+
+scene floor
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : There's a quiet way to set down a full tray.
+b : Both hands? | At a tilt?
+a : And a clear space decided on before lifting it. Most noisy accidents start with indecision. | With the near edge first, then let the weight travel down my fingers.
+
+scene calm
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I set out an extra cloth before I know whether it will be needed.
+b : Is that superstition? | Does the cloth invariably find a use?
+a : Practical optimism. A spill's easier if the clean cloth is already near one's elbow. | No, and putting it away unused is one of the simplest pleasures I have.
+
+scene quiet
+when topic=lore here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Ridgemere gives the best view to the one who has climbed the furthest. I have a quarrel with that arrangement.
+b : Would you level the hill? | What do you suggest?
+a : No. I'd settle for a bench at every second landing. | Give some of the landings windows where a wolf can look out sitting down.
+
+scene habit
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't repeat a confidence to fill the interval before a cup is poured.
+b : Even carefully unnamed? | Does the silence become uncomfortable?
+a : Especially in a familiar court. An unnamed habit may identify its owner quite sufficiently. | I can pass the sugar. One minute of service does considerably more for a table than disloyalty.
+
+scene warmhand
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : Sometimes I put a cup beside my spouse without saying a word.
+b : An invitation? | No explanation?
+a : An invitation both to sit and to leave me sitting alongside. | A cup makes a fairly legible request. It's best to leave the answer unhurried.
+
+scene tree
+when topic=work self.house
+does tell.self / ask.detail / answer.detail
+a : Fine timber never goes into a household without another household having cut and hauled it.
+b : You keep that in mind? | Even for a little stool?
+a : I try to do so before congratulating us on the quality of our furnishings. | Especially the stool. That is where a worker will sit to repair the grander chair.
+
+scene newsprices
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a lean period I want a household account tabulated in meals as well as copper.
+b : Why both? | Who would count?
+a : A number of coppers can sound ample long after it stops purchasing a sound supper. | The wolf who divides the grain has the clearest idea of the quantity.
+
+scene arrival
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : When a wagon is late I ask which part of supper can go ahead without it.
+b : Why supper first? | Would you alter the table?
+a : To give the waiting company a practical interval before they begin blaming the road. | Certainly. A smaller dish served quietly often serves us better than a grand lateness.
+
+scene winter
+when topic=season here.season=winter
+does tell.self / ask.detail / answer.detail
+a : A warm chair in winter needs room to get out of again.
+b : You'd move it away from the fire? | To stand and stretch?
+a : Just enough for a long shin to come round without a scorch. | Yes. Becoming too comfortable to move is no improvement on being too busy to sit.
+
+scene dream
+when topic=dreams self.job=official
+does tell.self / ask.detail / answer.detail
+a : I dreamed the Council sat in a room full of soft chairs and no table whatsoever.
+b : Did anything get done? | Where did you put the papers?
+a : A rather good discussion, once everybody overcame the alarm of being comfortable. | On our knees. We had to pass them civilly from paw to paw.
+
+story inward [topic=memories]
+  : At a long supper I once turned my teapot so the handle pointed away from the nearest reaching hand. I needed a moment to finish a sentence.
+  : The moment stretched into a full conversation before anybody poured again. There was still quite sufficient tea and a good deal less interruption.
+  b : Did anybody object?
+  : Nobody who wanted the tea very much. A thirsty wolf could easily turn the pot back.
+
+story float [topic=pastimes self.likes=evening_line]
+  : My fishing float once dipped sharply and rose again in quiet water. I lifted my line and had a gentle disagreement with a wet leaf.
+  : I left the leaf along the bank and sat down. It made a much larger disturbance falling off a stem than it had from the end of my line.
+  b : Was the afternoon lost?
+  : I had gone to see whether the water was quiet. The leaf gave me a fairly exact answer.
+
+story traytilt [topic=food]
+  : My first carefully arranged tray tilted on lifting. I'd set the teapot and both spoons on the same side for the sake of a handsome appearance.
+  : I shifted one cup. The greater mass still won the argument, as it generally does, and a line of tea travelled across my cuff.
+  b : What changed the balance?
+  : Moving the pot itself. The experience returns to mind when I am tempted to solve a large discomfort by adjusting an exceedingly small courtesy.
+
+story cupchair [topic=home]
+  : I once had a chair put ready for an expected caller, very handsomely placed beside the hearth. I tried it before the caller arrived.
+  : A warm draught came straight to the ear and a cold one crossed both ankles. The advantages of the arrangement had only been evident from the doorway.
+  b : Did you change the place?
+  : By half the length of a hearth rug. The dignified view from the door survived. So did two pairs of comfortable ankles.
+
+story vote [topic=work self.job=official]
+  : I wrote out a matter I meant to raise and discovered that my neatest sentence required three separate breaths. I tried it aloud to an empty chair.
+  : The chair offered no visible encouragement. I reduced the matter to a plain request for a figure and took that into the room instead.
+  b : Did you obtain the figure?
+  : In time for my vote. It would have been hard for anybody to locate it in the original sentence.
+
+rule @aside1
+when concept=bark self.job=official self.working=yes
+does aside
+cooldown 6h
+say Set the handle towards the board awhile. | Another cup before the papers come back.
+
+rule @aside2
+when concept=bark self.married=yes
+does aside
+cooldown 7h
+say Warm chair and an unoccupied minute. | Two bowls and a small interval free.
+
+rule @aside3
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say Let the barley lift before serving. | Near side first for the full bowl.
+
+rule @aside4
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 9h
+say The tea's entitled to a reasonable hearing too. | Warm the second pot properly.
+
+rule @aside5
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Evening has arrived at the float end. | A quiet line and a small piece of sky.
+
+rule @aside6
+when concept=bark here.season=spring
+does aside
+cooldown 11h
+say Draw the good chair a little towards the window. | Clean cloth ready for the first warm meal.
+
+dlg @1 resident.hub : Take a chair without waiting to discover which one the etiquette recommends. A comfortable sitting makes for a clearer hearing.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, come and take the ordinary household chair.
+dlg @3 resident.hub [here.time=dawn] : We're in good time to talk before the house begins to require both my hands.
+dlg @4 resident.hub [here.time=dusk] : Evening gives us a few minutes when the quiet seat has particular merit.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : A brief and civil account will do quite well for a beginning.
+dlg @6 resident.hub [pair.band=friends|family] : Come inside the household circle. There's no business to clear before we may speak.
+dlg @1 resident.job [self.job=official self.workplace] : My duties at #self.workplace# involve allowing practical things to have their due time alongside public ones.
+dlg @2 resident.job [self.job=official self.trade_words] : #self.trade_words.capitalize#. The private needs of a household continue while public decisions are being considered.
+dlg @3 resident.job : I notice an unseated guest or a bowl that hasn't been warmed.
+dlg @1 resident.news [world.news] : This is the matter that has reached my table. #world.news#
+dlg @1 resident.bye : I hope your next engagement leaves time for a proper meal.
+dlg @2 resident.bye [here.time=night] : May you reach a quiet chair while the lamp is still warm.
+dlg @7 resident.hub [self.parent=yes] : I make a practice of hearing a request through. There may be a family matter just after it, so begin as you like.
+graft @handle resident.hub
+choice What does the turned handle tell me? -> inward_handle
+node inward_handle
+say For a little while there's no more business to pour out. A thirsty guest can still reach the pot. I've seldom found a fuller explanation necessary.
+free
+choice What if business really won't wait? -> outward_handle
+choice I'll take the quiet invitation. -> hub
+node outward_handle
+say Turn it back, with a word for the wolf whose rest you're about to interrupt. Sometimes so small a courtesy changes the nature of the interruption.
+choice I'll make that courtesy first. -> hub
+choice I shall leave the handle as you set it. -> bye
+
+graft @line resident.hub
+choice Does your household run to the rhythm of a fishing line? -> evening_float
+node evening_float
+say On a good evening I give the line a very modest share of my attention. Watching a cork is an agreeable way of letting my other concerns sit down.
+free
+choice What if the float disappears? -> evening_tug
+choice I'd enjoy a quiet bank myself. -> hub
+node evening_tug
+say Then the water requires my services. I find its requests are generally brief, unmistakable and considerably easier to answer than a public summons.
+choice The water sounds good company. -> hub
+choice I'll leave you a little time for fishing. -> bye

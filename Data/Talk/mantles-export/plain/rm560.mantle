@@ -1,0 +1,249 @@
+# rm560, the cheese witness (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm560
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_wynn_pitchwell
+written_by codex
+title the cheese witness
+fits stage=adult|old
+prefers job=servant
+traits temper=short talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk keeps_a_small_wooden_wedge_to_practise_cutting_even_shares
+likes hard_cheese old_tales old_maps frosty_mornings
+dislikes salt_wind haggling
+fears a_market_scale_jammed_in_the_rain a_private_saving_wasted_on_fuss
+hopes a_quiet_stall_on_the_commons a_knife_that_cuts_an_even_portion
+topics prices +0.5 food +0.4 lore +0.3
+styles comfort=practical gossip=discreet refuse=firm tease=dry
+marks oath saying
+persona #self.first# has a wooden model of a cheese wedge to practise measuring portions and a short stock of patience for a price that won't sit still.
+
+words
+oath! = Splinters in the rind | Salt on my good scales
+saying! = Sell the cheese the customer can see | A wedge has two sides to keep honest
+wedgewit = my wooden witness | the model portion
+beeswax = the waxed cut face | my polished edge
+thinend = the narrow yellow toe | a sliver at the tip
+broadback = the square rind end | the heavy end
+plaincopper = my saved market copper | a coin with a known destination
+quietweight = a flat grey weight | my stone counterbalance
+ribbonend = the measuring strip | the short length of tape
+highturn = the route above the spill | one dry landing
+bookroad = the old ink road | a mistake in fine brown lines
+cheeseflower = the shaving off the tip | a little curl of hard cheese
+
+any
+opinion @1 city for 1 : Our city accommodates a house that requires my service and a market stall I might one day call mine. I appreciate the arrangement.
+opinion @1 festivals against 2 : A crowd admiring a great procession is apt to forget its smaller obligation to let the supper through.
+opinion @1 merchants against 1 : A price that changes when my coat changes would make me reluctant to buy a button.
+opinion @1 sump against 1 : I prefer a return route where a dish and its bearer can both arrive without having been rinsed en route.
+opinion @1 dole mixed 0 : I'd consider the actual need of the hungry guest before offering a lecture on dividing the portions.
+
+grown
+line @1 greet : The model's wood. You may safely stand near it.
+line @2 greet [pair.band=strangers] : Welcome. Stand by my sample's square wooden heel.
+line @3 greet [here.time=dawn] : Frost has begun signing its name on the cheese board.
+line @4 greet [here.time=dusk|night] : I've one appointment with a quiet seat this evening.
+line @5 greet [self.working=yes] : Let me stand the serving board square before speaking.
+line @1 kin.open [pair.kin!=no] : I reserve the seat clear of the scales for family.
+line @1 again.open : Back to inspect the honest wedge once more.
+line @1 greet.return : Your voice comes through with a good clean edge.
+line @2 greet.return [pair.band=friends|family] : I recognise a familiar note even during the weighing.
+line @1 farewell : Leave the wooden portion to sharpen somebody else's curiosity.
+line @1 farewell.return : My practice counter can close entirely without receipts.
+line @1 react.news : Shall we weigh the actual occurrence separately from the opinion?
+line @1 react.news.new : No mark resembling that has appeared on my board.
+line @1 react.news.known : An old quantity under a freshly polished weight.
+line @1 react.news.doubt : Would the original witness recognise the portion you've just served?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A simple meal with no formal obligation to speak might be welcome.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a sound piece of cheese by for that occasion.
+line @1 answer.how : My temper's tolerable. The measure remains reliable.
+line @1 ask.how : Would you say today delivered what the label promised?
+line @1 sympathise : I'm content to hear the difficult part without putting a figure on it.
+line @1 reassure : A pause won't add anything to the price you owe.
+line @1 decline : I've undertaken to bring this board back complete before considering outside business.
+line @1 accept_decline : I'll fold my own request up and carry it away.
+line @1 preclose : My little wooden customer is entitled to the remainder of my attention.
+line @1 ack : Sits level.
+scene wedge
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I had a wedge cut in wood so I could practise dividing a cheese without diminishing the actual supply.
+b : Can you weigh wood like cheese? | Why not practise at dinner?
+a : Only for its shape. I mark the portions, then try my judgement on the real article. | An experimental supper might be educational. A guest usually prefers an edible one.
+
+scene serve
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At service I set the heavy side of a board nearest the bend in my elbow.
+b : Does it matter over a short distance? | How do you find that balance?
+a : A guest drawing out a chair can make a short distance take an unexpectedly long time. | I test it while it's still resting. An experienced wrist shouldn't need to advertise the test.
+
+scene house
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I could walk a serving board round a corner without obliging the cheese to join the conversation.
+b : Is it apt to slide? | Would you put a cover over it?
+a : A smooth board and a quick wrist can turn a quiet helping into a small public event. | For a journey outdoors. Inside I trust a well-placed thumb rather more than a tall and ornamental cover.
+
+scene hard
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : The best hard cheese leaves a little curl on the knife after a thin slice.
+b : Do you eat the curl? | Is a thin slice mean?
+a : Certainly. A fragment falling into the proper hands is no tragedy. | Offer another while the first is being enjoyed. A thick lump eaten from politeness does the cheese no honour.
+
+scene tale
+when topic=memories self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : An old tale with the ending well known has much the same merit as a familiar cheese.
+b : It comes as advertised? | Would you want a new ending?
+a : Yes. That allows me to appreciate the particular way the teller cuts it. | Only if the teller can account for it. Unexplained improvements often have very little to recommend them.
+
+scene oldmap
+when topic=lore self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : My old street plan bestows an elegant avenue on what is actually a thoroughly undistinguished drain.
+b : Will you correct the drawing? | Is it dangerous to follow?
+a : I have added one modest note. The draughtsman's avenue can remain for the amusement of posterity. | Only to a clean pair of shoes in wet weather. I can generally offer a better way.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : On a frosty morning a roof tile looks more carefully outlined than the finest etching.
+b : Do you linger over the view? | Can you see the garden paths too?
+a : A short interval. My employers wish to eat whether the roof's beautifully delineated or not. | The high paths first. The low ones choose rather a wet moment to become legible.
+
+scene wind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : Salt wind roughens a clean face and puts an edge on my remarks that neither of us particularly needs.
+b : Do you escape it altogether? | Would a scarf help?
+a : I take the sheltered turn, sacrificing a few fine views in the interests of civil conversation. | For the face. The remarks require a separate measure of restraint.
+
+scene haggle
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I intend to show the price before a caller has invested a whole conversation in discovering it.
+b : Will you accept a lower offer? | What's wrong with discussing it?
+a : I'd state the terms plainly at the beginning. Either of us can decline with dignity. | Nothing at all, provided the figure and the article remain on speaking terms throughout.
+
+scene stall
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My savings are intended for a small counter on the Commons, with a sound scale and no gilding.
+b : Why no gilding? | What would the counter sell?
+a : Gilding is difficult to eat and unlikely to increase my accuracy. | I'd like to begin with cheese that I can describe from personal acquaintance.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd bring a slice home for #self.spouse# from the interesting end of a cheese.
+b : Which end is interesting? | Why only a slice?
+a : The darker part near the rind, where a little extra keeping shows in the taste. | I'd wish to hear a second opinion before investing a household's supper in the proposition.
+
+scene formal
+when topic=home self.quarter=heights
+does tell.self / ask.detail / answer.detail
+a : In the Heights a serving board can attract quite elaborate silver furniture while its contents remain something one eats on bread.
+b : Do you value the furniture? | What's your favourite arrangement?
+a : If it's useful to the wolf eating. A bright latch on an empty cover leaves me unmoved. | A sound plate, a decent knife and sufficient elbow room to use it.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : A quiet opinion from #self.friend# would tell me more about a sample than a roomful of elaborate compliments.
+b : Would you want the blunt truth? | What if it tasted poor?
+a : I should be disappointed to receive anything else. I'm still working on receiving it with perfect serenity. | I'd choose a different stock. A private disappointment is cheaper than a public one.
+
+scene water
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A street may look dry at its entrance and present a thoroughly different conclusion beyond the first door.
+b : What's your estimate based upon? | Would you warn another walker?
+a : I know the hollows that fill from the back. I watch the returns along the wall for a line of fresh silt. | I should, briefly. A simple dry alternative is more persuasive than a long discourse on wet feet.
+
+scene store
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I put down a board before adjusting a stiff wrist. Both actions deserve my full attention.
+b : Do you use the other hand? | Is the stiffness serious?
+a : When the weight permits. I don't invite the cheese to investigate gravity for my comfort. | Usually no. A minute of rest is an inexpensive way to preserve that answer.
+
+scene report
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : Some accounts get a handsome crust while the middle remains as full of holes as before.
+b : Would you pass one along? | How do you inspect the middle?
+a : Only with its holes visible. I dislike giving my name to the appearance of a whole piece. | Ask for one particular to be described. A second-hand account often comes apart very tidily at that point.
+
+scene latework
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I put the wooden wedge back before lamplight makes it too flattering a shade of gold.
+b : Can you mistake it for cheese? | What would give it away?
+a : At a glance, yes. I haven't yet reached the point of requiring a taste to settle the enquiry. | The wood grain and the very reasonable condition in which it survives a week on my counter.
+
+story waxedge [topic=prices]
+  : I rubbed a little beeswax along my wooden sample and saw a lovely sheen develop on the cut face.
+  : Then my measuring ribbon slid straight down the slope and puddled in my lap.
+  b : Did you remove the wax?
+  : Yes. A witness that won't hold still for its own evidence is more ornamental than I require.
+
+story drainroad [topic=travel]
+  : I stood where my old plan promised an avenue and found daylight glimmering in a flooded gutter.
+  : I turned the plan over and could just make out the draughtsman's original pencil line pointing up the hill.
+  b : Which route did you choose?
+  : The pencil knew its business better than the ink. My shoes bore witness to that conclusion at supper.
+
+story tinycurl [topic=food]
+  : One slender shaving of cheese stayed on the end of my knife as I tried to set a very formal plate.
+  : When I touched it to the board it stood up in a coil rather like a little flower.
+  b : Was that part of the arrangement?
+  : It became part of it, briefly. My own portion was available for the prompt correction of an overambitious flourish.
+
+rule @board
+when concept=bark self.job=servant self.working=yes
+does aside
+cooldown 8h
+say Heavy side against the steady elbow. | Allow this board its turning radius.
+
+rule @wind
+when concept=bark self.dislikes=salt_wind
+does aside
+cooldown 8h
+say The sheltered lane will do nicely. | Salt enough on the cheese already.
+
+rule @coin
+when concept=bark self.dislikes=haggling
+does aside
+cooldown 8h
+say That price can stand on both its feet. | No private figure behind the public one.
+
+rule @dusk
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Return the wooden sample to its drawer. | Lamplight has flattered the wax again.
+
+dlg @1 resident.hub : There's my wooden witness. The cheese itself would incline to less prolonged conversation.
+dlg @2 resident.hub [topic.meeting=known] : You've seen the portion I measure by, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I'll keep both the scale and my own judgement within reach.
+dlg @4 resident.hub [here.time=night] : The board catches enough lamplight for an unhurried word.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. A board laid square and a supper received hot generally meet the case.
+dlg @2 resident.job : I'm useful to a household that values dinner more highly than the fuss of producing it.
+dlg @1 resident.news [world.news] : I've kept the part that passed inspection on my scales. #world.news#.
+dlg @1 resident.bye : Take the higher pavement where the street turns.
+graft @modelportion resident.hub
+choice Would that wooden cheese fit a real set of scales? -> modelportion
+node modelportion
+say Comfortably. The model helps me estimate the proportions of a wedge. The actual weight still requires real cheese and an honest balance.
+choice What becomes of the practice portions? -> modelportion_more
+choice Set down the measuring ribbon. -> hub
+node modelportion_more
+say I mark the cuts in a little wax and rub them out for another attempt. A beautifully economical supper for a household entirely made of wood.
+choice Set down the measuring ribbon. -> hub
+choice Leave the counter tidy. -> bye

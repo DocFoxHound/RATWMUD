@@ -1,0 +1,262 @@
+# rm518, the clean square (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm518
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hilde_dripby
+written_by codex
+title the clean square
+fits stage=adult|old
+prefers job=none honesty=sly
+traits temper=short talk=plain warmth=reserved humour=none honesty=sly piety=ordinary drive=steady
+quirk folds_one_clean_square_from_even_the_worst_rag
+likes hard_cheese long_walks new_boots misty_dawns
+dislikes cold_tea stale_bread
+fears a_private_sorrow_washed_into_public_talk
+hopes boots_that_finish_a_whole_long_walk_dry
+topics work +0.6 pastimes +0.4 weather +0.4 food +0.3
+styles comfort=practical gossip=guarded refuse=brisk tease=dry
+marks oath saying
+persona #self.first# folds a strip of worn cloth until one spotless square shows, keeping the rest of its history inside.
+
+words
+oath! = Three ragged hems | A bootful of cold tea
+saying! = Fold the story inward | A clean inch can do a job
+endfold = the inward fold | my private seam
+smallwhite = a clean inch | the pale square
+bluerag = a blue thread | an old selvedge
+heelwrap = a heel strip | a soft backing
+saltfog = a wet white veil | harbour mist
+cheeseknob = a hard little heel | the cheese button
+teabite = a hot swallow | a steaming lipful
+stonewrap = the tool wrap | the stone pocket
+walkend = a dry resting place | my turning point
+ragmark = a worn corner | the old crease
+bootdream = a new sole | a dry tongue
+millcloth = a sound strip | the clean scrap
+
+any
+opinion @1 merchants against 1 : A seller quoting whole-cloth money for a square of sound rag had best offer a fine reason.
+opinion @1 houses mixed 0 : A grand sleeve and a threadbare one can each hide a face that deserves its private moment.
+opinion @1 dole for 2 : A dry wrap round a loaf protects the food long after the dole queue has moved.
+opinion @1 road for 1 : I'd see the long walking road mended before the grand short cut gets a second sign.
+opinion @1 watch mixed 0 : A witness need only give the facts a question actually concerns.
+opinion @1 city mixed 0 : Even the best harbour view can be badly let down by the bootsole beneath it.
+
+grown
+line @1 greet : Hello. There's a dry inch to stand on. | Come up past the loose rag.
+line @2 greet [pair.band=strangers] : New face. Wipe your feet before judging the floor. | There's a free patch by my folded cloth.
+line @3 greet [here.time=dawn] : First mist gives a plain harbour some manners. | Morning. Still a little white along the water.
+line @1 greet.return : Yes, hello. My left ear's still dry. | I heard that quite clearly across the fold.
+line @2 greet.return [pair.band=friends|family] : A familiar voice won't fray my temper today. | You've found the sound side of my morning.
+line @3 greet.return [here.time=night] : Late. No need to air a whole length of cloth. | Evening. A short quiet word will carry.
+line @1 again.open : Back before the crease has set. | Another visitor to this same clean inch.
+line @1 hail [pair.band=friends] : Take this turning while the mist looks good! | There's a dry view from my side!
+line @1 farewell : Walk till your boots have had their money's worth. | Carry one clean corner home.
+line @1 farewell.return : I'll fold my bit of silence up again. | Go with the sound side toward the wet.
+line @1 react.news : Give me the clean inch of the account. | I can sort the straight part from its fraying edge.
+line @1 react.news.new : First thread of that colour I've seen. | New to my small stock of information.
+line @1 react.news.known : I've handled a strip cut from that account. | Same old crease running down its middle.
+line @1 react.news.doubt : That story's been washed till the useful marks are gone. | Show me the source under that splendid fold.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : A sorrow needn't be spread out for inspection. | I have a clean cloth for you if it's wanted.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Good. A bright strip in an old grey day. | That's a change worth turning the clean side out for.
+line @1 ask.how : Has today rubbed a sore spot anywhere? | Still some sound walking left in your boots?
+line @1 answer.how : Fair. Dry inside the collar so far. | Short of money, long enough on feet.
+line @1 decline : My spare inch is carrying something I mean to protect. | That would open a fold I'd rather leave closed.
+line @1 accept_decline : Then your reasons can stay inside the fold. | No need to air your private account.
+line @1 preclose : The next street won't walk itself today. | Time to tuck the strip out of the wet.
+line @1 accept_preclose : Go while your boot leather's willing. | Fair enough. Our cloth has a clean edge there.
+line @1 thank : That was a kindness you needn't have spent. Thanks. | You've saved the last sound inch.
+line @1 deflect_thanks : I only turned the clean bit toward you. | It took no more than one turn of cloth.
+line @1 sympathise : Let the sore part stay wrapped today. | I'll keep the staring faces off this corner.
+line @1 reassure : Tomorrow may give the fold a sounder face. | There's one patch still bearing weight under us.
+line @1 ack : Yes. I'd call that cloth fit for use. | There's sound weave in your argument.
+line @1 give.advice : Look inside a boot before blaming the road. | Never unfold a private hurt to amuse a crowd.
+scene foldcloth
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At rag work I look for the clean inch. Some grand lengths haven't got one left.
+b : Is it always on the inside? | What if the outside's fine?
+a : Often behind an old fold. That's where rough handling seldom finds it. | Lovely. Then I'm looking for two useful pieces in a single length of rag.
+
+scene toolwrap
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : My whetstone travels wrapped. It gets a cleaner lodging than my feet some weeks.
+b : Does a stone mind dirt? | Why bother carrying it?
+a : The pocket minds the grit. I prefer to keep cheese in a pocket with fewer ambitions. | A cloth tool that can't do its honest work wastes sound material. I look after what earns its place.
+
+scene cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : A hard cheese heel makes a neat parcel in my square of cloth. No dripping riddles.
+b : What happens to the rind? | Does everything get its own wrap?
+a : Goes in the pot when there's one going. I'm not wealthy enough to discard a second flavour. | Anything that would offend my cheese gets a strictly separate residence.
+
+scene stale
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : Stale bread wants a day's wages in tea before you can call it a meal.
+b : Could you toast it? | Why tea?
+a : With fuel available, yes. A cold hearth seldom rises to the invitation. | Broth if I've got it. Dry bread shouldn't send me out buying a list of accompaniments.
+
+scene coldtea
+when topic=day self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : Cold tea has an air of having been useful to somebody else first.
+b : Wouldn't it warm again? | Do you pour it away?
+a : If the fire's going. I'd have preferred one decent hot swallow at the start. | I finish it. A grievance can be entirely justified and still drinkable.
+
+scene boots
+when topic=travel self.likes=new_boots
+does tell.plan / ask.detail / answer.detail
+a : I'd choose new boots by the inside seam and walk a short circle before admiring the polish.
+b : Would you pay more for looks? | Why such a short circle?
+a : With my purse? I'd treat a decent sole as decoration enough. | No need for a harbour excursion to find that a stitch is rubbing in precisely the wrong place.
+
+scene longwalk
+when topic=pastimes self.likes=long_walks
+does tell.self / ask.detail / answer.detail
+a : A long walk lets me turn the same thought until its rough side is out of sight.
+b : Do you come to an answer? | Where does your return walk start?
+a : If it deserves one. Some things need a fold and no more talking. | Where the ground changes under my feet. I enjoy a different surface on the return.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.feeling / react.self / assess
+a : Dawn mist takes the hard outlines off a wharf. Even a worn coat gets a fine edge in it.
+b : Can you see your feet? | Is it the quiet you like?
+a : Briefly, between patches. I watch each board fairly closely in any case. | The privacy. An ordinary face can pass without supplying an explanation for it.
+
+scene sawone
+when topic=memories
+does give.opinion / react.self / assess
+a : I once saw a face that belonged to a high place looking thoroughly mortal. Its owner has my silence.
+b : Couldn't you at least describe it? | What makes that worth keeping?
+a : That's how a description becomes a name before you've got round to finishing it. | Being high up oughtn't to cost a wolf all chance of having a private minute to be unhappy.
+
+scene watchhear
+when topic=gossip
+does give.opinion / react.self / assess
+a : A strip of cloth can cover a cut. It oughtn't to be pulled off just to prove there's blood.
+b : Are we talking about talk? | What if the tale's true?
+a : Mostly. The principle works on a real sore place as well. | True facts can still be put to a wretched use. I'd consider the purpose before the telling.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd keep a quiet bit of company for #self.friend# along a road where silence doesn't require a joint explanation.
+b : Would you share the road all day? | Doesn't the quiet drag?
+a : As far as our roads happen to agree. I like an arrangement with an honest turning place. | Heavy talk drags. A comfortable silence wears almost as well as good leather.
+
+scene wharf
+when topic=home self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : A strip left loose near the water will begin its own journey sooner than most cargo.
+b : Would you go after it? | Why not weigh it down?
+a : Only within reach of my hand from solid ground. It's a poor bit of arithmetic to lose a wolf for a rag. | Exactly. A clean little stone in the fold earns its own passage.
+
+scene prayer
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A private minute earns my thanks after a public working day. Even a wet street has those.
+b : Why a private one? | Does the cloth come into it?
+a : Because I can say what I'm grateful for without supplying anybody else a story. | Occasionally. A used sleeve won't conceal gratitude from the Bright One.
+
+scene cheap
+when topic=prices self.wealth=destitute
+does tell.self / ask.detail / answer.detail
+a : I judge a price by the walks it costs. Some fine boots cost more walks than they'd ever give me.
+b : Then what would you buy? | Could you save for a pair?
+a : A plain pair with a sound lining. There's no sense carrying a seller's vanity on my feet. | I can save the idea at present. It's light enough to carry while I look for a decent bargain.
+
+scene firstfold
+when topic=newcomer
+does warn / react.self / assess
+a : Handle a strange rag by a corner before deciding it's worth the room in a sack.
+b : What could be wrong with it? | Why only a corner?
+a : A damp inside and splendid dry outer fold. Sellers learn the same folds I know. | It lets me turn the rest of the length open without collecting every stain on my front.
+
+scene hope
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Give me one pair of boots able to walk out of a mist and back into it next dawn.
+b : No grander wish? | How would you spend that walk?
+a : A long comfortable walk seems a fairly grand wish from the patch where I stand. | On the water's edge while the day is still thinking about getting up.
+
+scene marketnews
+when topic=news world.news
+does tell.self / ask.detail / answer.detail
+a : I've had this from #world.news_from#. #world.news#. The wrapping says where it came from.
+b : Would you guarantee it? | Why keep the wrapping?
+a : I'd guarantee I heard it in that form. My guarantees are properly modest. | A tale with its origin washed off is a rather different parcel.
+
+scene summerland
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : One paving stone on a long road can say more about a place than six views from a window.
+b : What's it say? | Which stone would you choose?
+a : Whether folk have money for repairs, and whether water respects the edge. My soles can read both. | The one just before a doorway. There a street has to account for its effect indoors.
+
+story whiteedge [topic=work|memories]
+  : I found a rag with exactly one white corner. I folded it with great care and put it aside for wiping a clean surface.
+  : Reached for it later and found four equally grubby faces.
+  b : Where was the white corner?
+  : Inside my cleverest fold. A sound secret, though poor housekeeping.
+
+story teawalk [topic=food|memories]
+  : I took my tea on a walk to keep from sitting too long. Walked till I found a perfect patch of mist and then inspected my cup.
+  : Tea cold, view warming up fast.
+  b : Which did you keep?
+  : The view. Drank the evidence against the tea before another wolf could offer a useful opinion.
+
+story bootsole [topic=travel|memories]
+  : A pebble tapped my heel all morning. Emptied my boot twice and found the lining clean. I sat down on a dry bollard for a better reckoning.
+  : The pebble was stuck outside in the tread.
+  b : How did it feel without it?
+  : Oddly quiet. A long complaint can come to sound like part of your own natural step.
+
+rule @fold
+when concept=bark
+does aside
+cooldown 8h
+say Turn the spotless inch out and leave the rest in peace. | No need to display every stain in the length.
+
+rule @work
+when concept=bark self.job=none self.working=yes
+does aside
+cooldown 8h
+say Sound fibres here under the old wearing crease. | Keep the soft strip away from the gritty wrap.
+
+rule @boot
+when concept=bark self.likes=new_boots
+does aside
+cooldown 8h
+say A dry boot tongue is a luxury you feel all day. | Soft seam first, handsome leather after.
+
+rule @tea
+when concept=bark self.dislikes=cold_tea
+does aside
+cooldown 8h
+say Catch the heat before a good cup loses its manners. | Cold tea sets my teeth to complaining.
+
+dlg @1 resident.hub : I've a clean little patch of the day to spare. Speak your piece.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you know which bit of my cloth is on public view.
+dlg @3 resident.hub [here.time=night] : Dark hides the stains without improving the material a jot.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : My pockets stay folded. You can ask your business from there.
+dlg @1 resident.job [self.job=none self.working=yes] : I sort cloth and look for the sound bit a careless hand would put aside.
+dlg @2 resident.job : Whatever earns a walk in boots with a clean lining interests me.
+dlg @1 resident.bye : Save one dry square against the road's last soggy turning.
+graft resident.hub
+choice What's folded into that strip of cloth? -> inwardrag
+node inwardrag
+say Nothing you'd pay money to see. There's one clean square inside for a gritty eyelid or fingers about to touch a good piece of cheese.
+free
+choice Why keep the worn side showing? -> outsidewear
+choice I'll respect the fold. -> hub
+node outsidewear
+say Because the outer skin takes the weather. And nobody has yet tried to buy this sorry-looking rag while the sound patch stays out of sight.
+choice That's a sensible private corner. -> hub
+choice I'll get on with my walking. -> bye

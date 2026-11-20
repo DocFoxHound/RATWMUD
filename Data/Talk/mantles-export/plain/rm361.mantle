@@ -1,0 +1,249 @@
+# rm361, the dancer's extra bowl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm361
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_erland_millstack
+written_by codex
+title the dancer's extra bowl
+fits stage=adult|old
+prefers job=healer
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk sidesteps_to_make_room_for_an_extra_bowl
+likes mutton_stew dancing full_larder frosty_mornings
+dislikes night_noise early_bells
+fears letting_a_busy_room_drown_a_quiet_need
+hopes keeping_one_place_warm
+topics faith +0.6 food +0.4 pastimes +0.4 family +0.3
+styles comfort=gentle gossip=careful refuse=soft tease=none
+marks oath saying
+persona #self.first# steps sideways as if making room in a dance and sets an extra bowl within reach of a visitor who might be too shy to ask.
+
+words
+oath! = Cloud my good spoon | Scuff my quiet step
+saying! = Keep the bowl facing up | Make the sideways step
+sparepot = a little brown bowl | a shallow basin
+warmheel = a soft heel of bread | a bit of bread for dipping
+smoketail = a thread of woodsmoke | a pale curl of smoke
+stewlip = a shining rim of broth | a dark line of gravy
+danceplace = a space of two short steps | a narrow gap in the ring
+frostfur = a rim of bright crystals | a line of white frost
+lampmark = a small pool of lamplight | a spot of warmth
+larderjar = a waiting bean jar | a broad pot of split peas
+cupcloth = a soft wiping square | a scrap of clean linen
+spoonrest = a flat dish | a small piece of tile
+strawshoe = a plaited sole | a soft slipper
+
+grown
+opinion @1 church for 2 : A bowl set down softly can carry my prayer farther than words said to an unwilling listener.
+opinion @1 houses against 1 : Folk at a great wharf should remember which tables have lost a place before praising a profitable day.
+opinion @1 strangers for 2 : An extra bowl gives a caller permission to be hungry before a word has to be found for it.
+opinion @1 city for 1 : A crowded city gives me plenty of chances to practise moving gently through a room.
+opinion @1 festivals for 1 : A dance that leaves a gap in the ring can turn a bystander into company at once.
+opinion @1 dole for 2 : I prefer a pot that is replenished by several quiet hands to one guarded by a grand speech.
+line @1 greet : I've made a little space here with good light on it.
+line @2 greet [pair.band=strangers] : You're welcome to sit within reach of the warmth.
+line @1 greet.return : I hear you gently enough. Come this way.
+line @1 farewell : Save one unhurried step for the home doorway.
+line @1 farewell.return : May the Bright One bring your feet lightly home.
+line @1 ask.how : Has anybody thought to ask what would give you ease today?
+line @1 answer.how : Well enough for a little turn about the room.
+line @1 react.news : I'll listen right through before trying any answer on for size.
+line @1 react.news.new : That's an unfamiliar step in a dance I thought I knew.
+line @1 react.news.known : The shape of that news is already beside me.
+line @1 react.news.doubt : I'd rather wait a measure before trusting so sharp a turn.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : I'd set the brightest bowl out for that sort of news.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll see who needs supper without asking after the particulars.
+line @1 decline : I can't offer that without first knowing whose comfort it may take away.
+line @1 accept_decline : Then I'll give the decision some room of its own.
+line @1 thank : Your kindness came within reach just where I needed it.
+line @1 deflect_thanks : There was time to put another place in.
+line @1 reassure : You may take just the little step you can manage.
+line @1 sympathise : I can be here without needing you to make conversation.
+line @1 ack : I feel where the next step goes.
+line @1 accept_preclose : Then we'll let the quiet settle comfortably between us.
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I sometimes set out an empty bowl before praying over supper.
+b : Who is it for? | Does it need to stay empty?
+a : Anyone I ought to have remembered before the food was divided. | Only till it catches my eye. A prayer ought to leave some room for a ladle.
+
+scene work_1
+when topic=work self.job=healer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I let a caller settle before I ask what's amiss.
+b : What tells you a caller's ready? | What if the matter is urgent?
+a : Often a pair of shoulders drops just a little. The words come easier then. | We see to the urgent thing. Gentle needn't mean slow in the wrong place.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I like keeping a bit of unhurried evening for #self.spouse#.
+b : Do you go dancing? | What if the day has run late?
+a : We might, if we both wished. Mostly I mean leaving room for company without a list of things unfinished. | I'd take a very short moment kindly over a long evening filled with reproach about the hour.
+
+scene pastimes_1
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : In a dance I enjoy making a sideways place for somebody new.
+b : How do you invite a shy dancer? | Suppose you land on somebody's toes?
+a : Look down at the space I've made and let the other wolf decide whether to fill it. | I take one clear step back. An apology is more convincing when my weight is off the toe.
+
+scene food_1
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : My mutton stew needs one piece that comes apart under a very timid spoon.
+b : For a pup? | Why one piece in particular?
+a : A pup, a tired elder or anybody who wants a meal without a contest. | It's the little test that says everything else has had time to give the broth some goodness.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A clean frost makes a step look bright enough for dancing even when it's unwise to try.
+b : Do you risk a turn? | Where does the morning take you?
+a : Not there. I have a fondness for taking both ankles home in working order. | Walk carefully to the best view and enjoy seeing every roof edged in the same colour.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A full larder gives me the courage to make a proper invitation.
+b : Must it be full? | What do you store first?
+a : No. Sometimes one extra spoonful can make the difference and a large promise would only embarrass us. | Whatever will make a plain bowl welcoming if a visitor comes when the market's shut.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A little smoke clings to my coat as though it wants advice too.
+b : Can anybody smell it? | Does it trouble a caller?
+a : Often. I say plainly that my cuff smells of smoke and see whether the room still smells after I've moved. | If it does I'll wash and hang my coat further off. A gentle intention ought to notice the nose as well as the ears.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I enjoy feeding a friend who chooses the smaller bowl without an apology.
+b : You'd rather give less? | What if a guest wants more?
+a : I'd rather give exactly what my guest wants and leave pride out of the measure. | Keep the pot in reach. A second helping needn't summon an entire audience.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A loss on the waterfront changed the way I look at an unset place.
+b : Does it still hurt? | Whose place was it?
+a : Particularly when somebody talks as if all the day's work came home safely. A number can tell an unkind half-truth. | I'd sooner keep that close. I can say what care came out of it without naming a grief.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : After dark I wish door latches had the gentler manners of bowls on cloth.
+b : Sensitive ears? | Do you wake your neighbours?
+a : I know what an effort sleep can be for somebody in pain. A good night is worth a silent wrist. | I try to lower a latch as if listening at pillow height beyond the door.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A little broth has a different value on the two sides of a table.
+b : What's the cook's price? | How would you set a fair one?
+a : Some time, a sound bone, enough warmth. For the one who's been waiting hungry it's a very different sum. | I wouldn't use the last of a hungry wolf's coppers as a measure of the broth's ambition.
+
+scene faith_2
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : The first bell of the morning sometimes catches a prayer I've barely begun.
+b : Does it spoil the prayer? | Aren't you glad of the bell?
+a : It makes me lose the words. My prayer keeps its direction even if I have to pause for the noise. | At the appointed hour, yes. I can value a bell and still envy those last quiet breaths.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'd stop at a doorstep for a caller who seemed to be choosing between a knock and retreat.
+b : Would you knock for somebody? | How would you offer help?
+a : Only if asked. A closed door can make a private matter public very quickly. | I can stand beside the step in a way that still leaves the road open.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a hard week I warm the spare bowl with water before serving anybody from it.
+b : Does that help the food stretch? | Why bother if there's little stew?
+a : It gives a small serving time to be eaten pleasantly. That's a sort of plenty I can still offer. | All the more reason to take care that the little bit's good when it reaches a mouth.
+
+scene friends_2
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : A dance partner will notice if I've more breath for listening than talking.
+b : By how you move? | What happens if the music quickens?
+a : I take the quiet side step and leave the lively figures to someone with lightness to spare. | Finish the figure I'm in, thank my partner and make the next place available.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'll welcome a newcomer with room for the bundle as well as the body.
+b : Why remember the bundle? | Would you ask what's in it?
+a : Because a wolf unsettled by a strange place takes longer to untie things and put them down. | Only if I'd offered to carry it and something inside needed gentler treatment.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The version passed to me says #topic.subject# #topic.claim#.
+b : Do you believe it? | Would you carry it further?
+a : I believe the words are in circulation. I've yet to hear what the one concerned would choose to add. | I'd ask first whether it served the one mentioned or merely the hunger round a table.
+
+story spoon [topic=food]
+  : I laid a spoon across an extra bowl in readiness for an unexpected visitor.
+  : I reached over it and sent the spoon into the pot before anyone arrived.
+  b : Did supper have to wait?
+  : Not a moment. I fetched another spoon and served with the one the stew had claimed for itself.
+
+story dance [topic=pastimes]
+  : I practised a very careful turning step between two chairs.
+  : Coming out of the turn I found my tail had pulled one chair right into the middle.
+  b : Did you fall?
+  : I sat down. It was the most courteous invitation to rest that a piece of furniture has ever offered me.
+
+story frost [topic=memories]
+  : I stood looking at white leaves on a window and thought how perfectly each vein had been drawn.
+  : My warm breath made a round clear place exactly where the best leaf had been.
+  b : Were you disappointed?
+  : The clear place showed a real branch tipped with frost outside. I had merely exchanged one picture for another.
+
+rule @bowl
+when concept=bark
+does aside
+cooldown 8h
+say Room at the quiet end for another bowl. | Turn the empty one towards the caller.
+
+rule @early
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say One soft word before the bells begin. | Daylight ought to come in on quiet feet.
+
+rule @food
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say The soft bit goes where the spoon is weakest. | Plenty of broth under those roots.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Let the latch make the last sound a small one. | Somebody may just be drifting off.
+
+dlg @1 resident.hub : Come into the easy light. We'll take each word at its own pace.
+dlg @1 resident.job [self.job=healer] : At #self.workplace# I try to see the whole visitor before getting caught up in the complaint.
+dlg @1 resident.news [world.news] : This has reached the table. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The tale says #topic.subject# #topic.claim#. I'd like the kindness to hear the rest in confidence.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, it is good to hear your step come near the door.
+dlg @1 resident.bye : May the quieter turn of the dance meet you next.
+graft resident.hub
+choice Why is that bowl facing up? -> bowl_up
+node bowl_up
+say An upturned bowl says supper has finished. This one says you may ask for a place and I have already thought about making it.
+choice What if I don't want to eat? -> bowl_rest
+choice I'll take the quiet. -> hub
+node bowl_rest
+say Then it holds a little quiet for you instead. You need never invent an appetite to deserve a welcome.
+choice I'll take the quiet. -> hub

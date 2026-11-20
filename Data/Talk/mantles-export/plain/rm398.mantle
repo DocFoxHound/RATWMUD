@@ -1,0 +1,257 @@
+# rm398, the stormless shelf (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm398
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_vesper_greenholt
+written_by codex
+title the stormless shelf
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk straightens_one_shelf_each_time_a_storm_costs_an_hours_sleep
+likes roast_pork digging tidy_house summer_evenings
+dislikes cold_tea haggling
+fears having_to_start_the_road_empty_again
+hopes a_warm_board_under_another_tired_traveller
+topics weather +0.6 home +0.5 work +0.4 travel +0.3
+styles comfort=sheltering gossip=plain refuse=kind tease=none
+marks oath saying
+persona #self.first# uses sleepless hours before storms to put a small home in order and never forgets the first empty arrival at its door.
+
+words
+oath! = Tilt my clean shelf | Hollow my chopping block
+saying! = The storm may have the sky but not this shelf | A straight stack makes a small house roomy
+shelf = the level board | a narrow shelf
+wood = a sound billet | a straight stick
+block = the heavy block | a flat chopping stump
+dig = a spade cut | a deep notch of soil
+pot = a lidded crock | a clean pot
+tea = a warm cup | a fresh mug
+meat = the browned corner | a slice of pork
+chair = my sound stool | a plain wooden chair
+bark = a strip of bark | a long peel
+spade = a steel spade | a sharp digging blade
+sky = a low grey lid | a brooding sky
+bundle = a snug armload | a balanced bundle
+rainnoise = the first drumming | the roof chatter
+
+any
+opinion @1 strangers for 2 : I know the price of an arrival carrying nothing. A board to sit on buys a lot of courage for the following day.
+opinion @1 road for 1 : A road brought me within reach of a life I could put together with both paws.
+opinion @1 dole for 2 : There was a time I'd have called one bowl a year's worth of good fortune.
+opinion @1 houses mixed 1 : I'd sooner inspect a plain shelf built square than a whole fine roof in somebody's name.
+opinion @1 merchants mixed 1 : Let me see the wood, name the charge, and give me time to judge the two together.
+opinion @1 sump for 1 : The little rooms people make comfortable tell you more about a city than the view above its roofs.
+
+grown
+line @1 greet : Find a dry spot on the board and sit. | You're welcome beside my working coat.
+line @1 greet.return : That greeting has a proper warm place here.
+line @1 again.open : Back on the same plank before it cooled.
+line @1 farewell : Get where the roof suits the weather. | Carry one good bit of this hour away.
+line @1 farewell.return : A level floor and a kind voice at your next stop.
+line @1 react.news : Tell me while the wood's settled. | I'll stay steady for the whole account.
+line @1 react.news.new : First chip cut from that news for me.
+line @1 react.news.known : I remember the grain in that telling.
+line @1 react.news.doubt : I would look again before putting a weight on it.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : A wolf in that sort of hurt deserves company through the long hours.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's a bright window opened on an ordinary day.
+line @1 ask.how : How has your own roof held today?
+line @1 answer.how : Sleep's a bit scant. Still enough shoulder for a fair turn.
+line @1 sympathise : Here's a seat that doesn't ask you to explain yourself.
+line @1 reassure : You can lay the first board and leave the rest till morning.
+line @1 refuse : My next bit of strength is promised to another job.
+line @1 accept_decline : We'll let that rest in its own quiet corner.
+line @1 preclose : Best be off before my homeward strip of light goes.
+line @1 accept_preclose : Get to your own warm room while it still feels near.
+line @1 ack : I hear just where the grain changes.
+scene exchange1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I wake before the storm has knocked. | If I can't settle before thunder I straighten a shelf.
+b : Can you hear it? | Does that ward it off?
+a : It's the missing quiet I notice, as though the roof's holding its breath. | It gives the morning one dry bit of order.
+
+scene exchange2
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : Coppice wood has a bend you have to greet before cutting. | I stack my sound billets facing the air.
+b : Can you straighten it? | How can wood face anywhere?
+a : Better choose a use that likes a curve. | Turn a split surface outward and watch which one dries first.
+
+scene exchange3
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I enjoy the pause when a spadeful comes up clean. | I turn the first clod upside down.
+b : Admiring the hole? | Always?
+a : Admiring a little space I had a paw in making. | Only to learn which way the roots were travelling.
+
+scene exchange4
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : I like a strip of rind to set beside my potatoes. | A roast sends a great welcome through a small doorway.
+b : Saving it for last? | Even to an empty room?
+a : Lending a bit of its good smell to the lot. | I usually find somebody's remembered an errand near me.
+
+scene exchange5
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : An orderly shelf's a whole inch wider than a messy one. | I hang one peg lower for tired arms.
+b : You measured it? | Just for visitors?
+a : The last pot fits. That's measure enough. | I've walked plenty far enough to be my own tired visitor.
+
+scene exchange6
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : Summer light reaches the far end of my shelf. | I like long evenings after a clean day's cutting.
+b : What lives there? | More time for the chopping block?
+a : The cup I couldn't bear to throw out while I owned just the one. | More time for ordinary company before sleep.
+
+scene exchange7
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : I come back to cold tea with a stick in each paw. | I take tea warm with both hands round it.
+b : Too busy carrying wood? | To keep it from cooling?
+a : Too hopeful about what a mug can do unassisted. | To keep me from starting something else first.
+
+scene exchange8
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I like a price you can lay flat on a table. | I'll tell you why a twisted branch costs less.
+b : Does haggling curl it up? | Why not bargain it up?
+a : It gives it so many corners neither wolf knows what was meant. | A bent stick wants a different job. That's sufficient explanation.
+
+scene exchange9
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I keep a shelf end clear for #self.spouse#. | A roof can sound much calmer with #self.spouse# beside me.
+b : A private bit of space? | Even when a storm's near?
+a : Every shared house wants a few small places where one voice chooses. | Even when I expect a poor night's rest, the waiting isn't lonely.
+
+scene exchange10
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I came up the road with my paws empty. | The first piece of my own furniture scarcely qualified.
+b : What came in first? | Was it a rough chair?
+a : A plain pot. There's something hopeful about buying the means of making a meal. | A block to sit on. I owned the whole broad top of it.
+
+scene exchange11
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put the chair with the stout repair out for #self.friend#. | A friend gets the protected corner by my back step.
+b : You'd choose the mended one? | Will you get wet?
+a : Because I know each joint and trust it with somebody I care for. | I keep an extra folded cloth. Sharing the place means preparing for both.
+
+scene exchange12
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : A city window with two rows of pots always stops me. | I like seeing timber used twice.
+b : What are you looking at? | Where does that show?
+a : How much home can be made from a small stretch of wall. | Peg holes in a lintel where it once carried a shelf.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : Here's what drifted in from outside. #topic.subject# #topic.claim#. | A story has a fresh-cut smell when it's truly new.
+b : How sound is that account? | And when it's old?
+a : I wouldn't use loose bark to hold up a roof. I'd wait to learn more. | You can still see where it's been trimmed to fit the next door.
+
+scene exchange14
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard days make me glad of a tidy store of kindling. | A tight spell makes me look at what's still standing.
+b : For your own hearth? | Why?
+a : And a little armful for a visitor with no dry start. | A decent shelf can outlast a surprisingly poor season.
+
+scene exchange15
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like the first wolf coming up that road empty to see a light. | I want one fine calm night before the weather breaks.
+b : What can you offer? | And what then?
+a : A board, a dry cloth, something warming while the feet rest. | Lie still, shutter wide, and listen to nothing at all.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I shoulder a heavy piece on the smooth side. | I work more slowly after a sleepless night.
+b : Wouldn't the bark stop it slipping? | Do you lose a lot of ground?
+a : I can steady weight. I don't want to spend the night picking splinters out. | Less than I'd waste rushing a tired cut.
+
+scene exchange17
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I sweep the floor towards the open air after cutting. | I swap my wet outdoor cloth for a dry one as soon as I enter.
+b : Does the dust all go? | Why so quickly?
+a : I take the answer I can get today. | It tells my shoulders the work journey's finished.
+
+scene exchange18
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can name a road by its places to sit. | I leave a sound block beside paths where I stack wood.
+b : Not by the turns? | A seat for you?
+a : A tired newcomer looks at a different sort of map. | My legs may be elsewhere when another wolf needs it first.
+
+story tale1 [topic=memories]
+  : I started my first night under a roof by lining up every possession I had. It came to one cup and a scrap of cloth.
+  : The shelf looked bare enough to make a heart sink, until I put my cup right in the middle.
+  b : What difference did the middle make?
+  : I could choose it. I lived a long time away from places where the position of a cup was mine to decide.
+
+story tale2 [topic=work self.job=woodcutter]
+  : I cut a forked branch that looked ideal for a peg. I trimmed the fork neatly, held it against the wall and discovered both ends pointed the same way.
+  : A coat would slide off either prong before I got my arms out.
+  b : Was the fork still useful?
+  : I made it a wooden bird and turned its useless pegs into excellent wings. It lives above the sound coat hook.
+
+story tale3 [topic=weather]
+  : One sleepless night I made up my mind to sort the jars by height. The first thunder came while I was still standing the second tallest beside the third.
+  : I woke in the chair after sunrise with a little jar balanced on each knee.
+  b : Was your shelf properly arranged?
+  : Mostly. I put the two little ones side by side, made my tea and kept the chair in its comfortable place.
+
+rule @call1
+when concept=bark working=yes self.job=woodcutter
+does aside
+cooldown 8h
+say Split the piece where the grain invites it. | Bark down on the damp side of the pile.
+
+rule @call2
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Summer light or winter, there's a welcome on a cleaned board. | An evening needs a place to put a cup.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The roof has finally said what it was brooding over. | A sound shelf for the jars to wait on.
+
+rule @call4
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say One good spadeful and a neat place for the next. | Roots still show the way their rain went.
+
+dlg @1 resident.hub : There's a sound seat here, built to have company on it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you're as welcome as warm tea when the day's cutting is over.
+dlg @3 resident.hub [here.time=night] : A late visitor doesn't trouble me. I have practice with wakeful hours.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We can speak civilly from either end of a level board.
+dlg @1 resident.job [self.job=woodcutter] : I cut coppice wood. I like finding a good use even for the little forks.
+dlg @2 resident.job : My work buys me the right to come home and hang things where I choose.
+dlg @1 resident.news [world.news] : The bit of news that came in from the road was #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Talk runs that #topic.subject# #topic.claim#. It hasn't had a fair test of its joints.
+dlg @1 resident.bye : A warm board beside a sound roof when you next rest.
+graft resident.hub
+choice Why sort a shelf when a storm's coming? -> night_shelf
+node night_shelf
+say I'm going to be awake anyway. I'd like the worry to leave something better behind than an early yawn.
+free
+choice Does the shelf stay tidy? -> night_shelf_again
+choice Goodbye. -> bye
+node night_shelf_again
+say Until breakfast. A shelf that stays perfect all day probably hasn't got a household to look after.
+choice Leave the cup somewhere warm. -> hub
+choice Goodbye. -> bye

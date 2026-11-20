@@ -1,0 +1,398 @@
+# rm208, the listening hood (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm208
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_ragnar_roperidge
+written_by codex
+title the listening hood
+fits stage=adult|old
+prefers role=merchant job=herder
+traits temper=even talk=plain warmth=reserved humour=none honesty=frank piety=devout drive=steady
+quirk turns_back_one_corner_of_an_oilcloth_hood_to_hear
+likes blackberries roof_birds fresh_straw frosty_mornings
+dislikes flies waiting
+fears a_bolt_heard_too_late a_mouth_full_of_dust
+hopes a_well_swept_courtyard a_quiet_climb
+topics animals +0.5 work +0.4 faith +0.3 weather +0.3 travel +0.2 gossip -0.5
+styles comfort=practical gossip=unwilling refuse=square tease=none
+marks oath saying
+persona #self.first# pins back one corner of an oilcloth hood for a clear hearing, speaks plainly about a bargain and gives thanks over the least comfortable creature first.
+
+words
+oath! = Hay in my hood | Buckles keep bright
+saying! = Listen on the yard side first | A full bucket changes how you walk
+flap = the folded ear flap | the turned corner
+pin = a little horn toggle | the smooth black toggle
+berry = a bruised blackberry | a blackberry with its crown on
+bedding = the cleanest handful of straw | a sweet handful of bedding
+fidget = a shift of weight | a little sidestep
+bucket = the water pail | the shallow bucket
+foldline = the pale crease | that bending mark
+curry = a stiff brush | my small curry brush
+dust = a brown shower | a cloud of loose coat
+wipe = a square of rough linen | a clean linen scrap
+tuft = a yellow wisp | a straw tuft
+tiles = the rooftop perches | those high red ledges
+flybrush = a switch of leaves | a leafy fly whisk
+click = the click at the hasp | that little iron note
+meal = a proper mouthful | a quiet feed
+
+any
+opinion @1 church for 2 : Kneeling to scour a pail puts me in a perfectly good position for a prayer.
+opinion @2 dole for 2 : Hunger's no better a judge of character than a leaky roof. Fill the bowl.
+opinion @3 drink against 1 : It steals the last clear word out of a mouth. That's a loss I mind.
+opinion @4 merchants for 1 : If I can put a plain question about the cost, I'm glad of somebody who can answer it plainly.
+opinion @5 road against 1 : A cart that sticks in a rut leaves its load hungry for daylight.
+opinion @6 watch for 1 : I like to see somebody with the time to stand still and notice a loose fastening.
+opinion @7 festivals mixed 1 : I enjoy a fine parade. I like it still better with a quiet lane left open beside it.
+opinion @8 newcomers for 1 : Somebody once explained a stupid little latch to me. I'd sooner be the wolf explaining than the one laughing.
+opinion @9 city for 1 : There is always an uphill way in this city. That suits an ambitious pair of boots.
+
+grown
+line @1 greet [pair.band=strangers] : I've folded #flap# back. You'll have a hearing. | Step into earshot and welcome.
+line @2 greet [self.working=yes self.job=herder] : Quiet feet about the horses. A welcome to you. | Mind the pail. Come in easy.
+line @3 greet [here.time=dawn] : First light finds us both about. | Dawn's given us room to get ahead.
+line @4 greet [here.time=dusk|night] : Dusk draws the street in close. Welcome. | Evening. I heard your soles before your voice.
+line @5 kin.open [pair.kin!=no] : Here's space for family on the dry side. | Come within the sweep of my good ear.
+line @6 again.open : Still within a day's calling distance. | Twice to the same door sits well with me.
+line @7 hail [pair.band=friends] : A friend coming into hearing! | Mind the edge, then over here!
+line @8 greet.return : Your voice came through the cloth clear enough. | That welcome does me very well.
+line @9 greet.return [pair.band=friends|family] : I'd know that call with both ears covered. | Good company needs very little announcing.
+line @10 greet.return [self.working=yes] : Give me leave to finish this handful. Welcome. | I can listen with both paws busy.
+line @11 greet.return [here.time=dusk|night] : Evening. Not too late for a decent word. | That's a welcome sound in the gathering dark.
+line @12 farewell : A dry collar for your journey. | Leave at whatever pace keeps you easy.
+line @13 farewell.return : I'll hear you on the return stretch. | Good parting to the pair of us.
+line @14 react.news : Give it plainly and I'll measure it for myself. | I've uncovered an ear for the whole report.
+line @15 react.news.new : First hearing for these cloth-covered ears. | Our end of the street hasn't caught that word.
+line @16 react.news.known : Yes. The account held its shape in transit. | I had that from an earlier telling.
+line @17 react.news.doubt : A witness could settle that better than our guessing. | I'd give it time to show its true gait.
+line @18 react.news.sorrow [topic.kind=death|loss|assault] : I wish that household a gentle arrival of friends. | Terrible weight for a single threshold to bear.
+line @19 react.news.glad [topic.kind=marriage|birth] : Best news I've carried under this hood. | The Bright One give that household an easy season.
+line @20 answer.how : Well enough to carry a bucket without slopping. | Fed, dry about the ears and glad of both.
+line @21 ask.how : How's the balance between bustle and rest? | What pace has your day been setting?
+line @22 decline : I'll pass; I'd have to break my word elsewhere. | I have my course set for the day already.
+line @23 accept_decline : That's a clear answer. You've saved me holding my breath. | Say no once and I'll hear it properly.
+line @24 sympathise : I can take the next little errand off your paws. | Stay on the dry side awhile with me.
+line @25 reassure : A pause won't spoil a sound decision. | Draw breath. There's space enough for it here.
+line @26 thank : That's a kindness properly placed. | I owe you a dry corner sometime.
+line @27 deflect_thanks : Put the favour where it's wanted next. | It took less doing than describing.
+line @28 preclose : I must turn my hood towards home. | There are little fastenings to see to yet.
+line @29 accept_preclose : Go when you're ready; I'll stand clear. | You've given me plenty of your day already.
+line @30 ack : Understood through the cloth. | That sounds square to me.
+line @31 give.advice : Listen once before you move anything heavy. | Try the quiet way while you still have a choice.
+scene toggle
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : One ear of this hood stays pinned up in any weather. | #pin.capitalize# looks a poor match for that big flap.
+b : Doesn't the wet get in? | Will it hold?
+a : Some. I can shake off water. Can't shake a missed call back into my ear. | It has held through three pieces of cloth, which is more than I asked of it.
+
+scene straw_listen
+when topic=work self.job=herder self.working=yes
+does tell.self / react.self / assess
+a : There's a soft scuff in the bedding just before a horse settles. | #bedding.capitalize# makes a fine loud welcome.
+b : Through a door? | Loud seems an odd comfort.
+a : Through a door is easier. If I stand there watching, the horse watches me back. | You can hear each step settle. No hollow knock on the stones.
+
+scene berry_bowl
+when topic=food self.likes=blackberries
+does tell.self / ask.detail / answer.detail
+a : I pick #berry# last. There's usually juice on the stalk by then. | My berry bowl has a black ring round the lip.
+b : Save it for the road? | Why don't you scrub it?
+a : No chance. That's the one I eat over the bowl. | Did once. A perfectly good bowl looked like it belonged to somebody else.
+
+scene brushing
+when topic=animals self.job=herder
+does ask.advice / give.advice / assess
+a : What colour would you say this brush is? It was pale before the morning's work. | I've got #dust# coming out of the brush by itself.
+b : The colour of whatever you last brushed. | Can it get clean?
+a : Right. The beast looks splendid and I look like its shadow. | Easier out of the bristles than out of my porridge.
+
+scene gate_check
+when topic=work self.job=herder
+does tell.self / ask.detail / answer.detail
+a : I wait for #click# before I take my paw away. | You can always tell which gate I've latched.
+b : Does it sometimes need a second go? | By the sound?
+a : Yes. A hasp can look shut from halfway down the yard. | By the second tug. There's a full breath between the click and the tug.
+
+scene bucket_walk
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I walk differently carrying something that can spill. | Ever carried two full pails and felt lighter?
+b : Looks almost stately. | Lighter than with one?
+a : It's the water that's stately. I'm just following orders. | Much. Two sides to mind, no leaning on either.
+
+scene uphill
+when topic=dreams here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : Someday I'd like to climb the city without having to come down for something I left below. | My dream house has a view up another hill.
+b : What would you carry up last? | Even if you've reached the top?
+a : My hood. Everything else can go ahead without me. | A little hill will do. I like knowing I could go higher yet.
+
+scene early_bird
+when topic=animals self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : I watch which of #tiles# gets a bird first. | Look how a bird shuts up shop with one foot.
+b : Because that's the warm one? | Shuts up shop?
+a : Because every other perch looks just as good to me. I'm hoping to learn the difference. | Tucks it away in the feathers. No latch or key to lose.
+
+scene straw_scent
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : If I could hang a smell on a peg I'd pick clean straw. | I've a liking for #tuft# caught in a coat.
+b : Why the peg? | Most would brush it off.
+a : So I could come in, take one breath and hang my worries beside it. | Leave it till the next turn. Gives the street a sweeter smell.
+
+scene clean_water
+when topic=faith self.piety=devout
+does give.opinion / disagree / concede
+a : I like a prayer you can carry to somebody. | Two paws to put to use while my voice thanks the Bright One.
+b : Isn't a prayer spoken? | What does that mean for praying?
+a : I speak it while I draw clean water. The bucket goes on to whoever needs it. | If I see a mess, both can be occupied at once.
+
+scene wind_seam
+when topic=weather here.weather=storm
+does tell.complaint / react.complaint / assess
+a : Wind's got up under #flap#. It wants a conversation all to itself. | A storm will find any loose stitch you've overlooked.
+b : Does pinning it down help? | Is yours leaking?
+a : Stops the flapping. Leaves me listening to one private little storm. | At the collar. There's a cold bead making slow progress inside.
+
+scene cold_toggle
+when topic=season|weather here.season=winter
+does tell.self / react.self / assess
+a : In winter I use horn instead of metal for the hood toggle. | A cold morning makes every loose strap speak up.
+b : Warmer? | What do they say?
+a : Less eager to stick to a damp paw. That's warm enough. | Mostly little squeaks asking for oil.
+
+scene hands_full
+when topic=work self.job=herder self.working=yes
+does tell.self / ask.detail / answer.detail
+a : When a horse lifts one foot for me, I keep the visit short. | I don't mind a horse nosing #bucket# while I fill it.
+b : How short? | Doesn't water get everywhere?
+a : Long enough to look; short enough that standing still feels worth doing again. | Yes. But I learn whether the horse wants a drink or likes pushing things.
+
+scene sale_words
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : Point a fault out plainly and you have my whole attention as a seller. | There's no sense advertising legs by their length alone.
+b : Some sellers would send a fault finder packing. | Doesn't length count?
+a : I'd have to hear the fault from the next buyer anyway. Might as well answer now. | Certainly. But ask the buyer how long the journey is.
+
+scene patient_animal
+when topic=animals self.job=herder
+does tell.self / react.self / assess
+a : A horse doesn't mind being looked at till you start looking for a quick answer. | I stand aside when the horse wants a closer look at something.
+b : Can it tell? | What if it's your coat?
+a : I hurry. That's all the telling it needs. | Then it gets a nose full of oilcloth. Cures the curiosity.
+
+scene merchant_road
+when topic=caravan world.wagons=late
+does tell.news / react.news / assess
+a : A late wagon makes the whole street listen hard. | We've waited past the wagons' time.
+b : Do they listen for wheels? | What's the worst of waiting?
+a : First for wheels. Then for whoever has been sent ahead. | Giving my attention to a road that gives me nothing back.
+
+scene new_face
+when topic=newcomer|player
+does offer / accept / assess
+a : If you're looking for a quiet way through, I'll point one out. | I can tell you how to ask your way without drawing a little crowd.
+b : Quiet sounds fine to me. | Go on, then.
+a : Pick the side with the fewest open shutters. Let the noisy windows face each other. | Ask one wolf a plain question, then close your mouth till the answer comes.
+
+scene last_stall
+when topic=work|faith self.job=herder self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : The last stall gets the first visit when I go back through. | I like to have one creature in mind when I give thanks.
+b : Why reverse your order? | Which creature?
+a : Somebody always has to be last once. I see no cause to make it twice. | Whichever seemed least easy that day. It keeps my prayer from getting too grand.
+
+scene fly_shadow
+when topic=animals here.season=summer
+does tell.complaint / react.complaint / assess
+a : A fly's shadow under a hood looks large enough to pay rent. | I can hear the fly at my ear even over a whole street.
+b : Is there room in there for both of you? | Surely it's quieter than the carts.
+a : Until I start walking. Then I insist on travelling alone. | Much quieter. Much nearer, too.
+
+scene berry_stain
+when topic=food self.likes=blackberries
+does tell.self / react.self / assess
+a : A purple patch on the paw is a little receipt I don't mind carrying. | I like a berry tart best once the juice starts making its escape.
+b : For what purchase? | Harder to carry then.
+a : An afternoon among brambles. Paid for in scratches. | Quite. Means you've got a good reason to sit down with it.
+
+scene sleep_door
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : Last night there was a little door in each fold of my hood. | In my sleep I heard somebody calling me from a closed cupboard.
+b : Did you open one? | Did you recognise the voice?
+a : All at once. I woke to my own hood falling off its peg. | My own. I was considerably politer from inside the cupboard.
+
+scene misheard
+when topic=accent|smalltalk
+does tell.self / react.self / assess
+a : A muffled word always sounds like something you were expecting. | If I could pick a word to hear twice, it'd be the last one in a bargain.
+b : How do you know? | Why the last one?
+a : Because nobody mishears anything surprising till the speaker repeats it clearly. | That's the one folk drop when they think the matter's settled.
+
+scene gossip_latch
+when topic=gossip
+does give.opinion / disagree / concede
+a : I like a closed mouth on a wolf who was trusted with a confidence. | A lowered voice doesn't make a piece of gossip better made.
+b : Do you never want to hear the thing? | Doesn't it show care?
+a : I do. But I'd rather have the reliable neighbour than the interesting afternoon. | Care about the neighbours hearing. Not about getting it right.
+
+scene rain_pace
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : There's one patch on my shoulder that gets wet whenever I walk too fast. | When water runs off both sides I'm standing straight.
+b : Rain keeps your pace for you? | And when it doesn't?
+a : My collar does. I like the rain outside it. | Means I'm leaning in to hear. So move a little closer.
+
+scene easy_friend
+when topic=friends self.friend
+does tell.feeling / sympathise / assess
+a : I'd lend #self.friend# my last dry covering. | Good talk with #self.friend# always leaves room for a pause.
+b : Even walking home afterwards? | Don't you lose the thread?
+a : Especially then. A short wet walk makes no difference to a long friendship. | A sound thread waits for you to pick it up.
+
+scene quiet_shop
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I'd put a stool outside every place of business. | I like a buyer who takes time at the door.
+b : For wolves who can't pay? | Working out what to spend?
+a : For any legs that have carried a wolf to my door. | Or whether to spend. I'd like the answer to be settled first.
+
+scene first_star
+when topic=faith|day here.time=dusk self.piety=devout
+does tell.self / react.self / assess
+a : My shortest thanks is for the moment I can stop watching my feet. | Supper can sit for a breath at dusk while my thanks go up.
+b : What's up above, then? | Is supper inclined to listen?
+a : Whatever's above the roofs. I've been looking down all day. | No. That's why the order matters.
+
+scene hood_mend
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Would you hide #foldline# with a patch or leave it visible? | I'm thinking of putting my spare toggle on a cord.
+b : A visible patch saves hunting next time. | Long enough to reach?
+a : There's sense in having your last mistake point out the next repair. | Short enough to stay found. A long cord makes another knot to manage.
+
+scene watch_roads
+when topic=crime world.bandits=near
+does tell.worry / reassure / assess
+a : I worry less about the warnings going out than about the last cart getting one. | Bandits near the road make the quiet stretches sound different.
+b : A return traveller can carry it. | You can travel alongside somebody.
+a : That's the one I'd ask. A warning ought to meet a cart head on. | Yes. Two sets of ears ease the quiet considerably.
+
+scene hard_week
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean season makes me listen carefully to a wolf asking for a bargain. | In hard times I count the extra knot marks in a belt.
+b : For what in particular? | Yours or other wolves'?
+a : Whether there's something smaller that would serve just as well. | My own first. It's rude to count anybody else's till asked.
+
+story hood_sound [topic=memories]
+  : My first hood was so stiff that every time I turned my head I thought a cart had come up behind me.
+  : I stepped aside for it six times along one lane. On the seventh I stood still and listened properly.
+  b : Was there a cart that time?
+  : Only my neck turning. I wore a fold into the cloth where my ear wanted to be.
+
+story empty_bucket [topic=work self.job=herder]
+  : I once spent a good part of a morning looking for a drip in a water pail.
+  : Water went down, floor stayed dry. I sat still beside the thing till a brown nose leant past my shoulder.
+  b : A horse was having a drink?
+  : And waiting very civilly between my inspections.
+
+story berry_prayer [topic=food|faith self.piety=devout]
+  : I said thanks over a thornful of fruit once and put my elbow down in every berry I meant to eat.
+  : I found a scrap of bread to wipe my sleeve clean; it made a rather splendid purple supper.
+  ask : What would you give thanks for then?
+  b : The bread and a dark-coloured sleeve.
+  : Both, and enough sense to sit on the other side next time.
+
+story feather_roof [topic=animals self.likes=roof_birds]
+  : I carried a fallen feather up a stair once, hoping to learn what sort of bird had lost it.
+  : Every bird on the tiles was looking the other way till the wind whipped it away over the slates.
+  b : Did its owner want it back?
+  : None of them. It belonged to my pillow. A bit of ticking was still caught round the end.
+
+story straw_visitor [topic=memories self.age>=20]
+  : I gave a tired stranger a seat stuffed with straw and thought I'd done well.
+  : After a minute a tiny field mouse came out through the rip by the stranger's ankle.
+  b : Did your visitor jump?
+  : I jumped. My guest was fast asleep; the mouse had all the excitement going.
+
+rule @hasp
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 8h
+say Listen for the hasp before letting go. | Give the brown mare a clear space to turn.
+
+rule @broom
+when concept=bark working=yes self.job=herder
+does aside
+cooldown 8h
+say That straw comes away clean underneath. | Sweep towards the opening; keep the dust behind.
+
+rule @hurry
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Dry wick, dry hood and a clear start. | Plenty of light coming. Give it a moment.
+
+rule @berry
+when concept=bark self.likes=blackberries
+does aside
+cooldown 8h
+say That purple stain will keep till washing day. | A bramble's morning work caught in one cuff.
+
+rule @fly
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Here's a leaf for the loudest fly. | Off my collar, little summer nuisance.
+
+rule @waitroad
+when concept=bark world.wagons=late
+does aside
+cooldown 8h
+say Keep clear where the late wheels have to turn. | Time's running faster than the wagons again.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Something bring you round my corner? I've a little time.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, let me turn this flap back for you.
+dlg @3 resident.hub [here.time=night] : Speak near me so the neighbours can sleep through our talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Name your business clearly with a little space between our feet.
+dlg @5 resident.job [self.job=herder] : I see to animals. The trick is hearing the trouble while it still sounds small.
+dlg @6 resident.job : My work gets a clear word and a steady pull. It's mostly what anything needs.
+dlg @7 resident.news [world.news] : The word that's travelled this far is #world.news#.
+dlg @8 resident.news [world.wagons=raided] : There's been trouble on the wagon road. Ask the Watch before setting out.
+dlg @9 resident.business [business=thriving] : A brisk trade and little time to rub the road off my boots.
+dlg @10 resident.gossip [here.gossip=yes] : They're saying #topic.subject# #topic.claim#. I haven't witnessed it.
+dlg @11 resident.bye : I'll fasten my hood again. Go dry.
+dlg @12 shop.greet [here.shop=open] : Tell me what would suit you best. You'll get a fair account of the stock.
+dlg @13 shop.greet [here.shop=bare] : Nothing here to pass to a buyer today. You can show me what you've brought.
+dlg @14 shop.prices : You're entitled to the figure before you choose. #shop_offer#
+dlg @15 shop.bye : That concludes our business as I understand it. Good travelling.
+graft resident.hub
+choice Why pin up just one side? -> hoodpin
+node hoodpin
+say I want news of the street to reach an ear before it reaches the back of my head. One wet ear is a tolerable price.
+choice Why not both? -> hoodrim
+choice We can leave it there. -> hub
+node hoodrim
+say I'd have paid for an entire hood and kept only the string. I try to be sensible about my comforts.
+choice I'll leave you to the street. -> bye
+choice Another matter first. -> hub
+
+graft shop.greet
+choice How much time should a buyer take? -> buyerpause
+node buyerpause
+say Enough to ask the same question twice. If my second answer feels different from my first, I'd like to know why myself.
+choice What if others are waiting? -> buyerline
+choice Then I'll take a look. -> greet
+node buyerline
+say They can hear the answer too. Saves everyone the trouble of asking a third time.
+choice Let's see what you have. -> greet
+choice I'll go for now. -> bye

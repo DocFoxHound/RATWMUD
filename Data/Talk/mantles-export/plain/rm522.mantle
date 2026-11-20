@@ -1,0 +1,263 @@
+# rm522, the steward's landing die (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm522
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hollis_nailwick
+written_by codex
+title the steward's landing die
+fits stage=adult|old
+prefers job=servant warmth=warm
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk sets_a_die_on_the_landing_for_the_hands_a_load_needs
+likes hard_cheese dice market_bustle misty_dawns
+dislikes crowds early_bells
+fears a_crowd_on_a_loaded_stair a_date_promised_without_asking_the_household
+hopes an_evening_when_the_last_load_takes_only_one_hand
+topics work +0.6 family +0.4 food +0.3 festival +0.3
+styles comfort=practical gossip=plain refuse=brisk tease=none
+marks oath saying
+persona #self.first# sets a die on a landing to show how many hands a heavy parcel needs and moves a guest out of its path with more warmth than patience.
+
+words
+oath! = Trip the empty basket | Break the little cube
+saying! = Hands counted before stairs climbed | One can welcome while two can carry
+die = my landing die | a plain square die
+double = the two-pip face | the face marked for two
+strap = a spare carrying strap | the broad strap
+cloth = a twist of house cloth | a strip of linen
+cheesecut = a hard-cheese corner | a wedge of dry cheese
+clearspot = the empty landing square | a square of clear floor
+earlyclang = a particularly early clang | a dismal dawn peal
+fogstrip = a strip of mist between roofs | a veil across the upper windows
+stallcall = the trading cries together | the market voices answering
+piped = the well-worn pip | the pip nearest the split
+sideboard = a narrow hall shelf | my little landing shelf
+
+any
+opinion @1 houses for 1 : A household that undertakes to feed a table must allow for the backs that bring it there.
+opinion @1 merchants mixed 0 : My kind of market calls parcel size and price in the same breath.
+opinion @1 festivals mixed 0 : Music's very welcome, and a space kept open for the supper basket is warmer welcome still.
+opinion @1 road for 1 : A sound step below a door is a proper end to a decent delivery road.
+opinion @1 dole for 1 : Set the food near the door within reach of even the most tired visitor.
+opinion @1 strangers mixed 0 : A newcomer careful of other people's footing can expect a seat at my end.
+opinion @1 city for 1 : The streets meet at all sorts of angles. I've found a neighbour to lend a hand at most of them.
+
+grown
+line @1 greet : Welcome. Give the landing a hand's breadth.
+line @2 greet [pair.band=strangers] : First visit, I see. Easy round that basket.
+line @3 greet [here.time=dawn] : Morning. Two on the die already.
+line @4 greet [here.time=dusk|night] : Evening comes easier once the passage clears.
+line @1 greet.return : Heard you. Now we can use the same landing.
+line @2 greet.return [pair.band=friends|family] : Your voice carries its own invitation indoors.
+line @3 greet.return [self.working=yes] : I've a hand free for listening today.
+line @4 greet.return [here.time=dusk|night] : Move into the little pool of light to talk.
+line @1 kin.open [pair.kin!=no] : Family comes up on the inside.
+line @1 again.open : We kept a square empty for the second part.
+line @1 hail [pair.band=friends] : Friend, your spot is beside the clear rail!
+line @1 farewell : Steady on the way back down.
+line @1 farewell.return : And let the laden feet pass first.
+line @1 react.news : What's the word underneath all that noise?
+line @1 react.news.new : A fresh arrival on my landing.
+line @1 react.news.known : Earlier telling had the same number of spots.
+line @1 react.news.doubt : One face showing. I'd look underneath it.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Put that weight here a moment. I have both hands.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That news would lighten a full basket.
+line @1 ask.how : Did the day set much on your shoulders?
+line @1 answer.how : Steady enough to take the stairs two at once.
+line @1 thank : You turned a two-hand job into an easy lift. Thank you.
+line @1 deflect_thanks : Both hands came back to me in the end.
+line @1 sympathise : I'll stay here while you gather your breath.
+line @1 reassure : Take one landing at a time. We can see this one.
+line @1 decline : No. Both hands are already promised.
+line @1 accept_decline : Then we'll call the carry off.
+line @1 preclose : I'd better clear the little shelf before night.
+line @1 accept_preclose : Take the sheltered turn going down.
+scene counting_cube
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I put #double# uppermost when a basket needs two sets of hands. | #die.capitalize# stays beside a load instead of riding on it.
+b : Isn't the weight plain to see? | Why leave it behind?
+a : A wet blanket and a dry one look remarkably alike when folded. | The next arrival ought to find it without ransacking my cellar.
+
+scene turn_side
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #piped.capitalize# has almost worn smooth. | I can tell the five face without turning the cube.
+b : Too many games? | Eyes closed?
+a : That face means a lot of help. We have some extraordinarily solid furniture. | Thumb over four corners, then feel the middle for a guest.
+
+scene house_work
+when topic=work self.job=servant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a steward learns not to call a pair of free hands by two different names. | I like #clearspot# when the household at #self.workplace# is busy.
+b : Has a load waited? | For resting?
+a : It will wait less if I count actual hands properly. | For passage. We'll rest beyond the turn where nobody needs our feet.
+
+scene strap_place
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I keep #strap# unknotted and #cloth# within reach. | A narrow load wants a little room outside its own width.
+b : Both for carrying? | For a longer strap?
+a : One takes the weight. The other keeps a good edge from taking the skin. | For the elbows of the poor soul inside the strap.
+
+scene hard_cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : #cheesecut.capitalize# packs nicely into an hour short of dinner. | Hard cheese goes uphill better than a brimful cup.
+b : Into an hour? | You take it upstairs to eat?
+a : It fills the vacancy almost precisely. | Some days the stairs leave very little choice of dining room.
+
+scene dice_game
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : At play I shake the die out. On duty I set it down. | Give me a die with the same weight in every corner.
+b : No temptation to play at work? | How can you test one?
+a : Not when six means trying to recruit another five shoulders. | Roll it often enough and keep disputes off the landing.
+
+scene bustle_market
+when topic=festival self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : #stallcall.capitalize# leaves a clean place for an answer for a listener near the edge. | A good market rises to the exact pitch at which a price will travel.
+b : Why the edge? | How loud is that?
+a : My ears enjoy the business. I'd prefer the business to spare my toes. | Loud enough to get a shake of the head from three stalls off.
+
+scene mist_landing
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : #fogstrip.capitalize# makes two neighbouring roofs look like separate countries. | I enjoy seeing a misted pane begin to clear.
+b : Do you mind? | What's visible first?
+a : By breakfast they have settled their border quite peacefully. | Whether the road is filling faster than the sky is clearing.
+
+scene crowd_pass
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I object to a crowd chiefly where its elbows come together. | Let me move a loaded basket before inviting everybody upstairs.
+b : Can you enjoy the market then? | Everybody at once?
+a : From the barrow end. Barrows require wonderfully definite lanes. | That's exactly what 'everybody' sounds like to a basket.
+
+scene bell_time
+when topic=smalltalk self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : #earlyclang.capitalize# invites me to discover how comfortable my bed was. | A dawn bell is a fine reminder to somebody already halfway to market.
+b : Are you quick getting up? | And to you?
+a : Quicker if somebody has had the decency to let the sky lighten. | A reminder to ask when the first delivery was actually booked.
+
+scene estate_step
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : In the Estate the first unexpected guest is often a heavy parcel preceding its owner. | I know #sideboard# by the scratch under its lip.
+b : Does it get a seat? | Did you make it?
+a : A place off the stairs. It's the hospitality a parcel appreciates. | I can identify a mark without owning up to its entire history.
+
+scene time_together
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : When I put the die away I like #self.spouse# to see me really leave it there. | I'd take #self.spouse# to the market during the noisy hour, then find a quiet place for dinner.
+b : No last job? | Why both?
+a : A last job ought to know when to be last. | I like to have room for the answer when I ask how the day went.
+
+scene letter_place
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A letter on a shelf ought to be visible from the door. | If I were expecting a letter I'd weight the corner with a die.
+b : So a visitor can read it? | What number would face up?
+a : So the wolf it's meant for can see there's something worth coming in for. | One. A letter's welcome enough by itself.
+
+scene short_house
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Through a hard week I reckon how many bowls the house can set out. | When a load's smaller there's another way of sharing the strap.
+b : Before seeing who's come? | What's that?
+a : The number of bowls is mine to know. Arrivals get to surprise me. | Let the tired back arrive for supper before the load does.
+
+scene first_visit
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A new visitor gets a warning about the shelf before the grand view. | Look whether a door opens inwards before setting a parcel outside it.
+b : A low shelf? | You give everybody that advice?
+a : At exactly the height heads reach when tilted to admire a ceiling. | Everybody who's asked me to come and move a parcel.
+
+scene hand_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : News put down from #world.news_from#. #world.news#. | #world.news#. The source written alongside is #world.news_from#.
+b : Heavy going? | Can another notice fit?
+a : That's its given weight. I won't put my thumb on it. | Only when more actually arrives.
+
+scene gossip_stair
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Some talk has come up the back stair looking for the grand door. | A whisper squeezed through the parcel gap.
+b : Will you admit it? | Could you make much of it?
+a : Not on a false introduction. | Enough to know it wouldn't carry a heavy conclusion.
+
+scene few_loads
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like the very last load of an evening to be a single loaf. | I'd be content to roll my die at supper without a single basket taking it personally.
+b : Why that weight? | A game to finish the day?
+a : It comes upstairs with me and explains exactly where my day is going. | A game with no furniture in it.
+
+story false_six [topic=work|memories]
+  : I once called for six hands to take a folded cloth upstairs.
+  : The basket had brushed the die and turned my one pip into a magnificent six.
+  b : Did anybody turn up?
+  : I had the most ceremonious delivery of a napkin I can remember.
+
+story melted_mark [topic=food|memories]
+  : I scratched a little cross in a cheese rind so I could tell which end had been weighed.
+  : Very sensibly, the rind was taken off the cheese before serving.
+  b : What became of the cross?
+  : It had an uneventful career in the scrap bowl. The cheese was worth eating either way.
+
+story mist_door [topic=weather|memories]
+  : On a misty morning I greeted the outline of a loaded cart with some particularly brisk directions.
+  : The outline came clear and stood exactly where it had stood all night.
+  b : What was it?
+  : The empty handcart under my own spare cloak. Obedient to a fault.
+
+rule @two_hands
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Two pips. Don't carry that one alone.
+
+rule @return_cube
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Give the die its place on the shelf.
+
+rule @clear_turn
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Spare the corner for the turning wheel.
+
+rule @sun_mark
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say Clear light right through the carrying loop.
+
+dlg @1 resident.hub : The die can occupy its square while we speak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've come to a familiar landing.
+dlg @3 resident.hub [here.time=dawn] : Morning. A word before the big baskets arrive.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Stay clear of the strap. We can have our difference at an ordinary distance.
+dlg @1 resident.job [self.job=servant self.workplace] : At #self.workplace# I see that a welcome has hands enough behind it.
+dlg @1 resident.news [world.news] : Left on the shelf from #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I would enter that visitor in the book under hearsay.
+dlg @1 resident.bye : Take the easy side of the carrying stair.
+graft resident.hub
+choice Why is there a die beside the parcel? -> die_face
+node die_face
+say Two pips mean put two sets of hands on the straps. Anybody can read them passing. A written instruction would be curled up in a wet pocket by now.
+choice What if the die gets knocked over? -> flat_shelf
+choice I'll leave room for two. -> hub
+node flat_shelf
+say I keep it in a shallow hollow and I look again before any heavy lift. Nobody has permission to turn off good judgement at the sight of six spots.
+choice I'll mind the hollow. -> hub
+choice I'll keep the stair clear for you. -> bye

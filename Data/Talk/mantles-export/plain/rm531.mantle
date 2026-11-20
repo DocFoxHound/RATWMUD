@@ -1,0 +1,258 @@
+# rm531, the treasurer's dark square (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm531
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_karin_stanmore
+written_by codex
+title the treasurer's dark square
+fits stage=adult|old
+prefers class=upper
+traits temper=calm talk=plain warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk tests_a_purse_weight_with_two_draughtsmen
+likes barley_soup draughts market_bustle frosty_mornings
+dislikes flies wet_floors
+fears a_licked_clean_column a_wet_account_room
+hopes a_closed_balance a_quiet_game_at_home
+topics prices +0.5 work +0.4 family +0.3 pastimes +0.3
+styles comfort=gentle gossip=guarded refuse=measured tease=none
+marks oath saying
+persona #self.first# carries two dark counters within a purse whose contents receive a much more guarded hearing than its weight.
+
+words
+oath! = Forge take the slack | By hammer and swell
+saying! = Let a quiet purse be weighed | A dark square can be counted
+counterone = a bone counter | my plain piece
+countertwo = a dark counter | my dark piece
+balance = the small scale | a pocket balance
+pouch = a chamois purse | the soft purse
+chain = a short scale chain | the thin chain
+stain = a damp patch | a wet smear
+soup = a barley broth | a plain barley bowl
+boardedge = the low board rail | a raised border
+weight = a little brass weight | a notched weight
+scrap = a folded reckoning | my second reckoning
+marketcall = a lively market cry | the call across the stalls
+frostcoin = a white frost ring | a rim of frost
+
+any
+opinion @1 city for 1 : Our city is a difficult account that still shows a balance in my favour.
+opinion @2 houses for 1 : A household able to stand surety for a public appointment should have to stand by its word afterward.
+opinion @3 watch for 1 : I value the sound of ordinary rounds. Other arrangements belong in a separate account.
+opinion @4 strangers against 2 : I can hear a stranger's concern without opening the strong drawer.
+opinion @5 dole against 2 : A recurring payment deserves an accounting even when its purpose is kindly.
+opinion @6 times for 1 : My own household can eat well. I'd hesitate to balance the whole city against that comfort.
+
+grown
+line @1 greet [pair.band=strangers] : You may speak across my balance.
+line @2 greet [here.time=dawn] : Clear morning. The brass has taken a chill.
+line @3 greet [here.weather=rain] : Kindly use the dry flags for your approach.
+line @4 greet.return : A civil balance between us so far.
+line @5 greet.return [pair.band=friends] : I recognise the quiet rate of your voice.
+line @6 farewell : Keep a firm bottom in your purse.
+line @7 farewell.return : The audience is concluded on an even footing.
+line @8 again.open : Another entry for this familiar face.
+line @9 kin.open [pair.kin!=no] : Household business may be spoken gently here.
+line @10 hail [pair.band=friends] : A moment within the reach of my voice.
+line @11 react.news : Give the account in its smallest verifiable sum.
+line @12 react.news.new : That amount hasn't figured in my hearing before.
+line @13 react.news.known : I have the earlier entry for comparison.
+line @14 react.news.doubt : That figure deserves an empty space for the original source.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : I can put the public business aside while you sit.
+line @16 react.news.glad [topic.kind=birth|marriage] : One welcome addition that needs no justification.
+line @17 answer.how : Quiet in mind, with the pans still moving a little.
+line @18 decline : I'd be promising from an account already spoken for.
+line @19 accept_decline : Then I'll consider the matter settled at your word.
+line @20 sympathise : I'll arrange a place out of sight of this counter.
+line @21 thank : That is a consideration I shall enter in full.
+line @22 deflect_thanks : There's no fee for this particular service.
+line @23 preclose : I have a figure that wants my undivided eye.
+line @24 accept_preclose : Your time is yours to apportion.
+scene barley
+when topic=food self.likes=barley_soup
+does tell.self / ask.detail / answer.detail
+a : I let #soup# settle before tasting a spoonful from the bottom.
+b : Is that where you take your measure of a cook?
+a : It's where the barley sits. I'd prefer to know the meal before judging the broth.
+
+scene game
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail / assess
+a : Two men in #pouch# give it a known weight when it's otherwise empty.
+b : Which of the two gets to move first?
+a : On the board, the dark. In #balance# they have the courtesy to remain a pair.
+b : A game with one opening rule and an entirely different closing rule.
+
+scene market
+when topic=smalltalk self.likes=market_bustle
+does tell.self / react.self / assess
+a : A market in full voice gives me a rare chance to keep quite quiet.
+b : Do you still follow the offers?
+a : Only those that rise clear of #marketcall#. The rest remains other people's business.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.plan / ask.detail / answer.detail
+a : I mean to draw #frostcoin# on the pane before the room heats up.
+b : Why preserve a ring that cost you nothing?
+a : To mark the morning's first touch of light.
+
+scene fly
+when topic=food self.dislikes=flies
+does tell.complaint / react.complaint / assess
+a : A fly on #chain# can move the lighter pan.
+b : Could it move the price as well?
+a : If I leave the fly in place. The balance gets checked before a figure goes down.
+
+scene floor
+when topic=work self.dislikes=wet_floors
+does tell.worry / reassure / assess
+a : I am uneasy at the sight of #stain# below a locked drawer.
+b : Has the water found its way in?
+a : I can check the blank leaves at the bottom. They take a mark before the accounts.
+
+scene treasury
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I make a clean distinction between a royal payment and a private obligation.
+b : And what stays in #scrap#?
+a : What still needs a second view before I'm prepared to sign a public figure.
+
+scene oddmoney
+when topic=gossip
+does give.opinion / disagree / concede
+a : A private payment and a quiet gate may both deserve a second look.
+b : Even a proper fee can be paid in private.
+a : Exactly. That's why a note is a question and an accusation costs rather more.
+
+scene spouse
+when topic=family self.spouse
+does offer / accept / assess
+a : I save #counterone# for a game with #self.spouse# after the books close.
+b : Must your household game have a tally too?
+a : I'd rather end the evening knowing who won the board and nothing else.
+
+scene child
+when topic=family self.child
+does tell.feeling / sympathise / assess
+a : I like a quiet game across the squares from #self.child#.
+b : Doesn't a treasurer want a good little reckoner?
+a : A good reckoner in time, certainly. This game's a chance to play for a simple pleasure.
+
+scene bowl
+when topic=food
+does offer / accept / assess
+a : I can fill a small bowl with clear broth from this barley pot.
+b : A little barley with the broth would suit me.
+a : Then I'll stir gently. There's quite sufficient for a sound portion.
+
+scene lean
+when topic=prices world.times=hard|lean
+does give.opinion / disagree / concede
+a : A thin week is an argument for clearer sums.
+b : The wolf carrying home less food might prefer a larger portion.
+a : I'd have that portion weighed and paid for openly. Clarity can help it reach the table.
+
+scene ground
+when topic=land
+does tell.self / ask.detail / answer.detail
+a : I can tell a heavily used stair by the hollow a coin settles into.
+b : Do you actually put coin on a public step?
+a : A dark counter serves me equally well. It has less interesting consequences if lost.
+
+scene appointment
+when topic=work
+does tell.self / react.self / assess
+a : A public appointment can rest on a word given in Council.
+b : Does the word matter much once the post is filled?
+a : It matters each time the holder is invited to overlook a doubtful sum.
+
+scene travel
+when topic=travel
+does ask.advice / give.advice / assess
+a : What would you pack round brass pans for a jolting road?
+b : Fold cloth between the pans and take the chain off altogether.
+a : I'll wrap #chain# round #weight#. That makes three loose objects into one bundle.
+
+scene seaforge
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : Forge and sea give a purse an odd pair of measures.
+b : What are their units?
+a : A well-struck edge for one. For the other, the cost of a shipment that never arrives.
+
+scene sleep
+when topic=dreams
+does tell.self / react.self / assess
+a : I dreamed a board with a single dark square worth the whole treasury.
+b : Did you take the square?
+a : I turned the board over and found plain wood underneath. I slept much better afterward.
+
+scene cart
+when topic=travel world.wagons=late
+does tell.worry / reassure / assess
+a : A late revenue cart can hold up a column for days.
+b : Can the waiting figure be entered provisionally?
+a : I leave room beside its date. A blank in public is preferable to an invented certainty.
+
+story counterfall [topic=pastimes]
+  : My dark counter fell down between two boards during a long match.
+  : I could see one edge whenever I leaned to the right.
+  b : Which piece got you through the match?
+  : With a barley grain. The grain won; the counter was recovered with its honour intact.
+
+story soupink [topic=food]
+  : A grain of barley once dried in the fold of an empty purse.
+  : It gave my scale a small but insistent discrepancy.
+  b : Was the purse short?
+  : My dinner was. The account came right when I shook the purse over a saucer.
+
+story frostbalance [topic=weather]
+  : Frost hung from one pan like a very delicate fringe.
+  : In the cold it weighed a surprising amount.
+  b : Did you record that weight?
+  : Only in memory. When I finally unfolded my paper the experiment had become a wet patch.
+
+rule @brasspan
+when concept=bark self.working=yes self.workplace
+does aside
+cooldown 8h
+say Still both pans before the figure goes down.
+
+rule @darkturn
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say Leave the dark piece on its own square.
+
+rule @barleysettle
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say A quiet ladleful from below that shine.
+
+rule @frostsill
+when concept=bark self.likes=frosty_mornings
+does aside
+cooldown 8h
+say A whole bright ring before the sun strikes it.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You may address me as #self.first#. A concise account will do.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I have a little time before the next balance.
+dlg @3 resident.hub [here.time=night] : There is still sufficient light to distinguish both sides of the board.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Your current distance will do. I'll attend from here.
+dlg @5 resident.job [self.workplace] : At #self.workplace# I handle the royal balances. A title gives a wolf the duty to answer for each one.
+dlg @6 resident.job : I distinguish what has been paid from what has merely been promised.
+dlg @7 resident.bye : A safe return with your accounts in order.
+graft resident.hub
+choice Are the dark counters currency? -> darkpurse
+node darkpurse
+say They are of known weight and uncertain value in a game. I keep public coin separate from either sort of wager.
+choice Which wins on the scale? -> weighmen
+choice I have a different question. -> hub
+node weighmen
+say Neither, with both men removed. A scale should begin at an empty balance; a game would be distinctly less agreeable that way.
+choice Resume our audience. -> hub
+choice I'll leave your pans steady. -> bye

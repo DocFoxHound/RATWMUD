@@ -1,0 +1,264 @@
+# rm407, the bottle-rack king (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm407
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_dagny_catterick
+written_by codex
+title the bottle-rack king
+fits stage=adult|old
+prefers job=merchant humour=dry
+traits temper=even talk=chatty warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk rehearses_draughts_openings_with_odd_corks
+likes warm_bread draughts fresh_straw summer_evenings
+dislikes deep_mud night_noise
+fears a_tap_run_dry_after_promising_a_cup mud_above_the_laces
+hopes one_summer_evening_to_finish_a_long_game
+topics pastimes +0.6 work +0.4 food +0.2 weather +0.2 gossip -0.3
+styles comfort=company gossip=plain refuse=brisk tease=dry
+marks oath saying
+persona #self.first# marks two corks as kings, considers every waiting room a possible draughts board, and can make a great noise explaining a very small tactical error.
+
+words
+oath! = Crown the bung | Six rows of vinegar
+saying! = A cork can take a crown | Count the landing square
+lightpiece = a pale cork | my white piece
+darkpiece = a blackened bung | my dark piece
+kingcut = the little cross in the top | the royal notch
+edgefile = the squares along the edge | the outer file
+dustrow = a row traced in dust | a line of thumb squares
+warmheel = a thick warm crust | the steaming heel end
+corkcup = the hollow in a cork | a small round dent
+strawmesh = a web of fresh straw | my sweet straw packing
+summerlast = the long last hour | an amber evening
+gatedin = a shout from the gate | the noise off the gate road
+bootridge = the upper rim of my boot | a line of muddy stitching
+
+any
+opinion @1 merchants for 1 : I'd trust a price from somebody willing to write it large before the first cup's poured.
+opinion @1 houses against 1 : A fine badge can take up a lot of board without earning the right to move a piece.
+opinion @1 strangers mixed 0 : Any stranger may play white. If the dark pieces go home in a strange pocket I reassess.
+opinion @1 city for 1 : Send a lost cork rolling in Ridgemere and it'll find three possible employers before it stops.
+opinion @1 dole for 1 : You have to get everybody fed before you can start boasting what a fine table it is.
+opinion @1 festivals for 1 : A feast is worth the disturbance when the loser of a game can still go home singing.
+opinion @1 watch mixed 0 : A patrol doesn't bother me till the boots go across my nice square rows.
+
+grown
+line @1 greet : Here's your square. It's an excellent place to begin.
+line @2 greet [pair.band=strangers] : You'll be the new face on the far side. Welcome.
+line @3 greet [here.time=dawn] : Morning. I've beaten the day to the first square.
+line @4 greet [here.time=dusk|night] : Evening good enough to spend on another move.
+line @1 greet.return : I heard that over my own explaining. Well done.
+line @2 greet.return [pair.band=friends|family] : The board looks more civil with you at it.
+line @3 greet.return [self.working=yes] : Hold beside the counter while I free my paw.
+line @4 greet.return [here.time=dusk|night] : After dark a loud hello covers the distance twice.
+line @1 kin.open [pair.kin!=no] : Kin can have the comfortable side and make no speeches.
+line @1 again.open : I left the counters just where they ought to be.
+line @1 hail [pair.band=friends] : There you are! Right beside my winning position!
+line @1 farewell : Walk away in a straight line if you possibly can.
+line @1 farewell.return : And keep the better squares to yourself going home.
+line @1 react.news : Give me the account before I start commenting on it.
+line @1 react.news.new : That cork's just hit my board for the first time.
+line @1 react.news.known : Seen that opening from both sides of the table.
+line @1 react.news.doubt : It sits a little too prettily to convince me yet.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. I'll put both pieces down a minute.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Somebody deserves a little crown for that piece of news.
+line @1 ask.how : Has the day let you choose your own moves?
+line @1 answer.how : I'm in a position which could be improved by supper.
+line @1 thank : I've got a reason to put your name on a better square.
+line @1 deflect_thanks : Cost me one move and I'd plenty to spare.
+line @1 sympathise : Sit opposite. I can keep my big voice down if it helps.
+line @1 reassure : The unfortunate opening hasn't settled the whole game.
+line @1 decline : I'd otherwise agree, but my next move's promised elsewhere.
+line @1 accept_decline : Then a straight refusal leaves us both standing comfortably.
+line @1 preclose : I'll take my last light along while it's still portable.
+line @1 accept_preclose : We can give a good pause its own square.
+scene cork_set
+when topic=pastimes|smalltalk
+does tell.self / ask.detail / answer.detail
+a : All my kings started out in bottles. | I put #kingcut# into cork instead of balancing one piece atop another.
+b : What happened to the wine? | Less likely to topple?
+a : You're asking the least interesting question on a very fine board. | Yes. Royal dignity's hard enough to maintain on a wobbly table.
+
+scene side_open
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : A safe edge is only safe until you want to get off it. | #lightpiece.capitalize# looks harmless beside #darkpiece#.
+b : Good reason to stay in the middle? | Is it a trap?
+a : Worse reason to get comfortable anywhere. | I'm flattered you think I'd grow out of setting them.
+
+scene cellar_count
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : Count the bottles before you count the cups you're going to sell. | I know whether a rack was filled from the middle or from one end.
+b : A difference? | Bottles tell you that?
+a : Of course. One bad cork can turn a splendid forecast sour. | Dust on the empty boards tells more than the bottles care to.
+
+scene warm_bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I'd like #warmheel# with no instruction about making it last. | At market I choose the bread with a real split down the top.
+b : Will it last? | An opening to judge it by?
+a : You see why I object to instructions. | An opening to get butter into. One must keep priorities straight.
+
+scene straw_loose
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : Fresh straw behaves like a guest determined to inspect every corner. | I'll gather #strawmesh# up while there's light.
+b : Even your coat pockets? | For the bottles?
+a : Those first. I keep finding yesterday's straw in tomorrow's clean coat. | Perhaps. A good bed's entitled to make a competing claim.
+
+scene summer_lamp
+when topic=season here.season=summer
+does tell.self / ask.detail / answer.detail
+a : Summer lets a game run one long argument past suppertime. | I can watch #summerlast# slide across four rows of corks.
+b : Do you argue over every move? | Can you finish before it's gone?
+a : Certainly not. There are several which don't do me any harm. | If everybody stops asking me questions about the light.
+
+scene mud_depth
+when topic=travel self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Boot tops may look decorative till mud comes up to them. | #bootridge.capitalize# ought to remain the colour I paid for.
+b : What's your next move then? | Complaining to the mud?
+a : Mine is to regret the square I've chosen. | I find it gives about the same satisfaction as any other complaint.
+
+scene noisy_end
+when topic=home here.time=night
+does tell.complaint / react.self / assess
+a : Funny how my voice sounds entirely reasonable until it's somebody else's turn after midnight. | A falling cork hardly makes a sound. A falling shelf is a quite different musician.
+b : Perhaps a more moderate tone? | Heard from the shelf lately?
+a : I meant I should like everybody safely asleep by then, myself included. | The fact I'm tired should answer that.
+
+scene northgate_road
+when topic=travel here.region=ridgemere self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : Northgate on a busy morning is a game with far too many pieces. | I like #gatedin# just before the road fills.
+b : Which piece would you take off? | You'd prefer a quiet gate?
+a : The cart standing broadside when all its business is straight ahead. | For about five breaths. Then I'd have nothing to describe at all.
+
+scene trusted_boards
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Let a new wolf play a game without explaining every little household rule. | There's room at my table so long as nobody moves the whole table.
+b : You'd tolerate different rules? | Reasonable terms.
+a : For one game. The difference gives me the subject of the next one. | You'd be amazed how often they bear repeating.
+
+scene bad_season
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When the week's poor I crown a cork and count my evening's entertainment paid for. | A lean shelf leaves room for all the things you can't buy.
+b : Cheer yourself up? | Do you keep the space clean?
+a : That, and a crowned cork costs nothing. A free game is a fair evening. | Spotless. Poverty has yet to outwit my dusting rag.
+
+scene late_casks
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A delivery due today will generally outwait a wolf who stands glaring at the gate. | You can have a fine long game while wagons are late.
+b : What do you do? | Are you glad of the delay?
+a : Give the wolf a chair and a board and glare in shifts. | I'd be considerably gladder of an interruption just now.
+
+scene own_debt
+when topic=prices self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : If I've a debt to settle I'd sooner do it in bright daylight. | A debt is one sort of opponent that never gets tired of the game.
+b : Expecting a dispute? | How would you beat it?
+a : Expecting a receipt I can read without hunting for a lamp. | By reckoning what I can pay and making sure the receipt agrees.
+
+scene outspoken
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I heard #topic.subject# #topic.claim#. That's what was said, not a wager I'm laying. | About #topic.subject#, the account is #topic.claim#. No more details in my jar.
+b : You wouldn't stake a cork on it? | Empty already?
+a : I would keep both kings for something I can see. | It didn't come brimming with facts in the first place.
+
+scene public_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : The report carried from #world.news_from# says #world.news#. | Here's the portion from #world.news_from#: #world.news#.
+b : Would you read any more into it? | Is that a generous measure?
+a : I might read it twice. That wouldn't improve the number of facts. | It's every drop that reached the counter.
+
+scene neighbour_seat
+when topic=friends self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd set the sound chair out for #self.neighbour#. | I'd challenge #self.neighbour# to a perfectly friendly game.
+b : What's wrong with the other one? | No wager?
+a : Nothing if the guest intends to stand throughout. | A wager of continued friendly relations, whichever way the board goes.
+
+scene careful_cloth
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Hold a cork under water and it comes back to the surface ready for an argument. | Got a little square cloth that serves for a board on the road.
+b : Where did it learn that? | Do the squares fold up evenly?
+a : Long acquaintance with me, possibly. | No. It's the most hilly country my kings have ever crossed.
+
+scene later_game
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a long table under cover, enough room for a board and the whole supper beyond it. | I wish a promising evening could be corked and laid by.
+b : Who chooses the moves? | How long would you keep it?
+a : On the board, me. At supper I'd leave myself open to persuasion. | Till a miserable damp morning needed teaching better manners.
+
+story small_crown [topic=pastimes|memories]
+  : I once crowned a piece by balancing a thimble on it.
+  : The thimble rattled off the table just as I was explaining what a splendid decision I'd made.
+  b : Did you take the decision back?
+  : Took the thimble back. There were three honest dents in it. Quite a short reign.
+
+story loose_paper [topic=work|memories self.job=merchant]
+  : Made a very fine chart for a rack and forgot to mark which edge went up.
+  : All the numbers looked respectable either way except one rather consequential six.
+  b : Did you empty the rack?
+  : Stopped for a drink. Then I remembered where I'd stood to write it. Less work than lifting the lot.
+
+story joy_dusk [topic=memories]
+  : A game I started in daylight once went on till the pieces looked the same colour.
+  : I felt for the royal notches and announced a magnificent win.
+  b : Did your opponent object?
+  : Naturally. I'd won magnificently on the other wolf's behalf.
+
+rule @turn_cork
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say There's sunlight on the king. Best move the board before the cork dries out.
+
+rule @false_square
+when concept=bark self.working=yes
+does aside
+cooldown 8h
+say Count from the edge or the empty rows will trick you.
+
+rule @pocket_straw
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say A pocketful of straw and no horse to show for it.
+
+rule @ice_noise
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say A cork can go to sleep without a thump. Most civil.
+
+dlg @1 resident.hub : Across here, where we can get a good argument out of a small question.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Glad you kept your place on my board.
+dlg @3 resident.hub [here.time=night] : Well, we've a small lamp and two perfectly serviceable ears apiece.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Speak from your square. I'm uninclined to trade positions.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. Lively business for such quiet neighbours as bottles.
+dlg @2 resident.job : It pleases me when a day's work adds up the second time too.
+dlg @1 resident.news [world.news] : To put that in proper order, #world.news_from#, and the account is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : What was said of #topic.subject# was #topic.claim#. I wasn't playing witness.
+dlg @1 resident.bye : There's daylight on the squares yet. Safe going.
+graft resident.hub
+choice Which cork ought I to move first? -> board_guest
+node board_guest
+say The one you can get home again. A piece that races ahead merely gets the best possible view of the trap set for it.
+choice How do I spot the trap? -> check_corner
+choice I'll trouble the board another time. -> hub
+node check_corner
+say Count its landing places. If your king can get away in three directions and the next move leaves one, you're shopping for trouble on a restricted budget.
+choice I'd better count a second time. -> hub
+choice I'll leave both kings at peace. -> bye

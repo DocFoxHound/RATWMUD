@@ -1,0 +1,383 @@
+# rm267, the stall measured in elbows (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm267
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_soren_coaldale
+written_by codex
+title the stall measured in elbows
+fits stage=adult|old
+prefers job=carter
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk measures_a_dream_stall_with_an_elbow_in_any_empty_space
+likes mutton_stew digging market_bustle summer_evenings
+dislikes haggling rats
+fears a_slipping_strap a_partner_who_moves_the_marks
+hopes a_stall_under_cover an_hour_with_the_spade
+topics work +0.4 prices +0.4 pastimes +0.3 home +0.2
+styles comfort=practical gossip=blunt refuse=firm tease=none
+marks oath saying
+persona #self.first# measures empty corners with an elbow, saves towards a covered stall, and would set a load in the muck before accepting a change of price halfway across the square.
+
+words
+oath! = Sore pad and slant board | Splinters in my pitch
+saying! = Agree the lift before the lifting | A stall starts with elbow room
+pitch = my imaginary pitch | my chalked-out stall
+measure = the span of my forearm | one bare elbow's length
+loosecord = a strap with slack left | a hanging strap end
+graftwood = a dry forked stick | a notch of hazel
+carryingpad = the folded shoulder cloth | my old carrying pad
+footbreadth = a shoe's width | a paw of room
+coinwrap = my little cloth purse | my stall money
+shovelcut = a spade's breadth | a clean wedge of earth
+lastleaf = a bruised cabbage leaf | one broken outer leaf
+cornermark = a short chalk hook | a shallow heel mark
+stewpiece = a brown piece of mutton | a scrap of mutton in broth
+railend = the end of the front board | the square rail end
+duckboard = a split walking board | a scrap of raised flooring
+handroom = room to bend my elbows | space enough for a turn
+rowcover = an old sack spread flat | a rag of sacking
+
+any
+opinion @1 church for 1 : I've lifted flour sacks enough to remember the weight. The chapel has put plenty of that weight into hungry bellies.
+opinion @1 city for 1 : There's only one square where my elbow knows all four corners. I'd miss it.
+opinion @1 dole for 2 : I used to think everybody in that queue had time to spare. Try missing a shift for a loaf and see what it costs.
+opinion @1 road for 1 : The road puts weight in my barrow and a bit of brass in my pocket. I won't call it cruel on a fair day.
+opinion @1 houses against 2 : The House mark faces out on the bale. The scrape down my shoulder faces in, where no fine wolf sees it.
+opinion @1 watch against 1 : A cart blocking a Sump doorway will stand there all afternoon. Strange what the Watch finds time to move.
+opinion @1 merchants against 1 : A price offered after the load is lifted is never the one I'd have agreed while it stood on the ground.
+opinion @1 festivals against 1 : Let the music come after the market. You can't hear a warning over a horn.
+
+grown
+line @1 greet : Come stand beside the marks. There's clear space.
+line @2 greet [pair.band=strangers] : Keep your toes off the chalk and we're well met.
+line @3 greet [here.time=dawn] : First light makes this square look twice its size. Welcome.
+line @4 greet [here.time=dusk|night] : Enough said by a nod at this hour.
+line @5 greet [self.working=yes] : Welcome along my empty side.
+line @1 kin.open [pair.kin!=no] : There's room for a familiar pair of elbows alongside mine.
+line @1 again.open : We've gone all the way round to one another.
+line @1 greet.return : Your voice came clear over here.
+line @2 greet.return [pair.band=friends|family] : I've an elbow free for a familiar nudge.
+line @3 greet.return [self.working=yes] : Much obliged. I'll answer properly when the load's down.
+line @4 greet.return [here.time=dusk|night] : Can hear you better than see you, but welcome.
+line @1 farewell : Keep the weight close on the way.
+line @1 farewell.return : I'll keep my chalk. You keep your footing.
+line @2 farewell [here.time=dusk|night] : Pick the lighter patch at the bend.
+line @1 react.news : I'm listening. Tell it at the pace it happened.
+line @1 react.news.new : That's another mark to put down.
+line @1 react.news.known : I'd counted that bit in already.
+line @1 react.news.doubt : Whose shoulder was under it when it happened?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd spare the weight of a small errand for that house.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A nice broad piece of news to set out in the sun.
+line @1 answer.how : Worn about the shoulders. Sound underfoot.
+line @2 answer.how [self.working=yes] : I've room to move a load and small reason to complain.
+line @1 ask.how : Any part of today still riding heavy on you?
+line @1 sympathise : A hard day doesn't finish when the weight comes off.
+line @1 reassure : Put one corner down here. You'll breathe easier.
+line @1 decline : No extra carrying till we agree the whole distance.
+line @1 accept_decline : Fair. I'll shift my mark back.
+line @1 thank : My shoulder knows exactly what that favour's worth.
+line @1 deflect_thanks : You can give somebody else the easy end next time.
+line @1 preclose : I'm beginning to measure the space beyond you.
+line @2 preclose [self.working=yes] : Can't leave this weight hanging on a corner.
+line @1 accept_preclose : Carry on. My elbows are well clear.
+line @1 hail [pair.band=friends] : A familiar shoulder! This way a moment.
+line @1 ack : Square enough.
+scene elbow
+when topic=pastimes|dreams
+does tell.self / ask.detail / answer.detail
+a : I measured a stall against a blank wall this morning. | There's a whole counter in the space my elbow covers three times.
+b : Have you space for a chair? | How far does that reach?
+a : My first plan left me outside in the wet. I've allowed another elbow. | Just far enough to slide the price across without leaning on the goods.
+
+scene price
+when topic=work self.job=carter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : The price carries the load exactly as far as we agreed. | I make a mark where the carrying ends.
+b : Even for one extra step? | How can you mark somebody else's floor?
+a : An extra step I might give. An extra flight I expect to be asked about. | With my eye. Last blue shutter, first dry sill. Something we both recognise.
+
+scene braise
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : Take the lid off mutton too often and a pot loses its temper. | I want my stew thick enough to stay put while I blow on it.
+b : Have you heard a pot complain? | What's wrong with thin broth?
+a : That little hiss when you put the lid back. Supper's asked you to leave it alone. | A draught carries it off the spoon. My mouth ought to get it before the wind does.
+
+scene ditch
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I keep the first spadeful of good earth to fill the hole back in. | I spread rough sacking beside the patch I'm digging.
+b : Why save that one? | For kneeling?
+a : That's the good earth. The rough stuff underneath can go to the bottom. | For the good topsoil. My knees can fend for themselves.
+
+scene crowd
+when topic=smalltalk self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : Nobody in the square looks the same height with a bale against each shoulder. | Market noise sounds different down near barrow height.
+b : Can you see who's coming? | How different?
+a : I see feet. A foot turned sideways often says a body's stopped. | More wheels than voices. Trouble squeaks before it shouts.
+
+scene latebench
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : I keep the evening for looking at the square when the corners are clear. | At dusk a stall casts a better-sized shadow than a House sign.
+b : What do you see with the stalls cleared? | How can a shadow be a better size?
+a : Where I could put my own. Half the corners are bigger in my head than on the ground. | Wide enough for a bowl and a pair of tired feet. That's my measure.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : I stand grain on blocks with bare air beneath. | I sweep a half-circle round a stacked sack.
+b : Can a rat climb a block? | Why only half a circle?
+a : A rat could climb my hat. I'm after seeing loose grains before they bring a crowd. | The wall takes care of the other half. Anything disturbed shows plain next day.
+
+scene stubborn
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : When somebody offers less twice I put both straps down. | I don't ask a customer to bid against an empty square.
+b : Then what? | Would you earn a bit more that way?
+a : Then there's a quiet space where an honest answer ought to go. | By making the customer worry, perhaps. It's heavy enough earning it straight.
+
+scene gardenweather
+when topic=weather here.season=summer
+does tell.self / ask.detail / answer.detail
+a : A long light evening gives a spade a second shift. | I like summer light on turned earth.
+b : Do your arms agree? | Is that when you plant?
+a : One row usually agrees. The second has to wait till my shoulders feel more agreeable. | Sometimes I just look. Not every good hour has a price nailed to it.
+
+scene stalled
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My stall has had three roofs this week, all in my mind. | Sometimes I dream somebody has moved my counter while I slept.
+b : Which roof will you keep? | How far can a dream move it?
+a : The one that sheds water out the back. I'm trying to keep the customers. | Only a foot. Precisely enough that none of my elbows measures up.
+
+scene sill
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Every Sump room I measure has one awkward bit behind the door. | A carrying pad left high dries on both faces.
+b : What fits an awkward corner? | Why bother with the underside?
+a : Put the spade there, handle up. No use throwing away room a spade will occupy. | Because that's the face my skin will meet tomorrow.
+
+scene watchstrap
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : I turn a damp strap over and look at the pale crease. | A barrow handle ought to have two clear places for paws.
+b : Does a crease mean it's worn out? | Surely the whole handle is for holding.
+a : If it cracks when I flatten it, somebody can have it for tying light bundles. | Hang a sack off the middle of one and tell me how much grip's left on a bend.
+
+scene rain
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain puts a cheap shine on a poor floorboard. | That sound of water falling off a roof means I need to look up before I shift a sack.
+b : Does the shine hide much? | Why up?
+a : Splits, grease and one or two nail heads. That's enough. | The bottom of the sack gets under shelter. Its top might be directly under the drip.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.friend# first sight of the stall when I get it. | I've marked out a place for a second cup.
+b : First pick of the stock too? | Who gets the cup?
+a : First sight means first sight. Goods are another matter entirely. | I'd offer it to #self.friend#. Somebody has to tell me whether I've made the counter too high.
+
+scene marketage
+when topic=memories self.age>=35
+does tell.self / ask.detail / answer.detail
+a : My elbow hasn't changed length since I started counting with it. | In my younger days I thought the taller wolf got the long end of a load.
+b : Has the market changed its size? | And now?
+a : My plans have. As a younger wolf I wanted four elbows just for the sign. | Now I look at which end weighs most before I admire anybody's height.
+
+scene housemark
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : If a bale's stamped, I still turn it and inspect the seam. | A good seal is no help under a bad strap.
+b : You don't trust a mark? | Who gets the blame if the strap goes?
+a : A mark may tell me who owns the goods. It doesn't keep my toes from underneath. | Ask once the bale is standing on the ground. While it's slipping I want another shoulder.
+
+scene passing
+when topic=travel self.job=carter
+does tell.self / ask.detail / answer.detail
+a : I take a light first trip along an unfamiliar stretch. | If a stair turns back on itself I go up empty first.
+b : Doesn't that waste a journey? | What's the empty trip meant to show you?
+a : It saves the trip I might otherwise make headfirst. | The place where the barrow has to stop being a barrow and the sacks go on a back.
+
+scene store
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I keep my stall money separate from the ordinary coppers. | A copper saved for a pitch is as heavy as any other.
+b : In a separate purse? | Does it feel different?
+a : In #coinwrap#. A tight knot makes me stop and consider before raiding it for supper. | In the pocket, no. In the mind it's got half a plank hanging off it.
+
+scene markout
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I draw two widths for a doorway when I plan my counter. | I've allowed my dream stall a row of splinters already.
+b : Why two? | Before you've even bought the boards?
+a : One to enter with an empty back and one to come out carrying. I buy boards for the wider of the two. | Yes. Good to reckon on losing a little time to sandpaper.
+
+scene chill
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : The corner of my shoulder pad is thicker than the middle. | The best stuffing for a carrying pad is the bit that stays put.
+b : Which part wears harder? | Does stuffing move?
+a : Neither at first. Once the corner starts rubbing I turn it in, and that's how the thickness comes. | Everything moves under a sack. Useful things don't move very far.
+
+scene lanes
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : A narrow Sump lane is wide enough until two wolves try to be first. | I pick the wide landing for any conversation that needs my whole face.
+b : Who ought to wait? | Can't you talk sideways?
+a : Whichever can stand still without losing balance. This isn't a question of rank. | Yes, but the load doesn't know when my head is turning.
+
+scene sprouts
+when topic=season self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I stick a forked twig where I've sown the smallest seeds. | New earth has an excellent way of looking empty.
+b : Does the fork point somewhere? | Have you dug up your own sowing?
+a : At the ground I'm supposed to leave alone, however bare it looks. | Just far enough to see a pale root. I covered the root gently and dug elsewhere.
+
+scene music
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I'd put the loudest player on an empty handcart. | A festival bench should have a clear lane at either end.
+b : So the music can travel? | How much room do you want?
+a : So anybody moving goods sees the noise coming and gets a quiet minute once it's gone. | Enough to get a hot bowl through without soaking a coat in mutton.
+
+scene skies
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : A cart standing full in the early light throws a crooked shadow if it's leaning. | I check yesterday's heel marks before the first heavy tread wipes them out.
+b : Is the shadow enough warning? | What good are old marks?
+a : Enough to make me lay a paw on each wheel before I take the handles. | They tell me where the boards dipped. A fresh mark can lie about yesterday.
+
+scene bargain
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A wolf who doesn't know the square may mistake a shout for an offer. | I draw a plain line for a newcomer before I agree to lift anything.
+b : How do you make yourself understood? | Across what?
+a : Point to where we stand, point to where we finish. Then say the price slowly. | Across the ground where the carrying ends. One straight scrape works in plenty of accents.
+
+scene faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I like hearing bowls scrape outside a chapel door on a dole day. | At the chapel supper I stack the bowls first and give thanks after.
+b : Doesn't the noise spoil the quiet? | Why after the stacking?
+a : No. A noisy queue means folk are being fed. A silent one worries me more. | It frees the bench for the next hungry wolf. That's a thanks with a little weight to it.
+
+scene storm
+when topic=dreams|weather
+does tell.self / ask.detail / answer.detail
+a : I picture the worst gust when I plan my stall cover. | My imaginary counter has never lost a single board in a gale.
+b : How high would you pitch it? | Is it built that well?
+a : Low enough to nip the wind. I'll duck myself before I ask a roof to fly. | Hasn't been built at all. That's been wonderful for the cost of repairs.
+
+scene apprent
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : The first trick worth learning is to admit a sack is too heavy. | I'd teach a beginner how to set a weight down before trying to lift it.
+b : How would you tell before lifting? | Wouldn't that lesson run backwards?
+a : Lean it first and feel whether it means to follow you. You can stop there. | I'd start with something light already on a bench. No sense giving a lesson that ends on a toe.
+
+story one_elbow [topic=memories]
+  : I once chalked out my whole stall in a patch of sunlight.
+  : By the time I'd marked the last rail the sun had moved and half the stall was in shadow.
+  b : Which half would you keep?
+  : Both. The shadow side did nicely for the mutton.
+
+story button [topic=food self.likes=mutton_stew]
+  : A bit of carrot in my stew looked exactly like a brass button.
+  : I kept pushing it round the bowl, thinking I'd find the fastening holes.
+  b : Did you find any?
+  : I bit it at last. Two dents from my teeth looked close enough.
+
+story wrongwidth [topic=work self.job=carter]
+  : I measured a narrow opening with both arms spread and pronounced it wide enough.
+  : Then I went to push a barrow through and remembered I hadn't measured the barrow.
+  b : Did the load have to go back?
+  : No. It came through parcel by parcel. Gave me time to remember several other things I ought to have measured.
+
+story splitseed [topic=pastimes self.likes=digging]
+  : I planted two little rows from the same twist of seed and covered one with sacking.
+  : The covered row came first through the earth. I lifted the sack to admire the seedlings properly.
+  b : Did they keep their lead?
+  : Till a bird came to admire them in its own manner. I left the other row to itself.
+
+story buyspace [topic=dreams]
+  : I set a coin down where a stall board might go, then another at the far corner.
+  : Up came a gust that blew my plan away. The coppers stayed put.
+  b : The stall was only on paper then?
+  : Yes. It's reassuring to know the money weighs more than the dream. I gather both and start over.
+
+rule @loads
+when concept=bark self.job=carter self.working=yes
+does aside
+cooldown 8h
+say Make room for the long end first. | A shoulder's paid for one trip at a time.
+
+rule @garden
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say The fork marks seed. Mind your heel. | Don't bury the little twig.
+
+rule @whenrain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Sack corner's in the drip, lift it clear. | Dry board, slippery edge.
+
+rule @market
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say Settle the distance while the goods are down. | Clear one elbow more, please.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Feel for the high stone before the turn. | One lamp can't cover two cart lengths.
+
+rule @rat
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Leave air between the sack and the wall. | Sweep that spill before the whiskers find it.
+
+dlg @1 resident.hub : There's a strip clear beside me. Speak from there.
+dlg @2 resident.hub [topic.meeting=known] : I've measured your elbow before, #topic.player#. Welcome.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : I haven't agreed to carry a thing. You may speak.
+dlg @4 resident.hub [here.time=night] : The ground's only just visible here. Stay in the lighter patch.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. I name a price with both ends of the journey in mind.
+dlg @2 resident.job : I've a shoulder that knows when to take the strain.
+dlg @1 resident.news [world.news] : Here's what has made it as far as my patch. #world.news#.
+dlg @2 resident.news [world.event_words] : I can hear the stir about #world.event_words# from the square.
+dlg @3 resident.news [world.wagons=raided] : There'll be gaps in the stacks after that cart was stripped.
+dlg @4 resident.news [world.wedding=recent] : A wedding! Gives a new pair of shoulders reason to share the weight.
+dlg @5 resident.news [world.death=recent] : I'd leave a way clear for the house with a death to bear.
+dlg @1 resident.gossip [here.gossip!=yes] : Nobody's brought me anything I'd repeat even for a bright new barrow.
+dlg @1 resident.bye : There's your space in the stream. Go while it's clear.
+graft @elbow_pitch resident.hub
+choice How big is the stall you mean to have? -> elbow_pitch
+node elbow_pitch
+say Stretch your arm. Now fold it and measure with the elbow. That much, three times, and another bit for a mug that needn't be moved every time I turn.
+choice Will a mug really get a place of its own? -> elbow_pitch_more
+choice Leave the chalk mark alone.  -> hub
+node elbow_pitch_more
+say Yes. I've spent proper coin on tea and drunk it cold for lack of a safe place to set it. One of my own boards ought to keep a mug safe.
+choice Leave the chalk mark alone.  -> hub
+choice Step away from the wall. -> bye
+
+graft @which_weight resident.hub
+choice Which end of a load should I take? -> which_weight
+node which_weight
+say Show me how it stands on the ground. The end that wants to stay there is generally heavier. You won't always guess it by looking.
+choice Would you let me take the lighter end? -> which_weight_more
+choice Set the weight down gently. -> hub
+node which_weight_more
+say Gladly. I'd sooner you carried your share ten good paces than shifted mine three and dropped the lot.
+choice Set the weight down gently. -> hub
+choice Head into the square. -> bye

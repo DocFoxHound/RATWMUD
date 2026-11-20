@@ -1,0 +1,397 @@
+# rm254, the smoke in the seam (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm254
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_petra_ashgate
+written_by codex
+title the smoke in the seam
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk smells_the_seam_of_a_folded_cloth_for_old_smoke
+likes crisp_apples whittling full_larder misty_dawns
+dislikes crowds early_bells
+fears a_scorched_shirt a_bare_shelf_in_winter
+hopes a_shelf_three_jars_deep a_dry_splinter_to_carve
+topics work +0.6 pastimes +0.4 food +0.2 gossip -0.5 dreams +0.3
+styles comfort=practical gossip=guarded refuse=dry tease=gentle
+marks oath saying
+persona #self.first# can smell which wood warmed a wet sleeve, pares little wooden lids to fit mismatched jars and has a soft voice that makes room for a very dry joke.
+
+words
+oath! = Soot in the starch | Singe my good cuff
+saying! = Smoke pays no board | Even an empty jar needs a lid
+fold = the inside fold | a tucked seam
+thinwood = a shaving no thicker than peel | a sliver curled like a whisker
+cuff = the turned cuff | a double fold of linen
+jar = my squat brown jar | the jar with a crooked neck
+scent = a thread of wood smoke | a thin smell of ashes
+applepeel = a strip of tart peel | the curling red skin
+knifegrip = my easy knife grip | a loose hold on the haft
+bowlid = a flat scrap of wood | a square sawn off clean timber
+mistedge = a pale hem of mist | a low white edge
+dryrag = the square of clean rag | a little dry wiper
+tubside = the smooth side of the tub | the worn board
+woodspot = a whorl in the grain | one dark knot
+lidring = a narrow wooden rim | a slender rim of oak
+smokedwood = a resinous chip | a scrap of sweet wood
+
+any
+opinion @1 dole for 2 : An empty shelf isn't a character defect. A bit of dinner goes a surprisingly long way toward fixing it.
+opinion @2 houses against 2 : I've washed cloth of a quality that would pay my way for months. It carries dirt as well as the cheapest weave.
+opinion @3 merchants against 2 : The lid of a jar costs me a scrap and some time. Buying something to put under it takes most of my wages.
+opinion @4 festivals against 1 : A quiet spectator at a window costs the crowd nothing in sore toes.
+opinion @5 church for 1 : For a large building it's capable of noticing a small matter like one wolf's dinner. I remember.
+opinion @6 sump for 1 : In the Sump we can tell which way a hearth draws two floors away. Call it an education.
+opinion @7 times against 2 : If prices climbed any faster they'd be ringing the early bell on their own.
+opinion @8 watch against 1 : I prefer to keep the hard thump of boots three stout boards away from my ear.
+opinion @9 city for 1 : Smoke's a signature I can read blind. There's plenty of Ridgemere in the collar of my coat.
+
+grown
+line @1 greet [pair.band=strangers] : Take the clean patch on this bench. Welcome. | Hello. You've come to the quieter part.
+line @2 greet [here.time=dawn] : Morning's arrived before I gave the order again. | Welcome. There's some blue left in the smoke.
+line @3 greet [self.working=yes] : Mind the cleared space. It's taken a deal of work to get it clear. | Come upwind of this damp business.
+line @4 greet [here.weather=fog] : There you are under the white cover. | Welcome out of the mist a little.
+line @5 greet.return : That's me properly greeted. Thank you. | I can manage a civil reply at this hour.
+line @6 greet.return [pair.band=friends|family] : Your seat's dry. I attend to the important details. | I know that welcome by the feel of it.
+line @7 greet.return [here.time=night] : The night shift of greetings, then. | Evening to you and your quiet feet.
+line @8 farewell : Keep your good sleeve out of the ashes. | Go home with enough space round both elbows.
+line @9 farewell.return : A tidy end to a decent visit. | We'll close that lid for the day.
+line @10 again.open : A second visit. I'll count it as good wear. | This crease has folded our ways together again.
+line @11 kin.open [pair.kin!=no] : Here's the place we keep for family. Easy to find by the worn wood. | You know which end of the bench is sound.
+line @12 hail [pair.band=friends] : Here. The wolf with the smoky halo! | Follow the clean wood smell this way!
+line @13 react.news : Leave some quiet round that and I'll take it in. | Let's unfold the business along the least grubby crease.
+line @14 react.news.known : I could still smell the first telling on that. | Already had a look inside that particular parcel.
+line @15 react.news.new : That's a scent I'd yet to place. | First time that piece has come through my paws.
+line @16 react.news.doubt : I think there's a finger mark over the part that matters. | Somebody's put a good clean fold across a rather dirty bit.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Plenty of time to get the words right. I'll sit. | That's a bitter thing to bring in from outside.
+line @18 react.news.glad [topic.kind=marriage|birth] : I'd open the good jar in honour of that. | Even the morning bell could carry that news agreeably.
+line @19 answer.how : A little frayed but hemmed in properly. | My seams haven't let go, if that's the question.
+line @20 accept_decline : Good. An answer I can put away flat. | That'll save a fruitless spot of waiting.
+line @21 decline : There's already more on my shelf than my arms will lift. | I'd spoil a useful arrangement by promising more on top.
+line @22 sympathise : Sit clear of the bustle while it hurts. I can manage the bustle. | Here's a dry bit of sleeve if you need one.
+line @23 thank : Handy of you to notice the awkward corner. | I'll count that kindness among the things worth keeping.
+line @24 deflect_thanks : Only needed somebody's elbow in the right place. | Save a formal speech till I've actually mended the world.
+line @25 preclose : I'd best give my paws an honest occupation again. | Enough board worn smooth for one visit.
+line @26 accept_preclose : As tidy a stopping place as any I've seen. | Go on before the crowd gets thick.
+line @27 farewell [here.time=dawn] : May the next bell find somebody else to bully. | Enjoy the hours between bells.
+line @28 farewell [here.weather=rain] : Fold the dry side in for home. | Don't let a puddle climb above the hem.
+line @29 greet [pair.band=friends] : Ah, company I can sit quiet with. | Here's a face I'd keep a jarful of time for.
+line @30 again.open [here.time=dusk] : Back for the last light on the wood. | Good. Another visit before we put the lids on.
+line @31 answer.how [self.working=yes] : Quite rinsed, thank you. | As fresh as the driest thing within reach.
+line @32 preclose [here.time=night] : Even the light looks ready for its dust cover. | There's a pillow somewhere going unused on my account.
+scene seamsmell
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Try the cloth at #fold#. Still smoky after the airing. | #scent# sits longest in #cuff#.
+b : How can you smell that little bit? | Why bother with the inside?
+a : I warm it between my paws. The wood comes back a little way. | The outside's had a whole street to tell lies to it.
+
+scene larder
+when topic=dreams self.likes=full_larder
+does tell.plan / ask.detail / answer.detail
+a : I want a shelf so full one jar has to go behind another. | I'm saving #bowlid# for the third row of jars.
+b : Wouldn't you forget what's behind? | Have you got a decent jar for #lidring#?
+a : Happy to be reminded by my own supper for once. | No. The wood was available and the ambition keeps dry.
+
+scene whittlelid
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I'm fitting a lid to #jar#. It goes on one way only. | A round jar will show how unround my best lid is.
+b : What guides you to the proper fit? | Does that put you off cutting another?
+a : I leave #woodspot# lined up with the handle. | Quite the opposite. I like an honest critic I can put away on a shelf.
+
+scene apple
+when topic=food self.likes=crisp_apples
+does tell.self / react.self / assess
+a : I like an apple that answers back at the first bite. | #applepeel# goes on the warm hearthstone after I've eaten the rest.
+b : I generally ask my food to keep quiet. | Trying to perfume the house?
+a : That's the virtue of the second bite. Settles the conversation. | Just giving the smoke another subject for the evening.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / react.self / assess
+a : #mistedge# makes the sheds look like a neatly covered shelf. | Mist takes the edges off this place in the morning.
+b : What do you keep on that shelf? | You'd like to hide a few hard corners?
+a : An hour I can enjoy while the rest of the city sleeps. | Only till I've woken enough to steer round them.
+
+scene crowd
+when topic=smalltalk self.dislikes=crowds
+does tell.complaint / react.complaint / assess
+a : In a crush I'm forever smelling a stranger's woodpile. | I'd give a little money to have my own elbow back in a crowd.
+b : Perhaps the stranger's doing the same to you. | Does anybody ever sell you the space?
+a : Probably getting the better smell, then. | I collect it free by slipping down a side passage.
+
+scene bells
+when topic=smalltalk self.dislikes=early_bells
+does give.opinion / disagree / concede
+a : An early bell does enough work with the first stroke. | I'd put a wool cover over the bell till the sun was properly up.
+b : Somebody might sleep through one stroke. | Might as well ask a rooster to whisper.
+a : Entirely public-spirited of somebody to spare us the rest. | A rooster's light enough to move a street away.
+
+scene washlesson
+when topic=work self.job=laborer self.workplace self.working=yes
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a cuff can hold on to yesterday harder than a whole shirt. | #self.workplace.capitalize# puts every sort of sleeve in front of me.
+b : What gets the old day out? | Can you tell where a sleeve's been?
+a : Turn the seam and work gently on what's hiding there. | Only that a smoky room has very long arms.
+
+scene mastereyes
+when topic=work self.master=yes
+does tell.self / react.self / assess
+a : My first question for a learner is which side's dry. | I can tell more from how a learner sets a thing down than from how fast it's picked up.
+b : That sounds too easy. | It's easier to set something down, surely.
+a : Easy questions are cheap to get wrong at the beginning. | With a hand free and the weight where it belongs. That's the bit worth watching.
+
+scene basketweight
+when topic=work self.job=laborer
+does ask.advice / give.advice / assess
+a : Where would you shift your grip if half a basket hung over one wrist? | How do you carry something wet without soaking your coat all along one side?
+b : Underneath, before I tried taking a step. | Give the load a board to stand on.
+a : You've saved your wrist a long argument. | Good. Boards go about undressed in any case.
+
+scene carriedword
+when topic=lore
+does tell.self / react.self / assess
+a : A letter that smells of vine cuttings can make a room twice its usual size. | A written word from a far slope lasts longer than a bunch of grapes.
+b : From remembering all the open country? | I'd get more out of the grapes at supper.
+a : From imagining somewhere there's space to burn wood outdoors. | I'll grant you the first supper. I've had a whole winter out of a letter.
+
+scene stampprice
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : If a jar's dearer empty than the stuff inside, I'll eat from the paper. | A fancy stamp on a lid adds very little to a meal.
+b : You'd be paying for the work on the jar. | The stamp gives the contents a maker you can find again.
+a : I'll take a full stomach first and a handsome jug next payday. | True. But there's no nourishing way to lick the maker's name.
+
+scene quietroof
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : At my Sump doorstep I can read hearth smoke right through another wolf's washing. | A shirt dried at home takes a bit of the neighbourhood with it.
+b : What are you reading for in all that? | Who'd pay to have the neighbourhood washed back out?
+a : Only where to put a towel next time the wind turns. | Nobody with somewhere quiet and clean to dry their own.
+
+scene friendletter
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd show #self.friend# how to fold a letter with something dry round the corners. | I might ask #self.friend# to choose the nicest smelling chip for a parcel.
+b : What's likely to get in through a corner? | Wouldn't it mark the letter?
+a : The house smell. It's a shameless reader of private correspondence. | A chip can stay outside the fold and still send a greeting.
+
+scene thinshop
+when topic=times world.times=hard|lean
+does tell.feeling / sympathise / assess
+a : It's a good week when an empty shelf's a cleaning job instead of a description of supper. | I save glass for things I might be able to buy when prices ease.
+b : That's a hard sight to dust over. | How do you stand looking at the empties?
+a : Yes. It would be pleasant to complain of crumbs again. | Put the best lids on. Gives my eyes one good thing to rest on.
+
+scene twofires
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : #smokedwood# makes a little curl that keeps its smell after the fire goes cold. | You can rub a bit of wood and learn whether it's worth carving.
+b : You mean it leaves smoke on your paw? | By the smell alone?
+a : No fire needed. The tree's done the important part. | Also by whether my thumb picks up a splinter. That's an emphatic opinion.
+
+scene tidycorner
+when topic=smalltalk
+does tell.self / react.self / assess
+a : #dryrag# belongs nowhere near the steam till it's wanted. | I keep a little corner folded in on itself.
+b : It won't stay clean long in this city. | What's hidden in that last corner?
+a : Neither will I. That's hardly a reason for giving over. | Nothing. A piece of nothing with no soot on it has a dozen uses.
+
+scene fogfromabove
+when topic=land here.region=ridgemere
+does tell.plan / ask.detail / answer.detail
+a : One dawn I'll get high enough to see whether the fog lies flat on Ridgemere. | I want a look at the uppermost chimney with the low ones under mist.
+b : Would you bring a rag up to straighten it? | What would you be watching for?
+a : I'd look for the wolf who's already put the crease in the middle. | Whether smoke still insists on climbing after it's had a look at the Heights.
+
+scene cleanplates
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A bowlful of apples makes an excellent lid for an empty patch on a shelf. | Give me a sound apple over a tart somebody's smothered in pretty marks.
+b : What's the lid good for when the bowl's empty? | Couldn't a pretty tart still taste good?
+a : Seeing the bowl's clean. Small consolations stay useful. | Yes. I'd admire it properly after I'd made sure of my apple.
+
+scene afterhours
+when topic=work self.master=yes
+does give.opinion / disagree / concede
+a : A learner deserves to know when a lesson is over for the day. | I won't keep repeating a correction once a pair of paws has got the feel of it.
+b : What if the learner wants another turn? | Don't you risk a slip next time?
+a : Willing work is quite another thing. I'd make space on the board. | Everybody slips. I'd teach how much of the mess is worth picking up.
+
+scene woodgrain
+when topic=pastimes self.likes=whittling
+does ask.advice / give.advice / assess
+a : Where would you start cutting a lid with this knot at the rim? | Is there a use for a curl pared too thin to hold its shape?
+b : Leave the knot proud and turn it into a grip. | Put it underneath the larger kindling.
+a : A handle. I've been calling it poor fortune for an hour. | Good. It can try for a less permanent career as smoke.
+
+scene goodhearth
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd like somewhere that smells of wood because I've lit a fire by choice. | It might be restful to hang one shirt where its only scent is clean wind.
+b : A fire for sitting by instead of getting a job done? | Wouldn't you miss knowing what the neighbours were burning?
+a : Quite. I'd spend an evening being a poor use of fuel. | I hope to find the strength to bear the ignorance.
+
+scene workchange
+when topic=work self.job=laborer
+does tell.self / react.self / assess
+a : When food took up all the market room I put my paws to a different business. | A change of trade can leave old shapes worn into your paws.
+b : Did the new work fit? | Can you still feel them?
+a : Slowly. Wrinkles take longer to press out than you think. | On cold mornings. My hands appear to keep better accounts than I do.
+
+scene givetwist
+when topic=pastimes
+does offer / accept / assess
+a : Take #thinwood#. It'll start a small blaze. | You can have this curly bit of packing for a fragile present.
+b : I'd keep it rolled till I wanted the fire. | I'd need something fragile to put inside.
+a : It'll keep its shape without wages or supervision. | An apple will oblige if you drop it often enough.
+
+scene festivalplace
+when topic=season
+does tell.plan / ask.detail / answer.detail
+a : I'll take my festival from the first empty sill. | I have a place for a procession that doesn't require me to join it.
+b : Will you be able to see the dancers? | Right at the front where it starts?
+a : From the waist up. I can imagine the expensive damage to toes. | At the side, with a wall looking after one elbow.
+
+scene nearbyfaces
+when topic=newcomer
+does give.opinion / disagree / concede
+a : A wolf coming in wants a place for a bundle before a speech of welcome. | Let a new arrival find a dry shelf before asking what's inside the parcel.
+b : I'd ask what was coming in on those boards. | What if it holds something that marks?
+a : Ask with the bundle down and the weight off both arms. | Wipe your boards after. Easier than wiping up a whole quarrel.
+
+scene rainsoot
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain cleared the smoke overhead by rinsing it into my hem. | Rain brings the hearth right up close under your nose.
+b : Has the hem come any cleaner? | Is that why you're smelling your sleeve?
+a : The air's done better out of the arrangement. | Checking which part of today has settled in already.
+
+scene upstairs
+when topic=land self.street
+does tell.self / react.self / assess
+a : My address, #self.street#, takes a good load off a shelf and puts it straight onto your knees. | Carry something home to #self.street# and you'll learn its weight by the door.
+b : Does the climbing come included with the rent? | How do you make the trip easier?
+a : I have yet to find a landlord willing to carry my basket to settle it. | I give the jars their lids at home. Every saving counts.
+
+scene neatwork
+when topic=pastimes
+does tease / tease.return / laugh
+a : Are you inspecting my scrap wood or applying for the post of jar? | Stand there long enough and I'll have a lid fitted to you.
+b : Depends what the jar gets for supper. | Leave a little hole for conversation.
+a : An enviable profession if I can ever afford the filling. | I could probably manage one small, well-seasoned remark at a time.
+
+scene done
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I know the week's finished when #knifegrip# feels easy again. | When work's over my paw opens and I wait.
+b : What have your fingers been doing all week? | What are you waiting to see?
+a : Trying to keep the whole tub from following a wet blanket home. | Whether the wood shaving drops. If it sticks, I owe myself a wash.
+
+story jar_fit [topic=pastimes]
+  : My first homemade lid fell right into the jar and sat flat below the handle. I told myself it was a splendid fit for the part I couldn't reach.
+  : I pared a longer handle and fixed it across the middle of the disc.
+  b : Was the handle how you got it back?
+  : And dipped sauce with it all winter. I got the job wrong and made a fair spoon.
+
+story coat_letter [topic=lore]
+  : I put a folded letter in a coat pocket. Next day, striking out the coat, I saw little black specks come flying out.
+  : I thought I'd beaten the writing clean off my bit of paper.
+  b : What were the specks?
+  : Soot. The words were hiding inside their fold, quite safe. My talents have proper limits.
+
+story breakfast [topic=food]
+  : I bit into an apple beside a steaming tub and heard an answer from somewhere beyond the board wall. Another crack just like my own.
+  : Waited and tried once more. Heard the second crunch again.
+  b : Another wolf eating breakfast?
+  : A dry peg splitting as the line drew tight. I finished the apple and let the peg have a rest.
+
+story too_full [topic=dreams]
+  : I dreamed my shelf was so full of jars one was elbowing its way off. I reached out to put it safe.
+  : Woke up holding the coverlet in both paws and with my nose pressed to a board.
+  b : Was anything on that board?
+  : A splinter. It was a cheap breakfast after such a well-stocked dream.
+
+story one_sleeve [topic=work]
+  : I washed a sleeve that had been hanging near a fire. Soap took the soot and the water went off a strong colour.
+  : That night I walked by somebody splitting wood. Same sweet smoke smell followed me two turnings.
+  b : Was the sleeve still with you?
+  : My nose had been inside my own cuff all along. Can't send the whole wolf through a tub every time.
+
+rule @steam
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say One more turn for the inside seam. | Clean corners where the smell sat.
+
+rule @master
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Show me how you put the weight down. | No merit badge for a bent wrist.
+
+rule @wood
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say That's a neat curl going nowhere in particular. | A lid's only as round as the jar wants.
+
+rule @mist
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say Somebody draped the town for the night. | Neat turn along the top of the mist.
+
+rule @bell
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Heard the first stroke, thank you. | No danger of the day going back to bed now.
+
+rule @jar
+when concept=bark self.likes=full_larder
+does aside
+cooldown 8h
+say Lids for the lot. Supplies to follow. | Empty jars are unusually easy to inventory.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You've found a seat and a quiet wolf. Which one were you after?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. There's a bit of clean bench available for a civilised interval.
+dlg @3 resident.hub [here.time=night] : The day has stopped demanding clean corners. We can sit.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Keep the pressure off my elbow and we'll get further.
+dlg @5 resident.job [self.job=laborer self.workplace] : Wash work at #self.workplace#. Sometimes we even persuade a sleeve to give up its previous address.
+dlg @6 resident.job : I do things that leave my paws a little less ornamental by evening.
+dlg @7 resident.news [world.news] : Here's the piece that's come out in the rinse. #world.news.capitalize#
+dlg @8 resident.bye : Leave room enough for a quiet turn on the way home.
+dlg @9 master.learn [here.teaches=yes] : Start by setting the weight down without a thump. I can teach from there.
+dlg @10 master.learn [here.teaches=no] : No teaching space open just now. You can still see what a careful wrist looks like.
+dlg @11 master.work : You'll be doing the work that needs a steady grip and noticing what hides in a fold.
+dlg @12 master.wages : No wages for learning. You may sell what you've made, and working by me helps you learn sooner.
+dlg @13 master.takes [here.take_on=no] : #here.take_on_why# Saves us both measuring for something that doesn't fit today.
+dlg @14 master.refused : #topic.why# Better to know which corner caught.
+dlg @15 master.bye : Let those wrists rest between turns.
+graft resident.hub
+choice Is that a jar lid in your pocket? -> pocket_lid
+node pocket_lid
+say Been one for three days if I can find a jar quite this shape. A wolf can have more ambition than shelf space.
+choice What would you put inside? -> lid_dream
+choice Another matter then. -> hub
+node lid_dream
+say Apple rings for winter, cut thin and dried. I'd risk my last good jar for something that smells of summer when you open it in the rain.
+choice I'll watch for the right shape. -> hub
+choice May the shelf hold up. -> bye
+
+graft master.learn
+choice How do you know when a cloth's clean? -> clean_seam
+node clean_seam
+say Turn the cuff. See the crease under your thumb? That's where dirt goes when it's heard the inspector coming.
+choice And the smell of smoke? -> smoke_seam
+choice Back to learning. -> learn
+node smoke_seam
+say A scent may stay a while after the dirt. Give the cloth air. Scrub it to pieces and all you've made is an extremely clean hole.
+choice I'd like to hear about the work. -> work
+choice Enough for today. -> bye

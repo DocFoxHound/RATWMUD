@@ -1,0 +1,294 @@
+# rm482, the treasury of borrowed steps (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm482
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_bertil_grantham
+written_by codex
+title the treasury of borrowed steps
+fits stage=young|adolescent|adult|old
+prefers honesty=guarded humour=merry
+traits temper=even talk=quiet warmth=reserved humour=merry honesty=guarded piety=ordinary drive=steady
+quirk reckons_favours_in_footsteps_saved_on_a_wet_road
+likes smoked_eel long_walks full_larder misty_dawns
+dislikes deep_mud wet_floors
+fears losing_track_of_a_promised_return
+hopes paying_every_friend_back_in_kindness
+topics friends +0.6 travel +0.5 food +0.3 prices +0.2
+styles comfort=quiet gossip=guarded refuse=soft tease=merry
+marks oath saying
+persona #self.first# keeps a treasury of favours reckoned in footsteps and grants silent credit to anybody who has shared the dry side of a path.
+
+words
+oath! = Spend my last dry step | Ink on my eel
+saying! = Two steps to your credit | Kindness isn't paid in mud
+stepcoin = a round ink spot | a dot with two little legs
+accountbit = a shelf of folded papers | a little bundle of tallies
+eelwrap = a smoky length of eel | a tightly rolled fish shaving
+drybank = a ridge of firm dirt | a strip of raised planks
+bootdebt = a heel's worth of credit | a whole dry footstep
+jarback = a full crock | a big round-bellied jar
+fognub = a white patch beyond the wall | a low tuft of mist
+pursepage = a folded walking account | a square of soft paper
+rindloop = a ring-shaped scrap | a thin curl of skin
+bridgechip = a square wooden chip | a flat bit of board
+inktoe = a black thumb spot | a fine grey smudge
+
+any
+opinion @1 houses mixed 1 : A House can count what's owed for a parcel. I'd also like it to count who never made it home after carrying one.
+opinion @1 merchants mixed 1 : Set down the coin plainly and leave a separate bit of paper for the favours.
+opinion @1 road for 2 : A long way in good company can be worth borrowing a little daylight for.
+opinion @1 strangers mixed 1 : A stranger may have the firm side of the path. That doesn't entitle a stranger to inspect my private accounts.
+opinion @1 dole for 2 : A whole shelf of supper ought to help a neighbour with a single empty bowl.
+opinion @1 city mixed 1 : There's a very large drop between two of our streets for a city that fits in such a little picture.
+line @1 react.news : I'll put that down where I can still change the entry.
+line @1 react.news.known : My paper already has a little dot for that.
+line @1 react.news.new : There's a fresh bit of walking for my thoughts.
+line @1 react.news.doubt : The telling sounds grander than the footsteps that brought it.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's worth a whole row of dry-step credits.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd give away my place on the good path to the one carrying that.
+line @1 reassure : Friends needn't pay back every kind thing before bedtime.
+
+grown
+line @1 greet : There's room on the sound part of this board for a quiet visitor.
+line @1 greet.return : I remember your particular way of coming back.
+line @1 farewell : May the return path collect nothing more costly than your time.
+line @1 farewell.return : A dry step in your favour when you come this way again.
+line @1 decline : I'll acknowledge what I owe and keep the private cause of it to myself.
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I would still choose a long walk for the chance of having one uninterrupted thought.
+b : What thought lasts so long? | Don't you get tired?
+a : An ordinary one that gets interrupted at home may require two whole hills to put back together. | Yes, but I've generally found the end of the thought by the time my feet begin to ask politely.
+
+scene food_1
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Smoked eel is my idea of a small portable feast with very little ceremony.
+b : How much would you take? | Who'd receive the final bit?
+a : Enough for two if I'm expecting company. More if I'm pretending I expect nobody at all. | I'd offer it. I have learnt that doing the offering slowly doesn't make the morsel any easier to part with.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A full pantry ought to make me bolder about opening the door.
+b : Would you invite anybody? | What if the supplies hardly stretch?
+a : A bowl may be offered on a doorstep. A welcome needn't include access to every drawer. | Then the kindness should be properly measured and honestly named. I wouldn't make a promise with an empty pot.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There are losses I still keep out of any arithmetic.
+b : Because they're too large? | Does carrying the memory help?
+a : Because no entry on the other side brings a loved voice back across a threshold. | It makes me look at who carried a parcel, not just how promptly the parcel was delivered.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I give a wet floor the quiet inspection it mightn't have had before laying claim to my ankle.
+b : What's your test? | Won't a new sole grip?
+a : A slanting look and the lightest push of an unloaded toe. I save the proper step for a known board. | I leave new leather to prove its confidence on dry ground first.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I can remember a debt without giving a friend the feeling of a collector at the door.
+b : Do you note it somewhere? | Would you ever ask for repayment?
+a : Only if it's a true obligation. The rest I keep as a reason to be glad whenever that face comes in sight. | Yes, plainly and quietly. Hinting has a distressing habit of presenting a bill to every ear in reach.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : The most valuable part of a small loan can be the week it gives somebody to catch a breath.
+b : Would you set any interest? | How do you protect a friendship?
+a : Name all the terms before the hand opens. Some weeks ought to pass with no extra price at all. | By holding neither a surprise nor a humiliation deep inside the purse.
+
+scene weather_1
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : In mist I can see one sure bit of path and several expensive guesses.
+b : What does a wrong guess cost? | Would you turn back?
+a : Wet stockings, if I'm fortunate. I have learnt to price socks higher than pride. | If I can't see a reliable place for the next heel, yes. Coming home in one piece is a respectable return.
+
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I could walk the whole of a fine evening balancing no account but left foot against right.
+b : Does the counting start up anyway? | Would you take a companion?
+a : Now and then. It usually stops when I find something worth watching instead. | One who doesn't feel obliged to conduct a thorough examination of every comfortable silence.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Mud can take the shine off a whole week's good planning.
+b : Can you plan around it? | What if the only way lies through?
+a : Leave room to find the road's higher edge. Exact plans are the ones that take offence at a detour. | Choose one firm mark at a time and make the rest of the decision from there.
+
+scene times_1
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A lean week teaches the difference between an account that balances and a cupboard that feeds.
+b : Which comes first? | Doesn't a fair account feed somebody eventually?
+a : The body waiting now. Empty bellies find the arithmetic entirely unconvincing. | Eventually is an interval it helps greatly to have a meal packed for.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : When someone new asks a direction I start by finding out how much walking is wanted.
+b : Why not give the short way? | Would you charge for being a guide?
+a : A short muddy slither isn't everybody's idea of a saving. I'd give both routes with the state of the ground marked. | Only for a real job agreed as such. A neighbour's good turn has no cause to send a disguised invoice.
+
+story shelf [topic=food]
+  : I put two pieces of fish on a coloured shelf and counted only the one I could see easily.
+  : I was halfway through dividing that little piece when my fingers found the other one.
+  b : Did the sum come out right?
+  : It did after supper. The mistake gave each of us an extra helping without a moment's hard bargaining.
+
+rule @sides
+when concept=bark
+does aside
+cooldown 8h
+say Choose the dry bit for whoever's done enough walking already. | A kindness can count with no inscription at all.
+
+rule @mist
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say One sound plank has more value than a whole invented crossing. | Mist makes expensive guesses look beautifully cheap.
+
+dlg @2 resident.hub : We'll keep private figures private and see what we can say plainly to each other.
+dlg @1 resident.news [world.news] : The words that reached the open page are these. #world.news#.
+dlg @2 resident.bye : Give the steep or slippery bit its proper allowance.
+
+young
+line @1 greet : Hullo. You can walk in the dry bit that belongs to me.
+line @1 greet.return : I've still got you in the book of welcome visitors.
+line @1 farewell : I'll put this walk on the nice side of the account.
+line @1 farewell.return : Hope the mud has gone somewhere else while you were talking.
+line @1 ask.how : Did you get enough of the good path for your feet?
+line @1 answer.how : Quite well off in footsteps, a bit short in smoked eel.
+line @1 thank : You remembered your promise without making me read out the list.
+line @1 decline : I won't show the private page. The corners aren't for everybody.
+line @1 sympathise : I'll walk beside you till talking feels easy again.
+line @1 accept_decline : Your place on the good board is still yours.
+scene pastimes_1
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've started a bank where the money is steps and nobody's ever hungry for a copper.
+b : How could I pay something in? | What can the steps buy?
+a : Walk round a puddle on the outside so a friend gets the boards. Two dry steps go right in. | A friend who remembers which side you got wet on. That's my best price so far.
+
+scene work_1
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At lessons I can give each sum feet and make it go up the side of my page.
+b : Does that help you add? | What happens when the ink runs?
+a : I can see if one's run away before I've properly counted its toes. | My numbers come home very grubby and I have to wash the page with the bottom of my sleeve.
+
+scene family_1
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.father# the bank if I could first explain that all the money was pretend.
+b : What would you put as evidence? | Is the bank very rich?
+a : I'd get my pockets out and explain how many perfectly good empty ones I started with. | I've got three favours owing and an entire little smoke-coloured fish skin. That's considerable business for one morning.
+
+scene food_1
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : A little smoked eel can be a whole expedition in a pocket.
+b : Doesn't the pocket get sticky? | Who goes with you?
+a : I fold the fish in its own paper so the footsteps won't all taste of lunch. | Me at the start. By the time I've brought the eel out there's generally someone interested in seeing where our little journey finishes.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I want a misty dawn where the roofs look like islands and the mud has gone to sea.
+b : Can you see to walk? | What makes the mud go away?
+a : Far enough for the next dry bit. My nose can usually find the pantry even in very deep imaginary fog. | In my dawn the mud has agreed to become somebody else's interesting puddle for a while.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like a cupboard so full the last jar sticks its tummy out.
+b : What will you keep in that jar? | What if it falls?
+a : Enough eel to get far enough on foot to want my supper all over again. | I'd keep that fat jar down low. It would be a terrible shame if the pantry rolled out the door.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I write my friend's favours very small so nobody passing can help add them up.
+b : Is that sneaky? | Can the friend read them?
+a : It's private. If I tell the whole room every time somebody's kind to me it might feel like owing the room too. | I'd turn the sheet round as soon as I was asked and not half a moment sooner.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : My favourite walk would follow the tops of little boards.
+b : No hills? | What if you meet another wolf on the boards?
+a : Lots, but they'd be dry hills. My boots are quite ambitious provided nobody fills them up with mud. | I'll step down if the ground will take me. A muddy favour is worth a very large spot of ink.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A money debt feels different from an empty place that never can be paid for.
+b : Does your bank reckon that too? | Do you mean to tell me whose?
+a : It has a page all to itself where I don't draw any funny little feet. | Not now. A name can stay home even when I come outside and play.
+
+story heel [topic=memories]
+  : I tried drawing each good step as an actual little boot instead of a dot.
+  : My first drawing had five toes at the heel and none at the front.
+  b : Could it walk?
+  : Backwards beautifully. I called it a favour I'd be paying back and so the mark could stay.
+
+rule @dry
+when concept=bark
+does aside
+cooldown 8h
+say Step bank's open where the boards are dry. | That's a very good credit on your left boot.
+
+rule @sums
+when concept=bark self.job=child
+does aside
+cooldown 8h
+say I can fit four sums across a walking account's back. | That one went over the edge but I can still see its feet.
+
+dlg @1 resident.hub : You may look at the dots but the words on this fold are all mine.
+dlg @1 resident.job [self.job=child] : At lessons I'm practising how to get every little mark into the right column without anybody stepping on it.
+dlg @1 resident.bye : Mind where you change from a road into a puddle.
+graft resident.hub
+choice What is a dry step worth? -> step_price
+node step_price
+say If both our boots are clean it's just a step. If one of us is going to get muddy and you let me past, that's a whole ink dot to your credit.
+choice Can I spend that dot now? -> step_buy
+choice I'll spend mine on the path. -> hub
+node step_buy
+say On choosing the dry side for the next puddle. Or on not having to hear a remarkably long talk about my way of counting.
+choice I'll spend mine on the path. -> hub
+
+
+adolescent
+line @1 greet : Come level and I'll keep the two accounts in my pockets.
+line @1 greet.return : It's an agreeable bit of credit, finding you came round again.
+line @1 farewell : Choose the road you can stand behind afterwards.
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I've started crossing out favours that were really presents all along.
+b : Which ones are those? | Does crossing them out mean forgetting?
+a : The ones given when nobody asked how far a wolf could go to pay them back. | No. I'll remember them with no little hook stuck on the end.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Making a precise measure of every kindness can spoil the gift.
+b : Wasn't that the point of your bank? | Are the figures wrong?
+a : I wanted to remember who helped. The banking part was the bit where I got carried away. | No. They're simply not the whole of what's passed between two tired walkers.
+
+story wrongline [topic=memories]
+  : I found a favour mistakenly counted as a penny in a little sum of mine.
+  : The figures came out perfectly so long as I left the mistake in place.
+  b : Did you change them?
+  : I struck it through. A reliable friend shouldn't be keeping my purse square by turning into small change.

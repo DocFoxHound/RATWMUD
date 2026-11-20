@@ -1,0 +1,260 @@
+# rm243, the weekly caller (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm243
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_orm_nailhand
+written_by codex
+title the weekly caller
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk identifies_ships_by_their_shadows
+likes spiced_cider swimming fresh_straw warm_rain
+dislikes deep_mud smoke
+fears a_name_rubbed_off_the_roll
+hopes a_receipt_for_the_petition
+topics work +0.5 land +0.4 travel +0.3 gossip -0.5
+styles comfort=practical gossip=brief refuse=plain tease=none
+marks oath saying
+persona #self.first# studies hull shadows, keeps a folded petition flat against the ribs and saves the plainest words for the hardest question.
+
+words
+oath! = Blot my copy | Smudge the seal
+saying! = A slip of paper needs two legs | Even a shadow has a draught
+copy = my folded copy | my clean copy
+strawbit = a bright stalk | a stem of straw
+prow = the lip of the bow | the rising end
+receipt = a dated scrap | a mark of receipt
+ripple = the split in the water | the narrow wake
+bundle = a parcel of requests | a tied bundle
+ink = berry-black ink | ink thin as tea
+cidersteam = the spicy breath | the apple steam
+dryrack = a high shelf | the dry ledge
+swimstroke = a long easy reach | a quiet stroke
+wick = a bit of twisted rush | a rush end
+fold = the old crease | the raised fold
+
+any
+opinion @1 city for 2 : There's a place in this city for my name. I'm prepared to stand about until somebody finds it.
+opinion @1 dole for 2 : A mouth can stay shut about hunger while the belly's writing a petition of its own.
+opinion @1 strangers for 1 : A traveller sees the water from the other end. Worth setting down a parcel to hear that.
+opinion @1 festivals against 1 : I still owe a day's rent when the day disappears under flags.
+opinion @1 houses against 2 : I'd like one House seal beside my own thumbprint. Then we'd see which leaves the greater stain.
+opinion @1 sump for 1 : In the Sump you can ask for dry straw without explaining the state of your roof.
+
+grown
+line @1 greet : Greetings. There's clear standing room beside me. | Well met. I can spare these next few minutes.
+line @2 greet [here.time=dawn] : Early company. The ink isn't even mixed yet.
+line @3 greet [pair.band=strangers] : A new mark in the margin of my day. Welcome.
+line @1 greet.return : A greeting duly received, and one for you. | Glad you stopped level with me.
+line @1 again.open : Back on the same page, I see.
+line @1 hail [pair.band=friends] : Over here by my raised paw!
+line @1 farewell : Go with enough light to read your way. | I'll leave you to the rest of your errand.
+line @1 farewell.return : And an easy passage homeward for you. | My good wishes go along in your pocket.
+line @1 react.news : I'll listen before I put a mark beside it. | Take your time over the particulars.
+line @1 react.news.new : First wet gleam of that I've seen.
+line @1 react.news.known : I've seen the shape of that account already.
+line @1 react.news.doubt : I'd want a second copy before swearing to the first.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'll gladly mark that day down to remember.
+line @1 answer.how : Still turning up. Some days that takes the lot.
+line @1 ask.how : Anything come back to you for all your trouble?
+line @1 sympathise : Come stand clear of other ears for a bit.
+line @1 reassure : Leave yourself a margin. There's room to mend a poor beginning.
+line @1 ack : I take your meaning exactly.
+line @1 give.advice : I'm keeping the particulars straight.
+line @1 refuse : I'm due elsewhere, and the walk takes every spare minute.
+line @1 react.news.sorrow [topic.kind=loss|death] : I'd keep the page clear around that name. | Hard news deserves a decent interval of quiet.
+line @1 accept_decline : There's no mark against you for choosing otherwise. | You choose how to spend the hour.
+line @1 preclose : I ought to start for the next desk before it closes. | I'd better put my feet to my errand.
+line @1 accept_preclose : Go on while the road's a little quieter. | You've another page of the day to fill.
+scene shadow
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Give me a hull's shadow and I'll name what cast it. | I can tell two sister ships apart at noon.
+b : What if the bow's behind a wall? | Does the paint show in a shadow?
+a : I look for the missing length in the stern. It's like reading half a familiar word. | No, but one casts a little hook where the other's rail runs straight.
+
+scene paper
+when topic=work|memories
+does tell.self / ask.detail / answer.detail
+a : My petition's made more visits to the Office than it has pages. | I've practised asking for #receipt#.
+b : Why keep making the walk? | Does that get your request granted?
+a : If I do nothing, the answer's settled without me. | I can point to that mark on my next visit.
+
+scene straw
+when topic=home self.likes=fresh_straw
+does tell.self / react.self / assess
+a : Fresh straw makes the floor sound newly roofed. | I scatter the longest stalks where I get up.
+b : A roof under your feet? | Easier to sweep?
+a : Just that little dry whisper. I missed it all winter. | Easier to find the floor by feel before daylight.
+
+scene store
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I leave space under the lowest stock. | I stack one parcel with the tie sticking out.
+b : What's the empty space for? | Won't that catch on a sleeve?
+a : To find the creeping wet before the cloth does. | Better a loose tie than hauling the whole pile apart to open it.
+
+scene swim
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : My first #swimstroke# always feels too short. | Swimming takes the office dust out of my ears.
+b : Do you stretch out the next? | Is the Sound very quiet?
+a : I let the water finish carrying me before I reach. | Underneath it is. I spend a moment there before coming up.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does tell.self / react.self / assess
+a : I drink cider slowly enough to find the last spice. | My nose gets the first turn at hot cider.
+b : Which one stays longest? | And what does your tongue get?
+a : The sharp little taste right at the back. I'm still putting a name to it. | The apple underneath when the steam's spent.
+
+scene stamp
+when topic=land|work
+does tell.self / ask.detail / answer.detail
+a : There's a spot on my folded paper as round as a seal. | I wrap my request in plain cloth on Office days.
+b : Did someone finally sign it? | Why no ribbon?
+a : Cider. I'll know a proper seal when one comes. | I haven't any interest in getting the ribbon noticed.
+
+scene smoke
+when topic=weather self.dislikes=smoke
+does tell.self / react.self / assess
+a : Smoke smudges the far bank out of existence. | I save my good copy from the smoke.
+b : Still know which way's home? | Doesn't it dry the ink?
+a : My feet know perfectly. It's my eyes that begrudge the loss. | It leaves a thumb's worth of grey over every word.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd trust #self.friend# with the only copy I had. | I can swim quietly beside a friend.
+b : Would you risk it? | No racing?
+a : I'd make another first. Trust's no cure for weather. | Best sort of company lets a wolf float.
+
+scene mud
+when topic=weather self.dislikes=deep_mud
+does tell.complaint / ask.detail / answer.detail
+a : Mud took the shape off both my prints. | I walked the long edge round a mudhole.
+b : Need prints to find the way back? | Did you arrive clean?
+a : I needed dry ankles for the Office. A fine beginning. | Came in late, but nobody had to mop my tracks.
+
+scene rain
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Big warm drops look like new seals on the water. | I'm leaving the hood down for a minute.
+b : How many can you count? | Won't it soak behind your ears?
+a : About three before one seal runs into the next. | A warm rain can have that particular liberty.
+
+scene queue
+when topic=memories
+does tell.self / react.self / assess
+a : Once I stood a whole hour behind an empty coat. | I mark a wait by the light on the floor.
+b : Someone had left a place in line? | Is that easier than counting?
+a : It was on a peg. The room was dark. I went pink to the ears. | There's something to show for it. A whole flagstone passed.
+
+scene market
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : When the markets filled with food I learned how much space a sack wants. | I can feel when a parcel's tied too tight.
+b : More when full? | Surely tighter keeps it safe?
+a : More when near empty. It slumps into its neighbours. | Not if the cord bites through the wrapper before it sells.
+
+scene board
+when topic=travel|land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The headland is where I learned to read hulls. | I look back from the headland sometimes.
+b : Is that high enough? | At the city?
+a : From there I can take in a hull's shadow in a single look. | At the roofs. I like identifying my own from the wrong side.
+
+scene letters
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I practised my name on a wet barrel. | I used to copy the letters off crate ends.
+b : With ink? | Can you still read them upside down?
+a : A straw. The mark lasted just long enough to judge. | Faster upside down, some days. That's how they were stacked.
+
+scene visit
+when topic=travel
+does tell.self / react.self / assess
+a : I like an errand with a landing at each end. | There's always a second walk inside an Office errand.
+b : Prefer travelling on water? | From one desk to another?
+a : I just like knowing for certain that I've arrived. | Sometimes from one end of a sentence to the other.
+
+scene boss
+when topic=work self.boss self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : When I ask #self.boss# for time away, I name the hour I'll return. | I leave a tidy counter whenever I ask for time away.
+b : What if the Office keeps you? | So anyone could take over?
+a : I go back to work. There's another week coming. | That's the decent part of asking.
+
+scene home
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : #self.street# is the last line on my request. | I could draw the turn home blind.
+b : Does an address really matter? | Would a stranger recognise it?
+a : An answer can't come back by following a wish. | I'd add the bent gutter. No street has another quite its equal.
+
+story corner [topic=memories]
+  : I took a clean sheet uphill in tearing sideways rain.
+  : One corner worked free of my coat and took the rain straight on. I unfolded four sheets' worth of matching holes.
+  b : Four holes ruined an entire request?
+  : I wrote between them. The little wet windows looked out on my own knees.
+
+story eel [topic=pastimes self.likes=swimming]
+  : I mistook a trailing weed for the tail of an eel and chased it halfway along the shore.
+  : It kept exactly my speed. I'd never met such a courteous eel.
+  b : What was pulling it?
+  : My ankle. I untied the weed and watched my great rival float away.
+
+story twins [topic=travel]
+  : Two hulls went by with equal shadows, and for once I held my tongue.
+  : There was a pale gap in one that kept flickering shut. I waited for a clearer patch of sun.
+  b : Did that settle their names?
+  : It settled their number. I was trying to name one hull and its long reflection.
+
+rule @stock
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Dry goods up a shelf, please. | Leave me the cord. I'll use that bit again.
+
+rule @wait
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A good clean sheet of a morning. | Light enough to read the smallest hand.
+
+rule @smell
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Rain's laid the dust on my copy. | The ink can wait under my coat.
+
+rule @sound
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say There's a shape I'd recognise stripped of sail. | I can put a hull to that shadow.
+
+dlg @1 resident.hub : I've a little time between errands. Spend it carefully.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your last words have kept their outline.
+dlg @1 resident.job [self.job=merchant] : My work takes me to #self.workplace#. Things come in tied and go out measured.
+dlg @1 resident.news [world.news] : My pen kept this much: #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim was this. #topic.subject.capitalize# #topic.claim#. I'd leave a margin for error.
+dlg @1 resident.bye : Put your important papers somewhere dry.
+dlg @3 resident.hub [here.time=night] : We'll have to do our reading by ear tonight.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Let's keep the particulars short enough to write on a slip.
+dlg @2 resident.job : I carry each small task through and make a mark when it's done.
+graft resident.hub
+choice Why carry two copies of a petition? -> office_copy
+node office_copy
+say One for the desk and one to show what I left there. I started out believing a single sheet would be enough.
+free
+choice What do you want back from the desk? -> office_copy_more
+choice Goodbye. -> bye
+node office_copy_more
+say A day and a mark. Even an unwelcome answer would have some edges I could get hold of.
+choice I'll leave you some room. -> hub
+choice Goodbye. -> bye

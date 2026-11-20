@@ -1,0 +1,360 @@
+# rm535, crumbs against the new moon (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm535
+revision 1
+state ready
+dialect plain
+accent broad light
+tier standard
+written_for rm_magnus_stanmore
+written_by codex
+title crumbs against the new moon
+fits stage=young|adolescent|adult|old
+prefers job=child humour=merry
+traits temper=even talk=chatty warmth=reserved humour=merry honesty=sly piety=ordinary drive=steady
+quirk uses_crumbs_to_subtract_a_debt_with_each_bite
+likes warm_bread riddles fresh_straw first_snow
+dislikes haggling drizzle
+fears having_to_explain_the_unticked_column
+hopes seeing_a_whole_page_settled
+topics pastimes +0.7 prices +0.5 food +0.4 dreams +0.3
+styles comfort=playful gossip=sly refuse=precise tease=merry
+marks oath saying
+persona #self.first# arranges crumbs into two columns and subtracts a debt with each bite.
+
+words
+oath! = Nick my last notch | Blot my splendid answer
+saying! = A crumb repaid still tastes of bread | Two half riddles make a longer afternoon
+grub = a warm loaf heel | a steaming crust
+square = a ruled square | a little box
+mark = a crooked tick | a neat dot
+penny = a dull penny | a small round copper
+moon = a slender crescent | a half-hidden moon
+sum = a troublesome figure | a tidy reckoning
+stake = a promised crumb | a twist of clean straw
+bunch = a straw twist | a little bundle
+riddle = a question with a hinge | a crooked little puzzle
+rain = penny-sized drops | a tiresome drizzle
+rest = a gap between sums | an empty square
+dust = the floury end | a spray of crumbs
+
+any
+opinion @1 merchants mixed 1 : I'd pay extra for an honest price if doing so didn't spoil the whole exercise.
+opinion @1 houses mixed 1 : A House factor can give even a trifling sum an uncomfortably long shadow.
+opinion @1 festivals for 1 : Dancing costs one's breath and never sends a second demand.
+opinion @1 dole for 1 : If a hungry wolf owes nothing for breakfast, why invent a new column?
+opinion @1 road mixed 1 : A useful road should run both ways for the same fare.
+opinion @1 times against 1 [world.times=lean|hard] : When every bite gets dearer, a crumb becomes a fairly serious denomination.
+line @1 greet : A welcome, free of charge today. | I've saved a blank square for company.
+line @1 greet.return : Consider that greeting returned in full.
+line @1 again.open : Back before I rubbed out your first mark.
+line @1 farewell : Take a little credit for a pleasant visit.
+line @1 farewell.return : Your farewell earns an equal one from me.
+line @1 react.news : Give me the puzzle end of that news.
+line @1 react.news.new : That's one fresh mark on the page.
+line @1 react.news.known : I recognise those figures in a different order.
+line @1 react.news.doubt : Who checked the sum before passing it along?
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : Surely even this account deserves a kinder reckoning.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That deserves a splendid fat tick.
+line @1 ask.how : Has your side of the page stayed sunny?
+line @1 answer.how : One figure out, but I've several excellent suspects.
+line @1 sympathise : Sit with me. Unhappy sums can wait.
+line @1 reassure : One unsettled square needn't spoil a page.
+line @1 refuse : I owe my next hour to something else.
+line @1 accept_decline : I'll put a clean stroke through the invitation.
+line @1 preclose : My figures will multiply if I leave them untended.
+line @1 accept_preclose : You may go with a thoroughly clear column.
+line @1 ack : Right, both sides agree.
+
+grown
+line @1 greet : Beside my figures I've kept a visitor's spot.
+line @1 farewell : May your evening's reckoning bring some ease.
+line @1 react.news : I'll hear the terms before inspecting the arithmetic.
+scene exchange23
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : A riddle with two good answers deserves two prizes. | I still keep one unanswerable question.
+b : What are the prizes? | What for?
+a : The pleasure of hearing both well defended. | To rescue a dull evening from easy certainty.
+
+scene exchange24
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I leave ordinary kindness out of formal accounts. | A paid debt gets a line through the figure.
+b : Do you forget it? | Why leave it legible?
+a : Precisely the opposite. I remember how freely it was given. | A cleared obligation deserves a visible ending.
+
+scene exchange25
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A dry shelf is the first requirement of a ledger. | I keep bread on a separate shelf now.
+b : Before a lock? | An accounting principle?
+a : A thief may never come. Drizzle visits reliably. | A hard lesson in what fresh crumbs do to ink.
+
+scene exchange26
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I share a loaf by asking which end looks best. | Warm bread can quiet an argument over a small sum.
+b : Both choose the heel? | Does it settle the debt?
+a : Then the heel itself becomes a matter for division. | It allows two mouths to chew before answering.
+
+scene exchange27
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Fine rain costs more paper than a downpour. | I give a wet account time to dry.
+b : Why more? | Before you read it?
+a : In a downpour even an optimist puts the figures away. | Before I decide which digits are merely raindrops.
+
+scene exchange28
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.friend# a balance before signing it. | A friend needn't enter every favour in my book.
+b : For an audit? | Do you enter them?
+a : For a second pair of unhurried eyes. | Some go straight to memory, ink-free.
+
+scene exchange29
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : When bread is dear a small loan needs plain terms. | I offer a smaller share before extending the date.
+b : Why more than usual? | Why that order?
+a : Because repaying confusion can cost a meal. | It lets the borrower choose what is manageable.
+
+scene exchange30
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : I count the turns uphill when my mind is crowded. | A high window makes a fine observatory.
+b : Do the sums help? | For the moon?
+a : They give the rest of my thoughts room to settle. | And for the weather that may hide it on a due date.
+
+scene exchange31
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Winter accounts leave room for fuel. | I mark the first snowfall in my book.
+b : What goes in spring's column? | As an expense?
+a : A new sheet and the pleasure of open shutters. | As a delight worth writing down.
+
+scene exchange32
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A traveller's loan wants a clear meeting spot. | I keep enough for the return fare separate.
+b : More than a date? | Too cautious?
+a : A date without a place makes very poor company. | I like my further adventures to be voluntary.
+
+scene exchange33
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : New arrivals sometimes ask when the day's market settles. | I offer a stranger the plain version of my riddle.
+b : Which sign should they watch? | Saving the hard one?
+a : Watch the bread buyers, not the loudest price. | Until I know there's a taste for it.
+
+scene exchange34
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I remember counting with crumbs before using ink. | The sums I feared most were often very small.
+b : Any advantages? | Why fear them?
+a : A clean slate was particularly agreeable. | An approaching date can throw quite a shadow.
+
+story tale1 [topic=pastimes self.likes=riddles]
+  : I wrote a puzzle with the answer tucked under a bread crust.
+  : By the second question the hiding place had been eaten.
+  b : Was the answer eaten too?
+  : Only a corner. Enough remained to suggest a much better answer than mine.
+
+story tale2 [topic=weather self.likes=first_snow]
+  : I drew a figure in fresh snow and carried on down the path.
+  : When I looked back a small track had turned my zero into an elaborate eight.
+  b : Did you accept the correction?
+  : Only on the understanding that the next snowfall would erase the evidence.
+
+story tale3 [topic=prices]
+  : I marked a debt with a knot and its repayment with a second knot.
+  : By evening I could remember the figure perfectly and couldn't undo the string.
+  b : Did you keep both knots?
+  : I kept the string as a model of an unnecessarily complicated arrangement.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say A new square for the morning. | The sums are asleep yet.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Look at that thin moon. | Close the book on the dark.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Those dots don't count. | Dry corner for the tally.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Sunset, payable in crumbs. | Only the crust remains outstanding.
+
+dlg @1 resident.hub : There's still room for one enquiry in my good column.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you can claim a return visit on the account.
+dlg @3 resident.hub [here.time=night] : Ask while the moon is available as a witness.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I prefer a precise question to a demand without a figure.
+dlg @1 resident.job [self.job=child] : Lessons take up their proper share of my page. Riddles fill the margins.
+dlg @2 resident.job : I keep the arithmetic honest, especially when it wants to be amusing.
+dlg @1 resident.news [world.news] : I've entered this among the day's news. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : Someone reckons #topic.subject# #topic.claim#. I haven't balanced that account.
+dlg @1 resident.bye : May your next obligation be a pleasantly small one.
+graft resident.hub
+choice Can a crumb really pay a debt? -> crumb_question
+node crumb_question
+say If you agreed to lend a crumb, certainly. Confusing a crumb with a penny is where most of the interesting trouble begins.
+free
+choice What about a promised joke? -> crumb_question_again
+choice Goodbye. -> bye
+node crumb_question_again
+say Repay it by making the lender laugh. A solemn explanation will only increase the balance.
+choice I'll leave that column open. -> hub
+choice Goodbye. -> bye
+
+
+young
+line @1 greet : Welcome to my crumb exchange.
+line @1 farewell : Don't count the moon twice tonight.
+line @1 react.news : I can listen without charging an entrance crumb.
+scene exchange2
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : What spends itself by growing smaller? I've an answer. | I change one word in a riddle.
+b : A candle? | Does that make it new?
+a : Good. Mine was supper. We can both have a point. | It makes yesterday's clever answer wonderfully embarrassing.
+
+scene exchange3
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : My crumb bank charges interest in heat. | A loaf heel makes a capital counting board.
+b : How do you pay that? | Where are the figures?
+a : Eat before the crust goes cold. | Gone. My appetite has passed its examination.
+
+scene exchange4
+when topic=home self.likes=fresh_straw
+does tell.self / ask.detail / answer.detail
+a : I've got five counters that smell of a stable. | Twist straw twice and it holds a promise.
+b : Are they straws? | How long?
+a : If you can guess the sixth you can have it. | Till one of us remembers where the coin went.
+
+scene exchange5
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : The first snow covers all yesterday's sums. | I like catching a flake on a copper.
+b : A clean start? | Does that add value?
+a : On the paving. My head still keeps the account. | A whole drop if I act quickly.
+
+scene exchange6
+when topic=day self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I'd buy one price and keep it forever. | Haggling over a crumb takes longer than eating it.
+b : What price? | Who wins?
+a : The first honest one I met. | The sparrow, usually.
+
+scene exchange7
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle puts extra dots among my figures. | Rain that won't commit ought to owe us interest.
+b : Do they add anything? | Payable in what?
+a : A quite false impression of diligence. | Sunny minutes after tea.
+
+scene exchange8
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At lessons I favour questions with one penny missing. | I count out a difficult sum upon my fingers.
+b : Why missing? | What if it needs more?
+a : It gives the answer somewhere to go. | That's what obliging toes were made for.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd lend #self.friend# my best riddle. | I keep a friendly debt in a round box.
+b : Can riddles be returned? | An actual coin?
+a : Improved, if somebody finds a second answer. | A joke I promised to finish.
+
+scene exchange10
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a moon that went backwards on request. | I could settle every debt with a perfect riddle.
+b : Why backwards? | Who'd accept that?
+a : A few extra nights improve a deadline. | Somebody quite a bit like me, I hope.
+
+scene exchange11
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A factor's figures look bigger upside down. | I remember what I'm owed to the last crumb.
+b : Have you tried turning them over? | And what you owe?
+a : Only the page, and it didn't help. | Unfortunately my memory works both directions.
+
+scene exchange12
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Heights have enough stairs for counting practice. | A slope can teach subtraction.
+b : How many? | How?
+a : I lost my place when a particularly fine smell came out a window. | Walk downhill eating bread one mouthful per landing.
+
+scene exchange13
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I let visitors guess my easiest riddle first. | I offer directions in whole turns.
+b : Is that kind? | No half turns?
+a : It makes them stay for the dreadful second one. | Half a turn would point you back at me.
+
+scene exchange14
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'd give thanks for a lost penny found. | I say my quiet words before breakfast.
+b : Even if it wasn't yours? | Why before?
+a : Especially then. Returning it would improve two accounts. | Afterwards another slice occupies most of my thoughts.
+
+
+adolescent
+line @1 greet : Welcome from the side still doing the arithmetic.
+line @1 farewell : May your evening leave a credit.
+line @1 ask.how : How steep has the day's account grown?
+scene exchange16
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I write the answer before constructing the trap. | A riddle about debt needs careful wording.
+b : Is that fair? | Or it sounds unkind?
+a : It is my only defence against trapping myself. | Or it sounds regrettably like an invoice.
+
+scene exchange17
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I now put dates beside little loans. | A promise should say exactly what comes back.
+b : Does that help friendships? | Even a borrowed book?
+a : It saves two friends from inventing different winters. | Particularly a borrowed book with crumbs in its spine.
+
+scene exchange18
+when topic=weather self.likes=first_snow
+does tell.self / ask.detail / answer.detail
+a : Fresh snow is the sole ledger I enjoy spoiling. | I count snowfall by the covered steps.
+b : With your boots? | Does that measure depth?
+a : With several splendid circuits no accountant could balance. | It measures how long I can put off sweeping.
+
+scene exchange19
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : I divide warm bread before beginning a sum. | A slice shared now needn't be repaid in summer.
+b : To get neat fractions? | A free slice?
+a : To keep the best crust clear of ink. | An edible distinction between sharing and lending.
+
+scene exchange20
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like to set one last debt to rights privately. | Some evenings I count down to the dark moon.
+b : A grand secret? | Looking forward to it?
+a : An ordinary obligation becomes grand enough without an audience. | Looking attentively towards it, which is another calculation.
+
+scene exchange21
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I can show #self.friend# an unfinished puzzle. | A friend gets to challenge my arithmetic.
+b : A risk to your reputation? | Even when it's right?
+a : An investment in a far better punchline. | Checking is half the pleasure.

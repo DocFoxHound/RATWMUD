@@ -1,0 +1,306 @@
+# rm232, the pinhole astronomer (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm232
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_agna_dripgate
+written_by codex
+title the pinhole astronomer
+fits stage=young|adolescent|adult|old
+prefers talk=quiet honesty=guarded
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=content
+quirk hums_to_match_star_patterns_in_pricked_paper
+likes warm_bread stars fresh_straw thunder
+dislikes salt_wind smoke
+fears losing_the_shape_of_a_favourite_star
+hopes a_dry_berth_below_a_clear_sky
+topics dreams +0.5 pastimes +0.6 weather +0.3 gossip -0.4
+styles comfort=quiet gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# holds pinpricked scrap paper to the light, finding each little star again by the note of a half-hummed sea tune.
+
+words
+oath! = Bent pins | Stars in a mitten
+saying! = Give a little light a dark place | Any scrap can hold a sky
+card = my paper sky | the scrap with the pinholes
+prick = a round hole | the tiniest dot
+brightdot = the biggest of my stars | that strong white dot
+cluster = a crook of stars | a bent little row
+dotname = the fishbone | the broken comb
+note = a low hum | the high humming bit
+straw = a clean stalk | the yellow straw end
+loaf = a soft warm bread heel | my warm crust
+storm = a roll of thunder | a far-off rumble
+berth = a dry berth | a snug bunk
+smut = a little black flake | a soot speck
+sailcloth = a patch of canvas | a strip of old sail
+
+any
+opinion @1 church for 1 : A bowl given quietly seems a fine reason to keep the chapel light burning.
+opinion @1 dole for 2 : A little bread at the right time can fill more than the hollow under your ribs.
+opinion @1 strangers against 1 : Somebody new can see the front of my picture. What's on the back is mine.
+opinion @1 festivals for 1 : On a feast night you can linger till even the faint stars appear.
+opinion @1 times against 1 : It's harder to find a corner of sound paper when everything gets used twice.
+opinion @1 houses against 1 : When the roof lets rain through a House ought to send somebody with a tile.
+story spare_map [topic=memories|pastimes]
+  : I held a sky against a lamp once and found a star I hadn't put there. Treated it like a discovery.
+  : A corner had worn thin from my pocket. You could put a claw right through my new star.
+  b : Did you give it a name anyway?
+  : Pocket. It's my only star you can visit without leaving the ground.
+
+story bread_glow [topic=food|memories]
+  : I weighted my paper with a bread heel to keep it from blowing off. When I lifted it a dot was missing.
+  : Turned the paper round. Looked under my paw. Thought I'd forgotten how my own tune went.
+  b : Where'd the star go?
+  : Into the bread. One little crumb caught in the hole. Easiest sky I ever mended.
+
+story nearly_music [topic=pastimes|memories]
+  : There's a row of five stars I could never quite hum. Always came out with a gap where the tune ought to finish.
+  : One clear evening I looked again and noticed the big gap actually belonged there.
+  b : Did you change the picture?
+  : Put the two dots further apart. I'd been listening better than I'd been looking.
+
+rule @hum
+when concept=bark
+does aside
+cooldown 8h
+say Hm, hm, down a little. That's the crooked row. | Three notes close and then a gap. Nearly got it.
+
+rule @storm
+when concept=bark here.weather=storm
+does aside
+cooldown 8h
+say There's the big rolling sound again! | Thunder and a sound roof between us. My favourite sort.
+
+rule @loaf
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Ah. Smell the warm bit inside the crust. | That steam makes lovely little clouds.
+
+rule @night
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say One high dot through the chimney gap. | Bright enough to draw by underneath that lamp.
+
+dlg @1 resident.hub : I was humming a bit of sky. You've come between tunes.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, the picture's come out different today.
+dlg @3 resident.hub [here.time=night] : If you shade your eyes that pale one comes up brighter.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'd like to fold my paper before you come any closer.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I save the corners left blank after the sums.
+dlg @2 resident.job : A bit of the day for what needs doing, a bit for paper and sky.
+dlg @1 resident.bye : Keep one little patch of dark to look up through.
+graft resident.hub
+choice How do you find that shape again? -> crooktune
+node crooktune
+say Wait until you see three dots lined up and a fourth a bit to one side. I call the last one the handle. You can hum the whole thing in four notes.
+free
+choice Which note is the handle? -> handlehum
+choice I'll look through the paper again. -> hub
+node handlehum
+say The lowest. There are three little hops and then a long way down. I rather like having a tune I can see as well as hear.
+choice I'll try it quietly. -> hub
+choice I'll look for it tonight. -> bye
+
+
+grown
+line @1 greet : Hello. Let me shade this lamp for you. | Welcome. I've been watching a shape come clear.
+line @1 greet.return : Hello there. I was trying to catch the last of a cluster. | You can stand where the light reaches us both.
+line @1 farewell : I hope your whole road lies under a clear patch tonight. | There's still a little light to find the way by.
+line @1 farewell.return : Yes. I'll carry this scrap home before the damp gets in. | Go while the brighter stars are out.
+line @1 react.news : I can set the sketch down for news. | Give me the account while the light changes.
+scene paperfold
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've learned not to fold a crease straight across a row of stars. | Every pinhole turns up again when you open a well-folded page.
+b : Do the little holes tear? | Why is the fold so crooked?
+a : A hole too near a crease grows into a split. I fold round the stars now. | I wanted all those dots to stay dots. That's the way round them.
+
+scene low_lights
+when topic=home self.quarter=sump
+does tell.self / react.self / assess
+a : Down in the Sump it's the patch between the chimneys that I know by heart. | I've a small view of the sky at home and an exact idea of its shape.
+b : Doesn't leave much to see. | Ever wish the chimneys away?
+a : Quite the contrary. You learn every scrap of the bit that's offered. | Perhaps the smoky one. The rest frame the picture rather nicely.
+
+scene wind_corner
+when topic=weather self.dislikes=salt_wind
+does tell.feeling / ask.detail / answer.detail
+a : Salt wind will roughen the edge of a map. | A shore breeze is hard on the old paper I carry about.
+b : How do you protect the paper? | Ever lost a whole drawing?
+a : A piece of canvas tied round it saves most of the corners. | Enough of one to make me start wrapping them before I go out.
+
+scene summer_dark
+when topic=day here.time=night
+does tell.self / react.self / assess
+a : Tip your face away from the lamps till you can pick one small star out. | I like to give my eyes a little dark to work in.
+b : There's scarcely anything out there. | Hard to find your feet like that.
+a : Stand a minute. Those first two pinpoints have a lot of quiet company. | Stand still, then. Let the dark come to you before you try to go anywhere.
+
+scene lantern
+when topic=faith
+does give.opinion / ask.detail / answer.detail
+a : A little light in a chapel window reaches a surprising distance. | I'd like my prayer to carry as well as the light of a candle.
+b : Where are you hoping it'll get to? | To the Bright One?
+a : I'd settle for the next cold wolf coming up the stairs in the dark. | Yes. And to a traveller listening for company.
+
+scene breadmark
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : Warm bread crust makes a fair paperweight if you're quick. | It takes a certain sort of self-restraint to weight a page with supper.
+b : How long does it hold the page? | Will a warm loaf lie still?
+a : Till I've found my place. After that I use my elbow and eat the bread. | Better than I can. Warm crust so close to the nose is hard on a hungry observer.
+
+scene cloud_tune
+when topic=weather here.weather=rain
+does tell.self / react.self / assess
+a : On an evening of solid cloud I can still hum a row of stars. | I've kept a few shapes in tunes for weather just like this.
+b : That's quite a feat of memory. | Do the stars keep time?
+a : Only three or four at a stretch. Start low for the ones toward the sea. | In my version. Less exact than a chart, but it travels safely through a shower.
+
+scene secret_chart
+when topic=gossip
+does give.opinion / ask.detail / answer.detail
+a : Nobody needs the names pencilled behind my drawing. | A private name can keep its place quite happily behind a public picture.
+b : Why bother naming it then? | What are the names for?
+a : To call the whole evening back to me. A wet sleeve, hot bread, the sound of wheels. | So I'll remember what it was like to stand under that particular sky.
+
+scene berthdry
+when topic=dreams
+does tell.feeling / react.self / assess
+a : My idea of luxury fits in a dry bunk and has a hook above it for my things. | Give me a pillow clear of drips and a little view when I wake.
+b : That's a small ambition. | No room there for company.
+a : Small enough to go after. I'd rather like to see it happen. | That's the virtue of sleeping space. There's a whole deck outside it for company.
+
+scene neighbour_stray
+when topic=friends self.neighbour
+does tell.plan / ask.detail / answer.detail
+a : I'd lend #self.neighbour# a view through this star paper. | One evening I'd like to set out two stools for #self.neighbour# and me.
+b : Would you need a telescope? | What would there be to see?
+a : Just a gap between roofs and one decent evening. The paper shows where to look. | The same thing twice, once on paper and once hanging high over the chimney pots.
+
+scene star_market
+when topic=prices
+does give.opinion / react.self / assess
+a : A used scrap costs less if the corner's torn. I prefer it. | A crooked scrap of paper's worth looking at twice.
+b : Particularly economical taste. | Hard to draw anything straight on that.
+a : The missing corner lets me feel which side's up in the dark. That's worth something. | I give the stars straight lines only if the stars ask for them.
+
+scene fog_hum
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : There's one stretch of road I could hum my way down in fog. | I've set a tune to each turn on a walk I like.
+b : Would you risk it tonight? | Can you follow it blind?
+a : Far enough to find a seat and let the fog lift. A tune doesn't spot a cart. | In my head. On the real road I'd still put a paw forward carefully.
+
+
+young
+line @1 greet : Hello. Stand beside me. Keep your shadow small. | Hello from this little patch of light.
+line @2 greet [pair.band=strangers] : New face. I'll put the pin away before we talk. | Hello. You can see the picture from over there.
+line @1 greet.return : Yes, I heard. I was keeping a note going. | Hello back. I've marked my place now.
+line @2 greet.return [pair.band=friends|family] : Good, a face I can show the proper side to. | I've saved a good bright dot for you.
+line @3 greet.return [here.time=night] : Night-time hello. I was counting lighted windows. | Hello. There's heaps to see after dark.
+line @1 again.open : Same bit of sky. A little further through the tune. | I see my little corner stayed on your map.
+line @1 hail [pair.band=friends] : Hold this up while there's light enough. | Come here a second. I've found the crooked one.
+line @1 kin.open [pair.kin!=no] : I've a scrap put by for family. | Here, kin get a look from this side.
+line @1 farewell : May you see a star over your own roof. | Keep a dry place for bits of paper.
+line @1 farewell.return : I'll fold my sky up for now. Goodbye. | Off you go. I'll remember where you stood.
+line @1 react.news : I can keep quiet and hear the whole thing. | Wait while I finish this note. There. Tell me.
+line @1 react.news.new : I hadn't even guessed a corner of that. | All new to my ears, that is.
+line @1 react.news.known : I heard that once when I wasn't supposed to be listening. | That tale came past my window earlier.
+line @1 react.news.doubt : A bit seems to be missing in the middle. | I think I'll keep a tiny doubt there.
+line @1 react.news.glad [topic.kind=work|marriage|birth|apprentice] : I'll put a bright little dot on my paper for that. | It makes my tune go higher all by itself.
+line @1 react.news.sorrow [topic.kind=loss|death|crime|assault|arrest] : I'll turn the picture over. You can have all my listening. | A small sad note for that. I wish it had never happened.
+line @1 ask.how : What sort of tune would today make for you? | Has any good little thing happened yet?
+line @1 answer.how : Quite low down in the tune today. I'm all right here. | I like this light. That's one good thing already.
+line @1 decline : I'll keep that tucked away, if you please. | I'd like to leave that part folded up.
+line @1 accept_decline : You can keep your own page closed. | All right. I know about keeping things to yourself.
+line @1 preclose : I think it's time I put my little things away. | Mind if I fold this and slip off now?
+line @1 accept_preclose : Our talk would fold up neatly here. | Goodbye. That gave me plenty to listen to.
+line @1 thank : You've made a dark dot shine. Thank you. | That was kind. I'll give you a look at this one.
+line @1 deflect_thanks : I had a scrap left anyway. | There's more light than either of us can use alone.
+line @1 sympathise : You can stand in my dry spot for a bit. | I know a very low tune to sit quietly with.
+line @1 reassure : We might see one little bright thing when our eyes get used to it. | Come under cover first. It feels smaller there.
+scene cardsky
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I've got a bit of last night's sky in my pocket. | I can make stars come out in the daytime.
+b : Can you show me? | How does that work?
+a : Hold #card# against the light. I made the holes where the stars were. | Look through these holes with the bright side away from you. There it is again.
+
+scene straw_star
+when topic=pastimes self.likes=fresh_straw
+does tell.self / react.self / assess
+a : I draw round the end of a straw for my biggest star. | Press a cut straw into damp paper and you get a little ring.
+b : That's much bigger than a pinhole. | A ring for a star?
+a : To show which one you can see first. It needs a mark of its own. | Only for the brightest. The others have to manage with a pinprick.
+
+scene quietstar
+when topic=friends self.friend
+does tell.feeling / ask.detail / answer.detail
+a : There's a name for this row I'd share with #self.friend#. | I've a picture I'd like #self.friend# to see first.
+b : Is it secret? | Can I look too?
+a : The picture you can see. The name on the back's my secret to give. | You can hold it by the corner. Leave it that side up, please.
+
+scene schoolturn
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : I like it when a lesson leaves a bit of blank paper. | What I like about sums is the margin left clear.
+b : What do you put there? | Room for another sum?
+a : Four little stars. I get to carry a bit of night home in daylight. | Sometimes. Sometimes it's a sky so small I can cover it with my claw.
+
+scene warmtreat
+when topic=food self.likes=warm_bread
+does tell.self / react.self / assess
+a : I wait for hot bread to stop breathing on my nose. | Can you see the steam off the soft bit of a loaf?
+b : Is that when you eat it? | Getting cold while you look.
+a : Yes, when it's warm enough to tear and doesn't sting my lip. | Only the curl of steam. The middle's still lovely and warm.
+
+scene thunder_shelf
+when topic=weather here.weather=storm
+does tell.feeling / ask.detail / answer.detail
+a : Thunder sounds enormous from a snug little room. | I'd like a roof just wide enough for me and that rolling noise.
+b : Aren't you frightened? | You want the noise inside?
+a : I like the noise. I like knowing the roof's between me and the sky. | Just the sound of it. The wet part can stay where it started.
+
+scene two_note
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : The little hook of stars gets the bent bit of my sea song. | I give the stars notes instead of proper names.
+b : Does every dot have a sound? | What does that row sound like?
+a : The crook has three. Hum low, high, low and the shape comes back. | Down again at the end. The last dot comes down on a low note.
+
+scene future_bunk
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I want to sleep on a ship with a pillow well away from the drips. | I'd like to wake up in a bunk with a bit of clear sky outside.
+b : Would you mind if the ship rocked? | What if you're far from home?
+a : The rocking's the bit I want. It's my paper sky I need to keep dry. | I'll have room for a folded piece of here under the pillow.
+
+scene smudge
+when topic=weather self.dislikes=smoke
+does tell.complaint / react.self / assess
+a : Smoke puts black stars everywhere I wanted white ones. | I held my paper up and the smoke hid nearly all the holes.
+b : Can't you clean it off? | Has your sky gone dark?
+a : Blow it off dry. If you wipe it, the whole paper goes grey. | Only for a bit. One good puff takes away the little black flakes.
+
+
+adolescent
+line @1 greet : Hello. Still daylight enough to compare two drawings. | Good to see somebody who can stand still a minute.
+line @1 farewell : I'll watch for a break in the cloud on my way. | Good luck finding your own patch of clear sky.
+scene two_skies
+when topic=pastimes
+does tell.plan / ask.detail / answer.detail
+a : I'm keeping two pictures of the same tiny patch of sky. | One drawing's from a month ago and one's from today.
+b : Are there stars gone missing? | How do you compare them?
+a : Hold the sheets together. If light gets through a hole in both, that one's stayed. | Stack the pages against a lamp. The light does most of the counting.
+
+scene paper_trade
+when topic=prices
+does give.opinion / react.self / assess
+a : A page with writing on both sides can still hold a fair map. | Sometimes a used sheet does a better job than a new one.
+b : Doesn't the writing get in your way? | Is it just that it's cheaper?
+a : If a bit's too dark I'll put a hole through it. Only the light counts. | Cheaper means I can make mistakes. That's when the interesting shapes turn up.

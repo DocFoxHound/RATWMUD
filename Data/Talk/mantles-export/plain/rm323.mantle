@@ -1,0 +1,262 @@
+# rm323, the margin fleet (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm323
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_harriet_platt
+written_by codex
+title the margin fleet
+fits stage=adult|old
+prefers job=scholar piety=devout
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=ambitious
+quirk carves_small_bow_stamps_for_a_private_harbour_register
+likes honey_cakes whittling sharp_knife misty_dawns
+dislikes wet_floors crowds
+fears a_mark_mistaken_for_an_official_seal
+hopes an_orderly_register_of_vessels
+topics ships +0.6 pastimes +0.4 work +0.5 faith +0.3
+styles comfort=precise gossip=careful refuse=formal tease=none
+marks oath saying
+persona #self.first# carves tiny bow-shaped stamps for a private harbour register and records an uncertainty with as much care as a certain sighting.
+
+words
+oath! = My smallest stamp | Six smeared keels
+saying! = A clean margin may wait | Mark the sighting before the guess
+prow = a high curved prow | the bluff bow
+stamp = my little boat stamp | the carved end
+book = the harbour notebook | my private register
+margin = a clear margin | the narrow verge
+square = a square letter | the neat capital
+space = an open space | the unfilled box
+wash = a pale wash | the thinnest ink
+block = a fruitwood chip | a flat wood end
+pad = the little ink cloth | my dab of colour
+lineup = a series of bows | a row of hulls
+bun = a small honey cake | a sticky round
+point = the sharp corner | the fine point
+
+any
+opinion @1 city for 2 : A city worth keeping accounts for ought to let any ordinary resident understand a fair copy.
+opinion @1 church for 2 : The Bright One already knows what I have seen. A prayer helps me admit how much I only suppose.
+opinion @1 watch mixed 0 : A sighting, a claim and an accusation deserve three separate entries.
+opinion @1 merchants mixed 0 : A complete account will incline me toward a merchant more readily than a polished speech.
+opinion @1 dole for 1 : The last name in a distribution list deserves as legible an entry as the first.
+opinion @1 festivals for 1 : Many small craft make an agreeable border to my account of a festival by the water.
+
+grown
+line @1 greet : Welcome. There's room for another entry today. | Hello. I have set the wet ink aside.
+line @2 greet [pair.band=strangers] : Our first meeting. I can start on a clean page. | I shall remember this as our introduction.
+line @3 greet [here.time=dawn] : Morning. The day's first mark is usually the neatest. | Early light makes delicate writing possible.
+line @1 greet.return : Yes, hello. The page can dry while we talk. | I caught your voice through the turn of a sheet.
+line @2 greet.return [pair.band=friends|family] : A familiar arrival in my little register. | I could recognise your greeting without a caption.
+line @3 greet.return [here.time=night] : A late greeting deserves its own clear entry. | Hello. My ears are more dependable than lamplight.
+line @1 again.open : I see we've appeared twice on one page. | We've contrived another welcome meeting.
+line @1 hail [pair.band=friends] : Come and inspect a little fleet in ink. | Here. This impression came through especially well.
+line @1 farewell : May your journey come under a kindly eye. | An uneventful crossing of the remaining streets to you.
+line @1 farewell.return : I shall close the entry there. Goodbye. | That gives me a pleasant final word to set down.
+line @1 react.news : I'll listen first and choose the proper heading afterwards. | State the facts at the pace they warrant.
+line @1 react.news.new : Nothing like that appears in my recollection. | I can supply a clean heading for that news.
+line @1 react.news.known : Yes, that fits a fairly recent entry. | It agrees with the earlier version in all essentials.
+line @1 react.news.doubt : I would enter a discreet question beside the account. | The identification seems less certain than the outline.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll give that loss its due space and leave the guessing out. | Little space in the account for such a quantity of hurt.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : Joy deserves as careful a record as sorrow. I'm glad. | I'd gladly strike a bright little mark beside that event.
+line @1 ask.how : What heading would you give the day so far? | Has your progress kept reasonably steady?
+line @1 answer.how : Quite intent on a plan whose margins are slowly filling. | A little pressed for time, still fairly legible.
+line @1 decline : I'd be exceeding the limits of what I can actually attest. | I have a prior commitment that deserves a complete account of my time.
+line @1 accept_decline : I'll leave the matter open at your request. | Understood. A refusal is a clear answer.
+line @1 preclose : I should attend to the ink before it dries on the stamp. | There is a little unfilled business waiting.
+line @1 accept_preclose : Certainly. I can round off the entry myself. | Our accounts may part quite amicably here.
+line @1 thank : I appreciate that correction. My next entry will be better. | Your care has spared me an inaccurate record. Thanks.
+line @1 deflect_thanks : I already had the proper instrument ready. | The small trouble produced a legible result. Enough for me.
+line @1 sympathise : You may leave the difficult part unrecorded with me. | You can have my company without any detailed inquiries.
+line @1 reassure : A blank left honestly can be filled when we know more. | Allow the ink to settle before judging the shape.
+line @1 ack : I see which outline you mean. | That is an entirely legible distinction.
+line @1 give.advice : Date the first sighting before attempting an identification. | Reserve a narrow margin for a later correction.
+scene shipstamp
+when topic=ships
+does tell.self / ask.detail / answer.detail
+a : I can mark a ship before I'm certain of its name. | My little bow stamp records an arrival without presuming too much.
+b : What if two ships have the same bow? | How does a stamp distinguish them?
+a : I leave room for the rig and the tide alongside. Identity can wait. | By itself it doesn't. A mark of having seen something is already useful.
+
+scene mirrorblock
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : A prow carved to face right prints facing left. | The small fleet on my wood blocks sets off in the opposite direction from its prints.
+b : What helps maintain the direction? | Does that spoil the drawing?
+a : One dry trial on waste paper before using the register. | Not after I remember which side of the page the water is meant to occupy.
+
+scene cleanpoint
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I rule a square for doubtful matters as carefully as a square for settled ones. | There's no need for an uncertain fact to be written in a wandering hand.
+b : Which distinction do you make? | Does neat writing make it look certain?
+a : The heading says exactly what I know. The lettering says I'm taking due care. | That's why a clear heading matters. I mark the doubt as neatly as the ship.
+
+scene inkpause
+when topic=work self.job=scholar self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I keep my carved stamps off the official page. | Private curiosities have a different drawer from public business.
+b : Would a little boat do harm? | Even a fine clear picture?
+a : It might appear to approve something. I won't give a decoration that responsibility. | Especially a fine clear picture. An official mark ought to be unmistakable.
+
+scene squarehand
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Changing desks once obliged me to change the slant of my writing. | A square hand suits an awkwardly placed light.
+b : Why change the letters? | Wouldn't moving the lamp do?
+a : So my own paw didn't cast a shadow over the letter I had just formed. | On a small desk a lamp takes up valuable space. A careful hand can adapt.
+
+scene honeywrap
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I keep my cakes in a wrapper distinguishable from a folded note. | Honey is a singularly effective way of sealing a private notebook permanently.
+b : Which fold identifies the cake? | That sounds like experience.
+a : One corner folded up on the cake. Entirely different aroma, too. | Only of two pages fastened together. I should prefer not to repeat the experiment.
+
+scene mistbow
+when topic=weather here.weather=fog
+does tell.self / ask.detail / answer.detail
+a : In mist a bow can arrive well in advance of the remaining hull. | My register admits a surprising number of half-ships at dawn.
+b : You record only the front? | How do you complete the entry?
+a : I record precisely that the front was visible. It's a rather important qualification. | If the mist lifts I add what I see. If it doesn't, the blank stands.
+
+scene wetfloor
+when topic=home self.dislikes=wet_floors
+does tell.complaint / ask.detail / answer.detail
+a : Wet boards make an unhelpfully lively foundation for a stack of papers. | My papers and I have a joint objection to a polished puddle.
+b : Which protests first? | Why carry so many sheets together?
+a : My feet, usually. The damp corners protest for much longer afterwards. | To avoid a second crossing. One ought to limit one's experiments with wet floors.
+
+scene crowdview
+when topic=smalltalk self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I'd choose a farther view over an elbow beside the register. | Crowds make for an adventurous style of handwriting.
+b : Does the elbow spoil the count? | You could make the entry later.
+a : It jogged my pen once and gave a sloop a third mast. Nobody on deck would have known her. | I could. I'd rather set down a clear first impression from a little distance.
+
+scene astatement
+when topic=faith
+does tell.feeling / react.self / assess
+a : I pray for the patience to leave a blank where I'm tempted to invent a name. | There is a small exercise in honesty at every indistinct sighting.
+b : You count that as prayer? | What do you want patience for?
+a : Yes. The Bright One doesn't require me to know every name, only to be truthful. | So I can discover the answer in its time instead of creating one in mine.
+
+scene spouseproof
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd welcome #self.spouse# as the first reader of my private record. | I'd show #self.spouse# a most uncertain sketch without dressing it up.
+b : To test whether the shape is clear? | Wouldn't you finish it first?
+a : Precisely. An independent reading is valuable, especially from a trusted reader. | I should like company in the discovery as well as praise for the result.
+
+scene workquarter
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : A private ship book feels quite at home among the Office's numerous accounts. | Where I live even a shopping list can look a little official.
+b : Is yours ruled as well? | How do you distinguish what's private?
+a : Yes. Its neat little boats along the margin rather give the purpose away. | My small book travels in my pocket. Public business has a home of its own.
+
+scene hallnoise
+when topic=gossip
+does give.opinion / react.self / assess
+a : The resemblance between two bows is a poor basis for a public report. | I make a note of a rumour as a rumour, if it has to be recorded at all.
+b : How about a confident witness? | Does your book include such things?
+a : I'd record how confident the witness was. The sighting still requires its own check. | The ship book includes my own sightings. It suffers fewer editorial headaches that way.
+
+scene lightcoin
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : When buying wood for stamps I request a view of the cut face. | A smooth board can hide troublesome grain for a very small carving.
+b : Why pay much for so little wood? | What size do you need?
+a : Because the tiniest knot looks like a whole rock in a carving that size. | A thumb's width usually. At such reduction the grain becomes part of the picture.
+
+scene dryberth
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I should like a berth from which I could record the harbour receding. | Someday I hope to reverse the view I get from shore.
+b : Would the book go too? | Which part would merit the opening sketch?
+a : In a reliably dry wrapper. I'd stipulate that before inquiring about luxuries. | The long line of roofs getting smaller. I think they might resemble a fleet of another sort.
+
+scene hardpaper
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : Scarce paper makes a little stamp do useful work in a narrow space. | I make smaller impressions when replacement sheets grow dear.
+b : Wouldn't that lose particulars? | Which details do you omit?
+a : Enough to keep the essential outline. The little writing still has room to supply the rest. | Decorations first. Never the little mark that says a name is uncertain.
+
+scene cartregister
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A wagon late and a wagon lost should receive different entries. | I would leave an open space beside the delayed wagon.
+b : For an explanation? | Do you expect bad news?
+a : For the arrival. An explanation, if there is one, belongs elsewhere. | No. The empty space means I'm prepared to hear what happened eventually.
+
+scene night_stamp
+when topic=day here.time=night
+does warn / react.self / assess
+a : Don't trust a fine dark impression till you've seen it with daylight behind you. | Lamplight makes the rim of a bad impression look remarkably distinguished.
+b : How do you assess it tonight? | You'd leave the entry unfinished?
+a : I leave it to dry, with a small scrap marking the place for tomorrow. | The observation's finished. The quality of my little picture can wait.
+
+story backwardship [topic=pastimes|memories]
+  : I carved a particularly proud bow and added my own tiny initial. On paper the bow looked lovely. The letter looked like a protesting crab.
+  : Had forgotten that letters, as well as hulls, face the other way once printed.
+  b : Did the crab remain?
+  : I have allowed it to sign that particular series of boats. Quite a respectable assistant.
+
+story mooringmist [topic=ships|memories]
+  : In thick mist I entered a small dark upright as the first sign of a mast. Left room for the rest.
+  : When the air cleared it was a perfectly ordinary post on the bank.
+  b : What became of the entry?
+  : A short account of the post. It had done everything I actually wrote of it.
+
+story cakefleck [topic=food|memories]
+  : I noticed a little gold spot beside a hull in my notebook. Spent some time wondering if I'd drawn a light on the water.
+  : The page smelled faintly of cake. I revised my conclusion.
+  b : Did you wipe the spot clear?
+  : I did. A memory ought to have its proper heading. This one belongs under meals.
+
+rule @bow
+when concept=bark
+does aside
+cooldown 8h
+say One curve impressed. Let the ink settle. | A second mark only if a second vessel appears.
+
+rule @work
+when concept=bark working=yes self.job=scholar
+does aside
+cooldown 8h
+say A small clear heading for the uncertainty, please. | Private stamps in the side drawer. Official papers here.
+
+rule @mist
+when concept=bark here.weather=fog
+does aside
+cooldown 8h
+say Half a prow in sight and none of the rig yet. | Enough of an outline for pencil, not a full caption.
+
+rule @cake
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say Dry paws for the notebook, sticky ones for supper. | Paper folded up on the corner. That'll be the cake.
+
+dlg @1 resident.hub : The margin's clear. What would you like me to consider?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I'm glad our entries have crossed again.
+dlg @3 resident.hub [here.time=night] : This light suffices for conversation. Fine cutting can wait.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I'll hear a precise question. Please leave the book closed.
+dlg @1 resident.job [self.job=scholar] : #self.trade_words.capitalize#. My private little boats stay well apart from the marks I make at work.
+dlg @2 resident.job : I take care to set down just what I can establish.
+dlg @1 resident.bye : May you reach the right destination under a clear heading.
+graft resident.hub
+choice How does the print get its bow? -> prowprint
+node prowprint
+say I leave a narrow ridge where the bow ought to be. Ink catches on the raised wood. The hollow spaces are important because they let the sky stay clear.
+free
+choice Could you use the same stamp for a different ship? -> twobows
+choice I can see the clear sky now. -> hub
+node twobows
+say Quite deliberately. The essential outline is common to several vessels. Their distinctions belong in the written observations alongside.
+choice That explains the margin. -> hub
+choice I shall leave you room to write. -> bye

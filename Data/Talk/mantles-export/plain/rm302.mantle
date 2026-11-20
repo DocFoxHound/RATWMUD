@@ -1,0 +1,264 @@
+# rm302, the ferrule turner (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm302
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_oda_greywell
+written_by codex
+title the ferrule turner
+fits stage=adult|old
+prefers warmth=warm temper=calm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=content
+quirk turns_a_loose_iron_ferrule_to_suit_the_slope
+likes spiced_cider wrestling full_larder autumn_wind
+dislikes waiting flies
+fears a_blind_corner_above_a_drop an_empty_spice_bag
+hopes a_larder_with_every_lid_fitting
+topics work +0.5 weather +0.3 pastimes +0.3 food +0.2 gossip -0.3
+styles comfort=steady gossip=discreet refuse=mild tease=none
+marks oath saying
+persona #self.first# turns the iron tip of a walking stick to suit the ground, admires a clean throw on the green, and can wait in good humour until somebody promises it will only take a minute.
+
+words
+oath! = Anvil and undertow | Tide in the bellows
+saying! = A stick earns its iron downhill | Stand the jar till the spice dust drops
+ironshoe = my stick's iron shoe | the worn ferrule
+flatside = the flattened side | a broad worn face
+toe = the narrow nose | a wedge of hard iron
+heelhold = a patch of gravel | a few grains of grit
+cidercup = my thick cider cup | a squat brown mug
+spiceend = the last clove | a shred of peel
+hookhold = a low wrestling grip | a hip hold
+stickring = a circle of rust | a brown ring of iron
+pantry = a shelf with fitted lids | a neat row of crocks
+flysheet = a thin scrap of muslin | a cloth fine as mist
+brinegust = wind off grey water | a salt-laden gust
+
+any
+opinion @1 road mixed 1 : There's a hard mile in almost any road. I'd sooner know where it lies than call the whole road bad.
+opinion @1 dole for 2 : Give someone a square supper and a week later there might be another strong back in the street.
+opinion @1 sump for 1 [self.quarter=sump] : You learn the ground by touching it. No map could give me the Sump under my feet.
+opinion @1 church for 1 : I've gone into chapel too tired for a single word. Quiet serves the Bright One too.
+opinion @1 watch against 1 : I'd see patrols better on my road if the boots made room for the wolf coming down.
+opinion @1 strangers for 1 : A newcomer may know just the turn that'll stop a stick from sliding.
+opinion @1 houses against 2 : Stone laid for a crest cuts the same blister as common stone.
+
+grown
+line @1 greet : There's room beside the planted stick.
+line @2 greet [pair.band=strangers] : I'll set the iron sideways. Nobody need trip over it.
+line @3 greet [here.time=dawn] : Morning. There's still dew in the grip marks.
+line @4 greet [here.time=dusk|night] : Evening to you. Rest your balance here.
+line @1 greet.return : Welcome like the ring of iron on firm ground.
+line @2 greet.return [pair.band=friends|family] : Your tread would come out clear in a downpour.
+line @3 greet.return [self.working=yes] : I'm keeping this end steady. Talk from there.
+line @4 greet.return [here.time=dusk|night] : Hearing you saves me peering through the dusk.
+line @1 kin.open [pair.kin!=no] : Come take the kind bend round, kin.
+line @1 again.open : There's time for the other half of our walk.
+line @1 hail [pair.band=friends] : Familiar feet! Hold there and I'll join you.
+line @1 farewell : May the grit lie where you plant your heel.
+line @1 farewell.return : And get that last corner comfortably behind you.
+line @1 react.news : Turn it round. Let's feel its other side.
+line @1 react.news.new : That's the first tap of that particular iron.
+line @1 react.news.known : Had that one under my foot earlier.
+line @1 react.news.doubt : A true account should bear a little sideways pressure.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A heavy word. I'll stand by while it settles.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good news gives a tired leg a second spring.
+line @1 ask.how : Has your day been all slope so far?
+line @1 answer.how : I'm keeping my shoulders level, more or less.
+line @1 thank : That saved a stumble I'll remember.
+line @1 deflect_thanks : It only needed my weight for a moment.
+line @1 sympathise : Take hold here if the ground's gone uncertain.
+line @1 reassure : Plant one foot. Everything needn't move at once.
+line @1 decline : I've a load of my own to settle this afternoon.
+line @1 accept_decline : Fair enough. No need to hang an excuse on it.
+line @1 preclose : I'd like to get the far turn behind me.
+line @1 accept_preclose : Then carry your unspent breath along.
+scene iron_turn
+when topic=work|smalltalk
+does tell.self / ask.detail / answer.detail
+a : #ironshoe.capitalize# has two good faces. | My stick looks crooked against a wall.
+b : Which goes down first? | Is it split?
+a : The flat for paving. The nose bites gravel. | No. I wore the end to suit a sideways hill.
+
+scene heel_lever
+when topic=work self.working=yes self.job=none
+does tell.self / ask.detail / answer.detail
+a : I put the light parcel under my elbow. | A wide strap wants checking under the twist.
+b : Keep the other paw free? | For a fray?
+a : For the rail. A free paw earns twice its keep. | For a little sharp grit that works through all the threads.
+
+scene lazy_bout
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I admire a throw you can barely see. | A fine wrestler looks half asleep until the landing.
+b : Surely somebody falls? | Are you sure it's a fair match?
+a : Yes. Catch the shoulder before that happens, and you see the art. | Watch the feet. Sleepers don't set their feet that cleanly.
+
+scene cider_cooling
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : #cidercup.capitalize# stays warm in my paw longer than a thin cup. | I leave the peel in my cider.
+b : Does the cider stay warm? | Even the bitter bit?
+a : Long enough to get acquainted with #spiceend#. | That makes the next mouthful sweet enough.
+
+scene larder_lids
+when topic=home self.likes=full_larder
+does confide / react.self / assess
+a : Wealth is a crock whose lid fits the first time. | I'd stock the pantry in pairs.
+b : I'd prefer the contents. | Two of everything?
+a : With you there. I want the contents where I put them. | One for planned company, one for a knock at the door.
+
+scene grey_gust
+when topic=season here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : Autumn wind cleans the smells out of a collar. | Listen where #brinegust# hits a rail.
+b : Cold work for a collar. | Iron singing?
+a : Glad trade for a summer of hot hauling. | Wood and iron together. My two favourite kinds of company.
+
+scene waiting_time
+when topic=smalltalk
+does tell.complaint / react.self / assess
+a : I've patience enough for an hour. It's the promised minute I can't bear. | If a wolf says straight away, I check the nearest wall.
+b : How's that different? | For what?
+a : I could have sat down for the hour. | A place to lean until straight away arrives.
+
+scene flies_spice
+when topic=animals self.dislikes=flies
+does tell.self / ask.detail / answer.detail
+a : Cover cider with #flysheet#. | A fly can squander a lovely afternoon for a whole table.
+b : Won't the spice smell still get out? | Just by landing?
+a : Yes, and the fly gets to complain on the other side. | By not landing till everybody's watching.
+
+scene headland_iron
+when topic=travel|weather here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : Walk far enough along the headland and iron starts sounding soft. | I've found good grit right at the lip of a cove.
+b : Soft iron? | Do you go down for it?
+a : Turf beneath my stick. A few more strides will buy me the view. | Never with my arms full. A view takes both eyes.
+
+scene change_hand
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : When my shoulder stiffens, I move the stick across. | Too much pride in a straight back makes the rest of you crooked.
+b : Helps the shoulder rest? | Lean sometimes?
+a : Helps the other shoulder remember it's got a job too. | Against something kinder than pride.
+
+scene plain_friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd take the long inside bend beside #self.friend#. | I wouldn't hurry #self.friend# along a rough bit of road.
+b : Longer but safer? | Even if a job was waiting?
+a : Long enough for the conversation to have a proper ending. | I'd put my impatience to work carrying the heavier bag.
+
+scene slack_rope
+when topic=times|prices world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Slack work puts more lines in a brow than heavy loads. | A poor week makes every hill look steeper.
+b : Worry about supper? | Any use for the stick then?
+a : Worry I might get used to counting it by mouthfuls. | A little. Hard times haven't made it any shorter.
+
+scene late_cask
+when topic=travel world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : If the cart's late I give the iron another rub. | I'd sooner take a late cart than good news about an imaginary one.
+b : Does that bring a cart quicker? | Any news yet?
+a : No, but my hands stop pretending it will. | Just the gap where the wheels ought to be.
+
+scene plain_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : Here is what came out of #world.news_from#: #world.news#. | #world.news#. From #world.news_from#. That's the part I took hold of.
+b : What's your part in that? | Any weight to it?
+a : Carrying it this much farther, no more. | Enough to bear hearing in the same words twice.
+
+scene own_burden
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : A name's gone round with a nasty little tail on it. | I've room for honest speech and little room for guessing today.
+b : Are you cutting the tail off? | A short guess then?
+a : I'm setting the whole thing down. | Some short ones go on hurting for years.
+
+scene forge_sound
+when topic=faith|pastimes
+does tell.self / ask.detail / answer.detail
+a : The sound of iron cooling sticks beside the sound of waves for me. | I'd swear an oath by something that can carry my weight.
+b : A wave can drown out a hiss. | That little iron shoe?
+a : Yes. The interval between hisses is much the same. | That and the big water that wore the shore away.
+
+scene strong_bag
+when topic=home|weather self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Down our stairs the best place to mend a bag is the light by a high window. | A leaning sill can be a handy little ramp.
+b : Why climb with a torn bag? | For parcels?
+a : I climb with an empty one. I'd rather not mend a burst sack at all. | For catching a rolling pin when the table wants to send it somewhere.
+
+scene light_pantry
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a pantry with hooks high and low. | I think I'd carve a handle into the shelf itself.
+b : For tall and short visitors? | To haul the shelf?
+a : For full bags and empty bags. Visitors can have the biscuit tin. | To have a steady place to grip when I look for the bottom jar.
+
+story ring_roll [topic=memories]
+  : The shoe came off my stick once above a long run of steps.
+  : It tapped its way down every stair like a very small messenger.
+  b : Did you follow it?
+  : Several steps behind. The iron had announced me to every landing before I arrived.
+
+story steam_cider [topic=food|memories]
+  : I tilted a cup of cider to warm my nose and put half of it down my collar.
+  : Saved the other half with a skilful turn of the wrist.
+  b : Was that your opinion of the feat?
+  : Certainly. At the very least I deserved half a cup of cider for it.
+
+story broom_bout [topic=pastimes|memories]
+  : In my first winter I wrestled a broom with a broad straw skirt.
+  : Broom went down like any champion. I stood and saluted.
+  b : A flawless victory?
+  : The handle landed up inside my jacket. I had to walk out of the jacket to win.
+
+rule @turn_iron
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Listen to that tip take the weight.
+
+rule @drink_spice
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Hot spice on the nose means the cup's worth waiting for.
+
+rule @fly_cover
+when concept=bark here.time=day
+does aside
+cooldown 8h
+say Over the rim and under the cloth. Meal safe.
+
+rule @night_step
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Let the stick find that last dark edge.
+
+dlg @1 resident.hub : An iron tip can hold two wolves' worth of conversation.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#. Enough room on this step to meet properly.
+dlg @3 resident.hub [here.time=night] : The light's low. I'll let my ears take your measure.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : Give my stick a clear length and say what's needed.
+dlg @1 resident.job [self.working=yes self.job=none] : #self.trade_words.capitalize#. The ferrule bears witness to every mile.
+dlg @2 resident.job : My pride's in setting things down in good order.
+dlg @1 resident.news [world.news] : #world.news#. I picked that up from #world.news_from#.
+dlg @1 resident.gossip [here.gossip=yes] : I've no desire to put a neighbour's name on my load today.
+dlg @1 resident.bye : Try the firm side going round the bend.
+graft resident.hub
+choice Why turn the end of your stick? -> worn_iron
+node worn_iron
+say The narrow bit was a crack before it was a useful nose. I worked the crack smooth and kept both edges in service.
+choice Would a new one be better? -> new_shoe
+choice I see the flattened side. -> hub
+node new_shoe
+say A new one would have to learn my road from the beginning. I prefer an old acquaintance under my paw.
+choice Tell me about the road. -> hub
+choice I'll go carefully myself. -> bye

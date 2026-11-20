@@ -1,0 +1,257 @@
+# rm368, the halfway shout (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm368
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rmx_ivo_pitchridge
+written_by codex
+title the halfway shout
+fits stage=adult|old
+prefers job=laborer
+traits temper=even talk=chatty warmth=cold humour=none honesty=guarded piety=ordinary drive=steady
+quirk climbs_in_pairs_and_saves_a_cry_for_the_odd_step
+likes oatcakes riddles market_bustle thunder
+dislikes early_bells rats
+fears a_knock_before_the_new_moon
+hopes an_oatcake_bought_with_unpromised_coin
+topics work +0.6 pastimes +0.4 prices +0.4 weather +0.2
+styles comfort=indirect gossip=selective refuse=equivocal tease=none
+marks oath saying
+persona #self.first# climbs two treads with every breath, talks readily across a market and keeps one unanswered question behind the teeth.
+
+words
+oath! = Halve my top stair | Crack my oat in two
+saying! = Two steps cover a distance but never a debt | Price the cloth before the cry
+landing = a half-landing | a turn of stair
+cry = a clear call | a rising cry
+bale = a red-tied bale | a squat bundle
+rag = a long rag strip | a crooked corner
+moon = a narrow moon rim | a brass-coloured crescent
+cake = a plain oatcake | a crumbly oat round
+purse = my inside purse | a sewn pouch
+slate = the market slate | a public board
+rail = a stout stair rail | a worn handrail
+stepedge = the near stair edge | a chipped nosing
+scrape = a light scratching | a scurry in the wall
+riddle = an unfinished question | a neat little riddle
+drum = a roll of thunder | a long growl overhead
+
+any
+opinion @1 houses against 2 : I'd like a factor obliged to climb as many steps for a payment as the wolf finding it.
+opinion @1 sump for 1 : A low room still gives a call a high roof if enough of us hear it.
+opinion @1 merchants mixed 1 : My voice can carry the marked price. Making the price fair is a different line of work.
+opinion @1 dole for 2 : A wolf with nothing left for supper ought to get a portion without answering a riddle.
+opinion @1 festivals mixed 1 : A crowd can be glorious when the coin in it has already paid the night's rent.
+opinion @1 watch against 1 : A pair of heavy feet can stop a whole stairful of quiet conversation.
+
+grown
+line @1 greet : There's a gap beside the calling place. | Stand clear of my market elbow.
+line @1 greet.return : Welcome made it in one breath. Here's mine. | I heard even the low end of that greeting.
+line @1 again.open : Back up the odd step again.
+line @1 farewell : Take the stair by the sound edge. | Keep the rest of your day's price to yourself.
+line @1 farewell.return : And two good steps for every tiring one. | My parting's light enough to carry.
+line @1 react.news : Let me hear what the crowd couldn't swallow. | Tell it at the pitch it started on.
+line @1 react.news.new : No answer for that in my pocket yet.
+line @1 react.news.known : I've heard the return cry on that account.
+line @1 react.news.doubt : The riddle and its answer haven't travelled together.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I'd drop my voice for the wolves carrying that hurt.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That goes up the stair two steps at once.
+line @1 ask.how : Have you bought yourself much quiet in all the noise?
+line @1 answer.how : I've another call left. That's about my measure.
+line @1 sympathise : Nobody else needs to hear it from me.
+line @1 reassure : You needn't see the whole stair to step onto the first dry board.
+line @1 refuse : There's a call I owe an answer before that one.
+line @1 accept_decline : No sale. We can leave the price talk there.
+line @1 preclose : I've still got the last odd step of my own errand to take.
+line @1 accept_preclose : Go get clear before my next voice carries.
+line @1 ack : I've caught the answer under the noise.
+scene exchange1
+when topic=work self.job=laborer
+does tell.self / ask.detail / answer.detail
+a : I call the pattern first and the price on the turn. | I've got a short cry for a crowded hour.
+b : What turn? | Does it leave anything out?
+a : The buyer's head. No good pricing a sleeve to a departing ear. | Only what the eye can settle from the front of the stall.
+
+scene exchange2
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Two treads per stride unless there's an odd one. | I remember a bad stair by which knee it meets.
+b : Where does the spare tread fit? | Wouldn't a mark be easier?
+a : Keep it for the breath after the climb. | A mark can wear away between market days.
+
+scene exchange3
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : My oatcake gets split in half before the climb. | I like the oatcake with one burnt speck.
+b : Why not eat it walking? | What's the special taste?
+a : I like knowing a whole half's still waiting behind my back teeth. | Toast. Only takes one speck to point it out.
+
+scene exchange4
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I made a riddle from a stair that's one tread short. | A riddle can ride inside a price call.
+b : How do you solve it? | Wouldn't that confuse the buyer?
+a : Look up. A short step has borrowed the landing. | Only if the price is my question. The price I tell straight.
+
+scene exchange5
+when topic=prices self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : A crowded market throws my call back changed. | I like two rows talking across one lane.
+b : Who changes it? | What's there to like?
+a : Ten mouths trying to remember whether I said striped or spotted. | I can walk through ten different deals without entering one.
+
+scene exchange6
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : A thunder roll puts the buyers quiet for a breath. | I save a long breath when the clouds darken.
+b : Do you fill it with a cry? | Meant to outsound thunder?
+a : No. That's the only caller in the sky I don't interrupt. | Meant to be heard in the pause that comes behind it.
+
+scene exchange7
+when topic=day self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : The early bell has an account with my pillow. | I count the morning bells in pairs.
+b : Overdue again? | And the odd stroke?
+a : Always wants paying before my feet agree to rise. | I pull the cover over that one.
+
+scene exchange8
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : Rat teeth can set a whole oatcake rattling in its tin. | I stop on the stair when I hear scratching.
+b : Won't the lid hold? | Want to catch it?
+a : I'm happier checking the lid with both eyes open. | Want to hear it retreat before I take another step.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There's a sum due at the next new moon. | I'm not in the habit of counting another wolf's coin.
+b : Did you borrow it for stock? | And your own?
+a : The date's quite public in the sky. The reason stays in my pocket. | The less I have the more often it gets counted.
+
+scene exchange10
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : A high stair keeps me honest about what I carry. | I put the light things underneath the rest of my bundle.
+b : Too much trouble to climb twice? | Won't they get crushed?
+a : Too little space in my arms to carry two lies and a parcel. | The heavy thing stays in my paw under my own close inspection.
+
+scene exchange11
+when topic=work self.job=laborer self.boss
+does tell.self / ask.detail / answer.detail
+a : I can ask #self.boss# what's to be cried before the stalls open. | I keep my private worries off everybody else's price call.
+b : Do you repeat it exactly? | Never a slip?
+a : Depends how many breaths the description takes. | If I hesitate I go back to colour and size. Safe ground.
+
+scene exchange12
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard #topic.subject# #topic.claim#. I could cry that quite handsomely. | A rumour runs up a crowded flight without taking a breath.
+b : Are you going to? | Do you let the rumour past?
+a : No. I cry cloth. Cloth doesn't suffer from a wrong description the way a living wolf can. | I let it pass and see if any witness comes along behind.
+
+scene exchange13
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Hard times change what my big voice sells. | When the market's lean I can hear an empty purse opening.
+b : Do prices go down? | What sound gives it away?
+a : More bargains cut from the ends and fewer full lengths. | A little rustle followed by a very long pause.
+
+scene exchange14
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a week's calls that start and finish with paid-up coin. | I dream a stair has a flat bit where an awkward question ought to be.
+b : How would you spend the quieter hours? | Do you stop on it?
+a : Eat one whole oatcake without figuring the next one first. | I've never quite decided till I wake.
+
+scene exchange15
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : My map of the city would show stairs in pairs. | I could point out the long stair by the voices below it.
+b : And the very steep ones? | How?
+a : I'd put a small drawing of a closed mouth halfway up. | The first shout carries up clean. The answer coming down gets chopped by the turns.
+
+scene exchange16
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I stop a long cry just before my throat feels dry. | Two steps give my knees a comfortable swing.
+b : How do you learn when? | Even on the way down?
+a : By going past it once and having an unwanted day of whispering. | Coming down I give the stones a chance to prove themselves singly.
+
+scene exchange17
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : My best breath sits ready just behind the ribs. | I close the day by saying a whole sentence softly.
+b : Does that make a long call? | What sentence?
+a : It makes a calm one. Long needn't mean anything but tired. | Usually something ordinary like 'the snap on my bag has held.'
+
+scene exchange18
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't make stretching a coin the Bright One's business. | A chapel and a market both have places where a voice carries.
+b : What do you ask? | Do you speak loud there too?
+a : Sense to know which wolf needs the next one most. | No. The market's paying for it. The chapel isn't.
+
+story tale1 [topic=work self.job=laborer]
+  : I cried up a bolt of cloth with such a carrying voice that a customer took the colour for a direction and turned down a side lane.
+  : I tried giving the right call again, which naturally sent the poor soul farther off.
+  b : How did you bring the customer back?
+  : Held the patterned end over my head and kept my bright ideas behind my teeth.
+
+story tale2 [topic=travel]
+  : One stair I used for practice had a missing tread. I learned the entire ascent as a pleasing little sequence of pairs, skipping the gap clean.
+  : The missing tread got mended. I went up by memory and stumbled on solid wood.
+  b : Did the repaired stair hurt you?
+  : Mostly it hurt my pride. I give a good repair a nod now when I pass.
+
+story tale3 [topic=pastimes self.likes=riddles]
+  : I once set a question in two halves at two far corners of one street. Reaching the second corner I realised I'd changed the answer in my head.
+  : Both versions quite neatly fitted the first half.
+  b : Which one did you give?
+  : I walked back, collected the original question and sat down with my oatcake. An unsupervised riddle can get expensive in shoe leather.
+
+rule @call1
+when concept=bark working=yes self.job=laborer
+does aside
+cooldown 8h
+say Clear pattern up high for the far row! | Bright strip at an honestly marked length!
+
+rule @call2
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Bells can wait. My voice is still putting its coat on. | First step wants testing before the pair.
+
+rule @call3
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Crisp edge, sound middle. There's a bite worth keeping. | Crumbs stay in the wrapper till the climb's done.
+
+rule @call4
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Keep the lower end of the sample clear of the drip. | Dry cloth gets seen from farther off.
+
+dlg @1 resident.hub : My lower voice costs nothing. You've got that one.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our voices don't need their public pitch here.
+dlg @3 resident.hub [here.time=night] : My voice works more quietly up here after dark.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I can hear your question with the purse strings shut.
+dlg @1 resident.job [self.job=laborer] : I cry wares where the market's at its loudest. Pattern, colour, length and price, in one lungful if possible.
+dlg @2 resident.job : I give my paid hours the voice they bought and keep a private one for later.
+dlg @1 resident.news [world.news] : From somewhere beyond my last call comes #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The claim came to my ear as #topic.subject# #topic.claim#. That isn't a sworn account.
+dlg @1 resident.bye : Keep one good breath for the last rise.
+graft resident.hub
+choice Can you fit a riddle in a market cry? -> price_riddle
+node price_riddle
+say Easy. One bolt cast two shadows, one red and one blue. That's the question I sing. The price gets said in an ordinary voice.
+free
+choice What's the answer to the riddle? -> price_riddle_again
+choice Goodbye. -> bye
+node price_riddle_again
+say Cloth woven different on each face. It draws the eye twice, which is all I can fairly promise a seller.
+choice I'll look at both faces. -> hub
+choice Goodbye. -> bye

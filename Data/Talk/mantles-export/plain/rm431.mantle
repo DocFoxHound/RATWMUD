@@ -1,0 +1,400 @@
+# rm431, the board of charcoal accounts (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm431
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_ilse_fogridge
+written_by codex
+title the board of charcoal accounts
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk keeps_the_balanced_debts_as_empty_squares_on_a_draughtboard
+likes plum_tart draughts old_maps first_warm_day
+dislikes stale_bread gulls
+fears a_family_name_in_the_wrong_column a_wet_sack
+hopes a_board_without_old_debts a_warm_step_for_a_game
+topics work +0.6 pastimes +0.5 prices +0.4 travel +0.2 food +0.3
+styles comfort=material gossip=guarded refuse=sharp tease=dry
+marks oath saying
+persona #self.first# sets charcoal pieces on a little board to remember unsettled accounts, keeps a square clear for an old wharf loss and has very little patience for a wolf who confuses soot with poor work.
+
+words
+oath! = Crack the coal crown | Scuff my last square
+saying! = A paid square stays empty | Try a sack before praising the tie
+man = my little charcoal piece | the light black piece
+board = a scored scrap of board | my little debt board
+line = the far rank | the empty row
+sack = a well-tied bag | the charcoal sack
+dust = the dust at the knot | a thin pepper of coal
+tart = the dark plum wedge | a plum-heavy slice
+cloth = my coarse wiping rag | the clean sack square
+bread = the petrified crust | a hard wedge of loaf
+gull = a large disagreeable bill | the greedy white beak
+boot = my dusty shoe | the black-tipped boot
+map = the folded coal route | a worn street drawing
+note = my short account slip | a small creased chitty
+red = the old red counter | a brick-red man
+chip = a wedge of hardwood | the little square of oak
+beam = a strip of first sunlight | the bright pavement stripe
+gate = the lower gate mark | a dot for the outside wall
+slot = the slot in the lid | a narrow carrying handle
+wrap = a doubled cake paper | the folded grease wrapper
+
+any
+opinion @1 merchants for 1 : A clean knot and a full measure of fuel ought to quiet most quarrels on a counter. They do not, alas, quiet all the customers.
+opinion @2 houses against 2 : A House can clear its trade debts to the last figure and still owe a wharf family more than it has ever entered.
+opinion @3 dole for 2 : The hand that ladled supper out in the lean week had no need to set a counter down against my door.
+opinion @4 road against 1 : A lost afternoon weighs a fine lot when it arrives stuck to a cartload of fuel.
+opinion @5 watch for 1 : I'll pay for a watchful eye on the yard. I'd prefer the eye actually attended to the gate.
+opinion @6 church for 1 : The meal I remember from the chapel is worth more on the credit side than all the speeches in the square.
+opinion @7 sump for 2 : In the Sump people know how to put a sack down gently beside a sleeping household. That's a refinement I value.
+opinion @8 times against 2 : The crust has become both dearer and harder. As a demonstration of improvement it lacks a good deal.
+opinion @9 city for 1 : Ridgemere has enough streets for daily business and another set in the old maps for leisure. I use both freely.
+
+grown
+line @1 greet [pair.band=strangers] : Step beyond the loose dust. Good. Welcome. | Plenty of space to look without poking the sacks.
+line @2 greet [here.time=dawn] : Morning. A clean board for about another minute. | The first light's a better visitor than most gulls.
+line @3 greet [here.weather=rain] : Set your wet things short of the charcoal. | Come out of that wet. Only the fuel has to stay dry.
+line @4 greet [self.working=yes] : Use the end I cleared for customers. | Welcome this side of the sacks and that side of my elbow.
+line @5 greet.return : A civil sound from over the board. Good. | No toll on a plain greeting.
+line @6 greet.return [pair.band=friends|family] : I've kept a square for your visit. | The sound chair's where you'd expect it.
+line @7 greet.return [here.time=dusk|night] : A late entry I can stand to see. | Welcome while the dust lies still.
+line @8 farewell : May your fuel stay dry till it's wanted. | Take an unoccupied square on the way home.
+line @9 farewell.return : That's the visit accounted for. | I'll let your footprints cool in peace.
+line @10 again.open : Back on this row of the board. | That parcel took a short trip round the table.
+line @11 kin.open [pair.kin!=no] : Family can come past the counting row. | We've an inside square for our own.
+line @12 hail [pair.band=friends] : At the dark board past the last sack! | Here. A free move for a friend!
+line @13 react.news : Give the weight without the fancy knot. | Show which part made it onto the board on its own feet.
+line @14 react.news.new : A fresh square taken on a familiar board. | There wasn't a man down for that particular account.
+line @15 react.news.known : That figure's been in my reckoning before. | I had the same piece one square further back.
+line @16 react.news.doubt : I'd be interested to see a sack weighed behind that fine description. | Somebody's made a pair of moves while we were looking at the wrong square.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : That leaves a square nobody can fill by talking. | The loss matters more than the account of it.
+line @18 react.news.glad [topic.kind=marriage|birth] : A prosperous move for once. I'll put out the tart. | I'll set a good counter in the light for that.
+line @19 answer.how : Slightly dusty, amply provided with opinions. | My side of the board still has pieces to play.
+line @20 decline : I'd have to move a settled debt back onto the board for that. | My patience and the available daylight both fall short of the offer.
+line @21 accept_decline : That leaves the square clear for other business. | Your answer came with its own sensible knot.
+line @22 sympathise : Bring the trouble over. There's a dry corner to rest it in. | I've felt how heavily a name can sit that won't come off the account.
+line @23 thank : A clean move. I shall remember whose it was. | That's worth a mark on the favourable side.
+line @24 deflect_thanks : There wasn't any sense leaving a good piece unused. | A paid favour lifts straight off my board.
+line @25 preclose : I've a row of small accounts to settle before supper. | I owe the board another look while the lamp's clear.
+line @26 accept_preclose : Go along. The last move's properly yours. | I can close the empty space after you.
+line @27 farewell [here.weather=rain] : Take the higher edge across that gutter. | Keep the paper inside the knot while it's wet.
+line @28 greet [pair.band=friends] : Excellent. A face that's never mistaken charcoal for dirt. | You can borrow the steady end of this table.
+line @29 farewell [here.time=night] : Go with a little heat left in your own hearth. | No night visits from hungry gulls, I trust.
+line @30 answer.how [self.working=yes] : Occupied with honest sacks and more complicated company. | My knots have held. A tolerable state of business.
+line @31 preclose [here.time=dusk] : Enough light to clear one small account by. | I'll put the pieces back where the room can find them.
+scene debtboard
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : One side of #board# is for playing and the other is for accounts. | I keep the same #man# for play and for debts set down.
+b : Why not just use a common book?
+a : Nobody can jump a figure in a book. I like a reminder of how quickly a day's balance can change. | I use a book as well. A counter in my coat is a good aide to memory when the book's at home.
+
+scene plum
+when topic=food self.likes=plum_tart
+does offer / accept / assess
+a : Have #tart# from #wrap#. I've enough black on my fingers to colour it twice. | I saved the plum end from a very respectable tart. Want part?
+b : Which half's the generous one?
+a : The plum is under both. No hidden tariff on the good patch. | Choose. I'd rather eat the remainder than watch two wolves do long division over pastry.
+
+scene map
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : #gate# on #map# has been closed longer than I've been drawing breath. | This street looks clean through to the bay on my old paper.
+b : Does the old road get you any nearer work?
+a : It tells me which long way round was very recently somebody's short way. Interesting if you quote for a load. | Not a yard. Takes my mind off the current road without wearing a sole.
+
+scene spring
+when topic=season here.season=spring
+does tell.self / react.self / assess
+a : I try the first warm daylight on #board# before I let it try my back. | #beam# is the only thing I permit to cross the board between moves.
+b : Does it cheat if it takes a black square?
+a : No, it gets the whole row for a while. I'm uncommonly easy on good weather. | The sun's paid for its place by warming the table. Some of my visitors could note the example.
+
+scene gulls
+when topic=smalltalk self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : #gull# has come to inspect a consignment of plum tart it cannot possibly afford. | Gulls are the one flock I'd consider charging by the question.
+b : Do you ever part with a mouthful for them?
+a : If one manages to pay in cargo that can't fly off by itself, I'll show it the goods. | An empty wrapper once. It was received with a good deal of unnecessary comment.
+
+scene staled
+when topic=food self.dislikes=stale_bread
+does give.opinion / disagree / concede
+a : #bread# would make a draughts man if I knew a wolf with a saw. | I should like stale bread labelled by the damage it could do to a jar lid.
+b : Wouldn't you soak it and eat it all the same?
+a : Yes. I'd still prefer to keep the joiner's work out of the baker's price. | I've worked harder for worse meals. Doesn't follow I must admire the texture.
+
+scene store
+when topic=work self.role=merchant self.job=merchant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I see whether a sack's tied to keep coal in or simply to look tidy. | Every bag at #self.workplace# leaves with its weight clearly stated.
+b : What can you tell from #dust#?
+a : If it's on the upper fold, someone's put the knot down on a dirty bench. Inside the fold I check for leakage. | If the dust runs from inside a seam I check the weight again. Chalk on paper won't fill a split sack.
+
+scene hand
+when topic=work self.role=merchant self.hand
+does tell.plan / ask.detail / answer.detail
+a : I'd invite #self.hand# to weigh a doubtful bag a second time. | I've left a fresh tie at the bench for #self.hand#.
+b : Why get another wolf to look?
+a : My wrist can make a mistake. My pride doesn't get to alter a paid weight after the fact. | Someone looking across the counter can spot a small hole on the side I'm holding against my chest.
+
+scene oldloss
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : One square on this board stays clear for a wharf loss I will not turn into a settled sum. | I'd have those houses above the harbour tally who hasn't come back, along with all the cargo that has.
+b : Is there any entry would make you content?
+a : Not content. An honest recognition of a real loss would be a start. | A name given room among the grand totals. There's a household for whom that single entry is the whole account.
+
+scene swornprice
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : I won't charge full measure for a sack that's shed a line of fuel along its route. | It's my custom to show the back of the scale before the front of the bill.
+b : Wouldn't you rather the customer simply trusted you?
+a : Trust comes up light if it can't bear one turn on a scale. I'm quite used to the labour. | Of course. I'd have done something to earn that trust first; that's my side of the transaction.
+
+scene leanprofit
+when topic=prices self.wealth=poor|destitute
+does tell.self / react.self / assess
+a : A shop door can swing all day and still not buy its keeper enough dinner. | Coin is a general word; the bit in my own pocket is considerably more specific.
+b : Where does the day's taking go?
+a : Back to the carts and the people who put the charcoal into sacks. My plate takes its rather late turn. | I can tell the rough edge of the one left over once a hard week's bills have come in. No great anonymity in there.
+
+scene sumpdust
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : My black Sump cuff could tell you exactly where I've spent the day. | My Sump landing seems to collect one crumb of fuel per journey home.
+b : Do you list that with the household fuel?
+a : No. If cuffs counted as fuel I'd be the best-stocked household on the stair. | I sweep it up. Fuel's fuel, even when the margins on carrying it are a little thin.
+
+scene route
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : A driver learns more about Ridgemere on the downward half of a journey with fuel. | I mark charcoal routes with the street rising along the high edge of my fold.
+b : What does the downward journey show?
+a : Which knots were tied by somebody who never carried a load downhill. They slip. | Which doors open into the cart's path. Ordinary street maps leave a considerable amount to be desired.
+
+scene friendmove
+when topic=friends self.friend
+does offer / accept / assess
+a : I keep #red# by for #self.friend#. Take the black one for a trial round. | I'd lend #self.friend# the clean half of #cloth#. You can use the edge for that plum spot.
+b : I'll keep the borrowed bit in good order.
+a : Good. Once you get a bit of coal dust into a white game piece it lives a less certain life. | That's kind, though it's already on its second occupation as a cloth for bad stains.
+
+scene quietboard
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : The centre square's worn shinier than either of the back rows. | #chip# has a little hollow where a thumb has been trying to decide the right move.
+b : Does the wear betray how you play?
+a : Any opponent who can read a moving thumb under a settled counter deserves a win. | To a limited degree. I enjoy an opponent who spends the first game carefully studying my furniture.
+
+scene sackcarry
+when topic=work
+does ask.advice / give.advice / assess
+a : Where would you put #slot# if a box of game pieces had to go home under one arm? | How would you lift #sack# if the knot had a dark streak crossing it?
+b : Test the carrying place before putting your whole weight into the lift.
+a : Agreed. A game scattered down a Sump stair plays by considerably worse rules. | I'd put a board under it as well. Charcoal is much easier to move before the sack hits the floor.
+
+scene gossip
+when topic=gossip
+does give.opinion / disagree / concede
+a : A story missing its source goes in my unclaimed box. | I dislike a rumour that asks me to supply the name as well as the listener.
+b : Could you not put a question mark against it?
+a : I could. Then a second wolf might conveniently rub out the question mark and keep my initials. | No. I keep debts that somebody actually owes. Spare scandal can pay for its own storage.
+
+scene rushwag
+when topic=travel world.wagons=late
+does tell.complaint / react.complaint / assess
+a : A late fuel wagon can make punctual customers look extraordinarily discontented. | I dislike taking the heat from a cart schedule I never drew up.
+b : How do you keep waiting customers occupied?
+a : Let them see what's there and what I am still missing. A forthright account keeps some of the toes off mine. | I set out the honest little sacks already filled. The big promises can wait out in the road with the wagon.
+
+scene coaltruth
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I take #man# off an unpaid square once the last copper's changed paws. | I've a drawerful of game pieces made from coal that was too light to go in a sack.
+b : What becomes of the little piece afterward?
+a : It goes back into play. A settled debt deserves quite an ordinary and cheerful retirement. | If it breaks, into the fire. Very few games can heat a tart after the final round.
+
+scene thinpot
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : There's enough heat under the pot to warm a second bowl. Want yours here? | A small helping paid from my own pocket is ready if you need it.
+b : I'll take a small share if you don't need another mark for the loan.
+a : I've no desire to make my housekeeping any more complicated. It's a gift. | Take the measure in your bowl. That's the only record I need of where it went.
+
+scene newarrive
+when topic=newcomer
+does tell.self / react.self / assess
+a : A stranger can have an honest measure on the very first visit. | I don't make a buyer pass an examination on the correct way to stand beside a sack.
+b : How do you tell if somebody's trying to take advantage?
+a : I check the scale in full view. Usually the buyer has been asking the same question about me. | Don't much need to if the weights agree. Manners are a separate division of the game.
+
+scene crumbmoves
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I keep a little clear circle beside the tart so the crust won't find my draughts squares. | A bit of dark fruit on the board makes a poor substitute for #man#.
+b : Couldn't you simply eat the mistake?
+a : Yes, then wonder which side had all its listed pieces afterward. I prefer a cleared board. | Indeed. That is how a player can win fairly and come out accused of eating the best move.
+
+scene latework
+when topic=work self.role=merchant
+does tell.worry / reassure / assess
+a : I'm prepared to lose a little sleep over keeping fuel dry. I object to losing it because some fool won't pull a cover straight. | I listen to a damp wind for long enough to decide where to put tomorrow's stock.
+b : Isn't there a cover you can trust in any weather?
+a : Yes. It needs fastening at both ends. A surprisingly subtle negotiation with some sleepers. | No. A cover acquires a loose corner in the most disagreeable company. I check.
+
+scene bestfire
+when topic=dreams
+does tell.self / react.self / assess
+a : I'd like an afternoon when the board held no unpaid accounts and the sacks were all dry. | One sunny step, two sound players and as much plum tart as the game lasted. That's my programme.
+b : Do you expect business to let you have it?
+a : Not gratis. I'll earn the interval and keep it as if somebody else's supper depended on my enjoying mine. | An afternoon of slow trading might be put to better use than complaining of slow trading.
+
+scene startset
+when topic=pastimes self.likes=draughts
+does tell.plan / ask.detail / answer.detail
+a : I'll mark a second row of board squares as soon as the weather gives my thumb a warm hour. | I mean to court a new opponent with the old black pieces and a freshly scrubbed tray.
+b : Do the accounts take precedence over the board?
+a : The accounts can have one side. Time off quite cheerfully takes the other. | Only till they're settled. Then a wolf can be gainfully employed in losing a game.
+
+scene oldmapfit
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : #map# has a fold where an entire street used to go straight through. | I like the false turns on an old chart better when somebody's tried correcting them at the edge.
+b : Can you work out the useful route from that?
+a : A curved fold at each end puts the streets back together. There isn't a real cart in the city that could make the turn. | Usually. The corrections show where a wolf had to turn back with a load. That's worth knowing.
+
+scene springreturn
+when topic=season self.likes=first_warm_day
+does tell.plan / ask.detail / answer.detail
+a : I'll put the old board out when the warm sun reaches the place I bought my first bit of coal. | My first warm afternoon has a date with a delivery bench.
+b : Do you plan to work through the good weather?
+a : I intend playing on top of my place of business. It's a pleasing reversal for one afternoon. | A bench holding a sleeping shopkeeper for half an hour still justifies its purchase.
+
+scene wholeprice
+when topic=work self.role=merchant
+does give.opinion / disagree / concede
+a : The weight of a sack belongs on the bill. The weight of a keeper's personal irritation does not. | If I've quoted a figure squarely, a bad morning's no cause for me to shift it at delivery.
+b : How do those weights stay separate?
+a : Count the fuel, then keep quiet while the customer gives me a decent reason for calling. | The sack's tied to #note#. The temper travels in my private pocket and stays out of the offer.
+
+scene smile
+when topic=smalltalk
+does tease / tease.return / laugh
+a : You're looking earnestly at the clean square. Expecting it to produce a plum? | If that dark piece moves any slower I'll be charging it ground rent.
+b : I'd settle for the promise of a lesser fruit. | Severe terms for a counter without a salary.
+a : Then you're well qualified to negotiate with an empty square. I'll bring the tart. | I could offer it paid work as a fuel sample when we've finished playing.
+
+scene lastfriend
+when topic=friends
+does tell.feeling / sympathise / assess
+a : I'm fond of company that knows one square may be left empty for reasons outside the present game. | I like a wolf who'll eat by the counter without asking to see my whole book of debts.
+b : Must a good friend ask no questions at all?
+a : Good friends may ask. The finest sort can stand an answer that leaves something in my keeping. | Not at all. I'd prefer a question a wolf has actually thought about asking.
+
+story false_piece [topic=pastimes]
+  : I played in poor light with one piece made of coal. My opponent rubbed a faint black line on one cheek with each doubtful move.
+  : By the finish there were four black strokes up the face and a perfectly clean board.
+  b : Could you read the game afterwards?
+  : No. I knew exactly how often the player had doubted a choice, which is a rather different score.
+
+story sack_label [topic=work]
+  : I once tied a label to a sack using one short turn of twine that just reached the knot. A wet evening came on and the string drew tight as a new wire.
+  : In the morning the label stood on end like a little black flag.
+  b : Could you still read the weight?
+  : Certainly. It was the rain giving the goods an extra announcement, for no commission whatsoever.
+
+story plum_count [topic=food]
+  : I tried making a plum tart last a whole match by awarding a bite at each capture. There came a stretch where neither wolf would move into danger.
+  : The crust went cold while two hungry tacticians sat staring at it.
+  b : Which side broke the deadlock?
+  : The side holding the knife. Halved the tart and played a far better game on a settled stomach.
+
+story lost_line [topic=lore]
+  : My oldest purchase from a map stall had a thin blank streak through an entire quay. Thought it a lane so small the maker hadn't named it.
+  : I carried fuel there and found a firm wall, not a trace of space for a wheel.
+  b : How had the street disappeared?
+  : Crease through the ink. Somebody had folded a whole new road onto the plan. My cart declined the invitation.
+
+story empty_square [topic=dreams]
+  : I dreamed my account board was entirely clear. Nobody owing a copper, every sack stored dry, every cart put back in its place.
+  : Then I tried setting the pieces out for a game and one black square refused to take any piece.
+  b : What became of the recalcitrant square?
+  : Left it empty. There are things I remember better than I care to settle, even on an excellent day.
+
+rule @scale
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Show the figure before closing the knot. | Dust at the corner there. Turn it.
+
+rule @board
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say One paid piece back into play. | The empty square can keep its own account.
+
+rule @warm
+when concept=bark here.season=spring
+does aside
+cooldown 8h
+say There's a decent patch for a sunny game. | Heat free from the top side of the board.
+
+rule @gull
+when concept=bark self.dislikes=gulls
+does aside
+cooldown 8h
+say No credit for a hungry beak. | The tart is under separate cover.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Keep the wet outside and the figure readable. | A backed-up cart needs the sound sheet.
+
+rule @home
+when concept=bark self.quarter=sump
+does aside
+cooldown 8h
+say Dust in the corner earns a sweep. | The black marks stop before the stairs.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Show me the goods or the question. Either can be weighed from here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I recall which side of the board you favour.
+dlg @3 resident.hub [here.time=night] : The lamps are showing more dust than the day could manage. Say your piece.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Stand clear of the stock and keep the weight in your words.
+dlg @5 resident.job [self.role=merchant self.job=merchant self.workplace] : I run #self.workplace#. Dry fuel, clear measure, and no disguising a poor knot with a fine label.
+dlg @6 resident.job : I see to the goods and mind who has actually paid for the carrying.
+dlg @7 resident.news [world.news] : There's a solid knot on the following. #world.news#
+dlg @8 resident.bye : Leave the board in reach of a dry hand.
+dlg @9 shop.greet [here.shop=open] : Have a look and a proper feel if your hands are dry. I quote for what is actually here.
+dlg @10 shop.greet [here.shop=bare] : Nothing in stock for your hearth. I might buy if you're bringing something fit to carry.
+dlg @11 shop.greet [here.shop=asleep] : Mm. Leave the board where I shut it.
+dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, your usual right to see the whole weight applies.
+dlg @13 shop.prices : I charge for fuel and its honest journey. #shop_offer#
+dlg @14 shop.bye : Keep the goods dry. Our business here is settled.
+dlg @15 resident.hub [here.weather=rain] : Take the spot past the stacked fuel. I'm not buying extra water today.
+graft resident.hub
+choice Why is that square kept empty? -> reserved_square
+node reserved_square
+say Fuel settled and coin received, I clear the square. One stays clear to remind me that some old costs never reached any House's tidy book.
+choice Could a game still go round it? -> round_loss
+choice We can put the board by. -> hub
+node round_loss
+say Perfectly well. Players who know the rules can mind one empty square without claiming they've forgotten what's meant to be there.
+choice I'd play on those terms. -> hub
+choice I'll leave the board as set. -> bye
+
+graft shop.greet
+choice What do you learn from the knot? [here.shop=open] -> sack_knot
+node sack_knot
+say A dust line reaching from the seam to the knot means I should have another look along the bag. Coal doesn't improve anybody's bill by falling on the cart floor.
+choice Will you weigh it once more? -> weigh_twice
+choice Back to the shop board. -> greet
+node weigh_twice
+say Indeed. I'd like you to watch how a well-tied sack settles on the plate. A repeat customer with an eye for good work is a fine thing.
+choice I'd like to consider the goods. -> greet
+choice Enough weighing today. -> bye

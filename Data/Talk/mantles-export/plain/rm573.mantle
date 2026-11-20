@@ -1,0 +1,263 @@
+# rm573, the unlit rung (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm573
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_piet_lumley
+written_by codex
+title the unlit rung
+fits stage=adult|old
+prefers drive=ambitious honesty=plain
+traits temper=short talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk names_each_lamp_by_its_bracket_shadow
+likes spiced_cider riddles new_boots summer_evenings
+dislikes crowds rats
+fears a_step_missed_in_a_ladder_shadow a_dark_corner_left_out_of_the_evening_round
+hopes a_row_of_lamps_lit_so_evenly_a_stranger_can_read_the_last_one_from_the_first
+topics work +0.5 weather +0.4 smalltalk +0.6 home +0.3
+styles comfort=practical gossip=direct refuse=short tease=dry
+marks oath saying
+persona #self.first# reads the bracket shadows above the street lamps, names one a crooked ladder and sets a riddle for the rung the light never reaches.
+
+words
+oath! = Soot on the last rung | Forge spark and salt spray
+saying! = Count the shadows after lighting | A dark rung still has a place
+bracket = a forked lamp bracket | the bent iron arm
+rung = the shadow's missing rung | the absent step in my ladder shadow
+lampglass = a freshly wiped pane | the clean lamp glass
+cider = a small spiced cider | a measure of sharp warm cider
+bootheel = the square heel of a new boot | my new leather heel
+moth = a pale fluttering moth | a little moth at the pane
+crowdedge = a clear strip outside the crowd | a handcart's space by the wall
+ratprint = a rat's little ink-black print | a paw print beneath the grain bin
+evening = a lingering summer twilight | a slow summer dusk
+stairwall = the pale stair wall | a smooth patch of high plaster
+wipe = my rag's still-clean face | a scrap of wiping linen
+
+any
+opinion @1 city for 1 : A city looks better by a whole row of modest lights than by one brilliant patch at a grand door.
+opinion @1 houses mixed 0 : A fine crest on a wall still leaves the step below it quite capable of tripping the unwary.
+opinion @1 road for 1 : I value the last lit corner before the road takes its chances with the dark.
+opinion @1 watch mixed 0 : A plain round honestly done looks much the same in a grand quarter as beside a cheap lodging.
+opinion @1 times against 1 : A modest supper grows dearer while a wolf's eyes are busy with other matters.
+opinion @1 drink for 1 : I take my cider slowly when there's still some evening worth looking at.
+opinion @1 festivals mixed 0 : The music reaches my patch quite comfortably without bringing the whole crowd along.
+
+grown
+line @1 greet : Look where the bracket throws a fork. There's room beside it.
+line @2 greet [pair.band=strangers] : New to this patch. Let your eye settle.
+line @3 greet [here.time=dawn] : Morning. The lamp arm's plain as bare iron now.
+line @4 greet [here.time=dusk|night] : Come where the light just touches the wall.
+line @1 greet.return : I heard your step in the space after mine.
+line @2 greet.return [pair.band=friends|family] : A familiar shadow. The voice settles it.
+line @3 greet.return [self.working=yes] : I can give a word while one pane clears.
+line @4 greet.return [here.time=dusk|night] : You can come by the shadow without stepping in it.
+line @1 kin.open [pair.kin!=no] : Kin, leave the tallest patch of wall for my ladder.
+line @1 again.open : There was a dark rung left to consider.
+line @1 hail [pair.band=friends] : Friend! You've arrived on the well-lit side.
+line @1 farewell : May the next lamp find your feet in time.
+line @1 farewell.return : And save your boot heels from the broken step.
+line @1 react.news : Tell it where it has a little light on it.
+line @1 react.news.new : Fresh oil in that account.
+line @1 react.news.known : I've seen the earlier shadow of it.
+line @1 react.news.doubt : There's a rung absent from the middle of that.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Keep the light a little lower for news of such a loss.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That would brighten a whole row.
+line @1 ask.how : Has today given your eyes something decent to rest on?
+line @1 answer.how : I've had one sound answer from the evening.
+line @1 thank : You found the footing I was about to miss. Thanks.
+line @1 deflect_thanks : No charge for pointing at a lit wall.
+line @1 sympathise : Stand with me. I can spare you the riddles for a while.
+line @1 reassure : Leave the next step till this one's clear.
+line @1 decline : That would take the light from something I've promised.
+line @1 accept_decline : Fine. A clear refusal saves me squinting.
+line @1 preclose : One last bit of dusk requires my attention.
+line @1 accept_preclose : You'll have the long light over your shoulder.
+scene missing_rung
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : Look at #bracket# reflected on #stairwall#. Which rung won't hold a boot? | #rung.capitalize# is where I put a question that hasn't got a good ending.
+b : All of them? | Does it ever fill?
+a : Not the answer I had, but a better one. I meant the rung the lamp never reaches. | Only when a passer-by gives me a better ending.
+
+scene dusk_lights
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At dusk I notice a lamp that reaches the actual step, not just a handsome stretch of wall. | I know the lamp I call the crooked ladder by the notch of shadow underneath.
+b : What if the wall's crooked? | Its flame is crooked?
+a : Then it has a little extra room to be handsome elsewhere. | The iron's crooked. The flame just gives its opinion.
+
+scene work_hands
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I can wipe #lampglass# clean without pushing a thumb into its middle. | A length of street comes together one small light at a time.
+b : A particular knack? | Are you claiming the whole length?
+a : Hold the edge. Half of looking sharp is knowing where you put your own fingers. | I'm looking at the whole length. My hands can account for their own portion.
+
+scene summer_time
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : #evening.capitalize# gives an old bracket a splendid long shadow. | I watch the lamp take over where the warm sky leaves off.
+b : Is longer better? | Doesn't it get lost in daylight?
+a : The long shadow gives a riddle more interesting corners. | For a moment. Then you notice the stone below it has gone gold.
+
+scene cider_warm
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : #cider.capitalize# puts a fine little heat in my throat after the damp has had its say. | Cider with a scrap of spice's like a lamp with one clear pane.
+b : Does it last? | How so?
+a : I don't rush the cup. That helps considerably. | You can tell exactly where the warmth came through.
+
+scene new_boots
+when topic=smalltalk self.likes=new_boots
+does tell.self / ask.detail / answer.detail
+a : #bootheel.capitalize# makes a splendid sharp corner in the evening shadow. | I like a new boot best the moment it stops telling all my toes where to stand.
+b : You watch your boots? | Does that take long?
+a : Somebody ought to admire them before the mud takes charge. | Depends who had the last word at the cobbler's.
+
+scene crowd_gap
+when topic=festival self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : #crowdedge.capitalize# is my proper place when all the bells are going. | I won't press into a hundred shoulders for a better view of one dancer.
+b : Can you see the procession? | Not tempted?
+a : I can see the top of it. My boots can still see the ground. | I can admire footwork without volunteering my own feet for trampling.
+
+scene rat_bin
+when topic=home self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : #ratprint.capitalize# makes a silhouette I could gladly do without. | A good lid improves a rat's evening by directing it to a different address.
+b : What gives the print away? | Generous of you?
+a : It generally has a second little print just inside the door of my cupboard. | I'd be still more generous if it took its relations along.
+
+scene common_lamp
+when topic=home self.quarter=commons
+does tell.self / ask.detail / answer.detail
+a : A Commons lamp at the meeting of two lanes casts two quite different crowds on the plaster. | I like the corners where a Commons lamp touches the foot of a stair.
+b : Which crowd do you watch? | Quite particular about light?
+a : The one that leaves me space to pass in the actual street. | Particular about keeping both ankles in working order.
+
+scene living_alone
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : One chair under a little lamp can make an enormously satisfactory room. | Lean a boot by the door at just the wrong angle and the lamp will make it look occupied.
+b : Would you accept another chair? | By whom?
+a : I'd have to measure whether a visitor could get past the first. | My getting-home shadow. A somewhat impatient predecessor.
+
+scene age_riddle
+when topic=memories self.age>=50
+does tell.self / ask.detail / answer.detail
+a : I've watched enough evenings to see the same bent bracket look new at three different heights of light. | I used to hurry to the next lit patch.
+b : Does that surprise you still? | And now?
+a : Yes. It keeps me from pretending familiarity is the end of looking. | I like finding the precise point where shadow begins.
+
+scene debt_flame
+when topic=times self.owes=yes
+does tell.self / ask.detail / answer.detail
+a : A date due looks larger at night even if it's written in exactly the same hand. | I would pay a private obligation with the lamp set plainly between the two parties.
+b : How do you treat a night-time figure? | Why the lamp?
+a : Read it again in the morning and keep the agreed date. | A clearly lit coin spares the fingers a later argument.
+
+scene lean_oil
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : Lean evenings call for a small lamp properly tended to a wide one burning dust. | A fine new boot isn't my first purchase when bread costs dear.
+b : Less light? | What is?
+a : Dependable light. My eyes will find their way round the remainder. | Supper. I can dream of the boot quite successfully on an ordinary doorstep.
+
+scene new_face
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd direct a stranger by bracket shapes when half the street names are invisible. | Need a clear route after dusk? Look for the lamp that catches a stair in its last light.
+b : Can you tell the shapes from below? | Is it the shortest road?
+a : Yes. That's the reason I'd choose them over a sign above the eaves. | Measured in slips avoided, it's an extremely short road.
+
+scene clear_oil
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #moth.capitalize# would make a surprisingly firm case for cleaning a pane from the inside. | #wipe.capitalize# stays clean if I start at the corner and work outwards.
+b : Does it really mind the soot? | And when it's all dirty?
+a : I doubt it. I'm the one looking to discover whether it's indoors or out. | Wash the rag. No riddle in that.
+
+scene rumour_lamp
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : Talk in a dark street can give the smallest cause a magnificent outline. | A shadow's a poor witness to the colour of a coat.
+b : Are you giving that outline a name? | Was a coat mentioned?
+a : I'd answer for seeing it. Names require more light. | I'm illustrating the need for caution, not describing a particular visitor.
+
+scene news_lamp
+when topic=news world.news
+does tell.news / react.self / assess
+a : Coming into light from #world.news_from#, this word. #world.news#. | #world.news#. The first lantern on that road was #world.news_from#.
+b : Does the light improve it? | Have you followed the whole road?
+a : I can read the words correctly that way. Their order still matters. | I've heard the word at this end of it.
+
+scene even_row
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want a line of lights so clean an arriving visitor could read the last from the first. | I should like a riddle worth stopping for even when the supper hour's going.
+b : Read the last what? | What would you offer the solver?
+a : Last stair. I'd consider a smooth journey a fine line of writing. | A bowl of supper, when my purse stretched that far, and the satisfaction of a straight answer.
+
+story crooked_wall [topic=memories|work]
+  : I spent an evening studying a crooked line from a lamp arm and deciding just where the iron had bent.
+  : Called back in daylight to have a quiet look at the offending bracket.
+  b : Did it need attention?
+  : The iron was straight. The wall had a fine pot-bellied curve where my proof was meant to fall.
+
+story borrowed_heel [topic=travel|memories]
+  : One dusk I thought somebody with very new boots was walking half a step beside me.
+  : A bright square heel kept showing and disappearing just over my shoulder.
+  b : Did a stranger pass?
+  : I had my own heel lit by two lamps. It appeared I was keeping much better company than usual.
+
+story spice_shadow [topic=food|memories]
+  : A curl of spice stood up inside my cider cup and the lamp drew a little mast on the table.
+  : I raised my cup to see how far a vessel could travel in this manner.
+  b : Did it cross the table?
+  : The shadow crossed. I didn't, and a patch of my supper coat took on a distinctly festive scent.
+
+rule @find_hook
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Bent bracket, straight drop of light.
+
+rule @light_out
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say There's the iron again, plain without its shadow.
+
+rule @step_side
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Pass where the heels show square.
+
+rule @pane_clear
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say An extra arm's length of shadow this evening.
+
+dlg @1 resident.hub : Stand clear of the sharp bit of shadow and say your piece.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've found the crooked ladder again.
+dlg @3 resident.hub [here.time=dusk] : A fine hour to judge the shape of a bracket. There's time to listen too.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : I'll hear you with the lamp between our two shadows.
+dlg @1 resident.job : I look after the little details that make a street fit to walk when the evening draws on.
+dlg @1 resident.news [world.news] : The word lit up at #world.news_from# is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I've seen what a small patch of shadow can persuade a street to believe.
+dlg @1 resident.bye : Keep the next well-lit step in view.
+graft resident.hub
+choice Where is the missing rung of the crooked ladder? -> unlit_rung
+node unlit_rung
+say The fork throws two shadows up the plaster. A window frame supplies the crosspiece. Move the lamp down a handspan and the rung vanishes.
+choice Does it belong to the light or the ladder? -> shadow_answer
+choice I'll look from a lower step. -> hub
+node shadow_answer
+say It belongs to the wall when everything is in the right place. I have a soft spot for a riddle whose answer only turns up at a particular hour.
+choice I'll call that the dusk answer. -> hub
+choice I'll follow the lit stones home. -> bye

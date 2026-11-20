@@ -1,0 +1,400 @@
+# rm272, the singing whetstone (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm272
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_rosamund_coalford
+written_by codex
+title the singing whetstone
+fits stage=adult|old
+prefers role=merchant job=fisher
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk hums_back_the_note_a_wet_stone_makes_on_an_edge
+likes barley_soup dice new_boots first_snow
+dislikes waiting wet_floors
+fears quarrelling_buyers a_whetstone_split
+hopes an_even_draw an_open_hearth_for_company
+topics work +0.4 pastimes +0.4 weather +0.3 times +0.2 friends +0.3
+styles comfort=warm gossip=careful refuse=gentle tease=none
+marks oath saying
+persona #self.first# listens for the note a wet stone strikes on steel, keeps a second cup at the ready and watches for the little quarrel that comes before a falling-out.
+
+words
+oath! = Chip the hone | Scales in my sleeve
+saying! = Don't press past the note | A friendly edge gets its turn
+hone = my grey hone | the little oil-dark stone
+note = a light singing note | a clear thin hum
+flat = the wide face | the worn flat
+burr = a rough little lip | the last wire burr
+cork = a plug of cork | the clean cork end
+heel = a square new heel | an unspoilt boot heel
+cup = a deep soup cup | my thick barley mug
+grain = a pearl of barley | one round swollen grain
+throw = a low toss | a gentle cast
+bone = my speckled die | the pale bone die
+flake = an early snowflake | the first white speck
+smell = a low curl of smoke | a sweet wood breath
+rack = an upper rack | the top row of hooks
+shore = the outer strand | the rock edge
+timebit = a minute to spare | the wait before a boil
+towel = a hand-sized cloth | a clean fold of linen
+strop = a soft leather strip | the plain side of my belt
+
+any
+opinion @1 houses against 2 : Four big appetites at a narrow table. I'd set an extra place for a quarrel by winter.
+opinion @2 dole for 2 : Pour barley into the water and a meal starts swelling before anybody has to ask a name.
+opinion @3 merchants against 2 : I sell things myself. A civil smile can accompany a greedy price.
+opinion @4 city for 2 : From a quiet stretch of coast the city looks quite small enough to hold in one paw.
+opinion @5 sump for 1 : I've had clean dry leather offered me in the Sump with no inquiry into my pockets.
+opinion @6 watch against 1 : A blunt question asked loudly doesn't get sharper. Someone could mention that to the Watch.
+opinion @7 times against 2 : I've had to scrape the bottom of my cup a little nearer the middle of the meal lately.
+opinion @8 festivals for 1 : A good throw needs level ground and willing company. Plenty of both when the tables come out.
+opinion @9 strangers for 1 : A stranger's wet boots deserve the same spot by the fire as the ones I recognise.
+
+grown
+line @1 greet [pair.band=strangers] : Welcome. Find a place close enough to see my paws. | Lay down that load a moment and come friendly.
+line @2 greet [here.time=dawn] : Hello there. First light on the smooth stone. | Glad of a voice before things get noisy.
+line @3 greet [here.weather=snow] : Snow on the outer edges. Come into the middle. | Welcome in with the soft weather.
+line @4 greet [self.working=yes] : Come to this side where the sharp edge faces away. | Welcome. I've a dry cloth for wet paws.
+line @5 greet.return : A warm word back across the space. | There was real kindness in the voice that hailed me.
+line @6 greet.return [pair.band=friends|family] : Your company brings a fine note with it. | There's a whole cup's time for you.
+line @7 greet.return [here.time=night] : Evening. Lower voices suit this hour. | There's still a hearing ear here.
+line @8 farewell : Use your good boots kindly going home. | May you get a fair turn at the fire.
+line @9 farewell.return : I'll keep the welcome keen till next time. | An easy road back to your own warm corner.
+line @10 again.open : Around we come along the same smooth edge. | You've put another good note in my day.
+line @11 kin.open [pair.kin!=no] : Family's entitled to the deep cup. | Nearer the warmth, you know the custom.
+line @12 hail [pair.band=friends] : There's a good edge to the day over here! | Lift your ears our way, friend!
+line @13 react.news : Tell it at a pace a wolf can take in. | I'll hear the whole account level.
+line @14 react.news.known : I've heard that particular ring already. | That word came by while it was still fresh.
+line @15 react.news.new : Well, that's struck a new note with me. | I hadn't the least inkling of that business.
+line @16 react.news.doubt : I think that account has a burr nobody's felt yet. | I'd like a second voice on that particular note.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : Put the work down. There's a grief to sit beside. | My doorstep has room for a wolf bearing bad news.
+line @18 react.news.glad [topic.kind=birth|marriage] : I could sing a whole tray of good wishes for that. | That's news to pour a deeper cup over.
+line @19 answer.how : Some wear, still true along the edge. | Keeping steady on a little warmth.
+line @20 decline : I'd wear right through if I took all that on. | I've too little daylight to give that favour its due.
+line @21 accept_decline : A wolf knows where the edge lies. | Nothing lost between us by a fair refusal.
+line @22 sympathise : Here, put your cold paws against a warm bowl. | I'd make the grief lighter if my hands knew how.
+line @23 thank : You've taken the rough lip off my day. | A sound kindness. I'll give it decent keeping.
+line @24 deflect_thanks : We were both standing near enough to help. | You'd have caught that rough edge yourself shortly.
+line @25 preclose : I should put the stone away before it dries. | I've business waiting for these hands.
+line @26 accept_preclose : Go catch your share of the good light. | We'll let the words cool where they stand.
+line @27 farewell [here.weather=rain] : Dry your heel against a dry patch before turning. | Stay on stone that shows a little tooth.
+line @28 greet [pair.band=friends] : Come share the inside of my elbow's reach. | Here's a welcome that doesn't need sharpening.
+line @29 answer.how [self.working=yes] : Up to the wrist in honest business. | Steady with the job that's before me.
+line @30 preclose [here.time=dusk] : There's only a thread of honing light left. | I'll put things by while I can see their edges.
+line @31 farewell.return [here.time=night] : Sleep where the first gust can't reach you. | Rest with your shoes set to dry.
+line @32 react.news [here.weather=rain] : I'll hear you clearer under the eaves. | Speak where the rain can't rub the words out.
+scene ring
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : A clean edge gives #note# against #hone#. | I hum once after each stroke on the stone.
+b : Do you copy the pitch? | Does every stroke deserve a tune?
+a : If my hum matches, the pressure hasn't wandered. | Only the last one needs to sing properly.
+
+scene broth
+when topic=food self.likes=barley_soup
+does tell.self / react.self / assess
+a : #grain# gets rounder sitting in hot broth. | I like my barley best on its second swelling.
+b : I usually take mine straight from the pot. | How long do you leave it?
+a : That's an excellent excuse to have another cup later. | Until the spoon marks stay a moment in the middle.
+
+scene dice
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : I throw #bone# with the same loose grip I hone with. | #throw# keeps bones from going skidding across the floor.
+b : Does that win you more often? | What if you get a poor number?
+a : No. Spares my knees some crawling under benches. | I'll live with the number. I object to losing the die.
+
+scene boot
+when topic=travel self.likes=new_boots
+does tell.self / react.self / assess
+a : #heel# shows every step you've taken in the first wet hour. | New leather keeps such fine pale scratches.
+b : I prefer to keep mine unmarked. | Would you rub those scratches out?
+a : Fair, though I'd fancy a walk while the soles are firm. | Only if I went somewhere I'd sooner forget.
+
+scene snow
+when topic=season here.season=winter
+does tell.plan / ask.detail / answer.detail
+a : When #flake# settles I stand outside and hear it melting. | I'd like first snow to find me on dry stone.
+b : Can a flake make itself heard? | Expect it to turn slippy?
+a : Only in the hush every other thing makes for it. | Yes. I'll admire it better if I'm standing up.
+
+scene wet
+when topic=weather here.weather=rain
+does tell.complaint / react.complaint / assess
+a : Wet boards persuade good soles to misbehave. | Water and tidbits of scale make a poor floor.
+b : A bit of grit would give some purchase. | Want a paw with the wiping?
+a : A bit. Too much and everybody tracks it inside. | Yes please. Leave the last strip dry to stand on.
+
+scene waiting
+when topic=smalltalk self.dislikes=waiting
+does ask.advice / give.advice / assess
+a : What keeps an idle wait from souring your temper? | What can I do with #timebit# that doesn't feel like throwing it away?
+b : Find a small thing that needs attention. | Greet the next wolf who looks put out.
+a : #hone# can do with another wipe, that's true. | Kindness is a decent use for a minute's impatience.
+
+scene frostbone
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Have you tried throwing dice with cold fingers? | In winter I wrap the dice inside #towel# first.
+b : Do you warm the dice or your fingers? | Does the cloth keep the throws fair?
+a : Both. Saves one catching a chill off the other. | Stops the bones leaping whenever I shiver.
+
+scene rackwork
+when topic=work self.role=merchant self.job=fisher self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I judge smoke by the smell it leaves on my sleeve. | An eye on #rack# and another on my customer at #self.workplace#.
+b : What about the sleeve after work? | Can you mind both at once?
+a : Hang it where the smell can find its way out. | The nose has been known to lend a little help.
+
+scene housefall
+when topic=times here.region=ridgemere
+does give.opinion / disagree / concede
+a : By winter the Houses may be taking the hone to each other. | I keep hearing four proud claims to the same narrow space.
+b : They've kept their distance so far. | Large tables can seat four easily.
+a : Only till somebody's elbow slips. I'm uneasy about it. | Large appetites can make a generous table narrow.
+
+scene paltry
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I could teach #self.friend# to hear a hone better than any bell. | I'd offer #self.friend# the first spare cup of soup.
+b : What would the first lesson be? | Why a spare one?
+a : Press less. Every wolf I meet begins by bearing down. | I make a cup more than I mean to eat. Leaves room for company.
+
+scene smokeway
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : Smoke out on the headland goes flat the instant it meets sea wind. | I like seeing the outer rocks and the city in one slow turn.
+b : Can you hang fish in that sort of draught? | Which view ends your turn?
+a : Under a sound roof, with the doors managed sensibly. | The rocks. I enjoy a sight nobody expects to be paid for.
+
+scene dealer
+when topic=prices self.role=merchant
+does give.opinion / disagree / concede
+a : A bargain should let both wolves go home and eat. | I dislike a price so sharp somebody bleeds on it.
+b : A thin profit can cut a seller too. | So you'd sell everything for next to nothing?
+a : It can. That's why I said both wolves. | I'd look for the point it does honest work for both parties.
+
+scene handlesson
+when topic=work self.role=merchant self.hand
+does tell.plan / ask.detail / answer.detail
+a : I'd show #self.hand# my cork trick on a freshly honed edge. | I'd put #hone# in reach for #self.hand# as readily as for myself.
+b : What does the cork do? | Wouldn't it soon wear out?
+a : Takes #burr# without taking a slice off a testing thumb. | Yes. A worn stone's a better keepsake than a neglected one.
+
+scene dolepot
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Take some barley before it drinks the whole cup dry. | My pot's thick enough to spare you a ladle.
+b : I could eat an end of that. | Let me taste the thin broth beside the grain.
+a : Then I'll mix the last grains through. Catch them while you can. | No need to live entirely on the reflection of a meal.
+
+scene sumpplace
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : On my Sump landing, a freshly wiped floor is a thing worth handing on. | I go home to the Sump carrying a whiff of the outer shore.
+b : How do you hand floor on? | How long does that smell stay?
+a : Wipe where you stood before the next wolf puts a foot there. | Clear through supper if my coat hangs near the pot.
+
+scene marketbone
+when topic=pastimes self.likes=dice
+does tell.self / ask.detail / answer.detail
+a : The die that travels furthest gets little nicks in the corners. | Feel this worn edge on #bone# before you cast.
+b : Does it run true? | Would you stake coin with that one?
+a : Near enough for an unfunded argument after dinner. | No. I like a die nobody can find a reason to resent.
+
+scene snowmarks
+when topic=weather here.weather=snow
+does tell.self / react.self / assess
+a : Snow brings out every clean division in a set of roof slates. | #flake# makes a black sleeve look newly mended.
+b : Until the sun comes round. | A leaky sort of patch.
+a : Then you can see which slate starts to dry first. | Best stitching I could afford at such short notice.
+
+scene shopquiet
+when topic=work self.role=merchant
+does tell.feeling / sympathise / assess
+a : A customer who takes time at a counter honours the work on it. | I enjoy that quiet instant when a buyer's about to speak.
+b : Doesn't the wait bother you? | I thought standing about would fret you.
+a : Considering's work too. Waiting with no say in it is different. | Standing's easy when I can greet somebody in return.
+
+scene split
+when topic=smalltalk
+does give.opinion / disagree / concede
+a : A stone worn into a dish will ruin a keen edge quietly. | Don't put all the pressure in the middle of #flat#.
+b : I'd have thought the shine promised a level surface. | Doesn't the middle need doing too?
+a : Turn it to the light side on. The rim stands out like an eyebrow. | Even strokes across. Keep the wear as quiet as the hand.
+
+scene watchtalk
+when topic=gossip
+does tell.self / react.self / assess
+a : A sharp rumour can go straight through a fold of good sense. | I've a rule against sharpening a word that was rough when it reached me.
+b : How do you put it down safely? | You'd send it back blunt?
+a : Leave it lying till there's a fact to wrap it in. | I'd let the teller supply the fact that gives it an edge.
+
+scene decentend
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I want a flat stone wide enough to set two cups on at sunset. | I'd give a bit to hold a final summer meal entirely out of the wind.
+b : Does the stone have to be yours? | What's on the menu at that meal?
+a : Dry and steady will do. I'll bring the cups. | Barley that keeps its steam and butter that stays on the bread.
+
+scene dryboots
+when topic=travel
+does offer / accept / assess
+a : Give me your boot a moment. I'll test the heel for a loose nail. | I'll lend you #towel# to take that slick off your sole.
+b : You'll not take the edge to my shoe, I hope. | I'll return the cloth muddier than I found it.
+a : Only the nail head gets a rub. Leather costs enough. | Better than returning your elbow with a bruise on it.
+
+scene scent
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : Barley soup and smoke have a way of meeting in my coat. | There are days when even my tea smells cured.
+b : Doesn't it put you off supper? | What do you drink it with then?
+a : Smell never filled me up yet. I can bear a second helping. | Plain bread. I let the smell do the fancy work.
+
+scene longwait
+when topic=travel
+does tell.self / react.self / assess
+a : A long walk's easier than a short wait outside a shut gate. | I count off the headland path by the places I'd oil a boot.
+b : That's more work on your boots though. | Many places like that along the way?
+a : Boots are supposed to take me somewhere. A wait doesn't shift anybody. | Sand, wet stone, short turf. Three sound reasons before I get inside the walls.
+
+scene waxwrap
+when topic=smalltalk
+does tell.self / react.self / assess
+a : I wrap #hone# apart from the dice. Both deserve a fair surface. | If the stone rolls loose my whole pocket gets shiny.
+b : There's a neat arrangement of parcels you've got. | Handy for seeing what you own.
+a : I like to lose my coin without losing my die as well. | I can reckon that without turning all my buttons bright.
+
+scene outsider
+when topic=newcomer
+does offer / accept / assess
+a : You'll find a little dry space if you fold your pack like this. | Come at the wind from this side if those boots are new to our stones.
+b : I'll try the fold before I settle. | That's kind. I'm feeling for every edge.
+a : Good. Then you've made space for somebody else to get by. | Aye, by the second bit of dry rock the soles of your boots can do the telling.
+
+scene smokeweather
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A short low trail of smoke tells me the wind's turning. | See how #smell# doubles back across the roof?
+b : What do you do when it turns? | Does it spoil the whole day's smoke?
+a : Get my cloths out of the air that was clean ten breaths ago. | Just means you mind the draught again. Nothing personal in a wind.
+
+scene corkcut
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : Steel makes a sharper note after I draw #cork# past it. | I strop on #strop# after the coarse work's done.
+b : How do you tell when to stop? | Won't you mark the belt?
+a : The hum stays even from heel to tip. More would waste good steel. | Far less than I'd mark my paw skipping the finish.
+
+scene sharehour
+when topic=friends
+does tell.self / react.self / assess
+a : I like company that's content to hum across a job. | A long silence over a soup cup feels different from a long silence at a counter.
+b : You'd trust a quiet worker beside you? | Different how?
+a : Aye. A wolf who hears the stone has a fair notion where to stand. | One gives everybody space. The other waits for a price.
+
+story lost_stone [topic=pastimes]
+  : I thought I'd left the hone on a rock above the tide. Went back over every pale stone and tapped each one.
+  : I'd just about made music for a whole beach when my pocket bumped my knee.
+  b : The hone was in it?
+  : Wrong pocket. I heard the right note at last and gave the whole shore leave.
+
+story dice_dinner [topic=food]
+  : I threw dice while the barley simmered. One of the bones rolled under the bowl and tipped it toward the pot.
+  : Caught the bowl and put the dice away, all but the one underneath.
+  b : Did it come out at supper?
+  : When I lifted the bowl. A six, and not a single witness whose mouth wasn't full.
+
+story leather_mark [topic=travel]
+  : New boots once printed a row of tiny stars on a wet path. The heel nails had heads like that.
+  : I walked in a little circle to see if the stars would join.
+  b : What did the circle look like?
+  : A wolf with time to spare and decent soles underfoot. I recommend the view.
+
+story smoke_soup [topic=lore]
+  : The story goes that a poor cook offered soup to the whole shore and started with one smoking chip.
+  : Everybody who came to see that wonder contributed what might go well with smoke.
+  b : Did the cook put the chip in?
+  : Took it straight back out. By then there was a good pot going.
+
+story edge_song [topic=work]
+  : I used to hum loud when honing. After a while I noticed I couldn't hear the scrape that warned me to ease the pressure.
+  : I tried keeping the very last note to myself.
+  b : Inside your head?
+  : Right there. My mouth gets one note, the steel gets the rest of the tune.
+
+rule @hone
+when concept=bark self.likes=dice
+does aside
+cooldown 8h
+say The hone's in my other pocket. | Dice against stone makes dear little chips.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say No shame in testing that board first. | Damp leather wants a level step.
+
+rule @snow
+when concept=bark here.weather=snow
+does aside
+cooldown 8h
+say There goes my first white speck. | Quiet between the flakes today.
+
+rule @shop
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Room by the clear end of the counter. | There's a dry place to lay things out.
+
+rule @broth
+when concept=bark self.likes=barley_soup
+does aside
+cooldown 8h
+say The grain's taken up its share. | Soup like that keeps the cup warm.
+
+rule @shore
+when concept=bark here.region=ridgemere
+does aside
+cooldown 8h
+say Sea breath clears a weary nose. | Some wind left in the headland.
+
+dlg @1 resident.hub [topic.meeting=stranger] : Let me put the stone down. There's a hearing ear for you here.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I like that familiar note.
+dlg @3 resident.hub [here.time=night] : Dark enough to put the edge away. Plenty of time to hear you.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Hands in sight, please. A cool word works quite well.
+dlg @5 resident.job [self.role=merchant self.job=fisher self.workplace] : I mind #self.workplace#, customers on one side and the smoke on the other.
+dlg @6 resident.job : Give me something to bring to a decent finish.
+dlg @7 resident.news [world.news] : Word has carried along the coast. #world.news#
+dlg @8 resident.bye : Go easy and keep the shoes under you.
+dlg @9 shop.greet [here.shop=open] : Come close enough to judge for yourself. I'm proud to have a good look taken.
+dlg @10 shop.greet [here.shop=bare] : Bare counter for buyers. If you're selling I still have an ear.
+dlg @11 shop.greet [here.shop=asleep] : Mm. Stone down. Eyes shut awhile.
+dlg @12 shop.greet [here.shop=open topic.meeting=known] : #topic.player#, the clear end of the counter's yours again.
+dlg @13 shop.prices : I'll give the figure straight and let you see where the value lies. #shop_offer#
+dlg @14 shop.bye : May the value follow you home in full.
+dlg @15 resident.hub [here.weather=snow] : There's snow to admire when we've done talking. Come a bit nearer.
+graft resident.hub
+choice Where did you learn that note? -> stone_note
+node stone_note
+say By wearing a groove in a sound stone. I pushed so hard I could hear nothing over the grinding. It took a gentle last stroke to find the note again.
+choice Do you still hum it? -> stone_hum
+choice Let's give the stone a rest. -> hub
+node stone_hum
+say Under my breath if there's work on. A little softer than the steel itself. Company is welcome to listen.
+choice I might know it next time. -> hub
+choice Safe keeping to you. -> bye
+
+graft shop.greet
+choice What does a clean edge buy me? [here.shop=open] -> edge_value
+node edge_value
+say A cut that stays one piece all the way into your parcel. You'll see if a counter is giving you the loose ends.
+choice Is a loose end wasted? -> spare_end
+choice I'll think about the goods. -> greet
+node spare_end
+say Perfectly good in broth. I like the buyer to be the wolf who decides what's going in the pot.
+choice I'd look at the counter again. -> greet
+choice That's all my business. -> bye

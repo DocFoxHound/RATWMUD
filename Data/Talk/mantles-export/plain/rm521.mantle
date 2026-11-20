@@ -1,0 +1,258 @@
+# rm521, the missing claw's account (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm521
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_hjalte_wetdale
+written_by codex
+title the missing claw's account
+fits stage=adult|old
+prefers job=healer
+traits temper=nervy talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk counts_unpaid_kindnesses_against_the_missing_claw
+likes pickled_herring roof_birds festival_bells misty_dawns
+dislikes gulls smoke
+fears owing_more_than_the_moon_leaves_time_to_pay
+hopes for_a_supper_without_a_sum_in_mind
+topics work +0.5 prices +0.4 health +0.3 home +0.2
+styles comfort=quiet gossip=close refuse=guarded tease=none
+marks oath saying
+persona #self.first# counts favours along a paw, reserving the gap of a missing claw for the obligation that costs sleep.
+
+words
+oath! = By the uncounted finger | Bone and last silver
+saying! = Mind the gap in the reckoning | A kindness outlasts its price
+gap = my absent claw | that smooth bare tip
+moon = the thinnest moon | the darkening moon
+jar = my small herring jar | a stoppered pickle jar
+brine = the herring brine | the sharp pickle water
+ledge = a high roof ledge | a bit of sheltered coping
+cloth = a patient cloth | a square of worn linen
+cup = a shallow blue cup | a small glazed tumbler
+salt = the white salt ring | a grain of pickle salt
+shade = a patch of dawn mist | a grey pocket of morning
+gull = a clamorous gull | a heavy white gull
+chime = a bell sounding far off | a bronze holiday chime
+purse = the tied purse | a slender leather bag
+
+any
+opinion @1 houses against 1 : A payment looks much smaller from a factor's window than it does from inside a working purse.
+opinion @1 dole for 1 : A hungry visitor needs a bowl without a mark being set against its price.
+opinion @1 drink against 1 : A careless extra cup leaves me hearing its cost well into the night.
+opinion @1 city for 1 : My feet know the native mist with a jar in either paw.
+opinion @1 festivals for 1 : The holiday bells interrupt my sums without asking me to explain them.
+
+grown
+line @1 greet [pair.band=strangers] : There's a ledge here for what you're carrying. | Come in. The waiting cup's clean.
+line @2 greet [self.working=yes] : Give me a low word beside the linen. | My paws can pause awhile.
+line @3 greet [here.time=dawn] : Morning mist has muffled the traffic. | There's room beneath this grey light.
+line @4 greet [here.time=dusk|night] : Welcome under a thinning moon. | Softly. Evening's a listening hour here.
+line @1 kin.open [pair.kin!=no] : A household face can quiet my keeping-count. | Family may draw a little closer.
+line @1 again.open : My fingers remember this meeting. | Back inside hearing distance.
+line @1 greet.return : I saved a quieter space. | I know your tread from the last call.
+line @2 greet.return [pair.band=friends|family] : Familiar company lets these fingers rest. | Welcome among my plain belongings.
+line @3 greet.return [self.working=yes] : Some linen left, and some listening. | Speak near my unoccupied ear.
+line @4 greet.return [here.time=dusk|night] : Back for the quieter hour, welcome. | Good to hear a step after lamplighting.
+line @1 farewell : Easy accounts wherever you go. | Enough silver and a sound doorstep.
+line @1 farewell.return : Bring your own quiet back again. | May the road charge you kindly.
+line @2 farewell.return [here.time=night] : Sleep through the hour of reckoning. | A soft pillow for tomorrow's figures.
+line @1 react.news : I'd hear just the sum of it. | Tell me what you yourself heard.
+line @1 react.news.new : A fresh entry in my hearing. | That reached me only now.
+line @1 react.news.known : That was counted on a former visit. | My ears recall that little reckoning.
+line @1 react.news.doubt : I'd give a thin rumour another night's consideration before counting it. | Even a clear voice can have a figure wrong.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Let the price of speaking wait. | You needn't find a brave voice here.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's brought my fingers to rest. | Good. Something to count on the kinder side.
+line @1 ask.how : Have you found a moment free of worry? | Is anything weighing on your sleep?
+line @1 answer.how : I woke adding columns. I'm here all the same. | My day has a narrow margin left.
+line @1 decline : I ought to keep what little spare time I have in hand. | I need the quiet interval before my next call.
+line @1 accept_decline : The request can leave my little ledger. | Nothing owed on that account.
+line @1 thank : I've set your help against my hardest hour. | I won't lose count of your kindness.
+line @1 sympathise : Come sit till the first hurt eases. | You may keep the worst detail private.
+line @1 reassure : Nobody here is charging by the breath. | The cup will be here when you're ready.
+line @1 preclose : I'll take my figures home soon. | There's folded linen asking for my attention.
+scene claw
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I leave #gap# for the obligation I find hardest to settle.
+b : Why that place? | Does the missing claw hurt?
+a : My finger finds it even when I'm trying to think about something else. | Rarely. My reckoning bothers me more.
+
+scene factor
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : When #moon# thins I find myself holding #purse# even in daylight.
+b : Is something due? | How thin a moon?
+a : A private sum. I'd sooner tell you about the leather than the reason it feels light. | New moon is soon enough. I can count the nights without a chart.
+
+scene linen
+when topic=work self.job=healer
+does tell.self / ask.detail / answer.detail
+a : I can remember who lent #cloth# by the stitching on the hem.
+b : Even after washing? | Do you return every one?
+a : The corner was turned by a particular paw. Water leaves that much of a kindness intact. | I mean to. One square grows very large in my thoughts if I can't place it.
+
+scene jar
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : I turn #jar# until the brine shows me whether a fillet remains.
+b : Would you split one? | Do you drink the brine?
+a : A whole piece shared tastes better than two lonely scraps. | No. The ring left round the jar is all the salt I need reminding of.
+
+scene roofs
+when topic=pastimes self.likes=roof_birds
+does tell.self / ask.detail / answer.detail
+a : A little bird can shelter on #ledge# while a gull has to stand in plain sight.
+b : Which do you watch? | Do you envy it?
+a : The small quiet bird. A gull makes its presence known without assistance. | I envy finding such an exact fit for one's troubles.
+
+scene dawn
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : #shade.capitalize# makes the city seem willing to delay its claims.
+b : Do they come back? | For a whole morning?
+a : As the roofs emerge. Still, for a while I hear only dripping eaves. | An hour of borrowed quiet makes a substantial payment on a bad night.
+
+scene gulls
+when topic=weather self.dislikes=gulls
+does tell.self / ask.detail / answer.detail
+a : A gull's cry catches me somewhere between my shoulder blades.
+b : Like a summons? | What do you do?
+a : That's an unpleasantly exact description. It always sounds as if I'm already late. | Look for its white wing. No standing debt with that creature at least.
+
+scene smoke
+when topic=health self.dislikes=smoke
+does tell.self / ask.detail / answer.detail
+a : I notice smoke on my sleeves before I've stepped back behind the curtain.
+b : Does it cling? | Why mind so much?
+a : Enough that I trade the cloth out. A caller shouldn't have to sit close to that smell. | A healer ought to bring fewer worries into a room than a patient did.
+
+scene home
+when topic=home self.spouse
+does tell.self / ask.detail / answer.detail
+a : The purse ought to be put away before sitting beside #self.spouse# at home.
+b : Does the sum stay away? | Do you discuss it?
+a : Sometimes through one whole herring supper. That's better than no peace together. | At a decent hour. I won't peg a difficult figure to the last moment before sleeping.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd keep a small place at supper for #self.friend# without entering it in an account.
+b : No mark at all? | What would you serve?
+a : I'd notice the empty place if my friend didn't come. That's a different kind of keeping count. | Herring on a bread heel fit to soak up brine.
+
+scene blue
+when topic=work self.workplace self.job=healer
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I keep #cup# within reach of the shorter seat.
+b : For a child? | Does colour matter?
+a : For any wolf who needs to reach it without standing. A small kindness needn't ask a private question. | It's easily seen against the linen. I'd rather a patient found water before having to call.
+
+scene brass
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : #chime.capitalize# can carry past every roof between me and the holiday street.
+b : Do you follow it? | What does the note give you?
+a : If I've nothing owing to a caller. Some days the one note is celebration enough. | A breath long enough to draw without counting.
+
+scene word
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I won't pass a debt around by mouth before it's paid.
+b : Your own? | What about a neighbour's?
+a : Least of all my own. I'd rather choose which ears get the figure. | A neighbour's is even less my money to spend.
+
+scene bread
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A bowl offered freely can become a burden if the giver remembers it too publicly.
+b : You'd forget? | Keep it quiet instead?
+a : I'd remember the face before the cost. Remembering has its uses if one can choose them. | Quiet as a cup put down by a sleeping bed.
+
+scene gate
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : At #self.street# I know which paving seam takes the heel of a tired foot.
+b : Is it dangerous? | Did you mark the seam?
+a : Only enough to interrupt a thought. Sometimes that interruption has earned my gratitude. | I counted the steps one night instead of counting coins.
+
+scene owe
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once had to remember a kindness I couldn't repay in kind.
+b : Still owing? | Why not coin?
+a : In my thoughts, yes. The giver asked only that I spare another wolf the same embarrassment. | I've been taught the weight of that difference. It isn't measured by a scale.
+
+scene quiet
+when topic=faith self.priest
+does tell.self / ask.detail / answer.detail
+a : I could ask #self.priest# whether keeping a favour in mind can spoil the gift.
+b : Would you ask today? | Are you afraid of forgetting?
+a : On a quiet morning. I'd keep that question from travelling over departing worshippers. | Of turning gratitude into another anxious little debt.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed my missing claw had come back made of bright silver.
+b : Would you sell it? | Did it scratch?
+a : I wondered whether my creditor might accept something no longer missing. Then I woke. | Only the inside of my purse. Dreams can give a very exact discomfort.
+
+story ledger [topic=memories]
+  : I once counted my obligations on my good paw and found I had one more kindness than fingers. The gap on the other paw seemed an obvious place to put it.
+  : By evening I had forgotten the small ordinary debts in my worry over the large invisible one. I carried clean linen round till each small account came back.
+  b : Did the big one shrink?
+  : A fraction. I could look at the empty place and remember some of the work I'd finished.
+
+story mist [topic=weather]
+  : I was walking home before sunrise with a stopper rattling against an empty pickle jar. In the mist it sounded like little coins dropping into a box.
+  : I stopped the jar with a shred of linen. The sudden peace was worth considerably more than the imaginary money.
+  b : Did you keep that stopper?
+  : I use it for the same jar. I paid once for the herring and that's quite sufficient.
+
+story cupmark [topic=work self.job=healer]
+  : A blue cup went missing on wash day. I had visions of having to replace a whole set because I couldn't match that particular glaze.
+  : I'd left it inside the linen basket to keep the lid from falling shut. It was doing precisely the work I'd set it, and I was worrying over a loss.
+  b : Did you put it straight back?
+  : After I found a proper prop. I prefer a cup with one duty where I can keep track of it.
+
+rule @aside1
+when concept=bark self.working=yes self.job=healer
+does aside
+cooldown 6h
+say Cup within reach, linen corners smooth. | One clean square for the next tired caller.
+
+rule @aside2
+when concept=bark self.likes=misty_dawns
+does aside
+cooldown 7h
+say The mist has paid for a moment of silence. | Still grey above the little jars.
+
+rule @aside3
+when concept=bark self.likes=pickled_herring
+does aside
+cooldown 8h
+say A whole fillet under the brine still. | Keep the jar mouth clear of salt.
+
+rule @aside4
+when concept=bark here.time=night
+does aside
+cooldown 9h
+say Tonight I'd willingly spare myself the figures. | Moon's getting very slender indeed.
+
+dlg @1 resident.hub : There's a clean cup beside the seat. Do you need silence, or a willing ear?
+dlg @1 resident.job [self.job=healer self.trade_words] : I'm the #self.trade_words#. A tired caller can borrow my attention without owing me any story afterwards.
+dlg @1 resident.news [world.news] : One report I've kept apart from my own concerns. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I've remembered your face without needing either paw.
+dlg @1 resident.bye : Enough for your purse and a peaceful hour for your head.
+graft resident.hub
+choice What are you counting on your fingers? -> gap_lending
+node gap_lending
+say Favours. A small one for each sound claw, the hardest one for the gap. I can find that particular space in darkness, which isn't always a blessing.
+free
+choice Can anybody settle a kindness in coin? -> gap_kind
+choice I hope the figures ease tonight. -> hub
+node gap_kind
+say A loan has its sum. For a kindness I try to do the same good turn when I see the chance. Sometimes that's the only accounting I can bear.
+choice I'll remember the difference. -> hub
+choice I'll leave you the quiet. -> bye

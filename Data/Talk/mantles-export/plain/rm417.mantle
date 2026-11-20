@@ -1,0 +1,400 @@
+# rm417, the uneven column (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm417
+revision 1
+state ready
+dialect plain
+accent none
+tier full
+written_for rm_rosalind_greatly
+written_by codex
+title the uneven column
+fits stage=adult|old
+prefers job=servant
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk places_a_pressed_leaf_beside_the_sum_that_does_not_balance
+likes oatcakes riddles tidy_house autumn_wind
+dislikes salt_wind drizzle
+fears a_figure_copied_unquestioned a_wet_garden_page
+hopes a_reconciled_ledger a_quiet_alcove_of_my_own
+topics lore +0.5 work +0.4 pastimes +0.5 dreams +0.4 gossip -0.5
+styles comfort=considerate gossip=discreet refuse=measured tease=none
+marks oath saying
+persona #self.first# marks a doubtful column with a pressed leaf, gives a puzzle the courtesy of a second reading and maintains a perfectly composed silence until the figures are ready to speak.
+
+words
+oath! = Blot the footnote | Invert the folio
+saying! = A leaf can hold a question open | Sum the quiet column twice
+leaf = the copper beech leaf | my pressed leaf
+folio = the green folio | my narrow volume
+sum = a troublesome total | the uneasy sum
+ink = the darker stroke | a stroke of dilute ink
+cake = a round oatcake | the thin oat wafer
+butter = a curl of cold butter | my neat butter pat
+ribbon = a grey silk marker | the narrow page ribbon
+slip = the unruled slip | a narrow linen slip
+corner = the heavy lower corner | a page corner
+rain = a fine film of rain | the floating drizzle
+wind = a gust through the copper leaves | a dry autumn breath
+salt = the bitter salt trace | a powdering of brine
+chair = a straight garden chair | the reading stool
+lens = the little reading glass | my clear lens
+band = the worn binding band | a faded leather band
+bowl = a shallow butter bowl | the round china dish
+brace = the column brace | my copied tally bracket
+crease = the inner fold | a crease by the stitching
+
+any
+opinion @1 houses for 2 : A House needs the habit of opening its own books, precisely because its decisions belong to such a great many other lives.
+opinion @2 dole against 1 : I would begin by counting the undelivered portions while an additional share is being considered. A complete reckoning can be a kindness.
+opinion @3 city for 1 : Ridgemere offers considerable evidence that quite different ways of living may occupy a single page of geography.
+opinion @4 watch for 1 : Ordinary street quiet requires some rather unobtrusive labour. I like to enter that labour on the credit side.
+opinion @5 sump against 1 : I prefer a reading place where the damp is an occasional guest. A low stretch of street is simply too hard on paper.
+opinion @6 merchants for 1 : I value a price the seller will leave written beside the item while I am free to think it through.
+opinion @7 strangers for 1 : An unfamiliar reader can notice an assumption that has passed quite honourably through several familiar pairs of eyes.
+opinion @8 times for 1 : I have sufficient light and opportunity to examine my own household affairs. It seems fair to begin my account of the present there.
+opinion @9 festivals for 1 : The sight of an entire square pausing for the same bell is an interesting answer to the question of public order.
+
+grown
+line @1 greet [pair.band=strangers] : Here is a quiet seat for our introduction. | You are welcome within ordinary speaking distance.
+line @2 greet [here.time=dawn] : Morning. The unmarked hours are still the larger part. | This light favours clear distinctions. Welcome.
+line @3 greet [here.weather=rain] : Welcome inside the reach of the dry cover. | Put your papers beyond the drip before making a beginning.
+line @4 greet [self.working=yes] : Welcome. This leaf will hold my place while you speak. | A timely interruption where the page gives way to margin.
+line @5 greet.return : Your greeting has my undivided attention. | A measured courtesy, which I return with pleasure.
+line @6 greet.return [pair.band=friends|family] : The marker may stay in the book rather longer for you. | An established voice needs little announcement.
+line @7 greet.return [here.time=dusk|night] : An evening visit has a shorter shadow. Welcome. | There is sufficient quiet left for your business.
+line @8 farewell : May your inquiry have a satisfactory conclusion. | An easy passage to the next well-lit room.
+line @9 farewell.return : I shall keep a marker at the place where we parted. | Your visit has been entered in a favourable hand.
+line @10 again.open : The chapter has opened on a familiar figure. | We are in the same margin a second time.
+line @11 kin.open [pair.kin!=no] : A household matter may have the quieter seat. | Come within the fold we keep for family.
+line @12 hail [pair.band=friends] : Here, past the copper leaves! | The free seat by my green volume!
+line @13 react.news : Let me hear the particulars before deciding what they amount to. | I should like an account with the order of events preserved.
+line @14 react.news.new : I had no mark beside that entry till now. | There is an unexpected figure for the day's reckoning.
+line @15 react.news.known : That accords with an earlier reading of the matter. | I recall finding this on a previous leaf.
+line @16 react.news.doubt : There is a difference between the total claimed and the evidence offered. | I would allow some blank space for a second opinion.
+line @17 react.news.sorrow [topic.kind=death|loss|assault] : We may close the ordinary book awhile. This deserves care. | Some matters are better met with a reserved chair than a clever observation.
+line @18 react.news.glad [topic.kind=birth|marriage] : That is a most welcome addition to the account. | I'd mark the day with a leaf of its own.
+line @19 answer.how : Making steady progress across a stubborn page. | Quite content to be left a little arithmetic.
+line @20 decline : My present obligations would receive a poor reading if I added another. | I cannot promise that now without making a doubtful entry.
+line @21 accept_decline : I understand the limits of the offer. | Very well. We may draw a clear line underneath it.
+line @22 sympathise : The chair beside me is free of duties for a while. | I can wait here without requiring the hurt to account for itself.
+line @23 thank : Your kindness has corrected a difficulty without seeking notice. | I shall remember exactly where your assistance made a difference.
+line @24 deflect_thanks : It took scarcely the space of a footnote. | I had the place open at the appropriate page.
+line @25 preclose : I have a particular column calling for a further look. | The daylight will presently leave the least legible hand behind.
+line @26 accept_preclose : Carry your question to its proper next engagement. | I shall keep the matter in a composed condition.
+line @27 farewell [here.weather=rain] : A good fold between your papers and the weather. | May the damp find its way into a less important margin.
+line @28 answer.how [self.working=yes] : I am occupied with a question that rewards an unhurried eye. | My attention is adequately engaged by one small discrepancy.
+line @29 greet [pair.band=friends] : Here is the visitor for whom I have kept the better chair. | A voice always welcome between two difficult entries.
+line @30 preclose [here.time=dusk] : I must rescue the small figures from the approaching dusk. | I ought to settle this mark before putting the light away.
+line @31 farewell [here.time=night] : A quiet walk beyond the final lamp. | May the household put its questions aside before you retire.
+scene leafmark
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I put #leaf# beside #sum# when my first addition differs from the written total. | A pressed leaf means I am unwilling either to approve a figure or to accuse the pen.
+b : Why not simply write the difference on the page?
+a : The leaf records a question. Ink would imply I had already established the answer. | A second reading may show the mistake entirely my own. Even a careful reader needs an exit.
+
+scene oats
+when topic=food self.likes=oatcakes
+does offer / accept / assess
+a : Please try #cake# with #butter# cut from the cool side. | I have an oatcake small enough to hold above the page without covering the title.
+b : I shall keep away from your open book.
+a : That is considerate. Set the butter down on the slip here before its edge begins to soften. | A separate little plate is all the distance between an orderly snack and an unfortunate library.
+
+scene riddle
+when topic=pastimes self.likes=riddles
+does tell.self / ask.detail / answer.detail
+a : I have a number which grows when a reader omits one item near the top of a page. | A column is too large by the amount it ought to have paid out. Can you account for it?
+b : Was the omitted figure an expense?
+a : Precisely. The answer is in the direction money travels, not the number of strokes in the ink. | Yes. A negative entry has very considerable power for such a modest-looking mark.
+
+scene room
+when topic=pastimes self.likes=tidy_house
+does tell.self / react.self / assess
+a : I appreciate rooms in which the space that belongs to a missing object is visible. | #folio# has a particular place on a particular shelf and its neighbours have quite definite obligations.
+b : Does this mean everything has to stand at exactly the same angle?
+a : No. A missing vase should be visible as an absence rather than lost among a host of cheerful ornaments. | Only the books on either side. They keep the binding upright when the folio goes outdoors.
+
+scene autumn
+when topic=season here.season=autumn
+does tell.self / ask.detail / answer.detail
+a : #wind# selecting a leaf for me is my one concession to chance in the account. | Autumn has supplied #ribbon# with a most attractive competitor.
+b : Which leaf do you keep?
+a : One whose stem ends before the binding. It must hold the place without injuring the page. | The copper one, after it is quite dry. A living colour has no business staining a borrowed volume.
+
+scene brine
+when topic=weather self.dislikes=salt_wind
+does tell.complaint / react.complaint / assess
+a : #salt# roughens the edge of a page most indecently. | A sea wind seems determined to introduce the whole harbour between my covers.
+b : What protection have the leaves in a sea breeze?
+a : Turn the bound edge to the breeze. It offers remarkably little surface to an unwanted guest. | Close the book before the first crystals start up. Even curiosity can take some air without a page.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #rain# begins working on the smallest ink before a reader feels any damp. | My objection is to weather too faint to announce itself honestly.
+b : What is the first indication of a shower?
+a : The palest character grows dark at its edges. I then take my question back under a sound roof. | A loose leaf clings lightly to the next. That is the point at which I cease to negotiate.
+
+scene garden
+when topic=work self.job=servant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : I read outside when the light at #self.workplace# is kinder to small writing. | At #self.workplace# I make sure the next task can find me before I take a book out among the plants.
+b : What is the advantage of a reading place in a garden?
+a : The eye can travel a respectable distance between two readings of exactly the same figure. | The sounds beyond the book continue. It is rather difficult to make a column the whole world among moving leaves.
+
+scene learner
+when topic=work self.apprentice=yes
+does tell.self / react.self / assess
+a : As a learner I find an unexplained correction more interesting than an error without a mark. | When somebody shows me a second method I keep both workings till they agree.
+b : Do you consider that questioning your instruction?
+a : It means I value a correction enough to understand it fully before I copy it. | It is a courtesy to the instruction. Merely nodding would lend it far less weight.
+
+scene houseentry
+when topic=work self.house
+does give.opinion / disagree / concede
+a : I should like a House figure to stand by its working as readily as by the reputation of its author. | My household colours do not alter the result of combining two columns.
+b : Does your interest in the answer put the House at a disadvantage?
+a : Only if a questionable figure is more valuable than the trust of the next person reading it. | It is precisely because I value the House that I prefer its accounts to withstand daylight.
+
+scene motherleaf
+when topic=family self.mother
+does tell.plan / ask.detail / answer.detail
+a : I would leave a clean explanatory slip beside a difficult entry for #self.mother#. | I should like to bring #self.mother# a puzzle which does not yield at the first reading.
+b : What is the courtesy in passing on a difficulty?
+a : The working is available beside it. Nobody is asked to take my opinion as a condition of reading. | It gives a keen mind some occupation other than correcting everybody's routine omissions.
+
+scene fathercase
+when topic=family self.father
+does tell.plan / ask.detail / answer.detail
+a : A properly reconciled page would please me to place before #self.father#. | Once the amounts agreed I would show the calculation first to #self.father#.
+b : Why wait for a complete result?
+a : I like to distinguish making an observation from placing an obligation in another wolf's lap. | The error may yet be my own. That possibility should have the same quiet hearing as any other.
+
+scene friendgarden
+when topic=friends self.friend
+does offer / accept / assess
+a : I keep a second garden seat available for #self.friend#. This one has a dry corner if you like. | I have marked a useful passage for #self.friend#. You may read the other copy beside it.
+b : I should like to stay for a little quiet.
+a : The seat has soft light on the left. It is an agreeable place for a short pause. | Read at your own pace. The two leaves need not be turned in company.
+
+scene ledgerdetail
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I am investigating why a beautifully finished ledger leaves a remainder when I copy it privately. | I have found one total whose perfect penmanship does not survive an ordinary addition.
+b : Would you assume somebody meant the difference to be there?
+a : Not before checking a transfer half concealed in #crease#. A binding can make a thoroughly innocent accomplice. | I would begin by counting a second time in reverse order. Intent is an ambitious conclusion for a single sum.
+
+scene watchstreet
+when topic=land here.region=ridgemere
+does tell.self / react.self / assess
+a : Northgate gives a reader between paragraphs a surprisingly exact account of the city's arrivals. | Ridgemere can put a load of timber and a sheaf of very fine calculations onto the same damp stone.
+b : Which part of that busy view attracts you?
+a : The pause after a question and before a driver begins a long explanation. It is often quite legible from a distance. | The practical matter of keeping both the timber and the paper out of the gutter. The figures do ultimately belong to the street.
+
+scene temperedwealth
+when topic=prices self.wealth=rich
+does give.opinion / disagree / concede
+a : An ample purse permits me to buy a second copy when the first is unreadable. It does not improve the argument in either. | I should like the actual cost distinguished from the social satisfaction of not having to ask it.
+b : Would you let a small discrepancy in a household price pass?
+a : I could afford the difference. That does not make a wrong entry correct for the next customer. | Only after discovering why it arose. One can pay generously quite independently of paying blindly.
+
+scene estatewindow
+when topic=land self.quarter=estate
+does tell.self / react.self / assess
+a : A great house can lend a reader remarkable shelter from the very figures being read. | An Estate window gives a fine prospect of falling rain without showing which part gets into a worker's cuffs.
+b : How do you make allowance for the distance?
+a : I try to preserve a column for what I cannot see from the desk. A visit may supply the missing information. | I occasionally carry the papers far enough outside to learn the difference myself.
+
+scene gossip
+when topic=gossip
+does give.opinion / disagree / concede
+a : I shall not turn a doubtful addition into a story about a particular hand. | A rumour can add an entire crime to a missing figure in the distance between two chairs.
+b : Is a possible irregularity to stay hidden indefinitely?
+a : Certainly not. A question may be raised without a suspect being invented for its convenience. | I'd first establish that the missing figure is in fact missing. That seems a modest demand.
+
+scene pantryprice
+when topic=food
+does give.opinion / disagree / concede
+a : A full dish ought not to have its size judged solely by the first serving taken out of it. | I like the last oatcake left visible where a visitor can make a considered decision about taking it.
+b : Is a record necessary before anyone has tea?
+a : None at all. Only an eye for whether every guest has had a chance at the dish. | A simple count is quite sufficient. The object of a calculation is an agreeable table.
+
+scene binding
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : I enjoy a story in which the omitted word turns out to be part of the binding. | A riddle written into #band# can be read only when the cover is nearly closed.
+b : Why hide a clue in the part that holds the book together?
+a : Because a reader seldom inspects the thing making the whole account possible. | It lets the closing gesture supply an answer. I consider that decent craft.
+
+scene provision
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : Have some of this dish now. I can adjust the little provision account afterward. | I have ordered a little more bread than my present table requires. You may take your share quietly.
+b : May my name stay off the list.
+a : No name is needed for a portion handed over. A bare total will serve the kitchen. | I keep track of the loaves. The uses of a loaf include leaving the recipient in peace.
+
+scene markskill
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : Where would you mark a questionable figure in a book whose owner has forbidden ink in the margin? | How would you return to the exact line on a page without making a stain?
+b : Slip a clean strip in beside the line with one narrow end still visible.
+a : Yes. #slip# will do exactly that and survive an inconvenient change of mind. | Precisely. A narrow marker is all the insistence a careful question needs.
+
+scene gusttrap
+when topic=weather
+does tell.worry / reassure / assess
+a : I'd rather not collect a page of confidential figures from the far hedge. | A gust has taken some interest in the corner I'm examining.
+b : May I set something on that edge?
+a : #lens# beside #corner# would make a sensible anchor. Thank you. | A straight hand across the blank side will do till I've found the proper weight.
+
+scene travelread
+when topic=travel
+does tell.self / react.self / assess
+a : A sensible reading journey goes from the figure to the goods and back again. | I like to take one disagreeing amount for a walk across the garden.
+b : Does distance make it look any different?
+a : The goods may reveal that the amount covers two trips. The column mentioned only one. | My mind notices the missing step while my feet are occupied with a perfectly ordinary path.
+
+scene waitsum
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I shall add one column beginning at its foot and the other beginning at the heading. | I mean to make an entirely independent copy and lay transparent paper at the edges.
+b : What are you hoping will stay different?
+a : The same amount twice would point me back to the transfer. A new result would send me back to my own work. | The length of the columns, if an entry was swallowed by the fold. Otherwise my puzzle keeps its open chair.
+
+scene citybroth
+when topic=newcomer
+does tell.self / react.self / assess
+a : A thoughtful new reader generally asks why one column has a wider margin than the rest. | I enjoy showing someone unfamiliar with the city the difference between the gate and the route printed beside it.
+b : Are newcomers particularly good at spotting things the rest overlook?
+a : They are less accustomed to taking the empty space for a simple matter of furniture. | Sometimes. At the least one must look again before giving clear directions.
+
+scene cakecrumb
+when topic=smalltalk
+does tell.self / react.self / assess
+a : #bowl# has a rim precisely wide enough for an oat crumb to hide behind. | I can tell which end of a library desk hosted breakfast without lifting a single paper.
+b : How much can one infer from a crumb?
+a : That someone ought to take a cloth to the hidden rim. I would refrain from identifying the diner. | Merely that a plate would be an excellent improvement to the next reading session.
+
+scene tidyquestion
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I would like a room orderly enough that an unsettled question can occupy the chair opposite. | A library with one clear table and one unresolved entry has a greater attraction than a shelf full of borrowed opinions.
+b : Does an untidy question suit a tidy room?
+a : Extremely well. It makes the point that attention need not depend on comfortable conclusions. | A problem can be quite sharply defined by what is known to be in order around it.
+
+scene autumnwork
+when topic=season here.season=autumn
+does tell.plan / ask.detail / answer.detail
+a : I mean to choose a leaf among the ones that have fallen of their own accord. | One dry autumn afternoon will provide a year's worth of garden markers.
+b : Which of them belong with the stubborn entries?
+a : The narrow well-veined leaves. A wolf can follow every branching line back to its origin. | Those that lie flat without force. I'd rather a question remain legible than crisply crushed.
+
+scene routetable
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : One of my exercises is to describe a household duty without using the line that names it. | I have been trying to read a set of accounts by the quiet things the clerk could leave unsaid.
+b : How would that help you learn what the household needs?
+a : A series of shorter candle stubs describes a late reader. A title beside a name cannot tell me quite that much. | Missing time between two simple duties points to a passage or a flight of stairs that the list never mentioned.
+
+story crisp_column [topic=food]
+  : I once laid two halves of an oatcake alongside the columns I was comparing. One crumbled neatly into the little space below the total.
+  : The result looked so much more convincing that I went back a page and found the line that should actually have occupied the gap.
+  b : Did you give the cake its due credit?
+  : Certainly. I removed the crumb before making the correction. No reputable clerk would use a biscuit as a permanent entry.
+
+story green_sum [topic=pastimes]
+  : An old leaf had left a green shadow across the final stroke of an amount. It was possible to read the altered figure two ways.
+  : I found the same transaction described on a plain receipt, though the receipt itself had been folded at an unhappy angle.
+  b : Was the leaf responsible for the discrepancy?
+  : No. It had only made me look. The two figures were in different measures, and both entirely sound.
+
+story fountain_book [topic=lore]
+  : There is a story of a book in a garden that acquired a new figure every time the fountain rose. A visitor accused the gardener of selling water by the number.
+  : The gardener turned the book over. Rain marks had lifted the ink from a perfectly ordinary account onto the lower page.
+  b : Did the visitor withdraw the accusation?
+  : After the laughter, yes. I should have preferred the gardener to receive the courtesy before the audience.
+
+story riddle_chair [topic=dreams]
+  : I once put a difficult riddle on a slip under a garden chair as protection against a gust. Came back by another entrance and sat down facing the other way.
+  : What had looked like a question about doors suddenly made sense as a question about where a reader stood.
+  b : Did you really need the other entrance for that?
+  : Apparently. A little literal movement did what a considerable display of private obstinacy had failed to achieve.
+
+story twin_ink [topic=work]
+  : Two figures looked quite identical on a shaded page. I took the book into brighter light and found one had a tiny curved tail the same colour as the ruling.
+  : I copied both shapes onto blank paper and laid the sheets side by side.
+  b : Which amount was corrected?
+  : Neither, until I'd seen the related entry. A difference in the writing gave me the right to ask a better question, and no more.
+
+rule @garden
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say Leave the narrow space beside the column clear. | I will return the page to its place presently.
+
+rule @riddle
+when concept=bark self.likes=riddles
+does aside
+cooldown 8h
+say It is the missing expense that enlarges the sum. | That answer requires one more reading.
+
+rule @fold
+when concept=bark self.likes=tidy_house
+does aside
+cooldown 8h
+say A leaf in the middle, a weight at the edge. | The ribbon lies clear of the stitching.
+
+rule @wind
+when concept=bark here.season=autumn
+does aside
+cooldown 8h
+say One quite serviceable marker in that gust. | Copper leaves, if the stems are short.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say The finest character shows the weather first. | I should move the folio under cover.
+
+rule @study
+when concept=bark self.apprentice=yes
+does aside
+cooldown 8h
+say The correction belongs beside the reason. | Two methods ought to reach the same quiet result.
+
+dlg @1 resident.hub [topic.meeting=stranger] : You may state your question while the leaf holds this place.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our inquiry resumes at a familiar place.
+dlg @3 resident.hub [here.time=night] : The small print may rest. A spoken question still has a perfectly good hearing.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I prefer an exact statement made at the present distance.
+dlg @5 resident.job [self.job=servant self.workplace] : My duties are at #self.workplace#. An attentive reader can be useful in a household of some size.
+dlg @6 resident.job : I spend much of my time seeing whether the stated result follows from the material before me.
+dlg @7 resident.news [world.news] : The item presently available reads as follows. #world.news#
+dlg @8 resident.bye : A good light for your next inquiry.
+dlg @9 resident.hub [self.house] : A household concern may be submitted to me with due discretion.
+dlg @10 resident.hub [here.season=autumn] : The wind has found the one corner not held down. There. You have my attention.
+dlg @11 resident.job [self.apprentice=yes] : I have cause to study both the task and the reasoning used to teach it.
+dlg @12 resident.hub [here.weather=rain] : Your account might be better heard where the paper can stay dry.
+dlg @13 resident.news [world.wagons=late] : A wagon is overdue. The delay can be entered without inventing its cause.
+dlg @14 resident.news [world.death=recent] : There has been a recent death. A small silence is part of an accurate account.
+dlg @15 resident.bye [here.time=night] : May the last of your business require no small print tonight.
+graft resident.hub
+choice What question has the pressed leaf been holding? -> doubtful_column
+node doubtful_column
+say Two amounts disagree. I am trying to learn whether a figure was lost in the fold or someone carried it over in a different measure.
+choice Could it have been intentional? -> honest_sum
+choice Let the leaf keep the question awhile. -> hub
+node honest_sum
+say Of course. So could the making of a handsome garden path, but I should want evidence of some paving before describing where it leads.
+choice I'll leave the question open too. -> hub
+choice Good light for your further reading. -> bye
+
+graft resident.job
+choice Why take a riddle into the garden? -> moving_leaf
+node moving_leaf
+say Indoors a mistaken reading can grow extremely comfortable. A leaf moving across the lines obliges the eye to approach them afresh.
+choice Doesn't the wind take the page? -> ribbon_sense
+choice Let me return to the ordinary business. -> hub
+node ribbon_sense
+say The binding faces the wind. The marker is heavy enough to hold the place, and light enough not to pretend it has supplied the answer.
+choice I should like to ask something else. -> hub
+choice I shall leave the garden in order. -> bye

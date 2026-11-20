@@ -1,0 +1,420 @@
+# rm434, the unmarked draughtsmen (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm434
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rm_lavinia_plankwick
+written_by codex
+title the unmarked draughtsmen
+fits stage=adult|old
+prefers job=servant talk=chatty
+traits temper=even talk=chatty warmth=reserved humour=none honesty=plain piety=ordinary drive=steady
+quirk rehearses_a_halls_arrivals_with_plain_draughtsmen
+likes spiced_cider draughts tidy_house summer_evenings
+dislikes bad_manners wet_floors
+fears a_guest_received_as_a_crest_instead_of_a_wolf
+hopes a_house_that_can_welcome_an_unexpected_guest
+topics work +0.6 pastimes +0.5 family +0.3 newcomer +0.3
+styles comfort=seat gossip=discreet refuse=orderly tease=none
+marks oath saying
+persona #self.first# rehearses arrivals in a hall with plain draughtsmen and likes to know how a welcome works before adding family marks to a seating plan.
+
+words
+oath! = My missing draughtsman | Six wet thresholds
+saying! = Seat the guest before the crest | Leave the door a square
+piece = a plain draughtsman | the broad counter
+board = a pocket board | my chequered cloth
+corner = the corner square | a near corner
+reserve = the spare piece | a pale spare
+cider = a warm cider measure | the spiced cup
+dryrag = a thick dry rag | the wiping cloth
+stool = a low stool | the waiting seat
+cross = a diagonal row | the slanting line
+tray = a trial tray | the little salver
+bellnote = the arrival bell | a light chime
+place = the outside seat | a spare place
+point = a corner nick | the plain edge
+robe = the hanging cloth | the heavy curtain
+salt = a pinch dish | the little salt bowl
+ring = a cup mark | a pale ring
+cuff = a folded cuff | the linen end
+wax = a little seal | a thumb of wax
+stripe = a checked strip | the chequered edge
+
+any
+opinion @1 houses mixed 0 : A House that wants to be known for courtesy must manage it even when the visitor has brought no flattering introduction.
+opinion @1 church for 1 : The welcome I remember best from a quiet chapel belongs to a bench, a dry corner and nobody asking for credentials.
+opinion @1 merchants mixed 0 : An explanation before the bill gives both buyer and seller a more agreeable evening.
+opinion @1 road for 1 : It helps a host to remember the road the guest has just walked. A fine reception may begin simply with a place for wet boots.
+opinion @1 newcomers for 2 : A new arrival may have no idea which doorway is intended. We in the hall ought to have considered that in advance.
+opinion @1 festivals for 1 : A feast gives me scope to dispense a great deal of orderly pleasure and very little instruction once the guests are in.
+opinion @1 dole for 1 : Setting out portions in the right order makes the last arrival no less deserving than the first.
+opinion @1 city for 1 : An entire city has learnt to live in common on a hillside. That makes rearranging one hall seem a comfortably modest task.
+opinion @1 watch mixed 0 : I would rather report the direction a visitor took than attach an imagined motive to the choice of doors.
+opinion @1 times mixed 0 : Uncertain times are a sound reason to practise what can be made certain, especially where a tired arrival might sit.
+
+grown
+line @1 greet : Welcome. I can fit you in comfortably without upsetting the board. | Hello. We've ample room on the open side of this conversation.
+line @2 greet [pair.band=strangers] : A new arrival, always rather interesting to a student of arrangements. | Welcome. We can attend to the particulars after you're comfortable.
+line @3 greet [here.time=dawn] : Morning. The pieces are all at their starting places. | An early arrival generally has an excellent choice of chairs.
+line @1 greet.return : Yes, your greeting reached me. The spare piece has moved and can give you my ears. | Hello returned with proper attention now.
+line @2 greet.return [pair.band=friends|family] : A voice I can place without a seating chart. | You're the kind of arrival that simplifies arrangements.
+line @3 greet.return [here.time=night] : Late welcome. Let's keep the light by the step for anybody following. | The night has left a quiet place between engagements.
+line @1 again.open : You came by a slightly different square this time. | The board appears to have brought us together twice.
+line @1 hail [pair.band=friends] : Come find the little fault in this procession. | Here. I've arranged a welcome that might amuse you.
+line @1 farewell : May your next arrival find a competent host. | Walk into a clear and kindly doorway when you reach it.
+line @1 farewell.return : I'll leave a place for another conversation. Goodbye. | Go with a little evening still to spare.
+line @1 react.news : Let any conclusions wait outside till the account arrives. | You may occupy the whole quiet space while you tell it.
+line @1 react.news.new : A new piece entirely. I shall consider the position. | That little board afforded me no advance notice.
+line @1 react.news.known : Yes. My previous account puts the pieces in much the same order. | I heard the substance earlier, without that last small detail.
+line @1 react.news.doubt : One piece has moved an improbable distance in that account. | I'd like to inspect the intermediate squares before accepting the end.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : I'll find you somewhere quiet enough to let the news settle. | A loss doesn't need to arrange itself neatly before somebody offers a chair.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : That does a great deal to brighten the arrangement of the day. | I'd quite gladly extend a summer evening to make room for news like that.
+line @1 ask.how : Has your day left you a free square to rest on? | Have your own arrangements been reasonably kind to you?
+line @1 answer.how : In fair order, with one small unexplained draughtsman occupying my thoughts. | Comfortably busy and extremely interested in the gaps.
+line @1 decline : I'd have to surrender an earlier duty to give the matter its full attention. | I'd be arranging somebody else's time without the slightest right.
+line @1 accept_decline : I shall adjust my own plans accordingly. Thank you. | The counter may remain precisely where you put it.
+line @1 preclose : There's a small difficulty in my next arrangement that wants a second glance. | I'd like to set the board in order while I remember the sequence.
+line @1 accept_preclose : Please attend to the next arrival in your own day. | You've made your intention clear and my arrangements will bear it.
+line @1 thank : That was a thoughtful move, particularly from the end that couldn't see the doorway. | I noticed how neatly you made room for another. Thank you.
+line @1 deflect_thanks : There was a spare position and I simply put it to work. | It took only the courtesy of leaving one useful square empty.
+line @1 sympathise : You may have the outside chair if you'd like an easy departure later. | No need to speak for the whole time you sit with me.
+line @1 reassure : Let's make space for one comfortable move before deciding the entire game. | A stiff arrangement can often be remedied by moving the least important stool.
+line @1 ack : Yes. The next position follows quite sensibly. | I see which movement had escaped my eye.
+line @1 give.advice : Try the arrival from the visitor's side of the door. | Always rehearse where the empty tray will return, as well as where the full one goes.
+line @1 kin.open [pair.kin!=no] : A family occasion may dispense with the formal procession. | For kin, I'd gladly retire my practice board and make room by instinct.
+line @4 greet.return [self.working=yes] : Hello. We are between two orderly arrivals just now. | I have only to shift this one piece and I am listening.
+line @2 farewell.return [here.time=night] : May there be one sheltered square at your own door tonight. | Travel quietly where the household lights have gone down.
+line @1 give.opinion : An distinguished guest and a shy arrival both deserve a clear way in. | I prefer courteous uncertainty to a splendidly certain mistake.
+line @1 ask.detail : Where does the last arrival put a coat down? | Who has to step aside when the door swings inward?
+line @1 answer.detail : The table on the near side takes the coat without a second crossing. | The visitor can step forward once the outer chair has shifted back.
+line @1 react.self : A rather interesting problem for the quiet end of a room. | That would send my little board into useful rearrangement.
+line @1 assess : A courteous course with very few unnecessary turns. | Well settled, provided the doorway actually opens that way.
+line @1 tell.plan : I shall move the second chair before asking the guest to try the route. | I mean to leave a spare place reachable without a procession.
+scene draughtarrival
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I play an odd little game in which all the pieces are guests and nobody gets taken.
+b : How do you win? | What do the dark and pale ones mean?
+a : By getting a late guest to a comfortable place without making six earlier guests stand up. | Pale for folk still arriving and dark for folk settled. Their colours have nothing to do with their names.
+
+scene cresttest
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I make my first seating plan entirely without crests. | A curious thing happens when the host can't put noble names on the draughtsmen yet.
+b : Won't the places all be wrong? | What curious thing?
+a : A few may change. The fundamentals of proper light beside an open doorway needn't. | I attend to ordinary questions first. Is the chair dry, will the visitor see the welcome, can the plate reach the table.
+
+scene lateentrance
+when topic=work self.job=servant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : The late arrival gets a place reached without a long public walk past everybody already seated.
+b : Wouldn't a grand entrance be better? | Why the outer end?
+a : For a guest who wants one, perhaps. I don't consider lateness permission to provide a spectacle. | The guest can reach it promptly, and a warm dish can arrive before conversation turns to the lateness.
+
+scene chairwheel
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : I rotate the whole board and look at the hall from the serving side. | The host's view of a fine arrangement is only one quarter-turn of the picture.
+b : What changes when you turn it? | Do the guests move too?
+a : I notice the tray hung up behind a high chair. That would reflect very poorly on the soup. | They don't need to. My own eyes need to approach from the door the working paws actually use.
+
+scene learnpiece
+when topic=work self.job=servant self.master=yes
+does tell.self / ask.detail / answer.detail
+a : If I'm teaching, I give the learner the spare draughtsman before explaining its purpose. | A good lesson begins with an arrival the learner's plan did not anticipate.
+b : What do you ask the learner to do? | A trick question, then?
+a : Find it a civil place without upsetting the other pieces. Then we discuss which chair made the difference. | No trick. The hall hasn't promised to arrange its surprises in the order a lesson requires.
+
+scene hotdrink
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : Cider with a little spice deserves a cup that can be lifted in one paw without the handle scorching it.
+b : Do you check that personally? | How spicy a cup?
+a : I try the temperature with an empty test cup beside the pour. I want comfort as well as warmth. | Enough to smell the spice while the apple still has something to say about the flavour.
+
+scene quietgame
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : A proper game of draughts is quite restful after using the pieces to settle a hall.
+b : More restful taking pieces? | What's different for you?
+a : At least in a game nobody expects the captured counter to receive a pleasing supper afterwards. | A legal move is one the rules permit. In a hall an otherwise splendid move may inadvertently be rude.
+
+scene tidycorner
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A very tidy room with no place to hang a wet coat is simply untidy a little ahead of schedule.
+b : Which wall wants that peg? | Would you change the furniture for a coat?
+a : Near enough to the door for the dripping part of the journey to be short. | Certainly. The guest and the coat are real. An idea of tidiness can afford to adjust.
+
+scene wettest
+when topic=weather here.weather=rain self.dislikes=wet_floors
+does warn / react.self / assess
+a : A wet floor changes the movement of every single piece on my imagined board.
+b : All the chairs too? | How does the game change?
+a : Particularly the chairs. I move one so nobody tries to step round it onto a slick patch. | The pleasantest route is the dry one till somebody's wiped up. Everything else can be made to follow.
+
+scene poorwelcome
+when topic=smalltalk self.dislikes=bad_manners
+does tell.complaint / ask.detail / answer.detail
+a : Manners do not improve by being directed solely towards the best-dressed arrival. | I dislike courtesy that expires as soon as the crest is out of sight.
+b : How would you detect that? | Would you mention it within an arriving guest's hearing?
+a : Watch what happens to the wet cloak rather than to the person wearing it. A tired carrier matters too. | I'd fix the immediate discourtesy quietly. There would be time to speak plainly once the company had settled.
+
+scene latebreeze
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : A long summer evening lets you move the visiting chairs entirely away from the lamps. | I enjoy making arrangements for guests while daylight gradually forgets to leave.
+b : Does that save oil? | Why arrange them again?
+a : Some. More importantly the company can see one another without leaning across a flame. | Because the hot part of the room moves away from the windows as the sun goes down. All very cooperative if I pay attention.
+
+scene mildguest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : A newcomer may follow the grandest doorway and end in entirely the wrong company. | I'd show the useful door before saying how easy the hall is to navigate.
+b : Wouldn't a servant stop the mistake? | What if the new arrival can't remember the route?
+a : Ideally, by being there early enough with the right direction that nobody needs stopping. | Then I would walk a little way. Company can sometimes do more than another beautifully accurate description.
+
+scene parenthouse
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I can put the draughtsmen away and spend an evening with #self.spouse# quite happily. | The first chair I'd leave free at my own table is for #self.spouse#.
+b : What becomes of your plan then? | You'd put family before the game?
+a : I am extraordinarily confident supper for two can proceed without a board and little counters. | With pleasure. A good plan is meant to serve the people who would like to sit down.
+
+scene friendlyhabit
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd try an unlikely new arrangement out in conversation with #self.friend# first. | I can show #self.friend# the unfinished plan with three pieces still having nowhere sensible to sit.
+b : Afraid of a critical eye? | Would a friend find the mistakes?
+a : I rather hope for one. There is comfort in correcting a piece before an actual guest arrives. | A friend may ask why I'm proud of an entirely blocked door. That question can be useful.
+
+scene greathall
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : An Estate hall has a public face and another made of all the little practical turnings behind it. | From my street at the Estate I sometimes see the arriving guests and the supper taking quite different routes.
+b : Which face do you like better? | Do you watch both journeys?
+a : The practical one. It's a particular pleasure to have everything work while the guests think it simply happened. | As often as possible. A fine warm arrival deserves something better than a cold dinner.
+
+scene softdoor
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : A service door that closes with a bang becomes the loudest guest at every meal. | I listen to an empty door before settling the nearest chair.
+b : You'd move the chair for a noise? | What can the empty door tell you?
+a : Yes. Or see the door eased. Nobody deserves to be interrupted for the whole soup course by a latch. | Whether a quiet conversation can survive each passing tray. I'd give the company that chance.
+
+scene tablesun
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : A polished table in the sun can leave one guest looking straight into a small sunrise. | I plan for the light as well as for the legs beneath a chair.
+b : Wouldn't a bright room be pleasant? | How would you try the angle?
+a : For most of the company. I should like to include the one directly facing the reflection in that pleasant prospect. | Sit where the guest is to sit. My board can suggest the question but actual eyes ought to give the answer.
+
+scene replytime
+when topic=gossip
+does give.opinion / react.self / assess
+a : Where a guest sat does not establish what passed between two seats. | I've seen a whole grand story inflated from the order in which chairs were occupied.
+b : Wouldn't near neighbours speak? | What would you say about the visit?
+a : Usually. I haven't any right to supply the actual conversation as well. | That the arrangements served their purpose. A good host needn't pay in confidences for a reputation for discretion.
+
+scene hallprices
+when topic=prices
+does give.opinion / react.self / assess
+a : An expensive chair which can't be moved by one working wolf is earning its decoration at an awkward rate. | I'd calculate a handsome article's cost in effort after we have paid in coin.
+b : Would you choose a cheap chair? | Is beauty a waste of money?
+a : A sound one with an intelligent back and four reliable feet. I can fit a little beauty round that. | Not at all. Beauty that takes three tired wolves to lift had better give somebody extraordinary pleasure.
+
+scene hardless
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A smaller supper doesn't require smaller manners. | I can plan a courteous table with fewer dishes if times demand it.
+b : Which expense goes first? | Could anybody tell the difference?
+a : The irrelevant procession of lids. Keep the food warm and let the actual dish speak honestly. | Of course. I wouldn't deceive guests about the quantity. I'd see they all got an equally considered share.
+
+scene raincoat
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : A rain-soaked arrival takes up the space of one wolf and three sensible precautions. | What's on the board for a soaking visitor?
+b : A dripping cloak makes more than one piece? | Do you want me to guess?
+a : It earns one piece for the peg, one for the drying cloth and one for the dry seat after the coat comes off. | I'll spare you the counting. First the cloak goes somewhere drip-safe, then we offer a cloth and a chair.
+
+scene darkpaths
+when topic=day here.time=night
+does warn / react.self / assess
+a : At night an unused dark square can be the most important bit of the route. | Don't leave a stool in a path made narrow by shadows.
+b : There's plenty of room in daylight. | Would one candle solve it?
+a : Yes. Darkness makes a different room without moving any of the walls. | If it shows the obstacle. I'd prefer to move the stool first, then spend the candle on a more useful sight.
+
+scene lefthand
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I set out the game for an imaginary guest who arrives with one paw full. | One free paw is a fairly severe test of a polite arrangement.
+b : An important parcel? | What does one free paw need?
+a : Any damp errand bundle will do. I simply want to know whether the guest can manage the door gracefully. | A straightforward latch and somewhere nearby to put the bundle. Two modest courtesies before any formal greeting.
+
+scene churchquiet
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : When I pray I sometimes picture an empty square just inside the door. | I wonder who has found a room too grand or too busy to enter.
+b : An empty place for whom? | Do you mean the chapel door?
+a : For a visitor I haven't correctly imagined. A prayer that specifies every single guest leaves very little room for a surprise. | That door certainly. I should also like to remember the lesson at ordinary doors during the ordinary week.
+
+scene privatehistory
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Some expressions seen across a big room belong in no account of the event. | I can remember an evening by the placing of the chairs without needing to catalogue the private faces in them.
+b : Do you remember the faces too? | Is that deliberate?
+a : Often. Seeing a thing does not confer the right to discuss it afterwards. | Much of the time. I'd like my own difficult moments to be treated with comparable restraint.
+
+scene teachwait
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A learner has thought of a first answer. I like to leave time for the more interesting second one. | Sometimes the correct thing to teach is a useful pause.
+b : What's special about the second answer? | Wouldn't the work go quicker if you said?
+a : It often accounts for the wet cloak forgotten in the first. That's progress anybody can see. | Today, perhaps. The next crowded evening deserves someone who can see the cloak without my pointing.
+
+scene tactlearn
+when topic=pastimes self.master=yes
+does tell.self / ask.detail / answer.detail
+a : An unmarked draughtsman makes an excellent teaching guest because it cannot be embarrassed by an awkward first trial. | I'd rather make a mistake on the board than over somebody else's hot dinner.
+b : Can it object to a bad seat? | Who decides the trial succeeded?
+a : The learner tries sitting there, which supplies the objection with considerably more life than the piece could manage. | We can walk the path with an empty tray. If that goes through without nudging a sleeve, the plan has promise.
+
+scene latewagon
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A delayed wagon calls for a different supper plan, not an announcement that supper has ceased to exist. | I keep a second arrangement for the evening's late goods.
+b : What would you set out? | Isn't that twice the work?
+a : What the cupboard actually contains. It is a particularly obliging ingredient, always present under a lifted lid. | Only on the board. The alternative to a little extra planning can be an entire hall of hungry questions.
+
+scene receivedload
+when topic=caravan world.wagons=in
+does tell.self / ask.detail / answer.detail
+a : Goods newly come into town still need a clear landing place behind the kitchen. | A delivery that finds the service entrance full of chairs can give the evening a remarkable start.
+b : Who's using a doorway for chairs? | What sort of start?
+a : Nobody if my rehearsal was worth the quarter hour. I like to identify the possibility before it acquires weight. | The kind with everybody talking at once and nobody carrying anything inward. I prefer to avoid it.
+
+scene planahead
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a household where any worker can describe why the entrance remains clear, not just repeat an order to keep it so. | My ideal hall would welcome a stranger quite intelligently in my absence.
+b : You'd make your own position unnecessary? | What would you have taught everybody?
+a : For a quiet afternoon, certainly. I should take the opportunity to sit with my cider. | To see the arrival before the inconvenience and the wet floor before the hurried feet. The rest can be arranged.
+
+scene gueststorm
+when topic=weather here.weather=storm
+does tell.self / ask.detail / answer.detail
+a : A loud storm brings the chairs closer without anybody having to issue a formal invitation. | I enjoy seeing what a room chooses to do for its company when the thunder interrupts.
+b : What does it generally choose? | Would you still interfere?
+a : The seats nearer the light fill first. I see whether the quietest guest has retained a good place. | Only with some practical need. A room full of sensible wolves doesn't need directing every time the sky speaks.
+
+story firstdrape [topic=work|memories self.job=servant]
+  : I planned two elegant files on my board and walked my splendid route through the real hall, empty dish aloft.
+  : My sleeve caught the curtain as I rounded the first corner. No piece on the board had been issued a sleeve.
+  b : Did you add some cloth to the counters?
+  : I added the curtain to the plan. Dressing an entire set of draughtsmen looked an unreasonable use of a fine afternoon.
+
+story blackpiece [topic=pastimes|memories]
+  : I held a reception on half my draughts board and played a real game on the other half. The two occasions stayed separate for almost an hour.
+  : An distinguished guest took two jumps and became an entirely accidental champion.
+  b : Did the guest return to the table?
+  : Gave the honourable champion a comfortable chair and started playing the actual game from its proper first position.
+
+story saucersquare [topic=food|memories]
+  : I left my cider standing on the cloth board while I moved some chairs. Came back to find one square handsomely marked with a round wet seal.
+  : It became the wet floor in every subsequent rehearsal until the cloth was washed.
+  b : What did the mark teach you?
+  : To attend to spills and to stop inviting the cider into a discussion intended for dry wooden counters.
+
+story latebird [topic=memories|pastimes]
+  : I set a game out on a low sill one summer evening. A bird hopped onto a corner and looked hard at the only unoccupied square.
+  : I felt it my duty as a host to make a little room.
+  b : Did the bird stay?
+  : No. It took the offered square as its point of departure. A clear exit is a form of hospitality too.
+
+story welcomefoot [topic=memories|travel]
+  : I left by the service door and returned by the guest entrance to see what a visitor would see. There was my best umbrella leaning against a chair.
+  : It had gone missing two mornings earlier.
+  b : And the welcome?
+  : Quite improved once the umbrella went home. An exercise in observation with a particularly practical reward.
+
+rule @door
+when concept=bark
+does aside
+cooldown 8h
+say Leave that first square unoccupied. The door wants it. | A well-set chair and a free turn for the next arrival.
+
+rule @work
+when concept=bark working=yes self.job=servant
+does aside
+cooldown 8h
+say Check the returning tray's route as well as the full tray's. | Place the drying cloth where the guest can reach it without asking.
+
+rule @lesson
+when concept=bark self.master=yes
+does aside
+cooldown 8h
+say Now try that opening move from the visitor's end of the board. | One new guest at the door. See which of your pieces must shift.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Wet cloak, dry seat, a clear patch between. | A hurried boot will find any wet square we leave.
+
+rule @summertime
+when concept=bark self.likes=summer_evenings
+does aside
+cooldown 8h
+say Pull the seats round to the long light while we have it. | Time enough for cider and another move before the lamps.
+
+rule @tact
+when concept=bark
+does aside
+cooldown 8h
+say The real guest doesn't need to know we're still moving chairs. | Quiet feet round the outside of a settled conversation, please.
+
+dlg @1 resident.hub : I have my guests safely arranged in wood for the moment. A living question will have my full attention.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you'll recognise the layout, though the extra visitor has changed the interesting part.
+dlg @3 resident.hub [here.time=night] : We've a quiet hour well suited to considering the day's little surprises.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Our present distance allows an entirely civil conversation if we both choose to use it.
+dlg @1 resident.job [self.job=servant] : #self.trade_words.capitalize#. My concern begins a few steps before the visitor enters and lasts till the departing feet are safely out of the weather.
+dlg @2 resident.job : When my preparations are good, the next wolf has leisure to enjoy the occasion.
+dlg @1 resident.bye : May your next welcome feel entirely natural, however much trouble went into planning it.
+dlg @1 resident.gossip [here.gossip=no] : No tale from me. My little wooden guests are a credit to themselves on the matter of discretion.
+dlg @2 resident.gossip [here.gossip=yes] : Word reached me concerning #topic.subject#. The account is that #topic.subject# #topic.claim#. A report only, not a matter I've settled by arranging a few chairs.
+dlg @1 resident.news [world.news] : We have a report carried from #world.news_from#. The substance is this. #world.news#.
+dlg @1 master.learn [here.teaches=yes] : #here.trade_title.capitalize#. I can demonstrate an opening arrangement and explain the work that keeps it useful. Which arrangement interests you?
+dlg @2 master.learn [here.teaches=no] : I've already given the learner's place to somebody, but there's still room for an interested question.
+dlg @1 master.work : The pleasing part is receiving people. The patient part is getting very ordinary arrangements right a hundred times in advance.
+dlg @1 master.wages : You won't receive wages simply for learning. You'll practise beside me, learn more quickly, and the value of your own completed work is yours.
+dlg @1 master.takes [here.take_on=yes] : I have room to guide a single pupil. I'd be very comfortable taking you. Ask plainly and we can settle the arrangement.
+dlg @2 master.takes [here.take_on=no] : I need time and trust for one learner. At present there's an obstacle. #here.take_on_why#.
+dlg @1 master.taken : We've agreed then. I'll put an extra stool where you can observe both the guests and the service door.
+dlg @1 master.refused : The place can't be settled that way just now. #topic.why#.
+dlg @1 master.bye : Keep an interested eye on the next doorway you pass.
+graft resident.hub
+choice Would you mind showing me the arrangement on the board? -> guestboard
+node guestboard
+say Start with this plain piece. It arrives late, carrying a wet cloak and hoping to avoid a parade past the rest of the company. Which gap would you leave open?
+free
+choice I'd try the entrance at the near corner. -> nearestmove
+choice I should like to discuss something else. -> hub
+node nearestmove
+say Quite sensible. Put the chair near enough to offer, far enough back to let the door swing. Now the guest can choose whether to settle or go further in.
+choice I'll keep that square clear. -> hub
+choice I ought to see to my own arrangements. -> bye
+
+graft master.learn
+choice May I try a simple exercise with the draughtsmen? -> firstboard
+node firstboard
+say Take three counters for guests and a fourth for an arriving supper tray. Leave yourself a square at one side for the hand bringing it in.
+free
+choice What if that side is occupied? -> newapproach
+choice Back to the questions about learning. -> learn
+node newapproach
+say Try moving one chair before moving every guest. The fewer people asked to stand, the warmer the meal should be when it reaches them.
+choice Let me return to the work itself. -> learn
+choice Thanks for the trial. -> bye

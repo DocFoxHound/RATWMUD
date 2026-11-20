@@ -1,0 +1,264 @@
+# rm274, the cupboard constellations (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm274
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_ottilie_dripdale
+written_by codex
+title the cupboard constellations
+fits stage=adult|old
+prefers job=merchant
+traits temper=short talk=plain warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk lays_spice_grains_in_the_shapes_of_stars
+likes spiced_cider stars full_larder autumn_wind
+dislikes stale_bread bad_manners
+fears a_store_cupboard_without_a_lower_shelf a_box_split_in_rain
+hopes an_open_hatch_under_clear_stars enough_spice_for_winter
+topics food +0.4 pastimes +0.5 dreams +0.3
+styles comfort=provisions gossip=brisk refuse=direct tease=dry
+marks oath saying
+persona #self.first# sets peppercorns in the shapes of stars, takes stairs quickly to reach a view of the sky, and gives a short answer to anyone poking through the cupboard unasked.
+
+words
+oath! = Crack a clove | Pepper in the purse
+saying! = Let the sky keep its own accounts | Count the pepper before the sneeze
+starscrap = my spice sky | my cupboard sky
+pepperstar = a bruised peppercorn | a black grain
+starcup = a pale saucer | a chipped white lid
+cidersteam = the first hot breath of cider | a little spicy cloud
+crumbtile = a tile for catching crumbs | a square of smooth tile
+starmark = a spot of chalk dust | a floury dot
+jarback = the dark side of the jar | the unlettered side
+lidcord = a twist of wool | a short tying cord
+upperstair = the tread with the wider view | the last clear step
+windskin = a dry peel | a curl of apple skin
+saltcase = a horn salt cup | my box for dry salt
+
+any
+opinion @1 church for 1 : Food without the usual price pinned beside it is a comfort. The chapel knows how to serve such a meal.
+opinion @1 dole for 2 : The ration gave my cupboard a smell of bread again. Somebody upstairs ought to come down and smell hunger for comparison.
+opinion @1 merchants against 2 : They've found a way of charging for the spice and the dust where the spice once lay.
+opinion @1 houses against 2 : A high wall leaves a fine dry patch inside. The rest of us get the drips down our necks.
+opinion @1 strangers for 1 : One visitor described six different ways to spice a hot drink. I'd have let that wolf stay for a seventh.
+opinion @1 festivals against 1 : I can see the same stars from a quiet landing without a stranger's hat in my mouth.
+
+grown
+line @1 greet : Come within smelling distance of the cider. | Space to speak near the spice shelf.
+line @2 greet [pair.band=strangers] : I'm particular about my cupboard and civil to a caller.
+line @3 greet [here.time=dawn] : Early enough to have the last star for company.
+line @4 greet [here.time=dusk|night] : One more voice under the evening sky.
+line @5 greet [self.working=yes] : I've a jar balanced here. Welcome from a paw's length off.
+line @1 kin.open [pair.kin!=no] : Come in. Our folk may have the good cup.
+line @1 again.open : You've turned up twice like a peppercorn that's lost a chip.
+line @1 greet.return : Heard. You're the nearer voice.
+line @2 greet.return [pair.band=friends|family] : A familiar word goes well with the spice.
+line @3 greet.return [self.working=yes] : Your greeting's arrived between two twists of the string.
+line @4 greet.return [here.time=dusk|night] : I can place the voice with my eyes shut.
+line @1 farewell : Carry a little warmth away with you.
+line @1 farewell.return : I'll set the last cup in its place.
+line @2 farewell [here.time=dusk|night] : Take the steps where the pale edges show.
+line @1 react.news : Let me get the grain of this.
+line @1 react.news.new : That's added a star to my private sky.
+line @1 react.news.known : I heard the same thing from the far shelf.
+line @1 react.news.doubt : Who saw it clearly enough to count it?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I might bring something warm that won't ask for an answer.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'll put extra spice in the next cup to celebrate that bit of news.
+line @1 answer.how : Getting by. The cupboard hasn't had cause to complain.
+line @1 ask.how : How do your own stores stand?
+line @1 sympathise : You needn't pour any more of this out than you can bear.
+line @1 reassure : Sit till the sting comes off it.
+line @1 decline : My cupboard's a private matter once the doors are fast.
+line @1 accept_decline : Keep the lid on whatever you choose.
+line @1 thank : My hands are freer for what you did.
+line @1 deflect_thanks : Save the grand thanks. Tell me if the spice suits you.
+line @1 preclose : Time I put those little stars back in line.
+line @1 accept_preclose : I'll leave the way by the jars clear.
+line @1 ack : Neatly reckoned.
+scene sky
+when topic=pastimes self.likes=stars
+does tell.self / ask.detail / answer.detail
+a : I put #pepperstar# wherever I remember a bright star. | My smallest night sky fits on #starcup#.
+b : Do you draw the dark between? | Can you carry it?
+a : It's white china. You'll just have to squint and forgive me. | Till I sneeze. Then the whole sky needs sweeping.
+
+scene cup
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I take the cider off the heat before the spice comes out. | I like to smell my cup before I can drink it.
+b : Why stop the heating? | What if it's still too hot?
+a : So the second mouthful doesn't taste entirely different from the first. | That's the very time. My nose is readier than my tongue.
+
+scene wobbleshelf
+when topic=work self.job=merchant self.working=yes
+does tell.self / ask.detail / answer.detail
+a : A small round spice rolls to the low side of a shelf. | If the first jar won't stand square the next goes back in the box.
+b : Do you sell it from there? | Why wait over one crooked jar?
+a : No. I level the shelf and start again with clean spice. | One bad foot under a board can bring the whole row down on a customer.
+
+scene stairview
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Sometimes I bound up the stairs in pairs for a strip of sky above the Sump. | One step down from the landing is my place for looking up.
+b : Wouldn't you see the stars just as well going slowly? | Why not the landing itself?
+a : Yes. I'd just have less time with my eyes turned towards them. | Because callers need somewhere to turn. I'm trying to count stars with both my heels unbruised.
+
+scene oldcrust
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : A crust that knocks on a plate might as well call itself supper's door. | No, I don't throw out hard bread.
+b : Will you still eat it? | What becomes of it then?
+a : Only if there's a pot to soak it in. I like my teeth where I keep them. | It goes in the soup till the spoon fits through. That's my test for forgiveness.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : When somebody lifts a lid without asking I quietly lift it right away. | I don't like being answered while I'm still asking a question.
+b : The whole lid? | Would you start again?
+a : With the jar still attached. Then we can discuss a few manners before we discuss spice. | I'd stand quiet till the answer ran out, then finish the last two words.
+
+scene store
+when topic=home self.likes=full_larder
+does tell.self / ask.detail / answer.detail
+a : A shelf is full when I can make supper without standing on my toes. | I like a row where the oldest jars stick out a thumb's breadth.
+b : Doesn't that leave space at the top? | To grab the oldest first?
+a : Yes. For the tray that saves my good things from the leaky bit. | To notice them. Picking up a jar that's stood a year is a separate act of courage.
+
+scene autumntumble
+when topic=weather self.likes=autumn_wind
+does tell.self / ask.detail / answer.detail
+a : A proper autumn blow sends dry leaves up the stairs after me. | I hang #windskin# where the wind can get under it.
+b : Do you let the leaves inside? | For the smell?
+a : One or two. I'll invite the rest when I've swept up the first two. | To see when it's dry. A wet peel sticks. A dry one's off to seek its fortune.
+
+scene dryship
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My imaginary voyage ends somewhere the jar labels never curl. | I'd take one spice jar to sea if anybody offered a dry berth.
+b : How would you recognise the place? | Just one?
+a : Look in a shop window. If all the labels are flat I'll ask the name. | I expect I'd appreciate it more than a holdful. Particularly if I have to carry it upstairs.
+
+scene differentword
+when topic=travel self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : Travellers have wonderful arguments about what ought to go in hot cider. | I've heard a plain cup of cider described as bare.
+b : Do you take sides? | Did you agree?
+a : I take notes. Then I make the drink in my own pot the way I please. | Bare as an apple, perhaps. Quite respectfully dressed if you ask the apple.
+
+scene starfriend
+when topic=pastimes self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd let #self.friend# move one spice grain in my sky. | If #self.friend# had a different shape for those four stars, I'd give it room.
+b : Would you put it back later? | On the same saucer?
+a : Only after a clear night. The sky can settle our dispute cheaply. | On the other side. A saucer with two skies on it can still hold tea.
+
+scene newwork
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I can tell the jars I've handled by a neat woollen tie. | If a customer wants the smallest possible measure, that's still a sale.
+b : What makes one tie different? | Isn't it more trouble than it's worth?
+a : I turn the ends toward the bare side so no wool covers the writing. | Little bags still need a tight fold. I get some pride out of doing it well.
+
+scene pairdots
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : When I try to remember a night I begin with the two close stars. | I've had whole patches of stars vanish when the candle behind me flared.
+b : Are those two always there? | Did you think it was a cloud?
+a : In my head, yes. They're the corners I hang the rest from. | For a moment. I moved into the shade and the stars all came back at once.
+
+scene expenses
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I don't measure spice by what will fit in my palm. | If the price goes up I can still make cider with a single clove.
+b : What sets the measure then? | Won't the flavour run thin?
+a : What's left in my purse after bread. A palm has no sense about tomorrow. | A smaller cup helps. I'd also be very glad of a bigger wage.
+
+scene roofgreen
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain draws dark outlines round all the little chips in a white sill. | I count the drops that get past my upper shutter.
+b : Do you wipe them off? | Does each drop get its own star?
+a : Once I've counted the deep ones. The shallow ones won't hold a spice grain. | Each drop gets its own bit of rag till I run out. After that it's a puddle.
+
+scene keepnews
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't shake every jar just because somebody wants to hear it rattle. | A rumour can come out pretty as a fresh label.
+b : Doesn't a rattle tell you there's something in it? | What would you want with the label?
+a : Could be spice. Could be a dead pebble. I'd like to see what's inside first. | The jar it was tied on, please. Pretty writing doesn't say whether the goods were sound.
+
+scene smallsky
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : The first star I see is the one that gets my cleanest grain. | At dusk the jars in my head begin to look rather large beside the stars.
+b : What if it vanishes? | Is that bad for trade?
+a : Then it was a light on a hill. Back goes the grain. | It's excellent for sleep. A shelf a mile wide would take forever to put right.
+
+scene weight
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I'd set a full bowl where anybody at the chapel door could see it. | A good meal has a quiet moment after everybody sits.
+b : Is seeing the bowl enough? | When's the quietest bit?
+a : Only to get a hungry wolf across the step. Once inside, fill a bowl for eating too. | Just when the first mouthful reaches all those empty bellies. You can hear a dropped spoon.
+
+story spicefall [topic=pastimes self.likes=stars]
+  : I set out six pepper stars and turned the saucer until the pattern matched the sky.
+  : The last turn was a little brisk. Five stars rolled into my lap.
+  b : Where did the sixth go?
+  : It stayed put. Drop of cider underneath. Next time I built a sky I used a sticky saucer on purpose.
+
+story breadwork [topic=food self.dislikes=stale_bread]
+  : I made a crust so hard stand up on its cut edge all by itself.
+  : There it stood while I set the soup on. It looked very pleased with the arrangement.
+  b : How pleased were you?
+  : Delighted once the soup was hot. A crust shouldn't get too attached to standing upright.
+
+story jarletters [topic=work self.job=merchant]
+  : A damp label once came off a jar and stuck right across the front of my sleeve.
+  : I went a long while before I noticed I was advertising myself as whole cloves.
+  b : Was it at least the right label for the jar?
+  : Perfectly right. I'd put the jar down by then and had to smell everything on the shelf to find it again.
+
+rule @shelf
+when concept=bark self.job=merchant self.working=yes
+does aside
+cooldown 8h
+say Lids back over the open jars. | A loose tie won't keep a dry spice.
+
+rule @stair
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say View's clearer two paces off the turn! | Look up when your feet are planted.
+
+rule @cider
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Leave the last clove where it lies. | Steam first, sip afterwards!
+
+rule @wind
+when concept=bark self.likes=autumn_wind
+does aside
+cooldown 8h
+say Catch the wrapper before the wind takes an interest. | Don't let the breeze price my goods.
+
+dlg @1 resident.hub : I've got my lids on. Ask while both ears are free.
+dlg @2 resident.hub [topic.meeting=known] : You again, #topic.player#. I've found room for another star.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A pace back from the cupboard. Now we can be civil.
+dlg @4 resident.hub [here.time=night] : You've caught the hour when I count bright things.
+dlg @1 resident.job [self.job=merchant] : #self.trade_words.capitalize#. A neat shelf and a plain price suit me.
+dlg @2 resident.job : Steady paws for parcels that shouldn't come open.
+dlg @1 resident.news [world.news] : Word among the jars was this. #world.news#.
+dlg @1 resident.bye : I hope the sky has saved you a clear patch.
+graft @pepper_night resident.hub
+choice Why do you arrange the pepper like that? -> pepper_night
+node pepper_night
+say See the crooked handle? I can find those stars even in a gap between two roofs. This is me keeping the pattern for an overcast night.
+choice What would a cloud look like on the saucer? -> pepper_night_more
+choice Let the little sky stand. -> hub
+node pepper_night_more
+say A bit of bread. A great black night would look like me giving up, grinding the pepper and having supper.
+choice Let the little sky stand. -> hub
+choice Leave the cupboard corner. -> bye

@@ -1,0 +1,261 @@
+# rm371, the storm's reply (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm371
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_cinder_wheatton
+written_by codex
+title the storm's reply
+fits stage=adult|old
+prefers talk=quiet drive=content
+traits temper=even talk=quiet warmth=reserved humour=none honesty=plain piety=ordinary drive=content
+quirk asks_a_cloud_a_quiet_question_and_waits_for_the_next_change
+likes honey_cakes old_tales quiet_chapel thunder
+dislikes bad_manners early_bells
+fears a_latch_banged_before_dawn wet_honey_cake
+hopes a_whole_thunderstorm_under_cover a_civil_reply_from_a_cloud
+topics weather +0.5 lore +0.3 faith +0.4
+styles comfort=company gossip=quiet refuse=plain tease=none
+marks oath saying
+persona #self.first# addresses low questions to passing clouds, takes a quiet chapel for the best hearing place in town, and objects to any bell that speaks before a sleeper is ready.
+
+words
+oath! = Hail in my honey | Rattle the wrong latch
+saying! = Let the sky supply its own half | One civil word between showers
+cloudmouth = the low split in a cloud | a long grey opening
+rainreply = a drop on my knuckle | a first wet speck
+tinroof = a sounding bit of roof | a little metal cover
+thumbrest = a dry notch against the post | a warm notch in the wood
+quietbench = an unclaimed bench end | the place by the back wall
+honeyedge = the dark cake corner | a bit of sticky crust
+stormend = the long last rumble | the note under the thunder
+storypause = the quiet before the truth | the last pause but one
+drybag = my dry little parcel | a tied waxed wrapping
+bellrem = the stroke that goes on ringing | a thin leftover note
+
+any
+opinion @1 church for 1 : I have sat quiet till all the noise from the street had finished speaking in my head. I'm grateful the chapel leaves room for that.
+opinion @1 dole for 2 : The bread gets home before anybody has to make an argument for having a hunger. I'd like more ordinary things to be arranged that well.
+opinion @1 merchants against 2 : I was given a very long explanation for a very small cake once. The smallest slice of explanation was more than I could eat.
+opinion @1 festivals for 1 : My best festival has songs I can hear from under cover and old tales needing only one good ear at a time.
+opinion @1 times against 2 : The longer I save a little coin the smaller its share of a loaf looks. I've a civil question to put to whoever arranged that.
+
+grown
+line @1 greet : There's a minute free till my cloud replies.
+line @2 greet [pair.band=strangers] : I can't place the voice. It's welcome here.
+line @3 greet [here.time=dawn] : Quiet welcome before the bells finish waking everybody.
+line @4 greet [here.time=dusk|night] : Stay in the dry patch. I can hear you there.
+line @5 greet [self.working=yes] : My ears can come away from the weather a moment.
+line @1 kin.open [pair.kin!=no] : One of ours may always share my cover.
+line @1 again.open : You're back. I expect you've managed a better speech than my cloud has.
+line @1 greet.return : Hello from under this bit of quiet.
+line @2 greet.return [pair.band=friends|family] : Your voice beats a whole skyful of answers.
+line @3 greet.return [self.working=yes] : The work will stand a moment while I answer you.
+line @4 greet.return [here.time=dusk|night] : Such a small sound runs a good way at night.
+line @1 farewell : May your next shelter come to hand before the shower.
+line @1 farewell.return : I'll wait for the sky's side of the matter.
+line @1 react.news : I'd let that sound run to its end before judging it.
+line @1 react.news.new : I've not heard the weather turn like that.
+line @1 react.news.known : Yes. The first telling rolled off beyond my hearing yesterday.
+line @1 react.news.doubt : Did the words come from a mouth or just from everybody listening?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can share some silence with the house left aching.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A brighter answer than I was prepared to hope for.
+line @1 ask.how : Any shelter for your thoughts today?
+line @1 answer.how : Content enough to let the sky have the last word.
+line @1 sympathise : An ordinary day sounds different after such a hurt.
+line @1 reassure : You may keep my quiet corner until you're sure of your feet.
+line @1 decline : That hour's promised to quiet. I mean to honour the agreement.
+line @1 accept_decline : Then we'll leave the cover on that bit of business.
+line @1 thank : Your kindness has made a dry place at the right time.
+line @1 deflect_thanks : Share the roof with another wolf after me.
+line @1 preclose : I'd like to take that silence back to my own door.
+line @1 accept_preclose : Go along. There's no need for a loud ending.
+line @1 ack : Clear reply.
+scene question
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I ask a cloud a question and let the next thing it does stand for an answer.
+b : What if it does nothing? | Do you ask in a loud voice?
+a : Then it has a peaceful opinion and I try a different cloud. | Very quietly. I don't want a whole street arguing with my end of the sky.
+
+scene warmroof
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Under a thick roof I'd let a storm roll as much as it wants.
+b : Which part of the roof do you choose? | Are you fond of being indoors for the noise?
+a : The bit without a drip behind my collar. A simple liking with a fairly exact condition. | Hearing the noise from somewhere dry is a comfort. The storm can be as fierce as it likes beyond that line.
+
+scene honey
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I split a honey cake when it's still warm enough for the middle to pull a long thread.
+b : Who gets the sweet thread? | Does that spoil the cake?
+a : The tongue that guesses which half will fall away first. It's a game I can play with only one tongue, too. | No. It gives me time to admire the part I meant to eat.
+
+scene tale
+when topic=lore self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I like a tale that leaves a whole quiet breath just before the last sentence.
+b : Does the teller do it on purpose? | What happens in that breath?
+a : The best ones seem to. I can wait quietly while a good ending takes its time coming down. | The wolf listening gets to wonder if the story will go towards a happy turn or a poor one. It's a generous little pause.
+
+scene chapels
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : A chapel with no other callers lets a wolf hear a paw being put down carefully.
+b : Is that your idea of quiet? | Would you speak in there yourself?
+a : Yes. Hearing my own two feet tells me I'm part of the quiet. | Sometimes a little word of thanks, once I can hear how the room will take it.
+
+scene bellquiet
+when topic=day here.time=dawn self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : I would allow an early bell a morning off if I had charge of the rope.
+b : Would the city sleep all day? | What would you do for a warning?
+a : Some of it. The rest would get a civil chance to wake before being spoken to. | There's light at the shutter. I don't need another warning after the light has knocked.
+
+scene manners
+when topic=smalltalk self.dislikes=bad_manners
+does tell.self / ask.detail / answer.detail
+a : A wolf who keeps interrupting will never hear a complete storm.
+b : Does weather take offence? | What if there's something urgent?
+a : No. It can shout. A quiet mouth has to wait for a gap somebody else cares to leave. | Then give the urgent word and say it's urgent. It makes the interruption much easier to bear.
+
+scene spouse
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I'd save the sheltered stretch of bench for #self.spouse#.
+b : Where would that put you? | Wouldn't you both fit in the middle?
+a : Nearer the sky. I ought to be ready to face the questions I ask it. | Often, yes. Being close makes a small cover feel bigger than it is.
+
+scene fieldwork
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : Give me a quiet-looking job that keeps my ears employed.
+b : What sort of sound do you mean? | What do you do while nothing moves?
+a : A latch shifting, grass bending, a mouth quietly finishing its fodder. Small things can save a long search afterwards. | Look for what I'd miss once the job gets busy again. I'd like my mistakes to be small ones.
+
+scene learn
+when topic=work self.apprentice=yes
+does tell.self / ask.detail / answer.detail
+a : I try to ask one clear question when I'm shown a job.
+b : Only one? | What about a question you haven't thought of?
+a : Separately, yes. It's easy to ask so much that I don't hear the working bit of the answer. | I let that one appear when I put my own paws to the work. Then I can show exactly where I'm stuck.
+
+scene plainroad
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I'm happy to walk past a break in a hedge without finding out where it goes.
+b : Not at all curious? | What if it leads to a better view?
+a : I'm curious. I like leaving a few things in the world that haven't answered me yet. | Then it'll be a good place to take a friend someday. A view needn't all be used at once.
+
+scene noincome
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I put the plain part of supper first and ask about the honey after.
+b : Why ask at all if there's little money? | Does the price of honey often please you?
+a : Because some days a little sweetness looks possible. If I never asked I'd give up even those days. | Not often. Asking is a way of giving it an opportunity to be civil.
+
+scene friendcloud
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd listen to an argument between #self.friend# and a good big black cloud.
+b : Does the cloud get a choice? | Whose side would you take?
+a : It may go away. That's a privilege storms use quite freely. | I'd listen for a while before choosing either. The argument might finish on its own and I could keep my own opinions quite comfortably.
+
+scene civildown
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I ask a shower to leave the parcel alone even if it wants to speak to my ears.
+b : Can it tell the difference? | What if the parcel gets wet?
+a : The rain professes itself unable to distinguish ear fur from paper. I use the wrapper to make my meaning plainer. | Then I've given myself a very fair reason to fold it better before going out.
+
+scene goodnews
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : A tale that's all noise gets quieter every time somebody asks an exact question.
+b : Which question first? | Do you dislike all noisy news?
+a : Which ear heard it first from the wolf who saw. That short question cuts down on guesswork. | No. Joyful shouting has its place. I'd enjoy it more once I knew the reason.
+
+scene dreambench
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream of a field with a little dry roof exactly wherever I choose to stand.
+b : What supports it? | Would it come to bed with you?
+a : My cheerful ignorance. Waking, I've escaped the trouble of designing such a marvel. | When I get to bed the roof is already there. It's one wish the waking world will meet halfway.
+
+scene farthunder
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : Several old tales sound like answers to questions nobody now remembers.
+b : Could you make the question up? | Does it spoil the tale?
+a : I can. It's more fun to give it an evening and see which question fits the tale exactly. | No. It gives a curious wolf two tales to think about instead of one.
+
+scene nightnoise
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I untie a tight knot in my little parcel at dusk so my fingers needn't hunt for it in full dark.
+b : What's inside? | Couldn't you just light a candle?
+a : A bite of something saved. Dark fingers aren't nearly as interested in a tidy knot as hungry teeth are. | Yes. I'd rather do a little thinking in light I've already got.
+
+story cloudmanners [topic=memories]
+  : I had a small argument with a cloud over whether it meant to break before I got home.
+  : The first drop came before I'd finished asking. It struck my lower lip quite neatly.
+  b : Did the cloud get the last word?
+  : It got swallowed and brought my argument to a stop. I'd call that a perfectly clear answer.
+
+story lostending [topic=pastimes self.likes=old_tales]
+  : I once tried telling a long old tale to myself while crossing a noisy street.
+  : A cart clattered past and carried off the middle words. Across the street I could still remember the ending.
+  b : How did you get from one to the other?
+  : Gave it a new middle. Reaching home brought the old version back to mind and I had two very agreeable ways of finishing.
+
+story cakecloth [topic=food self.likes=honey_cakes]
+  : A cake I'd wrapped in cloth left a sticky round print when I lifted it out.
+  : I folded the cloth and found the reverse picture had kept a very little of the honey too.
+  b : Was it worth fetching a spoon for?
+  : Worth folding the very last bit of the cake inside and wiping the cloth with it. A spoon would only have been a spectator.
+
+rule @quiet
+when concept=bark self.likes=quiet_chapel
+does aside
+cooldown 8h
+say One soft foot after another inside here. | Let the last voice finish.
+
+rule @thunder
+when concept=bark self.likes=thunder
+does aside
+cooldown 8h
+say That long low note is nearly home. | Leave a little room under this cover.
+
+rule @bell
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Give the waking ear a short rest. | Quiet words can do the first asking.
+
+rule @cake
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say Parcel in from the wet, please! | Keep the honey under its cloth.
+
+dlg @1 resident.hub : There's an argument with the sky on hold. You can have the quiet half.
+dlg @2 resident.hub [topic.meeting=known] : I know your voice, #topic.player#. Has a clearer edge than a cloud.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Give a little space and we may both hear something better.
+dlg @4 resident.hub [here.time=night] : Listen for my side of the doorway. I don't need to raise my voice.
+dlg @1 resident.job [self.job=none] : #self.trade_words.capitalize#. There are small sounds in a day's work that repay listening.
+dlg @2 resident.job : I'm learning which things settle on their own and which want another steady paw.
+dlg @1 resident.news [world.news] : This much carried to my dry patch. #world.news#.
+dlg @1 resident.bye : Hope the sky leaves your supper covered.
+graft @skys_reply resident.hub
+choice Will you ask the sky something for me? -> skys_reply
+node skys_reply
+say I'd ask whether that dark bit means business or is only passing through. You can follow it with your eye. We're promised an answer if we wait long enough.
+choice What answer would no rain give? -> skys_reply_more
+choice Wait under cover. -> hub
+node skys_reply_more
+say That you may put your hood back for a bit. Useful little answer for a cloud with no words inside it.
+choice Wait under cover. -> hub
+choice Leave the argument to the sky. -> bye

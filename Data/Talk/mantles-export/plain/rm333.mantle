@@ -1,0 +1,372 @@
+# rm333, the pebble audience (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm333
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_josephine_brineford
+written_by codex
+title the pebble audience
+fits stage=young|adolescent|adult|old
+prefers honesty=frank talk=quiet
+traits temper=even talk=quiet warmth=reserved humour=none honesty=frank piety=ordinary drive=content
+quirk sits_pebbles_in_rows_to_hear_a_story
+likes honey_cakes old_tales festival_bells warm_rain
+dislikes rats stale_bread
+fears a_missing_ending a_rat_in_the_cake_box
+hopes a_high_window_with_a_wharf_view a_whole_tale_from_one_small_stone
+topics pastimes +0.5 lore +0.4 food +0.3
+styles comfort=company gossip=frank refuse=plain tease=none
+marks oath saying
+persona #self.first# seats smooth pebbles in tidy rows for old tales, speaks plainly about a missing ending, and keeps a sticky paw away from the best listening stones.
+
+words
+oath! = Honey on a pebble | Broken nutshell
+saying! = Keep one stone for the end | Let the roundest listener sit down first
+crowd = my pebble audience | my row of little listeners
+endstone = the white ending stone | a smooth end-of-story stone
+guessstone = a brown wondering pebble | the dotty grey listener
+foldstage = my folded bit of cloth | the corner of a clean rag
+honeyface = a dark glazed cake edge | a lumpy honeyed corner
+splashpond = a puddle with a bright rim | a rain pool on the plank
+tinhouse = my little round box | the waxy old cake tin
+brittleheel = a hard loaf corner | a strip of weary crust
+skyseat = my highest little ledge | a perch by the sill
+cloakchip = a black shard of slate | a flat dark chip
+
+any
+opinion @1 city for 1 : The water comes right up to the story streets. You can point to the place a boat arrived and listen to the rest from there.
+opinion @1 festivals for 1 : A great bell is just the noise you want at the start of a very large story.
+opinion @1 houses for 1 : The big works give the street dinner. I'd still want to hear a tale from both sides of a House wall.
+opinion @1 merchants against 1 : When cake costs two little coins I wish both pieces of money would fall from one large purse for me.
+opinion @1 times for 1 : A warm room, a bit of cake, a tale I get to finish. I'd keep that sort of day.
+
+grown
+line @1 greet : I've put the end marker down. You've time to speak.
+line @1 greet.return : Your greeting's reached the little audience and me.
+line @1 farewell.return : May the story of your walk come to a good landing.
+line @1 react.news : Give the words their proper order. I'm listening.
+line @1 answer.how : I've a clear seat and an unbroken tale to look forward to.
+line @1 thank : You gave a patient hearing as well as a hand.
+line @1 decline : I'd like to tell that story after its owner says I may.
+scene oldrow
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I can name the part of a tale a stone once stood for without remembering every word. | The white one was my sign to finish.
+b : Did the words move around it? | Did it always work?
+a : Often. What didn't move was the feeling of being almost home with the tale. | It worked whenever I listened to my own hand. Some evenings the words were having too good a time.
+
+scene flatbase
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep my stones on a low shelf where a tumble makes a short journey. | The light reaches the pale stones first in my room.
+b : Is the lowest shelf for the heaviest? | Do you move them about?
+a : For the roundest. The heavy flat ones can be trusted up high. | Yes. I give the dark stones a brief hour at the bright end to bring out the flecks.
+
+scene cakeshare
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A shared cake needs a good wide plate. | I keep the cloth on until the first listener's ready.
+b : For the crumbs? | Do wolves come to hear a cake?
+a : For the pause between mouthfuls. There's room to set a piece down without losing a corner overboard. | A cake makes willing company for a quiet talk. The listening's for the story that goes beside it.
+
+scene bridgetale
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A story travels rather like a passenger on a borrowed boat. | When I hear a tale in several mouths I listen for what's stayed.
+b : Does it change the boat? | Is what stays the truth?
+a : A little. A teller who brings a story home in good condition has done some work of the journey too. | Sometimes just the most memorable bit. I don't take a good image as proof by itself.
+
+scene stoneweight
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I can quiet my hands by rolling a smooth stone across the pads. | If a stone's still wet I'll leave it in a cloth till the water warms.
+b : Does the weight matter? | Why not put it straight in a pocket?
+a : Enough to feel when it stops. Too heavy and all I feel is the effort of holding it up. | Because the cold goes through the lining quite quickly and the wet hangs on longer.
+
+scene twowindows
+when topic=land self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : From the Wharf I can tell which windows have room to seat a storyteller. | There's a good little rise for looking out over the water.
+b : From outside? | Can you find it in fog?
+a : I can make a guess from the depth of the sill. A stone audience requires less comfort than a wolf. | By the slope underfoot. I'd miss the view, and it's the view I've come for.
+
+scene motherend
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.mother# the tale whole before passing it into a crowd. | There are little old stories I'd seek out #self.mother# to hear.
+b : Do you expect a correction? | For the words or the voice?
+a : If I missed a good bit I'd be glad to reclaim it before the next telling. | Both. A familiar voice can carry a pause that wasn't set down anywhere.
+
+scene distantroad
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : An unremarkable stone can mean more to a traveller than a bright bought trinket. | I'd carry just one pebble on any long walk.
+b : How could you tell the meaning? | Which would you choose?
+a : I'd let the traveller tell it. Sometimes a small grey rock has crossed more water than I have. | My ending stone. I'd keep a place for it to reach once I'd reached my destination.
+
+scene pricecake
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I watch the size of the cake as well as the weight of its honey. | A glossy edge by itself makes no judgement on the crumb.
+b : How do you gauge the crumb? | Would you ask for a sample?
+a : By how it comes away when broken. A good bite ought to come away before my patience does. | If there's a broken piece. I'd hate to see a whole cake torn for an opinion.
+
+scene bellnear
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I like to leave the last sentence till after a festival bell finishes. | A bell can be the right ending for a short tale.
+b : Won't you lose some listeners? | Without saying the ending?
+a : The ones who stayed that long have earned a clear finish. I can spare the rest a few words. | If the tale concerned a sound a wolf waited to hear, yes. Then the whole street provides the answer.
+
+scene goodbed
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My dream room has a story in each corner and quiet right in the middle. | I see an island from above in one familiar dream.
+b : Would you want to live in the quiet? | What shape does the island make?
+a : Visit it. Even a wolf who loves a tale can use a little empty silence. | A common grey pebble. The dream is quite content with the old workmanship.
+
+scene forgotturn
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : If I forget a name in a tale I leave the place open. | I don't mind a listener wanting a second ending.
+b : What fills the space? | Would you change the first?
+a : For the moment the shape of the act. A name can come back afterwards if it's a story I know well. | Tell both. Sometimes a little extra ending gives the first somewhere softer to sit.
+
+
+young
+line @1 greet : You can sit beside the spotty one. I saved space.
+line @2 greet [pair.band=strangers] : Hello from me. The others don't talk much.
+line @3 greet [here.time=dawn] : You woke up before my front row did.
+line @4 greet [here.time=dusk|night] : My row's all shadows now. You may still come.
+line @1 kin.open [pair.kin!=no] : Sit close, you can hear the very small voice with us.
+line @1 again.open : You came back in time for another ending!
+line @1 greet.return : You spoke! That's more than my other listeners do.
+line @2 greet.return [pair.band=friends|family] : I knew that sound before I looked round.
+line @3 greet.return [here.time=dusk|night] : Welcome from the bit of dark where I'm sitting.
+line @1 farewell : I'll leave a stone to keep your seat.
+line @1 farewell.return : Bye from the pebbles as well as me.
+line @1 react.news : I'll hear it. Just let me sit the wobbly one down.
+line @1 react.news.new : That's a whole new row of story!
+line @1 react.news.known : I've heard that in a taller voice.
+line @1 react.news.doubt : Was somebody close enough to really see?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'd leave the soft place for a sore heart.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That one gets my smoothest white stone.
+line @1 ask.how : Is it a good sort of day inside your head?
+line @1 answer.how : My pebbles are listening and I've a bit more story left.
+line @1 sympathise : You can sit and let the tale go by for a while.
+line @1 reassure : I'll save your stone if you feel like coming back.
+line @1 decline : No. The ending stays in my pocket till the proper time.
+line @1 accept_decline : All right. I won't turn your pebble over.
+line @1 thank : You left every little pebble just where I sat it.
+line @1 deflect_thanks : You could smile at the spotty one for me.
+line @1 preclose : I've forgotten to set my last listener down.
+line @1 accept_preclose : I'll keep the quiet part for myself.
+line @1 ack : I heard right.
+scene seating
+when topic=pastimes self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I sit the flat pebbles first, then the round ones. | The white pebble goes in my pocket till the end.
+b : So the round ones can lean? | Does that one miss the story?
+a : Yes. The flat ones do all the patient work before I even give them voices. | It gets to hear my coat rustling. Then it comes out for the best part.
+
+scene honeyplate
+when topic=food self.likes=honey_cakes
+does tell.self / ask.detail / answer.detail
+a : I put the honeyed side of a cake on top. | A bit of cake makes a fine hill for my story.
+b : Wouldn't the honey stick to your nose? | Do you put pebbles on the top?
+a : It does. I like my nose to get a taste before my tongue. | Not twice. The last ones got stuck and I had to eat my way to the rescue.
+
+scene bells
+when topic=festival self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : When a bell rings the pebbles in a tin almost sound like cheering. | I give the smallest pebble a turn at being the bell.
+b : Who shakes the tin? | But how can a pebble ring?
+a : Me. They're good listeners, but a poor sort of crowd for making its own excitement. | I go ding. You didn't really think the pebble would do the work.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : If a pebble has a fuzzy tail it's not invited to tea. | I listen twice if my cake tin makes a scratching noise.
+b : What if it's a very polite rat? | Why twice?
+a : It can show its good manners by leaving my cake alone. | Once for the noise. Then once to find out if I'm scraping it with my own shoe.
+
+scene crust
+when topic=food self.dislikes=stale_bread
+does tell.self / ask.detail / answer.detail
+a : A crust harder than my white pebble doesn't belong on a plate. | I tried giving hard bread a part in a story.
+b : Where should that crust go? | Which part could a crust play?
+a : In a pot to get soft. I'd hate a perfectly decent crumb to lose its chance. | The rock that stood in the way. Very easy pretending for the crust.
+
+scene warmrain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain brings the colours out of my little listeners. | Two plain pebbles have hidden stripes.
+b : Do the colours stay? | Where do the stripes go?
+a : Till they're dry. Then the next shower gets to do it again for nothing. | Inside the stone, I think. I'll ask the rain to show you.
+
+scene wharf
+when topic=land self.quarter=wharf
+does tell.self / ask.detail / answer.detail
+a : On the Wharf a little row of stones can stand in for a whole row of boats. | A long board makes my best harbour.
+b : Which ones are meant to be boats? | Is there water on it?
+a : I give them names inside the tale. Each has a different tale of coming home. | Just wet marks. My boats aren't meant to sail off with the actual ships.
+
+scene mother
+when topic=family self.mother
+does tell.self / ask.detail / answer.detail
+a : I'd save the white listening stone for #self.mother#. | I've a cake corner I'd take home to #self.mother#.
+b : Could I use the spotty one? | Even the part with all the honey?
+a : Yes. That one's very good when there's a mystery coming. | Especially that part. It travels best if I don't keep licking it.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : Sometimes I need #self.friend# when I've too many story voices. | I'd let #self.friend# choose the ending stone for a change.
+b : Can't one voice do every part? | What if the wrong one gets picked?
+a : Only one after the other. I want to make an argument that lasts two whole mouths. | No wrong one if I gave away the choosing. I can have it back next story.
+
+scene lesson
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : There's a lesson about sums in two rows of pebble listeners. | I make little story pictures round a hard word.
+b : How do you count a round one that rolls away? | What if the word is too big?
+a : I leave space for it. The answer has a missing pebble in it till it comes back. | I draw a very small picture and tell the rest. I don't put everything on a slate.
+
+scene crest
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : The dark chip plays the rich gate and the pale one plays the poor little door. | In my story a very grand wolf loses a key.
+b : What happens when the door needs the gate? | Who gets to find it?
+a : The gate opens. If it only stood there being grand I'd want a different story. | The littlest listener gets that part. The tallest one can't put a paw down the crack.
+
+scene highview
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a window so high my stone audience could see over all the ships. | I dream of stories that climb stairs.
+b : Would you still come down? | How many stairs?
+a : I'd need to. Up there I couldn't reach any new pebbles. | As many as the story needs to show what happens when you look down from the top.
+
+scene private
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : Ask me if I got that from a story or heard it through a real door. | I'd never say a stone spoke for real.
+b : How can I tell? | Even for a lovely story?
+a : Ask. I might get mixed up over which door, but I know when I made the whole thing up. | Especially then. I like the voices because I made them.
+
+scene smalltime
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : My story can last just as long as a clean sleeve stays clean. | A very short tale uses only two stones.
+b : Is that a long time? | Which two?
+a : It is if I keep my elbow off the wet rail. I often forget at the good part. | One for the beginning, one for the end. The wolf in the middle is me.
+
+scene saltcorner
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I put my stone row in a box with a bit of cloth under it. | I save tiny scraps for the audience to sit on.
+b : Does the cloth keep it from making a clatter? | Wouldn't the stones be fine on the floor?
+a : Yes. A tale shouldn't wake the whole room just by being put away. | They'd be fine. My toes might mind very much if I got up in the night.
+
+scene queensoil
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My very best tale begins with everybody thinking a little pebble is an island. | A dark stone makes a good night sky.
+b : How do they find out? | Isn't the sky much bigger?
+a : It rolls over. A whole island doesn't generally do that halfway through my words. | The play's very small. The sky only has to reach up to my next pebble.
+
+scene cups
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I set a quiet pebble in the row when a tale has a part that's sad. | I close my paws round a stone to keep it warm.
+b : Does a silent pebble help? | Do you feel the warmth?
+a : I can leave a little gap. Nobody needs to make a voice every single time. | After a bit. It comes from me. I don't claim the pebble did it on purpose.
+
+story lostfriend [topic=memories]
+  : I once lost the end of my story down a crack between two boards.
+  : I knelt and poked about for the white stone till the other pebbles slid off the cloth after it.
+  b : Did you lose the whole audience?
+  : No. One big flat one got stuck in the crack, which gave all the others something to wait on. I had an entirely new ending.
+
+story sticknose [topic=food self.likes=honey_cakes]
+  : I tried telling a tale while I licked honey off my paw.
+  : I got to the most important word and stuck two claws together just when I meant to point.
+  b : Did the story have a long pause?
+  : It had a wolf stop to eat a cake. I had to be true about it.
+
+story paintwater [topic=weather self.likes=warm_rain]
+  : A little shower made the white stone go pink underneath.
+  : I thought it had learnt a new trick. There was red dust on the cloth where I'd set it.
+  b : Could it do the trick again?
+  : For three more drops. Then it was a clean white stone again and I had new pink spots up my nose.
+
+rule @lineup
+when concept=bark self.likes=old_tales
+does aside
+cooldown 8h
+say Round ones lean on the flat ones! | Nobody sit on my last listener.
+
+rule @cake
+when concept=bark self.likes=honey_cakes
+does aside
+cooldown 8h
+say Little hill of honey coming through. | Clean paws for the white stone!
+
+rule @roof
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Show your stripes in the warm drops. | Pebbles under my sleeve till the puddle's ready.
+
+rule @rat
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Lid on now, that scrape had feet. | No tails in my cake box.
+
+dlg @1 resident.hub : One more listener fits if you sit by the box.
+dlg @2 resident.hub [topic.meeting=known] : Here's the spotty seat again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : You stay beyond my little row. We'll hear you there.
+dlg @4 resident.hub [here.time=night] : I can find the white one even when the others turn dark.
+dlg @1 resident.job [self.job=child] : #self.trade_words.capitalize#. I like sums with a story in them.
+dlg @2 resident.job : I fit a whole audience on this bit of cloth.
+dlg @1 resident.bye : The white stone's out. That's our ending.
+graft @listeners_seats resident.hub
+choice Which of your pebbles has the best ears? -> listeners_seats
+node listeners_seats
+say The spotty one has speckles where ears would go. If a story gets in one speck and slips out the other it'll have gone straight through a stone.
+choice Does the white one hear just the ending? -> listeners_seats_more
+choice Set the spotty one back. -> hub
+node listeners_seats_more
+say Yes. If it heard the whole story it'd come out of my pocket knowing what comes last. I like to give one listener a proper surprise.
+choice Set the spotty one back. -> hub
+choice Leave a little room round the white one. -> bye
+
+
+adolescent
+line @1 greet : Come close enough for an ordinary voice.
+line @1 greet.return : Glad to hear a wolf with breathing lungs for a change.
+line @1 farewell.return : The stones and I will keep our own counsel.
+line @1 react.news : I'd hear what happened around that bit before giving it another telling.
+line @1 ask.how : Have you heard a tale worth sitting still for?
+scene memoriesrow
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I used to sit pebbles up in a serious little row. I still do sometimes. | Now I can tell a tale with most of its stones in my pocket.
+b : Does the tale feel smaller now? | What's the use of the pocket?
+a : It's the audience that's grown. A listening wolf has opinions my old pebbles never dreamt of. | I can feel the place without stopping to stare at my paws.
+
+scene twoearrs
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I try a tale on one patient ear before I tell it to a room. | I put the ending before the beginning when I practise alone.
+b : How do you choose the ear? | Doesn't that spoil it?
+a : I choose a wolf who will tell me plainly if a middle piece fell out. | For me, no. I can see where all the little earlier bits ought to point.
+
+scene hillhome
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a room with high glass and a narrow stone sill. | A view of the wharf would be my first wish for any house.
+b : Room for the little row? | Even from up the hill?
+a : Yes. The pebbles have travelled in a pocket long enough. | From up there the same boards would give the tale quite a different beginning. I've seen them often enough from below.

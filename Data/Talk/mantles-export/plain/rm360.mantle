@@ -1,0 +1,262 @@
+# rm360, the bark king (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm360
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_eleanor_wickhand
+written_by codex
+title the bark king
+fits stage=adult|old
+prefers job=woodcutter
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=devout drive=ambitious
+quirk leaves_bark_on_one_draught_piece_to_mark_a_king
+likes smoked_eel draughts market_bustle misty_dawns
+dislikes haggling wet_floors
+fears a_warped_playing_square an_empty_evening_pot
+hopes a_board_worthy_of_a_long_game a_clear_sight_of_the_far_row
+topics pastimes +0.5 work +0.4 faith +0.3
+styles comfort=practical gossip=plain refuse=firm tease=none
+marks oath saying
+persona #self.first# keeps the bark on one draught piece, strives to see two moves past a crowded middle, and speaks with no patience for a price that changes halfway through a purchase.
+
+words
+oath! = King in the sawdust | Knot across the diagonal
+saying! = The farthest square grows bark | Look beyond the jumped square
+roughking = my bark-backed king | my rough-crowned piece
+softside = the peeled pale face | the smooth side
+farrow = the king row | the last bright row
+gamebox = my chip box | the sliding piece box
+jointline = the join between the boards | a pale seam
+eeledge = a smoky tail cut | a strip of rich eel
+miststrip = a pale veil over a board | an edge of mist
+strawcloth = a rough clearing rag | a square of wool
+woodknock = the crack of dry ends | a short wooden knock
+knoteye = a dark seam in the cut | a tight eye in the grain
+
+any
+opinion @1 church for 2 : Faith has let me look beyond a bad position and see a neighbour waiting for a hand. That matters more than winning any little game.
+opinion @1 dole for 3 : Giving out bread has one rule plain enough to put on a board. Get a meal into a hungry mouth before anybody goes home.
+opinion @1 houses against 3 : A House seems born sitting on the far row. The rest of us would like a clear square even to begin.
+opinion @1 merchants against 2 : I'd sooner one hard price on a scrap of board than a kind word that grows dearer while I'm counting.
+opinion @1 drink against 1 : I'd like to choose which move is mine. Too much ale can take the choice and leave a wolf the entire blame.
+opinion @1 sump for 1 : A Sump door can open on two seats and a game and give me all the room I need. The hill's fine games can't do more.
+
+grown
+line @1 greet : I've set the pieces aside for a caller.
+line @2 greet [pair.band=strangers] : A caller I haven't placed yet, in the nearest row. Welcome.
+line @3 greet [here.time=dawn] : There's light to see the pale pieces now. Come near.
+line @4 greet [here.time=dusk|night] : We can leave the board dark and talk.
+line @5 greet [self.working=yes] : I've a cut to finish neatly before I turn.
+line @1 kin.open [pair.kin!=no] : Come sit by the edge we know between us.
+line @1 again.open : The far row's no farther off than when we parted.
+line @1 greet.return : You have an answer across a plain stretch of board.
+line @2 greet.return [pair.band=friends|family] : A friendly word's got through the centre cleanly.
+line @3 greet.return [self.working=yes] : Your greeting carried beyond the wood knocking.
+line @4 greet.return [here.time=dusk|night] : Your voice shows up better than the squares do now.
+line @1 farewell : May the street open up once you've crossed it.
+line @1 farewell.return : My turn to watch the loose pieces. Go well.
+line @1 react.news : Put the moving part before me and leave it there a moment.
+line @1 react.news.new : I hadn't reckoned on that piece moving.
+line @1 react.news.known : I'd seen the position before, if not quite from there.
+line @1 react.news.doubt : Did the teller see the piece or just its empty square?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : May that house find somebody who'll carry a little of the ordinary weight.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Fair room for a good move there.
+line @1 answer.how : I've a firm square under me and another in view.
+line @1 ask.how : Seen a way clear through today's business yet?
+line @1 sympathise : Tough to see past an empty place meant for somebody else.
+line @1 reassure : Wait for a patch of clear ground. There's no clock on grief.
+line @1 decline : I'd have to call a crooked bargain straight, and I won't.
+line @1 accept_decline : I'll keep my hand clear of your pieces.
+line @1 thank : You let me see another move when I'd seen none.
+line @1 deflect_thanks : Give the next learner a decent turn.
+line @1 preclose : My board has slipped half a square across my knee.
+line @1 accept_preclose : I can carry on without rushing you.
+line @1 ack : Sound square.
+scene barkking
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I leave a rim of bark on the piece that earns the far row.
+b : For a crown? | Doesn't the bark catch?
+a : Yes. Even if the light's gone I can feel which piece earned its wider choice. | Only if I push it sideways. I expect better manners of a king.
+
+scene markboard
+when topic=work self.job=woodcutter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I turn a scrap sideways to see where the grain means to run.
+b : What do you see across it? | Can you choose another way?
+a : Little black eyes in the pale end. Some mean there's a knot ahead of the cut. | My hands can. The board will give its own opinion after the cut.
+
+scene eel
+when topic=food self.likes=smoked_eel
+does tell.self / ask.detail / answer.detail
+a : A smoky eel end keeps its taste longer if I set my bite across the grain.
+b : Chewing slowly? | You find grain in fish?
+a : Quite slowly when there's only a small supper. A careful mouth has its compensations. | Everything put together has a direction it comes apart. Supper is a convenient lesson.
+
+scene market
+when topic=pastimes self.likes=market_bustle
+does tell.self / ask.detail / answer.detail
+a : I stand quietly in a busy market to see which bit of the crowd moves next.
+b : Is that a sort of game? | Do you ever get pushed about?
+a : Until I have to pick a way through. Then it's quite practical. | Yes, if I'm so pleased with a guess that I forget my place in it.
+
+scene mist
+when topic=weather self.likes=misty_dawns
+does tell.self / ask.detail / answer.detail
+a : On a misty morning a single clear stone can make a whole road visible in my mind.
+b : Would you walk on that guess? | Why remember the stone?
+a : Just one stone's worth of walking. A pleasant vision needn't make a poor foothold. | It usually shows the edge of a place where the water gathers. I'd rather let the water keep that square.
+
+scene wetboard
+when topic=weather self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : I keep my pieces in their box when a floor's wet.
+b : Do you play on the floor? | Would a table do?
+a : Sometimes. More often I'm afraid of losing my footing while carrying a board full of draughts. | If the table's near enough to reach walking slowly. One splash can finish a game without choosing a winner.
+
+scene singleprice
+when topic=prices self.dislikes=haggling
+does tell.self / ask.detail / answer.detail
+a : I want the same price when the coin leaves my pocket as when my paw went in.
+b : Won't you argue a price down? | Even for the last little piece?
+a : Tell me the real figure and I'll decide. I don't want to perform my poverty as part of a sale. | If a small piece costs less, name it before I choose it. My ears are free before my purse opens.
+
+scene stairstep
+when topic=land self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I think of the steep Sump stairs as a diagonal laid upright.
+b : Can you jump two? | Where's your king row?
+a : Dry stairs, clear feet, sometimes. I don't get an extra life for calling a lane a board. | Where the pot and my chair begin. No better reward for a hill.
+
+scene foodprayer
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I like a prayer that sends me away with my sleeves rolled back for a neighbour.
+b : Doesn't quiet suit a prayer? | What if the work's finished already?
+a : Quiet to listen and activity to put what I've heard to use. The two fit well together. | A heartfelt thanks then. Perhaps the neighbour would welcome company at supper.
+
+scene blankpieces
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I give a beginner a pair of plain pieces first and a rough king to feel afterwards.
+b : Why hold the king back? | Why just a pair?
+a : To make the change of direction clear when it comes. A crown means something once you've been one way. | To show a single jump. A whole crowded board can wait till there's a reason for the first move.
+
+scene dearwood
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : Good offcuts are dear in time even when they're free in money.
+b : What costs the time? | Would you buy a board ready-made?
+a : Finding one that's flat under all four corners. I won't waste a whole working evening chasing a draught off a tilt. | If that price bought me back the evening for playing, perhaps. Most would cost the next evening too.
+
+scene friend
+when topic=pastimes self.friend
+does tell.self / ask.detail / answer.detail
+a : There's a little plain piece I'd give #self.friend# to keep.
+b : What good's one draught on its own? | Why that piece?
+a : It'll bring a game to mind, and the full box can come along next time. | It's got a dark eye on the face. Whatever else gets lost in the chips, I'd recognise that one.
+
+scene ambition
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dream of a board the width of a whole long table, each square true against the next.
+b : Who gets the first game? | How would the far player reach?
+a : I'd like a beginner. I'd rather see somebody delighted to arrive than bored with an easy victory. | That's the detail I keep waking before I answer. Dreams can afford long arms.
+
+scene slipstack
+when topic=work self.job=woodcutter
+does tell.self / ask.detail / answer.detail
+a : I set dry lengths so air can pass behind the pile.
+b : Why keep air in room you could fill with wood? | Is that to make the board dry faster?
+a : Because spoiled wood takes just as much room and gives no useful work back. | To let both faces dry evenly. One dry face and one damp one are an invitation to a twist.
+
+scene muddledvoice
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't give a name to a shadow on a board.
+b : What if the outline is familiar? | What would convince you?
+a : A round-headed nail casts a very fair draught shadow. I need more before I tell a wolf's business. | The piece itself and a reason to speak. I've no call to move somebody else's king.
+
+scene silentmeal
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I let my eyes take in the whole table before I start to eat.
+b : Do you count the dishes? | Is it a custom?
+a : I look for the wolf nobody has passed a dish to. An empty plate can sit quite politely and go unseen. | My own. I like to know if there's a paw somewhere a little hesitant to reach.
+
+scene endday
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : I rub the rough king once before I put the game away by night.
+b : To knock the dust out? | To remember the winner?
+a : To feel whether a flake of bark is coming loose. A crown too can do with repairs. | A board can start again tomorrow without keeping a grievance from the previous game.
+
+scene newmove
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A move that looked wonderfully bold from this end can look foolish from the other.
+b : Would you change seats halfway? | Who gets to decide which view was right?
+a : Before a game, yes. While it's on I'll live with what I opened. | The next move usually does. A quiet answer from the other side is quite educational.
+
+story fallenking [topic=memories]
+  : Once I played with bark so loose that the king's rim came away halfway over the board.
+  : Nobody could feel which of two pale pieces was meant to go backwards.
+  b : Did you start all over?
+  : We looked at the scrap of bark. Its pale underside fitted one piece exactly. I found my king and a firmer crown for the next evening.
+
+story squarepot [topic=food self.likes=smoked_eel]
+  : I spread my smoky eel across a pair of squares to see where to cut an even share.
+  : I pulled it tight to measure. When I let go both ends curled and one share looked enormous.
+  b : How did you settle that?
+  : By the weight in my palm. The board was very good at its own game and a fool at supper.
+
+story dustdawn [topic=work self.job=woodcutter]
+  : A cool mist had left a dark map of marks on a stack of boards one morning.
+  : I touched the pale shape at its centre and lifted one thin shaving off the end.
+  b : Was the shaving keeping the wet out?
+  : It was. A thing almost too small to pick up had drawn quite a clear picture of itself.
+
+rule @cut
+when concept=bark self.job=woodcutter self.working=yes
+does aside
+cooldown 8h
+say Let the new cut show its own grain. | Set the short ends where they won't tip.
+
+rule @king
+when concept=bark self.likes=draughts
+does aside
+cooldown 8h
+say Feel the rough edge before you take the king. | One clear diagonal, please.
+
+rule @wet
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Board level through the wet patch. | Keep the game box shut in the drip.
+
+rule @market
+when concept=bark here.place=market
+does aside
+cooldown 8h
+say Name the figure while the hands are free. | One square of space to pass.
+
+dlg @1 resident.hub : I'll clear a square for whatever thought you've brought.
+dlg @2 resident.hub [topic.meeting=known] : There's the familiar piece again, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Keep your paws to the near squares. We're within easy speaking distance.
+dlg @4 resident.hub [here.time=night] : The last row's nearly invisible now but I can hear a voice well enough.
+dlg @1 resident.job [self.job=woodcutter] : #self.trade_words.capitalize#. I like a cut that runs true all the way into the useful wood.
+dlg @2 resident.job : I take a look at both faces before putting a piece to use.
+dlg @1 resident.news [world.news] : The news fits on this bit of the board. #world.news#.
+dlg @1 resident.bye : Save one clear move for coming home.
+graft @barkpiece resident.hub
+choice How did this piece earn its bark? -> barkpiece
+node barkpiece
+say The bark was always there. I left it on one piece and peeled the rest. A wolf who gets a plain draught to the far row can trade it in for this one.
+choice Does the bark really change the move? -> barkpiece_more
+choice Hand the draught back. -> hub
+node barkpiece_more
+say The rules do. The bark lets a paw read the rule when the lamp's a long way off. Try the plain piece and the rough one with your eyes shut.
+choice Hand the draught back. -> hub
+choice Leave the king on its square. -> bye

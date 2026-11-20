@@ -1,0 +1,295 @@
+# rm223, the nutshell captain (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm223
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_corra_ropewick
+written_by codex
+title the nutshell captain
+fits stage=young|adolescent|adult|old
+prefers drive=ambitious talk=plain
+traits temper=even talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=ambitious
+quirk rigs_walnut_shells_for_distant_voyages
+likes roast_pork old_tales tidy_house warm_rain
+dislikes waiting cold_tea
+fears being_left_on_the_bank
+hopes to_see_a_far_dry_coast
+topics travel +0.6 pastimes +0.4 home +0.3 smalltalk +0.2
+styles comfort=quiet gossip=cautious refuse=direct tease=none
+marks oath saying
+persona #self.first# rigs nutshells for distant voyages and puts every scrap of cargo in precisely the right place.
+
+words
+oath! = Split my little mast | Crack my cargo
+saying! = Load low and go | Even a shell needs a harbour
+hull = half a walnut | a nutshell boat
+mastbit = a clean thorn | a stick of broom
+sailbit = a twist of onion skin | a scrap of dry leaf
+cargo = a yellow bead | a speckled bean
+chartbit = a map in crumbs | a chart in dust
+berth = a hollow in a brick | a notch in the step
+leak = a shiny trickle | a dark wet line
+cupsea = a saucer of water | a very shallow sea
+quay = a bone button | a slice of cork
+fatbit = a curl of crackling | a crisp bit of rind
+flagbit = a red thread | one strip of ribbon
+stonebit = a flat flake of slate | a square pebble
+
+any
+opinion @1 houses mixed 1 : A House might own a ship. It can't own the patch of sea the ship just left.
+opinion @1 church for 1 : Somebody ought to give the Bright One credit for giving water interesting edges.
+opinion @1 newcomers for 1 : A stranger might know what the far slope of a wave looks like.
+opinion @1 festivals mixed 1 : I like seeing flags. I like it less when shoulders are all there is to see.
+opinion @1 dole for 2 : If the pot holds one more ladle, why leave a belly empty?
+opinion @1 sump for 1 : You can find a little port in almost every broken brick round here.
+line @1 react.news : I'd like to hear which bit of the story came first.
+line @1 react.news.new : That changes where I'd put my finger on the map.
+line @1 react.news.known : Somebody got that news here ahead of you.
+line @1 react.news.doubt : A fine tale ought to float twice in the same water.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : Oh. I'd keep somebody company after news like that.
+line @1 react.news.glad [topic.kind=birth|marriage|apprentice|succession|work] : I'd put out my smallest bright flag for that.
+line @1 sympathise : Here. There's a place beside me where you can be quiet.
+
+grown
+line @1 greet : Welcome aboard this little dry patch.
+line @1 greet.return : No tide to beat. We can take a moment.
+line @1 farewell : Here's wishing you a level crossing.
+line @1 farewell.return : I'll look for your sail coming back.
+line @1 decline : I need a clearer view before I promise that.
+scene a_chart_ought_to
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A chart ought to show where you can come in tired. | A safe landing interests me more than a handsome compass rose.
+b : What would you draw there?
+a : Two posts close enough for a wet wolf to cling between. | A roof you can see from the water and a light beneath it.
+
+scene i_can_rig_a
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I can rig a nutshell by feel if the thread is waxed. | My fingers still remember how to step a mast smaller than a tooth.
+b : Why keep making such little ships?
+a : Cheap passage for a mind that wants to travel after supper. | A whole afternoon at sea fits into one old saucer.
+
+scene little_things_disappear_under
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Little things disappear unless they own a drawer, or a shelf with a lip. | Give me a shelf with a lip over a cupboard any day.
+b : What's the lip for?
+a : My collection includes several perfectly round passengers. | A shelf should keep its cargo when somebody shuts a door too hard.
+
+scene there_s_a_surprising
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : There's a surprising silence between two heavy drops. | I watch the line below the eaves to judge a shower.
+b : How can you tell a shower's nearly over?
+a : I've mistaken the beginning for the end so often I stay under cover an extra breath. | When the drops quit joining hands it's generally safe to try.
+
+scene a_crisp_edge_on
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : A crisp edge on a roast makes carving feel like opening a present. | I've been known to trade the soft centre of a roast for its browned edge.
+b : Even a small piece?
+a : Especially a small piece. You can hear every tooth doing its share. | As long as it comes away with a crackle.
+
+scene i_d_pay_for
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I'd pay for a sound floor before I'd pay for a high ceiling. | A room looks different when you've considered where water would run.
+b : You'd judge a house like a hull?
+a : The first leak in either rather settles the question. | Only if I'm to keep anything dear inside.
+
+scene i_like_hearing_a
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I like hearing a friend's account of a journey twice. | When a friend draws me somewhere far away, I look at it twice.
+b : Why the second look?
+a : The first tale is the one everybody's heard. The second has the sore feet in it. | The first look's for the place. The second's for how my friend felt there.
+
+scene when_waiting_wears_on
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : When waiting wears on me I sort something small. | Cold tea is my private measure of a long delay.
+b : What if there's nothing to do?
+a : I take a loose thread and see how many separate strands it holds. | I empty the cup. Waiting with cold tea's worse than waiting without.
+
+scene a_broken_bit_of
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : A broken bit of pottery can make a very good peninsula. | I keep seeing coastlines in bits of chipped tile.
+b : Can you sail round that jagged bit?
+a : With gingerly turns and a smaller boat than that beetle. | Only when it's been raining. Otherwise you'd be dragging a boat through dust.
+
+scene sore_fingers_make_me
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Sore fingers mean I put the rigging down and look out at the water a while. | I've learnt to give tired eyes a large horizon.
+b : Does looking into the distance help?
+a : It reminds me nothing dreadful happens if a tiny sail waits till tomorrow. | It stops me scowling at a knot that can hardly scowl back.
+
+scene i_d_thank_the
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : My first safe footprint ashore deserves more gratitude than a hundred miles of sailing. | A place to land seems a small mercy until there's nowhere to stand.
+b : Do you say that on dry land too?
+a : Sometimes. A closed door in the rain is a good reminder. | I try to notice when I'm the one who could open a door.
+
+scene a_lean_week_shrinks
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : A lean week shrinks my world to the table, so I sail off over supper in my head. | There's no fare to pay for the voyage you can picture over supper.
+b : Where would you sail first?
+a : Someplace where nobody has ever watered a good stew to feed one more mouth. | Out beyond the last demand for a copper and then home by lamplight.
+
+story berth [topic=memories]
+  : I cut a harbour in a piece of turf for a walnut boat.
+  : The water seeped away and left a perfectly respectable little valley.
+  b : What became of the boat?
+  : A roof. A beetle moved in before I could even charge rent.
+
+rule @box
+when concept=bark
+does aside
+cooldown 8h
+say A level bottom makes a better box for sails. | Keep the little cargo in the shallows.
+
+rule @dark
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Good hour for putting distant shores away. | One shelf of sleeping ships. Lovely.
+
+dlg @2 resident.hub : Put your bundle anywhere clear of those fragile bits.
+dlg @1 resident.news [world.news] : This much reached shore whole. #world.news.capitalize#.
+dlg @2 resident.bye : I hope something worth bringing home comes your way.
+
+young
+line @1 greet : Step across the river! There. You're safe on my side.
+line @1 greet.return : Hullo again. The harbour's still open.
+line @1 farewell : Take care crossing over my little fleet.
+line @1 farewell.return : Go the dry way if you can find it.
+line @1 decline : I'm saving that bit for a very important ship.
+line @1 answer.how : Fairly busy keeping a bean out of the water.
+line @1 ask.how : Are your toes wet inside your boots too?
+line @1 thank : You could have stepped right on it. Thanks for looking down.
+line @1 reassure : A little water won't sink everything at once.
+line @1 accept_decline : You don't have to play if you've got other plans.
+scene i_ve_made_hull
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I've made #hull#. So far the sea comes up to here. | That's my biggest ship. Keep your sneeze inside.
+b : What's it carrying?
+a : #cargo#. One more and we'd have to bail with a nutshell even smaller. | A crumb that looks very much like a whole roast from down there.
+
+scene i_want_to_sail
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I want to sail away to someplace where they hang coats up dry. | I'm going to find the dry country at the other end of all this water.
+b : How will you know you've got there?
+a : I'll sit on the dock in my best things and nothing will soak through. | I'll ask them what a puddle is and see if anybody knows.
+
+scene at_self_workplace_i
+when topic=work self.job=child
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I try making my letters look like little ports. | I like writing the round letters. You can sail right round them.
+b : What happens when you meet a crooked one?
+a : I give it steps. Even my letters need a way ashore. | That's the bit where the wind turns back.
+
+scene crackling_makes_a_noise
+when topic=food self.likes=roast_pork
+does tell.self / ask.detail / answer.detail
+a : Crackling makes a noise like sticks falling down. | I've saved #fatbit# for the very end.
+b : Don't you like the soft part?
+a : I do. I eat it first so the last bite's loud. | It's soft all the way through. I want one last loud bite.
+
+scene there_s_a_drop
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : There's a drop holding on. I think it's forgotten what comes next. | I'm watching the rain to see which drop finishes last.
+b : Will it be the last one?
+a : It went and another took its place. I'll have to start over. | That one with its belly hanging down. Don't breathe on it.
+
+scene things_look_smaller_put
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Things look smaller put away. That's how I get a whole fleet in a box. | All my ships sleep with their bows pointed out.
+b : In case of trouble?
+a : In case I need to fit one more inside before bedtime. | In case it rains and the harbour comes back while I'm asleep.
+
+scene tell_me_an_old
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Tell me an old tale with a very long voyage. | I like a story where the sea seems too big to get over.
+b : Does it need a monster?
+a : It can just be wide. That's quite scary when you're little. | No. A leak as wide as my nail would do for me.
+
+scene i_d_show_self
+when topic=family self.father
+does tell.self / ask.detail / answer.detail
+a : I'd show #self.father# my new mast when the glue holds. | I want to show #self.father# how it floats before I try the deep bit.
+b : Why wait?
+a : Anyone can see a stick lying down. I want this one standing up. | In the deep bit I might have to show just the bubbles.
+
+scene i_ll_wait_as
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : Waiting for tea takes ages, so I float a boat in the jug while it steeps. | Cold tea tastes like someone forgot you were coming.
+b : How can you tell when it's ready?
+a : When the boat's gone brown. Then I fish it out and drink. | I hold both paws round the cup. If I'm warming it we've waited too long.
+
+story sink [topic=memories]
+  : I put a little stone in a shell and it went straight down.
+  : I put another shell above it to show where my first ship was lying.
+  b : Did that one sink too?
+  : No stone in that one. I had learnt one whole thing about ships.
+
+rule @moor
+when concept=bark
+does aside
+cooldown 8h
+say That's a dock, not just a broken corner! | My shell's pointing out to sea already.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say There's room for a second ship in that puddle now. | Another drop. I nearly saw the very last one.
+
+dlg @1 resident.hub : You can stand on that bit. The water on my map stops at your toe.
+dlg @1 resident.job [self.job=child] : My sums take forever if I make every number into a ship.
+dlg @1 resident.bye : Bring back news if you see a real sail.
+graft resident.hub
+choice What's that speck in the middle? -> hull_speck
+node hull_speck
+say It's my cargo. It's got to sit exactly there or everything else starts getting wet.
+choice What will you bring home? -> hull_home
+choice I'll leave you to your loading. -> hub
+node hull_home
+say A little dry sand. Enough that when it rains here I can poke one toe into summer.
+choice Save me a pinch. -> bye
+
+
+adolescent
+line @1 greet : Watch where the gutter runs. I've a boat trying her luck in there.
+line @1 greet.return : I've got time while the water's still up.
+line @1 farewell : Hope there's clear water ahead for you.
+scene i_used_to_want
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I used to want nothing between me and the horizon. | I used to draw only the way out of the harbour. Now I draw the way back too.
+b : What changed your mind?
+a : I decided I'd want to come home to tell somebody what I'd seen. | I want to know both views before I choose.
+
+scene i_d_let_a
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : I'd let a friend name the next boat. | I've named so many boats I'm running low on good sounds.
+b : What makes a good name?
+a : Something you can shout after a runaway shell and still sound dignified. | Short is best. A gutter only runs so far.
+
+story spare [topic=memories]
+  : I cut two sails once. The second was insurance against a squall.
+  : A gust took them both before I'd thought about tying either one down.
+  b : Did you ever get them back?
+  : I got one. The other crossed the road without going to sea at all.

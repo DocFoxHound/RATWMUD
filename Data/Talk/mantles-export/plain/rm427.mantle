@@ -1,0 +1,249 @@
+# rm427, the pantry facsimile (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm427
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_agna_dripridge
+written_by codex
+title the pantry facsimile
+fits stage=adult|old
+prefers temper=calm honesty=frank
+traits temper=calm talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk stores_the_clean_second_copy_on_a_pantry_shelf
+likes pickled_herring swimming fresh_straw frosty_mornings
+dislikes drizzle smoke
+fears being_told_a_filed_request_never_existed
+hopes one_clear_answer_in_the_right_hand
+topics work +0.5 travel +0.4 food +0.3 pastimes +0.3
+styles comfort=practical gossip=exact refuse=direct tease=none
+marks oath saying
+persona #self.first# keeps a clean second copy at home and counts progress in answers, never in the number of stairs climbed to request one.
+
+words
+oath! = Blot my second copy | Brine down my sleeve
+saying! = One stays on my shelf | Name the drawer it entered
+cleantext = my folded duplicate | a clean spare copy
+counterfoil = a narrow receipt | a numbered strip
+brinebox = a pickle crock | a covered brine jar
+herbit = a herring end | a sharp little morsel
+strawroll = a plain straw pad | a tight twist of fresh straw
+frostmark = a pale thumbprint | a little patch of white
+sillstep = a broad half landing | a low stone shelf
+returnfold = a long inward crease | a doubled fold
+daypeg = a peg at eye level | a single marked nail
+saltcrumb = a clear salt grain | a salty little crystal
+stockline = a neat shelf edge | a straight row
+
+grown
+opinion @1 houses mixed 1 : An estate thrives on knowing exactly where the goods have gone. I expect the same precision when a favour changes hands.
+opinion @1 city mixed 1 : Our streets go somewhere definite. Some of our requests appear to live indefinitely between two doors.
+opinion @1 merchants for 1 : A store that can find a customer's parcel in the dark has earned a little confidence in the daylight.
+opinion @1 strangers mixed 1 : A stranger may see the words I've filed. The little note of how I felt filing them remains with me.
+opinion @1 road for 1 : A familiar journey gives me time to decide which question will need the fewest courtesies wrapped round it.
+opinion @1 dole for 2 : An applicant in need of dinner shouldn't have to prove that the first request for dinner went missing.
+line @1 greet : Stand here a moment. Nothing needs signing before we talk.
+line @1 greet.return : We're both present this time, which is a respectable beginning.
+line @2 greet [pair.band=strangers] : Welcome. I've no assumptions to put right before hearing you.
+line @1 farewell : May your papers reach willing hands without having to climb there twice.
+line @1 farewell.return : I shall keep the words that actually passed between us.
+line @1 ask.how : Are things turning up where you left them today?
+line @1 answer.how : Steady. I know where my own copy lies.
+line @1 react.news : I shall want the account in words short enough to repeat.
+line @1 react.news.new : That's an addition my copy does not show.
+line @1 react.news.known : I've seen that entry in the earlier hand.
+line @1 react.news.doubt : I'd look for a reference before filing that under anything definite.
+line @1 react.news.glad [topic.kind=birth|marriage|work|apprentice|succession] : That's a result worth keeping in the open drawer.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : A kind visit might achieve more than another question about the particulars.
+line @1 decline : I won't endorse a statement nobody has yet let me read.
+line @1 thank : You've given me an answer I can use without coming back to check it.
+line @1 deflect_thanks : I had the copy to hand and time to look at it.
+line @1 accept_decline : I'll record the answer as it stands and leave you in peace.
+line @1 sympathise : I can make a patient listener if nothing useful can be done yet.
+line @1 reassure : If we've kept the wording, the question can go in again.
+line @1 ack : I have that in plain order now.
+line @1 preclose : My feet have another landing to attend to.
+scene work_1
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I like an article put back on exactly the shelf named for it.
+b : Even if it's more convenient elsewhere? | Would you blame the last hand to touch it?
+a : Then alter the entry. A settled arrangement can perfectly well be improved in daylight. | I'd find it first. Establishing the culprit does very little for a customer waiting with a basket.
+
+scene smalltalk_1
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : I have put the same question at an office too frequently to consider the count worth preserving.
+b : Do you raise your voice? | Have you considered changing the question?
+a : It's the answer I want raised into view. My own voice gets there well enough. | My wording has improved with use. The matter itself remains inconveniently unchanged.
+
+scene travel_1
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : Long stairs go in pairs on my upward journey and singly on the way back.
+b : Carrying an answer down? | Why the hurry uphill?
+a : Sometimes. Sometimes only carrying myself, and that's a load I mean to deliver intact. | I know the speech by then and the feet gain confidence. Coming down calls for slightly different virtues.
+
+scene family_1
+when topic=family self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I would give #self.spouse# the clean copy to read before taking a request across the city.
+b : For corrections? | Do you really show every word?
+a : For a second understanding of the matter. Correct spelling won't rescue a crooked question. | Words about our own affairs, if wanted. A marriage isn't an excuse to bring home other households' papers.
+
+scene food_1
+when topic=food self.likes=pickled_herring
+does tell.self / ask.detail / answer.detail
+a : An honest herring should taste sharp without taking all the skin off my tongue.
+b : How sharp is that? | Would you serve it with bread?
+a : Sharp enough to make me notice I'm eating it, mild enough that I'd like the rest. | Certainly. A plain crust ought to be allowed to attend an interesting meal now and then.
+
+scene pastimes_1
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I swim for the agreeable absence of stairs and paper.
+b : Do you set yourself a distance? | Aren't you afraid of losing your place?
+a : A safe one. I try to leave my urge to file a report on how many strokes it took on shore. | In the water I rather like beginning a stretch from wherever I happen to be standing.
+
+scene home_1
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep my private copy well above the reach of a leaking crock.
+b : Are you fond of records? | Which cupboard takes the crock?
+a : Fond of an answer that cannot disappear simply by closing a drawer. | On the bottom shelf over a shallow dish. Herring has never once written an application to the contrary.
+
+scene weather_1
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : On a frosty morning I can see every thumb that has tried a latch before mine.
+b : Is that useful? | Do you like what it shows?
+a : It tells me whether I'll be the first caller of the day. I can adjust my expectations by an inch. | I like anything written clearly enough that nobody has to pretend to know what the mark means.
+
+scene prices_1
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I take a receipt for a sum too small to quarrel over.
+b : Expecting a quarrel? | Is the scrap worth its ink?
+a : Preventing one. My patience is too valuable to spend twice on the same little piece of business. | The scrap can save a journey. Ink is quite modestly priced beside a second climb uphill.
+
+scene weather_2
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle treats a written record as a suggestion.
+b : Do you hide it in your sleeve? | What if it gets damp anyway?
+a : A sleeve bends. I put it flat inside the driest part of my coat. | Separate the sheets before the letters begin keeping company with the backs of other letters.
+
+scene memories_1
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I once handed a post over to somebody who had arrived with far better connections than mine.
+b : Did you call it unfair? | Want that position back now?
+a : Yes. I said so quite calmly. Mistaking composure for agreement would have been a considerable error. | I'd want to read the actual terms. A remembered slight isn't a promising employer by itself.
+
+scene friends_1
+when topic=friends
+does tell.self / ask.detail / answer.detail
+a : If a friend brings a tale of being done out of something I ask exactly what was first promised.
+b : Do you believe a friend? | Aren't you supposed to offer sympathy?
+a : Enough to want the complaint to arrive whole when another ear examines it. | I do. Asking the right question is sometimes the most durable sympathy I can supply.
+
+scene day_1
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : Fresh straw makes a shelf look orderly while a wolf is still thinking where everything ought to go.
+b : Aren't shelves better left bare? | Do you use new straw every time?
+a : Not if a jar needs saving from a chilly board or its noisy neighbour. | I use clean straw. I'm not sure a crock would notice the difference between new and merely well cared for.
+
+scene health_1
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Smoke will set me squinting at a perfectly plain line of figures.
+b : Do you read them aloud? | Would you set the work aside?
+a : Once the air clears. A confident voice can misread a three as easily as a burning eye. | Straight away. An honest pause requires far less forgiveness than a tidy inaccurate total.
+
+scene times_1
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In lean weeks I mark the last good shelf fuller in memory than it actually is.
+b : Can you catch yourself doing that? | How do you correct it?
+a : Yes. A bare patch of straw has a rather uncompromising way of speaking to hopeful arithmetic. | Count the jars again and plan dinner from the answer the shelf prefers.
+
+scene faith_1
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A repeated request at an office isn't much like repeating a prayer.
+b : Why distinguish them? | What about patience?
+a : One ought to have some visible record of its arrival. The other may best be kept quite private. | Both ask for it. Only one makes me take a copy to establish I've been there.
+
+scene newcomer_1
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd show a newcomer exactly where a letter should land and where to stand for its receipt.
+b : Does everybody require a receipt? | And if the place is shut?
+a : Only those who might care to know what happened next. I happen to count myself among them. | Write down the hour and try at a different one. A shut door cannot be made official by looking impressed.
+
+scene gossip_1
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The version in circulation has #topic.subject# #topic.claim#.
+b : How did you file it? | Do you regard that as plain fact?
+a : Under talk. There's a considerable amount of empty shelf between that and proof. | No. That's why I said where the version is circulating, not where the event occurred.
+
+story brine [topic=memories]
+  : I laid a fresh receipt beside a pickle jar and took a particularly sharp herring for my lunch.
+  : A drop of brine reached the receipt and turned the number into a small blue fish.
+  b : Were you able to use it?
+  : The words were clear. I took a clean copy as well and gave an absolutely literal account of the fish.
+
+story shelf [topic=work]
+  : I assigned three parcels to three orderly shelves and carefully wrote down the new arrangement.
+  : At closing time I realised I had labelled the shelves looking out from behind them.
+  b : Everything backwards from the front?
+  : Precisely. I went round to the customer's side before writing a more generally useful account of reality.
+
+story swim [topic=pastimes]
+  : I left my spare boots pointing towards the water as I went in for a swim.
+  : When I came out I'd forgotten which rock they were behind, but there were two good heel dents in the mud.
+  b : Did the dents give their position?
+  : They gave mine. I was sitting on my boots while studying the evidence some distance off.
+
+rule @shelf
+when concept=bark
+does aside
+cooldown 8h
+say One copy for the desk and a legible one for my own shelf. | A proper answer occupies less space than all this waiting.
+
+rule @work
+when concept=bark self.job=merchant
+does aside
+cooldown 8h
+say Keep the front label visible after the jar's been turned. | If the stock moves, move the note as well.
+
+rule @walk
+when concept=bark
+does aside
+cooldown 8h
+say Two risers up where the footing permits. | A long climb seldom improves evasive wording.
+
+rule @rain
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Dry fold outward and the letters laid flat. | Paper takes drizzle far more personally than I do.
+
+dlg @1 resident.hub : I'll hear the short version and ask if anything needs copying more exactly.
+dlg @1 resident.job [self.job=merchant] : At #self.workplace# I notice the shelf where each promised parcel actually lands.
+dlg @1 resident.news [world.news] : Here's the part I could copy without making an addition. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : There's a circulating report that #topic.subject# #topic.claim#. It hasn't acquired proof by being copied around.
+dlg @1 shop.greet [here.shop=open] : Take your time looking. A price ought to hold still while the purchaser thinks.
+dlg @1 resident.bye : Let your own record stay clear and dry.
+graft resident.hub
+choice Do you really copy a petition before handing it in? -> petition_twice
+node petition_twice
+say I make a copy on a quiet table where I can be exact about it. That saves me from trying to recall the fine points with three clerks watching.
+choice Does the copy make the answer come faster? -> petition_wait
+choice I'll remember the extra sheet. -> hub
+node petition_wait
+say No. It merely keeps the matter alive while the answer takes whatever grand tour it considers necessary.
+choice I'll remember the extra sheet. -> hub

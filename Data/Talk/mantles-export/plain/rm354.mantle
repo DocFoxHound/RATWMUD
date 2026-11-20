@@ -1,0 +1,262 @@
+# rm354, the downhill map (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm354
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_piet_wickridge
+written_by codex
+title the downhill map
+fits stage=adult|old
+prefers job=none temper=short
+traits temper=short talk=plain warmth=reserved humour=none honesty=frank piety=ordinary drive=steady
+quirk draws_loaded_routes_as_seen_on_the_descent
+likes oatcakes swimming old_maps summer_evenings
+dislikes stale_bread cold_tea
+fears a_blind_turn_under_a_shifting_load
+hopes a_map_that_shows_the_return
+topics travel +0.6 work +0.4 pastimes +0.4 gossip -0.4
+styles comfort=relieve gossip=short refuse=blunt tease=none
+marks oath saying
+persona #self.first# draws a stair as it looks to a wolf coming back down laden and has little patience for maps that stop at the destination.
+
+words
+oath! = Backwards arrows | Seven blind turns
+saying! = Map the way back first | A bend has two faces
+arrow = a backward arrow | my charcoal dart
+weightbar = a carrying stick | the shoulder pole
+stepend = the outer lip | a tread nose
+maprag = a cloth plan | the folded route scrap
+hitch = a tight hitch | the parcel loop
+swimdip = a quiet dip | my short swim
+bend = the lower bend | a blind turn
+whiteline = a broad chalk stroke | the clear arrow
+cake = a buttered oatcake | a soft oat round
+flask = the warm flask | the stoppered jug
+land = a half landing | the low platform
+swirl = the eddy | a turn in the water
+
+any
+opinion @1 houses against 2 : I'd be glad to see a House mark on the splintered rail as well as on the goods that travel past it.
+opinion @1 watch against 1 : Come down the stairs the way the parcel went before deciding who ought to have seen a collision.
+opinion @1 sump for 1 : We know a few good ways out as well as ways into the low streets.
+opinion @1 dole for 2 : If the shoulder gives way the appetite doesn't. I'm in favour of food for the interval.
+opinion @1 merchants against 1 : I'd charge a full carriage back to a seller who forgets to mention returns.
+opinion @1 road for 1 : A short road can be very dear if there's no sensible way back.
+
+grown
+line @1 greet : Here. There's a view round the bend from this spot. | Hello. I've put the load down already.
+line @2 greet [pair.band=strangers] : New face this way. There's a clear place to stand. | You can speak without getting under my elbow.
+line @3 greet [here.time=dawn] : Morning. Even the return way looks fresh. | A good early view down the stair.
+line @1 greet.return : Heard that. I'm just shifting my shoulder. | Yes, hello. The turn's behind me.
+line @2 greet.return [pair.band=friends|family] : Good, a voice I'd know coming back up as well. | Take the clear place beside the rail.
+line @3 greet.return [here.time=night] : Hello through the dark. Stay on the level bit. | Late feet on a familiar turning.
+line @1 again.open : Our routes have crossed on the return already. | Back before my chalk's had a chance to wear off.
+line @1 hail [pair.band=friends] : Look down from here. There's your awkward turn. | Stand on this side, the view's different.
+line @1 farewell : Mind the step you can't see from above. | Give yourself a good way home.
+line @1 farewell.return : I'll turn down here myself presently. | Right. An easy walk back to you.
+line @1 react.news : Tell it from the end you actually saw. | I'll hear the full trip before deciding.
+line @1 react.news.new : That hadn't made the return journey to me yet. | An unfamiliar turn. I'll remember it.
+line @1 react.news.known : Yes. It reads the same from this end. | I'd already got the account over my shoulder.
+line @1 react.news.doubt : Somebody's missed the corner in the middle. | I'd take that tale back over its own tracks.
+line @1 react.news.sorrow [topic.kind=death|crime|assault|loss|theft] : That's a terrible load to get home with. Sit down. | Some hurts don't improve for being carted about. Leave yours here awhile.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|work] : There's a good turn in the road for somebody. | I'd go back up a flight to hear news like that.
+line @1 ask.how : How's the return journey treating you so far? | Any steep bits still to get through today?
+line @1 answer.how : My feet are willing. The shoulder has a different opinion. | Not downright cross, by my usual standard.
+line @1 decline : I'd be taking a trip with no sensible return if I agreed. | I can't give you the answer you want without making part of it up.
+line @1 accept_decline : Refusal noted. Saves me standing on a stair. | Fair. I'll try an open way.
+line @1 preclose : I'd like to get down before the next parcel comes up. | My shoulder has had enough of standing ready.
+line @1 accept_preclose : Go clean round that bend then. | You may as well get the walking done.
+line @1 thank : You kept the turning clear for my whole parcel. Thanks. | That's help you can feel across your shoulders.
+line @1 deflect_thanks : I already knew the bad corner was there. | It was easy to point where I could see.
+line @1 sympathise : Lean against that railing. You can stop for a minute. | No need to carry it straight back the way it came.
+line @1 reassure : We can manage the turning without doing the whole road again. | Take off a little weight and have another look.
+line @1 ack : Yes, the arrow points that way down. | That matches the way I remember it.
+line @1 give.advice : Look back once before you leave the last clear patch. | Try the return route with one paw occupied.
+scene topview
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A stair looks like a different place coming down with a load.
+b : How different? | Can't you just reverse the directions?
+a : That post hides the first tread. Going up you'd swear the post wasn't in the way. | Reverse an arrow, yes. Move a solid post off a vital bit of the view, no.
+
+scene pairclimb
+when topic=work self.job=none self.working=yes
+does tell.self / ask.detail / answer.detail
+a : I take steps in pairs uphill empty, singles down with a load.
+b : Quicker that way? | Why singles down?
+a : Quicker to come down intact than to pick a parcel up in pieces. | I want to feel the lip before the parcel passes over it.
+
+scene jobbend
+when topic=work self.job=none self.working=yes
+does warn / react.self / assess
+a : Don't put the long parcel in my paws till I know the last turn.
+b : It's only a corner. | Would knowing sooner help?
+a : A sharp one costs the parcel its nose. Might cost me mine too. | I'd carry it low or take a different stair. Can't ask it to bend for courtesy.
+
+scene oldmap
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : An old map can be perfectly accurate about a stair that no longer gets you anywhere.
+b : Blocked at the top? | Does that ruin the map?
+a : Blocked on the descent. The new rail sends a wide load into the opposite wall. | Only for a job. For talking about the old place it earns its keep.
+
+scene returnshore
+when topic=pastimes self.likes=swimming
+does tell.self / ask.detail / answer.detail
+a : I like seeing a well-known bit of bank from the water.
+b : Does it look lower? | A swim's just another return trip then?
+a : Higher. My eyes are down by the roots where the little things live. | Not if I've time. I can go nowhere at all with a decent swim.
+
+scene oatfold
+when topic=food self.likes=oatcakes
+does tell.self / ask.detail / answer.detail
+a : I butter the cake and fold it with the bitten edge inward for carrying.
+b : Wouldn't it crack? | Keeps it out of the dust?
+a : The soft ones fold. Any stubborn pieces get eaten immediately. | Yes. And the butter off my strap. Both sensible uses of a fold.
+
+scene badbread
+when topic=food self.dislikes=stale_bread
+does tell.complaint / ask.detail / answer.detail
+a : A stale loaf can make as much loose packing as food. | Give me a crust I can cut instead of sweep up.
+b : Can't you soak it? | A stew would sort that out.
+a : While I'm out hauling parcels? I'll take a decent cake instead. | I haven't got a cookpot hung about my neck. A sound slice suits the journey.
+
+scene warmtea
+when topic=food self.dislikes=cold_tea
+does tell.self / ask.detail / answer.detail
+a : A jug of tea gets cold remarkably fast on a windy landing.
+b : Can't you wrap it better? | And then it's ruined?
+a : A cloth helps. Getting to drink it before the next load helps more. | It'd warm again if the fire was here. The fire isn't usually inclined to follow me.
+
+scene twilightday
+when topic=season self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : In summer there's enough light after supper to walk a troublesome route empty. | I like an evening long enough to see both sides of a street.
+b : Learning the route for work? | Do the turns change at supper?
+a : Sometimes I'm just curious how much easier it feels without a parcel. | No. I can look round with no load to save and no instructions coming over my shoulder.
+
+scene sumpview
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : I see the tops of a good many Sump doorways on the way down home.
+b : You count doorways? | What can a doorway show?
+a : Only when the parcel blocks my view of the paving. I use whatever rises clear above it. | Where the last landing is. That one with the crooked top means I can change shoulders.
+
+scene lostquiet
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : There are parts of the wharf I prefer to pass without much company.
+b : Would you go a different way? | Does company bother you?
+a : Depends on the day. Sometimes it's better to walk straight past what you remember. | Questions bother me. Quiet footsteps alongside do no harm.
+
+scene friendload
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd put the bare end in the keeping of #self.friend# while I turn underneath the parcel.
+b : Do you still need a warning? | How do you swap ends?
+a : Of course. Trust is exactly why I'd speak before moving. | Set down, both get a secure hold and count before lifting. No heroics.
+
+scene pricesreturn
+when topic=prices
+does give.opinion / react.self / assess
+a : A price for carrying there isn't a price for taking the same thing back laden.
+b : But you have to go back anyway. | The road's the same length.
+a : Yes. With my own two arms empty, I hope. Weight has its own fare. | So is a walk with a sack of sand and without one. Only one leaves a dent in the shoulder.
+
+scene tightwork
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When coin is scarce I worry about straps being repaired one more time than sense permits.
+b : Can you see a failing mend? | Would you turn down the job?
+a : Usually. The awkward bit is getting a boss to look before the strap's actually broken. | I'd turn down a bad strap. A parcel doesn't need to hear all about a wolf's money troubles.
+
+scene wardrum
+when topic=gossip
+does give.opinion / react.self / assess
+a : If a story takes a wrong turn I won't finish carrying it. | I dislike being made the return route for a quarrel.
+b : How'd you recognise a wrong turn? | Suppose both sides ask you?
+a : I'd have to know the spot. Anything less and I could carry a question, not an answer. | Both can ask somebody else. I haul solid things with corners I can see.
+
+scene exitwish
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I'd like a map showing only the bad turns and the clear places to rest in between. | I could draw a useful map without naming half the streets.
+b : No destinations? | What use to a stranger?
+a : A destination doesn't shift. A parcel can. Show a wolf where it's safe to set down. | Start with the road's name and end with the stair that takes a loaded wolf home. Plenty.
+
+scene rainchalk
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Rain takes a chalk arrow away from the bottom end first on this slant.
+b : What's left behind? | Can you read it backwards?
+a : The little fork at the tail, if I made one. Useful till the next shower. | Only because I made the tail a different shape. A bare line's no help.
+
+scene latewagons
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon hasn't relieved anybody of the return trip after unloading. | Ten empty waiting paws don't mean a short carry when the wagon finally gets in.
+b : Wouldn't more paws help? | What would you plan for?
+a : They help the lift. They can't all stand sideways on the same turning. | Where the last carrier can come back round while the next goes up.
+
+story arrowtail [topic=memories|travel]
+  : I sketched a route on the front and reverse of a scrap once. The drawing on the back showed through, running quite neatly the wrong way.
+  : Took me past one very familiar doorway twice.
+  b : Did you need a third try?
+  : No. The second view of the same chipped post was quite sufficient education.
+
+story bubblemaps [topic=pastimes|memories]
+  : I thought I knew the shape of a quiet cove till I swam across it and found two gaps in the rock where I'd drawn one.
+  : Drew a much better map the next day.
+  b : For the way in or out?
+  : Both. I don't expect to be walking about on the shore every time I consult my own drawing.
+
+story softcorner [topic=work|memories self.job=none self.working=yes]
+  : I wrapped a long parcel's projecting end in cloth thinking that would get it round a tricky bend without a scratch.
+  : It did. The cloth remained on a nail, with a perfect impression of the corner in it.
+  b : Keep the cloth?
+  : Certainly. It kept an exact hollow where the turning wanted watching.
+
+rule @turn
+when concept=bark
+does aside
+cooldown 8h
+say Clear the last tread for somebody coming back down. | Let the load see round that corner first.
+
+rule @work
+when concept=bark working=yes self.job=none
+does aside
+cooldown 8h
+say Empty arms this way, laden arms the other, please. | Give the pole room to swing without clipping a door.
+
+rule @nights
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say That bottom bend deserves a lamp. | Feel that broken lip with your boot first.
+
+rule @cake
+when concept=bark self.likes=oatcakes
+does aside
+cooldown 8h
+say Fold the soft bit over the butter. | A whole meal strapped into one bit of clean cloth.
+
+dlg @1 resident.hub : I've time while the strap marks fade off my shoulder. What brings you?
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, recognise that turning you can only see on the way back?
+dlg @3 resident.hub [here.time=night] : It's dark round the bend. This patch is level enough to stand and talk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : We'll talk with the parcel and a bit of air between us.
+dlg @1 resident.job [self.job=none self.working=yes] : #self.trade_words.capitalize#. A fine route with no space for turning is no route for me.
+dlg @2 resident.job : If I take something on I think about the journey both ways.
+dlg @1 resident.bye : Don't come back down that last stair without a look.
+graft resident.hub
+choice Why does your arrow have a fork at both ends? -> arrowfork
+node arrowfork
+say One fork shows the way the route goes. The second is a little spur pointing to the side where a laden wolf ought to turn. Bear the load on the clear side.
+free
+choice Won't I muddle them up? -> shortprong
+choice I'll follow the long fork. -> hub
+node shortprong
+say The spur has one very short prong. The travel arrow has two the same length. I made that mistake once. I prefer a system that lets me notice it.
+choice I'll check the short prong. -> hub
+choice Good luck down the steps. -> bye

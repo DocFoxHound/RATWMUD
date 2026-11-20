@@ -1,0 +1,258 @@
+# rm470, the chair on the skids (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm470
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for cty_rue_haycombe
+written_by codex
+title the chair on the skids
+fits stage=adult|old
+prefers job=farmer
+traits temper=short talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk slides_a_facing_chair_to_the_orchard_door
+likes hard_cheese singing old_maps summer_evenings
+dislikes waiting salt_wind
+fears overlooking_a_caller_with_both_arms_full
+hopes for_a_returning_voice_to_find_a_place_at_supper
+topics work +0.6 home +0.4 pastimes +0.3 weather +0.2
+styles comfort=warm gossip=plain refuse=firm tease=none
+marks oath saying
+persona #self.first# keeps a chair on runners facing the orchard door, ready to slide out and take a caller's load.
+
+words
+oath! = My crooked chair skids | Bless the back orchard gate
+saying! = Slide over and take an end | Good shoulders earn their supper
+skids = my oak chair runners | the two polished skids
+crate = a slatted fruit box | an empty harvest crate
+rind = a sharp cheese wedge | some sharp hard cheese
+song = the long picking song | the last harvest verse
+door = the loading door | my broad orchard doorway
+hock = the back chair leg | the short rear leg
+map = a crooked road map | a map with a forgotten turning
+handle = the worn hand slot | the smooth lifting grip
+letter = a folded scrap | a small square of writing paper
+burr = a latching burr | a seed caught in the ruff
+gust = the salt draught | a draught tasting of brine
+light = long summer light | the last yellow light
+
+any
+opinion @1 dole for 2 : An orchard table doesn't grow poorer for cutting a wedge for a hungry wolf.
+opinion @1 festivals against 1 : I want a tune giving me a chance to hear who came in halfway. A street full of shouting spoils the verse.
+opinion @1 newcomers for 1 : Fresh shoulders can help lift the day as readily as a familiar pair.
+opinion @1 strangers for 1 : A road greeting ought to get a wolf as far as the cheese plate.
+opinion @1 city for 1 : I've followed the homeward smell of spent apple leaves for too many years to want another city.
+
+grown
+line @1 greet [pair.band=strangers] : Slide your load this way. Welcome. | I can see you fine from this seat.
+line @2 greet [self.working=yes] : Come clear of that crate lip. | Welcome, there's an end free to lean on.
+line @3 greet [here.time=dawn] : Morning. The apples are still cool. | Good light on the orchard door.
+line @4 greet [here.time=dusk|night] : Evening. Bring that chair into earshot. | Welcome under the last picking light.
+line @1 kin.open [pair.kin!=no] : Household voices deserve first cut of cheese. | Bring your face into the good light.
+line @1 again.open : Found the runners again, I see. | We can take that other end now.
+line @1 greet.return : Good to see your shoulders clear the door. | Back within reach of a cheese wedge.
+line @2 greet.return [pair.band=friends|family] : You've a welcome warm enough to sing in. | Slide over, familiar face.
+line @3 greet.return [self.working=yes] : I'll put my box down for company. | Good to see where the help is coming from.
+line @4 greet.return [here.time=dusk|night] : I left the lamp facing outwards. | Come catch the last of our light.
+line @1 farewell : Keep a steady hold downhill. | May your load reach the right door.
+line @1 farewell.return : I'll look up for you next time. | Come back with a verse to spare.
+line @2 farewell.return [here.time=night] : Mind the soft verge on your way home. | Some light hangs above the leaf line.
+line @1 react.news : Set down the load and let me hear. | Pass me the plain account.
+line @1 react.news.new : That landed fresh in my lap. | New as this season's first windfall.
+line @1 react.news.known : I've had my shoulders under that story before. | That one came up the orchard road earlier.
+line @1 react.news.doubt : I'd look for another witness before hauling that any farther. | Somebody's added a weight that never grew on that tree.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll take an end if the weight gets too much. | A bitter thing to have fetched home.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : I'd put a verse to such good fortune. | That's worth a generous second cutting.
+line @1 ask.how : How's the load sitting today? | What weight have you carried in here?
+line @1 answer.how : A fair load, and a chair that answers. | I've a thorn in my patience. Otherwise sound.
+line @1 decline : I'll have to keep my shoulders for the evening crates. | A wolf with free paws would serve you better.
+line @1 accept_decline : Set it down then. I've heard you. | Let the empty box stay empty.
+line @1 thank : You saw the weight and pitched in. | I felt that kindness at my end.
+line @1 sympathise : Turn your chair towards this bit of light. | Have some sharp cheese while your voice comes back.
+line @1 reassure : We can start with one small box between us. | There's room to take a second hold.
+line @1 preclose : My facing chair is wanted at the door. | That last row can't bring itself indoors.
+scene skids
+when topic=work self.job=farmer
+does tell.self / ask.detail / answer.detail
+a : I put #skids# under a chair so I could turn it to face #door# without lifting it.
+b : Why bother with runners? | Is it a good working seat?
+a : I'd see the next caller coming. Some come in with a crate high enough to cover a face. | Fine. I can slide it well away before a heavy load comes through.
+
+scene box
+when topic=work self.working=yes
+does tell.self / ask.detail / answer.detail
+a : My fingers look for #handle# before the lifting starts.
+b : A loose slat? | What about a sharp edge?
+a : One bad grip breaks more fruit than the journey down from the tree. | I rub it smooth. Somebody else may get the same box full.
+
+scene cheese
+when topic=food self.likes=hard_cheese
+does tell.self / ask.detail / answer.detail
+a : I'll give #rind# to a visitor before asking for the news.
+b : Even at a busy hour? | How much do you cut?
+a : A busy hour can be a hungry one. That's my reasoning. | A broad enough wedge to let a guest breathe before speaking.
+
+scene verse
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : I sing #song# in a key that suits a load going uphill.
+b : Low or high? | Do you change it downhill?
+a : Low. Save the breath for lifting and let the leaves take the finer notes. | Coming down with an empty crate I can make quite a different noise.
+
+scene map
+when topic=pastimes self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : Give me #map# to see a road running clean through an old tree.
+b : Is the road wrong? | Do you mark the tree?
+a : The tree certainly hasn't stirred out of stubbornness. The drawer ought to have come here in person. | With a seed if I have one. I won't spoil an entertaining mistake in ink.
+
+scene wait
+when topic=work self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : A cart dawdling while I stand beside an empty stool makes me considerably crosser than an ordinary late delivery.
+b : Could you sit down? | Why stay there?
+a : Once I've dragged the stool round to face the track. I can't settle with the road at my back. | Somebody must take the first crate. I'm considerably pleasanter once there's lifting to do.
+
+scene wind
+when topic=weather self.dislikes=salt_wind
+does tell.self / ask.detail / answer.detail
+a : I lift my ruff against #gust# and get a whole harvest of burrs down my neck.
+b : Worth stopping for? | How do they get there?
+a : The big ones yes. I can't sing with a seed trying to play accompaniment against my ear. | I get under low boughs for the best fruit. There are costs to being thorough.
+
+scene longlight
+when topic=weather self.likes=summer_evenings
+does tell.self / ask.detail / answer.detail
+a : In #light# I can see which apples keep a last fleck of sun on the skin.
+b : Do you pick those? | Does that fleck affect the flavour?
+a : By the time I've admired one it's usually grown too dark to choose its neighbours. It gets left for morning. | I can see a difference. I'll leave tasting as a separate pleasure.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd like to hear #self.friend# join me for a verse out beyond the rows.
+b : Where do you start? | Would you take food?
+a : Any note that comes easily through a tired throat. This isn't a temple choir. | Hard cheese and an apple cut through the middle. Nothing that calls for a second journey.
+
+scene silence
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : Sometimes I lay #letter# beside my plate and can't think how to begin it.
+b : Do you expect a reply? | What do you finally put?
+a : A long road may carry my news one way even if the road back has gone quiet. | Which tree came into flower first. A wolf far away might still remember it.
+
+scene guest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : Two steps in from the loading door is a fine safe place where a newcomer can wait.
+b : How can a stranger tell? | Out of the traffic?
+a : I take the first crate and show the spot with my heel. There's no need to guess under a full load. | Clear of the swing and within reach of the cheese. Both count.
+
+scene merit
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A box of sound fruit is easier to price when somebody remembers who carried it in.
+b : You count the shoulders? | Does a bruise lower the price?
+a : And the wood and the waiting. A tree does very little hauling by itself. | Of course. It doesn't take the soundness out of every other apple in the box.
+
+scene open
+when topic=home self.street
+does tell.self / ask.detail / answer.detail
+a : I like my first step home on #self.street# to come after I've heard the load settle properly.
+b : Can you hear that much? | Do you miss the orchard indoors?
+a : Wood quits complaining a little before fruit does. That second quiet sends me home. | At times. I don't miss watching for wheels while I cut my supper.
+
+scene faith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : For one moment under full blossom I can hold my peace quite naturally.
+b : Just one moment? | What do you ask then?
+a : Listening under blossoms takes less effort than standing quietly inside a doorway for an hour. | For enough full branches that nobody comes away with a basket of excuses.
+
+scene doors
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : Sit in the comfortable seat if you'll leave me the one facing the entrance.
+b : Bad back? | Afraid of visitors?
+a : Perfectly good back. I watch for callers needing a hand before a load is dropped. | It's company I want. I prefer to get a welcome in first.
+
+scene gather
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : A festival crowd could do with the order of an orchard picking song.
+b : Would you lead it? | How does it help?
+a : Only within reach of a sensible exit. I don't much like voices all knocking together. | A verse to lift and a verse to set down. There's space in between for the next wolf.
+
+scene sharp
+when topic=work
+does tell.self / ask.detail / answer.detail
+a : I get sharp enough for cheese rind when a crate's left across a doorway.
+b : Do you move it? | What do you say?
+a : First move it, then speak. By then I usually have enough breath to say something civil. | Exactly where I'd like it carried. There's small sense in making a sermon out of a box.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed a whole orchard could roll indoors on my chair runners when the weather turned.
+b : Room for all the trees? | What woke you?
+a : Not even one. I was trying to argue a bough through my front door and neither of us would give. | A branch tapping the roof. I was glad of one last tree with decent outdoor habits.
+
+story runner [topic=memories]
+  : My old chair caught the same floor crack every morning. One day the seat arrived at the loading door a good pace ahead of its hind legs.
+  : I found two lengths of smooth oak instead of hunting for a better crack. Now the legs travel in company and my visitors get to see my face.
+  b : Did you fill the crack afterwards?
+  : I laid the chair across it first and had a good long sit. Some repairs deserve to see the trouble from above.
+
+story rindroad [topic=pastimes]
+  : A crumb of cheese on an old map once looked remarkably like a farmhouse at a bend I'd forgotten. I spent a whole supper remembering its window.
+  : Then I brushed the crumb away. The farmhouse had never been on the page. I'd put it back out of my own head while looking at that scrap of rind.
+  b : Was it sad to lose it again?
+  : I carry that window with me still. I value the map for knowing when to let go.
+
+story loadsong [topic=work self.job=farmer]
+  : I tried using a particularly fine high tune to put heart into the last uphill haul. I reached my top note just as my crate slipped.
+  : I set the load safely down and sang that note sitting beside it. Afterwards I carried the apples home to three plain low notes and no clever turns.
+  b : Do you still use the fine tune?
+  : In my chair after supper. A voice ought to have a good night out too.
+
+rule @aside1
+when concept=bark self.working=yes self.job=farmer
+does aside
+cooldown 6h
+say Slats straight, paws beneath the hand slots. | Make a clear way for a full fruit box.
+
+rule @aside2
+when concept=bark self.likes=hard_cheese
+does aside
+cooldown 7h
+say A broad wedge for a long walk. | The rind belongs with the sharp bit.
+
+rule @aside3
+when concept=bark self.likes=old_maps
+does aside
+cooldown 8h
+say A tree parting the cart ruts in two. | That crooked bend found a home on paper.
+
+rule @aside4
+when concept=bark here.time=dusk
+does aside
+cooldown 9h
+say Runners round towards the fading light. | One last verse before the crates go quiet.
+
+dlg @1 resident.hub : Slide my chair towards the door as you come through. I've a sharp cheese wedge and enough patience for plain speaking.
+dlg @1 resident.job [self.job=farmer self.workplace] : The crates at #self.workplace# get their first rest after a long morning in the branches.
+dlg @1 resident.news [world.news] : Here's what's reached the orchard door. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I know that step. There's a fresh cutting of cheese within reach.
+dlg @1 resident.bye : A smooth runner under whatever you carry home.
+graft resident.hub
+choice Why does the orchard chair run on skids? -> orchard_seat
+node orchard_seat
+say Take a short leg, give it a stubborn floor crack and see how far it'll follow the rest of the chair. My two oak runners take them all to the door together.
+free
+choice Why face the door in particular? -> orchard_load
+choice I hope the chair holds up. -> hub
+node orchard_load
+say A falling crate needs another pair of shoulders. I can take an end from a stranger much more readily when I see it rocking towards me.
+choice I'd take the lighter end to start. -> hub
+choice Good luck with the picking. -> bye

@@ -1,0 +1,258 @@
+# rm308, the rain docket (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm308
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ottilie_sootdale
+written_by codex
+title the rain docket
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=steady
+quirk dates_a_dry_straw_whenever_the_rain_breaks
+likes spiced_cider old_tales fresh_straw summer_evenings
+dislikes gulls flies
+fears damp_in_the_tale_chest a_blank_horizon
+hopes a_berth_with_dry_air a_complete_record_of_clearings
+topics lore +0.6 weather +0.4 travel +0.4 food +0.2 gossip -0.2
+styles comfort=generous gossip=careful refuse=reasoned tease=none
+marks oath saying
+persona #self.first# collects the first dry straws after showers, writes a minute account of each clearing and dreams of a crossing where the story can end in sunshine.
+
+words
+oath! = Mildew the docket | Wick through the wrapper
+saying! = Date the instant it clears | Keep one copy for a traveller
+stem = a clean straw | my pale yellow stem
+case = my little straw case | the dry reed tube
+mark = a minute ink mark | the date in small script
+tale = a long folded tale | my neat story leaf
+cup = the spiced cup | a brown cider cup
+spice = a shaving of spice | the little cinnamon curl
+tide = a clear tide mark | a strip of open shore
+gull = a sharp-winged nuisance | a heavily voiced gull
+fly = a sticky-legged fly | one ink-footed pest
+sky = the narrow clear patch | a tear of blue
+sleeve = my paper sleeve | a folded page guard
+berth = a berth facing dry land | a bunk with a sunlit edge
+
+any
+opinion @1 strangers for 2 : A traveller can correct the ending of a tale whose writer never left the city. I'd pay for that company in cider.
+opinion @2 city for 1 : An errand across Ridgemere leaves me footnotes enough for a whole long evening.
+opinion @3 merchants for 1 : A well-wrapped purchase and a clear amount written on the outside strike me as considerate work.
+opinion @4 festivals for 1 : Each stall has a story worth walking up to. Several will even let you sample the ending.
+opinion @5 road for 1 : Bring a clean sheet out from the records and let it come home creased by actual travel.
+opinion @6 dole for 1 : I can put aside a whole cup as easily as half of one. Someone in want knows the difference.
+
+grown
+line @1 greet [pair.band=strangers] : A fresh voice. Come where the sheet is dry. | Welcome to a space with a good margin.
+line @2 greet [here.time=dawn] : Morning. Light enough for dates now. | There's light for the day's opening entry.
+line @3 greet [here.weather=rain] : A damp arrival. We'll make a dry note of it. | Welcome under this serviceable bit of cover.
+line @4 greet.return : I have your greeting in good order. | A welcome worthy of a clear reply.
+line @5 greet.return [pair.band=friends|family] : Some voices need no identifying mark. | Your company merits my clean cup.
+line @6 farewell : File away something pleasant from your walk. | May you have a clear road to record.
+line @7 farewell.return : I'll put a tidy close under this visit. | Till we can compare the next clear intervals.
+line @8 again.open : A second visit for the day's record. | Here comes the continuing part of that tale.
+line @9 kin.open [pair.kin!=no] : The family account still has room in the margin. | Take the place reserved for our own.
+line @10 hail [pair.band=friends] : There's a straw here with today's date on it! | Over by my clear account book!
+line @11 react.news : I should like the sequence carefully, beginning with the first witness. | Leave me room to copy the sense of it.
+line @12 react.news.new : A fresh entry for an otherwise familiar page. | That item escaped the earlier account.
+line @13 react.news.known : There's my note on an older margin. | My first copy agrees on the point.
+line @14 react.news.doubt : I think there's a change of ink halfway through that account. | Something has slipped in between the date and the event.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Fold that leaf carefully. There's real grief in it. | I can set my business aside for somebody bearing that.
+line @16 react.news.glad [topic.kind=birth|marriage] : Give that a clean sheet all its own. | Cider shared to a word like that tastes better.
+line @17 answer.how : In order except for a wish to travel. | Dry in most of the important places.
+line @18 accept_decline : A clearly stated limit is fair dealing. | I shall mark the matter settled.
+line @19 decline : I'd give a poor account of more than I've undertaken. | I need a rather larger margin of time before I promise that.
+line @20 sympathise : There's time enough to put the trouble into your own words. | Leave the business with me till you feel steadier.
+line @21 thank : That goes into my favourable account of the day. | You've given me exactly the small assistance the job required.
+line @22 deflect_thanks : There was a spare cup and a thirsty wolf. | Only a brief entry between other duties.
+line @23 preclose : I have a date to set down while I recall it. | The next clearing will want a witness.
+line @24 accept_preclose : Take the better light along on your errand. | Your account here is quite complete.
+line @25 farewell [here.time=night] : A dry cover for your night's reading. | Safe passage in the lamplight.
+scene straw
+when topic=weather here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : I keep #stem# by the sill as a rain gauge. | One end of my straw sits outside #case#.
+b : What tells you the rain's finished? | Does the exposed end get any drier?
+a : The straw lifts away from the stone. Then I write the time. | Yes. First dry part curls and the rest follows by degrees.
+
+scene story
+when topic=lore self.likes=old_tales
+does tell.self / ask.detail / answer.detail
+a : I fold #tale# so the last page faces inward. | A tale seems better with its doubtful parts neatly marked.
+b : Who gets to open it? | Doesn't that spoil the wonder?
+a : A wolf willing to follow all the turns. I'll read it over cider. | Increases it. I know exactly where wondering may begin.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does offer / accept / assess
+a : Try #cup#. I've left #spice# for the last drinker. | I'll pour two small cups from the one warm jug.
+b : I'll take the last bit if it's strong. | Set mine on bare wood beyond the papers.
+a : Strong enough to warm a reader's nose over a late page. | Good thought. A cider ring makes a very unhelpful illustration.
+
+scene dryship
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : I picture #berth# with a crisp bundle of straw under my ear. | For a dry journey I'd put one clean leaf in a ship's chest.
+b : What sheet would you put uppermost? | Would you mark where the journey started?
+a : An empty one. My first morning on a dry shore deserves its own account. | And the first day a whole page lay out without a weight.
+
+scene clerical
+when topic=work self.job=merchant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I check both spelling and wrapping on a parcel. | A paper can leave #self.workplace# flawless and meet a wet sleeve at the door.
+b : Which end gets checked last? | How do you stop the sleeve doing damage?
+a : The outside direction. A correct spelling inside the wrong parcel serves nobody. | Another loose fold. Easier than drying all the ink again.
+
+scene gull
+when topic=smalltalk self.dislikes=gulls
+does tell.complaint / react.complaint / assess
+a : A gull has no interest in a pause set aside for a good ending. | #gull# can put a whole street out of hearing.
+b : Can you write its cry into the tale? | Not much of an audience then.
+a : I'd need a wider margin to record my opinion of it. | Only the gull enjoys the recital. I'll speak indoors.
+
+scene fly
+when topic=smalltalk self.dislikes=flies
+does tell.self / react.self / assess
+a : #fly# left a trail of commas through an otherwise tidy note. | I'll put #sleeve# over the ink before the flies find their supper.
+b : What would you have told a reader? | Wouldn't a cover blot your words?
+a : Pause a little less than the punctuation suggests. | It's a tent. I leave the two ends open to let the ink breathe.
+
+scene evening
+when topic=season here.season=summer
+does tell.plan / ask.detail / answer.detail
+a : I want the long evening for a tale with a slow middle. | At midsummer I'll read outside till I lose the smallest letters.
+b : What do you gain by dragging the middle out? | What happens to the last page?
+a : Time to let the first cup cool and the second doubt arise. | I tell it from memory. That's when my listener hears the differences.
+
+scene office
+when topic=land self.quarter=office
+does tell.self / react.self / assess
+a : Office paper smells dry even in rain. I like bringing that smell home. | I've a little corner in the Office quarter that gets a stripe of evening sun.
+b : How long does the smell stay? | Enough space for a chair?
+a : Until I open the window. A modest victory over weather. | For a page. I move the book and sit beside it.
+
+scene namegate
+when topic=gossip
+does give.opinion / disagree / concede
+a : A beautiful hand is a poor reason to trust an ugly rumour. | An unsigned accusation ought to stay folded.
+b : Can't a careful hand belong to a careful witness? | What if there's truth inside?
+a : It can. Those are two different entries in the record. | Find somebody who can stand behind the writing and let that wolf unfold it.
+
+scene strawdock
+when topic=pastimes self.likes=fresh_straw
+does tell.self / react.self / assess
+a : A clean straw makes a fairly fine marker for a page. | I lay two pale stems crosswise where the tale forks.
+b : Does it leave dust in the fold? | Which branch of the tale do you read?
+a : I shake it over the sill first. A little clean dust doesn't eat ink. | Both. Then I mark which holds up to a second reading.
+
+scene price
+when topic=prices
+does tell.self / react.self / assess
+a : I enjoy a price written clearly enough to see before I unwrap the goods. | An honest account of a cup should include the spice at the bottom.
+b : And if the price is unkind? | Would you charge the cup twice for that?
+a : At least a wolf can put down the parcel without staining the paper. | Not at all. I mean to make sure the guest gets the whole purchase.
+
+scene travelfriend
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd write my first clear-weather letter for #self.friend#. | My best travelling tale has a copy set by for #self.friend#.
+b : Would it begin with the sea or the roof above it? | No spare copy for your own shelf?
+a : The absence of drips. Then I'd describe the extraordinary silence. | I'll remember the first one better for having copied it carefully.
+
+scene summerheat
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : A straw under a sunlit page makes a fine dry rustling sound. | #sky# seems larger if you look between two papers hung up to dry.
+b : Can you hear the story getting crisp? | Why watch it through paper at all?
+a : The damp going out. A tale has a stronger spine afterward. | I need to stay here till the ink's quite set. I like company while I wait.
+
+scene watchroad
+when topic=travel
+does tell.worry / reassure / assess
+a : I worry a ship would find more rain just past the one coast I've learnt. | I might spend a whole voyage trying to keep my blanket dry.
+b : You could ask before choosing a berth. | You may find a perfectly dry room beyond the crossing.
+a : Exactly. I'll ask after the rain as well as the destination. | That's my hope. Even a damp voyage ends a chapter.
+
+scene latewagon
+when topic=travel world.wagons=late
+does tell.self / react.self / assess
+a : A delayed wagon leaves a page of ruled lines with nothing to enter. | When a wagon's late I can work on a tale while I wait.
+b : What's entered in the blank? | Will you leave the tale unfinished when the wheels arrive?
+a : The true hour eventually. Guesswork makes a dreadful account afterward. | I'll put a straw at the break. That's what the case is for.
+
+scene strangercup
+when topic=newcomer
+does offer / accept / assess
+a : A traveller's directions can be easier to draw. Here's a clean bit of paper. | Set your spare things on this straw while we find your road.
+b : I'll try marking where I came in. | A dry surface would make the drawing much easier.
+a : Leave a little at the top for whichever roof you're seeking next. | Yes. A route drawn in puddles needs a witness to remember it.
+
+scene wetweek
+when topic=times world.times=hard|lean
+does tell.feeling / sympathise / assess
+a : It's a lean account when the paper costs as much as what it wraps. | I see a great many small purchases getting smaller still.
+b : There must be a cheaper way to wrap them. | Can you help without making a song about it?
+a : A clean second sheet will do. I keep a stack for that very purpose. | That's the nicest kind of helping. I'll start with my extra cup.
+
+story fanfold [topic=lore]
+  : I once copied a tale on a sheet too long for its cover. I folded it backwards and forwards to fit the case.
+  : The wind lifted the nearest fold. In one instant my whole company saw a paper snake run across the table.
+  b : Did anyone see the ending?
+  : Only the wind. We put the tail back under a cup and read the adventure properly.
+
+story dry_order [topic=weather]
+  : I labelled two straws for the moment the rain stopped. One came from a broad sill and one from underneath a little roof.
+  : The labels disagreed by almost the length of supper.
+  b : Which record did you keep?
+  : Wrote the locations into both. There isn't one stopping time for every square of a street.
+
+story ink_cider [topic=food]
+  : I had a cup of cider and a small pot of brown ink beside my papers. I reached without looking, then smelt the spice.
+  : The pen came out of the cider with a little curl caught in its nib.
+  b : Was your account legible?
+  : Perfectly, once I changed pots. Best-smelling draft I've ever had to put aside.
+
+rule @date
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Straw's holding to the sill yet. | No date for the clearing just yet.
+
+rule @work
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Check the outer fold before sending. | A neat direction belongs on the dry side.
+
+rule @warm
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Late light reads the small hand well. | Room for an extra page tonight.
+
+rule @fix
+when concept=bark self.likes=old_tales
+does aside
+cooldown 8h
+say That ending needs a cleaner margin. | A fair place for a bookmark.
+
+dlg @1 resident.hub [topic.meeting=stranger] : There's space for a new account here. Come out with the first line.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, our bookmark goes at a familiar entry.
+dlg @3 resident.hub [here.time=night] : There's an evening's worth of patience on my side of this page.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : I shall hear a civil statement without putting my papers within reach.
+dlg @5 resident.job [self.job=merchant self.workplace] : I help with the paper work at #self.workplace#. Do you have a fold going astray?
+dlg @6 resident.job : I set parcels and papers straight and leave some room for their next owner.
+dlg @7 resident.bye : May there be a fine clearing to mark your arrival.
+graft resident.hub
+choice What's the date doing on the straw? -> clearing_note
+node clearing_note
+say It records exactly when the straw came dry after the rain. I'm looking forward to the day I can leave an entire page of such notes empty.
+choice What will you write on that dry day? -> long_page
+choice We can let the straw dry in peace. -> hub
+node long_page
+say An account of how I came to be on a ship under a cloudless sky. I'll save the nice paper for it and include the view from the bunk.
+choice A story worth a blank page. -> hub
+choice I hope the weather obliges. -> bye

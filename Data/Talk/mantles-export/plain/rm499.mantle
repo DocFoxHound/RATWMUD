@@ -1,0 +1,410 @@
+# rm499, the tanner's last wet measure (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm499
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_dunstan_greywick
+written_by codex
+title the tanner's last wet measure
+fits stage=adult|old
+prefers role=merchant job=crafter
+traits temper=even talk=quiet warmth=warm humour=none honesty=guarded piety=ordinary drive=steady
+quirk steps_a_dance_on_the_drying_floor_till_the_rain_gaps
+likes mutton_stew dancing sharp_knife thunder
+dislikes drizzle waiting
+fears a_private_grief_put_on_the_price_slate
+hopes a_yard_that_can_keep_its_own_workers_warm
+topics work +0.6 weather +0.5 pastimes +0.4 memories +0.3
+styles comfort=quiet gossip=withheld refuse=gentle tease=none
+marks oath saying
+persona #self.first# tests a drying patch with a soft dance step and keeps a carefully guarded tenderness behind the counter.
+
+words
+oath! = Stretch my left heel | Tan my supper cloth
+saying! = A hide dries by its own measure | The best step leaves the rack upright
+hide = a supple hide | a stiff flank
+strip = a narrow leather strip | a stout offcut
+rack = a pegged drying rack | a square frame
+heel = the worn left heel | a smooth heel
+step = a half-turn | a sliding step
+grain = a fine pebble grain | a long crease
+board = a blackened board | a smooth counter
+knife = the sharp scraping knife | a clean skinning blade
+cloth = a fresh linen rag | a thick wiping cloth
+stew = a dark mutton stew | a bowl of soft mutton
+bone = a marrow end | a shoulder bone
+rain = a stitching drizzle | a rain in small points
+boom = a low long roll | a deep thunder beat
+clip = a pin of wood | a flat wooden clip
+slot = a space on the rack | a peg hole
+peg = a dry peg | a little split pin
+tally = a neat sale mark | a line of chalk
+soap = a twist of soap | a cake of plain soap
+vat = a wooden tub | a round vat
+
+any
+opinion @1 merchants mixed 1 : A sale comes with a share of the responsibility for how the hide will wear after the buyer walks out.
+opinion @1 houses against 2 : A wharf ledger can be in perfect order while a household has everything torn across the middle.
+opinion @1 dole for 2 : A good stew shares readily if its keeper remembers to put another bowl beside the pot.
+opinion @1 strangers for 1 : I'll let a new face warm up in the yard without publicly enquiring where the chill came from.
+opinion @1 watch mixed 1 : An honest inspection may have its questions answered. A private grief may choose its own company.
+opinion @1 road mixed 1 : I don't mind a long road if it brings me back before the loosened hides take a soaking.
+opinion @1 sump for 1 : A dry space in a wet street can be made into a considerable act of friendship.
+opinion @1 church mixed 1 : I have little taste for a speech about grief and a great deal for the wolf who can stay beside it.
+opinion @1 times against 2 [world.times=lean|hard] : An unsold hide hangs in the rich yard and a worn-out shoe walks past the gate. There's work in getting them to meet.
+
+grown
+line @1 greet : Rest your elbow on the dry end. | You can come in a step without explaining your business.
+line @1 greet.return : That welcome meets a little warmth from my side.
+line @1 again.open : This patch hasn't even dried since you went.
+line @1 farewell : Go with a soft step and a sheltered sleeve. | Keep the weather off the part you need warm.
+line @1 farewell.return : A clean landing under your own coat too.
+line @1 react.news : Leave the words their own room to settle. | I'll hear it without stretching what's said.
+line @1 react.news.new : An unfamiliar mark on the grain.
+line @1 react.news.known : The earlier telling had much the same crease.
+line @1 react.news.doubt : I'd want to feel the backing before I took that surface as proof.
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : I can lend the hurting a little shelter beyond the public yard.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : That's good news enough to put some lift in a tired heel.
+line @1 ask.how : Where's the day caught on your shoulders?
+line @1 answer.how : Fairly supple yet. A little tired at the seams.
+line @1 sympathise : I can wait for words if waiting will ease you.
+line @1 reassure : A stiff piece sometimes needs warmth before it can be bent.
+line @1 refuse : I've an earlier tie on my time which I'd like to keep sound.
+line @1 accept_decline : All right. Your answer can stay just as you gave it.
+line @1 preclose : I ought to give my own work another turn before the light goes.
+line @1 accept_preclose : Go on without pulling the parting any tighter.
+line @1 ack : I can feel the sense of that.
+line @2 greet [here.time=dawn] : A clear strip of board for early company.
+line @3 greet [pair.band=strangers] : New boots are welcome under my cover.
+line @4 greet [here.time=night] : Come into the lamp's reach before the night gets under your coat.
+line @2 greet.return [pair.band=friends] : I know that greeting by the way it comes through the yard.
+line @1 hail [pair.band=friends] : Here where the drying frame leaves a gap!
+line @1 answer.how.busy [self.working=yes] : Busy at the fingers and not too busy at the ear.
+line @1 thank : Your trouble's taken a hard crease out of mine.
+line @1 deflect_thanks : The little piece of shelter was there to be used.
+line @1 give.advice : Turn it over. A good surface deserves a look at the back.
+line @2 ask.how [pair.band=friends] : Had a moment to let the day's work fall off your coat?
+scene exchange1
+when topic=work self.job=crafter
+does tell.self / ask.detail / answer.detail
+a : I judge a hide by flexing a narrow part. | My knife only comes out after the frame sits flat.
+b : Rather than the fine broad bit? | For a straighter cut?
+a : A strap has to take some sharp turns when the lovely broad bit doesn't. | For a safer grip. It isn't only leather occupying this yard.
+
+scene exchange2
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I watch the drip from one particular peg. | Rain lifts in the lane half a minute before it lifts at the rack.
+b : Why that one? | Can you really see a difference?
+a : It stops last. When it's dry I can move my best stock out. | The eave goes on shedding yesterday's news.
+
+scene exchange3
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I test the drying floor with a little turn. | One soft heel finds the first dry patch.
+b : Do you dance alone? | And the other?
+a : Only when the hides decline to join me. | It waits till the first heel has something decent to say.
+
+scene exchange4
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I want stew with a broth that holds its own against a wrinkled crust. | I eat the tender corner after the rest.
+b : Enough meat? | To keep its heat?
+a : Enough time. A small knuckle puts a lot of patience into a pot. | So it can have my proper attention.
+
+scene exchange5
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : I test my knife on a thin scrap. | A bright blade can have a stubborn dull patch.
+b : Then go to the good hide? | How can you find that patch?
+a : Only when it cuts without hauling the frame with it. | With a scrap. I don't put the buyer's goods to that employment.
+
+scene exchange6
+when topic=weather self.likes=thunder
+does tell.self / ask.detail / answer.detail
+a : Thunder lets the whole street hear the weather thinking. | I go to the door when a proper storm rolls by.
+b : A violent thought? | Wishing it away?
+a : A heavy sound, then a useful piece of quiet. | Drizzle I wish away. Thunder's worth the visit.
+
+scene exchange7
+when topic=weather self.dislikes=drizzle here.weather=rain
+does tell.self / ask.detail / answer.detail
+a : Drizzle keeps choosing for me whether the hides can go out. | A fine rain darkens only one edge at first.
+b : What's it chosen? | The price changes over that?
+a : Wait a minute. Its entire range of opinion. | The promised drying time does. I'd rather say so early.
+
+scene exchange8
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I stand a wait better if there's room to move one foot. | I put a small repair by when a caller's late.
+b : A private dance? | To forget the wait?
+a : A poor imitation that serves until the real tune starts. | To have something besides impatience ready when the door opens.
+
+scene exchange9
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A wharf loss can follow you into a successful yard. | There are things that catch in the voice when the harbour's mentioned.
+b : Is it the financial side? | Want to speak of one?
+a : No. The sort without a paid column at the far edge. | Only as much as I've done. Work claims whatever minutes remain.
+
+scene exchange10
+when topic=work self.role=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# a finished hide has to bear my present judgement. | I have the profit when a hide sells well.
+b : Was it yours from the beginning? | And the fault when it doesn't wear well?
+a : I answer for what's on the frame today. | Mine to hear about. Keeping the yard doesn't divide those two.
+
+scene exchange11
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I let a learner feel the change from damp to supple along one strip. | I hand the learner a clear-cut scrap before explaining its edge.
+b : With eyes shut? | Why give the example first?
+a : First looking, then looking away. Both teach something. | To leave the eyes free to form their own question.
+
+scene exchange12
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd have a bowl set by for #self.friend# on a filthy night. | My friend can have the quieter side of the rack.
+b : How filthy? | Where do you stand?
+a : Filthy enough to justify staying till the second helping. | Where I can talk under shelter from rain.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : I heard the claim #topic.subject# #topic.claim#. That's all I'm drying for public inspection. | A story can stretch several times its size before anybody sees a hole.
+b : Nothing private? | Do you stretch it?
+a : My own thoughts aren't goods on the board. | I leave the pulling to those willing to show where the hide came from.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : A thin spell brings in more small repairs. | When pay runs tight I put prices beside the offcuts too.
+b : Do you take them readily? | To raise more money?
+a : A strap that pinches can ruin a day's work as thoroughly as a split side. | To let a quiet customer choose without announcing what's in the pocket.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I can smell my way home from the lower yard. | Long walks can put a heel pad to honest trial.
+b : Tanning smell? | Which heel wears fastest?
+a : The washhouse, then mutton, then the wet wood of my own side gate. | Mine always tests the left outside corner first.
+
+scene exchange16
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want a drying floor with room for a whole evening dance. | I'd like the last buyer of a wet day to leave with dry hands.
+b : After the hides are lifted? | And dry goods?
+a : With them still hanging, if the roof's high enough. | That I already make part of the sale.
+
+scene exchange17
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I rub a tired thumb into a soft leather offcut. | I take the longest turn away from the vats at midday.
+b : Why not just let it rest? | For a fresh breath?
+a : It wants to uncurl gradually after a hard grip. | Yes. The yard's good work and my lungs are also due their living.
+
+scene exchange18
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Commons windows catch the yard light in the afternoon. | There are streets where a drying frame wouldn't stand ten minutes.
+b : Do you watch passing faces? | Too narrow?
+a : I look first for the smallest patch of blue left in the glass. | Too much damp coming sideways between the walls.
+
+scene exchange19
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I ask a stranger which side of the hide will touch the body. | I offer a stool where a new buyer may lay a parcel.
+b : Before you ask what it's for? | No need for a hard sell?
+a : I can settle the fit without any private particulars. | There's never any need for that. A clear bit of board usually does better.
+
+scene exchange20
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : A shiny finish can hide a thin corner. | I charge according to the use left in the piece.
+b : Should the thin corner be cheaper? | So a little scrap may be dear?
+a : It should be visible before the price is agreed. | It may be very useful. I'll generally find a fair figure for that.
+
+scene exchange21
+when topic=pastimes self.likes=dancing
+does tell.self / ask.detail / answer.detail
+a : I used to dance as if a finished hide were stretched across my shoulders. | I like a dance with room for small changes in time.
+b : Stiff and flat? | Why not a strict count?
+a : Very fine to look at. Rather unhelpful to a partner. | My workday's already got a yard full of pegs.
+
+scene exchange22
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : A good pot lid moves just enough to show supper's safe underneath. | I drop the first warm spoonful onto a plate.
+b : How does it move? | Why waste it?
+a : One little tremble along the low side. I learnt that before learning a frame. | To save a visitor a burnt tongue. We eat the cooled spoonful too.
+
+scene exchange23
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I don't ask a grieving wolf what comfort ought to look like. | A little blessing may be spoken under a working breath.
+b : What happens in that case? | At what point?
+a : Open the dry door, have a clean cloth ready, keep my mouth out of the way. | When the hands can honestly say a hard part's done.
+
+scene exchange24
+when topic=season
+does tell.self / ask.detail / answer.detail
+a : Summer drying can go too quick at the edges. | Cold weather stiffens poor leather first.
+b : Better than rain? | A buyer can feel it?
+a : Better to have control. Sunshine can hurry a nice piece quite out of shape. | A careful seller can find it before a buyer needs to.
+
+scene exchange25
+when topic=day
+does tell.self / ask.detail / answer.detail
+a : I turn the first frame in silence. | I end work with a clear path through the racks.
+b : Is it a custom? | To get home quickly?
+a : I listen for any peg that loosened since last night. | So the first wolf in tomorrow starts with a yard that isn't trying to trip a visitor.
+
+scene exchange26
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I keep one soft patch for my own worn sleeve. | A dry cloth sits within a wet elbow's reach.
+b : Do you mend it often? | For cleaning the house?
+a : I like using goods that have proved themselves on someone else's account first. | For leaving the tannery outside while I come in.
+
+scene exchange27
+when topic=work self.role=merchant
+does tell.self / ask.detail / answer.detail
+a : I let a buyer bend the sample twice. | A decent sale leaves neither of us minding the weather quite so much.
+b : Once doesn't show enough? | Because the piece is dry?
+a : The second bend shows where the first one went. | Because both of us know exactly what was promised.
+
+scene exchange28
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : A good pupil notices the bit I'm still adjusting. | I'll use a quiet day to draw attention towards the stink of spoiled hide.
+b : Must a lesson look unfinished? | Why not point at an obvious fault?
+a : A finished object is useful. A decision actually being made teaches another part. | The nose sometimes finds trouble before a mark can be seen.
+
+scene exchange29
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a roof where each drop finds an honest route out. | I picture a dry fine piece of leather lasting long enough to go soft on the shoulder.
+b : A rare ambition in this city? | Whose shoulder?
+a : Rare in its modesty, perhaps. I still entertain it. | The name needn't be mine for the thought to please me.
+
+scene exchange30
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : I keep the first rain-scent off the supper spoon. | I listen to gutters before taking a frame round the corner.
+b : Can it spoil the flavour? | Why listen first?
+a : It's enough to make me walk out inspecting pegs while the stew goes cold. | My hands will have rather less freedom after I lift.
+
+story tale1 [topic=work self.job=crafter]
+  : I hung a narrow offcut where I could judge drying by its colour. It turned dark again after lunch even though the roof had stopped dripping.
+  : I found I had been testing it with a wet thumb.
+  b : Was the work harmed?
+  : Only my opinion of the testing arrangement. I moved the scrap near a clean towel and kept it as an honest reminder.
+
+story tale2 [topic=pastimes self.likes=dancing]
+  : A polished heel once slipped half a step during a turn. I put the other foot down where the slipping one had been and managed a surprisingly graceful recovery.
+  : A wolf watching asked whether the extra step had a name.
+  b : What name suited it?
+  : The damp half-turn. I've only taught the dry version since.
+
+story tale3 [topic=memories]
+  : I inherited an empty hook in a remarkably awkward place when I took over a work corner. I moved it towards a convenient beam.
+  : A day later I found the beam left every hung cloth in a slow, steady drip.
+  b : Where's the hook now?
+  : Back where an earlier pair of hands had judged it ought to be. I can keep a profit without claiming to have invented the rain.
+
+story tale4 [topic=food self.likes=mutton_stew]
+  : I took a spoonful of rich mutton stew out to a drying floor at dusk. Its steam briefly hid a little pinprick of light coming through the eave.
+  : When the steam cleared I saw the pinhole again. It looked very like a star.
+  b : Did it leak?
+  : At the following shower it made a determined attempt. I had filled the hole before then. I owe the repair to a good supper.
+
+story tale5 [topic=work self.master=yes]
+  : I told a learner to lay out the scraps in order of finest grain. The whole display was very carefully reversed in my eyes.
+  : Then I stepped round past the bench's far leg and saw the direction it had been set to read.
+  b : Who had the order right?
+  : The learner. I kept the useful habit of looking from the working end before making an important correction.
+
+rule @call1
+when concept=bark working=yes self.job=crafter
+does aside
+cooldown 8h
+say Leave a thumb's space beside the drying edge. | A clean scrape before the final stretch.
+
+rule @call2
+when concept=bark working=yes self.role=merchant
+does aside
+cooldown 8h
+say Feel the sample where the bend will come. | Ordinary straps against the board's unpainted face.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say That last peg's still taking drops. | The yard wants a patient set of covers over it.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Clear the floor before it grows dark under the frames. | A soft little turn on the dry patch.
+
+rule @call5
+when concept=bark self.likes=mutton_stew
+does aside
+cooldown 8h
+say A deep dish deserves the richest gravy. | That pepper smell's turned my head towards the door.
+
+rule @call6
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 8h
+say There's always a minor patch to mend while rain deliberates. | Give the waiting hands a sound scrap.
+
+dlg @1 resident.hub : I've swept a board dry and a wolf with a little time behind it.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, come where the hides aren't shutting daylight out.
+dlg @3 resident.hub [here.time=night] : The late yard makes quiet talking very easy.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : You can see the public face of my board and ask about the goods on it.
+dlg @1 resident.job [self.job=crafter] : I tan leather and stand behind the pieces I sell. Flex the working side before judging the finish.
+dlg @2 resident.job : I keep a careful account of which part of the work is mine to answer for.
+dlg @1 resident.news [world.news] : The matter that came through the open yard is #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : I caught the claim that #topic.subject# #topic.claim#. Take it at the strength of a telling.
+dlg @1 resident.bye : Walk easy with the grain of the leather.
+dlg @1 shop.greet [here.shop=open] : Unfold any sample and look at its working side. Let me find the cut to suit the bend you need.
+dlg @2 shop.greet [here.shop=bare] : The frames have been cleared and the board has no finished goods. Best wait for the next drying.
+dlg @3 shop.greet [here.shop=asleep] : I'm asleep enough for trade to want a later hour.
+dlg @1 shop.prices : The price follows the useful area and the grain. Let me show what both mean on this piece.
+dlg @1 shop.bye [here.shop!=asleep] : Let the parcel breathe when you're under cover.
+dlg @1 master.learn [here.teaches=yes] : I can show how #here.trade_title# feels in the hands. You may start by asking what the work asks of the wrist.
+dlg @2 master.learn [here.teaches=no] : I've a learner already. There is still space for a practical question beside the frame.
+dlg @1 master.work : It is work for an attentive grip and a patient nose. The weather has a vote on most afternoons.
+dlg @1 master.wages : Learning earns no extra wage. What you make at the frame may be sold on your own account.
+dlg @1 master.takes [here.take_on=no] : I can't give the place at the moment. #here.take_on_why#.
+dlg @1 master.bye : Give the sample one more bend after you get home.
+dlg @1 resident.business [business=steady] : The board clears regularly, with room to choose good work for the next frame.
+dlg @2 resident.business [business=thriving] : Clean frames scarcely stand empty before the next piece is wanted.
+dlg @3 resident.business [business=failing] : I've had the same soft samples up rather longer than I'd like.
+graft resident.hub
+choice Is the drying floor really good for dancing? -> dance_floor
+node dance_floor
+say When it is dry, swept and clear of frames. A proper turn shows quite precisely where your sole meets the ground.
+free
+choice What if the rain comes in? -> dance_floor_again
+choice Goodbye. -> bye
+node dance_floor_again
+say I put the covers down and save the rest of the dance for an evening that can afford to keep its promise.
+choice Leave the floor clear. -> hub
+choice Goodbye. -> bye
+
+graft shop.greet
+choice How do I test a piece without spoiling it? [self.job=crafter] -> test_grain
+node test_grain
+say Take this scrap from the same cut. Bend it where a belt would turn and feel how readily it opens again. You needn't mark the finished piece.
+free
+choice What should the back look like? -> test_grain_again
+choice Goodbye. -> bye
+node test_grain_again
+say Steady in colour and free from a hard ridge where your shoulder will carry it. Look at the surface again after that.
+choice I'll examine the samples. -> greet
+choice Goodbye. -> bye

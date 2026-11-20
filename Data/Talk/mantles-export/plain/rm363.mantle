@@ -1,0 +1,400 @@
+# rm363, the price in a tune (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm363
+revision 1
+state ready
+dialect plain
+accent broad light
+tier full
+written_for rm_josephine_dripgate
+written_by codex
+title the price in a tune
+fits stage=adult|old
+prefers role=merchant job=merchant
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=plain piety=ordinary drive=steady
+quirk hums_the_price_of_little_things_while_wrapping_them
+likes mutton_stew singing sharp_knife first_warm_day
+dislikes deep_mud waiting
+fears swapping_two_wrapped_orders
+hopes to_sell_from_a_window_above_the_smoke
+topics work +0.5 prices +0.4 pastimes +0.3 dreams +0.2
+styles comfort=practical gossip=curt refuse=soft tease=dry
+marks oath saying
+persona #self.first# hums the prices of small wares just loudly enough to keep the parcels in order and carries the smoke of sealing string on both cuffs.
+
+words
+oath! = Singe my last knot | By the price of a pause
+saying! = Tie the parcel on the final note | Wax costs less than a second errand
+twine = a length of waxed twine | my smoke-dark string
+seal = a drop of sealing wax | a thumbprint of wax
+note = the low price note | a soft downward note
+wrapper = a clean paper square | a bit of buff wrapping
+needle = a fine needle | a stout sewing pin
+shelf = the high goods shelf | a crowded board
+blade = a thin sharp blade | my trim little knife
+jar = a squat crock | a wide-necked jar
+cup = a measure of dried beans | a cup of split peas
+stew = a rich mutton broth | a bowl of slow-cooked mutton
+coin = a careful copper | a small dark coin
+mud = a clog of black mud | the mud on my hem
+sun = a warm patch of wall | early spring warmth
+tune = the sum tune | a four-note tally
+draught = the thin air upstairs | a stairwell breeze
+edge = a narrow folded lip | the clean paper edge
+
+any
+opinion @1 dole for 2 : Hunger once made a heavy noise in our cupboards. The dole quieted it for a week I keep in mind.
+opinion @1 church for 1 : I like a charity that knows which end of a ladle is for passing food.
+opinion @1 merchants mixed 1 : I trade in small wares. A mean little bargain and a fair one can fit on the same scrap. Listen closely.
+opinion @1 houses against 1 : A House should at least cover up its own gaps before charging a tenant for draughts.
+opinion @1 newcomers for 1 : Some of my best coppers come from faces I haven't seen before. Plenty of room to start there.
+opinion @1 strangers for 1 : A traveller can tell me what a needle actually did six streets beyond my counter.
+opinion @1 festivals against 1 : Let me hear the tune through a shutter. I'd like my supper to stay on my plate while I listen.
+opinion @1 road against 1 : A late load doesn't pay the hour I spent looking for it round the bend.
+opinion @1 times against 2 : A purse with one small copper left has to sing a harder tune each week.
+
+grown
+line @1 greet [pair.band=strangers] : Hello. Set your parcel flat. | New face, clear patch on the board.
+line @2 greet [self.working=yes] : Give me room for the last knot. | I hear past the rustling twine.
+line @3 greet [here.time=dawn] : Morning. First note's scarcely warmed up. | Come near the clean wrapping.
+line @4 greet [here.time=dusk|night] : Evening. Prices sound lower in this light. | Dusk. Keep the corners clear.
+line @1 kin.open [pair.kin!=no] : Family may come inside the string. | Kin needn't carry a price tag.
+line @1 again.open : Another verse round my corner. | Back before the wax set.
+line @1 greet.return : Welcome to the unwrapped part of my day. | I heard. Your turn.
+line @2 greet.return [pair.band=friends|family] : Your voice won't tangle the string. | You're welcome between knots.
+line @3 greet.return [self.working=yes] : I'll tie the end while you speak. | My hands are wrapping. Ear's free.
+line @4 greet.return [here.time=dusk|night] : Evening. My voice still reaches the door. | A quiet caller after the high notes.
+line @1 farewell : Carry the thing by its stout side. | Keep the knot above the wet.
+line @1 farewell.return : I'll mind my own loose ends. | May the wrapping see you home.
+line @2 farewell.return [here.time=night] : A dry walk under the late lamps. | Don't let the dark catch your string.
+line @1 react.news : What's the clear note in it? | Remove the price tags before the telling.
+line @1 react.news.new : Fresh in my wrapping. | That changes the tune a bit.
+line @1 react.news.known : Yes. I've counted that verse already. | That note's been round the counter.
+line @1 react.news.doubt : I'd check what that account was wrapped round. | There's a turn missing from the total there.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I'll leave the tune alone awhile. | A heavy parcel of news.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Something to lift the last note for. | Glad of a bright turn there.
+line @1 ask.how : How stands your little reckoning? | How's the load in your pocket today?
+line @1 answer.how : Still keeping my parcels mostly straight. | A touch smoked round the edges.
+line @1 decline : I'd best save my fingers for the next knot. | I'd sooner have the time than that particular bargain.
+line @1 accept_decline : Then we cut the string there. | A clear end to that price.
+line @1 thank : A useful kindness, well tied. | That comes through the wrapping warm.
+line @1 sympathise : Hand me the unwieldy bundle. | You're welcome to rest on the plain side.
+line @1 reassure : One loose end can wait. | We'll take the wrapping slowly.
+line @1 preclose : My twine's threatening a knot of its own. | Time I cleared the little board.
+line @1 accept_preclose : I'll hold the tune here. | Go and settle your loose bundle.
+line @1 deflect_thanks : Leave off pricing that favour. | That bit was thrown in freely.
+line @1 ack : Neatly tied. | True pitch.
+line @1 give.advice : Pull the short end before tugging the knot. | A label belongs outside the fold.
+line @1 offer : I can put fresh wrapping paper round that. | Shall I hold the corner steady?
+line @1 praise : A sound price clearly spoken. | You tied that matter off quite tidily.
+scene sum
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I hum #tune# as I set a purchase on its wrapping.
+b : Is that part of the price? | What does the last note do?
+a : Free of charge. It keeps two parcels from having the same voice. | Tells me to tie the knot and stop remembering the previous total.
+
+scene smoke
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : There's smoke in my cuffs again.
+b : From cooking? | Can you get it out?
+a : Mostly from softening the wax round the twine. I smell like a tightly shut parcel. | Air helps. A fresh day of work puts it back by supper.
+
+scene knife
+when topic=work self.likes=sharp_knife
+does tell.self / ask.detail / answer.detail
+a : My knife needs one quiet draw through wrapping paper.
+b : What's wrong with two? | Can you feel the sharpness?
+a : Two pulls can bring whatever's in the paper towards the edge. | My fingers feel the paper part without having to chase it.
+
+scene stew
+when topic=food self.likes=mutton_stew
+does tell.self / ask.detail / answer.detail
+a : I put a spoon of mutton stew on bread and wait for the rim to sag.
+b : Why not dip it? | Are you judging the bread?
+a : Dipping drowns the bread. I'd sooner it soaked slowly from the top. | I'm judging whether a second spoonful will stay on top.
+
+scene song
+when topic=pastimes self.likes=singing
+does tell.self / ask.detail / answer.detail
+a : A price in a tune is no use at a friendly singing.
+b : Different songs? | Afraid of mentioning money?
+a : I prefer something with room for two voices to lean on a word. | Afraid I'd start pricing the chorus. A singing isn't a counter.
+
+scene warm
+when topic=season self.likes=first_warm_day
+does tell.self / ask.detail / answer.detail
+a : The year's first little warmth brings my cuffs out to air along the wall.
+b : Can't you smell spring otherwise? | Both cuffs?
+a : Hard to smell anything over a morning of sealing string. | One at a time. My arms tend to be inside them.
+
+scene mud
+when topic=weather self.dislikes=deep_mud
+does tell.self / ask.detail / answer.detail
+a : Deep mud adds weight to a parcel before I've sold a thing.
+b : On the wrapping? | Doesn't it dry?
+a : On my coat. I have to carry the whole arrangement in together. | Yes, then it becomes somebody's sweepings. Generally mine.
+
+scene wait
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : Waiting for a parcel makes my hands tie knots in nothing.
+b : Can you untie them? | What's the cure for restless paws?
+a : Luckily, or I'd have to charge myself for invisible twine. | Wrap a spare empty box for practice. At least it takes up space honestly.
+
+scene friend
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I'd sing a tune with #self.friend# without counting the notes.
+b : Why make a point of that? | Would you sing loudly?
+a : I'm used to getting a total out of my music. It's a good habit to interrupt. | Enough to make a second voice welcome.
+
+scene hand
+when topic=work self.hand
+does tell.self / ask.detail / answer.detail
+a : I keep my knots loose enough for #self.hand# to check before a sale.
+b : Don't you trust the knot? | Why have a second look?
+a : I trust a knot better when another paw can discover where its business ends. | Two parcels of the same shape can have entirely different insides.
+
+scene height
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I want a window higher than the everyday smoke.
+b : For trade? | How high?
+a : For waking up. A view that belongs to me before the first customer arrives. | Till a clean shirt has a reasonable chance of staying clean all morning.
+
+scene stair
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : My bit of the Sump has a stair with just enough room to turn a parcel.
+b : Room for you as well? | What if it's too wide?
+a : Just. The parcel goes first and I follow it round like a tail. | I take it corner first. Pride has to come round last.
+
+scene dolefood
+when topic=food
+does tell.self / ask.detail / answer.detail
+a : I remember what boiled grain costs when you haven't a copper for salt.
+b : Does it taste of anything? | Why remember that?
+a : Of being able to stand without your knees coming apart, for one thing. | It lends perspective to a complaint about stew lacking a second piece of mutton.
+
+scene feast
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : I like a feast heard through a window with good thick glass.
+b : To soften the tune? | Doesn't that shut you out?
+a : To soften the part where everybody has had more than enough ale. | Precisely the service I value in a good window.
+
+scene pride
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : Cheap goods ought to be counted with a particularly exact hand.
+b : Because they're cheap? | Is a little mistake so bad?
+a : It's cheaper for a rich paw to be careless. My customers have fewer spares. | Not to the seller, perhaps. The buyer may need that last needle.
+
+scene paper
+when topic=work self.job=merchant
+does tell.self / ask.detail / answer.detail
+a : I won't wrap a sharp thing with its point on a fold.
+b : Where does the point go? | Wouldn't extra paper help?
+a : Facing the flat, with a thick bit over the end. | Only if the keen end doesn't go hunting for the thinnest place.
+
+scene tallhealth
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : A high shelf and a tired shoulder argue in the afternoons.
+b : Who wins? | Does a stool help?
+a : The shelf. It stays exactly where it began and I fetch the stool. | It does if I fetch it before stretching myself cross.
+
+scene visit
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd give a traveller directions using things a wolf can smell.
+b : All the way home? | Such as smoke?
+a : Far as the first familiar corner. After that a plain word does better. | Fresh bread is more use. Smoke likes to make the whole street smell alike.
+
+scene cred
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : I don't let a good rhyme recommend a rumour.
+b : Could it rhyme by accident? | Do the bad ones rhyme?
+a : Yes, and stick to the ear just as long as the most careful truth. | Annoyingly often. That's how they get wrapped round a wolf's good name.
+
+scene knifeend
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I cut string diagonally if I want to thread it through a small eye.
+b : Why the slant? | Does wax help?
+a : The end becomes its own guide. A square cut likes sitting on the rim. | A touch. Too much makes a plug instead of a point.
+
+scene stock
+when topic=work self.job=merchant self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my quietest wares are the ones I count most carefully.
+b : Needles? | Quietest wares?
+a : Pins, needles, any little thing that walks without a sound when a cuff brushes the tray. | A jar will thump when it falls. A sewing pin prefers to remain mysterious.
+
+scene price
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : In a lean week many a parcel is mostly wrapping.
+b : Do you mind? | What would you change?
+a : I mind the reason. I count the smallest order quite seriously. | I'd like the buyer to take fewer empty corners home in the paper.
+
+scene wagon
+when topic=caravan world.wagons=late
+does tell.self / ask.detail / answer.detail
+a : A late wagon leaves some high notes missing from my stock song.
+b : Which ones? | Can't you sing them anyway?
+a : The little light goods I'd expected to unwrap first. | I could. A customer might then reasonably ask for something to go with the sound.
+
+scene sweets
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I like opening a parcel somebody else has tied.
+b : Does it come as a surprise? | Do you inspect the knot?
+a : I may know exactly what's inside already. But my paws get to start where another pair finished. | I try not to. Depends how thoroughly I'm off duty.
+
+scene dust
+when topic=day here.time=dawn
+does tell.self / ask.detail / answer.detail
+a : Early light shows the dust on each square of wrapping.
+b : Is dusty paper wasted? | Is it all dust?
+a : I keep the clean side for the parcel. The outer paper can take the wear. | Some may be flour. That's an experiment I prefer to leave to the baker.
+
+scene window
+when topic=day here.time=dusk
+does tell.self / ask.detail / answer.detail
+a : At dusk my window turns into a dark looking glass.
+b : Do you admire yourself? | Can you see the street?
+a : Mostly I discover which cuff could use a wash. | By looking past my own nose, an operation I recommend to fellow traders.
+
+scene candle
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I remember a kindness longer than a sermon, usually.
+b : Could a sermon be a kindness? | What kindness?
+a : A short one can. Particularly when there's a hot supper waiting afterwards. | A bowl handed to me when paying wasn't possible. My belly remembers the kindness.
+
+scene dustpot
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I wouldn't charge for the dust under the buttons in a jar.
+b : Would anybody take it? | How do you measure buttons?
+a : A wolf might for mending a doll, but I'd include an actual button. | By count. Two little buttons look much like one when dust has stuck them fast.
+
+scene songdream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamed my stock sang an entire chorus behind my back.
+b : Was it tuneful? | Did it matter?
+a : In a mercantile sort of way. The high-priced needle wanted a solo. | It mattered that everything knew the sale price except me.
+
+scene neighbour
+when topic=friends self.neighbour
+does tell.self / ask.detail / answer.detail
+a : I'd offer #self.neighbour# my knot-cutting knife without making a price of it.
+b : Lend your best edge? | If it came back blunt?
+a : A decent edge saves a neighbour wasting good twine wrestling it loose. | I'd sharpen it. That's a shorter business than turning a loan into a quarrel.
+
+story songknot [topic=memories]
+  : I hummed a little sum so steadily once that I wrapped a parcel twice, in opposite directions. I didn't notice until I tried to tie the ends together.
+  : Two different bits of string don't necessarily want to finish the same tune. I stopped humming to see what I'd done.
+  b : What was in the parcel?
+  : More twine, as it happens. It got a very thorough introduction to the family.
+
+story sillstew [topic=food]
+  : I kept a hot spoonful of mutton stew by the cooling window once to see whether it would set firm. I meant to take a proper bite after wrapping an order.
+  : The spoon tipped. When the order was wrapped I had a neat little map of the wall below and one very clean spoon.
+  b : What became of lunch?
+  : I retained the bowl. I confine my experiments to the part I can afford to wipe up.
+
+story dustsun [topic=season]
+  : On a fine spring morning I hung a cuff outside to air and discovered my fingers still moving as if they were tying a knot indoors.
+  : I tried the same thing with an imaginary parcel the size of my entire shop. I had to step back twice before I found its far corner.
+  b : Did you tie it at last?
+  : No. A parcel that size can carry itself home unwrapped.
+
+story cordcount [topic=work self.job=merchant]
+  : I used to count the length of string by the number of turns round my wrist. A winter sleeve gave me very generous measure and a bare wrist much less.
+  : I discovered the difference after selling two parcels of the same size in two kinds of weather. One had a tail like a ribbon.
+  b : What measures it now?
+  : A pair of marks on the board. The board has yet to acquire a winter coat.
+
+story notepin [topic=pastimes]
+  : I once set a pin down on a clean sheet while I worked out a new three-note tune. By the time I liked the tune I'd forgotten the pin.
+  : A fold in the paper brought it back to my attention, point first. I sang the final note rather higher than I'd rehearsed.
+  b : Did you retain the change?
+  : No. I've retained the pin cushion. Its services are considerably more affordable.
+
+rule @aside1
+when concept=bark self.role=merchant self.working=yes
+does aside
+cooldown 6h
+say High for pins. Low for twine. | One parcel closed before the other opens.
+
+rule @aside2
+when concept=bark self.likes=singing
+does aside
+cooldown 7h
+say Give that last price a soft landing. | Quiet tune for the small wares.
+
+rule @aside3
+when concept=bark self.dislikes=deep_mud
+does aside
+cooldown 8h
+say Carry the parcel above my muddy cuff. | Good pavement earns its portion of rent.
+
+rule @aside4
+when concept=bark self.likes=sharp_knife
+does aside
+cooldown 9h
+say Blade across the grain of the string. | One draw does the whole business.
+
+rule @aside5
+when concept=bark here.time=dusk
+does aside
+cooldown 10h
+say Dark window, bright wrapping square. | Last of the little goods for the day.
+
+rule @aside6
+when concept=bark here.season=spring
+does aside
+cooldown 11h
+say Air the smoke from the cuff at the first chance. | A clean space for spring on the sill.
+
+dlg @1 resident.hub : The unwrapped patch on the board is for talking. Set your elbows there if they're reasonably clean.
+dlg @2 resident.hub [topic.meeting=known] : I know how your name goes in my tune, #topic.player#.
+dlg @3 resident.hub [here.time=dawn] : Paper's cut and my throat's clear. You're early enough for both.
+dlg @4 resident.hub [here.time=night] : Light's poor for little goods but more than adequate for a conversation.
+dlg @5 resident.hub [pair.disposition=wary|hostile] : Keep the twine clear and your voice ordinary. I'll do the same.
+dlg @1 resident.job [self.role=merchant self.workplace] : I keep #self.workplace#. Small things take a surprising amount of wrapping.
+dlg @2 resident.job : I try to send things home in the right paws and properly tied.
+dlg @1 resident.news [world.news] : The word came in with its corners still clear. #world.news#
+dlg @1 resident.bye : Take the easy knot with you, if you can't take anything else.
+dlg @1 shop.greet [self.role=merchant here.shop!=bare] : Take a look at the small wares. They behave much better once paid for and wrapped.
+dlg @2 shop.greet [self.role=merchant here.shop=bare] : No stock to put into a parcel today. My tune has a bit of a rest.
+dlg @1 shop.prices [self.role=merchant here.shop!=bare] : I'll give the figure in a speaking voice. The tune comes when I wrap it.
+dlg @1 shop.bye [self.role=merchant] : A dry pocket does wonders for the cheaper goods.
+graft @tune resident.hub
+choice Do your little parcels really have prices you can hear? -> tune_price
+node tune_price
+say One low note for the common things. Add a high note when a second item goes in. By the time the knot's tight I can hear whether both are paid for.
+free
+choice What if two little parcels sound alike? -> tune_pair
+choice I'll listen before you tie the knot. -> hub
+node tune_pair
+say Then I write a label and get on with my life. My customers never agreed to pay extra for an opera.
+choice A label sounds reasonable. -> hub
+choice I'll give your throat a rest. -> bye
+
+graft @string shop.greet
+choice Why wax the string? [self.role=merchant] -> wax_knot
+node wax_knot
+say Feel this end. It keeps the loose fibres together so the knot goes in without making the customer wait through a long account of my difficulties.
+free
+choice Doesn't it smell of smoke? -> wax_smell
+choice The knot looks tidy. -> greet
+node wax_smell
+say A little, yes. That's the only scent I provide free with every purchase, and I bring quite a lot home myself.
+choice I'll consider the other wares. -> greet
+choice My nose has finished trading. -> bye

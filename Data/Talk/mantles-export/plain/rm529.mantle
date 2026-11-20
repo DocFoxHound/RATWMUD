@@ -1,0 +1,263 @@
+# rm529, the black square (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm529
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rm_ivo_wickgate
+written_by codex
+title the black square
+fits stage=adult|old
+prefers job=servant warmth=warm
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=ordinary drive=restless
+quirk keeps_a_coal_counter_for_a_draughtsboard_short_a_piece
+likes crisp_apples draughts quiet_chapel frosty_mornings
+dislikes early_bells wet_floors
+fears a_wet_footprint_across_a_finished_floor a_game_put_away_without_a_return_move
+hopes to_sit_through_one_whole_quiet_game_before_any_bell
+topics home +0.6 smalltalk +0.5 work +0.3 weather +0.4
+styles comfort=gentle gossip=quiet refuse=kind tease=light
+marks oath saying
+persona #self.first# rubs a piece of coal smooth enough for a draughtsboard and looks for a move that will leave the other player a little room.
+
+words
+oath! = Blacken the white square | A split down the board
+saying! = Judge the square after wiping it | The missing piece gets the longest journey
+counter = the coal counter | my smooth black man
+square = the dark playing square | the corner square
+apple = a crisp piece of apple | an apple quarter
+frost = a white feathering of frost | the frost fringe
+stepcloth = my folded floor cloth | my dry step rag
+cuffbit = the lined fold of my pocket | the dark pocket flap
+board = a borrowed draughtsboard | my little playing board
+dustline = a fine black line | a grey coal streak
+faintbell = the first thin bell | a cold little peal
+chapelair = the stillness under the chapel roof | the quiet inside a chapel
+sillwarm = the warmth in a narrow sill | a window ledge holding its heat
+
+any
+opinion @1 city for 1 : I welcome a short walk between my working door and my home door. It gives the evening time to arrive.
+opinion @1 houses mixed 0 : A house can give a wolf steady work and should earn a steady answer in return.
+opinion @1 church for 1 : A chapel leaves more room for thought if you enter with your claims and enquiries left outside.
+opinion @1 road for 1 : A kept path makes the first step indoors cleaner. That's an improvement at both ends.
+opinion @1 dole for 1 : A little food given quietly preserves a great deal of pride.
+opinion @1 festivals mixed 0 : I'd save the earliest bell for a decent hour and give the dancing all the lost time.
+opinion @1 strangers for 1 : A visitor's boots may be wet. There's no reason for the welcome to be cold as well.
+
+grown
+line @1 greet : A clean square here beside me.
+line @2 greet [pair.band=strangers] : A fresh visitor can have the first move.
+line @3 greet [here.time=dawn] : Morning. Frost still holding in the corners.
+line @4 greet [here.time=dusk|night] : Evening has reached the windowsill.
+line @1 greet.return : It's your move. I haven't forgotten.
+line @2 greet.return [pair.band=friends|family] : There's a familiar step behind that voice.
+line @3 greet.return [self.working=yes] : My fingers can finish a turn while I listen.
+line @4 greet.return [here.time=dusk|night] : The house is quiet. Your voice reaches the board.
+line @1 kin.open [pair.kin!=no] : Kin, the coal piece is yours to turn over.
+line @1 again.open : The game has held its place for both of us.
+line @1 hail [pair.band=friends] : Friend, come share a good square of dry floor.
+line @1 farewell : Keep a sure footing going home.
+line @1 farewell.return : And save a counter for next time.
+line @1 react.news : Set the first bit within my reach.
+line @1 react.news.new : That has only just crossed my board.
+line @1 react.news.known : I could follow that one's earlier track in dust.
+line @1 react.news.doubt : Might we wipe that square and look again?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : The board can wait. Sit quietly beside me.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : That's a bright square to end on.
+line @1 ask.how : Did today offer you any easy moves?
+line @1 answer.how : A little restless, though all the pieces are here.
+line @1 thank : You gave a stray piece a place. Thank you.
+line @1 deflect_thanks : There was plenty of room on my square.
+line @1 sympathise : I'll sit the turn out along with you.
+line @1 reassure : A move can take all the time it needs.
+line @1 decline : I'm saving this part of the evening for another promise.
+line @1 accept_decline : Then the square remains free. All quite fair.
+line @1 preclose : I'll put the last piece back in its pocket.
+line @1 accept_preclose : We'll leave the return move open.
+scene coal_game
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : #counter.capitalize# fills the gap in #board#. | Missing a piece changes a fair game.
+b : Does anybody mind black fingers? | Can't you leave a matching piece out?
+a : I rubbed it with cloth till the cloth went away clean. | That would leave two pockets embarrassingly empty.
+
+scene pocket_fold
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #cuffbit.capitalize# knows the shape of the counter now. | I keep the coal against a seam.
+b : Can you find it without looking? | For luck?
+a : Yes. That's very handy when my eyes ought to be on a wet step. | I've lost fewer pieces since. That's luck I can account for.
+
+scene door_to_door
+when topic=work self.job=servant self.workplace
+does tell.self / ask.detail / answer.detail
+a : There's a proper satisfaction in sending a room at #self.workplace# back to quiet. | Work at #self.workplace# puts wear on the edge of #stepcloth#.
+b : How do you send a room anywhere? | Where's the worst of it?
+a : Give the things in it their right places and leave it gently. | Right at the beginning of the step after a wet walk.
+
+scene walk_back
+when topic=home self.quarter=estate
+does tell.self / ask.detail / answer.detail
+a : I like the short pause between a working door and an Estate supper. | On an Estate path I count the dry stretches as playing squares.
+b : At the doorstep? | Do you jump them?
+a : Before it. A greeting deserves more than the remains of a working thought. | I'd feel undignified hopping through a clean entrance.
+
+scene wet_square
+when topic=home self.dislikes=wet_floors
+does tell.self / ask.detail / answer.detail
+a : Put #stepcloth# on a pale board and you can see how far the wet travelled. | A wet floor shows a visitor's last five steps.
+b : What if the cloth is dark? | Useful directions?
+a : A clean palm against it will settle that little question. | I can follow the footprints backwards with my cloth.
+
+scene apple_quarter
+when topic=food self.likes=crisp_apples
+does tell.self / ask.detail / answer.detail
+a : #apple.capitalize# will tell you how crisp it is without asking for a bite. | A round apple likes rolling across a board.
+b : By the smell? | What stops it?
+a : By the little crack when a knife parts the first slice. | Cutting it into quarters. I like both halves of that solution.
+
+scene quiet_room
+when topic=faith self.likes=quiet_chapel
+does tell.self / ask.detail / answer.detail
+a : #chapelair.capitalize# can quiet my fingers before they start seeking the next move. | I can sit still in an empty chapel if I give myself long enough.
+b : You take the counter inside? | Restless first?
+a : In a pocket. Some places have perfectly good uses for empty hands. | Yes. The stillness isn't something I've brought along ready-made.
+
+scene frost_morning
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : #frost.capitalize# draws a board I could hardly hope to beat for elegance. | On a frosty morning two kinds of quiet meet at the window.
+b : Could you play on it? | Two?
+a : One warm counter would ruin the arrangement. | Quiet indoors and the whole street waiting for a first footfall.
+
+scene bell_move
+when topic=festival self.dislikes=early_bells
+does tell.self / ask.detail / answer.detail
+a : #faintbell.capitalize# makes a bold first move while I'm still asleep. | I forgive an early bell more readily once daylight has caught up.
+b : How do you answer? | Does it help?
+a : Roll the other way and see if it can counter that. | It helps my manners considerably.
+
+scene private_game
+when topic=family self.spouse self.married=yes
+does tell.self / ask.detail / answer.detail
+a : I keep a return move for a quiet hour with #self.spouse#. | Given a fine apple, I'd offer #self.spouse# the piece that made the cleanest snap.
+b : Do you mind waiting? | Why choose by sound?
+a : A game worth coming back to takes the sting out of closing the board. | The sound was a promise. I'd share the fulfilling of it.
+
+scene warm_hearth
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I like the steady heat from a little bank of charcoal. | Coal smoke takes me farther in memory than a brisk walk.
+b : What does it bring to mind? | To a particular town?
+a : A quiet hour where there was room enough to hear a knife cut an apple. | To the quiet around a well-banked fire. That's part enough to name.
+
+scene two_houses
+when topic=work self.job=servant
+does tell.self / ask.detail / answer.detail
+a : Knowing one household door by touch doesn't give me the key to the next. | I come to any task with a cloth folded clean side in.
+b : Are the handles so different? | Why inward?
+a : Often. What waits behind the door differs more. | So the bit intended for another household gets there clean.
+
+scene lean_game
+when topic=times world.times=hard|lean
+does tell.self / ask.detail / answer.detail
+a : My coal piece costs very little to put in play through a spell of lean suppers. | A small apple goes farther shared with a game than swallowed on a stair.
+b : Could you burn it instead? | Is the game important?
+a : It gives a good many evenings of occupation for very little heat. | The company is.
+
+scene stray_piece
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I'd put a new visitor somewhere dry and explain the furniture afterwards. | Lost your way? Show me the last turn as though we had a board between us.
+b : In case it's all strange? | With my finger?
+a : In case it's all wet. Introductions can take their time. | Yes. It's easier to see a mistaken turn lying flat.
+
+scene dust_news
+when topic=news world.news
+does tell.news / react.self / assess
+a : This word moved out of #world.news_from#. #world.news#. | #world.news#. They put its starting square at #world.news_from#.
+b : Did it make a mark? | Where will it finish?
+a : Enough of one for me to know which way it came. | We'll have to see who takes the next move.
+
+scene whisper_play
+when topic=gossip here.gossip=yes
+does tell.gossip / react.self / assess
+a : I found talk laid where I'd rather have a clean square. | A rumour may look clever halfway through its game.
+b : Will you sweep it? | Does the outcome interest you?
+a : Gently. No need to spread the dust. | If the wolf it's about chooses to tell me.
+
+scene sill_rest
+when topic=smalltalk
+does tell.self / ask.detail / answer.detail
+a : #sillwarm.capitalize# will dry #dustline# on a cloth, but won't remove it. | I find a straight row of pieces wonderfully restful.
+b : Then why set it there? | Until a game begins?
+a : To find out whether I need water or a good shake. | After that it's the chance to move that settles me.
+
+scene whole_evening
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd spend one evening on a complete game without having to wrap up a single piece for later. | My idea of luxury is a little dry space on either side of the board.
+b : What if you lost? | For more pieces?
+a : That's also a way of finishing. | For two sets of elbows and an apple cut between them.
+
+story grease_square [topic=memories|pastimes]
+  : I put a nicely polished counter on a fine applewood board and admired its reflection.
+  : When I leaned across, the counter slid sideways and crowned itself.
+  b : Was the board crooked?
+  : I'd polished it with a buttery cloth. A remarkably generous rule for getting promoted.
+
+story bell_dust [topic=home|memories]
+  : A bell rang just as I shook a damp cloth out of the open window.
+  : I saw a shower below and snatched the cloth in, thinking I'd tipped a jug over a caller.
+  b : Was anybody at the door?
+  : A dry stone step and a frosted bush dropping its own little shower. Neither minded the bell.
+
+story apple_game [topic=food|memories]
+  : I borrowed a small piece of apple for a white counter when a set came up short.
+  : The board stayed undisturbed until I shifted the black pieces and ate something quite thoughtlessly.
+  b : Did you play on?
+  : We called it supper and gave the remaining counters a well-earned rest.
+
+rule @one_square
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say That square's dry. Start there.
+
+rule @coal_away
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Smooth side against the pocket stitch.
+
+rule @step_clear
+when concept=bark here.place=street
+does aside
+cooldown 8h
+say Mind the glossy bit beside the rail.
+
+rule @pane_lines
+when concept=bark here.weather=clear
+does aside
+cooldown 8h
+say What a fine white edge to the window.
+
+dlg @1 resident.hub : Come beside the board. There's time before anyone needs this bit of floor.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, I kept the black piece in play for you.
+dlg @3 resident.hub [here.time=dusk] : The low light shows the game's little tracks.
+dlg @4 resident.hub [pair.disposition=hostile|wary] : We can leave an open square between us.
+dlg @1 resident.job [self.job=servant self.workplace] : At #self.workplace# I try to let the room feel ready before anyone has to ask.
+dlg @1 resident.news [world.news] : Mark the first square #world.news_from#. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : That talk can sit a turn out. No harm in a little quiet.
+dlg @1 resident.bye : Take your time on the step. It's the first square of your next game.
+graft resident.hub
+choice Why use coal for a missing draughtsman? -> coal_man
+node coal_man
+say My pocket provided the quickest answer to a gap on the board. After a few games the coal began to feel like the proper piece.
+choice What if it leaves a streak? -> coal_trace
+choice I like the way it fits. -> hub
+node coal_trace
+say A streak will show which move I made if somebody jogs the table. Then I wipe the board clean. A fresh game deserves fresh mistakes.
+choice A fresh board makes sense. -> hub
+choice I'll leave you the next move. -> bye

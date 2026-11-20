@@ -1,0 +1,258 @@
+# rm394, the petition in charcoal (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm394
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_nessa_slagmarsh
+written_by codex
+title the petition in charcoal
+fits stage=adult|old
+prefers job=merchant
+traits temper=even talk=quiet warmth=reserved humour=dry honesty=sly piety=ordinary drive=steady
+quirk carves_the_shape_of_a_lost_petition_seal_in_lucky_coal
+likes honey_cakes whittling full_larder summer_evenings
+dislikes drizzle early_bells
+fears a_blank_receipt a_damp_coal_in_a_good_cuff
+hopes a_shelf_of_preserves a_word_from_the_records_desk
+topics work +0.4 dreams +0.4 pastimes +0.4 prices +0.3 gossip -0.4
+styles comfort=quiet gossip=evasive refuse=dry tease=light
+marks oath saying
+persona #self.first# cuts a clerk's stamp in a piece of pocket coal, has memorised the route of a lost petition and prefers to disclose an inventory one shelf at a time.
+
+words
+oath! = File the soot | Stamp my last chip
+saying! = Even a missing paper has a weight | A full jar can keep its counsel
+seal = my black seal | the coal stamp
+lid = a round jar lid | the squat wooden cover
+scrap = a slip of waste paper | the trial strip
+tally = the thin reckoning stick | my little iron tally
+ink = a dark coal print | the smoky impression
+crumb = a sticky golden crumb | the cake's sweet edge
+shelf = my highest shelf | the shelf out of casual eye
+curl = a shaving of soft wood | the narrow wood curl
+gouge = a blunt little gouge | my fine carving point
+wet = a nagging fine drizzle | the threadbare rain
+hour = the long bright hour | the last summer light
+path = the office turn | my weekly route
+
+any
+opinion @1 dole for 2 : One hard week my cupboard bottom had more grain in the wood than in the bowls. A pot at the dole set that right.
+opinion @2 houses against 1 : I'd exchange an owner's name plate for one properly mended stair, on the understanding I owed nothing on the plate.
+opinion @3 merchants against 1 : The figures stay quite steady on their side of the counter. Mine make smaller cakes all week.
+opinion @4 sump for 1 : My end of the Sump could stamp water marks straight onto the notices about keeping floors dry.
+opinion @5 city for 1 : A wolf can find a lost piece of paperwork interesting here for an entire season. There are certainly doors enough.
+opinion @6 times against 2 : A full larder used to mean enough to eat. These days it might mean the jars all still have their lids.
+
+grown
+line @1 greet [pair.band=strangers] : Come to the visible side. Room for an introduction. | New face. I'll put that much on record.
+line @2 greet [here.time=dawn] : Here already. No petition required to see the light. | Morning. The desks needn't know yet.
+line @3 greet [here.weather=rain] : Wet boots wait off the paper. Welcome. | You've brought a little of the paperwork weather.
+line @4 greet.return : Your greeting's had a better reception than my papers. | Civil enough. I'll put away the stamp.
+line @5 greet.return [pair.band=friends|family] : Your face is filed where I can find it. | A seat for a name that needs no checking.
+line @6 farewell : Keep your own copy, whatever gets promised. | Go with a dry outside pocket.
+line @7 farewell.return : I'll see the account closed gently. | Right. Make it past the first desk in peace.
+line @8 again.open : A return visit without a written summons. | I've seen that shape beside the desk.
+line @9 kin.open [pair.kin!=no] : Our own come inside the paper screen. | No signature required from family here.
+line @10 hail [pair.band=friends] : Beside the thumbprint! | Right here behind the short stack!
+line @11 react.news : Leave out the stamp for now. I want the words. | Tell me what actually reached the desk.
+line @12 react.news.new : First impression of that in my paw. | There's a new slip among the usual copies.
+line @13 react.news.known : There was an earlier copy in circulation. | That account has already worn a corner thin.
+line @14 react.news.doubt : I'd hesitate to stamp that before I examined the fold. | A curious distance between the claim and what the paper shows.
+line @15 react.news.sorrow [topic.kind=death|loss|assault] : Leave a little clear paper round that loss. | A meal and quiet might do more than a public entry.
+line @16 react.news.glad [topic.kind=birth|marriage] : That can have my least dusty stamp. | Good word enough to open a jar for.
+line @17 answer.how : Still appearing on my own behalf. | Adequately stocked with persistence.
+line @18 decline : I've another claim that has already spent my available patience. | I'd rather keep a little time outside the official account.
+line @19 accept_decline : No seal required on that answer. | I'll keep it off the bill.
+line @20 sympathise : Set the worry down. I'll mind the ends while it lies. | Have a chair with no desk between us.
+line @21 thank : An actual kindness delivered to the correct paw. | I'll put a good clear mark beside that favour.
+line @22 deflect_thanks : Just a little saved from the general expense. | I walked right by the desk anyhow.
+line @23 preclose : Another jar due for private inspection. | I need to count what's left of the good light.
+line @24 accept_preclose : Go before another signature occurs to anybody. | Your business sets its own hours.
+line @25 farewell [here.time=night] : May the dream desk be shut till daylight. | Dry covers on whatever you leave behind.
+scene coalstamp
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : I cut #seal# from a lump I used to carry whole. | There's a small square of darkness in my pocket that can sign its own name.
+b : What name does it put on paper?
+a : Received, in the fashion of an honest thumb. Nothing more ambitious. | Exactly the amount of coal I used. No pretending to a grander authority.
+
+scene petition
+when topic=dreams
+does tell.plan / ask.detail / answer.detail
+a : Another week, another walk round #path# to see where my petition has travelled. | I'd like one answer from the City Office that didn't come equipped with a fresh direction.
+b : What would count as an answer?
+a : The paper in sight on a named shelf. I'd settle for proof it hasn't learnt to burrow. | A desk that actually had it. One could go home after that sort of statement.
+
+scene cake
+when topic=food self.likes=honey_cakes
+does offer / accept / assess
+a : You can have #crumb# if you'll catch it before it adheres to an account. | Try the corner of my honey cake. The cake has remained substantially easier to locate than my petition.
+b : I'll hold #scrap# underneath.
+a : Good. The next reader can have all the letters and none of the honey. | Excellent foresight. A proper petition for crumbs needs no official stamp.
+
+scene carve
+when topic=pastimes self.likes=whittling
+does tell.self / ask.detail / answer.detail
+a : I've used #gouge# to take #curl# off a lid that wouldn't fit. | I put #lid# against the jar and turn it before taking the next shaving.
+b : What gives the bad place away?
+a : The rim goes bright where the lid rubs. Bright can be a fault in the right circumstances. | A short squeak just past halfway. I needn't plane the silent part.
+
+scene larder
+when topic=dreams self.likes=full_larder
+does tell.self / react.self / assess
+a : My ideal larder has enough jars that I need labels at the back. | I want #shelf# occupied by something other than private hopes.
+b : What label comes first?
+a : Honey, if I ever do that well. I should want proper notice before meeting the bottom. | Something that keeps through winter. I like a quietly reliable tenant.
+
+scene summer
+when topic=season here.season=summer
+does tell.self / ask.detail / answer.detail
+a : #hour# lasts the length of an additional very small carving. | Light in summer goes across a shelf like a clerk checking the long row of jars.
+b : What does it see near the end?
+a : A new lid shaved level before the lamps come out. That inspector can go home content. | The one jar I forgot to dust. This inspector draws very bright attention to oversights.
+
+scene mist
+when topic=weather self.dislikes=drizzle
+does tell.complaint / react.complaint / assess
+a : #wet# can put in a full day's business with no single drop accountable. | Drizzle isn't worth the wear it puts on a piece of coal.
+b : Does it spoil the impression?
+a : Spreads it till the whole street looks as though it's been approved. | Leaves less coal on the thumb than on my cuff. A poor distribution of resources.
+
+scene bell
+when topic=smalltalk self.dislikes=early_bells
+does give.opinion / disagree / concede
+a : An early bell could send a note round the night before and spare the rest of us. | A wolf ringing a bell before daybreak deserves a similar courtesy at bedtime.
+b : Would you prefer to sleep through your work?
+a : I'd prefer to wake in the proper edition of the day. | No. Merely through the first series of unnecessary corrections.
+
+scene iron
+when topic=work self.job=merchant self.working=yes self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# I tally by feeling #tally# as well as watching the stack. | Iron leaves an account of its passage on my hands at #self.workplace#.
+b : Better evidence than a written figure?
+a : Second witness only. I check the pile before I dismiss either witness. | Certainly a darker one. The actual number has to be settled separately.
+
+scene sump
+when topic=land self.quarter=sump
+does tell.self / react.self / assess
+a : A Sump window ledge gives me an admirable view of the level a flood expects to reach. | Our Sump doors can show a whole season of water marks without anyone signing a report.
+b : Does that tell you where to put the larder?
+a : Well above the finest line, yes. Dropping a jar is a smaller risk than losing a shelf to the tide. | My readable papers need a perch clear of those marks. The jars can go up another rung.
+
+scene friendproof
+when topic=friends self.friend
+does tell.plan / ask.detail / answer.detail
+a : I'd try #seal# on a harmless scrap before showing it to #self.friend#. | I'd set by a jar with an amusing label for #self.friend#.
+b : What would the writing say?
+a : Receipt for a piece of charcoal presently somewhere else. A model office entry. | Private stock, if I wanted my smallest jar to look important.
+
+scene dearprice
+when topic=prices self.wealth=poor|destitute
+does give.opinion / disagree / concede
+a : I won't give a seller the entire list of what I can stretch to before a price appears. | The cake looks larger once the asking figure's been put in smaller writing.
+b : Does the seller get to keep a little back as well?
+a : Certainly. Stock in the back's a private matter. The thing in my paw must be priced plainly. | A little, but I'd like the seller to distinguish the price of cake from the cost of the ink.
+
+scene marketface
+when topic=newcomer
+does tell.self / react.self / assess
+a : I can give a new face directions to several desks at once. I have had unusual practice. | A caller wanting the records desk may walk with me next time I go.
+b : Does it matter which desk the caller wants?
+a : For walking there, no. For seeing something concluded I'm beginning to wonder. | Very much. We can compare the lists of desks we were sent away from.
+
+scene rumour
+when topic=gossip
+does give.opinion / disagree / concede
+a : I can file a rumour in a space so small nobody need ever find it. | I have my doubts about news that arrives with more seals than particulars.
+b : Who gets to inspect that file?
+a : A wolf with a genuine piece of evidence. A most unusual visit. | Nobody without leave. If the account's true some evidence can knock at the door.
+
+scene latecart
+when topic=travel world.wagons=late
+does tell.self / react.self / assess
+a : A late wagon can at least be traced by the depth of its ruts. | A wagon due some hours back has an advantage over a lost petition.
+b : You'd sooner go looking for a wagon?
+a : I wouldn't have to ask which direction the cart was declared to have gone. | A wagon leaves tracks that don't all end under somebody else's desk.
+
+scene emptybowl
+when topic=times world.times=hard|lean
+does offer / accept / assess
+a : There's space for a second spoonful if the pot goes round again. Have mine first. | I can part with one helping without sending notice to the whole household.
+b : I don't want to spoil your own supper.
+a : There's a crust kept beside my jar. I know how its contents stand. | I keep such accounts privately. You're quite safe taking that part.
+
+scene spoonmark
+when topic=pastimes
+does ask.advice / give.advice / assess
+a : How deep should I carve a line if it's only to mark the outside of a softwood jar lid? | Can #ink# take the place of deep lettering on something that needs frequent washing?
+b : Mark a discarded trimming with your first trial cut.
+a : A fair regulation applied to me by my own waste basket. I'll try it. | Sensible. Ink that comes off on a damp thumb might be better kept for paper.
+
+scene lastjar
+when topic=dreams
+does tell.feeling / sympathise / assess
+a : I'd like the day my petition comes home to coincide with a full jar and a long evening. | I should like to open a cupboard entirely for pleasure once in a while.
+b : And the recovered paper goes where?
+a : Stamp it home at last and enjoy the pleasure of showing it where the proper file lives. | Fold it under a jar and adjust the shelf exactly level. Quite a practical conclusion.
+
+story shadow_receipt [topic=lore]
+  : I took a fresh stamp mark into the window light to judge its depth. A square of light moved up behind it and the seal appeared to vanish.
+  : I thought I'd invented a receipt with the excellent property of proving absolutely nothing.
+  b : What happened when you moved it?
+  : Whole mark came back. The blank reverse had faced me the whole time. A promising technique for a busy office.
+
+story short_shelf [topic=pastimes]
+  : I wanted a shelf an exact hand longer than the piece of wood I owned. I sat there whittling the rough end, thinking how to manage.
+  : Looked down and I'd lost another finger of length contemplating the problem.
+  b : How many jars went on in the end?
+  : Three. I made the smallest a lid and stacked it safely on top of the other two. The arithmetic I should have used first.
+
+story sweet_seal [topic=food]
+  : Once pressed a piece of soft honey cake against a clean jar seal to see if a pattern would come up. Very handsome result.
+  : I considered offering it as an edible receipt for a jar of preserves.
+  b : Did the buyer take the receipt?
+  : I was the buyer that day. Ate the receipt and found I had rather a lot of appetite left for the actual preserves.
+
+rule @coal
+when concept=bark self.likes=whittling
+does aside
+cooldown 8h
+say A nice clear edge on that missing entry. | A bit of coal saves an entire ink bottle.
+
+rule @tally
+when concept=bark working=yes self.job=merchant
+does aside
+cooldown 8h
+say Count the far stack before dating the slip. | Iron stays where the paper won't.
+
+rule @light
+when concept=bark here.season=summer
+does aside
+cooldown 8h
+say Enough light for one last correction. | The sun has found the empty jar.
+
+rule @damp
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say That's bad weather for a private seal. | Fold the blank side over the evidence.
+
+dlg @1 resident.hub [topic.meeting=stranger] : A caller. You may state the purpose before producing any documents.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, your last visit still has a perfectly legible mark.
+dlg @3 resident.hub [here.time=night] : One advantage of a late hour is the absence of an open records desk.
+dlg @4 resident.hub [pair.disposition=wary|hostile] : Please stay beside the counter's public sign.
+dlg @5 resident.job [self.job=merchant self.workplace] : I tally the iron at #self.workplace#. Iron makes a gratifying effort to stay in its assigned place.
+dlg @6 resident.job : I keep track of things important people sometimes mislay.
+dlg @7 resident.bye : Take proof of your departure if you feel it necessary.
+graft resident.hub
+choice Where do you suppose the petition went? -> wandering_sheet
+node wandering_sheet
+say If I knew I should have no cause for another visit. It might be pressed under a large book, in which case it's enjoying a much better position than its owner.
+choice What's your black stamp for then? -> private_imprint
+choice You can keep the file shut. -> hub
+node private_imprint
+say To prove a wolf with a bit of spare coal could at least give me a receipt. I don't use it on anything except my private labels, on the blank side.
+choice I take your point about receipts. -> hub
+choice May your next call be the last. -> bye

@@ -1,0 +1,375 @@
+# rm564, the cup ride (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm564
+revision 1
+state ready
+dialect plain
+accent light broad
+tier full
+written_for rmx_aud_saltridge
+written_by codex
+title the cup ride
+fits stage=adult|old
+prefers job=carter
+traits temper=nervy talk=plain warmth=reserved humour=none honesty=plain piety=ordinary drive=restless
+quirk puts_a_cup_of_water_on_the_cart_to_see_how_gently_it_travels
+likes warm_bread digging tidy_house frosty_mornings
+dislikes rats waiting
+fears a_sudden_jolt_in_a_load_of_loaves a_wait_that_ends_without_wages
+hopes a_whole_cup_carried_over_a_rough_yard a_quiet_hour_with_dark_soil
+topics work +0.5 travel +0.4 land +0.3
+styles comfort=practical gossip=discreet refuse=plain tease=dry
+marks oath saying
+persona #self.first# keeps coal in a lined pocket and measures the smoothness of a cart ride by how much water is left in a chipped cup.
+
+words
+oath! = Coal in the cup | A wheel through my afternoon
+saying! = Let the water judge the driver | A crumb rides the same road as a loaf
+yardcup = my chipped passenger | the little blue cup
+halfride = a thumb of water | the halfway filling
+sloshmark = a wet lip on the board | the high splash
+cupnest = the ring of old rope | my little round cup seat
+coalgrip = my black pocket comfort | a smooth pinch of coal
+goodcorner = the long gentle turning | my quiet bend
+rushbed = the layer of rushes | the sprung bed under the box
+frostcoin = the iced white rim | a little wheel of frost
+handlewood = my worn spade haft | a smooth short handle
+heelcrust = the thick heel off the loaf | the stout bit for a journey
+stillweight = the load at rest | the waiting weight
+wheelbite = the notch at a rut | a sharp little depression
+freeten = ten minutes unclaimed | a pause I can spend
+blackrow = the turned stripe of soil | my garden's dark line
+
+any
+opinion @1 dole for 2 : If I could take enough loaves round for everybody who needed one I'd call it a day's work worth the pulling.
+opinion @1 road for 1 : Give me a decent surface and I'll get more supper to market with fewer crumbs. A good road earns its price.
+opinion @1 houses against 2 : A house puts a grand name across my cargo. It's still my bones that get to know the ruts.
+opinion @1 times against 2 : Last week the crust I could buy after my full delivery run was a bit thinner than I'd planned.
+opinion @1 sump for 1 : I know whose doorstep can take an extra loaf without the whole street needing to hear an explanation.
+opinion @1 drink against 1 : A loaded cart needs both my wits wide awake even if I've finished the day's last paid run.
+opinion @1 merchants against 1 : A buyer calls it a light load until the payment's agreed, and then remembers another sack.
+opinion @1 watch against 1 : I like a question at my cart to start with a plain reason for stopping a tired working wolf.
+opinion @1 church for 1 : The sort of chapel welcome I remember has a bench for the feet and a thick bread heel for my belly.
+
+grown
+line @1 greet : My little passenger has a visitor. Come here.
+line @2 greet [pair.band=strangers] : New voice at the wheel. Keep the outside of the bend.
+line @3 greet [here.time=dawn] : Daylight on the cup rim at last.
+line @4 greet [here.time=dusk|night] : Evening gives me a minute to inspect the splash.
+line @5 greet [self.working=yes] : Hang on till the shafts are properly settled.
+line @1 kin.open [pair.kin!=no] : Kin gets the plank I've wiped down beside me.
+line @1 again.open : Your side of the cart is still here.
+line @1 greet.return : Heard you over a board that's been asking for grease.
+line @2 greet.return [pair.band=friends|family] : Your voice is a good sound to bring a load in by.
+line @3 greet.return [self.working=yes] : I'm listening with both hands holding steady.
+line @4 greet.return [here.time=dusk|night] : The last cart squeak's left us a quiet word.
+line @1 farewell : Take the long curve if your knees are sore.
+line @1 farewell.return : The blue cup and I can finish the journey.
+line @2 farewell [here.time=dusk|night] : Watch for a dark rut where the lamps don't meet.
+line @1 react.news : How much of that account stayed inside the original cup?
+line @1 react.news.new : A new sort of splash on this afternoon's board.
+line @1 react.news.known : I've carried that particular piece round once before.
+line @1 react.news.doubt : Where did the teller stand to see the whole turn?
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : There's a door I'd leave quiet after dropping supper.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : Good. Enough there to warm a driver on the last mile.
+line @1 answer.how : Waiting's got into my knees. Moving still comes naturally.
+line @2 answer.how [self.working=yes] : I've got a full load and just enough free mind for it.
+line @1 ask.how : Did your share of today arrive in fair condition?
+line @1 sympathise : A hard jolt can carry on hurting long after the wheel's out.
+line @1 reassure : Rest the weight on something sound for a minute.
+line @1 decline : That'd mean taking a second load before I've properly landed this one.
+line @1 accept_decline : I'll put my own bundle aside and give the board room.
+line @1 thank : That bit of help will show in the cup when we arrive.
+line @1 deflect_thanks : Give somebody a hand with a heavy step on your way home.
+line @1 preclose : Time to see how much water survived the last stretch.
+line @2 preclose [self.working=yes] : The shafts won't get themselves round another corner.
+line @1 accept_preclose : A good place for letting the load come to rest.
+line @1 ack : Rode true.
+scene cup
+when topic=work self.job=carter self.working=yes
+does tell.self / ask.detail / answer.detail
+a : When I've a spare bit of cart board I put a cup in a rope ring and watch the surface.
+b : Doesn't the cup jump out? | What can water tell you?
+a : Never fill it right up. The job's to let the water ride, not give the street a drink. | A hard stop makes a mark across the plank. It shows which turn my hands need to take easier.
+
+scene coal
+when topic=pastimes
+does tell.self / ask.detail / answer.detail
+a : My pocketful of coal has done a remarkable amount of travelling without keeping anybody warm.
+b : Why take it along? | Would you burn the coal?
+a : I rub a smooth piece when I've got to stand and wait. It wears better than my patience. | On a hard cold evening, probably. Even luck ought to do a spot of real work.
+
+scene drive
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : A bend will tell a carter how high the weight sits even when every box is tied down.
+b : Why don't the cords settle the matter? | Can you see it shift?
+a : The cords hold boxes together. They haven't made the ground any flatter. | My hands tell me first. I straighten gently rather than adding a fresh jolt by hurrying.
+
+scene teach
+when topic=work self.master=yes
+does tell.self / ask.detail / answer.detail
+a : I'd have a learner carry a half cup over one uneven yard before fetching any breakable load.
+b : Can a cup be mended? | When does a learner pass?
+a : This one's chipped already. I'm interested in how the free water moves inside it. | Arriving with a better idea of where the jolt came from. The water level will improve with practice.
+
+scene garden
+when topic=pastimes self.likes=digging
+does tell.self / ask.detail / answer.detail
+a : I dig a straight short bed when my head's still moving at cart speed.
+b : Why keep it short? | Does the speed come down?
+a : My narrow bed has an end I can actually reach before my supper's cold. | Usually by the second spadeful. Soil that isn't being paid by the load can take a bit of time.
+
+scene bread
+when topic=food self.likes=warm_bread
+does tell.self / ask.detail / answer.detail
+a : The warm heel from a loaf fits my palm better than any ornament I could put there.
+b : While the cart is in motion? | Which heel do you take?
+a : Only at a stop. Crumbs in one eye and a load starting forwards make poor company. | The thick end that's holding most of the heat. Give me a clear half minute and a little butter.
+
+scene order
+when topic=home self.likes=tidy_house
+does tell.self / ask.detail / answer.detail
+a : A room feels tidy to me when I can get through it without checking my hips for corners.
+b : Must it be empty? | Does your cart need the same order?
+a : No. Plenty can live against the walls and still allow a tired driver one straight walk to bed. | More so. A thing loose by a wheel has a long enough day to find trouble.
+
+scene frost
+when topic=weather self.likes=frosty_mornings
+does tell.self / ask.detail / answer.detail
+a : A frosty morning will mark the one board that tips when nobody thinks there's weight on it.
+b : How can you tell? | Would you still load there?
+a : A little bare stripe where the end has rubbed. I can see it before the sun works on the white. | Once I've got sound support under the loose end. Frost has done a cheap inspection for me.
+
+scene rats
+when topic=animals self.dislikes=rats
+does tell.self / ask.detail / answer.detail
+a : A rat nibbling an end of sacking doesn't stop when it's made exactly a one-grain hole.
+b : Can you mend it on the cart? | Would you throw the sack away?
+a : I'd get the grain into something sound first. A patch can't catch a shower that's already falling. | Depends on the cloth beyond the hole. I'm not so rich I can give rats first choice of every useful scrap.
+
+scene waiting
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : When I'm waiting for somebody else's load I can hear every little rattle the empty cart's forgotten to mention.
+b : Is that an advantage? | How do you bear the delay?
+a : While there's a repair to make. After that I'd gladly sell the advantage back by the minute. | Rub the coal, check a wheel, think of what to plant. None of those pays the missing wage.
+
+scene quiet
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : A bit of quiet with a wood smell in it can take the cart clean away from the inside of my head.
+b : Would you stop to enjoy it? | Why wood in particular?
+a : On my own time, yes. A paid load still deserves the trip it was promised. | It brings back quiet work and a slower fire. I'd preserve that memory without boxing it up with too many words.
+
+scene headland
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : A gust gets under the cover of a nearly empty cart a great deal easier than a full one.
+b : Would you strip the cover off? | Does the empty cart feel lighter?
+a : I'd fold the loose cloth down flat and take some of the wind's ambition away. | In the shafts, yes. In a sideways gust it can make plenty of claims on my thought.
+
+scene sump
+when topic=home self.quarter=sump
+does tell.self / ask.detail / answer.detail
+a : Coming back into the Sump I recognise the turn for home from my wheel's particular noise on that join.
+b : Would you ride blind? | Why does it sound different?
+a : No. I use my eyes and take the familiar noise as a welcome. | Stone to another bit of stone with a narrow gap. It's got one small knock all to itself.
+
+scene boss
+when topic=work self.job=carter self.boss
+does tell.self / ask.detail / answer.detail
+a : I'd give #self.boss# the wet cup and the dry cup to compare before promising a faster run.
+b : How would cups settle the time? | Would you make the faster trip?
+a : I'd show what happened at a careless pace. That's a fair warning before we add breakable cargo. | If the load could take it. A cup's a useful witness, but it isn't every kind of goods.
+
+scene friend
+when topic=smalltalk self.friend
+does tell.self / ask.detail / answer.detail
+a : I could spend an hour sitting on a stopped cart beside #self.friend# if the stopping were my decision.
+b : Does choosing make the difference? | Does the talk concern driving?
+a : All of it. Waiting for a wage is a different business from resting with good company. | Only if the week's made some story funnier than a wheel squeak. I'd prefer to hear about supper.
+
+scene coins
+when topic=prices self.wealth=poor|destitute
+does tell.self / ask.detail / answer.detail
+a : I keep back something for a wheel repair before thinking how much supper I can carry home.
+b : What if the wheel holds? | Can't the repair wait?
+a : The spare copper sleeps quietly. It'll have a rude enough awakening the day that rim goes soft. | For many things, yes. A wheel can't choose a convenient bit of road on which to give notice.
+
+scene healthback
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : I let my shoulders settle before I lift the shafts again after a wait.
+b : Both shoulders at once? | Does a little wait make you stiff?
+a : The one that's been turned to watch the road needs more persuasion. | Ask me immediately after a winter queue. I'll give you a very considered answer once I can look round.
+
+scene longhome
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I'd like a little plot reached by a lane so level I could carry the cup home without a ripple.
+b : Wouldn't that be dull driving? | Has the plot got a gate?
+a : After a road built entirely from corners, dull would have a quite lively attraction. | A broad one, with a space to put down a loaf before I set to work among the rows.
+
+scene readnews
+when topic=news
+does tell.self / ask.detail / answer.detail
+a : Some news rides about so long that the part I'm supposed to believe has washed over the rim.
+b : Would you look at what's left? | Could it still be true?
+a : Certainly. I'm particularly interested to know how much was actually put in to begin with. | A real occurrence can have a deal of cart noise attached. Best ask whoever made the first delivery.
+
+scene rainload
+when topic=weather
+does tell.self / ask.detail / answer.detail
+a : Rain on a tied cover can put a pond right above a basket of dry goods.
+b : What stops the hollow filling? | Does water really weigh enough to matter?
+a : Give the cloth some gentle slope. A cover spread dead flat can change its mind while I'm turning a wheel. | A whole shallow puddle on top is one more load I wasn't asked to carry.
+
+scene marketyard
+when topic=work self.job=carter
+does tell.self / ask.detail / answer.detail
+a : A load of food has a shorter patience than a load of clean stone.
+b : How do you allow for that? | What can you do about a delay?
+a : I settle who'll receive it before we start. Bread ought to spend its good warmth on somebody's supper. | I'd find who could take delivery now. A loaf waiting in a cart doesn't get those minutes back.
+
+scene wheelring
+when topic=lore
+does tell.self / ask.detail / answer.detail
+a : A rope ring under a pot does two different jobs depending on how tight the circle is.
+b : What are the two jobs? | What's the right size?
+a : A slack ring rubs and allows a wobble. A sensible fit stops the cup travelling a board's length. | Snug without pressing. I want to lift the cup at the finish without bringing its bed up too.
+
+scene firsttime
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : I let a new caller name the destination before anybody starts putting goods on the board.
+b : Do callers object? | What if the place has two names?
+a : Some dislike waiting. I know that feeling intimately and require the direction all the same. | Give the door or the turn beside it. The cart can reach a description if the description touches actual ground.
+
+scene oldload
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : The first time I put water on the board I meant it for my own throat, not as a lesson.
+b : Did you get a drink? | Was it a hard road?
+a : A swallow or two. Enough to see how much better I might have done at the first corner. | Just an ordinary yard with its usual old ridge. That was the instructive bit.
+
+scene restfaith
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : A quiet bench belongs in my working week even when my knees want to keep ticking on.
+b : Does the quiet come all at once? | Would you take the coal inside?
+a : No. The mind rolls on a little after the cart has stopped. A quiet minute gives it room. | In its bag. I don't owe the bench a black spot by way of thanks.
+
+scene dusk
+when topic=day here.time=dusk|night
+does tell.self / ask.detail / answer.detail
+a : At dusk I put my cup on a shelf where my elbow can't knock it off in darkness.
+b : Does the chip show which way to turn it? | Would you fill it now?
+a : I can feel that chip without light. Facing the wall it's a safe little marker for my own hand. | Fresh water in the morning. I'm not offering the local insects an overnight berth.
+
+scene treat
+when topic=festival
+does tell.self / ask.detail / answer.detail
+a : At a festival I'm mostly interested in the bit of open ground where a food cart can turn.
+b : Does that keep you from the dance? | How large a patch?
+a : Not after the delivery. There's something handsome in a crowd that's got its supper and got its feet free. | Large enough to turn without nudging a caller's knees. You'd be surprised how rarely a planner measures those.
+
+story cupchip [topic=work self.job=carter]
+  : I took my blue cup over an empty yard and found the water had ridden perfectly but the rim had acquired a fresh chip.
+  : A loose buckle had rubbed the pot at every turn. My little rope seat held the base splendidly and ignored the top.
+  b : What fixed the cup's complaint?
+  : Secured the buckle and made the same run. I like a lesson I can repeat without charging anybody else for the pottery.
+
+story coalseed [topic=land]
+  : A lump of pocket coal rolled into a row I'd meant for onion sets.
+  : I dug the spot up with my fingers and found the coal and a smooth bit of black stone lying shoulder to shoulder.
+  b : Which did you take?
+  : Both, till I got to better light. An onion bed shouldn't be asked to sort a driver's lucky pocket for free.
+
+story loafmark [topic=food]
+  : A warm round loaf pressed into my rope cup ring and took a curious pattern under the crust.
+  : I was admiring the design while the heel sat out quite ready to be eaten.
+  b : Did you keep the pattern?
+  : Long enough to carry it home. The last few marks were every bit as tasty as their neighbours.
+
+story waitingbird [topic=day]
+  : I stood waiting by an empty cart while a roof bird took a considerable interest in one of my rushes.
+  : It tugged the end right out, flew up and returned for the curly bit I'd left behind.
+  b : Did you let it take another?
+  : One more. At least one worker in that yard had a definite destination and a load ready to go.
+
+story frostwheel [topic=weather]
+  : I moved an empty cart a single wheel turn across white frost and noticed one dark square in the track.
+  : A chip of wood had lodged in the rim, with the neat flat side turned out to print a mark.
+  b : Was it hard to remove?
+  : Came free under my nail. The frost had saved me bothering half the morning about an unexplained tick.
+
+rule @cup
+when concept=bark self.job=carter self.working=yes
+does aside
+cooldown 8h
+say Rope nest round the base before the first turn. | Give that blue passenger its smooth ride.
+
+rule @garden
+when concept=bark self.likes=digging
+does aside
+cooldown 8h
+say Dark row to the garden's far corner. | Put the short spade back dry.
+
+rule @rat
+when concept=bark self.dislikes=rats
+does aside
+cooldown 8h
+say Grain into sound cloth before patching. | Tie that sack above the nibbled bit.
+
+rule @bread
+when concept=bark self.likes=warm_bread
+does aside
+cooldown 8h
+say Keep a little heat round the driver's heel. | Bread on board and ready to move.
+
+rule @wait
+when concept=bark self.dislikes=waiting
+does aside
+cooldown 8h
+say A destination, then a load, please. | Empty boards don't make anybody supper.
+
+rule @dark
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Blue cup to the upper shelf. | Last bright bit on the wheel track.
+
+dlg @1 resident.hub : I've got my cup nested and no call to move this minute.
+dlg @2 resident.hub [topic.meeting=known] : You'll remember the blue passenger, #topic.player#.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : Nothing goes on the board till I know who's taking it back off.
+dlg @4 resident.hub [here.time=night] : Parked and quiet. A voice should travel nicely over the empty boards.
+dlg @1 resident.job [self.job=carter] : #self.trade_words.capitalize#. What matters is the state my load's in when the receiver gets a hand to it.
+dlg @2 resident.job : I know most varieties of jolt and several mildly effective cures for waiting.
+dlg @1 resident.news [world.news] : This is the piece that rode in whole. #world.news#.
+dlg @2 resident.news [world.event_words] : There was mention of #world.event_words#. I'd say only what reached the receiving end.
+dlg @3 resident.news [world.wagons=raided] : A raided wagon makes today's missing delivery a serious matter. I'd want the actual list before I start guessing.
+dlg @1 resident.gossip [here.gossip!=yes] : My cart isn't carrying anybody's private business past the delivery it was meant for.
+dlg @4 resident.news [world.death=recent] : A recent death leaves the next few meals to be thought about. That's one practical errand I can understand.
+dlg @5 resident.news [world.wedding=recent] : There's a wedding to wish well. I'd send the household a warm round loaf if I could.
+dlg @1 resident.bye : Take the quiet turn and mind the joint in the road.
+graft @cupride resident.hub
+choice Why is that chipped cup riding in a length of rope? -> cupride
+node cupride
+say I half fill it for a practice run. Clear water goes dark on the board where it spills, and the marks tell me something about my last few corners.
+choice Why keep the chipped one? -> cupride_more
+choice Watch the water settle. -> hub
+node cupride_more
+say The chip helps me recognise the angle of the rim by touch. Besides, a fine new cup would cost too much to go working as an unpaid passenger.
+choice Watch the water settle. -> hub
+choice Stand away from the cart. -> bye
+
+graft @coalcompany resident.hub
+choice Does pocket coal make a cart ride better? -> coalcompany
+node coalcompany
+say Does something for its driver. I hold a smooth lump in a lined pocket during a queue. It reminds me quiet can be earned without turning every wheel at once.
+choice Do you ever spend your luck on the fire? -> coalcompany_more
+choice Return the coal to its bag. -> hub
+node coalcompany_more
+say If I'm cold enough. At least I'd know exactly what job my lucky passenger had done on the journey to my little stove.
+choice Return the coal to its bag. -> hub
+choice Leave the driver a quiet minute. -> bye

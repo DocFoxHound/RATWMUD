@@ -1,0 +1,257 @@
+# rm570, the berth above the stain (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm570
+revision 1
+state ready
+dialect plain
+accent light broad
+tier standard
+written_for rmx_liv_tarmarsh
+written_by codex
+title the berth above the stain
+fits stage=adult|old
+prefers job=none
+traits temper=even talk=quiet warmth=reserved humour=none honesty=guarded piety=ordinary drive=steady
+quirk sights_along_a_whetstone_at_water_stains_inside_hulls
+likes fried_fish wrestling festival_bells warm_rain
+dislikes night_noise crowds
+fears another_post_decided_before_the_door_opens
+hopes a_shipboard_bunk_that_stays_dry
+topics dreams +0.7 work +0.5 weather +0.4 pastimes +0.3
+styles comfort=quiet gossip=guarded refuse=firm tease=low
+marks oath saying
+persona #self.first# sights along a whetstone and studies the high water stains inside every hull.
+
+words
+oath! = Sour my whet water | Soak my top shelf
+saying! = Look for the stain before laying bedding | A small stone will tell on a big edge
+stone = my flat oval stone | a black wedge of hone
+blade = a working knife | a narrow clean edge
+grub = a fish in crisp paper | a browned fish heel
+rain = a warm deck shower | mild rain on timber
+bunk = a high berth | an upper bunk
+seam = a dark timber joint | a long seam
+line = a stain left by water | a pale wrack line
+tune = a far bell | a festival peal
+rest = a still patch after work | a seat above the wet
+dust = fine honing grit | a black wet trace
+coat = my old sea coat | a tucked-up cuff
+wharf = a low timber landing | the landing by the ribs
+
+any
+opinion @1 houses against 1 : A House mark dresses up a hull handsomely. It ought to weigh less on the hiring side.
+opinion @1 merchants mixed 1 : I inspect the lining before paying for anything said to be watertight.
+opinion @1 watch mixed 1 : An accurate report on slick boards beats a handsome notice about footing.
+opinion @1 festivals for 1 : A bell can fill a quiet room without pushing anybody against the wall.
+opinion @1 road mixed 1 : A road away needn't be broad if there's real work at its other end.
+opinion @1 sump mixed 1 : Anyone raised by the water learns just how high a dry berth needs to be.
+
+grown
+line @1 greet : Come above the wet mark. | Light shows nicely along this seam.
+line @1 greet.return : Welcome back to my dry stretch of planking.
+line @1 again.open : Round again before I've wetted my stone.
+line @1 farewell : May your bedding stay out of the bilge.
+line @1 farewell.return : Carry that good wish past the yard.
+line @1 react.news : I'll hear what's reached this far.
+line @1 react.news.new : Hadn't heard that against these boards.
+line @1 react.news.known : I recognise the stain that account has left.
+line @1 react.news.doubt : Where does that claim touch solid timber?
+line @1 react.news.sorrow [topic.kind=death|loss|assault] : That's a heavy bit to take aboard.
+line @1 react.news.glad [topic.kind=birth|marriage|work] : I'd spare a festival stroke for news like that.
+line @1 ask.how : How's the shift sitting with your shoulders?
+line @1 answer.how : Slightly worn. The edge still holds.
+line @1 sympathise : Stay clear of the crowd here and take your time.
+line @1 reassure : You needn't decide your whole passage today.
+line @1 refuse : Other duties have first call on me.
+line @1 accept_decline : Let the matter lie where we put it.
+line @1 preclose : Something of mine still needs a last pass on the stone.
+line @1 accept_preclose : Walk out before the landing fills.
+line @1 ack : That rings clean enough.
+line @1 thank : You kept me from a troublesome second pass.
+line @2 greet [here.time=night] : There's quiet under this bit of roof tonight.
+scene exchange1
+when topic=work self.workplace
+does tell.self / ask.detail / answer.detail
+a : At #self.workplace# my eye follows the line a dried puddle leaves. | My working stone goes back in its rag before I travel.
+b : What can a stain tell? | Why so particular?
+a : How much higher I'd put my bedding. | Loose grit can do a job nobody asked of it.
+
+scene exchange2
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : My ideal bunk has one plain luxury. | I fancy looking at seawater from my bunk.
+b : A fine mattress? | Through a window?
+a : A dry corner past morning as well as at bedtime. | Through anything except the bedding.
+
+scene exchange3
+when topic=food self.likes=fried_fish
+does tell.self / ask.detail / answer.detail
+a : I eat fish where the hot paper can lie open. | My favourite piece wears a dark curled edge.
+b : Why open? | Aren't those burnt?
+a : A tight wrap steams the crisp bit soft. | Only the black ones. Brown still has plenty to offer.
+
+scene exchange4
+when topic=pastimes self.likes=wrestling
+does tell.self / ask.detail / answer.detail
+a : I like wrestling with proper space for planting a foot. | A match teaches more about weight than a heavy lift.
+b : For a stronger hold? | How's that?
+a : For a clean release when the turn's finished. | A weight rarely changes its mind halfway through.
+
+scene exchange5
+when topic=pastimes self.likes=festival_bells
+does tell.self / ask.detail / answer.detail
+a : A festival bell gives the yard a larger roof. | I listen to the shortest bell die away.
+b : What do you mean? | Why that one?
+a : Even voices across the water seem under the same sound. | It's the last small sound before everybody starts talking again.
+
+scene exchange6
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : Warm rain can stay as long as my coat lasts. | I like hearing the rain on an unfinished hull.
+b : Thought you wanted dry boards? | Does it sound hollow?
+a : My bunk gets different terms from my sleeves. | It sounds like a room getting ready.
+
+scene exchange7
+when topic=day self.dislikes=night_noise
+does tell.self / ask.detail / answer.detail
+a : Night clatter travels up the ribs of a house. | I put my stone on folded cloth at night.
+b : Can you shut it out? | To keep it warm?
+a : An early walk helps more than a pillow sometimes. | To keep the shelf from announcing my every movement.
+
+scene exchange8
+when topic=newcomer self.dislikes=crowds
+does tell.self / ask.detail / answer.detail
+a : I don't offer directions in a crush of elbows. | A crowd makes every exit the wrong size.
+b : Where do you speak? | Know a better route?
+a : On an edge where two wolves can both look up. | I usually wait beside a fixed post till I can see one.
+
+scene exchange9
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : Before accepting a berth I'd invite #self.friend# to inspect it. | A friend can cross my quiet without knocking.
+b : Why a second inspection? | What makes the difference?
+a : A friend might see damp where I see only a chance. | Knowing which silence wants company.
+
+scene exchange10
+when topic=work self.boss
+does tell.self / ask.detail / answer.detail
+a : I give #self.boss# the state of the board as I found it. | I like a task with a finish I can show.
+b : Wet or dry? | Do you ask for that?
+a : Including anything just painted over it. | A clear job is better for the wolf giving it too.
+
+scene exchange11
+when topic=memories
+does tell.self / ask.detail / answer.detail
+a : I've seen a post promised before the workers arrived. | I take the work that's there while I look further.
+b : Can you say where? | Sounds practical?
+a : I can say what a wasted morning feels like. | It leaves my evenings my own.
+
+scene exchange12
+when topic=land here.region=ridgemere
+does tell.self / ask.detail / answer.detail
+a : The Sump has windows low enough to hear wheels through. | I look uphill when the wharf air sticks.
+b : Even shut? | What for?
+a : Especially the ones whose frames have come loose. | A sign the clouds are moving somewhere.
+
+scene exchange13
+when topic=gossip here.gossip=yes
+does tell.self / ask.detail / answer.detail
+a : The report on the boards was #topic.subject# #topic.claim#. | A name can travel a yard quicker than a plank.
+b : Is there proof aboard? | Do you help it along?
+a : Not in anything I've personally inspected. | I've paid work waiting.
+
+scene exchange14
+when topic=times world.times=lean|hard
+does tell.self / ask.detail / answer.detail
+a : When shifts get scarce I keep my stone working. | A small hot fish makes a thin day easier.
+b : Even without a task? | The whole cure?
+a : It means the tool is ready when the task does come. | Enough help to take the next step.
+
+scene exchange15
+when topic=travel
+does tell.self / ask.detail / answer.detail
+a : I ask about the bunks before the destination. | A sound passage needs a dry bag.
+b : Why that order? | What goes in first?
+a : A voyage lasts through quite a few nights. | My bedding, then the rag for the hone.
+
+scene exchange16
+when topic=faith
+does tell.self / ask.detail / answer.detail
+a : I give thanks for work offered squarely. | A quiet thought at a rail suits me.
+b : And poor work? | What sort?
+a : I can ask for better without giving up my grip on today. | Good wishes for a crew with cold blankets.
+
+scene exchange17
+when topic=prices
+does tell.self / ask.detail / answer.detail
+a : I pay for an edge I can sharpen again. | A dear bunk should prove its roof in rain.
+b : What about a fancy handle? | Can you demand that?
+a : It would have to enclose a second useful edge to interest me. | The hour of inspection is my choice.
+
+scene exchange18
+when topic=home
+does tell.self / ask.detail / answer.detail
+a : I hang a spare cloth above splash height. | My knife lives where the stone can find it.
+b : How high's that? | Together in the dark?
+a : Look for yesterday's stripe and add a palm. | Separate wrappings. A cutting edge deserves a proper home.
+
+story tale1 [topic=dreams]
+  : I checked a likely berth and admired the pale shape of a fish on the board above it.
+  : A second look showed where an old wet blanket had dried against the wood.
+  b : Did you still admire the fish?
+  : Certainly. I chose a different place for my imaginary bedding.
+
+story tale2 [topic=pastimes self.likes=wrestling]
+  : I practised a wrestling turn with my hone still in my pocket.
+  : The stone slipped sideways, giving me a very persuasive reason to set my hip differently.
+  b : Did it improve the turn?
+  : The next one. My hone went straight onto its shelf and got both hips properly involved.
+
+story tale3 [topic=weather self.likes=warm_rain]
+  : I left a scrap board outside during warm rain and heard a little ticking underneath.
+  : A curled shaving had made a tiny roof. The drops ran off it onto a loose nail.
+  b : Did you keep the shaving?
+  : I kept its curve in my head. That's a shape worth remembering for a bunk shelf.
+
+rule @call1
+when concept=bark here.time=dawn
+does aside
+cooldown 8h
+say Fresh grit on the stone. | A pale line round the hull.
+
+rule @call2
+when concept=bark here.time=night
+does aside
+cooldown 8h
+say Quiet with the loose timbers. | Keep the hone from knocking.
+
+rule @call3
+when concept=bark here.weather=rain
+does aside
+cooldown 8h
+say Let it run below the bedding. | Working rag on the dry side.
+
+rule @call4
+when concept=bark here.time=dusk
+does aside
+cooldown 8h
+say Stains show best in slanting light. | One more pass at the burr.
+
+dlg @1 resident.hub : The honing water can settle while we speak.
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, you've found my bit of dry board again.
+dlg @3 resident.hub [pair.disposition=wary|hostile] : A question put plainly might travel further with me.
+dlg @1 resident.job [self.workplace] : My current work takes me to #self.workplace#. I prefer to inspect the job itself before talking about its prospects.
+dlg @2 resident.job : I take what work is offered and keep my good edge in decent shape.
+dlg @1 resident.news [world.news] : An account made it here through the yard noise. #world.news#.
+dlg @1 resident.gossip [here.gossip=yes] : The story as it landed was #topic.subject# #topic.claim#. I'm slow to put my own mark on another account.
+dlg @1 resident.bye : Dry bedding and a quieter landing to you.
+graft resident.hub
+choice Which stripe tells you about a berth? -> berth_stripe
+node berth_stripe
+say The one the water left by drying. It often runs below the bright paint and it can tell a different story from the price.
+free
+choice Where would you sleep then? -> berth_stripe_again
+choice Goodbye. -> bye
+node berth_stripe_again
+say A palm above the highest mark I can find, with dry space for my boots and a little room to turn round.
+choice I'll inspect the boards myself. -> hub
+choice Goodbye. -> bye

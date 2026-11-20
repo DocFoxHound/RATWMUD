@@ -1,0 +1,258 @@
+# rm504, the counter on the curl (Docs/Design/84). Exported from ridgemere3 at revision 1: edit it in Atlas or the DM, or as a draft through tools/mantle_load.py.
+mantle rm504
+revision 1
+state ready
+dialect plain
+accent none
+tier standard
+written_for rm_eleanor_mudworth
+written_by codex
+title the counter on the curl
+fits stage=adult|old
+prefers job=scholar
+traits temper=calm talk=plain warmth=warm humour=none honesty=plain piety=devout drive=steady
+quirk sets_a_draughts_counter_on_a_curling_roll
+likes spiced_cider draughts old_maps warm_rain
+dislikes waiting drizzle
+fears letting_a_small_request_vanish_in_damp_paper
+hopes to_leave_every_reader_a_flat_clear_page
+topics work +0.4 faith +0.4 pastimes +0.3 home +0.2
+styles comfort=gentle gossip=close refuse=soft tease=none
+marks oath saying
+persona #self.first# steadies curling paper with a draughts counter and takes a private breath while finding the next clear line.
+
+words
+oath! = Weight my wandering margin | By the quiet black counter
+saying! = The lightest curl deserves its little weight | Keep the page flat for the next eyes
+counter = a black draughts counter | a smooth horn piece
+curl = a pale curling margin | the turned paper corner
+roll = a narrow record roll | a long wound page
+clove = a tiny clove | a crisp bit of spice
+cider = warm cider scented with cloves | a warm spiced cup
+map = an old route drawing | my ragged river map
+chest = the quiet breath | a careful little breath
+board = the ruled game board | my small draughts board
+file = my paper sleeve | a folded record cover
+cloth = a fine clean cloth | the softest wiping rag
+rain = a soft shower | gentle warm rain
+glass = the lower pane | the square of plain glass
+
+any
+opinion @1 church for 1 : A petition reaches the Bright One before its clerk has finished unrolling the paper. I find considerable peace in that.
+opinion @1 dole for 1 : We need not search a shelf for the reason to fill a hungry neighbour's bowl.
+opinion @1 houses for 1 : Great houses keep the city's long records safe. They ought to leave a low shelf for the ordinary reader too.
+opinion @1 strangers for 1 : A stranger needs the same sort of steady page beneath a searching finger as an old friend.
+opinion @1 festivals for 1 : There's one wedding dance I remember whenever I sit judging a feast beside a room's quieter wall.
+
+grown
+line @1 greet [pair.band=strangers] : Take the chair beside the flat part of the roll. | A welcome place near the little counter.
+line @2 greet [self.working=yes] : You have a hearing while my page stays open. | Come near my clear working corner.
+line @3 greet [here.time=dawn] : Morning. The page lies particularly flat. | New light for a civil request.
+line @4 greet [here.time=dusk|night] : Evening leaves room for a quieter word. | Come where the record still catches the lamp.
+line @1 kin.open [pair.kin!=no] : Family need no counter to hold their place. | There's room beside the household paper.
+line @1 again.open : A second visit on an open page. | We turn to our place again.
+line @1 greet.return : I hear you, softly and clearly. | My hand can rest upon the margin.
+line @2 greet.return [pair.band=friends|family] : A familiar voice beside my patient little weight. | This seat knows your welcome.
+line @3 greet.return [self.working=yes] : One free ear above the open record. | Let my hand finish with this curling end.
+line @4 greet.return [here.time=dusk|night] : Evening. Kindly voices travel quite sufficiently. | There's warmth this side of the shutter.
+line @1 farewell : An uncrowded page in your next hour. | Keep your place easily wherever you stop.
+line @1 farewell.return : I'll hold the curling end for the next visit. | Kind company at the far chair.
+line @2 farewell.return [here.time=night] : A gentle lamp beyond your last turning. | May your work be closed before sleep finds you.
+line @1 react.news : Place the matter where I may see it plainly. | Which bit belongs in the fair copy?
+line @1 react.news.new : A line newly entered in my hearing. | That has no mark here yet.
+line @1 react.news.known : I remember the position of that sentence. | An earlier reading brought the same account.
+line @1 react.news.doubt : I'd allow a second look before weighting that line down. | A curling edge may have hidden one important qualification.
+line @1 react.news.sorrow [topic.kind=death|loss|theft|assault|arrest|crime] : I can keep the page quite still for you. | That hurt deserves a quieter hearing.
+line @1 react.news.glad [topic.kind=marriage|birth|apprentice|succession|work] : A happy addition to the household record. | My private thanks go up for that happy turn.
+line @1 ask.how : Has the day lain quietly under your hand? | Are you wearing a heavy page today?
+line @1 answer.how : My counter's keeping things reasonably even. | A little weariness. Room for another kind word.
+line @1 decline : I'd best keep my calm hour free for an unfinished record. | I need my remaining breath for a little work at home.
+line @1 accept_decline : I understand the need to leave that page closed. | Your answer has its proper place.
+line @1 thank : You've eased my hand upon the stubborn edge. | I remember the gentle attention you brought.
+line @1 sympathise : Sit by the quieter pane awhile. | I'll keep the place while you rest your eyes.
+line @1 reassure : A page may be laid down without losing the line. | You may have another gentle beginning.
+line @1 preclose : I ought to return the counter to its page. | The last quiet business wants my ear again.
+scene curl
+when topic=work self.job=scholar
+does tell.self / ask.detail / answer.detail
+a : I keep #counter# for the one corner of a roll that will not lie still.
+b : A borrowed game piece? | Why not use a stone?
+a : It may return to the board after duty. I take care to keep both games distinct. | Smooth horn won't scuff a fine page. A stone can be too eager to make an entry of its own.
+
+scene cough
+when topic=health
+does tell.self / ask.detail / answer.detail
+a : Sometimes I take longer finding a margin than the curling paper strictly requires.
+b : For a breath? | Does the damp catch you?
+a : For an easy breath under cover of a perfectly ordinary bit of work. | A little. I prefer to give the record the attention instead of my throat.
+
+scene prayer
+when topic=faith self.piety=devout
+does tell.self / ask.detail / answer.detail
+a : I begin a day's handling with a very short prayer for clear reading.
+b : Clear sight? | Is the prayer audible?
+a : For the reader's patience too. A difficult name may shelter a family matter of great importance. | The Bright One needn't compete with a room full of turning pages to hear it.
+
+scene cider
+when topic=food self.likes=spiced_cider
+does tell.self / ask.detail / answer.detail
+a : I like a little spice afloat where the cup curves in.
+b : Do you leave it there? | Just one piece?
+a : Till the cider has its character. Then I lift the hard bit before it reaches the mouth. | A small warm flavour does beautifully. More wouldn't necessarily be a better welcome.
+
+scene draught
+when topic=pastimes self.likes=draughts
+does tell.self / ask.detail / answer.detail
+a : I play a quiet game with the same black counter that helps hold a roll.
+b : Does it have a favourite square? | Any extra powers?
+a : The one that leaves two moves open for the morning. I'm fond of considering a thing overnight. | Absolutely none. Its dignity at work has not enlarged its privileges at play.
+
+scene oldmap
+when topic=travel self.likes=old_maps
+does tell.self / ask.detail / answer.detail
+a : An old map can roll itself round its own river.
+b : Do you straighten it? | Why the river?
+a : Only to the point where the paper yields willingly. A crease once broken can't be prayed together. | The long inked line took more wetting than the spare corners. So it remembers a different bend.
+
+scene rain
+when topic=weather self.likes=warm_rain
+does tell.self / ask.detail / answer.detail
+a : I enjoy a warm shower provided the records have dry covers.
+b : Would you walk in that shower? | Doesn't your throat complain?
+a : Perhaps, after a sufficiently gentle day. Rain can be a gift without becoming compulsory exercise. | A very light warm shower seldom troubles me like cold drips by an open frame.
+
+scene drizzle
+when topic=weather self.dislikes=drizzle
+does tell.self / ask.detail / answer.detail
+a : Drizzle leaves a fine grey fur on a dark cover.
+b : Is it really fur? | Can it get inside?
+a : Only the look of it. Tiny beads catching the same dim sky. | Not if I wipe before opening. A careless thumb can carry more water than a sound cover lets in.
+
+scene wait
+when topic=day self.dislikes=waiting
+does tell.self / ask.detail / answer.detail
+a : I find a wait easier if I can offer somebody else a little help during it.
+b : Can you always find a need? | Does it shorten the wait?
+a : A low stool, a door, a question from a quiet reader. Generally something quite modest. | It shortens the bit of waiting that's occupied with my own impatience.
+
+scene spouse
+when topic=family self.married=yes self.spouse
+does tell.self / ask.detail / answer.detail
+a : I'd like to give #self.spouse# an evening with no rolled papers near our cups.
+b : A whole evening? | Why the cups?
+a : Yes, although the papers occasionally have other ideas. One can begin by closing the door. | I like to talk without shifting a precious page away whenever the cider comes round.
+
+scene friends
+when topic=friends self.friend
+does tell.self / ask.detail / answer.detail
+a : I can sit quite happily in a quiet game with #self.friend# even if neither of us makes a move.
+b : Who wins then? | For long?
+a : The hour. It goes by pleasantly in good company, which a board on its own can't properly manage. | Until the desire to speak or move a piece comes of itself.
+
+scene office
+when topic=home self.quarter=office
+does tell.self / ask.detail / answer.detail
+a : Office stairs have distinct sounds. I recognise a stair by the particular rustle of paper carried up it.
+b : Not the footfalls? | Do you know which pages?
+a : A carpet can soften those, but a long roll brushing a sleeve has its own quite definite voice. | I don't inquire simply because I can hear. A closed roll is quite entitled to privacy.
+
+scene wealth
+when topic=prices self.wealth=rich
+does tell.self / ask.detail / answer.detail
+a : I can buy a clear sheet when I need one. I try to remember who must make a small scrap do twice.
+b : Would you give a sheet away? | What would make you remember?
+a : Certainly if the matter is private and calls for an honest fresh beginning. | A request written between columns of old sums. Such a page takes considerable care.
+
+scene lookwork
+when topic=work self.job=scholar self.workplace
+does tell.self / ask.detail / answer.detail
+a : When I work at #self.workplace#, I check the spot where a fold interrupts the ink.
+b : Why there? | Can you restore it?
+a : One letter hidden can change the household the entry refers to. I don't guess at a family name. | I lay it flat with a little patience. A marginal guess would scarcely repair the damage.
+
+scene quietguest
+when topic=newcomer
+does tell.self / ask.detail / answer.detail
+a : New callers sometimes feel embarrassed at not knowing how to ask for a record.
+b : How do you help? | Do you keep the question private?
+a : Ask what the visitor hopes to learn. The shelf mark comes later, by my own hand. | In a low voice and off the public side of the desk if it concerns an intimate matter.
+
+scene news
+when topic=gossip
+does tell.self / ask.detail / answer.detail
+a : A fact set down in ink can be less certain than a quiet memory.
+b : Even in a public record? | Whose memory?
+a : A careful clerk records where a statement came from. The entry does not make the statement true by itself. | A witness before the story went round several tables and grew a handsome conclusion.
+
+scene feast
+when topic=festival self.married=yes
+does tell.self / ask.detail / answer.detail
+a : Feasting gives me a chance to enjoy that brief pause between one dance and the next.
+b : So you can sit? | Which dance comes to mind?
+a : Sometimes. It also gives the dancers a chance to look at the wolf whose paw they have been holding. | My wedding. I have very little inclination to argue with a tune that has carried so kind a memory.
+
+scene dream
+when topic=dreams
+does tell.self / ask.detail / answer.detail
+a : I dreamt my draughts board was a great unrolled map and each counter was a resting place for a traveller.
+b : Could a traveller move? | What about the empty squares?
+a : Indeed. The kindest move appeared to be putting a rest where someone was about to arrive. | Room for journeys yet to come. I woke inclined to take rather particular care of my own next move.
+
+story outroll [topic=memories]
+  : A stiff roll once overturned my lightest counter. It landed on the floor with an unexpectedly cheerful sound and rolled some distance beneath a shelf.
+  : I went down on my knees and found my missing white piece beside it. The little wanderer had restored the whole game by taking a liberty with my filing.
+  b : Did you use a heavier piece afterwards?
+  : I let the roll ease open more slowly. Most papers are less troublesome if I spare them my haste.
+
+story spiceprint [topic=food]
+  : A single dry clove once fell out of my cuff while I was examining a map. It landed with its little stalk pointing towards an unfamiliar bend of the river.
+  : I looked there just out of curiosity and discovered a beautifully careful drawing of a ferry. Without the spice I should have overlooked a quiet bit of work.
+  b : Do you still look for the ferry?
+  : Sometimes when the cup gives off the same scent. A memory doesn't always need the shelf mark I would assign it.
+
+story courtesy [topic=work self.job=scholar]
+  : I once spent an entire morning looking for a request I'd kept out because it needed a particularly clear answer. I knew I had left it on an empty corner.
+  : Every flat space was presently occupied. At last I lifted my little black game board. I'd made a cover of it to keep the clean request from getting dusty.
+  b : Did the answer come late?
+  : It came in time, with a plain acknowledgment of the trouble. I keep an actual sleeve for a paper awaiting a special kindness now.
+
+rule @aside1
+when concept=bark self.job=scholar self.working=yes
+does aside
+cooldown 6h
+say Horn counter on the broad margin. | Give the roll time before asking it to flatten.
+
+rule @aside2
+when concept=bark self.likes=draughts
+does aside
+cooldown 7h
+say One square held and another open. | The black counter can return to the board at supper.
+
+rule @aside3
+when concept=bark self.likes=spiced_cider
+does aside
+cooldown 8h
+say Lift the clove before the last gentle swallow. | Warm cup first, clear papers afterwards.
+
+rule @aside4
+when concept=bark here.time=dawn
+does aside
+cooldown 9h
+say Silence enough to read that difficult first name. | Wipe the sill before opening the covers.
+
+dlg @1 resident.hub : Take the chair where my little page weight's in view. It will keep my place while I hear your business in peace.
+dlg @1 resident.job [self.job=scholar self.trade_words] : #self.trade_words.capitalize#. I try to return a reader's particular name in its own proper form.
+dlg @1 resident.news [world.news] : A report has reached my quiet corner of the desk. #world.news#
+dlg @2 resident.hub [topic.meeting=known] : #topic.player#, there's a free square beside the familiar papers.
+dlg @1 resident.bye : May the Bright One allow you a quiet place to set the day's work down.
+graft resident.hub
+choice Is your paperweight allowed to play draughts again? -> roll_counter
+node roll_counter
+say Gladly. A plain black piece holds my place while a difficult roll stretches out. When the last page is put away it may resume its ambitions on a board.
+free
+choice Does it keep a place in interrupted games too? -> roll_game
+choice I hope the black piece plays a good game. -> hub
+node roll_game
+say I put the board aside for a tired visitor. The pieces may be untroubled where they stand for a while. A person who has come asking deserves the immediate move.
+choice I'll let the next visitor take the chair. -> hub
+choice May you find time to finish playing. -> bye
