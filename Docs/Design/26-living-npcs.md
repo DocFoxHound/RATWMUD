@@ -709,10 +709,16 @@ plan; `Society::decideAuthored`, how residents live it.)
 - **Communities.** A resident belongs to the community of their home: its town, or its region in a world of one town
   (as the Watch does, Phase 7). Each has a market square: the town's market, or where most of its merchants work;
   a market indoors spills out of its door into the street. Around it, worked out once a day on open ground reachable
-  from the square (not beds, not doorways): twelve stall spots a tile apart, and up to 64 places to stand.
+  from the square (not beds, not doorways): twelve stall spots a tile apart, and up to 64 places to stand. (Since
+  2026-11-20 the places to stand are two and three tiles off each built stall, taken a stall at a time in turn, so the
+  crowd is spread over every stall of the square; the open ground around its middle only for a square without stalls
+  or room left. Before, they were the 64 open tiles nearest the middle: in Ridgemere 3, whose middle is at the west
+  end of a square 45 tiles across, a market hour's sixty townsfolk stood ten tiles square by its first two stalls.)
 - **Marketday.** From seven to two, merchants trade from a stall at their town's square: they carry more (20 meals
   rather than 12) and sell a tenth cheaper (rounded down: a meal is 5 pennies rather than 6). Each of the townsfolk
-  goes for an hour some time between eight and one, to buy and talk. In foul weather at the square the stalls stay in.
+  goes for an hour some time between eight and one, to buy and talk, going from stall to stall: a new place in the
+  crowd every ten minutes, each on a clock of its own (a friend group of children on its group's; since 2026-11-20:
+  before, each stood its hour at one place, and the square stood still). In foul weather at the square the stalls stay in.
 - **Restday.** No work but the watch. Shops open the morning (8 to 12), so everyone can eat; people spend the day with
   friends where they spend their evenings (at home when the weather is bad).
 - **Festivals.** The 46th day of each season. Each town has its own name for each season's festival (one of three,
