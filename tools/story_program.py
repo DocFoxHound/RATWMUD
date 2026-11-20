@@ -1,9 +1,12 @@
 """The same deterministic world-story rules for Studio, authoring tools and the world's runner."""
 
+import contextvars
 import hashlib
 import json
 import math
 import re
+import threading
+import time
 
 import story_scenes
 import story_triggers as triggers
@@ -200,6 +203,29 @@ INJURY_TYPES = ('torn_flank', 'bitten_foreleg', 'bitten_hindleg', 'torn_ear_acut
                 'singed_coat', 'burned_muzzle', 'torn_ear', 'bent_tail', 'scarred_muzzle', 'scarred_flank', 'burn_scars',
                 'notched_nose', 'clouded_eye', 'permanent_limp', 'bad_back', 'stiff_shoulder')
 ID = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}\Z')
+
+
+# A rehearsal is asked for over Studio and the author bridge, so one request must not take the host's CPU: each review
+# runs within a time and work budget, and only a couple run at once. The live runner dispatches outside any budget.
+REHEARSAL_SECONDS = 8.0
+REHEARSAL_STEPS = 200_000          # Facts and signals dispatched, and rules fired, across all of a review's cases.
+REHEARSALS_AT_ONCE = 2
+_rehearsals = threading.BoundedSemaphore(REHEARSALS_AT_ONCE)
+_budget = contextvars.ContextVar('rehearsal_budget', default=None)
+
+
+class RehearsalBudget:
+    def __init__(self, seconds=None, steps=None):
+        self.deadline = time.monotonic() + (REHEARSAL_SECONDS if seconds is None else seconds)
+        self.steps = REHEARSAL_STEPS if steps is None else steps
+
+    def spend(self, n=1):
+        before, self.steps = self.steps, self.steps - n
+        if self.steps < 0 or (before // 256 != self.steps // 256 and time.monotonic() > self.deadline):
+            raise ValueError(
+                'This rehearsal is too large to run in one request. Use fewer or shorter rehearsal cases, '
+                'or fewer signals per event, and try again.'
+            )
 
 
 def require(ok, message):
@@ -884,7 +910,10 @@ def dispatch(p, phase, state, event, day, trace, elapsed):
             emitted.add(name)
             queue.append({**source, 'kind': triggers.SIGNAL, 'signal': name})
 
+    budget = _budget.get()
     for fact in queue:
+        if budget:
+            budget.spend()
         track_missions(phase, state, fact, credited)
         trace_start = len(trace) if trace is not None else 0
         target = triggers.fire(
@@ -898,6 +927,8 @@ def dispatch(p, phase, state, event, day, trace, elapsed):
             emit,
             trace,
         )
+        if budget and trace is not None:
+            budget.spend(len(trace) - trace_start)   # (The trace is the reply: it is bounded with the work.)
         if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
             for firing in trace[trace_start:]:
                 firing.update(cell=fact['cell'], x=fact['x'], y=fact['y'])
@@ -987,7 +1018,19 @@ def mission_credits(missions):
     return credits
 
 
-def review(p):
+def review(p, budget=None):
+    """Rehearse every case, within a work and time budget (RehearsalBudget). Too large a request is refused politely."""
+    if not _rehearsals.acquire(timeout=REHEARSAL_SECONDS):
+        raise ValueError('Other rehearsals are running. Try again in a moment.')
+    token = _budget.set(budget or RehearsalBudget())
+    try:
+        return _review(p)
+    finally:
+        _budget.reset(token)
+        _rehearsals.release()
+
+
+def _review(p):
     validate(p)
     reports = []
     for case in p['tests']:

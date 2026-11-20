@@ -36,6 +36,31 @@ class AuthorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'different contents'):
             rules.review(p)
 
+    def test_rehearsal_has_a_work_and_time_budget(self):
+        from unittest.mock import patch
+
+        p = runner.catalogue()['examples']['siege-at-greyfen']
+        with self.assertRaisesRegex(ValueError, 'too large to run in one request'):
+            rules.review(p, rules.RehearsalBudget(steps=10))
+        with self.assertRaisesRegex(ValueError, 'too large to run in one request'):
+            rules.review(p, rules.RehearsalBudget(seconds=-1, steps=10**9))
+        self.assertTrue(rules.review(p)['passed'])  # The default budget runs every bundled example.
+        # The live runner's dispatch is never budgeted.
+        self.assertIsNone(rules._budget.get())
+        with patch.object(rules, 'REHEARSAL_SECONDS', 0.01):
+            held = [rules._rehearsals.acquire(timeout=1) for _ in range(rules.REHEARSALS_AT_ONCE)]
+            try:
+                with self.assertRaisesRegex(ValueError, 'Other rehearsals are running'):
+                    rules.review(p)
+            finally:
+                for ok in held:
+                    if ok:
+                        rules._rehearsals.release()
+        self.assertTrue(rules.review(p)['passed'])
+        with patch.object(rules, 'REHEARSAL_STEPS', 10):
+            with self.assertRaisesRegex(ValueError, 'too large'):
+                story_author.request({'op': 'rehearse', 'program': p}, {}, None, False)
+
     def test_event_library_is_playable_and_searchable(self):
         catalog = story_author.request({'op': 'catalog'}, {})
         events = catalog['eventTypes']

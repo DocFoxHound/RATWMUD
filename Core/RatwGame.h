@@ -1503,7 +1503,25 @@ class Game
     bool advanceCinematic(json::Value& instance, double wall);
     Result submitCinematicInput(const std::string& viewer, const std::string& instance, const std::string& beat,
                                const std::string& input, bool reply);
+    // Whether this scene holds this viewer still: a participant who joined (a private scene's audience from its start; a
+    // public one's by voting or replying, never by walking in), for at most kSceneLockSeconds, and never in a fight.
+    bool sceneHolds(const json::Value& instance, const std::string& viewer) const;
+    // What was said in each playing scene, newest last (the user, 2026-11-20: in a scene each speaker has their own panel
+    // with their face). Kept only in memory, never in a save, so players' typed words stay out of the checkpoint.
+    struct SceneLine
+    {
+        std::uint64_t seq = 0;
+        std::string speaker;   // The resident's or the player's entity id.
+        std::string role;      // A resident's cast role ("" for a player).
+        std::string beat;      // A resident's beat, with its start, so the current line is never listed twice.
+        double since = 0;
+        std::string text;
+    };
+    std::map<std::string, std::deque<SceneLine>> sceneLines_;
+    std::uint64_t sceneLineSeq_ = 0;
+    void noteSceneLine(const std::string& instance, SceneLine line);
   public:
+    static constexpr double kSceneLockSeconds = 300;
     Result directSceneResident(const std::string& kind, const std::string& npc, const json::Value& payload);
     void tickStoryScenes(double dt);
     void releaseSceneResidents(const storylines::Storyline& story);

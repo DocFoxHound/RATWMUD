@@ -1459,6 +1459,14 @@ export class GameState {
         }
         this.posts.push(post);
         if (this.posts.length > 300) this.posts.splice(0, this.posts.length - 300);
+        // In a scene each speaker has their own panel with their face (the user, 2026-11-20): a player's words heard
+        // while it plays go into that player's panel, by the same rule as the face beside the line (only when shown).
+        if (this.cinematic.current && post.channel === 'ic' && post.kind === 'roleplay' && !post.faint && post.speakerId && post.face) {
+            const self = post.speakerId === str(obj(this.snapshot, 'self'), 'id');
+            if (self || this.entities.get(post.speakerId)?.kind === 'player')
+                this.cinematic.hear(eventId || `${post.speakerId}@${this.clock}`, {id: post.speakerId, name: post.speaker,
+                    appearance: post.face.appearance, artwork: post.face.artwork, self}, post.text, this.clock);
+        }
         this.transcriptScroll = 0;
         const view = this.entities.get(str(e, 'speakerId', str(e, 'entityId')));
         if (view) {

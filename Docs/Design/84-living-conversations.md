@@ -1296,6 +1296,12 @@ Unaddressed speech is not an interaction: barks to no one in particular, beggars
 sermons, the crier, howl answers, and residents talking *about* a player to each other (`talk.player`, 85 entries).
 Resident letters (doc 55) stay: they are mail, read in their own view, not conversation.
 
+**Story scenes are the one exception (the user, 2026-11-20): "in scenes when anyone speaks it's in their own panel with
+their face."** During a scene (Docs/story-programs.md, "Reusable scenes and ceremonies"), every speaker has their own panel with
+their painted face: each cast resident's line, each player's typed reply, and a player's in-character words heard while
+the scene plays. Several speakers have several panels, the newest last. A player's face goes only to a viewer who is
+shown that player (`Game::addSpeaker`), as beside a chat line.
+
 ### 13.4 What the window gains (decided)
 
 1. **The mantle's voice** at every node it covers (§7.9), with the role tree's line as the floor.

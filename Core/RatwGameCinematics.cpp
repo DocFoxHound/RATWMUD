@@ -224,6 +224,15 @@ Value pathFor(World& world, const Value& actor, const Value& beat)
     return path;
 }
 
+// A private scene's audience takes part from its first beat: the time each joined bounds how long it can be held.
+void joinMembers(Value& state, double wall)
+{
+    if (!state.has("joined")) state.set("joined", Value::object());
+    auto& joined = *state.find("joined");
+    for (const auto& [who, member] : state["members"].fields())
+        if (!joined.has(who)) joined.set(who, wall);
+}
+
 void project(Value& actor, const Value& state, double wall)
 {
     const auto& path = state.array("path");
@@ -261,6 +270,7 @@ Result Game::startCinematic(const std::string& run, const Value& payload)
             for (const auto& mate : party->members) members.set(mate,true);
     }
     state.add("members",members);
+    state.add("joined",Value::object());
     state.add("responses",Value::array());
     state.add("questions",Value::array());
     auto stage = Value::object();
@@ -292,7 +302,11 @@ Result Game::startCinematic(const std::string& run, const Value& payload)
     if (!saved.boolean("failed"))
     {
         if (waitsForPrivateScene(storylines_, saved)) saved.set("queued",true);
-        else openCinematicBeat(saved,doc.string("start"),sceneTime());
+        else
+        {
+            joinMembers(saved,sceneTime());
+            openCinematicBeat(saved,doc.string("start"),sceneTime());
+        }
     }
     record(StoryBook);
     return {true,"Cinematic accepted.",id};
@@ -322,13 +336,29 @@ const Value* Game::visibleCinematic(const std::string& who) const
     return best;
 }
 
-bool Game::cinematicLocks(const std::string& who) const
+bool Game::sceneHolds(const Value& state,const std::string& who) const
 {
     // A fight outranks the shot: a viewer set upon (a story's bandits, a wild wolf) moves and acts in the fight as anyone
     // does, or it could only stand while it was beaten. The scene still plays for it, and locks again once it is over.
-    if (world_.inBattle(who)) return false;
+    // Only a participant who joined is held: a passer-by walking into a public ceremony sees it and walks on. And no
+    // one is held for longer than kSceneLockSeconds, however long the scene runs.
+    if (!state["doc"].boolean("lockMovement") || world_.inBattle(who)) return false;
+    const auto& joined=state["joined"];
+    return joined.has(who) && sceneTime()-joined.number(who) < kSceneLockSeconds;
+}
+
+bool Game::cinematicLocks(const std::string& who) const
+{
     auto* state=visibleCinematic(who);
-    return state && (*state)["doc"].boolean("lockMovement");
+    return state && sceneHolds(*state,who);
+}
+
+void Game::noteSceneLine(const std::string& instance,SceneLine line)
+{
+    line.seq=++sceneLineSeq_;
+    auto& said=sceneLines_[instance];
+    said.push_back(std::move(line));
+    while (said.size()>8) said.pop_front();
 }
 
 Value Game::cinematicView(const std::string& who) const
@@ -353,7 +383,50 @@ Value Game::cinematicView(const std::string& who) const
         cast.push(actor);
     }
     const bool pending=s.boolean("generating"), voted=s["inputs"].has(who);
-    out.add("actors",cast); out.add("text",pending ? "" : s.string("text")); out.add("lockMovement",doc.boolean("lockMovement"));
+    out.add("actors",cast); out.add("text",pending ? "" : s.string("text")); out.add("lockMovement",sceneHolds(s,who));
+    // Each speaker's own panel (the user, 2026-11-20): the scene's last few lines, residents' and players', newest last.
+    // A player's face and name go only to a viewer who is shown that player, as with any line heard (addSpeaker).
+    {
+        std::vector<SceneLine> said;
+        const auto found=sceneLines_.find(s.string("id"));
+        if (found!=sceneLines_.end()) said.assign(found->second.begin(),found->second.end());
+        const auto type=beat.string("type");
+        const bool spoken=type=="line" || type=="choice" || type=="response";
+        if (spoken && !pending && !s.string("text").empty() &&
+            std::none_of(said.begin(),said.end(),[&](const SceneLine& l) {
+                return l.role==beat.string("speaker") && l.beat==s.string("beat") && l.since==s.number("since"); }))
+        {
+            // After a restart the current line is known only from the saved beat: it came before any reply since.
+            const auto* pin=s["stage"].find(beat.string("speaker"));
+            said.insert(said.begin(),SceneLine{0,pin ? pin->string("id") : std::string(),beat.string("speaker"),s.string("beat"),
+                                               s.number("since"),s.string("text")});
+        }
+        if (said.size()>4) said.erase(said.begin(),said.end()-4);
+        auto lines=Value::array();
+        for (const auto& l : said)
+        {
+            auto row=Value::object();
+            row.add("key",l.seq ? std::to_string(l.seq) : "beat:"+l.beat);
+            row.add("text",l.text);
+            if (!l.role.empty())
+            {
+                const auto* pin=s["stage"].find(l.role);
+                if (!pin) continue;
+                row.add("kind","resident"); row.add("name",(*pin)["name"]); row.add("speakerId",(*pin)["id"]);
+                row.add("appearance",(*pin)["appearance"]);
+            }
+            else
+            {
+                const auto* e=world_.entity(l.speaker);
+                row.add("kind","player");
+                addSpeaker(row,who,l.speaker,true);
+                row.add("name",e && row.has("speakerId") ? e->name : std::string("Someone"));
+                row.add("self",l.speaker==who);
+            }
+            lines.push(row);
+        }
+        out.add("lines",lines);
+    }
     out.add("remainingMs",std::max(0.,std::ceil((s.number("end")-wall)*1000)));
     out.add("generating",pending); out.add("voted",voted); out.add("mode",beat.string("mode"));
     out.add("canRespond", !pending && !voted && wall<s.number("end") && s["electorate"].has(who));
@@ -416,12 +489,19 @@ void Game::openCinematicBeat(Value& state,const std::string& id,double since)
         state.set("responses",Value::array());
         state.set("questions",Value::array());
     }
-    if (!beat.has("ai") || !mind_.live()) return;
+    const auto spoken=[&] {
+        if (type=="line" || type=="choice" || type=="response")
+            noteSceneLine(state.string("id"),{0,actor->string("id"),role,id,since,state.string("text")});
+    };
+    if (!beat.has("ai") || !mind_.live()) { spoken(); return; }
     // The live Mind writes a line only for players who can hear it: a ceremony in an empty square, or a private scene
     // whose audience has all signed out, plays its authored line and spends nothing.
     if (std::none_of(clients_.begin(), clients_.end(),
                      [&](const Connection* c) { return !c->entityId.empty() && cinematicViewer(state, c->entityId); }))
+    {
+        spoken();
         return;
+    }
     auto context=Value::object();
     context.add("npcId",(*actor)["id"]); context.add("npc",(*actor)["name"]); context.add("personality",beat["ai"]["personality"]);
     context.add("intent",beat["ai"]["intent"]); context.add("fallback",beat["text"]); context.add("responses",recentResponses);
@@ -451,6 +531,8 @@ bool Game::advanceCinematic(Value& s,double wall)
         if (!s.string("generated").empty()) s.set("text",s["generated"]);
         s.erase("generated");
         s.set("generating",false); s.set("since",wall); s.set("end",wall+beat.number("seconds"));
+        if (const auto* pin=s["stage"].find(beat.string("speaker")))
+            noteSceneLine(s.string("id"),{0,pin->string("id"),beat.string("speaker"),s.string("beat"),wall,s.string("text")});
         return false;
     }
     std::string next=beat.string("next");
@@ -495,7 +577,11 @@ bool Game::advanceCinematic(Value& s,double wall)
 
 void Game::tickCinematics()
 {
-    if (storylines_.playingCinematics().empty()) return;
+    if (storylines_.playingCinematics().empty())
+    {
+        sceneLines_.clear();
+        return;
+    }
     const double wall=sceneTime();
     struct Request { std::string run,instance,beat; Value context; };
     std::vector<Request> requests;
@@ -514,6 +600,7 @@ void Game::tickCinematics()
             {
                 if (waitsForPrivateScene(storylines_,s)) { ++it; continue; }
                 s.erase("queued");
+                joinMembers(s,wall);
                 openCinematicBeat(s,s["doc"].string("start"),wall);
                 changed=true;
             }
@@ -541,7 +628,7 @@ void Game::tickCinematics()
                 changed=true;
                 if (ended) break;
             }
-            if (ended) it=instances.erase(it); else ++it;
+            if (ended) { sceneLines_.erase(it->first); it=instances.erase(it); } else ++it;
         }
     }
     if (changed)
@@ -600,6 +687,8 @@ Result Game::submitCinematicInput(const std::string& who,const std::string& inst
             s.set("responses",std::move(answers)); s.set("questions",std::move(questions));
         }
         s.find("inputs")->set(who,true);
+        // The reply is said aloud in the scene: in the player's own panel, for its audience (never in the event log).
+        noteSceneLine(instance,{0,who,"","",sceneTime(),input});
     }
     else
     {
@@ -608,6 +697,9 @@ Result Game::submitCinematicInput(const std::string& who,const std::string& inst
             return {false,"Choose an offered option.",{}};
         s.find("inputs")->set(who,input);
     }
+    // Answering is taking part: a public scene with a movement lock holds this viewer from now (sceneHolds).
+    if (!s.has("joined")) s.set("joined",Value::object());
+    if (!s["joined"].has(who)) s.find("joined")->set(who,sceneTime());
     // Persist immediately when this input resolves the beat and creates an outcome. Otherwise journal the new ballot.
     const auto run=s.string("run");
     s.set("inputChanged",true);
