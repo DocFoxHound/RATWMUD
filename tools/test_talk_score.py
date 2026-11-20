@@ -217,6 +217,15 @@ class Metrics(unittest.TestCase):
         ])
         self.assertEqual(m["T3_detail"]["by_kind"], {"own_name": 1, "unbacked": 2})
 
+    def test_t3_a_denied_sight_is_not_an_eyewitness_claim(self):
+        # Hearsay owned as hearsay ("I didn't see it with my own eyes") claims no sight; a later clause still can.
+        unseen = {"teller": "wren", "other": "varg", "topic": "gossip", "seen": "no"}
+        m = self.score([(unseen, [("wren", "varg", "Word is the mill was robbed. I didn't see it with my own eyes."),
+                                  ("wren", "varg", "I never saw it myself, mind.")])])
+        self.assertEqual(m["T3"], 0)
+        m = self.score([(unseen, [("wren", "varg", "Nobody believes me, but I saw it with my own eyes.")])])
+        self.assertEqual(m["T3_detail"]["by_kind"], {"unbacked": 1})
+
     def test_k3_own_news_is_its_tellers(self):
         # Two weddings told to Varg by the two who married are two pieces of news; one told him twice is a repeat.
         own = {"topic": "news", "claim": "marriage", "other": "varg"}
