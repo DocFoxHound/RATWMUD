@@ -681,6 +681,22 @@ class RuntimeTests(unittest.TestCase):
         self.assertNotEqual(retry['receipt'], first)
         self.assertEqual(self.status()['actions'][-1]['kind'], 'festival.call')
         self.assertIn(first, self.status()['history'][0]['receipts'])
+        # The world was down past the ten minutes: the act expired unapplied, and Retry sends it again.
+        self.answer('expired')
+        self.tick()
+        self.assertEqual(self.status()['status'], 'paused')
+        expired = self.status()['actions'][-1]['id']
+        again = runner.direct(self.conn, self.world, 'retry', {'run': self.run, 'operator': 'human'})['receipt']
+        self.assertNotEqual(again, expired)
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'festival.call')
+        # Paused, then the game answered applied after all (from its journal, after a restart): Retry resumes, sending nothing.
+        self.answer('expired')
+        self.tick()
+        self.answer('applied')
+        sent = len(self.status()['actions'])
+        resumed = runner.direct(self.conn, self.world, 'retry', {'run': self.run, 'operator': 'human'})
+        self.assertEqual((resumed['status'], len(self.status()['actions'])), ('running', sent))
+        self.assertEqual(self.status()['status'], 'running')
         runner.direct(self.conn, self.world, 'stop', {'run': self.run, 'operator': 'human'})
         self.assertEqual(self.status()['actions'][-1]['kind'], 'story.stop')
 
@@ -1027,6 +1043,15 @@ class RuntimeTests(unittest.TestCase):
     def test_context_digest_and_expiry(self):
         self.assertEqual(runner.atlas(self.conn, self.world, 'rm11')['matches'][0]['id'], 'rm111')
         self.assertEqual(runner.context(self.conn, self.world, 'rm111')['resident']['id'], 'rm111')
+        self.conn.execute('SET LOCAL ROLE ratw_game')
+        for key, text in (('m1', 'Conversation record. Ash said: "my secret"'), ('m2', 'Summary. Ash asked about the ford.')):
+            self.conn.execute(
+                'INSERT INTO game.npc_memories(world_id,key,position,data) VALUES (%s,%s,1,%s::jsonb)',
+                (self.world, key, json.dumps({'npc': 'rm111', 'subject': 'player-ash', 'text': text})),
+            )
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        memories = runner.context(self.conn, self.world, 'rm111')['memories']
+        self.assertEqual([m['summary'] for m in memories], ['Summary. Ash asked about the ford.'])
         p = self.examples['wagon']
         wrong = rules.digest(p)
         p['title'] += '!'

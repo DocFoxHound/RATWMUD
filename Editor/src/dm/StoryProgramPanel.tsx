@@ -145,7 +145,7 @@ export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, can
             {details.directions?.map(d=><p key={d.receipt}>{d.npc} · visit {d.visit} · {d.status}</p>)}
             {direction && <label>Direction ticket<input readOnly value={direction} onFocus={e=>e.target.select()}/></label>}
             {details.status==='paused' && details.actions.at(-1)?.status==='refused' && <button disabled={busy}
-                onClick={()=>void perform(async()=>{await storyProgram(target,'retry',{run:selected}); await refresh();})}>Retry refused action</button>}
+                onClick={()=>void perform(async()=>{await storyProgram(target,'retry',{run:selected}); await refresh();})}>Retry refused or expired action</button>}
             {['approved','running','paused'].includes(details.status) && <button disabled={busy} onClick={()=>{
                 if(window.confirm('Stop this run and cancel future phases? Effects already delivered stay in the world.'))
                     void perform(async()=>{await storyProgram(target,'stop',{run:selected}); setDirection(''); setTicket(''); await refresh();});

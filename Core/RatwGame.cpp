@@ -2453,10 +2453,12 @@ void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double fac
             (from.x == player->position.x || from.y == player->position.y))
         {
             const int endX = int(std::floor(player->position.x)), endY = int(std::floor(player->position.y));
-            const int dx = (endX > seen->second.x) - (endX < seen->second.x);
-            const int dy = (endY > seen->second.y) - (endY < seen->second.y);
+            // Each step re-aims at the landing tile, so even a stale last tile (one sampled from a fight's arena, say)
+            // closes in on it and the walk ends: a fixed diagonal would overshoot one axis and never stop.
             while (std::abs(endX - seen->second.x) > 1 || std::abs(endY - seen->second.y) > 1)
             {
+                const int dx = (endX > seen->second.x) - (endX < seen->second.x);
+                const int dy = (endY > seen->second.y) - (endY < seen->second.y);
                 const StoryTile next{player->cellId, seen->second.x + dx, seen->second.y + dy};
                 recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, id, seen->second, next);
                 seen->second = next;

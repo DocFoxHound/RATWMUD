@@ -1349,6 +1349,31 @@ NO_DEV_CONSOLE = "The Dev Console (character.dm) is never a host's: it needs an 
 NO_AI_KEY = 'Needs an AI key in world.toml.'
 WOLF_KINDS = ('character.kill', 'character.injury', 'character.resurrect', 'character.move')      # (Q24.)
 CHEAT_KINDS = ('character.gift', 'account.unlock')
+# A world story's effects that hurt players' wolves (character.injury on a player, damage to everyone in an area): an
+# approval with any of them needs the flag, as the same acts by hand do.
+STORY_WOLF_KINDS = frozenset({'character.injury', 'story.area.damage'})
+
+
+def story_effect_kinds(program) -> set:
+    """Every effect kind a world-story program could deliver (phase entries, phase and campaign triggers), read loosely:
+    a malformed program is refused by the approval itself."""
+    kinds = set()
+    if not isinstance(program, dict):
+        return kinds
+    def scan_triggers(triggers):
+        for t in triggers if isinstance(triggers, list) else []:
+            for a in (t.get('actions') if isinstance(t, dict) else None) or []:
+                if isinstance(a, dict) and isinstance(a.get('effect'), dict):
+                    kinds.add(str(a['effect'].get('kind')))
+    for phase in program.get('phases') if isinstance(program.get('phases'), list) else []:
+        if not isinstance(phase, dict):
+            continue
+        for e in phase.get('effects') if isinstance(phase.get('effects'), list) else []:
+            if isinstance(e, dict):
+                kinds.add(str(e.get('kind')))
+        scan_triggers(phase.get('triggers'))
+    scan_triggers(program.get('triggers'))
+    return kinds
 # Accounts on a community world are pairwise ids (doc 77: "acct-" and 32 hex); the Editor shows the first 8.
 ACCOUNT_ID = re.compile(r'acct-([0-9a-f]{8})[0-9a-f]{24}')
 SHORT_ACCOUNT = re.compile(r'acct-[0-9a-f]{8}')
@@ -1795,6 +1820,8 @@ class HostedStudio:
             if kind in WOLF_KINDS and not who['mayActOnWolves']:
                 raise D.DMError(WOLVES_REASON, 403)
         story_approval = path == '/api/dm/story-program' and data.get('op') == 'approve'
+        if story_approval and not who['mayActOnWolves'] and STORY_WOLF_KINDS & story_effect_kinds(data.get('program')):
+            raise D.DMError(WOLVES_REASON, 403)   # (A story's effects are the same acts as the actions route's, Q24.)
         if data and (story_approval or path in PLACING_ROUTES or path.startswith('/api/atlas/layers/')) and self._dev():
             try:
                 place = self.publisher.ahead(data)

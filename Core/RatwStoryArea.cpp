@@ -50,7 +50,7 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
     if (!(damage && points) && !(item && quantity && itemValid(good)) && !(buff && hours && payload.string("buff") == "fed"))
         return {false, "Unknown area effect or invalid amount.", run};
 
-    std::vector<std::string> here;
+    std::vector<std::string> here, full;
     for (const auto& [id, participant] : release->participants)
     {
         const auto* e = world_.entity(id);
@@ -61,8 +61,13 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
             continue;
         if (!damage && !cheatsOn() && hostsOwnWolf(id))
             continue;
+        // A full pack misses this reward alone. Refusing the whole effect would pause the story for everyone, and any
+        // one participant could keep it paused by standing in the area with a full pack.
         if (item && !world_.society().canCreate(id, good, quantity))
-            return {false, "A participant cannot carry the area reward.", run};
+        {
+            full.push_back(id);
+            continue;
+        }
         here.push_back(id);
     }
     // The server processes one action at a time. Check every pack before granting the first item.
@@ -81,6 +86,9 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
     for (const auto& id : here)
         tellActedOn(id, item ? "You receive " + std::to_string(quantity) + " " + Society::itemName(good) + "."
                          : damage ? "You are hurt in " + payload.string("region") + "." : "You feel well fed.");
-    return {true, "Area effect reached " + std::to_string(here.size()) + " participants.", run};
+    for (const auto& id : full)
+        tellActedOn(id, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+    return {true, "Area effect reached " + std::to_string(here.size()) + " participants" +
+                      (full.empty() ? std::string(".") : "; " + std::to_string(full.size()) + " had no room."), run};
 }
 } // namespace ratw::game

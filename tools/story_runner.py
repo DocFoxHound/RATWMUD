@@ -650,7 +650,14 @@ def direct(conn, world, op, data):
             'SELECT status,kind,target_id,payload FROM dm.actions WHERE id=%s',
             (state[pending_key] if pending_key else receipts[-1],),
         ).fetchone()
-        rules.require(previous and previous[0] == 'refused', 'Only an explicitly refused game action can be retried.')
+        rules.require(previous and previous[0] in ('refused', 'expired', 'applied'),
+                      'Only a refused or expired game action can be retried.')
+        if previous[0] == 'applied':
+            # The game answered after the pause (an act applied before a restart is answered from its journal): the
+            # story carries on from that receipt, and nothing is sent twice.
+            conn.execute("UPDATE dm.story_releases SET status='running',problem='' WHERE id=%s", (run,))
+            return {'run': run, 'status': 'running', 'receipt': state[pending_key] if pending_key else receipts[-1]}
+        # Expired: no server took it within ten minutes (the world was down), so it was never applied; send it again.
         receipt = queue(conn, data['operator'], *previous[1:])
         if pending_key:
             state[pending_key] = receipt
@@ -816,8 +823,11 @@ def context(conn, world, npc):
                             AND v.released_day IS NULL""",
         args,
     ).fetchone()
+    # A memory the Mind never summarised is "Conversation record. ...": the players' typed words. Authors get
+    # summaries only (the same rule as the hosted chronicle, R1 security).
     memories = conn.execute(
-        "SELECT data->>'subject',left(data->>'text',700) FROM game.npc_memories WHERE world_id=%s AND npc=%s ORDER BY updated_at DESC,key LIMIT 20",
+        "SELECT data->>'subject',left(data->>'text',700) FROM game.npc_memories WHERE world_id=%s AND npc=%s "
+        "AND coalesce(data->>'text','') !~* '^\\s*conversation\\s+record' ORDER BY updated_at DESC,key LIMIT 20",
         args,
     )
     beliefs = conn.execute(

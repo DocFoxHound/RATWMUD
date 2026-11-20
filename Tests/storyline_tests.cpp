@@ -276,6 +276,78 @@ void privateSceneQueue()
     fs::remove(file);
 }
 
+// A locked viewer set upon by a resident (a story's bandits, say) fights as anyone does; the lock returns once it is over.
+void sceneLockYieldsToFight()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-scene-fight-" + std::to_string(::getpid()));
+    const auto file = root.string() + ".json";
+    {
+        Town t(writeStrip(root), file);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        auto& world = t.g.world();
+        const auto run = "world-scene-fight";
+        auto phase = parsed(R"({"title":"Hearing","phase":"hear","journal":"State your case.","visit":1})");
+        auto names = json::Value::array();
+        names.push(t.ash.entityId);
+        phase.add("players", names);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "hearing opens");
+        auto payload = parsed(R"({"visit":1,"cue":"hear","scene":{"format":"ratw-scene","version":1,"id":"hearing","title":"Give an account","visibility":"individual","lockMovement":true,"cast":[{"id":"scribe","npc":"u1"}],"start":"ask","beats":[{"id":"ask","type":"response","speaker":"scribe","text":"Tell me about the crossing.","seconds":300,"mode":"first"}]}})");
+        payload.set("player", t.ash.entityId);
+        expect(t.g.applyDmAct({"2", "story.scene", run, "dm", json::dump(payload)}).ok && t.g.cinematicLocks(t.ash.entityId),
+               "the private scene locks its viewer");
+        const auto* ash = world.entity(t.ash.entityId);
+        expect(world.teleport("u2", ash->cellId, ash->position.x + 1, ash->position.y).ok, "a resident beside the viewer");
+        const auto fight = world.attack("u2", t.ash.entityId);
+        expect(fight.ok && world.inBattle(t.ash.entityId), "the resident sets upon the viewer: " + fight.message);
+        expect(!t.g.cinematicLocks(t.ash.entityId), "a fight releases the scene's lock");
+        t.run(.1);
+        expect(t.g.cinematicView(t.ash.entityId).isObject(), "the scene still plays for the fighter");
+        t.ash.events.clear();
+        t.g.command(&t.ash, R"({"type":"battle","verb":"wait"})");
+        const bool held = std::any_of(t.ash.events.begin(), t.ash.events.end(),
+                                      [](const json::Value& m) { return json::dump(m).find("holding position for the scene") != std::string::npos; });
+        expect(!held, "the fighter's battle turn is not refused by the scene");
+    }
+    fs::remove_all(root);
+    fs::remove(file);
+}
+
+// A linked-AI line is asked of the Mind only when some player can hear it: an empty square plays the authored line.
+void sceneAiNeedsAnAudience()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-scene-ai-" + std::to_string(::getpid()));
+    const auto file = root.string() + ".json";
+    {
+        Town t(writeStrip(root), file, 120, false, 3 * 86400, "http://127.0.0.1:9/dialogue"); // Plugged in, never answers.
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        const auto run = "world-scene-ai";
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm",
+                               R"({"title":"Oath","phase":"square","journal":"Gather in the square.","visit":1})"}).ok, "ceremony visit opens");
+        auto payload = parsed(R"({"visit":1,"player":"world","scene":{"format":"ratw-scene","version":1,"id":"oath","title":"The oath",
+            "visibility":"public","lockMovement":false,"cast":[{"id":"captain","npc":"u1"}],"start":"speak",
+            "beats":[{"id":"speak","type":"line","speaker":"captain","text":"Stand with us.","seconds":5,
+                      "ai":{"personality":"Solemn.","intent":"Welcome the watch."}}]}})");
+        const auto open = [&](const char* cue, int x1, int x2) {
+            payload.set("cue", cue);
+            auto scene = payload["scene"];
+            auto area = json::Value::object();
+            area.add("cell", cellId(1)); area.add("x1", x1); area.add("y1", 8); area.add("x2", x2); area.add("y2", 8);
+            scene.set("area", area);
+            payload.set("scene", scene);
+            const auto started = t.g.applyDmAct({"2", "story.scene", run, "dm", json::dump(payload)});
+            expect(started.ok, "ceremony starts: " + started.message);
+            return t.g.storylineBook().find(run)->cinematics.at(started.targetId);
+        };
+        const auto empty = open("empty", 1, 2); // Ash stands at (8, 8), outside.
+        expect(!empty.boolean("generating") && !empty.has("aiPending") && empty.string("text") == "Stand with us.",
+               "nobody in the square: the authored line plays and the Mind is not asked");
+        const auto heard = open("heard", 7, 9);
+        expect(heard.boolean("generating") && heard.has("aiPending"), "a player in the square: the live Mind is asked for the line");
+    }
+    fs::remove_all(root);
+    fs::remove(file);
+}
+
 void storyAreaEffects()
 {
     const auto root = fs::temp_directory_path() / ("ratw-storyareas-" + std::to_string(::getpid()));
@@ -321,10 +393,11 @@ void storyAreaEffects()
         expect(apply("item").ok && stock(t.ash) == ashStart + 2 && stock(t.bo) == boStart + 2, "group reward reaches real inventory");
         expect(world.society().create(t.bo.entityId, "meal", 10000 - stock(t.bo), "dm grant: full pack fixture"),
                "filled a participant's pack");
-        expect(!apply("item").ok && stock(t.ash) == ashStart + 2 && stock(t.bo) == 10000,
-               "one full pack refuses the group reward before anyone receives it");
+        const auto missed = apply("item");
+        expect(missed.ok && stock(t.ash) == ashStart + 4 && stock(t.bo) == 10000 && missed.message.find("1 had no room") != std::string::npos,
+               "a full pack misses the reward alone; the others receive it and the story keeps running: " + missed.message);
         area.set("item", "no-such-world-item");
-        expect(!apply("item").ok && stock(t.ash) == ashStart + 2, "invalid good refused");
+        expect(!apply("item").ok && stock(t.ash) == ashStart + 4, "invalid good refused");
         area.set("count", 2);
         const auto n = world.roads().camps.size();
         expect(apply("spawn").ok && world.roads().camps.size() == n + 1, "a real camp is created");
@@ -670,6 +743,8 @@ int main()
         privateSceneQueue();
         scriptedResidentScene();
         privateCameraAndMovement();
+        sceneLockYieldsToFight();
+        sceneAiNeedsAnAudience();
         storyAreaEffects();
         inTheGame();
         sources();
