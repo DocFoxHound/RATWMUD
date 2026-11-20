@@ -324,6 +324,9 @@ const Value* Game::visibleCinematic(const std::string& who) const
 
 bool Game::cinematicLocks(const std::string& who) const
 {
+    // A fight outranks the shot: a viewer set upon (a story's bandits, a wild wolf) moves and acts in the fight as anyone
+    // does, or it could only stand while it was beaten. The scene still plays for it, and locks again once it is over.
+    if (world_.inBattle(who)) return false;
     auto* state=visibleCinematic(who);
     return state && (*state)["doc"].boolean("lockMovement");
 }
@@ -414,6 +417,11 @@ void Game::openCinematicBeat(Value& state,const std::string& id,double since)
         state.set("questions",Value::array());
     }
     if (!beat.has("ai") || !mind_.live()) return;
+    // The live Mind writes a line only for players who can hear it: a ceremony in an empty square, or a private scene
+    // whose audience has all signed out, plays its authored line and spends nothing.
+    if (std::none_of(clients_.begin(), clients_.end(),
+                     [&](const Connection* c) { return !c->entityId.empty() && cinematicViewer(state, c->entityId); }))
+        return;
     auto context=Value::object();
     context.add("npcId",(*actor)["id"]); context.add("npc",(*actor)["name"]); context.add("personality",beat["ai"]["personality"]);
     context.add("intent",beat["ai"]["intent"]); context.add("fallback",beat["text"]); context.add("responses",recentResponses);

@@ -1592,6 +1592,15 @@ class HostedAllowlistTests(HostedBase):
             self.assertEqual((status, data['error']), (403, ST.WOLVES_REASON), kind)
             self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'}, role='dm', wolves=True)[0], 200)
             self.assertEqual(self.call('POST', '/api/dm/actions', {'kind': kind, 'characterId': 'c1'}, role='owner')[0], 200)
+        # A world story that injures or damages players' wolves is the same act: its approval needs the flag too.
+        for effect in ({'kind': 'character.injury', 'player': '$actor', 'add': 'cracked_rib', 'severity': 1},
+                       {'kind': 'story.area.damage', 'region': 'breach', 'points': 10}):
+            program = {'phases': [{'id': 'a', 'effects': []}, {'id': 'b', 'effects': [],
+                                   'triggers': [{'id': 't', 'on': 'arrival', 'actions': [{'do': 'effect', 'effect': effect}]}]}]}
+            status, data = self.call('POST', '/api/dm/story-program', {'op': 'approve', 'target': 'live', 'program': program})
+            self.assertEqual((status, data['error']), (403, ST.WOLVES_REASON), effect['kind'])
+        self.assertEqual(ST.story_effect_kinds({'triggers': [{'actions': [{'do': 'effect', 'effect': {'kind': 'deed.award'}}]}],
+                                                'phases': [{'effects': [{'kind': 'npc.line'}]}]}), {'deed.award', 'npc.line'})
         move = {'kind': 'character.move', 'id': 'c1', 'cell': 'square', 'x': 1, 'y': 1}
         self.assertEqual(self.call('POST', '/api/dm/live/move', move)[0], 403)
         self.assertEqual(self.call('POST', '/api/dm/live/move', move, wolves=True)[0], 200)
