@@ -156,12 +156,14 @@ void World::fillSquare(MarketSquare& sq, std::string at, Vec2 where)
         if (p.work.cell == at)
             keepers.insert({int(std::floor(p.work.x)), int(std::floor(p.work.y))});
     std::set<std::pair<int, int>> stallSpots;
+    std::vector<std::pair<int, int>> stallTiles;
     for (int ty = std::max(0, cy - StallReach); ty <= std::min(c->height - 1, cy + StallReach); ++ty)
         for (int tx = std::max(0, cx - StallReach); tx <= std::min(c->width - 1, cx + StallReach); ++tx)
         {
             const auto* stall = c->tile(tx, ty);
             if (!stall || stall->glyph != 'u')
                 continue;
+            stallTiles.push_back({tx, ty});
             for (const auto [dx, dy] : {std::pair{0, 1}, std::pair{0, -1}, std::pair{1, 0}, std::pair{-1, 0}})
             {
                 const int sx = tx + dx, sy = ty + dy;
@@ -175,21 +177,61 @@ void World::fillSquare(MarketSquare& sq, std::string at, Vec2 where)
                 }
             }
         }
+    // The crowd stands where it can: open ground, not a home's tile, a doorway, a door's mouth, another part of the
+    // square, a stall spot or a keeper's post; each tile once.
+    std::set<std::pair<int, int>> crowdAt;
+    const auto stand = [&](int tx, int ty) {
+        const auto* t = c->tile(tx, ty);
+        const Vec2 p{tx + .5, ty + .5};
+        if (!t || t->solid || crowdAt.count({tx, ty}) || homes.count({tx, ty}) || inDoorway(at, p) || nearPortal(at, p, 1.2) ||
+            (region >= 0 && regionAt(*c, p) != region) || stallSpots.count({tx, ty}) || keepers.count({tx, ty}))
+            return false;
+        crowdAt.insert({tx, ty});
+        sq.crowd.push_back({at, p.x, p.y});
+        return true;
+    };
+    // At the stalls: two and three tiles off each built stall (before its keeper), a stall at a time in turn, so the
+    // crowd is spread over every stall of the square. Before, it was only the open ground nearest the market's middle
+    // (the rings, below): in Ridgemere 3, whose middle is at the west end of a square 45 tiles across, a market hour's
+    // sixty townsfolk stood on its 64 tiles, ten tiles square by the first two stalls, while the other stalls had
+    // nobody (the user, 2026-11-20: "everyone is massed around like a few stalls").
+    {
+        std::vector<std::vector<std::pair<int, int>>> before(stallTiles.size());
+        for (std::size_t s = 0; s < stallTiles.size(); ++s)
+        {
+            const auto [sx, sy] = stallTiles[s];
+            for (int ring = 2; ring <= 3; ++ring)
+                for (int dy = -ring; dy <= ring; ++dy)
+                    for (int dx = -ring; dx <= ring; ++dx)
+                        if (std::max(std::abs(dx), std::abs(dy)) == ring)
+                            before[s].push_back({sx + dx, sy + dy});
+            // Round it, not one side first: each ring in an order of its own tiles (the same every time).
+            const auto mixed = [](std::pair<int, int> t) { return (std::uint32_t(t.first) * 73856093u) ^ (std::uint32_t(t.second) * 19349663u); };
+            std::stable_sort(before[s].begin(), before[s].end(), [&](auto a, auto b) {
+                const int ra = std::max(std::abs(a.first - sx), std::abs(a.second - sy)), rb = std::max(std::abs(b.first - sx), std::abs(b.second - sy));
+                return ra != rb ? ra < rb : mixed(a) < mixed(b);
+            });
+        }
+        std::vector<std::size_t> next(stallTiles.size(), 0);
+        for (bool more = true; more && int(sq.crowd.size()) < Crowd;)
+        {
+            more = false;
+            for (std::size_t s = 0; s < before.size() && int(sq.crowd.size()) < Crowd; ++s)
+                while (next[s] < before[s].size())
+                {
+                    more = true;
+                    const auto [tx, ty] = before[s][next[s]++];
+                    if (stand(tx, ty))
+                        break;                      // (One a stall a turn.)
+                }
+        }
+    }
+    // A square without stalls (or room left): the open ground around its middle, the nearest first.
     for (int ring = 1; ring <= 8 && int(sq.crowd.size()) < Crowd; ++ring)
         for (int dy = -ring; dy <= ring; ++dy)
             for (int dx = -ring; dx <= ring; ++dx)
-            {
-                if (std::max(std::abs(dx), std::abs(dy)) != ring)
-                    continue;
-                const int tx = cx + dx, ty = cy + dy;
-                const auto* t = c->tile(tx, ty);
-                const Vec2 p{tx + .5, ty + .5};
-                if (!t || t->solid || homes.count({tx, ty}) || inDoorway(at, p) || nearPortal(at, p, 1.2) ||
-                    (region >= 0 && regionAt(*c, p) != region) || stallSpots.count({tx, ty}) || keepers.count({tx, ty}))
-                    continue;
-                if (int(sq.crowd.size()) < Crowd)
-                    sq.crowd.push_back({at, p.x, p.y});
-            }
+                if (std::max(std::abs(dx), std::abs(dy)) == ring && int(sq.crowd.size()) < Crowd)
+                    stand(cx + dx, cy + dy);
 }
 
 const std::vector<World::Chapel>& World::churches(const std::string& community)

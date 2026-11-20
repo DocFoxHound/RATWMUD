@@ -362,6 +362,70 @@ void marketday()
     expect(life(foul, "wren").goalCell == "shop", "the stalls don't go out");
 }
 
+// Marketday's crowd at the stalls (the user, 2026-11-20, in Ridgemere 3: "everyone is massed around like a few stalls,
+// and nobody is walking around"): the crowd's places are spread over every stall of the square, a far one too, not only
+// the ground by the market's middle; and the townsfolk at the market go from stall to stall in their hour, not standing
+// it out at one place. Greyfen, with a fourth stall built across the street, 27 tiles from the market's middle.
+void marketCrowdAtTheStalls()
+{
+    World w;
+    expect(w.loadWorldFile(RATW_SOURCE_DIR "/Data/Worlds/Greyfen/world.ratw").ok, "Greyfen loads");
+    buildStalls(w);
+    auto* far = w.cell("town")->tile(40, 19);
+    expect(far && !far->solid, "Open ground across the street");
+    far->glyph = 'u';
+    far->solid = true;
+    expect(w.advanceCalendar(5 - std::floor(w.calendarDays())).ok && w.setTimeOfDay(8.05).ok, "Marketday morning");
+    const auto* middle = w.marketSpot("greyfen");
+    expect(middle && std::hypot(middle->x - 40.5, middle->y - 19.5) > 20, "The far stall is well away from the market's middle");
+    const auto plan = w.dayPlan("greyfen");
+    const auto* town = w.cell("town");
+    std::size_t stalls = 0;
+    for (int y = 0; y < town->height; ++y)
+        for (int x = 0; x < town->width; ++x)
+            if (const auto* t = town->tile(x, y); t && t->glyph == 'u')
+            {
+                ++stalls;
+                std::size_t by = 0;
+                for (const auto& s : plan.crowd)
+                    by += s.cell == "town" && std::max(std::abs(std::floor(s.x) - x), std::abs(std::floor(s.y) - y)) <= 3;
+                expect(by >= 3, "The crowd has places at the stall at " + std::to_string(x) + "," + std::to_string(y) + " (" +
+                                    std::to_string(by) + ")");
+            }
+    expect(stalls == 4, "Four stalls (" + std::to_string(stalls) + ")");
+    const auto inCrowd = [&](const ResidentLife& r) {
+        return std::any_of(plan.crowd.begin(), plan.crowd.end(),
+                           [&](const Spot& s) { return s.cell == r.goalCell && s.x == r.goalX && s.y == r.goalY; });
+    };
+    // Each hour at the market: where each one at it is going at five past, and at twenty to.
+    std::size_t went = 0, still = 0, moved = 0;
+    for (double hour = 8; hour < 13; hour += 1)
+    {
+        expect(w.setTimeOfDay(hour + .05).ok, "Five past the hour");
+        run(w, 3);
+        std::map<std::string, std::string> first;
+        for (const auto& [id, r] : w.society().state().residents)
+            if (r.task == "at the market")
+            {
+                expect(inCrowd(r), id + " goes to a place in the crowd");
+                first[id] = std::to_string(r.goalX) + "," + std::to_string(r.goalY);
+            }
+        went += first.size();
+        expect(w.setTimeOfDay(hour + .67).ok, "Twenty to");
+        run(w, 3);
+        for (const auto& [id, was] : first)
+            if (const auto& r = life(w, id); r.task == "at the market")
+            {
+                ++still;
+                expect(inCrowd(r), id + " is still at a place in the crowd");
+                moved += std::to_string(r.goalX) + "," + std::to_string(r.goalY) != was;
+            }
+    }
+    expect(went >= 5 && still >= 5, "The town goes to the market (" + std::to_string(went) + ", " + std::to_string(still) + " still there at twenty to)");
+    expect(moved * 3 >= still * 2, "Most of those at the market have gone on to another stall by twenty to (" + std::to_string(moved) +
+                                       " of " + std::to_string(still) + ")");
+}
+
 // Children on Marketday (the crowd the user saw in Ridgemere, 2026-11-13): Greyfen with six children, two friend groups.
 // A group goes to the market together for its hour and meets at one place there; the rest of the day, school or play
 // and the evening, is a child's own, not on the square: before, every child spent the whole day and the evening there.
@@ -576,6 +640,7 @@ int main()
         restdayChurchesFit();
         marketday();
         stallsOneEach();
+        marketCrowdAtTheStalls();
         childrenOnMarketday();
         cityMarkets();
         festivals();

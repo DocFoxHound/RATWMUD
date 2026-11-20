@@ -285,6 +285,14 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
     const auto pick = [](const std::vector<Spot>& spots, const std::string& id) -> const Spot* {
         return spots.empty() ? nullptr : &spots[std::hash<std::string>{}(id) % spots.size()];
     };
+    // Marketday's hour at the market is spent going from stall to stall: a new place in the crowd every ten minutes,
+    // each on a clock of its own so they don't all set off at once (a friend group on its group's). Before, each stood
+    // the hour at one place (the user, 2026-11-20: "nobody is walking around").
+    const auto browsing = [&](const std::string& who) {
+        constexpr int Turns = 144;                  // (A day's ten minutes.)
+        const double phase = double(std::hash<std::string>{}(who + "browse") % 100) / 100.;
+        return who + "@" + std::to_string(std::int64_t(std::floor(absoluteDay * Turns + phase)));
+    };
     // Restday's service: one's place at it (World::planDays), or null.
     const auto serviceOf = [&](const std::string& id) -> const ServicePlace* {
         if (!day_.service)
@@ -584,8 +592,8 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         else if (marketHour)
         {
             task = "at the market";
-            goal = *pick(plan.crowd, id);
-            reason = "Marketday: gossiping at the stalls.";
+            goal = *pick(plan.crowd, browsing(id));
+            reason = "Marketday: browsing the stalls.";
         }
         else if (guard)
         {
@@ -662,7 +670,7 @@ void Society::decideAuthored(double absoluteDay, const std::map<std::string, Lif
         // child of Ridgemere's city, a hundred and more, on the one square from nine in the morning to ten at night, out
         // of school (the crowd the user saw, 2026-11-13).
         if (task == "at the market"sv && &friends != &id && !friends.empty())
-            if (const auto* meet = pick(plan.crowd, friends))
+            if (const auto* meet = pick(plan.crowd, browsing(friends)))
             {
                 goal = *meet;
                 c.routeGoal = false;
