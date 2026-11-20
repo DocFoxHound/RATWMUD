@@ -191,24 +191,54 @@ void privateCameraAndMovement()
         auto publicScene = payload["scene"];
         publicScene.set("visibility","public");
         publicScene.set("area",parsed(R"({"cell":"c_1_0","x1":8,"y1":11,"x2":8,"y2":11})"));
+        // The vote leads to a long closing line, so the scene goes on after the viewer has taken part.
+        auto beats = publicScene["beats"];
+        auto ask = beats.items().at(0);
+        auto options = ask["options"];
+        for (auto& o : options.items()) o.set("next","close");
+        ask.set("options",options);
+        beats.items().at(0) = ask;
+        beats.push(parsed(R"({"id":"close","type":"line","speaker":"runner","text":"Then go with the Bright One.","seconds":600})"));
+        publicScene.set("beats",beats);
         payload.set("scene",publicScene);
         payload.set("player","world");
         payload.set("cue","crowd");
-        expect(t.g.applyDmAct({"3","story.scene",run,"dm",json::dump(payload)}).ok && !t.g.cinematicLocks(ash->id),
-               "A public scene leaves a viewer in another cell free");
         const auto audienceView = [&] {
             t.run(1); // Four fixture ticks cover every connection's staggered snapshot slot.
             return t.ash.snapshots.back()["self"]["scene"];
         };
+        t.place(t.ash, 1, 8.5, 11.5);
+        const auto crowd = t.g.applyDmAct({"3","story.scene",run,"dm",json::dump(payload)});
+        expect(crowd.ok, "A public scene opens with Ash in the square");
+        expect(audienceView().isObject() && !audienceView().boolean("lockMovement") && !t.g.cinematicLocks(ash->id),
+               "Standing in a public scene shows it but holds no one who has not taken part");
+        auto crowdBallot = parsed(R"({"type":"scene_vote","option":"east"})");
+        crowdBallot.add("beat","ask");
+        crowdBallot.add("instance",crowd.targetId);
+        t.g.command(&t.ash,json::dump(crowdBallot));
+        expect(audienceView().string("beat") == "close" && t.g.cinematicLocks(ash->id), "Voting is taking part: the voter is held");
         // At the southeast-facing corner of the collision pair, an ordinary body push would carry Ash over x=9.
         t.place(t.ash, 1, 8.99, 11.01);
         t.place(t.bo, 1, 8.89, 10.99); // Touching from outside the viewing area.
         expect(audienceView().boolean("lockMovement") && ash->position.x == 8.99 && ash->position.y == 11.01,
                "The crowd beyond the public boundary cannot push an audience member out of the scene");
+        t.place(t.bo, 1, 11.5, 11.5);
+        auto& joined = *t.g.storylineBook().find(run)->cinematics.at(crowd.targetId).find("joined");
+        const auto since = joined.number(ash->id);
+        joined.set(ash->id, since - ratw::game::Game::kSceneLockSeconds);
+        expect(audienceView().isObject() && !audienceView().boolean("lockMovement") && !t.g.cinematicLocks(ash->id),
+               "No one is held past the lock's cap, however long the scene runs");
+        joined.set(ash->id, since);
+        expect(t.g.cinematicLocks(ash->id), "A participant within the cap is held");
         t.place(t.ash, 1, 7.5, 11.5);
         expect(audienceView().isNull() && !t.g.cinematicLocks(ash->id), "Leaving the area releases the public lock");
         t.place(t.ash, 1, 8.99, 11.5);
-        expect(audienceView().boolean("lockMovement"), "Reentry reacquires the current scene and its lock");
+        expect(audienceView().boolean("lockMovement"), "A participant's reentry reacquires the current scene and its lock");
+        t.place(t.ash, 1, 7.5, 11.5);
+        t.place(t.bo, 1, 8.5, 11.5);
+        t.run(1);
+        expect(t.bo.snapshots.back()["self"]["scene"].isObject() && !t.g.cinematicLocks(t.bo.entityId),
+               "A passer-by walking in later sees the scene and is not held");
     }
     fs::remove(save);
     fs::remove_all(root);
@@ -271,6 +301,58 @@ void privateSceneQueue()
         t.g.world().setEventWatcher({});
         expect(t.g.applyDmAct({"3","story.stop","world-private-queue","dm","{}"}).ok && !t.g.cinematicLocks(ash) && !t.g.cinematicLocks(bo),
                "stopping the owning story cancels every instance");
+    }
+    fs::remove_all(root);
+    fs::remove(file);
+}
+
+// In a scene each speaker has their own panel with their face (the user, 2026-11-20): the resident's lines and each
+// player's typed reply reach the scene's audience as lines with the speaker's id, name and look, newest last; the
+// players' words are never written into the saved story book.
+void scenePanels()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-scene-panels-" + std::to_string(::getpid()));
+    const auto file = root.string() + ".json";
+    {
+        Town t(writeStrip(root), file);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 1, 10.5);
+        const auto ash = t.ash.entityId, bo = t.bo.entityId;
+        t.place(t.ash, 1, 8.5, 8.5);
+        t.place(t.bo, 1, 10.5, 8.5);
+        const auto run = "world-scene-panels";
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm",
+                               R"({"title":"Oath","phase":"square","journal":"Gather in the square.","visit":1})"}).ok, "ceremony visit opens");
+        auto payload = parsed(R"({"visit":1,"player":"world","cue":"oath","scene":{"format":"ratw-scene","version":1,"id":"oath",
+            "title":"The oath","visibility":"public","lockMovement":true,"cast":[{"id":"captain","npc":"u1"}],"start":"ask",
+            "beats":[{"id":"ask","type":"response","speaker":"captain","text":"Who keeps the ford tonight?","seconds":120,"mode":"all","next":"close"},
+                     {"id":"close","type":"line","speaker":"captain","text":"Then the ford is kept.","seconds":600}]}})");
+        auto scene = payload["scene"];
+        auto area = json::Value::object();
+        area.add("cell", cellId(1)); area.add("x1", 7); area.add("y1", 8); area.add("x2", 11); area.add("y2", 8);
+        scene.set("area", area);
+        payload.set("scene", scene);
+        const auto started = t.g.applyDmAct({"2", "story.scene", run, "dm", json::dump(payload)});
+        expect(started.ok, "ceremony starts: " + started.message);
+        const auto captain = t.g.world().entity("u1")->name;
+        auto lines = t.g.cinematicView(bo).array("lines");
+        expect(lines.size() == 1 && lines[0].string("kind") == "resident" && lines[0].string("speakerId") == "u1" &&
+               lines[0].string("name") == captain && lines[0].has("appearance") && lines[0].string("text") == "Who keeps the ford tonight?",
+               "the resident's line is in the resident's own panel");
+        expect(t.g.cinematicReply(ash, started.targetId, "ask", "I will, with Bo.").ok, "Ash replies");
+        lines = t.g.cinematicView(bo).array("lines");
+        expect(lines.size() == 2 && lines[1].string("kind") == "player" && lines[1].string("speakerId") == ash &&
+               lines[1].string("name") == "Ash" && lines[1].has("appearance") && lines[1].string("text") == "I will, with Bo." &&
+               !lines[1].boolean("self"), "Ash's reply is in Ash's own panel, with Ash's face, for Bo");
+        expect(t.g.cinematicView(ash).array("lines").at(1).boolean("self"), "and in Ash's own panel for Ash");
+        expect(!contains(json::dump(t.g.storylineBook().save()), "I will, with Bo."), "a typed reply is never saved with the story");
+        expect(t.g.cinematicReply(bo, started.targetId, "ask", "Aye.").ok, "Bo replies, and the beat resolves");
+        lines = t.g.cinematicView(ash).array("lines");
+        expect(t.g.cinematicView(ash).string("beat") == "close" && lines.size() == 4 && lines[2].string("speakerId") == bo &&
+               lines[3].string("text") == "Then the ford is kept." && lines[3].string("kind") == "resident",
+               "several speakers: several panels, oldest first and the newest last");
+        t.place(t.ash, 1, 8.5, 12.5);
+        expect(t.g.cinematicView(ash).isNull(), "outside the square the scene's panels are not shown");
     }
     fs::remove_all(root);
     fs::remove(file);
@@ -744,6 +826,7 @@ int main()
         scriptedResidentScene();
         privateCameraAndMovement();
         sceneLockYieldsToFight();
+        scenePanels();
         sceneAiNeedsAnAudience();
         storyAreaEffects();
         inTheGame();

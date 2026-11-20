@@ -37,13 +37,17 @@ Open **Dungeon Master → Story Creator → Scenes** to write a ceremony once, r
 
 **The watch takes its oath** is set in Greyfen’s square. Harrow walks to the speaking place. A merchant recalls the previous winter. The audience chooses where to carry the first lantern. A majority for the bridge ends the ceremony at the crossing. A majority for the south road lets a volunteer type who the patrol should look for. Harrow can answer in character through the host’s linked NPC Mind. With ordinary authored playback he promises to meet the last carters. If nobody replies, he acknowledges their silence and gives the watch its charge. [Ceremony document](../Data/Storylines/scenes/greyfen-oath.json)
 
-- **Cast and framing.** Bind a role to a particular resident, or choose by role or cell. The game selects the cast at the start and keeps those residents for that performance. The dialogue panel uses the speaking resident’s portrait and name. Give each line its own reading time in real seconds. A camera point frames a map tile for viewers. A movement lock applies while a viewer is taking part.
+- **Cast and framing.** Bind a role to a particular resident, or choose by role or cell. The game selects the cast at the start and keeps those residents for that performance. Give each line its own reading time in real seconds. A camera point frames a map tile for viewers.
+- **Speaker panels.** A scene is the one place where players and residents speak outside the dialogue window (doc 84 §13). Everyone who speaks during a scene gets their own panel with their painted face and name. This includes each cast resident, each player who types a reply, and a player who speaks in character nearby. The panels stack with the newest at the bottom and the oldest faded, up to four at once. A player’s face and name appear only to viewers who are shown that player, the same rule as for faces beside chat lines. Anyone else sees “Someone” with no face. Typed replies reach the scene’s audience and the linked AI only. They stay out of the event log and the saved story.
+- **Movement lock.** The lock holds only participants who have joined. For a private or party scene, that is its audience from the first beat. For a public scene, it is a viewer who votes or replies. Walking into a public scene shows it without holding you. No one is held for more than five minutes, however long the scene runs, and a fight always releases the lock.
 - **Audience.** A public performance has a rectangular viewing area. Players walking in see the current beat. The players present when a question opens form its electorate. Later arrivals can participate at the next prompt. Choose **individual** for a private encounter or **party** to capture the initiating player’s current party. Private choreography and dialogue are visible to that audience.
 - **Voting.** Give each choice a reading and voting interval in real seconds. In first-response mode the first eligible ballot selects its branch. A strict majority settles a majority vote early. On expiry the largest vote total wins, with the authored default resolving a tie or silence.
 - **Written responses.** Choose first reply or replies from all eligible participants. Set a next beat for submitted answers and an optional alternate beat for a timeout. A campaign can also act on the result. For example, a `scene response` trigger matching `first-watch.name-the-watch.submitted` can open a patrol mission, while `first-watch.name-the-watch.timeout` can send a messenger. Players see a notice when their words can inform a linked AI. Free text stays out of the public event log.
 - **Linked dialogue.** On a spoken line, choice or written prompt, select **Use linked AI for this line**. In **Personality**, describe how the resident speaks. In **Response intent**, say what they want to accomplish here. The game supplies up to eight recent answers with their questions, plus the resident’s chronicle when available. Write the fallback line as you want players to hear it. When the provider is offline, busy or slow, the game plays the fallback and gives players the full reading or voting interval.
 
 For an embedded performance set the effect’s `scene`, `player` and `cue`. A public ceremony can use `world`; a private scene needs a specific character or the participating `$actor`. A cue of `first-watch` with winning option `carters` produces a `scene choice` with detail `first-watch.carters`. A trigger can remember that result in a counter. Wait for `scene finished` with detail `first-watch` before opening the patrol mission so the closing speech has time to play. Use `scene failed` for an interrupted performance.
+
+Studio and the author bridge accept requests of up to 1 MiB. A rehearsal also runs within a work and time budget: about 200,000 dispatched facts, signals and fired rules, or 8 seconds. Only two rehearsals run at once. A request over the budget gets a polite refusal asking for fewer or shorter rehearsal cases. Every bundled example rehearses well within the budget.
 
 The author API exposes `scene.draft`, `scene.validate`, `scene.rehearse`, `scene.import` and `scene.wrap`. For the ceremony, request `scene.draft` with `"example":"greyfen-oath"`. Rehearse the road ending with `"choices":["carters"]` and `"responses":{"name-the-watch":"submitted"}`. Use `"timeout"` to inspect the silent branch. The bridge ending can be rehearsed with no submitted answers.
 
@@ -119,6 +123,14 @@ The packaged world starts and supervises the runner after migration. On an unpac
 ```sh
 python3 tools/story_runner.py --world WORLD_KEY
 ```
+
+On the laptop’s Ridgemere 3, which `Saved/WorldAgent/run.sh` hosts, start the runner beside the world from the checkout root. The runner reads the DM credentials from `Database/.env` and finds `build-core/libratw_story.so`, which is built with `ratw_server`:
+
+```sh
+python3 tools/story_runner.py --world ridgemere3 >> Saved/WorldAgent/stories.log 2>&1 &
+```
+
+Known for later: a scene input that settles a beat with a new world fact saves the game synchronously on the game thread, through `Game::save`. A crowded scene can cause a brief hitch.
 
 ## AI authoring and direction
 

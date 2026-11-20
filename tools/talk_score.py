@@ -921,6 +921,15 @@ EYEWITNESS = re.compile(r"\b(I saw (?!(?:them|him|her|#[^#]*#) only\b)|I watched
                         r"with my own eyes|I was there when)", re.I)
 # Topics whose eyewitness words claim the deed itself was seen (a death's "I saw them only on Restday" is not one).
 WITNESSED = {"gossip", "crime", "bandits", "deed"}
+# An eyewitness's words denied in their own clause ("I didn't see it with my own eyes", "I never saw it myself") claim
+# the opposite: hearsay owned as hearsay, not a sight.
+DENIED = re.compile(r"\b(?:didn't|did not|didnt|never|wasn't|was not|weren't|haven't|have not|hadn't|had not|can't say|"
+                    r"cannot say|couldn't say)\b[^.!?;:,|]*$", re.I)
+
+
+def eyewitness_claim(text: str) -> bool:
+    """Whether the text claims a sight with an eyewitness's words not denied in the same clause."""
+    return any(not DENIED.search(text[:m.start()]) for m in EYEWITNESS.finditer(text))
 
 
 def calls(text: str, at: int, end: int) -> bool:
@@ -946,7 +955,7 @@ def self_reference(line: dict, head: dict, residents: dict) -> str:
         for found in re.finditer(re.escape(them), text):
             if not calls(text, found.start(), found.end()):
                 return "listener_third"
-    if "seen" in head and head.get("topic") in WITNESSED and EYEWITNESS.search(text):
+    if "seen" in head and head.get("topic") in WITNESSED and eyewitness_claim(text):
         backed = line["who"] == head.get("teller") and head.get("seen") == "yes"
         if not backed:
             return "unbacked"

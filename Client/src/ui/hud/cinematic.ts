@@ -1,5 +1,5 @@
 // Story-scene playback occupies the map only for viewers included by the server.
-import {actorPoint} from '../../game/cinematic.ts';
+import {actorPoint, type SceneSpeech} from '../../game/cinematic.ts';
 import {arr, bool, clamp, num, obj, str, type Json} from '../../game/json.ts';
 import type {GameState} from '../../game/state.ts';
 import {terrainInfo} from '../../game/terrainLayer.ts';
@@ -8,13 +8,17 @@ import {drawPortrait, type Portraits} from '../portrait.ts';
 import {artCache} from '../artwork.ts';
 import {el, setText, show} from './dom.ts';
 
+interface SpeechCard { key: string; face: HTMLCanvasElement; faceKey: string; speech: SceneSpeech; }
+
+// In a scene each speaker has their own panel with their face (the user, 2026-11-20): the resident's lines and each
+// player's words stand as a column of panels, the newest last and clearest; the beat's controls go beneath them.
 export class CinematicPanel {
     private frame: HTMLCanvasElement;
     private panel: HTMLElement;
-    private portrait: HTMLCanvasElement;
-    private body: HTMLElement;
+    private speeches: HTMLElement;
+    private controls: HTMLElement;
     private heading: HTMLElement;
-    private line: HTMLElement;
+    private narration: HTMLElement;
     private clock: HTMLElement;
     private options: HTMLElement;
     private form: HTMLFormElement;
@@ -22,10 +26,10 @@ export class CinematicPanel {
     private submit: HTMLButtonElement;
     private note: HTMLElement;
     private status: HTMLElement;
+    private cards: SpeechCard[] = [];
+    private cardsKey = '';
     private beat = '';
-    private faceKey = '';
     private choiceKey = '';
-    private sceneObject: Json|null = null;
     private cameraKey = '';
 
     constructor(map: HTMLElement, private s: GameState, private portraits: Portraits) {
@@ -34,18 +38,16 @@ export class CinematicPanel {
         this.panel = el('section','cinematic-panel',map);
         this.panel.setAttribute('aria-label','Story scene');
         this.panel.addEventListener('focusin',()=>this.s.focusLost());
-        this.portrait = el('canvas','cinematic-portrait',this.panel);
-        this.portrait.width=160; this.portrait.height=180;
-        this.portrait.setAttribute('aria-hidden','true');
-        this.body = el('div','cinematic-body',this.panel);
-        const header = el('div','cinematic-header',this.body);
+        this.speeches = el('div','cinematic-speeches',this.panel);
+        this.speeches.setAttribute('aria-live','polite');
+        this.controls = el('div','cinematic-controls',this.panel);
+        const header = el('div','cinematic-header',this.controls);
         this.heading = el('strong','',header);
         this.clock = el('span','cinematic-time',header);
         this.clock.setAttribute('role','timer');
-        this.line = el('p','cinematic-line',this.body);
-        this.line.setAttribute('aria-live','polite');
-        this.options = el('div','cinematic-options',this.body);
-        this.form = el('form','cinematic-response',this.body);
+        this.narration = el('p','cinematic-narration',this.controls);
+        this.options = el('div','cinematic-options',this.controls);
+        this.form = el('form','cinematic-response',this.controls);
         const label = el('label','',this.form,'Your response');
         this.reply = el('input','',label);
         // HTML maxlength counts UTF-16 units; the wire limit counts Unicode characters.
@@ -62,8 +64,8 @@ export class CinematicPanel {
             this.s.cinematic.reply(this.reply.value,this.s.clock,this.s.send);
             this.update();
         });
-        this.note = el('p','cinematic-note',this.body);
-        this.status = el('div','cinematic-note',this.body);
+        this.note = el('p','cinematic-note',this.controls);
+        this.status = el('div','cinematic-note',this.controls);
         this.status.setAttribute('role','status');
         show(this.panel,false); show(this.frame,false);
     }
@@ -73,24 +75,21 @@ export class CinematicPanel {
         show(this.panel,!!scene);
         show(this.frame,!!obj(scene,'frame'));
         if (!scene) {
-            this.beat=''; this.faceKey=''; this.choiceKey=''; this.sceneObject=null; this.cameraKey=''; this.reply.value='';
+            this.beat=''; this.choiceKey=''; this.cameraKey=''; this.reply.value='';
+            if (this.cards.length) { this.cards=[]; this.cardsKey=''; this.speeches.replaceChildren(); }
             return;
         }
         const type = str(scene,'type'), speaker = obj(scene,'speaker'), name = str(speaker,'name');
         const generating = bool(scene,'generating'), voted=bool(scene,'voted'), eligible = scene.canRespond !== false || voted;
-        const newSnapshot = this.sceneObject !== scene;
-        this.sceneObject = scene;
         const key = JSON.stringify([scene.instance,scene.beat]);
         if (this.beat!==key) { this.beat=key; this.reply.value=''; this.reply.setCustomValidity(''); this.choiceKey=''; }
+        this.showSpeeches(speaker, generating);
         const narration = type==='move' ? name+' is moving.' : type==='pose' ? name+' is '+str(scene,'posture',playback.actors.get(str(speaker,'id'))?.posture || 'standing')+'.' : '';
-        setText(this.heading,name || str(scene,'title','Story scene'));
-        const text = str(scene,'text') || (generating?'…':narration);
-        setText(this.line,text);
-        show(this.line,!!text);
+        setText(this.heading,str(scene,'title','Story scene'));
+        setText(this.narration,narration);
+        show(this.narration,!!narration);
         const seconds = Math.max(0,Math.ceil(playback.ends-this.s.clock));
         setText(this.clock,['choice','response','line'].includes(type) && !generating ? seconds+'s remaining' : '');
-        if (speaker && (newSnapshot || !this.faceKey || artCache.get(str(speaker,'artwork')))) this.drawFace(speaker);
-        show(this.portrait,!!speaker && (!!obj(speaker,'appearance') || !!str(speaker,'artwork')));
         const choices = playback.choices(), choiceKey=JSON.stringify(choices);
         if (this.choiceKey!==choiceKey) {
             this.choiceKey=choiceKey; this.options.replaceChildren();
@@ -117,14 +116,49 @@ export class CinematicPanel {
         if (frame) this.drawFrame(frame);
     }
 
-    private drawFace(speaker:Json) {
-        const artwork=str(speaker,'artwork'), picture=artCache.get(artwork);
-        const key=JSON.stringify([speaker.id,speaker.appearance,artwork,!!picture,this.portraits.version]);
-        if (key===this.faceKey) return;
-        const c=this.portrait.getContext('2d');
+    /** The speakers' panels: what was said, newest last, and the speaker still finding their words ("…"). */
+    private showSpeeches(speaker: Json|null, generating: boolean) {
+        const list: SceneSpeech[] = this.s.cinematic.speeches();
+        if (generating && speaker) list.push({key:'pending:'+this.beat, kind:'resident', speakerId:str(speaker,'id'), name:str(speaker,'name'),
+            appearance:obj(speaker,'appearance'), artwork:str(speaker,'artwork'), text:'…', self:false, at:Infinity});
+        const key = JSON.stringify(list.map(l=>l.key));
+        if (key!==this.cardsKey) {
+            this.cardsKey=key;
+            const old = new Map(this.cards.map(c=>[c.key,c]));
+            this.cards = list.map(speech=>old.get(speech.key) ?? this.card(speech));
+            this.speeches.replaceChildren(...this.cards.map(c=>c.face.parentElement!));
+            this.cards.forEach((c,i)=>{
+                const box=c.face.parentElement!;
+                box.classList.toggle('newest',i===this.cards.length-1);
+                box.classList.toggle('older',i<this.cards.length-2);
+            });
+        }
+        for (const c of this.cards) this.drawFace(c);
+    }
+
+    private card(speech: SceneSpeech): SpeechCard {
+        const box = document.createElement('article');
+        box.className = 'cinematic-speech '+speech.kind+(speech.self?' self':'');
+        const face = el('canvas','cinematic-portrait',box);
+        face.width=160; face.height=180;
+        face.setAttribute('aria-hidden','true');
+        const body = el('div','cinematic-body',box);
+        el('strong','cinematic-name',body,speech.self ? speech.name+' (you)' : speech.name);
+        el('p','cinematic-line',body,speech.text);
+        return {key:speech.key, face, faceKey:'', speech};
+    }
+
+    private drawFace(card: SpeechCard) {
+        const {speech} = card, picture = speech.artwork ? artCache.get(speech.artwork) : undefined;
+        const key = JSON.stringify([speech.speakerId,speech.appearance,speech.artwork,!!picture,this.portraits.version]);
+        if (key===card.faceKey) return;
+        const has = !!speech.speakerId && (!!speech.appearance || !!speech.artwork);
+        show(card.face,has);
+        if (!has) { card.faceKey=key; return; }
+        const c=card.face.getContext('2d');
         if (!c) return;
         c.clearRect(0,0,160,180);
-        if (drawPortrait(c,this.portraits,obj(speaker,'appearance'),0,0,160,180,artwork,{view:'face',paper:true})) this.faceKey=key;
+        if (drawPortrait(c,this.portraits,speech.appearance,0,0,160,180,speech.artwork || undefined,{view:'face',paper:true})) card.faceKey=key;
     }
 
     private drawFrame(frame:Json) {

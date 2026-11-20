@@ -1,6 +1,7 @@
 """Real clients watch a standalone ceremony and play an embedded, private party scene on disposable Greyfen."""
 
 import json
+import os
 import subprocess
 import threading
 import time
@@ -48,9 +49,13 @@ class SceneLive(unittest.TestCase):
         threading.Thread(target=self.mind.serve_forever, daemon=True).start()
         self.addCleanup(self.mind.server_close)
         self.addCleanup(self.mind.shutdown)
+        web = live.ROOT / 'Client' / 'dist'
         self.server, port = self.fixture.start(
-            240, ('--speed', '8', '--dialogue', f'http://127.0.0.1:{self.mind.server_port}/dialogue')
+            240,
+            ('--speed', '8', '--dialogue', f'http://127.0.0.1:{self.mind.server_port}/dialogue',
+             *(('--web', str(web)) if web.is_dir() else ())),
         )
+        self.port = port
         self.addCleanup(self.stop_server)
         self.clients = SceneClients(port)
         self.addCleanup(self.clients.close)
@@ -230,6 +235,12 @@ class SceneLive(unittest.TestCase):
         self.command('ash', type='scene_reply', instance=prompt['instance'], beat=prompt['beat'], text=private)
         generated = self.beat('fern', 'road-watch')
         self.assertEqual(generated['text'], 'I have heard your answer.')
+        # Each speaker's own panel: Ash's typed words reach Fern in Ash's panel, with Ash's face.
+        said = {(line['kind'], line.get('speakerId', '')): line for line in generated['lines']}
+        mine = said.get(('player', self.players['ash']))
+        self.assertTrue(mine and mine['text'] == private and mine['name'] and mine.get('appearance'), generated['lines'])
+        self.assertEqual(generated['lines'][-1]['text'], 'I have heard your answer.')
+        self.assertTrue(any(l['self'] for l in self.view('ash')['scene']['lines'] if l['kind'] == 'player'))
         self.assertIsNone(self.view('willow')['scene'])
         self.finish('road')
         with world_db.connect('dev', 'dm', dbname=self.fixture.name) as db:
@@ -243,6 +254,40 @@ class SceneLive(unittest.TestCase):
                     'SELECT 1 FROM game.events WHERE world_id=%s AND detail LIKE %s', (self.world, '%' + private + '%')
                 ).fetchone()
             )
+
+    @unittest.skipUnless(os.environ.get('RATW_SCENE_SHOTS'), 'RATW_SCENE_SHOTS=DIR takes the scene panels\' screenshots')
+    def test_scene_panels_screenshots(self):
+        """A resident and two players speaking in a public scene, each in their own panel, seen in Ash's real page."""
+        self.assertTrue((live.ROOT / 'Client' / 'dist' / 'index.html').exists(), 'build the client first (npm run build)')
+        self.move('willow', 38, 21)  # Out of the square: the question waits for Ash and Fern.
+        s = self.example('public')
+        cast = s['beats'][0]['speaker']
+        s['start'] = 'ask'
+        s['lockMovement'] = False
+        s['beats'] = [
+            {'id': 'ask', 'type': 'response', 'speaker': cast, 'mode': 'all', 'seconds': 120, 'next': 'close',
+             'text': 'The ford has no watch tonight. Who will keep it until the carters are home?'},
+            {'id': 'close', 'type': 'line', 'speaker': cast, 'seconds': 120,
+             'text': 'Then it is kept. Go with the Bright One, both of you, and come back at first light.'},
+        ]
+        program = story_author.request({'op': 'scene.wrap', 'scene': s}, {})['program']
+        self.clients.request('close', 'ash')  # Ash's page is the browser's.
+        shots = subprocess.Popen(
+            [live.NODE, 'tools/client/scene-panels-shot.mjs', str(self.port), os.environ['RATW_SCENE_SHOTS']],
+            cwd=live.ROOT, stdout=subprocess.PIPE, text=True,
+        )
+        self.addCleanup(lambda: shots.poll() is None and shots.kill())
+        self.publish(program)
+        ask = self.beat('fern', 'ask')
+        self.assertEqual(shots.stdout.readline().strip(), 'asked')
+        self.assertEqual(shots.stdout.readline().strip(), 'replied')
+        self.command('fern', type='scene_reply', instance=ask['instance'], beat='ask', text='Aye. I know the ford in the dark.')
+        panels = shots.stdout.readline().strip()
+        self.assertEqual(shots.stdout.readline().strip(), 'done', panels)
+        shown = json.loads(panels.split(' ', 1)[1])
+        self.assertEqual([k for k, *_ in shown], ['resident', 'player', 'player', 'resident'], shown)
+        self.assertTrue(all(face for _, _, _, face, _ in shown), 'every panel has its speaker\'s face')
+        self.assertEqual(shots.wait(timeout=20), 0)
 
     def test_individual_response_expires_and_its_fallback_releases_the_player(self):
         scene = self.example('individual')

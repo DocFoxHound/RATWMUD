@@ -43,3 +43,39 @@ test('private cast positions interpolate separately from the world and clear whe
     assert.equal(s.cinematic.actors.size,0);
     assert.equal(s.cinematic.suppressedActors.size,0);
 });
+
+test('each speaker has their own panel: the scene\'s lines and players\' heard words, newest last', () => {
+    const {state:s} = testGame();
+    const face = {fur:'grey'};
+    const lines = [{key:'1',kind:'resident',speakerId:'u1',name:'Harrow',appearance:face,text:'Who keeps the ford?'}];
+    const at = (beat:string, more:object[]=[]) => s.applySnapshot({self:{id:'player-ash',scene:{instance:'one',beat,type:'response',
+        remainingMs:5000,canRespond:true,lines:[...lines,...more]}}});
+    at('ask');
+    assert.deepEqual(s.cinematic.speeches().map(l=>[l.kind,l.name,l.text]),[['resident','Harrow','Who keeps the ford?']]);
+    s.clock=1;
+    at('ask',[{key:'2',kind:'player',speakerId:'player-ash',name:'Ash',appearance:face,text:'I will.',self:true}]);
+    s.clock=2;
+    s.cinematic.hear('post-9',{id:'player-fern',name:'Fern',appearance:face,artwork:'',self:false},'"And I."',2);
+    s.cinematic.hear('post-9',{id:'player-fern',name:'Fern',appearance:face,artwork:'',self:false},'"And I."',2);
+    s.clock=3;
+    at('close',[{key:'2',kind:'player',speakerId:'player-ash',name:'Ash',appearance:face,text:'I will.',self:true},
+        {key:'3',kind:'player',name:'Someone',text:'Aye.'}, {key:'4',kind:'resident',speakerId:'u1',name:'Harrow',text:'Then it is kept.'}]);
+    const shown = s.cinematic.speeches();
+    assert.deepEqual(shown.map(l=>l.text),['I will.','"And I."','Aye.','Then it is kept.']);
+    assert.ok(shown[0]!.self && !shown[1]!.self && shown[2]!.speakerId==='' && shown[2]!.appearance===null,
+        'an unseen speaker has a panel with no face, never a guess');
+    s.applySnapshot({self:{id:'player-ash',scene:{instance:'two',beat:'a',type:'line',lines:[]}}});
+    assert.equal(s.cinematic.speeches().length,0,'a new scene starts with no panels');
+    s.applySnapshot({self:{}});
+    s.cinematic.hear('post-10',{id:'player-fern',name:'Fern',appearance:face,artwork:'',self:false},'Hello',4);
+    assert.equal(s.cinematic.speeches().length,0,'outside a scene speech stays in the chat');
+});
+
+test('a player\'s own words said in the chat during a scene stand in their own panel', () => {
+    const {state:s} = testGame();
+    s.applySnapshot({self:{id:'player-ash',name:'Ash',scene:{instance:'one',beat:'ask',type:'line',remainingMs:5000,lines:[]}}});
+    s.receiveEvent({type:'roleplay',id:'e1',speaker:'Ash',speakerId:'player-ash',appearance:{fur:'grey'},text:'"We go at dawn."'});
+    s.receiveEvent({type:'roleplay',id:'e2',speaker:'Myrtle',speakerId:'u4',appearance:{fur:'red'},text:'"Fresh bread."'});
+    assert.deepEqual(s.cinematic.speeches().map(l=>[l.name,l.text,l.self]),[['Ash','"We go at dawn."',true]],
+        'a resident\'s bark outside the cast stays in the chat');
+});
