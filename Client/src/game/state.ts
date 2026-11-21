@@ -28,6 +28,7 @@ export interface EncounterView {
 }
 import {inParty, readParty, type PartyView} from './party.ts';
 import {readRealm, type RealmMap} from './realm.ts';
+import {wolfInWorld} from './minimap.ts';
 import {bubbleSeconds, bubbleText, spokenWords} from './bubbles.ts';
 import {askText} from '../ui/dialog.ts';
 import {commandToRun, runCommand, slashSuggestions, wheelCommands} from './commands.ts';
@@ -387,7 +388,7 @@ export class GameState {
     worldPan: [number, number] = [0, 0];
     worldFit = 1;
     worldScaleShown = 1;
-    private worldDrag: {from: [number, number]; pan: [number, number]} | null = null;
+    private worldDrag: {from: [number, number]; pan: [number, number]; moved: number} | null = null;
     // The realm's map, whole (realm.ts): asked for once in the world, kept for the session.
     realm: RealmMap | null = null;
     private realmAsked = -100;
@@ -433,7 +434,7 @@ export class GameState {
 
     constructor(send: (command: Json) => void, composer: Composer) {
         this.send = command => {
-            if (this.cinematic.locked && ['move','path','pose','face','travel'].includes(str(command,'type'))) return;
+            if (this.cinematic.locked && ['move','path','pose','face','travel','travel_to'].includes(str(command,'type'))) return;
             send(command);
         };
         this.composer = composer;
@@ -2042,7 +2043,9 @@ export class GameState {
         if (this.chat || this.worldMap || this.modal || !this.navigationFocus || this.movementPending || this.heldKeys.size ||
             !contains(this.mapRect, point[0], point[1]) || this.tileSize <= 0) return false;
         const wx = (point[0] - this.mapOrigin[0]) / this.tileSize, wy = (point[1] - this.mapOrigin[1]) / this.tileSize;
-        if (wx < 0 || wy < 0 || wx >= this.cellWidth || wy >= this.cellHeight) return false;
+        // Anywhere on the ground shown: the cell, and the ground round it past a seam (doc 80: the whole screen).
+        const g = this.battle ? {x0: 0, y0: 0, x1: this.cellWidth - 1, y1: this.cellHeight - 1} : this.groundExtent();
+        if (wx < g.x0 || wy < g.y0 || wx >= g.x1 + 1 || wy >= g.y1 + 1) return false;
         const self = this.entities.get(this.selfId);
         return !!self && !self.moving && (wx - self.x) ** 2 + (wy - self.y) ** 2 > 0.0001;
     }
@@ -2056,9 +2059,44 @@ export class GameState {
         }
     }
 
+    /**
+     * Alt+click: the wolf turns to face the spot, anywhere in the world, without moving (the user, 2026-11-20). Walked
+     * by the page, the wolf turns at once and the page's next pose tells the server (World::placeByClient takes its
+     * facing: sight and sneaking go by it, docs 40 and 80); walked by the server, the server turns it (World::face).
+     */
     sendFacing(point: [number, number]) {
-        this.send({type: 'face', x: (point[0] - this.mapOrigin[0]) / this.tileSize, y: (point[1] - this.mapOrigin[1]) / this.tileSize});
+        const x = (point[0] - this.mapOrigin[0]) / this.tileSize, y = (point[1] - this.mapOrigin[1]) / this.tileSize;
         this.contextTarget = '';
+        const pose = this.freePose, view = this.entities.get(this.selfId);
+        if (this.freeWalking() && pose && view) {
+            pose.facing = Math.atan2(y - pose.y, x - pose.x);
+            view.facing = pose.facing;
+            this.poseUnsent = true;
+            return;
+        }
+        this.send({type: 'face', x, y});
+    }
+
+    /** A point on the World Map (screen pixels) in world tiles, as drawCountry last drew it. */
+    worldPointAt(point: [number, number]): [number, number] {
+        const m = this.mapRect, k = this.worldScaleShown || 1, at = wolfInWorld(this);
+        return [at[0] + this.worldPan[0] + (point[0] - (m.left + m.right) / 2) / k,
+            at[1] + this.worldPan[1] + (point[1] - (m.top + m.bottom) / 2) / k];
+    }
+
+    /**
+     * A spot clicked on the minimap or the World Map, in world tiles (the user, 2026-11-20): the wolf travels there,
+     * across as many cells as it takes, by the roads where they go (World::travelToPoint). The keys, a click on the
+     * ground, Esc or STOP end it; the server says plainly when a spot can't be reached.
+     */
+    travelToSpot(x: number, y: number) {
+        if (this.modal || this.battle || this.cinematic.locked || !this.selfId || !Number.isFinite(x) || !Number.isFinite(y)) return;
+        if (this.chat) this.setChat(false);
+        this.heldKeys.clear();
+        this.facingPreview = false;
+        this.contextTarget = '';
+        this.send({type: 'travel_to', x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10});
+        this.showToast('Finding a way there, by the roads where they go…');
     }
 
     // ------------------------------------------------------------------ Input
@@ -2350,6 +2388,7 @@ export class GameState {
         this.hover = point;
         if (this.worldDrag) {
             const k = this.worldScaleShown || 1, d = this.worldDrag;
+            d.moved = Math.max(d.moved, Math.hypot(point[0] - d.from[0], point[1] - d.from[1]));
             this.worldPan = [clamp(d.pan[0] - (point[0] - d.from[0]) / k, -9000, 9000), clamp(d.pan[1] - (point[1] - d.from[1]) / k, -9000, 9000)];
         }
         this.updateFacingPreview(point, alt);
@@ -2369,7 +2408,13 @@ export class GameState {
 
     /** The button let go: a drag from one's wolf turns it that way; a plain click on its tile is a click as ever. */
     mouseUp() {
+        // A press on the World Map let go where it was pressed (not a drag to pan): travel there.
+        const drag = this.worldDrag;
         this.worldDrag = null;
+        if (drag && drag.moved < 5 && this.worldMap && !this.travelAtlas) {
+            const [x, y] = this.worldPointAt(drag.from);
+            this.travelToSpot(x, y);
+        }
         const start = this.faceDrag;
         if (!start) return;
         const dir = this.faceDragDir;
@@ -2468,7 +2513,7 @@ export class GameState {
             }
         if (this.modal) return 'map';
         if (left && this.worldMap && !this.travelAtlas && contains(this.mapRect, point[0], point[1])) {
-            this.worldDrag = {from: point, pan: [this.worldPan[0], this.worldPan[1]]};
+            this.worldDrag = {from: point, pan: [this.worldPan[0], this.worldPan[1]], moved: 0};
             this.contextTarget = '';
             return 'map';
         }

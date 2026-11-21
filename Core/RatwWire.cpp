@@ -740,6 +740,21 @@ Value travel(const TravelState& t)
     for (const auto& id : t.route)
         route.push(id);
     o.add("route", route);
+    if (t.toPoint)
+    {
+        // A spot on the map (World::travelToPoint): where it ends, and the way planned there, in world tiles.
+        auto goal = Value::array();
+        goal.push(t.goal.x);
+        goal.push(t.goal.y);
+        o.add("goal", goal);
+        auto line = Value::array();
+        for (const auto& p : t.line)
+        {
+            line.push(std::round(p.x * 10) / 10);
+            line.push(std::round(p.y * 10) / 10);
+        }
+        o.add("line", line);
+    }
     return o;
 }
 

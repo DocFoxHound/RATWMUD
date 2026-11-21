@@ -608,6 +608,11 @@ struct TravelState
     bool active = false, paused = false;
     std::string destination, status, nextDoor;
     std::vector<std::string> route; // Visited cells only; no hidden map geometry.
+    // A journey to a spot clicked on the minimap or the World Map (World::travelToPoint; the realm's map is public, so
+    // unvisited ground is allowed): where it ends and the way planned there, in world tiles, for the maps to draw.
+    bool toPoint = false;
+    Vec2 goal{};
+    std::vector<Vec2> line;
 };
 struct SensoryResult
 {
@@ -1607,6 +1612,11 @@ class World
     void adoptFactions(const World& candidate);
     Result setPace(const std::string& id, int pace);
     Result travelTo(const std::string& id, const std::string& destination);
+    // To a spot on the minimap or the World Map, in world tiles (the user, 2026-11-20: "the characters should travel all
+    // the way there ... follow roads as closely as possible"): across as many cells as it takes, by the roads where they
+    // go, on the realm's ground whether visited or not. Planned coarse first (travelGrid: the realm in blocks, a road
+    // block cheaper than open country), each cell's leg on its own tiles on arrival (RatwMapTravel.cpp).
+    Result travelToPoint(const std::string& id, double worldX, double worldY);
     Result cancelTravel(const std::string& id);
     TravelState travelState(const std::string& id) const;
     std::vector<MapCell> travelMap(const std::string& id) const;
@@ -2826,6 +2836,39 @@ class World
     };
     SeamPlan planSeamClick(const Entity& a, const Cell& c, Vec2 local) const;
     std::map<std::string, TravelState> travels_;
+    // Map travel (travelToPoint): the coarse way (world tiles, a block's middle each), how far along it the wolf is, and
+    // the leg in hand. Never saved.
+    struct MapTravel
+    {
+        std::string targetCell, lastCell;
+        Vec2 target{};                              // In the target cell.
+        std::vector<Vec2> coarse;                   // World tiles, from where it set out to the goal.
+        std::vector<std::size_t> shown;             // The coarse points kept for the maps (simplified), by index.
+        std::size_t progress = 0, aim = 0;          // Nearest coarse point; the one the leg makes for.
+        int transitions = 0, replans = 0, coarsePlans = 1;
+        bool finalLeg = false, nearOnly = false;
+        std::string doorAhead;                      // A closed gate the leg stops short of.
+        std::size_t pathShown = std::size_t(-1);
+    };
+    std::map<std::string, MapTravel> mapTravels_;
+    // The realm in blocks of TravelBlock tiles a side, for map travel's coarse plan: each outdoor cell's, from its tiles
+    // at load (indexRoads), and the realm's grid at each level made from them when first asked (travelGrid). A block's
+    // cost is in tenths a tile: a road block 10, open country dearer, 0 a block nothing can cross.
+    static constexpr int TravelBlock = 8;
+    std::map<std::string, std::vector<std::uint8_t>> travelBlocks_;
+    struct TravelGrid
+    {
+        long x0 = 0, y0 = 0;                        // Blocks.
+        int cols = 0, rows = 0;
+        std::vector<std::uint8_t> cost;
+    };
+    mutable std::map<long, TravelGrid> travelGrids_;
+    const TravelGrid& travelGrid(double z) const;
+    std::vector<Vec2> coarseRoute(double z, Vec2 from, Vec2 to, std::string& problem) const;
+    void updateMapTravel(Entity& actor, TravelState& state);
+    bool planMapLeg(Entity& actor, TravelState& state, MapTravel& travel, std::string& problem);
+    void showMapLine(const Entity& actor, TravelState& state, MapTravel& travel);
+    void endMapTravel(Entity& actor, TravelState& state, const std::string& message);
     // Transient route execution bookkeeping; never restored from a save.
     std::map<std::string, std::string> travelLegCells_;
     std::map<std::string, double> travelRetryAt_;
@@ -3099,6 +3142,9 @@ bool roadTerrain(char code);
 // made ground, and OffRoad times it on open country (any ground dearer than a floor), so a way along the road wins over
 // one straight across the fields unless the road goes far out of the way.
 constexpr double OffRoad = 1.8;
+// A player's map travel (World::travelToPoint) keeps to the roads harder than that: every step off a road, on any
+// ground, counts this many times its cost.
+constexpr double MapTravelOffRoad = 2.4;
 double routeWeight(char code, double cost);
 const std::vector<TerrainInfo>& terrainCatalog();
 const char* weatherName(Weather value);
