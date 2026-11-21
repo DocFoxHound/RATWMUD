@@ -12,6 +12,9 @@ export interface PartyMember {
     place: string;
     x: number;
     y: number;
+    wx: number;                 // Where they are in the realm, in tiles, for the maps (NaN from an older server).
+    wy: number;
+    inside: boolean;            // Indoors (wx, wy are then the door into the building from the street).
     health: number;
     downed: boolean;
     fighting: boolean;
@@ -42,7 +45,8 @@ export function readParty(self: Json | null): PartyView | null {
         leader: str(p, 'leader'),
         members: arr(p, 'members').filter((m): m is Json => !!m && typeof m === 'object' && !Array.isArray(m)).map(m => ({
             id: str(m, 'id'), name: str(m, 'name'), leader: bool(m, 'leader'), online: bool(m, 'online'), cell: str(m, 'cell'),
-            place: str(m, 'place'), x: num(m, 'x'), y: num(m, 'y'), health: num(m, 'health', 100), downed: bool(m, 'downed'),
+            place: str(m, 'place'), x: num(m, 'x'), y: num(m, 'y'), wx: num(m, 'wx', NaN), wy: num(m, 'wy', NaN),
+            inside: bool(m, 'inside'), health: num(m, 'health', 100), downed: bool(m, 'downed'),
             fighting: bool(m, 'fighting'), npc: bool(m, 'npc'), reason: str(m, 'reason'), wage: num(m, 'wage'),
             waiting: bool(m, 'waiting'), mine: bool(m, 'mine'),
         })),

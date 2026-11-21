@@ -92,6 +92,7 @@ class Book
     std::vector<Star> recent_;
 };
 
-// A count in bands: "a few", "10+", "25+"... (`givers`: the giver bands, under the first reads "a few" as well).
+// A count in bands: "none" (zero), "a few", "10+", "25+"... (`givers`: the giver bands, under the first reads "a few" as
+// well, and zero "none").
 std::string band(int n, bool givers = false);
 } // namespace ratw::stars

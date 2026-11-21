@@ -158,7 +158,7 @@ void choicesAndLines()
     std::vector<std::string> texts;
     for (const auto& s : shown)
         texts.push_back(s.text);
-    expect(texts == std::vector<std::string>{"Let me see your wares.", "What's dear today?", "Goodbye."},
+    expect(texts == std::vector<std::string>{"Let me see your wares.", "What's dear today?", "Goodbye for now."},
            "an open shop with no work: wares, prices, goodbye (work hidden)");
     expect(shown[0].n == 1 && shown[2].n == 3, "numbered from one");
     q.facts["here.work"] = "2";
@@ -167,7 +167,7 @@ void choicesAndLines()
     expect(shown.size() == 4 && shown[1].text == "Any work going?", "with work going, four");
     q.facts["here.shop"] = "asleep";
     shown = lib.choices(greet, q, 1, none);
-    expect(shown.size() == 1 && shown[0].text == "Goodbye.", "a sleeping keeper: only goodbye");
+    expect(shown.size() == 1 && shown[0].text == "Goodbye for now.", "a sleeping keeper: only goodbye");
     expect(contains(said(lib, q), "shut") || contains(said(lib, q), "cold") || contains(said(lib, q), "Mm") || contains(said(lib, q), "Zzz"),
            "and they answer in words, asleep: " + said(lib, q));
     q.facts["here.shop"] = "bare";
@@ -198,8 +198,8 @@ void choicesAndLines()
         return out;
     };
     shown = lib.choices(work, keeperQuery("dlg.work.list", {{"here.work", "5"}, {"here.mine", "0"}}), 1, jobs);
-    expect(shown.size() == 5 && shown[0].text == "Ask about: Carry a letter 0 (12p)" && shown[2].bound.at("topic.job_id") == "k2" &&
-               shown[4].text == "Goodbye.",
+    expect(shown.size() == 5 && shown[0].text == "What about this one: Carry a letter 0 (12p)?" && shown[2].bound.at("topic.job_id") == "k2" &&
+               shown[4].text == "Goodbye for now.",
            "four jobs at most, then goodbye: " + (shown.empty() ? std::string() : shown[0].text));
     expect(shown[1].locked && shown[1].why == "That's promised to another for now." && !shown[0].locked, "one promised elsewhere: greyed, why");
     expect(lib.tree("work") && lib.tree("official") && lib.tree("receiver") && lib.tree("receiver")->priority > lib.tree("resident")->priority,
@@ -340,7 +340,7 @@ void inAGame()
            "the time it speaks the line: " + std::to_string(d->number("speaking")) + " for " + std::to_string(line.size()));
     const auto choices = d->array("choices");
     expect(!choices.empty() && choices.size() <= 4 && choices.front().string("text") == "Let me see your wares." &&
-               choices.back().string("text") == "Goodbye.",
+               choices.back().string("text") == "Goodbye for now.",
            "wares first, goodbye last, four at most");
     const auto bo = heardFrom(town.bo, "um");
     expect(std::find(bo.begin(), bo.end(), line) != bo.end(), "a bystander hears the keeper's greeting: " + line);
@@ -488,7 +488,7 @@ void inAGame()
            "the keeper falling asleep closes it");
     // Asleep from the start: the keeper mumbles, and there's only goodbye.
     d = open("um", "trade");
-    expect(d && d->array("choices").size() == 1 && d->array("choices").front().string("text") == "Goodbye.",
+    expect(d && d->array("choices").size() == 1 && d->array("choices").front().string("text") == "Goodbye for now.",
            "a sleeping keeper: words, and only goodbye: " + (d ? json::dump(*d) : std::string()));
     expect(d && d->string("mood") == "sleepy", "a sleeping keeper's face is sleepy, whatever the node's mood");
     w.entity("um")->posture = "standing";
@@ -617,7 +617,7 @@ void giversWork()
     expect(d && pick(d, "Any work going?") == 0, "no work: the greeting doesn't offer it: " + texts(d));
     d = open("um", "work");
     expect(d && d->string("tree") == "work" && d->string("node") == "list" && d->array("choices").size() == 1 &&
-               pick(d, "Goodbye.") == 1,
+               pick(d, "Goodbye for now.") == 1,
            "no work: the list is only goodbye: " + texts(d) + " / " + (d ? d->string("line") : std::string()));
 
     // Work posted: a letter from Neighbour u2 to u3, and a bounty on a camp.
@@ -630,11 +630,11 @@ void giversWork()
     const int any = pick(d, "Any work going?");
     expect(any > 0, "work going: the greeting offers it: " + texts(d));
     d = choose(any);
-    expect(d && d->string("tree") == "work" && d->string("node") == "list" && pick(d, "Ask about: a letter for Neighbour u3 (5p)") > 0 &&
-               pick(d, "Ask about: Clear the bandits") > 0 && pick(d, "Goodbye.") > 0,
+    expect(d && d->string("tree") == "work" && d->string("node") == "list" && pick(d, "What about this one: a letter for Neighbour u3 (5p)?") > 0 &&
+               pick(d, "What about this one: Clear the bandits") > 0 && pick(d, "Goodbye for now.") > 0,
            "the keeper's work, each job in plain words with its pay: " + texts(d));
     // The details: where and what, then the pay and the time, then the risks.
-    d = choose(pick(d, "Ask about: a letter"));
+    d = choose(pick(d, "What about this one: a letter"));
     expect(d && d->string("node") == "job" && contains(d->string("line"), "Carry the letter to") && pick(d, "I'll take it on.") > 0 &&
                pick(d, "Not for me") > 0,
            "a job's details: " + (d ? d->string("line") : std::string()) + " " + texts(d));
@@ -687,7 +687,7 @@ void giversWork()
     promised.offeredUntil = w.calendarDays() + 1;
     const std::string promisedId = promised.id;
     d = open("um", "work");
-    expect(lockedWhy(d, "Ask about: a letter for Neighbour u1") == "That's promised to another for now.",
+    expect(lockedWhy(d, "What about this one: a letter for Neighbour u1") == "That's promised to another for now.",
            "work promised to another: greyed, with why: " + texts(d));
     d = open("um", "job:" + promisedId);
     expect(d && lockedWhy(d, "I'll take it on.") == "That's promised to another for now.", "and its take greyed: " + texts(d));
@@ -707,10 +707,10 @@ void giversWork()
     const auto purse = s.cash(town.ash.entityId);
     d = open("um", "trade");
     d = choose(pick(d, "Any work going?"));
-    expect(pick(d, "About the work I took on.") > 0, "the giver hears about work taken: " + texts(d));
-    d = choose(pick(d, "About the work I took on."));
-    expect(d && d->string("node") == "mine" && pick(d, "About: a letter for Neighbour u3") > 0, "the work taken, listed: " + texts(d));
-    d = choose(pick(d, "About: a letter"));
+    expect(pick(d, "I wanted to ask about the work I took on.") > 0, "the giver hears about work taken: " + texts(d));
+    d = choose(pick(d, "I wanted to ask about the work I took on."));
+    expect(d && d->string("node") == "mine" && pick(d, "About this one: a letter for Neighbour u3") > 0, "the work taken, listed: " + texts(d));
+    d = choose(pick(d, "About this one: a letter"));
     expect(d && d->string("node") == "progress" && contains(d->string("line"), "waiting on that letter"),
            "how it stands: " + (d ? d->string("line") : std::string()));
     d = choose(pick(d, "I can't do it after all."));
@@ -755,8 +755,8 @@ void giversWork()
     f.define({"watch", "The Greyfen Watch", "#9aa9c0", "city"});
     f.setMember("u1", "watch", "sergeant", true);
     d = open("u1", "missions");
-    expect(d && d->string("tree") == "official" && contains(d->string("line"), "Chapters") && pick(d, "Ask about:") > 0 &&
-               !lockedWhy(d, "Ask about:").empty(),
+    expect(d && d->string("tree") == "official" && contains(d->string("line"), "Chapters") && pick(d, "What about this one:") > 0 &&
+               !lockedWhy(d, "What about this one:").empty(),
            "a wolf of no Chapter: the board shown, every mission greyed: " + texts(d) + " / " + (d ? d->string("line") : std::string()));
     auto& ch = town.g.chapters();
     ch.propose(town.ash.entityId, {town.bo.entityId, town.cy.entityId}, "Ashen Lodge", "#5b8bd9", "", "scene-x", 0);
@@ -764,7 +764,7 @@ void giversWork()
     const auto lodge = ch.agree(town.cy.entityId, 0).message;
     expect(ch.of(town.ash.entityId), "the Lodge is founded");
     d = open("u1", "missions");
-    expect(d && lockedWhy(d, "Ask about:") == "For a Lodge the faction knows well.", "a new Lodge: locked by standing, why: " + texts(d));
+    expect(d && lockedWhy(d, "What about this one:") == "For a Lodge the faction knows well.", "a new Lodge: locked by standing, why: " + texts(d));
     ch.byId(lodge)->level = 2;
     f.change("watch", lodge, 20, "test", w.calendarDays(), 0, false);
     faction::Mission m;
@@ -781,8 +781,8 @@ void giversWork()
     f.missions().clear();                           // (Ours first on the day's board.)
     f.missions().push_back(m);
     d = open("u1", "missions");
-    const int ours = pick(d, "Ask about: Bring a meal to");
-    expect(ours > 0 && lockedWhy(d, "Ask about: Bring a meal to").empty(), "known well: tier one open: " + texts(d));
+    const int ours = pick(d, "What about this one: Bring a meal to");
+    expect(ours > 0 && lockedWhy(d, "What about this one: Bring a meal to").empty(), "known well: tier one open: " + texts(d));
     expect(contains(texts(d), "For a Company the faction trusts."), "tier two still greyed, with why");
     d = choose(ours);
     expect(d && d->string("tree") == "work" && d->string("node") == "job" && contains(d->string("line"), "Bring a meal to"),
@@ -818,15 +818,15 @@ void giversWork()
     expect(f.mission(another)->taker == town.ash.entityId, "taken from the board's old way");
     f.mission(another)->official = "u1";
     d = open("u1", "missions");
-    d = choose(pick(d, "About what I took on."));
+    d = choose(pick(d, "I wanted to ask about the work I took on."));
     expect(d && d->string("tree") == "work" && d->string("node") == "mine", "about what was taken: " + texts(d));
-    d = choose(pick(d, "About:"));
+    d = choose(pick(d, "About this one:"));
     d = choose(pick(d, "I can't do it after all."));
     expect(d && d->string("node") == "given" && f.mission(another)->state == "open" && f.mission(another)->taker.empty(),
            "a mission given back: on the board again: " + (d ? json::dump(*d) : std::string()));
     // The Chapter's standing, asked in the window.
     d = open("u1", "missions");
-    d = choose(pick(d, "About our Chapter's standing"));
+    d = choose(pick(d, "I wanted to ask about our Chapter's standing"));
     d = choose(pick(d, "How does"));
     expect(d && d->string("node") == "answer" && !d->string("line").empty() && d->string("line").front() != '"',
            "the standing, said as the official's line: " + (d ? d->string("line") : std::string()));
@@ -882,7 +882,7 @@ void roleTrees()
                talksTo(who({{"role", "guard"}}), "fine") == "watch",
            "the wheel's Apprentice, Report and Pay fine: the master's and the watch's");
     expect(lib.tree("resident")->entries.count("chat") && lib.tree("resident")->entries.count("news") && lib.tree("resident")->entries.count("way"),
-           "every role's 'Something else...', news and ways go on in the resident's tree");
+           "every role's 'I was wondering about something else...', news and ways go on in the resident's tree");
     // Only what the server allows: a fine only while wanted; a bed locked, with why, for one who has a lodging; a master
     // who wouldn't take this wolf on, locked with the reason.
     const auto none = [](const std::string&) { return std::vector<talk::Facts>{}; };
@@ -903,7 +903,7 @@ void roleTrees()
     expect(has(shownOf("watch", "fine", guard), "I'll pay it (11p)."), "and what settles it, said");
     auto keeper = who({{"role", "merchant"}, {"job", "innkeeper"}}, {{"here.inn", "yes"}, {"here.bed_ok", "no"}, {"here.bed_why", "You have a lodging already."},
                                                                    {"here.bed_night", "2"}, {"here.bed_week", "10"}, {"here.upstairs_night", "8"}});
-    expect(has(shownOf("inn", "greet", keeper), "A bed for the night (2p). [You have a lodging already.]"), "a bed, locked for one lodged already");
+    expect(has(shownOf("inn", "greet", keeper), "I'd like a bed for the night (2p). [You have a lodging already.]"), "a bed, locked for one lodged already");
     auto master = who({{"job", "smith"}}, {{"here.teaches", "yes"}, {"here.take_on", "no"}, {"here.take_on_why", "They don't know you well enough to take you on yet."},
                                           {"here.trade_title", "smith"}, {"here.giver", "no"}});
     expect(has(shownOf("master", "learn", master), "Will you take me on? [They don't know you well enough"), "the master: locked, why");
@@ -1070,25 +1070,25 @@ void otherRoles()
     // The resident's hub: the town from its real numbers; the way to a place, from the world's own posts and doors.
     auto* d = open("u1", "talk");
     expect(d && d->string("tree") == "resident" && d->string("node") == "hub", "Talk with a neighbour: the hub: " + show(d));
-    // (Doc 84 §13.4.3, Phase 13: the hub rebuilt: the news, Ask about..., a name given, goodbye; the town, the work and the
-    // way under Ask about...)
-    for (const auto* topic : {"Heard any news?", "Ask about...", "I'm Ash.", "Goodbye."})
+    // (Doc 84 §13.4.3, Phase 13: the hub rebuilt: the news, the about node, a name given, goodbye; the town, the work and the
+    // way under the about node)
+    for (const auto* topic : {"Heard any news?", "I want to know more about something...", "I'm Ash.", "Goodbye for now."})
         expect(pick(d, topic) > 0, std::string("the hub offers: ") + topic + " " + texts(d));
     expect(d && d->array("choices").size() <= 9, "nine choices at most: " + texts(d));
     talk::Facts facts;
     town.g.dialogueRoleFacts(town.ash.entityId, "u1", facts);
-    d = choose(pick(d, "Ask about..."));
-    for (const auto* topic : {"Tell me about yourself.", "What's it like around here?", "Could you tell me the way?", "Back to the rest."})
-        expect(pick(d, topic) > 0, std::string("Ask about... offers: ") + topic + " " + texts(d));
+    d = choose(pick(d, "I want to know more about something..."));
+    for (const auto* topic : {"Tell me about yourself.", "What's it like around here?", "Could you tell me the way?", "I was wondering about something else..."})
+        expect(pick(d, topic) > 0, std::string("the about node offers: ") + topic + " " + texts(d));
     d = choose(pick(d, "What's it like around here?"));
     expect(d && d->string("node") == "town" && (contains(d->string("line"), facts["here.folk"]) || contains(d->string("line"), facts["here.shops"]) ||
                                                 contains(d->string("line"), "times") || contains(d->string("line"), "doing well")),
            "the town, by its numbers (" + facts["here.folk"] + " folk, " + facts["here.shops"] + " shops): " + show(d));
-    d = choose(pick(d, "Back to the rest."));
-    d = choose(pick(d, "Ask about..."));
+    d = choose(pick(d, "I was wondering about something else..."));
+    d = choose(pick(d, "I want to know more about something..."));
     d = choose(pick(d, "Could you tell me the way?"));
-    expect(d && d->string("node") == "way" && pick(d, "The Chapel (the church)") > 0, "the ways: the chapel among them: " + show(d));
-    d = choose(pick(d, "The Chapel (the church)"));
+    expect(d && d->string("node") == "way" && pick(d, "How do I get to The Chapel (the church)?") > 0, "the ways: the chapel among them: " + show(d));
+    d = choose(pick(d, "How do I get to The Chapel (the church)?"));
     expect(d && d->string("node") == "place" && contains(d->string("line"), "The Chapel is close by to the") &&
                contains(d->string("line"), "south") && contains(d->string("line"), "Mother Ada"),
            "the way to it, from where they stand, and who's there: " + show(d));
@@ -1146,29 +1146,29 @@ void otherRoles()
 
     // The inn: a bed upstairs from the keeper downstairs, as the lodging's own rule takes it; then locked, with why.
     d = open("ui", "talk");
-    expect(d && d->string("tree") == "inn" && pick(d, "A bed for the night (2p).") > 0, "Talk with the innkeeper: the inn: " + show(d));
+    expect(d && d->string("tree") == "inn" && pick(d, "I'd like a bed for the night (2p).") > 0, "Talk with the innkeeper: the inn: " + show(d));
     d = open("ui", "trade");
     expect(d && d->string("tree") == "inn", "Trade with them too: " + show(d));
     const auto before = s.cash(town.ash.entityId);
-    d = choose(pick(d, "A bed for the night (2p)."));
+    d = choose(pick(d, "I'd like a bed for the night (2p)."));
     expect(d && d->string("node") == "roomed", "the bed taken: " + show(d));
     expect(contains(town.ash.said(), "You take a bed for the night (2p)") && s.cash(town.ash.entityId) == before - 2,
            "as the lodging rule takes it (2p, upstairs): " + town.ash.said());
     d = open("ui", "talk");
-    const auto* bed = d ? &d->array("choices")[std::size_t(pick(d, "A bed for the night") - 1)] : nullptr;
+    const auto* bed = d ? &d->array("choices")[std::size_t(pick(d, "I'd like a bed for the night") - 1)] : nullptr;
     expect(bed && bed->boolean("locked") && bed->string("why") == "You have a lodging already.", "one lodging a wolf: greyed, why: " + show(d));
     d = choose(pick(d, "What's the news of the house?"));
     expect(d && d->string("tree") == "resident" && d->string("node") == "news", "the news of the house: " + show(d));
-    d = choose(pick(d, "Something else..."));
+    d = choose(pick(d, "I was wondering about something else..."));
     expect(d && d->string("tree") == "inn" && d->string("node") == "greet", "and back to the innkeeper's own: " + show(d));
 
     // A pot hand at the inn (doc 83, Phase 4): the inn's tree, but only the keeper lets the beds.
     d = open("uh", "talk");
     expect(d && d->string("tree") == "inn" && contains(d->string("line"), "Keeper u"), "a helper at the inn sends one to the keeper: " + show(d));
-    bed = d && pick(d, "A bed for the night") > 0 ? &d->array("choices")[std::size_t(pick(d, "A bed for the night") - 1)] : nullptr;
+    bed = d && pick(d, "I'd like a bed for the night") > 0 ? &d->array("choices")[std::size_t(pick(d, "I'd like a bed for the night") - 1)] : nullptr;
     expect(bed && bed->boolean("locked") && bed->string("why") == "Ask Keeper u: the rooms are theirs to let.",
            "and the bed is the keeper's to let: " + show(d));
-    expect(pick(d, "What other rooms") == 0 && pick(d, "Something to eat or drink") == 0, "no rooms, no counter: " + show(d));
+    expect(pick(d, "What other rooms") == 0 && pick(d, "I'd like something to eat or drink") == 0, "no rooms, no counter: " + show(d));
 
     // A master: their trade from the hub; taken on only when they know and trust the wolf.
     d = open("um", "talk");
@@ -1196,9 +1196,9 @@ void otherRoles()
     expect(d && d->string("tree") == "church", "Talk with the priest: the church: " + show(d));
     d = choose(pick(d, "When is the service?"));
     expect(d && contains(d->string("line"), "from nine until eleven in the morning"), "the service's hours: " + show(d));
-    d = choose(pick(d, "An offering for the church."));
+    d = choose(pick(d, "I'd like to make an offering to the church."));
     const auto mine = s.cash(town.ash.entityId), theirs = s.cash("up");
-    d = choose(pick(d, "Five pennies."));
+    d = choose(pick(d, "Here are five pennies."));
     expect(d && d->string("node") == "thanked" && s.cash(town.ash.entityId) == mine - 5 && s.cash("up") == theirs + 5,
            "five pennies given: " + show(d));
     const auto guardAt = spots["ug"], helperAt = spots["uh"];
@@ -1232,7 +1232,7 @@ void otherRoles()
                          contains(d->string("line"), "Have a look around")),
                    "and the window's greeting knows the customer has just come in (" + look + "): " + show(d));
             if (town.g.dialogueOf(town.ash.entityId))
-                choose(pick(d, "Goodbye."));
+                choose(pick(d, "Goodbye for now."));
         }
         spots["ug"] = guardAt;
         spots["uh"] = helperAt;
@@ -1286,7 +1286,7 @@ void otherRoles()
         const bool none = contains(line, "Hard to say") || contains(line, "no strong view") || contains(line, "keep my thoughts");
         expect(d && d->string("node") == "think" && !line.empty() && (holds ? !none : none),
                std::string("What do you think?: ") + (holds ? "their view" : "no view to give") + ": " + show(d));
-        d = choose(pick(d, "Goodbye."));
+        d = choose(pick(d, "Goodbye for now."));
     }
     // The window's gossip keeps the street's rules: nobody gossips about their own kin (doc 84 §24, the slice-end review).
     // Married to u2, u1 has no gossip of him: a widow never says "Sad news. Orm died." of her husband.
@@ -1531,7 +1531,7 @@ void windowTalk()
         d = open("u1");
         expect(pick(d, "I'm Ash.") == 0 && pick(d, "What's your name?") == 0, "and not offered again, theirs given back: " + show(d));
         // An `answers` node: the move made, answered.
-        d = choose(pick(d, "Ask about..."));
+        d = choose(pick(d, "I want to know more about something..."));
         d = choose(pick(d, "Tell me about yourself."));
         expect(d && d->string("node") == "job" && pick(d, "How are you keeping") > 0, "about themselves: " + show(d));
         d = choose(pick(d, "How are you keeping"));
@@ -1738,7 +1738,7 @@ choice Back to the rest. -> hub
     const auto invites = std::count_if(w.talkLedger().invites().begin(), w.talkLedger().invites().end(),
                                        [&](const auto& i) { return i.by == "u1" && i.to == town.ash.entityId && i.state == "open"; });
     expect(invites == 1, "one invitation standing, not one a visit: " + std::to_string(invites));
-    d = choose(pick(d, "Ask about..."));
+    d = choose(pick(d, "I want to know more about something..."));
     d = choose(pick(d, "Tell me about yourself."));
     expect(d && contains(d->string("line"), "I count the cobbles"), "the job's line the wearer's, before the game's answer: " + show(d));
     town.ash.events.clear();
@@ -1749,21 +1749,21 @@ choice Back to the rest. -> hub
     // Stage 4's review: the hub is rebuilt at every choice, a graft shown or not by the hour, so the choices move; the one
     // chosen is the one taken (never its neighbour, never past the end of the list).
     d = open("u1");
-    const int byeAtNoon = pick(d, "Goodbye.");
+    const int byeAtNoon = pick(d, "Goodbye for now.");
     expect(byeAtNoon > 0 && pick(d, "Up counting by moonlight?") == 0, "no moonlight choice at noon: " + show(d));
     w.setTimeOfDay(23);
     d = choose(byeAtNoon);
     expect(!d || d->string("node") == "bye" || town.g.dialogueOf(town.ash.entityId) == nullptr,
            "Goodbye chosen at noon is Goodbye at night, the moonlight graft now before it: " + show(d));
     d = open("u1");
-    const int byeAtNight = pick(d, "Goodbye.");
+    const int byeAtNight = pick(d, "Goodbye for now.");
     expect(pick(d, "Up counting by moonlight?") > 0 && byeAtNight > byeAtNoon, "the moonlight choice at night: " + show(d));
     w.setTimeOfDay(12);
     d = choose(byeAtNight);
     expect(!d || d->string("node") == "bye" || town.g.dialogueOf(town.ash.entityId) == nullptr,
            "Goodbye chosen at night is Goodbye at noon (it stood past the end of noon's list): " + show(d));
     d = open("u1");
-    d = choose(pick(d, "Ask about..."));
+    d = choose(pick(d, "I want to know more about something..."));
     w.setTimeOfDay(23);
     d = open("u2");
     expect(d && pick(d, "What are you counting?") == 0 && !contains(d->string("line"), "cobbles"), "nobody else's: " + show(d));

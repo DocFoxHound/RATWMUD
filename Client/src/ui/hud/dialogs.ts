@@ -26,13 +26,15 @@ function socialShare(self: Json | null): number {
     const xp = num(self, 'socialXp'), from = num(self, 'socialXpLevel', -1), to = num(self, 'socialXpNext', -1);
     return from >= 0 && to > from ? clamp((xp - from) / (to - from), 0, 1) : clamp((xp % 100) / 100, 0, 1);
 }
-/** A player's stars in words (doc 51): "★ 437 stars from 61 wolves", or in bands: "★ 250+ stars from 30+ wolves". */
+/** A player's stars in words (doc 51): "★ 437 stars from 61 wolves", or in bands: "★ 250+ stars from 30+ wolves"; none
+ *  at all reads "★ No stars yet" either way. */
 export function starsLine(stars: Json | null): string {
     if (bool(stars, 'exact')) {
         const total = Math.trunc(num(stars, 'total')), from = Math.trunc(num(stars, 'from'));
         return total ? `★ ${total} star${total === 1 ? '' : 's'} from ${from} ${from === 1 ? 'wolf' : 'wolves'}` : '★ No stars yet';
     }
     const band = str(stars, 'band', 'a few'), from = str(stars, 'fromBand', 'a few');
+    if (band === 'none') return '★ No stars yet';
     return band === 'a few' ? '★ A few stars' : `★ ${band} stars from ${from === 'a few' ? 'a few' : from} wolves`;
 }
 /** What a player's stars say of them (doc 51): Known for, the tags (counts for oneself, words for others), the rate. */

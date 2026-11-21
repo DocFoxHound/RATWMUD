@@ -125,6 +125,9 @@ std::string sceneColour(const std::string& session)
 
 std::string band(int n, bool givers)
 {
+    // None at all says so: a new player's card reads "no stars yet", never "a few" (the bands start above zero).
+    if (n <= 0)
+        return "none";
     const auto& list = givers ? rules().giverBands : rules().bands;
     std::string out = "a few";
     for (const int b : list)

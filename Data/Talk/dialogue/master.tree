@@ -19,8 +19,8 @@ choice What does it pay? -> wages
 choice What would it take to learn it? -> takes
 choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
 choice Any work going? [here.giver=yes] -> do open work
-choice Something else... -> do open chat
-choice Goodbye. -> bye
+choice I was wondering about something else... -> do open chat
+choice Goodbye for now. -> bye
 
 node work
 ask player.hours
@@ -28,14 +28,14 @@ say Long days, but honest ones. #learn_offer# | Steady work, most days. #learn_o
 free
 choice What does it pay? -> wages
 choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node wages
 say Nobody pays a wage to learn. You work beside me and learn it three times as fast as alone; what you make, you sell.
 free
 choice What would it take to learn it? -> takes
 choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node takes
 say I take one apprentice at a time, and one I know and trust. You'd do. Ask, and it's settled.
@@ -43,16 +43,16 @@ say[here.take_on=no priority=2] One apprentice at a time, and one I know and tru
 free
 choice Will you take me on? [here.take_on=yes] locked "#here.take_on_why#" -> do apprentice ; then taken ; refused refused
 choice What's the work like? -> work
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node taken
 say #learn_taken#
 mood pleased
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why# | Not yet. #topic.why#
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #farewell#, #address#.

@@ -893,6 +893,41 @@ std::string World::outsideOf(const std::string& cellId) const
     return outsideOf_[cellId] = out;
 }
 
+bool World::streetDoor(const std::string& cellId, std::string& outside, Vec2& at) const
+{
+    if (doorsKey() != streetDoors_)
+    {
+        streetDoor_.clear();
+        streetDoors_ = doorsKey();
+    }
+    auto found = streetDoor_.find(cellId);
+    if (found == streetDoor_.end())
+    {
+        // Out through the doors that lead in, the nearest first (as outsideOf), keeping the door met in the street.
+        std::pair<std::string, Vec2> out;
+        const auto* start = cell(cellId);
+        std::vector<std::string> queue{cellId};
+        std::set<std::string> seen{cellId};
+        for (std::size_t i = 0; start && !start->outdoors && i < queue.size() && i < 16 && out.first.empty(); ++i)
+            for (const auto& [id, d] : doors_)
+                if (d.targetCell == queue[i] && d.cellId != queue[i] && seen.insert(d.cellId).second)
+                {
+                    if (const auto* c = cell(d.cellId); c && c->outdoors)
+                    {
+                        out = {d.cellId, d.position};
+                        break;
+                    }
+                    queue.push_back(d.cellId);
+                }
+        found = streetDoor_.emplace(cellId, std::move(out)).first;
+    }
+    if (found->second.first.empty())
+        return false;
+    outside = found->second.first;
+    at = found->second.second;
+    return true;
+}
+
 void World::talkMoment(const std::string& who, std::map<std::string, std::string>& facts)
 {
     // Where and when, in the talk library's facts (doc 62): the place, the town, the hour, the sky, the day.

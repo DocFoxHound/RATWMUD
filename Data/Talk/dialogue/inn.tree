@@ -37,48 +37,48 @@ say[pair.disposition=wary priority=3] Yes? | What is it you want? | #greet#. Wha
 say[pair.disposition=hostile priority=10] You. Say what you want and go. | What now? | I'll serve you, and that's all.
 mood warm
 free
-choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
-choice Something to eat or drink. [here.shop=open|bare] -> do shop
+choice I'd like a bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
+choice I'd like something to eat or drink. [here.shop=open|bare] -> do shop
 choice What other rooms are there? [here.inn=yes] -> rooms
 choice What's the news of the house? -> do open news
 choice Anyone here I ought to meet? [here.matchmaker=yes] -> match
 choice I'll just rest by the fire a while. -> rest
-choice Something else... -> do open chat
-choice Goodbye. -> bye
+choice I was wondering about something else... -> do open chat
+choice Goodbye for now. -> bye
 
 node rooms
 say A bed's #here.bed_night#p a night, #here.bed_week#p the week. The whole upstairs is #here.upstairs_night#p a night, if nobody's in it.
-choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
-choice A bed for the week (#here.bed_week#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed week ; then roomed ; refused refused
-choice The whole upstairs, tonight (#here.upstairs_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge whole ; then roomed ; refused refused
-choice Not just now. -> greet
+choice I'd like a bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
+choice I'd like a bed for the week (#here.bed_week#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed week ; then roomed ; refused refused
+choice I'll take the whole upstairs tonight (#here.upstairs_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge whole ; then roomed ; refused refused
+choice Not just now, thanks. -> greet
 
 node roomed
 say #inn_bed#
 mood pleased
-choice Something to eat or drink. [here.shop=open|bare] -> do shop
-choice Goodbye. -> bye
+choice I'd like something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye for now. -> bye
 
 node rest
 say #inn_rest#
 say[here.lodging=yes] Rest as long as you like. Your bed's upstairs when you want it.
 free
-choice A bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
-choice Something to eat or drink. [here.shop=open|bare] -> do shop
-choice Goodbye. -> bye
+choice I'd like a bed for the night (#here.bed_night#p). [here.bed_ok=yes] locked "#here.bed_why#" -> do lodge bed night ; then roomed ; refused refused
+choice I'd like something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why# | Sorry, #address#. #topic.why#
-choice Something to eat or drink. [here.shop=open|bare] -> do shop
-choice Goodbye. -> bye
+choice I'd like something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye for now. -> bye
 
 node match
 ask game.match
 say Nobody I'd point you to just now. Try again of an evening, when it's busier. | Not just now. Come back when there's more about.
 mood warm
 free
-choice Something to eat or drink. [here.shop=open|bare] -> do shop
-choice Goodbye. -> bye
+choice I'd like something to eat or drink. [here.shop=open|bare] -> do shop
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #farewell#, #address#. | #shop_bye#

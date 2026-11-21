@@ -258,7 +258,7 @@ talk::Facts Game::jobFacts(const std::string& playerId, const std::string& npcId
     talk::Facts f{{"topic.job_id", jobId}, {"topic.job_state", "gone"}, {"topic.job_allowed", "no"}, {"topic.job_ready", "no"},
                   {"topic.job_why", "That work is gone."}, {"topic.job_title", "that work"}, {"topic.job_reward", "0"},
                   {"topic.job_directions", "That work is gone."}, {"topic.job_due", "no time at all"},
-                  {"topic.job_risk", "None now."}, {"topic.job_progress", "That's done with."}, {"topic.job_handover", "About that work."},
+                  {"topic.job_risk", "None now."}, {"topic.job_progress", "That's done with."}, {"topic.job_handover", "It's about that work."},
                   {"topic.job_poster", "someone"}};
     const double today = world_.calendarDays();
     if (isMission(jobId))
