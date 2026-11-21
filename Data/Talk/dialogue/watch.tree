@@ -30,57 +30,57 @@ choice I want to report a crime. -> crime
 choice What's the law here? -> law
 choice Any bounties posted? -> bounties
 choice Could you tell me the way? -> do open way
-choice Something else... -> do open chat
-choice Goodbye. -> bye
+choice I was wondering about something else... -> do open chat
+choice Goodbye for now. -> bye
 
 node crime
 say Go on, then. What did you see? | Out with it. Who, and what?
 say[here.witnessed=0 priority=2] Saw something, did you? Go on.
 free
 choice I saw it with my own eyes. -> do report ; then reported ; refused refused
-choice Never mind. -> hub
+choice Actually, never mind. -> hub
 
 node reported
 say That's nothing new to us. Keep your eyes open, though. | Nothing we don't know. Still, thank you.
 say[topic.reported=yes] #watch_noted#
 mood formal
-choice Anything else? -> hub
-choice Goodbye. -> bye
+choice I was wondering about something else... -> hub
+choice Goodbye for now. -> bye
 
 node fine
 say You owe #here.fine# pennies: the fine, and what's to be made good. Pay it, or you'll come with us.
 say[here.wanted=no priority=2] You owe the watch nothing. Keep it that way.
 mood stern
 choice I'll pay it (#here.fine#p). [here.wanted=yes] -> do pay_fine ; then paid ; refused refused
-choice Not now. -> hub
+choice Not right now. -> hub
 
 node paid
 say Settled. You're free to go. Mind yourself. | That's that, then. Keep out of trouble.
 mood formal
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node law
 say Steal and it's a fine of three pennies, and what you took paid back. Strike a wolf and it's eight. Pay any of the watch.
 say[here.wanted=yes priority=2] You'd know. Theft's three pennies and the goods back; striking a wolf is eight. Yours is #here.fine#.
 choice And if I can't pay? -> unpaid
-choice Anything else? -> hub
-choice Goodbye. -> bye
+choice I was wondering about something else... -> hub
+choice Goodbye for now. -> bye
 
 node unpaid
 say Then you'll come with us, and sit in the cells until it's settled. | Then it's the cells, until it's paid.
-choice Anything else? -> hub
-choice Goodbye. -> bye
+choice I was wondering about something else... -> hub
+choice Goodbye for now. -> bye
 
 node bounties
 say #here.bounty#
 free
-choice Anything else? -> hub
-choice Goodbye. -> bye
+choice I was wondering about something else... -> hub
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why# | Hm. #topic.why#
-choice Anything else? -> hub
-choice Goodbye. -> bye
+choice I was wondering about something else... -> hub
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #watch_bye#

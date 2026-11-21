@@ -271,6 +271,34 @@ void invitationsAndTheView()
     expect(bo.string("name") == "Bo" && bo.boolean("online") && bo.string("cell") == t.g.world().entity(t.bo.entityId)->cellId &&
                std::abs(bo.number("x") - t.g.world().entity(t.bo.entityId)->position.x) < .2,
            "with where Bo is, for her minimap");
+    {
+        // On both maps wherever he is (the user, 2026-11-20): indoors (the demo starts them in the tavern), at the door
+        // into the building from the street; outdoors, in the realm's tiles; whatever Ada knows of either place.
+        const auto& w = t.g.world();
+        const auto inside = w.entity(t.bo.entityId)->cellId;
+        const Door* in = nullptr;
+        for (const auto& [id, d] : w.doors())
+            if (const auto* from = w.cell(d.cellId); from && from->outdoors && d.targetCell == inside)
+            {
+                in = &d;
+                break;
+            }
+        expect(in && !w.cell(inside)->outdoors, "they start in a building with a door from the street");
+        const auto* street = w.cell(in->cellId);
+        expect(bo.boolean("inside") && bo.string("outside") == street->id && std::abs(bo.number("wx") - (street->worldX + in->position.x)) < .2 &&
+                   std::abs(bo.number("wy") - (street->worldY + in->position.y)) < .2,
+               "indoors, at the building's door from the street: " + json::dump(bo));
+        t.g.world().entity(t.bo.entityId)->cellId = street->id;
+        t.g.world().entity(t.bo.entityId)->position = {in->position.x + 1, in->position.y + 1};
+        t.tick(.3);
+        const auto& out = t.ada.self()["party"].array("members")[1];
+        expect(!out.boolean("inside") && out.string("cell") == street->id && std::abs(out.number("wx") - (street->worldX + in->position.x + 1)) < .2 &&
+                   std::abs(out.number("wy") - (street->worldY + in->position.y + 1)) < .2,
+               "outdoors, where he is in the realm: " + json::dump(out));
+        t.g.world().entity(t.bo.entityId)->cellId = inside;
+        t.place(t.bo, 1.2, 0);
+        t.tick(.3);
+    }
     expect(t.ada.said().find("Bo joins the party") != std::string::npos, "Ada is told he joined");
     expect(t.ada.sees(t.bo.entityId)->string("rel") == "party" && t.bo.sees(t.ada.entityId)->string("rel") == "party",
            "each shows as the other's party mate");

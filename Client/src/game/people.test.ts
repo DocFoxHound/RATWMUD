@@ -116,6 +116,7 @@ test('stars: in words, exact for oneself and a friend who sees, in bands for oth
     assert.equal(starsLine({exact: true, total: 0, from: 0}), '★ No stars yet');
     assert.equal(starsLine({exact: false, band: '250+', fromBand: '30+'}), '★ 250+ stars from 30+ wolves');
     assert.equal(starsLine({exact: false, band: 'a few', fromBand: 'a few'}), '★ A few stars');
+    assert.equal(starsLine({exact: false, band: 'none', fromBand: 'none'}), '★ No stars yet', 'a new player has none, not "a few"');
 });
 
 test('stars: Known for, the tags and the rate in words', async () => {

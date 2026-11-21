@@ -16,36 +16,36 @@ say[here.missions=0 priority=2] Nothing on the board today. Come back tomorrow.
 say[here.chapter=no priority=5] #here.faction# deals with Chapters, not with one wolf alone.
 mood formal
 each job in here.missions max 4
-choice Ask about: #job.title# (#job.reward#p) [here.chapter=yes topic.job_allowed=yes] locked "#job.why#" -> do open job
+choice What about this one: #job.title# (#job.reward#p)? [here.chapter=yes topic.job_allowed=yes] locked "#job.why#" -> do open job
 each job in here.deliveries max 2
 choice #job.handover# [topic.job_ready=yes] locked "#job.why#" -> do deliver job.id ; then paid ; refused refused
-choice About what I took on. [here.mine>0] -> do open mine
-choice About our Chapter's standing... [here.chapter=yes] -> standing
-choice Goodbye. -> bye
+choice I wanted to ask about the work I took on. [here.mine>0] -> do open mine
+choice I wanted to ask about our Chapter's standing. [here.chapter=yes] -> standing
+choice Goodbye for now. -> bye
 
 node standing
 say What of it? | Ask, then. | Go on.
 choice How does #here.faction# hold us? -> do standing ; then answer ; refused refused
 choice I'll pay for a report (#here.report_fee#p). -> do buy_report ; then answer ; refused refused
-choice A tithe, from our Chapter (#here.tithe_fee#p). -> do tithe ; then answer ; refused refused
-choice Back to the board. -> board
+choice I've brought a tithe from our Chapter (#here.tithe_fee#p). -> do tithe ; then answer ; refused refused
+choice Let's look at the board again. -> board
 
 node answer
 say #topic.answer#
-choice Anything else? -> board
-choice Goodbye. -> bye
+choice What else is on the board? -> board
+choice Goodbye for now. -> bye
 
 node paid
 say #work_paid# #topic.job_paid.capitalize#. | #work_paid#
 say[topic.job_paid=nothing priority=2] Done, and noted. There's no coin left in it today, I'm afraid.
 mood pleased
-choice Anything else? -> board
-choice Goodbye. -> bye
+choice What else is on the board? -> board
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why# | Hm. #topic.why#
-choice Anything else? -> board
-choice Goodbye. -> bye
+choice What else is on the board? -> board
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #farewell#, #address#.

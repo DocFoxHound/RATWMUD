@@ -263,10 +263,10 @@ void theBook()
     expect(b.tally("eve")->total == 2 && b.tally("eve")->kinds.at("story") == 1 && b.tally("eve")->givers.size() == 2,
            "a Story Star counts as one; two givers");
     // Bands: strangers see a few, 10+, 25+...
-    expect(stars::band(0) == "a few" && stars::band(9) == "a few" && stars::band(10) == "10+" && stars::band(437) == "250+" &&
+    expect(stars::band(0) == "none" && stars::band(1) == "a few" && stars::band(9) == "a few" && stars::band(10) == "10+" && stars::band(437) == "250+" &&
                stars::band(1200) == "1000+",
            "the bands");
-    expect(stars::band(4, true) == "a few" && stars::band(31, true) == "30+", "the giver bands");
+    expect(stars::band(0, true) == "none" && stars::band(4, true) == "a few" && stars::band(31, true) == "30+", "the giver bands");
     const auto exact = b.view("ada", true), banded = b.view("ada", false);
     expect(exact.number("total") == 10 && exact.number("from") == 1 && exact.boolean("exact"), "exact for the player");
     expect(!banded.has("total") && !banded.has("from") && banded.string("band") == "10+" && banded.string("fromBand") == "a few",
@@ -392,6 +392,11 @@ void throughTheGame()
     w.send(w.cy, "action", {{"action", "inspect"}, {"target", w.adaId}});
     auto stars = w.cy.last("inspect")->object("stars");
     expect(!stars.boolean("exact") && stars.string("band") == "a few" && !stars.has("total"), "Cy, a stranger, sees \"a few\"");
+    // One with no stars at all reads "none", never "a few" (the user's new wolf, 2026-11-20).
+    w.send(w.ada, "action", {{"action", "inspect"}, {"target", w.cyId}});
+    const auto none = w.ada.last("inspect")->object("stars");
+    expect(!none.boolean("exact") && none.string("band") == "none" && none.string("fromBand") == "none",
+           "Ada, a stranger, sees Cy has none");
     w.friends(w.cy, {{"verb", "request"}, {"handle", "Adder"}});
     w.friends(w.ada, {{"verb", "accept"}, {"handle", "Cypress"}});
     w.send(w.cy, "action", {{"action", "inspect"}, {"target", w.adaId}});

@@ -342,6 +342,30 @@ Game::Relations Game::relationsFor(const std::string& viewer) const
 
 Value Game::partyView(const std::string& id) const
 {
+    // Where each one is on the maps (the user, 2026-11-20: "I need to be able to see party members on the minimap and
+    // expanded map"): wx, wy in the realm's tiles, whatever this wolf knows of the place; indoors, at the door from the
+    // street into the building (`inside`, and `outside`: the street's cell). Allies, so nothing hides them from each
+    // other; only the party's own are in it.
+    const auto mapSpot = [&](Value& j, const Entity& e) {
+        const auto* c = world_.cell(e.cellId);
+        if (!c)
+            return;
+        if (c->outdoors)
+        {
+            j.add("wx", std::round((c->worldX + e.position.x) * 10) / 10);
+            j.add("wy", std::round((c->worldY + e.position.y) * 10) / 10);
+            return;
+        }
+        j.add("inside", true);
+        std::string street;
+        Vec2 door;
+        if (const auto* s = world_.streetDoor(e.cellId, street, door) ? world_.cell(street) : nullptr)
+        {
+            j.add("outside", street);
+            j.add("wx", std::round((s->worldX + door.x) * 10) / 10);
+            j.add("wy", std::round((s->worldY + door.y) * 10) / 10);
+        }
+    };
     auto v = Value::object();
     bool any = false;
     if (const auto* p = parties_.of(id))
@@ -366,6 +390,7 @@ Value Game::partyView(const std::string& id) const
                     j.add("place", cell->name);
                 j.add("x", std::round(e->position.x * 10) / 10);
                 j.add("y", std::round(e->position.y * 10) / 10);
+                mapSpot(j, *e);
                 j.add("health", std::round(100 - e->hurt));
                 if (e->downedLeft > 0)
                     j.add("downed", true);
@@ -393,6 +418,7 @@ Value Game::partyView(const std::string& id) const
                     j.add("place", cell->name);
                 j.add("x", std::round(e->position.x * 10) / 10);
                 j.add("y", std::round(e->position.y * 10) / 10);
+                mapSpot(j, *e);
                 j.add("health", std::round(100 - e->hurt));
                 if (e->downedLeft > 0)
                     j.add("downed", true);

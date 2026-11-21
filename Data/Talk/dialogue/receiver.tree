@@ -20,7 +20,7 @@ say[pair.disposition=hostile priority=10] You. Say what you want and go. | What 
 free
 each job in here.deliveries max 3
 choice #job.handover# [topic.job_ready=yes] locked "#job.why#" -> do deliver job.id ; then paid ; refused refused
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node paid
 say #work_paid# #topic.job_paid.capitalize#.
@@ -28,11 +28,11 @@ say[topic.job_kind=courier] A letter, for me? Thank you. #topic.job_paid.capital
 say[topic.job_paid=nothing priority=2] Thank you. There's no pay left in it today, I'm afraid.
 mood pleased
 free
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why# | Hm. #topic.why#
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #farewell#, #address#.

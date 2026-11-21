@@ -31,13 +31,13 @@ mood warm
 choice Let me see your wares. [here.shop=open|bare] -> do shop
 choice Any work going? [here.shop=open|bare here.giver=yes] -> do open work
 choice What's dear today? [here.shop=open|bare] -> prices
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node prices
 ask player.trade
 say #shop_dear# #shop_offer# | Nothing's moved much. #shop_offer#
 choice Let me see your wares. [here.shop=open|bare] -> do shop
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #shop_bye# | #farewell#, #address#.

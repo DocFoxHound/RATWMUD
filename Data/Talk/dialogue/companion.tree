@@ -19,8 +19,8 @@ choice How are you holding up? -> holding
 choice What do you think? -> think
 choice Go home for now. -> do order home ; refused refused
 choice We part ways here. -> do order dismiss ; refused refused
-choice Something else... -> do open chat
-choice Goodbye. -> bye
+choice I was wondering about something else... -> do open chat
+choice Goodbye for now. -> bye
 
 node holding
 say Well enough. Lead on. | I'm fine. Don't fuss.
@@ -30,7 +30,7 @@ say[injured=bad priority=2] I'm hurt, badly. I need to rest.
 free
 choice Follow me. [here.waiting=yes] -> do order follow ; refused refused
 choice Wait here for me. [here.waiting=no] -> do order wait ; refused refused
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 # "What do you think?" (Docs/Design/84 §13.1.6, Phase 12): once said in chat to a companion and answered there; now
 # here, answered by the game from the companion's own stances (Game::companionOpinion: their view on one of the realm's
@@ -40,11 +40,11 @@ ask companion.opinion
 say Hard to say. I'll think on it. | I've no strong view either way. | I'd sooner keep my thoughts to myself, for now.
 free
 choice How are you holding up? -> holding
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why#
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node bye
 say Right. | Lead on. | As you like.

@@ -728,6 +728,10 @@ class World
     const std::vector<Door*>& doorsIn(const std::string& cellId) const;
     // Cells one step away through any portal (seams, doors, stairs), locked or not.
     std::set<std::string> neighbors(const std::string& cellId) const;
+    // Where a place indoors meets the street: the outdoor cell and the spot of the door from it that leads in (up a
+    // floor or two, out through the floors below), for showing someone inside "at the building" on a map. False for a
+    // place with no way out found (or one outdoors: it is its own street). Found once a cell, again when the doors change.
+    bool streetDoor(const std::string& cellId, std::string& outside, Vec2& at) const;
     // Streamed worlds: the cells not in memory next to ones that are, the ones someone may need next. A host can
     // fetch their files ahead of time so that loading one (ensureLoaded) waits on nothing.
     std::vector<std::string> cellsSoonNeeded() const;
@@ -1984,6 +1988,8 @@ class World
     // found again when the doors change.
     mutable std::map<std::string, std::string> outsideOf_;
     mutable std::size_t outsideDoors_ = 0;
+    mutable std::map<std::string, std::pair<std::string, Vec2>> streetDoor_;    // (streetDoor: "" for none.)
+    mutable std::size_t streetDoors_ = 0;
     // districtHouse's answers by cell, found again when the doors change and each game day (a claim may move): asked
     // for every resident's leader whenever one speaks (doc 84, Phase 1), it walks the doors.
     mutable std::map<std::string, std::string> districtOf_;

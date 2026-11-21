@@ -17,9 +17,9 @@ node list
 say #work_offer# | This is what's going. | Work? Aye, some.
 say[here.work=0 priority=2] #work_none# | #work_none# Ask again tomorrow.
 each job in here.work max 4
-choice Ask about: #job.title# (#job.reward#p) [topic.job_allowed=yes] locked "#job.why#" -> job
-choice About the work I took on. [here.mine>0] -> mine
-choice Goodbye. -> bye
+choice What about this one: #job.title# (#job.reward#p)? [topic.job_allowed=yes] locked "#job.why#" -> job
+choice I wanted to ask about the work I took on. [here.mine>0] -> mine
+choice Goodbye for now. -> bye
 
 node job
 say #job.directions#
@@ -49,25 +49,25 @@ say #work_taken# It's marked on your map. | #work_taken#
 mood pleased
 choice What else is there? [topic.job_source=contract] -> list
 choice What else is there? [topic.job_source=mission] -> do open missions
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node declined
 say #work_declined#
 choice What else is there? [topic.job_source=contract] -> list
 choice What else is there? [topic.job_source=mission] -> do open missions
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node refused
 say #topic.why# | Not so fast. #topic.why#
 choice What else is there? [topic.job_source=contract] -> list
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node mine
 say Which of them? | What about it? | Go on, then.
 say[here.mine=0 priority=2] You've nothing of mine in hand.
 each job in here.mine max 4
-choice About: #job.title# -> progress
-choice Goodbye. -> bye
+choice About this one: #job.title#. -> progress
+choice Goodbye for now. -> bye
 
 node progress
 say #job.progress#
@@ -84,7 +84,7 @@ node given
 say #work_back#
 mood calm
 choice What else is there? [topic.job_source=contract] -> list
-choice Goodbye. -> bye
+choice Goodbye for now. -> bye
 
 node bye
 say #farewell#. | #farewell#, #address#.

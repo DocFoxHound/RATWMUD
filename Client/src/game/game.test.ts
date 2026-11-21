@@ -559,10 +559,40 @@ test('the minimap marks each accepted job and party member, but omits residents'
     map.draw(record, s, {x: 0, y: 0, w: 200, h: 160}, 4);
     assert.ok(circles.includes(116), 'a party resident has a map marker');
     assert.ok(!circles.includes(108), 'an ordinary resident has no minimap marker');
-    assert.deepEqual(map.sceneMarks.filter(m => m.text.includes(' · ')).map(m => m.text),
+    assert.deepEqual(map.sceneMarks.filter(m => m.text.includes(' · ') && !m.text.startsWith('your party')).map(m => m.text),
         ['1 · Guard the wagon to Oakhaven', '2 · Carry a letter']);
     assert.ok(Math.hypot(map.sceneMarks[0].x - map.sceneMarks[1].x, map.sceneMarks[0].y - map.sceneMarks[1].y) >= 17,
         'two jobs at one destination keep separate numbered markers');
+});
+
+test('party mates on both maps wherever they are: another town unknown to the wolf, indoors at the building', () => {
+    const {state: s} = testGame();
+    s.applySnapshot({cell: {id: 'road', x: 0, y: 0, width: 64, height: 64, outdoors: true},
+        self: {id: 'self', x: 10, y: 10, party: {id: 'p', leader: 'self', members: [
+            {id: 'self', online: true, cell: 'road', x: 10, y: 10, wx: 10, wy: 10},
+            // In a cell this wolf has never seen, far off: placed by the realm's tiles the server gives.
+            {id: 'ash', name: 'Ash', online: true, cell: 'far_town', place: 'Greyfen', x: 5, y: 5, wx: 900, wy: 40},
+            // Indoors, close by: at the door into the building from the street.
+            {id: 'bo', name: 'Bo', online: true, cell: 'inn_floor2', place: 'The Wharf Inn', x: 3, y: 3, wx: 30, wy: 12, inside: true},
+            {id: 'cy', name: 'Cy', online: false}]}},
+        entities: [],
+        worldMap: [{id: 'road', name: 'Road', x: 0, y: 0, width: 64, height: 64, knowledge: 'visited', current: true}]});
+    const texts: [string, number, number][] = [];
+    const record = new Proxy({} as Record<string, unknown>, {
+        get: (_, key) => key === 'fillText' ? (t: string, x: number, y: number) => texts.push([t, x, y]) : key === 'canvas' ? undefined : () => {},
+        set: () => true,
+    }) as unknown as CanvasRenderingContext2D;
+    const map = new MapRenderer(() => null);
+    map.draw(record, s, {x: 0, y: 0, w: 200, h: 160}, 4);
+    const mates = map.sceneMarks.filter(m => m.text.startsWith('your party'));
+    assert.deepEqual(mates.map(m => m.text), ['your party · Ash · at Greyfen', 'your party · Bo · in The Wharf Inn'], 'online mates only');
+    assert.equal(mates[0].x, 200 - 8, 'one far east is held at the minimap\'s east edge');
+    assert.deepEqual([mates[1].x, mates[1].y], [100 + 20 * 4, 80 + 2 * 4], 'one indoors at the building\'s door');
+    texts.length = 0;
+    map.draw(record, s, {x: 0, y: 0, w: 4000, h: 600}, 2, [0, 0], true);
+    assert.ok(texts.some(([t]) => t === 'Ash') && texts.some(([t]) => t === 'Bo'), 'named on the World Map');
+    const ash = map.sceneMarks.find(m => m.text.includes('Ash'))!;
+    assert.equal(ash.x, 2000 + (900 - 10) * 2, 'in the realm where the server says, though the wolf never saw the place');
 });
 
 test('cell atmosphere follows the room, never the viewport; lighting presets for developers only', () => {

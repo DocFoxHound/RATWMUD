@@ -20,6 +20,21 @@ export function fitScale(snapshot: Json | null, w: number, h: number): number {
     return Math.max(0.1, Math.min(8, 0.85 * Math.min(w / Math.max(1, x1 - x0), h / Math.max(1, y1 - y0))));
 }
 
+/** The party's colour on the maps (as their names and marks in the world: paint.ts Amber). */
+const PartyAmber = '#d9b67b';
+
+/** A party mate's mark on a map, in box pixels: held at the edge (pointing `angle` the way they are) when off it. */
+interface MateMark {
+    x: number;
+    y: number;
+    edge: boolean;
+    angle: number;
+    name: string;
+    npc: boolean;
+    inside: boolean;
+    text: string;
+}
+
 interface Place {
     id: string;
     name: string;
@@ -260,7 +275,8 @@ export class MapRenderer {
         }
         for (const e of s.entities.values()) {
             if (e.self) continue;
-            if (!labels && (e.kind === 'npc' || e.rel === 'party')) continue;
+            // (Party mates are the party's marks, below: drawn wherever they are, not only in sight.)
+            if (e.rel === 'party' || (!labels && e.kind === 'npc')) continue;
             const x = toX(ox + e.x), y = toY(oy + e.y);
             c.fillStyle = e.rel === 'party' ? '#d9b67b' : e.hostile ? '#e0695e' : e.rel === 'chapter' && e.colour ? e.colour
                 : e.kind === 'npc' ? '#a8c2a6' : '#92bacd';
@@ -294,19 +310,8 @@ export class MapRenderer {
             c.strokeStyle = str(chapter, 'colour', '#d9b67b');
             c.strokeRect(toX(place.x + num(site, 'x')) - 4, toY(place.y + num(site, 'y')) - 4, 8, 8);
         }
-        // Party mates (doc 32): always shown, even out of sight, in any place this wolf knows.
-        for (const m of s.party?.members ?? []) {
-            if (m.id === s.selfId || !m.online || (labels && s.entities.has(m.id))) continue;
-            const place = places.find(p => p.id === m.cell);
-            if (!place) continue;
-            const x = toX(place.x + m.x), y = toY(place.y + m.y);
-            c.fillStyle = '#d9b67b';
-            c.beginPath();
-            c.arc(x, y, Math.max(2, Math.min(3.5, scale)), 0, Math.PI * 2);
-            c.fill();
-            c.strokeStyle = '#11191b';
-            c.stroke();
-        }
+        // Party mates (doc 32; the user, 2026-11-20): always shown, wherever they are, drawn over the rest (drawMates).
+        const mates = this.partyMarks(s, box, places, here, toX, toY, scale, labels);
         this.sceneMarks = [];
         // Each accepted job gets a numbered marker. The number also identifies its description on hover, even when
         // several jobs point to the same town or wagon. Clamp distant goals to the map edge as the tracked story does.
@@ -403,6 +408,7 @@ export class MapRenderer {
                 c.fill();
                 this.sceneMarks.push({x, y, text: `a howl${h.wolves > 1 ? ` of ${h.wolves} wolves` : ''}${h.status ? ` · ${h.status}` : ''} · ${h.band}`});
             }
+        this.drawMates(c, mates, box, labels);
         if (me) {
             const x = toX(ox + me.x), y = toY(oy + me.y), r = labels ? 6 : 8;
             c.fillStyle = '#0b1213';
@@ -446,6 +452,80 @@ export class MapRenderer {
         c.textBaseline = 'top';
         c.fillText('N ^', box.x + 6, box.y + 5);
         c.restore();
+    }
+
+    /**
+     * Where each party mate goes on this map (doc 32; the user, 2026-11-20: "When in a party I need to be able to see party
+     * members on the minimap and expanded map"): in the wolf's own place where it stands; elsewhere at the spot the
+     * server gives in the realm's tiles (indoors, the door into the building from the street), whether this wolf knows
+     * the place or not; held at the map's edge, pointing the way, when off it. Each is said on hover (sceneMarks).
+     */
+    private partyMarks(s: GameState, box: {x: number; y: number; w: number; h: number}, places: Place[], here: Place | undefined,
+        toX: (x: number) => number, toY: (y: number) => number, scale: number, labels: boolean): MateMark[] {
+        const out: MateMark[] = [];
+        // From indoors the minimap is the room's, so a mate elsewhere is placed from where the wolf last stood outside.
+        const fromRoom = !labels && !s.outdoors, me = wolfInWorld(s);
+        for (const m of s.party?.members ?? []) {
+            if (m.id === s.selfId || !m.online || !m.cell) continue;
+            let x: number, y: number;
+            const seen = s.entities.get(m.id);       // (In sight: where the screen has them, a moment fresher.)
+            if (here && m.cell === here.id) x = toX(here.x + (seen?.x ?? m.x)), y = toY(here.y + (seen?.y ?? m.y));
+            else {
+                const place = places.find(p => p.id === m.cell);
+                const wx = Number.isFinite(m.wx) ? m.wx : place ? place.x + m.x : NaN;
+                const wy = Number.isFinite(m.wy) ? m.wy : place ? place.y + m.y : NaN;
+                if (!Number.isFinite(wx) || !Number.isFinite(wy)) continue;
+                if (fromRoom) x = box.x + box.w / 2 + (wx - me[0]) * scale, y = box.y + box.h / 2 + (wy - me[1]) * scale;
+                else x = toX(wx), y = toY(wy);
+            }
+            const pad = 8, inX = Math.max(box.x + pad, Math.min(box.x + box.w - pad, x)), inY = Math.max(box.y + pad, Math.min(box.y + box.h - pad, y));
+            const edge = inX !== x || inY !== y;
+            const where = m.place ? `${m.inside ? 'in' : 'at'} ${m.place}` : '';
+            const state = m.downed ? 'down' : m.fighting ? 'fighting' : '';
+            out.push({x: inX, y: inY, edge, angle: Math.atan2(y - inY, x - inX), name: m.name || 'Party mate', npc: m.npc, inside: m.inside,
+                text: ['your party', m.name || 'a party mate', where, state].filter(Boolean).join(' · ')});
+        }
+        return out;
+    }
+
+    /** The party's marks (partyMarks): a ring in the party's amber round a dark middle, a roof over it for one indoors, an
+     *  arrow for one off the map's edge; on the World Map each one named. */
+    private drawMates(c: CanvasRenderingContext2D, mates: MateMark[], box: {x: number; y: number; w: number; h: number}, labels: boolean) {
+        for (const m of mates) {
+            const r = m.npc ? 3.5 : 4.5;
+            c.fillStyle = '#11191b';
+            c.beginPath(); c.arc(m.x, m.y, r + 2, 0, Math.PI * 2); c.fill();
+            c.fillStyle = PartyAmber;
+            c.beginPath(); c.arc(m.x, m.y, r, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#11191b';
+            c.beginPath(); c.arc(m.x, m.y, r * 0.4, 0, Math.PI * 2); c.fill();
+            if (m.inside) {
+                // A small roof: they are in the building at this door.
+                c.fillStyle = PartyAmber;
+                c.beginPath(); c.moveTo(m.x - r - 1, m.y - r - 1); c.lineTo(m.x, m.y - r - 5); c.lineTo(m.x + r + 1, m.y - r - 1); c.closePath(); c.fill();
+            }
+            if (m.edge) {
+                const dx = Math.cos(m.angle), dy = Math.sin(m.angle), tip = r + 7;
+                c.fillStyle = PartyAmber;
+                c.beginPath();
+                c.moveTo(m.x + dx * tip, m.y + dy * tip);
+                c.lineTo(m.x + dx * (r + 2) - dy * 3.5, m.y + dy * (r + 2) + dx * 3.5);
+                c.lineTo(m.x + dx * (r + 2) + dy * 3.5, m.y + dy * (r + 2) - dx * 3.5);
+                c.closePath(); c.fill();
+            }
+            if (labels) {
+                c.font = "600 11px 'RATW Sans', sans-serif";
+                c.textBaseline = 'middle';
+                c.textAlign = m.x > box.x + box.w - 110 ? 'right' : 'left';
+                const tx = m.x + (c.textAlign === 'right' ? -(r + 5) : r + 5);
+                c.lineJoin = 'round'; c.strokeStyle = 'rgba(8,12,13,0.9)'; c.lineWidth = 3;
+                c.strokeText(m.name, tx, m.y);
+                c.fillStyle = PartyAmber;
+                c.fillText(m.name, tx, m.y);
+                c.textAlign = 'start'; c.lineWidth = 1;
+            }
+            this.sceneMarks.push({x: m.x, y: m.y, text: m.text});
+        }
     }
 
     /** Where the last draw put buildings' icons (box pixels), and what each is: for the pointer. */
