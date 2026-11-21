@@ -194,6 +194,12 @@ Result World::cancelTravel(const std::string& id)
         it->second.route.clear();
         it->second.status = "Travel cancelled.";
     }
+    if (it != travels_.end())
+    {
+        it->second.toPoint = false;
+        it->second.line.clear();
+    }
+    mapTravels_.erase(id);
     travelLegCells_.erase(id);
     travelRetryAt_.erase(id);
     travelProgress_.erase(id);
@@ -245,6 +251,11 @@ void World::updateTravel(Entity& actor)
     if (it == travels_.end() || !it->second.active || actor.npc)
         return;
     auto& state = it->second;
+    if (state.toPoint)
+    {
+        updateMapTravel(actor, state);              // A spot on the map (RatwMapTravel.cpp).
+        return;
+    }
     auto& progress = travelProgress_[actor.id];
     auto pause = [&](const std::string& message, const std::string& blocker = std::string{}) {
         actor.path.clear();

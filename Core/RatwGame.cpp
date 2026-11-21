@@ -5725,7 +5725,8 @@ void Game::command(Connection* c, const std::string& raw)
     Result result;
     bool report = false;
     const auto num = [&](const char* key) { return wire::number(j, key); };
-    const bool walkingCommand = type == "move" || type == "path" || type == "pose" || type == "face" || type == "travel";
+    const bool walkingCommand =
+        type == "move" || type == "path" || type == "pose" || type == "face" || type == "travel" || type == "travel_to";
     const auto sceneActionMoves = [&] {
         const auto action = j.string("action");
         return action == "attack" || action == "challenge" || action == "accept" || action == "ask to spar" ||
@@ -5807,6 +5808,15 @@ void Game::command(Connection* c, const std::string& raw)
         world_.setClientWalks(id, false);          // The journey is the server's to walk (held until it ends).
         c->movementMode = std::max<std::uint8_t>(c->movementMode, HeldMovement);
         result = target.size() <= 96 ? world_.travelTo(id, target) : Result{false, "No known route to that destination.", {}};
+        report = true;
+    }
+    else if (type == "travel_to")
+    {
+        // A spot clicked on the minimap or the World Map, in world tiles (World::travelToPoint): walked to by the
+        // server, held until it ends, as a journey to a place is.
+        world_.setClientWalks(id, false);
+        c->movementMode = std::max<std::uint8_t>(c->movementMode, HeldMovement);
+        result = world_.travelToPoint(id, num("x"), num("y"));
         report = true;
     }
     else if (type == "cancel_travel")

@@ -46,6 +46,7 @@ const MapKeys = 'WASD move · CLICK walk there · RIGHT-CLICK what you can do he
 const FightKeys = 'CLICK a tile to move (waiting: to plan) · CLICK a foe to strike · WHEEL pace · 1–9 actions · C stalk · Z aim · G guard · ' +
     'F shove · R rest · SPACE end turn · Q / E turn · ENTER write';
 
+const MiniTitle = 'The country around · CLICK to travel there, by the roads · wheel to zoom · M for the World Map';
 const icons = new WeakMap<HTMLElement, string>();
 /** Puts one of the pictures (hudIcons.ts) in an element, only when it changed, with its words for the pointer. */
 function setIcon(e: HTMLElement, svg: string, words: string) {
@@ -225,20 +226,25 @@ export class Hud {
         show(this.tellerButton, false);
         this.devButton = page('dev', 'DEV CONSOLE', 'The Dev Console (`): commands for Dungeon Masters', () => act('dev_console'));
         show(this.devButton, false);
-        // The minimap switches between the local and world views.
+        // The minimap: a click on it travels there (the user, 2026-11-20: "click to a location on the minimap and the
+        // characters should travel all the way there"); the tabs above and M switch to the World Map.
         const mini = el('section', 'panel minimap', side);
         this.minimap = el('canvas', '', mini);
-        this.minimap.title = 'The country around · wheel to zoom · click for the World Map';
+        this.minimap.title = MiniTitle;
         this.minimap.addEventListener('mousedown', e => e.preventDefault());
-        this.minimap.addEventListener('click', () => act(state.worldMap ? 'local' : 'world'));
+        this.minimap.addEventListener('click', e => {
+            const r = this.minimap.getBoundingClientRect();
+            const at = this.mapRenderer.toWorld(e.clientX - r.left, e.clientY - r.top);
+            if (at) state.travelToSpot(at[0], at[1]);
+        });
         // Pointing at an open scene's mark says what it is (doc 51): "3 wolves at the Wharf tavern · open".
         this.minimap.addEventListener('mousemove', e => {
             const r = this.minimap.getBoundingClientRect();
             const near = this.mapRenderer.sceneMarks.find(m => Math.hypot(m.x - (e.clientX - r.left), m.y - (e.clientY - r.top)) < 9);
-            this.minimap.title = near ? near.text : `The country around · wheel to zoom · click for the ${state.worldMap ? 'Local' : 'World'} Map`;
+            this.minimap.title = near ? near.text : MiniTitle;
         });
         this.minimap.addEventListener('mouseleave', () => {
-            this.minimap.title = `The country around · wheel to zoom · click for the ${state.worldMap ? 'Local' : 'World'} Map`;
+            this.minimap.title = MiniTitle;
         });
         this.minimap.addEventListener('wheel', e => {
             e.preventDefault();
@@ -336,8 +342,6 @@ export class Hud {
         setText(this.trackingWords, trackingText);
         show(this.trackingHint, s.tracking && !s.worldMap && !s.battle);
         show(this.huntButton, bool(wild, 'hunt'));
-        if (this.minimap.title.startsWith('The country around'))
-            this.minimap.title = `The country around · wheel to zoom · click for the ${s.worldMap ? 'Local' : 'World'} Map`;
         this.story.update();
         this.updateSight();
         this.updateStatus(self);

@@ -1271,6 +1271,8 @@ void World::indexRoads()
     roadWays_.clear();
     crossings_.clear();
     grounds_.clear();
+    travelBlocks_.clear();
+    travelGrids_.clear();
     climatesFor_ = std::size_t(-1);
     const auto road = [](char code) { return roadTerrain(code); };
     // An outdoor cell's road map, from its glyphs: kept only where there is a road to keep to. And what its land is
@@ -1302,6 +1304,41 @@ void World::indexRoads()
             }
         if (land)
             grounds_[id] = {double(snow) / double(land), double(marsh) / double(land), double(sand) / double(land)};
+        // Map travel's blocks (travelGrid): a block with a road on it costs a road's step; open country its ground's
+        // average cost, dearer off the road (MapTravelOffRoad) and dearer again where little of it is open; a block
+        // with almost nothing to stand on (deep water, rock, a building's walls) none.
+        {
+            const int B = TravelBlock, bw = (width + B - 1) / B, bh = (height + B - 1) / B;
+            auto& blocks = travelBlocks_[id];
+            blocks.assign(std::size_t(std::max(0, bw)) * std::size_t(std::max(0, bh)), 0);
+            for (int by = 0; by < bh; ++by)
+                for (int bx = 0; bx < bw; ++bx)
+                {
+                    int tiles = 0, open = 0, roads = 0;
+                    double cost = 0;
+                    for (int y = by * B; y < std::min(height, by * B + B); ++y)
+                        for (int x = bx * B; x < std::min(width, bx * B + B); ++x)
+                        {
+                            ++tiles;
+                            const char g = glyphAt(x, y);
+                            const auto* info = terrainInfo(g);
+                            if (g == 'W' || g == '~' || !info || info->solid)
+                                continue;
+                            ++open;
+                            roads += road(g);
+                            cost += info->cost;
+                        }
+                    std::uint8_t value = 0;
+                    if (roads >= 2)
+                        value = 10;
+                    else if (open * 6 >= tiles)
+                    {
+                        const double tenths = cost / open * MapTravelOffRoad * 10 * (open * 5 >= tiles * 2 ? 1 : 2);
+                        value = std::uint8_t(std::clamp(std::lround(tenths), 11L, 255L));
+                    }
+                    blocks[std::size_t(by * bw + bx)] = value;
+                }
+        }
         if (any)
         {
             map->walkGrid();

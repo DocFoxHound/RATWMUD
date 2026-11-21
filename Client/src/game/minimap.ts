@@ -205,6 +205,7 @@ export class MapRenderer {
         const centre: [number, number] = realm ? wolfInWorld(s)
             : [(here?.x ?? num(cell, 'x')) + (me?.x ?? s.cellWidth / 2), (here?.y ?? num(cell, 'y')) + (me?.y ?? s.cellHeight / 2)];
         const cx = centre[0] + pan[0], cy = centre[1] + pan[1];
+        this.view = {box: {...box}, cx, cy, scale};
         const toX = (wx: number) => box.x + box.w / 2 + (wx - cx) * scale;
         const toY = (wy: number) => box.y + box.h / 2 + (wy - cy) * scale;
         c.save();
@@ -272,6 +273,7 @@ export class MapRenderer {
             }
         }
         this.icons = iconAt;
+        drawTravelLine(c, s, toX, toY, labels);
         // Doors of the wolf's place, then the wolves it can see, then the wolf.
         const ox = here?.x ?? num(cell, 'x'), oy = here?.y ?? num(cell, 'y');
         for (const d of objects(s.snapshot, 'doors')) {
@@ -536,6 +538,16 @@ export class MapRenderer {
     /** Where the last draw put buildings' icons (box pixels), and what each is: for the pointer. */
     icons: {x: number; y: number; name: string; kind: string}[] = [];
 
+    /** Where the last draw was centred (world tiles) and at what scale, in its box: for turning a click back into tiles. */
+    view: {box: {x: number; y: number; w: number; h: number}; cx: number; cy: number; scale: number} | null = null;
+
+    /** A point in the last draw's box (its own units) as world tiles: where a click on the map means (map travel). */
+    toWorld(px: number, py: number): [number, number] | null {
+        const v = this.view;
+        if (!v || v.scale <= 0) return null;
+        return [v.cx + (px - v.box.x - v.box.w / 2) / v.scale, v.cy + (py - v.box.y - v.box.h / 2) / v.scale];
+    }
+
     /**
      * The realm's names on the World Map (the user, 2026-11-14: "when the player zooms in close enough they should see
      * the names of the areas and towns"): larger places first and from further out, each where it doesn't cover one
@@ -595,6 +607,53 @@ export class MapRenderer {
         }
         c.restore();
     }
+}
+
+/** The way a journey to a spot on the map takes (the snapshot's travel line, World::travelToPoint), in world tiles. */
+export function travelLine(snapshot: Json | null): {line: [number, number][]; goal: [number, number] | null} {
+    const travel = obj(snapshot, 'travel');
+    const flat = arr(travel, 'line'), goal = arr(travel, 'goal');
+    if (!travel || !(bool(travel, 'active') || bool(travel, 'paused'))) return {line: [], goal: null};
+    const line: [number, number][] = [];
+    for (let i = 0; i + 1 < flat.length && line.length < 400; i += 2) {
+        const x = Number(flat[i]), y = Number(flat[i + 1]);
+        if (Number.isFinite(x) && Number.isFinite(y)) line.push([x, y]);
+    }
+    const gx = Number(goal[0]), gy = Number(goal[1]);
+    return {line, goal: goal.length === 2 && Number.isFinite(gx) && Number.isFinite(gy) ? [gx, gy] : null};
+}
+
+/**
+ * The way to a spot clicked on the map, drawn over the ground on both maps: from the wolf, a dashed amber line along the
+ * way it will go, and a ring with a cross where it ends.
+ */
+function drawTravelLine(c: CanvasRenderingContext2D, s: GameState, toX: (x: number) => number, toY: (y: number) => number, large: boolean) {
+    const {line, goal} = travelLine(s.snapshot);
+    if (!goal) return;
+    const here = wolfInWorld(s);
+    const points: [number, number][] = [[toX(here[0]), toY(here[1])], ...line.slice(1).map(([x, y]) => [toX(x), toY(y)] as [number, number])];
+    c.save();
+    c.lineJoin = 'round';
+    c.lineCap = 'round';
+    for (const [width, colour, dash] of [[large ? 5 : 4, 'rgba(11,18,19,0.8)', [] as number[]], [large ? 2.5 : 2, 'rgba(255,214,140,0.95)', [6, 4]]] as const) {
+        c.lineWidth = width;
+        c.strokeStyle = colour;
+        c.setLineDash([...dash]);
+        c.beginPath();
+        points.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y)));
+        c.stroke();
+    }
+    c.setLineDash([]);
+    const x = toX(goal[0]), y = toY(goal[1]), r = large ? 7 : 5;
+    c.lineWidth = 3;
+    c.strokeStyle = 'rgba(11,18,19,0.85)';
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.stroke();
+    c.lineWidth = 1.5;
+    c.strokeStyle = '#ffd68c';
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.stroke();
+    c.beginPath(); c.moveTo(x - r * 0.6, y - r * 0.6); c.lineTo(x + r * 0.6, y + r * 0.6);
+    c.moveTo(x + r * 0.6, y - r * 0.6); c.lineTo(x - r * 0.6, y + r * 0.6); c.stroke();
+    c.restore();
 }
 
 function hashText(s: string): number {

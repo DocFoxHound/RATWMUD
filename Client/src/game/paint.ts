@@ -141,7 +141,7 @@ export class GamePainter {
         };
         tab(width - 290, 'NEARBY', 'nearby', true);
         tab(width - 150, 'KNOWN ROUTES', 'atlas', false);
-        p.text(14, height - 26, s.realm ? 'WHEEL or + − zoom · DRAG to pan · names show as you zoom in · BRIGHT seen'
+        p.text(14, height - 26, s.realm ? 'CLICK to travel there, by the roads · WHEEL or + − zoom · DRAG to pan · names show as you zoom in'
             : 'WHEEL zoom · DRAG pan · BRIGHT seen · DIM remembered · DARK unexplored (the whole realm is on its way)', 9, Muted, true);
     }
 

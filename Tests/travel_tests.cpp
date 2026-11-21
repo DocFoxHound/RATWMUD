@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -406,6 +407,170 @@ void portalApproachBesideUnrelatedSeam()
     expect(!wrongCell && world.travelState("wolf").paused && world.travelState("wolf").nextDoor == "link_bc",
            "Local portal approach stops beside seam without interpreting it as an edge crossing");
 }
+
+// Map travel (the user, 2026-11-20: "Players should be able to click to a location on the minimap and the characters
+// should travel all the way there. The path there should follow roads as closely as possible."). Four 40 by 24 cells,
+// a, b and c in a row and d under c, every edge tile a seam; a dirt road runs up from near the wolf in a, east along
+// y 4 through b and c, and down through c into d. Grass lies straight between the wolf and the end of the road.
+struct RoadFixture
+{
+    fs::path dir;
+    RoadFixture()
+    {
+        const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+        dir = fs::temp_directory_path() / ("ratw-maptravel-" + std::to_string(stamp));
+        fs::create_directories(dir);
+        constexpr int W = 40, H = 24;
+        std::map<std::string, std::vector<std::string>> grids;
+        for (const auto* id : {"a", "b", "c", "d"})
+            grids[id] = std::vector<std::string>(H, std::string(W, ','));
+        for (int y = 4; y <= 20; ++y)
+            grids["a"][std::size_t(y)][4] = 'd';
+        for (int x = 4; x < W; ++x)
+            grids["a"][4][std::size_t(x)] = 'd';
+        grids["b"][4] = std::string(W, 'd');
+        for (int x = 0; x <= 35; ++x)
+            grids["c"][4][std::size_t(x)] = 'd';
+        for (int y = 4; y < H; ++y)
+            grids["c"][std::size_t(y)][35] = 'd';
+        for (int y = 0; y <= 12; ++y)
+            grids["d"][std::size_t(y)][35] = 'd';
+        for (int y = 16; y <= 22; ++y)
+            for (int x = 20; x <= 26; ++x)
+                grids["d"][std::size_t(y)][std::size_t(x)] = 'W';   // A pond.
+        const std::map<std::string, std::pair<int, int>> at{{"a", {0, 0}}, {"b", {40, 0}}, {"c", {80, 0}}, {"d", {80, 24}}};
+        std::string manifest = "RATW_WORLD 1\n";
+        for (const auto& [id, rows] : grids)
+        {
+            std::ostringstream cell;
+            cell << "id: " << id << "\nname: Field " << id << "\ndescription: Map travel fixture.\nworld: " << at.at(id).first
+                 << ' ' << at.at(id).second << " 0\noutdoors: true\nweather: clear\ngrid:\n";
+            for (const auto& row : rows)
+                cell << row << '\n';
+            write(dir / (id + ".cell"), cell.str());
+            manifest += "cell \"" + id + "\" \"" + id + ".cell\"\n";
+        }
+        // An indoor room, for setting out from indoors.
+        write(dir / "room.cell", "id: room\nname: A room\ndescription: Indoors.\nworld: 300 300 0\noutdoors: false\nweather: clear\n"
+                                 "grid:\n......\n......\n......\n......\n");
+        manifest += "cell \"room\" \"room.cell\"\nspawn \"a\" 2.5 20.5\n";
+        std::ostringstream seams;
+        const auto pair = [&](const std::string& a, double ax, double ay, char edge, const std::string& b, double bx, double by) {
+            const char back = edge == 'N' ? 'S' : edge == 'S' ? 'N' : edge == 'W' ? 'E' : 'W';
+            const std::string one = "s_" + a + b + "_" + std::to_string(int(ax)) + "_" + std::to_string(int(ay));
+            const std::string two = "s_" + b + a + "_" + std::to_string(int(bx)) + "_" + std::to_string(int(by));
+            seams << "door \"" << one << "\" \"Seam\" \"" << a << "\" " << ax << ' ' << ay << " \"" << b << "\" " << bx << ' '
+                  << by << " \"" << two << "\" 1 0 1 1 \"" << edge << "\"\n";
+            seams << "door \"" << two << "\" \"Seam\" \"" << b << "\" " << bx << ' ' << by << " \"" << a << "\" " << ax << ' '
+                  << ay << " \"" << one << "\" 1 0 1 1 \"" << back << "\"\n";
+        };
+        for (int y = 0; y < H; ++y)
+        {
+            pair("a", W - .5, y + .5, 'E', "b", .5, y + .5);
+            pair("b", W - .5, y + .5, 'E', "c", .5, y + .5);
+        }
+        for (int x = 0; x < W; ++x)
+            pair("c", x + .5, H - .5, 'S', "d", x + .5, .5);
+        manifest += seams.str();
+        write(dir / "world.ratw", manifest);
+    }
+    ~RoadFixture()
+    {
+        std::error_code ignored;
+        fs::remove_all(dir, ignored);
+    }
+};
+void mapTravel()
+{
+    RoadFixture fixture;
+    World world;
+    const auto loaded = world.loadWorldFile((fixture.dir / "world.ratw").string());
+    expect(loaded.ok, "Map travel fixture loads: " + loaded.message);
+    auto& wolf = world.addPlayer("wolf", "Wolf");
+    const auto setOff = [&](const std::string& cell, Vec2 at) {
+        world.cancelTravel("wolf");
+        wolf.cellId = cell;
+        wolf.position = at;
+        wolf.path.clear();
+    };
+    const auto where = [&] { return wolf.cellId + " " + std::to_string(wolf.position.x) + ", " + std::to_string(wolf.position.y); };
+    // Walked until the journey ends, counting the tiles walked on and whether they were road.
+    const auto walk = [&](double limit, int& onRoad, int& offRoad) {
+        onRoad = offRoad = 0;
+        std::string lastTile;
+        for (int step = 0; step < int(limit * 30) && world.travelState("wolf").active; ++step)
+        {
+            world.tick(1.0 / 30.0);
+            const auto* c = world.cell(wolf.cellId);
+            const auto* t = c ? c->tile(int(wolf.position.x), int(wolf.position.y)) : nullptr;
+            const std::string tile = wolf.cellId + std::to_string(int(wolf.position.x)) + "," + std::to_string(int(wolf.position.y));
+            if (t && tile != lastTile)
+                (t->glyph == 'd' ? onRoad : offRoad) += 1;
+            lastTile = tile;
+        }
+    };
+
+    // All the way along the road: through b and c and down into d, to the end of the road.
+    setOff("a", {2.5, 20.5});
+    auto result = world.travelToPoint("wolf", 80 + 35.5, 24 + 12.5);
+    expect(result.ok && world.travelState("wolf").active && world.travelState("wolf").toPoint, "A spot three cells off is taken: " + result.message);
+    const auto first = world.travelState("wolf");
+    expect(first.destination == "d" && first.route.size() >= 4 && first.route.front() == "a" && first.route.back() == "d",
+           "The way is planned through every cell between");
+    expect(first.line.size() >= 3 && std::abs(first.line.back().x - 115.5) < .01 && std::abs(first.line.back().y - 36.5) < .01,
+           "The maps are given the way, ending on the spot");
+    int onRoad = 0, offRoad = 0;
+    walk(240, onRoad, offRoad);
+    expect(!world.travelState("wolf").active && world.travelState("wolf").status == "Arrived.", "The journey ends: " + world.travelState("wolf").status);
+    expect(wolf.cellId == "d" && std::abs(wolf.position.x - 35.5) < .3 && std::abs(wolf.position.y - 12.5) < .3,
+           "On the clicked spot, two seams and a corner later: " + where());
+    expect(onRoad >= 150 && offRoad <= 8, "It keeps to the road, not straight over the grass: " + std::to_string(onRoad) +
+                                              " road tiles, " + std::to_string(offRoad) + " off it");
+
+    // Off the road at the end: along the road, then over the grass for the last stretch.
+    setOff("a", {2.5, 20.5});
+    expect(world.travelToPoint("wolf", 80 + 30.5, 24 + 8.5).ok, "A spot off the road is taken");
+    walk(240, onRoad, offRoad);
+    expect(wolf.cellId == "d" && std::abs(wolf.position.x - 30.5) < .3 && std::abs(wolf.position.y - 8.5) < .3,
+           "It reaches a spot off the road: " + where());
+    expect(onRoad >= 140, "The road takes it most of the way there: " + std::to_string(onRoad) + " road tiles");
+
+    // A pond: as near as the ground allows, and said so.
+    setOff("d", {35.5, 2.5});
+    expect(world.travelToPoint("wolf", 80 + 23.5, 24 + 19.5).ok, "A spot in a pond is taken");
+    walk(120, onRoad, offRoad);
+    const auto pond = world.travelState("wolf");
+    expect(!pond.active && pond.status.find("as near") != std::string::npos, "It stops by the water and says so: " + pond.status);
+    expect(wolf.cellId == "d" && std::hypot(wolf.position.x - 23.5, wolf.position.y - 19.5) < 5, "Beside the pond: " + where());
+
+    // Keys and a click on the ground take over; so does the journey being cancelled.
+    setOff("a", {2.5, 20.5});
+    expect(world.travelToPoint("wolf", 115.5, 36.5).ok, "Set off again");
+    tick(world, 1);
+    world.move("wolf", 1, 0);
+    expect(!world.travelState("wolf").active && world.travelState("wolf").line.empty(), "WASD ends the journey and its line");
+    world.move("wolf", 0, 0);
+    expect(world.travelToPoint("wolf", 115.5, 36.5).ok, "Set off once more");
+    tick(world, 1);
+    world.moveTo("wolf", wolf.position.x, wolf.position.y - 2);
+    expect(!world.travelState("wolf").active, "A click on the ground ends it too");
+    expect(world.travelToPoint("wolf", 115.5, 36.5).ok, "And again");
+    wolf.downedLeft = 30;
+    tick(world, .2);
+    expect(!world.travelState("wolf").active && world.travelState("wolf").status.find("down") != std::string::npos,
+           "Downed, the wolf stops: " + world.travelState("wolf").status);
+    wolf.downedLeft = 0;
+
+    // Refused plainly, with nothing changed.
+    setOff("a", {2.5, 20.5});
+    result = world.travelToPoint("wolf", 300, 300);
+    expect(!result.ok && result.message.find("no land") != std::string::npos && wolf.path.empty(), "Past the land: " + result.message);
+    result = world.travelToPoint("wolf", 2.6, 20.6);
+    expect(!result.ok && result.message.find("already") != std::string::npos, "Where it stands: " + result.message);
+    setOff("room", {2.5, 1.5});
+    result = world.travelToPoint("wolf", 115.5, 36.5);
+    expect(!result.ok && result.message.find("outside") != std::string::npos, "Indoors: " + result.message);
+}
 } // namespace
 int main()
 {
@@ -418,6 +583,7 @@ int main()
         transientAcrossSaveAndDisconnect();
         internalDoorAndRemoteState();
         portalApproachBesideUnrelatedSeam();
+        mapTravel();
         std::cout << checks << " travel checks passed.\n";
         return 0;
     }
