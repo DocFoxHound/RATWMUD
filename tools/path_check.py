@@ -6,12 +6,14 @@
 
 A settlement is a box of outdoor ground in world coordinates (it may span several cells: the walk crosses their seams as
 a wolf does). Walking is four-way, tile to tile, as Core's step rules allow (Core/RatwStep.cpp: solid tiles never; a step
-of up to half a height, or a whole one onto or off stairs or a slope). Three things are reported:
+of up to half a height, or a whole one onto or off stairs or a slope). These are reported:
 
 - cut off: a path tile (street, road, footpath, bridge, flagstones, packed earth, an archway or doorway) or a door that
   cannot be walked to from the settlement's streets, not even through the buildings its doors join (rooms are taken as
   open inside). Each says whether a prop or other removable obstacle (a barrel, crates, a stall, a lamp, a tree, a
   fence...) is what closes it.
+- shut in: a door whose own ground outside (a back door's strip behind its house) reaches the streets only through
+  buildings, because a prop or other obstacle closes it off.
 - closed path: an obstacle standing across a path with walls or other obstacles on both its sides, so the path has no
   open tile of width there, and going round is a long way (more than DETOUR tiles longer than walking through).
 - steep step: two path tiles side by side whose heights differ more than a wolf may step between them.
@@ -20,7 +22,7 @@ of up to half a height, or a whole one onto or off stairs or a slope). Three thi
   STREET_CLEAR open path tiles across the street beside it, so a straight walk along any street is never blocked by it.
   A street narrower than that gets its lamps beside it, off the paving, never in it.
 
-fix(grid) clears each cut off or closed path (moving a prop aside where there is room, and clearing other obstacles) until
+fix(grid) clears each cut off, shut in or closed path (moving a prop aside where there is room, and clearing other obstacles) until
 the check passes. tools/refresh_ridgemere3_map.py uses it on the world; tools/test_path_check.py checks the rules.
 """
 from __future__ import annotations
@@ -271,6 +273,22 @@ def check(grid):
             blockers = comp_open(x, y)
             report('cut off', x, y, f'door {", ".join(ids)} cannot be reached' +
                    (' (obstacles close it)' if blockers else ''), blockers or ())
+    # Shut in: a door whose own ground outside is apart from the streets, reached from them only through buildings (a
+    # back door's strip behind its house), where obstacles close that ground off. Whoever comes out by it finds no way
+    # on and goes back in, and out again, for good (Ridgemere 3, 2026-11-20: a barrel shut the Oakum Stair House's back
+    # door in, and its household came and went through it all day).
+    ground = max(range(len(sizes)), key=lambda c: sizes[c])
+    ground_open = None
+    for (x, y), ids in doors:
+        c = comp.get((x, y))
+        if c is None or c == ground or group[c] != main:
+            continue                             # (On the streets' own ground; or cut off, above.)
+        if ground_open is None:
+            ground_open = obstacle_paths(grid, comp, {k: k for k in range(len(sizes))}, ground, opened)
+        blockers = ground_open(x, y)
+        if blockers:
+            report('shut in', x, y, f'door {", ".join(ids)} opens onto {sizes[c]} tiles of ground that obstacles close '
+                   f'off from the streets', blockers)
     for y in range(grid.y0, grid.y1):
         for x in range(grid.x0, grid.x1):
             if grid.at(x, y) not in PATH or (x, y) in door_at:

@@ -2,6 +2,7 @@
 // only while someone is in it or next to it. A generated 10x10 grid of outdoor cells; a resident commutes across it.
 #include "RatwMotionCore.h"
 #include "RatwWorld.h"
+#include "RatwStep.h"
 
 #include <algorithm>
 #include <cmath>
@@ -1600,6 +1601,135 @@ void aPlaceThatWontLoadWaits()
     expect(world.cell("r_1")->loaded, "once it reads, it comes in");
 }
 
+// A household sets off at once through its one closed door (Ridgemere 3, 2026-11-20): five who sleep in a cottage
+// work in the next cell, and at six all make for the ground just in front of the door, to open it on arrival. Only one
+// body fits there; the rest, pressed round it within a body or two of it and their last turn, waited to reach it for
+// good (a whole household stood at its door all day, in every town). Held off their last turn so close, they are as
+// near as they will get: they open the door from where they stand, and go out one after another.
+void aHouseholdGetsOutOfItsDoor()
+{
+    std::string household = "economy 1000 100 50 10 12\n";
+    const std::vector<std::pair<std::string, Vec2>> beds{{"ash", {1.5, 1.5}}, {"bay", {6.5, 1.5}}, {"cob", {1.5, 3.5}},
+                                                         {"dun", {6.5, 3.5}}, {"elm", {4.5, 2.5}}};
+    for (const auto& [who, bed] : beds)
+        household += "resident \"" + who + "\" \"" + who + "\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" "
+                     "\"female\" \"average\" \"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"h_cot\" " + std::to_string(bed.x) + " " +
+                     std::to_string(bed.y) + " \"c_0_0\" 9.5 8.5 \"h_cot\" " + std::to_string(bed.x) + " " + std::to_string(bed.y) + "\n";
+    auto f = grid(household);
+    f.manifest += "door \"cot_out\" \"The cottage door\" \"c_1_0\" 8.5 8.5 \"h_cot\" 3.5 5.5 \"cot_in\" 0 0 0 0 \"-\"\n"
+                  "door \"cot_in\" \"The cottage door\" \"h_cot\" 3.5 6.5 \"c_1_0\" 8.5 9.5 \"cot_out\" 0 0 0 0 \"-\"\n";
+    auto& street = f.cells["c_1_0"];
+    street[street.find("grid:\n") + 6 + std::size_t(8 * (Side + 1) + 8)] = '+';
+    // Walled, as Ridgemere's cottages are: the door is in the wall, and the one tile in front of it is inside.
+    f.cells["h_cot"] = "id: h_cot\nname: The cottage\ndescription: A small room.\nworld: 16 200 0\noutdoors: false\n"
+                       "weather: clear\nsize: 8 7\ngrid:\n########\n#......#\n#......#\n#......#\n#......#\n#......#\n###+####\n";
+    f.seams["h_cot"] = "";
+    const std::string was = "exits \"c_1_0\" 3 \"c_0_0\" \"c_1_1\" \"c_2_0\"\n";
+    const auto at = f.manifest.find(was);
+    expect(at != std::string::npos, "The fixture lists c_1_0's exits");
+    f.manifest.replace(at, was.size(), "exits \"c_1_0\" 4 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_cot\"\nexits \"h_cot\" 1 \"c_1_0\"\narea \"h_cot\"\n");
+    auto world = load(f);
+    world.setTimeOfDay(3);
+    world.ensureLoaded("h_cot");
+    for (const auto& [who, bed] : beds)
+    {
+        auto* e = world.entity(who);
+        expect(e && e->npc, who + " is a resident");
+        e->cellId = "h_cot";
+        e->position = bed;
+        e->path.clear();
+    }
+    for (int i = 0; i < 20; ++i)
+        world.tick(.5);
+    expect(!world.door("cot_in")->open, "The cottage door is shut for the night");
+    world.setTimeOfDay(9);                                  // To work, all five at once.
+    int out = 0;
+    int second = 0;
+    for (; second < 600 && out < int(beds.size()); ++second)
+    {
+        for (int k = 0; k < 10; ++k)
+            world.tick(.1);
+        out = 0;
+        for (const auto& [who, bed] : beds)
+            out += world.entity(who)->cellId != "h_cot";
+    }
+    std::string where;
+    for (const auto& [who, bed] : beds)
+        if (const auto* e = world.entity(who))
+            where += " " + who + "@" + e->cellId + ":" + std::to_string(e->position.x) + "," + std::to_string(e->position.y) +
+                     " path " + std::to_string(e->path.size());
+    expect(out == int(beds.size()), "The whole household gets out of its door:" + where);
+    expect(second < 120, "in good time: " + std::to_string(second) + " s");
+}
+
+// The foot of the stairs (Ridgemere 3, 2026-11-20): a shopkeeper comes down the stairs onto the tile beside their foot
+// and sets off for the street door. The straight way there cut the corner of the stairs' tile, and a step onto stairs
+// is a step up them: up he went, came down again, set off, and up again, all day. A route crosses no doorway or stairs
+// it isn't making for.
+void theFootOfTheStairs()
+{
+    auto f = grid("economy 1000 100 50 10 12\n"
+                  "resident \"gorm\" \"Gorm\" \"civilian\" \"surveying\" \"A walker.\" \"Hello.\" 30 \"timber\" \"male\" \"average\" "
+                  "\"saddle\" 3 1 5 1 1 6 18 \"-\" 10 0 1 \"h_shop_up\" 2.5 2.5 \"c_0_0\" 9.5 8.5 \"h_shop_up\" 3.5 2.5\n");
+    f.manifest += "door \"shop_out\" \"The shop door\" \"c_1_0\" 8.5 8.5 \"h_shop\" 4.5 9.5 \"shop_in\" 1 0 0 0 \"-\"\n"
+                  "door \"shop_in\" \"The shop door\" \"h_shop\" 4.5 10.5 \"c_1_0\" 8.5 9.5 \"shop_out\" 1 0 0 0 \"-\"\n"
+                  "door \"stairs_shop_up\" \"The shop stairs\" \"h_shop\" 6.5 8.5 \"h_shop_up\" 6.5 7.5 \"stairs_shop_down\" 1 0 0 1 \"-\"\n"
+                  "door \"stairs_shop_down\" \"The shop stairs\" \"h_shop_up\" 6.5 8.5 \"h_shop\" 6.5 7.5 \"stairs_shop_up\" 1 0 0 1 \"-\"\n";
+    auto& street = f.cells["c_1_0"];
+    street[street.find("grid:\n") + 6 + std::size_t(8 * (Side + 1) + 8)] = '+';
+    const std::string rooms = "########\n#......#\n#......#\n#......#\n#......#\n#......#\n#......#\n#......#\n#.....^#\n#......#\n";
+    f.cells["h_shop"] = "id: h_shop\nname: The shop\ndescription: A shop.\nworld: 16 200 0\noutdoors: false\nweather: clear\n"
+                        "size: 8 11\ngrid:\n" + rooms + "####+###\n";
+    f.cells["h_shop_up"] = "id: h_shop_up\nname: Over the shop\ndescription: Rooms.\nworld: 16 200 1\noutdoors: false\n"
+                           "weather: clear\nsize: 8 11\ngrid:\n" + rooms + "########\n";
+    f.seams["h_shop"] = f.seams["h_shop_up"] = "";
+    const std::string was = "exits \"c_1_0\" 3 \"c_0_0\" \"c_1_1\" \"c_2_0\"\n";
+    const auto at = f.manifest.find(was);
+    expect(at != std::string::npos, "The fixture lists c_1_0's exits");
+    f.manifest.replace(at, was.size(), "exits \"c_1_0\" 4 \"c_0_0\" \"c_1_1\" \"c_2_0\" \"h_shop\"\nexits \"h_shop\" 2 \"c_1_0\" \"h_shop_up\"\n"
+                                       "exits \"h_shop_up\" 1 \"h_shop\"\narea \"h_shop\"\narea \"h_shop_up\"\n");
+    auto world = load(f);
+    world.setTimeOfDay(9);                                  // At work in c_0_0, from the foot of the stairs.
+    world.ensureLoaded("h_shop");
+    world.ensureLoaded("h_shop_up");
+    auto* gorm = world.entity("gorm");
+    expect(gorm && gorm->npc, "Gorm is a resident");
+    gorm->cellId = "h_shop";
+    gorm->position = {6.5, 7.5};
+    gorm->path.clear();
+    int climbs = 0, second = 0;
+    std::string in = gorm->cellId;
+    for (; second < 300 && (gorm->cellId == "h_shop" || gorm->cellId == "h_shop_up"); ++second)
+        for (int k = 0; k < 10; ++k)
+        {
+            world.tick(.1);
+            if (gorm->cellId != in)
+                climbs += gorm->cellId == "h_shop_up", in = gorm->cellId;
+        }
+    expect(gorm->cellId != "h_shop" && gorm->cellId != "h_shop_up" && climbs == 0,
+           "Gorm goes out by the shop door, never up the stairs beside him: " + gorm->cellId + " " +
+               std::to_string(gorm->position.x) + "," + std::to_string(gorm->position.y) + " after " + std::to_string(climbs) +
+               " climbs, " + std::to_string(second) + " s");
+    // And no route across the room's floor cuts over the stairs (not a footprint's edge over them): from beside them to
+    // the other side of their foot.
+    gorm->cellId = "h_shop";
+    gorm->position = {6.5, 6.5};
+    gorm->path.clear();
+    Vec2 from = gorm->position;
+    expect(world.moveTo("gorm", 5.5, 9.5).ok, "Gorm has a way past the stairs' foot");
+    for (const auto p : std::vector<Vec2>(gorm->path))
+    {
+        for (int k = 1; k <= 20; ++k)
+        {
+            const Vec2 q{from.x + (p.x - from.x) * k / 20, from.y + (p.y - from.y) * k / 20};
+            for (const Vec2 o : {Vec2{0, 0}, Vec2{step::Radius, 0}, Vec2{-step::Radius, 0}, Vec2{0, step::Radius}, Vec2{0, -step::Radius}})
+                expect(!(int(std::floor(q.x + o.x)) == 6 && int(std::floor(q.y + o.y)) == 8),
+                       "A walk past the stairs' foot keeps off their tile: " + std::to_string(q.x) + "," + std::to_string(q.y));
+        }
+        from = p;
+    }
+}
+
 int main()
 {
     try
@@ -1613,6 +1743,8 @@ int main()
         noOneIsStrandedInAPocket();
         aPairedPocketIsClamberedOutOf();
         aCrossingIsNotHeldShut();
+        aHouseholdGetsOutOfItsDoor();
+        theFootOfTheStairs();
         aLaneATileWide();
         aStripIsNoWayOn();
         aStripWithAHouseIsNoWayOn();

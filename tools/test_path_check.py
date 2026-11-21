@@ -63,6 +63,38 @@ class PathCheckTest(unittest.TestCase):
         self.assertEqual(sum(r.count('O') for r in p['cells'][0]['terrain']), 1)   # (Carried aside, not thrown away.)
         self.assertEqual(PC.failures(PC.check(grid(p))), [])
 
+    def test_barrel_shutting_in_a_back_door_is_moved_aside(self):
+        # A house between two streets joined by a lane: its front door on the north street, its back door onto a strip
+        # of grass behind it, which a barrel closes off from the south street. Reached through the house, the strip
+        # isn't cut off; but whoever comes out by the back door finds no way on (Ridgemere 3, 2026-11-20).
+        rows = ['__________',
+                '_###+#####',
+                '_ZZZZZZZZ#',
+                '_###+#####',
+                '_###,,####',
+                '_###O#####',
+                '__________']
+        p = project(rows, doors=[(4, 1), (4, 3)])
+        g = grid(p)
+        problems = PC.failures(PC.check(g))
+        self.assertEqual(self.kinds(problems), {'shut in': 1}, problems)
+        self.assertEqual(problems[0]['blockers'], [(4, 5)])
+        self.assertEqual(PC.failures(PC.fix(g)), [])
+        g.commit()
+        self.assertNotEqual(p['cells'][0]['terrain'][5][4], 'O')
+        self.assertEqual(PC.failures(PC.check(grid(p))), [])
+
+    def test_back_door_onto_its_own_walled_yard_is_fine(self):
+        # A back door onto a yard walled round, with nothing in the way to clear: the house's own, not shut in.
+        rows = ['__________',
+                '_###+#####',
+                '_ZZZZZZZZ#',
+                '_###+#####',
+                '_###,,####',
+                '_#########',
+                '__________']
+        self.assertEqual(PC.failures(PC.check(grid(project(rows, doors=[(4, 1), (4, 3)])))), [])
+
     def test_barrel_in_a_wide_street_is_fine(self):
         self.assertEqual(PC.failures(PC.check(grid(project(put(ALLEY, 5, 0, 'O'))))), [])
 

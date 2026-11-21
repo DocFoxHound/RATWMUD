@@ -2757,6 +2757,7 @@ class World
     // a few dozen of these. Built on first use; seams come and go with loading but these don't (rebuildFixtureIndex
     // drops them).
     mutable std::map<std::string, std::vector<const Door*>> portalsIn_;
+    const std::vector<const Door*>& portalsOf(const std::string& cellId) const;   // (portalsIn_, built on first use.)
     mutable std::map<std::string, std::map<std::pair<long, long>, std::vector<const Door*>>> portalsNear_;   // (By square.)
     // Each cell's portals (seams included) by 2-tile square, for "is anyone at a doorway" (separate()); rebuilt when
     // the cell's door list changes.
