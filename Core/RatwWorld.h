@@ -2809,8 +2809,22 @@ class World
     std::map<std::string, ObservedTile> lastObserved_;
     // Explicit portal actions wait for posture changes, but are never saved.
     std::map<std::string, std::string> pendingPortals_;
-    // A click on visible ground across an outdoor seam continues to that ground after the crossing.
+    // A click on visible ground across an outdoor seam continues to that ground after the crossing (in the next
+    // cell's coordinates: past its edge too, when the click was round a corner, for a second crossing).
     std::map<std::string, std::pair<std::string, Vec2>> crossClickGoals_;
+    // Set while moveTo carries a click on over a seam it has just crossed: a destination by the edge it arrived over is
+    // then that spot, not a crossing back (moveTo's "click on a boundary portal").
+    bool onwardClick_ = false;
+    // A click on the ground round a cell (doc 70): the seam on this side to walk to, the cell it leads into and where
+    // to go on to there; or, with no seam, why that ground can't be reached (moveTo).
+    struct SeamPlan
+    {
+        const Door* seam = nullptr;
+        std::string next;
+        Vec2 onward{-1, -1};
+        std::string problem;
+    };
+    SeamPlan planSeamClick(const Entity& a, const Cell& c, Vec2 local) const;
     std::map<std::string, TravelState> travels_;
     // Transient route execution bookkeeping; never restored from a save.
     std::map<std::string, std::string> travelLegCells_;

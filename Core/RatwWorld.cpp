@@ -2440,8 +2440,12 @@ Result World::moveTo(const std::string& id, double x, double y)
     Vec2 requested{x, y};
     Vec2 goal = requested;
     const Door* exit = nullptr;
-    // A click on, or just beyond, a boundary portal expresses a crossing.
-    for (const Door* door : doorsIn(a->cellId))
+    // A click on the ground round an outdoor cell (doc 70): the neighbours' own ground, drawn on past the seam (doc 80).
+    const bool fringeClick = c->outdoors && (x < 0 || y < 0 || x >= c->width || y >= c->height);
+    // A click on, or just beyond, a boundary portal expresses a crossing. (Not a click carried on over a seam just
+    // crossed: a spot by the edge it came over is where it is going, not back.)
+    static const std::vector<Door*> noDoors;
+    for (const Door* door : onwardClick_ ? noDoors : doorsIn(a->cellId))
     {
         const auto& d = *door;
         if (!d.boundary)
@@ -2465,42 +2469,19 @@ Result World::moveTo(const std::string& id, double x, double y)
             break;
         }
     }
-    // The fringe is real neighbouring ground. A click there chooses a reachable seam on the correct edge, even if
-    // the clicked tile is several rows from its narrow opening. Keep the exact destination for after the crossing.
+    // The fringe is real neighbouring ground: a click there walks to a seam the wolf can reach that leads on to the
+    // clicked tile (planSeamClick), and on to it after the crossing; or says plainly why it can't be reached. (Just
+    // beyond a door in the edge, a gate, it is that door, as above.)
     std::pair<std::string, Vec2> across;
-    if (c->outdoors && (x < 0 || y < 0 || x >= c->width || y >= c->height) &&
-        x >= -Fringe::Band && y >= -Fringe::Band && x < c->width + Fringe::Band && y < c->height + Fringe::Band)
+    if (fringeClick && !(exit && !exit->passage))
     {
-        const Vec2 worldGoal{c->worldX + x, c->worldY + y};
-        const Door* nearest = nullptr;
-        double best = 1e18;
-        for (const Door* door : doorsIn(a->cellId))
-        {
-            const auto& d = *door;
-            const auto* next = d.boundary && d.passage && d.open ? cell(d.targetCell) : nullptr;
-            if (!next || !next->outdoors || next->worldZ != c->worldZ || worldGoal.x < next->worldX ||
-                worldGoal.y < next->worldY || worldGoal.x >= next->worldX + next->width ||
-                worldGoal.y >= next->worldY + next->height)
-                continue;
-            const bool side = d.edge == 'N' ? y < 0 : d.edge == 'S' ? y >= c->height :
-                              d.edge == 'W' ? x < 0 : d.edge == 'E' ? x >= c->width : false;
-            if (!side)
-                continue;
-            const double lateral = (d.edge == 'N' || d.edge == 'S') ? std::abs(x - d.position.x) : std::abs(y - d.position.y);
-            if (lateral < best)
-                best = lateral, nearest = &d;
-        }
-        if (nearest)
-        {
-            exit = nearest;
-            goal = nearest->position;
-            const auto* next = cell(nearest->targetCell);
-            const Vec2 local{worldGoal.x - next->worldX, worldGoal.y - next->worldY};
-            // A pointer just over the border names the crossing itself; routing to that edge tile again would
-            // immediately select the reciprocal seam and send the wolf back.
-            if (local.x >= 1 && local.y >= 1 && local.x < next->width - 1 && local.y < next->height - 1)
-                across = {nearest->targetCell, local};
-        }
+        const auto plan = planSeamClick(*a, *c, requested);
+        if (!plan.seam)
+            return {false, plan.problem, {}};
+        exit = plan.seam;
+        goal = plan.seam->position;
+        if (!plan.next.empty())
+            across = {plan.next, plan.onward};
     }
     // A click on a door itself, on its own tile (the user, 2026-11-14: "I can't click into a doorway"), walks into it as
     // the keys do (throughDoor): to the open ground beside it, then on into it, so an open doorway or stairs is gone
@@ -2564,7 +2545,12 @@ Result World::moveTo(const std::string& id, double x, double y)
             }
             path.push_back(p);
         }
-        return {false, "No reachable route to that point.", {}};
+        // Said plainly (the user, 2026-11-20, of "No reachable route to that point"): ground nothing stands on, or
+        // ground walled off from here.
+        const bool blocked = !fringeClick && goal.x >= 0 && goal.y >= 0 && goal.x < c->width && goal.y < c->height &&
+                             regionMap(*c) && regionAt(*c, goal) < 0;
+        return {false, blocked ? "That ground is blocked: nothing can stand there."
+                               : "There is no way through to there from here: walls, water or rock stand between.", {}};
     }
     if (exit && exit->open)
     {
@@ -2584,6 +2570,127 @@ Result World::moveTo(const std::string& id, double x, double y)
         crossClickGoals_[id] = across;
     prepareMovement(*a);
     return {true, "Following a route.", {}};
+}
+
+World::SeamPlan World::planSeamClick(const Entity& a, const Cell& c, Vec2 local) const
+{
+    // A click on the ground round the cell (doc 70; the whole screen is drawn since doc 80, so the next cell's ground is
+    // there to click). Before (Ridgemere 3, the user 2026-11-20: "I couldn't path beyond the edge of a cell despite
+    // seeing it"), the seam nearest the click sideways was taken whether the wolf could reach it or not (one in a walled
+    // yard: "No reachable route"), and a click into the cell across a corner, where four meet, found no seam at all.
+    // Now: every seam on the side(s) facing the click that leads on toward it -- into the cell clicked, or into the
+    // cell beside that one, for a second crossing -- that stands in the wolf's own region (World::regionAt: joined
+    // ground) and comes out where the clicked tile can be reached (when that cell's ground is in memory), nearest by
+    // the way there and on; the route search then runs on the best few only.
+    constexpr int Tries = 3;
+    SeamPlan plan;
+    const int band = Fringe::Band;
+    if (local.x < -band || local.y < -band || local.x >= c.width + band || local.y >= c.height + band)
+    {
+        plan.problem = "That ground is too far past the edge to pick a way to. Walk nearer first.";
+        return plan;
+    }
+    const Vec2 world{c.worldX + local.x, c.worldY + local.y};
+    const auto holds = [&](const Cell& n) {
+        return world.x >= n.worldX && world.y >= n.worldY && world.x < n.worldX + n.width && world.y < n.worldY + n.height;
+    };
+    const Cell* target = nullptr;
+    for (const auto& b : besideCells(c.id))
+        if (const auto* n = cell(b.id); n && holds(*n))
+        {
+            target = n;
+            break;
+        }
+    if (!target)
+    {
+        plan.problem = "There is no ground there to walk on: that is past the edge of the land.";
+        return plan;
+    }
+    const Vec2 there{world.x - target->worldX, world.y - target->worldY};
+    // The clicked tile's joined ground in its own cell; -2 when that cell isn't in memory (nothing to check it by).
+    const int goalRegion = regionMap(*target) ? regionAt(*target, there) : -2;
+    if (goalRegion == -1)
+    {
+        plan.problem = "That ground is blocked: nothing can stand there.";
+        return plan;
+    }
+    const int from = regionAt(c, a.position);
+    struct Option
+    {
+        const Door* seam;
+        const Cell* next;
+        double estimate;
+    };
+    std::vector<Option> options;
+    std::map<const Cell*, std::set<int>> onToGoal;  // A cell's regions with a seam on into the clicked tile's (a corner).
+    bool anySeam = false;
+    for (const Door* door : doorsIn(c.id))
+    {
+        const auto& d = *door;
+        if (!d.boundary || !d.passage || !d.open)
+            continue;
+        const bool facing = d.edge == 'N' ? local.y < 0 : d.edge == 'S' ? local.y >= c.height :
+                            d.edge == 'W' ? local.x < 0 : d.edge == 'E' ? local.x >= c.width : false;
+        const auto* next = facing ? cell(d.targetCell) : nullptr;
+        if (!next || !next->outdoors || std::abs(next->worldZ - c.worldZ) > .01)
+            continue;
+        const bool direct = next == target;
+        // Round a corner: the clicked tile lies in the ground round the next cell, past its own edge.
+        if (!direct && (world.x < next->worldX - band || world.y < next->worldY - band ||
+                        world.x >= next->worldX + next->width + band || world.y >= next->worldY + next->height + band))
+            continue;
+        anySeam = true;
+        if (from >= 0 && regionAt(c, d.position) != from)
+            continue;                               // Not to be reached from here: a walled yard, the far bank.
+        if (goalRegion >= 0)
+        {
+            if (direct)
+            {
+                if (regionAt(*target, d.arrival) != goalRegion)
+                    continue;                       // It comes out where the clicked tile can't be reached.
+            }
+            else if (regionMap(*next))
+            {
+                auto [ways, fresh] = onToGoal.try_emplace(next);
+                if (fresh)
+                    for (const Door* on : doorsIn(next->id))
+                        if (on->boundary && on->passage && on->open && on->targetCell == target->id &&
+                            regionAt(*target, on->arrival) == goalRegion)
+                            ways->second.insert(regionAt(*next, on->position));
+                if (!ways->second.count(regionAt(*next, d.arrival)))
+                    continue;
+            }
+        }
+        const Vec2 seamAt{c.worldX + d.position.x, c.worldY + d.position.y};
+        options.push_back({&d, next, distance(a.position, d.position) + distance(seamAt, world)});
+    }
+    if (options.empty())
+    {
+        plan.problem = anySeam ? "There is no way through to there from here: walls, water or rock stand between."
+                               : "There is no way across to that ground from this side.";
+        return plan;
+    }
+    const auto best = options.begin() + std::min<std::ptrdiff_t>(Tries, std::ptrdiff_t(options.size()));
+    std::partial_sort(options.begin(), best, options.end(),
+                      [](const Option& l, const Option& r) { return l.estimate < r.estimate; });
+    const Option* chosen = &options.front();
+    for (auto it = options.begin(); it != best; ++it)
+        if (distance(a.position, it->seam->position) < .05 || !findPath(a, it->seam->position).empty())
+        {
+            chosen = &*it;
+            break;
+        }
+    plan.seam = chosen->seam;
+    const Vec2 onward{world.x - chosen->next->worldX, world.y - chosen->next->worldY};
+    // A click just over the border names the crossing itself: the wolf stops where it comes out.
+    const double inward = chosen->seam->edge == 'N' ? chosen->next->height - onward.y : chosen->seam->edge == 'S' ? onward.y :
+                          chosen->seam->edge == 'W' ? chosen->next->width - onward.x : onward.x;
+    if (chosen->next != target || inward >= 1)
+    {
+        plan.next = chosen->next->id;
+        plan.onward = onward;
+    }
+    return plan;
 }
 
 void World::transition(Entity& a, const Door& d)
@@ -2609,8 +2716,8 @@ void World::transition(Entity& a, const Door& d)
     if (!destination)
         return;
     const auto click = crossClickGoals_.find(a.id);
-    const auto onward = click != crossClickGoals_.end() && click->second.first == d.targetCell
-                            ? click->second.second : Vec2{-1, -1};
+    const bool goOn = click != crossClickGoals_.end() && click->second.first == d.targetCell;
+    const Vec2 onward = goOn ? click->second.second : Vec2{};
     crossClickGoals_.erase(a.id);
     Vec2 arrival = d.arrival;
     if (d.passage && d.boundary && d.edge != '-')
@@ -2635,9 +2742,12 @@ void World::transition(Entity& a, const Door& d)
     a.transitioned = true;
     if (!a.npc)
         observe(a.id);
-    if (onward.x >= 0 && onward.y >= 0)
+    if (goOn)
     {
+        // On to the clicked tile: in this cell, or past its edge again (a click round a corner: planSeamClick).
+        const bool was = std::exchange(onwardClick_, true);
         const auto result = moveTo(a.id, onward.x, onward.y);
+        onwardClick_ = was;
         if (!result.ok)
             notice(a.id, result.message);
     }

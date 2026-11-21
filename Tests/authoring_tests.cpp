@@ -325,6 +325,121 @@ void cellValidation()
     expect(world.cell("east")->wind.variable && near(world.cell("east")->wind.strength, .5),
            "Outdoor defaults retain live wind");
 }
+// A click on ground in the next cell (doc 70; the whole screen is drawn, doc 80): Ridgemere 3, the user 2026-11-20, "I
+// couldn't path beyond the edge of a cell despite seeing it". Four 12-square cells meet at a corner; the player stands in
+// "se". The seam nearest a click sideways may stand in a walled yard, the click may be round the corner (in "nw"), the
+// clicked tile may be a wall or walled in, or by an edge with a seam of its own.
+void seamClicks()
+{
+    Fixture fixture;
+    const auto grid = [](const std::string& id, int worldX, int worldY, const std::vector<std::string>& rows) {
+        std::ostringstream cell;
+        cell << "id: " << id << "\nname: " << id << "\ndescription: Authored test terrain.\nworld: " << worldX << ' '
+             << worldY << " 0\noutdoors: true\nweather: clear\ngrid:\n";
+        for (const auto& row : rows)
+            cell << row << '\n';
+        return cell.str();
+    };
+    const std::vector<std::string> open(12, std::string(12, '.'));
+    // se: a walled yard in its north-west corner (x 0-4, y 0-1), with a seam north out of it at x 2.
+    auto se = open;
+    se[2] = "######......";
+    se[0][5] = se[1][5] = '#';
+    // ne: a walled-in spot at (9, 5).
+    auto ne = open;
+    ne[4] = "........###.";
+    ne[5] = "........#.#.";
+    ne[6] = "........###.";
+    // nw: a wall at (9, 9).
+    auto nw = open;
+    nw[9][9] = '#';
+    write(fixture.dir / "cells/se.cell", grid("se", 12, 12, se));
+    write(fixture.dir / "cells/ne.cell", grid("ne", 12, 0, ne));
+    write(fixture.dir / "cells/nw.cell", grid("nw", 0, 0, nw));
+    write(fixture.dir / "cells/sw.cell", grid("sw", 0, 12, open));
+    std::string manifest = "RATW_WORLD 1\n"
+                           "cell \"se\" \"cells/se.cell\"\n"
+                           "cell \"ne\" \"cells/ne.cell\"\n"
+                           "cell \"nw\" \"cells/nw.cell\"\n"
+                           "cell \"sw\" \"cells/sw.cell\"\n"
+                           "spawn \"se\" 3.5 6.5\n";
+    // A seam pair: from `a`'s (x, y) over its `edge` into `b`'s (bx, by).
+    const auto seam = [&](const std::string& id, const std::string& a, double x, double y, char edge, const std::string& b,
+                          double bx, double by) {
+        const char back = edge == 'N' ? 'S' : edge == 'S' ? 'N' : edge == 'W' ? 'E' : 'W';
+        std::ostringstream line;
+        line << "door \"" << id << "_a\" \"Seam\" \"" << a << "\" " << x << ' ' << y << " \"" << b << "\" " << bx << ' ' << by
+             << " \"" << id << "_b\" 1 0 1 1 \"" << edge << "\"\n";
+        line << "door \"" << id << "_b\" \"Seam\" \"" << b << "\" " << bx << ' ' << by << " \"" << a << "\" " << x << ' ' << y
+             << " \"" << id << "_a\" 1 0 1 1 \"" << back << "\"\n";
+        manifest += line.str();
+    };
+    seam("yard", "se", 2.5, .5, 'N', "ne", 2.5, 11.5);       // Nearest to a click above the yard, but walled off.
+    seam("street", "se", 9.5, .5, 'N', "ne", 9.5, 11.5);
+    seam("lane", "se", .5, 6.5, 'W', "sw", 11.5, 6.5);
+    seam("upper", "ne", .5, 5.5, 'W', "nw", 11.5, 5.5);
+    seam("left", "sw", 5.5, .5, 'N', "nw", 5.5, 11.5);
+    fixture.manifest(manifest);
+    World world;
+    const auto loaded = world.loadWorldFile(fixture.path());
+    expect(loaded.ok, "Four cells round a corner import: " + loaded.message);
+    auto& p = world.addPlayer("tester", "Tester");
+    const auto from = [&](double x, double y) {
+        p.cellId = "se";
+        p.position = {x, y};
+        p.path.clear();
+    };
+    const auto where = [&] {
+        return p.cellId + " at " + std::to_string(p.position.x) + ", " + std::to_string(p.position.y);
+    };
+
+    from(3.5, 6.5);
+    auto result = world.moveTo("tester", 2.5, -5.5);
+    expect(result.ok, "A click above the walled yard is taken (" + result.message + ")");
+    tick(world, 12);
+    expect(p.cellId == "ne" && std::abs(p.position.x - 2.5) < .3 && std::abs(p.position.y - 6.5) < .3,
+           "It goes by the street's seam, not the yard's, and on to the clicked tile: " + where());
+
+    from(3.5, 6.5);
+    result = world.moveTo("tester", -4.5, -4.5);
+    expect(result.ok, "A click into the cell across the corner is taken (" + result.message + ")");
+    tick(world, 20);
+    expect(p.cellId == "nw" && std::abs(p.position.x - 7.5) < .3 && std::abs(p.position.y - 7.5) < .3,
+           "Round the corner: two seams crossed, and on to the clicked tile: " + where());
+
+    from(3.5, 6.5);
+    result = world.moveTo("tester", -2.5, -2.5);
+    expect(!result.ok && result.message.find("blocked") != std::string::npos && p.path.empty(),
+           "A wall past the corner is said to be blocked, and nobody sets off: " + result.message);
+    result = world.moveTo("tester", 9.5, -6.5);
+    expect(!result.ok && result.message.find("no way through") != std::string::npos && p.path.empty(),
+           "A walled-in spot over the seam is said to be out of reach, and nobody sets off: " + result.message);
+
+    from(8.5, 3.5);
+    result = world.moveTo("tester", .5, -6.5);
+    expect(result.ok, "A click by the next cell's own edge seam is taken (" + result.message + ")");
+    tick(world, 14);
+    expect(p.cellId == "ne" && std::abs(p.position.x - .5) < .3 && std::abs(p.position.y - 5.5) < .3,
+           "It stops on the clicked tile by that seam, not over it into the next cell: " + where());
+
+    from(9.5, 2.5);
+    world.moveTo("tester", 9.5, -.5);
+    tick(world, 4);
+    expect(p.cellId == "ne" && p.path.empty() && p.position.y > 10.5,
+           "A click just over the border crosses and stops there: " + where());
+
+    from(3.5, 6.5);
+    result = world.moveTo("tester", 3.5, -60);
+    expect(!result.ok && !result.message.empty() && p.path.empty(), "Ground past the band has a plain answer: " + result.message);
+    result = world.moveTo("tester", 30, 6.5);
+    expect(!result.ok && result.message.find("edge of the land") != std::string::npos,
+           "Nothing beside the cell there: said so: " + result.message);
+    result = world.moveTo("tester", 4.5, 1.5);
+    expect(!result.ok && result.message.find("no way through") != std::string::npos,
+           "In the cell, too, walled-off ground is said plainly: " + result.message);
+    result = world.moveTo("tester", .5, 2.5);
+    expect(!result.ok && result.message.find("blocked") != std::string::npos, "And a wall is blocked: " + result.message);
+}
 void cornersAndPassages()
 {
     Fixture fixture;
@@ -582,6 +697,7 @@ int main(int argc, char** argv)
         invalidManifests();
         cellValidation();
         cornersAndPassages();
+        seamClicks();
         boundsAndCollisionValidation();
         districtHouses();
         std::cout << checks << " authoring checks passed\n";

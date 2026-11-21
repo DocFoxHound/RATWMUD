@@ -84,6 +84,33 @@ test('the map runs on over a seam: the ground round the cell is read, drawn and 
     assert.equal(s.glyphAt(7, 1), ' ', 'and nothing is drawn past the edge');
 });
 
+test('a click across a seam: any known ground past the edge, round a corner too, is asked for; unknown ground is said', () => {
+    // Ridgemere 3 (the user, 2026-11-20: "I couldn't path beyond the edge of a cell despite seeing it"): the server
+    // picks the seam (World::planSeamClick); the page sends the exact tile, and explains what it can't ask for.
+    const {state: s, commands} = testGame();
+    const rows = bandRows();
+    s.applySnapshot({cell: {id: 'field', width: Width, height: Height, outdoors: true, rows: cellRows, fringe: Band, fringeRows: rows,
+        fringeHeights: heightRows(rows)}, fringeVisibility: rows.map(r => r.replace(/[^ ]/g, '2').replace(/ /g, '0')),
+    self: {id: 'self', x: 5.5, y: 3.5}, entities: [], doors: [], time: 0, cellGeneration: 1} as Json);
+    s.mapOrigin = [30, 30];
+    s.tileSize = 10;
+    s.mapRect = {left: 0, top: 0, right: 200, bottom: 200} as typeof s.mapRect;
+    s.hits = [];
+    const click = (x: number, y: number) => {
+        const before = commands.length;
+        s.toast = '';
+        s.mouseDown([30 + x * 10, 30 + y * 10], true, false, false);
+        return commands.slice(before).find(c => c.type === 'path') ?? null;
+    };
+    assert.deepEqual(click(7.5, 5.5), {type: 'path', x: 7.5, y: 5.5}, 'the corner where four cells meet: the exact tile, both ways past the edge');
+    assert.deepEqual(click(3.5, -1.5), {type: 'path', x: 3.5, y: -1.5}, 'straight across the north seam');
+    assert.deepEqual(click(-0.5, 2.5), {type: 'path', x: -0.5, y: 2.5}, 'and the west one');
+    assert.equal(click(-1.5, -1.5), null, 'ground never seen is not asked for');
+    assert.match(s.toast, /haven't seen that ground/, 'and the page says why');
+    assert.equal(click(-2.5, 1.5), null, 'nor ground past the band (the screen zoomed out runs on beyond it)');
+    assert.match(s.toast, /too far past the edge/, 'said too, not silently ignored');
+});
+
 test("the page's sight runs on over the band, and its walking stays in the cell", async () => {
     const walker = (await Walker.load(wasm))!;
     const rows = bandRows();

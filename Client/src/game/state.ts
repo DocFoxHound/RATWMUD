@@ -2479,9 +2479,13 @@ export class GameState {
             const wx = (point[0] - this.mapOrigin[0]) / this.tileSize, wy = (point[1] - this.mapOrigin[1]) / this.tileSize;
             // Past the edge, on the ground round the cell (doc 70): the server heads for the seam there.
             const extent = this.battle ? {x0: 0, y0: 0, x1: this.cellWidth - 1, y1: this.cellHeight - 1} : this.groundExtent();
-            if (wx < extent.x0 || wy < extent.y0 || wx >= extent.x1 + 1 || wy >= extent.y1 + 1) return 'map';
-            if (!this.battle && !this.inCell(Math.floor(wx), Math.floor(wy)) && this.glyphAt(Math.floor(wx), Math.floor(wy)) === ' ') {
-                this.showToast('That ground is not visible from here. Move closer to the seam.');
+            // Past what is known round the cell (zoomed out, the screen runs on beyond the band): said, not ignored.
+            const beyond = wx < extent.x0 || wy < extent.y0 || wx >= extent.x1 + 1 || wy >= extent.y1 + 1;
+            if (beyond && (this.battle || this.fringe <= 0)) return 'map';
+            if (beyond || (!this.battle && !this.inCell(Math.floor(wx), Math.floor(wy)) && this.glyphAt(Math.floor(wx), Math.floor(wy)) === ' ')) {
+                // (Where the wolf has never seen, there is nothing to pick a way over: the server is not asked.)
+                this.showToast(beyond ? 'That ground is too far past the edge to pick a way to. Walk nearer first.'
+                    : 'You haven\'t seen that ground yet, so there is no way to pick to it. Walk nearer the edge first.');
                 return 'map';
             }
             if (this.battle) {
