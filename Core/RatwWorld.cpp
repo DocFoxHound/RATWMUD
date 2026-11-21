@@ -1745,6 +1745,23 @@ bool World::searchable(const Entity& a, Vec2 goal, bool allowClosed, std::vector
                         closedTiles.resize(c->tiles.size(), 0);
                         closedTiles[std::size_t(at.second * c->width + at.first)] = 1;
                     }
+    // Doorways and stairs into other places, open: a step onto one is a step through it (throughDoor), so a route
+    // crosses none it isn't making for, not even a corner of one (as closed ones are shut, above). Never the tile the
+    // walker stands on or makes for. (Ridgemere 3, 2026-11-20: a shopkeeper come down the stairs set off for the street
+    // door past the stairs' foot, clipped its corner, was taken up again, came down, and so on, all day; and a route
+    // across a room could cut over the stairs in its floor.)
+    const int ownX = int(std::floor(a.position.x)), ownY = int(std::floor(a.position.y));
+    const int goalX = int(std::floor(goal.x)), goalY = int(std::floor(goal.y));
+    for (const Door* d : portalsOf(a.cellId))
+        if (d->open && !d->boundary && d->targetCell != a.cellId)
+        {
+            const int dx = int(std::floor(d->position.x)), dy = int(std::floor(d->position.y));
+            if (dx >= 0 && dy >= 0 && dx < c->width && dy < c->height && !(dx == ownX && dy == ownY) && !(dx == goalX && dy == goalY))
+            {
+                closedTiles.resize(c->tiles.size(), 0);
+                closedTiles[std::size_t(dy * c->width + dx)] = 1;
+            }
+        }
     // Chapters' buildings (Docs/Design/32, 5.7), shut like closed doors whatever allowClosed says; never the tiles the
     // walker stands on or makes for, so one caught by a new building can still step out of it.
     if (const auto found = obstacles.find(a.cellId); found != obstacles.end())
@@ -2837,8 +2854,16 @@ void World::heldOff(Entity& a)
     a.heldSince = time_;                            // (Whatever it tries now has a couple of seconds of its own.)
     if (off <= Within)
     {
+        // Its last turn, held off it this close: as near as it will get. The walk ends here, and whoever sent it
+        // looks again from where it stands: a resident making for the ground in front of a door (to open it on
+        // arrival) opens it from here, within reach, and goes through; one making for a spot others stand on takes
+        // a spot of its own beside it. (A household setting off at once, pressed round the one tile in front of its
+        // door, waited there for good, all day, in every town: Ridgemere 3, 2026-11-20.) Not an actor in a scene:
+        // its director walks it.
         if (a.path.size() > 1)
             a.path.erase(a.path.begin());           // (The next turn is new: its clock begins next step.)
+        else if (!a.sceneDirected)
+            a.path.clear();
         return;
     }
     const auto* c = cell(a.cellId);
@@ -3761,6 +3786,20 @@ std::size_t World::offstageCount() const
     return n;
 }
 
+const std::vector<const Door*>& World::portalsOf(const std::string& cellId) const
+{
+    auto portals = portalsIn_.find(cellId);
+    if (portals == portalsIn_.end())
+    {
+        std::vector<const Door*> list;
+        for (const Door* d : doorsIn(cellId))
+            if (d->portal && !(d->passage && d->boundary))
+                list.push_back(d);
+        portals = portalsIn_.emplace(cellId, std::move(list)).first;
+    }
+    return portals->second;
+}
+
 void World::nearCells(const Entity& e, std::set<std::string>& out, bool cellToo) const
 {
     // A door further off than this is a building the entity can neither see into nor reach within a few seconds.
@@ -3776,15 +3815,7 @@ void World::nearCells(const Entity& e, std::set<std::string>& out, bool cellToo)
                 if (d->portal && d->passage && d->boundary)
                     out.insert(d->targetCell);
     }
-    auto portals = portalsIn_.find(e.cellId);
-    if (portals == portalsIn_.end())
-    {
-        std::vector<const Door*> list;
-        for (const Door* d : doorsIn(e.cellId))
-            if (d->portal && !(d->passage && d->boundary))
-                list.push_back(d);
-        portals = portalsIn_.emplace(e.cellId, std::move(list)).first;
-    }
+    const auto& portals = portalsOf(e.cellId);
     // By square a little wider than NearDoor: only those in the squares around it can be near enough (a city cell has
     // a hundred).
     constexpr double Square = NearDoor + 1;
@@ -3792,7 +3823,7 @@ void World::nearCells(const Entity& e, std::set<std::string>& out, bool cellToo)
     if (grid == portalsNear_.end())
     {
         std::map<std::pair<long, long>, std::vector<const Door*>> squares;
-        for (const Door* d : portals->second)
+        for (const Door* d : portals)
             squares[{long(std::floor(d->position.x / Square)), long(std::floor(d->position.y / Square))}].push_back(d);
         grid = portalsNear_.emplace(e.cellId, std::move(squares)).first;
     }

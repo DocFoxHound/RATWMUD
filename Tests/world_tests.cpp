@@ -548,7 +548,9 @@ void aQueueStandsStill()
         w.tick(.1);
         widest = std::max(widest, std::abs(a.position.y - spot.y));
     }
-    expect(a.path.size() == 1 && std::abs(a.position.x - (spot.x - step::BodyRadius * 2)) < .1 && widest < .05,
+    // (Held off the last turn of its path so close, its walk ends where it waits, as near as it gets: whoever sent it
+    // there looks again from there, Ridgemere 3, 2026-11-20.)
+    expect(a.path.empty() && std::abs(a.position.x - (spot.x - step::BodyRadius * 2)) < .1 && widest < .05,
            "The resident waits behind the one standing on its spot, never stepping aside: " + std::to_string(a.position.x) + "," +
                std::to_string(a.position.y) + ", " + std::to_string(widest) + " off its line at most");
     // Further back in the queue (two more standing between, at rest: arrived, as near the spot as they could get), more
