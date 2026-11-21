@@ -21,7 +21,7 @@ import {paintUpperTiles} from '../../../Data/Visuals/blockTexture.ts';
 /** How a home's stores are drawn (doc 36). */
 const StoreGlyphs: Record<string, string> = {larder: '%', chest: '=', wardrobe: 'H', woodpile: '#'};
 import {groundIllumination, pageSurface, snapToDevice, TerrainLayer, terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
-import {FieldSheetLeast, KindOfLetter, WeatherKinds} from './ambient.ts';
+import {FieldSheetLeast, KindOfLetter, seamOffset, WeatherKinds, type WeatherFieldView} from './ambient.ts';
 import {nightColor, nightLevel} from './lights.ts';
 
 // Hostile wolves (doc 32), the same red as a fight's other side.
@@ -70,6 +70,14 @@ export class GamePainter {
     private scaledSheets = new WeakMap<CanvasImageSource, Map<number, CanvasPattern | null>>();
     private lastCell = '';
     private lastSelfScreen: Point | null = null;
+    // The sky's own cell and where the wolf stood in it last frame, to tell where a new cell lies from the old.
+    private skyCell = '';
+    private skySelf: Point | null = null;
+    private skySize: Point = [0, 0];
+    // A point fixed on the ground, in the cell's tiles, that the weather's sheets are laid from: moved with the cell's
+    // tiles at a crossing, so rain, mist and cloud shadows run on over a seam rather than jumping to the new cell.
+    private skyAnchor: Point = [0, 0];
+    private blendSurface: Surface | null = null;
 
     /** The painted wolves' faces, for the speech bubbles (view.ts gives the page's; tests may leave it out). */
     portraits: Portraits | null = null;
@@ -228,10 +236,12 @@ export class GamePainter {
         if (width < 80 || height < 80) return marks;
         const animation = s.reducedMotion ? 0 : s.clock;
         const count = Math.round((storm ? 56 : 32) * Math.max(0.25, Math.min(1, rainy)));
+        // Splashes on the ground stay on it as the wolf walks, and over a seam (skyPoint).
+        const [ax, ay] = this.skyPoint();
         for (let i = 0; i < count; ++i) {
             const life = wrapCoordinate(animation * (storm ? 1.1 : 0.7) + i * 0.618, 1);
             if (life > 0.62) continue;
-            marks.push({x: area.left + 24 + wrapCoordinate(i * 157.3, width - 48), y: area.top + 44 + wrapCoordinate(i * 91.7, height - 68),
+            marks.push({x: area.left + 24 + wrapCoordinate(i * 157.3 + ax, width - 48), y: area.top + 44 + wrapCoordinate(i * 91.7 + ay, height - 68),
                 size: 1 + life * 8, alpha: (1 - life / 0.62) * 0.32 * fade});
         }
         return marks;
@@ -286,37 +296,48 @@ export class GamePainter {
     /**
      * Each kind of weather in the field over this cell, painted on its own and then cut down by a soft mask of how
      * strong it is across the cell (the server's grid, scaled up smoothly), so rain thins toward a front's edge and
-     * gives way to fog or snow where two meet. False where it can't be done (no field, or no offscreen canvas).
+     * gives way to fog or snow where two meet. For a few seconds after a crossing the old cell's field is drawn too,
+     * where it lay, fading as the new one comes in (ambient.ts): the frame after the seam is the frame before it.
+     * False where it can't be done (no field, or no offscreen canvas).
      */
     private drawFieldWeather(b: Rect): boolean {
-        const s = this.s, f = s.weatherField, c = this.p.ctx;
+        const s = this.s, f = s.weatherField, c = this.p.ctx, a = s.ambient;
         const t = typeof c.getTransform === 'function' ? c.getTransform() : null;
-        if (!f || !t || !c.canvas || s.worldMap) return false;
+        const prior = a.fieldMix < 1 ? a.priorField : null;
+        if ((!f && !prior) || !t || !c.canvas || s.worldMap) return false;
         const W = c.canvas.width, H = c.canvas.height;
-        const letters = new Set<string>();
         // Weak fronts are already represented by the cell's tint. Compositing two full-screen canvases for
         // one- to three-ninths weather cost more than a frame in Ridgemere's broad outdoor views.
-        for (let i = 0; i < f.kinds.length; ++i)
-            if (f.kinds[i] !== 'c' && Number(f.amounts[i]) >= FieldSheetLeast) letters.add(f.kinds[i]);
-        const a = s.ambient;
+        const lettersOf = (field: WeatherFieldView | null) => {
+            const letters = new Set<string>();
+            if (field) for (let i = 0; i < field.kinds.length; ++i)
+                if (field.kinds[i] !== 'c' && Number(field.amounts[i]) >= FieldSheetLeast) letters.add(field.kinds[i]);
+            return letters;
+        };
+        const letters = lettersOf(f), priorLetters = lettersOf(prior);
         // How far a kind in this field has faded in (1 once it has): a crossing brings new weather on over seconds.
         const fade = (kind: string) => a.target(kind) > 0 ? Math.min(1, a.sheets[kind] / a.target(kind)) : 0;
         // Sunlit clear ground keeps its passing cloud shadows.
         if (a.sheets.clear > 0.01) for (const layer of this.weatherLayers('clear')) this.drawWeatherLayer(b, layer, undefined, a.sheets.clear);
-        // Keep the prior cell's sheets on screen while this cell's field comes in. This also covers two neighboring
-        // fields of the same weather kind, whose masks otherwise changed shape in one frame.
-        if (a.fieldMix < 1) {
+        if (a.fieldMix < 1 && !prior) {
+            // An old cell with no field: its weather was the same all over, and fades so.
             for (const kind of WeatherKinds)
                 if (kind !== 'clear' && a.priorSheets[kind] > 0.01)
                     for (const layer of this.weatherLayers(kind))
                         this.drawWeatherLayer(b, layer, undefined, a.priorSheets[kind] * (1 - a.fieldMix));
-        } else for (const kind of WeatherKinds)
-            if (kind !== 'clear' && a.target(kind) <= 0 && a.sheets[kind] > 0.01)
-                for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, a.sheets[kind]);
-        if (!letters.size) return true;
+        } else if (a.fieldMix >= 1) {
+            for (const kind of WeatherKinds)
+                if (kind !== 'clear' && a.target(kind) <= 0 && a.sheets[kind] > 0.01)
+                    for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, a.sheets[kind]);
+        }
+        // A new cell with no field, coming in over the old one's: its weather the same all over, as strong as it has come.
+        if (!f) for (const kind of WeatherKinds)
+            if (kind !== 'clear' && a.target(kind) > 0 && a.sheets[kind] > 0.01)
+                for (const layer of this.weatherLayers(kind)) this.drawWeatherLayer(b, layer, undefined, a.sheets[kind] * a.fieldMix);
+        if (!letters.size && !priorLetters.size) return true;
         // A forced or uniform front has no edge to mask. Draw its glyph sheet straight onto the map;
         // the full-screen offscreen copy is the main cost of rain at night.
-        if (letters.size === 1 && f.kinds.split('').every(k => k === f.kinds[0]) &&
+        if (f && !prior && letters.size === 1 && f.kinds.split('').every(k => k === f.kinds[0]) &&
             f.amounts.split('').every(a => a === f.amounts[0])) {
             const kind = KindOfLetter[f.kinds[0]] ?? 'clear';
             const strength = Number(f.amounts[0]) / 9 * fade(kind) * a.fieldMix;
@@ -327,14 +348,26 @@ export class GamePainter {
             this.weatherSurface = this.surfaces(W, H);
         const surface = this.weatherSurface;
         if (!surface) return false;
-        const oc = surface.ctx, size = f.step * s.tileSize, [ox, oy] = s.mapOrigin;
+        const oc = surface.ctx, tile = s.tileSize, [ox, oy] = s.mapOrigin;
         // The field covers the cell; past a seam its edge samples run on over the band (doc 70), so the weather falls
         // there as on the ground beside it rather than stopping in a straight line.
-        const pad = s.fringe > 0 ? Math.ceil(s.fringe / f.step) : 0;
-        for (const letter of letters) {
-            const kind = KindOfLetter[letter] ?? 'clear', shown = fade(kind);
+        type Part = {field: WeatherFieldView; at: Point; weight: number};
+        const place = (on: CanvasRenderingContext2D, {field, at}: Part, letter: string) => {
+            const pad = s.fringe > 0 ? Math.ceil(s.fringe / field.step) : 0, size = field.step * tile;
+            const mask = this.maskFor(field, letter, pad);
+            if (mask) on.drawImage(mask.canvas, ox + at[0] * tile - size / 2 - pad * size, oy + at[1] * tile - size / 2 - pad * size,
+                (field.cols + 2 * pad) * size, (field.rows + 2 * pad) * size);
+            return !!mask;
+        };
+        for (const letter of new Set([...letters, ...priorLetters])) {
+            const kind = KindOfLetter[letter] ?? 'clear';
+            const parts: Part[] = [];
+            const share = a.shares(kind);
+            if (f && letters.has(letter)) parts.push({field: f, at: [0, 0], weight: share.now});
+            if (prior && priorLetters.has(letter)) parts.push({field: prior, at: a.priorOffset, weight: share.prior});
             const layers = this.weatherLayers(kind);
-            if (!layers.length || shown <= 0.001) continue;
+            const shown = parts.filter(part => part.weight > 0.001);
+            if (!layers.length || !shown.length) continue;
             oc.setTransform(1, 0, 0, 1, 0, 0);
             oc.globalCompositeOperation = 'source-over';
             oc.clearRect(0, 0, W, H);
@@ -345,16 +378,40 @@ export class GamePainter {
             oc.clip();
             for (const layer of layers) this.drawWeatherLayer(b, layer, oc);
             oc.restore();
-            const mask = this.maskFor(f, letter, pad);
-            if (!mask) continue;
             oc.globalCompositeOperation = 'destination-in';
             oc.imageSmoothingEnabled = true;
-            oc.drawImage(mask.canvas, ox - size / 2 - pad * size, oy - size / 2 - pad * size, (f.cols + 2 * pad) * size,
-                (f.rows + 2 * pad) * size);
+            let alpha = 1;
+            if (shown.length === 1) {
+                if (!place(oc, shown[0], letter)) continue;
+                alpha = shown[0].weight;
+            } else {
+                // The old field and the new both have this kind: their masks, each as strong as its share, summed
+                // into one at a quarter of the screen's pixels (they are soft), and the kind drawn once through it.
+                const q = 4, mw = Math.ceil(W / q), mh = Math.ceil(H / q);
+                if (!this.blendSurface || this.blendSurface.canvas.width !== mw || this.blendSurface.canvas.height !== mh)
+                    this.blendSurface = this.surfaces(mw, mh);
+                const blend = this.blendSurface;
+                if (!blend) continue;
+                const bc = blend.ctx;
+                bc.setTransform(1, 0, 0, 1, 0, 0);
+                bc.globalCompositeOperation = 'source-over';
+                bc.clearRect(0, 0, mw, mh);
+                bc.setTransform(t.a / q, t.b / q, t.c / q, t.d / q, t.e / q, t.f / q);
+                bc.imageSmoothingEnabled = true;
+                for (const part of shown) {
+                    bc.globalAlpha = Math.min(1, part.weight);
+                    place(bc, part, letter);
+                    bc.globalCompositeOperation = 'lighter';
+                }
+                bc.globalAlpha = 1;
+                bc.globalCompositeOperation = 'source-over';
+                oc.setTransform(1, 0, 0, 1, 0, 0);
+                oc.drawImage(blend.canvas, 0, 0, W, H);
+            }
             oc.globalCompositeOperation = 'source-over';
             c.save();
             c.setTransform(1, 0, 0, 1, 0, 0);
-            c.globalAlpha = shown * a.fieldMix;
+            c.globalAlpha = alpha;
             c.drawImage(surface.canvas, 0, 0);
             c.restore();
         }
@@ -400,6 +457,12 @@ export class GamePainter {
         return 0.2 * Math.max(first, second) * Math.max(0.3, Math.min(1, storm));
     }
 
+    /** Where the weather's sheets are laid from on screen: a point on the ground (skyAnchor), not the cell's middle. */
+    private skyPoint(): Point {
+        const s = this.s;
+        return [s.mapOrigin[0] + this.skyAnchor[0] * s.tileSize, s.mapOrigin[1] + this.skyAnchor[1] * s.tileSize];
+    }
+
     private drawWeatherLayer(area: Rect, layer: WeatherLayer, on?: CanvasRenderingContext2D, alpha = 1) {
         if (layer.tint.a <= 0.001 || layer.scale <= 0) return;
         const c = on ?? this.p.ctx;
@@ -413,8 +476,8 @@ export class GamePainter {
         if (!pattern) return;
         const shiftX = wrapCoordinate(layer.scroll[0], SheetSize) * layer.scale, shiftY = wrapCoordinate(layer.scroll[1], SheetSize) * layer.scale;
         const cos = Math.cos(layer.angle), sin = Math.sin(layer.angle);
-        const cx = (area.left + area.right) / 2 + cos * shiftX - sin * shiftY;
-        const cy = (area.top + area.bottom) / 2 + sin * shiftX + cos * shiftY;
+        const [ax, ay] = this.skyPoint();
+        const cx = ax + cos * shiftX - sin * shiftY, cy = ay + sin * shiftX + cos * shiftY;
         pattern.setTransform(new DOMMatrix().translateSelf(cx, cy).rotateSelf(layer.angle * 180 / Math.PI).scaleSelf(layer.scale));
         c.save();
         c.globalAlpha = Math.min(1, layer.tint.a * alpha);
@@ -456,8 +519,8 @@ export class GamePainter {
         const unit = side / k / SheetSize;          // (The layer's scale, as the sheet's whole pixels make it.)
         const shiftX = wrapCoordinate(layer.scroll[0], SheetSize) * unit, shiftY = wrapCoordinate(layer.scroll[1], SheetSize) * unit;
         const cos = Math.cos(layer.angle), sin = Math.sin(layer.angle);
-        const [x, y] = snapToDevice(c, (area.left + area.right) / 2 + cos * shiftX - sin * shiftY,
-            (area.top + area.bottom) / 2 + sin * shiftX + cos * shiftY);
+        const [ax, ay] = this.skyPoint();
+        const [x, y] = snapToDevice(c, ax + cos * shiftX - sin * shiftY, ay + sin * shiftX + cos * shiftY);
         const m = new DOMMatrix().translateSelf(x, y);
         const turned = Math.abs(layer.angle) > 1e-4;
         if (turned) m.rotateSelf(layer.angle * 180 / Math.PI);
@@ -490,21 +553,27 @@ export class GamePainter {
                 const covered = b.left <= map.left && b.top <= map.top && b.right >= map.right && b.bottom >= map.bottom;
                 if (!covered && a.glowStrength > 0.001) p.halo(b, a.haloRadius, withAlpha(a.glowColor, a.glowStrength * 0.42));
                 if (!covered && a.weatherStrength > 0.001) p.halo(b, a.haloRadius * 0.7, withAlpha(a.weatherColor, a.weatherStrength));
-                if (s.outdoors) {
+                if (s.outdoors) p.clip(b, () => {
+                    // The ground's shade and the sky's washes are laid over the screen, not the cell (the user,
+                    // 2026-11-20: "screen color changes rather dramatically during a transition from one cell to
+                    // another"): spread over a cell (and the ground round it) they were a grading 350 tiles long,
+                    // the screen a slice of it, and a crossing swapped the bottom of one cell's for the top of the
+                    // next's in a frame. Over the screen only their eased strengths change, so a seam never shows.
+                    const sx = map.left, sy = map.top, sw = map.right - map.left, sh = map.bottom - map.top;
                     const ground = lerp(rgb(0x1e2c22), rgb(0x0a1225), darkness);
                     const horizon = lerp(rgb(0x343629), rgb(0x152339), darkness);
-                    p.gradient(b.left, b.top, w, h, horizon, ground, withAlpha(scale(ground, 0.78), 1), false);
+                    p.gradient(sx, sy, sw, sh, horizon, ground, withAlpha(scale(ground, 0.78), 1), false);
                     // Each wash as strong as it now is (ambient.ts): crossing from rain into snow, one gives way to the other.
                     const washes: Array<[string, () => void]> = [
-                        ['dawn', () => p.gradient(b.left, b.top, w, h, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), true)],
-                        ['dusk', () => p.gradient(b.left, b.top, w, h, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), false)],
-                        ['rain', () => p.gradient(b.left, b.top, w, h, rgb(0x617a92, 0.08), rgb(0x34495c, 0.07), rgb(0x294859, 0.11), false)],
-                        ['snow', () => p.gradient(b.left, b.top, w, h, rgb(0xb4c3ce, 0.09), rgb(0x87a0b8, 0.07), rgb(0xb7c9ce, 0.12), false)],
-                        ['fog', () => p.box(b.left, b.top, w, h, rgb(0x9fafac, 0.11))],
-                        ['overcast', () => p.box(b.left, b.top, w, h, rgb(0x7d868c, 0.1))],
-                        ['storm', () => p.gradient(b.left, b.top, w, h, rgb(0x3c4b5c, 0.18), rgb(0x223040, 0.14), rgb(0x1b2836, 0.2), false)],
-                        ['sandstorm', () => p.gradient(b.left, b.top, w, h, rgb(0xc09a62, 0.2), rgb(0xa57b45, 0.16), rgb(0x8c6a3e, 0.22), true)],
-                        ['day', () => p.box(b.left, b.top, w, h, rgb(0xffd89a, 0.05))]];
+                        ['dawn', () => p.gradient(sx, sy, sw, sh, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), true)],
+                        ['dusk', () => p.gradient(sx, sy, sw, sh, rgb(0xd69864, 0.12), rgb(0xc0774b, 0.04), rgb(0x786992, 0.02), false)],
+                        ['rain', () => p.gradient(sx, sy, sw, sh, rgb(0x617a92, 0.08), rgb(0x34495c, 0.07), rgb(0x294859, 0.11), false)],
+                        ['snow', () => p.gradient(sx, sy, sw, sh, rgb(0xb4c3ce, 0.09), rgb(0x87a0b8, 0.07), rgb(0xb7c9ce, 0.12), false)],
+                        ['fog', () => p.box(sx, sy, sw, sh, rgb(0x9fafac, 0.11))],
+                        ['overcast', () => p.box(sx, sy, sw, sh, rgb(0x7d868c, 0.1))],
+                        ['storm', () => p.gradient(sx, sy, sw, sh, rgb(0x3c4b5c, 0.18), rgb(0x223040, 0.14), rgb(0x1b2836, 0.2), false)],
+                        ['sandstorm', () => p.gradient(sx, sy, sw, sh, rgb(0xc09a62, 0.2), rgb(0xa57b45, 0.16), rgb(0x8c6a3e, 0.22), true)],
+                        ['day', () => p.box(sx, sy, sw, sh, rgb(0xffd89a, 0.05))]];
                     for (const [wash, lay] of washes) {
                         const amount = ambient.washes[wash];
                         if (amount <= 0.002) continue;
@@ -513,7 +582,8 @@ export class GamePainter {
                         lay();
                         p.ctx.restore();
                     }
-                } else if (darkness > 0.01) p.box(b.left, b.top, w, h, rgb(0x020610, darkness * 0.58));
+                });
+                else if (darkness > 0.01) p.box(b.left, b.top, w, h, rgb(0x020610, darkness * 0.58));
                 return;
             }
             // Every fade follows the true room bounds, even beyond this viewport. Atmosphere only: no terrain,
@@ -1283,8 +1353,23 @@ export class GamePainter {
 
     private drawLocal() {
         const s = this.s, p = this.p;
-        // The sky's look follows the server's over a few seconds (ambient.ts), so a seam never snaps it.
-        s.ambient.update(s.environment, s.weatherField, s.outdoors, s.clock, s.cellId);
+        // The sky's look follows the server's over a few seconds (ambient.ts), so a seam never snaps it; across an
+        // outdoor seam the old cell's weather is held where it lay (seamOffset) while the new cell's comes in.
+        const self = s.entities.get(s.selfId);
+        let offset: [number, number] | null = null;
+        if (this.skyCell && s.cellId !== this.skyCell) {
+            offset = seamOffset(s.snapshot, this.skyCell, s.cellId);
+            // Not on the travel map: where the wolf walked over a seam (at the edge of both cells), the new cell is
+            // where its step says.
+            const edge = (x: number, y: number, w: number, h: number) => Math.min(x, y, w - x, h - y) < 3;
+            if (!offset && self && this.skySelf && edge(...this.skySelf, ...this.skySize) && edge(self.x, self.y, s.cellWidth, s.cellHeight))
+                offset = [self.x - this.skySelf[0], self.y - this.skySelf[1]];
+            this.skyAnchor = offset ? [this.skyAnchor[0] + offset[0], this.skyAnchor[1] + offset[1]] : [0, 0];
+        }
+        this.skyCell = s.cellId;
+        this.skySelf = self ? [self.x, self.y] : null;
+        this.skySize = [s.cellWidth, s.cellHeight];
+        s.ambient.update(s.environment, s.weatherField, s.outdoors, s.clock, s.cellId, offset);
         const map = s.mapRect;
         const mapW = map.right - map.left, mapH = map.bottom - map.top;
         // A small room fills the map (up to 28 pixels a tile); anything larger shows at the chosen zoom.

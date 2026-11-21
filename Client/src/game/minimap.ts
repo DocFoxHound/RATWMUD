@@ -5,6 +5,7 @@
 import {arr, bool, isObject, num, obj, objects, str, type Json} from './json.ts';
 import {terrainInfo, type Surface, type SurfaceFactory} from './terrainLayer.ts';
 import type {GameState} from './state.ts';
+import type {WeatherFieldView} from './ambient.ts';
 import {HouseIconScale, IconScale, labelsAt, type RealmMap} from './realm.ts';
 import {drawMapIcon} from './mapIcons.ts';
 
@@ -226,18 +227,22 @@ export class MapRenderer {
             c.lineWidth = 1;
             c.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
         }
-        // Where the weather is, faintly (the field over the wolf's own place).
-        const f = s.weatherField;
-        if (f && here) {
-            const tints: Record<string, string> = {r: '115,155,178', s: '78,98,117', n: '220,232,238', f: '190,205,202', d: '199,154,92', o: '154,163,168'};
+        // Where the weather is, faintly (the field over the wolf's own place): for a few seconds after a crossing the
+        // old place's too, where it lay, fading as the new one's comes in (ambient.ts), so the minimap's colour does
+        // not jump at a seam any more than the map's.
+        const tints: Record<string, string> = {r: '115,155,178', s: '78,98,117', n: '220,232,238', f: '190,205,202', d: '199,154,92', o: '154,163,168'};
+        const weather = (f: WeatherFieldView, x0: number, y0: number, weight: number) => {
             for (let yy = 0; yy < f.rows; ++yy)
                 for (let xx = 0; xx < f.cols; ++xx) {
-                    const i = yy * f.cols + xx, tint = tints[f.kinds[i]], a = Number(f.amounts[i]) / 9;
-                    if (!tint || a <= 0) continue;
+                    const i = yy * f.cols + xx, tint = tints[f.kinds[i]], a = Number(f.amounts[i]) / 9 * weight;
+                    if (!tint || a <= 0.002) continue;
                     c.fillStyle = `rgba(${tint},${(a * 0.28).toFixed(3)})`;
-                    c.fillRect(toX(here.x + xx * f.step - f.step / 2), toY(here.y + yy * f.step - f.step / 2), f.step * scale, f.step * scale);
+                    c.fillRect(toX(x0 + xx * f.step - f.step / 2), toY(y0 + yy * f.step - f.step / 2), f.step * scale, f.step * scale);
                 }
-        }
+        };
+        const mix = s.ambient.fieldMix, prior = mix < 1 ? s.ambient.priorField : null;
+        if (here && s.weatherField) weather(s.weatherField, here.x, here.y, prior ? mix : 1);
+        if (here && prior) weather(prior, here.x + s.ambient.priorOffset[0], here.y + s.ambient.priorOffset[1], 1 - mix);
         // What each building is (the user, 2026-11-14), an icon over its footprint's middle once close enough to read:
         // on the World Map, and on the minimap outdoors (indoors its picture is the room's, not the street's).
         const buildingsFrom = s.realm && (labels || s.outdoors) ? s.realm : null;
