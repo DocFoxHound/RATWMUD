@@ -18,6 +18,12 @@ import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
 import type {Explained, Order, Preview, Problems, RunDetail, RunRow} from './lib/campaigns';
 import {AskDialog} from './dm/campaigns/Steer';
 import {ProblemsList} from './dm/StoryProgramPanel';
+import {Workbench, type FullCatalogue} from './dm/triggers/Workbench';
+import {RehearsalStrip, type Report, type Steps} from './dm/triggers/Rehearsal';
+import {BenchContext} from './dm/triggers/context';
+import {EventPicker, ActionPicker, Picker} from './dm/triggers/pickers';
+import {buildTree, eventParts, namesOf, pretty, wordingOf, type Program, type Ref, type Refs} from './lib/workbench';
+import {WordingContext} from './dm/campaigns/Explain';
 import {DmSuite} from './dm/DmApp';
 
 const none = () => {};
@@ -215,3 +221,55 @@ export function renderAll(): Record<string, string> {
         runs: [{run: 'world-77ab', title: 'Two ways across Reed Ford', status: 'paused', kinds: ['paused'], text: 'Story "Two ways across Reed Ford" is paused.'}]}} />);
     return out;
 }
+
+// The trigger workbench (doc 85, Phase 4) over every bundled example and every library draft: each rendered whole with each
+// of its triggers and exits selected in turn, so a program that makes it throw fails here; and none of them edited by
+// being shown (`edit` is never called while rendering: the round trip guard, with workbench.test.ts's).
+export const WB_REFS: Refs = {
+    residents: [{id: 'rm111', name: 'Ivo Tarmarsh', work: 'carter'}, {id: 'rm112', name: 'Wren the innkeeper'}],
+    wolves: [{id: 'player-ash', name: 'Ash Greymantle'}, {id: 'player-birch', name: 'Birch Oakenfall'}],
+    places: [{id: 'reed_ford', kind: 'cell', name: 'Reed Ford', width: 64, height: 64, town: 'greyfen'}],
+    items: [{id: 'rope', name: 'Rope (coil)', category: 'tool'}], factions: [{id: 'ridgemere_watch', name: 'The Ridgemere Watch'}],
+    towns: [{id: 'greyfen', name: 'greyfen'}], markets: [], areas: [], ships: [], templates: [], projects: [],
+};
+export function renderWorkbenches(catalog: FullCatalogue, programs: Record<string, Program>): {html: Record<string, string>; edits: number; views: number} {
+    const html: Record<string, string> = {};
+    let edits = 0, views = 0;
+    const edit = () => { edits++; };
+    for (const [name, program] of Object.entries(programs)) {
+        const before = pretty(program);
+        const refs: Ref[] = [];
+        for (const b of buildTree(program)) {
+            for (const f of b.folders) refs.push(...f.items.map(i => i.ref));
+            refs.push(...b.loose.map(i => i.ref), ...b.exits);
+            if (b.scope !== null) refs.push({kind: 'phase', phase: b.scope}, {kind: 'missions', phase: b.scope});
+        }
+        refs.push({kind: 'settings'}, {kind: 'tests'}, {kind: 'scenes'});
+        let first = '';
+        for (const ref of refs) {
+            const out = renderToString(<Workbench program={program} edit={edit} catalog={catalog} refs={WB_REFS} world={null} target="dev" sceneLibraryKey="s"
+                templatesKey="t" problems={null} checking={false} chosenCase={null} stepping={null} startFromLibrary={none} initial={ref} />);
+            views++;
+            if (!first) first = out;
+        }
+        if (pretty(program) !== before) throw Error(name + ': the workbench changed the program it showed');
+        html[name] = first;
+    }
+    return {html, edits, views};
+}
+export function renderWorkbenchParts(catalog: FullCatalogue, program: Program, report: Report, steps: Steps): Record<string, string> {
+    const out: Record<string, string> = {};
+    const cat = catalog.catalogue;
+    const bench = {cat, refs: WB_REFS, names: namesOf(WB_REFS, program), program, world: null, edit: none, problems: {}};
+    out['Workbench rehearsal'] = renderToString(<BenchContext.Provider value={bench}><WordingContext.Provider value={wordingOf(cat, {})}>
+        <RehearsalStrip report={report} program={program} target="dev" busy={false}
+        rehearse={none} chosen={0} choose={none} stepping={{steps, at: Math.min(2, steps.steps.length - 1)}} setStepping={none} /></WordingContext.Provider></BenchContext.Provider>);
+    out['Workbench pickers'] = renderToString(<BenchContext.Provider value={bench}><EventPicker value="gift" close={none} pick={none} />
+        <ActionPicker close={none} pick={none} />
+        <Picker slot={eventParts(cat, {on: 'gift', match: {target: 'rm111'}}, bench.names).find(p => 'slot' in p && p.slot === 'target') as never} pick={none} close={none} clearable />
+        <Picker slot={{slot: 'item', keys: ['item'], type: 'item', label: 'the item', value: 'rope', shown: 'Rope (coil)', empty: false}} pick={none} close={none} />
+        <Picker slot={{slot: 'x', keys: ['cell', 'x', 'y'], type: 'tile', label: 'a tile', value: {}, shown: '', empty: true}} pick={none} close={none} />
+        </BenchContext.Provider>);
+    return out;
+}
+

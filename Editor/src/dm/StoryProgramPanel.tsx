@@ -1,58 +1,61 @@
-import {useEffect, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {storyProgram, worldName, type Target} from './api';
 import type {Project} from '../model/model.mjs';
-import {EmbeddedScenes} from './EmbeddedScenes';
-import {editableRegion} from './StoryRegions';
-import {editableRule} from './StoryTriggerEditor';
 import {download} from '../lib/api';
+import {commit, editable, historyOf, namesOf, pretty, redo, refOfProblem, undo, wordingOf, type History, type Program, type Ref, type Refs} from '../lib/workbench';
+import {BenchContext} from './triggers/context';
+import {WordingContext} from './campaigns/Explain';
+import type {Problems} from '../lib/campaigns';
+import {Workbench, type FullCatalogue} from './triggers/Workbench';
+import {ProblemsList} from './triggers/Problems';
+import {RehearsalStrip, type Report, type Steps} from './triggers/Rehearsal';
+import type {LibraryEntry} from './triggers/Library';
 
-import {StoryPhaseEditor, type Jump, type WorldProgram as Program, type ProgramCatalogue as Catalogue} from './StoryPhaseEditor';
-import {problemList, problemPlace, type Problem, type Problems} from '../lib/campaigns';
+export {ProblemsList};
 
-/** Every problem of the draft at once, each with [Go] (Docs/Design/85, Phase 3; 4.2's Problems list): the program's errors,
- *  what the world says (a Dungeon Master's: unknown residents, tiles outside a cell, what approval would refuse), the
- *  warnings the program alone can tell, and the triggers the last rehearsal did not reach. */
-export function ProblemsList({found, untried, phases, go, asking}: {found: Problems | null; untried?: string[]; phases: string[];
-    go?: (p: Problem) => void; asking: boolean}) {
-    if (!found) return <section className="story-problems"><h4>Problems</h4><p className="hint">{asking ? 'Checking the draft…' : 'Not checked yet.'}</p></section>;
-    const list = problemList(found.problems, untried, phases);
-    const errors = list.filter(p => p.level === 'error').length, warnings = list.length - errors;
-    return <section className="story-problems" aria-label="Problems">
-        <h4>Problems · {errors ? `${errors} error${errors === 1 ? '' : 's'}` : <span className="ok">no errors</span>}{warnings ? ` · ${warnings} warning${warnings === 1 ? '' : 's'}` : ''}
-            {asking ? <small className="hint"> · checking…</small> : null}</h4>
-        {list.length > 0 && <ul>{list.map((p, i) => <li key={i} className={p.level}>
-            <span>{p.level === 'error' ? '✖' : '⚠'}</span>
-            <span>{p.text}<small>{problemPlace(p)}{p.world ? ` · from the world${p.blocks ? ': approval refuses this' : ''}` : ''}</small></span>
-            {go && p.at.kind !== 'source' ? <button onClick={() => go(p)}>Go</button> : <span />}</li>)}</ul>}
-        {!errors && !found.world && <p className="hint">The world's references are checked for a Dungeon Master once the draft has no error.</p>}
-    </section>;
+/** What the `catalog` op gives (tools/story_runner.catalogue). */
+interface Catalog extends FullCatalogue {blank: Program; examples: Record<string, Program>; eventTypes: LibraryEntry[]}
+/** A draft kept on the server (tools/story_drafts.py, migration 0073). */
+interface DraftRow {id: number; name: string; owner: string; version: number; savedBy: string; savedAt: string | null; title: string; phases: number; triggers: number}
+/** Which draft the text in this browser is: its id and version on the server, its name, and the text as last saved. */
+interface DraftMeta {id?: number; version?: number; name: string; saved?: string; savedAt?: string | null; owner?: string}
+
+function readMeta(key: string): DraftMeta {
+    try { const v = JSON.parse(localStorage.getItem(key) ?? 'null'); return v && typeof v.name === 'string' ? v : {name: 'Untitled story'}; } catch { return {name: 'Untitled story'}; }
 }
+const clock = (iso: string | null | undefined) => iso ? new Date(iso).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : '';
 
-interface TraceTile {cell?:string;x?:number;y?:number}
-function tracePlace({cell,x,y}:TraceTile) {
-    return cell && x!==undefined && y!==undefined?' · '+cell+' ('+x+', '+y+')':'';
-}
-interface Report {uncoveredTriggers?:string[]; uncovered:string[]; voices:{phase:string;npc:string}[]; digest: string; passed: boolean; tests: {triggers?:(TraceTile & {phase:string;trigger:string;event?:string;on:string;signal?:string})[]; counters?:Record<string,unknown>; missionVisits?:{phase:string;visit:number;credits:Record<string,string[]>}[]; name:string; passed:boolean; path:string[]; expected:string[]; effects:Record<string,unknown>[]}[]; effects: Record<string,unknown>[]}
-const pretty = (value: unknown) => JSON.stringify(value,null,2);
+// The Story Creator's "World stories" (Docs/Design/85, section 4, Phase 4): the drafts (kept on the server for a Dungeon
+// Master, many per world; a viewer's stay in this browser), undo and redo over the whole draft, the trigger workbench
+// or the program as JSON ("Source"), rehearsal along the bottom, then approval and publication. A story approved and
+// published here is watched and directed in the Campaigns tab (5.1).
+export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, canDirect, openCampaigns}: {sceneLibraryKey: string; world: Project | null; target: Target;
+    storageKey: string; canDirect: boolean; openCampaigns?: (run: string) => void}) {
+    const [catalog, setCatalog] = useState<Catalog>();
+    const [refs, setRefs] = useState<Refs | null>(null);
+    const [hist, setHist] = useState<History>(() => { try { return historyOf(localStorage.getItem(storageKey) ?? ''); } catch { return historyOf(''); } });
+    const source = hist.present;
+    const [meta, setMeta] = useState<DraftMeta>(() => readMeta(storageKey + '.draft'));
+    const [drafts, setDrafts] = useState<DraftRow[] | null>(null);
+    const [draftsProblem, setDraftsProblem] = useState('');
+    const [view, setView] = useState<'workbench' | 'source'>('workbench');
+    const [report, setReport] = useState<Report>();
+    const [chosenCase, setChosenCase] = useState<number | null>(null);
+    const [stepping, setStepping] = useState<{steps: Steps; at: number} | null>(null);
+    const [ticket, setTicket] = useState('');
+    const [selected, setSelected] = useState('');
+    const [published, setPublished] = useState('');
+    const [search, setSearch] = useState('');
+    const [places, setPlaces] = useState<{kind: string; id: string; name: string}[]>([]);
+    const [resident, setResident] = useState<{resident: {id: string; name: string}}>();
+    const [feedback, setFeedback] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [problems, setProblems] = useState<Problems | null>(null);
+    const [checking, setChecking] = useState(false);
+    const [opening, setOpening] = useState(false);
+    const [jump, setJump] = useState<{seq: number; ref: Ref}>();
+    const fileInput = useRef<HTMLInputElement>(null);
 
-// A story approved and published here is watched and directed in the Campaigns tab (Docs/Design/85, 5.1: the Releases
-// panel that was beside the editor moved there).
-export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, canDirect, openCampaigns}: {sceneLibraryKey:string;world:Project|null;target:Target; storageKey:string; canDirect:boolean;
-    openCampaigns?:(run:string)=>void}) {
-    const [catalog,setCatalog] = useState<Catalogue>();
-    const [source,setSource] = useState(() => { try { return localStorage.getItem(storageKey) ?? ''; } catch { return ''; } });
-    const [report,setReport] = useState<Report>();
-    const [ticket,setTicket] = useState('');
-    const [selected,setSelected] = useState('');
-    const [published,setPublished] = useState('');
-    const [search,setSearch] = useState('');
-    const [places,setPlaces] = useState<{kind:string;id:string;name:string}[]>([]);
-    const [resident,setResident] = useState<{resident:{id:string;name:string}}>();
-    const [feedback,setFeedback] = useState('');
-    const [busy,setBusy] = useState(false);
-    const [problems,setProblems] = useState<Problems|null>(null);
-    const [checking,setChecking] = useState(false);
-    const [jump,setJump] = useState<Jump>();
     // Every problem at once, asked again half a second after the last edit (doc 85, Phase 3).
     useEffect(() => {
         let active = true;
@@ -60,102 +63,201 @@ export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, can
             let parsed: unknown;
             try { parsed = JSON.parse(source); } catch (e) {
                 setChecking(false);
-                setProblems({problems:[{level:'error',text:'The program JSON does not parse: '+(e as Error).message,path:'',at:{kind:'source'}}],errors:1,warnings:0,world:false,digest:null});
+                setProblems({problems: [{level: 'error', text: 'The program JSON does not parse: ' + (e as Error).message, path: '', at: {kind: 'source'}}], errors: 1, warnings: 0, world: false, digest: null});
                 return;
             }
             setChecking(true);
-            storyProgram<Problems>(target,'problems',{program:parsed}).then(p => {if (active) setProblems(p);})
-                .catch(() => {if (active) setProblems(null);}).finally(() => {if (active) setChecking(false);});
+            storyProgram<Problems>(target, 'problems', {program: parsed}).then(p => { if (active) setProblems(p); })
+                .catch(() => { if (active) setProblems(null); }).finally(() => { if (active) setChecking(false); });
         }, 500);
-        return () => {active = false; window.clearTimeout(timer);};
+        return () => { active = false; window.clearTimeout(timer); };
     }, [source, target]);
     useEffect(() => {
         let active = true;
-        storyProgram<Catalogue>(target,'catalog').then(c => {
-            if (active) {setCatalog(c); setSource(previous => previous || pretty(c.blank));}
-        }).catch(e => {if (active) setFeedback(e.message);});
-        return () => {active = false;};
+        storyProgram<Catalog>(target, 'catalog').then(c => {
+            if (active) { setCatalog(c); setHist(h => h.present ? h : historyOf(pretty(c.blank))); }
+        }).catch(e => { if (active) setFeedback(e.message); });
+        storyProgram<Refs>(target, 'refs').then(r => { if (active) setRefs(r); }).catch(() => { if (active) setRefs(null); });
+        return () => { active = false; };
     }, [target]);
-    let program: Program | undefined;
-    try {program = JSON.parse(source);} catch { /* Raw editing includes incomplete JSON. */ }
-    function edit(text:string) {
-        setSource(text); setTicket(''); setReport(undefined); setFeedback(''); setPublished('');
-        try {localStorage.setItem(storageKey,text);} catch {setFeedback('Browser storage is full or unavailable. Export a copy to keep this draft.');}
+    const listDrafts = () => {
+        if (!canDirect) return;
+        storyProgram<{drafts: DraftRow[]}>(target, 'draft.list').then(r => { setDrafts(r.drafts); setDraftsProblem(''); })
+            .catch(e => { setDrafts(null); setDraftsProblem((e as Error).message); });
+    };
+    useEffect(listDrafts, [target, canDirect]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => { try { localStorage.setItem(storageKey + '.draft', JSON.stringify(meta)); } catch { /* the meta is a convenience */ } }, [meta, storageKey]);
+
+    const program = useMemo(() => { try { return JSON.parse(source) as unknown; } catch { return undefined; } }, [source]);
+    const shown = editable(program) ? program : null;
+    const dirty = source !== (meta.saved ?? '');
+    function setText(text: string, mark?: string) {
+        setHist(h => commit(h, text, mark));
+        setTicket(''); setReport(undefined); setPublished(''); setStepping(null); setChosenCase(null);
+        try { localStorage.setItem(storageKey, text); } catch { setFeedback('Browser storage is full or unavailable. Save the draft or export a copy to keep it.'); }
     }
-    async function perform(work:()=>Promise<void>) {
+    const edit = (p: Program, mark?: string) => setText(pretty(p), mark);
+    function replaceWith(text: string, next: DraftMeta, ask = true) {
+        if (ask && source && dirty && !window.confirm('This draft has changes that are not saved. Replace it anyway? (Undo brings it back.)')) return false;
+        setText(text); setMeta(next); setFeedback(''); return true;
+    }
+    async function perform(work: () => Promise<void>) {
         setBusy(true); setFeedback('');
-        try {await work();} catch (e) {setFeedback(e instanceof Error ? e.message : String(e));} finally {setBusy(false);}
+        try { await work(); } catch (e) { setFeedback(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
     }
-    const editableGraph = program && (program.regions===undefined || (Array.isArray(program.regions) && program.regions.every(editableRegion))) && (program.triggers===undefined || (Array.isArray(program.triggers) && program.triggers.every(editableRule))) && Array.isArray(program.tests) && program.tests.every(c=>c && typeof c.name==='string'
-        && (c.expectEffects===undefined || (Array.isArray(c.expectEffects) && c.expectEffects.every(e=>e && typeof e.phase==='string')))
-        && (c.expectMissionVisits===undefined || (Array.isArray(c.expectMissionVisits) && c.expectMissionVisits.every(v=>v && typeof v.phase==='string')))
-        && Array.isArray(c.cohort) && Array.isArray(c.expect) && Array.isArray(c.events) && c.events.every(f=>f && typeof f.kind==='string'))
-        && (program.scenes===undefined || (Array.isArray(program.scenes) && program.scenes.every(s=>s && typeof s.title==='string' && Array.isArray(s.beats) && s.beats.every(b=>b && typeof b.id==='string'))))
-        && typeof program.title === 'string' && program.audience && typeof program.audience.kind === 'string' && Array.isArray(program.phases) && program.phases.every(p=>
-        p && typeof p.id==='string' && typeof p.journal==='string' && (!p.guestVoices || Array.isArray(p.guestVoices)) &&
-        (p.triggers === undefined || (Array.isArray(p.triggers) && p.triggers.every(editableRule))) &&
-        (p.missions === undefined || (Array.isArray(p.missions) && p.missions.every(m=>m && typeof m.id==='string' && typeof m.title==='string' &&
-            ['individual','group','either'].includes(m.mode) && Array.isArray(m.objectives) && m.objectives.every(o=>o && typeof o.label==='string' && typeof o.on==='string')))) &&
-        Array.isArray(p.exits) && p.exits.every(e=>e && typeof e.on==='string' && (e.missions===undefined || Array.isArray(e.missions))) &&
-        Array.isArray(p.effects) && p.effects.every(e=>e && typeof e.kind==='string'));
+    function step(direction: 'undo' | 'redo') {
+        setHist(h => {
+            const next = direction === 'undo' ? undo(h) : redo(h);
+            try { localStorage.setItem(storageKey, next.present); } catch { /* as setText */ }
+            return next;
+        });
+        setReport(undefined); setTicket(''); setStepping(null);
+    }
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            const typing = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+            if (!(e.ctrlKey || e.metaKey) || typing) return;
+            if (e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); step('undo'); }
+            else if ((e.key.toLowerCase() === 'z' && e.shiftKey) || e.key.toLowerCase() === 'y') { e.preventDefault(); step('redo'); }
+            else if (e.key.toLowerCase() === 's' && canDirect) { e.preventDefault(); void save(false); }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    });
+    async function save(asNew: boolean) {
+        if (!canDirect) return;
+        let name = meta.name;
+        if (asNew || !meta.id) {
+            const asked = window.prompt('A name for this draft', asNew ? meta.name + ' (copy)' : (shown?.title || meta.name));
+            if (!asked?.trim()) return;
+            name = asked.trim();
+        }
+        await perform(async () => {
+            const parsed = JSON.parse(source);
+            const r = await storyProgram<{id: number; version: number; savedAt: string; name: string}>(target, 'draft.save',
+                {name, program: parsed, ...(asNew || !meta.id ? {} : {id: meta.id, version: meta.version})});
+            setMeta({id: r.id, version: r.version, name: r.name, saved: source, savedAt: r.savedAt, owner: meta.owner});
+            listDrafts();
+        });
+    }
+    async function openDraft(id: number) {
+        await perform(async () => {
+            const d = await storyProgram<DraftRow & {program: Program}>(target, 'draft.open', {id});
+            const text = pretty(d.program);
+            if (replaceWith(text, {id: d.id, version: d.version, name: d.name, saved: text, savedAt: d.savedAt, owner: d.owner})) setView(editable(d.program) ? 'workbench' : 'source');
+        });
+    }
+    async function deleteDraft() {
+        if (!meta.id || !window.confirm(`Delete the draft "${meta.name}" from the server, with its saved versions? Your copy in this browser stays.`)) return;
+        await perform(async () => { await storyProgram(target, 'draft.delete', {id: meta.id}); setMeta({name: meta.name}); listDrafts(); });
+    }
+    async function startFromLibrary(id: string) {
+        if (!window.confirm('Start a new small story from this library event? It replaces the draft in the workbench (save it first to keep it).')) return;
+        await perform(async () => {
+            const p = (await storyProgram<{program: Program}>(target, 'draft-event', {eventType: id})).program;
+            replaceWith(pretty(p), {name: p.title}, false); setOpening(false);
+        });
+    }
     const reviewed = report?.passed && !report.uncovered?.length && program;
-    return <div className="story-columns program-workspace"><section className="dm-panel"><h3>{program?.title || 'World story'}</h3>
-        <fieldset disabled={busy}><div className="story-filebar"><button disabled={!catalog} onClick={()=>{if(catalog && window.confirm('Replace this draft with a blank story?')) edit(pretty(catalog.blank));}}>New blank story</button><label>Start from a story<select defaultValue="" onChange={e => {
-            const example = catalog?.examples[e.target.value];
-            if (example && (!source || window.confirm('Replace this draft with the selected story?'))) edit(pretty(example));
-            e.target.value='';
-        }}><option value="">Choose an example</option>{Object.entries(catalog?.examples ?? {}).map(([id,s]) => <option key={id} value={id}>{s.title}</option>)}</select></label>
-        <label>Import a program<input type="file" accept=".json,application/json" onChange={e => {
-            const f=e.target.files?.[0]; e.target.value=''; if (f) void perform(async () => {
-                if (f.size > 1024*1024) throw Error('Choose a program under 1 MiB.');
-                if (!source || window.confirm('Replace this draft with the imported story?')) edit(await f.text());
-            });
-        }}/></label>
+    const status = !canDirect ? 'Drafts stay in this browser' : meta.id ? (dirty ? 'Unsaved changes' : `Saved ${clock(meta.savedAt)} · version ${meta.version}`) : dirty ? 'Not saved on the server yet' : '';
+    const phases = Array.isArray((program as Program | undefined)?.phases) ? (program as Program).phases.map(p => String(p?.id)) : [];
+    return <div className="story-columns program-workspace"><section className="dm-panel">
+        <div className="wb-file">
+            <h3>{shown?.title || meta.name || 'World story'}</h3>
+            <span className={'wb-saved' + (dirty ? ' dirty' : '')} role="status">{status}</span>
         </div>
-        <ProblemsList found={problems} untried={report?.uncoveredTriggers} phases={Array.isArray(program?.phases) ? program.phases.map(p => String(p?.id)) : []} asking={checking}
-            go={editableGraph ? p => setJump(j => ({seq: (j?.seq ?? 0) + 1, at: p.at})) : undefined}/>
-        {program && !editableGraph && <p className="hint" role="status">The forms cannot show this draft as it is: fix the problems above in Program JSON below, and the forms come back.</p>}
-        {catalog && program && editableGraph &&
-            <><EmbeddedScenes target={target} libraryKey={sceneLibraryKey} program={program} examples={catalog.sceneExamples ?? {}} edit={p=>edit(pretty(p))}/>
-            <StoryPhaseEditor world={world} start={id=>{if(window.confirm('Replace this draft with the selected event story?'))
-                void perform(async()=>edit(pretty((await storyProgram<{program:Program}>(target,'draft-event',{eventType:id})).program)));}} program={program} catalog={catalog} onEdit={p=>edit(pretty(p))} jump={jump}/></>}
-        <details><summary>Program JSON and rehearsal cases</summary><label>Program JSON<textarea rows={18} spellCheck={false} value={source} onChange={e => edit(e.target.value)}/></label></details>
-        <button disabled={!source} onClick={() => download('world-story.json',source)}>Export draft</button>
-        <button disabled={!source} onClick={() => void perform(async () => setReport(await storyProgram<Report>(target,'rehearse',{program:JSON.parse(source)})))}>Rehearse all paths</button>
+        <fieldset disabled={busy} className="wb-filebar">
+            {canDirect && <label>Drafts<select value={meta.id ?? ''} onChange={e => { if (e.target.value) void openDraft(Number(e.target.value)); }} aria-label="Open a draft">
+                <option value="">{drafts ? (drafts.length ? 'Open a draft…' : 'No drafts on the server yet') : 'Drafts…'}</option>
+                {(drafts ?? []).map(d => <option key={d.id} value={d.id}>{d.name} · {d.owner.split('#')[0]} · {clock(d.savedAt)} · v{d.version}</option>)}</select></label>}
+            {canDirect && <button type="button" disabled={!program} onClick={() => void save(false)} title="Ctrl+S">{meta.id ? 'Save' : 'Save on the server…'}</button>}
+            {canDirect && meta.id && <button type="button" disabled={!program} onClick={() => void save(true)}>Save as new…</button>}
+            {canDirect && meta.id && <button type="button" onClick={() => void deleteDraft()}>Delete draft…</button>}
+            <button type="button" onClick={() => setOpening(!opening)} aria-pressed={opening}>New…</button>
+            <button type="button" onClick={() => fileInput.current?.click()}>Import…</button>
+            <button type="button" disabled={!source} onClick={() => download((shown?.id || 'world-story') + '.json', source)}>Export</button>
+            <span className="wb-sep"/>
+            <button type="button" disabled={!hist.past.length} onClick={() => step('undo')} title="Ctrl+Z" aria-label="Undo">↶ Undo</button>
+            <button type="button" disabled={!hist.future.length} onClick={() => step('redo')} title="Ctrl+Shift+Z" aria-label="Redo">↷ Redo</button>
+            <span className="wb-sep"/>
+            <span className="wb-views" role="group" aria-label="View"><button type="button" aria-pressed={view === 'workbench'} onClick={() => setView('workbench')}>Workbench</button>
+                <button type="button" aria-pressed={view === 'source'} onClick={() => setView('source')}>Source</button></span>
+            <input ref={fileInput} type="file" hidden accept=".json,application/json" onChange={e => {
+                const f = e.target.files?.[0]; e.target.value = '';
+                if (f) void perform(async () => {
+                    if (f.size > 1024 * 1024) throw Error('Choose a program under 1 MiB.');
+                    const text = await f.text();
+                    let parsed: unknown;
+                    try { parsed = JSON.parse(text); } catch { parsed = undefined; }
+                    if (replaceWith(text, {name: (parsed as Program | undefined)?.title || f.name.replace(/\.json$/, '')})) setView(editable(parsed) ? 'workbench' : 'source');
+                });
+            }}/>
         </fieldset>
-        {catalog && <details><summary>Available triggers and effects</summary><p>{catalog.events.join(', ')}</p>
-            <ul>{Object.entries(catalog.effects).map(([kind,fields]) => <li key={kind}><code>{kind}</code> ({fields.join(', ')})</li>)}</ul></details>}
-        {report && <section><h4>Rehearsal results</h4><ul>{report.tests.map((t,i) => <li key={i}>{t.passed?'Pass':'Fail'} · {t.name}<br/>{t.path.join(' → ')}{!t.passed && <p>Expected {t.expected.join(' → ')}</p>}
-                {!!t.triggers?.length && <details><summary>Trigger trace</summary><ol>{t.triggers.map((f,i)=><li key={i}>{f.phase} · {f.trigger} ← {f.signal ?? f.on}{f.event?' ('+f.event+')':''}{tracePlace(f)}</li>)}</ol></details>}
-                {t.counters && Object.keys(t.counters).length>0 && <details><summary>Final counters</summary><pre>{pretty(t.counters)}</pre></details>}
-                {!!t.missionVisits?.length && <details><summary>Mission credit by phase</summary>{t.missionVisits.map(v=><div key={v.visit}>
-                    <strong>{v.phase} · visit {v.visit}</strong><ul>{Object.entries(v.credits).map(([id,players])=><li key={id}>{id} · {players.join(', ') || 'No finishers'}</li>)}</ul></div>)}</details>}
-                {!!t.effects?.length && <details><summary>Effects in this run</summary><ol>{t.effects.map((e,n)=><li key={n}><code>{JSON.stringify(e)}</code></li>)}</ol></details>}</li>)}</ul>
-            {!!report.uncovered?.length && <p>Phases awaiting rehearsal · {report.uncovered.join(', ')}.</p>}
-            {!!report.uncoveredTriggers?.length && <p>Triggers awaiting rehearsal · {report.uncoveredTriggers.join(', ')}</p>}
-            <h4>Effects for approval</h4>{report.effects.length ? <ul>{report.effects.map((e,i) => <li key={i}><code>{JSON.stringify(e)}</code></li>)}</ul>:<p>Journal entries only.</p>}
-            {report.voices?.map(v=><p key={v.phase+v.npc}>Optional guest voice · {v.npc} during {v.phase}</p>)}
-            <p>Audience · {program?.audience.kind === 'active' ? 'Players active in the last '+program.audience.days+' days' : program?.audience.players?.join(', ')}</p>
+        {draftsProblem && canDirect && <p className="hint">{draftsProblem}</p>}
+        {opening && catalog && <NewStory catalog={catalog} close={() => setOpening(false)} start={id => void startFromLibrary(id)}
+            pick={p => { if (replaceWith(pretty(p), {name: p.title})) { setOpening(false); setView('workbench'); } }}/>}
+        {!catalog && <p className="hint">Loading the trigger catalogue…</p>}
+        {catalog && view === 'workbench' && shown && <Workbench key={meta.id ?? 'local'} program={shown} edit={edit} catalog={catalog} refs={refs} world={world} target={target}
+            sceneLibraryKey={sceneLibraryKey} templatesKey={storageKey + '.templates'} problems={problems} checking={checking} report={report}
+            chosenCase={chosenCase} stepping={stepping} startFromLibrary={id => void startFromLibrary(id)} jumpTo={jump}/>}
+        {catalog && (view === 'source' || !shown) && <section className="wb-source">
+            {!shown && program !== undefined && <p className="hint" role="status">The workbench cannot show this draft as it is: fix it here (the problems below say where), and it comes back. Nothing is lost.</p>}
+            {program === undefined && source && <p className="hint" role="status">This is not JSON yet: the workbench comes back once it parses.</p>}
+            {view === 'source' && shown && <p className="hint">The whole program as JSON: for what the workbench cannot yet do. Edits here are undone with the rest.</p>}
+            {!shown && <ProblemsList found={problems} phases={phases} asking={checking}
+                go={editable(program) ? pr => { const r = refOfProblem(program, pr.at); if (r) { setView('workbench'); setJump(j => ({seq: (j?.seq ?? 0) + 1, ref: r})); } } : undefined}/>}
+            <label>Program JSON<textarea rows={24} spellCheck={false} value={source} onChange={e => setText(e.target.value, 'source')}/></label>
+        </section>}
+        {(() => {
+            const strip = <RehearsalStrip report={report} program={shown} target={target} busy={busy} chosen={chosenCase} choose={setChosenCase}
+                stepping={catalog && shown ? stepping : null} setStepping={setStepping}
+                rehearse={() => void perform(async () => { setReport(await storyProgram<Report>(target, 'rehearse', {program: JSON.parse(source)})); setChosenCase(null); setStepping(null); })}/>;
+            if (!catalog || !shown) return strip;
+            const names = namesOf(refs, shown);
+            return <BenchContext.Provider value={{cat: catalog.catalogue, refs, names, program: shown, world, edit, problems: {}}}>
+                <WordingContext.Provider value={wordingOf(catalog.catalogue, Object.assign({}, ...Object.values(names)))}>{strip}</WordingContext.Provider></BenchContext.Provider>;
+        })()}
+        {report && <section className="wb-approval"><h4>Effects for approval</h4>{report.effects.length ? <ul>{report.effects.map((e, i) => <li key={i}><code>{JSON.stringify(e)}</code></li>)}</ul> : <p>Journal entries only.</p>}
+            {report.voices?.map(v => <p key={v.phase + v.npc}>Optional guest voice · {v.npc} during {v.phase}</p>)}
+            {shown && <p>Audience · {shown.audience.kind === 'active' ? 'Players active in the last ' + shown.audience.days + ' days' : shown.audience.players?.join(', ')}</p>}
             <details><summary>Version fingerprint</summary><code>{report.digest}</code></details>
             <button disabled={!canDirect || !reviewed || busy || !!ticket} onClick={() => void perform(async () => {
-                const r=await storyProgram<{ticket:string;run:string}>(target,'approve',{program,digest:report.digest});
+                const r = await storyProgram<{ticket: string; run: string}>(target, 'approve', {program, digest: report.digest});
                 setTicket(r.ticket); setSelected(r.run);
             })}>Approve this version for {worldName(target)}</button></section>}
-        {ticket && <fieldset disabled={busy}><label>Publication ticket<input readOnly value={ticket} onFocus={e=>e.target.select()}/></label>
-            <button onClick={() => void perform(async () => {const r=await storyProgram<{run:string}>(target,'publish',{ticket}); setTicket(''); setPublished(r.run);})}>Publish approved story</button>
-            {openCampaigns && selected && <button onClick={()=>openCampaigns(selected)}>Open in Campaigns</button>}</fieldset>}
-        {published && <p className="hint">Published. {openCampaigns && <button onClick={()=>openCampaigns(published)}>Open in Campaigns</button>}</p>}
+        {ticket && <fieldset disabled={busy}><label>Publication ticket<input readOnly value={ticket} onFocus={e => e.target.select()}/></label>
+            <button onClick={() => void perform(async () => { const r = await storyProgram<{run: string}>(target, 'publish', {ticket}); setTicket(''); setPublished(r.run); })}>Publish approved story</button>
+            {openCampaigns && selected && <button onClick={() => openCampaigns(selected)}>Open in Campaigns</button>}</fieldset>}
+        {published && <p className="hint">Published. {openCampaigns && <button onClick={() => openCampaigns(published)}>Open in Campaigns</button>}</p>}
         {feedback && <p role="alert">{feedback}</p>}
     </section>{canDirect && <aside className="dm-panel"><h3>For an author</h3>
         <p className="hint">The stories running in {worldName(target)} are watched in the Campaigns tab.
-            {openCampaigns && <> <button onClick={()=>openCampaigns('')}>Open Campaigns</button></>}</p>
+            {openCampaigns && <> <button onClick={() => openCampaigns('')}>Open Campaigns</button></>}</p>
         <details><summary>World references for an author</summary>
-            <label>Search Atlas names and IDs<input value={search} onChange={e=>setSearch(e.target.value)}/></label>
-            <button disabled={busy} onClick={()=>void perform(async()=>{const r=await storyProgram<{matches:typeof places}>(target,'atlas.search',{query:search}); setPlaces(r.matches); setResident(undefined);})}>Find references</button>
-            <ul>{places.map(p=><li key={p.kind+p.id}>{p.name} · <code>{p.id}</code> · {p.kind}
-                {p.kind==='npc' && <button disabled={busy} onClick={()=>void perform(async()=>setResident(await storyProgram(target,'npc.context',{npc:p.id})))}>Read resident history</button>}</li>)}</ul>
+            <label>Search Atlas names and IDs<input value={search} onChange={e => setSearch(e.target.value)}/></label>
+            <button disabled={busy} onClick={() => void perform(async () => { const r = await storyProgram<{matches: typeof places}>(target, 'atlas.search', {query: search}); setPlaces(r.matches); setResident(undefined); })}>Find references</button>
+            <ul>{places.map(p => <li key={p.kind + p.id}>{p.name} · <code>{p.id}</code> · {p.kind}
+                {p.kind === 'npc' && <button disabled={busy} onClick={() => void perform(async () => setResident(await storyProgram(target, 'npc.context', {npc: p.id})))}>Read resident history</button>}</li>)}</ul>
             {resident && <pre>{pretty(resident)}</pre>}
-            {!!places.length && <button onClick={()=>download('story-context.json',pretty({matches:places,residents:resident?[resident]:[]}))}>Export author context</button>}
+            {!!places.length && <button onClick={() => download('story-context.json', pretty({matches: places, residents: resident ? [resident] : []}))}>Export author context</button>}
         </details>
     </aside>}</div>;
+}
+
+/** "New…" (doc 85, 4.4): a small story from one of the 100 library events, a campaign (blank or one of the 8 examples). */
+function NewStory({catalog, close, start, pick}: {catalog: Catalog; close: () => void; start: (id: string) => void; pick: (p: Program) => void}) {
+    const [q, setQ] = useState('');
+    const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    const found = catalog.eventTypes.filter(e => words.every(w => (e.title + ' ' + e.category + ' ' + e.scale).toLowerCase().includes(w)));
+    return <div className="wb-new" role="dialog" aria-label="New story">
+        <header><strong>New…</strong><button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
+        <div className="wb-new-grid">
+            <section><h5>A small story</h5><p className="hint">One of the 100 library events, ready to rehearse: its opening, its objectives as a mission, its outcome.</p>
+                <input type="search" placeholder="Find an event" value={q} onChange={e => setQ(e.target.value)} aria-label="Find a library event"/>
+                <div className="wb-options">{found.slice(0, 40).map(e => <button key={e.id} type="button" onClick={() => start(e.id)}><span>{e.title}</span><small>{e.category} · {e.scale}</small></button>)}</div></section>
+            <section><h5>A campaign</h5><p className="hint">Phases, triggers, missions and scenes.</p>
+                <button type="button" onClick={() => pick(structuredClone(catalog.blank))}>A blank campaign</button>
+                <div className="wb-options">{Object.entries(catalog.examples).map(([id, p]) => <button key={id} type="button" onClick={() => pick(structuredClone(p))}>
+                    <span>{p.title}</span><small>{p.phases.length} phases · from the examples</small></button>)}</div></section>
+        </div></div>;
 }

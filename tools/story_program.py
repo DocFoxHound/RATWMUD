@@ -7,6 +7,7 @@ import math
 import re
 import threading
 import time
+from pathlib import Path
 
 import story_scenes
 import story_triggers as triggers
@@ -14,194 +15,19 @@ import story_triggers as triggers
 SCENE_EVENTS = ('scene arrived', 'scene spoken', 'scene posed', 'scene blocked', 'scene finished', 'scene choice', 'scene response', 'scene failed')
 REGION_EVENTS = ('region entered', 'region left')
 SCENE_EFFECTS = ('npc.walk', 'npc.speak', 'npc.pose')
-EVENTS = (
-    *SCENE_EVENTS,
-    *REGION_EVENTS,
-    'conversation',
-    'arrival',
-    'enter place',
-    'departure',
-    'gift',
-    'gift again',
-    'economy',
-    'contract done',
-    'hunted',
-    'fight ends',
-    'gift used',
-    'death',
-    'revival',
-    'marriage',
-    'relocation',
-    'raid',
-    'bandits gather',
-    'camp cleared',
-    'bandits scattered',
-    'patrol',
-    'caravan arrives',
-    'festival',
-    'project built',
-    'project gift',
-    'festival entered',
-    'carter robbed',
-    'storyline objective',
-    'storyline step',
-    'tale ended',
-    'story phase',
-    'archive work',
-    'contract taken',
-    'contract posted',
-    'deed',
-    'festival won',
-    'fine paid',
-    'forage',
-    'groomed',
-    'hunt',
-    'huntRole',
-    'introduced',
-    'lease',
-    'lease ended',
-    'lent',
-    'letter sent',
-    'letter delivered',
-    'loan returned',
-    'notice answered',
-    'notice posted',
-    'pact sealed',
-    'paid off bandits',
-    'performance',
-    'reported',
-    'shared meal',
-    'ship docks',
-    'ship lost',
-    'ship sails',
-    'ship stormbound',
-    'stall rented',
-    'stall sale',
-    'story told',
-    'table game',
-    'tended',
-    'together',
-    'told the wardens',
-    'trouble heard',
-    'trouble solved',
-    'vouch',
-    'vouched to the wardens',
-    'warrant',
-    'witnessed',
-    'project ruined',
-    'harvest over',
-    'wagon overdue',
-    'wagon held up',
-    'caravan lost',
-    'caravan departs',
-    'festival called',
-    'arrest',
-    'assault',
-    'bandit falls',
-    'bandits called',
-    'bandits creep',
-    'bandits demand',
-    'caravan dropped',
-    'caravan home',
-    'caravan passes',
-    'cart arrives',
-    'cart departs',
-    'cart missed',
-    'cart stocks the stalls',
-    'carter hurt',
-    'character created',
-    'cleared',
-    'contract given back',
-    'crier',
-    'deed revoked',
-    'downed',
-    'event added',
-    'event begins',
-    'event notice',
-    'event posted',
-    'event rolled',
-    'fight',
-    'harvest called',
-    'held for a story',
-    'letter returned',
-    'loan unreturned',
-    'matchmaking',
-    'milestone',
-    'mourning',
-    'nickname',
-    'nickname dropped',
-    'notice removed',
-    'nudge over',
-    'old age',
-    'prices reset',
-    'project cancelled',
-    'project posted',
-    'project proposed',
-    'project removed',
-    'promise',
-    'promise broken',
-    'released',
-    'resident letter',
-    'robbed',
-    'sermon',
-    'ship posted',
-    'ships cleared',
-    'spawn',
-    'stall closed',
-    'stolen goods smelt',
-    'stopped by the watch',
-    'story prize',
-    'storyline begun',
-    'storyline done',
-    'table game begun',
-    'tale begun',
-    'tale joined',
-    'tie ended',
-    'times cause',
-    'times nudged',
-    'vouch broken',
-    'wagon cancelled',
-    'wagon delayed',
-    'wagon posted',
-    'welcome',
-    'welcomed back',
-    'clock',
-    'dm signal',
-)
+# Every event, condition, action and effect, with typed parameters and a sentence each, is one file (doc 85, 3.1 rule 2 and
+# Phase 4): the tables below are read from it, so the validator, the Story Creator's sentences and pickers, the console
+# and the author bridge all say the same thing.
+CATALOGUE_FILE = Path(__file__).resolve().parents[1] / 'Data/Storylines/trigger-catalogue.json'
+CATALOGUE = json.loads(CATALOGUE_FILE.read_text(encoding='utf-8'))
+_SPECIAL = {e['id'] for e in CATALOGUE['events'] if e.get('special')}
+EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e['id'] not in _SPECIAL)
 FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
 # Actions here map to existing, bounded world operations. Story-only dialogue expires on phase exit.
-EFFECTS = {
-    'scene.play': ('scene', 'player', 'cue'),
-    'npc.line': ('npc', 'text'),
-    'npc.walk': ('npc', 'cell', 'x', 'y', 'pace', 'cue'),
-    'npc.speak': ('npc', 'text', 'cue'),
-    'npc.pose': ('npc', 'posture', 'cue'),
-    'story.area.damage': ('region', 'points'),
-    'story.area.item': ('region', 'item', 'quantity'),
-    'story.area.buff': ('region', 'buff', 'hours'),
-    'story.area.spawn': ('region', 'count'),
-    'npc.move': ('npc', 'cell', 'x', 'y'),
-    'npc.protect': ('npc',),
-    'npc.unprotect': ('npc',),
-    'npc.revive': ('npc',),
-    'character.injury': ('player', 'add', 'severity'),
-    'ship.storm': ('ship',),
-    'harvest.override': ('area', 'word', 'days', 'words'),
-    'band.override': ('npc', 'band', 'days'),
-    'festival.call': ('town', 'name', 'inDays'),
-    'storyline.give': ('player', 'template', 'resident', 'place'),
-    'faction.relation': ('faction', 'other', 'stance', 'disposition', 'reason'),
-    'bandits.call': ('player', 'count'),
-    'story.practice': ('player', 'skill'),
-    'times.nudge': ('market', 'points', 'days', 'words'),
-    'deed.award': ('player', 'detail'),
-    'project.post': ('town', 'project', 'cell', 'x', 'y', 'title'),
-}
+EFFECT_PARAMS = {e['id']: tuple(e['params']) for e in CATALOGUE['effects']}
+EFFECTS = {kind: tuple(param['key'] for param in params) for kind, params in EFFECT_PARAMS.items()}
 # Injuries a Dungeon Master may give (Docs/Design/38-injuries.md, phase 5; the game's Core/RatwInjury.cpp has the same).
-INJURY_TYPES = ('torn_flank', 'bitten_foreleg', 'bitten_hindleg', 'torn_ear_acute', 'wrenched_neck', 'deep_gash', 'cut_foreleg',
-                'cut_muzzle', 'cut_shoulder', 'bruised_ribs', 'cracked_rib', 'sprained_foreleg', 'knocked_senseless', 'burned_paws',
-                'singed_coat', 'burned_muzzle', 'torn_ear', 'bent_tail', 'scarred_muzzle', 'scarred_flank', 'burn_scars',
-                'notched_nose', 'clouded_eye', 'permanent_limp', 'bad_back', 'stiff_shoulder')
+INJURY_TYPES = tuple(next(param for param in EFFECT_PARAMS['character.injury'] if param['key'] == 'add')['values'])
 ID = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}\Z')
 
 
@@ -257,94 +83,10 @@ def number(v, low, high):
 
 
 # Mission objectives take evidence from the participant who acted. Ambient events can open or close a phase.
-MISSION_EVENTS = (
-    *REGION_EVENTS,
-    'bandit falls',
-    'downed',
-    'archive work',
-    'contract taken',
-    'contract done',
-    'conversation',
-    'deed',
-    'enter place',
-    'festival entered',
-    'festival won',
-    'fine paid',
-    'forage',
-    'gift',
-    'gift again',
-    'gift used',
-    'groomed',
-    'hunt',
-    'huntRole',
-    'hunted',
-    'introduced',
-    'lease',
-    'lease ended',
-    'lent',
-    'letter sent',
-    'letter delivered',
-    'loan returned',
-    'notice answered',
-    'notice posted',
-    'pact sealed',
-    'paid off bandits',
-    'performance',
-    'project gift',
-    'reported',
-    'shared meal',
-    'stall rented',
-    'stall sale',
-    'story told',
-    'table game',
-    'tended',
-    'together',
-    'told the wardens',
-    'trouble heard',
-    'trouble solved',
-    'vouch',
-    'vouched to the wardens',
-    'witnessed',
-)
+MISSION_EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e.get('mission'))
 MISSION_GATE = 'missions completed'
 # Positive amounts actually emitted by the native producers in addition to an occurrence.
-MISSION_MEASURES = {
-    'quantity': (
-        'deed',
-        'festival won',
-        'forage',
-        'gift',
-        'gift again',
-        'hunt',
-        'hunted',
-        'lent',
-        'loan returned',
-        'project gift',
-        'stall sale',
-        'table game',
-        'together',
-    ),
-    'coins': (
-        'archive work',
-        'contract taken',
-        'contract done',
-        'festival entered',
-        'festival won',
-        'fine paid',
-        'gift',
-        'gift again',
-        'lease',
-        'lease ended',
-        'letter sent',
-        'notice posted',
-        'paid off bandits',
-        'project gift',
-        'stall rented',
-        'stall sale',
-        'table game',
-        'trouble solved',
-    ),
-}
+MISSION_MEASURES = {m: tuple(e['id'] for e in CATALOGUE['events'] if m in e.get('measures', ())) for m in ('quantity', 'coins')}
 
 
 def validate_missions(phase):
@@ -510,55 +252,26 @@ def check_region_source(rule, regions):
         require(regions and (name is None or name in regions), 'A boundary crossing must use a region in this story.')
 
 
+def _param_ok(param, v, regions):
+    """One effect parameter against its catalogue entry (Data/Storylines/trigger-catalogue.json)."""
+    kind = param['type']
+    if kind == 'int':
+        return integer(v, param['min'], param['max']) and not (param.get('nonzero') and v == 0)
+    if kind == 'choice':
+        return isinstance(v, str) and v in param['values']
+    if kind == 'text':
+        return word(v, param['max'])
+    if kind == 'region':
+        return identifier(v) and v in (regions or {})
+    return identifier(v) or (kind == 'wolf' and v == '$actor')
+
+
 def validate_effect(effect, pid, regions=None, scenes=None):
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
     shape(effect, ('kind', *EFFECTS[kind]))
-    for k in EFFECTS[kind]:
-        v = effect[k]
-        if k in ('x', 'y', 'inDays'):
-            ok = integer(v, 0, 30 if k == 'inDays' else 4095)
-        elif k == 'stance':
-            ok = v in ('allied', 'friendly', 'neutral', 'tense', 'hostile', 'war')
-        elif k == 'disposition':
-            ok = integer(v, -100, 100)
-        elif k == 'reason':
-            ok = word(v, 300)
-        elif k == 'count':
-            ok = integer(v, 1, 6)
-        elif k == 'skill':
-            ok = v in ('craft', 'commerce', 'labour', 'service', 'travel', 'watch')
-        elif k == 'region':
-            ok = identifier(v) and v in (regions or {})
-        elif k == 'pace':
-            ok = v in ('walk', 'run')
-        elif k == 'posture':
-            ok = v in ('standing', 'sitting', 'lying')
-        elif k == 'buff':
-            ok = v == 'fed'
-        elif k == 'quantity':
-            ok = integer(v, 1, 100)
-        elif k == 'hours':
-            ok = integer(v, 1, 168)
-        elif k == 'points' and kind == 'story.area.damage':
-            ok = integer(v, 1, 99)
-        elif k == 'points':
-            ok = integer(v, -100, 100) and v != 0
-        elif k == 'days':
-            ok = integer(v, 1, 112 if kind == 'band.override' else 366)
-        elif k == 'word' and kind == 'harvest.override':
-            ok = v in ('poor', 'fair', 'good', 'clear')
-        elif k == 'band':
-            ok = v in ('destitute', 'poor', 'comfortable', 'rich', 'clear')
-        elif k == 'add' and kind == 'character.injury':
-            ok = v in INJURY_TYPES
-        elif k == 'severity':
-            ok = integer(v, 1, 3)
-        elif k in ('text', 'name', 'title', 'detail', 'words'):
-            ok = word(v, 200 if k in ('text', 'detail') else 80)
-        else:
-            ok = identifier(v) or (k == 'player' and v == '$actor')
-        require(ok, f'{pid}: invalid {kind}.{k}.')
+    for param in EFFECT_PARAMS[kind]:
+        require(_param_ok(param, effect[param['key']], regions), f"{pid}: invalid {kind}.{param['key']}.")
     if kind == 'scene.play':
         scene = (scenes or {}).get(effect['scene'])
         require(
@@ -1393,64 +1106,104 @@ def review(p, budget=None):
         _rehearsals.release()
 
 
+def _play_case(p, case, step=None):
+    """One rehearsal case, fact by fact (as the runner would take them). `step(fact, state, path, trace, intended)` is
+    called after each fact, for the workbench's step-through (doc 85, 4.5)."""
+    _check_case(p, case)
+    state = begin(p, case['cohort'], 0)
+    path, intended, last_day, seen = [], [], 0, {}
+    visit_credits, trace = [], []
+    elapsed = 0
+
+    record_entry(p, state, path, intended, visit_credits)
+    if step:
+        step(None, state, path, trace, intended)
+    for ev in case['events']:
+        _check_fact(ev)
+        if ev['id'] in seen:
+            require(ev == seen[ev['id']], 'A repeated event ID has different contents.')
+            if step:
+                step(ev, state, path, trace, intended)
+            continue
+        require(ev['day'] >= last_day, 'Rehearsal game time must move forward.')
+        seen[ev['id']] = ev
+        require(
+            number(ev.get('elapsedDays', elapsed), elapsed, 1e8),
+            'Rehearsal elapsed real days must move forward.',
+        )
+        elapsed = ev.get('elapsedDays', elapsed)
+        last_day = ev['day']
+        dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock'}, ev]
+        for fact in dispatch:
+            while True:
+                source_phase = state['phase']
+                moved = advance(p, state, fact, last_day, trace, elapsed)
+                intended.extend({'phase': source_phase, **effect} for effect in state.pop('triggerEffects', []))
+                if moved:
+                    record_entry(p, state, path, intended, visit_credits)
+                if not moved or fact['kind'] != 'clock':
+                    break
+        if step:
+            step(ev, state, path, trace, intended)
+    missions = mission_snapshot(phase_of(p, state), state)
+    credits = mission_credits(missions or state.get('previousMissions', []))
+    if missions:
+        visit_credits.append({'phase': state['phase'], 'visit': state['visits'], 'credits': credits})
+    expected_effects = case.get('expectEffects', intended)
+    require(isinstance(expected_effects, list), 'Expected effects must be a list.')
+    return {
+        'name': case['name'],
+        'passed': path == case['expect']
+        and expected_effects == intended
+        and credits == case.get('expectMissions', credits)
+        and visit_credits == case.get('expectMissionVisits', visit_credits)
+        and [f['trigger'] for f in trace] == case.get('expectTriggers', [f['trigger'] for f in trace])
+        and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {})),
+        'triggers': trace,
+        'counters': state.get('counters', {}),
+        'missionCredits': credits,
+        'missionVisits': visit_credits,
+        'path': path,
+        'expected': case['expect'],
+        'effects': intended,
+    }
+
+
+def rehearse_steps(p, index, budget=None, look=None):
+    """Step through one rehearsal case (doc 85, 4.5, Phase 4): the state after the opening and after each fact: the phase
+    and visit, the path so far, counters, timers, the triggers that fired and the effects sent by that fact, the missions,
+    and the phase's journal. `look(state)` adds what the console's explain says of the phase as it then stands."""
+    if not _rehearsals.acquire(timeout=REHEARSAL_SECONDS):
+        raise ValueError('Other rehearsals are running. Try again in a moment.')
+    token = _budget.set(budget or RehearsalBudget())
+    try:
+        validate(p)
+        require(type(index) is int and 0 <= index < len(p['tests']), 'Choose a rehearsal case.')
+        steps, marks = [], {'trace': 0, 'effects': 0}
+
+        def step(fact, state, path, trace, intended):
+            phase = phase_of(p, state)
+            snap = json.loads(json.dumps({k: v for k, v in state.items() if k not in ('cohort',)}, default=sorted))
+            steps.append({
+                'fact': fact, 'phase': state['phase'], 'visit': state['visits'], 'path': list(path),
+                'journal': phase.get('journal', ''), 'counters': snap.get('counters', {}), 'timers': snap.get('timers', {}),
+                'fired': trace[marks['trace']:], 'effects': intended[marks['effects']:],
+                'missions': mission_snapshot(phase, state), 'ending': not phase['exits'] and not phase.get('triggers'),
+                **({'listening': look(state)} if look else {}),
+            })
+            marks['trace'], marks['effects'] = len(trace), len(intended)
+
+        report = _play_case(p, p['tests'][index], step)
+        return {'case': report['name'], 'passed': report['passed'], 'expected': report['expected'], 'steps': steps,
+                'cohort': sorted(set(p['tests'][index]['cohort']))}
+    finally:
+        _budget.reset(token)
+        _rehearsals.release()
+
+
 def _review(p):
     validate(p)
-    reports = []
-    for case in p['tests']:
-        _check_case(p, case)
-        state = begin(p, case['cohort'], 0)
-        path, intended, last_day, seen = [], [], 0, {}
-        visit_credits, trace = [], []
-        elapsed = 0
-
-        record_entry(p, state, path, intended, visit_credits)
-        for ev in case['events']:
-            _check_fact(ev)
-            if ev['id'] in seen:
-                require(ev == seen[ev['id']], 'A repeated event ID has different contents.')
-                continue
-            require(ev['day'] >= last_day, 'Rehearsal game time must move forward.')
-            seen[ev['id']] = ev
-            require(
-                number(ev.get('elapsedDays', elapsed), elapsed, 1e8),
-                'Rehearsal elapsed real days must move forward.',
-            )
-            elapsed = ev.get('elapsedDays', elapsed)
-            last_day = ev['day']
-            dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock'}, ev]
-            for fact in dispatch:
-                while True:
-                    source_phase = state['phase']
-                    moved = advance(p, state, fact, last_day, trace, elapsed)
-                    intended.extend({'phase': source_phase, **effect} for effect in state.pop('triggerEffects', []))
-                    if moved:
-                        record_entry(p, state, path, intended, visit_credits)
-                    if not moved or fact['kind'] != 'clock':
-                        break
-        missions = mission_snapshot(phase_of(p, state), state)
-        credits = mission_credits(missions or state.get('previousMissions', []))
-        if missions:
-            visit_credits.append({'phase': state['phase'], 'visit': state['visits'], 'credits': credits})
-        expected_effects = case.get('expectEffects', intended)
-        require(isinstance(expected_effects, list), 'Expected effects must be a list.')
-        reports.append(
-            {
-                'name': case['name'],
-                'passed': path == case['expect']
-                and expected_effects == intended
-                and credits == case.get('expectMissions', credits)
-                and visit_credits == case.get('expectMissionVisits', visit_credits)
-                and [f['trigger'] for f in trace] == case.get('expectTriggers', [f['trigger'] for f in trace])
-                and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {})),
-                'triggers': trace,
-                'counters': state.get('counters', {}),
-                'missionCredits': credits,
-                'missionVisits': visit_credits,
-                'path': path,
-                'expected': case['expect'],
-                'effects': intended,
-            }
-        )
+    reports = [_play_case(p, case) for case in p['tests']]
     covered = {phase for case in reports for phase in case['path']}
     fired = {
         (t['scope'], t['phase'] if t['scope'] == 'phase' else '', t['trigger'])

@@ -6,7 +6,7 @@ import {SceneBeatEditor,IdInput} from './SceneBeatEditor';
 import {ScenePreview} from './ScenePreview';
 import {StoryRegions} from './StoryRegions';
 import {loadScenes,newScene,uniqueId,type CastRole,type Scene} from './scenes';
-import type {WorldProgram} from './StoryPhaseEditor';
+import type {Program as WorldProgram} from '../lib/workbench';
 
 interface Props {target:Target;libraryKey:string;world:Project|null;roster:Npcs|null;canDirect:boolean;openProgram:(program:WorldProgram)=>void}
 export function SceneWorkspace({target,libraryKey,world,roster,canDirect,openProgram}:Props) {

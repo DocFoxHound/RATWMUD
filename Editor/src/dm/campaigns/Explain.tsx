@@ -3,15 +3,18 @@
 // behind it, and for which wolves here now it would fire), [Why not?] (its last events and where each stopped), "What
 // if…" (a made-up event through the rules on a copy of the run: nothing saved) and what will happen next by itself. All
 // reads of the op `explain` (tools/story_runner.explain).
-import {useEffect, useState} from 'react';
+import {createContext, useContext, useEffect, useState} from 'react';
 import {storyProgram, type Target} from '../api';
 import {condLines, dueText, eventText, judgedState, nameOf, outcomeLines, secondsText, stepText, wouldFireFor, type Explained,
-    type Judged, type WhatIf, type WhyNot} from '../../lib/campaigns';
+    type Judged, type WhatIf, type WhyNot, type Wording} from '../../lib/campaigns';
 import type {SteerFn} from './Steer';
+
+/** The trigger catalogue's sentences, once the page has the catalogue (doc 85, Phase 4). */
+export const WordingContext = createContext<Wording | undefined>(undefined);
 
 /** The conditions of a trigger as an indented list, each line marked ✔ ✘ or ?. */
 export function Conditions({tree, names}: {tree: Judged['conditions']; names: Record<string, string>}) {
-    const lines = condLines(tree, names);
+    const lines = condLines(tree, names, 0, useContext(WordingContext));
     if (!lines.length) return null;
     return <ul className="camp-conds">{lines.map((l, i) => <li key={i} className={l.verdict === true ? 'yes' : l.verdict === false ? 'no' : 'unknown'}
         style={{paddingLeft: 8 + l.depth * 16}}>◆ {l.text}</li>)}</ul>;
@@ -21,6 +24,7 @@ export function Conditions({tree, names}: {tree: Judged['conditions']; names: Re
 export function WhyNotPanel({target, run, which, names, close}: {target: Target; run: string; which: {trigger: string} | {exit: number};
     names: Record<string, string>; close: () => void}) {
     const [data, setData] = useState<WhyNot | null>(null), [problem, setProblem] = useState('');
+    const wording = useContext(WordingContext);
     useEffect(() => {
         let live = true;
         storyProgram<WhyNot>(target, 'explain', {run, ...which}).then(d => { if (live) setData(d); }, e => { if (live) setProblem((e as Error).message); });
@@ -30,7 +34,7 @@ export function WhyNotPanel({target, run, which, names, close}: {target: Target;
     return <div className="camp-whynot" role="region" aria-label={`Why not ${who}`}>
         <div className="camp-whynot-head"><b>Why has {who} not fired?</b><button className="link-button" onClick={close}>close</button></div>
         {problem ? <p className="error-text">{problem}</p> : !data ? <p className="hint">Asking the story runner…</p> : <>
-            <p className="hint">{eventText(data.listener, names)} · {judgedState(data.listener, names, null).text}</p>
+            <p className="hint">{eventText(data.listener, names, wording)} · {judgedState(data.listener, names, null).text}</p>
             <Conditions tree={data.listener.conditions} names={names} />
             {data.notLogged ? <p className="hint">{data.notLogged === 'story signal'
                 ? `Signals are not in the world's log. ${(data.listener.timers ?? []).length ? `A timer sends it: ${(data.listener.timers ?? []).map(t => t.timer).join(', ')}.`
@@ -52,6 +56,7 @@ export function WhyNotPanel({target, run, which, names, close}: {target: Target;
 export function WaitingFor({explained, names, here, steer, busy, target, run, fire}: {explained: Explained | null; names: Record<string, string>;
     here: Set<string>; steer?: SteerFn; busy: boolean; target: Target; run: string; fire?: (l: Judged) => void}) {
     const [why, setWhy] = useState<string | null>(null);
+    const wording = useContext(WordingContext);
     if (!explained) return <p className="hint">Asking the story runner what it waits for…</p>;
     if (explained.ending) return <p className="hint">This phase is an ending: nothing to wait for.</p>;
     const live = explained.listeners.filter(l => !l.off && !l.used), spent = explained.listeners.filter(l => l.off || l.used);
@@ -61,7 +66,7 @@ export function WaitingFor({explained, names, here, steer, busy, target, run, fi
         const wolves = wouldFireFor(l, here, names);
         return <li key={id} className={`camp-judged ${state.tone}${l.can ? '' : ' cannot'}`}>
             <div className="camp-judged-head">
-                <span>⚑ <b>{l.source === 'trigger' ? l.id : `exit to ${l.to}`}</b> {eventText(l, names)}</span>
+                <span>⚑ <b>{l.source === 'trigger' ? l.id : `exit to ${l.to}`}</b> {eventText(l, names, wording)}</span>
                 <span className="camp-judged-state">{state.text}</span>
                 <span className="camp-judged-buttons">
                     {steer && fire && l.source === 'trigger' && <button disabled={busy} onClick={() => fire(l)}>Fire…</button>}

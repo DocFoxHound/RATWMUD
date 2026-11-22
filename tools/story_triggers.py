@@ -131,12 +131,15 @@ def _check_trigger(t, phase, ids, links):
     shape(
         t,
         ('id', 'on', 'actions'),
-        ('match', 'signal', 'if', 'once', 'audience', 'afterDays'),
+        ('match', 'signal', 'if', 'once', 'audience', 'afterDays', 'folder', 'note'),
     )
     require(
         rules.identifier(t['id']) and t['id'] not in ids,
         'Give every trigger in the phase a unique ID.',
     )
+    # The Story Creator's folder and note (doc 85, 4.2; Phase 4): words for the author, which the engine ignores.
+    require('folder' not in t or rules.word(t['folder'], 80), "A trigger's folder is a name of up to 80 characters.")
+    require('note' not in t or rules.word(t['note'], 300), "A trigger's note is up to 300 characters.")
     ids.add(t['id'])
     require(
         t['on'] in (*rules.EVENTS, SIGNAL) and t['on'] != 'dm signal',

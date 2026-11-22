@@ -424,8 +424,30 @@ const OPS: Record<string, string> = {'=': '=', '!=': '≠', '>': '>', '>=': '≥
 const mark = (v: boolean | null) => (v === true ? '✔' : v === false ? '✘' : '?');
 const shown = (v: unknown, names: Record<string, string>) => (typeof v === 'string' ? (v ? `"${nameOf(names, v)}"` : 'nothing') : String(v));
 
-/** One judged test in words: "stores ≥ 5 ✘ (stores is 2)", "item = rope ? (the event brings it)". */
-export function condText(c: CondNode, names: Record<string, string> = {}): string {
+/** The catalogue's sentences for events and conditions (Data/Storylines/trigger-catalogue.json, doc 85 Phase 4), when the
+ *  page has it: lib/workbench.ts's eventParts and conditionParts (dm/campaigns/Explain.tsx's WordingContext). Without it
+ *  the console says the short forms below. */
+export interface Wording {
+    event?: (rule: {on: string; signal?: string; match?: Record<string, string>; afterDays?: number}) => string;
+    condition?: (c: CondNode) => string;
+}
+/** One judged test in words: "stores ≥ 5 ✘ (stores is 2)", "item = rope ? (the event brings it)"; with the catalogue's
+ *  sentence when there is one ("the story's counter stores >= 5 ✘ (stores is 2)"). */
+export function condText(c: CondNode, names: Record<string, string> = {}, wording?: Wording): string {
+    if (wording?.condition && !['all', 'any', 'not'].includes(c.test)) {
+        const head = `${wording.condition(c)} ${mark(c.verdict)}`;
+        if (c.test === 'mission') return head;
+        if (c.test === 'region') {
+            const v = c.value as {cell?: string; x?: number; y?: number} | undefined;
+            return head + (c.needs === 'place' ? (v?.cell ? ' (the event has no tile)' : ' (the event brings its place)')
+                : v?.cell ? ` (it was at ${nameOf(names, v.cell)} (${v.x}, ${v.y}))` : '');
+        }
+        const what = c.test === 'counter' ? c.key ?? '' : c.field ?? '';
+        if (c.needs === 'event') return `${head} (the event brings it)`;
+        if (c.needs === 'wolf') return `${head} (each wolf's own)`;
+        if (c.why) return `${head} (${c.wolf ? nameOf(names, c.wolf) + ' is' : 'the wolf is'} ${c.why})`;
+        return `${head} (${what} is ${shown(c.value, names)}${c.wolf ? ' for ' + nameOf(names, c.wolf) : ''})`;
+    }
     if (c.test === 'all' || c.test === 'any') return `${c.test === 'all' ? 'all' : 'any'} of these ${mark(c.verdict)}`;
     if (c.test === 'not') return `not ${mark(c.verdict)}`;
     if (c.test === 'mission') return `mission ${c.id} is ready ${mark(c.verdict)}`;
@@ -442,13 +464,14 @@ export function condText(c: CondNode, names: Record<string, string> = {}): strin
     return `${head} (${what} is ${shown(c.value, names)}${c.wolf ? ' for ' + nameOf(names, c.wolf) : ''})`;
 }
 /** A judged condition tree as indented lines, for the Overview and [Why not?]. */
-export function condLines(c: CondNode | undefined, names: Record<string, string> = {}, depth = 0): {depth: number; text: string; verdict: boolean | null}[] {
+export function condLines(c: CondNode | undefined, names: Record<string, string> = {}, depth = 0, wording?: Wording): {depth: number; text: string; verdict: boolean | null}[] {
     if (!c) return [];
     const kids = c.conditions ?? (c.condition ? [c.condition] : []);
-    return [{depth, text: condText(c, names), verdict: c.verdict}, ...kids.flatMap(k => condLines(k, names, depth + 1))];
+    return [{depth, text: condText(c, names, wording), verdict: c.verdict}, ...kids.flatMap(k => condLines(k, names, depth + 1, wording))];
 }
 /** "when a wolf gives (item rope, target Ivo Tarmarsh)", "when signal "watch-round"". */
-export function eventText(l: Pick<Listening, 'on' | 'signal' | 'match'> & {missions?: string[]; afterDays?: number}, names: Record<string, string> = {}): string {
+export function eventText(l: Pick<Listening, 'on' | 'signal' | 'match'> & {missions?: string[]; afterDays?: number}, names: Record<string, string> = {}, wording?: Wording): string {
+    if (wording?.event && l.on !== 'dm signal' && l.on !== 'missions completed') return 'when ' + wording.event(l);
     if (l.on === 'story signal') return `when signal "${l.signal}"`;
     if (l.on === 'clock') return `after ${l.afterDays} game day${l.afterDays === 1 ? '' : 's'} in the phase`;
     if (l.on === 'dm signal') return `when a Dungeon Master directs "${l.match?.detail ?? ''}"`;

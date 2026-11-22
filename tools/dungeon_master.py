@@ -47,6 +47,7 @@ import world_db
 import story_program
 import story_library
 import story_scenes
+import story_drafts
 import story_runner
 import world_store as S
 
@@ -2718,7 +2719,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body(1024 * 1024)
                 target = self.posted(data)
                 op = data.get('op')
-                if op not in ('catalog', 'draft-event', 'rehearse', 'problems', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
+                if op not in ('catalog', 'draft-event', 'rehearse', 'rehearse-step', 'problems', 'refs', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
                     raise DMError('A Dungeon Master account is required.', 403)
                 try:
                     if op == 'catalog':
@@ -2729,6 +2730,12 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         return self.reply(200, {'program': story_library.draft(data.get('eventType'))})
                     if op == 'rehearse':
                         return self.reply(200, story_program.review(data.get('program')))
+                    if op == 'rehearse-step':
+                        # (Doc 85, 4.5 and Phase 4: one rehearsal case fact by fact, each step with what the phase then
+                        # listens for, judged as the console's explain judges a running story.)
+                        return self.reply(200, story_runner.rehearse_steps(data.get('program'), data.get('case')))
+                    if op == 'refs' and RANK[who['role']] < RANK['dm']:
+                        return self.reply(200, story_runner.static_refs())   # (A viewer's pickers: what every world has.)
                     if op == 'problems' and RANK[who['role']] < RANK['dm']:
                         # (Doc 85, Phase 3: every problem of a draft at once. A viewer drafts and rehearses; the world's
                         # references are a Dungeon Master's, as the atlas search is.)
@@ -2781,6 +2788,10 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                             if hosted and who['role'] != 'owner':
                                 raise DMError("Only the world's owner may change its alert rules.", 403)
                             result = story_runner.set_alert_rules(conn, world, who['username'], data)
+                        elif op == 'refs':   # (Doc 85, 4.3: what the Story Creator's pickers may name in this world.)
+                            result = story_runner.refs(conn, world)
+                        elif op in story_drafts.OPERATIONS:   # (Doc 85, 4.1 decision 5: drafts kept on the server, 0073.)
+                            result = story_drafts.request(conn, world, who['username'], RANK[who['role']], data)
                         elif op == 'atlas.search':
                             result = story_runner.atlas(conn, world, data.get('query',''))
                         elif op == 'npc.context':

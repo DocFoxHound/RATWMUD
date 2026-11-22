@@ -49,6 +49,9 @@ def catalogue():
         'filters': rules.FIELDS,
         'effects': rules.EFFECTS,
         'injuryTypes': rules.INJURY_TYPES,
+        # Every event, condition, action and effect with typed parameters and a sentence (doc 85, Phase 4): the Story
+        # Creator's workbench draws its sentences and pickers from it.
+        'catalogue': rules.CATALOGUE,
         'examples': {f.stem: json.loads(f.read_text()) for f in sorted(EXAMPLES.glob('*.json'))},
     }
 
@@ -2366,6 +2369,15 @@ def listeners(program, state, per_wolf=True, recent=None):
     return out
 
 
+def rehearse_steps(program, case):
+    """A rehearsal case stepped through (doc 85, 4.5; Phase 4): story_program.rehearse_steps, each step with listeners()
+    on the rehearsal's state, as the Campaigns console explains a running story ("Waiting for"), so an author sees
+    which triggers are waiting and why before anything is live."""
+    def look(state):
+        return listeners(program, state, per_wolf=True)
+    return rules.rehearse_steps(program, case, look=look)
+
+
 def _stall(conn, world, program, state, limits):
     """Doc 85, 5.6's "cannot move on": an ongoing phase none of whose triggers and exits can still fire by itself (each
     off, used up, waiting for a wolf who has been gone `goneDays`, or a signal nothing left can send). None when it can
@@ -2918,6 +2930,47 @@ def atlas(conn, world, query):
         {**dict(zip(('kind', 'id', 'name'), r)), **({'width': r[3], 'height': r[4]} if r[3] is not None else {})}
         for r in rows
     ]}
+
+
+REFS_LIMIT = 5000
+
+
+def static_refs():
+    """What a picker may offer that is the same in every world (doc 85, 4.3): items with their categories, the DM's
+    personal-quest templates, the kinds of town project, injuries. A viewer gets these; the world's are a DM's."""
+    items = json.loads((DATA / 'Items/items.json').read_text())['items']
+    templates = json.loads((DATA / 'Storylines/templates.json').read_text())['templates']
+    projects = json.loads((DATA / 'Town/projects.json').read_text())['kinds']
+    return {'items': [{'id': i['id'], 'name': i.get('name') or i['id'], 'category': i.get('category', '')} for i in items],
+            'templates': [{'id': t['id'], 'name': t.get('title') or t['id']} for t in templates if t.get('source') == 'dm'],
+            'projects': [{'id': k['id'], 'name': k.get('title') or k.get('name') or k['id']} for k in projects],
+            'injuries': list(rules.INJURY_TYPES)}
+
+
+def refs(conn, world):
+    """Everything a parameter of a trigger may name in this world, by kind, for the Story Creator's pickers (doc 85, 4.3
+    and Phase 4, op `refs`; the atlas search grown): residents, wolves, places, factions, towns, markets, harvest areas and
+    ships, beside static_refs(). Nobody types an id."""
+    out = static_refs()
+    out['residents'] = [{'id': r[0], 'name': r[1] or r[0], 'home': r[2] or '', 'work': r[3] or ''} for r in conn.execute(
+        'SELECT id,name,home_area,work_area FROM dm.story_residents WHERE world_id=%s ORDER BY name,id LIMIT %s', (world, REFS_LIMIT))]
+    out['wolves'] = [{'id': r[0], 'name': r[1] or r[0]} for r in conn.execute(
+        "SELECT key,data->>'name' FROM game.characters WHERE world_id=%s ORDER BY data->>'name',key LIMIT %s", (world, REFS_LIMIT))]
+    out['places'] = [{'id': r[1], 'kind': r[0], 'name': r[2] or r[1], 'width': r[3], 'height': r[4], 'town': r[5] or ''} for r in conn.execute(
+        """SELECT 'cell',id,name,width,height,region FROM world.cells WHERE world_id=%s UNION ALL
+           SELECT 'interior',id,name,width,height,region FROM world.interiors WHERE world_id=%s ORDER BY 3,2""", (world, world))]
+    out['factions'] = [{'id': r[0], 'name': r[1] or r[0]} for r in conn.execute(
+        'SELECT id,name FROM live.factions WHERE world_id=%s ORDER BY name,id', (world,))]
+    out['towns'] = [{'id': t, 'name': t.replace('_', ' ').replace('-', ' ')} for t in sorted({p['town'] for p in out['places']} - {'', 'unassigned'})]
+    society = conn.execute("SELECT payload::jsonb->'society' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+    society = society[0] if society and isinstance(society[0], dict) else {}
+    report = society.get('report') if isinstance(society.get('report'), dict) else {}
+    board = society.get('board') if isinstance(society.get('board'), dict) else {}
+    named = lambda rows: [{'id': r['id'], 'name': r.get('name') or r['id']} for r in rows if isinstance(r, dict) and isinstance(r.get('id'), str)]
+    out['markets'] = named(report.get('markets', [])) or [{'id': m, 'name': m} for m in sorted(board.get('cell') or {})]
+    out['areas'] = named(report.get('areas', []))
+    out['ships'] = named(board.get('ships', []) or [])
+    return out
 
 
 def context(conn, world, npc):

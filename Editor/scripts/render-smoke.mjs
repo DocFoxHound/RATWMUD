@@ -6,6 +6,7 @@ import {tmpdir} from 'node:os';
 import {join, dirname} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = mkdtempSync(join(tmpdir(), 'ratw-s2stage-render-'));
@@ -13,8 +14,28 @@ try {
     await build({root, configFile: join(root, 'vite.config.ts'), logLevel: 'error',
         build: {ssr: 'src/render.smoke.tsx', outDir: out, emptyOutDir: true, rollupOptions: {input: 'src/render.smoke.tsx'}},
         ssr: {noExternal: true}});
-    const {renderAll} = await import(pathToFileURL(join(out, 'render.smoke.js')).href);
+    const {renderAll, renderWorkbenches, renderWorkbenchParts} = await import(pathToFileURL(join(out, 'render.smoke.js')).href);
     const html = renderAll();
+    // (Doc 85, Phase 4: the workbench over the 8 examples and the 100 library drafts, as tools/story_runner.py serves them.)
+    const served = JSON.parse(execFileSync('python3', ['-c', `import json, sys
+sys.path.insert(0, 'tools')
+import story_library as L, story_runner as R
+c = R.catalogue()
+drafts = {'library/' + e['id']: L.draft(e['id']) for e in L.entries()}
+p = c['examples']['reed-ford']
+print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), 'steps': R.rehearse_steps(p, 0)}))`], {cwd: join(root, '..'), maxBuffer: 1 << 28}).toString());
+    const programs = {...Object.fromEntries(Object.entries(served.catalog.examples).map(([k, v]) => ['example/' + k, v])), ...served.drafts};
+    assert.equal(Object.keys(programs).length, 108, 'the 8 examples and the 100 library drafts');
+    const benches = renderWorkbenches(served.catalog, programs);
+    assert.equal(benches.edits, 0, 'showing a program never edits it');
+    for (const [name, text] of Object.entries(benches.html)) {
+        assert.ok(text.includes(programs[name].phases[0].id), `${name}: the workbench shows its phases`);
+        assert.ok(text.includes('Problems'), `${name}: the workbench shows the Problems list`);
+    }
+    Object.assign(html, renderWorkbenchParts(served.catalog, served.catalog.examples['reed-ford'], served.report, served.steps));
+    html['Workbench (reed-ford)'] = benches.html['example/reed-ford'];
+    html['Workbench (library)'] = benches.html['library/' + Object.keys(served.drafts)[0].slice(8)];
+    console.log(`workbench smoke: ${Object.keys(programs).length} programs, ${benches.views} views, none edited`);
     const expect = {
         'Steer': ['-45 (lean times)', 'Set the times'], 'Rules': ['wagons on the roads, 0-300% of normal', 'Harvest bias'],
         'Seasons': ['grain and flour'], 'Imports': ['Cheese', '0 never carried'], 'Status': ['The daily caps'],
@@ -54,6 +75,10 @@ try {
         'Story problems': ['2 errors', '3 warnings', 'Phase ferry-watch › trigger begin-deep-freeze › action 2', 'Phase ferries-reopen',
             'Campaign triggers › trigger offer-a-coil › action 2', 'from the world: approval refuses this', 'No rehearsal case reaches this trigger.', 'Go'],
         'DM tab bar': ['⚑ Campaigns', '⚠ 2', 'The story runner has not beaten for 95 s: 2 stories are not moving.', 'Open Campaigns'],
+        // (Doc 85, Phase 4: the workbench, its pickers, the rehearsal strip stepping.)
+        'Workbench (reed-ford)': ['Campaign (always on)', 'Phase: ', 'Exits', 'Events', 'Conditions', 'Actions', 'Library…', 'Signals', 'Counters'],
+        'Workbench pickers': ['Choose an event', 'A gift is given', 'Gifts, items and loans', 'Add an action', 'Award a deed', 'Ivo Tarmarsh', 'Rope (coil)', 'Any (no filter)', 'Reed Ford'],
+        'Workbench rehearsal': ['Rehearse ▶', 'every case passes', 'Step through', 'step 2 of', 'Waiting for', 'Counters'],
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
     const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days'],

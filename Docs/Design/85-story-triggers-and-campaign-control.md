@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1, 2 and 3 are built (section 6, "Phase 1 as built", "Phase 2 as built" and "Phase 3 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 4 are built (section 6, "Phase 1 as built" to "Phase 4 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -15,8 +15,8 @@ quests are made here; steering a running campaign on a hosted world is the owner
 of these answers, it now says **decided (user, 2026-11-21)**.
 
 **Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`, Phase 2 ("Steer it"), on branch `r3-camp-p2` (from `r3-camp-p1`), and
-Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A: see "Phase 1 as built", "Phase 2 as built" and
-"Phase 3 as built" in section 6.
+Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A, and Phase 4 (the catalogue and the
+workbench), on branch `r3-camp-p4` (from `r3-camp-p3`): see "Phase 1 as built" to "Phase 4 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -1593,6 +1593,83 @@ the program format.
 - Migration `0073` (Phase 3 took `0072`): `dm.story_drafts`; the draft ops. The two old tabs removed.
 - Tests: the render smoke over all 8 examples and the 100 library drafts; a round trip (open, save, compare) for
   each, so the workbench never changes a program it did not edit.
+
+**Phase 4 as built** (2026-11-22, branch `r3-camp-p4`, on `r3-camp-p3`). Migration `0073`, no engine change, no new game order;
+two optional trigger fields.
+- **The catalogue** (`Data/Storylines/trigger-catalogue.json`, 162 events, 7 conditions, 7 actions, 25 effects). Each event has its
+  group (the 15 of 1.3), a title, a help line, a sentence whose slots are its fields (`{actor} gives {item} to {target}`), and for each
+  field it fills its type (wolf, resident, character, place, item, faction, town, market, ship, area, project, notice, contract, letter,
+  run, phase, region, cue, text, number), what it holds and the word for "anyone"; `tile`, `mission`, `measures`, notes. The fields of
+  the ~140 undescribed events were read from every `recordEvent` call (findings worth knowing: `World::recordEvent` fills the cell and
+  the tile from the actor when a call leaves them empty, so most wolf events carry a tile; the town-side project events write the town
+  as `town:<id>` and lose their tile, since `project posted`/`built` pass x,y in the time slots; `bandit falls` has the camp as target;
+  `cleared` is a DM spawn rule clearing a fallen resident, not bandits; `economy`'s actor and target are ledger accounts). Conditions,
+  actions and effects carry typed `params` (`int` with bounds and `nonzero`, `choice` with values and words, `text` with a length, the
+  reference types) and a sentence over them; a slot `{cell,x,y}` is one tile picker. **The validator reads its tables from it**:
+  `story_program.EVENTS`, `MISSION_EVENTS`, `MISSION_MEASURES`, `EFFECTS`, `INJURY_TYPES`, and `validate_effect` checks each parameter
+  by its catalogue entry (`_param_ok`); `tools/test_story_catalogue.py` compares it with the hand-written checks it replaced over every
+  parameter of every effect with in- and out-of-bound values (3,000+ cases, same verdict and words). `catalog` serves it as `catalogue`.
+- **Two trigger fields**: `folder` (up to 80 characters) and `note` (up to 300), words for the author that the engines ignore (both read
+  rules by key; the digest covers them).
+- **The workbench** (`Editor/src/dm/triggers/`: `Workbench`, `TriggerTree`, `TriggerView`, `PhaseViews`, `Sentence`, `pickers`,
+  `Library`, `Rehearsal`, `Problems`; the logic, without React, in `Editor/src/lib/workbench.ts`). Left: the tree (campaign triggers,
+  then each phase with its triggers grouped by folder and numbered in the order they are tried, its **Exits** shown as "when … → go to …"
+  triggers, its Missions and "When it opens"; then regions, scenes, rehearsal cases, settings). Drag a trigger to reorder it or into
+  another folder or phase; right-click for Duplicate, Copy, Cut, Paste after, Copy as text, Rename (rehearsal cases that expect it follow),
+  Save as a template, Delete; Shift/Ctrl pick several; Ctrl+C/X/V/D, Delete, F2, Ctrl+F. Middle: the selected trigger as **Events /
+  Conditions / Actions in sentences**, every parameter a slot that opens its picker in place (residents and wolves by name, a place then
+  a **tile on the real map**, regions, items by category, factions, towns, markets, ships, areas, templates, projects, phases, missions,
+  scenes, cues, signals and counters of the story, numbers within their bounds, words with their length; "the acting wolf", and "Enter
+  an id" stays), the event chosen from the catalogue's groups with each one's help and fields, actions and effects from grouped lists,
+  conditions as nested All/Any/Not groups, a slot red with its problem as its tooltip; the folder, the note, how it fires, for whom, how
+  often the last rehearsal fired it, and its signal connections. Right: the **Problems list** (Phase 3's, moved, [Go] selects the node),
+  search results, and the story's signals, counters and regions with **every use** and rename-everywhere. **Undo and redo** over the whole
+  draft (typing in one field is one step; 200 steps). **Library…**: the 100 events' openings and objectives pasted in as triggers in a
+  folder of their own (the opening sends `<id>-begins` instead of going to the library's "work" phase), a library event's mission added
+  to a phase, a small story started from one; the DM's own templates (`ratw-triggers` fragments: triggers and the regions they use) kept
+  in the browser, exported and imported as files. **New…**: a small story from a library event, a blank campaign, one of the 8 examples.
+  Import and Export; **Source** (the JSON, undone with the rest), which is also what shows a draft the forms cannot (risk 6).
+- **Rehearsal** along the bottom: each case pass or fail with its path; choosing one shows its counts in the tree and dims what it never
+  fired; **Step through** (new op `rehearse-step`, a viewer's too: `story_program.rehearse_steps`, the review's loop now `_play_case` with a
+  step callback, and `story_runner.listeners` on the rehearsal's state at each step) plays it fact by fact: the fact in the catalogue's
+  words, phase and visit, journal, counters (changes marked), timers, missions, what fired, what was sent, and "Waiting for" judged as the
+  console judges a running story.
+- **Drafts on the server** (migration `0073_story_drafts.sql`, `tools/story_drafts.py`, ops `draft.list`, `draft.open`, `draft.save`,
+  `draft.delete`, a Dungeon Master's): `dm.story_drafts` (name, owner, `program json`, `version`, saved by and when) and
+  `dm.story_draft_versions` (the newest 20). The program is `json`, not `jsonb`, so a draft comes back with its own key order. A save names
+  the version it was made on and is refused over a newer one ("ann saved this draft at 14:02 (version 2) after you opened it"); any DM
+  opens and saves the world's drafts; the owner, a builder or the world's owner deletes. A broken program is kept as it is. Closed to the
+  game. The browser keeps the unsaved text and which draft it is; a viewer's drafts stay in the browser as before.
+- **Op `refs`** (`story_runner.refs`): residents, wolves, places (with size and town), factions, towns, markets, harvest areas, ships, and
+  `static_refs()` (items with categories, DM templates, project kinds, injuries); a viewer gets the static part.
+- **The console's words** come from the catalogue too: `condText`/`eventText` take a `Wording` (`workbench.wordingOf`), which the
+  Campaigns tab passes once it has read the catalogue (`WordingContext`); without it they say what they said.
+- **Retired:** "Write draft" and "Inspect rehearsal" (`lib/storyRehearsal.ts`), `StoryPhaseEditor`, `StoryTriggerEditor`,
+  `StoryEffectFields` and `SceneCueFilter`.
+- **Tests:** `tools/test_story_catalogue.py` (every event described, every parameter a slot, the tables read from the catalogue, the
+  effect checks against the hand-written ones); `tools/test_story_drafts.py` (the round trip of all 8 examples and 100 library drafts
+  through the server, key order included; versions, a save over a newer one, the newest 20; a broken draft kept; deleting; closed to the
+  game; `refs`; a rehearsal stepped through; the route for a DM, a second DM, a builder and a viewer); `Editor/src/lib/workbench.test.ts`
+  (every trigger, condition, action, effect and exit of the 108 programs as a sentence; the tree; round trips of a move and back, a cut
+  and paste back, renames and back, edits undone and redone; unique ids, regions pasted along; uses, search, problem places; the console's
+  words); the render smoke renders the workbench for all 108 programs with each trigger, exit, phase, missions, settings, cases and scenes
+  selected (1,194 views; showing a program never edits it), the pickers and the rehearsal stepping. The P1-P3 suites pass;
+  `test_dungeon_master`, `test_world_db`, `test_studio` pass; `test_world_admin`'s two known failures are the same on `r3-camp-p3`.
+- **Seen:** on a throwaway Greyfen database (its map, roster, three wolves, two drafts; no game server, nothing published), the real DM
+  suite: screenshots in `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p4/` (a trigger, the resident picker, the event picker, the
+  tile picker on the map, the library and its triggers added, the context menu, a duplicate id in Problems, a rehearsal's trace and step
+  through, a pasted trigger with a note in a folder, an exit as a trigger, search and uses, unsaved and saved, New…, a small story, Source).
+- **Not in Phase 4, on purpose:** the Enabled / "initially on" box and the Variables panel (Phase 5's `enabled`, declared variables;
+  the right column lists signals and counters as they are used); nested If/Else/For each (Phase 5); a rehearsal case's facts written with
+  the event picker and forms for expected effects and counters (the case form is today's), and "Rehearse here"; quests in the tree (Phase
+  6); a draft's older versions opened from the page (the op takes `version`; the page opens the newest); the hosted desktop shell needs
+  nothing new (the route is the same).
+- **For Phase 5:** add the new conditions and actions to the catalogue's `conditions`/`actions` with params and sentences, and the tree
+  and sentences follow; nested actions need `ActionList` to recurse (it is one list today) and `Ref` to name a nested action for
+  Problems' `part`; `enabled` goes in the trigger head of `TriggerView` and as the tree's checkbox (`TriggerTree`'s `Row`); declared
+  variables replace `countersOf` (the pickers' `counter` type and the right column); `withEvent`, `newAction`, `newCondition` are where
+  defaults live; keep `editable()` in step with the validator so a version 2 program opens in the workbench; `wordingOf` gives the console
+  the new sentences for free.
 
 **Phase 5: The trigger language, version 2. About 16 hours.**
 - Declared variables, types, lists; `compare`, `switch`, `in list`, `phase is`, `timer`, `fired`, `chance`,

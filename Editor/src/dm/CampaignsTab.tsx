@@ -8,15 +8,26 @@ import {atLeast, dmApi, maySteer, storyProgram, worldLabel, type Live, type Me, 
 import {newKey, mergeTimeline, sinceOf, steerable, type Explained, type Overview, type RunDetail, type TimelineCursor, type TimelineItem, type TimelinePage,
     type WorldEvent} from '../lib/campaigns';
 import {CampaignList} from './campaigns/CampaignList';
+import {WordingContext} from './campaigns/Explain';
+import {wordingOf, type Catalogue} from '../lib/workbench';
+import type {Wording} from '../lib/campaigns';
 import {CampaignView, type ViewTab} from './campaigns/CampaignView';
 
 export const POLL_MS = 2000;
 
 /** What the render smoke (and a test) hands the tab instead of asking the DM tool. */
-export interface CampaignsInitial { overview: Overview; detail?: RunDetail; timeline?: TimelinePage; live?: Live; tab?: ViewTab; explained?: Explained }
+export interface CampaignsInitial { overview: Overview; detail?: RunDetail; timeline?: TimelinePage; live?: Live; tab?: ViewTab; explained?: Explained; catalogue?: Catalogue }
 
 export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Target; focus?: string; initial?: CampaignsInitial}) {
     const [overview, setOverview] = useState<Overview | null>(initial?.overview ?? null);
+    // The trigger catalogue's sentences for "Waiting for" and Why not? (doc 85, Phase 4), once it is read.
+    const [catalogue, setCatalogue] = useState<Catalogue | null>(initial?.catalogue ?? null);
+    useEffect(() => {
+        if (initial) return;
+        let live = true;
+        storyProgram<{catalogue: Catalogue}>(target, 'catalog').then(c => { if (live) setCatalogue(c.catalogue); }, () => {});
+        return () => { live = false; };
+    }, [target]); // eslint-disable-line react-hooks/exhaustive-deps
     const [selected, setSelected] = useState<string>(focus ?? initial?.detail?.run ?? '');
     const [detail, setDetail] = useState<RunDetail | null>(initial?.detail ?? null);
     const [items, setItems] = useState<TimelineItem[]>(initial?.timeline?.items ?? []);
@@ -100,7 +111,8 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
     if (!canSee) return <div className="dm-center"><div className="empty-sheet"><h2>⚑ Campaigns</h2>
         <p>The Campaigns console names wolves and where they are: it needs a Dungeon Master account.</p></div></div>;
     const run = overview?.runs.find(r => r.run === selected);
-    return <div className="dm-health dm-campaigns">
+    const wording: Wording | undefined = catalogue ? wordingOf(catalogue, names) as Wording : undefined;
+    return <WordingContext.Provider value={wording}><div className="dm-health dm-campaigns">
         <div className="dm-sheet-bar">
             <strong>{selected ? <button className="link-button" onClick={() => setSelected('')}>◂ Campaigns</button> : 'Campaigns'} · {worldLabel(target)}</strong>
             <span className="meta hint">{overview ? `game day ${overview.now.day === null ? '—' : overview.now.day.toFixed(1)} · the world's log at #${overview.now.newest}`
@@ -117,5 +129,5 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
             : <CampaignView me={me} target={target} row={run} detail={detail?.run === selected ? detail : null} items={items} events={events}
                 names={names} now={overview!.now} live={live} tab={tab} setTab={setTab} earlier={earlier ? more : undefined}
                 refresh={() => poll(selected)} explained={explained?.run === selected ? explained : null} />}
-    </div>;
+    </div></WordingContext.Provider>;
 }

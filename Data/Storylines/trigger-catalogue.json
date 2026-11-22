@@ -1,0 +1,6564 @@
+{
+ "format": "ratw-trigger-catalogue",
+ "version": 1,
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y).",
+ "groups": [
+  {
+   "id": "story",
+   "label": "Story engine"
+  },
+  {
+   "id": "scenes",
+   "label": "Scenes"
+  },
+  {
+   "id": "regions",
+   "label": "Regions"
+  },
+  {
+   "id": "coming",
+   "label": "Coming and going"
+  },
+  {
+   "id": "talk",
+   "label": "Talk, ties and company"
+  },
+  {
+   "id": "gifts",
+   "label": "Gifts, items and loans"
+  },
+  {
+   "id": "fights",
+   "label": "Fights, hunting, death"
+  },
+  {
+   "id": "bandits",
+   "label": "Bandits and the roads"
+  },
+  {
+   "id": "caravans",
+   "label": "Caravans, wagons, carts"
+  },
+  {
+   "id": "ships",
+   "label": "Ships"
+  },
+  {
+   "id": "money",
+   "label": "Money, work and markets"
+  },
+  {
+   "id": "letters",
+   "label": "Letters and notices"
+  },
+  {
+   "id": "law",
+   "label": "Law, crime and pacts"
+  },
+  {
+   "id": "town",
+   "label": "Town life"
+  },
+  {
+   "id": "fame",
+   "label": "Fame, journal and tales"
+  }
+ ],
+ "actionGroups": [
+  {
+   "id": "variables",
+   "label": "Counters"
+  },
+  {
+   "id": "signals",
+   "label": "Signals and timers"
+  },
+  {
+   "id": "flow",
+   "label": "Flow"
+  },
+  {
+   "id": "residents",
+   "label": "Residents"
+  },
+  {
+   "id": "wolves",
+   "label": "Players' wolves"
+  },
+  {
+   "id": "places",
+   "label": "Places and regions"
+  },
+  {
+   "id": "economy",
+   "label": "Towns, markets and factions"
+  },
+  {
+   "id": "quests",
+   "label": "Quests"
+  },
+  {
+   "id": "scenes",
+   "label": "Scenes"
+  }
+ ],
+ "types": {
+  "wolf": "A player's wolf: the acting wolf ($actor) or a named one.",
+  "resident": "A resident of the world.",
+  "character": "A wolf or a resident.",
+  "place": "A cell or an interior.",
+  "item": "An item of Data/Items/items.json.",
+  "faction": "A faction.",
+  "town": "A town (a region of the map).",
+  "market": "A market.",
+  "ship": "A ship.",
+  "area": "A harvest area.",
+  "template": "A personal-quest template (DM source).",
+  "project": "A kind of town project.",
+  "scene": "A scene embedded in this story.",
+  "cue": "A scene cue: the name a scene event comes back with.",
+  "region": "A region of this story.",
+  "phase": "A phase of this story.",
+  "mission": "A mission of this phase.",
+  "signal": "A story signal name.",
+  "counter": "A counter name.",
+  "text": "Words.",
+  "int": "A whole number.",
+  "days": "A number of days.",
+  "choice": "One of a list.",
+  "bool": "Yes or no.",
+  "value": "A number or a text.",
+  "effect": "A world effect.",
+  "notice": "A notice on a board.",
+  "contract": "A contract.",
+  "letter": "A letter.",
+  "run": "A story release.",
+  "number": "A number the event records."
+ },
+ "trigger": {
+  "once": {
+   "each": "every time",
+   "visit": "once this phase visit",
+   "player": "once per wolf this visit",
+   "campaign": "once in the campaign",
+   "member": "once per wolf in the campaign"
+  },
+  "audience": {
+   "world": "anyone in the world",
+   "participant": "a wolf of the story"
+  },
+  "exit": {
+   "participant": "a wolf of the story",
+   "players": "when {n} different wolves of the story have",
+   "percent": "when {n}% of the audience have"
+  },
+  "limits": {
+   "triggers": 64,
+   "actions": 12,
+   "conditions": 8,
+   "depth": 5,
+   "exits": 16,
+   "effects": 12,
+   "missions": 16,
+   "objectives": 8,
+   "regions": 128,
+   "scenes": 32,
+   "phases": 100
+  }
+ },
+ "events": [
+  {
+   "id": "scene arrived",
+   "group": "scenes",
+   "title": "A directed resident arrives",
+   "sentence": "{actor} arrives at the spot for cue {detail}",
+   "help": "A story's npc.walk order finished: the resident stands on the tile it was sent to.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident the scene directs",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "the author's cue on the order",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true,
+   "notes": "tile = the resident's tile on arrival."
+  },
+  {
+   "id": "scene spoken",
+   "group": "scenes",
+   "title": "A directed resident speaks",
+   "sentence": "{actor} says the line for cue {detail}",
+   "help": "A story's npc.speak order was carried out: the resident said its line aloud.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident the scene directs",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "the author's cue on the order",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "scene posed",
+   "group": "scenes",
+   "title": "A directed resident takes a pose",
+   "sentence": "{actor} takes the pose for cue {detail}",
+   "help": "A story's npc.pose order finished: the resident is now in the posture asked for.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident the scene directs",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "the author's cue on the order",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "scene blocked",
+   "group": "scenes",
+   "title": "A directed resident can't do it",
+   "sentence": "{actor} can't carry out cue {detail}",
+   "help": "A story's walk, speak or pose order could not be carried out: the resident is gone, dead, downed, fighting, following someone, has no way there, or made no progress for 3 minutes.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident the scene directs",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "the author's cue on the order",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true,
+   "notes": "The story engine sets no tile when blocked (doc 85), but recordEvent then fills the resident's own tile if it is on stage in that cell; cell is empty when the resident no longer exists."
+  },
+  {
+   "id": "scene finished",
+   "group": "scenes",
+   "title": "A scene finishes",
+   "sentence": "Scene {detail} finishes",
+   "help": "An embedded scene (cinematic) reached its last beat.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf who started the scene, if any",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where that wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "the scene's cue",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true,
+   "notes": "actor empty when no wolf started it; cell and tile are that wolf's, filled by recordEvent when it is in the world."
+  },
+  {
+   "id": "scene choice",
+   "group": "scenes",
+   "title": "A scene's choice is made",
+   "sentence": "The choice {detail} is made in the scene",
+   "help": "A choice beat of an embedded scene closed: the votes (or the default, on a tie or a timeout) picked an option.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf who started the scene, if any",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where that wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "cue.option: the scene's cue and the option chosen",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true,
+   "notes": "detail is '<cue>.<option id>'."
+  },
+  {
+   "id": "scene response",
+   "group": "scenes",
+   "title": "Players answer in a scene",
+   "sentence": "The response {detail} comes in",
+   "help": "A response beat of an embedded scene closed, answered by the players or timed out.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf who started the scene, if any",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where that wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "cue.beat.submitted or cue.beat.timeout",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true,
+   "notes": "The typed words are never logged."
+  },
+  {
+   "id": "scene failed",
+   "group": "scenes",
+   "title": "A scene fails",
+   "sentence": "Scene {detail} fails",
+   "help": "An embedded scene could not go on (marked failed) and ended.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf who started the scene, if any",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run the scene belongs to",
+     "any": "any story"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where that wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "cue",
+     "label": "the scene's cue",
+     "any": "any cue"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the visit (the run's visit number)"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "region entered",
+   "group": "regions",
+   "title": "A wolf enters a story region",
+   "sentence": "{actor} enters region {target} in {cell}",
+   "help": "A wolf's move took it inside a region of a live story that watches regions.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "region",
+     "label": "the region's id",
+     "any": "any region"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the cell of the first tile inside",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "run",
+     "label": "the story run the region belongs to",
+     "any": "any story"
+    }
+   },
+   "tile": true,
+   "notes": "tile = the first tile inside.",
+   "mission": true
+  },
+  {
+   "id": "region left",
+   "group": "regions",
+   "title": "A wolf leaves a story region",
+   "sentence": "{actor} leaves region {target} in {cell}",
+   "help": "A wolf's move took it outside a region of a live story that watches regions.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "region",
+     "label": "the region's id",
+     "any": "any region"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the cell of the last tile inside",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "run",
+     "label": "the story run the region belongs to",
+     "any": "any story"
+    }
+   },
+   "tile": true,
+   "notes": "tile = the last tile inside.",
+   "mission": true
+  },
+  {
+   "id": "conversation",
+   "group": "talk",
+   "title": "Someone talks to someone",
+   "sentence": "{actor} talks to {target}",
+   "help": "A wolf speaks to a resident (chat or the dialogue window), a resident answers a wolf, or two residents finish an ambient talk.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who spoke",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who was spoken to",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the speaker is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "for residents' own talk only: the topic kind (news, deed, friends, day...)",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "Never what was said. Wolf to resident: actor = the wolf. Resident answering: actor = the resident, target = the wolf. actor (or target) is empty for an unrecognised voice. An ambient quarrel is logged as 'quarrel', not this.",
+   "mission": true
+  },
+  {
+   "id": "arrival",
+   "group": "coming",
+   "title": "A wolf comes into the world",
+   "sentence": "{actor} comes into the world at {cell}",
+   "help": "A player enters the world with a character (logs in).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it appears",
+     "any": "anywhere"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "enter place",
+   "group": "coming",
+   "title": "A wolf enters a place",
+   "sentence": "{actor} enters {target} from {detail}",
+   "help": "A wolf crosses a door or a cell edge into another cell or interior (residents' crossings are not logged).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "place",
+     "label": "the place entered",
+     "any": "anywhere"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the place entered (same as target)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "place",
+     "label": "the place left",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "notes": "detail is a cell or interior id, so a place picker fits it too.",
+   "mission": true
+  },
+  {
+   "id": "departure",
+   "group": "coming",
+   "title": "A wolf leaves the world",
+   "sentence": "{actor} leaves the world from {cell}",
+   "help": "A player's character leaves the world (logs out or disconnects).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it was",
+     "any": "anywhere"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "gift",
+   "group": "gifts",
+   "title": "A gift is given",
+   "sentence": "{actor} gives {item} to {target}",
+   "help": "A character gives goods or coins to another, the first gift of the game day between that pair (the one that warms the bond).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the giver",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who receives it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the giver is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was given (empty for coins only)",
+     "any": "anything"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins given"
+    }
+   },
+   "tile": true,
+   "notes": "A trigger on 'gift' also fires on 'gift again'. A gift's item filter matches the base item, so a marked or crafted rope counts as rope (unless the filter names marks with ~ or @).",
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "gift again",
+   "group": "gifts",
+   "title": "Another gift the same day",
+   "sentence": "{actor} gives {item} to {target} again",
+   "help": "A character gives to the same receiver again on a game day it has already given to them (no more warmth).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the giver",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who receives it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the giver is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was given (empty for coins only)",
+     "any": "anything"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins given"
+    }
+   },
+   "tile": true,
+   "notes": "Item filter matches the base item, as for gift.",
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "economy",
+   "group": "money",
+   "title": "Money or goods change hands",
+   "sentence": "{actor} pays {target} for {detail}",
+   "help": "Every move between accounts in the economy's ledger: sales, wages, rent, fees, gifts, prizes, fines, upkeep. Very frequent.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the account paying or handing over (a character, or an account such as treasury, stores:<town>, till:<post>, contract:<id>)",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the account receiving",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the payer is, when it is a character",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "the goods moved (empty for coins only)",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the ledger's reason ('a gift', 'rent', 'stall sale', 'contract reward', 'fine'...)",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many goods"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins moved"
+    }
+   },
+   "tile": true,
+   "notes": "Logged from the society's journal (World::absorbJournal). Accounts are not all characters; tile only when the payer is a character in the world. item may be a marked id (base~marks)."
+  },
+  {
+   "id": "contract done",
+   "group": "money",
+   "title": "A contract is fulfilled",
+   "sentence": "{actor} completes the contract for {target}: {detail}",
+   "help": "A contract (bounty, escort, courier, supply...) is settled as done: its reward paid to the one who did it, or returned to the poster when nobody took it (the watch cleared the camp, the carters carried it).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who did it and was paid (or the poster, when the reward went back)",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "text",
+     "label": "what it was for: a bounty's camp, a courier's recipient, an escort's or supply's town",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the doer is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<contract kind>: <its description>', e.g. 'bounty: ...'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "what was paid (or the whole reward returned)"
+    }
+   },
+   "tile": true,
+   "notes": "Written as 'contract ' + status; 'contract expired' is the other status and is not listed. Filter detail by its 'courier:', 'escort:' or 'bounty:' prefix only with exact text.",
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "hunted",
+   "group": "fights",
+   "title": "An animal is killed in a hunt",
+   "sentence": "{actor} kills a {target}: {detail}",
+   "help": "An animal falls in a hunt; its parts go to the hunters.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who made the kill",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "text",
+     "label": "the species",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the hunt was",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the kill's grade: 'a clean kill', 'a good kill', 'a rough kill' or 'a ragged kill'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods taken from it"
+    }
+   },
+   "tile": true,
+   "notes": "tile = where the animal fell.",
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "fight ends",
+   "group": "fights",
+   "title": "A fight ends",
+   "sentence": "A fight in {cell} ends",
+   "help": "A battle (a fight or a hunt) is over.",
+   "fields": {
+    "cell": {
+     "type": "place",
+     "label": "where the fight was",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the battle's id",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "No actor or target."
+  },
+  {
+   "id": "gift used",
+   "group": "gifts",
+   "title": "A Gift is used outside a fight",
+   "sentence": "{actor} uses a {item} Gift ({detail})",
+   "help": "A wolf uses a work Gift outside a fight (Mend, Shortcut, Lighten Load, Dowse, Echo, Carry, or lending it to a workshop).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the Gift's family",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the ability's id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "item is a Gift family, not an item id. Gifts used in fights are not logged.",
+   "mission": true
+  },
+  {
+   "id": "death",
+   "group": "fights",
+   "title": "Someone dies",
+   "sentence": "{actor} dies",
+   "help": "A character dies: killed in a fight, of old age, or by the Dungeon Master.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who died",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they died",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "notes": "Old age also records 'old age' straight after."
+  },
+  {
+   "id": "revival",
+   "group": "fights",
+   "title": "Someone is brought back",
+   "sentence": "{actor} is brought back to life",
+   "help": "A dead character is raised again (a Dungeon Master or developer action).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who is revived",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they lie",
+     "any": "anywhere"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "marriage",
+   "group": "talk",
+   "title": "Two residents marry",
+   "sentence": "{actor} marries {target}",
+   "help": "Once a game week, two unmarried adult residents who like and know each other well enough may marry; one moves in with the other.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "one spouse",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the other spouse",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the first spouse is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<name> moves in'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "relocation",
+   "group": "coming",
+   "title": "A resident is moved to a new home",
+   "sentence": "{actor} is sent to a new home: {detail}",
+   "help": "A resident is given a new home elsewhere: by the Dungeon Master's director (npc_relocate), or moved to a House's estate site; it walks there before the home changes.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it is now",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'new home in <cell id>'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "raid",
+   "group": "bandits",
+   "title": "Bandits rob a wagon",
+   "sentence": "Bandits of {actor} rob the wagon to {target} in {cell}",
+   "help": "Bandits camped on a road waylay a passing wagon and take its cargo.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market the wagon was going to",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the raid happened",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the wagon's departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'the wagon to <market> was robbed'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "pieces of cargo taken"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "bandits gather",
+   "group": "bandits",
+   "title": "Bandits make camp on a road",
+   "sentence": "Bandits gather in {cell} on the road to {target}",
+   "help": "Once a game week a new bandit camp may form in wild country along a road (never near a watch post).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the new camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market at the road's far end",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they camp",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'on the road to <market>'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "camp cleared",
+   "group": "bandits",
+   "title": "A bandit camp is broken",
+   "sentence": "{actor} clears the bandit camp {target}",
+   "help": "A bandit camp is broken: by whoever beat its last bandits, or by a town's watch on patrol.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who cleared it (a character; the town's id when the watch did it)",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the camp's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'by <name>' or 'by the watch'",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when a character cleared it and stands in that cell."
+  },
+  {
+   "id": "bandits scattered",
+   "group": "bandits",
+   "title": "Bandits starve and scatter",
+   "sentence": "The bandits of {actor} scatter, starved out",
+   "help": "A bandit camp grown too hungry and weak breaks up on its own.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the camp's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'starved out'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "patrol",
+   "group": "bandits",
+   "title": "The watch goes after bandits",
+   "sentence": "The watch of {actor} goes out after the bandits of {target}",
+   "help": "A town with a bounty out on a camp sends its watch after the bandits (each game day, by chance).",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town whose watch went out",
+     "any": "any town"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the camp's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'the watch went out after the bandits'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "caravan arrives",
+   "group": "caravans",
+   "title": "A wagon arrives at a market",
+   "sentence": "The wagon {actor} arrives at {target}, {detail}",
+   "help": "A wagon between markets reaches the far market and unloads.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it reached",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it unloads",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'from <market id>' and ', guarded' when escorted",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it carried"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "festival",
+   "group": "town",
+   "title": "A festival begins",
+   "sentence": "{detail} begins in {actor}",
+   "help": "A town's festival day reaches noon and the festival starts at the square.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town",
+     "any": "any town"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the town square's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the festival's name",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "project built",
+   "group": "town",
+   "title": "A town project is finished",
+   "sentence": "{actor} finishes {detail}",
+   "help": "A town project has all its materials and work and stands built.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town (written 'town:<town id>')",
+     "any": "any town"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it stands",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "project",
+     "label": "the kind of project",
+     "any": "any kind"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the project's title",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "its whole worth"
+    }
+   },
+   "tile": false,
+   "notes": "actor carries the 'town:' prefix. The project's x,y are passed in the event's time slots and overwritten, so no tile is logged."
+  },
+  {
+   "id": "project gift",
+   "group": "town",
+   "title": "Someone gives to a town project",
+   "sentence": "{actor} gives {item} to {detail}",
+   "help": "A wolf gives coins or hands in materials to a town project (or its upkeep).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the giver",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the giver is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "the base item handed in, or 'coin'",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the project's title",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many pieces"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins given"
+    }
+   },
+   "tile": true,
+   "notes": "item is 'coin' for money.",
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "festival entered",
+   "group": "town",
+   "title": "Someone enters a festival contest",
+   "sentence": "{actor} enters the {item} at {detail}",
+   "help": "A wolf pays to enter a festival contest at the square, a board or an inn.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the entrant",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it signed up",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the contest kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the festival's name",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the entry fee"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "carter robbed",
+   "group": "bandits",
+   "title": "A carter loses the purse",
+   "sentence": "{actor} is robbed by the bandits of {target}",
+   "help": "A wagon is raided and its carter, not hurt, is robbed of the purse.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the carter",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the raid happened",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'robbed of the purse in the raid'",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Logged with a raid, as the other half of 'carter hurt'."
+  },
+  {
+   "id": "storyline objective",
+   "group": "fame",
+   "title": "A storyline objective is met",
+   "sentence": "{actor} meets an objective of {target}: {detail}",
+   "help": "Something a character did met an objective of a storyline they are in (a personal storyline or a tale).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who met it",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the objective's line, with ' (by hand)' when marked done by hand",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "storyline step",
+   "group": "fame",
+   "title": "A storyline step is done",
+   "sentence": "{actor} finishes the step {detail} of {target}",
+   "help": "Every objective of a storyline's step is met and the storyline moves to its next step.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "whose act finished it",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the step's title",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "tale ended",
+   "group": "fame",
+   "title": "A tale ends",
+   "sentence": "{actor}'s tale {target} ends: {detail}",
+   "help": "A storyteller's tale (a player-run storyline) is ended by its teller, or closed.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the storyteller",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the teller is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<title> (<how it ended>)'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "story phase",
+   "group": "story",
+   "title": "A story enters a phase",
+   "sentence": "Story {actor} enters phase {target}",
+   "help": "A world story run (a campaign) is put into a phase by the story runner; recorded by the game.",
+   "fields": {
+    "actor": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "target": {
+     "type": "phase",
+     "label": "the phase entered",
+     "any": "any phase"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the story's title",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Triggers cannot listen for it (the runner refuses it as a trigger event); exits and the runner use it."
+  },
+  {
+   "id": "archive work",
+   "group": "money",
+   "title": "Someone does archive work",
+   "sentence": "{actor} does {item} work at the archive in {cell}",
+   "help": "A wolf does a task in a town's archive (copying, sorting records...) and is paid by the town.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the worker",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the archive",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the task: copy or sort",
+     "any": "any"
+    },
+    "detail": {
+     "type": "town",
+     "label": "the town whose archive it is",
+     "any": "any town"
+    },
+    "coins": {
+     "type": "number",
+     "label": "what it was paid"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "contract taken",
+   "group": "money",
+   "title": "Someone takes on a contract",
+   "sentence": "{actor} takes on work for {target}: {detail}",
+   "help": "A wolf takes on a posted contract (at a board, by letter), or a resident or town guard is given one (a guard taking an escort).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who took it",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who posted it (a character or an account such as stores:<town>)",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the taker is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<contract kind>: <its description>'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the reward on offer"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "contract posted",
+   "group": "money",
+   "title": "A contract is posted",
+   "sentence": "{actor} posts work: {detail}",
+   "help": "Someone posts a contract with its reward held in trust: a town's escort for a wagon, a bounty on a camp, a courier's letter, a project's work.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who posted it (a character or a town's store/treasury account)",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "text",
+     "label": "what it is for: a bounty's camp, a courier's recipient, an escort's or supply's town",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the poster is, when it is a character",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<contract kind>: <its description>'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the reward set aside"
+    }
+   },
+   "tile": false,
+   "notes": "cell and tile only when the poster is a character in the world."
+  },
+  {
+   "id": "deed",
+   "group": "fame",
+   "title": "A deed is told of",
+   "sentence": "{actor} does a deed for {target}: {detail}",
+   "help": "A wolf's notable act becomes a deed in the town's talk (a camp broken, a project built, a promise kept, a trouble solved, a milestone credited...).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the first of those who did it",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "who it was done for (a character, or 'town:<town id>')",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it was done",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the deed's kind (broke_camp, tended, kept_promise, carried_letter, built_project, award...)",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the deed in words, then its id in brackets",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "its weight: 0 small, 1 notable, 2 great, 3 legendary"
+    }
+   },
+   "tile": true,
+   "notes": "Only wolves are doers. target may be empty.",
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "festival won",
+   "group": "town",
+   "title": "A festival contest is won",
+   "sentence": "{actor} wins the {item} at {detail}",
+   "help": "A festival contest ends with a winner and the pot is shared out.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the winner (the first of a winning team)",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the town square",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the contest kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the festival's name",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many entered"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the winner's share of the pot"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "fine paid",
+   "group": "law",
+   "title": "A fine is paid to the watch",
+   "sentence": "{actor} pays the watch: {detail}",
+   "help": "Someone with a warrant pays what is owed and the fine to a guard who stopped them.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who paid",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the guard",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the payer is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'to the watch of <town>'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "restitution and fine together"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "forage",
+   "group": "gifts",
+   "title": "Someone forages",
+   "sentence": "{actor} gathers {item} from {detail}",
+   "help": "A wolf gathers from wild ground (alone, or the whole find of a joint foraging).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the forager",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was gathered",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the foraging ground's kind",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many (a joint's whole find)"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "groomed",
+   "group": "talk",
+   "title": "Someone is groomed",
+   "sentence": "{actor} grooms {target}",
+   "help": "A wolf grooms another character, or itself.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the groomer",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who was groomed (empty when self)",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the groomed one is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'self' or 'other'",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "hunt",
+   "group": "fights",
+   "title": "A hunt begins",
+   "sentence": "{actor} goes out after game in {cell}",
+   "help": "A wolf starts a hunt: animals are lined up in a hunting battle.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the hunter who started it",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the battle's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "animals in the hunt"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "huntRole",
+   "group": "fights",
+   "title": "A part played in a hunt",
+   "sentence": "{actor} played the {target} in the hunt",
+   "help": "When a hunt ends, one event for each part each wolf played; also when a wolf is given another's share to carry.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who played it",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "text",
+     "label": "the role: tracker, driver, ambusher, carrier...",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the hunt was",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the hunt's battle id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "introduced",
+   "group": "talk",
+   "title": "Someone gives their name",
+   "sentence": "{actor} gives their name to {target}: {detail}",
+   "help": "A character says one of its registered names to another, who learns it (hidden names on).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who gave the name",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who learned it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the speaker is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the name given",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "lease",
+   "group": "money",
+   "title": "Someone rents lodging",
+   "sentence": "{actor} rents a {item} from {target}",
+   "help": "A wolf rents a bed, a room upstairs at an inn, a lodger's place or a home's place.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the renter",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "the landlord (a resident, or 'treasury')",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the lodging's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the kind: bed, night, lodger, place",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the lodging's id",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the rent paid"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "lease ended",
+   "group": "money",
+   "title": "A lodging ends",
+   "sentence": "{actor}'s lodging with {target} ends",
+   "help": "A lodging runs out, is given up, can't be paid for, or ends because the place is held for a story.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the renter",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "the landlord (a resident, or 'treasury')",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the lodging's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the kind: bed, night, lodger, place",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the lodging's id",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "rent returned"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when the renter is in that place.",
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "lent",
+   "group": "gifts",
+   "title": "Something is lent",
+   "sentence": "{actor} lends {item} to {target}",
+   "help": "A wolf accepts a loan another offered: the goods move to the borrower until due.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the lender",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the borrower",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the lender is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was lent",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the loan's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many"
+    }
+   },
+   "tile": true,
+   "notes": "item may be a marked id (base~marks).",
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "letter sent",
+   "group": "letters",
+   "title": "A letter is sent",
+   "sentence": "{actor} sends a letter to {target}",
+   "help": "A wolf hands a letter to the courier (paying the fee, perhaps with coins or goods enclosed).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the writer",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "the recipient (empty when it goes by a courier contract)",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the writer is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "letter",
+     "label": "the letter's id",
+     "any": "any letter"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the courier's fee"
+    }
+   },
+   "tile": true,
+   "notes": "An enclosure is not in the event; see 'letter returned'.",
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "letter delivered",
+   "group": "letters",
+   "title": "A letter is delivered",
+   "sentence": "{actor} receives the letter {detail}",
+   "help": "A letter reaches its reader, in their post town or at one of its inns.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the reader",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the reader is (empty when it waits at an inn)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "letter",
+     "label": "the letter's id",
+     "any": "any letter"
+    }
+   },
+   "tile": true,
+   "notes": "cell and tile only when the reader is in the world.",
+   "mission": true
+  },
+  {
+   "id": "loan returned",
+   "group": "gifts",
+   "title": "A loan is given back",
+   "sentence": "{actor} gives {item} back to {target}",
+   "help": "A borrower gives a loan back, or it falls due and the courier takes back what they still have (the whole loan).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the borrower",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the lender",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the borrower is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was lent",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the loan's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many came back"
+    }
+   },
+   "tile": true,
+   "notes": "cell and tile only when the borrower is in the world (a loan falling due may come back while they are away). item may be a marked id.",
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "notice answered",
+   "group": "letters",
+   "title": "A resident answers a notice",
+   "sentence": "{actor} answers the notice {detail} of {target}",
+   "help": "A resident answers a wolf's notice when it is posted: a seller or buyer for an item, a master for an apprenticeship.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident who answered",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the notice's author",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "what the notice is about: 'item:<item id>', 'apprenticeship:<trade>', 'room', 'partner'",
+     "any": "any"
+    },
+    "detail": {
+     "type": "notice",
+     "label": "the notice's id",
+     "any": "any notice"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "notice posted",
+   "group": "letters",
+   "title": "A notice is posted",
+   "sentence": "{actor} posts the notice {detail}",
+   "help": "A wolf pins a notice on a board (seeking, offering, an event, lost, other) and pays the fee.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the author",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the author is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "what it is about: 'item:<item id>', 'apprenticeship:<trade>', 'room', 'partner', or empty",
+     "any": "any"
+    },
+    "detail": {
+     "type": "notice",
+     "label": "the notice's id",
+     "any": "any notice"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the fee"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "pact sealed",
+   "group": "law",
+   "title": "A pact is sealed",
+   "sentence": "{actor} and {target} seal the pact {detail}",
+   "help": "Both parties to a pact (a written agreement sent by letter) have sealed it; recorded when the last of them seals.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the pact's author",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "the other party",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the author is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the pact's id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "paid off bandits",
+   "group": "bandits",
+   "title": "Someone pays off bandits",
+   "sentence": "{actor} pays off the bandits of {target}",
+   "help": "A wolf stopped by bandits on the road pays what they demand (half the purse, if already fighting).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the one who paid",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'on the road'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "what was paid"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "performance",
+   "group": "talk",
+   "title": "Someone performs",
+   "sentence": "{actor} begins to perform: {item}",
+   "help": "A wolf begins to sing, tell a tale or play an instrument it carries, in a tavern or anywhere.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the performer",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "'sing', 'tale', or the instrument's item id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "reported",
+   "group": "law",
+   "title": "A crime is reported to the watch",
+   "sentence": "{actor} reports {detail} to {target}",
+   "help": "A witness to a crime tells a guard of it.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the witness",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the guard told",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the crime happened",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<charge> (<incident id>)'",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when the witness is in the crime's cell.",
+   "mission": true
+  },
+  {
+   "id": "shared meal",
+   "group": "talk",
+   "title": "A meal is shared",
+   "sentence": "{actor} shares a meal with {target}",
+   "help": "A wolf eats beside another who is eating too (within two tiles); once a game day for a pair.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who ate",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who was eating beside them",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "ship docks",
+   "group": "ships",
+   "title": "A ship comes in",
+   "sentence": "{item} docks at {target}",
+   "help": "A ship on the timetable comes in to its port with its cargo.",
+   "fields": {
+    "actor": {
+     "type": "ship",
+     "label": "the ship",
+     "any": "any ship"
+    },
+    "target": {
+     "type": "market",
+     "label": "its port's market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the port",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the ship's name",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the words posted about it",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it brings"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "ship lost",
+   "group": "ships",
+   "title": "A ship is lost at sea",
+   "sentence": "{item} is lost at sea on the way to {target}",
+   "help": "A ship due at a port is lost with all its cargo (by chance or by the Dungeon Master).",
+   "fields": {
+    "actor": {
+     "type": "ship",
+     "label": "the ship",
+     "any": "any ship"
+    },
+    "target": {
+     "type": "market",
+     "label": "its port's market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the port",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the ship's name",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the words posted about it",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it was bringing"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "ship sails",
+   "group": "ships",
+   "title": "A ship sails",
+   "sentence": "{item} sails from {target}",
+   "help": "A docked ship leaves its port, taking goods with it.",
+   "fields": {
+    "actor": {
+     "type": "ship",
+     "label": "the ship",
+     "any": "any ship"
+    },
+    "target": {
+     "type": "market",
+     "label": "its port's market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the port",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the ship's name",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the words posted about it",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "pieces of goods it took on"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "ship stormbound",
+   "group": "ships",
+   "title": "A storm keeps a ship out",
+   "sentence": "{item} is stormbound and will not come to {target}",
+   "help": "A storm keeps a ship out of its port (by chance or by the Dungeon Master); what it brings grows dearer.",
+   "fields": {
+    "actor": {
+     "type": "ship",
+     "label": "the ship",
+     "any": "any ship"
+    },
+    "target": {
+     "type": "market",
+     "label": "its port's market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the port",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the ship's name",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the words posted about it",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it was bringing"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "stall rented",
+   "group": "money",
+   "title": "A market stall is rented",
+   "sentence": "{actor} rents a market stall in {cell}",
+   "help": "A wolf rents a stall at a market for the day.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the renter",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the stall's id",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the fee"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "stall sale",
+   "group": "money",
+   "title": "Something is bought at a stall",
+   "sentence": "{actor} buys {item} from {target}'s stall",
+   "help": "Someone buys goods from a wolf's market stall.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the buyer",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the stall's keeper",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was bought",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the stall's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many"
+    },
+    "coins": {
+     "type": "number",
+     "label": "what was paid"
+    }
+   },
+   "tile": true,
+   "notes": "item may be a marked id.",
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "story told",
+   "group": "talk",
+   "title": "A story is finished as a book",
+   "sentence": "{actor} finishes the story {detail}",
+   "help": "A chronicle story is finished and bound as a book; one event for each wolf in it.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "a wolf in the story",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the book's title",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "table game",
+   "group": "talk",
+   "title": "A table game is won",
+   "sentence": "{actor} wins at {detail}",
+   "help": "A tavern table game ends with a winner, who takes the pot less the house's penny.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the winner",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the tavern",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the game: knucklebones, wolves or liars",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the game's name",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "players at the table"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the pot"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "tended",
+   "group": "talk",
+   "title": "Someone is helped up",
+   "sentence": "{actor} gets {target} back on their feet",
+   "help": "A character tends a downed one beside it and stands them up.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who tended",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who was helped up",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "together",
+   "group": "talk",
+   "title": "Two worked together",
+   "sentence": "{actor} and {target} work together at {item}",
+   "help": "When a joint work (foraging, farm work, bench work) ends, one event for each pair who worked enough beats side by side.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "one of the pair",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the other",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the work was",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the activity's id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the joint work's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "beats they worked together"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "told the wardens",
+   "group": "law",
+   "title": "A wolf is reported to the Wardens",
+   "sentence": "{actor} tells the Wardens of {target}",
+   "help": "A wolf who saw another use a Gift tells the Wardens of it (the told-of wolf's Warden attention rises).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the one who told",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the one told of",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the teller is",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "trouble heard",
+   "group": "talk",
+   "title": "A wolf hears of a trouble",
+   "sentence": "{actor} hears of {target}'s {detail} trouble",
+   "help": "A resident tells a wolf of a trouble of theirs in conversation.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident with the trouble",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the trouble's kind: short, feud, work, child",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "trouble solved",
+   "group": "talk",
+   "title": "A trouble is solved",
+   "sentence": "{actor} solves {target}'s {item} trouble",
+   "help": "A wolf solves a resident's trouble.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident it helped",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the trouble's kind: short, feud, work, child",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins it brought"
+    }
+   },
+   "tile": true,
+   "mission": true,
+   "measures": [
+    "coins"
+   ]
+  },
+  {
+   "id": "vouch",
+   "group": "talk",
+   "title": "A wolf vouches for another",
+   "sentence": "{actor} vouches for {target} to {detail}",
+   "help": "A wolf tells a resident it knows that a newcomer is with them; the resident and its household warm to the newcomer.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "who vouched",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "who was vouched for",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the voucher is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "resident",
+     "label": "the resident told",
+     "any": "any resident"
+    }
+   },
+   "tile": true,
+   "notes": "detail holds a resident id, so a resident picker fits it.",
+   "mission": true
+  },
+  {
+   "id": "vouched to the wardens",
+   "group": "law",
+   "title": "A wolf vouches to the Wardens",
+   "sentence": "{actor} vouches to the Wardens for {target}",
+   "help": "A wolf who saw another's Gift vouches for them to the Wardens (once a month).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the one who vouched",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the one vouched for",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the voucher is",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "warrant",
+   "group": "law",
+   "title": "A warrant is out",
+   "sentence": "{actor} is wanted by the watch for a crime against {target}",
+   "help": "Word of a crime reaches a town's watch: the offender is wanted (a new warrant or one more charge).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the offender",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the victim",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the crime happened",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was stolen, if a theft",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'wanted by the watch of <town> for <charge> (<incident id>)'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many were stolen"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins stolen"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when the offender is in the crime's cell."
+  },
+  {
+   "id": "witnessed",
+   "group": "talk",
+   "title": "A wolf stands witness",
+   "sentence": "{actor} stands witness at the {item} of {target}",
+   "help": "An invited wolf comes within ten tiles of a wedding or a funeral while it is on.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the witness",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the first host",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it is held",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "'wedding' or 'funeral'",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the occasion's id ('<kind>:<subject>')",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "mission": true
+  },
+  {
+   "id": "project ruined",
+   "group": "town",
+   "title": "A town project falls to ruin",
+   "sentence": "{detail} in {actor} falls to ruin",
+   "help": "A built town project wears down to nothing for want of upkeep.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town (written 'town:<town id>')",
+     "any": "any town"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it stands",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "project",
+     "label": "the kind of project",
+     "any": "any kind"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the project's title",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "actor carries the 'town:' prefix."
+  },
+  {
+   "id": "harvest over",
+   "group": "money",
+   "title": "A harvest override ends",
+   "sentence": "The harvest call for {actor} is lifted",
+   "help": "The Dungeon Master clears a harvest override on an area (a poor, fair or good season called earlier).",
+   "fields": {
+    "actor": {
+     "type": "area",
+     "label": "the harvest area",
+     "any": "any area"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "wagon overdue",
+   "group": "caravans",
+   "title": "A wagon is overdue",
+   "sentence": "The wagon {actor} to {target} is overdue",
+   "help": "A wagon on the road is more than a day past due at its far market.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it is going to",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wagon is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'Overdue: the wagon from <market>' and its cause, or 'No word of it yet.'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "wagon held up",
+   "group": "caravans",
+   "title": "A wagon is held up",
+   "sentence": "The wagon {actor} to {target} is held up by {detail}",
+   "help": "A wagon meets a seeded mishap on the road and stops for a day or two.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it is going to",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it is held up",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the cause: 'a broken axle', 'mud to the axles', 'a wheel off in a rut', 'a washed-out ford'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "caravan lost",
+   "group": "caravans",
+   "title": "A wagon can go no further",
+   "sentence": "The wagon {actor} to {target} is lost in {cell}",
+   "help": "A wagon finds no road on from where it is and stops for good.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it was going to",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it stopped",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'no road on from here'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "caravan departs",
+   "group": "caravans",
+   "title": "A wagon sets out",
+   "sentence": "The wagon {actor} sets out for {target}",
+   "help": "A committed wagon departure loads and makes ready to leave its market (it waits a little for its escorts).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it is going to",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it loads",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<n> guards', and ', <carter> driving'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it carries"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "festival called",
+   "group": "town",
+   "title": "A festival is called",
+   "sentence": "{detail} is called in {actor}",
+   "help": "The Dungeon Master (or a story) calls a festival for a town, today or some days ahead.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town",
+     "any": "any town"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the festival's name",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "arrest",
+   "group": "law",
+   "title": "Someone is arrested",
+   "sentence": "{actor} takes {target} into custody",
+   "help": "A guard takes a wanted character into custody (they wouldn't pay, or were downed) and puts them in the gaol.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the guard",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "character",
+     "label": "who is held",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the gaol",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'held by the watch of <town>'",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "tile only if the guard stands in the gaol's cell."
+  },
+  {
+   "id": "assault",
+   "group": "fights",
+   "title": "A resident is attacked",
+   "sentence": "{actor} attacks {target}",
+   "help": "A wolf starts a fight (not a spar) with a resident: a crime the watch may hear of.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the attacker",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the one attacked",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the incident's id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "'fight' is recorded too."
+  },
+  {
+   "id": "bandit falls",
+   "group": "bandits",
+   "title": "A bandit falls",
+   "sentence": "{actor} brings down {detail}",
+   "help": "A bandit is downed in a fight.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who landed the last blow",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit's camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the fight is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the bandit's name",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "tile = where the bandit fell. Doc 85's table leaves target blank, but the code fills it with the camp's id.",
+   "mission": true
+  },
+  {
+   "id": "bandits called",
+   "group": "bandits",
+   "title": "Bandits are called up",
+   "sentence": "Bandits are called up near {target} in {cell}",
+   "help": "The Dungeon Master sets a bandit camp near a character, or a story effect sets one in a story area.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "always 'dungeon master'",
+     "any": "any"
+    },
+    "target": {
+     "type": "text",
+     "label": "the character it gathers near (DM), or the new camp's id (a story's)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the camp is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the new camp's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many bandits"
+    }
+   },
+   "tile": true,
+   "notes": "tile = the camp's spot."
+  },
+  {
+   "id": "bandits creep",
+   "group": "bandits",
+   "title": "Bandits creep up on someone",
+   "sentence": "Bandits of {actor} creep up on {target}",
+   "help": "Bandits near a wolf with coins sneak toward it unseen (nobody notices them).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the wolf they stalk",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the camp's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'on the road'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "bandits demand",
+   "group": "bandits",
+   "title": "Bandits demand a purse",
+   "sentence": "Bandits of {actor} stop {target} for their purse",
+   "help": "Bandits step out around a wolf on the road and demand coins (pay, fight or get clear).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the wolf stopped",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the camp's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'on the road'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "what they demand"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "caravan dropped",
+   "group": "caravans",
+   "title": "A wagon is dropped",
+   "sentence": "The wagon {actor} to {target} is dropped",
+   "help": "A wagon's market no longer exists (a host's edit), so the wagon is taken off the road.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it was going to",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it was",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'its market is gone'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "caravan home",
+   "group": "caravans",
+   "title": "A wagon comes home",
+   "sentence": "The wagon {actor} is home at {target}, {detail}",
+   "help": "A wagon gets back to the market it set out from; its carter returns to his post.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "its home market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it stops",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "its departure id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'back from <market id>'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "caravan passes",
+   "group": "caravans",
+   "title": "A wagon gets past bandits",
+   "sentence": "The wagon {actor} gets past the bandits of {target}",
+   "help": "A wagon passes a bandit camp and its guards keep the bandits off.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the wagon's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'the guards kept the bandits off'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "cart arrives",
+   "group": "caravans",
+   "title": "A farm cart arrives",
+   "sentence": "The cart {actor} from {item} arrives at {target}",
+   "help": "A farm's cart reaches its market; its goods go on the shelves.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the cart's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it unloads",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the farm's id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'from <farm id>'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "cart departs",
+   "group": "caravans",
+   "title": "A farm cart sets out",
+   "sentence": "The cart {actor} sets out from {item} for {target}",
+   "help": "A farm's morning cart leaves the farm for its market.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the cart's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the farm, where it loads",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the farm's id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the farm's name",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "cart missed",
+   "group": "caravans",
+   "title": "A farm cart doesn't come",
+   "sentence": "The cart from {item} to {target} doesn't come: {detail}",
+   "help": "A farm's cart was due but nobody at the farm could drive it, or there was no way through.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the cart departure's id",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the farm",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the farm's id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "why, in words",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it would have brought"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "cart stocks the stalls",
+   "group": "caravans",
+   "title": "A cart stocks the Marketday stalls",
+   "sentence": "The cart {actor} from {item} stocks the stalls at {target}",
+   "help": "A farm's cart arrives on Marketday and fills the market's stalls.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the cart's id (cv<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it unloads",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the farm's id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'Marketday'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "carter hurt",
+   "group": "bandits",
+   "title": "A carter is hurt in a raid",
+   "sentence": "{actor} is hurt by the bandits of {target}",
+   "help": "A wagon is raided and its carter is bruised (half the time; else 'carter robbed').",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the carter",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the raid happened",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'bruised in the raid'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "character created",
+   "group": "coming",
+   "title": "A new wolf is made",
+   "sentence": "{actor} is created",
+   "help": "A player makes a new character.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the new wolf",
+     "any": "any wolf"
+    }
+   },
+   "tile": false,
+   "notes": "The wolf is not in the world yet, so no cell or tile."
+  },
+  {
+   "id": "cleared",
+   "group": "bandits",
+   "title": "A fallen spawned resident is cleared",
+   "sentence": "{actor} is cleared away by {detail}",
+   "help": "A spawn rule clears away one of its spawned residents who has fallen, before spawning another.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the fallen resident",
+     "any": "any resident"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'spawn rule <rule id>'",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Nothing to do with bandits, despite doc 85's grouping: it comes from DM spawn rules (RatwGame.cpp:2344)."
+  },
+  {
+   "id": "contract given back",
+   "group": "money",
+   "title": "A contract is given back",
+   "sentence": "{actor} gives back work for {target}: {detail}",
+   "help": "A wolf gives up a contract it had taken; it is open again.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "who gave it back",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "who posted it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<contract kind>: <its description>'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the reward on offer"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "crier",
+   "group": "letters",
+   "title": "The town crier cries",
+   "sentence": "{actor} cries at the square: {detail}",
+   "help": "A town's crier (its official, an innkeeper or the priest) cries a news line, or the season's deeds and nicknames, at the square.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the crier",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the square",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the line cried (news), or the festival's name (deeds)",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "lines of news (1), or deeds called"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when the crier already stands in the square's cell."
+  },
+  {
+   "id": "deed revoked",
+   "group": "fame",
+   "title": "A deed is revoked",
+   "sentence": "The deed {detail} is revoked",
+   "help": "The Dungeon Master strikes a deed from the record; the town forgets it.",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the deed's id",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Only detail is filled."
+  },
+  {
+   "id": "downed",
+   "group": "fights",
+   "title": "Someone goes down in a fight",
+   "sentence": "{actor} downs {target}",
+   "help": "A fighter (or an animal in a hunt) is knocked down in a battle.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who downed them",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "who went down",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the fight is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the battle's id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "tile = where the fallen one lies in the fight, not the actor's. A bandit going down also records 'bandit falls'.",
+   "mission": true
+  },
+  {
+   "id": "event added",
+   "group": "town",
+   "title": "The Dungeon Master adds a market event",
+   "sentence": "The market event {actor} is added at {target}: {detail}",
+   "help": "The Dungeon Master adds an event to a market's calendar (a fair, a shortage, a glut...).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the market event's id (e<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "item": {
+     "type": "text",
+     "label": "the event's kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the event in words",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "goods it bears on"
+    }
+   },
+   "tile": false,
+   "notes": "No cell. Its notice, if due already, follows as 'event posted'."
+  },
+  {
+   "id": "event begins",
+   "group": "town",
+   "title": "A market event begins",
+   "sentence": "The market event {actor} begins at {target}",
+   "help": "A market event's day arrives and it takes effect on prices and stock.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the market event's id (e<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the event's kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "its notice, or its words when it has none",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "1 if it was not announced before, else 0"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "event notice",
+   "group": "town",
+   "title": "A market event's notice changes",
+   "sentence": "The notice of market event {actor} at {target} changes",
+   "help": "A market event tied to a ship gets its after-notice once that ship has sailed (or is gone).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the market event's id (e<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the event's kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the new notice",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "event posted",
+   "group": "town",
+   "title": "A market event is announced",
+   "sentence": "The market event {actor} is announced at {target}",
+   "help": "A coming market event's notice goes up on the board, some days before it begins.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the market event's id (e<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the event's kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the notice",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "event rolled",
+   "group": "town",
+   "title": "A market event is rolled",
+   "sentence": "A market event {actor} is rolled for {target}",
+   "help": "The staged economy rolls a new event onto a market's calendar.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the market event's id (e<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the event's kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the event in words",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "goods it bears on"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "fight",
+   "group": "fights",
+   "title": "A fight starts",
+   "sentence": "{actor} goes for {target}",
+   "help": "A fight begins: a character attacks another, or bandits rush or attack a wolf on the road.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the attacker (or the bandit camp's id when bandits start it)",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the one attacked",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the battle's id, or 'bandits rush' / 'bandits attack'",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when a character attacks (none for bandits)."
+  },
+  {
+   "id": "harvest called",
+   "group": "money",
+   "title": "A season's harvest is called",
+   "sentence": "The harvest of {actor} is called for {target}",
+   "help": "The Dungeon Master calls a poor, fair or good season for a harvest area; posted on the boards of its markets (one event per market).",
+   "fields": {
+    "actor": {
+     "type": "area",
+     "label": "the harvest area",
+     "any": "any area"
+    },
+    "target": {
+     "type": "market",
+     "label": "a market it is posted at",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "that market's place",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the notice, e.g. 'A good season for wheat and oats.'",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the season: 0 poor, 1 fair, 2 good"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "held for a story",
+   "group": "fame",
+   "title": "A place is held for a story",
+   "sentence": "{cell} is held for a story: {detail}",
+   "help": "The Dungeon Master or a story holds a place: no new lodgings, running ones given a week's notice.",
+   "fields": {
+    "cell": {
+     "type": "place",
+     "label": "the place held",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the reason given",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "letter returned",
+   "group": "letters",
+   "title": "A letter's enclosure comes back",
+   "sentence": "{actor}'s letter to {target} comes back with {item}",
+   "help": "A letter holding coins or goods goes back to its writer with them: unread for 56 game days, its reader gone, or burnt unopened.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the writer",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "the one it was for",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the writer is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "the goods it held",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "letter",
+     "label": "the letter's id",
+     "any": "any letter"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many goods"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins it held"
+    }
+   },
+   "tile": true,
+   "notes": "Recorded only when there was an enclosure to return. cell and tile when the writer is in the world."
+  },
+  {
+   "id": "loan unreturned",
+   "group": "gifts",
+   "title": "A loan isn't given back",
+   "sentence": "{actor} fails to give {item} back to {target}",
+   "help": "A loan falls due and the borrower no longer has all of it: the rest is owed to the lender.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the borrower",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the lender",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the borrower is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "what was lent",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the loan's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many are missing"
+    },
+    "coins": {
+     "type": "number",
+     "label": "what is now owed"
+    }
+   },
+   "tile": true,
+   "notes": "cell and tile only when the borrower is in the world."
+  },
+  {
+   "id": "matchmaking",
+   "group": "talk",
+   "title": "A resident points out a companion",
+   "sentence": "{actor} points {target} to a companion",
+   "help": "A resident talking to a newcomer wolf suggests another wolf they might meet (doc 52).",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the matchmaker",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the newcomer told",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<reason> <the suggested wolf's id>'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "milestone",
+   "group": "fame",
+   "title": "A story milestone is credited",
+   "sentence": "Milestone {detail} is credited",
+   "help": "The Dungeon Master's host credits a world story's milestone to the wolves who took part (deeds follow for the main ones).",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "always 'dm'",
+     "any": "any"
+    },
+    "target": {
+     "type": "text",
+     "label": "the credits' id",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<story> · <milestone title>'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "mourning",
+   "group": "fights",
+   "title": "A resident mourns",
+   "sentence": "{actor} mourns {target}",
+   "help": "Someone dies and each resident close to them (family, or a good friend) begins to mourn.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the mourner",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "character",
+     "label": "who died",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the mourner is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'family' or 'friend'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "nickname",
+   "group": "talk",
+   "title": "A wolf is given a nickname",
+   "sentence": "{target} gives {actor} a nickname: {detail}",
+   "help": "After a notable deed (or a third small one), a resident who likes the wolf coins a nickname for it.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf named",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "who coined it",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the deed was done",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<nickname> (<nickname id>)'",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when the wolf is in the deed's cell."
+  },
+  {
+   "id": "nickname dropped",
+   "group": "talk",
+   "title": "A nickname is dropped",
+   "sentence": "{actor} drops the nickname {detail}",
+   "help": "A wolf drops one of its nicknames; it is never coined again from that deed.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the wolf is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<nickname> (<nickname id>)'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "notice removed",
+   "group": "letters",
+   "title": "A notice is taken down",
+   "sentence": "The notice {detail} of {actor} is taken down",
+   "help": "The Dungeon Master takes a notice off a board.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the notice's author",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the author is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "notice",
+     "label": "the notice's id",
+     "any": "any notice"
+    }
+   },
+   "tile": true,
+   "notes": "cell and tile only when the author is in the world."
+  },
+  {
+   "id": "nudge over",
+   "group": "money",
+   "title": "A Times nudge lapses",
+   "sentence": "The nudge to trade at {actor} is over",
+   "help": "A Dungeon Master's nudge to a market's Times runs out or is cleared.",
+   "fields": {
+    "actor": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market (same)",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "old age",
+   "group": "fights",
+   "title": "A resident dies of age",
+   "sentence": "{actor} dies: {detail}",
+   "help": "A resident dies by the daily chance of its age (after 'death').",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "who died",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'died of old age' (60 or older) or 'died'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "prices reset",
+   "group": "money",
+   "title": "A market's prices are reset",
+   "sentence": "Prices at {actor} are reset: {detail}",
+   "help": "The Dungeon Master resets the prices of one market or all (one event per market).",
+   "fields": {
+    "actor": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market (same)",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the words given, default 'fresh stock everywhere'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "project cancelled",
+   "group": "town",
+   "title": "A town project is cancelled",
+   "sentence": "{actor} cancels the project {target}: {detail}",
+   "help": "A town project is called off (by the Dungeon Master) and its gifts refunded.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town (written 'town:<town id>')",
+     "any": "any town"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "item": {
+     "type": "project",
+     "label": "the kind of project",
+     "any": "any kind"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it was to stand",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "why, e.g. 'cancelled by the Dungeon Master'",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "project posted",
+   "group": "town",
+   "title": "A town project is posted",
+   "sentence": "A project, {detail}, is posted by {actor}",
+   "help": "A town project is put up for gifts and work: by the town's own needs, the Dungeon Master or a developer.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "who posted it: 'town', 'dm' or 'dev'",
+     "any": "any"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "item": {
+     "type": "project",
+     "label": "the kind of project",
+     "any": "any kind"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it will stand",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the project's title",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "The project's x,y are passed in the event's time slots and overwritten, so no tile is logged. A town's own proposal also records 'project proposed'."
+  },
+  {
+   "id": "project proposed",
+   "group": "town",
+   "title": "A town proposes a project",
+   "sentence": "{actor} proposes a project: {detail}",
+   "help": "A town decides it needs something (cover, mending...) and posts a project of its own.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town (written 'town:<town id>')",
+     "any": "any town"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "item": {
+     "type": "project",
+     "label": "the kind of project",
+     "any": "any kind"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it will stand (may be empty)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the town's reason",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Follows a 'project posted' with actor 'town'."
+  },
+  {
+   "id": "project removed",
+   "group": "town",
+   "title": "A town project is removed",
+   "sentence": "{actor} removes the project {detail}",
+   "help": "A town project (built or not) is removed and its gifts refunded.",
+   "fields": {
+    "actor": {
+     "type": "town",
+     "label": "the town (written 'town:<town id>')",
+     "any": "any town"
+    },
+    "target": {
+     "type": "text",
+     "label": "the project's id",
+     "any": "any"
+    },
+    "item": {
+     "type": "project",
+     "label": "the kind of project",
+     "any": "any kind"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it stood",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the project's title",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "promise",
+   "group": "talk",
+   "title": "A promise is made",
+   "sentence": "{actor} promises {target}: {detail}",
+   "help": "In conversation (not the dialogue window) the NPC Mind reports a promise: by the resident to the wolf, or by the wolf to the resident.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who promised",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "to whom",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the promiser is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "what was promised, in words",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "Kept if the promiser trades with, pays, gives to or helps the other within 3 days ('promise kept', not listed); else 'promise broken'."
+  },
+  {
+   "id": "promise broken",
+   "group": "talk",
+   "title": "A promise is broken",
+   "sentence": "{actor} breaks the promise to {target}: {detail}",
+   "help": "A promise falls due without being kept.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who promised",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "to whom",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the promiser is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "what was promised, in words",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "released",
+   "group": "law",
+   "title": "Someone is let out of the gaol",
+   "sentence": "{actor} is let go {detail}",
+   "help": "Someone held by the watch has served their time.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who is let go",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the gaol",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'by the watch of <town>'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "resident letter",
+   "group": "letters",
+   "title": "A resident writes to a wolf",
+   "sentence": "{actor} writes a letter to {target}",
+   "help": "A resident writes to a wolf (thanks for help, a wedding or funeral invitation, work offered...), perhaps with coins.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the writer",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the resident is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the letter's kind",
+     "any": "any"
+    },
+    "detail": {
+     "type": "letter",
+     "label": "the letter's id",
+     "any": "any letter"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins enclosed"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "robbed",
+   "group": "bandits",
+   "title": "Bandits beat and rob a wolf",
+   "sentence": "The bandits of {actor} beat and rob {target}",
+   "help": "Bandits beat a wolf to the ground in a road fight and take half its purse.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the bandit camp (its id, e.g. camp_<cell>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the wolf robbed",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the camp's cell",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'beaten and robbed on the road'",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins taken"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "sermon",
+   "group": "talk",
+   "title": "A sermon is preached",
+   "sentence": "{actor} preaches {detail} in {target}",
+   "help": "A priest reaches the pulpit and begins the week's sermon.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the priest",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "town",
+     "label": "the town",
+     "any": "any town"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the church",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the sermon's title",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "ship posted",
+   "group": "ships",
+   "title": "A ship is put on the timetable",
+   "sentence": "{item} is posted, due at {target}",
+   "help": "The wharf's timetable gains a ship due at a port.",
+   "fields": {
+    "actor": {
+     "type": "ship",
+     "label": "the ship",
+     "any": "any ship"
+    },
+    "target": {
+     "type": "market",
+     "label": "its port's market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the port",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the ship's name",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the words posted about it",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it will bring"
+    }
+   },
+   "tile": false,
+   "notes": "detail is '<Name>, due <weekday>.'."
+  },
+  {
+   "id": "ships cleared",
+   "group": "ships",
+   "title": "A port's ship notice comes down",
+   "sentence": "Ship notices at {actor} are cleared",
+   "help": "A port's ships notice comes down: no ships due any more, or its port is gone.",
+   "fields": {
+    "actor": {
+     "type": "market",
+     "label": "the port's market",
+     "any": "any market"
+    },
+    "target": {
+     "type": "market",
+     "label": "the same market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the port (empty when it is gone)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "empty, or 'its port is gone'",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Its twin 'ships posted' (the notice put up) is not listed."
+  },
+  {
+   "id": "spawn",
+   "group": "coming",
+   "title": "A resident is spawned",
+   "sentence": "{actor} is spawned by {detail}",
+   "help": "A Dungeon Master's spawn rule puts a new resident into its area.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the new resident",
+     "any": "any resident"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it appears",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'spawn rule <rule id>'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "stall closed",
+   "group": "money",
+   "title": "A market stall closes",
+   "sentence": "{actor}'s stall in {cell} closes",
+   "help": "A rented stall closes at the day's end (or is given up); its goods go back to the keeper.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the keeper",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the stall's id",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the day's takings"
+    }
+   },
+   "tile": true,
+   "notes": "tile only when the keeper is still in that place."
+  },
+  {
+   "id": "stolen goods smelt",
+   "group": "law",
+   "title": "Stolen goods are smelt",
+   "sentence": "{actor} smells stolen {item} on {target}",
+   "help": "A resident's nose catches its own maker's scent on goods a thief carries: it now knows of the theft.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "who smelt it",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "character",
+     "label": "the thief",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the thief is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "the stolen goods",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the theft's incident id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "always 1"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "stopped by the watch",
+   "group": "law",
+   "title": "The watch stops someone",
+   "sentence": "{actor} stops {target}, wanted for {detail}",
+   "help": "A guard confronts someone with a warrant: pay, or come along.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the guard",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "character",
+     "label": "who is wanted",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the charges, 'theft and assault'...",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "story prize",
+   "group": "fame",
+   "title": "A story's prize is given",
+   "sentence": "{actor} gives a prize to {target}",
+   "help": "A storyteller gives a prize from their purse (or an Officer from the Chapter's) for their tale.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the storyteller",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "who receives it",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the teller is",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "item",
+     "label": "the goods given (empty for coins)",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "run",
+     "label": "the tale's id",
+     "any": "any story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many goods"
+    },
+    "coins": {
+     "type": "number",
+     "label": "coins given"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "storyline begun",
+   "group": "fame",
+   "title": "A storyline begins",
+   "sentence": "{actor} begins the storyline {target}",
+   "help": "A character starts a storyline (a personal quest, from a template or a source).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "who began it",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "its title",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "storyline done",
+   "group": "fame",
+   "title": "A storyline is finished",
+   "sentence": "{actor} finishes the storyline {target}",
+   "help": "Every step of a storyline is done.",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "its owner (or its author)",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "its title",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "table game begun",
+   "group": "talk",
+   "title": "A table game begins",
+   "sentence": "{actor} starts a game of {item}",
+   "help": "A wolf starts a tavern table game with the players seated.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "who started it",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the tavern",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "the game: knucklebones, wolves or liars",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the table's id",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "players seated"
+    },
+    "coins": {
+     "type": "number",
+     "label": "each player's stake"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "tale begun",
+   "group": "fame",
+   "title": "A tale begins",
+   "sentence": "{actor} begins the tale {target}",
+   "help": "A storyteller starts (or resumes) their tale.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the storyteller",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the teller is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the tale's title",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "tale joined",
+   "group": "fame",
+   "title": "A wolf joins a tale",
+   "sentence": "{actor} joins the tale {target}",
+   "help": "An invited wolf accepts a part in a tale.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "who joined",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the storyline's id (a story run, a tale or a personal storyline)",
+     "any": "any storyline"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the tale's title",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "tie ended",
+   "group": "talk",
+   "title": "A newcomer tie ends",
+   "sentence": "{actor}'s tie is ended {detail}",
+   "help": "A newcomer's tie with a mentor is ended by the host or the Dungeon Master.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf whose tie ended",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'by <who>'",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "notes": "A player ending their own tie from the client is not logged."
+  },
+  {
+   "id": "times cause",
+   "group": "money",
+   "title": "The Times' cause is told",
+   "sentence": "The Times at {actor} go {item}: {detail}",
+   "help": "The economy's slider moves and its cause is told once in every market (a notice and a crier's line).",
+   "fields": {
+    "actor": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "target": {
+     "type": "market",
+     "label": "the same market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "'up' or 'down'",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the notice",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the cause's strength"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "times nudged",
+   "group": "money",
+   "title": "Trade at a market is nudged",
+   "sentence": "Trade at {actor} is nudged: {detail}",
+   "help": "The Dungeon Master nudges a market's Times up or down for some days; posted once.",
+   "fields": {
+    "actor": {
+     "type": "market",
+     "label": "the market",
+     "any": "any market"
+    },
+    "target": {
+     "type": "market",
+     "label": "the same market",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the market's place",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the notice ('Trade is brisk in ...' or the cause)",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the nudge, -100 to 100"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "vouch broken",
+   "group": "talk",
+   "title": "A vouch goes bad",
+   "sentence": "{target}, vouched for by {actor}, wrongs {detail}",
+   "help": "A newcomer someone vouched for wrongs the resident they were vouched to.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "who vouched",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "who was vouched for",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the voucher is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "resident",
+     "label": "the resident wronged",
+     "any": "any resident"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "wagon cancelled",
+   "group": "caravans",
+   "title": "A wagon departure is cancelled",
+   "sentence": "The wagon {actor} to {target} is cancelled: {detail}",
+   "help": "A committed wagon (or cart) departure can't go: its market is gone, the road is closed, or no carter for too long.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the departure's id (w<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it is for",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the setting-out market's place (empty when that market is gone)",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "text",
+     "label": "where it was to set out from (a market, or a farm's id for a cart)",
+     "any": "any"
+    },
+    "detail": {
+     "type": "text",
+     "label": "why, in words",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "wagon delayed",
+   "group": "caravans",
+   "title": "A wagon departure is put off",
+   "sentence": "The wagon {actor} to {target} is put off a day",
+   "help": "A committed wagon has no carter or no room on the roads, and goes a day later.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the departure's id (w<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it is for",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the setting-out market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "market",
+     "label": "the market it sets out from",
+     "any": "any market"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the new notices",
+     "any": "any"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "wagon posted",
+   "group": "caravans",
+   "title": "A wagon departure is posted",
+   "sentence": "A wagon from {item} to {target} is posted",
+   "help": "The staged economy commits a wagon between two markets and posts its notices.",
+   "fields": {
+    "actor": {
+     "type": "text",
+     "label": "the departure's id (w<n>)",
+     "any": "any"
+    },
+    "target": {
+     "type": "market",
+     "label": "the market it is for",
+     "any": "any market"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the setting-out market's place",
+     "any": "anywhere"
+    },
+    "item": {
+     "type": "market",
+     "label": "the market it sets out from",
+     "any": "any market"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the notices",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "kinds of goods it will carry"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "welcome",
+   "group": "coming",
+   "title": "An innkeeper welcomes a newcomer",
+   "sentence": "{actor} welcomes {target}",
+   "help": "An innkeeper welcomes a newcomer wolf and points out others who could help them.",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the innkeeper",
+     "any": "any resident"
+    },
+    "target": {
+     "type": "wolf",
+     "label": "the newcomer",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the innkeeper is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<n> pointed out'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "welcomed back",
+   "group": "coming",
+   "title": "A wolf comes back after a while",
+   "sentence": "{actor} is welcomed back",
+   "help": "A wolf comes back into the world after days away and is told what happened meanwhile.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where it is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "'<n> days away'",
+     "any": "any"
+    }
+   },
+   "tile": true
+  },
+  {
+   "id": "clock",
+   "group": "story",
+   "title": "Time passes in the phase",
+   "sentence": "The phase has been open a while",
+   "help": "The story runner's clock: fires once the phase has been open the trigger's afterDays game days.",
+   "fields": {},
+   "tile": false,
+   "notes": "No fields. The delay is the trigger's afterDays (from 1/1440, a minute, to 36,500 days), counted from when the phase opened."
+  },
+  {
+   "id": "dm signal",
+   "group": "story",
+   "title": "The Dungeon Master gives a direction",
+   "sentence": "The Dungeon Master sends {detail}",
+   "help": "The Dungeon Master sends a named direction from the Campaigns tab; it can only move a phase through an exit (never a trigger).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf it is sent as, if any",
+     "any": "any wolf"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the direction's name",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "notes": "Exits only. Made by the story runner, never in game.events. Tried as a story signal of the same name first.",
+   "exitOnly": true
+  },
+  {
+   "id": "story signal",
+   "group": "story",
+   "title": "A story signal arrives",
+   "sentence": "the signal {signal} arrives",
+   "help": "A named signal sent by another trigger (emit), by a timer (schedule) or by the Dungeon Master.",
+   "fields": {
+    "signal": {
+     "type": "text",
+     "label": "the signal's name",
+     "any": "any"
+    },
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf it concerns, if any",
+     "any": "any wolf"
+    }
+   },
+   "tile": false,
+   "notes": "Not in game.events. An emitted signal keeps the source event's actor, target, cell, item, detail, quantity, coins and tile; a timer's carries only the timer's owner as actor. Each name is delivered at most once per world event, after that event's triggers. The catalogue has a 'signal' type for the name.",
+   "special": "signal"
+  },
+  {
+   "id": "missions completed",
+   "group": "story",
+   "title": "The missions are done",
+   "sentence": "The phase's chosen missions are complete",
+   "help": "An exit that waits until every mission it names has reached its completion threshold, for a wolf in the phase's cohort.",
+   "fields": {},
+   "tile": false,
+   "notes": "Exits only (not a trigger). Its parameter is the list 'missions' (ids of this phase's missions), not an event field.",
+   "special": "gate",
+   "exitOnly": true
+  }
+ ],
+ "conditions": [
+  {
+   "id": "all",
+   "title": "All of these",
+   "sentence": "all of these",
+   "group": true,
+   "help": "True when every condition under it is true (1 to 8)."
+  },
+  {
+   "id": "any",
+   "title": "Any of these",
+   "sentence": "any of these",
+   "group": true,
+   "help": "True when one condition under it is true."
+  },
+  {
+   "id": "not",
+   "title": "Not",
+   "sentence": "not",
+   "group": true,
+   "help": "True when the condition under it is false."
+  },
+  {
+   "id": "field",
+   "title": "The event's field",
+   "sentence": "the event's {field} {op} {value}",
+   "help": "Compares one field of the event that just happened. Text takes = and !=; quantity and coins take a number.",
+   "params": [
+    {
+     "key": "field",
+     "type": "choice",
+     "label": "the field",
+     "values": [
+      "actor",
+      "target",
+      "cell",
+      "item",
+      "detail",
+      "quantity",
+      "coins"
+     ]
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ]
+    },
+    {
+     "key": "value",
+     "type": "value",
+     "label": "the value"
+    }
+   ]
+  },
+  {
+   "id": "counter",
+   "title": "A counter",
+   "sentence": "{scope} counter {key} {op} {value}",
+   "help": "Compares one of the story's counters with a number. A player counter is the acting wolf's.",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "the story's",
+      "player": "the acting wolf's"
+     }
+    },
+    {
+     "key": "key",
+     "type": "counter",
+     "label": "the counter"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ]
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "the number",
+     "min": -1000000000,
+     "max": 1000000000
+    }
+   ]
+  },
+  {
+   "id": "region",
+   "title": "Inside a region",
+   "sentence": "the event happened inside {region}",
+   "help": "The event's tile is inside the rectangle. An event with no tile is unknown, and unknown never fires, not even under \"not\".",
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    }
+   ]
+  },
+  {
+   "id": "mission",
+   "title": "A mission is ready",
+   "sentence": "the mission {id} is complete",
+   "phaseOnly": true,
+   "help": "That mission of the current phase has reached its completion threshold. Phase triggers only.",
+   "params": [
+    {
+     "key": "id",
+     "type": "mission",
+     "label": "the mission"
+    }
+   ]
+  }
+ ],
+ "actions": [
+  {
+   "id": "set",
+   "group": "variables",
+   "title": "Set a counter",
+   "sentence": "Set {scope} counter {key} to {value}",
+   "help": "Sets a counter, clamped to plus or minus 1,000,000,000.",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "the story's",
+      "player": "the acting wolf's"
+     }
+    },
+    {
+     "key": "key",
+     "type": "counter",
+     "label": "the counter"
+    },
+    {
+     "key": "value",
+     "label": "the value",
+     "type": "int",
+     "min": -1000000000,
+     "max": 1000000000,
+     "or": [
+      "quantity",
+      "coins"
+     ],
+     "words": {
+      "quantity": "the event's quantity",
+      "coins": "the event's coins"
+     }
+    }
+   ]
+  },
+  {
+   "id": "add",
+   "group": "variables",
+   "title": "Add to a counter",
+   "sentence": "Add {value} to {scope} counter {key}",
+   "help": "Adds to a counter (a negative number takes away).",
+   "params": [
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "the story's",
+      "player": "the acting wolf's"
+     }
+    },
+    {
+     "key": "key",
+     "type": "counter",
+     "label": "the counter"
+    },
+    {
+     "key": "value",
+     "label": "the amount",
+     "type": "int",
+     "min": -1000000000,
+     "max": 1000000000,
+     "or": [
+      "quantity",
+      "coins"
+     ],
+     "words": {
+      "quantity": "the event's quantity",
+      "coins": "the event's coins"
+     }
+    }
+   ]
+  },
+  {
+   "id": "emit",
+   "group": "signals",
+   "title": "Send a signal",
+   "sentence": "Send the signal {signal}",
+   "help": "A named signal, delivered after this event's triggers; it keeps the event's actor, item, target, place, amounts and detail.",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the signal"
+    }
+   ]
+  },
+  {
+   "id": "schedule",
+   "group": "signals",
+   "title": "Start a timer",
+   "sentence": "Start the timer {signal} to go off in {days} days on the {clock} clock, {owner}, for {scope}{repeat}",
+   "help": "A named timer that sends the signal when due. The same name for the same owner replaces the deadline. The shortest delay is a minute (1/1440 of a day).",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the signal"
+    },
+    {
+     "key": "days",
+     "type": "days",
+     "label": "days",
+     "min": 0.0006944444444444445,
+     "max": 36500
+    },
+    {
+     "key": "clock",
+     "type": "choice",
+     "label": "the clock",
+     "values": [
+      "game",
+      "real"
+     ],
+     "words": {
+      "game": "world's",
+      "real": "real"
+     },
+     "default": "game"
+    },
+    {
+     "key": "owner",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "shared by the story",
+      "player": "one for each wolf"
+     },
+     "default": "story"
+    },
+    {
+     "key": "scope",
+     "type": "choice",
+     "label": "its life",
+     "values": [
+      "visit",
+      "campaign"
+     ],
+     "words": {
+      "visit": "this phase visit",
+      "campaign": "the whole campaign"
+     },
+     "default": "visit"
+    },
+    {
+     "key": "repeat",
+     "type": "bool",
+     "label": "repeats",
+     "words": {
+      "true": ", again and again",
+      "false": ""
+     },
+     "default": false
+    }
+   ]
+  },
+  {
+   "id": "cancel",
+   "group": "signals",
+   "title": "Cancel a timer",
+   "sentence": "Cancel the timer {signal} ({owner})",
+   "help": "Stops that timer.",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the timer"
+    },
+    {
+     "key": "owner",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "shared",
+      "player": "the acting wolf's"
+     },
+     "default": "story"
+    }
+   ]
+  },
+  {
+   "id": "effect",
+   "group": "flow",
+   "title": "Change the world",
+   "sentence": "{effect}",
+   "help": "Asks the game to change the world: one of the world effects below. Each is a DM order the game checks again when it applies it.",
+   "params": [
+    {
+     "key": "effect",
+     "type": "effect",
+     "label": "the world effect"
+    }
+   ]
+  },
+  {
+   "id": "enter",
+   "group": "flow",
+   "title": "Go to a phase",
+   "sentence": "Go to the phase {phase}",
+   "help": "Moves the story to a phase. Must be the last action.",
+   "last": true,
+   "params": [
+    {
+     "key": "phase",
+     "type": "phase",
+     "label": "the phase"
+    }
+   ]
+  }
+ ],
+ "effects": [
+  {
+   "id": "scene.play",
+   "group": "scenes",
+   "title": "Play a scene",
+   "sentence": "Play the scene {scene} for {player}, cue {cue}",
+   "help": "Plays one of the scenes embedded in this story; a public scene may play for the world.",
+   "params": [
+    {
+     "key": "scene",
+     "type": "scene",
+     "label": "the scene"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "who sees it",
+     "world": true
+    },
+    {
+     "key": "cue",
+     "type": "cue",
+     "label": "its cue",
+     "max": 64
+    }
+   ]
+  },
+  {
+   "id": "npc.line",
+   "group": "residents",
+   "title": "Give a resident a dialogue line",
+   "sentence": "{npc} has the line {text} for the story's wolves",
+   "help": "Phase entry only: while the phase is open the resident has this line for the wolves of the story.",
+   "entryOnly": true,
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the line",
+     "max": 200
+    }
+   ]
+  },
+  {
+   "id": "npc.walk",
+   "group": "residents",
+   "title": "A resident walks somewhere",
+   "sentence": "{npc} walks to {cell,x,y} at a {pace}, cue {cue}",
+   "help": "The resident goes there; \"scene arrived\" follows (or \"scene blocked\" after 180 seconds without progress).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile"
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "pace",
+     "type": "choice",
+     "label": "pace",
+     "values": [
+      "walk",
+      "run"
+     ]
+    },
+    {
+     "key": "cue",
+     "type": "cue",
+     "label": "the cue"
+    }
+   ]
+  },
+  {
+   "id": "npc.speak",
+   "group": "residents",
+   "title": "A resident speaks",
+   "sentence": "{npc} says {text}, cue {cue}",
+   "help": "The resident says it aloud; \"scene spoken\" follows.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the words",
+     "max": 200
+    },
+    {
+     "key": "cue",
+     "type": "cue",
+     "label": "the cue"
+    }
+   ]
+  },
+  {
+   "id": "npc.pose",
+   "group": "residents",
+   "title": "A resident takes a posture",
+   "sentence": "{npc} is {posture}, cue {cue}",
+   "help": "The resident stands, sits or lies down; \"scene posed\" follows.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "posture",
+     "type": "choice",
+     "label": "posture",
+     "values": [
+      "standing",
+      "sitting",
+      "lying"
+     ]
+    },
+    {
+     "key": "cue",
+     "type": "cue",
+     "label": "the cue"
+    }
+   ]
+  },
+  {
+   "id": "story.area.damage",
+   "group": "places",
+   "title": "Hurt the wolves in a region",
+   "sentence": "Hurt the story's wolves inside {region} by {points} points",
+   "help": "Acts on players' wolves: needs \"may act on players' wolves\" on a hosted world.",
+   "actsOnWolves": true,
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    },
+    {
+     "key": "points",
+     "type": "int",
+     "label": "points",
+     "min": 1,
+     "max": 99
+    }
+   ]
+  },
+  {
+   "id": "story.area.item",
+   "group": "places",
+   "title": "Give an item to the wolves in a region",
+   "sentence": "Give each of the story's wolves inside {region} {quantity} {item}",
+   "help": "A full pack is skipped and the wolf told.",
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    },
+    {
+     "key": "item",
+     "type": "item",
+     "label": "the item"
+    },
+    {
+     "key": "quantity",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 100
+    }
+   ]
+  },
+  {
+   "id": "story.area.buff",
+   "group": "places",
+   "title": "Feed the wolves in a region",
+   "sentence": "The story's wolves inside {region} are {buff} for {hours} hours",
+   "help": "The timed \"fed\" benefit.",
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    },
+    {
+     "key": "buff",
+     "type": "choice",
+     "label": "the benefit",
+     "values": [
+      "fed"
+     ]
+    },
+    {
+     "key": "hours",
+     "type": "int",
+     "label": "hours",
+     "min": 1,
+     "max": 168
+    }
+   ]
+  },
+  {
+   "id": "story.area.spawn",
+   "group": "places",
+   "title": "A bandit camp in a region",
+   "sentence": "A camp of {count} bandits in {region}",
+   "help": "Bandits camp in the rectangle.",
+   "params": [
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    },
+    {
+     "key": "count",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 6
+    }
+   ]
+  },
+  {
+   "id": "npc.move",
+   "group": "residents",
+   "title": "Put a resident somewhere",
+   "sentence": "Put {npc} at {cell,x,y}",
+   "help": "The resident is there at once (no walk).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile"
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    }
+   ]
+  },
+  {
+   "id": "npc.protect",
+   "group": "residents",
+   "title": "Protect a resident",
+   "sentence": "{npc} cannot be killed",
+   "help": "Marks the resident as one who cannot be killed.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.unprotect",
+   "group": "residents",
+   "title": "Remove a resident's protection",
+   "sentence": "{npc} can be killed again",
+   "help": "Takes the mark off.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.revive",
+   "group": "residents",
+   "title": "Revive a resident",
+   "sentence": "Bring {npc} back to life",
+   "help": "Brings a dead resident back.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "character.injury",
+   "group": "wolves",
+   "title": "Injure a wolf",
+   "sentence": "Give {player} a {add} of severity {severity}",
+   "help": "Acts on players' wolves: needs \"may act on players' wolves\" on a hosted world.",
+   "actsOnWolves": true,
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "add",
+     "type": "choice",
+     "label": "the injury",
+     "values": [
+      "torn_flank",
+      "bitten_foreleg",
+      "bitten_hindleg",
+      "torn_ear_acute",
+      "wrenched_neck",
+      "deep_gash",
+      "cut_foreleg",
+      "cut_muzzle",
+      "cut_shoulder",
+      "bruised_ribs",
+      "cracked_rib",
+      "sprained_foreleg",
+      "knocked_senseless",
+      "burned_paws",
+      "singed_coat",
+      "burned_muzzle",
+      "torn_ear",
+      "bent_tail",
+      "scarred_muzzle",
+      "scarred_flank",
+      "burn_scars",
+      "notched_nose",
+      "clouded_eye",
+      "permanent_limp",
+      "bad_back",
+      "stiff_shoulder"
+     ]
+    },
+    {
+     "key": "severity",
+     "type": "int",
+     "label": "severity",
+     "min": 1,
+     "max": 3
+    }
+   ]
+  },
+  {
+   "id": "ship.storm",
+   "group": "economy",
+   "title": "Hold a ship in a storm",
+   "sentence": "{ship} is stormbound",
+   "help": "A ship due in port is held by a storm.",
+   "params": [
+    {
+     "key": "ship",
+     "type": "ship",
+     "label": "the ship"
+    }
+   ]
+  },
+  {
+   "id": "harvest.override",
+   "group": "economy",
+   "title": "Set a harvest",
+   "sentence": "The harvest in {area} is {word} for {days} days ({words})",
+   "help": "Sets a harvest area's yield for a while; \"clear\" gives it back to the season.",
+   "params": [
+    {
+     "key": "area",
+     "type": "area",
+     "label": "the harvest area"
+    },
+    {
+     "key": "word",
+     "type": "choice",
+     "label": "the harvest",
+     "values": [
+      "poor",
+      "fair",
+      "good",
+      "clear"
+     ]
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 366
+    },
+    {
+     "key": "words",
+     "type": "text",
+     "label": "what people say",
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "band.override",
+   "group": "economy",
+   "title": "Set a household's prosperity",
+   "sentence": "{npc}'s household is {band} for {days} days",
+   "help": "A household's prosperity band for a while.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "a resident of the household"
+    },
+    {
+     "key": "band",
+     "type": "choice",
+     "label": "the band",
+     "values": [
+      "destitute",
+      "poor",
+      "comfortable",
+      "rich",
+      "clear"
+     ]
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 112
+    }
+   ]
+  },
+  {
+   "id": "festival.call",
+   "group": "economy",
+   "title": "Call a festival",
+   "sentence": "{town} holds the festival {name} in {inDays} days",
+   "help": "Schedules a festival.",
+   "params": [
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "its name",
+     "max": 80
+    },
+    {
+     "key": "inDays",
+     "type": "int",
+     "label": "days from now",
+     "min": 0,
+     "max": 30
+    }
+   ]
+  },
+  {
+   "id": "storyline.give",
+   "group": "quests",
+   "title": "Give a personal quest",
+   "sentence": "Give {player} the personal quest {template} with {resident} at {place}",
+   "help": "Starts a personal quest from a DM template; refused at three personal quests.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "template",
+     "type": "template",
+     "label": "the template"
+    },
+    {
+     "key": "resident",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "place",
+     "type": "place",
+     "label": "the place"
+    }
+   ]
+  },
+  {
+   "id": "faction.relation",
+   "group": "economy",
+   "title": "Change faction relations",
+   "sentence": "{faction} is {stance} toward {other} ({disposition}): {reason}",
+   "help": "One faction's stance toward another. A builder or the owner must approve it on a hosted world.",
+   "needsBuilder": true,
+   "params": [
+    {
+     "key": "faction",
+     "type": "faction",
+     "label": "the faction"
+    },
+    {
+     "key": "other",
+     "type": "faction",
+     "label": "the other faction"
+    },
+    {
+     "key": "stance",
+     "type": "choice",
+     "label": "the stance",
+     "values": [
+      "allied",
+      "friendly",
+      "neutral",
+      "tense",
+      "hostile",
+      "war"
+     ]
+    },
+    {
+     "key": "disposition",
+     "type": "int",
+     "label": "disposition",
+     "min": -100,
+     "max": 100
+    },
+    {
+     "key": "reason",
+     "type": "text",
+     "label": "the reason",
+     "max": 300
+    }
+   ]
+  },
+  {
+   "id": "bandits.call",
+   "group": "wolves",
+   "title": "Send bandits after a wolf",
+   "sentence": "{count} bandits come for {player}",
+   "help": "The wolf must be in the world.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "count",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 6
+    }
+   ]
+  },
+  {
+   "id": "story.practice",
+   "group": "wolves",
+   "title": "Give a wolf a lesson",
+   "sentence": "{player} practises {skill}",
+   "help": "A lesson under the ordinary practice rules; the wolf must be in the world.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "skill",
+     "type": "choice",
+     "label": "the skill",
+     "values": [
+      "craft",
+      "commerce",
+      "labour",
+      "service",
+      "travel",
+      "watch"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "times.nudge",
+   "group": "economy",
+   "title": "Change market conditions",
+   "sentence": "Push the times in {market} by {points} for {days} days ({words})",
+   "help": "Pushes a market's times up or down for a while.",
+   "params": [
+    {
+     "key": "market",
+     "type": "market",
+     "label": "the market"
+    },
+    {
+     "key": "points",
+     "type": "int",
+     "label": "points",
+     "min": -100,
+     "max": 100,
+     "nonzero": true
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 366
+    },
+    {
+     "key": "words",
+     "type": "text",
+     "label": "what people say",
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "deed.award",
+   "group": "wolves",
+   "title": "Award a deed",
+   "sentence": "Award {player} the deed {detail}",
+   "help": "A deed on the wolf's fame; the wolf must be in the world.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "detail",
+     "type": "text",
+     "label": "the deed",
+     "max": 200
+    }
+   ]
+  },
+  {
+   "id": "project.post",
+   "group": "economy",
+   "title": "Post a town project",
+   "sentence": "{town} posts the project {project} \"{title}\" at {cell,x,y}",
+   "help": "Opens a town project.",
+   "params": [
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "project",
+     "type": "project",
+     "label": "the kind of project"
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile"
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "title",
+     "type": "text",
+     "label": "its title",
+     "max": 80
+    }
+   ]
+  }
+ ]
+}
