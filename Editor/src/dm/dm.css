@@ -641,3 +641,37 @@
 .camp-menu-list { position: absolute; right: 0; top: 100%; z-index: 20; display: flex; flex-direction: column; min-width: 16rem; max-height: 22rem; overflow-y: auto;
     background: #1b2522; border: 1px solid var(--line); border-radius: 6px; padding: 4px; box-shadow: 0 8px 22px #0008; }
 .camp-menu-list button { text-align: left; white-space: normal; }
+
+/* Doc 85, Phase 10: campaigns as their chapters, the world's variables, a new campaign, and the Story Maker's guide. */
+.camp-campaigns { display: grid; gap: 6px; }
+.camp-campaign { border: 1px solid var(--line, #3a4048); border-radius: 6px; padding: 6px 10px; background: rgba(255,255,255,.02); }
+.camp-campaign.ended { opacity: .75; }
+.camp-chapters { display: flex; flex-wrap: wrap; gap: 4px 10px; list-style: none; margin: 4px 0 0; padding: 0; }
+.camp-chapters li { padding: 2px 8px; border-radius: 10px; border: 1px solid transparent; }
+.camp-chapters li.done { color: #8fc78f; }
+.camp-chapters li.running { color: #ffd277; border-color: rgba(255,210,119,.35); }
+.camp-chapters li.held, .camp-chapters li.paused { color: #f0a060; }
+.camp-chapters li.waiting, .camp-chapters li.ready { color: #9aa3ad; }
+.camp-chapters li.now { outline: 1px solid #ffd277; }
+.camp-chapter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 4px 16px; }
+.camp-world-vars, .camp-new { padding: 8px 12px; border: 1px solid var(--line, #3a4048); border-radius: 6px; display: grid; gap: 8px; }
+.camp-world-vars td small { display: block; }
+.camp-chosen { margin: 0; padding-left: 20px; }
+.camp-chosen li button { margin-left: 6px; }
+.camp-audit-list { margin: 0; padding-left: 18px; font-size: 12px; }
+.dm-guide { display: grid; grid-template-columns: 280px 1fr; min-height: 0; height: 100%; }
+.guide-contents { overflow-y: auto; padding: 10px; border-right: 1px solid var(--line, #3a4048); font-size: 12px; }
+.guide-contents input { width: 100%; margin-bottom: 8px; }
+.guide-contents ol { list-style: none; margin: 0; padding: 0; }
+.guide-contents li { margin: 2px 0; }
+.guide-contents li.l3 { padding-left: 10px; }
+.guide-contents li.l4 { padding-left: 20px; }
+.guide-contents li.ref.l4 { font-size: 11px; opacity: .85; }
+.guide-page { overflow-y: auto; padding: 12px 24px 40px; max-width: 1100px; line-height: 1.5; }
+.guide-page h2 { margin-top: 0; }
+.guide-page h3 { margin-top: 28px; border-bottom: 1px solid var(--line, #3a4048); padding-bottom: 4px; }
+.guide-page .guide-entry { margin-top: 18px; }
+.guide-code { background: rgba(0,0,0,.3); padding: 8px 10px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; font-size: 12px; }
+.guide-table { margin: 6px 0 12px; width: 100%; }
+.guide-page { overflow-x: auto; }
+.guide-found { border-left: 2px solid #71bdc0; padding-left: 10px; margin: 10px 0 16px; }

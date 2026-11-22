@@ -1,12 +1,14 @@
 // "New… → A small quest" (Docs/Design/85, 4.4; Phase 6): one quest any wolf may pick up from a resident. It asks who gives it,
 // what to do and the reward (coins from a named purse, never minted), and the offer's words; it makes a version 2 story with
 // an open audience, one phase that stays open, the quest, and a rehearsal case (a wolf takes it, does it, hands it in). Doc
-// 58's personal-quest templates are offered as starting points (the templates stay as they are).
+// 58's personal-quest templates are offered as starting points (the templates stay as they are), and (Phase 10) the 100 library
+// events: each one's objectives become the quest's steps, its giver the resident its first step names.
 import {useMemo, useState} from 'react';
 import templatesText from '../../../../Data/Storylines/templates.json?raw';
-import {eventOf, eventParts, FIELDS, fromTemplate, namesOf, SIGNAL, smallQuestProgram, type Catalogue, type Part, type Program, type QuestObjective,
+import {eventOf, eventParts, FIELDS, fromLibraryEntry, fromTemplate, namesOf, SIGNAL, smallQuestProgram, type Catalogue, type Part, type Program, type QuestObjective,
     type Refs, type SmallQuestInput, type Slot, type StorylineTemplate} from '../../lib/workbench';
 import {BenchContext, useBench} from './context';
+import type {LibraryEntry} from './Library';
 import {EventPicker, type Values} from './pickers';
 import {Sentence} from './Sentence';
 
@@ -48,10 +50,13 @@ function ObjectiveLine({o, change, remove, canRemove}: {o: Omit<QuestObjective, 
     }
 }
 
-export function SmallQuestFlow({cat, refs, pick, close}: {cat: Catalogue; refs: Refs | null; pick: (p: Program) => void; close?: () => void}) {
+export function SmallQuestFlow({cat, refs, pick, close, library}: {cat: Catalogue; refs: Refs | null; pick: (p: Program) => void; close?: () => void;
+    library?: LibraryEntry[]}) {
     const [input, setInput] = useState<SmallQuestInput>({title: 'An errand', summary: '', giver: '', objectives: [{label: 'Speak with them.', on: 'conversation'}],
         reward: {kind: 'deed', detail: 'Ran an errand.'}, offer: {say: 'There is something you could do for me, if you have the time.'}});
     const [template, setTemplate] = useState('');
+    const [entry, setEntry] = useState('');
+    const events = (library ?? []).filter(e => e.objectives?.length);
     const set = (patch: Partial<SmallQuestInput>) => setInput(i => ({...i, ...patch}));
     const program = useMemo(() => smallQuestProgram(input), [input]);
     const names = useMemo(() => namesOf(refs, program), [refs, program]);
@@ -69,6 +74,12 @@ export function SmallQuestFlow({cat, refs, pick, close}: {cat: Catalogue; refs: 
                 const t = templates.find(x => x.id === e.target.value);
                 if (t) { const from = fromTemplate(t, input.giver); set({title: from.title, summary: from.summary, ...(from.objectives.length ? {objectives: from.objectives} : {})}); }
             }}><option value="">(none: start blank)</option>{templates.map(t => <option key={t.id} value={t.id}>{t.title.replace(/\[\[\{?|\}?\]\]/g, '')} ({t.id})</option>)}</select></label>}
+            {events.length > 0 && <label>Or from one of the {events.length} library events (its steps and who gives it)<select value={entry} aria-label="A library event" onChange={e => {
+                setEntry(e.target.value);
+                const found = events.find(x => x.id === e.target.value);
+                if (found) { const from = fromLibraryEntry(found); set({title: from.title, summary: from.summary, objectives: from.objectives, ...(from.giver ? {giver: from.giver} : {})}); }
+            }}><option value="">(none)</option>{[...new Set(events.map(e => e.category))].map(c => <optgroup key={c} label={c}>
+                {events.filter(e => e.category === c).map(e => <option key={e.id} value={e.id}>{e.title} ({e.scale})</option>)}</optgroup>)}</select></label>}
             <div className="wb-head"><label className="wb-grow">Title<input value={input.title} maxLength={120} onChange={e => set({title: e.target.value})}/></label>
                 <label>Taken again<select value={input.repeat ?? 'once'} onChange={e => set({repeat: e.target.value as SmallQuestInput['repeat']})}>
                     <option value="once">never (once)</option><option value="daily">after a day</option><option value="weekly">after a week</option><option value="always">at once</option></select></label></div>

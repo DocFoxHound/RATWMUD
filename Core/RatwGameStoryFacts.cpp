@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace ratw::game
 {
@@ -24,6 +25,10 @@ constexpr double WatchSeconds = 1;      // The union of the watch lists, looked 
 constexpr double WeatherSeconds = 2;    // The weather in the watched places.
 constexpr double ReputationSeconds = 10;
 constexpr std::size_t WatchMost = 2000; // Of each kind, all stories together.
+constexpr double NearSeconds = 1;       // Doc 85, Phase 10: wolves near the watched residents, looked at this often,
+constexpr double NearTiles = 3;         // within this many tiles,
+constexpr double ApartTiles = 5;        // and not again until they have been further apart than this.
+constexpr double WorldSeconds = 2;      // Purses, standing, stances and mantles, looked at this often.
 
 std::string baseItem(const std::string& item) { return item.substr(0, item.find_first_of("~@")); }
 } // namespace
@@ -55,6 +60,15 @@ void Game::refreshStoryWatch()
         for (const auto& r : s.watch.array("relations"))
             if (r.isArray() && r.size() == 2 && r.items()[0].isString() && r.items()[1].isString() && w.relations.size() < WatchMost)
                 w.relations.insert({r.items()[0].asString(), r.items()[1].asString()});
+        add("near", w.near);
+        const auto pairs = [&](const char* key, std::set<std::pair<std::string, std::int64_t>>& into) {
+            for (const auto& r : s.watch.array(key))
+                if (r.isArray() && r.size() == 2 && r.items()[0].isString() && r.items()[1].isNumber() && into.size() < WatchMost &&
+                    r.items()[0].asString().size() <= 80)
+                    into.insert({r.items()[0].asString(), std::int64_t(std::llround(r.items()[1].asNumber()))});
+        };
+        pairs("purses", w.purses);
+        pairs("standing", w.standing);
         w.weatherWhereWolves = w.weatherWhereWolves || s.watch.boolean("weatherWhereWolves");
     }
     if (w.events != storyWatch_.events)
@@ -260,8 +274,15 @@ void Game::storyWatchTick(double real)
         storyHour_ = -1;
         storyDay_ = -1;
         storyWeather_.clear();
+        storyNear_.clear();
+        storyPurses_.clear();
+        storyStanding_.clear();
+        storyRelations_.clear();
+        storyMantles_.clear();
+        storyRelationsSeen_ = storyMantlesSeen_ = false;
         return;
     }
+    storyWorldWatch(real);
     // The calendar: an hour, a new day (its weekday), dawn and nightfall, a new season. Remembered from the first look, so a
     // story opening (or the server starting) makes no event for the hour it is already in.
     const double days = world_.calendarDays();
@@ -309,6 +330,154 @@ void Game::storyWatchTick(double real)
             world_.recordEvent({"weather changed", {}, id, id, 0, 0, was->second, 0, 0, kind});
     }
     storyWeather_ = std::move(now);
+}
+
+// ---- Doc 85, Phase 10: the events Phase 8 left (3.3), each looked for only while a live story listens, and only at what
+// the stories name: a wolf come near a resident, a purse or a wolf's standing past a number, a faction's stance changed, a
+// mantle taken or laid down. (A skill grown and an injury healed are written where they happen: World::practise and
+// World::healInjuries.)
+std::string Game::storyPurseAccount(const std::string& purse) const
+{
+    // (As character.grant reads a reward's purse: a town's treasury by its town, or the one treasury of a world without
+    // towns on its roads; town:<id>:works, till:<id> and chapter:<id> are accounts by those names.)
+    const auto& society = world_.society();
+    if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
+    {
+        for (const auto& t : world_.towns())
+            if (t.id == purse.substr(5))
+                return t.store;
+        if (society.account("stores:" + purse.substr(5)))
+            return "stores:" + purse.substr(5);
+        if (world_.towns().empty() && society.account("treasury"))
+            return "treasury";
+    }
+    return purse;
+}
+
+void Game::storyWorldWatch(double real)
+{
+    const auto& w = storyWatch_.events;
+    // A wolf within three tiles of a watched resident, in the same place (again only once they were more than five apart).
+    if (w.count("near resident") && !storyWatch_.near.empty() && (storyNearAccumulator_ += real) >= NearSeconds)
+    {
+        storyNearAccumulator_ = 0;
+        std::map<std::string, std::set<std::string>> now;
+        for (const auto* c : clients_)
+        {
+            const auto* e = c->entityId.empty() ? nullptr : world_.entity(c->entityId);
+            if (!e || e->npc || e->offstage || e->dead)
+                continue;
+            auto& mine = now[e->id];
+            const auto& was = storyNear_[e->id];
+            for (const auto& npc : storyWatch_.near)
+            {
+                const auto* r = world_.entity(npc);
+                if (!r || r->dead || r->offstage || r->cellId != e->cellId)
+                    continue;
+                const double d = std::hypot(r->position.x - e->position.x, r->position.y - e->position.y);
+                if (d <= NearTiles)
+                {
+                    mine.insert(npc);
+                    if (!was.count(npc))
+                    {
+                        const auto [x, y] = world_.eventTile(*e);
+                        world_.recordEvent({"near resident", e->id, npc, e->cellId, 0, 0, {}, int(std::lround(d)), 0, {}, x, y});
+                    }
+                }
+                else if (was.count(npc) && d <= ApartTiles)
+                    mine.insert(npc);   // (Still near enough: not a new meeting until they have been apart.)
+            }
+        }
+        storyNear_ = std::move(now);
+    }
+    if ((storyWatchedAccumulator_ += real) < WorldSeconds)
+        return;
+    storyWatchedAccumulator_ = 0;
+    // A purse past an amount a story names: up or down.
+    if (w.count("purse crossed"))
+    {
+        std::map<std::string, std::int64_t> now;
+        auto& society = world_.society();
+        for (const auto& [purse, amount] : storyWatch_.purses)
+        {
+            const auto* a = society.account(storyPurseAccount(purse));
+            if (!a)
+                continue;
+            now[purse] = a->cash;
+            const auto was = storyPurses_.find(purse);
+            if (was == storyPurses_.end())
+                continue;
+            if (was->second < amount && a->cash >= amount)
+                world_.recordEvent({"purse crossed", {}, purse, {}, 0, 0, "up", int(std::min<std::int64_t>(a->cash, std::numeric_limits<int>::max())), 0, std::to_string(amount)});
+            else if (was->second >= amount && a->cash < amount)
+                world_.recordEvent({"purse crossed", {}, purse, {}, 0, 0, "down", int(std::max<std::int64_t>(a->cash, std::numeric_limits<int>::min())), 0, std::to_string(amount)});
+        }
+        storyPurses_ = std::move(now);
+    }
+    // A wolf's standing with a faction (their Chapter's, as the faction counts it) past a number a story names.
+    if (w.count("standing crossed"))
+    {
+        std::map<std::string, double> now;
+        std::map<std::string, std::vector<std::string>> members;
+        for (const auto* c : clients_)
+        {
+            const auto* e = c->entityId.empty() ? nullptr : world_.entity(c->entityId);
+            const auto* chapter = e && !e->npc ? chapters_.of(e->id) : nullptr;
+            if (!chapter)
+                continue;
+            auto& who = members[chapter->id];
+            if (who.empty())
+                who = chapterMembers(chapter->id);
+            for (const auto& [faction, number] : storyWatch_.standing)
+            {
+                if (!factions_.find(faction))
+                    continue;
+                const auto key = e->id + "|" + faction;
+                const double v = std::round(factions_.effective(faction, chapter->id, who));
+                now[key] = v;
+                const auto was = storyStanding_.find(key);
+                if (was == storyStanding_.end())
+                    continue;
+                const auto n = double(number);
+                if ((was->second < n && v >= n) || (was->second >= n && v < n))
+                    world_.recordEvent({"standing crossed", e->id, faction, {}, 0, 0, v >= n ? "up" : "down", int(v), 0, std::to_string(number)});
+            }
+        }
+        storyStanding_ = std::move(now);
+    }
+    // A faction's stance toward another changed (by anyone's hand).
+    if (w.count("relation changed"))
+    {
+        std::map<std::string, std::pair<std::string, double>> now;
+        for (const auto& [a, fa] : factions_.all())
+            for (const auto& [b, fb] : factions_.all())
+                if (a != b)
+                {
+                    const auto r = factions_.relation(a, b);
+                    now[a + ">" + b] = {r.stance, r.disposition};
+                    const auto was = storyRelations_.find(a + ">" + b);
+                    if (storyRelationsSeen_ && (was == storyRelations_.end() || was->second.first != r.stance))
+                        world_.recordEvent({"relation changed", {}, a, {}, 0, 0, b, int(std::lround(r.disposition)), 0, r.stance});
+                }
+        storyRelations_ = std::move(now);
+        storyRelationsSeen_ = true;
+    }
+    // A mantle taken up or laid down.
+    if (w.count("mantle bound") || w.count("mantle released"))
+    {
+        const auto& now = mantleWearers();
+        if (storyMantlesSeen_)
+        {
+            for (const auto& [npc, mantle] : storyMantles_)
+                if (const auto found = now.find(npc); (found == now.end() || found->second != mantle) && w.count("mantle released"))
+                    world_.recordEvent({"mantle released", npc, {}, {}, 0, 0, mantle, 0, 0, {}});
+            for (const auto& [npc, mantle] : now)
+                if (const auto found = storyMantles_.find(npc); (found == storyMantles_.end() || found->second != mantle) && w.count("mantle bound"))
+                    world_.recordEvent({"mantle bound", npc, {}, {}, 0, 0, mantle, 0, 0, {}});
+        }
+        storyMantles_ = now;
+        storyMantlesSeen_ = true;
+    }
 }
 
 // ---- A region's count of the story's wolves (doc 85, 3.3: region occupied, region emptied; signing in inside counts).

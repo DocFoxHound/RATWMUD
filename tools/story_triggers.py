@@ -5,6 +5,7 @@ typed variables in four scopes, conditions over the story's own state, and flow 
 else, wait, for each, random, run, enable, disable, stop, note, finish). A version 1 program runs exactly as before: every
 version 2 path is behind `phase['_v'] == 2`. Core/RatwStoryTriggers.cpp is this file's twin (tools/test_story_native.py)."""
 
+import re
 import operator
 
 import story_native
@@ -739,6 +740,12 @@ def _check_trigger(t, phase, ids, links, runs=None, collect=None):
         isinstance(match, dict) and all(k in rules.FIELDS and rules.word(v, 400) for k, v in match.items()),
         'Invalid trigger filters.',
     )
+    # (Doc 85, Phase 10: a watched event the game can only look for when it is told what to look at: a resident to come
+    # near, a purse and the amount it crosses, a faction and the standing.)
+    needs = rules.NEEDS_MATCH.get(t['on'], ())
+    require(all(match.get(k) for k in needs), f'"{t["on"]}" needs its ' + ' and '.join(rules.MATCH_WORDS[k] for k in needs) + ' named.')
+    if t['on'] in ('purse crossed', 'standing crossed') and 'detail' in match:
+        require(re.fullmatch(r'-?[0-9]{1,9}', match['detail']) is not None, f'"{t["on"]}" names a whole number to cross.')
     rules.check_region_source(t, phase.get('_regions'))
     if 'if' in t:
         condition(t['if'], 1)

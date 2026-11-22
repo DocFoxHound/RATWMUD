@@ -371,7 +371,7 @@ test('Phase 8: the night watch opens in the workbench, every world condition and
         const words = plain(eventParts(cat, t, names));
         assert.ok(!words.includes('{'), t.on + ': ' + words);
     }
-    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 24);
+    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 32);   // (Phase 8's 24, Phase 10's 8.)
 });
 
 // ------------------------------------------------------------------------------------------ new world effects (doc 85, Phase 9)
@@ -405,4 +405,43 @@ test('Phase 9: every new world effect the workbench adds, its slots picked, is o
     assert.equal(plain(itemParts(cat.effects.find(x => x.id === 'story.tell')!, {kind: 'story.tell', to: 'party', player: '$actor', text: 'Stay together.'}, names)),
         'Tell the party of the acting wolf: “Stay together.”');
     assert.deepEqual(visitorsOf(p), ['stranger-1']);
+});
+
+// ------------------------------------------------------------- chapters, the events Phase 8 left, the library as quests (doc 85, Phase 10)
+
+import {fromLibraryEntry} from './workbench.ts';
+
+test('Phase 10: story.start as the workbench adds it, its chapter picked, passes the checks and reads as words; the new events read as words', () => {
+    const p = structuredClone(ledger);
+    const e = newEffect(cat, 'story.start', p);
+    assert.deepEqual(e, {kind: 'story.start', story: '', audience: 'same'});
+    e.story = 'the-next-chapter';
+    p.phases[1].triggers!.push({id: 'next', on: 'arrival', audience: 'participant', actions: [{do: 'effect', effect: e}]});
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(p)}).toString());
+    assert.deepEqual(found, []);
+    const words = plain(itemParts(cat.effects.find(x => x.id === 'story.start')!, {...e, when: 'now', carry: false},
+        namesOf({stories: [{id: 'the-next-chapter', name: 'The crossing'}]}, p)));
+    assert.ok(words.startsWith('Start the chapter The crossing for this story') && words.includes('now, beside this one'), words);
+    for (const id of ['near resident', 'purse crossed', 'standing crossed', 'relation changed', 'mantle bound', 'mantle released', 'skill practised',
+        'injury healed', 'story started', 'story ended']) {
+        const said = plain(eventParts(cat, {id: 't', on: id, actions: []}, names));
+        assert.ok(!said.includes('{') && said.length > 8, id + ': ' + said);
+    }
+});
+
+test('Phase 10: each of the 100 library events starts a small quest whose rehearsal passes', () => {
+    const entries = JSON.parse(readFileSync(join(repo, 'Data/Storylines/event-library.json'), 'utf8'));
+    const list = (Array.isArray(entries) ? entries : entries.events) as Parameters<typeof fromLibraryEntry>[0][];
+    assert.equal(list.length, 100);
+    const programs = list.map(entry => {
+        const from = fromLibraryEntry(entry);
+        assert.ok(from.objectives.length >= 1 && from.title, entry.title);
+        return smallQuestProgram({title: from.title, summary: from.summary, giver: from.giver || 'rm111', objectives: from.objectives,
+            reward: {kind: 'deed', detail: 'Saw it done.'}, offer: {say: 'There is something you could do.'}});
+    });
+    const failed = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "ps = json.loads(sys.stdin.read())\nout = []\nfor p in ps:\n    r = P.review(p)\n    if not r['passed']: out.append([p['title'], [t.get('error') for t in r['tests']]])\n"
+        + "print(json.dumps(out))"], {cwd: repo, input: JSON.stringify(programs), maxBuffer: 1 << 26}).toString());
+    assert.deepEqual(failed, []);
 });

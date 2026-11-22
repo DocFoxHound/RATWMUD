@@ -15,6 +15,7 @@ import {MissionGrid} from './MissionGrid';
 import {QuestGrid} from './QuestGrid';
 import {WolvesMap} from './WolvesMap';
 import {Orders} from './Orders';
+import {ChapterBar} from './Chapters';
 
 export type ViewTab = 'overview' | 'timeline' | 'triggers' | 'state' | 'missions' | 'quests' | 'wolves' | 'orders' | 'audit';
 const TABS: {id: ViewTab; label: string}[] = [
@@ -22,10 +23,10 @@ const TABS: {id: ViewTab; label: string}[] = [
     {id: 'missions', label: 'Missions'}, {id: 'quests', label: 'Quests'}, {id: 'wolves', label: 'Wolves & map'}, {id: 'orders', label: 'Orders'}, {id: 'audit', label: 'Audit'},
 ];
 
-export function CampaignView({me, target, row, detail, items, events, names, now, live, tab, setTab, earlier, refresh, explained}: {
+export function CampaignView({me, target, row, detail, items, events, names, now, live, tab, setTab, earlier, refresh, explained, open}: {
     me: Me; target: Target; row: RunRow; detail: RunDetail | null; items: TimelineItem[]; events: Record<string, WorldEvent>;
     names: Record<string, string>; now: Now; live: Live | null; tab: ViewTab; setTab: (t: ViewTab) => void; earlier?: () => void;
-    refresh: () => Promise<void> | void; explained?: Explained | null}) {
+    refresh: () => Promise<void> | void; explained?: Explained | null; open?: (run: string) => void}) {
     const [ticket, setTicket] = useState(''), [said, setSaid] = useState(''), [busy, setBusy] = useState(false);
     const [mapFocus, setMapFocus] = useState<{cell: string; x: number; y: number} | null>(null);
     const [ask, setAsk] = useState<Ask | null>(null), [sent, setSent] = useState<number | null>(null);
@@ -65,6 +66,7 @@ export function CampaignView({me, target, row, detail, items, events, names, now
             "may steer campaigns" for your account (My world, Editor accounts).</p>}
         {ask && <AskDialog key={ask.title + JSON.stringify(ask.payload)} ask={ask} row={row} names={names} busy={busy} send={send} cancel={() => setAsk(null)}
             target={target} />}
+        {detail?.campaign && <ChapterBar detail={detail} names={names} open={run => open?.(run)} />}
         <div className="camp-strip" aria-label="Phases">
             {strip.path.map((p, i) => <span key={i} className={i === strip.path.length - 1 && row.phase === p ? 'now' : ''}>{i ? '▸ ' : ''}{i === strip.path.length - 1 && row.phase === p ? `[${p}]` : p}</span>)}
             {strip.next.length > 0 && <span className="next">▸ next: {strip.next.join(' or ')}</span>}

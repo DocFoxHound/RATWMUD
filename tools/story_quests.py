@@ -40,7 +40,9 @@ QUEST_EFFECTS = ('quest.offer', 'quest.start', 'quest.complete', 'quest.fail', '
                  'objective.reveal', 'objective.progress')
 PARTICIPANT_EFFECTS = ('participant.add', 'participant.remove')
 # (Doc 85, Phase 9: story.tracker shows or hides a shown variable among the journal's trackers: the story's own too.)
-STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker')
+# (Doc 85, Phase 10: story.start, the next chapter of a campaign, is the story's own too: the runner starts it.)
+CHAPTER_EFFECTS = ('story.start',)
+STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker', *CHAPTER_EFFECTS)
 # (A wolf may be named by $actor in these from a trigger of anyone in the world: each takes the wolf into the story.)
 TAKES_IN = ('participant.add', 'quest.offer', 'quest.start')
 GAME_EVENTS = ('quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'dialogue choice')
@@ -244,6 +246,13 @@ def check_story_effect(effect, phase, t):
         d = phase.get('_vars', {}).get(effect['var'])
         rules.require(d is not None and d['type'] in ('number', 'switch') and d.get('show'),
                       f'Show or hide a declared number or switch that is shown ("shown as"): {effect["var"]} is not one.')
+    if kind == 'story.start':
+        rules.require(('list' in effect) == (effect['audience'] == 'list'),
+                      'Start a chapter for the wolves in a list names the list, and only then.')
+        if 'list' in effect and phase is not None:
+            d = phase.get('_vars', {}).get(effect['list'])
+            rules.require(d is not None and d['type'] == 'wolves' and d['scope'] in ('story', 'world'),
+                          f'A chapter\'s wolves come from a declared list of wolves of the story or the world: {effect["list"]} is not one.')
     if kind in QUEST_EFFECTS and phase is not None:
         known = phase.get('_questIndex')
         if known is not None:
@@ -673,6 +682,19 @@ class Run:
         if kind == 'participant.remove':
             remove_wolf(self.p, state, wolf, self.day)
             return
+        if kind == 'story.start':
+            # (Doc 85, Phase 10: the next chapter, started by the runner: at once ("now"), or once this story has ended in
+            # the game ("ended", the default), so what it held is let go first. A list's wolves are read now.)
+            start = {'story': effect['story'], 'audience': effect['audience'], 'carry': effect.get('carry', True),
+                     'when': effect.get('when', 'ended'), 'day': self.day, 'actor': actor}
+            if effect['audience'] == 'list':
+                d = self.phase.get('_vars', {}).get(effect['list'], {})
+                store = triggers.var_store(state, d.get('scope', 'story'), actor) or {}
+                start['wolves'] = list(store.get(effect['list'], []))[:AUDIENCE_CAP]
+            pending = state.setdefault('chapterStarts', [])
+            if not any(s['story'] == start['story'] for s in pending):
+                pending.append(start)
+            return
         if kind == 'story.tracker':
             hidden = set(state.get('hiddenTrackers', ()))
             (hidden.discard if effect['shown'] else hidden.add)(effect['var'])
@@ -762,7 +784,8 @@ def _uses_story_effects(p):
     for ph in p.get('phases', []):
         for t in [*p.get('triggers', []), *ph.get('triggers', [])]:
             for _, a in triggers.walk(t.get('actions', [])):
-                if a.get('do') == 'effect' and a['effect'].get('kind') in STORY_EFFECTS:
+                if a.get('do') == 'effect' and a['effect'].get('kind') in STORY_EFFECTS \
+                        and a['effect'].get('kind') not in CHAPTER_EFFECTS:
                     return True
     return False
 

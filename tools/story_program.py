@@ -92,6 +92,9 @@ MISSION_MEASURES = {m: tuple(e['id'] for e in CATALOGUE['events'] if m in e.get(
 # facts as of the event.)
 WATCHED_EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e.get('watch'))
 FACT_CONDITIONS = tuple(c['id'] for c in CATALOGUE['conditions'] if c.get('facts'))
+# (Doc 85, Phase 10: the watched events that need a trigger's filters to say what to look at, and the words for them.)
+NEEDS_MATCH = {e['id']: tuple(e['needsMatch']) for e in CATALOGUE['events'] if e.get('needsMatch')}
+MATCH_WORDS = {'target': 'what it is about (target)', 'detail': 'number (detail)', 'actor': 'wolf (actor)'}
 
 
 def validate_missions(phase):
@@ -1333,6 +1336,8 @@ def _check_case(p, case):
             'expectQuests',
             # (Doc 85, Phase 8: the world's facts at the start, as game.story_facts holds them; a fact may change them after.)
             'facts',
+            # (Doc 85, Phase 10: the chapters this one starts, by story id, in order.)
+            'expectChapters',
         ),
     )
     if 'facts' in case:
@@ -1340,6 +1345,8 @@ def _check_case(p, case):
     require('expectQuests' not in case or (isinstance(case['expectQuests'], dict) and all(
         isinstance(v, dict) and all(s in ('offered', 'none', *quests.STATUSES) for s in v.values())
         for v in case['expectQuests'].values())), 'Expected quests are {quest: {holder: status}}.')
+    require('expectChapters' not in case or (isinstance(case['expectChapters'], list) and all(identifier(c) for c in case['expectChapters'])),
+            'Expected chapters are a list of story ids.')
     require('seed' not in case or word(case['seed'], 80), 'A seed is a word of up to 80 characters.')
     require('rolls' not in case or (isinstance(case['rolls'], list) and len(case['rolls']) <= 256
                                     and all(integer(r, 0, 99) for r in case['rolls'])), 'Pinned rolls are numbers 0 to 99.')
@@ -1422,6 +1429,15 @@ def watch_of(p):
         listened.update(o.get('on') for o in q.get('objectives', []))
         listened.update(f.get('on') for f in q.get('fail', []) if isinstance(f, dict))
     sections, items, factions, towns, residents, relations = set(), set(), set(), set(), set(), set()
+    # (Doc 85, Phase 10: what the game looks at for "near resident", "purse crossed" and "standing crossed": the residents,
+    # the purses and amounts, the factions and numbers the triggers name.)
+    near, purses, standings = set(), set(), set()
+    for t in [*rules_, *(e for ph in p.get('phases', []) for e in ph.get('exits', []))]:
+        m = t.get('match', {}) if isinstance(t.get('match'), dict) else {}
+        if t.get('on') == 'near resident' and m.get('target'):
+            near.add(m['target'])
+        elif t.get('on') in ('purse crossed', 'standing crossed') and m.get('target') and re.fullmatch(r'-?[0-9]{1,9}', m.get('detail', '')):
+            (purses if t['on'] == 'purse crossed' else standings).add((m['target'], int(m['detail'])))
     for c in conditions:
         kind = c.get('test')
         if kind not in FACT_CONDITIONS:
@@ -1456,6 +1472,12 @@ def watch_of(p):
             out[key] = sorted(values)
     if relations:
         out['relations'] = [list(r) for r in sorted(relations)]
+    if near:
+        out['near'] = sorted(near)
+    if purses:
+        out['purses'] = [list(x) for x in sorted(purses)]
+    if standings:
+        out['standing'] = [list(x) for x in sorted(standings)]
     if anywhere:
         out['weatherWhereWolves'] = True
     return out
@@ -1590,8 +1612,11 @@ def _play_case(p, case, step=None):
         and [f['trigger'] for f in trace] == case.get('expectTriggers', [f['trigger'] for f in trace])
         and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {}))
         and ('expectVariables' not in case or _variables_match(p, state, case['expectVariables']))
-        and ('expectOutcome' not in case or (state.get('outcome') or {}).get('outcome') == case['expectOutcome']),
+        and ('expectOutcome' not in case or (state.get('outcome') or {}).get('outcome') == case['expectOutcome'])
+        and ('expectChapters' not in case or [c['story'] for c in state.get('chapterStarts', [])] == case['expectChapters']),
         **({'outcome': state.get('outcome'), 'outcomes': state.get('outcomes', {})} if v2 else {}),
+        **({'chapters': [{k: c[k] for k in ('story', 'audience', 'when') if k in c} for c in state['chapterStarts']]}
+           if state.get('chapterStarts') else {}),
         **({'quests': {qid: {h: c['status'] for h, c in copies.items()} for qid, copies in state.get('quests', {}).items()},
             'cohort': list(state['cohort'])} if p.get('quests') or quests.joinable(p) else {}),
         'triggers': trace,

@@ -94,7 +94,8 @@ def effect(kind, **more):
 class Catalogue(unittest.TestCase):
     def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
         ids = [e['id'] for e in CAT['effects']]
-        self.assertEqual(len(ids), 70)
+        self.assertEqual(len(ids), 71)   # (Phase 10's story.start, the story's own: not a game order.)
+        self.assertNotIn('story.start', runner.WORLD_ORDERS)
         for kind in NEW:
             with self.subTest(kind=kind):
                 self.assertIn(kind, ids)
@@ -117,7 +118,8 @@ class Catalogue(unittest.TestCase):
 
     def test_who_may_send_them_on_a_hosted_world(self):
         self.assertEqual(rules.WOLF_EFFECTS, {'character.injury', 'story.area.damage', 'item.take', 'warrant.issue'})
-        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust'})
+        # (Doc 85, Phase 10: the economy's effects need a builder or the owner too: prices and projects.)
+        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel'})
         self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
         self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
         p = program([effect('item.take')])
@@ -132,6 +134,9 @@ class Catalogue(unittest.TestCase):
                                'fire', {}, {'relations': False, 'wolves': True})
         runner._may_release(program([effect('weather.set'), effect('event.add'), effect('story.tell')]), 'fire', {},
                             {'relations': False, 'wolves': False})
+        for kind in ('prices.reset', 'project.complete', 'project.cancel'):
+            self.assertRaisesRegex(ValueError, 'the economy', runner._may_release, program([effect(kind)]), 'fire', {},
+                                   {'relations': False, 'wolves': True})
 
 
 class Checks(unittest.TestCase):
@@ -345,9 +350,21 @@ class HostedApproval(unittest.TestCase):
         self.assertIn('standing with a faction', data['error'])
         status, data = self.call(body, 'builder')
         self.assertNotEqual(status, 403, data)   # (Past the permission: this world has no such faction, so it is refused there.)
-        q = program(entry=[{**effect('weather.set')}, {**effect('board.post')}])
+        q = program(entry=[{**effect('weather.set')}, {**effect('board.post')}, {**effect('event.add')}])
         status, data = self.call({'op': 'approve', 'target': 'dev', 'program': q, 'digest': rules.digest(q)}, 'dm')
-        self.assertNotEqual(status, 403, data)   # (The weather and a notice are a Dungeon Master's, as they are by hand.)
+        self.assertNotEqual(status, 403, data)   # (The weather, a notice and a market event are a Dungeon Master's, as by hand.)
+
+    def test_the_economy_needs_a_builder(self):
+        # (Doc 85, Phase 10: prices eased and projects finished or called off change the economy: a builder or the owner.)
+        for kind in ('prices.reset', 'project.complete', 'project.cancel'):
+            with self.subTest(kind=kind):
+                p = program(entry=[effect(kind)])
+                body = {'op': 'approve', 'target': 'dev', 'program': p, 'digest': rules.digest(p)}
+                status, data = self.call(body, 'dm')
+                self.assertEqual(status, 403, data)
+                self.assertIn('the economy', data['error'])
+                status, data = self.call(body, 'builder')
+                self.assertNotEqual(status, 403, data)
 
 
 if __name__ == '__main__':

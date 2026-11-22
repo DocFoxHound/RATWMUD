@@ -137,6 +137,15 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
             '0 of 2 done · 1 ready to hand in · 1 under way · at most 10 under way at once', 'Who cut the rope?', 'Party of Ash Greymantle, Birch Oakenfall', 'left: Elm Sandpaw'],
         'Campaigns (wolves, parties)': ['Audience: open · 3 of 5000', 'Add a wolf…', 'Remove…', 'party with Birch Oakenfall'],
         'Campaigns (open audience)': ['open · 3 of 5000'],
+        // (Doc 85, Phase 10: chapters, the world's variables, the guide.)
+        'Campaigns (chapters)': ['The long winter', '3 chapters · 1 done · now: Ninety days on the winter ferries (ferry-watch)', '✔ 1. The muster',
+            '○ 3. The spring council', 'World variables…', 'New campaign…'],
+        'Campaigns (a chapter)': ['Chapter 2 of 3 of', 'The long winter', '“The spring council” for this story&#x27;s wolves, carrying its variables, when this story has ended'.replace('“', '"').replace('”', '"').replace(/"/g, '&quot;')],
+        'World variables': ['ferries-run', 'ferries that crossed this winter', 'Ninety days on the winter ferries (running)', 'not declared', '✎ Set…',
+            '+ Declare a world variable…', 'one more crossed at dawn'],
+        'Guide': ['A small quest in five minutes', 'Building a campaign', 'What the game undoes when a run ends', 'Why not?', 'story.start',
+            'Reference: every event, condition, action and effect', 'near resident'],
+        'Guide (search)': ['of the guide mention', 'purse crossed', 'Show the whole guide'],
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
     const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days'],

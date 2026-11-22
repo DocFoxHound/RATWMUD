@@ -1835,9 +1835,15 @@ class HostedStudio:
                 raise D.DMError(f'{kind} is a cheat on a community world. {CHEATS_OFF}', 403)
             if kind in WOLF_KINDS and not who['mayActOnWolves']:
                 raise D.DMError(WOLVES_REASON, 403)
-        story_approval = path == '/api/dm/story-program' and data.get('op') == 'approve'
+        story_approval = path == '/api/dm/story-program' and data.get('op') in ('approve', 'campaign.approve')
         if story_approval and not who['mayActOnWolves'] and STORY_WOLF_KINDS & story_effect_kinds(data.get('program')):
             raise D.DMError(WOLVES_REASON, 403)   # (A story's effects are the same acts as the actions route's, Q24.)
+        if story_approval and data.get('op') == 'campaign.approve' and not who['mayActOnWolves']:
+            # (Doc 85, Phase 10: a campaign's chapters, each as its own approval would be.)
+            chapters = (data.get('campaign') or {}).get('chapters') if isinstance(data.get('campaign'), dict) else None
+            for ch in chapters if isinstance(chapters, list) else []:
+                if isinstance(ch, dict) and STORY_WOLF_KINDS & story_effect_kinds(ch.get('program')):
+                    raise D.DMError(WOLVES_REASON, 403)
         if data and (story_approval or path in PLACING_ROUTES or path.startswith('/api/atlas/layers/')) and self._dev():
             try:
                 place = self.publisher.ahead(data)

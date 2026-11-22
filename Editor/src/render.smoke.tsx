@@ -15,6 +15,9 @@ import {ProsperityTab} from './dm/ProsperityTab';
 import {MyWorldTab} from './dm/MyWorldTab';
 import type {MyWorld} from './dm/api';
 import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
+import {GuideTab} from './dm/GuideTab';
+import {WorldVarsPanel} from './dm/campaigns/WorldVars';
+import type {Campaign} from './lib/campaigns';
 import type {Explained, MigrationReport, Order, Preview, Problems, RunDetail, RunRow, TimelineItem, Version} from './lib/campaigns';
 import {AskDialog, MovePanel} from './dm/campaigns/Steer';
 import {ProblemsList} from './dm/StoryProgramPanel';
@@ -303,6 +306,21 @@ export function renderAll(): Record<string, string> {
     out['Campaigns (wolves, parties)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignQuests, tab: 'wolves'}} />);
     out['Campaigns (open audience)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview,
         runs: [{...runningRow, audience: {kind: 'open', cap: 5000, size: 3}}]}}} />);
+    // (Doc 85, Phase 10: a campaign as its chapters, in the list and on a chapter's page; the world's variables; the guide.)
+    const ford: Campaign = {id: 'ford', title: 'The long winter', approvedBy: 'martin', approvedAt: at, status: 'running', chapters: [
+        {story: 'the-muster', title: 'The muster', digest: 'a', starts: ['winter-ferries'], runs: [{run: 'world-old', status: 'complete', phase: 'gather', at}]},
+        {story: 'winter-ferries', title: 'Ninety days on the winter ferries', digest: 'b', starts: [], runs: [{run: runningRow.run, status: 'running', phase: 'ferry-watch', at}]},
+        {story: 'spring-council', title: 'The spring council', digest: 'c', starts: [], runs: []}]};
+    out['Campaigns (chapters)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview, campaigns: [ford]}}} />);
+    out['Campaigns (a chapter)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, detail: {...campaignRunning.detail!,
+        campaign: {...ford, chapter: 1}, chapterStarts: [{story: 'spring-council', audience: 'same', when: 'ended', carry: true}]}}} />);
+    out['World variables'] = renderToString(<WorldVarsPanel target="dev" names={names} mayChange initial={{declarations: true, variables: [
+        {name: 'ferries-run', type: 'number', value: 4, declared: true, note: 'ferries that crossed this winter', declaredBy: 'martin', updatedBy: 'martin',
+         stories: [{run: runningRow.run, story: 'winter-ferries', title: 'Ninety days on the winter ferries', type: 'number', status: 'running'}]},
+        {name: 'bells', type: 'switch', value: true, declared: false, run: 'world-old', stories: []}],
+        audit: [{at: 1763800000, name: 'ferries-run', detail: 'ferries-run: 3 → 4. Reason: "one more crossed at dawn"', who: 'martin'}]}} />);
+    out['Guide'] = renderToString(<GuideTab />);
+    out['Guide (search)'] = renderToString(<GuideTab initialQuery="purse crossed" />);
     out['Story problems'] = renderToString(<ProblemsList found={problems} untried={['ferry-watch/begin-deep-freeze']} phases={['enrol', 'ferry-watch']} go={none} asking={false} />);
     out['DM tab bar'] = renderToString(<DmSuite me={me} target="dev" alertsInitial={{runner: {beatAt: earlier, age: 95}, runnerDown: true, live: 2, needsYou: 2, at,
         runs: [{run: 'world-77ab', title: 'Two ways across Reed Ford', status: 'paused', kinds: ['paused'], text: 'Story "Two ways across Reed Ford" is paused.'}]}} />);

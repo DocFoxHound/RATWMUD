@@ -5,6 +5,7 @@ import datetime
 import hashlib
 import json
 import math
+import re
 import secrets
 import time
 import uuid
@@ -79,7 +80,19 @@ def check_tile(conn, world, cell, x, y):
     rules.require(dimensions and x < dimensions[0] and y < dimensions[1], f'Tile ({x},{y}) lies outside {cell}.')
 
 
-def references(conn, world, program):
+def references(conn, world, program, chapters=False):
+    # (Doc 85, Phase 10: a story that starts another is a chapter: approved with its campaign, never alone.)
+    starts = chapter_starts(program)
+    rules.require(chapters or not starts, 'This story starts another (' + ', '.join(starts) + '): approve it as a chapter of a '
+                  'campaign, with the chapters it starts.')
+    # (And a world variable the world declares as another type is refused: every story reads the world's values alike.)
+    names = _world_names(program)
+    if names and conn.execute("""SELECT 1 FROM information_schema.columns WHERE table_schema='dm' AND table_name='story_world_vars'
+                                 AND column_name='declared'""").fetchone():
+        for name, kind in conn.execute('SELECT name,type FROM dm.story_world_vars WHERE world_id=%s AND declared AND name=ANY(%s)',
+                                       (world, sorted(names))):
+            rules.require(kind == names[name]['type'], f'The world declares {name} as {kind}; this story declares it as '
+                          f'{names[name]["type"]}.')
     for r in program.get('regions', []):
         check_tile(conn, world, r['cell'], r['x2'], r['y2'])
     if any(ph.get('triggers') for ph in rules.phases_of(program)):
@@ -231,7 +244,15 @@ def approve(conn, world, who, program, digest, for_run=None):
         report['passed'] and digest == report['digest'], 'Rehearse this exact version successfully before approval.'
     )
     rules.require(not report['uncovered'], 'Rehearse the remaining phases: ' + ', '.join(report['uncovered']))
-    references(conn, world, program)
+    campaign = None
+    if for_run is not None and chapter_starts(program):
+        # (A new version of a chapter's run may start the chapters of its campaign: doc 85, Phase 10.)
+        cid = _campaign_of(conn, for_run)
+        row = conn.execute('SELECT chapters FROM dm.story_campaigns WHERE world_id=%s AND id=%s', (world, cid)).fetchone() if cid else None
+        rules.require(row, 'This story starts another: only a chapter of a campaign may.')
+        campaign = {ch['story'] for ch in row[0]}
+        _check_chapter(rules.validate(program), campaign, program['id'])
+    references(conn, world, program, chapters=campaign is not None)
     if for_run is not None:
         return approve_version(conn, world, who, program, digest, for_run)
     run, ticket = 'world-' + uuid.uuid4().hex, secrets.token_urlsafe(32)
@@ -339,6 +360,13 @@ def publish(conn, world, ticket):
     if status != 'approved':
         return {'run': run, 'status': status}
     rules.require(valid, 'Approval expired. Approve the story again.')
+    return launch(conn, world, run, program, who)
+
+
+def launch(conn, world, run, program, who, cohort=None, carried=None, chapter_of=None):
+    """An approved release starts running: its audience frozen (or `cohort`, a chapter's wolves handed on by the one before
+    it), its first phase entered. `carried`: values a chapter before it carried over ({scope: {name: value}}, doc 85, Phase
+    10)."""
     # Serialize two different approvals of the same story in this world.
     conn.execute('SELECT pg_advisory_xact_lock(hashtext(%s),hashtext(%s))', (world, program['id']))
     other = conn.execute(
@@ -347,7 +375,7 @@ def publish(conn, world, ticket):
         (world, program['id']),
     ).fetchone()
     rules.require(not other, 'This story already has a live run.')
-    references(conn, world, program)
+    references(conn, world, program, chapters=bool(chapter_of) or bool(_campaign_of(conn, run)))
     a = program['audience']
     # Read the calendar and event watermark from a single MVCC snapshot.
     snapshot = conn.execute(
@@ -358,10 +386,11 @@ def publish(conn, world, ticket):
     ).fetchone()
     rules.require(snapshot and snapshot[0] is not None, 'The world needs its first saved clock.')
     day, cursor, published_at = snapshot
-    cohort = a.get('players')
+    handed = cohort is not None
+    cohort = list(cohort) if handed else a.get('players')
     joinable = quests.joinable(program)
     cap = quests.cap_of(program)
-    if a['kind'] == 'open':
+    if a['kind'] == 'open' and not handed:
         cohort = []   # (Doc 85, 3.6: nobody at first; wolves come in by taking a quest, or by participant.add.)
     if cohort is None:
         cohort = [
@@ -413,12 +442,17 @@ def publish(conn, world, ticket):
             f'Phase {phase["id"]} needs more distinct players than the opening audience contains.',
         )
     state = {**rules.begin(program, cohort, day, run), 'publishedAt': published_at}
+    if carried:
+        _carry_into(program, state, carried)
+    if chapter_of:
+        state['chapterOf'] = chapter_of
     if quests.relevant(program):
         # (Doc 85, Phase 6: each wolf's own state in dm.story_player_state; the game has the opening audience with the
         # first phase.)
         rules.require(_players_table(conn), 'Apply migration 0075 before publishing a story with quests or an open audience.')
         state.update(playerRows=True, cohortSent=list(state['cohort']))
-    enter(conn, run, program, who, state, cursor, 'published')
+    enter(conn, run, program, who, state, cursor, 'published' if not chapter_of else f'started by {chapter_of["from"]}')
+    tell_stories(conn, world, run, 'story started', program['id'], (chapter_of or {}).get('campaign') or _campaign_of(conn, run))
     return {'run': run, 'status': 'running', 'eligible': len(cohort)}
 
 
@@ -919,6 +953,375 @@ def world_save(conn, world, run, program, state, loaded):
             loaded[name] = now[name]
 
 
+# ----- chapters and campaigns (doc 85, 3.5 "story.start" and Phase 10)
+# A campaign is several stories of one world approved together, in order: its chapters (dm.story_campaigns, migration 0079).
+# The first is published with a ticket as any story is; a chapter starts the next with the story effect `story.start`, which
+# the runner carries out: at once ("now"), or once the chapter that started it has ended in the game ("ended", the default),
+# so what it held there (locks, holds, strangers, the weather) is let go before the next one begins. The next chapter's
+# wolves are the same, its own audience, or a list; the story and per-wolf variables it declares with the same name, scope
+# and type start with the values the last chapter had (`carry`), and world variables are the world's anyway. Every other
+# live story of the world that listens is told "story started" and "story ended", by story id, through its command inbox.
+
+CAMPAIGN_CHAPTERS = 12
+INTERNAL_COMMANDS = ('story-event',)   # (Commands the runner makes itself: never from the route, never audited.)
+ENDINGS = ('complete', 'success', 'failure', 'abandoned', 'stopped')
+
+
+def _campaigns_table(conn):
+    return conn.execute("SELECT to_regclass('dm.story_campaigns') IS NOT NULL").fetchone()[0]
+
+
+def chapter_starts(program):
+    """The story ids a program starts (story.start), in the order they appear."""
+    out = []
+    phases = rules.phases_of(program) if isinstance(program, dict) else []
+    for ph in phases:
+        for e in rules.possible_effects(ph):
+            if e.get('kind') == 'story.start' and e.get('story') not in out:
+                out.append(e['story'])
+    return out
+
+
+def _campaign_of(conn, run):
+    if not _campaigns_table(conn):
+        return ''
+    row = conn.execute('SELECT campaign FROM dm.story_releases WHERE id=%s', (run,)).fetchone()
+    return (row[0] if row else '') or ''
+
+
+def _carried(program, nxt, state):
+    """What a chapter hands the next one (`carry`): its story and per-wolf variables that the next declares with the same
+    name, scope and type ({scope: {name: value} | {wolf: {name: value}}}). World variables are shared anyway."""
+    if program.get('version') != 2 or nxt.get('version') != 2:
+        return {}
+    mine, theirs = rules.variables_of(program), rules.variables_of(nxt)
+    names = {n for n, d in mine.items() if d['scope'] in ('story', 'player') and n in theirs
+             and theirs[n]['scope'] == d['scope'] and theirs[n]['type'] == d['type']}
+    counters = state.get('counters', {})
+    out = {}
+    story = {n: v for n, v in counters.get('story', {}).items() if n in names and mine[n]['scope'] == 'story'}
+    if story:
+        out['story'] = story
+    wolves = {w: {n: v for n, v in vals.items() if n in names and mine[n]['scope'] == 'player'}
+              for w, vals in counters.get('player', {}).items()}
+    wolves = {w: v for w, v in wolves.items() if v}
+    if wolves:
+        out['player'] = wolves
+    return out
+
+
+def _carry_into(program, state, carried):
+    """The values a chapter before this one carried, into its first state (a wolf's only when the wolf is in it)."""
+    decls = rules.variables_of(program)
+    counters = state.setdefault('counters', {})
+    for name, value in carried.get('story', {}).items():
+        if decls.get(name, {}).get('scope') == 'story':
+            counters.setdefault('story', {})[name] = value
+    for wolf, values in carried.get('player', {}).items():
+        if wolf in state['cohort']:
+            for name, value in values.items():
+                if decls.get(name, {}).get('scope') == 'player':
+                    counters.setdefault('player', {}).setdefault(wolf, {})[name] = value
+    if not counters:
+        state.pop('counters')
+
+
+def _check_chapter(program, ids, own):
+    for story in chapter_starts(program):
+        rules.require(story != own, f'"{own}" cannot start itself: name the next chapter.')
+        rules.require(story in ids, f'"{own}" starts "{story}", which is not a chapter of this campaign.')
+
+
+def approve_campaign(conn, world, who, data):
+    """Several stories approved together as a campaign (op `campaign.approve`): {campaign: {id, title, chapters:
+    [{program, digest}]}}. Each chapter is rehearsed and checked as an approval is; the first gets a publication ticket
+    (unless it has already started); the others wait for a chapter before them to start them."""
+    rules.require(_campaigns_table(conn), 'Apply migration 0079 before approving a campaign.')
+    c = data.get('campaign')
+    rules.require(isinstance(c, dict), 'Name the campaign and its chapters.')
+    cid, title, chapters = c.get('id'), c.get('title'), c.get('chapters')
+    rules.require(isinstance(cid, str) and re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}', cid) is not None,
+                  'A campaign id is a short name (letters, digits, _ . : -).')
+    rules.require(rules.word(title, 100), 'A campaign needs a title of up to 100 characters.')
+    rules.require(isinstance(chapters, list) and 1 <= len(chapters) <= CAMPAIGN_CHAPTERS,
+                  f'A campaign has 1 to {CAMPAIGN_CHAPTERS} chapters.')
+    programs = []
+    for n, ch in enumerate(chapters):
+        rules.require(isinstance(ch, dict) and isinstance(ch.get('program'), dict), f'Chapter {n + 1} needs its story.')
+        report = rules.review(ch['program'])
+        rules.require(report['passed'] and ch.get('digest') == report['digest'],
+                      f'Chapter {n + 1}: rehearse this exact version successfully before approval.')
+        rules.require(not report['uncovered'], f'Chapter {n + 1}: rehearse the remaining phases: ' + ', '.join(report['uncovered']))
+        programs.append(rules.validate(ch['program']))
+    ids = [p['id'] for p in programs]
+    rules.require(len(set(ids)) == len(ids), 'Every chapter is a different story.')
+    for p in programs:
+        _check_chapter(p, set(ids), p['id'])
+        references(conn, world, p, chapters=True)
+    conn.execute('SELECT pg_advisory_xact_lock(hashtext(%s),hashtext(%s))', (world, 'campaign:' + cid))
+    started = {r[0]: r[1] for r in conn.execute(
+        """SELECT program->>'id',id FROM dm.story_releases WHERE world_id=%s AND campaign=%s AND status<>'approved'""",
+        (world, cid))}
+    others = conn.execute(
+        """SELECT program->>'id',campaign FROM dm.story_releases WHERE world_id=%s AND program->>'id'=ANY(%s)
+           AND status=ANY(%s) AND coalesce(campaign,'')<>%s""", (world, ids, list(STEERED) + ['stopping'], cid)).fetchall()
+    rules.require(not others, f'"{others[0][0]}" is running outside this campaign: stop it first.' if others else '')
+    entries = [{'story': p['id'], 'title': p['title'], 'digest': rules.digest(p), 'program': p, 'approvedBy': who} for p in programs]
+    conn.execute(
+        """INSERT INTO dm.story_campaigns(world_id,id,title,chapters,approved_by,status) VALUES (%s,%s,%s,%s::jsonb,%s,%s)
+           ON CONFLICT (world_id,id) DO UPDATE SET title=excluded.title,chapters=excluded.chapters,approved_by=excluded.approved_by,
+           approved_at=now(),status=excluded.status""",
+        (world, cid, title, json.dumps(entries), who, 'running' if started else 'approved'))
+    out = {'campaign': cid, 'title': title, 'chapters': [{'story': e['story'], 'title': e['title'], 'digest': e['digest'],
+                                                          **({'run': started[e['story']]} if e['story'] in started else {})}
+                                                         for e in entries]}
+    if ids[0] not in started:
+        # (An earlier approval's first chapter, never published, gives way to this one: its ticket no longer starts anything.)
+        conn.execute("DELETE FROM dm.story_releases WHERE world_id=%s AND campaign=%s AND status='approved' AND state IS NULL", (world, cid))
+        run, ticket = 'world-' + uuid.uuid4().hex, secrets.token_urlsafe(32)
+        conn.execute(
+            """INSERT INTO dm.story_releases(id,world_id,digest,program,approved_by,ticket_hash,status,campaign,chapter)
+               VALUES (%s,%s,%s,%s::jsonb,%s,%s,'approved',%s,0)""",
+            (run, world, entries[0]['digest'], json.dumps(programs[0]), who, ticket_hash(ticket), cid))
+        out.update(run=run, ticket=ticket, digest=entries[0]['digest'])
+    return out
+
+
+def start_chapter(conn, world, run, program, state, start, who='story-runner'):
+    """Carries out one story.start of a run: the next chapter of its campaign, published without a ticket. A note in the
+    run's history either way (a chapter not in the campaign, or one already running, is not started)."""
+    story = start['story']
+    try:
+        with conn.transaction():
+            rules.require(_campaigns_table(conn), 'This world needs migration 0079 for chapters.')
+            cid, at = conn.execute('SELECT campaign,chapter FROM dm.story_releases WHERE id=%s', (run,)).fetchone()
+            rules.require(cid, 'This story was not approved as a chapter of a campaign: it cannot start another.')
+            row = conn.execute('SELECT chapters,title FROM dm.story_campaigns WHERE world_id=%s AND id=%s', (world, cid)).fetchone()
+            rules.require(row, f'The campaign "{cid}" is no longer approved.')
+            chapters = row[0]
+            n = next((i for i, ch in enumerate(chapters) if ch['story'] == story), None)
+            rules.require(n is not None, f'"{story}" is not a chapter of "{row[1]}".')
+            conn.execute('SELECT pg_advisory_xact_lock(hashtext(%s),hashtext(%s))', (world, story))
+            live = conn.execute("""SELECT id FROM dm.story_releases WHERE world_id=%s AND program->>'id'=%s
+                                   AND status IN ('running','paused','held','stopping')""", (world, story)).fetchone()
+            rules.require(not live, f'"{story}" is already running.')
+            nxt = chapters[n]['program']
+            cohort = None
+            if start['audience'] == 'same':
+                cohort = list(state['cohort'])
+            elif start['audience'] == 'list':
+                cohort = sorted({w for w in start.get('wolves', []) if isinstance(w, str)})
+            carried = _carried(program, nxt, state) if start.get('carry', True) else {}
+            new = 'world-' + uuid.uuid4().hex
+            conn.execute(
+                """INSERT INTO dm.story_releases(id,world_id,digest,program,approved_by,ticket_hash,status,campaign,chapter)
+                   VALUES (%s,%s,%s,%s::jsonb,%s,%s,'approved',%s,%s)""",
+                (new, world, chapters[n]['digest'], json.dumps(nxt), chapters[n].get('approvedBy') or who,
+                 ticket_hash(secrets.token_urlsafe(32)), cid, n))
+            launched = launch(conn, world, new, nxt, chapters[n].get('approvedBy') or who, cohort, carried,
+                              {'campaign': cid, 'from': run, 'story': program['id'], 'chapter': n})
+            conn.execute("UPDATE dm.story_campaigns SET status='running' WHERE world_id=%s AND id=%s", (world, cid))
+        words = sum(len(v) for v in carried.values()) if carried else 0
+        _note(conn, run, state, 'chapter', f'Started the chapter "{nxt["title"]}" ({new}) for {launched["eligible"]} wolves'
+              + (f', carrying {words} of its values.' if words else '.'))
+        state.setdefault('chaptersStarted', []).append({'story': story, 'run': new})
+        return new
+    except ValueError as why:
+        _note(conn, run, state, 'chapter', f'The chapter "{story}" was not started: {why}')
+        state.setdefault('chaptersStarted', []).append({'story': story, 'refused': str(why)[:200]})
+        return None
+
+
+def start_chapters(conn, world, run, program, state, ended=False):
+    """The run's story.start effects due: those for now, and (once it has ended) those waiting for its end. Returns whether
+    any was taken."""
+    pending = state.get('chapterStarts', [])
+    due = [s for s in pending if s.get('when', 'ended') == 'now' or ended]
+    if not due:
+        return False
+    state['chapterStarts'] = [s for s in pending if s not in due]
+    if not state['chapterStarts']:
+        del state['chapterStarts']
+    for s in due:
+        start_chapter(conn, world, run, program, state, s)
+    return True
+
+
+def _listens(program, kind):
+    for ph in rules.phases_of(program):
+        if any(t.get('on') == kind for t in ph.get('triggers', [])) or any(e.get('on') == kind for e in ph.get('exits', [])):
+            return True
+    return any(t.get('on') == kind for t in program.get('triggers', []))
+
+
+def tell_stories(conn, world, run, kind, story, detail=''):
+    """Every other live story of the world that listens for "story started" or "story ended" is told, through its inbox:
+    the fact lands between two of its world events, as a console command does."""
+    if not _steering(conn):
+        return 0
+    told = 0
+    for other, program, state, digest in conn.execute(
+            """SELECT id,program,state,digest FROM dm.story_releases WHERE world_id=%s AND id<>%s AND status IN ('running','paused','held')""",
+            (world, run)).fetchall():
+        if not state or not _listens(program, kind):
+            continue
+        conn.execute(
+            """INSERT INTO dm.story_commands(run,key,visit,digest,kind,payload,reason,requested_by)
+               VALUES (%s,%s,%s,%s,'story-event',%s::jsonb,%s,'story-runner')""",
+            (other, 'ev-' + uuid.uuid4().hex[:24], state.get('visits'), digest,
+             json.dumps({'event': {'kind': kind, 'target': story, 'item': run, 'detail': detail or ''}}),
+             f'{kind}: {story}'))
+        conn.execute("SELECT pg_notify('ratw_story',%s)", (json.dumps({'run': other}),))
+        told += 1
+    return told
+
+
+def run_ended(conn, world, run, program, state, how):
+    """A run has ended (complete, or stopped once the game acknowledged it): the chapters waiting for its end start (not
+    for a stopped one), the other stories are told, and the campaign is marked ended when no chapter is left running."""
+    if how != 'stopped':
+        start_chapters(conn, world, run, program, state, ended=True)
+    outcome = (state.get('outcome') or {}).get('outcome') if how != 'stopped' else 'stopped'
+    tell_stories(conn, world, run, 'story ended', program['id'], outcome or how)
+    cid = _campaign_of(conn, run)
+    if cid:
+        live = conn.execute("""SELECT count(*) FROM dm.story_releases WHERE world_id=%s AND campaign=%s AND id<>%s
+                               AND status IN ('running','paused','held','stopping')""", (world, cid, run)).fetchone()[0]
+        if not live:
+            conn.execute("UPDATE dm.story_campaigns SET status='ended' WHERE world_id=%s AND id=%s", (world, cid))
+
+
+def campaigns(conn, world):
+    """The world's campaigns as their chapters (the console's view): each chapter's story, title and the runs it has had."""
+    if not _campaigns_table(conn):
+        return []
+    runs = {}
+    for rid, cid, n, status, state, approved_at in conn.execute(
+            """SELECT id,campaign,chapter,status,CASE WHEN status<>'approved' THEN state->>'phase' END,approved_at FROM dm.story_releases
+               WHERE world_id=%s AND campaign IS NOT NULL ORDER BY approved_at""", (world,)):
+        runs.setdefault((cid, n), []).append({'run': rid, 'status': status, 'phase': state, 'at': _iso(approved_at)})
+    out = []
+    for cid, title, chapters, who, at, status in conn.execute(
+            'SELECT id,title,chapters,approved_by,approved_at,status FROM dm.story_campaigns WHERE world_id=%s ORDER BY approved_at DESC',
+            (world,)):
+        out.append({'id': cid, 'title': title, 'approvedBy': who, 'approvedAt': _iso(at), 'status': status,
+                    'chapters': [{'story': ch['story'], 'title': ch['title'], 'digest': ch['digest'],
+                                  'starts': chapter_starts(ch['program']), 'runs': runs.get((cid, n), [])}
+                                 for n, ch in enumerate(chapters)]})
+    return out
+
+
+# ----- the world's own variables (doc 85, 3.2 and Phase 10: declared for the world, kept by the console, read by every story)
+WORLD_VAR_TYPES = ('number', 'switch', 'text', 'wolf', 'resident', 'place', 'item', 'faction', 'numbers', 'texts', 'wolves',
+                   'residents')
+WORLD_VAR_NAME = re.compile(r'[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}\Z')
+
+
+def _world_var_ok(kind, value):
+    if kind == 'number':
+        return type(value) is int and abs(value) <= rules.triggers.LIMIT
+    if kind == 'switch':
+        return type(value) is bool
+    if kind in rules.triggers.LISTS:
+        item = rules.triggers.LISTS[kind]
+        return isinstance(value, list) and len(value) <= rules.triggers.LIST_MAX and all(_world_var_ok(item, v) for v in value)
+    return isinstance(value, str) and len(value) <= rules.triggers.TEXT_MAX and (kind == 'text' or value == '' or rules.identifier(value))
+
+
+def world_vars(conn, world):
+    """The world's variables: those declared for it and those stories wrote, with the stories that declare each."""
+    have = conn.execute("SELECT to_regclass('dm.story_world_vars') IS NOT NULL").fetchone()[0]
+    if not have:
+        return {'variables': [], 'declarations': False}
+    declares = conn.execute("""SELECT column_name FROM information_schema.columns WHERE table_schema='dm'
+                               AND table_name='story_world_vars' AND column_name='declared'""").fetchone() is not None
+    cols = 'name,type,value,run,updated_at' + (',declared,initial,note,declared_by,updated_by' if declares else '')
+    rows = conn.execute(f'SELECT {cols} FROM dm.story_world_vars WHERE world_id=%s ORDER BY name', (world,)).fetchall()
+    users = {}
+    for rid, program, status in conn.execute(
+            """SELECT id,program,status FROM dm.story_releases WHERE world_id=%s AND status IN ('running','paused','held','stopping','approved')""",
+            (world,)):
+        for name, d in _world_names(program).items():
+            users.setdefault(name, []).append({'run': rid, 'story': program.get('id'), 'title': program.get('title'),
+                                               'type': d['type'], 'status': status})
+    if _campaigns_table(conn):
+        # (Doc 85, Phase 10: a campaign's chapters not started yet read them too, once they start.)
+        seen = {(u['story']) for us in users.values() for u in us}
+        for cid, chapters in conn.execute("SELECT id,chapters FROM dm.story_campaigns WHERE world_id=%s AND status IN ('approved','running')",
+                                          (world,)):
+            for ch in chapters:
+                if ch['story'] in seen:
+                    continue
+                for name, d in _world_names(ch['program']).items():
+                    users.setdefault(name, []).append({'run': None, 'story': ch['story'], 'title': ch['title'], 'type': d['type'],
+                                                       'status': 'approved', 'campaign': cid})
+    out = []
+    for r in rows:
+        v = {'name': r[0], 'type': r[1], 'value': r[2], 'run': r[3], 'updatedAt': _iso(r[4])}
+        if declares:
+            v.update(declared=r[5], initial=r[6], note=r[7], declaredBy=r[8], updatedBy=r[9])
+        v['stories'] = users.pop(r[0], [])
+        out.append(v)
+    for name, us in sorted(users.items()):
+        out.append({'name': name, 'type': us[0]['type'], 'value': None, 'stories': us, 'declared': False, 'unset': True})
+    return {'variables': out, 'declarations': declares}
+
+
+def world_var(conn, world, who, data):
+    """Declare, set or remove one of the world's variables (op `world-var`: {do: declare|set|remove, name, type?, value?,
+    note?, reason}); audited `story.world-var`. A live story reads the new value at its next turn."""
+    rules.require(conn.execute("""SELECT 1 FROM information_schema.columns WHERE table_schema='dm' AND table_name='story_world_vars'
+                                  AND column_name='declared'""").fetchone(), 'Apply migration 0079 to declare world variables.')
+    do, name = data.get('do'), data.get('name')
+    rules.require(do in ('declare', 'set', 'remove'), 'Declare, set or remove a world variable.')
+    rules.require(isinstance(name, str) and WORLD_VAR_NAME.match(name) is not None, 'A world variable has a short name.')
+    reason = _reason(data.get('reason'))
+    row = conn.execute('SELECT type,value,declared FROM dm.story_world_vars WHERE world_id=%s AND name=%s FOR UPDATE',
+                       (world, name)).fetchone()
+    readers = [u for u in world_vars(conn, world)['variables'] if u['name'] == name]
+    readers = readers[0]['stories'] if readers else []
+    if do == 'declare':
+        kind = data.get('type')
+        rules.require(kind in WORLD_VAR_TYPES, 'A world variable is a number, a switch, a text, a reference or a list.')
+        clash = [u for u in readers if u['type'] != kind]
+        rules.require(not clash, f'"{clash[0]["title"]}" declares {name} as {clash[0]["type"]}.' if clash else '')
+        initial = data.get('value', rules.triggers.initial({'type': kind}))
+        rules.require(_world_var_ok(kind, initial), f'Not a first value for {kind}.')
+        note = data.get('note', '')
+        rules.require(isinstance(note, str) and len(note) <= 300, 'A note of up to 300 characters.')
+        keep = row is not None and row[0] == kind
+        conn.execute(
+            """INSERT INTO dm.story_world_vars(world_id,name,type,value,declared,initial,note,declared_by,updated_by)
+               VALUES (%s,%s,%s,%s::jsonb,true,%s::jsonb,%s,%s,%s)
+               ON CONFLICT (world_id,name) DO UPDATE SET type=excluded.type,declared=true,initial=excluded.initial,note=excluded.note,
+               declared_by=excluded.declared_by,updated_at=now(),
+               value=CASE WHEN %s THEN dm.story_world_vars.value ELSE excluded.value END""",
+            (world, name, kind, json.dumps(initial), json.dumps(initial), note, who, who, keep))
+        before, after = ({'type': row[0], 'value': row[1]} if row else None), {'type': kind, 'value': row[1] if keep else initial}
+        text = f'Declared {name} ({kind})' + ('' if keep else f', first value {json.dumps(initial)}') + '.'
+    elif do == 'set':
+        rules.require(row is not None, f'{name} is not declared for this world: declare it first.')
+        value = data.get('value')
+        rules.require(_world_var_ok(row[0], value), f'Not a value for {row[0]}.')
+        conn.execute('UPDATE dm.story_world_vars SET value=%s::jsonb,updated_by=%s,run=NULL,updated_at=now() WHERE world_id=%s AND name=%s',
+                     (json.dumps(value), who, world, name))
+        before, after, text = {'value': row[1]}, {'value': value}, f'{name}: {json.dumps(row[1])} → {json.dumps(value)}.'
+    else:
+        rules.require(row is not None, f'{name} is not kept for this world.')
+        live = [u for u in readers if u['status'] != 'approved']
+        rules.require(not live, f'"{live[0]["title"]}" is running and uses {name}.' if live else '')
+        conn.execute('DELETE FROM dm.story_world_vars WHERE world_id=%s AND name=%s', (world, name))
+        before, after, text = {'type': row[0], 'value': row[1]}, None, f'Removed {name}.'
+    conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
+                 ('story.world-var', name, f'{text} Reason: "{reason}"'[:2000], who))
+    return {'text': text, 'before': before, 'after': after, 'variables': world_vars(conn, world)['variables']}
+
+
+def world_var_audit(conn, world, limit=60):
+    return [{'at': r[0], 'name': r[1], 'detail': r[2], 'who': r[3]} for r in conn.execute(
+        "SELECT at,target,detail,who FROM dm.audit WHERE action='story.world-var' ORDER BY sequence DESC LIMIT %s", (limit,))]
+
+
 # ----- each wolf's own state (doc 85, 3.6 and Phase 6: dm.story_player_state, migration 0075)
 # A story with quests or an open audience keeps what belongs to one wolf (their variables, their copies of quests, their
 # own ending, what their journal was last told) in one row per wolf, out of the release's one JSON, so a run can hold
@@ -1131,10 +1534,12 @@ def tick_run(conn, world, run, clock):
     return holder.get('left')
 
 
-def _finish(conn, run, who, state):
+def _finish(conn, run, who, state, world=None, program=None):
     """Version 2's finish: the story ended by its own action, once every effect before it went. Tells the game the story
-    is over (as an ending phase does), then the run is complete."""
+    is over (as an ending phase does), then the run is complete (and the chapters waiting for its end start: Phase 10)."""
     if state.get('finishSent'):
+        if world is not None:
+            run_ended(conn, world, run, program, state, 'complete')
         conn.execute("UPDATE dm.story_releases SET status='complete',state=%s::jsonb WHERE id=%s", (_dump(conn, run, state), run))
         return
     # (The game ends the storyline "done", or "abandoned" for a story abandoned; the outcome and its line go with the order.)
@@ -1238,10 +1643,11 @@ def _tick_run(conn, world, run, clock, holder):
         holder['left'] = 'game'
         return
     if state.get('outcome'):
-        _finish(conn, run, who, state)
+        _finish(conn, run, who, state, world, p)
         holder['left'] = 'game'
         return
     if not rules.ongoing(phase):
+        run_ended(conn, world, run, p, state, 'complete')   # (Doc 85, Phase 10: the next chapter, and the others told.)
         conn.execute("UPDATE dm.story_releases SET status='complete',state=%s::jsonb WHERE id=%s", (_dump(conn, run, state), run))
         return
     if _wants_parties(p) and _parties_from_save(conn, world, state):
@@ -1345,11 +1751,13 @@ def _tick_run(conn, world, run, clock, holder):
     if not caught_up:
         holder['left'] = 'more'
     changed = read or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]))
+    # (Doc 85, Phase 10: a chapter started "now" by this tick's triggers.)
+    started = start_chapters(conn, world, run, p, state)
     # (What it has to tell the game, together: this tick's effects and those left over, the journal after a command.)
     sent = _send_waiting(conn, world, run, who, p, phase, state, before)
     if sent:
         holder['left'] = holder.get('left') or 'game'
-    if changed or sent:
+    if changed or sent or started:
         save(cursor=cursor)
 
 
@@ -1897,8 +2305,16 @@ def overview(conn, world):
             view.update(visit=ended[r[0]][0], wolves=ended[r[0]][1])
         runs.append(view)
     ids = {i for v in runs for i in [*v.get('cohort', []), (v.get('last') or {}).get('actor', '')]}
+    # (Doc 85, Phase 10: each run's campaign and chapter, and the campaigns as their chapters.)
+    if _campaigns_table(conn):
+        chapter = {r: (c, n) for r, c, n in conn.execute(
+            'SELECT id,campaign,chapter FROM dm.story_releases WHERE world_id=%s AND campaign IS NOT NULL', (world,))}
+        for v in runs:
+            if v['run'] in chapter:
+                v.update(campaign=chapter[v['run']][0], chapter=chapter[v['run']][1])
     return {'runs': runs, 'now': {'day': now['day'], 'newest': now['newest'], 'at': _iso(now['at'])},
-            'names': names(conn, world, ids), 'thresholds': limits, 'speed': ctx['speed'], 'runner': beat}
+            'names': names(conn, world, ids), 'thresholds': limits, 'speed': ctx['speed'], 'runner': beat,
+            'campaigns': campaigns(conn, world)}
 
 
 def _program_ids(program):
@@ -2045,10 +2461,25 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
                      'joinable': quests.joinable(program)},
         'parties': {w: pt for w, pt in (state or {}).get('parties', {}).items() if w in set(state.get('cohort', []))} if state else {},
         'rewardsRefused': (state or {}).get('rewardsRefused', []),
+        # (Doc 85, Phase 10: the campaign it is a chapter of, with its chapters; the chapters it waits to start and has started.)
+        'campaign': _campaign_view(conn, world, run),
+        'chapterStarts': (state or {}).get('chapterStarts', []),
+        'chaptersStarted': (state or {}).get('chaptersStarted', []),
+        'chapterOf': (state or {}).get('chapterOf'),
     }
     if have != row[3]:
         result['program'] = program
     return result
+
+
+def _campaign_view(conn, world, run):
+    cid = _campaign_of(conn, run)
+    if not cid:
+        return None
+    found = next((c for c in campaigns(conn, world) if c['id'] == cid), None)
+    if found:
+        found['chapter'] = conn.execute('SELECT chapter FROM dm.story_releases WHERE id=%s', (run,)).fetchone()[0]
+    return found
 
 
 def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, trigger=None, limit=TIMELINE_PAGE):
@@ -2216,7 +2647,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc85-phase6'
+RUNNER_VERSION = 'doc85-phase10'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -2450,7 +2881,7 @@ def _check_payload(program, kind, payload):
     rules.require(isinstance(payload, dict) and len(json.dumps(payload)) <= 4000, 'A small command, please.')
     known = {'force', 'catchUp', 'name', 'actor', 'trigger', 'check', 'phase', 'effects', 'key', 'scope', 'player',
              'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version',
-             'quest', 'objective', 'amount', 'direction'}
+             'quest', 'objective', 'amount', 'direction', 'event'}
     rules.require(set(payload) <= known, 'Unknown field in the command: ' + ', '.join(sorted(set(payload) - known)))
     phases = rules.phases_of(program)
     if kind == 'signal':
@@ -2527,7 +2958,7 @@ def _may_release(program, kind, payload, may):
     rules.require(may.get('relations', True) or 'faction.relation' not in kinds,
                   'This story changes faction relations: only a builder or the owner may move it on (5.7).')
     rules.require(may.get('relations', True) or not (kinds & BUILDER_EFFECTS),
-                  'This story changes standing with a faction: only a builder or the owner may move it on (5.7).')
+                  'This story changes standing with a faction or the economy: only a builder or the owner may move it on (5.7).')
     rules.require(may.get('wolves', True) or not (kinds & WOLF_EFFECTS),
                   'This story can hurt players\' wolves: moving it on needs "may act on players\' wolves" (5.7).')
 
@@ -2727,6 +3158,21 @@ class Steer:
         return (f'Stopping: order #{receipt} tells the game; it is stopped when the game acknowledges. What it gave the '
                 'world stays.'), {'status': before}, {'status': 'stopping', 'order': receipt}
 
+    def do_story_event(self):
+        """Another story of the world started or ended (doc 85, Phase 10): the fact, as a world event's would go. It waits
+        while the run is held or paused, or still sends its orders; it is never refused for its age."""
+        if self.status != 'running' or not _settled(self.conn, self.program, self.state, self.receipts):
+            raise Wait()
+        e = self.payload['event']
+        _require(isinstance(e, dict) and e.get('kind') in ('story started', 'story ended'), 'Not a story event.')
+        before_phase = self.state['phase']
+        self.moved = self.dispatch({'kind': e['kind'], 'actor': '', 'target': str(e.get('target', ''))[:80],
+                                    'item': str(e.get('item', ''))[:80], 'detail': str(e.get('detail', ''))[:80], 'id': None})
+        fired = [t['trigger'] for t in self.trace]
+        return (f'{e["kind"].capitalize()}: {e.get("target")}' + (f' ({e["detail"]})' if e.get('detail') else '')
+                + (f'; {", ".join(fired)} fired' if fired else '; nothing fired') + (f'; it moved to {self.state["phase"]}.' if self.moved else '.'),
+                {'phase': before_phase}, {'phase': self.state['phase'], 'fired': fired})
+
     def do_signal(self):
         self.flow_ready()
         name, actor = self.payload['name'], self.cohort(self.payload.get('actor', ''), required=False)
@@ -2777,10 +3223,19 @@ class Steer:
             rules.triggers.count_firing(phase, self.state, t['id'])
         target = rules.triggers.perform(t, self.state, stand_in, actor, self.day(), self.elapsed(),
                                         lambda name, source: emitted.append(name), phase, self.trace[-1], ready, self.trace)
+        # (The story's own effects it queued, quests', who takes part, the next chapter: kept by the story, as a firing in play
+        # has them taken (doc 85, Phase 10: fired by hand they went to the game, which knows nothing of them). Their facts follow.)
+        facts = []
+        if rules.triggers.version(phase) == 2:
+            quests.take_story_effects(self.program, phase, self.state, self.day(), self.elapsed(), facts.append)
         _attach_changes(phase, self.trace[-1:], before, _values(self.state, actor))
         moved = False
         if target:
             moved = self._transition(target, actor)
+        for fact in facts:
+            if moved or self.state.get('outcome'):
+                break
+            moved = self.dispatch({**fact, 'id': None})
         for name in emitted:
             if moved:
                 break
@@ -3174,7 +3629,9 @@ class Steer:
 
     # --- the whole
     def take(self):
-        _require(self.digest == self.run_digest, 'Made against another version of the story.')
+        if self.kind in INTERNAL_COMMANDS and 'moveReceipt' in self.state:
+            raise Wait()   # (A story event waits for a move to settle: it is about the world, not a version.)
+        _require(self.kind in INTERNAL_COMMANDS or self.digest == self.run_digest, 'Made against another version of the story.')
         _require(self.status in (*STEERED,), f'The run is {self.status}.')
         _require(self.kind not in VISITED or self.visit == self.state['visits'] or self.payload.get('force') is True,
                  f'Made for visit {self.visit}; the story has moved on to visit {self.state["visits"]} ({self.state["phase"]}).')
@@ -3182,7 +3639,8 @@ class Steer:
                  'It is moving onto a new version: wait for the game to take it (a few seconds).')
         _check_payload(self.program, self.kind, self.payload)
         self.visit_before, cursor = self.state['visits'], self.cursor
-        text, before, after = getattr(self, 'do_' + self.kind)()
+        text, before, after = getattr(self, 'do_' + self.kind.replace('-', '_'))()
+        start_chapters(self.conn, self.world, self.run, self.program, self.state)   # (Doc 85, Phase 10: a chapter "now".)
         self.history()
         if self.moved:
             self.open_visit(f'admin {self.by}: {self.reason}'[:200], quiet=self.kind == 'enter' and self.payload.get('effects', True) is False)
@@ -3228,7 +3686,8 @@ def take_commands(conn, world, run, clock, limit=20):
             title = conn.execute("SELECT program->>'title' FROM dm.story_releases WHERE id=%s", (run,)).fetchone()[0]
         conn.execute("UPDATE dm.story_commands SET status=%s,result=%s::jsonb,done_at=statement_timestamp() WHERE id=%s",
                      (outcome, json.dumps(result), cmd[0]))
-        _audit(conn, (*cmd[:8], run), title, outcome, result)
+        if cmd[4] not in INTERNAL_COMMANDS:
+            _audit(conn, (*cmd[:8], run), title, outcome, result)
 
 
 def stopping(conn, run):
@@ -3243,6 +3702,8 @@ def stopping(conn, run):
     if status in ('applied', 'refused'):
         conn.execute("UPDATE dm.story_releases SET status='stopped',problem=%s WHERE id=%s",
                      ('' if status == 'applied' else f'The game had no such story: {result}', run))
+        found = conn.execute('SELECT world_id,program FROM dm.story_releases WHERE id=%s', (run,)).fetchone()
+        run_ended(conn, found[0], run, found[1], state, 'stopped')   # (Doc 85, Phase 10: the others told; no chapter starts.)
     elif status == 'expired':
         state['stopReceipt'] = queue(conn, 'story-runner', 'story.stop', run, {})
         conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
@@ -4257,6 +4718,22 @@ def refs(conn, world):
     out['mantles'] = [{'id': r[0], 'name': r[1] or r[0]} for r in conn.execute(
         "SELECT id,title FROM live.mantles WHERE world_id=%s AND state<>'retired' ORDER BY title,id", (world,))] \
         if conn.execute("SELECT to_regclass('live.mantles')").fetchone()[0] else []
+    # (Doc 85, Phase 10: the stories a chapter may start, by id: the world's drafts, its releases and its campaigns' chapters,
+    # and the world's own variables, to declare a story's world variable as the world has it.)
+    stories = {}
+    if conn.execute("SELECT to_regclass('dm.story_drafts')").fetchone()[0]:
+        for sid, title in conn.execute("SELECT program->>'id',program->>'title' FROM dm.story_drafts WHERE world_id=%s", (world,)):
+            if isinstance(sid, str) and sid:
+                stories.setdefault(sid, {'id': sid, 'name': title or sid, 'hint': 'a draft'})
+    for sid, title in conn.execute("SELECT DISTINCT program->>'id',program->>'title' FROM dm.story_releases WHERE world_id=%s", (world,)):
+        if isinstance(sid, str) and sid:
+            stories[sid] = {'id': sid, 'name': title or sid, 'hint': 'approved'}
+    for c in campaigns(conn, world):
+        for ch in c['chapters']:
+            stories[ch['story']] = {'id': ch['story'], 'name': ch['title'], 'hint': 'a chapter of ' + c['title']}
+    out['stories'] = sorted(stories.values(), key=lambda v: (v['name'], v['id']))
+    out['worldVars'] = [{'id': v['name'], 'name': v['name'], 'type': v['type'], 'note': v.get('note', '')}
+                        for v in world_vars(conn, world)['variables'] if v.get('declared')]
     return out
 
 

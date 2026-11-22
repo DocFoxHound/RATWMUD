@@ -56,7 +56,19 @@ export interface Audience { kind: string; cap?: number | null; size?: number; jo
 /** The story runner's heartbeat (doc 85, 5.6; Phase 2). */
 export interface Beat { beatAt: string | null; age: number | null; startedAt?: string; pid?: number; version?: string; behind?: number }
 export interface Now { day: number | null; newest: number; at: string }
-export interface Overview { runs: RunRow[]; now: Now; names: Record<string, string>; thresholds?: Record<string, number>; runner?: Beat | null; speed?: number | null }
+export interface Overview { runs: RunRow[]; now: Now; names: Record<string, string>; thresholds?: Record<string, number>; runner?: Beat | null; speed?: number | null;
+    /** Phase 10: the campaigns as their chapters. */
+    campaigns?: Campaign[] }
+/** A campaign (doc 85, Phase 10): stories approved together, in order, each a chapter that the one before it starts (story.start). */
+export interface Campaign { id: string; title: string; approvedBy: string; approvedAt: string | null; status: string; chapter?: number;
+    chapters: {story: string; title: string; digest: string; starts: string[]; runs: {run: string; status: string; phase: string | null; at: string | null}[]}[] }
+/** A chapter a run is to start, waiting (story.start: for now, or for this one's end). */
+export interface ChapterStart { story: string; audience: 'same' | 'own' | 'list'; when?: 'ended' | 'now'; carry?: boolean; wolves?: string[]; day?: number }
+/** One of the world's variables (Phase 10: declared for the world in the console; Phase 5: written by a story). */
+export interface WorldVar { name: string; type: string; value: Value | null; declared?: boolean; initial?: Value | null; note?: string; declaredBy?: string | null;
+    updatedBy?: string | null; updatedAt?: string | null; run?: string | null; unset?: boolean;
+    stories: {run: string | null; story: string; title: string; type: string; status: string; campaign?: string}[] }
+export interface WorldVars { variables: WorldVar[]; declarations: boolean; audit?: {at: number; name: string; detail: string; who: string}[] }
 export interface Region { id: string; cell: string; x1: number; y1: number; x2: number; y2: number }
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
@@ -88,7 +100,7 @@ export function valueText(v: Value | undefined, type: string | undefined, names:
 /** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
 export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: Value; after: Value; type?: string }
 export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene' | 'migrate'
-    | 'objective' | 'quest' | 'participant';
+    | 'objective' | 'quest' | 'participant' | 'story-event';
 /** One thing a move onto a new version keeps, resets, defaults, drops or adds (story_program.migration), with why. */
 export interface MigrationLine {
     what: 'phase' | 'variable' | 'timer' | 'wait' | 'mission' | 'fired' | 'count' | 'off' | 'vote' | 'steps' | 'seed'; key: string;
@@ -148,6 +160,9 @@ export interface RunDetail extends RunRow {
     quests?: QuestBoard[]; audience?: Audience; parties?: Record<string, string>;
     /** Phase 7: effects the game refused, held for their wolf until they are next in the world. */
     whenHere?: HeldForWolf[];
+    /** Phase 10: the campaign it is a chapter of; the chapters it waits to start, has started, and the one that started it. */
+    campaign?: Campaign | null; chapterStarts?: ChapterStart[]; chaptersStarted?: {story: string; run?: string; refused?: string}[];
+    chapterOf?: {campaign: string; from: string; story: string; chapter: number} | null;
 }
 export type QuestStatus = 'offered' | 'active' | 'ready' | 'done' | 'failed' | 'abandoned' | 'expired';
 /** One copy of a quest (story_runner.status's `quests`): a wolf's own, a party's, or the story's one copy. */
@@ -417,7 +432,7 @@ const PRETTY: Record<CommandKind, string> = {
     hold: 'held it', resume: 'resumed it', stop: 'stopped it', signal: 'sent a signal', fire: 'fired a trigger', enable: 'turned a trigger on',
     disable: 'turned a trigger off', enter: 'went to a phase', set: 'set a variable', timer: 'changed a timer', mission: 'changed a mission',
     order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene', migrate: 'moved it onto a new version',
-    objective: 'changed an objective', quest: 'changed a quest', participant: 'changed who takes part',
+    objective: 'changed an objective', quest: 'changed a quest', participant: 'changed who takes part', 'story-event': 'heard of another story',
 };
 const OBJ_WORDS: Record<string, string> = {complete: 'completed', progress: 'added to', reveal: 'revealed', fail: 'failed', reset: 'reset'};
 const QUEST_WORDS: Record<string, string> = {give: 'gave', take: 'took away', complete: 'completed', fail: 'failed'};
@@ -441,6 +456,9 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
         case 'objective': return `${OBJ_WORDS[String(p.do)] ?? p.do} ${p.objective} of ${p.quest}${p.do === 'progress' ? ` (+${p.amount ?? 1})` : ''}${p.player === 'story' ? ' (the story\'s copy)' : wolf}`;
         case 'quest': return `${QUEST_WORDS[String(p.do)] ?? p.do} the quest ${p.quest}${p.player === 'story' ? ' (the story\'s copy)' : wolf}`;
         case 'participant': return `${p.do === 'add' ? 'took' : 'took out'} ${nameOf(names, String(p.player))} ${p.do === 'add' ? 'into' : 'of'} the story`;
+        // (Phase 10: another story of the world started or ended, told by the story runner itself.)
+        case 'story-event': { const e = (p.event ?? {}) as Record<string, string>;
+            return `heard that the story ${e.target} ${e.kind === 'story started' ? 'started' : 'ended' + (e.detail ? ` (${e.detail})` : '')}`; }
         default: return PRETTY[kind] ?? kind;
     }
 }
@@ -951,3 +969,51 @@ export function giveAsk(q: QuestBoard, wolf: string, names: Record<string, strin
             : 'Starts the wolf\'s own copy, as accepting it would.', 'The journal is told; "quest started" is sent to the story\'s triggers.']};
 }
 
+
+// ---------------------------------------------------------------------------------- chapters and campaigns (doc 85, Phase 10)
+export type ChapterState = 'done' | 'running' | 'held' | 'paused' | 'stopped' | 'waiting' | 'ready';
+/** A campaign as its chapters, in order: each one's state (its newest run's), the run to open, and its phase. */
+export function chapterStrip(c: Campaign): {story: string; title: string; state: ChapterState; run: string | null; phase: string | null; runs: number}[] {
+    return c.chapters.map((ch, n) => {
+        const started = ch.runs.filter(r => r.status !== 'approved');
+        const last = started[started.length - 1] ?? null;
+        const state: ChapterState = !last ? (n === 0 && ch.runs.length ? 'ready' : 'waiting')
+            : last.status === 'complete' ? 'done' : last.status === 'stopped' ? 'stopped'
+            : last.status === 'held' ? 'held' : last.status === 'paused' ? 'paused' : 'running';
+        return {story: ch.story, title: ch.title, state, run: last?.run ?? null, phase: last?.phase ?? null, runs: started.length};
+    });
+}
+const CHAPTER_MARK: Record<ChapterState, string> = {done: '✔', running: '●', held: '⏸', paused: '⚠', stopped: '⏹', waiting: '○', ready: '◌'};
+export const chapterMark = (s: ChapterState) => CHAPTER_MARK[s];
+/** Words for a campaign: how far it has got. */
+export function campaignText(c: Campaign): string {
+    const strip = chapterStrip(c);
+    const done = strip.filter(s => s.state === 'done').length;
+    const now = strip.find(s => ['running', 'held', 'paused'].includes(s.state));
+    return `${strip.length} chapter${strip.length === 1 ? '' : 's'} · ${done} done` + (now ? ` · now: ${now.title}${now.phase ? ` (${now.phase})` : ''}`
+        : done === strip.length ? ' · ended' : strip[0]?.state === 'ready' ? ' · the first is approved, to publish' : '');
+}
+/** A chapter waiting to be started by this run, in words. */
+export function chapterStartText(s: ChapterStart, c: Campaign | null | undefined, names: Record<string, string> = {}): string {
+    const title = c?.chapters.find(ch => ch.story === s.story)?.title ?? s.story;
+    const who = s.audience === 'same' ? "this story's wolves" : s.audience === 'own' ? 'its own audience'
+        : (s.wolves ?? []).map(w => nameOf(names, w)).join(', ') || 'nobody (the list is empty)';
+    return `"${title}" for ${who}` + (s.carry === false ? '' : ', carrying its variables') + (s.when === 'now' ? ', now' : ', when this story has ended');
+}
+/** A world variable's value in words (by its type). */
+export function worldVarText(v: WorldVar, names: Record<string, string> = {}): string {
+    if (v.unset || v.value === null || v.value === undefined) return '(not set yet)';
+    return valueText(v.value as Value, v.type, names);
+}
+/** Whether a typed text is a value of a world variable's type: the value, or a reason it is not. */
+export function parseWorldValue(type: string, text: string): {value: Value} | {problem: string} {
+    const t = text.trim();
+    if (type === 'number') { const n = Number(t); return Number.isInteger(n) && t !== '' ? {value: n} : {problem: 'A whole number.'}; }
+    if (type === 'switch') return /^(on|true|yes)$/i.test(t) ? {value: true} : /^(off|false|no)$/i.test(t) ? {value: false} : {problem: 'On or off.'};
+    if (['numbers', 'texts', 'wolves', 'residents'].includes(type)) {
+        const parts = t ? t.split(',').map(x => x.trim()).filter(Boolean) : [];
+        if (type === 'numbers') { const ns = parts.map(Number); return ns.every(Number.isInteger) ? {value: ns as unknown as Value} : {problem: 'Whole numbers, with commas.'}; }
+        return {value: parts as unknown as Value};
+    }
+    return t.length <= 200 ? {value: t} : {problem: 'At most 200 characters.'};
+}

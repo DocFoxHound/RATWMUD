@@ -360,19 +360,9 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             who = saved->second.name;
         // A story's reward names the purse that pays it (doc 85, Phase 6): a town's treasury (town:<id>), its works, watch
         // or church (town:<id>:works), a business's till, a Chapter's treasury. Without one, a DM's grant as ever.
-        auto purse = payload.string("purse");
-        if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
-            for (const auto& t : world_.towns())
-                if (t.id == purse.substr(5))
-                    purse = t.store;
-        // (A world with no towns on its roads, a single settlement like Greyfen Crossing: its one treasury.)
-        if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
-        {
-            if (society.account("stores:" + purse.substr(5)))
-                purse = "stores:" + purse.substr(5);
-            else if (world_.towns().empty() && society.account("treasury"))
-                purse = "treasury";
-        }
+        // (A world with no towns on its roads, a single settlement like Greyfen Crossing: its one treasury. The same reading
+        // as "purse crossed" watches: storyPurseAccount.)
+        const auto purse = storyPurseAccount(payload.string("purse"));
         if (payload.has("purse"))
         {
             if (society.payPlayerFrom(purse, target, coins, reason, problem))

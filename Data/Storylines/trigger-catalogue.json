@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does.",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does. Phase 10: chapters (story.start, a campaign of stories approved together), \"story started\" and \"story ended\" from the story runner, and the events Phase 8 left (a wolf near a resident, a purse or a standing crossing a number the trigger names, a stance changed, mantles, a skill grown, an injury healed): \"needsMatch\" names the fields a trigger on it must give. \"needsBuilder\" also marks the effects that change the economy (prices, projects).",
  "groups": [
   {
    "id": "story",
@@ -118,6 +118,10 @@
    "label": "Quests"
   },
   {
+   "id": "chapters",
+   "label": "Chapters"
+  },
+  {
    "id": "scenes",
    "label": "Scenes"
   }
@@ -164,7 +168,8 @@
   "offer": "A story choice's name: what a dialogue choice event comes back with.",
   "door": "A door of the world (its id: link_<link>_a or _b; a story locks both sides).",
   "mantle": "A mantle (doc 84): a part a resident takes up, with its own lines.",
-  "visitor": "A temporary resident's id, given by the story (letters, digits, - and _)."
+  "visitor": "A temporary resident's id, given by the story (letters, digits, - and _).",
+  "story": "Another story of this world, by its id: a chapter of the same campaign (Phase 10)."
  },
  "trigger": {
   "once": {
@@ -6479,6 +6484,292 @@
    },
    "tile": false,
    "watch": true
+  },
+  {
+   "id": "near resident",
+   "group": "coming",
+   "title": "A wolf comes near a resident",
+   "sentence": "{actor} comes within three tiles of {target}",
+   "help": "A wolf comes within three tiles of a resident the trigger names (the moving location: wherever the resident is now), in the same place; again only after they have been more than five tiles apart. Name the resident. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "the resident named"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the place",
+     "any": "anywhere"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many tiles apart",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "needsMatch": [
+    "target"
+   ],
+   "notes": "Looked at once a second while a story listens: the residents named in the filters of its triggers and exits."
+  },
+  {
+   "id": "purse crossed",
+   "group": "money",
+   "title": "A purse crosses an amount",
+   "sentence": "the purse {target} goes {item} past {detail}p",
+   "help": "A town's treasury, its works, watch or church, a till or a Chapter's purse (as a reward names one: town:<town>, town:<town>:works, till:<id>, chapter:<id>) goes up or down past an amount the trigger names in its detail (quantity: what it holds now). Name the purse and the amount. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "target": {
+     "type": "purse",
+     "label": "the purse",
+     "any": "the purse named"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the amount crossed, in pennies",
+     "any": "the amount named"
+    },
+    "item": {
+     "type": "text",
+     "label": "which way: up or down",
+     "any": "either way"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "what the purse holds now",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true,
+   "needsMatch": [
+    "target",
+    "detail"
+   ],
+   "notes": "Looked at every two seconds while a story listens; the first look makes no event."
+  },
+  {
+   "id": "standing crossed",
+   "group": "law",
+   "title": "A wolf's standing crosses a number",
+   "sentence": "{actor}'s standing with {target} goes {item} past {detail}",
+   "help": "A wolf in the world: their standing with a faction (their Chapter's, as the faction counts it) goes up or down past a number the trigger names in its detail (quantity: the standing now). Name the faction and the number. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "faction",
+     "label": "the faction",
+     "any": "the faction named"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the number crossed",
+     "any": "the number named"
+    },
+    "item": {
+     "type": "text",
+     "label": "which way: up or down",
+     "any": "either way"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the standing now",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true,
+   "needsMatch": [
+    "target",
+    "detail"
+   ],
+   "notes": "Looked at every two seconds for the wolves in the world while a story listens; a wolf first looked at makes no event."
+  },
+  {
+   "id": "relation changed",
+   "group": "law",
+   "title": "A faction's stance changes",
+   "sentence": "{target}'s stance toward {item} becomes {detail}",
+   "help": "One faction's stance toward another changed (a DM's change, a story's, or the world's own): the new stance (quantity: the disposition). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "target": {
+     "type": "faction",
+     "label": "the faction",
+     "any": "any faction"
+    },
+    "item": {
+     "type": "faction",
+     "label": "toward this faction",
+     "any": "any faction"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the new stance",
+     "any": "any stance"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the disposition (-100 to 100)",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "mantle bound",
+   "group": "talk",
+   "title": "A resident takes a mantle",
+   "sentence": "{actor} takes the mantle {item}",
+   "help": "A resident now wears a mantle (doc 84: a dialogue of their own), by a DM's hand, a story's, or a mantle loaded again. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "any resident"
+    },
+    "item": {
+     "type": "mantle",
+     "label": "the mantle",
+     "any": "any mantle"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "mantle released",
+   "group": "talk",
+   "title": "A resident lays a mantle down",
+   "sentence": "{actor} lays the mantle {item} down",
+   "help": "A resident no longer wears the mantle they wore. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "any resident"
+    },
+    "item": {
+     "type": "mantle",
+     "label": "the mantle",
+     "any": "any mantle"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "skill practised",
+   "group": "fame",
+   "title": "A wolf's skill grows a step",
+   "sentence": "{actor}'s {item} grows a step",
+   "help": "A wolf's skill passes a whole step by practice (quantity: the new whole value), as their growth lines say. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "item": {
+     "type": "text",
+     "label": "the skill",
+     "any": "any skill"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the new whole value",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "injury healed",
+   "group": "fights",
+   "title": "A wolf's injury heals",
+   "sentence": "{actor}'s {detail} has healed",
+   "help": "An injury of a wolf healed with rest: the injury in words. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the injury, in words",
+     "any": "any injury"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "story started",
+   "group": "story",
+   "title": "Another story starts",
+   "sentence": "the story {target} starts",
+   "help": "Another story of this world was published, or started by a chapter before it (story.start): its id, not its run, so one chapter can wait for another.",
+   "fields": {
+    "target": {
+     "type": "story",
+     "label": "the story",
+     "any": "any story"
+    },
+    "item": {
+     "type": "run",
+     "label": "its run",
+     "any": "any run"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the campaign it is a chapter of",
+     "any": "any campaign"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story runner to every other live story of the world that listens for it; never in the world's log."
+  },
+  {
+   "id": "story ended",
+   "group": "story",
+   "title": "Another story ends",
+   "sentence": "the story {target} ends: {detail}",
+   "help": "Another story of this world ended: complete, success, failure, abandoned or stopped (by an admin).",
+   "fields": {
+    "target": {
+     "type": "story",
+     "label": "the story",
+     "any": "any story"
+    },
+    "item": {
+     "type": "run",
+     "label": "its run",
+     "any": "any run"
+    },
+    "detail": {
+     "type": "text",
+     "label": "how it ended: complete, success, failure, abandoned, stopped",
+     "any": "any ending"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story runner to every other live story of the world that listens for it; never in the world's log."
   }
  ],
  "conditions": [
@@ -10721,7 +11012,7 @@
    "group": "economy",
    "title": "Ease prices back",
    "sentence": "Prices at {market} ease back to their usual: {words}",
-   "help": "A market's prices (or every market's) go back to their usual over a day.",
+   "help": "A market's prices (or every market's) go back to their usual over a day. It changes the economy: a builder or the owner must approve it on a hosted world.",
    "params": [
     {
      "key": "market",
@@ -10738,14 +11029,15 @@
      "label": "why, in a few words",
      "max": 80
     }
-   ]
+   ],
+   "needsBuilder": true
   },
   {
    "id": "project.complete",
    "group": "economy",
    "title": "Finish a town project",
    "sentence": "The {project} project in {town} is finished",
-   "help": "A town project of that kind open in the town (one the story posted, or any) is finished by hand.",
+   "help": "A town project of that kind open in the town (one the story posted, or any) is finished by hand. It changes the economy: a builder or the owner must approve it on a hosted world.",
    "params": [
     {
      "key": "town",
@@ -10757,14 +11049,15 @@
      "type": "project",
      "label": "the kind of project"
     }
-   ]
+   ],
+   "needsBuilder": true
   },
   {
    "id": "project.cancel",
    "group": "economy",
    "title": "Call off a town project",
    "sentence": "The {project} project in {town} is called off",
-   "help": "A town project of that kind open in the town is called off, its gifts given back.",
+   "help": "A town project of that kind open in the town is called off, its gifts given back. It changes the economy: a builder or the owner must approve it on a hosted world.",
    "params": [
     {
      "key": "town",
@@ -10776,7 +11069,8 @@
      "type": "project",
      "label": "the kind of project"
     }
-   ]
+   ],
+   "needsBuilder": true
   },
   {
    "id": "deed.revoke",
@@ -10848,6 +11142,70 @@
      }
     }
    ]
+  },
+  {
+   "id": "story.start",
+   "group": "chapters",
+   "title": "Start the next chapter",
+   "sentence": "Start the chapter {story} for {audience} {list}, carrying its variables: {carry}, {when}",
+   "help": "Another story of the same campaign starts: the next chapter. With \"when this one has ended\" (the default) it waits until this story has ended in the game (finish, an ending phase), so what this one held (doors, residents, the weather) is let go first; \"now\" runs it beside this one. Its wolves: the same as this story's now, its own audience, or a list variable. Carrying: the story and per-wolf variables the next chapter declares with the same name and type start with this story's values; world variables are shared anyway. Only a story approved as part of a campaign may start one, and only a chapter of that campaign that is not running.",
+   "params": [
+    {
+     "key": "story",
+     "type": "story",
+     "label": "the chapter"
+    },
+    {
+     "key": "audience",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "same",
+      "own",
+      "list"
+     ],
+     "words": {
+      "same": "this story's wolves",
+      "own": "its own audience",
+      "list": "the wolves in"
+     }
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "a list of wolves",
+     "of": [
+      "wolves"
+     ],
+     "optional": true
+    },
+    {
+     "key": "carry",
+     "type": "bool",
+     "label": "carry the variables",
+     "words": {
+      "true": "yes",
+      "false": "no"
+     },
+     "optional": true
+    },
+    {
+     "key": "when",
+     "type": "choice",
+     "label": "when",
+     "values": [
+      "ended",
+      "now"
+     ],
+     "words": {
+      "ended": "when this one has ended",
+      "now": "now, beside this one"
+     },
+     "optional": true
+    }
+   ],
+   "v2": true,
+   "story": true
   }
  ],
  "variables": {

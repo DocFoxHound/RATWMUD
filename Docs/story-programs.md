@@ -1,5 +1,7 @@
 # World stories in Dungeon Master
 
+**For admins, start with the Story Maker's guide: `Docs/Story-Maker-guide.md` (also the Dungeon Master suite's **Guide** tab).** It walks through a small quest in five minutes and a campaign of chapters, and explains every event, condition, action and effect from the trigger catalogue with an example. This page is the format in detail.
+
 Open **Dungeon Master → Story Creator → World stories**. Choose **New blank story**, compose triggers in a phase, and run **Rehearse all paths**. Use **Start from a story** to inspect a worked example. A player can also write and rehearse a program offline and give its JSON file to a DM. A Studio viewer can draft and rehearse. A DM can approve a release for the selected world. On a hosted world, a faction-relation change needs a builder or owner.
 
 | Example | What makes it advance |
@@ -198,6 +200,36 @@ inside a region now counts as entering it); `weather changed` (in a place the st
 done` (bought or sold, with the coins); `dialogue opened`, `dialogue node`, `dialogue closed`; `crime seen` (the witness,
 the offender, the victim); `wolf downed`, `wolf revived`; `party formed`, `party ended`. The Campaigns console's Waiting for
 shows the world as the game last told the story, and its Why not judges each logged event with the facts written with it.
+
+## World effects, what is undone at the end, and who may send them (Phase 9)
+
+The world effects of Docs/Design/85, Phase 9 (telling the wolves, journal notes, map markers, trackers, taking items, warrants,
+strangers, mantles, holds, followers, doors, items on the ground, notices, the weather, market events, prices, projects, deeds,
+personal quests, stopping a scene) are each in the catalogue with their parameters, a sentence and help; the guide lists them
+all with an example. **What the game undoes when a run ends** (`story.stop`, `story.finish`, an ending phase): a door's lock
+as it was before the story first touched it (`door.lock`, `door.unlock`), held residents (`npc.hold`), residents sent along
+(`npc.follow`), strangers (`visitor.add`), mantles bound (`mantle.assign`), notices (`board.post`), the weather
+(`weather.set`) and the maps' markers (`story.ping`); journal notes stay, and everything given (items, coins, deeds, standing,
+warrants, relations, market events, prices, projects) stays. **The permission marks** in the catalogue drive every hosted
+check: `actsOnWolves` (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) needs the owner or "may act on
+players' wolves"; `needsBuilder` (`faction.relation`, `standing.adjust`, and since Phase 10 `prices.reset`,
+`project.complete`, `project.cancel`) needs a builder or the owner, to approve the story and to steer a control that could
+release it. The rest need what the same act needs by hand on LIVE: a Dungeon Master.
+
+## Chapters, world variables and other stories (Phase 10)
+
+A **campaign of chapters** is several stories approved together, in order (`Campaigns → New campaign…`, op `campaign.approve`;
+`dm.story_campaigns`, migration 0079). The first is published with a ticket; a chapter starts the next with the story's own
+effect `story.start` (`story`: a chapter of the same campaign; `audience`: `same`, `own` or `list` with `list` a declared list of
+wolves; `carry`: the story and per-wolf variables the next declares with the same name, scope and type start with this one's
+values, yes by default; `when`: `ended`, the default, once this story has ended in the game so what it held is let go first,
+or `now`). A story that starts another is refused when approved alone; a rehearsal case may expect `expectChapters`. Every
+other live story that listens hears `story started` and `story ended` (target: the other story's id; item: its run; detail:
+the campaign, or how it ended), through its command inbox. **World variables** may be declared for the world in Campaigns →
+World variables (a type, a first value, a note; set and removed there with a reason, audited `story.world-var`; op
+`world-var`); a story declaring one as another type is refused at approval. The events Phase 8 left are watched too: `near
+resident` (names the resident), `purse crossed` (names the purse and the amount in `detail`), `standing crossed` (the faction
+and the number), `relation changed`, `mantle bound`, `mantle released`, `skill practised` (a whole step), `injury healed`.
 
 ## Writing a program
 

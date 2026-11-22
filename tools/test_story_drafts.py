@@ -177,7 +177,7 @@ class Drafts(unittest.TestCase):
         self.assertEqual(status, 200, steps)
         self.assertTrue(steps['steps'])
         status, catalog = self.call({'op': 'catalog'}, viewer)
-        self.assertEqual((status, len(catalog['catalogue']['events'])), (200, 197))   # (Phase 8: 24 new events.)
+        self.assertEqual((status, len(catalog['catalogue']['events'])), (200, 207))   # (Phase 8: 24 new events; Phase 10: 10.)
         status, gone = self.call({'op': 'draft.delete', 'id': saved['id']}, builder)
         self.assertEqual((status, gone), (200, {'deleted': saved['id']}))
 

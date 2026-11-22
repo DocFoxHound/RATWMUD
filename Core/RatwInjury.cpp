@@ -627,7 +627,15 @@ void World::healInjuries(Entity& e, double restHours)
     if (e.injuries.empty())
         return;
     for (const auto& n : injury::heal(e.injuries, restHours))
-        notice(e.id, "Your " + [&] { auto x = n; x[0] = char(std::tolower(static_cast<unsigned char>(x[0]))); return x; }() + " has healed.");
+    {
+        const auto words = [&] { auto x = n; x[0] = char(std::tolower(static_cast<unsigned char>(x[0]))); return x; }();
+        notice(e.id, "Your " + words + " has healed.");
+        if (!e.npc && storyListens("injury healed"))   // (Doc 85, Phase 10: for a story that listens.)
+        {
+            const auto [x, y] = eventTile(e);
+            recordEvent({"injury healed", e.id, {}, e.cellId, 0, 0, {}, 0, 0, words, x, y});
+        }
+    }
 }
 
 Result World::addInjury(const std::string& id, const std::string& type, int severity, const std::string& side, const std::string& from)

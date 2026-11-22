@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b, 6, 7, 8 and 9 are built (section 6, "Phase 1 as built" to "Phase 9 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; all eleven phases are built (section 6, "Phase 1 as built" to "Phase 10 as built"). Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -20,8 +20,9 @@ workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), Phase 5 (the trigger lan
 (from `r3-camp-p4`), and Phase 5b (moving a running campaign onto a new version), on branch `r3-camp-p5b` (from `r3-camp-p5`),
 which closes Slice B, Phase 6 (quests and a living audience), on branch `r3-camp-p6` (from `r3-camp-p5b`), and Phase 7 (batched
 effects and a faster runner), on branch `r3-camp-p7` (from `r3-camp-p6`), Phase 8 (world facts and new events), on branch `r3-camp-p8`
-(from `r3-camp-p7`), and Phase 9 (new world effects), on branch `r3-camp-p9` (from `r3-camp-p8`): see "Phase 1 as built" to "Phase 9 as
-built" in section 6.
+(from `r3-camp-p7`), Phase 9 (new world effects), on branch `r3-camp-p9` (from `r3-camp-p8`), and Phase 10 (chapters, world variables
+and the guide), on branch `r3-camp-p10` (from `r3-camp-p9`), the last: see "Phase 1 as built" to "Phase 10 as built" in section 6. The
+admin's guide is `Docs/Story-Maker-guide.md` (also the DM suite's Guide tab).
 
 ## The ask (the user, 2026-11-21)
 
@@ -2304,6 +2305,85 @@ own), 17 of them orders new to the game; the catalogue's permission marks drive 
 - `Docs/story-programs.md` rewritten for the workbench and the console.
 - Slice end: full suite; end to end: a three-chapter campaign with a quest giver, a scene, a held phase and an
   admin's intervention; one review-and-fix.
+
+**Phase 10 as built** (2026-11-22, branch `r3-camp-p10`, on `r3-camp-p9`). Migration `0079`; no new game order; one story effect
+(`story.start`), ten events (eight written by the game while a story listens, two by the runner); the economy's effects need a builder.
+- **Chapters** (`tools/story_runner.py`, "chapters and campaigns"; `story_quests.CHAPTER_EFFECTS`). A **campaign** is several stories of
+  one world approved together, in order (op `campaign.approve {campaign: {id, title, chapters: [{program, digest}]}}`, 1 to 12; each
+  chapter rehearsed and checked as its own approval would be, every `story.start` naming another chapter of the campaign): kept in
+  `dm.story_campaigns` (migration `0079_story_campaigns.sql`, with `dm.story_releases.campaign` and `.chapter`). The first chapter
+  gets a release and a publication ticket as any story; approving again under the same id replaces the chapters not started (an
+  earlier approval's unpublished first chapter gives way). **`story.start`** (catalogue `"story": true`, version 2, group "Chapters";
+  never in `WORLD_ORDERS`, never sent to the game): `story` (a chapter of the same campaign), `audience` (`same`: this run's wolves
+  now; `own`: the chapter's own audience; `list` with `list`, a declared story or world list of wolves), `carry` (yes by default: the
+  story and per-wolf variables the next chapter declares with the same name, scope and type start with this run's values:
+  `_carried`/`_carry_into`), `when` (`ended`, the default, or `now`). The story keeps it (`state.chapterStarts`); the runner starts a
+  `now` one after the tick that queued it (or the command that fired it), and an `ended` one in `run_ended`, **when the run has
+  ended in the game** (its `story.finish` applied, or its ending phase: Phase 9's note, so `endStoryWorld` has let go of its locks and
+  holds first); a run stopped by an admin starts none. `start_chapter` publishes the chapter without a ticket (`launch`, the body of
+  `publish`, now with a handed cohort, carried values and `state.chapterOf`), in a savepoint: refused (not a chapter, the campaign
+  withdrawn, already running, an empty audience, a reference the world lost), it is a note in the run's history and
+  `state.chaptersStarted` says why. A story that starts another is refused when approved alone, and approved as a new version of a
+  chapter's run only against its campaign. The rehearsal reports `chapters`; a case may `expectChapters`.
+- **Other stories heard** (`tell_stories`): every other live story of the world whose triggers or exits listen is sent `story started`
+  (target the story's id, item its run, detail its campaign) and `story ended` (detail `complete`, `success`, `failure`, `abandoned` or
+  `stopped`) as a command of the runner's own kind `story-event` in its inbox (never from the route, never audited; it waits while
+  the run is held, paused, moving or sending, and is never refused for its age), so the fact lands between two of its world events.
+- **The world's variables** (3.2; 0079 adds `declared`, `initial`, `note`, `declared_by`, `updated_by` to `dm.story_world_vars`). Op
+  `world-vars` (a DM's read: every variable, the stories and chapters that declare each, the audit) and op `world-var {do: declare |
+  set | remove, name, type?, value?, note?, reason}` (typed values; a declaration as another type than a story reads it as, and removing
+  one a running story uses, refused; audited `story.world-var`; hosted: the owner or "may steer campaigns"). Approval refuses a story
+  declaring a world variable the world declares as another type. A live story reads a new value at its next turn.
+- **The events Phase 8 left** (catalogue `"watch": true`, gated by `World::storyListens`; `Game::storyWorldWatch` in
+  `Core/RatwGameStoryFacts.cpp`, from `storyWatchTick`; a first look makes no event; nothing while nothing listens): `near resident`
+  (a wolf within 3 tiles of a resident a trigger names, in the same place, again only after more than 5 apart; once a second),
+  `purse crossed` (a purse a trigger names, as rewards name them, `town:<town>` and the rest: `Game::storyPurseAccount`, now shared with
+  `character.grant`, up or down past the amount in its `detail`; every 2 s), `standing crossed` (a wolf's Chapter's standing with a named
+  faction past a number), `relation changed` (any faction's stance toward another), `mantle bound`, `mantle released`; and where they
+  happen `skill practised` (a skill past a whole step, `World::practise`) and `injury healed` (`World::healInjuries`). The catalogue's
+  `needsMatch` says which filters a trigger on one must give (checked; the number a whole one); `story_program.watch_of` sends `near`,
+  `purses` and `standing` with each phase. Not built: `month begins` (the calendar has no months), `price crossed`, `resident
+  arrived`/`left`, `variable changed`, `admin signal`, `trigger fired`.
+- **Permissions** (decided for the user): `prices.reset`, `project.complete` and `project.cancel` are `needsBuilder` in the catalogue, so
+  approving a story or a campaign with them, or steering a control that could release one, needs a builder or the owner on a hosted
+  world (the refusal says "standing with a faction or the economy"); the weather, notices and market events stay a Dungeon Master's.
+- **The guide**: `Docs/Story-Maker-guide.md`, written for admins (what it is; a small quest in five minutes; how a story is made; a
+  campaign, within one story and as chapters; flow; variables and scopes, world variables; quests and rewards; the world's facts and
+  watched events; rehearsing; approving; the Campaigns console and every control; moving a run onto a new version; who may do what;
+  what the game undoes when a run ends; troubleshooting with Explain, Why not? and What if; limits), and its reference, made from the
+  catalogue by `tools/story_guide.py` (`--write`, `--check`): every event (fields, filters it needs, an example trigger), condition,
+  action and effect (parameters, the sentence filled in, the marks: v2, watched, the story's own, acts on wolves, needs a builder,
+  undone at the end; an example). The Editor's **Guide** tab (`Editor/src/dm/GuideTab.tsx`, `src/lib/guide.ts`) shows the same file,
+  with its contents and a search over every section and entry. `Docs/story-programs.md` points to it and gains Phase 9's effects, what
+  each undoes, the permission marks, and chapters.
+- **The Editor**: the Campaigns list shows each campaign as its chapters (✔ ● ○, a chapter opens its run), **World variables…** and
+  **New campaign…** (the world's drafts in order, rehearsed, approved together, chapter 1 published); a chapter's page has the strip and
+  what it will start; the timeline words the runner's story events; the workbench's `story` picker (refs `stories`: drafts, releases,
+  chapters; and `worldVars`); **New… → A small quest** starts from any of the 100 library events (its steps and giver,
+  `fromLibraryEntry`) as well as doc 58's templates.
+- **Found and fixed on the way:** a trigger fired by hand from the console sent the story's own effects (quests', who takes part, now
+  `story.start`) to the game, which refused them: `Steer.do_fire` now takes them as play does, and their facts follow.
+- **Tests:** `tools/test_story_campaigns.py` (story.start checked and rehearsed; carrying; the new events' watch lists and filters; in a
+  throwaway database: approved alone refused, a campaign approved, the next chapter starting when the first has ended with its wolves and
+  values, a third story hearing both, the campaign ended; a chapter `now` and never twice; one fired by hand; a stopped chapter starting
+  nothing; world variables declared, set, removed, audited, read by a chapter, a clash refused; the hosted route: the economy needs a
+  builder, world variables the owner or "may steer"); `tools/test_story_guide.py` (the reference is the catalogue's, every entry anchored
+  with an example, every example effect passes the checks, the sections, the world's words); `Tests/story_facts_tests.cpp`
+  (`phaseTenEvents`: nothing unwatched, a first look makes nothing, near a resident and again after apart, a treasury down and up past
+  its amount, three wolves' standing up past 10, a stance changed once, a skill step, an injury healed, nothing after the end; 132
+  checks); `test_story_effects.py` (the builder marks, the economy refused to a hosted DM and passed for a builder); the Editor's
+  `guide.test.ts`, `campaigns.test.ts`, `workbench.test.ts` (story.start in words and passing the checks, the 10 events in words, all
+  100 library events as small quests whose rehearsals pass) and the render smoke (chapters, a chapter, world variables, the guide and
+  its search). Updated counts: `test_story_catalogue`, `test_story_drafts`, `test_story_facts`.
+- **Seen**, on a throwaway Greyfen database with a real game server (the built client served), the real runner ticking every second
+  and the DM tool's handler: `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p10/`. "The winter road", three chapters approved
+  together from New campaign… (10, 11), chapter 1 published (12); in the game Fern's journal with Linden's call (01), Fern walks into
+  the barracks yard: chapter 1 ends and chapter 2 begins with the snow it sets (02) and its note and tracker in the journal (03); the
+  list as chapters (13), chapter 1's timeline (14), chapter 2's strip (15), the town bell hearing them start and end (17), a world
+  variable declared and set by hand (18, 19), chapter 2 held (20, 21), a-watch-kept fired by hand for Fern with its dry run (22) and its
+  values, the world variable read (23), fired again for Willow: chapter 2 finishes and chapter 3 starts (24-26); the workbench's Start
+  the next chapter (30), a small quest from a library event (31); the guide (40-46: the start, a small quest, a campaign, what is
+  undone, troubleshooting, a search, story.start's entry).
 
 Total: about 147 hours (the ten phases' 137, and Phase 5b's 10). Later, not planned here: `belief.plant` and
 `npc.brief`, camera moves and fades in scenes, a cast chosen by a query (doc 34, 5.1), priorities between stories,

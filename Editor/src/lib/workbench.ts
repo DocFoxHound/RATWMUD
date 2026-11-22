@@ -165,11 +165,13 @@ export interface Refs {
     templates?: {id: string; name: string}[]; projects?: {id: string; name: string}[]; injuries?: string[];
     /** Phase 9: the world's doors (by the id of one side; a story locks both) and its mantles. */
     doors?: {id: string; name: string; cell?: string}[]; mantles?: {id: string; name: string}[];
+    /** Phase 10: the stories a chapter may start (drafts, releases, campaigns' chapters), and the world's declared variables. */
+    stories?: {id: string; name: string; hint?: string}[]; worldVars?: {id: string; name: string; type: string; note?: string}[];
 }
 /** The kinds a picker of a type lists (a `character` is a wolf or a resident). */
 export const REF_KIND: Record<string, keyof Refs> = {
     resident: 'residents', wolf: 'wolves', place: 'places', faction: 'factions', town: 'towns', market: 'markets', area: 'areas',
-    ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles',
+    ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles', story: 'stories',
 };
 /** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
 export function visitorsOf(p: Program): string[] {
@@ -1344,4 +1346,15 @@ export function fromTemplate(t: StorylineTemplate, giver: string): {title: strin
         else if (o.kind === 'place') objectives.push({label: words(o.line).slice(0, 180), on: 'enter place'});
     }
     return {title: words(t.title).slice(0, 120), summary: words(t.steps[0]?.text ?? '').slice(0, 300), objectives: objectives.slice(0, 12)};
+}
+
+/** One of the 100 library events (Data/Storylines/event-library.json) as a small quest's starting point (doc 85, Phase 10): its
+ *  objectives are the steps (the mission events and filters it names), its giver the resident its first step talks to or gives
+ *  to, and its title. */
+export function fromLibraryEntry(e: {title: string; objectives: {label: string; on: string; match?: Record<string, string>; goal?: number; measure?: string}[];
+    opening?: {journal: string}}): {title: string; summary: string; giver: string; objectives: Omit<QuestObjective, 'id'>[]} {
+    const objectives = e.objectives.slice(0, 12).map(o => ({label: o.label.slice(0, 180), on: o.on, ...(o.match ? {match: {...o.match}} : {}),
+        ...(o.goal && o.goal > 1 ? {goal: o.goal} : {}), ...(o.measure && o.measure !== 'count' ? {measure: o.measure} : {})}) as Omit<QuestObjective, 'id'>);
+    const first = e.objectives.find(o => o.match?.target && ['conversation', 'gift', 'gift again'].includes(o.on));
+    return {title: e.title.slice(0, 120), summary: (e.opening?.journal ?? '').slice(0, 300), giver: first?.match?.target ?? '', objectives};
 }

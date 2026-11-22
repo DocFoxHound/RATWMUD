@@ -2573,6 +2573,10 @@ class Game
     {
         std::set<std::string> sections, items, factions, towns, residents, cells, events;
         std::set<std::pair<std::string, std::string>> relations;
+        // Doc 85, Phase 10: what "near resident", "purse crossed" and "standing crossed" look at (the residents, the purses
+        // and amounts, the factions and numbers the stories' triggers name).
+        std::set<std::string> near;
+        std::set<std::pair<std::string, std::int64_t>> purses, standing;
         bool weatherWhereWolves = false;
         bool facts() const { return !sections.empty(); }
     };
@@ -2585,6 +2589,17 @@ class Game
     std::int64_t storyDay_ = -1;
     std::string storyPeriod_, storySeason_;
     std::map<std::string, std::string> storyWeather_;             // Place -> the weather last seen there.
+    // Doc 85, Phase 10 (RatwGameStoryFacts.cpp, storyWorldWatch): the events Phase 8 left, each looked for only while a live
+    // story listens. What each was last seen as; a first look makes no event.
+    void storyWorldWatch(double real);
+    double storyNearAccumulator_ = 0, storyWatchedAccumulator_ = 0;
+    std::map<std::string, std::set<std::string>> storyNear_;      // Wolf -> the watched residents within three tiles.
+    std::map<std::string, std::int64_t> storyPurses_;             // Purse -> what it held.
+    std::map<std::string, double> storyStanding_;                 // "wolf|faction" -> their standing.
+    std::map<std::string, std::pair<std::string, double>> storyRelations_;   // "a>b" -> the stance and disposition.
+    std::map<std::string, std::string> storyMantles_;             // Resident -> the mantle they wore.
+    bool storyRelationsSeen_ = false, storyMantlesSeen_ = false;
+    std::string storyPurseAccount(const std::string& purse) const;   // A reward's purse (town:<id>...) as the account it is.
     std::map<std::string, std::map<std::string, std::set<std::string>>> storyOccupants_;   // Run -> region -> its wolves inside.
     void storyRegionCrossed(const std::string& run, const std::string& region, const std::string& wolf, bool inside,
                             const std::string& cell, int x, int y);

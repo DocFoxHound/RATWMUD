@@ -291,7 +291,7 @@ export function NewStory({catalog, refs, close, start, pick, questing = false}: 
         <header><strong>New…</strong><button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
         <section className="wb-new-quest"><h5>A small quest</h5>
             <p className="hint">One quest, anyone who asks may take it: who gives it, what to do, the reward.</p>
-            {quest ? <SmallQuestFlow cat={catalog.catalogue} refs={refs} pick={pick} close={() => setQuest(false)}/>
+            {quest ? <SmallQuestFlow cat={catalog.catalogue} refs={refs} pick={pick} close={() => setQuest(false)} library={catalog.eventTypes}/>
                 : <button type="button" onClick={() => setQuest(true)}>A small quest…</button>}</section>
         <div className="wb-new-grid">
             <section><h5>A small story</h5><p className="hint">One of the 100 library events, ready to rehearse: its opening, its objectives as a mission, its outcome.</p>

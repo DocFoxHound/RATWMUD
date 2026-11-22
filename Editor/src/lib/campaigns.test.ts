@@ -385,3 +385,34 @@ test('Phase 8: world conditions in the console say what the facts said, and the 
         'Ivo · dead · Greyfen (1, 1)', 'weather · Greyfen snow', 'relations · a → b tense']);
     assert.deepEqual(factLines(null), []);
 });
+
+// ---------------------------------------------------------------------------------- chapters and campaigns (doc 85, Phase 10)
+import {campaignText, chapterStartText, chapterStrip, parseWorldValue, worldVarText, type Campaign} from './campaigns.ts';
+
+const campaign: Campaign = {id: 'ford', title: 'The ford', approvedBy: 'martin', approvedAt: null, status: 'running', chapters: [
+    {story: 'the-muster', title: 'The muster', digest: 'a', starts: ['the-crossing'], runs: [{run: 'world-1', status: 'complete', phase: 'gather', at: null}]},
+    {story: 'the-crossing', title: 'The crossing', digest: 'b', starts: [], runs: [{run: 'world-2', status: 'running', phase: 'cross', at: null}]},
+    {story: 'the-far-bank', title: 'The far bank', digest: 'c', starts: [], runs: []}]};
+
+test('a campaign as its chapters: done, running, waiting; in words', () => {
+    assert.deepEqual(chapterStrip(campaign).map(s => [s.state, s.run, s.phase]), [['done', 'world-1', 'gather'], ['running', 'world-2', 'cross'], ['waiting', null, null]]);
+    assert.equal(campaignText(campaign), '3 chapters · 1 done · now: The crossing (cross)');
+    const fresh: Campaign = {...campaign, chapters: [{...campaign.chapters[0], runs: [{run: 'world-0', status: 'approved', phase: null, at: null}]}, campaign.chapters[2]]};
+    assert.deepEqual(chapterStrip(fresh).map(s => s.state), ['ready', 'waiting']);
+    assert.ok(campaignText(fresh).endsWith('the first is approved, to publish'));
+    assert.equal(chapterStartText({story: 'the-crossing', audience: 'same', when: 'ended'}, campaign, names),
+        '"The crossing" for this story\'s wolves, carrying its variables, when this story has ended');
+    assert.equal(chapterStartText({story: 'the-far-bank', audience: 'list', wolves: ['player-ash'], when: 'now', carry: false}, campaign, names),
+        '"The far bank" for Ash Greymantle, now');
+    assert.equal(commandLine('story-event', {event: {kind: 'story ended', target: 'the-muster', detail: 'success'}}, names), 'heard that the story the-muster ended (success)');
+});
+
+test("the world's variables: values typed in and shown", () => {
+    assert.deepEqual(parseWorldValue('number', ' 12 '), {value: 12});
+    assert.ok('problem' in parseWorldValue('number', '1.5'));
+    assert.deepEqual(parseWorldValue('switch', 'on'), {value: true});
+    assert.deepEqual(parseWorldValue('wolves', 'player-ash, player-elm'), {value: ['player-ash', 'player-elm']});
+    assert.ok('problem' in parseWorldValue('numbers', '1, two'));
+    assert.equal(worldVarText({name: 'best', type: 'wolves', value: ['player-ash'], stories: []}, names), 'Ash Greymantle');
+    assert.equal(worldVarText({name: 'best', type: 'number', value: null, unset: true, stories: []}), '(not set yet)');
+});

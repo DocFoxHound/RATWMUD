@@ -374,6 +374,201 @@ void factsAndWatchedEvents()
     fs::remove_all(root);
     fs::remove(save);
 }
+// Doc 85, Phase 10: the events Phase 8 left, each written only while a live story listens and only for what it names: a wolf
+// come near a resident (and not again until they have been apart), a purse past an amount, a wolf's standing past a number,
+// a faction's stance changed, a skill grown a step, an injury healed.
+void phaseTenEvents()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyfacts10-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeDoors(root), save, 120, true);
+        auto& w = t.g.world();
+        t.enter(t.ash, 1, "ash", "Ash", 0, 12.5);
+        t.enter(t.bo, 2, "bo", "Bo", 0, 14.5);
+        t.enter(t.cy, 3, "cy", "Cy", 0, 8.5);
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto of = [&](const std::string& kind) {
+            std::vector<WorldEvent> out;
+            for (const auto& e : seen)
+                if (e.kind == kind)
+                    out.push_back(e);
+            return out;
+        };
+        const auto at = [&](Client& c, const std::string& cell, double x, double y) {
+            auto* e = w.entity(c.entityId);
+            e->cellId = cell;
+            e->position = {x, y};
+            w.stop(c.entityId);
+        };
+        const auto keepU1 = [&] {
+            auto* n = w.entity("u1");
+            n->cellId = cellId(0);
+            n->position = {20.5, 8.5};
+            w.stop("u1");
+        };
+        // A faction, and a Chapter for Ash, Bo and Cy, so the faction can count their standing.
+        auto& factions = t.g.factions();
+        factions.define({"watch", "The Watch", "#336699", "order"});
+        factions.define({"road", "The Road Company", "#996633", "guild"});
+        auto& chapters = t.g.chapters();
+        const double now = w.calendarDays();
+        expect(chapters.propose(t.ash.entityId, {t.bo.entityId, t.cy.entityId}, "The Grey Lodge", "#556677", "", "the ford", now).ok, "a Chapter is proposed");
+        chapters.agree(t.bo.entityId, now);
+        chapters.agree(t.cy.entityId, now);
+        const auto* lodge = chapters.of(t.ash.entityId);
+        expect(lodge != nullptr, "the Chapter is founded");
+        // The treasury the story watches, and what it holds.
+        expect(!w.towns().empty(), "the strip has a town");
+        const auto& town = w.towns().front();
+        auto& society = w.society();
+        if (!society.account(town.store) || society.account(town.store)->cash < 50)
+            testPurse(society, town.store, 100);
+        const auto held = society.account(town.store)->cash;
+
+        // Nothing watched: none of them.
+        at(t.ash, cellId(0), 19.5, 8.5);
+        keepU1();
+        factions.setRelation("watch", "road", {-40, "tense"});
+        t.run(2.5);
+        const char* Ten[] = {"near resident", "purse crossed", "standing crossed", "relation changed", "mantle bound", "mantle released",
+                             "skill practised", "injury healed"};
+        for (const auto* kind : Ten)
+            expect(of(kind).empty(), std::string("unwatched: no ") + kind);
+
+        // The story opens, watching them, with what its triggers name.
+        const auto run = "world-the-ford";
+        auto phase = parsed(R"({"title":"The ford","phase":"wait","journal":"Wait at the ford.","visit":1})");
+        auto players = json::Value::array();
+        for (const auto& id : {t.ash.entityId, t.bo.entityId, t.cy.entityId})
+            players.push(id);
+        phase.set("players", players);
+        auto watch = json::Value::object();
+        auto events = json::Value::array();
+        for (const auto* kind : Ten)
+            events.push(kind);
+        watch.set("events", events);
+        watch.set("near", parsed(R"(["u1"])"));
+        auto purses = json::Value::array();
+        auto purse = json::Value::array();
+        purse.push("town:" + town.id);
+        purse.push(double(held));
+        purses.push(purse);
+        watch.set("purses", purses);
+        watch.set("standing", parsed(R"([["watch", 10]])"));
+        phase.set("watch", watch);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens with its watch list");
+        expect(t.g.storyWatches("near resident") && w.storyListens("skill practised"), "watched");
+        // First looks: nothing.
+        seen.clear();
+        at(t.ash, cellId(0), 30.5, 8.5);
+        keepU1();
+        t.run(2.5);
+        for (const auto* kind : Ten)
+            expect(of(kind).empty(), std::string("a first look makes nothing: ") + kind);
+
+        // Near a resident: within three tiles, once; apart past five, and back: again.
+        at(t.ash, cellId(0), 18.5, 8.5);
+        keepU1();
+        t.run(1.2);
+        auto near = of("near resident");
+        expect(near.size() == 1 && near[0].actor == t.ash.entityId && near[0].target == "u1" && near[0].cell == cellId(0) && near[0].quantity == 2,
+               "near resident: Ash, two tiles from u1");
+        at(t.ash, cellId(0), 16.5, 8.5);
+        keepU1();
+        t.run(1.2);
+        expect(of("near resident").size() == 1, "four tiles off: not apart enough to meet again");
+        at(t.ash, cellId(0), 19.5, 8.5);
+        keepU1();
+        t.run(1.2);
+        expect(of("near resident").size() == 1, "and back: the same meeting");
+        at(t.ash, cellId(0), 30.5, 8.5);
+        keepU1();
+        t.run(1.2);
+        at(t.ash, cellId(0), 19.5, 8.5);
+        keepU1();
+        t.run(1.2);
+        expect(of("near resident").size() == 2, "apart, then near again: a second");
+
+        // A purse past its amount: down (a reward paid from it), then up again.
+        seen.clear();
+        auto grant = parsed(R"({"coins":5,"reason":"for the ford"})");
+        grant.set("purse", "town:" + town.id);
+        const auto paid = t.g.applyEconomyCommand("character.grant", t.bo.entityId, grant, "");
+        expect(paid.ok, "a reward paid from the treasury: " + paid.message);
+        t.run(2.5);
+        auto crossed = of("purse crossed");
+        expect(crossed.size() == 1 && crossed[0].target == "town:" + town.id && crossed[0].item == "down" &&
+                   crossed[0].detail == std::to_string(held) && crossed[0].quantity == int(held - 5),
+               "purse crossed: the treasury down past " + std::to_string(held));
+        expect(society.shift(t.bo.entityId, town.store, "", 0, 5, "test: paid back"), "the treasury is paid back (" + town.store + ")");
+        t.run(2.5);
+        crossed = of("purse crossed");
+        expect(crossed.size() == 2 && crossed[1].item == "up", "and up again");
+
+        // Standing: the Chapter's with the Watch past 10, for each of its wolves in the world.
+        seen.clear();
+        factions.change("watch", lodge->id, 25, "kept the ford", w.calendarDays(), 0, false);
+        t.run(2.5);
+        auto standing = of("standing crossed");
+        expect(standing.size() == 3 && standing[0].target == "watch" && standing[0].item == "up" && standing[0].detail == "10" &&
+                   standing[0].quantity >= 10,
+               "standing crossed: up past 10, for each of the three (" + std::to_string(standing.size()) + ")");
+
+        // A stance changed.
+        seen.clear();
+        factions.setRelation("watch", "road", {-80, "hostile"});
+        t.run(2.5);
+        auto stance = of("relation changed");
+        expect(stance.size() == 1 && stance[0].target == "watch" && stance[0].item == "road" && stance[0].detail == "hostile" &&
+                   stance[0].quantity == -80,
+               "relation changed: the Watch toward the Road Company, hostile");
+        t.run(2.5);
+        expect(of("relation changed").size() == 1, "once");
+
+        // A skill grown a step, and an injury healed.
+        seen.clear();
+        auto* ash = w.entity(t.ash.entityId);
+        const auto* sneak = practice::skill("sneak");
+        double* slot = sneak ? World::practiceSlot(*ash, *sneak) : nullptr;
+        expect(slot != nullptr, "a skill to grow");
+        const auto& skill = *sneak;
+        w.setPractice(t.ash.entityId, skill.id, std::floor(*slot) + 0.98, -1);
+        for (int i = 0; i < 200 && of("skill practised").empty(); ++i)
+        {
+            World::PracticeContext context;
+            context.amount = 1;
+            context.occasion = "ambush-" + std::to_string(i);
+            w.practise(t.ash.entityId, "sneak.ambush", context);
+        }
+        auto skilled = of("skill practised");
+        expect(!skilled.empty() && skilled[0].actor == t.ash.entityId && skilled[0].item == skill.id && skilled[0].quantity == int(std::floor(*slot)),
+               "skill practised: Ash's " + skill.id + " grows a step");
+        expect(w.addInjury(t.bo.entityId, "torn_flank", 1, "", "test").ok, "Bo is hurt");
+        w.healInjuries(*w.entity(t.bo.entityId), 24 * 120);
+        auto healed = of("injury healed");
+        expect(!healed.empty() && healed[0].actor == t.bo.entityId && !healed[0].detail.empty(), "injury healed: Bo's " +
+               (healed.empty() ? std::string("none") : healed[0].detail));
+
+        // The story ends: nothing more.
+        auto end = parsed(R"({"title":"The ford","phase":"over","journal":"Over.","visit":2,"end":true})");
+        end.set("players", players);
+        expect(t.g.applyDmAct({"3", "story.phase", run, "dm", json::dump(end)}).ok, "the story ends");
+        t.run(1.5);
+        seen.clear();
+        factions.setRelation("watch", "road", {0, "neutral"});
+        at(t.ash, cellId(0), 30.5, 8.5);
+        t.run(1.2);
+        at(t.ash, cellId(0), 19.5, 8.5);
+        keepU1();
+        t.run(2.5);
+        for (const auto* kind : Ten)
+            expect(of(kind).empty(), std::string("after the end: no ") + kind);
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
 } // namespace
 
 int main()
@@ -381,6 +576,7 @@ int main()
     try
     {
         factsAndWatchedEvents();
+        phaseTenEvents();
     }
     catch (const std::exception& e)
     {
