@@ -3563,6 +3563,21 @@ Result World::stowItem(const std::string& id)
     return {true, "You put the " + item + " away.", {}};
 }
 
+Result World::placeOnGround(const std::string& cellId, int x, int y, const std::string& item)
+{
+    if (!ensureLoaded(cellId).ok)
+        return {false, "No such place.", cellId};
+    const auto* c = cell(cellId);
+    const auto* tile = c ? c->tile(x, y) : nullptr;
+    if (!tile || tile->solid)
+        return {false, "Nothing can lie there.", cellId};
+    society_.openAccount(GroundAccount);
+    if (!society_.create(GroundAccount, item, 1, "dm grant: left on the ground for a story"))
+        return {false, "That can't be left on the ground.", cellId};
+    ground_.push_back({"ground-" + std::to_string(++nextGround_), cellId, item, x + .5, y + .5});
+    return {true, "Left on the ground.", ground_.back().id};
+}
+
 Result World::takeItem(const std::string& id, const std::string& groundId)
 {
     auto* e = entity(id);

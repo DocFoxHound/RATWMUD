@@ -76,3 +76,21 @@ export function trackerLines(t: Json): string[] {
         return `${str(k, 'label')}: ${value}`;
     });
 }
+
+/** A world story's notes in the wolf's journal (doc 85, Phase 9: journal.note), newest last, with the day each was written. */
+export function noteLines(t: Json): string[] {
+    return arr(t, 'notes').filter(isObject).map(n => `✎ ${str(n, 'text')}`);
+}
+
+/** A world story's markers on the maps (doc 85, Phase 9: story.ping): where in the realm's tiles, the label, the place. */
+export interface StoryPing {wx: number; wy: number; label: string; place: string; inside: boolean; story: string}
+export function storyPings(journal: unknown): StoryPing[] {
+    const out: StoryPing[] = [];
+    for (const t of Array.isArray(journal) ? journal.filter(isObject) : [])
+        for (const p of arr(t, 'pings').filter(isObject)) {
+            const wx = Number(p.wx), wy = Number(p.wy);
+            if (!Number.isFinite(wx) || !Number.isFinite(wy)) continue;
+            out.push({wx, wy, label: str(p, 'label'), place: str(p, 'place'), inside: bool(p, 'inside'), story: str(t, 'title')});
+        }
+    return out;
+}

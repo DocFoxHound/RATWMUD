@@ -496,6 +496,23 @@ bool Society::create(const std::string& accountId, const std::string& item, int 
     record(reason, "made", accountId, item, quantity, 0);
     return true;
 }
+bool Society::destroy(const std::string& accountId, const std::string& item, int quantity, const std::string& reason)
+{
+    const auto found = state_.accounts.find(accountId);
+    if (quantity < 1 || found == state_.accounts.end() || stockAll(found->second, item) < quantity)
+        return false;
+    for (const auto& kind : kindsHeld(found->second, item))
+    {
+        auto& n = found->second.stock[kind];
+        const int taken = std::min(n, quantity);
+        n -= taken;
+        quantity -= taken;
+        record(reason, accountId, "consumed", kind, taken, 0);
+        if (!quantity)
+            break;
+    }
+    return true;
+}
 EconomyResult Society::eat(const std::string& player)
 {
     if (!playerAccountId(player) || !account(player) || stock(*account(player), "meal") < 1)

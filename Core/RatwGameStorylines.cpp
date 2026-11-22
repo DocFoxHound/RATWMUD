@@ -328,6 +328,13 @@ Value Game::journalView(const std::string& viewer)
                 if (quests.size()) o.add("quests", std::move(quests));
                 if (f->second.array("trackers").size()) o.add("trackers", f->second["trackers"]);
             }
+        if (s->source == "storykeeper")
+        {
+            // Doc 85, Phase 9: the story's notes in this wolf's journal, and its markers on their maps.
+            const auto extras = storyJournalExtras(*s, viewer);
+            for (const auto& [key, value] : extras.fields())
+                o.add(key, value);
+        }
         if (s->kind == "tale")
         {
             auto who = Value::array();
@@ -454,6 +461,8 @@ Result Game::directSceneResident(const std::string& kind, const std::string& npc
     for (const auto& other : storylines_.activeScenes())
         if (other != run && storylines_.find(other)->sceneOrders.count(npc))
             return {false, "Another story is directing this resident.", npc};
+    if (heldByAnotherStory(npc, run))               // (Doc 85, Phase 9: npc.hold keeps a resident for its story.)
+        return {false, "Another story holds this resident.", npc};
     const auto prior = story->sceneOrders.find(npc);
     if (prior != story->sceneOrders.end() && !prior->second.done)
         return {false, "Wait for this resident's pending scene cue.", npc};
@@ -833,6 +842,7 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     story.lastActivity = now();
     if (p.boolean("end")) story.ended = now();
     if (prior && prior->live()) releaseSceneResidents(*prior);
+    if (p.boolean("end")) endStoryWorld(story);    // (Doc 85, Phase 9: an ending undoes what its world effects left.)
     // Sample pending movement against the previous watches before changing this run.
     for (const auto* client : clients_) observeStoryTile(client->entityId);
     const auto& kept = storylines_.add(std::move(story));

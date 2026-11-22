@@ -57,7 +57,7 @@ export function AskDialog({ask, row, names, busy, send, cancel, target, dryRun}:
 export function SteerBar({row, detail, names, steer, busy}: {row: RunRow; detail: RunDetail; names: Record<string, string>; steer: SteerFn; busy: boolean}) {
     const c = detail.controls;
     const [signal, setSignal] = useState(''), [phase, setPhase] = useState(''), [effects, setEffects] = useState(true), [telling, setTelling] = useState(false);
-    const [to, setTo] = useState<'participants' | 'wolf' | 'region'>('participants'), [wolf, setWolf] = useState(''), [region, setRegion] = useState(''), [text, setText] = useState('');
+    const [to, setTo] = useState<'participants' | 'wolf' | 'party' | 'region' | 'world'>('participants'), [wolf, setWolf] = useState(''), [region, setRegion] = useState(''), [text, setText] = useState('');
     const [moving, setMoving] = useState(false);
     if (!c) return null;
     const approved = (detail.versions ?? []).find(v => v.status === 'approved');
@@ -102,15 +102,18 @@ export function SteerBar({row, detail, names, steer, busy}: {row: RunRow; detail
         {telling && <div className="camp-tell">
             <select value={to} onChange={e => setTo(e.target.value as typeof to)} aria-label="To">
                 <option value="participants">the story's wolves</option><option value="wolf">one wolf</option>
-                {c.regions.length > 0 && <option value="region">the wolves in a region</option>}</select>
-            {to === 'wolf' && <select value={wolf} onChange={e => setWolf(e.target.value)} aria-label="Wolf"><option value="">choose…</option>
+                <option value="party">a wolf's party</option>
+                {c.regions.length > 0 && <option value="region">the wolves in a region</option>}
+                <option value="world">everyone in the world</option></select>
+            {(to === 'wolf' || to === 'party') && <select value={wolf} onChange={e => setWolf(e.target.value)} aria-label="Wolf"><option value="">choose…</option>
                 {cohort.map(id => <option key={id} value={id}>{nameOf(names, id)}</option>)}</select>}
             {to === 'region' && <select value={region} onChange={e => setRegion(e.target.value)} aria-label="Region"><option value="">choose…</option>
                 {c.regions.map(r => <option key={r}>{r}</option>)}</select>}
             <input value={text} maxLength={300} placeholder="One line, as a banner and a line in their log" onChange={e => setText(e.target.value)} />
-            <button disabled={busy || !text.trim() || (to === 'wolf' && !wolf) || (to === 'region' && !region)} onClick={() => { setTelling(false); steer({kind: 'tell',
-                payload: {to, text: text.trim(), ...(to === 'wolf' ? {player: wolf} : {}), ...(to === 'region' ? {region} : {})}, title: 'Tell the wolves',
-                does: ['Those in the world now see it as a banner and a line; those away are told when they are back.', 'The story itself does not move.']}); }}>Send…</button>
+            <button disabled={busy || !text.trim() || ((to === 'wolf' || to === 'party') && !wolf) || (to === 'region' && !region)} onClick={() => { setTelling(false); steer({kind: 'tell',
+                payload: {to, text: text.trim(), ...(to === 'wolf' || to === 'party' ? {player: wolf} : {}), ...(to === 'region' ? {region} : {})}, title: 'Tell the wolves',
+                does: [to === 'world' || to === 'party' ? 'Those in the world now see it as a banner and a line.'
+                    : 'Those in the world now see it as a banner and a line; those away are told when they are back.', 'The story itself does not move.']}); }}>Send…</button>
             <button onClick={() => setTelling(false)}>×</button>
         </div>}
     </>;

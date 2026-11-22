@@ -86,6 +86,8 @@ def verdict(check, effect):
 
 # (Doc 85, Phase 6: effects with no hand-written check before the catalogue.)
 PHASE6 = (*rules.quests.STORY_EFFECTS, 'character.grant', 'item.give', 'standing.adjust')
+# (Doc 85, Phase 9's world effects: checked by tools/test_story_effects.py, beside the catalogue.)
+PHASE9 = tuple(runner.WORLD_ORDERS) + ('story.tracker',)
 
 
 class CatalogueShape(unittest.TestCase):
@@ -148,7 +150,7 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
         self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
         self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
-        self.assertEqual(len(CAT['effects']), 39)   # (25, and Phase 6's 14.)
+        self.assertEqual(len(CAT['effects']), 70)   # (25, Phase 6's 14 and Phase 9's 31.)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):
                 self.assertTrue(item['title'] and item['help'])
@@ -186,7 +188,7 @@ class CatalogueShape(unittest.TestCase):
                 'skill': 'craft', 'market': 'grey', 'detail': 'Held the ford.', 'project': 'well', 'title': 'A new well', 'scene': 'oath'}
         compared = 0
         for kind, keys in rules.EFFECTS.items():
-            if kind == 'scene.play' or kind in PHASE6:
+            if kind == 'scene.play' or kind in PHASE6 or kind in PHASE9:
                 continue   # (Needs an embedded scene: both run the same checks after the loop. Phase 6's are new: below.)
             base = {'kind': kind, **{k: good[k] for k in keys}}
             self.assertEqual(verdict(rules.validate_effect, base), 'ok', kind)

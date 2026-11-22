@@ -1,9 +1,11 @@
 #include "RatwGame.h"
 #include "RatwStoryRegion.h"
+#include "RatwNames.h"
 
 #include <algorithm>
 #include <cmath>
 #include <optional>
+#include <set>
 
 namespace ratw::game
 {
@@ -158,17 +160,50 @@ Result Game::applyStoryTell(const std::string& run, const json::Value& payload)
             bound->second.y1 != area->y1 || bound->second.x2 != area->x2 || bound->second.y2 != area->y2)
             return {false, "The region differs from the published story.", run};
     }
-    else if (to == "wolf")
+    else if (to == "wolf" || to == "party")
     {
         const auto found = release->participants.find(payload.string("player"));
         if (found == release->participants.end() || !found->second.active())
             return {false, "That wolf is not in this story.", run};
     }
-    else if (to != "participants")
-        return {false, "Tell the participants, a wolf or a region.", run};
+    else if (to != "participants" && to != "world")
+        return {false, "Tell the participants, a wolf, a party, a region or the world.", run};
+    // (Doc 85, Phase 9: a line may be said by a resident of the world, named as the wolf knows them.)
+    const auto from = payload.string("from");
+    const auto* speaker = from.empty() ? nullptr : world_.entity(from);
+    if (!from.empty() && (!speaker || !speaker->npc))
+        return {false, "The one who says it must be a resident.", run};
     const auto title = payload.string("title", release->title);
-    const auto words = (title.empty() ? std::string() : "\"" + title + "\": ") + text;
+    const auto wordsFor = [&](const std::string& wolf) {
+        const auto said = speaker ? names::capitalised(labelFor(wolf, from)) + ": \u201c" + text + "\u201d" : text;
+        return (title.empty() ? std::string() : "\"" + title + "\": ") + said;
+    };
     int told = 0, away = 0;
+    if (to == "world" || to == "party")
+    {
+        // Everyone in the world (an announcement), or the wolf's party in the world (the wolf alone in none); nobody away.
+        std::set<std::string> whom;
+        if (to == "party")
+        {
+            whom.insert(payload.string("player"));
+            if (const auto* party = parties_.of(payload.string("player")))
+                whom.insert(party->members.begin(), party->members.end());
+        }
+        for (auto* c : clients_)
+        {
+            const auto* e = world_.entity(c->entityId);
+            if (!e || e->npc || (to == "party" && !whom.count(c->entityId)))
+                continue;
+            storylineToast(c, wordsFor(c->entityId));
+            ++told;
+        }
+        if (to == "party" && !clientOf(payload.string("player")))
+        {
+            tellActedOn(payload.string("player"), wordsFor(payload.string("player")));
+            ++away;
+        }
+        return {true, "Told " + std::to_string(told) + " in the world" + (away ? "; the wolf away, told when back." : "."), run};
+    }
     for (const auto& [id, participant] : release->participants)
     {
         if (!participant.active() || (to == "wolf" && id != payload.string("player")))
@@ -185,12 +220,12 @@ Result Game::applyStoryTell(const std::string& run, const json::Value& payload)
         }
         if (c)
         {
-            storylineToast(c, words);
+            storylineToast(c, wordsFor(id));
             ++told;
         }
         else
         {
-            tellActedOn(id, words);
+            tellActedOn(id, wordsFor(id));
             ++away;
         }
     }

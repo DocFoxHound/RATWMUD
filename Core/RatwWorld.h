@@ -729,6 +729,9 @@ class World
         return streamedSeams_ < doors_.size() ? doors_.size() - streamedSeams_ : 0;
     }
     const Door* door(const std::string& id) const;
+    // A door set by a story (doc 85, Phase 9): open (-1 leaves it, 0 shuts, 1 opens) and locked (-1, 0, 1), both sides of
+    // it alike. Locking shuts it; opening a locked door is refused. False for no such door, or a passage or stairs.
+    Result setDoorState(const std::string& id, int open, int locked);
     // The doors, stairs and seams in one cell, in ID order (an index over doors(); rebuilt when doors change).
     const std::vector<Door*>& doorsIn(const std::string& cellId) const;
     // Cells one step away through any portal (seams, doors, stairs), locked or not.
@@ -1401,6 +1404,9 @@ class World
     Result holdItem(const std::string& id, const std::string& item);
     Result stowItem(const std::string& id);
     Result takeItem(const std::string& id, const std::string& groundId);
+    // Something left on the ground for whoever finds it (doc 85, Phase 9: a story's item.place): made into the ground's
+    // account and laid at the tile, to be picked up as a fight's ground is.
+    Result placeOnGround(const std::string& cellId, int x, int y, const std::string& item);
     // Wearing (doc 35, Phase 4): putting on a wearable one owns, at a wear slot or (jewellery) a fur spot (`where`
     // empty: the first free place it fits), and taking it off again (`item` picks a piece at a fur spot). Not in a
     // fight. How many of an item one wears (or holds), and letting go of what the purse no longer has.
@@ -1464,6 +1470,10 @@ class World
     };
     const ThiefTally& thiefTally() const { return thiefTally_; }
     const Warrant* warrantFor(const std::string& person) const;
+    // A warrant made by a story, and one lifted (doc 85, Phase 9: warrant.issue, warrant.clear): a town's watch wants the
+    // person for `words` with a fine, as for a crime (its guards stop them); or no longer, what was owed forgiven.
+    Result storyWarrant(const std::string& person, const std::string& town, std::int64_t fine, const std::string& words);
+    Result liftWarrant(const std::string& person, const std::string& town);
     const Custody* custodyOf(const std::string& person) const;
     std::int64_t owedBy(const Warrant& w) const;             // Restitution and the fine, in pennies.
     bool guardOnDuty(const std::string& id) const;

@@ -886,7 +886,7 @@ std::string Game::dmActRefused(const std::string& kind, const std::string& targe
     if (!payload.isObject())
         payload = json::Value::object();
     if ((kind == "character.resurrect" || kind == "deed.award" || kind == "story.practice" || kind == "storyline.give" || kind == "mentor.restore" ||
-         kind == "item.give" || (kind == "standing.adjust" && payload.number("points", 0) > 0)) &&
+         kind == "item.give" || kind == "warrant.clear" || (kind == "standing.adjust" && payload.number("points", 0) > 0)) &&
         hostsOwnWolf(target))
         return refused;
     if (kind == "character.grant" && payload.number("coins", 0) > 0 && hostsOwnWolf(target))

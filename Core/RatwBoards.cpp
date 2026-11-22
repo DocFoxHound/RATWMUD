@@ -379,7 +379,7 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     const auto onBoard = documents_.onBoard(board);
     // (The carters' wagon notices have pins of their own: they never take one a player needs.)
     if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) {
-            return d->author != CartersSign && d->author != WharfSign && d->author != StagedAuthor;
+            return d->author != CartersSign && d->author != WharfSign && d->author != StagedAuthor && d->author != "story";
         }) >= PerBoard)
         return result = {false, "Every pin is taken. Try tomorrow.", {}}, true;
     if (std::count_if(onBoard.begin(), onBoard.end(), [&](const auto* d) { return d->author == me; }) >= PerWriter)

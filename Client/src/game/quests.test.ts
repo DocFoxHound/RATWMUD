@@ -1,7 +1,7 @@
 // A world story's quests in the journal (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 6).
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {questButtons, questLines, questMessage, questStatus, trackerLines} from './quests.ts';
+import {noteLines, questButtons, questLines, questMessage, questStatus, storyPings, trackerLines} from './quests.ts';
 
 const axle = {
     id: 'axle', title: 'An axle for the carter', summary: 'The carter at the ford is stuck.', scope: 'player', status: 'active',
@@ -53,4 +53,19 @@ test('trackers', () => {
     assert.deepEqual(trackerLines({trackers: [{label: 'Ropes delivered', value: 3}, {label: 'Gate open', value: false}, {label: 'Finder', value: 'Ash'}]}),
         ['Ropes delivered: 3', 'Gate open: no', 'Finder: Ash']);
     assert.deepEqual(trackerLines({}), []);
+});
+
+test('doc 85, Phase 9: a world story\'s notes in the journal and its markers on the maps', () => {
+    const journal = [
+        {id: 'world-a', title: 'The long night', notes: [{text: 'The tracks lead east.', day: 3}], pings: [
+            {cell: 'town', x: 4, y: 5, label: 'The tracks', wx: 104.5, wy: 205.5, place: 'Greyfen Crossing'},
+            {cell: 'shop', x: 2, y: 2, label: 'Upstairs', wx: 12, wy: 12, inside: true, place: 'Tallow & Twine'},
+            {cell: 'nowhere', label: 'Unplaced'}]},
+        {id: 'world-b', title: 'Quiet'}];
+    assert.deepEqual(noteLines(journal[0]), ['✎ The tracks lead east.']);
+    assert.deepEqual(noteLines(journal[1]), []);
+    assert.deepEqual(storyPings(journal), [
+        {wx: 104.5, wy: 205.5, label: 'The tracks', place: 'Greyfen Crossing', inside: false, story: 'The long night'},
+        {wx: 12, wy: 12, label: 'Upstairs', place: 'Tallow & Twine', inside: true, story: 'The long night'}]);
+    assert.deepEqual(storyPings(undefined), []);
 });

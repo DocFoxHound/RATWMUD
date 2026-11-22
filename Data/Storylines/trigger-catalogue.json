@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase).",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase). Phase 9: more world effects (doc 85, 3.5): telling the wolves, the journal, map markers, trackers, taking items, warrants, strangers, mantles, holds, followers, doors, the ground, boards, the weather (never the calendar), market events, prices, projects, deeds, personal quests and stopping a scene. \"actsOnWolves\" needs \"may act on players' wolves\" on a hosted world, \"needsBuilder\" (factions: relations and standing) a builder or the owner, as approving it does.",
  "groups": [
   {
    "id": "story",
@@ -94,6 +94,10 @@
    "label": "Flow"
   },
   {
+   "id": "tell",
+   "label": "Telling the wolves"
+  },
+  {
    "id": "residents",
    "label": "Residents"
   },
@@ -158,7 +162,9 @@
   "objective": "An objective of the quest named beside it.",
   "purse": "Who pays: a town's treasury (town:<town>), its works, watch or church (town:<town>:works), a business's till (till:<id>) or a Chapter's treasury (chapter:<id>). Never minted.",
   "offer": "A story choice's name: what a dialogue choice event comes back with.",
-  "door": "A door of the world (its id)."
+  "door": "A door of the world (its id: link_<link>_a or _b; a story locks both sides).",
+  "mantle": "A mantle (doc 84): a part a resident takes up, with its own lines.",
+  "visitor": "A temporary resident's id, given by the story (letters, digits, - and _)."
  },
  "trigger": {
   "once": {
@@ -9959,7 +9965,7 @@
    "group": "wolves",
    "title": "Change a wolf's standing",
    "sentence": "Change {player}'s standing with {faction} by {points}: {reason}",
-   "help": "A few points of standing with a faction, for a reason the wolf is told.",
+   "help": "A few points of standing with a faction, for a reason the wolf is told. A builder or the owner must approve it on a hosted world.",
    "params": [
     {
      "key": "player",
@@ -9984,6 +9990,862 @@
      "type": "text",
      "label": "the reason",
      "max": 80
+    }
+   ],
+   "needsBuilder": true
+  },
+  {
+   "id": "story.tell",
+   "group": "tell",
+   "title": "Tell the wolves",
+   "sentence": "Tell {to} {player} {region}: {text} {from}",
+   "help": "A line to one wolf, a wolf's party, the story's wolves, the wolves standing in a region, or everyone in the world: a banner and a line in their log. A wolf of the story who is away is told when back; nobody away refuses it.",
+   "params": [
+    {
+     "key": "to",
+     "type": "choice",
+     "label": "who is told",
+     "values": [
+      "participants",
+      "wolf",
+      "party",
+      "region",
+      "world"
+     ],
+     "words": {
+      "wolf": "the wolf",
+      "party": "the party of",
+      "participants": "the story's wolves",
+      "region": "the wolves inside",
+      "world": "everyone in the world"
+     }
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the words",
+     "max": 300
+    },
+    {
+     "key": "from",
+     "type": "resident",
+     "label": "said by (a resident)",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    }
+   ]
+  },
+  {
+   "id": "journal.note",
+   "group": "tell",
+   "title": "Add a note to the journal",
+   "sentence": "Note in the journal of {player}: {text}",
+   "help": "A line under the story in the wolf's journal (or every wolf's of the story), kept with the story: the newest 12.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "words": {
+      "": "every wolf of the story"
+     }
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the note",
+     "max": 200
+    }
+   ]
+  },
+  {
+   "id": "story.ping",
+   "group": "tell",
+   "title": "Mark a place on the map",
+   "sentence": "Mark {cell,x,y} on the maps of {player} as {label} for {minutes} minutes",
+   "help": "A marker on the minimap and the World Map of the story's wolves (or one wolf's) for a while. Undone when the story ends.",
+   "params": [
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile"
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf",
+     "optional": true,
+     "words": {
+      "": "the story's wolves"
+     }
+    },
+    {
+     "key": "label",
+     "type": "text",
+     "label": "the label",
+     "max": 40
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 240
+    }
+   ]
+  },
+  {
+   "id": "story.tracker",
+   "group": "tell",
+   "title": "Show or hide a tracker",
+   "sentence": "{shown} the tracker {var}",
+   "help": "A shown variable (its \"shown as\" label) among the story's trackers in the wolves' journal: shown again, or hidden for now.",
+   "params": [
+    {
+     "key": "shown",
+     "type": "bool",
+     "label": "show or hide",
+     "words": {
+      "true": "Show",
+      "false": "Hide"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the variable",
+     "of": [
+      "number",
+      "switch"
+     ]
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "item.take",
+   "group": "wolves",
+   "title": "Take an item from a wolf",
+   "sentence": "Take {quantity} {item} from {player}",
+   "help": "Out of one wolf's pack (gone, not paid for). Refused when they carry fewer. Acts on players' wolves: needs \"may act on players' wolves\" on a hosted world.",
+   "actsOnWolves": true,
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "item",
+     "type": "item",
+     "label": "the item"
+    },
+    {
+     "key": "quantity",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 20
+    }
+   ]
+  },
+  {
+   "id": "warrant.issue",
+   "group": "wolves",
+   "title": "Mark a wolf wanted",
+   "sentence": "{player} is wanted by the watch of {town}, fined {fine}p: {reason}",
+   "help": "A warrant from a town's watch, as for a crime: its guards stop the wolf for the fine or the gaol. Acts on players' wolves: needs \"may act on players' wolves\" on a hosted world.",
+   "actsOnWolves": true,
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "fine",
+     "type": "int",
+     "label": "the fine (pennies)",
+     "min": 0,
+     "max": 200
+    },
+    {
+     "key": "reason",
+     "type": "text",
+     "label": "what for",
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "warrant.clear",
+   "group": "wolves",
+   "title": "Lift a warrant",
+   "sentence": "Lift the warrant on {player} in {town}",
+   "help": "The town's watch no longer wants the wolf (what was owed is forgiven). Refused when there is no warrant.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    }
+   ]
+  },
+  {
+   "id": "visitor.add",
+   "group": "residents",
+   "title": "Bring a stranger",
+   "sentence": "{name} ({visitor}) comes to {cell,x,y} for {minutes} minutes, looking like {like} {description}",
+   "help": "A temporary resident appears at the tile for a while, then goes (the spawn). Their id is the story's own: Send away names it. Sent away when the story ends.",
+   "params": [
+    {
+     "key": "visitor",
+     "type": "visitor",
+     "label": "their id"
+    },
+    {
+     "key": "name",
+     "type": "text",
+     "label": "their name",
+     "max": 60
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile"
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "minutes",
+     "type": "int",
+     "label": "minutes",
+     "min": 1,
+     "max": 1440
+    },
+    {
+     "key": "like",
+     "type": "resident",
+     "label": "looking like (a resident)",
+     "optional": true,
+     "words": {
+      "": "a stranger"
+     }
+    },
+    {
+     "key": "description",
+     "type": "text",
+     "label": "how they look",
+     "max": 200,
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    }
+   ]
+  },
+  {
+   "id": "visitor.leave",
+   "group": "residents",
+   "title": "Send a stranger away",
+   "sentence": "Send {visitor} away",
+   "help": "A temporary resident the story brought goes.",
+   "params": [
+    {
+     "key": "visitor",
+     "type": "visitor",
+     "label": "their id"
+    }
+   ]
+  },
+  {
+   "id": "mantle.assign",
+   "group": "residents",
+   "title": "Bind a mantle",
+   "sentence": "{npc} takes up the mantle {mantle}",
+   "help": "A mantle (doc 84: a part with its own lines in the dialogue window) bound to the resident. Released when the story ends.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "mantle",
+     "type": "mantle",
+     "label": "the mantle"
+    }
+   ]
+  },
+  {
+   "id": "mantle.release",
+   "group": "residents",
+   "title": "Release a mantle",
+   "sentence": "{npc} lays down their mantle",
+   "help": "The resident's mantle is released.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.kill",
+   "group": "residents",
+   "title": "A resident dies",
+   "sentence": "{npc} dies",
+   "help": "The resident dies where they stand (Bring back undoes it). Never a protected resident.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.hold",
+   "group": "residents",
+   "title": "Hold a resident",
+   "sentence": "Hold {npc} where they are",
+   "help": "Off their schedule: they stay where they stand (or where a walk takes them) for the story, and no other story may direct them. Released by Release, or when the story ends.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.release",
+   "group": "residents",
+   "title": "Release a resident",
+   "sentence": "Release {npc}",
+   "help": "A resident the story held goes back to their day.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "npc.follow",
+   "group": "residents",
+   "title": "A resident follows a wolf",
+   "sentence": "{npc} travels with {player}",
+   "help": "The resident joins the wolf's party (or makes one with them) for the story's sake and follows. Refused when the party is full or the resident cannot leave. They go home when the story ends.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ]
+  },
+  {
+   "id": "npc.unfollow",
+   "group": "residents",
+   "title": "A resident stops following",
+   "sentence": "{npc} stops travelling with the party",
+   "help": "A resident the story sent along goes home.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    }
+   ]
+  },
+  {
+   "id": "door.lock",
+   "group": "places",
+   "title": "Lock a door",
+   "sentence": "Lock {door}",
+   "help": "Both sides of the door are locked (it closes first). Unlocked again when the story ends.",
+   "params": [
+    {
+     "key": "door",
+     "type": "door",
+     "label": "the door"
+    }
+   ]
+  },
+  {
+   "id": "door.unlock",
+   "group": "places",
+   "title": "Unlock a door",
+   "sentence": "Unlock {door}",
+   "help": "Both sides of a locked door are unlocked. Locked again when the story ends.",
+   "params": [
+    {
+     "key": "door",
+     "type": "door",
+     "label": "the door"
+    }
+   ]
+  },
+  {
+   "id": "door.open",
+   "group": "places",
+   "title": "Open a door",
+   "sentence": "Open {door}",
+   "help": "The door stands open (an unlocked one). It stays as a wolf would leave it.",
+   "params": [
+    {
+     "key": "door",
+     "type": "door",
+     "label": "the door"
+    }
+   ]
+  },
+  {
+   "id": "door.close",
+   "group": "places",
+   "title": "Close a door",
+   "sentence": "Close {door}",
+   "help": "The door is shut. It stays as a wolf would leave it.",
+   "params": [
+    {
+     "key": "door",
+     "type": "door",
+     "label": "the door"
+    }
+   ]
+  },
+  {
+   "id": "item.place",
+   "group": "places",
+   "title": "Leave an item on the ground",
+   "sentence": "Leave {quantity} {item} on the ground at {cell,x,y}",
+   "help": "Things to be found and picked up, by anyone. They lie there until taken (or the server restarts).",
+   "params": [
+    {
+     "key": "item",
+     "type": "item",
+     "label": "the item"
+    },
+    {
+     "key": "quantity",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 5
+    },
+    {
+     "key": "cell",
+     "type": "place",
+     "label": "the place",
+     "part": "tile"
+    },
+    {
+     "key": "x",
+     "type": "int",
+     "label": "tile x",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    },
+    {
+     "key": "y",
+     "type": "int",
+     "label": "tile y",
+     "min": 0,
+     "max": 4095,
+     "part": "tile"
+    }
+   ]
+  },
+  {
+   "id": "board.post",
+   "group": "places",
+   "title": "Pin a notice to a board",
+   "sentence": "Pin to the board of {town} for {days} days: {text}",
+   "help": "A notice on the town's board, signed with the story's title. Taken down when the story ends.",
+   "params": [
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the notice",
+     "max": 300
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days",
+     "min": 1,
+     "max": 28
+    }
+   ]
+  },
+  {
+   "id": "weather.set",
+   "group": "places",
+   "title": "Set the weather",
+   "sentence": "The weather in {place} {town} is {weather} for {hours} hours",
+   "help": "The weather of a place out of doors, or of every street of a town, for some hours of the world's clock, then the season's again. Harvests and the cold follow it. A story never changes the day or the hour. On a hosted world it needs what the same act by hand on LIVE needs (a Dungeon Master). Undone when the story ends.",
+   "params": [
+    {
+     "key": "place",
+     "type": "place",
+     "label": "the place",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "or a town's streets",
+     "optional": true,
+     "words": {
+      "": ""
+     }
+    },
+    {
+     "key": "weather",
+     "type": "choice",
+     "label": "the weather",
+     "values": [
+      "clear",
+      "overcast",
+      "rain",
+      "storm",
+      "fog",
+      "snow",
+      "sandstorm"
+     ]
+    },
+    {
+     "key": "hours",
+     "type": "int",
+     "label": "hours",
+     "min": 1,
+     "max": 72
+    }
+   ]
+  },
+  {
+   "id": "event.add",
+   "group": "economy",
+   "title": "Stage a market event",
+   "sentence": "{event} at {market} in {days} days at {hour}:00",
+   "help": "One of the market's events (a wedding, a fire, a glut) staged for today or within the next week, under the rules the scheduler keeps.",
+   "params": [
+    {
+     "key": "market",
+     "type": "market",
+     "label": "the market"
+    },
+    {
+     "key": "event",
+     "type": "choice",
+     "label": "the event",
+     "values": [
+      "house_wedding",
+      "works_fire",
+      "good_catch",
+      "orchard_blight",
+      "festival_buying",
+      "lame_ox",
+      "rich_cargo",
+      "lost_ship",
+      "mill_stopped",
+      "drovers_in",
+      "salt_short",
+      "brewers_glut"
+     ],
+     "words": {
+      "house_wedding": "the House wedding",
+      "works_fire": "the fire at the works",
+      "good_catch": "a good catch",
+      "orchard_blight": "blight in the orchards",
+      "festival_buying": "the festival trade",
+      "lame_ox": "the lame ox that held up the from cart",
+      "rich_cargo": "the ship's rich cargo",
+      "lost_ship": "the loss of the ship",
+      "mill_stopped": "the broken mill wheel",
+      "drovers_in": "the drovers and their herds",
+      "salt_short": "the flooded salt pans",
+      "brewers_glut": "the brewers' glut"
+     }
+    },
+    {
+     "key": "days",
+     "type": "int",
+     "label": "days from today",
+     "min": 0,
+     "max": 7
+    },
+    {
+     "key": "hour",
+     "type": "int",
+     "label": "the hour",
+     "min": 0,
+     "max": 23,
+     "optional": true,
+     "words": {
+      "": "9"
+     }
+    }
+   ]
+  },
+  {
+   "id": "event.cancel",
+   "group": "economy",
+   "title": "Call off a market event",
+   "sentence": "Call off {event} at {market}",
+   "help": "The next such event at the market still to come or on is called off.",
+   "params": [
+    {
+     "key": "market",
+     "type": "market",
+     "label": "the market"
+    },
+    {
+     "key": "event",
+     "type": "choice",
+     "label": "the event",
+     "values": [
+      "house_wedding",
+      "works_fire",
+      "good_catch",
+      "orchard_blight",
+      "festival_buying",
+      "lame_ox",
+      "rich_cargo",
+      "lost_ship",
+      "mill_stopped",
+      "drovers_in",
+      "salt_short",
+      "brewers_glut"
+     ],
+     "words": {
+      "house_wedding": "the House wedding",
+      "works_fire": "the fire at the works",
+      "good_catch": "a good catch",
+      "orchard_blight": "blight in the orchards",
+      "festival_buying": "the festival trade",
+      "lame_ox": "the lame ox that held up the from cart",
+      "rich_cargo": "the ship's rich cargo",
+      "lost_ship": "the loss of the ship",
+      "mill_stopped": "the broken mill wheel",
+      "drovers_in": "the drovers and their herds",
+      "salt_short": "the flooded salt pans",
+      "brewers_glut": "the brewers' glut"
+     }
+    }
+   ]
+  },
+  {
+   "id": "prices.reset",
+   "group": "economy",
+   "title": "Ease prices back",
+   "sentence": "Prices at {market} ease back to their usual: {words}",
+   "help": "A market's prices (or every market's) go back to their usual over a day.",
+   "params": [
+    {
+     "key": "market",
+     "type": "market",
+     "label": "the market",
+     "all": true,
+     "words": {
+      "all": "every market"
+     }
+    },
+    {
+     "key": "words",
+     "type": "text",
+     "label": "why, in a few words",
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "project.complete",
+   "group": "economy",
+   "title": "Finish a town project",
+   "sentence": "The {project} project in {town} is finished",
+   "help": "A town project of that kind open in the town (one the story posted, or any) is finished by hand.",
+   "params": [
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "project",
+     "type": "project",
+     "label": "the kind of project"
+    }
+   ]
+  },
+  {
+   "id": "project.cancel",
+   "group": "economy",
+   "title": "Call off a town project",
+   "sentence": "The {project} project in {town} is called off",
+   "help": "A town project of that kind open in the town is called off, its gifts given back.",
+   "params": [
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "project",
+     "type": "project",
+     "label": "the kind of project"
+    }
+   ]
+  },
+  {
+   "id": "deed.revoke",
+   "group": "wolves",
+   "title": "Revoke a deed",
+   "sentence": "Revoke {player}'s deed {detail}",
+   "help": "The wolf's newest deed awarded by a Dungeon Master or a story in these words is struck from their fame.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "detail",
+     "type": "text",
+     "label": "the deed's words",
+     "max": 200
+    }
+   ]
+  },
+  {
+   "id": "storyline.tick",
+   "group": "quests",
+   "title": "Tick a personal quest",
+   "sentence": "Tick objective {objective} of step {step} in {player}'s {template}",
+   "help": "An objective of the wolf's live personal quest from that DM template is done.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "template",
+     "type": "template",
+     "label": "the template"
+    },
+    {
+     "key": "step",
+     "type": "int",
+     "label": "the step (1 is the first)",
+     "min": 1,
+     "max": 10
+    },
+    {
+     "key": "objective",
+     "type": "int",
+     "label": "the objective (1 is the first)",
+     "min": 1,
+     "max": 8
+    }
+   ]
+  },
+  {
+   "id": "scene.stop",
+   "group": "scenes",
+   "title": "Stop a scene",
+   "sentence": "Stop the scene {scene}",
+   "help": "A scene of this story still playing ends now (scene failed follows, with its cue).",
+   "params": [
+    {
+     "key": "scene",
+     "type": "scene",
+     "label": "the scene",
+     "optional": true,
+     "words": {
+      "": "every scene of the story"
+     }
     }
    ]
   }

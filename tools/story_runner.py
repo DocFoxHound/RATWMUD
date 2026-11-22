@@ -95,6 +95,9 @@ def references(conn, world, program):
         'other': ('live.factions', 'id'),
         'place': ('world.areas', 'id'),
         'cell': ('world.areas', 'id'),
+        # (Doc 85, Phase 9: who says a story's line, whom a stranger looks like.)
+        'from': ('dm.story_residents', 'id'),
+        'like': ('dm.story_residents', 'id'),
     }
     refs = {
         (key, value)
@@ -188,6 +191,38 @@ def references(conn, world, program):
                     e['project'] in {k['id'] for k in json.loads((DATA / 'Town/projects.json').read_text())['kinds']},
                     'Unknown town project.',
                 )
+            phase9_references(conn, world, e)
+
+
+def phase9_references(conn, world, e):
+    """Doc 85, Phase 9: what the new world effects name, checked against the world at approval (as references() does)."""
+    kind = e['kind']
+    if kind in ('item.take', 'item.place'):
+        rules.require(e['item'] in {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']},
+                      'Unknown item: ' + e['item'])
+    if kind in ('story.ping', 'item.place', 'visitor.add'):
+        check_tile(conn, world, e['cell'], e['x'], e['y'])
+    if kind.startswith('door.'):
+        rules.require(conn.execute(
+            "SELECT 1 FROM world.links WHERE world_id=%s AND kind='door' AND %s IN ('link_'||id||'_a','link_'||id||'_b','link_'||id)",
+            (world, e['door'])).fetchone(), 'Unknown door in this world: ' + e['door'])
+    if kind == 'mantle.assign':
+        rules.require(conn.execute("SELECT to_regclass('live.mantles')").fetchone()[0] and conn.execute(
+            "SELECT 1 FROM live.mantles WHERE world_id=%s AND id=%s AND state<>'retired'", (world, e['mantle'])).fetchone(),
+            'Unknown mantle in this world: ' + e['mantle'])
+    if kind == 'visitor.add':
+        rules.require(not conn.execute(
+            'SELECT 1 FROM dm.story_residents WHERE world_id=%s AND id=%s UNION ALL SELECT 1 FROM game.characters WHERE world_id=%s AND key=%s',
+            (world, e['visitor'], world, e['visitor'])).fetchone(), 'A stranger needs an id nobody in the world has: ' + e['visitor'])
+    if kind in ('board.post', 'warrant.issue', 'warrant.clear', 'project.complete', 'project.cancel') or (kind == 'weather.set' and 'town' in e):
+        rules.require(conn.execute(
+            'SELECT 1 FROM world.cells WHERE world_id=%s AND region=%s UNION ALL SELECT 1 FROM world.interiors WHERE world_id=%s AND region=%s LIMIT 1',
+            (world, e['town'], world, e['town'])).fetchone(), 'Unknown town in this world: ' + e['town'])
+    if kind in ('project.complete', 'project.cancel'):
+        rules.require(e['project'] in {k['id'] for k in json.loads((DATA / 'Town/projects.json').read_text())['kinds']}, 'Unknown town project.')
+    if kind == 'storyline.tick':
+        rules.require(e['template'] in {t['id'] for t in json.loads((DATA / 'Storylines/templates.json').read_text())['templates']
+                                        if t.get('source') == 'dm'}, 'Unknown DM quest template.')
 
 
 def approve(conn, world, who, program, digest, for_run=None):
@@ -553,7 +588,49 @@ def order_of(conn, world, run, who, state, effect, phase):
         return 'factions.sync', faction, {'story': run, 'other': other}
     if kind == 'story.finish':
         return 'story.finish', run, {}
+    if kind in WORLD_ORDERS:
+        return world_order(effect, state['actor'], run, state['visits'], phase)
     return action(effect, state['actor'])
+
+
+# Doc 85, Phase 9: the new world effects, each the game order of its own name. The target is what it acts on (a wolf, a
+# resident, a door, a place, a town, a market, a stranger, or the run for the story's own lines), and every payload carries
+# the run and its visit: the game keeps what it must undo when the run ends (a lock, a hold, a stranger, a mantle, a notice,
+# the weather, a marker) with the story, and refuses an order of a visit that is over where a visit matters.
+WORLD_ORDERS = {
+    'story.tell': None, 'journal.note': None, 'story.ping': None, 'item.place': None, 'scene.stop': None,
+    'item.take': 'player', 'warrant.issue': 'player', 'warrant.clear': 'player', 'deed.revoke': 'player', 'storyline.tick': 'player',
+    'visitor.add': 'visitor', 'visitor.leave': 'visitor', 'mantle.assign': 'npc', 'mantle.release': 'npc', 'npc.kill': 'npc',
+    'npc.hold': 'npc', 'npc.release': 'npc', 'npc.follow': 'npc', 'npc.unfollow': 'npc',
+    'door.lock': 'door', 'door.unlock': 'door', 'door.open': 'door', 'door.close': 'door',
+    'board.post': 'town', 'weather.set': None, 'event.add': 'market', 'event.cancel': 'market', 'prices.reset': 'market',
+    'project.complete': 'town', 'project.cancel': 'town',
+}
+
+
+def world_order(effect, actor, run, visit, phase):
+    """A Phase 9 effect as its game order, (kind, target, payload)."""
+    kind, key = effect['kind'], WORLD_ORDERS[effect['kind']]
+    e = {k: (actor if v == '$actor' and k == 'player' else v) for k, v in effect.items() if k != 'kind'}
+    if kind == 'weather.set':
+        # (A place out of doors, or every street of a town: `streets` says which the target is.)
+        target = e.pop('place', None) or e.pop('town')
+        if 'town' in effect:
+            e['streets'] = True
+    elif key is None:
+        target = run
+    else:
+        target = e.pop(key)
+    payload = {**e, 'run': run, 'visit': visit}
+    if kind == 'story.tell' and 'region' in e:
+        payload['region'] = phase['_regions'][e['region']]
+    if kind in ('event.add', 'event.cancel'):
+        payload['kind'] = payload.pop('event')
+        if kind == 'event.add':
+            payload['inDays'] = payload.pop('days')
+    if kind in ('project.complete', 'project.cancel'):
+        payload['kind'] = payload.pop('project')
+    return kind, target, payload
 
 
 def submit_effect(conn, world, run, who, state, effect, phase):
@@ -2152,7 +2229,8 @@ URGENT = ('hold', 'resume', 'stop', 'order')
 VISITED = tuple(k for k in COMMAND_KINDS if k not in ('hold', 'resume', 'stop'))
 FLOW_WAIT_SECONDS = 60
 COMMAND_KEY = __import__('re').compile(r'[A-Za-z0-9_-]{8,64}\Z')
-WOLF_EFFECTS = frozenset({'character.injury', 'story.area.damage'})   # (studio.py's STORY_WOLF_KINDS: "may act on wolves".)
+WOLF_EFFECTS = rules.WOLF_EFFECTS        # (studio.py's STORY_WOLF_KINDS: "may act on wolves"; the catalogue's actsOnWolves.)
+BUILDER_EFFECTS = rules.BUILDER_EFFECTS  # (Factions: relations and standing, a builder or the owner; the catalogue's needsBuilder.)
 RELEASING = ('fire', 'enter', 'signal', 'timer', 'mission', 'objective', 'quest')   # (Controls that can deliver the program's effects.)
 
 
@@ -2412,7 +2490,9 @@ def _check_payload(program, kind, payload):
     elif kind == 'tell':
         text = payload.get('text')
         rules.require(rules.word(text, 300) and '\n' not in text and '\r' not in text, 'One line of up to 300 characters.')
-        rules.require(payload.get('to') in ('participants', 'wolf', 'region'), 'Tell the participants, a wolf or a region.')
+        # (Doc 85, Phase 9: a wolf's party, and everyone in the world, as the story's own story.tell may.)
+        rules.require(payload.get('to') in ('participants', 'wolf', 'party', 'region', 'world'),
+                      'Tell the participants, a wolf, a party, a region or the world.')
         if payload['to'] == 'region':
             rules.require(payload.get('region') in rules.region_index(program), 'This story has no such region.')
     elif kind == 'migrate':
@@ -2446,6 +2526,8 @@ def _may_release(program, kind, payload, may):
     kinds = {e['kind'] for ph in rules.phases_of(program) for e in rules.possible_effects(ph)}
     rules.require(may.get('relations', True) or 'faction.relation' not in kinds,
                   'This story changes faction relations: only a builder or the owner may move it on (5.7).')
+    rules.require(may.get('relations', True) or not (kinds & BUILDER_EFFECTS),
+                  'This story changes standing with a faction: only a builder or the owner may move it on (5.7).')
     rules.require(may.get('wolves', True) or not (kinds & WOLF_EFFECTS),
                   'This story can hurt players\' wolves: moving it on needs "may act on players\' wolves" (5.7).')
 
@@ -3002,13 +3084,14 @@ class Steer:
     def do_tell(self):
         to, text = self.payload['to'], self.payload['text']
         payload = {'visit': self.state['visits'], 'text': text, 'to': to, 'title': self.title}
-        if to == 'wolf':
+        if to in ('wolf', 'party'):
             payload['player'] = self.cohort(self.payload.get('player', ''))
         if to == 'region':
             payload['region'] = rules.region_index(self.program)[self.payload['region']]
         receipt = queue(self.conn, self.by, 'story.tell', self.run, payload)
         self.note_order(receipt)
-        whom = {'participants': 'the story\'s wolves', 'wolf': payload.get('player', ''), 'region': 'the wolves in ' + self.payload.get('region', '')}[to]
+        whom = {'participants': 'the story\'s wolves', 'wolf': payload.get('player', ''), 'party': 'the party of ' + payload.get('player', ''),
+                'region': 'the wolves in ' + self.payload.get('region', ''), 'world': 'everyone in the world'}[to]
         return f'Told {whom}: "{text}" (order #{receipt}).', {}, {'order': receipt}
 
     def do_scene(self):
@@ -4167,6 +4250,13 @@ def refs(conn, world):
     out['markets'] = named(report.get('markets', [])) or [{'id': m, 'name': m} for m in sorted(board.get('cell') or {})]
     out['areas'] = named(report.get('areas', []))
     out['ships'] = named(board.get('ships', []) or [])
+    # (Doc 85, Phase 9: the doors a story may lock, open or close, by one side's id (the game sets both), and the mantles a
+    # resident may take up.)
+    out['doors'] = [{'id': 'link_' + r[0] + '_a', 'name': r[1] or r[0], 'cell': r[2]} for r in conn.execute(
+        "SELECT id,name,a_area FROM world.links WHERE world_id=%s AND kind='door' ORDER BY name,id LIMIT %s", (world, REFS_LIMIT))]
+    out['mantles'] = [{'id': r[0], 'name': r[1] or r[0]} for r in conn.execute(
+        "SELECT id,title FROM live.mantles WHERE world_id=%s AND state<>'retired' ORDER BY title,id", (world,))] \
+        if conn.execute("SELECT to_regclass('live.mantles')").fetchone()[0] else []
     return out
 
 

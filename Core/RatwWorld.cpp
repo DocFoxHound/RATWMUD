@@ -1058,6 +1058,29 @@ const Door* World::door(const std::string& id) const
     return it == doors_.end() ? nullptr : &it->second;
 }
 
+Result World::setDoorState(const std::string& id, int open, int locked)
+{
+    const auto it = doors_.find(id);
+    if (it == doors_.end() || it->second.passage || it->second.boundary || id.rfind("stairs_", 0) == 0)
+        return {false, "No such door.", id};
+    auto& d = it->second;
+    auto* other = !d.linkedDoor.empty() && doors_.count(d.linkedDoor) ? &doors_.at(d.linkedDoor) : nullptr;
+    if (open == 1 && (locked == 1 || (locked == -1 && d.locked)))
+        return {false, d.name + " is locked.", id};
+    for (auto* side : {&d, other})
+    {
+        if (!side)
+            continue;
+        if (locked != -1)
+            side->locked = locked == 1;
+        if (open != -1)
+            side->open = open == 1;
+        if (locked == 1)
+            side->open = false;
+    }
+    return {true, d.name + (d.locked ? " is locked." : d.open ? " stands open." : " is shut."), id};
+}
+
 namespace
 {
 constexpr double FreeStep = 0.5, RampStep = 1.0;

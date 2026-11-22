@@ -411,6 +411,7 @@ class Game
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
     const documents::Store& documents() const { return documents_; }   // (Letters and notices: for tests and tools.)
+    const party::Parties& parties() const { return parties_; }           // (Parties and who travels with them: for tests.)
     // A character's social standing is its account's (doc 49): the social XP of all the account's characters together
     // (a development identity's wolf, with no account, its own), and the level that makes on standing.json's curve.
     long long socialXp(const std::string& characterId) const;
@@ -2623,6 +2624,22 @@ class Game
     Result applyStoryArea(const std::string& kind, const std::string& run, const json::Value& payload);
     Result applyStoryReward(const std::string& kind, const std::string& wolf, const json::Value& payload);
     Result applyStoryTell(const std::string& run, const json::Value& payload);   // (Doc 85, Phase 2: "Tell the wolves".)
+    // Doc 85, Phase 9 (RatwGameStoryWorld.cpp): a world story's new world effects, each the order of its own name with the
+    // run and its visit in the payload; what the game undoes when the run ends kept with the story (Storyline::held).
+    static bool storyWorldOrder(const std::string& kind);
+    Result applyStoryWorld(const std::string& kind, const std::string& target, const json::Value& payload);
+    void endStoryWorld(storylines::Storyline& story);   // Undoes what the story's world effects left (a run that ends).
+    void tickStoryWorld(double dt);                     // Holds kept, locks kept, the weather and markers run out.
+    std::set<std::string> storiesHolding_;              // Live world stories with something held (refreshStoryWatch).
+    double storyWorldAccumulator_ = 0;
+    bool heldByAnotherStory(const std::string& npc, const std::string& run) const;
+    void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger, a mantle.)
+    // An order a story sends that the DM's own tools send too, with the story's way of naming what it acts on: a town's
+    // project of a kind, a wolf's deed in its words, a wolf's personal quest from a template ("" when none is found).
+    std::string storyProject(const std::string& town, const std::string& kind) const;
+    std::string storyDeed(const std::string& wolf, const std::string& detail) const;
+    std::string storyStoryline(const std::string& wolf, const std::string& templateId) const;
+    json::Value storyJournalExtras(const storylines::Storyline& s, const std::string& viewer) const;   // notes, pings
     // The journal's view of what was last recorded, to find what changed since.
     struct Shadow
     {

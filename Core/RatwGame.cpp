@@ -1460,6 +1460,8 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         if (const auto space = npc.find(' '); space != std::string::npos)
             mantle = npc.substr(space + 1), npc = npc.substr(0, space);
         outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
+        if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run"))
+            noteStoryHeld(payload, "mantles", npc);   // (Doc 85, Phase 9: released when the story ends.)
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {
@@ -1469,7 +1471,14 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         std::string problem;
         if (row.size() > 4 && row[4])
             json::parse(*row[4], payload, problem);
-        if (kind == "deed.revoke")
+        if (kind == "deed.revoke" && payload.isObject() && payload.has("detail"))
+        {
+            // (Doc 85, Phase 9: a story names the wolf and the deed's words; the newest such deed by a DM or a story.)
+            const auto id = storyDeed(target, payload.string("detail"));
+            outcome = !id.empty() && revokeDeed(id) ? Result{true, "Revoked the deed " + id + ".", target}
+                                                    : Result{false, "That wolf has no such deed standing.", target};
+        }
+        else if (kind == "deed.revoke")
             outcome = revokeDeed(target) ? Result{true, "Revoked.", target} : Result{false, "No such deed.", target};
         else if (const auto* doer = world_.entity(target); !doer || doer->npc)
             outcome = {false, "Award deeds to player characters.", target};
@@ -1600,6 +1609,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             if (finished && !story->steps.empty() && !story->steps.back().objectives.empty())
                 story->steps.back().objectives.front().doneAt = now();
             if (story->live()) releaseSceneResidents(*story);
+            endStoryWorld(*story);                  // (Doc 85, Phase 9: its locks, holds, strangers, notices, weather undone.)
             story->sceneOrders.clear();
             story->cinematics.clear();
             storylines_.end(target, finished ? "done" : "abandoned", now());
@@ -1663,8 +1673,12 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = giveStoryline(target, payload.string("template"), payload.object("cast"), "dm", "");
         else
         {
-            const auto ticked = storylines_.tick(target, std::size_t(payload.number("step")), std::size_t(payload.number("objective")), "dm",
-                                                 now(), true);
+            // (Doc 85, Phase 9: a story names the wolf, the template, and the step and objective counted from 1.)
+            const bool byTemplate = payload.isObject() && payload.has("template");
+            const auto id = byTemplate ? storyStoryline(target, payload.string("template")) : target;
+            const auto step = std::size_t(std::max(0., payload.number("step") - (byTemplate ? 1 : 0)));
+            const auto objective = std::size_t(std::max(0., payload.number("objective") - (byTemplate ? 1 : 0)));
+            const auto ticked = id.empty() ? std::vector<storylines::Progress>{} : storylines_.tick(id, step, objective, "dm", now(), true);
             storylineProgress(ticked);
             outcome = ticked.empty() ? Result{false, "Nothing to tick there.", target} : Result{true, "Ticked.", target};
         }
@@ -1696,6 +1710,13 @@ Result Game::applyDmAct(std::vector<PgValue> row)
                   : kind == "project.cancel"   ? cancelProject(target, "cancelled by the Dungeon Master")
                   : kind == "project.complete" ? completeProject(target)
                                                : removeProject(target);
+        if (kind != "project.post" && payload.isObject() && payload.has("kind"))
+        {
+            // (Doc 85, Phase 9: a story names the town and the kind: the open project of that kind there.)
+            const auto id = storyProject(target, payload.string("kind"));
+            outcome = id.empty() ? Result{false, "No such project open in " + target + ".", target}
+                      : kind == "project.cancel" ? cancelProject(id, "called off by a story") : completeProject(id);
+        }
     }
     else if (kind == "nickname.drop" || kind == "nickname.restore")
     {
@@ -1809,10 +1830,20 @@ Result Game::applyDmAct(std::vector<PgValue> row)
                 if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
                     system(c, "Word goes round: " + outcome.message);
     }
+    else if (kind == "npc.kill" && row.size() > 4 && row[4] && row[4]->find("\"run\"") != std::string::npos && isProtected(target))
+        outcome = {false, "A story never kills a protected resident.", target};   // (Doc 85, Phase 9.)
     else if (kind == "npc.kill" || kind == "npc.revive")
     {
         const auto* npc = world_.entity(target);
         outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
+    }
+    else if (storyWorldOrder(kind))
+    {
+        // Doc 85, Phase 9: a world story's new world effects (RatwGameStoryWorld.cpp).
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem) && payload.isObject() ? applyStoryWorld(kind, target, payload)
+                                                                                       : Result{false, "Invalid story effect.", target};
     }
     else if (kind == "story.tell")
     {
@@ -2113,6 +2144,8 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = world_.addVisitor(target, payload.string("name"), description, like ? like->appearance : Appearance{},
                                         payload.string("cell"), wire::number(payload, "x", -1), wire::number(payload, "y", -1),
                                         wire::number(payload, "minutes", 0));
+            if (outcome.ok && payload.has("run"))
+                noteStoryHeld(payload, "visitors", target);   // (Doc 85, Phase 9: sent away when the story ends.)
         }
     }
     return outcome;
@@ -3530,6 +3563,7 @@ void Game::tick(double dt)
                 if (cinematicLocks(e->id)) world_.holdForScene(e->id);
             }
         tickStoryScenes(dt);
+        tickStoryWorld(dt);
         world_.tick(dt);
     }
     if (!storiesWatchingRegions_.empty())

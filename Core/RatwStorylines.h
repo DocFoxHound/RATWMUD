@@ -105,6 +105,11 @@ struct Storyline
     // What the runner asked the game to tell this world story (doc 85, Phase 8: its watch list, with each story.phase): the
     // sections of the world's facts and what of each, and the watched events ({} for none).
     json::Value watch;
+    // What a world story did to the world that the game undoes when it ends (doc 85, Phase 9): `doors` (each door it
+    // locked or unlocked, with the lock it had), `npcs` (residents it holds), `follow` (residents it sent along with a
+    // wolf), `visitors`, `mantles`, `notices` (its notices' ids), `weather` (each place: until when, and what it was),
+    // and what it shows: `pings` (its markers on the maps), `notes` (its lines in the journal). {} for none.
+    json::Value held;
     const json::Value* questView(const std::string& wolf, const std::string& quest) const;
     std::size_t current() const;                    // The first step not done (steps.size() when all are).
     bool takesPart(const std::string& who) const;

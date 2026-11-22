@@ -323,6 +323,28 @@ def validate_effect(effect, pid, regions=None, scenes=None):
             effect['faction'] != effect['other'],
             'A faction needs a different counterpart.',
         )
+    # (Doc 85, Phase 9: the world effects whose parts go together.)
+    if kind == 'story.tell':
+        to = effect['to']
+        require(('player' in effect) == (to in ('wolf', 'party')), f'{pid}: tell a wolf or a party names the wolf, and only then.')
+        require(('region' in effect) == (to == 'region'), f'{pid}: tell the wolves in a region names the region, and only then.')
+        require(effect['text'].strip() == effect['text'] and '\n' not in effect['text'], f'{pid}: a story message is one line.')
+    if kind == 'weather.set':
+        require(('place' in effect) != ('town' in effect), f'{pid}: set the weather of one place or one town\'s streets.')
+    if kind in ('visitor.add', 'visitor.leave'):
+        require(re.fullmatch(r'[a-z0-9][a-z0-9_-]{2,39}', effect['visitor']) is not None,
+                f'{pid}: a stranger\'s id is 3 to 40 small letters, digits, - and _.')
+
+
+# Doc 85, Phase 9: which effects a hosted Dungeon Master needs more than the dm rank for (5.7), from the catalogue: those
+# acting on players' wolves need the owner or "may act on players' wolves"; those on factions (relations, a wolf's standing)
+# a builder or the owner, as approving them does. The rest need what the same act by hand on LIVE needs: a Dungeon Master. studio.py, story_runner.py and dungeon_master.py read these.
+WOLF_EFFECTS = frozenset(e['id'] for e in CATALOGUE['effects'] if e.get('actsOnWolves'))
+BUILDER_EFFECTS = frozenset(e['id'] for e in CATALOGUE['effects'] if e.get('needsBuilder'))
+# Effects whose world change the game undoes when the run ends (a door's lock, a hold, a stranger, a mantle, a notice,
+# the weather, a marker): the catalogue's help says so.
+UNDONE_AT_END = ('door.lock', 'door.unlock', 'npc.hold', 'npc.follow', 'visitor.add', 'mantle.assign', 'board.post', 'weather.set',
+                 'story.ping')
 
 
 def region_index(program):

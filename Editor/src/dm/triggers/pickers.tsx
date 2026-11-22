@@ -5,7 +5,7 @@
 import {useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, type CatEvent, type CatItem, type Operand, type Param,
+import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, visitorsOf, type CatEvent, type CatItem, type Operand, type Param,
     type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 
@@ -209,6 +209,8 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'counter') body = <NamePicker names={[...new Set(countersOf(program).map(c => c.key))]} value={slot.value} pick={one} noun="counter"/>;
     else if (type === 'cue') body = <NamePicker names={cues ?? []} value={slot.value} pick={one} noun="cue"/>;
     else if (type === 'offer') body = <NamePicker names={offersOf(program)} value={slot.value} pick={one} noun="story choice"/>;
+    // (Phase 9: a stranger the story brings, by the id it gives them.)
+    else if (type === 'visitor') body = <NamePicker names={visitorsOf(program)} value={slot.value} pick={one} noun="stranger's id"/>;
     else if (type === 'objective') {
         const q = (program.quests ?? []).find(x => x.id === slot.param?.quest);
         body = q ? <SearchList options={q.objectives.map(o => ({id: o.id, name: o.label, hint: (o.optional ? 'optional' : '') + (o.hidden ? ' hidden' : '')}))}
@@ -222,12 +224,13 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     } else {
         const extra = type === 'wolf' ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === '$actor'} onClick={() => one('$actor')}>the acting wolf</button>
             {isV2(program) && <button type="button" aria-pressed={slot.value === '$each'} onClick={() => one('$each')} title="Inside For each">the looped wolf</button>}
-            {slot.param?.world && <button type="button" aria-pressed={slot.value === 'world'} onClick={() => one('world')}>everyone (a public scene)</button>}</div> : undefined;
+            {slot.param?.world && <button type="button" aria-pressed={slot.value === 'world'} onClick={() => one('world')}>everyone (a public scene)</button>}</div>
+            : slot.param?.all ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === 'all'} onClick={() => one('all')}>every market</button></div> : undefined;
         const here = slot.param?.optional ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined} onClick={() => one(undefined)}>{slot.param.words?.[''] ?? 'none'}</button></div>
             // (Doc 85, Phase 8: a place that may be where the acting wolf is: "the weather where the acting wolf is".)
             : slot.param?.or?.length ? <div className="wb-chips">{slot.param.or.map(v => <button key={v} type="button" aria-pressed={(slot.value ?? slot.param?.default) === v}
                 onClick={() => one(v === slot.param?.default ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div> : undefined;
-        body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra ?? here}/>
+        body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra && here ? <>{extra}{here}</> : extra ?? here}/>
             {!['phase', 'region', 'scene', 'mission', 'quest'].includes(type) && <EnterId value={slot.value} pick={one}
                 label={type === 'purse' ? 'Or a purse: town:<town>, town:<town>:works, till:<id>, chapter:<id>' : undefined}/>}</>;
     }

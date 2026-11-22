@@ -992,6 +992,9 @@ class Society
     // Goods made (not bought: a grant, a player's work): only goods, never money.
     bool canCreate(const std::string& account, const std::string& item, int quantity) const;
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
+    // Goods taken out of the world (doc 85, Phase 9: a story's item.take): `quantity` of the item, any kind of it (the
+    // plainest first), or nothing when the account holds fewer. Never money.
+    bool destroy(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
     // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals in
     // swords.

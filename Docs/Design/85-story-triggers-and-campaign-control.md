@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b, 6, 7 and 8 are built (section 6, "Phase 1 as built" to "Phase 8 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b, 6, 7, 8 and 9 are built (section 6, "Phase 1 as built" to "Phase 9 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -19,8 +19,9 @@ Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes
 workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
 (from `r3-camp-p4`), and Phase 5b (moving a running campaign onto a new version), on branch `r3-camp-p5b` (from `r3-camp-p5`),
 which closes Slice B, Phase 6 (quests and a living audience), on branch `r3-camp-p6` (from `r3-camp-p5b`), and Phase 7 (batched
-effects and a faster runner), on branch `r3-camp-p7` (from `r3-camp-p6`), and Phase 8 (world facts and new events), on branch `r3-camp-p8`
-(from `r3-camp-p7`): see "Phase 1 as built" to "Phase 8 as built" in section 6.
+effects and a faster runner), on branch `r3-camp-p7` (from `r3-camp-p6`), Phase 8 (world facts and new events), on branch `r3-camp-p8`
+(from `r3-camp-p7`), and Phase 9 (new world effects), on branch `r3-camp-p9` (from `r3-camp-p8`): see "Phase 1 as built" to "Phase 9 as
+built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -2209,6 +2210,92 @@ it fast. Known problems 1, 2, 3 and 11 are gone, 6 is the author's choice now, a
   `door.unlock`, `weather.set`, `standing.adjust`, `npc.hold`, `npc.release`, `npc.follow`, `board.post`,
   `warrant.issue`, `warrant.clear`, `scene.stop`. Each undone when the run ends where the table in 3.5 says so.
 - Catalogue entries, sentences and pickers for each; hosted checks for the ones that act on wolves.
+
+**Phase 9 as built** (2026-11-22, branch `r3-camp-p9`, on `r3-camp-p8`). No migration; 31 new effects (30 game orders, one the story's
+own), 17 of them orders new to the game; the catalogue's permission marks drive every hosted check.
+- **The effects** (`Data/Storylines/trigger-catalogue.json`, 70 effects now; each with typed parameters, a sentence and help; a new action
+  group "Telling the wolves"; types `door`, `mantle`, `visitor`). *Telling the wolves:* `story.tell` (to the story's wolves, one wolf, a
+  wolf's party, the wolves in a region, or everyone in the world; optionally said by a resident, named as each wolf knows them),
+  `journal.note` (a line under the story in one wolf's journal or every wolf's of the story; the newest 12 kept), `story.ping` (a marker on
+  the minimap and the World Map of the story's wolves or one wolf, for 1 to 240 minutes, labelled), `story.tracker` (the story's own: hide or
+  show a shown variable among the journal's trackers, `state.hiddenTrackers`). *Players' wolves:* `item.take` (out of the pack, any kind of
+  the item, plainest first; refused when they carry fewer), `warrant.issue` (a town's watch wants the wolf, with a fine, as for a crime: its
+  guards stop them), `warrant.clear`, `deed.revoke` (the wolf's newest deed in those words awarded by a DM or a story). *Residents:*
+  `visitor.add` / `visitor.leave` (a stranger with the story's own id, looking like a resident, for up to a day: the spawn), `mantle.assign`
+  / `mantle.release`, `npc.kill` (never a protected resident), `npc.hold` / `npc.release` (off their day where they stand, and no other
+  story may direct or hold them: doc 34's holds, risk 8), `npc.follow` / `npc.unfollow` (the resident joins the wolf's party for the story's
+  sake, reason `story`; their work and its hours give way, the party's other rules stand). *Places:* `door.lock`, `door.unlock`, `door.open`,
+  `door.close` (both sides; locking shuts it; opening a locked one is refused), `item.place` (1 to 5 on the ground, made into the ground's
+  account, picked up as a fight's ground is), `board.post` (a notice on a town's board signed with the story's title, never taking a pin a
+  player needs), `weather.set` (a place out of doors, or every street of a town, for 1 to 72 hours of the world's clock, then the season's or
+  what it was; **never the calendar or the hour**: no effect touches them, the catalogue test says so). *Towns and markets:* `event.add`
+  (one of `Data/Economy/market.json`'s events, today or up to 7 days on, `inDays`), `event.cancel` (the market's soonest such event),
+  `prices.reset` (a market or `all`), `project.complete` / `project.cancel` (the open project of that kind in the town). *Quests:*
+  `storyline.tick` (an objective of the wolf's live personal quest from that DM template, counted from 1). *Scenes:* `scene.stop` (one
+  scene of the story still playing, or all; `scene failed` with its cue follows).
+- **Coins**: unchanged from Phase 6 (`character.grant` names a purse and the game pays from it or refuses: never minted). No new effect makes
+  money; `item.take` takes goods out of the world (`Society::destroy`), `item.place` and `item.give` make goods only.
+- **The checks** (`story_program.validate_effect`, so `problems` and the workbench's red slots too): each parameter by its catalogue entry,
+  and what goes together: a tell to a wolf or a party names the wolf and only then, to a region names the region; one line; the weather of
+  one place or one town; a stranger's id (3 to 40 small letters, digits, - and _); a tracker is a declared number or switch with "shown as".
+  **The world's references at approval** (`story_runner.phase9_references`): items, tiles of markers, strangers and the ground, doors
+  (`world.links`, `link_<id>_a|b`), mantles not retired, towns, project kinds, DM templates, the resident who says a line and the one a
+  stranger looks like; a stranger's id that someone in the world already has is refused.
+- **The orders** (`story_runner.world_order`, `WORLD_ORDERS`): each effect is the order of its own name, the target what it acts on (a wolf,
+  a resident, a door, a place or a town, a market, the stranger's id, or the run for the story's own lines), the payload the rest with `run`
+  and `visit`; in a turn's `story.effects` batch with `ifRefused` as any game effect (Phase 7). The console's **Tell the wolves…** gains a
+  wolf's party and everyone in the world.
+- **The game** (`Core/RatwGameStoryWorld.cpp`, new; `Game::applyStoryWorld`, through `applyDmAct` and so through batches, crash receipts and
+  the community world's guards: `warrant.clear` on the host's own wolf is a reward, refused with cheats off). The orders the game had
+  (`visitor.*`, `mantle.*`, `npc.kill`, `event.*`, `prices.reset`, `project.*`, `deed.revoke`, `storyline.tick`) take the story's way of
+  naming what they act on beside their own. **What the game undoes when the run ends** (`story.stop`, `story.finish`, an ending phase:
+  `endStoryWorld`) is kept with the story (`Storyline::held`, saved with it): each door's lock as it was before the story first touched it,
+  the residents held, those sent along, the strangers, the mantles bound, the notices, the weather (and its marker), the maps' markers; its
+  journal notes stay. `tickStoryWorld` (twice a second, only while a live story holds something: `storiesHolding_`) keeps holds and locks
+  (a restart or a cell loaded again gives a door the lock its map has), and lets the weather and the markers run out. The journal view
+  carries `notes` and `pings` (each marker where it goes in the realm's tiles; indoors, at the street door, as a party mate is placed).
+- **Who may** (5.7; the catalogue's marks): `actsOnWolves` (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) needs the
+  owner or "may act on players' wolves" (studio's approval check, now with quests' rewards read too; and the console's controls that
+  could release one); `needsBuilder` (`faction.relation` and `standing.adjust`: factions) needs a builder or the owner (the approval route
+  and the console). **Decided (mine):** the economy and weather effects need what the same act needs by hand on LIVE, a Dungeon Master
+  (`times.nudge`, `event.add`, `prices.reset`… are `dm` in `ACTIONS`); the user may tighten it by marking them `needsBuilder`.
+- **The client**: the journal shows the story's notes (✎); the minimap and the World Map draw its markers as gold diamonds, held at the edge
+  with an arrow when off the map, labelled on the World Map, said on hover.
+- **The Editor**: the 31 effects in sentences from the catalogue, the Add an action list's new group, pickers for doors and mantles (from
+  `refs`: `doors`, `mantles`), strangers (the story's own ids), "every market"; a new effect starts sensibly (a tracker on the first shown
+  variable, a tell to the story's wolves, a stranger `stranger-N`, the weather's place to pick).
+- **Tests:** `Tests/story_world_tests.cpp` (ctest `story_world_behaviors`, 82 checks: every new order applied by the game on the town strip
+  with an inn door and a locked gaol door, and its refusals; a tell to a party with a resident's words and to the world; notes and markers in
+  the journal views; an item taken; a warrant made and lifted; a resident held, another story refused him, released; sent along and home;
+  a protected one not killed; a stranger; doors locked, opened refused, unlocked, opened, closed; the ground; a board; the weather running
+  out on the world's clock; a deed by its words; a scene stopped; a batch with a refusal skipped; held saved with the story; **the story's
+  end undoing it all**, the gaol door locked again as it was); `tools/test_story_effects.py` (the catalogue, the checks and bounds, each
+  order, the tracker, the hosted marks; in a throwaway database: the world's references at approval, a published story's batch, the
+  console's tell to a party and the world; the approval route on a hosted world: standing needs a builder, the weather and a notice do not);
+  `test_story_catalogue.py` (70 effects); the Editor's `workbench.test.ts` (every new effect the workbench adds passes the checks and reads
+  as words); the client's `quests.test.ts` (notes, markers). The P1-P8 suites, `test_studio`, `test_dungeon_master`, the Editor's and
+  client's tests, type checks and the render smoke pass; ctest passes but for the two timing tests (`talk_scorecard_quick`, `talk_bench`),
+  which fail the same with Phase 8's build on this machine under load.
+- **Seen**, on a throwaway Greyfen database with a real game server (the built client served), the real runner ticking every second and
+  the DM tool's handler: `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p9/`. **The game page itself** (the browser signed in as Fern:
+  P8's harness left her Node client connected to the same wolf; it is closed first now): the bells told to the world, snow on the streets,
+  the journal toast and the marker on the minimap (01); the journal's note (02); "Riders seen" on the World Map (03); in the barracks yard,
+  Linden's words to her party, Maple sent along, the Pale Rider and the rope (04); both markers and Maple on the World Map (05); the
+  journal's two notes and the tracker (06); Wren's door, locked by the story: "It is locked." (07). The console: the batches with each
+  order's outcome (10), the timeline (11), Send signal "curfew" and its dry run (12), the warrant and the door unlocked (13), Tell the
+  wolves to the world (14). The workbench: the yard trigger and the curfew trigger in sentences (20, 21), when it opens (23), Add an action's
+  "Telling the wolves" and door effects (22, 24).
+- **Not in Phase 9, on purpose:** town and House standing as effects (a town's regard is its residents' liking, a House is a Chapter: no
+  standing of its own to set; `standing.adjust` covers a faction); hiding and showing a resident (the game has no such state: `npc.move`,
+  `visitor.leave` and `npc.hold` cover it); music and ambience (the game has none: only the fight's sounds); `story.tell` as a letter;
+  `item.place` surviving a restart (the ground is not saved, as a fight's is not); `npc.brief`, `belief.plant`, camera beats (later, 3.5);
+  the console's own controls for these effects (an admin fires a trigger that has them, or uses LIVE); the events P8 left (`near resident`,
+  `purse crossed`, `relation changed`, `mantle bound`, `standing crossed`, `skill practised`, `injury healed`, `month begins`).
+- **For Phase 10:** `story.start` is the last effect of 3.5; give it a catalogue entry like these (a story effect, `"story": true`, run by
+  the runner) and keep `WORLD_ORDERS` for game orders only. A run that ends must still be ended in the game (`story.stop`/`story.finish`, or
+  an ending phase) for `endStoryWorld` to undo its holds and locks: a chapter that starts the next should end its own first. `Storyline::held`
+  is the place for anything else the game must undo; `storiesHolding_` is rebuilt by `refreshStoryWatch`. The guide (`Docs/story-programs.md`)
+  needs a section on these effects, what each undoes at the end, and the permission marks (`actsOnWolves`, `needsBuilder`).
 
 **Phase 10: Chapters, world variables, and the guide. About 9 hours.**
 - `story.start`, `story started`, `story ended`; several programs approved together as a campaign;

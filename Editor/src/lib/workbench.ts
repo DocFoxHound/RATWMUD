@@ -11,6 +11,8 @@ export type Json = Record<string, unknown>;
 export interface Param {
     key: string; type: string; label: string; min?: number; max?: number; values?: string[]; words?: Record<string, string>;
     default?: unknown; nonzero?: boolean; part?: string; or?: string[]; world?: boolean;
+    /** Phase 9: a market slot that may be every market ("all"). */
+    all?: boolean;
     /** Version 2: a variable's types (`variable`), an optional slot, an operand's kind or the slot it must match. */
     of?: string[]; optional?: boolean; kind?: string; like?: string;
     /** (The Editor's own: an `objective` slot's quest, filled from the record beside it, so its picker lists that quest's.) */
@@ -63,7 +65,7 @@ export type Condition =
     | {test: 'fired'; trigger: string; op: string; value: number; in?: string}
     | {test: 'chance'; percent: number}
     | {test: 'days since'; from: string; op: string; days: number; var?: string; of?: string};
-export type Effect = Record<string, string | number> & {kind: string};
+export type Effect = Record<string, string | number | boolean> & {kind: string};   // (Phase 9: a tracker's show is a switch.)
 export interface Branch2 {if: Condition; then: Action[]}
 export type Action =
     | {do: 'emit'; signal: string}
@@ -161,12 +163,22 @@ export interface Refs {
     factions?: {id: string; name: string}[]; towns?: {id: string; name: string}[]; markets?: {id: string; name: string}[];
     areas?: {id: string; name: string}[]; ships?: {id: string; name: string}[]; items?: {id: string; name: string; category: string}[];
     templates?: {id: string; name: string}[]; projects?: {id: string; name: string}[]; injuries?: string[];
+    /** Phase 9: the world's doors (by the id of one side; a story locks both) and its mantles. */
+    doors?: {id: string; name: string; cell?: string}[]; mantles?: {id: string; name: string}[];
 }
 /** The kinds a picker of a type lists (a `character` is a wolf or a resident). */
 export const REF_KIND: Record<string, keyof Refs> = {
     resident: 'residents', wolf: 'wolves', place: 'places', faction: 'factions', town: 'towns', market: 'markets', area: 'areas',
-    ship: 'ships', item: 'items', template: 'templates', project: 'projects',
+    ship: 'ships', item: 'items', template: 'templates', project: 'projects', door: 'doors', mantle: 'mantles',
 };
+/** Phase 9: the strangers (visitor.add) a program brings, by the ids it gives them. */
+export function visitorsOf(p: Program): string[] {
+    const out = new Set<string>();
+    const effects = [...p.phases.flatMap(ph => ph.effects ?? []),
+        ...[...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])].flatMap(t => allActions(t.actions).flatMap(({a}) => a.do === 'effect' ? [a.effect] : []))];
+    for (const e of effects) if ((e.kind === 'visitor.add' || e.kind === 'visitor.leave') && typeof e.visitor === 'string' && e.visitor) out.add(e.visitor);
+    return [...out].sort();
+}
 export function namesOf(refs: Refs | null, program?: Program | null): Names {
     const out: Names = {};
     for (const [type, kind] of Object.entries(REF_KIND)) {
@@ -230,7 +242,7 @@ export function parts(template: string, slot: (name: string) => Omit<Slot, 'slot
     if (last < template.length) out.push({text: template.slice(last)});
     return out;
 }
-export const plain = (ps: Part[]) => ps.map(p => 'text' in p ? p.text : p.hidden ? '' : (p.shown || p.label)).join('').replace(/ {2,}/g, ' ').replace(/ ,/g, ',').trim();
+export const plain = (ps: Part[]) => ps.map(p => 'text' in p ? p.text : p.hidden ? '' : (p.shown || p.label)).join('').replace(/ {2,}/g, ' ').replace(/ ([,:])/g, '$1').trim();
 
 const FIELD_WORDS: Record<string, string> = {actor: 'the acting wolf', target: "the event's target", cell: "the event's place", item: "the event's item",
     detail: "the event's detail", quantity: "the event's quantity", coins: "the event's coins"};
@@ -1017,9 +1029,14 @@ export function newEffect(cat: Catalogue, kind: string, p: Program): Effect {
         else if (param.type === 'quest') e[param.key] = p.quests?.[0]?.id ?? '';
         else if (param.type === 'objective') e[param.key] = p.quests?.find(q => q.id === e.quest)?.objectives[0]?.id ?? '';
         else if (param.type === 'offer') e[param.key] = 'choice';
+        // (Phase 9: show a tracker, the first shown variable it may be; a stranger's id of the story's own.)
+        else if (param.type === 'bool') e[param.key] = true;
+        else if (param.type === 'variable') e[param.key] = (p.variables ?? []).find(v => v.show && (param.of ?? []).includes(v.type))?.id ?? '';
+        else if (param.type === 'visitor') e[param.key] = 'stranger-' + ((visitorsOf(p).length) + 1);
         else e[param.key] = '';
     }
     if (kind === 'scene.play' && p.scenes?.[0]?.visibility === 'public') e.player = 'world';
+    if (kind === 'weather.set') e.place = '';   // (Phase 9: a place, or else a town's streets: one of them, to pick.)
     return e;
 }
 /** The first declared variable of some types (version 2), or a name to start with. */

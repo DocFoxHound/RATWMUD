@@ -373,3 +373,36 @@ test('Phase 8: the night watch opens in the workbench, every world condition and
     }
     assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 24);
 });
+
+// ------------------------------------------------------------------------------------------ new world effects (doc 85, Phase 9)
+
+import {itemParts, visitorsOf} from './workbench.ts';
+
+test('Phase 9: every new world effect the workbench adds, its slots picked, is one the story checks accept, and reads as words', () => {
+    const fresh = ['story.tell', 'journal.note', 'story.ping', 'story.tracker', 'item.take', 'warrant.issue', 'warrant.clear', 'visitor.add',
+        'visitor.leave', 'mantle.assign', 'mantle.release', 'npc.kill', 'npc.hold', 'npc.release', 'npc.follow', 'npc.unfollow', 'door.lock',
+        'door.unlock', 'door.open', 'door.close', 'item.place', 'board.post', 'weather.set', 'event.add', 'event.cancel', 'prices.reset',
+        'project.complete', 'project.cancel', 'deed.revoke', 'storyline.tick', 'scene.stop'];
+    assert.deepEqual(fresh.filter(k => !cat.effects.some(e => e.id === k)), []);
+    const p = structuredClone(ledger);
+    p.variables = [...(p.variables ?? []), {id: 'ropes-shown', type: 'number', scope: 'story', show: 'Ropes'}];
+    p.regions = [...(p.regions ?? []), {id: 'gate', cell: 'grey', x1: 1, y1: 1, x2: 4, y2: 4}];
+    const filled = (e: Effect) => Object.fromEntries(Object.entries(e).map(([k, v]) => [k, v === '' ? (k === 'text' || k === 'label' || k === 'reason'
+        || k === 'words' || k === 'name' || k === 'detail' ? 'Some words.' : k === 'template' ? 'the-debt' : 'picked-' + k) : v])) as Effect;
+    const made = fresh.map(k => filled(newEffect(cat, k, p)));
+    const tracked = made.find(e => e.kind === 'story.tracker')?.var;
+    assert.ok(p.variables?.find(v => v.id === tracked)?.show, 'a tracker starts on the first shown variable: ' + tracked);
+    assert.equal(made.find(e => e.kind === 'story.tell')?.to, 'participants');
+    made.forEach((e, i) => p.phases[1].triggers!.push({id: 'fx-' + i, on: 'arrival', audience: 'participant', actions: [{do: 'effect', effect: e}]}));
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(p)}).toString());
+    assert.deepEqual(found, []);
+    const names = namesOf(null, p);
+    for (const e of made) {
+        const words = plain(itemParts(cat.effects.find(x => x.id === e.kind)!, e, names));
+        assert.ok(!words.includes('{') && words.length > 6, e.kind + ': ' + words);
+    }
+    assert.equal(plain(itemParts(cat.effects.find(x => x.id === 'story.tell')!, {kind: 'story.tell', to: 'party', player: '$actor', text: 'Stay together.'}, names)),
+        'Tell the party of the acting wolf: “Stay together.”');
+    assert.deepEqual(visitorsOf(p), ['stranger-1']);
+});

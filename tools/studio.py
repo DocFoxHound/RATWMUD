@@ -1351,7 +1351,13 @@ WOLF_KINDS = ('character.kill', 'character.injury', 'character.resurrect', 'char
 CHEAT_KINDS = ('character.gift', 'account.unlock')
 # A world story's effects that hurt players' wolves (character.injury on a player, damage to everyone in an area): an
 # approval with any of them needs the flag, as the same acts by hand do.
-STORY_WOLF_KINDS = frozenset({'character.injury', 'story.area.damage'})
+# (Doc 85, Phase 9: read from the catalogue's actsOnWolves: taking an item, a warrant, as well.)
+def _story_wolf_kinds():
+    import story_program
+    return story_program.WOLF_EFFECTS
+
+
+STORY_WOLF_KINDS = _story_wolf_kinds()
 
 
 def story_effect_kinds(program) -> set:
@@ -1376,6 +1382,11 @@ def story_effect_kinds(program) -> set:
                 kinds.add(str(e.get('kind')))
         scan_triggers(phase.get('triggers'))
     scan_triggers(program.get('triggers'))
+    # (Doc 85, Phase 6 and 9: a quest's rewards are effects the story may deliver too.)
+    for q in program.get('quests') if isinstance(program.get('quests'), list) else []:
+        for e in [*(q.get('rewards') or []), *(q.get('bonus') or [])] if isinstance(q, dict) else []:
+            if isinstance(e, dict):
+                kinds.add(str(e.get('kind')))
     return kinds
 # Accounts on a community world are pairwise ids (doc 77: "acct-" and 32 hex); the Editor shows the first 8.
 ACCOUNT_ID = re.compile(r'acct-([0-9a-f]{8})[0-9a-f]{24}')

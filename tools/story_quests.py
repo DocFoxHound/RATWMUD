@@ -39,7 +39,8 @@ JOINABLE = ('open', 'everyone')
 QUEST_EFFECTS = ('quest.offer', 'quest.start', 'quest.complete', 'quest.fail', 'objective.complete', 'objective.fail',
                  'objective.reveal', 'objective.progress')
 PARTICIPANT_EFFECTS = ('participant.add', 'participant.remove')
-STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer')
+# (Doc 85, Phase 9: story.tracker shows or hides a shown variable among the journal's trackers: the story's own too.)
+STORY_EFFECTS = (*QUEST_EFFECTS, *PARTICIPANT_EFFECTS, 'npc.offer', 'story.tracker')
 # (A wolf may be named by $actor in these from a trigger of anyone in the world: each takes the wolf into the story.)
 TAKES_IN = ('participant.add', 'quest.offer', 'quest.start')
 GAME_EVENTS = ('quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'dialogue choice')
@@ -239,6 +240,10 @@ def check_story_effect(effect, phase, t):
         return
     if phase is not None:
         rules.require(triggers.version(phase) == 2, 'This effect needs a version 2 story.')
+    if kind == 'story.tracker' and phase is not None:
+        d = phase.get('_vars', {}).get(effect['var'])
+        rules.require(d is not None and d['type'] in ('number', 'switch') and d.get('show'),
+                      f'Show or hide a declared number or switch that is shown ("shown as"): {effect["var"]} is not one.')
     if kind in QUEST_EFFECTS and phase is not None:
         known = phase.get('_questIndex')
         if known is not None:
@@ -668,6 +673,14 @@ class Run:
         if kind == 'participant.remove':
             remove_wolf(self.p, state, wolf, self.day)
             return
+        if kind == 'story.tracker':
+            hidden = set(state.get('hiddenTrackers', ()))
+            (hidden.discard if effect['shown'] else hidden.add)(effect['var'])
+            if hidden:
+                state['hiddenTrackers'] = sorted(hidden)
+            else:
+                state.pop('hiddenTrackers', None)
+            return
         if kind == 'npc.offer':
             state.setdefault('offers', {})[effect['id']] = {
                 'npc': effect['npc'], 'words': effect['words'], 'reply': effect['reply'],
@@ -822,8 +835,9 @@ def trackers(p, state, wolf):
     if p.get('version') != 2:
         return out
     counters = state.get('counters', {})
+    hidden = set(state.get('hiddenTrackers', ()))
     for d in p.get('variables', []):
-        if not d.get('show') or d['type'] not in ('number', 'switch'):
+        if not d.get('show') or d['type'] not in ('number', 'switch') or d['id'] in hidden:
             continue
         scope = d['scope']
         if scope == 'player':

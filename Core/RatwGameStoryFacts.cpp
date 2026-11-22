@@ -31,8 +31,13 @@ std::string baseItem(const std::string& item) { return item.substr(0, item.find_
 void Game::refreshStoryWatch()
 {
     StoryWatch w;
+    storiesHolding_.clear();
     for (const auto& [id, s] : storylines_.all())
     {
+        // (Doc 85, Phase 9: the live stories holding something in the world, for tickStoryWorld.)
+        if (s.source == "storykeeper" && s.live() && s.held.isObject() &&
+            (s.held.object("npcs").size() || s.held.object("doors").size() || s.held.object("weather").size() || s.held.array("pings").size()))
+            storiesHolding_.insert(id);
         if (s.source != "storykeeper" || !s.live() || !s.watch.isObject())
             continue;
         const auto add = [&](const char* key, std::set<std::string>& into) {

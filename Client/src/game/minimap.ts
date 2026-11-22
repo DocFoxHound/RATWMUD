@@ -8,6 +8,7 @@ import type {GameState} from './state.ts';
 import type {WeatherFieldView} from './ambient.ts';
 import {HouseIconScale, IconScale, labelsAt, type RealmMap} from './realm.ts';
 import {drawMapIcon} from './mapIcons.ts';
+import {storyPings} from './quests.ts';
 
 /** Pixels a tile, closest last. */
 export const MapScales = [0.25, 0.5, 1, 2, 4, 8];
@@ -416,6 +417,7 @@ export class MapRenderer {
                 this.sceneMarks.push({x, y, text: `a howl${h.wolves > 1 ? ` of ${h.wolves} wolves` : ''}${h.status ? ` · ${h.status}` : ''} · ${h.band}`});
             }
         this.drawMates(c, mates, box, labels);
+        this.drawPings(c, s, box, here, toX, toY, scale, labels);
         if (me) {
             const x = toX(ox + me.x), y = toY(oy + me.y), r = labels ? 6 : 8;
             c.fillStyle = '#0b1213';
@@ -532,6 +534,46 @@ export class MapRenderer {
                 c.textAlign = 'start'; c.lineWidth = 1;
             }
             this.sceneMarks.push({x: m.x, y: m.y, text: m.text});
+        }
+    }
+
+    /** A world story's markers (doc 85, Phase 9: story.ping): a gold diamond at the spot, held at the edge with an arrow when off the
+     *  map, labelled on the World Map, said on hover. */
+    private drawPings(c: CanvasRenderingContext2D, s: GameState, box: {x: number; y: number; w: number; h: number}, here: Place | undefined,
+        toX: (x: number) => number, toY: (y: number) => number, scale: number, labels: boolean) {
+        const pings = storyPings(obj(s.snapshot, 'self')?.journal);
+        if (!pings.length) return;
+        const fromRoom = !labels && !s.outdoors, me = wolfInWorld(s);
+        void here;
+        for (const p of pings) {
+            const x = fromRoom ? box.x + box.w / 2 + (p.wx - me[0]) * scale : toX(p.wx);
+            const y = fromRoom ? box.y + box.h / 2 + (p.wy - me[1]) * scale : toY(p.wy);
+            const pad = 9, inX = Math.max(box.x + pad, Math.min(box.x + box.w - pad, x)), inY = Math.max(box.y + pad, Math.min(box.y + box.h - pad, y));
+            const edge = inX !== x || inY !== y, r = labels ? 6 : 5;
+            c.fillStyle = '#11191b';
+            c.beginPath(); c.moveTo(inX, inY - r - 2); c.lineTo(inX + r + 2, inY); c.lineTo(inX, inY + r + 2); c.lineTo(inX - r - 2, inY); c.closePath(); c.fill();
+            c.fillStyle = '#ffd36b';
+            c.beginPath(); c.moveTo(inX, inY - r); c.lineTo(inX + r, inY); c.lineTo(inX, inY + r); c.lineTo(inX - r, inY); c.closePath(); c.fill();
+            if (edge) {
+                const a = Math.atan2(y - inY, x - inX), dx = Math.cos(a), dy = Math.sin(a), tip = r + 8;
+                c.beginPath();
+                c.moveTo(inX + dx * tip, inY + dy * tip);
+                c.lineTo(inX + dx * (r + 2) - dy * 4, inY + dy * (r + 2) + dx * 4);
+                c.lineTo(inX + dx * (r + 2) + dy * 4, inY + dy * (r + 2) - dx * 4);
+                c.closePath(); c.fill();
+            }
+            if (labels && p.label) {
+                c.font = "600 11px 'RATW Sans', sans-serif";
+                c.textBaseline = 'middle';
+                c.textAlign = inX > box.x + box.w - 120 ? 'right' : 'left';
+                const tx = inX + (c.textAlign === 'right' ? -(r + 5) : r + 5);
+                c.lineJoin = 'round'; c.strokeStyle = 'rgba(8,12,13,0.9)'; c.lineWidth = 3;
+                c.strokeText(p.label, tx, inY);
+                c.fillStyle = '#ffd36b';
+                c.fillText(p.label, tx, inY);
+                c.textAlign = 'start'; c.lineWidth = 1;
+            }
+            this.sceneMarks.push({x: inX, y: inY, text: [p.story, p.label, p.place ? `${p.inside ? 'in' : 'at'} ${p.place}` : ''].filter(Boolean).join(' · ')});
         }
     }
 

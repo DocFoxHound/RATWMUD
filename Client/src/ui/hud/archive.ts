@@ -5,7 +5,7 @@ import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts'
 import type {GameState} from '../../game/state.ts';
 import {button, el} from './dom.ts';
 import {ask} from '../dialog.ts';
-import {questButtons, questLines, questMessage, questStatus, trackerLines} from '../../game/quests.ts';
+import {noteLines, questButtons, questLines, questMessage, questStatus, trackerLines} from '../../game/quests.ts';
 
 /** Moves the record at `i` one place up (-1) or down (+1); the same order if it can't. */
 export function moveRecord(order: readonly string[], i: number, by: -1 | 1): string[] {
@@ -109,6 +109,8 @@ export function renderStoryline(box: HTMLElement, s: GameState, t: Json) {
         }
     }
     for (const line of trackerLines(t)) el('div', 'muted small', box, line);
+    // Its notes (doc 85, Phase 9: lines the story added to this wolf's journal).
+    for (const line of noteLines(t)) el('div', 'small', box, line);
     const people = arr(t, 'participants').filter(isObject);
     if (people.length) el('div', 'muted small', box, people.map(p => `${str(p, 'name')} (${str(p, 'where')})`).join(', '));
     if (bool(t, 'invited')) {
