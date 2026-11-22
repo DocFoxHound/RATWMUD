@@ -8,13 +8,17 @@ import {NO_MAP_YET, noMapYet} from '../../lib/hosted';
 import {MapView, type Marker, type Overlay} from '../MapView';
 import {useWorld} from '../world';
 import type {Live, Target} from '../api';
-import {nameOf, wolvesNow, type FramePerson, type RunDetail, type TimelineItem} from '../../lib/campaigns';
+import {audienceText, nameOf, wolvesNow, type FramePerson, type RunDetail, type TimelineItem} from '../../lib/campaigns';
+import type {SteerFn} from './Steer';
 
 type View = {kind: 'world'} | {kind: 'cell'; id: string};
 const HERE = '#7fc8f8', AWAY = '#7d8a85', DIRECTED = '#e6c481', FOCUS = '#e07a6a', REGION = 'rgba(217,182,123,.55)';
 
-export function WolvesMap({target, detail, names, live, items, focus}: {target: Target; detail: RunDetail; names: Record<string, string>;
-    live: Live | null; items: TimelineItem[]; focus: {cell: string; x: number; y: number} | null}) {
+export function WolvesMap({target, detail, names, live, items, focus, steer, busy = false}: {target: Target; detail: RunDetail; names: Record<string, string>;
+    live: Live | null; items: TimelineItem[]; focus: {cell: string; x: number; y: number} | null;
+    /** Phase 6: take a wolf into the story, or out of it (the `participant` command). */
+    steer?: SteerFn; busy?: boolean}) {
+    const [adding, setAdding] = useState('');
     const [problem, setProblem] = useState('');
     const world = useWorld(target, setProblem);
     const people = (live?.frame?.people ?? []) as FramePerson[];
@@ -73,13 +77,31 @@ export function WolvesMap({target, detail, names, live, items, focus}: {target: 
         </div>
         <aside className="camp-map-list">
             <h3>{here} of {wolves.length} here now</h3>
+            {detail.audience && <p className="hint">Audience: {audienceText(detail.audience, wolves.length)}</p>}
+            {steer && (() => {
+                // (Who may be added: the wolves in the world now who are not in the story, or an id typed.)
+                const inStory = new Set(detail.state?.cohort ?? []);
+                const outside = people.filter(p => p[2] === 'p' && !inStory.has(p[0]));
+                const pick = adding || outside[0]?.[0] || '';
+                return <div className="camp-controls">
+                    <input list="camp-add-wolf" value={adding} placeholder={outside[0] ? outside[0][1] : 'a wolf\'s id'} aria-label="A wolf to take into the story"
+                        onChange={e => setAdding(e.target.value)} />
+                    <datalist id="camp-add-wolf">{outside.map(p => <option key={p[0]} value={p[0]}>{p[1]}</option>)}</datalist>
+                    <button disabled={busy || !pick} onClick={() => steer({kind: 'participant', payload: {player: pick, do: 'add'}, title: `Take ${nameOf(names, pick)} into the story`,
+                        does: ['The wolf joins the story\'s audience (up to its cap): the game is told, and the journal shows the story.']})}>Add a wolf…</button>
+                </div>;
+            })()}
             <ul>{wolves.slice(0, 300).map(w => {
                 const last = lastBy.get(w.id);
                 return <li key={w.id} className={selected === `p:${w.id}` ? 'on' : ''}>
                     <button className="link-button" disabled={!w.known} onClick={() => { setSelected(`p:${w.id}`); setView({kind: 'cell', id: w.cell}); }}>
                         <span className={w.here ? 'camp-here' : 'camp-away'}>{w.here ? '●' : '○'}</span> {w.name}</button>
                     <small>{w.known ? `${placeName(w.cell)} (${Math.floor(w.x)}, ${Math.floor(w.y)})${w.here && w.doing ? ' · ' + w.doing : ''}` : 'not on the map'}
-                        {last && last.type === 'trigger' ? ` · last in the story: ${last.trigger}, day ${last.day.toFixed(1)}` : ''}</small></li>;
+                        {last && last.type === 'trigger' ? ` · last in the story: ${last.trigger}, day ${last.day.toFixed(1)}` : ''}
+                        {detail.parties?.[w.id] && detail.parties[w.id] !== w.id ? ` · party ${partyWords(detail.parties, w.id, names)}` : ''}</small>
+                    {steer && <button className="wb-mini" disabled={busy} title="Take this wolf out of the story" onClick={() => steer({kind: 'participant', payload: {player: w.id, do: 'remove'},
+                        title: `Take ${w.name} out of the story`, does: ['The wolf leaves the story\'s audience: quests they hold are abandoned.', 'The game is told; the journal no longer shows it.'],
+                        warn: 'What the story already gave stays given.'})}>Remove…</button>}</li>;
             })}</ul>
             {detail.regions.length > 0 && <><h3>Regions</h3><ul>{detail.regions.map(r => <li key={r.id}>
                 <button className="link-button" onClick={() => setView({kind: 'cell', id: r.cell})}>{r.id}</button>
@@ -88,7 +110,14 @@ export function WolvesMap({target, detail, names, live, items, focus}: {target: 
                 const p = people.find(x => x[0] === id);
                 return <li key={id}><span style={{color: DIRECTED}}>☻</span> {nameOf(names, id)}<small>{p ? ` ${placeName(p[3])} (${Math.floor(p[4])}, ${Math.floor(p[5])})` : ' not in the frame'}</small></li>;
             })}</ul></>}
-            <p className="hint">Parties are not shown yet: the game does not tell the story runner about them (doc 85, Phase 8).</p>
+            {!detail.parties && <p className="hint">Parties: the story runner has not been told of any yet.</p>}
         </aside>
     </div>;
+}
+
+/** A wolf's party in words: the other members of it the story knows (doc 85, Phase 6: parties told to the runner). */
+function partyWords(parties: Record<string, string>, wolf: string, names: Record<string, string>): string {
+    const party = parties[wolf];
+    const others = Object.entries(parties).filter(([w, p]) => p === party && w !== wolf).map(([w]) => nameOf(names, w));
+    return others.length ? 'with ' + others.join(', ') : party;
 }

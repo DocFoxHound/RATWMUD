@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions.",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out.",
  "groups": [
   {
    "id": "story",
@@ -62,6 +62,10 @@
   {
    "id": "fame",
    "label": "Fame, journal and tales"
+  },
+  {
+   "id": "quests",
+   "label": "Quests and parties"
   }
  ],
  "actionGroups": [
@@ -137,7 +141,11 @@
   "variable": "A declared variable of this story (version 2), of the types the parameter names.",
   "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, or a little arithmetic.",
   "trigger": "A trigger of this story.",
-  "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's."
+  "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's.",
+  "quest": "A quest of this story (version 2).",
+  "objective": "An objective of the quest named beside it.",
+  "purse": "Who pays: a town's treasury (town:<town>), its works, watch or church (town:<town>:works), a business's till (till:<id>) or a Chapter's treasury (chapter:<id>). Never minted.",
+  "offer": "A story choice's name: what a dialogue choice event comes back with."
  },
  "trigger": {
   "once": {
@@ -173,7 +181,11 @@
    "variables": 64,
    "listValues": 500,
    "eachTurns": 500,
-   "textValue": 200
+   "textValue": 200,
+   "quests": 32,
+   "questObjectives": 12,
+   "questRewards": 8,
+   "audience": 5000
   },
   "enabled": {
    "true": "on from the start",
@@ -5486,6 +5498,308 @@
    "notes": "Exits only (not a trigger). Its parameter is the list 'missions' (ids of this phase's missions), not an event field.",
    "special": "gate",
    "exitOnly": true
+  },
+  {
+   "id": "quest accepted",
+   "group": "quests",
+   "title": "A wolf takes on a quest",
+   "sentence": "{actor} takes on {detail} from {item}",
+   "help": "A wolf accepted a story's quest: in the giver's dialogue window, or from the journal for a quest offered to them. The story checks who may take it (its join rules) and starts their copy.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "resident",
+     "label": "the resident it was taken from (empty: from the journal)",
+     "any": "anyone, or the journal"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "quest declined",
+   "group": "quests",
+   "title": "A wolf declines a quest",
+   "sentence": "{actor} declines {detail} from {item}",
+   "help": "A wolf said not now to a story's quest offered to them; it can be asked about again.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "resident",
+     "label": "the resident it was taken from (empty: from the journal)",
+     "any": "anyone, or the journal"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "quest handed in",
+   "group": "quests",
+   "title": "A wolf hands in a quest",
+   "sentence": "{actor} hands in {detail} to {item}",
+   "help": "A wolf whose quest was ready came back to its giver and handed it in (the dialogue window's hand-in choice): the quest is done and its rewards are given.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "resident",
+     "label": "the giver",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false,
+   "mission": true
+  },
+  {
+   "id": "quest abandoned",
+   "group": "quests",
+   "title": "A wolf abandons a quest",
+   "sentence": "{actor} abandons {detail}",
+   "help": "A wolf put a story's quest aside from the journal.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "dialogue choice",
+   "group": "quests",
+   "title": "A wolf picks a story's choice in a dialogue window",
+   "sentence": "{actor} picks the choice {detail} with {item}",
+   "help": "A wolf picked a story choice laid over a resident's dialogue window (npc.offer): the wolf's words said, the resident's reply given.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "offer",
+     "label": "the choice's name",
+     "any": "any choice"
+    }
+   },
+   "tile": false,
+   "mission": true
+  },
+  {
+   "id": "party joined",
+   "group": "quests",
+   "title": "A wolf joins a party",
+   "sentence": "{actor} joins the party {target}",
+   "help": "A wolf joined a party (accepted an invitation). Stories keep each wolf's party from these: party quests and party variables.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "text",
+     "label": "the party",
+     "any": "any party"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "party left",
+   "group": "quests",
+   "title": "A wolf leaves a party",
+   "sentence": "{actor} leaves the party {target}",
+   "help": "A wolf left a party, or the party was disbanded (one event for each of its wolves).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "text",
+     "label": "the party",
+     "any": "any party"
+    }
+   },
+   "tile": false
+  },
+  {
+   "id": "quest started",
+   "group": "quests",
+   "title": "A story's quest starts",
+   "sentence": "{actor}'s quest {detail} starts",
+   "help": "The story's own fact (never in the world's log): a copy of a quest began for a wolf, their party or the story.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf it started for",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact that caused it; the game never records it."
+  },
+  {
+   "id": "quest completed",
+   "group": "quests",
+   "title": "A story's quest is done",
+   "sentence": "{actor}'s quest {detail} is done",
+   "help": "The story's own fact: a copy of a quest was completed (handed in, or its last required objective done); its rewards follow.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf who finished it",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact that caused it; the game never records it.",
+   "mission": true
+  },
+  {
+   "id": "quest failed",
+   "group": "quests",
+   "title": "A story's quest fails",
+   "sentence": "{actor}'s quest {detail} fails",
+   "help": "The story's own fact: a copy of a quest failed (a fail rule, its deadline, an objective failed, or by hand).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf it failed for",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact that caused it; the game never records it."
+  },
+  {
+   "id": "objective completed",
+   "group": "quests",
+   "title": "A quest's objective is done",
+   "sentence": "{actor} completes {item} of {detail}",
+   "help": "The story's own fact: an objective of a quest copy was done.",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf who did it",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "run",
+     "label": "the story run",
+     "any": "any story"
+    },
+    "item": {
+     "type": "objective",
+     "label": "the objective",
+     "any": "any objective"
+    },
+    "detail": {
+     "type": "quest",
+     "label": "the quest",
+     "any": "any quest"
+    }
+   },
+   "tile": false,
+   "story": true,
+   "notes": "Sent by the story itself as it runs, after the fact that caused it; the game never records it.",
+   "mission": true
   }
  ],
  "conditions": [
@@ -7794,6 +8108,369 @@
      "key": "title",
      "type": "text",
      "label": "its title",
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "quest.offer",
+   "group": "quests",
+   "title": "Offer a quest",
+   "sentence": "Offer {quest} to {player}",
+   "help": "The wolf is offered the quest: they accept or decline it in its giver's window, or in the journal when it has no giver. Takes the wolf into the story.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "quest.start",
+   "group": "quests",
+   "title": "Start a quest",
+   "sentence": "Start {quest} for {player}",
+   "help": "Gives the quest without asking: the wolf's own copy, their party's, or the story's one copy. Takes the wolf into the story.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "quest.complete",
+   "group": "quests",
+   "title": "Complete a quest",
+   "sentence": "Complete {quest} for {player}",
+   "help": "Completes the copy the wolf holds, as if its last objective were done: its rewards are given.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "quest.fail",
+   "group": "quests",
+   "title": "Fail a quest",
+   "sentence": "Fail {quest} for {player}",
+   "help": "Fails the copy the wolf holds; the journal says so.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "objective.complete",
+   "group": "quests",
+   "title": "Complete an objective",
+   "sentence": "Complete {objective} of {quest} for {player}",
+   "help": "Marks one objective of the copy the wolf holds done (a hidden one is shown).",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "objective",
+     "type": "objective",
+     "label": "the objective"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "objective.fail",
+   "group": "quests",
+   "title": "Fail an objective",
+   "sentence": "Fail {objective} of {quest} for {player}",
+   "help": "An optional objective failed is struck through; a required one failed fails the quest.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "objective",
+     "type": "objective",
+     "label": "the objective"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "objective.reveal",
+   "group": "quests",
+   "title": "Reveal a hidden objective",
+   "sentence": "Show {objective} of {quest} to {player}",
+   "help": "A hidden objective appears in the journal.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "objective",
+     "type": "objective",
+     "label": "the objective"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "objective.progress",
+   "group": "quests",
+   "title": "Add to an objective",
+   "sentence": "Add {amount} to {objective} of {quest} for {player}",
+   "help": "Counts towards an objective's goal as if its event had happened that many times (or that quantity).",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "objective",
+     "type": "objective",
+     "label": "the objective"
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "amount",
+     "type": "int",
+     "label": "how much",
+     "min": 1,
+     "max": 1000000
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "participant.add",
+   "group": "wolves",
+   "title": "Take a wolf into the story",
+   "sentence": "Take {player} into the story",
+   "help": "The wolf joins the story's audience (an open audience's way in), up to its cap: they see it in their journal.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "participant.remove",
+   "group": "wolves",
+   "title": "Take a wolf out of the story",
+   "sentence": "Take {player} out of the story",
+   "help": "The wolf leaves the story's audience; quests they hold are abandoned.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "npc.offer",
+   "group": "residents",
+   "title": "Offer a choice in a resident's window",
+   "sentence": "{npc} offers the choice {id} to {player}: the wolf says {words}, {npc} replies {reply} (once: {once})",
+   "help": "While this phase visit is open, the resident's dialogue window shows a story choice to the wolf (or every wolf of the story): the wolf's words, the resident's reply in their own voice. Picking it makes a 'dialogue choice' event.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "id",
+     "type": "offer",
+     "label": "the choice's name"
+    },
+    {
+     "key": "words",
+     "type": "text",
+     "label": "the wolf's words",
+     "max": 120
+    },
+    {
+     "key": "reply",
+     "type": "text",
+     "label": "the resident's reply",
+     "max": 300
+    },
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "who sees it (empty: every wolf of the story)",
+     "optional": true
+    },
+    {
+     "key": "once",
+     "type": "bool",
+     "label": "once for each wolf",
+     "optional": true
+    }
+   ],
+   "v2": true,
+   "story": true
+  },
+  {
+   "id": "character.grant",
+   "group": "wolves",
+   "title": "Pay a wolf from a purse",
+   "sentence": "Pay {player} {coins} pennies from {purse}: {reason}",
+   "help": "Coins from a named purse (a town, its works, a business's till, a Chapter), never made from nothing: refused when the purse is short or over the wolf's day of grants.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "coins",
+     "type": "int",
+     "label": "pennies",
+     "min": 1,
+     "max": 2500
+    },
+    {
+     "key": "purse",
+     "type": "purse",
+     "label": "who pays"
+    },
+    {
+     "key": "reason",
+     "type": "text",
+     "label": "the reason",
+     "max": 80
+    }
+   ]
+  },
+  {
+   "id": "item.give",
+   "group": "wolves",
+   "title": "Give a wolf an item",
+   "sentence": "Give {player} {quantity} {item}",
+   "help": "An item into one wolf's pack; a full pack is refused and the wolf told.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "item",
+     "type": "item",
+     "label": "the item"
+    },
+    {
+     "key": "quantity",
+     "type": "int",
+     "label": "how many",
+     "min": 1,
+     "max": 20
+    }
+   ]
+  },
+  {
+   "id": "standing.adjust",
+   "group": "wolves",
+   "title": "Change a wolf's standing",
+   "sentence": "Change {player}'s standing with {faction} by {points}: {reason}",
+   "help": "A few points of standing with a faction, for a reason the wolf is told.",
+   "params": [
+    {
+     "key": "player",
+     "type": "wolf",
+     "label": "the wolf"
+    },
+    {
+     "key": "faction",
+     "type": "faction",
+     "label": "the faction"
+    },
+    {
+     "key": "points",
+     "type": "int",
+     "label": "points",
+     "min": -10,
+     "max": 10,
+     "nonzero": true
+    },
+    {
+     "key": "reason",
+     "type": "text",
+     "label": "the reason",
      "max": 80
     }
    ]

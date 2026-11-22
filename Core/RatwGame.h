@@ -812,6 +812,10 @@ class Game
     std::map<std::string, std::set<std::string>> stayedOut_;             // Who won't be called into which fights.
     std::map<std::string, std::map<std::string, double>> foes_;          // A player's recent foes, until when.
     double partyAccumulator_ = 0;
+    // Each wolf's party as last written to the world's log (doc 85, Phase 6: "party joined" and "party left", which the
+    // stories' runner reads to keep each wolf's party): compared with the parties after each change.
+    std::map<std::string, std::string> partyLogged_;
+    void partyEvents(bool quiet = false);
     struct Relations
     {
         std::set<std::string> mates, chapterMates;
@@ -1545,6 +1549,22 @@ class Game
     double nextSceneCheck_ = 0;
     Result applyWorldStoryPhase(const std::string& run, const json::Value& payload);
     std::string worldStoryLine(const std::string& npc, const std::string& wolf) const;
+    // A world story's quests (doc 85, Phase 6): its living audience (story.cohort), its quests and story choices
+    // (story.quests); whether a quest offered by a resident is open to a wolf now (its join rules as the game can check
+    // them: participants only, full, the region the wolf must stand in, a copy held or not taken again yet); and the
+    // choices a resident's dialogue window shows a wolf for them (offer, hand in, a story choice).
+    Result applyStoryCohort(storylines::Storyline& story, const json::Value& payload);
+    Result applyStoryQuests(storylines::Storyline& story, const json::Value& payload);
+    bool storyOfferOpen(const storylines::Storyline& s, const json::Value& offer, const std::string& wolf) const;
+    struct StoryChoice
+    {
+        std::string kind, run, id, words;           // kind: offer, handin, choice.
+    };
+    std::vector<StoryChoice> storyChoicesFor(const std::string& wolf, const std::string& npc) const;
+    const json::Value* storyOffer(const std::string& run, const std::string& quest) const;
+    std::string storyHome(const talk::Tree& t, const std::string& entry) const;
+    bool storyNode(const std::string& playerId, const DialogueSession& d, const std::string& nodeId, talk::TreeNode& out);
+    void storyQuestEvent(const char* kind, const std::string& wolf, const std::string& run, const std::string& npc, const std::string& id);
     std::string storylineBrief(const std::string& npc, const std::string& wolf) const;
     void hearTroubleFor(const std::string& wolf, const std::string& npc)   // (Tests: as if the resident had told them.)
     {
@@ -2540,6 +2560,7 @@ class Game
     void record(unsigned what, const std::string& character = {});
     void recordCharacters(unsigned what, const std::vector<std::string>& characters);
     Result applyStoryArea(const std::string& kind, const std::string& run, const json::Value& payload);
+    Result applyStoryReward(const std::string& kind, const std::string& wolf, const json::Value& payload);
     Result applyStoryTell(const std::string& run, const json::Value& payload);   // (Doc 85, Phase 2: "Tell the wolves".)
     // The journal's view of what was last recorded, to find what changed since.
     struct Shadow

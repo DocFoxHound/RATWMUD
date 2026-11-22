@@ -2,7 +2,7 @@
 // who is in it, when anything last happened and what it is waiting for.
 import {useState} from 'react';
 import {storyProgram, type Live, type Target} from '../api';
-import {ago, alertText, filterRuns, hereCount, lastText, listCounts, questsText, waitingOn, type FramePerson, type ListFilter, type Overview} from '../../lib/campaigns';
+import {ago, alertText, audienceText, filterRuns, hereCount, lastText, listCounts, questsText, waitingOn, type FramePerson, type ListFilter, type Overview} from '../../lib/campaigns';
 
 const FILTERS: {id: ListFilter; label: string}[] = [
     {id: 'all', label: 'All'}, {id: 'running', label: 'Running'}, {id: 'held', label: 'Held'}, {id: 'paused', label: 'Paused'}, {id: 'approved', label: 'Approved'},
@@ -61,7 +61,7 @@ export function CampaignList({overview, live, names, open, holdAll, target, mayR
                     <td><span className={`camp-status ${r.status}`}>{r.status}</span>{r.commandsQueued ? <small className="camp-warn">{r.commandsQueued} command{r.commandsQueued === 1 ? '' : 's'} sent</small> : null}
                         {alerts.map(a => <small key={a.kind} className={a.needsYou ? 'error-text' : 'camp-warn'} title={alertText(a, names)}>⚠ {a.kind}</small>)}</td>
                     <td>{r.phase ?? '-'}{r.visit ? <small>visit {r.visit}{r.entered !== undefined && overview.now.day !== null ? ` · ${(overview.now.day - r.entered).toFixed(1)} days in` : ''}</small> : null}</td>
-                    <td>{r.wolves ?? '-'}{r.cohort && <small>{hereCount(r.cohort, people)} here now</small>}</td>
+                    <td>{r.audience ? audienceText(r.audience, r.wolves) : r.wolves ?? '-'}{r.cohort && <small>{hereCount(r.cohort, people)} here now</small>}</td>
                     <td>{questsText(r.missions)}</td>
                     <td>{lastText(r.last, names)}{r.last?.at && <small>{ago(r.last.at, overview.now.at)}{r.last.day != null ? ` · day ${r.last.day.toFixed(1)}` : ''}</small>}</td>
                     <td className={wait ? `camp-wait ${wait.tone}` : ''}>{wait ? <><b>{wait.who}</b><small>{wait.text}</small></> : '-'}</td>

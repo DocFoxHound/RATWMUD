@@ -312,6 +312,22 @@ Value Game::journalView(const std::string& viewer)
             steps.push(j);
         }
         o.add("steps", steps);
+        if (s->source == "storykeeper")
+            if (const auto f = s->questViews.find(viewer); f != s->questViews.end())
+            {
+                // Doc 85, Phase 6: the quests the runner made for this wolf, as they may see them; the giver by name as the
+                // wolf knows them.
+                auto quests = Value::array();
+                for (auto q : f->second.array("quests"))
+                {
+                    if (const auto giver = q.string("giver"); !giver.empty())
+                        q.set("giverName", names::capitalised(labelFor(viewer, giver)));
+                    q.set("title", storyWords(viewer, q.string("title")));
+                    quests.push(std::move(q));
+                }
+                if (quests.size()) o.add("quests", std::move(quests));
+                if (f->second.array("trackers").size()) o.add("trackers", f->second["trackers"]);
+            }
         if (s->kind == "tale")
         {
             auto who = Value::array();
@@ -381,6 +397,28 @@ bool Game::storylineCommand(Connection* c, const Value& j, Result& result)
     {
         const bool ok = storylines_.take(s->id, std::size_t(j.number("step")), std::size_t(j.number("objective")), id);
         result = {ok, ok ? "You're on it: the others see so." : "That part can't be taken now.", {}};
+    }
+    else if (verb == "quest_accept" || verb == "quest_decline" || verb == "quest_abandon")
+    {
+        // A world story's quest from the journal (doc 85, Phase 6): accepted or declined when it was offered with no giver,
+        // abandoned while under way. The runner reads the event and keeps the ledger.
+        const auto quest = j.string("quest");
+        const auto* view = s->source == "storykeeper" && s->live() ? s->questView(id, quest) : nullptr;
+        const auto status = view ? view->string("status") : std::string();
+        if (!view)
+            result = {false, "That quest isn't in your journal.", {}};
+        else if (verb != "quest_abandon" && !view->boolean("accept"))
+            result = {false, "That quest is taken up with whoever gives it.", {}};
+        else if (verb == "quest_abandon" && (!view->boolean("abandon") || (status != "active" && status != "ready")))
+            result = {false, "That quest can't be put aside.", {}};
+        else
+        {
+            storyQuestEvent(verb == "quest_accept" ? "quest accepted" : verb == "quest_decline" ? "quest declined" : "quest abandoned", id,
+                            s->id, "", quest);
+            result = {true, verb == "quest_accept" ? "You take on: " + view->string("title") + "."
+                            : verb == "quest_decline" ? std::string("You let it pass, for now.") : "You put aside: " + view->string("title") + ".",
+                      {}};
+        }
     }
     else if (verb == "abandon" || verb == "leave")
     {
@@ -573,7 +611,7 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     const double visit = p.number("visit", 0);
     if (run.rfind("world-", 0) != 0 || run.size() > 80 || visit < 1 || visit > 1000000000 || visit != int(visit) ||
         p.string("title").empty() || p.string("phase").empty() || p.string("journal").empty() ||
-        p.array("players").size() > 500 || p.array("lines").size() > 12 || p.array("guestVoices").size() > 8)
+        p.array("players").size() > 5000 || p.array("lines").size() > 12 || p.array("guestVoices").size() > 8)
         return {false, "Invalid world story phase or audience.", run};
     auto* prior = storylines_.find(run);
     if (prior && (prior->kind != "world" || prior->source != "storykeeper"))
@@ -867,5 +905,184 @@ void Game::offerChain(const Contract& done)
     }
     else
         world_.withdrawContract(k.id);              // (No room in its journal: the work goes back.)
+}
+
+// ------------------------------------------------------------------ A world story's quests (doc 85, Phase 6)
+// The runner keeps each quest's ledger (who holds it, how far each objective is, who may take it); the game is told what
+// each wolf may see (`story.quests`), shows it in the journal and in the residents' dialogue windows, and writes what the
+// wolves do with it as events the runner reads (quest accepted, declined, handed in, abandoned; dialogue choice).
+namespace
+{
+constexpr std::size_t StoryAudienceMost = 5000, StoryOffersMost = 64, StoryChoicesMost = 64, QuestViewsMost = 64,
+                      TrackersMost = 16;
+
+bool plainId(const Value& v)
+{
+    return v.isString() && !v.asString().empty() && v.asString().size() <= 80;
+}
+
+bool endedQuest(const std::string& status)
+{
+    return status == "done" || status == "failed" || status == "abandoned" || status == "expired";
+}
+} // namespace
+
+Result Game::applyStoryCohort(storylines::Storyline& story, const Value& p)
+{
+    const auto& add = p.array("add");
+    const auto& remove = p.array("remove");
+    if (add.size() > StoryAudienceMost || remove.size() > StoryAudienceMost ||
+        !std::all_of(add.begin(), add.end(), plainId) || !std::all_of(remove.begin(), remove.end(), plainId))
+        return {false, "Invalid story audience change.", story.id};
+    std::size_t active = 0;
+    for (const auto& [id, member] : story.participants)
+        active += member.active();
+    for (const auto& who : add)
+        if (const auto f = story.participants.find(who.asString()); f == story.participants.end() || !f->second.active())
+            ++active;
+    if (active > StoryAudienceMost)
+        return {false, "A world story takes 5000 wolves at most.", story.id};
+    for (const auto& who : add)
+    {
+        auto& member = story.participants[who.asString()];
+        if (!member.active() || member.joined == 0)
+            member = {now(), -1};
+    }
+    for (const auto& who : remove)
+        if (const auto f = story.participants.find(who.asString()); f != story.participants.end() && f->second.active())
+        {
+            f->second.left = now();
+            story.tracking.erase(who.asString());
+            story.questViews.erase(who.asString());
+        }
+    storylines_.touch();
+    record(StoryBook);
+    return {true, "The story's wolves: " + std::to_string(add.size()) + " in, " + std::to_string(remove.size()) + " out.", story.id};
+}
+
+Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
+{
+    if ((p.has("offers") && (!p["offers"].isArray() || p.array("offers").size() > StoryOffersMost)) ||
+        (p.has("choices") && (!p["choices"].isArray() || p.array("choices").size() > StoryChoicesMost)) ||
+        (p.has("wolves") && (!p["wolves"].isObject() || p["wolves"].size() > StoryAudienceMost)))
+        return {false, "Invalid story quests.", story.id};
+    for (const auto& o : p.array("offers"))
+        if (!plainId(o["quest"]) || o.string("title").empty() ||
+            (o.string("npc").empty() ? !plainId(o["board"]) : !world_.society().resident(o.string("npc"))))
+            return {false, "A quest offer needs its quest, title and a resident who offers it, or a town's board.", story.id};
+    for (const auto& c : p.array("choices"))
+        if (!plainId(c["id"]) || !plainId(c["npc"]) || c.string("words").empty() || !world_.society().resident(c.string("npc")))
+            return {false, "A story choice needs its name, words and a resident.", story.id};
+    for (const auto& [wolf, entry] : p["wolves"].fields())
+        if (wolf.empty() || wolf.size() > 80 || !entry.isObject() || entry.array("quests").size() > QuestViewsMost ||
+            entry.array("trackers").size() > TrackersMost)
+            return {false, "Invalid quest journal for " + wolf + ".", story.id};
+    if (p.has("offers")) story.offers = p["offers"];
+    if (p.has("choices")) story.choices = p["choices"];
+    std::size_t wolves = 0;
+    for (const auto& [wolf, entry] : p["wolves"].fields())
+    {
+        auto kept = Value::object();
+        kept.add("quests", entry["quests"].isArray() ? entry["quests"] : Value::array());
+        kept.add("trackers", entry["trackers"].isArray() ? entry["trackers"] : Value::array());
+        if (!kept.array("quests").size() && !kept.array("trackers").size())
+            story.questViews.erase(wolf);
+        else
+            story.questViews[wolf] = std::move(kept);
+        ++wolves;
+        if (const auto toast = entry.string("toast"); !toast.empty())
+            if (auto* c = clientOf(wolf))
+                storylineToast(c, story.title + ": " + json::utf8Prefix(toast, 300));
+    }
+    storylines_.touch();
+    record(StoryBook);
+    return {true, "Story quests recorded (" + std::to_string(wolves) + " journals).", story.id};
+}
+
+bool Game::storyOfferOpen(const storylines::Storyline& s, const Value& offer, const std::string& wolf) const
+{
+    if (!s.live() || offer.boolean("full"))
+        return false;
+    if (offer.string("who") == "participants" && !s.takesPart(wolf))
+        return false;
+    if (const auto region = offer.string("region"); !region.empty())
+    {
+        const auto r = s.regions.find(region);
+        const auto* e = world_.entity(wolf);
+        if (r == s.regions.end() || !e || !r->second.contains(e->cellId, int(std::floor(e->position.x)), int(std::floor(e->position.y))))
+            return false;
+    }
+    const auto* view = s.questView(wolf, offer.string("quest"));
+    if (!view)
+        return true;
+    const auto status = view->string("status");
+    if (status == "offered")
+        return true;
+    if (!endedQuest(status))
+        return false;
+    const auto* again = view->find("again");
+    return again && again->isNumber() && again->asNumber() <= world_.calendarDays();
+}
+
+std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, const std::string& npc) const
+{
+    std::vector<StoryChoice> out;
+    for (const auto& [id, s] : storylines_.all())
+    {
+        if (s.source != "storykeeper" || !s.live())
+            continue;
+        for (const auto& o : s.offers.items())
+            if (!npc.empty() && o.string("npc") == npc && storyOfferOpen(s, o, wolf))
+                out.push_back({"offer", id, o.string("quest"), o.string("ask", "Ask about: " + o.string("title"))});
+        if (const auto f = s.questViews.find(wolf); f != s.questViews.end())
+            for (const auto& v : f->second.array("quests"))
+                if (v.boolean("handIn") && v.string("status") == "ready" && v.string("giver") == npc)
+                {
+                    std::string words = "About " + v.string("title") + ": it's done.";
+                    for (const auto& o : s.offers.items())
+                        if (o.string("quest") == v.string("id") && !o.string("handIn").empty())
+                            words = o.string("handIn");
+                    out.push_back({"handin", id, v.string("id"), words});
+                }
+        for (const auto& c : s.choices.items())
+        {
+            if (c.string("npc") != npc || !s.takesPart(wolf))
+                continue;
+            const auto& players = c["players"];
+            const auto has = [&](const Value& list) {
+                return std::any_of(list.items().begin(), list.items().end(), [&](const Value& w) { return w.asString("") == wolf; });
+            };
+            if (players.isArray() && !has(players))
+                continue;
+            if (c.boolean("once") && has(c["picked"]))
+                continue;
+            out.push_back({"choice", id, c.string("id"), c.string("words")});
+        }
+    }
+    return out;
+}
+
+const Value* Game::storyOffer(const std::string& run, const std::string& quest) const
+{
+    const auto* s = storylines_.find(run);
+    if (!s)
+        return nullptr;
+    for (const auto& o : s->offers.items())
+        if (o.string("quest") == quest)
+            return &o;
+    return nullptr;
+}
+
+void Game::storyQuestEvent(const char* kind, const std::string& wolf, const std::string& run, const std::string& npc,
+                           const std::string& id)
+{
+    WorldEvent e;
+    e.kind = kind;
+    e.actor = wolf;
+    e.target = run;
+    e.item = npc;
+    e.detail = id;
+    world_.recordEvent(std::move(e));
+    saveSoon();
 }
 } // namespace ratw::game

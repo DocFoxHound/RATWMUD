@@ -619,3 +619,20 @@
 .camp-version.past, .camp-version.withdrawn { color: var(--faint); }
 .wb-approval .wb-for-run { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
 .wb-approval .wb-for-run select { width: auto; max-width: 340px; }
+
+/* Doc 85, Phase 6: quests in the workbench and the console. */
+.wb-objective-body { display: flex; flex-direction: column; gap: .25rem; flex: 1; min-width: 0; }
+.wb-quest .wb-offer { border-left: 2px solid rgba(217, 182, 123, .45); padding-left: .6rem; margin: .3rem 0; }
+.wb-small-quest { display: flex; flex-direction: column; gap: .4rem; margin: .4rem 0 .8rem; }
+.wb-new-quest { margin-bottom: .6rem; }
+.wb-node.quest .wb-order { opacity: .8; }
+.camp-cell.failed { color: #e07a6a; }
+.camp-cell.hidden { opacity: .6; font-style: italic; }
+.camp-quest-status.ready { color: var(--amber); font-weight: 600; }
+.camp-quest-status.done { color: var(--ok); }
+.camp-quest-status.failed, .camp-quest-status.abandoned { color: #e07a6a; }
+.camp-quests .dm-table-wrap { overflow: visible; }   /* (A row's menu opens below the table: never clipped.) */
+.camp-menu { position: relative; display: inline-block; }
+.camp-menu-list { position: absolute; right: 0; top: 100%; z-index: 20; display: flex; flex-direction: column; min-width: 16rem; max-height: 22rem; overflow-y: auto;
+    background: #1b2522; border: 1px solid var(--line); border-radius: 6px; padding: 4px; box-shadow: 0 8px 22px #0008; }
+.camp-menu-list button { text-align: left; white-space: normal; }

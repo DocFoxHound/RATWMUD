@@ -9,9 +9,10 @@ import type {Target} from '../api';
 import type {Problem, Problems} from '../../lib/campaigns';
 import {
     fragmentOf, insertTriggers, namesOf, pasteFragment, readFragment, refOfProblem, removeTriggers, renameSignal,
-    renameTrigger, sameRef, search, signalsOf, takenIds, traceKey, triggersOf, unique, usesOf, type Catalogue, type Fragment, type Mission,
+    newQuest, renameTrigger, sameRef, search, signalsOf, takenIds, traceKey, triggersOf, unique, usesOf, withQuests, type Catalogue, type Fragment, type Mission,
     type Program, type Ref, type Refs,
 } from '../../lib/workbench';
+import {QuestEditor, QuestList} from './QuestEditor';
 import {StoryMissions} from '../StoryMissions';
 import {StoryRegions, type Region} from '../StoryRegions';
 import {EmbeddedScenes} from '../EmbeddedScenes';
@@ -68,6 +69,11 @@ function problemKeys(p: Program, list: Problem[]): {byKey: Record<string, string
             const action = /^actions\[\d+\]/.test(at.part ?? '');
             add(action ? `${head}:${at.part}` : at.part?.startsWith('if') ? head + ':if' : head, pr.text);
         } else if (ref?.kind === 'exit') add(`x:${ref.phase}:${ref.index}`, pr.text);
+        // (Phase 6: a quest's problems, by its part when the path names one: "q:2:rewards[0]", "q:2:objectives[1]".)
+        else if (ref?.kind === 'quest') {
+            const part = /^quests\[\d+\]\.(.+)$/.exec(pr.path ?? '')?.[1] ?? at.part;
+            add(part ? `q:${ref.index}:${part}` : `q:${ref.index}`, pr.text);
+        }
         else if (at.kind === 'effect' && typeof at.phase === 'number') add(`e:${at.phase}:${at.index ?? 0}`, pr.text);
     }
     return {byKey, refs};
@@ -102,6 +108,7 @@ export function Workbench({program, edit, catalog, refs, world, target, sceneLib
         if (r.kind === 'trigger') return r.index < triggersOf(program, r.phase).length && (r.phase === null || r.phase < program.phases.length);
         if (r.kind === 'exit') return r.phase < program.phases.length && r.index < program.phases[r.phase].exits.length;
         if (r.kind === 'phase' || r.kind === 'missions' || r.kind === 'entry') return r.phase < program.phases.length;
+        if (r.kind === 'quest') return r.index < (program.quests?.length ?? 0);
         return true;
     };
     const current: Ref = valid(selected) ? selected : {kind: 'settings'};
@@ -183,6 +190,10 @@ export function Workbench({program, edit, catalog, refs, world, target, sceneLib
             edit({...program, phases: [...program.phases, {id: 'phase-' + n, journal: '', effects: [], exits: []}]});
             select({kind: 'phase', phase: program.phases.length});
         },
+        newQuest: () => {
+            const quests = program.quests ?? [];
+            edit(withQuests(program, [...quests, newQuest(program)])); select({kind: 'quest', index: quests.length});
+        },
         newExit: phase => {
             const ph = program.phases[phase];
             const to = program.phases[(phase + 1) % program.phases.length].id;
@@ -236,6 +247,8 @@ export function Workbench({program, edit, catalog, refs, world, target, sceneLib
                             exits: p.exits.map(x => x.on === 'missions completed' ? {...x, missions: x.missions?.filter(id => missions.some(m => m.id === id))} : x)} : p)})}/></article>;
             }
             case 'settings': return <SettingsView/>;
+            case 'quests': return <QuestList select={select} add={() => actions.newQuest?.()}/>;
+            case 'quest': return <QuestEditor key={refKey(current)} index={current.index} select={select}/>;
             case 'regions': return <article className="wb-trigger"><StoryRegions world={world} regions={program.regions ?? []} used={id => usesOf(program, {type: 'region', id}).length > 0}
                 change={(next: Region[], rename?: [string, string]) => edit({...(rename ? renameRegion(program, rename[0], rename[1]) : program), regions: next})}/>
                 <p className="hint">Regions are rectangles on the map that triggers test ("the event happened inside") and that area effects act on.</p></article>;

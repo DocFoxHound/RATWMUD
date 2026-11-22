@@ -10,6 +10,7 @@ import {Workbench, type FullCatalogue} from './triggers/Workbench';
 import {ProblemsList} from './triggers/Problems';
 import {RehearsalStrip, type Report, type Steps} from './triggers/Rehearsal';
 import type {LibraryEntry} from './triggers/Library';
+import {SmallQuestFlow} from './triggers/SmallQuest';
 
 export {ProblemsList};
 
@@ -208,7 +209,7 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
             }}/>
         </fieldset>
         {draftsProblem && canDirect && <p className="hint">{draftsProblem}</p>}
-        {opening && catalog && <NewStory catalog={catalog} close={() => setOpening(false)} start={id => void startFromLibrary(id)}
+        {opening && catalog && <NewStory catalog={catalog} refs={refs} close={() => setOpening(false)} start={id => void startFromLibrary(id)}
             pick={p => { if (replaceWith(pretty(p), {name: p.title})) { setOpening(false); setView('workbench'); } }}/>}
         {!catalog && <p className="hint">Loading the trigger catalogue…</p>}
         {catalog && view === 'workbench' && shown && <Workbench key={meta.id ?? 'local'} program={shown} edit={edit} catalog={catalog} refs={refs} world={world} target={target}
@@ -233,7 +234,11 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
         })()}
         {report && <section className="wb-approval"><h4>Effects for approval</h4>{report.effects.length ? <ul>{report.effects.map((e, i) => <li key={i}><code>{JSON.stringify(e)}</code></li>)}</ul> : <p>Journal entries only.</p>}
             {report.voices?.map(v => <p key={v.phase + v.npc}>Optional guest voice · {v.npc} during {v.phase}</p>)}
-            {shown && <p>Audience · {shown.audience.kind === 'active' ? 'Players active in the last ' + shown.audience.days + ' days' : shown.audience.players?.join(', ')}</p>}
+            {shown && <p>Audience · {shown.audience.kind === 'active' ? 'Players active in the last ' + shown.audience.days + ' days'
+                : shown.audience.kind === 'open' ? `Open: nobody at first; a wolf joins by taking a quest or being taken in (at most ${shown.audience.cap ?? 5000})`
+                : shown.audience.kind === 'everyone' ? `Everyone: players active in the last ${shown.audience.days} days, and each who signs in after (at most ${shown.audience.cap ?? 5000})`
+                : shown.audience.players?.join(', ')}</p>}
+            {shown?.quests?.length ? <p>Quests · {shown.quests.map(q => q.title).join(', ')}</p> : null}
             <details><summary>Version fingerprint</summary><code>{report.digest}</code></details>
             <button disabled={!canDirect || !reviewed || busy || !!ticket} onClick={() => void perform(async () => {
                 const r = await storyProgram<{ticket: string; run: string}>(target, 'approve', {program, digest: report.digest});
@@ -275,13 +280,19 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
     </aside>}</div>;
 }
 
-/** "New…" (doc 85, 4.4): a small story from one of the 100 library events, a campaign (blank or one of the 8 examples). */
-function NewStory({catalog, close, start, pick}: {catalog: Catalog; close: () => void; start: (id: string) => void; pick: (p: Program) => void}) {
+/** "New…" (doc 85, 4.4): a small quest (Phase 6), a small story from one of the 100 library events, a campaign (blank or one of the 8 examples). */
+export function NewStory({catalog, refs, close, start, pick, questing = false}: {catalog: Catalog; refs: Refs | null; close: () => void; start: (id: string) => void;
+    pick: (p: Program) => void; questing?: boolean}) {
     const [q, setQ] = useState('');
+    const [quest, setQuest] = useState(questing);
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
     const found = catalog.eventTypes.filter(e => words.every(w => (e.title + ' ' + e.category + ' ' + e.scale).toLowerCase().includes(w)));
     return <div className="wb-new" role="dialog" aria-label="New story">
         <header><strong>New…</strong><button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
+        <section className="wb-new-quest"><h5>A small quest</h5>
+            <p className="hint">One quest, anyone who asks may take it: who gives it, what to do, the reward.</p>
+            {quest ? <SmallQuestFlow cat={catalog.catalogue} refs={refs} pick={pick} close={() => setQuest(false)}/>
+                : <button type="button" onClick={() => setQuest(true)}>A small quest…</button>}</section>
         <div className="wb-new-grid">
             <section><h5>A small story</h5><p className="hint">One of the 100 library events, ready to rehearse: its opening, its objectives as a mission, its outcome.</p>
                 <input type="search" placeholder="Find an event" value={q} onChange={e => setQ(e.target.value)} aria-label="Find a library event"/>

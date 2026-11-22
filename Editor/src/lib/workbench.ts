@@ -13,17 +13,23 @@ export interface Param {
     default?: unknown; nonzero?: boolean; part?: string; or?: string[]; world?: boolean;
     /** Version 2: a variable's types (`variable`), an optional slot, an operand's kind or the slot it must match. */
     of?: string[]; optional?: boolean; kind?: string; like?: string;
+    /** (The Editor's own: an `objective` slot's quest, filled from the record beside it, so its picker lists that quest's.) */
+    quest?: string;
 }
 export interface Field {type: string; label: string; any?: string}
 export interface CatEvent {
     id: string; group: string; title: string; sentence: string; help: string; fields: Record<string, Field>; tile: boolean;
     mission?: boolean; measures?: string[]; special?: string; exitOnly?: boolean; notes?: string;
+    /** Phase 6: the story's own fact (sent as it runs, never in the world's log). */
+    story?: boolean;
 }
 export interface CatItem {id: string; title: string; sentence: string; help: string; group?: string | boolean; params?: Param[];
     phaseOnly?: boolean; entryOnly?: boolean; last?: boolean; actsOnWolves?: boolean; needsBuilder?: boolean;
     /** Version 2 (doc 85, Phase 5): only in a story of version 2 (`v2`) or 1 (`v1`); the action's `do` when it is not the id;
      *  the lists of actions it holds (`nest`), and whether it holds a condition. */
-    v2?: boolean; v1?: boolean; do?: string; nest?: string[]; condition?: boolean}
+    v2?: boolean; v1?: boolean; do?: string; nest?: string[]; condition?: boolean;
+    /** Phase 6: kept by the story itself (quest progress, who takes part, a story choice), never an order to the game. */
+    story?: boolean}
 export interface Catalogue {
     groups: {id: string; label: string}[]; actionGroups: {id: string; label: string}[]; types: Record<string, string>;
     trigger: {once: Record<string, string>; audience: Record<string, string>; limits: Record<string, number>; enabled?: Record<string, string>};
@@ -107,11 +113,27 @@ export interface Fact {id: string; kind: string; day: number; elapsedDays?: numb
     cell?: string; x?: number; y?: number; detail?: string; quantity?: number; coins?: number}
 export interface Case {name: string; cohort: string[]; events: Fact[]; expect: string[]; expectEffects?: {phase: string; [key: string]: unknown}[];
     expectMissionVisits?: {phase: string; visit: number; credits: Record<string, string[]>}[]; expectTriggers?: string[]; expectCounters?: Json; expectMissions?: Json;
-    seed?: string; rolls?: number[]; parties?: Record<string, string>; expectVariables?: Json; expectOutcome?: string | null}
+    seed?: string; rolls?: number[]; parties?: Record<string, string>; expectVariables?: Json; expectOutcome?: string | null;
+    /** Phase 6: each quest's copies as the case ends: {quest: {holder: status}} (a wolf id, "party:<id>" or "story"). */
+    expectQuests?: Record<string, Record<string, string>>}
+/** A quest's objective (doc 85, 3.6): an event of a wolf with filters, a goal, what must come first, optional or hidden. */
+export interface QuestObjective {id: string; label: string; on: string; signal?: string; match?: Record<string, string>;
+    goal?: number; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean}
+/** What fails a quest: an event (with filters), or a deadline after it starts. */
+export type FailRule = {on: string; match?: Record<string, string>; signal?: string} | {afterDays: number; clock?: 'game' | 'real'};
+export interface QuestOffer {ask?: string; say: string; accept?: string; decline?: string; handIn?: string; thanks?: string}
+export interface QuestJoin {who?: 'anyone' | 'participants'; region?: string; cap?: number; limit?: number}
+/** A quest (doc 85, 3.6; Phase 6): a version 2 story's, offered by a resident or given by a trigger. */
+export interface Quest {
+    id: string; title: string; summary?: string; scope?: 'player' | 'party' | 'story'; contributors?: number; lifetime?: 'campaign' | 'phase';
+    phases?: string[]; repeat?: 'once' | 'daily' | 'weekly' | 'always'; giver?: string; board?: string; offer?: QuestOffer; handIn?: boolean; join?: QuestJoin;
+    abandon?: boolean; objectives: QuestObjective[]; fail?: FailRule[]; rewards?: Effect[]; bonus?: Effect[];
+}
+export interface Audience {kind: string; days?: number; players?: string[]; cap?: number}
 export interface Program {
-    format?: string; version?: number; id: string; title: string; audience: {kind: string; days?: number; players?: string[]};
+    format?: string; version?: number; id: string; title: string; audience: Audience;
     start: string; phases: Phase[]; triggers?: Trigger[]; regions?: Region[]; scenes?: Scene[]; tests: Case[]; quietAfterHours?: number;
-    variables?: Variable[];
+    variables?: Variable[]; quests?: Quest[];
 }
 
 export const SIGNAL = 'story signal';
@@ -151,7 +173,11 @@ export function namesOf(refs: Refs | null, program?: Program | null): Names {
         // (Version 2: each variable's scope and type, for its sentence: "the acting wolf's" only before a wolf's own.)
         out['var-scope'] = Object.fromEntries((program.variables ?? []).map(v => [v.id, v.scope]));
         out['var-type'] = Object.fromEntries((program.variables ?? []).map(v => [v.id, v.type]));
+        // (Phase 6: quests by title, their objectives by label.)
+        out.quest = Object.fromEntries((program.quests ?? []).map(q => [q.id, q.title || q.id]));
+        out.objective = Object.fromEntries((program.quests ?? []).flatMap(q => q.objectives.map(o => [o.id, o.label || o.id])));
     }
+    out.purse = purseNames(refs);
     return out;
 }
 
@@ -277,6 +303,11 @@ export function itemParts(item: CatItem, record: Record<string, unknown>, names:
             return {keys, type, label: wanted ? param.label : param.words?.[''] ?? '', value, param, shown: param.words?.[''] ?? '', empty: true,
                 hidden: !param.words?.[''] && !wanted} as Omit<Slot, 'slot'>;
         }
+        if (type === 'objective' && param) {   // (Phase 6: the objective of the quest beside it.)
+            const quest = typeof record.quest === 'string' ? record.quest : '';
+            const p2 = {...param, quest};
+            return {keys, type, label: p2.label, value, param: p2, shown: shown(type, value, names, p2), empty: value === undefined || value === ''};
+        }
         const effective = type === 'value' ? (typeof value === 'number' ? 'int' : 'text') : type;
         const words = param && param.type === 'int' && param.words && typeof value === 'string' ? param.words[value] : undefined;
         const text = words ?? shown(effective, value, names, param);
@@ -373,7 +404,9 @@ export type Ref =
     | {kind: 'settings'} | {kind: 'regions'} | {kind: 'scenes'} | {kind: 'tests'}
     | {kind: 'phase'; phase: number} | {kind: 'missions'; phase: number} | {kind: 'entry'; phase: number}
     | {kind: 'trigger'; phase: number | null; index: number}
-    | {kind: 'exit'; phase: number; index: number};
+    | {kind: 'exit'; phase: number; index: number}
+    // (Phase 6: the story's quests, and one of them.)
+    | {kind: 'quests'} | {kind: 'quest'; index: number};
 export const sameRef = (a: Ref | null | undefined, b: Ref | null | undefined) => JSON.stringify(a) === JSON.stringify(b);
 
 export interface Folder {name: string; items: {ref: Ref; order: number}[]}
@@ -401,7 +434,9 @@ export function buildTree(p: Program): Branch[] {
             ...branch(ph.id, i, ph.triggers ?? []),
             exits: ph.exits.map((_, index) => ({kind: 'exit', phase: i, index}) as Ref),
             missions: ph.missions?.length ?? 0, entry: ph.effects.length,
-            opening: p.start === ph.id, ending: !ph.exits.length && !ph.triggers?.length && !(p.triggers?.length && ph.campaignRules),
+            // (Phase 6: a phase where a quest is offered stays open: a small quest's one phase is not an ending.)
+            opening: p.start === ph.id, ending: !ph.exits.length && !ph.triggers?.length && !(p.triggers?.length && ph.campaignRules)
+                && !(p.quests ?? []).some(q => !q.phases || q.phases.includes(ph.id)),
         })),
     ];
 }
@@ -624,6 +659,7 @@ export function signalsOf(p: Program): string[] {
         for (const c of allConditions(t)) if (c.test === 'timer') out.add(c.signal);
     });
     for (const ph of p.phases) for (const m of ph.missions ?? []) for (const o of m.objectives) if (o.signal) out.add(o.signal);
+    for (const q of p.quests ?? []) for (const o of [...q.objectives, ...(q.fail ?? [])]) if ('signal' in o && o.signal) out.add(o.signal);
     return [...out].sort();
 }
 export function countersOf(p: Program): {scope: string; key: string}[] {
@@ -720,6 +756,24 @@ export function usesOf(p: Program, what: {type: string; id: string; scope?: stri
         else if (!['signal', 'counter', 'variable', 'trigger', 'phase'].includes(type) && (ph.missions ?? []).some(m => m.objectives.some(o => hasValue(o.match))))
             out.push({ref: {kind: 'missions', phase}, where: `${ph.id}: a mission objective's filter`});
     });
+    // (Phase 6: the quests: their objectives' and fail rules' signals and filters, the giver, the region, the rewards; a quest
+    // named by the quest effects of triggers is found above, as any id.)
+    (p.quests ?? []).forEach((q, index) => {
+        const ref: Ref = {kind: 'quest', index}, label = 'Quest ' + q.id;
+        if (type === 'signal') {
+            q.objectives.forEach(o => { if (o.signal === id) out.push({ref, where: `${label}: objective ${o.id} waits for it`}); });
+            if ((q.fail ?? []).some(f => 'signal' in f && f.signal === id)) out.push({ref, where: `${label}: fails on it`});
+        } else if (type === 'quest') {
+            if (q.id === id) out.push({ref, where: label});
+            else if (hasValue(q.objectives) || hasValue(q.fail) || hasValue(q.rewards) || hasValue(q.bonus)) out.push({ref, where: label});
+        } else if (type === 'phase') {
+            if (q.phases?.includes(id)) out.push({ref, where: `${label}: offered in it`});
+        } else if (!['counter', 'variable', 'trigger'].includes(type)) {
+            if (q.giver === id) out.push({ref, where: `${label}: gives it`});
+            else if (q.join?.region === id) out.push({ref, where: `${label}: taken inside it`});
+            else if (hasValue(q.objectives) || hasValue(q.fail) || hasValue(q.rewards) || hasValue(q.bonus)) out.push({ref, where: label});
+        }
+    });
     return out;
 }
 
@@ -737,7 +791,10 @@ export function renameSignal(p: Program, from: string, to: string): Program {
         if (!signal && next.actions === t.actions && next.if === t.if) return t;
         return {...next, ...(signal ? {signal: to} : {})};
     });
-    return {...out, phases: out.phases.map(ph => !ph.missions?.some(m => m.objectives.some(o => o.signal === from)) ? ph : {...ph,
+    const quests = out.quests?.map(q => !q.objectives.some(o => o.signal === from) && !(q.fail ?? []).some(f => 'signal' in f && f.signal === from) ? q : {...q,
+        objectives: q.objectives.map(o => o.signal === from ? {...o, signal: to} : o),
+        ...(q.fail ? {fail: q.fail.map(f => 'signal' in f && f.signal === from ? {...f, signal: to} : f)} : {})});
+    return {...out, ...(quests ? {quests} : {}), phases: out.phases.map(ph => !ph.missions?.some(m => m.objectives.some(o => o.signal === from)) ? ph : {...ph,
         missions: ph.missions!.map(m => ({...m, objectives: m.objectives.map(o => o.signal === from ? {...o, signal: to} : o)}))})};
 }
 
@@ -842,6 +899,11 @@ export function search(p: Program, cat: Catalogue, names: Names, query: string):
             if (hit(sentence + ' ' + JSON.stringify(x))) out.push({ref: {kind: 'exit', phase, index}, label: ph.id + ' / exit ' + (index + 1), text: sentence});
         });
     });
+    (p.quests ?? []).forEach((q, index) => {
+        const sentence = q.objectives.map(o => o.label + ' (' + plain(eventParts(cat, o, names)) + ')').join(' · ');
+        if (hit([q.id, q.title, q.summary ?? '', q.offer?.say ?? '', sentence, JSON.stringify(q)].join(' ')))
+            out.push({ref: {kind: 'quest', index}, label: 'Quest ' + q.id, text: q.title + ': ' + sentence});
+    });
     return out;
 }
 
@@ -884,6 +946,13 @@ export function refOfProblem(p: Program, at: At): Ref | null {
         case 'region': case 'regions': return {kind: 'regions'};
         case 'case': case 'tests': return {kind: 'tests'};
         case 'scene': case 'scenes': return {kind: 'scenes'};
+        // (Phase 6: a quest by its index or id, else the list.)
+        case 'quest': case 'quests': {
+            const list = p.quests ?? [];
+            const index = at.index !== undefined && at.index < list.length ? at.index : list.findIndex(q => q.id === at.id);
+            return index >= 0 ? {kind: 'quest', index} : {kind: 'quests'};
+        }
+        case 'audience': return {kind: 'settings'};
         case 'source': return null;
         default: return {kind: 'settings'};
     }
@@ -916,12 +985,18 @@ export const traceKey = (p: Program, ref: Ref) => {
 export function newEffect(cat: Catalogue, kind: string, p: Program): Effect {
     const e: Effect = {kind};
     for (const param of itemOf(cat.effects, kind)?.params ?? []) {
+        // (Phase 6: an optional parameter starts left out.)
+        if (param.optional) continue;
         if (param.type === 'region') e[param.key] = p.regions?.[0]?.id ?? '';
         else if (param.type === 'choice') e[param.key] = param.values![0];
         else if (param.type === 'int') e[param.key] = param.min! > 1 ? param.min! : Math.max(param.min!, param.nonzero ? 1 : param.key === 'x' || param.key === 'y' ? 0 : 1);
         else if (param.type === 'wolf') e[param.key] = '$actor';
         else if (param.type === 'scene') e[param.key] = String(p.scenes?.[0]?.id ?? '');
         else if (param.type === 'cue') e[param.key] = kind === 'scene.play' ? String(p.scenes?.[0]?.id ?? 'presentation') : 'cue';
+        // (A quest: the first of the story's, its first objective.)
+        else if (param.type === 'quest') e[param.key] = p.quests?.[0]?.id ?? '';
+        else if (param.type === 'objective') e[param.key] = p.quests?.find(q => q.id === e.quest)?.objectives[0]?.id ?? '';
+        else if (param.type === 'offer') e[param.key] = 'choice';
         else e[param.key] = '';
     }
     if (kind === 'scene.play' && p.scenes?.[0]?.visibility === 'public') e.player = 'world';
@@ -1036,6 +1111,16 @@ export function editableTrigger(v: unknown): boolean {
     return record(v) && typeof v.id === 'string' && typeof v.on === 'string' && (v.if === undefined || editableCondition(v.if))
         && (v.match === undefined || record(v.match)) && (v.enabled === undefined || typeof v.enabled === 'boolean') && editableActions(v.actions);
 }
+/** A quest the Quest editor can show: its id, title and objectives, and lists where lists go (Phase 6). */
+export function editableQuest(v: unknown): v is Quest {
+    const list = (x: unknown, each: (y: Json) => boolean) => x === undefined || (Array.isArray(x) && x.every(y => record(y) && each(y)));
+    return record(v) && typeof v.id === 'string' && typeof v.title === 'string' && Array.isArray(v.objectives) && v.objectives.length > 0
+        && v.objectives.every(o => record(o) && typeof o.id === 'string' && typeof o.label === 'string' && typeof o.on === 'string'
+            && (o.match === undefined || record(o.match)) && (o.after === undefined || Array.isArray(o.after)))
+        && list(v.fail, f => typeof f.on === 'string' || typeof f.afterDays === 'number') && list(v.rewards, e => typeof e.kind === 'string')
+        && list(v.bonus, e => typeof e.kind === 'string') && (v.phases === undefined || Array.isArray(v.phases))
+        && (v.offer === undefined || record(v.offer)) && (v.join === undefined || record(v.join));
+}
 /** Whether the workbench can show a program as it is. A program it cannot is still kept, and opened in Source (risk 6). */
 export function editable(v: unknown): v is Program {
     if (!record(v)) return false;
@@ -1046,6 +1131,7 @@ export function editable(v: unknown): v is Program {
         && (p.regions === undefined || (Array.isArray(p.regions) && p.regions.every(regionOk)))
         && (p.triggers === undefined || (Array.isArray(p.triggers) && p.triggers.every(editableTrigger)))
         && (p.scenes === undefined || (Array.isArray(p.scenes) && p.scenes.every(s => record(s) && typeof s.title === 'string' && Array.isArray(s.beats))))
+        && (p.quests === undefined || (Array.isArray(p.quests) && p.quests.every(editableQuest)))
         && Array.isArray(p.tests) && p.tests.every(c => record(c) && typeof c.name === 'string' && Array.isArray(c.cohort) && Array.isArray(c.expect)
             && Array.isArray(c.events) && c.events.every(f => record(f) && typeof f.kind === 'string'))
         && Array.isArray(p.phases) && p.phases.length > 0 && p.phases.every(ph => record(ph) && typeof ph.id === 'string' && typeof ph.journal === 'string'
@@ -1067,4 +1153,132 @@ export function wordingOf(cat: Catalogue, flat: Record<string, string>) {
         condition: (c: {test: string; field?: string; op?: string; expected?: unknown; key?: string; scope?: string; region?: string; id?: string}) =>
             plain(conditionParts(cat, {...c, value: c.expected} as unknown as Condition, names)),
     };
+}
+
+// ------------------------------------------------------------------------------------------------- quests (Phase 6)
+
+/** The quest effects' kinds that name a quest (and an objective): renaming one follows them. */
+export const QUEST_EFFECTS = ['quest.offer', 'quest.start', 'quest.complete', 'quest.fail', 'objective.complete', 'objective.fail', 'objective.reveal',
+    'objective.progress'];
+/** The events a quest's objectives may wait for: the catalogue's mission events, and a story signal. */
+export function objectiveEvents(cat: Catalogue): CatEvent[] {
+    return cat.events.filter(e => e.mission || e.id === SIGNAL);
+}
+/** Who pays a coin reward (doc 85, question 4: never minted): each town's treasury, works, watch and church, from the refs. */
+export function purseNames(refs: Refs | null): Record<string, string> {
+    const out: Record<string, string> = {};
+    for (const t of refs?.towns ?? []) {
+        out['town:' + t.id] = `${t.name}'s treasury`;
+        for (const [k, w] of [['works', 'Town Works'], ['watch', 'watch'], ['church', 'church']]) out[`town:${t.id}:${k}`] = `${t.name}'s ${w}`;
+    }
+    return out;
+}
+export const PURSE = /^(town:[A-Za-z0-9_.-]{1,60}(:(works|watch|church))?|till:[A-Za-z0-9_.:-]{1,70}|chapter:[A-Za-z0-9_.:-]{1,70})$/;
+const ID = /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/;
+export const isId = (v: string) => ID.test(v);
+
+/** A new quest of a program: one objective (talk to someone), offered by nobody yet. */
+export function newQuest(p: Program): Quest {
+    const taken = new Set((p.quests ?? []).map(q => q.id));
+    let n = (p.quests?.length ?? 0) + 1;
+    while (taken.has('quest-' + n)) n++;
+    return {id: 'quest-' + n, title: 'A new quest', scope: 'player', objectives: [{id: 'talk', label: 'Speak with them.', on: 'conversation'}]};
+}
+export function withQuests(p: Program, quests: Quest[]): Program {
+    if (!quests.length) { const {quests: _q, ...rest} = p; void _q; return rest; }
+    return {...p, quests};
+}
+/** Every effect of the program (triggers' actions, nested ones too, phases' entry effects, quests' rewards) passed through `fn`. */
+function mapEffects(p: Program, fn: (e: Effect) => Effect): Program {
+    const actions = (list: Action[]) => mapActions(list, a => {
+        if (a.do !== 'effect') return a;
+        const e = fn(a.effect);
+        return e === a.effect ? a : {...a, effect: e};
+    });
+    const trig = (t: Trigger) => { const next = actions(t.actions); return next === t.actions ? t : {...t, actions: next}; };
+    const list = (l: Effect[] | undefined) => { if (!l) return l; const next = l.map(fn); return next.some((e, i) => e !== l[i]) ? next : l; };
+    return {...p, ...(p.triggers ? {triggers: p.triggers.map(trig)} : {}),
+        phases: p.phases.map(ph => {
+            const effects = list(ph.effects)!;
+            return {...ph, effects, ...(ph.triggers ? {triggers: ph.triggers.map(trig)} : {})};
+        }),
+        ...(p.quests ? {quests: p.quests.map(q => ({...q, ...(q.rewards ? {rewards: list(q.rewards)} : {}), ...(q.bonus ? {bonus: list(q.bonus)} : {})}))} : {})};
+}
+const QUEST_FACTS = ['quest accepted', 'quest declined', 'quest handed in', 'quest abandoned', 'quest started', 'quest completed', 'quest failed', 'objective completed'];
+/** A quest renamed everywhere: its id, the quest effects naming it, objectives and fail rules waiting for its events, and the
+ *  rehearsal cases (their facts and expectQuests). */
+export function renameQuest(p: Program, from: string, to: string): Program {
+    if (from === to) return p;
+    let out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === from ? {...e, quest: to} : e);
+    const rule = <T extends {on?: string; match?: Record<string, string>}>(o: T): T =>
+        o.on && QUEST_FACTS.includes(o.on) && o.match?.detail === from ? {...o, match: {...o.match, detail: to}} : o;
+    out = rewriteTriggers(out, t => rule(t));
+    out = {...out, quests: (out.quests ?? []).map(q => ({...(q.id === from ? {...q, id: to} : q), objectives: q.objectives.map(rule),
+        ...(q.fail ? {fail: q.fail.map(f => 'on' in f ? rule(f) : f)} : {})}))};
+    out = {...out, tests: out.tests.map(c => ({...c, events: c.events.map(f => QUEST_FACTS.includes(f.kind) && f.detail === from ? {...f, detail: to} : f),
+        ...(c.expectQuests && from in c.expectQuests ? {expectQuests: Object.fromEntries(Object.entries(c.expectQuests).map(([k, v]) => [k === from ? to : k, v]))} : {})}))};
+    if (!p.quests) { const {quests: _q, ...rest} = out; void _q; return rest; }
+    return out;
+}
+/** An objective renamed: its id, the others' `after` naming it, and the objective effects naming it for its quest. */
+export function renameObjective(p: Program, quest: string, from: string, to: string): Program {
+    if (from === to) return p;
+    const out = mapEffects(p, e => QUEST_EFFECTS.includes(e.kind) && e.quest === quest && e.objective === from ? {...e, objective: to} : e);
+    return {...out, quests: (out.quests ?? []).map(q => q.id !== quest ? q : {...q, objectives: q.objectives.map(o => ({...(o.id === from ? {...o, id: to} : o),
+        ...(o.after ? {after: o.after.map(a => a === from ? to : a)} : {})}))})};
+}
+
+/** What the "New small quest" flow asks (doc 85, 4.4): who gives it, what to do, the reward, the offer's words. */
+export interface SmallQuestInput {
+    title: string; summary: string; giver: string; objectives: Omit<QuestObjective, 'id'>[];
+    reward: {kind: 'deed'; detail: string} | {kind: 'coins'; coins: number; purse: string; reason: string} | {kind: 'item'; item: string; quantity: number}
+        | {kind: 'standing'; faction: string; points: number; reason: string} | {kind: 'none'};
+    offer: QuestOffer; repeat?: Quest['repeat'];
+}
+export const slug = (text: string, fallback = 'quest') => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || fallback;
+export const REHEARSAL_WOLF = 'player-test';
+/** A small quest as a whole program: version 2, an open audience (anyone who asks may take it), one phase that stays open,
+ *  the quest with its giver, offer and hand-in, and a rehearsal case: a wolf takes it, does each objective and hands it in. */
+export function smallQuestProgram(input: SmallQuestInput): Program {
+    const id = slug(input.title);
+    const objectives: QuestObjective[] = input.objectives.map((o, i) => ({id: 'step-' + (i + 1), ...o, ...(i > 0 && !o.optional ? {after: ['step-' + i]} : {})}));
+    // (Each step after the one before: the order the wolf is told. The author can free them in the Quest editor.)
+    for (const o of objectives) if (o.after && objectives.find(x => x.id === o.after![0])?.optional) delete o.after;
+    const r = input.reward;
+    const rewards: Effect[] = r.kind === 'deed' ? [{kind: 'deed.award', player: '$actor', detail: r.detail}]
+        : r.kind === 'coins' ? [{kind: 'character.grant', player: '$actor', coins: r.coins, purse: r.purse, reason: r.reason}]
+        : r.kind === 'item' ? [{kind: 'item.give', player: '$actor', item: r.item, quantity: r.quantity}]
+        : r.kind === 'standing' ? [{kind: 'standing.adjust', player: '$actor', faction: r.faction, points: r.points, reason: r.reason}] : [];
+    const offer = Object.fromEntries(Object.entries(input.offer).filter(([, v]) => typeof v === 'string' && v.trim())) as unknown as QuestOffer;
+    const quest: Quest = {id, title: input.title, ...(input.summary ? {summary: input.summary} : {}), scope: 'player', repeat: input.repeat ?? 'once',
+        giver: input.giver, offer: {...offer, say: offer.say || 'There is something you could do for me.'}, handIn: true, objectives,
+        ...(rewards.length ? {rewards} : {})};
+    const wolf = REHEARSAL_WOLF;
+    const events: Fact[] = [{id: 'take', kind: 'quest accepted', day: 0, actor: wolf, item: input.giver, detail: id}];
+    objectives.filter(o => !o.optional).forEach((o, i) => {
+        if (o.on === SIGNAL) return;   // (A signal is the story's own: a case cannot state one.)
+        const fact: Fact = {id: o.id, kind: o.on, day: 0, actor: wolf, ...(o.match ?? {})};
+        const goal = o.goal ?? 1;
+        if (o.measure === 'quantity') fact.quantity = goal;
+        else if (o.measure === 'coins') fact.coins = goal;
+        for (let k = 0; k < (o.measure && o.measure !== 'count' ? 1 : goal); k++) events.push({...fact, id: goal > 1 && (!o.measure || o.measure === 'count') ? `${o.id}-${k + 1}` : o.id, day: 0.01 * (i + 1)});
+    });
+    events.push({id: 'hand-in', kind: 'quest handed in', day: 0.5, actor: wolf, item: input.giver, detail: id});
+    return {format: 'ratw-story-program', version: 2, id, title: input.title, audience: {kind: 'open'}, start: 'open',
+        phases: [{id: 'open', journal: input.summary || input.title, effects: [], exits: []}], quests: [quest],
+        tests: [{name: 'A wolf takes it, does it and hands it in', cohort: [], events, expect: ['open'], expectQuests: {[id]: {[wolf]: 'done'}}}]};
+}
+
+/** One of doc 58's personal-quest templates (Data/Storylines/templates.json), as the small quest's starting point. */
+export interface StorylineTemplate {id: string; title: string; source?: string; steps: {title: string; text: string; objectives: {kind: string; target?: string; line: string}[]}[]}
+const words = (t: string) => t.replace(/\[\[\{?([^}\]]+)\}?\]\]/g, (_, n) => n === 'tie' ? 'them' : n).replace(/\{([^}]+)\}/g, (_, n) => n).trim();
+/** A template's title, summary and objectives, as far as they map: talking to someone is a conversation (with the giver when it
+ *  names the template's resident), visiting a place is entering it; being told, scenes and contracts have no event of their own. */
+export function fromTemplate(t: StorylineTemplate, giver: string): {title: string; summary: string; objectives: Omit<QuestObjective, 'id'>[]} {
+    const objectives: Omit<QuestObjective, 'id'>[] = [];
+    for (const s of t.steps) for (const o of s.objectives) {
+        if (o.kind === 'talk') objectives.push({label: words(o.line).slice(0, 180), on: 'conversation', ...(giver ? {match: {target: giver}} : {})});
+        else if (o.kind === 'place') objectives.push({label: words(o.line).slice(0, 180), on: 'enter place'});
+    }
+    return {title: words(t.title).slice(0, 120), summary: words(t.steps[0]?.text ?? '').slice(0, 300), objectives: objectives.slice(0, 12)};
 }

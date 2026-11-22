@@ -92,6 +92,49 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
     return {true, "Area effect reached " + std::to_string(here.size()) + " participants" +
                       (full.empty() ? std::string(".") : "; " + std::to_string(full.size()) + " had no room."), run};
 }
+// A story's reward to one wolf (doc 85, Phase 6: a quest's rewards, and a trigger's): an item into the pack (item.give
+// {item, quantity 1..20}), or a few points of standing with a faction (standing.adjust {faction, points -10..10, reason}):
+// the wolf's Chapter's standing, as a faction's missions move it. Refused when the wolf isn't in the world, the item is
+// unknown or the pack full, or the wolf has no Chapter.
+Result Game::applyStoryReward(const std::string& kind, const std::string& wolf, const json::Value& payload)
+{
+    const auto* e = world_.entity(wolf);
+    if (!e || e->npc || e->dead)
+        return {false, "That wolf is not in the world just now.", wolf};
+    if (kind == "item.give")
+    {
+        const auto good = payload.string("item");
+        const int quantity = countField(payload, "quantity", 20);
+        if (!quantity || !itemValid(good))
+            return {false, "Give a known item, 1 to 20 of it.", wolf};
+        if (!world_.society().canCreate(wolf, good, quantity))
+        {
+            tellActedOn(wolf, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+            return {false, "Their pack is full.", wolf};
+        }
+        world_.society().create(wolf, good, quantity, "dm grant: story reward");
+        recordCharacters(Economy, {wolf});
+        tellActedOn(wolf, "You receive " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+        return {true, "Gave " + std::to_string(quantity) + " " + Society::itemName(good) + ".", wolf};
+    }
+    const auto factionId = payload.string("faction");
+    const auto& points = payload["points"];
+    const double n = points.asNumber();
+    const auto reason = json::utf8Prefix(payload.string("reason"), 80);
+    const auto* f = factions_.find(factionId);
+    if (!f)
+        return {false, "There is no such faction.", wolf};
+    if (!points.isNumber() || n < -10 || n > 10 || n == 0 || std::floor(n) != n || reason.empty())
+        return {false, "Change standing by -10 to 10 points, with a reason.", wolf};
+    const auto* chapter = chapters_.of(wolf);
+    if (!chapter)
+        return {false, "That wolf has no Chapter to stand with a faction.", wolf};
+    const double moved = factions_.change(factionId, chapter->id, n, "story", world_.calendarDays());
+    saveSoon();
+    tellActedOn(wolf, std::string("Your Chapter's standing with ") + f->name + (moved >= 0 ? " rises" : " falls") + ": " + reason + ".");
+    return {true, "Standing with " + f->name + " moved " + std::to_string(int(moved)) + ".", wolf};
+}
+
 // A Dungeon Master's words to a world story's wolves (doc 85, Phase 2, story.tell): to all of them, one of them, or the ones
 // standing in one of its regions. {visit, text, to: participants | wolf | region, player?, region?, title?}. A wolf in the
 // world sees it as a banner and a line; one away is told when back (tellActedOn: on a community world, kept with the wolf).

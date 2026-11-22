@@ -1595,6 +1595,20 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {true, "Mission progress recorded.", target};
         }
     }
+    else if (kind == "story.cohort" || kind == "story.quests")
+    {
+        // Doc 85, Phase 6: a living audience (wolves taken into a world story, or out), and its quests: each wolf's journal
+        // entries, the quests its residents offer and the story choices laid over their windows. The runner keeps the
+        // ledger; the game shows it, and checks a choice again when it is picked.
+        json::Value payload;
+        std::string problem;
+        auto* story = storylines_.find(target);
+        if (!row[4] || !json::parse(*row[4], payload, problem) || !payload.isObject() || !story || story->source != "storykeeper" ||
+            !story->live())
+            outcome = {false, "That world story is not running.", target};
+        else
+            outcome = kind == "story.cohort" ? applyStoryCohort(*story, payload) : applyStoryQuests(*story, payload);
+    }
     else if (kind == "story.phase")
     {
         json::Value payload;
@@ -1773,6 +1787,13 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         std::string problem;
         outcome = row[4] && json::parse(*row[4], payload, problem) ? applyStoryTell(target, payload)
                                                                   : Result{false, "Invalid story message.", target};
+    }
+    else if (kind == "item.give" || kind == "standing.adjust")
+    {
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem) ? applyStoryReward(kind, target, payload)
+                                                                  : Result{false, "Invalid reward.", target};
     }
     else if (kind.rfind("story.area_", 0) == 0)
     {
@@ -6164,6 +6185,7 @@ void Game::command(Connection* c, const std::string& raw)
     {
         if (!partyCommand(c, j, result))
             result = {false, "That isn't something a party does.", {}};
+        partyEvents();
         report = true;
     }
     else if (type == "safety")
@@ -7541,6 +7563,7 @@ void Game::load(const std::string& payload)
                 note("info", "RATW_CHEATS " + id + "'s Dungeon Master mark is cleared: a community world without --dev-tools has no Dev Console.");
             }
     parties_.load(state.parties);
+    partyEvents(true);
     aliases_.clear();
     for (const auto& [who, list] : state.aliases.fields())
         for (const auto& a : list.items())

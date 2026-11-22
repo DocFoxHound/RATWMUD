@@ -1368,6 +1368,11 @@ class Society
     // `moved`: the pennies paid or taken (a fine at most what the player holds).
     bool grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem,
                      std::int64_t* moved = nullptr);
+    // A story's reward paid from a named purse (doc 85, Phase 6; the user's answer to question 4: never minted): `coins`
+    // (1..2500) moved from an existing account that isn't a player's to the player, under the day's grant cap as a grant
+    // is. False, and why, when the purse is short ("The purse is short (Np).") or isn't one.
+    bool payPlayerFrom(const std::string& purse, const std::string& player, std::int64_t coins, const std::string& reason,
+                       std::string& problem);
     // "Reset prices" (12): every pressure in a market ("" all) eased linearly to 0 over a game day from `now` (the
     // Board's resets), with the event "prices reset" carrying the words ("fresh stock everywhere" by default). False for
     // a market the Board hasn't got.

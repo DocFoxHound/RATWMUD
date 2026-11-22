@@ -12,13 +12,14 @@ import {Audit} from './Audit';
 import {Timeline, TimelineRow} from './Timeline';
 import {StatePanel} from './StatePanel';
 import {MissionGrid} from './MissionGrid';
+import {QuestGrid} from './QuestGrid';
 import {WolvesMap} from './WolvesMap';
 import {Orders} from './Orders';
 
-export type ViewTab = 'overview' | 'timeline' | 'triggers' | 'state' | 'missions' | 'wolves' | 'orders' | 'audit';
+export type ViewTab = 'overview' | 'timeline' | 'triggers' | 'state' | 'missions' | 'quests' | 'wolves' | 'orders' | 'audit';
 const TABS: {id: ViewTab; label: string}[] = [
     {id: 'overview', label: 'Overview'}, {id: 'timeline', label: 'Timeline'}, {id: 'triggers', label: 'Triggers'}, {id: 'state', label: 'Variables & timers'},
-    {id: 'missions', label: 'Missions'}, {id: 'wolves', label: 'Wolves & map'}, {id: 'orders', label: 'Orders'}, {id: 'audit', label: 'Audit'},
+    {id: 'missions', label: 'Missions'}, {id: 'quests', label: 'Quests'}, {id: 'wolves', label: 'Wolves & map'}, {id: 'orders', label: 'Orders'}, {id: 'audit', label: 'Audit'},
 ];
 
 export function CampaignView({me, target, row, detail, items, events, names, now, live, tab, setTab, earlier, refresh, explained}: {
@@ -114,8 +115,9 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                     target={steerable(row.status) ? target : undefined} />
                 : tab === 'state' ? <StatePanel detail={detail} names={names} now={now} items={items} steer={canSteer ? setAsk : undefined} busy={busy} />
                 : tab === 'missions' ? <MissionGrid detail={detail} names={names} live={live} steer={canSteer ? setAsk : undefined} busy={busy} />
+                : tab === 'quests' ? <QuestGrid detail={detail} names={names} live={live} steer={canSteer ? setAsk : undefined} busy={busy} />
                 : tab === 'audit' ? <Audit detail={detail} names={names} now={now.at} />
-                : tab === 'wolves' ? <WolvesMap target={target} detail={detail} names={names} live={live} items={items} focus={mapFocus} />
+                : tab === 'wolves' ? <WolvesMap target={target} detail={detail} names={names} live={live} items={items} focus={mapFocus} steer={canSteer ? setAsk : undefined} busy={busy} />
                 : <Orders detail={detail} row={row} names={names} now={now.at} busy={busy} steer={canSteer ? setAsk : undefined} />}
         </section>
     </div>;

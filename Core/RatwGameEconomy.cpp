@@ -341,7 +341,35 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             who = e->name;
         else if (const auto saved = characters_.find(target); saved != characters_.end() && !saved->second.name.empty())
             who = saved->second.name;
-        if (society.grantPlayer(target, coins, reason, problem, &moved))
+        // A story's reward names the purse that pays it (doc 85, Phase 6): a town's treasury (town:<id>), its works, watch
+        // or church (town:<id>:works), a business's till, a Chapter's treasury. Without one, a DM's grant as ever.
+        auto purse = payload.string("purse");
+        if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
+            for (const auto& t : world_.towns())
+                if (t.id == purse.substr(5))
+                    purse = t.store;
+        // (A world with no towns on its roads, a single settlement like Greyfen Crossing: its one treasury.)
+        if (purse.rfind("town:", 0) == 0 && purse.find(':', 5) == std::string::npos)
+        {
+            if (society.account("stores:" + purse.substr(5)))
+                purse = "stores:" + purse.substr(5);
+            else if (world_.towns().empty() && society.account("treasury"))
+                purse = "treasury";
+        }
+        if (payload.has("purse"))
+        {
+            if (society.payPlayerFrom(purse, target, coins, reason, problem))
+            {
+                outcome = {true, "Paid " + std::to_string(coins) + "p to " + who + " from " + payload.string("purse") + ": " + reason + ".", target};
+                told = clientOf(target);
+                tell = "You are paid " + std::to_string(coins) + " pennies: " + reason + ".";
+                if (!told)
+                    tellActedOn(target, tell);
+            }
+            else
+                outcome = {false, problem, target};
+        }
+        else if (society.grantPlayer(target, coins, reason, problem, &moved))
         {
             // (A fine is at most what the player holds: the DM and the player told what was taken, not what was asked.)
             outcome = {true, (coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +

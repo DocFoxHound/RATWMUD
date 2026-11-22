@@ -620,6 +620,8 @@ struct TreeNode
     std::string mood;
     std::string answers;                  // `answers`: "*" (the move of the choice that led here) or a move; "" none.
     std::string invite;                   // A graft node's invitation (invite <place> <hour> <days>), the game's to check.
+    std::string said;                     // A world story's node (doc 85, Phase 6): the resident's line as the story wrote
+                                          // it, said in their own voice (#symbols# expanded); "" for the library's lines.
     bool free = false;
     std::vector<TreeChoice> choices;
     int line = 0;

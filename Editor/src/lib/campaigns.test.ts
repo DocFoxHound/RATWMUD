@@ -291,3 +291,63 @@ test('a move onto a new version in words: the report, the diff, the timeline, th
     const lines = previewLines({run: 'world-1', kind: 'migrate', payload: {version: 3}, outcome: 'done', text: 'Moving onto version b7e1c2d4.', migration: report, moved: false});
     assert.deepEqual(lines, ['Moving onto version b7e1c2d4.', 'Dropped (the new version has no place for it): timer first-freeze, due day 38.0: nothing listens', 'Counts start now.']);
 });
+
+// ------------------------------------------------------------------------------------------------- quests (doc 85, Phase 6)
+
+import {audienceText, giveAsk, questGrid, questSummary, rowAsks, withoutQuest, type QuestBoard} from './campaigns.ts';
+
+/** A quest as story_runner.status gives it: three wolves' copies (one ready, one part-way, one failed), objectives with an order,
+ *  an optional one and a hidden one. */
+export const ropeQuest: QuestBoard = {id: 'rope', title: 'Rope for the carter', scope: 'player', repeat: 'weekly', giver: 'rm111', open: true,
+    objectives: [{id: 'ask', label: 'Ask the carter what he needs.'}, {id: 'bring', label: 'Bring him two coils of rope.', goal: 2, measure: 'quantity', after: ['ask']},
+        {id: 'spare', label: 'A spare wheel.', optional: true}, {id: 'thief', label: 'Find who cut it.', hidden: true}],
+    copies: [
+        {holder: 'player-elm', kind: 'wolf', members: ['player-elm'], status: 'failed', began: 3, ended: 6, objectives: {ask: {n: 1, done: true}}},
+        {holder: 'player-ash', kind: 'wolf', members: ['player-ash'], status: 'active', began: 10, objectives: {ask: {n: 1, done: true}, bring: {n: 1}}},
+        {holder: 'player-birch', kind: 'wolf', members: ['player-birch'], status: 'ready', began: 9, objectives: {ask: {n: 1, done: true}, bring: {n: 2, done: true},
+            spare: {failed: true}, thief: {shown: true}}},
+    ], starts: 3, cap: 10};
+
+test('a quest as the console grid: a row per copy, ready first; ✔, n / goal, ✖, ? hidden, · not open yet', () => {
+    const rows = questGrid(ropeQuest, names);
+    assert.deepEqual(rows.map(r => [r.name, r.word]), [['Birch Oakenfall', 'READY'], ['Ash Greymantle', ''], ['Elm Sandpaw', 'FAILED']]);
+    assert.deepEqual(rows[0].cells.map(c => c.text), ['✔', '✔', '✖', '-'], 'a hidden objective revealed shows as open');
+    assert.deepEqual(rows[1].cells.map(c => c.text), ['✔', '1 / 2', '-', '?']);
+    const fresh = questGrid({...ropeQuest, copies: [{holder: 'player-elm', kind: 'wolf', members: ['player-elm'], status: 'active', objectives: {}}]}, names)[0];
+    assert.deepEqual(fresh.cells.map(c => c.state), ['open', 'later', 'open', 'hidden'], '"bring" waits for "ask"');
+    const party = questGrid({...ropeQuest, scope: 'party', copies: [{holder: 'party:7', kind: 'party', members: ['player-ash', 'player-birch'], left: ['player-elm'],
+        status: 'active', objectives: {}}]}, names)[0];
+    assert.equal(party.name, 'Party of Ash Greymantle, Birch Oakenfall');
+    assert.equal(party.player, 'player-ash', "a party's copy is steered through one of its wolves");
+    const story = questGrid({...ropeQuest, scope: 'story', copies: [{holder: 'story', kind: 'story', members: [], status: 'active', objectives: {}}]}, names)[0];
+    assert.equal(story.player, 'story');
+    assert.equal(questSummary(ropeQuest), '0 of 3 done · 1 ready to hand in · 1 under way · 1 failed · at most 10 under way at once');
+    assert.equal(questSummary({...ropeQuest, limit: 20}).endsWith('3 of 20 taken'), true);
+    // (Weekly: a wolf whose copy ended may be given it again; one who holds it under way may not.)
+    assert.deepEqual(withoutQuest(ropeQuest, ['player-ash', 'player-birch', 'player-elm', 'player-fern']), ['player-elm', 'player-fern']);
+    assert.deepEqual(withoutQuest({...ropeQuest, repeat: 'once'}, ['player-elm', 'player-fern']), ['player-fern']);
+    assert.equal(audienceText({kind: 'open', cap: 5000, size: 12}), 'open · 12 of 5000');
+    assert.equal(audienceText({kind: 'everyone', size: 40, joinable: false}), 'everyone · 40 (full)');
+    assert.equal(audienceText(undefined, 3), '3');
+});
+
+test('the Quests grid sends the commands of doc 85 5.4 exactly: objective and quest, with the wolf whose copy it is', () => {
+    const [ready, ash, elm] = questGrid(ropeQuest, names);
+    const asks = rowAsks(ropeQuest, ash);
+    const payloads = asks.map(a => [a.ask.kind, a.ask.payload]);
+    // (Order of the menu: objectives as the quest lists them, then the quest's own.)
+    assert.deepEqual(payloads.filter(([k]) => k === 'objective').map(([, p]) => `${(p as {objective: string}).objective}:${(p as {do: string}).do}`),
+        ['ask:reset', 'bring:complete', 'bring:progress', 'bring:fail', 'bring:reset', 'spare:complete', 'spare:fail', 'thief:complete', 'thief:reveal', 'thief:fail']);
+    assert.deepEqual(payloads.filter(([k]) => k === 'quest').map(([, p]) => p), [{quest: 'rope', player: 'player-ash', do: 'complete'},
+        {quest: 'rope', player: 'player-ash', do: 'fail'}, {quest: 'rope', player: 'player-ash', do: 'take'}]);
+    assert.ok(asks.find(a => a.ask.payload.do === 'complete' && a.ask.kind === 'quest')!.ask.does.some(d => d.includes('rewards')), 'no silent rewards (5.8 rule 5)');
+    assert.deepEqual(rowAsks(ropeQuest, elm).map(a => a.ask.payload.do), ['take'], 'a failed copy can only be taken away');
+    assert.ok(rowAsks(ropeQuest, ready).every(a => a.ask.payload.player === 'player-birch'));
+    assert.deepEqual(giveAsk(ropeQuest, 'player-fern', names).payload, {quest: 'rope', player: 'player-fern', do: 'give'});
+    assert.equal(commandLine('objective', {quest: 'rope', objective: 'bring', player: 'player-ash', do: 'progress', amount: 2}, names),
+        'added to bring of rope (+2) for Ash Greymantle');
+    assert.equal(commandLine('quest', {quest: 'rope', player: 'story', do: 'complete'}, names), "completed the quest rope (the story's copy)");
+    assert.equal(commandLine('participant', {player: 'player-elm', do: 'add'}, names), 'took Elm Sandpaw into the story');
+    assert.equal(commandLine('participant', {player: 'player-elm', do: 'remove'}, names), 'took out Elm Sandpaw of the story');
+    assert.equal(problemPlace({level: 'error', text: 'x', path: 'quests[1].rewards[0]', at: {kind: 'quest', index: 1, id: 'thief', part: 'rewards[0]'}}), 'quest thief › reward 1');
+});

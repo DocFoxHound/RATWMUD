@@ -1498,6 +1498,54 @@ void Game::dialogueChoose(Connection* c, DialogueSession& d, int n, std::string 
             dialogueSend(c, d, earned);
         return;
     }
+    if (choice.action == "story_accept" || choice.action == "story_decline" || choice.action == "story_handin" ||
+        choice.action == "story_choice")
+    {
+        // A world story's quest or choice in the window (doc 85, Phase 6): checked again as it stands now, then written as
+        // the event the story's runner reads; the runner keeps the ledger and answers in the journal.
+        const auto run = choice.args.size() > 0 ? choice.args[0] : std::string();
+        const auto id = choice.args.size() > 1 ? choice.args[1] : std::string();
+        const auto* story = storylines_.find(run);
+        bool open = story && story->source == "storykeeper" && story->live();
+        std::string note = earned;
+        if (open && (choice.action == "story_accept" || choice.action == "story_decline"))
+        {
+            const auto* offer = storyOffer(run, id);
+            open = offer && offer->string("npc") == d.npc && storyOfferOpen(*story, *offer, playerId);
+            if (open && choice.action == "story_accept")
+                note = "You take on: " + offer->string("title") + ".";
+        }
+        else if (open)
+        {
+            const auto mine = storyChoicesFor(playerId, d.npc);
+            const auto kind = choice.action == "story_handin" ? "handin" : "choice";
+            open = std::any_of(mine.begin(), mine.end(), [&](const StoryChoice& s) { return s.kind == kind && s.run == run && s.id == id; });
+        }
+        if (!open)
+        {
+            dialogueSend(c, d, "That's no longer on offer.");
+            return;
+        }
+        if (choice.action == "story_choice")
+            if (auto* s = storylines_.find(run))
+                for (auto& item : s->choices.items())
+                    if (item.string("id") == id && item.string("npc") == d.npc && item.boolean("once"))
+                    {
+                        // (Shown once: the runner's next word says so too.)
+                        auto picked = item["picked"].isArray() ? item["picked"] : json::Value::array();
+                        picked.push(json::Value(playerId));
+                        item.set("picked", picked);
+                        storylines_.touch();
+                    }
+        storyQuestEvent(choice.action == "story_accept" ? "quest accepted" : choice.action == "story_decline" ? "quest declined"
+                        : choice.action == "story_handin" ? "quest handed in" : "dialogue choice",
+                        playerId, run, d.npc, id);
+        if (!choice.then.empty())
+            dialogueGo(c, d, choice.then, note);
+        else
+            dialogueSend(c, d, note);
+        return;
+    }
     if (!choice.go.empty())
     {
         dialogueGo(c, d, choice.go, earned);

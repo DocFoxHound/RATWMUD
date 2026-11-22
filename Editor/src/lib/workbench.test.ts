@@ -239,3 +239,102 @@ test('version 2: every action and condition the workbench adds is one the story 
         + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(p)}).toString());
     assert.deepEqual(found, []);
 });
+
+// ------------------------------------------------------------------------------------------------- quests (doc 85, Phase 6)
+
+import {
+    editableQuest, fromTemplate, newEffect, newQuest, renameObjective, renameQuest, smallQuestProgram, withQuests, type Quest,
+} from './workbench.ts';
+import {questCampaignOf, SMALL_QUEST_INPUT} from './fixtures/inputs.ts';
+
+const smallQuest: Program = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/small-quest.json'), 'utf8'));
+const questCampaign: Program = questCampaignOf(smallQuest);
+
+test('the small quest flow makes the program kept beside the tests: open audience, one open phase, the quest, a rehearsal', () => {
+    const p = smallQuestProgram(SMALL_QUEST_INPUT);
+    assert.equal(pretty(p) + '\n', readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'fixtures/small-quest.json'), 'utf8'));
+    assert.equal(p.version, 2);
+    assert.deepEqual(p.audience, {kind: 'open'});
+    assert.equal(p.phases.length, 1);
+    assert.deepEqual(p.phases[0].exits, []);
+    const q = p.quests![0];
+    assert.equal(q.giver, 'rm111');
+    assert.deepEqual(q.objectives.map(o => [o.id, o.after]), [['step-1', undefined], ['step-2', ['step-1']]]);
+    assert.deepEqual(q.rewards, [{kind: 'character.grant', player: '$actor', coins: 12, purse: 'town:greyfen', reason: "the carter's thanks"}]);
+    const c = p.tests[0];
+    assert.deepEqual(c.cohort, []);
+    assert.deepEqual(c.events.map(e => e.kind), ['quest accepted', 'conversation', 'gift', 'quest handed in']);
+    assert.equal(c.events[2].quantity, 2, 'a quantity goal is one gift of that many');
+    assert.deepEqual(c.expectQuests, {[q.id]: {'player-test': 'done'}});
+    // (Nothing but thanks: no rewards key; a count goal of 3 is three facts.)
+    const plainer = smallQuestProgram({...SMALL_QUEST_INPUT, reward: {kind: 'none'}, objectives: [{label: 'Talk three times.', on: 'conversation', goal: 3}]});
+    assert.equal(plainer.quests![0].rewards, undefined);
+    assert.equal(plainer.tests[0].events.filter(e => e.kind === 'conversation').length, 3);
+});
+
+test('a program with quests is editable, and its quests, objectives and quest effects read as sentences', () => {
+    assert.ok(editable(smallQuest) && editable(questCampaign));
+    assert.ok(!editable({...questCampaign, quests: [{id: 'q', title: 'Q', objectives: []}]}), 'a quest needs an objective');
+    assert.ok(!editableQuest({id: 'q', title: 'Q', objectives: [{id: 'a', label: 'A'}]}), 'an objective needs its event');
+    const ns = namesOf({residents: [{id: 'rm111', name: 'Ivo Tarmarsh'}], items: [{id: 'rope', name: 'Rope (coil)', category: 'tool'}],
+        towns: [{id: 'greyfen', name: 'Greyfen'}]}, questCampaign);
+    assert.equal(ns.quest.thief, 'Who cut the rope?');
+    assert.equal(ns.purse['town:greyfen'], "Greyfen's treasury");
+    for (const q of questCampaign.quests!) for (const o of q.objectives) {
+        const s = plain(eventParts(cat, o, ns));
+        assert.ok(s && !s.includes('{'), s);
+    }
+    assert.match(plain(eventParts(cat, questCampaign.quests![0].objectives[1], ns)), /Ivo Tarmarsh/);
+    const lines = questCampaign.triggers![0].actions.map(a => plain(actionParts(cat, a, ns)));
+    for (const l of lines) assert.ok(l && !l.includes('{') && !l.includes('undefined'), l);
+    assert.equal(lines[0], 'Offer Who cut the rope? to the acting wolf');
+    assert.equal(lines[1], 'Show Name the one who cut it. of Who cut the rope? to the acting wolf', 'the objective by its label, within its quest');
+    assert.equal(lines[2], 'Add 1 to Bring him two coils of rope. of Rope for the carter for the acting wolf');
+    const reward = plain(actionParts(cat, {do: 'effect', effect: questCampaign.quests![0].rewards![0]}, ns));
+    assert.equal(reward, "Pay the acting wolf 12 pennies from Greyfen's treasury: “the carter's thanks”");
+    // (The optional parts of npc.offer are left out of a new one, and out of its sentence.)
+    const offer = newEffect(cat, 'npc.offer', questCampaign);
+    assert.ok(!('player' in offer) && !('once' in offer), JSON.stringify(offer));
+    assert.deepEqual(newEffect(cat, 'objective.complete', questCampaign), {kind: 'objective.complete', quest: 'rope-for-the-carter', objective: 'step-1', player: '$actor'});
+});
+
+test('quests in uses, search and problems; renaming a quest or an objective follows every use, and back gives the program back', () => {
+    const uses = usesOf(questCampaign, {type: 'quest', id: 'thief'});
+    assert.ok(uses.some(u => u.ref.kind === 'trigger'), 'the trigger that offers it');
+    assert.ok(usesOf(questCampaign, {type: 'resident', id: 'rm111'}).some(u => u.ref.kind === 'quest' && u.where.includes('gives it')));
+    assert.ok(search(questCampaign, cat, namesOf(null, questCampaign), 'rope-cutter').some(f => f.ref.kind === 'quest'));
+    assert.deepEqual(refOfProblem(questCampaign, {kind: 'quest', index: 1}), {kind: 'quest', index: 1});
+    assert.deepEqual(refOfProblem(questCampaign, {kind: 'quest', id: 'thief'}), {kind: 'quest', index: 1});
+    assert.deepEqual(refOfProblem(questCampaign, {kind: 'quests'}), {kind: 'quests'});
+    const renamed = renameQuest(questCampaign, 'rope-for-the-carter', 'rope');
+    assert.equal(renamed.quests![0].id, 'rope');
+    assert.equal(renamed.triggers![0].match!.detail, 'rope', 'a trigger on its quest completed follows');
+    assert.equal((renamed.quests![1].fail![0] as {match: Record<string, string>}).match.detail, 'rope', 'a fail rule on it follows');
+    assert.equal((renamed.triggers![0].actions[2] as {effect: {quest: string}}).effect.quest, 'rope');
+    assert.deepEqual(Object.keys(renamed.tests[0].expectQuests!), ['rope']);
+    assert.ok(renamed.tests[0].events.filter(e => e.kind.startsWith('quest')).every(e => e.detail === 'rope'));
+    assert.equal(pretty(renameQuest(renamed, 'rope', 'rope-for-the-carter')), pretty(questCampaign));
+    const moved = renameObjective(questCampaign, 'rope-for-the-carter', 'step-1', 'ask-him');
+    assert.deepEqual(moved.quests![0].objectives[1].after, ['ask-him']);
+    assert.equal(pretty(renameObjective(moved, 'rope-for-the-carter', 'ask-him', 'step-1')), pretty(questCampaign));
+    const reveal = renameObjective(questCampaign, 'thief', 'name', 'accused');
+    assert.equal((reveal.triggers![0].actions[1] as {effect: {objective: string}}).effect.objective, 'accused');
+    assert.equal((reveal.triggers![0].actions[2] as {effect: {objective: string}}).effect.objective, 'step-2', "another quest's objective is left alone");
+    // (A new quest takes a free id; removing the last quest leaves no empty list behind.)
+    assert.equal(newQuest(questCampaign).id, 'quest-3');
+    assert.ok(!('quests' in withQuests(questCampaign, [])));
+    assert.ok(signalsOf({...questCampaign, quests: [{...questCampaign.quests![1], objectives: [{id: 's', label: 'S', on: 'story signal', signal: 'clue'}]} as Quest]}).includes('clue'));
+});
+
+test("doc 58's templates start a small quest: talking is a conversation with the giver, visiting a place is entering it", () => {
+    const templates = JSON.parse(readFileSync(join(repo, 'Data/Storylines/templates.json'), 'utf8')).templates;
+    const tie = fromTemplate(templates.find((t: {id: string}) => t.id === 'tie-cart'), 'rm111');
+    assert.equal(tie.title, 'A tie: the same cart');
+    assert.deepEqual(tie.objectives.map(o => o.on), ['conversation', 'enter place', 'conversation']);
+    assert.ok(tie.objectives.every(o => !o.label.includes('{') && !o.label.includes('[[')), JSON.stringify(tie.objectives));
+    for (const t of templates) {
+        const from = fromTemplate(t, 'rm111');
+        const p = smallQuestProgram({...SMALL_QUEST_INPUT, ...from, objectives: from.objectives.length ? from.objectives : SMALL_QUEST_INPUT.objectives});
+        assert.ok(editable(p), t.id);
+    }
+});

@@ -10,6 +10,8 @@ export interface TreeActions {
     duplicate: (refs: Ref[]) => void; copy: (refs: Ref[], text?: boolean) => void; cut: (refs: Ref[]) => void; paste: (at: Ref | {scope: number | null; folder?: string | null}) => void;
     remove: (refs: Ref[]) => void; rename: (ref: Ref) => void; template: (refs: Ref[]) => void; newTrigger: (scope: number | null, folder?: string | null) => void;
     newPhase: () => void; newExit: (phase: number) => void; canPaste: boolean;
+    /** Phase 6: a new quest (a version 2 story's). */
+    newQuest?: () => void;
 }
 
 const refKey = (r: Ref) => JSON.stringify(r);
@@ -108,14 +110,31 @@ export function TriggerTree({selected, picked, select, actions, counts, trace, p
         </li>;
     }
 
+    // (Phase 6: the story's quests, after the phases: each a node of its own.)
+    const quests = program.quests ?? [];
+    const questsOpen = !closed.has('quests');
+    const questBranch = <li className="wb-branch">
+        <div className={'wb-branch-head' + (sameRef(selected, {kind: 'quests'}) ? ' selected' : '')}>
+            <button type="button" className="wb-fold" onClick={() => toggle('quests')} aria-expanded={questsOpen}>{questsOpen ? '▾' : '▸'}</button>
+            <button type="button" className="wb-branch-name" onClick={() => select({kind: 'quests'})}>Quests ({quests.length})</button>
+            {actions.newQuest && isV2(program) && <button type="button" className="wb-plus" title="New quest" aria-label="New quest" onClick={() => actions.newQuest!()}>+</button>}
+        </div>
+        {questsOpen && <ul role="group">{quests.map((q, index) => {
+            const r: Ref = {kind: 'quest', index};
+            return <li key={q.id + index} role="treeitem" className={'wb-node quest' + (sameRef(selected, r) ? ' selected' : '') + (problemRefs.has(refKey(r)) ? ' bad' : '')}
+                onClick={() => select(r)} aria-selected={sameRef(selected, r)}><span className="wb-order">❖</span><span className="wb-name">{q.id}</span>
+                <small>{q.title}{q.giver ? '' : q.board ? ' · on the notice board' : ' · given by a trigger'}</small></li>;
+        })}</ul>}
+    </li>;
     const aux: [Ref, string, string][] = [[{kind: 'settings'}, 'Campaign settings', ''], [{kind: 'regions'}, 'Map regions', String(program.regions?.length ?? 0)],
         [{kind: 'scenes'}, 'Embedded scenes', String(program.scenes?.length ?? 0)], [{kind: 'tests'}, 'Rehearsal cases', String(program.tests.length)]];
     return <nav className="wb-tree" aria-label="Triggers" onClick={() => setMenu(null)}>
-        <ul role="tree">{tree.map(b => <Scope key={String(b.scope)} b={b}/>)}</ul>
+        <ul role="tree">{tree.map(b => <Scope key={String(b.scope)} b={b}/>)}{(isV2(program) || quests.length > 0) && questBranch}</ul>
         <ul className="wb-aux">{aux.map(([r, label, n]) => <li key={label} role="treeitem" className={'wb-node aux' + (sameRef(selected, r) ? ' selected' : '') + (problemRefs.has(refKey(r)) ? ' bad' : '')}
             onClick={() => select(r)}><span className="wb-name">{label}</span><small>{n}</small></li>)}</ul>
         <div className="wb-tree-tools">
             <button type="button" onClick={() => actions.newPhase()}>+ Phase</button>
+            {actions.newQuest && isV2(program) && <button type="button" onClick={() => actions.newQuest!()}>+ Quest</button>}
             <button type="button" onClick={() => { const name = window.prompt('A name for the new folder'); if (name?.trim()) actions.newTrigger(selected?.kind === 'trigger' || selected?.kind === 'phase' ? (selected.phase ?? null) : null, name.trim()); }}>+ Folder</button>
             <button type="button" disabled={!actions.canPaste} onClick={() => actions.paste(selected ?? {scope: null})}>Paste</button>
         </div>

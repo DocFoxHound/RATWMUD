@@ -186,12 +186,33 @@ void Game::partyChat(Connection* c, const Entity& speaker, const std::string& te
         }
 }
 
+void Game::partyEvents(bool quiet)
+{
+    // Who is in which party now, against what the log last said: one "party left" and one "party joined" for each change
+    // (a disband: a left for each wolf; a party of two losing one: both). Players only; a resident companion is not told.
+    std::map<std::string, std::string> now;
+    for (const auto& [id, p] : parties_.all())
+        for (const auto& m : p.members)
+            now[m] = id;
+    if (!quiet)
+    {
+        for (const auto& [who, party] : partyLogged_)
+            if (const auto f = now.find(who); f == now.end() || f->second != party)
+                logEvent("party left", who, party);
+        for (const auto& [who, party] : now)
+            if (const auto f = partyLogged_.find(who); f == partyLogged_.end() || f->second != party)
+                logEvent("party joined", who, party);
+    }
+    partyLogged_ = std::move(now);
+}
+
 void Game::partyTick(double dt)
 {
     partyAccumulator_ += dt;
     if (partyAccumulator_ < 0.25)
         return;
     partyAccumulator_ = 0;
+    partyEvents();
     const double t = world_.time();
     // Places kept and lost: a member out of the world too long loses theirs.
     for (const auto& [who, partyId] : parties_.tick(now(), [&](const std::string& m) { return clientOf(m) != nullptr; }))

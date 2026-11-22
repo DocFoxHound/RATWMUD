@@ -142,8 +142,8 @@ function Nested({a, set, path, at, phase, depth, trigger}: {a: Action; set: (a: 
 }
 
 /** A list of actions (a trigger's, or one inside an If, For each or Random) or of effects (a phase's entry), as numbered sentences. */
-export function ActionList({actions, change, problems, entry = false, max = 12, path = 'actions', at, depth = 0, phase = null, trigger}: {actions: Action[];
-    change: (a: Action[]) => void; problems?: (i: number) => string[] | undefined; entry?: boolean; max?: number;
+export function ActionList({actions, change, problems, entry = false, max = 12, path = 'actions', at, depth = 0, phase = null, trigger, rewards = false}: {actions: Action[];
+    change: (a: Action[]) => void; problems?: (i: number) => string[] | undefined; entry?: boolean; max?: number; rewards?: boolean;
     /** Version 2: where this list is in the trigger ("actions[2].then"), and the problems of a part by its name. */
     path?: string; at?: (part: string) => string[] | undefined; depth?: number; phase?: number | null; trigger?: string}) {
     const {cat, names, program} = useBench();
@@ -167,19 +167,20 @@ export function ActionList({actions, change, problems, entry = false, max = 12, 
             </li>;
         })}
         {actions.length < max && <li className="wb-add-row">{adding
-            ? <ActionPicker entry={entry} close={() => setAdding(false)} pick={kind => {
+            ? <ActionPicker entry={entry} rewards={rewards} close={() => setAdding(false)} pick={kind => {
                 const a = newAction(cat, kind, program, trigger, phase);
                 // (Going to a phase is the last action; a new action goes before it.)
                 const last = actions.length && actions[actions.length - 1].do === 'enter' && a.do !== 'enter';
                 change(last ? [...actions.slice(0, -1), a, actions[actions.length - 1]] : [...actions, a]); setAdding(false);
             }}/>
-            : <button type="button" className="wb-add" onClick={() => setAdding(true)}>{entry ? '+ effect' : '+ action'}</button>}</li>}
+            : <button type="button" className="wb-add" onClick={() => setAdding(true)}>{rewards ? '+ reward' : entry ? '+ effect' : '+ action'}</button>}</li>}
     </ol>;
 }
 
 /** A phase's entry effects, as the action list shows them (effects only). */
-export function EffectList({effects, change, problems}: {effects: Effect[]; change: (e: Effect[]) => void; problems?: (i: number) => string[] | undefined}) {
-    return <ActionList entry actions={effects.map(effect => ({do: 'effect', effect}) as Action)} problems={problems}
+export function EffectList({effects, change, problems, rewards = false, max}: {effects: Effect[]; change: (e: Effect[]) => void; problems?: (i: number) => string[] | undefined;
+    rewards?: boolean; max?: number}) {
+    return <ActionList entry={!rewards} rewards={rewards} max={max} actions={effects.map(effect => ({do: 'effect', effect}) as Action)} problems={problems}
         change={list => change(list.flatMap(a => a.do === 'effect' ? [a.effect] : []))}/>;
 }
 void effectParts;

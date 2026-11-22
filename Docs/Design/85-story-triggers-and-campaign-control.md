@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 5 and 5b are built (section 6, "Phase 1 as built" to "Phase 5b as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b and 6 are built (section 6, "Phase 1 as built" to "Phase 6 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -18,7 +18,8 @@ of these answers, it now says **decided (user, 2026-11-21)**.
 Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A, and Phase 4 (the catalogue and the
 workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
 (from `r3-camp-p4`), and Phase 5b (moving a running campaign onto a new version), on branch `r3-camp-p5b` (from `r3-camp-p5`),
-which closes Slice B: see "Phase 1 as built" to "Phase 5b as built" in section 6.
+which closes Slice B, and Phase 6 (quests and a living audience), on branch `r3-camp-p6` (from `r3-camp-p5b`): see "Phase 1 as
+built" to "Phase 6 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -1895,6 +1896,110 @@ world's variables; 0074 to 0076 stay Phase 5b's, 6's and 8's); no new game order
 - The client's journal: optional, hidden, failed, trackers, abandon.
 - The Quest editor, "New small quest", and the console's Quests grid with every control.
 - Tests: rehearsals for each scope, any-order, fail, repeat; a game test for the offer in the window.
+
+**Phase 6 as built** (2026-11-22, branch `r3-camp-p6`, on `r3-camp-p5b`). Migration `0075`; new game orders `story.cohort`,
+`story.quests`, `item.give`, `standing.adjust` and `character.grant`'s `purse`; seven new game events; version 2 only.
+- **Quests** (`tools/story_quests.py`, pure; checked by `story_program.validate` and `problems`, `Docs/story-programs.md`, "Quests and a
+  living audience"). A version 2 story declares up to 32 `quests`: scope `player`, `party` (the party the wolf was in when it started;
+  members fixed then; one who leaves keeps the credit earned and earns no more) or `story` (one copy, `contributors` different wolves);
+  1-12 objectives (the mission events or a story signal, filters, goal and measure; `after` for what comes first, none for any order;
+  `optional`; `hidden` until revealed or done); `fail` (an event, or `afterDays` on the game or real clock); `lifetime` campaign or
+  phase (copies under way end "expired" with the visit); `phases` (when it is offered); `repeat` once, daily, weekly, always (a failed
+  or abandoned one may be taken again at once); `giver` and `offer` (the wolf's words to ask, the resident's offer, accept, decline,
+  hand in, thanks) and `handIn` (with a giver: ready, then handed in to finish); `board` (a town's notice board); `join` (`who`:
+  anyone in an open story, else participants; a `region` to stand in; `cap` copies under way; `limit` starts in all); `abandon`;
+  `rewards` (story effects: to each wolf with credit where they say `$actor`, once otherwise) and `bonus` (when every optional
+  objective was done too). Copies are kept in `state.quests` (`{quest: {wolf | party:<id> | story: copy}}`), offers in `questOffers`,
+  starts in `questStarts`. A phase with quests open in it goes on without exits or triggers (`story_program.ongoing`): a small quest
+  is one phase and one quest, and "cannot move on" is not raised for it.
+- **The living audience.** Audiences `open` (nobody at first) and `everyone` (the active wolves, and each who signs in: `arrival`),
+  each with a `cap` (up to 5,000; a fixed or active audience stays at 500). A wolf comes in by taking a quest (the join rules checked
+  by the story: open in this phase, who, cap, limit, repeat, the story's cap; refused, the wolf is told in a toast), by
+  `participant.add`, or by the console; leaves by `participant.remove`, the console, or leaving the story from the journal
+  (`storyline abandoned` of this run), their quests under way abandoned (what they did is kept).
+- **The story's own effects** (catalogue `"story": true`): `quest.offer`, `quest.start`, `quest.complete`, `quest.fail`,
+  `objective.complete`, `objective.fail`, `objective.reveal`, `objective.progress`, `participant.add`, `participant.remove`, and
+  `npc.offer` (a story choice laid over a resident's window for one wolf or every wolf, once or always, for the visit). Both twins
+  carry them as any effect (no C++ change to the engine; the parity test runs the quest samples), and `story_program.dispatch` takes
+  them out of `triggerEffects` after each firing and keeps them (`quests.take_story_effects`). Quest, offer and start may name
+  `$actor` from a trigger of anyone in the world (that is how an open story is joined). Quests' own facts, `quest started`,
+  `quest completed`, `quest failed`, `objective completed`, follow the fact that caused them in the dispatch queue, as signals do.
+  Optional effect parameters (`"optional": true`) and a `bool` type in the catalogue; types `quest`, `objective`, `purse`, `offer`.
+- **Coins from a named purse** (the user's answer to question 4): `character.grant` gains `purse` (`town:<town>` its treasury,
+  `town:<town>:works|watch|church`, `till:<id>`, `chapter:<id>`); the game pays from that account or refuses ("The purse is short
+  (Np).", "There is no such purse to pay from."), the day's grant cap kept, recorded as a story reward. Also `item.give` (one wolf,
+  1-20, a full pack refused) and `standing.adjust` (-10..10 with a faction; standing is a Chapter's, so a wolf with no Chapter is
+  refused). A reward the game refuses is noted (`rewardsRefused`, a note in the history) and the story carries on (Phase 7 adds
+  "when here").
+- **Parties told to the runner**: the game writes `party joined` and `party left` (each member at a disband, both of a party of two
+  losing one); the runner reads each wolf's party from the world's save when it is newer (`partiesAt`) and keeps it from the events
+  (`state.parties`), for stories with party quests or party variables. Phase 5's "a party of one" is gone where the game says.
+- **Each wolf's own state** (migration `0075_story_player_state.sql`, `dm.story_player_state(run, player, state)`): for a story with
+  quests, an open audience or story effects, a wolf's variables, quest copies, ending and journal mark are kept in their row, merged
+  in when a run is read (`_players_in`) and taken out when it is written (`_dump`, only the rows that changed; a wolf whose parts all
+  went loses the row). Other stories keep their one JSON as before. A move onto a version with quests starts keeping rows; a refused
+  move puts the rows back with `state_before` (and drops them if the old version kept none).
+- **The game** (`Core/RatwGameStorylines.cpp`, `RatwGameWindowTalk.cpp`, `RatwGameDialogue.cpp`, `RatwBoards.cpp`, `RatwStorylines.*`):
+  `story.cohort` (5,000 at most), `story.quests` (`offers`, `choices`, `wolves`: each wolf's quest views and trackers, and a toast;
+  saved with the storyline; up to 64 offers and choices, 64 views and 16 trackers a wolf); `story.phase` takes 5,000 players. The
+  journal (`journalView`) shows each quest and the story's shown variables as trackers; verbs `quest_accept`, `quest_decline`,
+  `quest_abandon` write `quest accepted|declined|abandoned`. **The dialogue window** (doc 83/84): on the node a resident's talk opens
+  (the resident hub), before the way out and before a mantle's grafts, each offer of this resident the wolf may take (`ask` → a story
+  node where the resident says `say` through `inVoice`, the dialect and mantle voice, with accept and decline), each of the wolf's
+  ready quests this resident takes back (`handIn` → `thanks`), and each story choice (`words` → `reply`); nodes `@story:<run>:offer|
+  thanks|reply:<id>`; every pick checked again when made; events `quest accepted|declined|handed in` and `dialogue choice` with the
+  resident as `item`. **The notice board**: an offer with `board` shows under QUESTS on that town's board with TAKE IT ON (`quest
+  accepted` with item `board:<town>`).
+- **The client** (`Client/src/game/quests.ts`, `ui/hud/archive.ts`): the journal's quests (state, "Ready: return to Linden", objectives
+  ticked, struck when failed, "(optional)", "3 / 4", "later" for one that waits on another, "And one more thing to find out" for hidden
+  ones, "To be done by day N", "It may be taken again from day N"), trackers, and ABANDON THE QUEST, or ACCEPT and DECLINE for a
+  quest offered with no giver; the board's QUESTS (`board.ts`).
+- **The runner** (`tools/story_runner.py`): publishes open (no wolves) and everyone audiences; after each tick that changed them it
+  sends `story.cohort` (the audience's changes against `cohortSent`) and `story.quests` (the offers and choices when they changed,
+  and each wolf's journal whose mark changed), and waits for both (`questReceipts`); reads only this run's quest events. Commands
+  `objective {quest, objective, player, do: complete|progress|reveal|fail|reset, amount}`, `quest {quest, player, do: give|take|
+  complete|fail}`, `participant {player, do: add|remove}` (flow commands; completing by hand gives the rewards as play does; the dry
+  run lists them). `status` gains `quests` (the grid: each copy with its objectives, counts, starts, cap and limit), `audience`,
+  `parties`, `rewardsRefused`, `controls.quests`; the list's rows `quests` (taken) and `audience`. The references check the givers and
+  reward items. `story_program.migration` keeps a quest by id when its objectives and scope are unchanged, resets its copies' progress
+  when they changed (a scope changed: its copies go), drops one the new version has not; the audience is kept; the diff has `quests`.
+- **The Editor**: the workbench's **Quests (n)** in the tree and `triggers/QuestEditor.tsx` (every field above; the giver and the board
+  pickers; objectives with the event picker, after, optional, hidden, reorder; fail rules; rewards and bonus with a purse picker),
+  pickers for quest, objective, purse and offer slots, quests in search, uses and rename; Settings' audience open and everyone; **New… →
+  A small quest** (`triggers/SmallQuest.tsx`: who gives it, the steps, the reward, the offer's words, doc 58's 24 templates as starting
+  points; it makes the open story, its one phase, the quest and a rehearsal that takes it, does it and hands it in). The console's
+  **Quests** tab (`campaigns/QuestGrid.tsx`: holders down, objectives across, each row's menu, Give the quest…, every control through
+  the dry run and a reason) and **Wolves & map**'s Add a wolf… and Remove…, with each wolf's party and the audience.
+- **Rehearsal**: a case may give an open story an empty `cohort` and assert `expectQuests` (`{quest: {holder: status}}`); a report
+  carries `quests` and `cohort`; step-through shows the quest grid.
+- **Tests:** `tools/test_story_quests.py` (the checks; rehearsals of each scope, any order and after, optional, hidden, the bonus,
+  repeat, cap, who may take it, fail rules and a deadline, abandon, offers accepted and declined, a party left keeping its credit,
+  the story's copy needing two wolves, the everyone audience, npc.offer and trackers, participants in and out, the story's cap; a
+  move keeping, resetting and dropping quests; in a throwaway database: a small quest taken in a window, done and handed in, the
+  orders, a coin reward refused by the game and the story carrying on, each wolf's row; the console giving, revealing, setting
+  progress, completing by hand with its dry run, adding and removing a wolf; a party quest with parties from the save and a member
+  leaving; a run with quests moved and the game refusing, its rows put back); `test_story_native.py` (the quest samples, both twins);
+  `test_story_catalogue.py` (Phase 6's effects in and out of bounds); `Tests/storyline_tests.cpp` (`storyQuestsInTheGame`: the
+  orders, journal views and trackers, the verbs and their refusals, rewards from a purse, items, standing, party events) and
+  `Tests/dialogue_tests.cpp` (`storyQuestsInTheWindow`: an offer shown to an eligible wolf and not to one who is not, accept,
+  decline, hand in and a story choice with their events and the resident's line); the client's `quests.test.ts`; the Editor's
+  workbench and campaigns tests and the render smoke (the quest editor, the small quest, the console's Quests tab, the open audience).
+- **Seen**, on a throwaway Greyfen database with a real game server (the built client served, the talk library loaded) and the real
+  runner ticking: `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p6/` — Linden's window offering "A word for Maple", his offer
+  in his own voice, taken; the journal; the story choice in Maple's window and her reply; the hidden optional objective found; the
+  hand-in and Linden's thanks (paid 6p from the town's treasury, a loaf of bread, a deed); the journal done ("may be taken again from
+  day 2"); the quest on the notice board, taken; the console's Quests grid, a row's menu, the dry run of completing by hand and its
+  reward sent, Wolves & map; the quest editor, a trigger with npc.offer, a board quest, and New… → A small quest from a template.
+- **Not in Phase 6, on purpose:** `ifRefused` and "when here" for rewards (Phase 7; a refused reward is noted and skipped);
+  quests for the hosted "may act on wolves" checks (none acts on wolves); a quest's goal read from a variable; `{variable}` in a
+  quest's words; the per-wolf rows for stories without quests or an open audience (they keep their one JSON); the 500-wolf
+  checks of fixed audiences (unchanged); objectives whose events the game does not record yet (Phase 8's); a quest's own
+  timer shown as a countdown beyond its deadline line.
+- **For Phase 7:** quest rewards are ordinary effects with a `reward` mark in `triggerEffects` (stripped before queueing) and
+  `rewardReceipt` (in `RECEIPT_KEYS`): batch them with the rest and give them `ifRefused: "when here"` by default; journal orders
+  wait in `questReceipts` (a list, not in `RECEIPT_KEYS`), sent by `sync_journal` at the end of a tick that changed something and
+  at the top of the next; per-wolf rows are written by `_dump` on every state write of a quest story (keep every new write through
+  it, and merge with `_players_in` before any read that runs the rules); a wolf's journal is resent only when its mark changes.
 
 **Phase 7: Batched effects and a faster runner. About 12 hours.**
 - `story.effects` (a list in one order, a result for each) and `ifRefused` (pause, skip, when here).

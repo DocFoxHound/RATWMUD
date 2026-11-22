@@ -350,6 +350,8 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
     const auto* npc = world_.entity(d.npc);
     const auto worn = npc ? mantleOf_.find(d.npc) : mantleOf_.end();
     const auto mantle = worn != mantleOf_.end() && talk_.mantle(worn->second) ? worn->second : std::string();
+    if (nodeId.rfind("@story:", 0) == 0)
+        return storyNode(playerId, d, nodeId, out);
     if (!nodeId.empty() && nodeId[0] == '@')
     {
         // A graft's own node: "@<mantle>.<name>", only the wearer's.
@@ -362,6 +364,41 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
     if (f == t->nodes.end())
         return false;
     out = f->second;
+    if (nodeId == storyHome(*t, d.entry))
+    {
+        // A world story's quests and choices with this resident (doc 85, Phase 6), on the node the window opens with for
+        // talk, before the way out, in what room it leaves (nine at most; a wearer's grafts get the rest).
+        auto story = storyChoicesFor(playerId, d.npc);
+        if (!story.empty())
+        {
+            auto q = dialogueQuery(playerId, d);
+            q.concept = out.concept;
+            const auto shown = talk_.choices(out, q, 0, [&](const std::string& list) { return dialogueItems(playerId, d.npc, list); });
+            const std::size_t room = shown.size() >= 9 ? 0 : 9 - shown.size();
+            std::vector<talk::TreeChoice> add;
+            for (const auto& c : story)
+            {
+                if (add.size() >= room)
+                    break;
+                talk::TreeChoice choice;
+                choice.words = c.words;
+                const auto node = "@story:" + c.run + ":" + (c.kind == "offer" ? "offer" : c.kind == "handin" ? "thanks" : "reply") + ":" + c.id;
+                if (c.kind == "offer")
+                    choice.go = node;
+                else
+                {
+                    choice.action = c.kind == "handin" ? "story_handin" : "story_choice";
+                    choice.args = {c.run, c.id};
+                    choice.then = node;
+                }
+                add.push_back(std::move(choice));
+            }
+            auto at = out.choices.end();
+            if (!out.choices.empty() && (out.choices.back().go == "bye" || out.choices.back().go == "hub" || out.choices.back().go == "about"))
+                at = out.choices.end() - 1;
+            out.choices.insert(at, add.begin(), add.end());
+        }
+    }
     if (mantle.empty())
         return true;
     // The wearer's graft choices on this node, in what room the node leaves (nine at most); a hub's that don't fit are
@@ -411,6 +448,95 @@ bool Game::windowNode(const std::string& playerId, const DialogueSession& d, con
         }
     }
     return true;
+}
+
+std::string Game::storyHome(const talk::Tree& t, const std::string& entry) const
+{
+    // The node a resident's window opens with for talk (the resident tree's hub), else the one it was opened at.
+    if (const auto f = t.entries.find("talk"); f != t.entries.end())
+        return f->second;
+    if (const auto f = t.entries.find(entry); f != t.entries.end())
+        return f->second;
+    return "hub";
+}
+
+bool Game::storyNode(const std::string& playerId, const DialogueSession& d, const std::string& nodeId, talk::TreeNode& out)
+{
+    // A world story's node (doc 85, Phase 6): "@story:<run>:offer|thanks|reply:<id>". The resident's line is the story's,
+    // said in their own voice; an offer's choices are its accept and decline while it is still open to the wolf.
+    const auto* t = talk_.tree(d.tree);
+    const auto rest = nodeId.substr(7);
+    const auto a = rest.find(':'), b = a == std::string::npos ? a : rest.find(':', a + 1);
+    if (!t || b == std::string::npos)
+        return false;
+    const auto run = rest.substr(0, a), kind = rest.substr(a + 1, b - a - 1), id = rest.substr(b + 1);
+    const auto* s = storylines_.find(run);
+    if (!s || s->source != "storykeeper" || !s->live())
+        return false;
+    const auto home = storyHome(*t, d.entry);
+    out = talk::TreeNode{};
+    out.id = nodeId;
+    out.concept = "dlg.story";
+    const auto back = [&](talk::TreeNode& n) {
+        talk::TreeChoice more;
+        more.words = "Something else...";
+        more.go = home;
+        n.choices.push_back(more);
+        talk::TreeChoice bye;
+        bye.words = "Goodbye for now.";
+        bye.go = t->nodes.count("bye") ? "bye" : "end";
+        n.choices.push_back(bye);
+    };
+    if (kind == "offer")
+    {
+        const auto* offer = storyOffer(run, id);
+        if (!offer || offer->string("npc") != d.npc)
+            return false;
+        if (storyOfferOpen(*s, *offer, playerId))
+        {
+            out.said = offer->string("say", offer->string("summary", offer->string("title")));
+            talk::TreeChoice accept;
+            accept.words = offer->string("accept", "I'll do it.");
+            accept.action = "story_accept";
+            accept.args = {run, id};
+            accept.then = home;
+            out.choices.push_back(accept);
+            talk::TreeChoice decline;
+            decline.words = offer->string("decline", "Not now.");
+            decline.action = "story_decline";
+            decline.args = {run, id};
+            decline.then = home;
+            out.choices.push_back(decline);
+            talk::TreeChoice bye;
+            bye.words = "Goodbye for now.";
+            bye.go = t->nodes.count("bye") ? "bye" : "end";
+            out.choices.push_back(bye);
+        }
+        else
+        {
+            out.said = "That's seen to, for now.";
+            back(out);
+        }
+        return true;
+    }
+    if (kind == "thanks")
+    {
+        const auto* offer = storyOffer(run, id);
+        out.said = offer && !offer->string("thanks").empty() ? offer->string("thanks") : "#thanks#. That's a weight off.";
+        back(out);
+        return true;
+    }
+    if (kind == "reply")
+    {
+        for (const auto& c : s->choices.items())
+            if (c.string("id") == id && c.string("npc") == d.npc)
+            {
+                out.said = c.string("reply", "Well, then.");
+                back(out);
+                return true;
+            }
+    }
+    return false;
 }
 
 std::string Game::windowPointer(const std::string& npcId, const std::string& playerId, const std::string& heard)
@@ -619,6 +745,13 @@ std::string Game::windowAsk(const std::string& playerId, DialogueSession& d, con
 std::string Game::windowLine(const std::string& playerId, DialogueSession& d, const talk::TreeNode& node, talk::Query& q,
                              std::uint64_t seed, talk::LineInfo& from)
 {
+    if (!node.said.empty())
+    {
+        // A world story's line (doc 85, Phase 6), in the resident's own voice where the library can say it so.
+        auto line = inVoice(d.npc, playerId, node.said, q.facts);
+        from = talk::LineInfo{"story", -1, {}};
+        return line.empty() ? node.said : line;
+    }
     const auto key = d.npc + "|" + playerId + "|" + node.concept;
     const auto last = windowLast_.find(key);
     // The node's own lines (the wearer's mantle's first, +5; a line of strict priority over it: asleep, hostile, a

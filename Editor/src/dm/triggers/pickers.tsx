@@ -5,8 +5,8 @@
 import {useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {countersOf, isV2, kindOfType, LIST_TYPES, operandWords, REF_KIND, signalsOf, type CatEvent, type CatItem, type Operand, type Param,
-    type Slot} from '../../lib/workbench';
+import {allActions, countersOf, isV2, kindOfType, LIST_TYPES, operandWords, purseNames, REF_KIND, signalsOf, type CatEvent, type CatItem, type Operand, type Param,
+    type Program, type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 
 export type Values = Record<string, unknown>;
@@ -44,6 +44,9 @@ export function useOptions(type: string): Option[] {
         if (type === 'region') return (program.regions ?? []).map(r => ({id: r.id, name: r.id, hint: `${r.cell} (${r.x1},${r.y1})–(${r.x2},${r.y2})`}));
         if (type === 'scene') return (program.scenes ?? []).map(s => ({id: s.id, name: s.title || s.id, hint: s.visibility}));
         if (type === 'mission') return program.phases.flatMap(p => (p.missions ?? []).map(m => ({id: m.id, name: m.title || m.id, group: p.id})));
+        // (Phase 6: the story's quests; who pays a coin reward, by town.)
+        if (type === 'quest') return (program.quests ?? []).map(q => ({id: q.id, name: q.title || q.id, hint: q.summary}));
+        if (type === 'purse') return Object.entries(purseNames(refs)).map(([id, name]) => ({id, name, group: id.split(':').length > 2 ? 'Town services' : 'Town treasuries'}));
         const kind = REF_KIND[type];
         const list = kind ? (refs?.[kind] as Option[] | undefined) ?? [] : [];
         if (type === 'item') return (refs?.items ?? []).map(i => ({id: i.id, name: i.name, group: i.category}));
@@ -165,6 +168,17 @@ function TriggerPicker({slot, pick}: {slot: Slot; pick: (v: string) => void}) {
     return <SearchList options={options} value={slot.value} pick={pick} placeholder="Find a trigger"/>;
 }
 
+/** Phase 6: the story choices (npc.offer) a program names, and those its triggers listen for. */
+export function offersOf(p: Program): string[] {
+    const out = new Set<string>();
+    const triggers = [...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])];
+    for (const t of triggers) {
+        if (t.on === 'dialogue choice' && t.match?.detail) out.add(t.match.detail);
+        for (const {a} of allActions(t.actions)) if (a.do === 'effect' && a.effect.kind === 'npc.offer' && typeof a.effect.id === 'string' && a.effect.id) out.add(a.effect.id);
+    }
+    return [...out].sort();
+}
+
 /** The picker for one slot of a sentence. `pick` gets the new values of the slot's keys (undefined: clear a filter). */
 export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: (v: Values) => void; close: () => void; clearable?: boolean; cues?: string[]}) {
     const {program} = useBench();
@@ -194,6 +208,12 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     else if (type === 'signal') body = <NamePicker names={signalsOf(program)} value={slot.value} pick={one} noun="signal"/>;
     else if (type === 'counter') body = <NamePicker names={[...new Set(countersOf(program).map(c => c.key))]} value={slot.value} pick={one} noun="counter"/>;
     else if (type === 'cue') body = <NamePicker names={cues ?? []} value={slot.value} pick={one} noun="cue"/>;
+    else if (type === 'offer') body = <NamePicker names={offersOf(program)} value={slot.value} pick={one} noun="story choice"/>;
+    else if (type === 'objective') {
+        const q = (program.quests ?? []).find(x => x.id === slot.param?.quest);
+        body = q ? <SearchList options={q.objectives.map(o => ({id: o.id, name: o.label, hint: (o.optional ? 'optional' : '') + (o.hidden ? ' hidden' : '')}))}
+            value={slot.value} pick={one} placeholder="Find an objective"/> : <p className="hint">Choose the quest first.</p>;
+    }
     else if (type === 'missions') {
         const chosen = new Set(Array.isArray(slot.value) ? slot.value as string[] : []);
         body = <div className="wb-options">{options.map(o => <label key={o.id}><input type="checkbox" checked={chosen.has(o.id)} onChange={e => {
@@ -205,7 +225,8 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
             {slot.param?.world && <button type="button" aria-pressed={slot.value === 'world'} onClick={() => one('world')}>everyone (a public scene)</button>}</div> : undefined;
         const here = slot.param?.optional ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined} onClick={() => one(undefined)}>{slot.param.words?.[''] ?? 'none'}</button></div> : undefined;
         body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra ?? here}/>
-            {!['phase', 'region', 'scene', 'mission'].includes(type) && <EnterId value={slot.value} pick={one}/>}</>;
+            {!['phase', 'region', 'scene', 'mission', 'quest'].includes(type) && <EnterId value={slot.value} pick={one}
+                label={type === 'purse' ? 'Or a purse: town:<town>, town:<town>:works, till:<id>, chapter:<id>' : undefined}/>}</>;
     }
     return <div className="wb-picker" role="dialog" aria-label={'Choose ' + (slot.label || type)} onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } }}>
         <header><strong>Choose {slot.label || type}</strong>{clearable && slot.value !== undefined && <button type="button" onClick={() => pick({[key]: undefined})}>Any (no filter)</button>}
@@ -237,17 +258,21 @@ export function EventPicker({value, pick, close, exits = false, filter}: {value?
 }
 
 /** "Add an action": counters, signals, the flow, and every world effect, by group, each with its help. */
-export function ActionPicker({pick, close, entry = false, phaseOnly}: {pick: (kind: string) => void; close: () => void; entry?: boolean; phaseOnly?: boolean}) {
+export function ActionPicker({pick, close, entry = false, phaseOnly, rewards = false}: {pick: (kind: string) => void; close: () => void; entry?: boolean; phaseOnly?: boolean;
+    /** A quest's rewards (Phase 6): the world effects only, which the game is sent for each wolf with credit. */
+    rewards?: boolean}) {
     const {cat, program} = useBench();
     const [q, setQ] = useState('');
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
     const match = (i: CatItem) => words.every(w => (i.id + ' ' + i.title + ' ' + i.help).toLowerCase().includes(w));
     const v2 = isV2(program);
-    const actions = entry ? [] : cat.actions.filter(a => a.id !== 'effect' && (v2 ? !a.v1 : !a.v2) && match(a));
-    const effects = cat.effects.filter(e => (entry || !e.entryOnly) && match(e));
+    const actions = entry || rewards ? [] : cat.actions.filter(a => a.id !== 'effect' && (v2 ? !a.v1 : !a.v2) && match(a));
+    // (Phase 6: a version 2 story's own effects (quests, who takes part, story choices) are a trigger's actions, never a phase's entry
+    // effects or a reward.)
+    const effects = cat.effects.filter(e => (entry || !e.entryOnly) && (v2 || !e.v2) && !((entry || rewards) && e.story) && match(e));
     void phaseOnly;
     return <div className="wb-picker wb-events" role="dialog" aria-label={entry ? 'Add an effect' : 'Add an action'}>
-        <header><strong>{entry ? 'When this phase opens…' : 'Add an action'}</strong><button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
+        <header><strong>{rewards ? 'Add a reward' : entry ? 'When this phase opens…' : 'Add an action'}</strong><button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
         <input type="search" autoFocus placeholder="Find an action (signal, deed, walk…)" value={q} onChange={e => setQ(e.target.value)} aria-label="Find an action"/>
         <div className="wb-options">{cat.actionGroups.map(g => {
             const here = [...actions.filter(a => a.group === g.id).map(a => ({id: a.id, item: a})), ...effects.filter(e => e.group === g.id).map(e => ({id: 'effect:' + e.id, item: e}))];

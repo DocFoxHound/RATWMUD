@@ -44,6 +44,13 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
     }
     console.log(`workbench smoke, version 2: ${Object.keys(served.v2).length} programs, ${second.views} views, none edited`);
     html['Workbench (version 2)'] = second.html['v2/v2-ledger'];
+    // (Doc 85, Phase 6: the small quest the flow makes, and a campaign with quests and quest effects: each quest in the Quest editor.)
+    const {readFileSync} = await import('node:fs');
+    const questPrograms = Object.fromEntries(['small-quest', 'quest-campaign'].map(f => [f, JSON.parse(readFileSync(join(root, 'src/lib/fixtures', f + '.json'), 'utf8'))]));
+    const third = renderWorkbenches(served.catalog, questPrograms);
+    assert.equal(third.edits, 0, 'showing a program with quests never edits it');
+    for (const [name, text] of Object.entries(third.html)) assert.ok(text.includes('Quests ('), `${name}: the tree shows its quests`);
+    console.log(`workbench smoke, quests: ${Object.keys(questPrograms).length} programs, ${third.views} views, none edited`);
     Object.assign(html, renderWorkbenchParts(served.catalog, served.catalog.examples['reed-ford'], served.report, served.steps));
     html['Workbench (reed-ford)'] = benches.html['example/reed-ford'];
     html['Workbench (library)'] = benches.html['library/' + Object.keys(served.drafts)[0].slice(8)];
@@ -108,11 +115,27 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         'Workbench (reed-ford)': ['Campaign (always on)', 'Phase: ', 'Exits', 'Events', 'Conditions', 'Actions', 'Library…', 'Signals', 'Counters'],
         'Workbench pickers': ['Choose an event', 'A gift is given', 'Gifts, items and loans', 'Add an action', 'Award a deed', 'Ivo Tarmarsh', 'Rope (coil)', 'Any (no filter)', 'Reed Ford'],
         'Workbench rehearsal': ['Rehearse ▶', 'every case passes', 'Step through', 'step 2 of', 'Waiting for', 'Counters'],
+        // (Doc 85, Phase 6: quests in the workbench, the small quest flow, the console's Quests tab and the living audience.)
+        'Quest editor': ['Quests (2)', 'Rope for the carter', 'Who gives it', 'Ivo Tarmarsh', 'The resident offers it', 'Could you find me some?', 'handed in to the resident',
+            'Who may take it', 'any wolf who asks', 'What to do', 'Ask the carter what he needs.', 'After:', 'Rewards', 'Pay the acting wolf 12 pennies from greyfen', 'Bonus',
+            'after a week'],
+        'Quest editor (party, hidden, fail rules)': ['one copy for the wolf&#x27;s party', 'hidden until revealed or done', 'optional', 'What fails it',
+            'When it has run for', 'The purse must be a town, a till or a Chapter.', 'given by a trigger'],
+        'Quest effects': ['Offer Who cut the rope? to the acting wolf', 'Show Name the one who cut it. of Who cut the rope? to the acting wolf',
+            'Ivo Tarmarsh offers the choice accuse', 'Take the acting wolf into the story'],
+        'Quest pickers': ['Name the one who cut it.', 'greyfen&#x27;s treasury', 'greyfen&#x27;s Town Works', 'Add a reward', 'Pay a wolf from a purse', 'Give a wolf an item'],
+        'New small quest': ['A small quest', 'Start from a personal-quest template', 'A tie: the same cart', 'Who gives it', 'What to do', 'The reward', 'coins, from a purse',
+            'Make the small quest', 'Choose who gives it.'],
+        'Campaigns (quests)': ['Quests', 'Rope for the carter', 'each wolf', 'from Ivo Tarmarsh', 'READY', '1 / 2', '✖', 'Give the quest…', 'Elm Sandpaw',
+            '0 of 2 done · 1 ready to hand in · 1 under way · at most 10 under way at once', 'Who cut the rope?', 'Party of Ash Greymantle, Birch Oakenfall', 'left: Elm Sandpaw'],
+        'Campaigns (wolves, parties)': ['Audience: open · 3 of 5000', 'Add a wolf…', 'Remove…', 'party with Birch Oakenfall'],
+        'Campaigns (open audience)': ['open · 3 of 5000'],
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
     const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days'],
         'Campaigns (hosted dm)': ['⏸ Hold', 'Go to phase…'], 'Campaigns (held)': ['⏸ Hold'], 'Campaigns (dry run)': ['what the program says'],
-        'Campaigns (running)': ['Move onto a new version'], 'Campaigns (move)': ['Land in:']};
+        'Campaigns (running)': ['Move onto a new version'], 'Campaigns (move)': ['Land in:'],
+        'Quest pickers': ['Start a quest', 'Take a wolf into the story'], 'Quest editor': ['Quests need a version 2 story']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {
         assert.ok(text.length > 100, `${name}: rendered`);

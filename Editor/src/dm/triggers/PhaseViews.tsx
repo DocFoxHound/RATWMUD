@@ -2,7 +2,7 @@
 // trigger it is ("when … → go to …"), the phase itself (its name, journal, guest voices), its entry effects, and the
 // campaign's settings.
 import {useState} from 'react';
-import {eventOf, exitParts, FIELDS, GATE, type Exit, type Phase, type Program, type Ref} from '../../lib/workbench';
+import {eventOf, exitParts, FIELDS, GATE, isV2, type Exit, type Phase, type Program, type Ref} from '../../lib/workbench';
 import {useBench} from './context';
 import {EventPicker, useOptions, type Values} from './pickers';
 import {Sentence} from './Sentence';
@@ -131,11 +131,24 @@ export function SettingsView() {
             <label>Story id<input value={program.id} onChange={e => edit({...program, id: e.target.value}, 's:id')} spellCheck={false}/></label>
             <label>Opening phase<select value={program.start} onChange={e => edit({...program, start: e.target.value})}>{program.phases.map(p => <option key={p.id}>{p.id}</option>)}</select></label></div>
         <h5>Who takes part</h5>
-        <div className="wb-head"><label>Audience<select value={program.audience.kind} onChange={e => edit({...program,
-            audience: e.target.value === 'active' ? {kind: 'active', days: 7} : {kind: 'players', players: []}})}>
-            <option value="active">every wolf active lately</option><option value="players">the wolves named</option></select></label>
-            {program.audience.kind === 'active' && <label>Active in the last … real days<input type="number" min={1} max={90} value={program.audience.days ?? 7}
-                onChange={e => edit({...program, audience: {kind: 'active', days: e.target.valueAsNumber || 1}}, 's:days')}/></label>}</div>
+        <div className="wb-head"><label>Audience<select value={program.audience.kind} onChange={e => {
+            const kind = e.target.value, cap = program.audience.cap;
+            const keep = cap !== undefined && (kind === 'open' || kind === 'everyone') ? {cap} : {};
+            edit({...program, audience: kind === 'active' ? {kind: 'active', days: 7} : kind === 'open' ? {kind: 'open', ...keep}
+                : kind === 'everyone' ? {kind: 'everyone', days: program.audience.days ?? 7, ...keep} : {kind: 'players', players: []}});
+        }}>
+            <option value="active">every wolf active lately</option><option value="players">the wolves named</option>
+            {/* (Phase 6: a living audience. Open: nobody at first, a wolf joins by taking a quest or a trigger's "take into the story";
+                everyone: the wolves active lately, and every wolf who signs in after.) */}
+            <option value="open" disabled={!isV2(program)}>open: nobody at first, anyone who takes a quest joins</option>
+            <option value="everyone" disabled={!isV2(program)}>everyone: active lately, and each newcomer who signs in</option></select></label>
+            {(program.audience.kind === 'active' || program.audience.kind === 'everyone') && <label>Active in the last … real days<input type="number" min={1} max={90} value={program.audience.days ?? 7}
+                onChange={e => edit({...program, audience: {...program.audience, days: e.target.valueAsNumber || 1}}, 's:days')}/></label>}
+            {(program.audience.kind === 'open' || program.audience.kind === 'everyone') && <label>At most … wolves<input type="number" min={1} max={5000}
+                value={program.audience.cap ?? ''} placeholder="5000" onChange={e => { const {cap, ...rest} = program.audience; void cap;
+                    edit({...program, audience: e.target.value === '' ? rest : {...rest, cap: Math.max(1, Math.min(5000, Math.round(e.target.valueAsNumber)))}}, 's:cap'); }}/></label>}</div>
+        {(program.audience.kind === 'open' || program.audience.kind === 'everyone') && <p className="hint">A living audience (version 2): wolves join when they take a quest, when a
+            trigger takes them in, {program.audience.kind === 'everyone' ? 'and when they sign in, ' : ''}up to the cap.</p>}
         {program.audience.kind === 'players' && <div className="wb-voices"><div className="wb-chips">{players.map(id => <span key={id} className="wb-chip">
             {wolves.find(w => w.id === id)?.name ?? id}<button type="button" aria-label={'Remove ' + id} onClick={() => edit({...program, audience: {kind: 'players', players: players.filter(x => x !== id)}})}>×</button></span>)}
             <input type="search" placeholder="Add a wolf…" value={find} onChange={e => setFind(e.target.value)} aria-label="Add a wolf"/></div>

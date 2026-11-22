@@ -475,8 +475,11 @@ def _check_action_v2(a, cx, address, depth, each, last):
             effect = {k: (stand if v == '$each' else v) for k, v in effect.items()}
         rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'))
         require(effect['kind'] != 'npc.line', 'Set resident dialogue on phase entry.')
-        require(a['effect'].get('player') != '$actor' or t.get('audience') == 'participant',
-                'An actor effect requires a participant trigger.')
+        rules.quests.check_story_effect(effect, phase, t)
+        # (Doc 85, Phase 6: taking a wolf in, or offering or giving them a quest, may name the acting wolf from a trigger of
+        # anyone in the world: that is how an open audience is joined.)
+        require(a['effect'].get('player') != '$actor' or t.get('audience') == 'participant'
+                or effect['kind'] in rules.quests.TAKES_IN, 'An actor effect requires a participant trigger.')
     elif kind == 'enter':
         shape(a, ('do', 'phase'))
         require(rules.identifier(a['phase']) and last, 'Enter phase must be the last action.')
@@ -679,6 +682,7 @@ def _check_trigger(t, phase, ids, links, runs=None, collect=None):
                 a['effect']['kind'] != 'npc.line',
                 'Set resident dialogue on phase entry.',
             )
+            rules.quests.check_story_effect(a['effect'], phase, t)
             require(
                 a['effect'].get('player') != '$actor' or t.get('audience') == 'participant',
                 'An actor effect requires a participant trigger.',

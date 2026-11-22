@@ -1,6 +1,7 @@
 """The authoring fallback and compiled interpreter must agree on every shipped rehearsal: the 108 programs as they are
 (version 1), the same 108 made version 2 (story_program.upgrade), and the version 2 samples that use every new condition
-and action (tools/story_v2_samples.py), with their rolls hashed under several seeds."""
+and action (tools/story_v2_samples.py), with their rolls hashed under several seeds; and the quest samples of
+tools/story_v2_samples.py (Phase 6)."""
 
 import copy
 import unittest
@@ -57,6 +58,13 @@ class NativeAuthoringParity(unittest.TestCase):
                             case.pop(key, None)
                         case['expect'] = []
                     self.same(other, passed=None)
+
+    def test_quests_match(self):
+        """Doc 85, Phase 6: a story's quests run the same whichever twin fires its triggers (the quest effects are carried
+        by both as any effect, and kept by the story after the firing)."""
+        for program in (story_v2_samples.QUEST_SMALL, story_v2_samples.QUEST_CAMPAIGN):
+            with self.subTest(program=program['id']):
+                self.same(program)
 
 
 if __name__ == '__main__':

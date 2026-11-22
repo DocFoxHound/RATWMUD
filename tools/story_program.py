@@ -9,6 +9,7 @@ import threading
 import time
 from pathlib import Path
 
+import story_quests as quests
 import story_scenes
 import story_triggers as triggers
 
@@ -160,7 +161,7 @@ def validate_missions(phase):
                 'Invalid mission event filter.',
             )
     require(
-        not missions or phase['exits'] or phase.get('triggers'),
+        not missions or ongoing(phase),
         'A mission needs an ongoing phase.',
     )
     return ids
@@ -263,15 +264,23 @@ def _param_ok(param, v, regions):
         return word(v, param['max'])
     if kind == 'region':
         return identifier(v) and v in (regions or {})
+    if kind == 'bool':
+        return type(v) is bool
     return identifier(v) or (kind == 'wolf' and v == '$actor')
 
 
 def validate_effect(effect, pid, regions=None, scenes=None):
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
-    shape(effect, ('kind', *EFFECTS[kind]))
+    # (Doc 85, Phase 6: a parameter marked "optional" may be left out.)
+    shape(effect, ('kind', *(p['key'] for p in EFFECT_PARAMS[kind] if not p.get('optional'))),
+          tuple(p['key'] for p in EFFECT_PARAMS[kind] if p.get('optional')))
     for param in EFFECT_PARAMS[kind]:
+        if param.get('optional') and param['key'] not in effect:
+            continue
         require(_param_ok(param, effect[param['key']], regions), f"{pid}: invalid {kind}.{param['key']}.")
+    if kind == 'character.grant':
+        require(quests.check_purse(effect['purse']), f'{pid}: name a purse that pays: town:<town>, town:<town>:works, till:<id> or chapter:<id>.')
     if kind == 'scene.play':
         scene = (scenes or {}).get(effect['scene'])
         require(
@@ -299,18 +308,27 @@ def variables_of(program):
 def effective_phase(program, phase):
     if program.get('version') == 2:
         phase = {**phase, '_v': 2, '_vars': variables_of(program)}
+        if program.get('quests'):
+            # (Doc 85, Phase 6: the story's quests, for the effects that name them; those open in this phase keep it going.)
+            phase.update(_questIndex=quests.index(program),
+                         _quests=[q['id'] for q in quests.open_quests(program, phase.get('id'))])
     if program.get('scenes'):
         phase = {**phase, '_scenes': {s['id']: s for s in program['scenes']}}
     if program.get('regions'):
         phase = {**phase, '_regions': region_index(program)}
     shared = program.get('triggers', [])
-    if shared and (phase.get('campaignRules', bool(phase.get('exits') or phase.get('triggers')))):
+    if shared and (phase.get('campaignRules', bool(phase.get('exits') or phase.get('triggers') or phase.get('_quests')))):
         return {
             **phase,
             '_sharedIds': {t['id'] for t in shared},
             'triggers': [*shared, *phase.get('triggers', [])],
         }
     return phase
+
+
+def ongoing(phase):
+    """A phase that goes on (not an ending): it has exits or triggers, or quests open in it (a small quest's one phase)."""
+    return bool(phase.get('exits') or phase.get('triggers') or phase.get('_quests'))
 
 
 def phases_of(program):
@@ -321,6 +339,8 @@ def possible_effects(phase):
     return [
         *phase['effects'],
         *(a['effect'] for t in phase.get('triggers', []) for _, a in triggers.walk(t['actions']) if a['do'] == 'effect'),
+        # (Doc 85, Phase 6: a quest's rewards may be given in any phase: its copies outlast the phase they began in.)
+        *(e for q in phase.get('_questIndex', {}).values() for e in (*q.get('rewards', ()), *q.get('bonus', ()))),
     ]
 
 
@@ -370,6 +390,13 @@ def _check_header(p):
 
 
 def _check_audience(a):
+    if isinstance(a, dict) and a.get('kind') in quests.JOINABLE:
+        # (Doc 85, 3.6 and Phase 6: open, nobody at first, wolves come in by taking a quest or by participant.add;
+        # everyone, the active wolves and each wolf who signs in. Up to `cap` wolves, 5,000 at most.)
+        shape(a, ('kind',) + (('days',) if a['kind'] == 'everyone' else ()), ('cap',))
+        require(a['kind'] == 'open' or integer(a['days'], 1, 90), 'Everyone: the wolves active in the last 1–90 real days, and each who signs in.')
+        require('cap' not in a or integer(a['cap'], 1, quests.AUDIENCE_CAP), f'An audience of 1 to {quests.AUDIENCE_CAP} wolves at most.')
+        return
     if isinstance(a, dict) and a.get('kind') == 'active':
         shape(a, ('kind', 'days'))
         require(
@@ -413,7 +440,7 @@ def _check_phase_head(p, phase, ids):
         and len(voices) <= 8
         and all(identifier(v) for v in voices)
         and len(set(voices)) == len(voices)
-        and (not voices or phase['exits'] or phase.get('triggers')),
+        and (not voices or ongoing(phase)),
         f'{pid}: choose up to eight distinct guest speakers in an ongoing phase.',
     )
     require(
@@ -426,6 +453,8 @@ def _check_phase_head(p, phase, ids):
 def _check_entry_effect(effect, phase, speakers):
     pid = phase['id']
     validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
+    require(effect['kind'] not in quests.STORY_EFFECTS, f'{pid}: {effect["kind"]} goes in a trigger, not in what a phase sends as it opens.')
+    quests.check_story_effect(effect, None, None)
     if effect['kind'] == 'npc.line':
         require(
             effect['npc'] not in speakers,
@@ -576,7 +605,7 @@ def _check_phase_paths(p, phases, phase):
             'A reward for $actor requires a participating player on every incoming path.',
         )
     require(
-        phase['exits'] or phase.get('triggers') or all(e['kind'] != 'npc.line' for e in phase['effects']),
+        ongoing(phase) or all(e['kind'] != 'npc.line' for e in phase['effects']),
         'A speaking phase needs an exit.',
     )
 
@@ -589,7 +618,7 @@ def _check_tests(p):
 
 
 TOP_REQUIRED = ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests')
-TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables')
+TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables', 'quests')
 VARIABLES_MAX = 64
 
 
@@ -646,6 +675,7 @@ def validate(p):
     _check_header(p)
     _check_variables(p)
     _check_audience(p['audience'])
+    quests.check_quests(p)
     require(
         isinstance(p['phases'], list) and 1 <= len(p['phases']) <= 100,
         'A story has 1–100 phases.',
@@ -746,6 +776,15 @@ def _problems(p):
         for i, d in enumerate(decls):
             attempt(f'variables[{i}]', {'kind': 'variable', 'index': i, 'id': d.get('id') if isinstance(d, dict) else None},
                     _check_variable, d, taken, names)
+
+    # (Doc 85, Phase 6: each quest's problems where it is.)
+    qs = p.get('quests', [])
+    if 'quests' in p and attempt('quests', {'kind': 'quests'}, require, isinstance(qs, list) and len(qs) <= quests.QUESTS_MAX
+                                 and (not qs or p.get('version') == 2), f'Choose up to {quests.QUESTS_MAX} quests (a version 2 story).'):
+        taken = set()
+        for i, q in enumerate(qs):
+            attempt(f'quests[{i}]', {'kind': 'quest', 'index': i, 'id': q.get('id') if isinstance(q, dict) else None},
+                    quests.check_quest, q, p, taken)
 
     # (From here the draft is walked as validate would see it, its broken lists read as empty, so one broken list does not
     # stop the rest being checked: what was wrong with each list is told above.)
@@ -999,9 +1038,11 @@ def begin(p, cohort, day, seed=None):
     return state
 
 
-def leave_visit(phase, state, target, day, actor):
+def leave_visit(phase, state, target, day, actor, p=None):
     """A run moves to another phase: the closing visit's missions kept, its timers, once-marks, counts and waits dropped
-    (a campaign trigger's or timer's stay)."""
+    (a campaign trigger's or timer's stay); with the program, its quests that last a phase end (doc 85, Phase 6)."""
+    if p is not None and quests.relevant(p):
+        quests.leave_visit(p, state, target, day)
     state.pop('previousMissions', None)
     if phase.get('missions'):
         state['previousMissions'] = mission_snapshot(phase, state)
@@ -1111,18 +1152,26 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
             queue.append({**source, 'kind': triggers.SIGNAL, 'signal': name})
 
     budget = _budget.get()
+    # (Doc 85, Phase 6: quests. Their own facts, "quest started", "objective completed"..., follow the fact that caused
+    # them in the queue, as signals do; the story effects a firing queued are kept by the story, never sent.)
+    quest_run = bool(p.get('quests')) or quests.joinable(p)
+    story_effects = p.get('version') == 2
     for n, fact in enumerate(queue):
         if budget:
             budget.spend()
         resuming = wait is not None and n == 0
         if not resuming:
             track_missions(phase, state, fact, credited)
+            if quest_run:
+                quests.Run(p, phase, state, day, elapsed, queue.append).track(fact)
         trace_start = len(trace) if trace is not None else 0
         ready = lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']}
         if resuming:
             target = triggers.resume(phase, state, wait, day, elapsed, ready, emit, trace)
         else:
             target = triggers.fire(phase, state, fact, day, elapsed, ready, matches, emit, trace)
+        if story_effects:
+            quests.take_story_effects(p, phase, state, day, elapsed, queue.append)
         if budget and trace is not None:
             budget.spend(len(trace) - trace_start)   # (The trace is the reply: it is bounded with the work.)
         if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
@@ -1132,7 +1181,7 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
             return False   # (Version 2's finish: the run has ended; nothing more is tried.)
         target = target or (None if resuming else exit_for(phase, state, fact, day))
         if target:
-            leave_visit(phase, state, target, day, fact.get('actor', ''))
+            leave_visit(phase, state, target, day, fact.get('actor', ''), p)
             return True
     return False
 
@@ -1220,8 +1269,13 @@ def _check_case(p, case):
             'parties',
             'expectVariables',
             'expectOutcome',
+            # (Doc 85, Phase 6: each quest's copies expected at the end, by holder: {quest: {wolf|party:<p>|story: status}}.)
+            'expectQuests',
         ),
     )
+    require('expectQuests' not in case or (isinstance(case['expectQuests'], dict) and all(
+        isinstance(v, dict) and all(s in ('offered', 'none', *quests.STATUSES) for s in v.values())
+        for v in case['expectQuests'].values())), 'Expected quests are {quest: {holder: status}}.')
     require('seed' not in case or word(case['seed'], 80), 'A seed is a word of up to 80 characters.')
     require('rolls' not in case or (isinstance(case['rolls'], list) and len(case['rolls']) <= 256
                                     and all(integer(r, 0, 99) for r in case['rolls'])), 'Pinned rolls are numbers 0 to 99.')
@@ -1235,7 +1289,7 @@ def _check_case(p, case):
     require(
         word(case['name'], 100)
         and isinstance(case['cohort'], list)
-        and len(case['cohort']) <= 500
+        and len(case['cohort']) <= quests.AUDIENCE_CAP
         and all(identifier(v) for v in case['cohort']),
         'Invalid rehearsal name or cohort.',
     )
@@ -1336,6 +1390,7 @@ def _play_case(p, case, step=None):
         'name': case['name'],
         'passed': path == case['expect']
         and expected_effects == intended
+        and ('expectQuests' not in case or _quests_match(state, case['expectQuests']))
         and credits == case.get('expectMissions', credits)
         and visit_credits == case.get('expectMissionVisits', visit_credits)
         and [f['trigger'] for f in trace] == case.get('expectTriggers', [f['trigger'] for f in trace])
@@ -1343,6 +1398,8 @@ def _play_case(p, case, step=None):
         and ('expectVariables' not in case or _variables_match(p, state, case['expectVariables']))
         and ('expectOutcome' not in case or (state.get('outcome') or {}).get('outcome') == case['expectOutcome']),
         **({'outcome': state.get('outcome'), 'outcomes': state.get('outcomes', {})} if v2 else {}),
+        **({'quests': {qid: {h: c['status'] for h, c in copies.items()} for qid, copies in state.get('quests', {}).items()},
+            'cohort': list(state['cohort'])} if p.get('quests') or quests.joinable(p) else {}),
         'triggers': trace,
         'counters': state.get('counters', {}),
         'missionCredits': credits,
@@ -1351,6 +1408,18 @@ def _play_case(p, case, step=None):
         'expected': case['expect'],
         'effects': intended,
     }
+
+
+def _quests_match(state, expected):
+    """A case's expected quests: each holder's status ('offered' for an offer not yet taken, 'none' for no copy)."""
+    for qid, holders in expected.items():
+        copies = state.get('quests', {}).get(qid, {})
+        for holder, status in holders.items():
+            have = copies[holder]['status'] if holder in copies else \
+                'offered' if holder in state.get('questOffers', {}).get(qid, ()) else 'none'
+            if have != status:
+                return False
+    return True
 
 
 def _variables_match(p, state, expected):
@@ -1438,7 +1507,8 @@ def rehearse_steps(p, index, budget=None, look=None):
                 'fact': fact, 'phase': state['phase'], 'visit': state['visits'], 'path': list(path),
                 'journal': phase.get('journal', ''), 'counters': snap.get('counters', {}), 'timers': snap.get('timers', {}),
                 'fired': trace[marks['trace']:], 'effects': intended[marks['effects']:],
-                'missions': mission_snapshot(phase, state), 'ending': not phase['exits'] and not phase.get('triggers'),
+                'missions': mission_snapshot(phase, state), 'ending': not ongoing(phase),
+                **({'quests': quests.board(p, state), 'cohort': list(state['cohort'])} if p.get('quests') else {}),
                 **({'listening': look(state)} if look else {}),
             })
             marks['trace'], marks['effects'] = len(trace), len(intended)
@@ -1677,7 +1747,7 @@ def migration(old, new, state, land=None, run='', began=None):
     report['phase']['to'] = land
     old_phase = phase_of(old, state)
     landing = effective_phase(new, next(ph for ph in new['phases'] if ph['id'] == land))
-    if not (landing['exits'] or landing.get('triggers')):
+    if not ongoing(landing):
         report['blocked'] = f'Phase {land} ends the story: land in an ongoing phase (then go to {land} from the console).'
         return None, report
     cohort = state['cohort']
@@ -1907,6 +1977,17 @@ def migration(old, new, state, land=None, run='', began=None):
                                 'why': 'that exit has changed: its count starts again.'})
         if field in state:
             state[field] = held
+
+    # ---- quests (doc 85, Phase 6): kept by id when their objectives and scope are unchanged, else their progress reset
+    lines = {'kept': kept, 'reset': reset, 'dropped': dropped, 'added': added}
+    quests.migrate(old, new, state, lambda kind, what, why: lines[kind].append(
+        {'what': 'quest', 'key': what.split(' ', 1)[1], 'why': why[0].upper() + why[1:] + '.'}))
+    qa, qb = quests.index(old), quests.index(new)
+    report['diff']['quests'] = {'added': sorted(set(qb) - set(qa)), 'removed': sorted(set(qa) - set(qb)),
+                                'changed': sorted(k for k in set(qa) & set(qb) if _json(qa[k]) != _json(qb[k]))}
+    if not new.get('quests'):
+        for key in ('questOffers', 'questStarts'):
+            state.pop(key, None)
 
     # ---- version 2's own memory
     if v2:

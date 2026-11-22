@@ -161,3 +161,90 @@ FLOW = {
 
 def all_samples():
     return [copy.deepcopy(LEDGER), copy.deepcopy(FLOW)]
+
+
+# ----- Doc 85, Phase 6: quests (tools/test_story_quests.py; both twins' parity, tools/test_story_native.py)
+ASH, BIRCH, ELM = 'player-ash', 'player-birch', 'player-elm'
+
+
+def quest_fact(i, kind, day, actor='', **fields):
+    return {'id': f'e{i}', 'kind': kind, 'day': day, 'actor': actor, **fields}
+
+
+QUEST_SMALL = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'carter-axle', 'title': 'An axle for the carter',
+    'audience': {'kind': 'open', 'cap': 50}, 'start': 'open',
+    'phases': [{'id': 'open', 'journal': 'The carter at the ford needs an axle.', 'effects': [], 'exits': []}],
+    'quests': [{
+        'id': 'axle', 'title': 'An axle for the carter', 'summary': 'The carter at the ford is stuck.', 'giver': 'rm111',
+        'offer': {'say': 'My axle split at the ford. Could you find me another?', 'accept': 'I will find you one.'},
+        'repeat': 'daily', 'join': {'cap': 2},
+        'objectives': [
+            {'id': 'ask', 'label': 'Ask the carter which part gave way.', 'on': 'conversation', 'match': {'target': 'rm111'}},
+            {'id': 'bring', 'label': 'Bring two axles.', 'on': 'gift', 'match': {'target': 'rm111', 'item': 'axle'},
+             'after': ['ask'], 'goal': 2, 'measure': 'quantity'},
+            {'id': 'wheel', 'label': 'A spare wheel would not go amiss.', 'optional': True, 'on': 'gift',
+             'match': {'target': 'rm111', 'item': 'cart_wheel'}},
+            {'id': 'thief', 'label': 'Find who cut the axle.', 'optional': True, 'hidden': True, 'on': 'conversation', 'match': {'target': 'rm119'}},
+        ],
+        'rewards': [{'kind': 'deed.award', 'player': '$actor', 'detail': 'Got the carter moving.'},
+                    {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'purse': 'town:greyfen', 'reason': 'the carter thanks you'}],
+        'bonus': [{'kind': 'item.give', 'player': '$actor', 'item': 'bread', 'quantity': 2}],
+    }],
+    'tests': [{'name': 'Ash takes it, does it and hands it in', 'cohort': [], 'events': [
+        quest_fact(1, 'quest accepted', 1, ASH, target='run', item='rm111', detail='axle'),
+        quest_fact(2, 'gift', 1.1, ASH, target='rm111', item='axle', quantity=2),
+        quest_fact(3, 'conversation', 1.2, ASH, target='rm111'),
+        quest_fact(4, 'gift', 1.3, ASH, target='rm111', item='axle', quantity=2),
+        quest_fact(5, 'quest handed in', 1.4, ASH, target='run', item='rm111', detail='axle'),
+    ], 'expect': ['open'], 'expectQuests': {'axle': {ASH: 'done'}},
+        'expectEffects': [
+            {'phase': 'open', 'kind': 'deed.award', 'player': ASH, 'detail': 'Got the carter moving.', 'reward': 'axle'},
+            {'phase': 'open', 'kind': 'character.grant', 'player': ASH, 'coins': 12, 'purse': 'town:greyfen',
+             'reason': 'the carter thanks you', 'reward': 'axle'}]}],
+}
+
+QUEST_CAMPAIGN = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'ford-campaign', 'title': 'The ford in winter',
+    'audience': {'kind': 'everyone', 'days': 30}, 'start': 'muster',
+    'variables': [{'id': 'ropes', 'type': 'number', 'scope': 'story', 'show': 'Ropes laid'}],
+    'regions': [{'id': 'ford', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 8, 'y2': 8}],
+    'phases': [
+        {'id': 'muster', 'journal': 'The ford must be roped before the freeze.', 'effects': [], 'exits': [
+            {'on': 'story signal', 'match': {'detail': ''}, 'to': 'freeze'}] if False else [], 'triggers': [
+            {'id': 'greet', 'on': 'arrival', 'actions': [
+                {'do': 'effect', 'effect': {'kind': 'quest.offer', 'quest': 'scout', 'player': '$actor'}}]},
+            {'id': 'roped', 'on': 'quest completed', 'audience': 'participant', 'match': {'detail': 'ropes'}, 'actions': [
+                {'do': 'add', 'var': 'ropes', 'value': 1}, {'do': 'enter', 'phase': 'freeze'}]},
+            {'id': 'ask-hale', 'on': 'conversation', 'audience': 'participant', 'match': {'target': 'rm119'}, 'actions': [
+                {'do': 'effect', 'effect': {'kind': 'npc.offer', 'npc': 'rm119', 'id': 'hale-news', 'words': 'Any news of the ice?',
+                                            'reply': 'Thin at the edges.', 'once': True}}]},
+        ]},
+        {'id': 'freeze', 'journal': 'The ford is roped.', 'effects': [], 'exits': [], 'triggers': [
+            {'id': 'late', 'on': 'conversation', 'audience': 'participant', 'actions': [{'do': 'note', 'text': 'Talked in the freeze.'}]}]},
+    ],
+    'quests': [
+        {'id': 'scout', 'title': 'Scout the ice', 'scope': 'player', 'lifetime': 'phase', 'phases': ['muster'],
+         'objectives': [{'id': 'walk', 'label': 'Walk the ford.', 'on': 'region entered', 'match': {'target': 'ford'}}],
+         'fail': [{'afterDays': 2}],
+         'rewards': [{'kind': 'deed.award', 'player': '$actor', 'detail': 'Scouted the ice.'}]},
+        {'id': 'ropes', 'title': 'Rope the ford', 'scope': 'party', 'giver': 'rm112', 'phases': ['muster'],
+         'objectives': [{'id': 'rope', 'label': 'Give Wren three ropes.', 'on': 'gift', 'match': {'target': 'rm112', 'item': 'rope'},
+                         'goal': 3, 'measure': 'quantity'},
+                        {'id': 'tell', 'label': 'Tell Ivo the ford is roped.', 'on': 'conversation', 'match': {'target': 'rm111'}}],
+         'handIn': False,
+         'rewards': [{'kind': 'standing.adjust', 'player': '$actor', 'faction': 'greyfen', 'points': 2, 'reason': 'roped the ford'}]},
+        {'id': 'watch', 'title': 'Keep the ice watch', 'scope': 'story', 'contributors': 2,
+         'objectives': [{'id': 'watch', 'label': 'Two wolves keep watch at the ford.', 'on': 'region entered', 'match': {'target': 'ford'}}],
+         'rewards': [{'kind': 'deed.award', 'player': '$actor', 'detail': 'Kept the ice watch.'}]},
+    ],
+    'tests': [{'name': 'A party ropes the ford', 'cohort': [ASH, BIRCH], 'parties': {ASH: 'p1', BIRCH: 'p1'}, 'events': [
+        quest_fact(1, 'arrival', 1, ELM),
+        quest_fact(2, 'quest accepted', 1, ELM, target='r', detail='scout'),
+        quest_fact(3, 'quest accepted', 1.1, ASH, target='r', item='rm112', detail='ropes'),
+        quest_fact(4, 'gift', 1.2, BIRCH, target='rm112', item='rope', quantity=2),
+        quest_fact(5, 'conversation', 1.3, ASH, target='rm111'),
+        quest_fact(6, 'gift', 1.4, ASH, target='rm112', item='rope', quantity=1),
+    ], 'expect': ['muster', 'freeze'], 'expectQuests': {'ropes': {'party:p1': 'done'}, 'scout': {ELM: 'expired'}},
+        'expectVariables': {'story': {'ropes': 1}}}],
+}

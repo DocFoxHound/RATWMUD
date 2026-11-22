@@ -125,6 +125,41 @@ Choose **missions completed** as a phase trigger, select the required missions, 
 
 The catalogue is available in [event-library.json](../Data/Storylines/event-library.json). The complete campaign and its rehearsal cases are in [river-relief.json](../Data/Storylines/programs/river-relief.json).
 
+## Quests and a living audience (version 2)
+
+A version 2 story may declare up to 32 `quests` (Docs/Design/85-story-triggers-and-campaign-control.md, 3.6 and Phase 6). A
+quest is a mission that any wolf the story lets in can pick up, that lasts the campaign (or, with `"lifetime": "phase"`, its
+phase), and that carries its own rewards. In the Story Creator, **New… → A small quest** makes one in a few questions: who
+gives it, what to do, the reward.
+
+| Field | Meaning |
+| --- | --- |
+| `scope` | `player` (each wolf's own copy), `party` (one copy for the party the wolf was in when it started; its members are fixed then, and one who leaves keeps the credit earned so far), `story` (one copy for everyone; `contributors` different wolves needed) |
+| `objectives` | 1–12: an event of a wolf (or a story signal) with filters, `goal` and `measure` as missions; `after` names the objectives that must be done first (none: open from the start); `optional`; `hidden` (not in the journal until revealed or done) |
+| `giver`, `offer` | The resident who offers it in their dialogue window and takes it back: the wolf's words to ask, the resident's offer in their own voice (`say`, which may use the talk library's `#symbols#`), accept, decline, hand in, thanks |
+| `handIn` | With a giver (the default), a quest whose required objectives are done is **ready** and finished by handing it in to the giver |
+| `join` | `who` may take it (`anyone` in an open or everyone story, else `participants`), the story `region` to stand in, `cap` (copies under way at once) and `limit` (starts in all) |
+| `phases`, `repeat` | When it is offered; `once`, `daily`, `weekly` or `always` again after it is done (a failed or abandoned quest may be taken again at once) |
+| `fail` | Up to four: an event (`{"on": "death", "match": {"actor": "rm111"}}`) or a deadline (`{"afterDays": 3}`) |
+| `rewards`, `bonus` | Story effects given when it is done, to each wolf with credit where they name `$actor`, once otherwise; the bonus when every optional objective was done too. Coins come from a named purse, never minted: `character.grant` with `purse` (`town:<town>` its treasury, `town:<town>:works`, `watch` or `church`, `till:<id>`, `chapter:<id>`), refused when the purse is short (the story notes it and carries on). Also `item.give`, `standing.adjust`, `deed.award`. |
+| `abandon` | Whether the journal lets a wolf put it aside (default yes) |
+
+An audience may be `{"kind": "open"}` (nobody at first: a wolf comes in by taking a quest or by `participant.add`) or
+`{"kind": "everyone", "days": 30}` (the wolves active in the last 30 days, and each who signs in), each with an optional
+`cap` (up to 5,000). A phase with quests open in it goes on without exits or triggers: a small quest is one phase and one
+quest. Triggers can `quest.offer`, `quest.start`, `quest.complete`, `quest.fail`, `objective.complete`, `objective.fail`,
+`objective.reveal`, `objective.progress`, `participant.add`, `participant.remove`, and lay a choice over a resident's window
+with `npc.offer` (the wolf's words, the resident's reply; picking it is a `dialogue choice` event). They hear `quest accepted`,
+`quest declined`, `quest handed in`, `quest abandoned`, `party joined`, `party left` from the game, and the story's own
+`quest started`, `quest completed`, `quest failed` and `objective completed`. A rehearsal case may give an open story an empty
+`cohort` and assert `expectQuests` (`{"quest": {"wolf" | "party:<id>" | "story": "done"}}`).
+
+The journal shows each quest with its objectives (optional, hidden, failed, counts), what must come first, its deadline,
+"return to" its giver when ready, the story's shown variables as trackers, and Abandon (or Accept and Decline for a quest
+offered with no giver). The Campaigns console's **Quests** tab is the grid of wolves (or parties, or the story) and
+objectives, with Complete, Set progress, Reveal, Fail, Reset, Give the quest, Take it away; **Wolves & map** adds and removes
+wolves. Each wolf's own state of such a story is kept in `dm.story_player_state` (migration 0075).
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

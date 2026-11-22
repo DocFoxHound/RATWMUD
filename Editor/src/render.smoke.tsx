@@ -25,6 +25,10 @@ import {EventPicker, ActionPicker, Picker} from './dm/triggers/pickers';
 import {buildTree, eventParts, namesOf, pretty, wordingOf, type Program, type Ref, type Refs} from './lib/workbench';
 import {WordingContext} from './dm/campaigns/Explain';
 import {DmSuite} from './dm/DmApp';
+import {NewStory} from './dm/StoryProgramPanel';
+import type {QuestBoard} from './lib/campaigns';
+import smallQuestText from './lib/fixtures/small-quest.json?raw';
+import questCampaignText from './lib/fixtures/quest-campaign.json?raw';
 
 const none = () => {};
 const view = (slim: boolean): EconomyData => ({
@@ -179,6 +183,20 @@ const campaignPaused: CampaignsInitial = {...campaignList, tab: 'orders', detail
     {...refused, id: 5513, kind: 'story.phase', target: pausedRow.run, status: 'applied', result: ''}]}),
     timeline: {run: pausedRow.run, names, events: {}, before: null, since: {}, now: at, items: []}};
 
+// (Doc 85, Phase 6: the console's quests, each wolf's copy, a party's, the living audience and the wolves' parties.)
+const ropeQuest: QuestBoard = {id: 'rope', title: 'Rope for the carter', scope: 'player', repeat: 'weekly', giver: 'rm111', open: true,
+    objectives: [{id: 'ask', label: 'Ask the carter what he needs.'}, {id: 'bring', label: 'Bring him two coils of rope.', goal: 2, measure: 'quantity', after: ['ask']},
+        {id: 'spare', label: 'A spare wheel.', optional: true}, {id: 'thief', label: 'Find who cut it.', hidden: true}],
+    copies: [{holder: 'player-ash', kind: 'wolf', members: ['player-ash'], status: 'active', began: 10, objectives: {ask: {n: 1, done: true}, bring: {n: 1}}},
+        {holder: 'player-birch', kind: 'wolf', members: ['player-birch'], status: 'ready', began: 9, objectives: {ask: {n: 1, done: true}, bring: {n: 2, done: true}, spare: {failed: true}}}],
+    starts: 2, cap: 10};
+const partyQuest: QuestBoard = {id: 'thief', title: 'Who cut the rope?', scope: 'party', giver: null, open: true,
+    objectives: [{id: 'ask', label: 'Ask about the rope.'}, {id: 'name', label: 'Name the one who cut it.', hidden: true}],
+    copies: [{holder: 'party:7', kind: 'party', members: ['player-ash', 'player-birch'], left: ['player-elm'], status: 'active', objectives: {ask: {n: 1, done: true}}}]};
+const campaignQuests: CampaignsInitial = {...campaignRunning, tab: 'quests', detail: {...campaignRunning.detail!, quests: [ropeQuest, partyQuest],
+    audience: {kind: 'open', cap: 5000, size: 3, joinable: true}, parties: {'player-ash': 'party:7', 'player-birch': 'party:7'},
+    controls: {...campaignRunning.detail!.controls!, quests: [{id: 'rope', title: ropeQuest.title, objectives: ['ask', 'bring', 'spare', 'thief']}]}}};
+
 // (Doc 85, Phase 3: what the run waits for, explained; a dry run's "this will do"; a stuck run; the Problems list.)
 const explained: Explained = {run: runningRow.run, phase: 'ferry-watch', visit: 2, status: 'running', day: 12.9, speed: 1 / 1800, recent: ['player-ash'], goneDays: 14,
     stall: null, ending: false,
@@ -262,6 +280,10 @@ export function renderAll(): Record<string, string> {
         dryRun={{run: runningRow.run, kind: 'migrate', payload: {version: 3}, outcome: 'done', migration, moved: false, phase: 'ferry-watch', visit: 2,
             text: 'Moving onto version b7e1c2d4 (from a41c9e00), in ferry-watch, visit 2: 4 kept, 1 reset, 1 defaulted, 1 dropped.',
             orders: [{kind: 'story.phase', target: runningRow.run, payload: {revise: true}}]}} />);
+    out['Campaigns (quests)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignQuests} />);
+    out['Campaigns (wolves, parties)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignQuests, tab: 'wolves'}} />);
+    out['Campaigns (open audience)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview,
+        runs: [{...runningRow, audience: {kind: 'open', cap: 5000, size: 3}}]}}} />);
     out['Story problems'] = renderToString(<ProblemsList found={problems} untried={['ferry-watch/begin-deep-freeze']} phases={['enrol', 'ferry-watch']} go={none} asking={false} />);
     out['DM tab bar'] = renderToString(<DmSuite me={me} target="dev" alertsInitial={{runner: {beatAt: earlier, age: 95}, runnerDown: true, live: 2, needsYou: 2, at,
         runs: [{run: 'world-77ab', title: 'Two ways across Reed Ford', status: 'paused', kinds: ['paused'], text: 'Story "Two ways across Reed Ford" is paused.'}]}} />);
@@ -291,6 +313,8 @@ export function renderWorkbenches(catalog: FullCatalogue, programs: Record<strin
             if (b.scope !== null) refs.push({kind: 'phase', phase: b.scope}, {kind: 'missions', phase: b.scope});
         }
         refs.push({kind: 'settings'}, {kind: 'tests'}, {kind: 'scenes'});
+        // (Phase 6: the quests, and each quest in the Quest editor.)
+        if (program.quests) refs.push({kind: 'quests'}, ...program.quests.map((_, index) => ({kind: 'quest', index}) as Ref));
         let first = '';
         for (const ref of refs) {
             const out = renderToString(<Workbench program={program} edit={edit} catalog={catalog} refs={WB_REFS} world={null} target="dev" sceneLibraryKey="s"
@@ -310,6 +334,24 @@ export function renderWorkbenchParts(catalog: FullCatalogue, program: Program, r
     out['Workbench rehearsal'] = renderToString(<BenchContext.Provider value={bench}><WordingContext.Provider value={wordingOf(cat, {})}>
         <RehearsalStrip report={report} program={program} target="dev" busy={false}
         rehearse={none} chosen={0} choose={none} stepping={{steps, at: Math.min(2, steps.steps.length - 1)}} setStepping={none} /></WordingContext.Provider></BenchContext.Provider>);
+    // (Doc 85, Phase 6: the Quest editor, the small quest flow in New…, and a quest effect's pickers.)
+    const quest = JSON.parse(questCampaignText) as Program;
+    const questBench = {...bench, names: namesOf(WB_REFS, quest), program: quest};
+    out['Quest editor'] = renderToString(<Workbench program={quest} edit={none} catalog={catalog} refs={WB_REFS} world={null} target="dev" sceneLibraryKey="s"
+        templatesKey="t" problems={null} checking={false} chosenCase={null} stepping={null} startFromLibrary={none} initial={{kind: 'quest', index: 0}} />);
+    out['Quest editor (party, hidden, fail rules)'] = renderToString(<Workbench program={quest} edit={none} catalog={catalog} refs={WB_REFS} world={null} target="dev" sceneLibraryKey="s"
+        templatesKey="t" problems={{errors: 1, warnings: 0, world: false, digest: null, problems: [{level: 'error', text: 'The purse must be a town, a till or a Chapter.',
+            path: 'quests[1].rewards[0]', at: {kind: 'quest', index: 1, id: 'thief', part: 'rewards[0]'}}]}} checking={false} chosenCase={null} stepping={null}
+        startFromLibrary={none} initial={{kind: 'quest', index: 1}} />);
+    out['Quest effects'] = renderToString(<Workbench program={quest} edit={none} catalog={catalog} refs={WB_REFS} world={null} target="dev" sceneLibraryKey="s"
+        templatesKey="t" problems={null} checking={false} chosenCase={null} stepping={null} startFromLibrary={none} initial={{kind: 'trigger', phase: null, index: 0}} />);
+    out['Quest pickers'] = renderToString(<BenchContext.Provider value={questBench}>
+        <Picker slot={{slot: 'objective', keys: ['objective'], type: 'objective', label: 'the objective', value: 'name', shown: '', empty: false,
+            param: {key: 'objective', type: 'objective', label: 'the objective', quest: 'thief'}}} pick={none} close={none} />
+        <Picker slot={{slot: 'purse', keys: ['purse'], type: 'purse', label: 'who pays', value: '', shown: '', empty: true}} pick={none} close={none} />
+        <ActionPicker rewards close={none} pick={none} /></BenchContext.Provider>);
+    out['New small quest'] = renderToString(<NewStory catalog={catalog as never} refs={WB_REFS} close={none} start={none} pick={none} questing />);
+    void smallQuestText;
     out['Workbench pickers'] = renderToString(<BenchContext.Provider value={bench}><EventPicker value="gift" close={none} pick={none} />
         <ActionPicker close={none} pick={none} />
         <Picker slot={eventParts(cat, {on: 'gift', match: {target: 'rm111'}}, bench.names).find(p => 'slot' in p && p.slot === 'target') as never} pick={none} close={none} clearable />

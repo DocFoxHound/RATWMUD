@@ -84,12 +84,44 @@ def verdict(check, effect):
         return str(error)
 
 
+# (Doc 85, Phase 6: effects with no hand-written check before the catalogue.)
+PHASE6 = (*rules.quests.STORY_EFFECTS, 'character.grant', 'item.give', 'standing.adjust')
+
+
 class CatalogueShape(unittest.TestCase):
+    def test_phase6_effects(self):
+        ok = [
+            {'kind': 'quest.start', 'quest': 'axle', 'player': '$actor'},
+            {'kind': 'objective.progress', 'quest': 'axle', 'objective': 'bring', 'player': 'ash', 'amount': 2},
+            {'kind': 'npc.offer', 'npc': 'rm111', 'id': 'ask-ivo', 'words': 'Any news?', 'reply': 'Plenty.'},
+            {'kind': 'npc.offer', 'npc': 'rm111', 'id': 'ask-ivo', 'words': 'Any news?', 'reply': 'Plenty.', 'player': '$actor', 'once': True},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'purse': 'town:greyfen', 'reason': 'thanks'},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'purse': 'town:greyfen:works', 'reason': 'thanks'},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'purse': 'till:shop-3', 'reason': 'thanks'},
+            {'kind': 'item.give', 'player': 'ash', 'item': 'bread', 'quantity': 20},
+            {'kind': 'standing.adjust', 'player': 'ash', 'faction': 'watch', 'points': -10, 'reason': 'a brawl'},
+        ]
+        for e in ok:
+            self.assertEqual(verdict(rules.validate_effect, e), 'ok', e)
+        bad = [
+            {'kind': 'objective.progress', 'quest': 'axle', 'objective': 'bring', 'player': 'ash', 'amount': 0},
+            {'kind': 'npc.offer', 'npc': 'rm111', 'id': 'x', 'words': 'Any news?', 'reply': 'Plenty.', 'once': 1},
+            {'kind': 'npc.offer', 'npc': 'rm111', 'id': 'x', 'words': 'Any news?'},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'purse': 'treasury', 'reason': 'thanks'},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'purse': 'town:greyfen:vault', 'reason': 'thanks'},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 2501, 'purse': 'town:greyfen', 'reason': 'thanks'},
+            {'kind': 'character.grant', 'player': '$actor', 'coins': 12, 'reason': 'thanks'},
+            {'kind': 'item.give', 'player': 'ash', 'item': 'bread', 'quantity': 21},
+            {'kind': 'standing.adjust', 'player': 'ash', 'faction': 'watch', 'points': 0, 'reason': 'a brawl'},
+        ]
+        for e in bad:
+            self.assertNotEqual(verdict(rules.validate_effect, e), 'ok', e)
+
     def test_every_event_is_described(self):
         groups = {g['id'] for g in CAT['groups']}
         ids = [e['id'] for e in CAT['events']]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertEqual(len(rules.EVENTS), 160)
+        self.assertEqual(len(rules.EVENTS), 171)   # (160, and Phase 6's 11 quest and party events.)
         self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE})
         for e in CAT['events']:
             with self.subTest(event=e['id']):
@@ -116,7 +148,7 @@ class CatalogueShape(unittest.TestCase):
         self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
         self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
         self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
-        self.assertEqual(len(CAT['effects']), 25)
+        self.assertEqual(len(CAT['effects']), 39)   # (25, and Phase 6's 14.)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):
                 self.assertTrue(item['title'] and item['help'])
@@ -135,7 +167,7 @@ class CatalogueShape(unittest.TestCase):
 
     def test_tables_read_from_it(self):
         self.assertEqual(rules.EFFECTS['npc.walk'], ('npc', 'cell', 'x', 'y', 'pace', 'cue'))
-        self.assertEqual(len(rules.MISSION_EVENTS), 48)
+        self.assertEqual(len(rules.MISSION_EVENTS), 52)
         self.assertEqual(len(rules.MISSION_MEASURES['quantity']), 13)
         self.assertEqual(len(rules.MISSION_MEASURES['coins']), 18)
         self.assertEqual(len(rules.INJURY_TYPES), 26)
@@ -154,8 +186,8 @@ class CatalogueShape(unittest.TestCase):
                 'skill': 'craft', 'market': 'grey', 'detail': 'Held the ford.', 'project': 'well', 'title': 'A new well', 'scene': 'oath'}
         compared = 0
         for kind, keys in rules.EFFECTS.items():
-            if kind == 'scene.play':
-                continue   # (Needs an embedded scene: both run the same checks after the loop.)
+            if kind == 'scene.play' or kind in PHASE6:
+                continue   # (Needs an embedded scene: both run the same checks after the loop. Phase 6's are new: below.)
             base = {'kind': kind, **{k: good[k] for k in keys}}
             self.assertEqual(verdict(rules.validate_effect, base), 'ok', kind)
             for key in keys:

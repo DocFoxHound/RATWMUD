@@ -43,7 +43,11 @@ export interface RunRow {
     behind?: {events: number; seconds: number}; last?: Last | null; alerts?: Alert[]; ending?: boolean; commandsQueued?: number;
     /** The story's own id and format (1 or 2), and whether it is moving onto a new version (doc 85, Phase 5b). */
     storyId?: string; format?: number; moving?: boolean;
+    /** Phase 6: who takes part (a living audience: open or everyone, with its cap). */
+    audience?: Audience;
 }
+/** The audience of a run (doc 85, Phase 6): its kind, its cap, how many take part, and whether wolves may still join. */
+export interface Audience { kind: string; cap?: number | null; size?: number; joinable?: boolean }
 /** The story runner's heartbeat (doc 85, 5.6; Phase 2). */
 export interface Beat { beatAt: string | null; age: number | null; startedAt?: string; pid?: number; version?: string; behind?: number }
 export interface Now { day: number | null; newest: number; at: string }
@@ -78,7 +82,8 @@ export function valueText(v: Value | undefined, type: string | undefined, names:
 }
 /** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
 export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: Value; after: Value; type?: string }
-export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene' | 'migrate';
+export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene' | 'migrate'
+    | 'objective' | 'quest' | 'participant';
 /** One thing a move onto a new version keeps, resets, defaults, drops or adds (story_program.migration), with why. */
 export interface MigrationLine {
     what: 'phase' | 'variable' | 'timer' | 'wait' | 'mission' | 'fired' | 'count' | 'off' | 'vote' | 'steps' | 'seed'; key: string;
@@ -116,6 +121,8 @@ export interface Controls {
     triggers: ControlTrigger[]; offElsewhere: string[]; phases: string[]; signals: string[]; counters: ControlVariable[];
     schedules: Record<string, {days: number; repeat?: boolean; scope?: string; clock?: string; owner?: string}>;
     missions: {id: string; title: string; mode: string; objectives: number}[]; scenes: string[]; regions: string[];
+    /** Phase 6: the quests a command may name, with their objectives' ids. */
+    quests?: {id: string; title: string; objectives: string[]}[];
 }
 export interface Visit { visit: number; phase: string; day: number; cause: string; receipts: number[]; missions?: Mission[] | null }
 export interface Firing {
@@ -132,6 +139,19 @@ export interface RunDetail extends RunRow {
     missionsNow: Mission[]; directed: string[]; regions: Region[]; phases: {id: string; to: string[]; missions: number}[]; start: string;
     listening: Listening[]; names: Record<string, string>; runner?: Beat | null; commands?: Command[]; controls?: Controls | null;
     versions?: Version[];
+    /** Phase 6: the story's quests with every copy (each wolf's, each party's, the story's), the audience, and each wolf's party. */
+    quests?: QuestBoard[]; audience?: Audience; parties?: Record<string, string>;
+}
+export type QuestStatus = 'offered' | 'active' | 'ready' | 'done' | 'failed' | 'abandoned' | 'expired';
+/** One copy of a quest (story_runner.status's `quests`): a wolf's own, a party's, or the story's one copy. */
+export interface QuestCopy {
+    holder: string; kind: 'wolf' | 'party' | 'story'; members: string[]; left?: string[]; status: QuestStatus | string; began?: number | null; ended?: number | null;
+    times?: number; objectives: Record<string, {n?: number; done?: boolean; failed?: boolean; shown?: boolean}>;
+}
+export interface QuestBoard {
+    id: string; title: string; summary?: string; scope: 'player' | 'party' | 'story'; lifetime?: string; repeat?: string; giver?: string | null; open?: boolean;
+    objectives: {id: string; label: string; optional?: boolean; hidden?: boolean; goal?: number; measure?: string; after?: string[]}[];
+    copies: QuestCopy[]; counts?: Partial<Record<QuestStatus, number>>; starts?: number; cap?: number | null; limit?: number | null;
 }
 export type TimelineItem =
     | {key: string; type: 'phase'; at: string | null; visit: number; phase: string; day: number; cause: string; receipts: number[]; missions?: Mission[] | null}
@@ -385,7 +405,10 @@ const PRETTY: Record<CommandKind, string> = {
     hold: 'held it', resume: 'resumed it', stop: 'stopped it', signal: 'sent a signal', fire: 'fired a trigger', enable: 'turned a trigger on',
     disable: 'turned a trigger off', enter: 'went to a phase', set: 'set a variable', timer: 'changed a timer', mission: 'changed a mission',
     order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene', migrate: 'moved it onto a new version',
+    objective: 'changed an objective', quest: 'changed a quest', participant: 'changed who takes part',
 };
+const OBJ_WORDS: Record<string, string> = {complete: 'completed', progress: 'added to', reveal: 'revealed', fail: 'failed', reset: 'reset'};
+const QUEST_WORDS: Record<string, string> = {give: 'gave', take: 'took away', complete: 'completed', fail: 'failed'};
 /** One line for a command: who did what, to what (before the runner's own words come back). */
 export function commandLine(kind: CommandKind, payload: Record<string, unknown>, names: Record<string, string>): string {
     const p = payload ?? {};
@@ -402,6 +425,10 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
         case 'tell': return `told ${p.to === 'wolf' ? nameOf(names, String(p.player)) : p.to === 'region' ? 'the wolves in ' + p.region : 'the story\'s wolves'}: "${p.text}"`;
         case 'scene': return `started scene ${p.scene} for ${p.player === 'world' ? 'the world' : nameOf(names, String(p.player))}`;
         case 'migrate': return `moved it onto approved version #${p.version}${p.phase ? `, landing in ${p.phase}` : ''}`;
+        // (Phase 6: quests and who takes part.)
+        case 'objective': return `${OBJ_WORDS[String(p.do)] ?? p.do} ${p.objective} of ${p.quest}${p.do === 'progress' ? ` (+${p.amount ?? 1})` : ''}${p.player === 'story' ? ' (the story\'s copy)' : wolf}`;
+        case 'quest': return `${QUEST_WORDS[String(p.do)] ?? p.do} the quest ${p.quest}${p.player === 'story' ? ' (the story\'s copy)' : wolf}`;
+        case 'participant': return `${p.do === 'add' ? 'took' : 'took out'} ${nameOf(names, String(p.player))} ${p.do === 'add' ? 'into' : 'of'} the story`;
         default: return PRETTY[kind] ?? kind;
     }
 }
@@ -723,7 +750,8 @@ export function problemPlace(p: Problem): string {
     const parts: string[] = [];
     if (a.phase === null && a.kind === 'trigger') parts.push('Campaign triggers');
     else if (a.phase !== undefined && a.phase !== null) parts.push(`Phase ${a.phaseId ?? '#' + (a.phase + 1)}`);
-    const one: Record<string, string> = {trigger: 'trigger', mission: 'mission', exit: 'exit', effect: 'entry effect', region: 'region', scene: 'scene', case: 'rehearsal case'};
+    const one: Record<string, string> = {trigger: 'trigger', mission: 'mission', exit: 'exit', effect: 'entry effect', region: 'region', scene: 'scene', case: 'rehearsal case',
+        quest: 'quest'};
     if (one[a.kind]) parts.push(`${one[a.kind]} ${a.id ?? '#' + ((a.index ?? 0) + 1)}`);
     else if (a.kind === 'settings') parts.push('Campaign settings');
     else if (a.kind === 'program') parts.push('The program');
@@ -743,6 +771,8 @@ export function problemPlace(p: Problem): string {
         }
     }
     else if (part.startsWith('objectives')) parts.push(`objective ${Number(n?.[1] ?? 0) + 1}`);
+    else if (part.startsWith('rewards') || part.startsWith('bonus') || part.startsWith('fail')) parts.push(`${part.startsWith('fail') ? 'fail rule' : part.startsWith('bonus') ? 'bonus' : 'reward'} ${Number(n?.[1] ?? 0) + 1}`);
+    else if (part === 'audience') parts.push('the audience');
     else if (part.startsWith('events')) parts.push(`fact ${Number(n?.[1] ?? 0) + 1}`);
     else if (part.startsWith('prerequisites')) parts.push(`prerequisite ${Number(n?.[1] ?? 0) + 1}`);
     return parts.join(' › ');
@@ -759,3 +789,97 @@ export function problemList(found: Problem[], uncoveredTriggers: string[] = [], 
     const rank = (p: Problem) => (p.level === 'error' ? 0 : p.blocks ? 1 : 2);
     return [...found, ...untried].map((p, i) => ({p, i})).sort((a, b) => rank(a.p) - rank(b.p) || a.i - b.i).map(x => x.p);
 }
+
+// ------------------------------------------------------------------------------------------------- quests (Phase 6)
+
+export const QUEST_STATUS: Record<string, string> = {offered: 'OFFERED', active: '', ready: 'READY', done: 'DONE', failed: 'FAILED', abandoned: 'ABANDONED', expired: 'ENDED'};
+export type QuestCell = {state: 'done' | 'partial' | 'open' | 'later' | 'failed' | 'hidden'; text: string};
+export interface QuestRow { holder: string; kind: QuestCopy['kind']; name: string; status: string; word: string; cells: QuestCell[]; members: string[]; left: string[]; player: string }
+/** A quest as the console's grid (doc 85, 5.3 "Quests"): a row per copy (each wolf's, each party's, the story's), a column per
+ *  objective: ✔ done, ✖ failed, 3 / 4, ? hidden, · not open yet (its "after" not done), - nothing yet. */
+export function questGrid(q: QuestBoard, names: Record<string, string>): QuestRow[] {
+    const rank: Record<string, number> = {ready: 0, active: 1, offered: 2, done: 3, failed: 4, abandoned: 5, expired: 6};
+    return q.copies.map(c => {
+        const done = (id: string) => !!c.objectives[id]?.done;
+        const cells = q.objectives.map((o): QuestCell => {
+            const r = c.objectives[o.id] ?? {};
+            const goal = o.goal ?? 1;
+            if (r.failed) return {state: 'failed', text: '✖'};
+            if (r.done) return {state: 'done', text: '✔'};
+            if (o.hidden && !r.shown) return {state: 'hidden', text: '?'};
+            if (o.after?.some(a => !done(a))) return {state: 'later', text: '·'};
+            if (r.n) return {state: 'partial', text: `${r.n} / ${goal}`};
+            return {state: 'open', text: goal > 1 ? `0 / ${goal}` : '-'};
+        });
+        const name = c.kind === 'story' ? 'Everyone (one copy)' : c.kind === 'party'
+            ? `Party of ${c.members.map(m => nameOf(names, m)).join(', ') || nameOf(names, c.holder.replace(/^party:/, ''))}` : nameOf(names, c.holder);
+        return {holder: c.holder, kind: c.kind, name, status: c.status, word: QUEST_STATUS[c.status] ?? c.status.toUpperCase(), cells, members: c.members,
+            left: c.left ?? [], player: c.kind === 'wolf' ? c.holder : c.kind === 'story' ? 'story' : c.members[0] ?? c.holder.replace(/^party:/, '')};
+    }).sort((a, b) => (rank[a.status] ?? 9) - (rank[b.status] ?? 9) || a.name.localeCompare(b.name));
+}
+/** "9 of 31 done · 3 ready to hand in · 2 failed": a quest's counts in a line. */
+export function questSummary(q: QuestBoard): string {
+    const counts: Record<string, number> = {};
+    for (const c of q.copies) counts[c.status] = (counts[c.status] ?? 0) + 1;
+    for (const [k, v] of Object.entries(q.counts ?? {})) counts[k] = v ?? 0;
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const out = [`${counts.done ?? 0} of ${total} done`];
+    if (counts.ready) out.push(`${counts.ready} ready to hand in`);
+    if (counts.active) out.push(`${counts.active} under way`);
+    if (counts.offered) out.push(`${counts.offered} offered`);
+    for (const k of ['failed', 'abandoned', 'expired']) if (counts[k]) out.push(`${counts[k]} ${k === 'expired' ? 'ended with their phase' : k}`);
+    if (q.cap) out.push(`at most ${q.cap} under way at once`);
+    if (q.limit) out.push(`${q.starts ?? 0} of ${q.limit} taken`);
+    return out.join(' · ');
+}
+/** The wolves of the story who hold no copy of a quest (whom "Give the quest" may name). */
+export function withoutQuest(q: QuestBoard, cohort: string[]): string[] {
+    const holding = new Set(q.copies.filter(c => !['done', 'failed', 'abandoned', 'expired'].includes(c.status) || q.repeat === undefined || q.repeat === 'once')
+        .flatMap(c => c.kind === 'wolf' ? [c.holder] : c.members));
+    return cohort.filter(w => !holding.has(w));
+}
+/** The audience in words: "open · 12 of 5000", "everyone · 40", "3 named wolves". */
+export function audienceText(a: Audience | undefined, wolves?: number): string {
+    if (!a) return wolves !== undefined ? String(wolves) : '-';
+    const size = a.size ?? wolves ?? 0;
+    const word = a.kind === 'open' ? 'open' : a.kind === 'everyone' ? 'everyone' : a.kind === 'active' ? 'active lately' : 'named';
+    return `${word} · ${size}${a.cap ? ` of ${a.cap}` : ''}${a.joinable === false ? ' (full)' : ''}`;
+}
+
+/** A console command waiting for the admin's second click (Steer.tsx's Ask, by shape). */
+export interface QuestAsk { kind: CommandKind; payload: Record<string, unknown>; title: string; does: string[]; warn?: string }
+/** The controls of one row, as the asks they send (also what campaigns.test.ts checks). */
+export function rowAsks(q: QuestBoard, r: QuestRow): {label: string; ask: QuestAsk}[] {
+    const who = r.kind === 'story' ? ' (the story\'s copy)' : ' for ' + r.name;
+    const out: {label: string; ask: QuestAsk}[] = [];
+    const live = ['active', 'ready', 'offered'].includes(r.status);
+    const rewards = 'Its rewards are given as play would give them, to each wolf with credit.';
+    for (const [i, o] of q.objectives.entries()) {
+        const cell = r.cells[i];
+        const obj = (d: string, label: string, does: string[], extra: Record<string, unknown> = {}, warn?: string) => out.push({label,
+            ask: {kind: 'objective', payload: {quest: q.id, objective: o.id, player: r.player, do: d, ...extra}, title: `${label}${who}`, does, ...(warn ? {warn} : {})}});
+        if (!live) continue;
+        if (cell.state !== 'done' && cell.state !== 'failed') obj('complete', `Complete “${o.label}”`, ['The objective is marked done, and the journal told.',
+            ...(!o.optional ? ['If it was the last one needed, the quest is ready to hand in (or done, with its rewards).'] : []), rewards]);
+        if ((o.goal ?? 1) > 1 && cell.state !== 'done' && cell.state !== 'failed') obj('progress', `Set progress on “${o.label}”`, ['It counts as one more towards its goal.'], {amount: 1});
+        if (o.hidden && cell.state === 'hidden') obj('reveal', `Reveal “${o.label}”`, ['The hidden objective appears in the journal.']);
+        if (cell.state !== 'failed' && cell.state !== 'done') obj('fail', `Fail “${o.label}”`, [o.optional ? 'The optional objective is struck through.' : 'A required objective failed fails the quest; the journal says so.']);
+        if (cell.state === 'done' || cell.state === 'partial' || cell.state === 'failed') obj('reset', `Reset “${o.label}”`, ['Its progress starts again, and the journal is told.'], {},
+            'What it already gave stays given.');
+    }
+    const quest = (d: string, label: string, does: string[], warn?: string) => out.push({label,
+        ask: {kind: 'quest', payload: {quest: q.id, player: r.player, do: d}, title: `${label} “${q.title}”${who}`, does, ...(warn ? {warn} : {})}});
+    if (live) {
+        quest('complete', 'Complete', ['Every required objective is marked done.', rewards]);
+        quest('fail', 'Fail', ['The quest fails; the journal says so, and "quest failed" is sent to the story\'s triggers.']);
+    }
+    quest('take', 'Take it away', ['The copy is removed: it leaves the journal.'], 'What it already gave stays given.');
+    return out;
+}
+
+export function giveAsk(q: QuestBoard, wolf: string, names: Record<string, string>): QuestAsk {
+    return {kind: 'quest', payload: {quest: q.id, player: wolf, do: 'give'}, title: `Give “${q.title}” to ${nameOf(names, wolf)}`,
+        does: [q.scope === 'party' ? 'Starts it for the wolf\'s party (its members as they are now).' : q.scope === 'story' ? 'Starts the story\'s one copy, if it has none.'
+            : 'Starts the wolf\'s own copy, as accepting it would.', 'The journal is told; "quest started" is sent to the story\'s triggers.']};
+}
+

@@ -13,6 +13,7 @@ from pathlib import Path
 
 import story_library
 import story_program as rules
+import story_quests as quests
 import story_scenes
 
 DATA = Path(__file__).resolve().parents[1] / 'Data'
@@ -101,7 +102,10 @@ def references(conn, world, program):
         for e in rules.possible_effects(s)
         for key, value in e.items()
         if key in tables and not (e['kind']=='scene.play' and key=='player' and value=='world')
+        and not (e['kind'] == 'standing.adjust' and key == 'faction')   # (Standing's factions are the game's: it refuses.)
+        and not (e['kind'] == 'npc.offer' and key == 'player')
     }
+    refs.update(('npc', q['giver']) for q in program.get('quests', []) if 'giver' in q)
     for scene in program.get('scenes', []):
         if 'area' in scene:
             area = scene['area']
@@ -169,6 +173,11 @@ def references(conn, world, program):
                 )
             if e['kind'] == 'npc.walk':
                 check_tile(conn, world, e['cell'], e['x'], e['y'])
+            if e['kind'] == 'item.give':
+                rules.require(
+                    e['item'] in {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']},
+                    'Unknown item for a reward: ' + e['item'],
+                )
             if e['kind'] == 'story.area.item':
                 rules.require(
                     e['item'] in {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']},
@@ -253,7 +262,7 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
             'title': program['title'],
             'players': state['cohort'],
             'visit': state['visits'],
-            'end': not (phase['exits'] or phase.get('triggers'))
+            'end': not rules.ongoing(phase)
             and not entry_effects(phase, state)
             and not state.get('arrivalEffects'),
             'guestVoices': phase.get('guestVoices', []),
@@ -266,7 +275,7 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
     conn.execute(
         """UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s,receipts=ARRAY[%s]::bigint[],status='running'
                     WHERE id=%s""",
-        (json.dumps(state), cursor, receipt, run),
+        (_dump(conn, run, state), cursor, receipt, run),
     )
     conn.execute(
         'INSERT INTO dm.story_transitions(run,visit,phase,game_day,cause,receipts) VALUES (%s,%s,%s,%s,%s,ARRAY[%s]::bigint[])',
@@ -311,13 +320,17 @@ def publish(conn, world, ticket):
     rules.require(snapshot and snapshot[0] is not None, 'The world needs its first saved clock.')
     day, cursor, published_at = snapshot
     cohort = a.get('players')
+    joinable = quests.joinable(program)
+    cap = quests.cap_of(program)
+    if a['kind'] == 'open':
+        cohort = []   # (Doc 85, 3.6: nobody at first; wolves come in by taking a quest, or by participant.add.)
     if cohort is None:
         cohort = [
             r[0]
             for r in conn.execute(
                 """SELECT DISTINCT e.actor FROM game.events e JOIN game.characters c
                     ON c.world_id=e.world_id AND c.key=e.actor WHERE e.world_id=%s AND e.id<=%s AND
-                    e.recorded_at >= now() - %s * interval '1 day' AND e.kind=ANY(%s) LIMIT 501""",
+                    e.recorded_at >= now() - %s * interval '1 day' AND e.kind=ANY(%s) LIMIT %s""",
                 (
                     world,
                     cursor,
@@ -333,10 +346,14 @@ def publish(conn, world, ticket):
                         'festival entered',
                         'project gift',
                     ],
+                    (cap if joinable else 500) + 1,
                 ),
             )
         ]
-    rules.require(0 < len(cohort) <= 500, 'The opening audience needs 1–500 eligible characters.')
+    if joinable:
+        cohort = sorted(cohort)[:cap]   # (Everyone: the active wolves, up to the cap; each wolf who signs in after joins.)
+    else:
+        rules.require(0 < len(cohort) <= 500, 'The opening audience needs 1–500 eligible characters.')
     for phase in rules.phases_of(program):
         for e in rules.possible_effects(phase):
             if e['kind'] == 'scene.play' and e['player'] not in ('$actor', '$each', 'world'):
@@ -344,6 +361,7 @@ def publish(conn, world, ticket):
         exits = rules.triggers.routes(phase)
         rules.require(
             not exits
+            or joinable
             or any(
                 edge.get('players', 1) <= len(cohort)
                 and all(
@@ -355,15 +373,13 @@ def publish(conn, world, ticket):
             ),
             f'Phase {phase["id"]} needs more distinct players than the opening audience contains.',
         )
-    enter(
-        conn,
-        run,
-        program,
-        who,
-        {**rules.begin(program, cohort, day, run), 'publishedAt': published_at},
-        cursor,
-        'published',
-    )
+    state = {**rules.begin(program, cohort, day, run), 'publishedAt': published_at}
+    if quests.relevant(program):
+        # (Doc 85, Phase 6: each wolf's own state in dm.story_player_state; the game has the opening audience with the
+        # first phase.)
+        rules.require(_players_table(conn), 'Apply migration 0075 before publishing a story with quests or an open audience.')
+        state.update(playerRows=True, cohortSent=list(state['cohort']))
+    enter(conn, run, program, who, state, cursor, 'published')
     return {'run': run, 'status': 'running', 'eligible': len(cohort)}
 
 
@@ -385,6 +401,10 @@ def action(effect, actor):
         'storyline.give': 'player',
         'project.post': 'town',
         'times.nudge': 'market',
+        # (Doc 85, Phase 6: rewards. The coins come from the named purse, never minted.)
+        'character.grant': 'player',
+        'item.give': 'player',
+        'standing.adjust': 'player',
     }[kind]
     target = effect[key]
     payload = {k: v for k, v in effect.items() if k not in ('kind', key)}
@@ -411,6 +431,7 @@ def write_relation(conn, w, faction_id, other_id, disposition, stance, reason, u
 
 
 def submit_effect(conn, world, run, who, state, effect, phase):
+    effect = {k: v for k, v in effect.items() if k != 'reward'}   # (A quest's reward: Phase 6. The mark is the runner's.)
     kind = effect['kind']
     if kind == 'scene.play':
         player = state['actor'] if effect['player'] == '$actor' else effect['player']
@@ -464,7 +485,7 @@ def delivered(conn, world, run, phase, state, who, receipts):
             )
         return False
     effects = [*state.get('arrivalEffects', []), *entry_effects(phase, state)]
-    if effects and not (phase['exits'] or phase.get('triggers')):
+    if effects and not rules.ongoing(phase):
         effects.append({'kind': 'story.finish'})
     if len(receipts) > len(effects):
         return True
@@ -534,6 +555,201 @@ def world_save(conn, world, run, program, state, loaded):
             loaded[name] = now[name]
 
 
+# ----- each wolf's own state (doc 85, 3.6 and Phase 6: dm.story_player_state, migration 0075)
+# A story with quests or an open audience keeps what belongs to one wolf (their variables, their copies of quests, their
+# own ending, what their journal was last told) in one row per wolf, out of the release's one JSON, so a run can hold
+# 5,000 wolves and a tick rewrites only the wolves it touched. The rules see one state: the rows are merged in when a run
+# is read (`_players_in`) and taken out again when it is written (`_dump`). Other stories keep the shape they had.
+
+_PLAYERS_SEEN = {}          # run -> {wolf: the row as last read or written by this process}
+PLAYER_PARTS_MARK = '_players'   # (On a state the rows were merged into; never saved.)
+
+
+def _players_table(conn):
+    return conn.execute("SELECT to_regclass('dm.story_player_state') IS NOT NULL").fetchone()[0]
+
+
+def _split(state):
+    """(blob, rows): the state without each wolf's own parts, and those parts by wolf."""
+    blob = {k: v for k, v in state.items() if k != PLAYER_PARTS_MARK}
+    rows = {}
+    counters = state.get('counters')
+    if counters and counters.get('player'):
+        blob['counters'] = {k: v for k, v in counters.items() if k != 'player'}
+        if not blob['counters']:
+            del blob['counters']
+        for wolf, values in counters['player'].items():
+            rows.setdefault(wolf, {})['counters'] = values
+    if state.get('quests'):
+        shared = {}
+        for qid, copies in state['quests'].items():
+            for holder, c in copies.items():
+                if holder == 'story' or holder.startswith('party:'):
+                    shared.setdefault(qid, {})[holder] = c
+                else:
+                    rows.setdefault(holder, {}).setdefault('quests', {})[qid] = c
+        if shared:
+            blob['quests'] = shared
+        else:
+            del blob['quests']
+    if state.get('outcomes'):
+        for wolf, record in state['outcomes'].items():
+            rows.setdefault(wolf, {})['outcome'] = record
+        del blob['outcomes']
+    if state.get('journalSent'):
+        for wolf, mark in state['journalSent'].items():
+            rows.setdefault(wolf, {})['sent'] = mark
+        del blob['journalSent']
+    return blob, rows
+
+
+def _merge(state, rows):
+    for wolf, part in rows.items():
+        if 'counters' in part:
+            state.setdefault('counters', {}).setdefault('player', {})[wolf] = part['counters']
+        for qid, c in part.get('quests', {}).items():
+            state.setdefault('quests', {}).setdefault(qid, {})[wolf] = c
+        if 'outcome' in part:
+            state.setdefault('outcomes', {})[wolf] = part['outcome']
+        if 'sent' in part:
+            state.setdefault('journalSent', {})[wolf] = part['sent']
+
+
+def _players_in(conn, run, state):
+    """The run's state with each wolf's row merged in (a run kept whole is returned as it is)."""
+    if not state or not state.get('playerRows') or state.get(PLAYER_PARTS_MARK):
+        return state
+    rows = {}
+    if _players_table(conn):
+        rows = {w: part for w, part in conn.execute('SELECT player,state FROM dm.story_player_state WHERE run=%s', (run,))}
+    _merge(state, rows)
+    _PLAYERS_SEEN[run] = {w: json.dumps(part, sort_keys=True) for w, part in rows.items()}
+    state[PLAYER_PARTS_MARK] = True
+    return state
+
+
+def _dump(conn, run, state):
+    """The release's JSON for a state, writing each wolf's row that changed (a run kept whole: the state as it is)."""
+    if not state or not state.get('playerRows'):
+        return json.dumps({k: v for k, v in state.items() if k != PLAYER_PARTS_MARK} if state else state)
+    blob, rows = _split(state)
+    if not _players_table(conn):
+        return json.dumps({k: v for k, v in state.items() if k != PLAYER_PARTS_MARK})   # (0075 not applied: kept whole.)
+    merged = bool(state.get(PLAYER_PARTS_MARK))
+    seen = _PLAYERS_SEEN.setdefault(run, {}) if merged else {}
+    for wolf, part in rows.items():
+        text = json.dumps(part, sort_keys=True)
+        if seen.get(wolf) != text:
+            conn.execute("""INSERT INTO dm.story_player_state(run,player,state) VALUES (%s,%s,%s::jsonb)
+                            ON CONFLICT (run,player) DO UPDATE SET state=excluded.state,updated_at=now()""", (run, wolf, text))
+            if merged:
+                seen[wolf] = text
+    if merged:
+        # (A wolf whose parts all went: their row goes too. Only from a state the rows were read into.)
+        for wolf in [w for w in seen if w not in rows]:
+            conn.execute('DELETE FROM dm.story_player_state WHERE run=%s AND player=%s', (run, wolf))
+            del seen[wolf]
+    return json.dumps(blob)
+
+
+def _parties_from_save(conn, world, state):
+    """Each wolf's party as the world's last save has it (then the party events after it, read in order, keep it)."""
+    row = conn.execute("SELECT saved_at,payload::jsonb->'parties' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+    if not row:
+        return False
+    at = _iso(row[0])
+    if state.get('partiesAt') == at:
+        return False
+    parties = {}
+    for party in ((row[1] or {}).get('parties') or []) if isinstance(row[1], dict) else []:
+        for member in party.get('members', []):
+            if isinstance(member, dict) and member.get('id') and party.get('id'):
+                parties[member['id']] = str(party['id'])
+    state['partiesAt'] = at
+    if parties:
+        state['parties'] = parties
+    else:
+        state.pop('parties', None)
+    return True
+
+
+def _wants_parties(program):
+    return any(q.get('scope') == 'party' for q in program.get('quests', [])) or any(
+        d.get('scope') == 'party' for d in program.get('variables', [])) if program.get('version') == 2 else False
+
+
+def _mark(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()[:16]
+
+
+def sync_journal(conn, run, program, state, who):
+    """Tells the game what changed of who takes part (`story.cohort`) and of the quests: the givers' offers, the story's
+    choices in residents' windows, and each wolf's journal whose quests or trackers changed (`story.quests`). The orders'
+    receipts are waited for (`questReceipts`). False when nothing needed sending."""
+    if not quests.relevant(program) and 'cohortSent' not in state:
+        return False
+    mark = _mark([quests.fingerprint(program, state), state['cohort']])
+    if state.get('journalMark') == mark:
+        return False
+    receipts = []
+    sent = set(state.get('cohortSent', []))
+    now = set(state['cohort'])
+    add, remove = sorted(now - sent), sorted(sent - now)
+    if add or remove:
+        receipts.append(queue(conn, who, 'story.cohort', run, {'visit': state['visits'], 'add': add, 'remove': remove}))
+        state['cohortSent'] = list(state['cohort'])
+    payload = {'visit': state['visits']}
+    offers, choices = quests.offers(program, state), quests.choices(state)
+    if _mark(offers) != state.get('offersSent'):
+        payload['offers'] = offers
+        state['offersSent'] = _mark(offers)
+    if _mark(choices) != state.get('choicesSent'):
+        payload['choices'] = choices
+        state['choicesSent'] = _mark(choices)
+    marks = state.setdefault('journalSent', {})
+    wolves = {}
+    for wolf in sorted(now | set(marks)):
+        j = quests.journal(program, state, wolf) if wolf in now else {'quests': [], 'trackers': []}
+        m = _mark(j)
+        if marks.get(wolf) != m:
+            wolves[wolf] = j
+            if wolf in now:
+                marks[wolf] = m
+            else:
+                del marks[wolf]
+    if not marks:
+        state.pop('journalSent', None)
+    if wolves:
+        payload['wolves'] = wolves
+    state.pop('toasts', None)
+    if len(payload) > 1:
+        receipts.append(queue(conn, who, 'story.quests', run, payload))
+    state['journalMark'] = _mark([quests.fingerprint(program, state), state['cohort']])
+    if receipts:
+        state['questReceipts'] = receipts
+        conn.execute('UPDATE dm.story_transitions SET receipts=receipts||%s::bigint[] WHERE run=%s AND visit=%s',
+                     (receipts, run, state['visits']))
+    return 'sent' if receipts else 'changed'
+
+
+def _quest_receipts(conn, run, state):
+    """The journal orders a run waits for: True when all were applied (or there were none); a refusal pauses the run."""
+    pending = state.get('questReceipts')
+    if not pending:
+        return True
+    rows = dict(conn.execute('SELECT id,status FROM dm.actions WHERE id=ANY(%s)', (pending,)).fetchall())
+    if any(rows.get(r) == 'queued' for r in pending):
+        return False
+    bad = next((r for r in pending if rows.get(r) not in ('applied',) and r not in state.get('skipped', ())), None)
+    if bad is not None:
+        result = conn.execute('SELECT status,result FROM dm.actions WHERE id=%s', (bad,)).fetchone()
+        conn.execute("UPDATE dm.story_releases SET status='paused',problem=%s WHERE id=%s",
+                     (f'Journal order {bad} {result[0]}: {result[1]}', run))
+        return False
+    del state['questReceipts']
+    return True
+
+
 def tick_run(conn, world, run, clock):
     holder = {}
     try:
@@ -547,13 +763,13 @@ def _finish(conn, run, who, state):
     """Version 2's finish: the story ended by its own action, once every effect before it went. Tells the game the story
     is over (as an ending phase does), then the run is complete."""
     if state.get('finishSent'):
-        conn.execute("UPDATE dm.story_releases SET status='complete',state=%s::jsonb WHERE id=%s", (json.dumps(state), run))
+        conn.execute("UPDATE dm.story_releases SET status='complete',state=%s::jsonb WHERE id=%s", (_dump(conn, run, state), run))
         return
     # (The game ends the storyline "done", or "abandoned" for a story abandoned; the outcome and its line go with the order.)
     kind = 'story.stop' if state['outcome']['outcome'] == 'abandoned' else 'story.finish'
     receipt = queue(conn, who, kind, run, {'outcome': state['outcome']['outcome'], 'text': state['outcome']['text']})
     state.update(triggerReceipt=receipt, finishSent=True)
-    conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+    conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
     conn.execute('UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
                  (receipt, run, state['visits']))
 
@@ -569,40 +785,61 @@ def _tick_run(conn, world, run, clock, holder):
     p, state, cursor, who, receipts = row
     if 'moveReceipt' in state:
         return   # (Moving onto a new version: nothing is read until the game has the new version's words; settle_move.)
+    _players_in(conn, run, state)
     holder.update(program=p, state=state, loaded=world_load(conn, world, p, state))
     phase = rules.phase_of(p, state)
-    receipt_key = next((key for key in ('missionReceipt', 'triggerReceipt') if key in state), None)
+    if not _quest_receipts(conn, run, state):
+        return
+    receipt_key = next((key for key in ('missionReceipt', 'triggerReceipt', 'rewardReceipt') if key in state), None)
     if receipt_key:
         pending = state[receipt_key]
         delivery, message = conn.execute('SELECT status,result FROM dm.actions WHERE id=%s', (pending,)).fetchone()
-        if delivery != 'applied' and pending not in state.get('skipped', ()):
+        if delivery == 'queued' or (delivery != 'applied' and pending not in state.get('skipped', ()) and receipt_key != 'rewardReceipt'):
             if delivery != 'queued':
                 conn.execute(
                     "UPDATE dm.story_releases SET status='paused',problem=%s WHERE id=%s",
                     (f'Story action {pending} {delivery}: {message}', run),
                 )
             return
+        if receipt_key == 'rewardReceipt' and delivery != 'applied':
+            # (Doc 85, 3.5 and Phase 6: a reward to one wolf the game refused is noted and the story carries on: a purse
+            # short, a full pack, a wolf away. Phase 7 adds "when here".)
+            refused = state.setdefault('rewardsRefused', [])
+            refused.append({'receipt': pending, 'status': delivery, 'result': str(message)[:200]})
+            del refused[:-50]
+            conn.execute('INSERT INTO dm.story_trigger_history(run,visit,entry) VALUES (%s,%s,%s::jsonb)',
+                         (run, state['visits'], json.dumps({'trigger': 'quest reward', 'scope': 'quest', 'phase': state['phase'],
+                                                             'notes': [f'A reward was not given (order #{pending} {delivery}: {message}).'[:300]],
+                                                             'actions': [], 'effects': []})))
         del state[receipt_key]
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
     if not delivered(conn, world, run, phase, state, who, receipts):
         return
     if state.get('triggerEffects'):
         effect = state['triggerEffects'].pop(0)
         receipt = submit_effect(conn, world, run, who, state, effect, phase)
         if receipt is not None:
-            state['triggerReceipt'] = receipt
-            conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+            state['rewardReceipt' if effect.get('reward') else 'triggerReceipt'] = receipt
+            conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
             conn.execute(
                 'UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
                 (receipt, run, state['visits']),
             )
         return
+    # (Doc 85, Phase 6: who takes part, the givers' offers and each wolf's quests, told to the game before more is read.)
+    told = sync_journal(conn, run, p, state, who)
+    if told:
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
+        if told == 'sent':
+            return
     if state.get('outcome'):
         _finish(conn, run, who, state)
         return
-    if not (phase['exits'] or phase.get('triggers')):
+    if not rules.ongoing(phase):
         conn.execute("UPDATE dm.story_releases SET status='complete' WHERE id=%s", (run,))
         return
+    if _wants_parties(p) and _parties_from_save(conn, world, state):
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
     # The clock read precedes the log read: an older query can never advance past a newly committed backlog.
     has_clock = bool(state.get('timers')) or bool(state.get('waiting')) or any(
         e['on'] == 'clock' for e in [*phase['exits'], *phase.get('triggers', [])]
@@ -649,6 +886,10 @@ def _tick_run(conn, world, run, clock, holder):
             continue
         if fact['kind'] in rules.REGION_EVENTS and fact['detail'] != run:
             continue
+        if fact['kind'] in quests.GAME_EVENTS and fact['target'] != run:
+            continue   # (Another story's quest or choice.)
+        if fact['kind'] == quests.LEAVES:
+            fact['mine'] = fact['target'] == run
         if dispatch(fact, fact['day'], elapsed):
             enter(conn, run, p, who, state, cursor, 'event ' + str(cursor))
             return
@@ -663,6 +904,8 @@ def _tick_run(conn, world, run, clock, holder):
     ):
         enter(conn, run, p, who, state, cursor, 'clock')
     elif rows or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')])):
+        if not state.get('triggerEffects') and not state.get('outcome'):
+            sync_journal(conn, run, p, state, who)   # (Doc 85, Phase 6: what this tick changed of quests, told at once.)
         if before is not None and before != json.dumps(state.get('missions', {})):
             snapshot = rules.mission_snapshot(phase, state)
             receipt = queue(conn, who, 'story.missions', run, {'visit': state['visits'], 'missions': snapshot})
@@ -672,7 +915,7 @@ def _tick_run(conn, world, run, clock, holder):
                 (json.dumps(snapshot), receipt, run, state['visits']),
             )
         conn.execute(
-            'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s WHERE id=%s', (json.dumps(state), cursor, run)
+            'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s WHERE id=%s', (_dump(conn, run, state), cursor, run)
         )
 
 
@@ -773,7 +1016,7 @@ def direct(conn, world, op, data):
         receipt = queue(conn, data['operator'], *previous[1:])
         if pending_key:
             state[pending_key] = receipt
-            conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+            conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, _players_in(conn, run, state)), run))
         else:
             receipts[-1] = receipt
         conn.execute(
@@ -854,8 +1097,8 @@ ALERTS = {'gameSeconds': 60, 'behindEvents': 2000, 'behindSeconds': 60, 'quietHo
           'overdueSeconds': 300, 'goneDays': 14, 'fullPercent': 90}
 ALERT_BOUNDS = {'gameSeconds': (5, 86400), 'behindEvents': (10, 10**7), 'behindSeconds': (5, 86400), 'quietHours': (0, 8760),
                 'runnerSeconds': (5, 3600), 'overdueSeconds': (10, 86400), 'goneDays': (1, 365), 'fullPercent': (50, 100)}
-AUDIENCE_CAP = 500
-RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt', 'moveReceipt')   # (moveReceipt: Phase 5b's move.)
+AUDIENCE_CAP = 500   # (A fixed or active audience; an open or everyone audience holds up to 5,000: story_quests.)
+RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt', 'moveReceipt', 'rewardReceipt')   # (moveReceipt: Phase 5b's move; rewardReceipt: Phase 6's.)
 STEERED = ('running', 'paused', 'held')   # (The statuses a command may steer.)
 TIMELINE_PAGE = 60
 
@@ -894,7 +1137,7 @@ def _effects_due(program, state):
     """A visit's orders in the order the runner sends them: the phase order (already sent), then entry effects."""
     phase = rules.phase_of(program, state)
     effects = [*state.get('arrivalEffects', []), *entry_effects(phase, state)]
-    if effects and not (phase['exits'] or phase.get('triggers')):
+    if effects and not rules.ongoing(phase):
         effects.append({'kind': 'story.finish'})
     return phase, effects
 
@@ -971,7 +1214,7 @@ def _waiting(program, state, status, problem, receipts, orders):
     wolves = [e for e in listening if e['on'] not in ('clock', 'dm signal', rules.triggers.SIGNAL)]
     if wolves:
         out.append({'on': 'wolves', 'events': sorted({e['on'] for e in wolves}), 'what': wolves[:16]})
-    if not (phase['exits'] or phase.get('triggers')) and not unsent:
+    if not rules.ongoing(phase) and not unsent:
         out.append({'on': 'end'})
     return out
 
@@ -1068,8 +1311,9 @@ def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, ru
                 out.append({'kind': 'overdue', 'needsYou': False, 'timer': key, 'signal': timer.get('signal', key),
                             'at': timer['at'], 'clock': timer.get('clock', 'game'), 'seconds': round(late)})
                 break
-    if cohort and len(cohort) >= AUDIENCE_CAP * limits['fullPercent'] / 100:
-        out.append({'kind': 'full', 'needsYou': False, 'wolves': len(cohort), 'cap': AUDIENCE_CAP})
+    cap = quests.cap_of(program) if program else AUDIENCE_CAP
+    if cohort and len(cohort) >= cap * limits['fullPercent'] / 100:
+        out.append({'kind': 'full', 'needsYou': False, 'wolves': len(cohort), 'cap': cap})
     return out
 
 
@@ -1113,8 +1357,13 @@ def _row_view(conn, world, row, now, last, runner=None, ctx=None):
         if moment else None,
         alerts=_alerts(conn, world, st, problem, waiting, behind, last, state.get('cohort', []), now['at'], runner, state.get('held'),
                        {**(ctx or {}), 'program': program, 'state': state, 'day': now['day']}),
-        ending=not (phase['exits'] or phase.get('triggers')),
+        ending=not rules.ongoing(phase),
     )
+    if program.get('quests'):
+        view['quests'] = {'taken': sum(state.get('questStarts', {}).values()), 'of': len(program['quests'])}
+    if quests.joinable(program):
+        view['audience'] = {'kind': program['audience']['kind'], 'cap': quests.cap_of(program), 'size': len(state.get('cohort', [])),
+                            'joinable': True}
     return view
 
 
@@ -1202,6 +1451,9 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
     ).fetchone()
     rules.require(row, 'Unknown run.')
     st, state, problem, ids, program = row[2], row[6], row[7], row[9], row[10]
+    if state and state.get('playerRows'):
+        state = {k: v for k, v in _players_in(conn, run, state).items() if k != PLAYER_PARTS_MARK}
+        row = (*row[:6], state, *row[7:])
     mission_program = any(p.get('missions') for p in rules.phases_of(program))
     if state:
         ids = [*ids, *(state[k] for k in RECEIPT_KEYS if k in state)]
@@ -1289,6 +1541,12 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         # (Doc 85, Phase 5b: the versions it has been on, and those approved for it and not moved onto yet.)
         'versions': versions_of(conn, run, program, state, st),
         'speed': ctx['speed'],
+        # (Doc 85, Phase 6: the Quests grid, who may come in, and each wolf's party.)
+        'quests': quests.board(program, state) if state and program.get('quests') else [],
+        'audience': {'kind': program['audience']['kind'], 'cap': quests.cap_of(program), 'size': len(state.get('cohort', [])) if state else 0,
+                     'joinable': quests.joinable(program)},
+        'parties': {w: pt for w, pt in (state or {}).get('parties', {}).items() if w in set(state.get('cohort', []))} if state else {},
+        'rewardsRefused': (state or {}).get('rewardsRefused', []),
     }
     if have != row[3]:
         result['program'] = program
@@ -1460,12 +1718,12 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc85-phase5b'
+RUNNER_VERSION = 'doc85-phase6'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
-                 'order', 'tell', 'scene', 'migrate')
+                 'order', 'tell', 'scene', 'migrate', 'objective', 'quest', 'participant')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
 # still sending a visit's orders, and are refused on a paused or held run that is part-way through sending.
-FLOW = ('signal', 'fire', 'enter', 'mission')
+FLOW = ('signal', 'fire', 'enter', 'mission', 'objective', 'quest', 'participant')
 # Taken even while a flow command ahead of them waits for the game: they are how an admin gets out of that wait.
 URGENT = ('hold', 'resume', 'stop', 'order')
 # The visit a command was made for still has to be the run's (5.8, rule 3), unless forced. Hold, resume and stop are
@@ -1474,7 +1732,7 @@ VISITED = tuple(k for k in COMMAND_KINDS if k not in ('hold', 'resume', 'stop'))
 FLOW_WAIT_SECONDS = 60
 COMMAND_KEY = __import__('re').compile(r'[A-Za-z0-9_-]{8,64}\Z')
 WOLF_EFFECTS = frozenset({'character.injury', 'story.area.damage'})   # (studio.py's STORY_WOLF_KINDS: "may act on wolves".)
-RELEASING = ('fire', 'enter', 'signal', 'timer', 'mission')          # (Controls that can deliver the program's effects.)
+RELEASING = ('fire', 'enter', 'signal', 'timer', 'mission', 'objective', 'quest')   # (Controls that can deliver the program's effects.)
 
 
 def heartbeat(conn, world):
@@ -1614,6 +1872,9 @@ def controls(program, state):
                      for m in phase.get('missions', [])],
         'scenes': [sc['id'] for sc in program.get('scenes', [])],
         'regions': [r['id'] for r in program.get('regions', [])],
+        'quests': [{'id': q['id'], 'title': q['title'], 'scope': q.get('scope', 'player'), 'objectives': [o['id'] for o in q['objectives']]}
+                   for q in program.get('quests', [])],
+        'joinable': quests.joinable(program),
     }
 
 
@@ -1689,7 +1950,8 @@ def _check_payload(program, kind, payload):
     """The checks a command passes whatever the run's state (made again when it is taken, against the state then)."""
     rules.require(isinstance(payload, dict) and len(json.dumps(payload)) <= 4000, 'A small command, please.')
     known = {'force', 'catchUp', 'name', 'actor', 'trigger', 'check', 'phase', 'effects', 'key', 'scope', 'player',
-             'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version'}
+             'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version',
+             'quest', 'objective', 'amount'}
     rules.require(set(payload) <= known, 'Unknown field in the command: ' + ', '.join(sorted(set(payload) - known)))
     phases = rules.phases_of(program)
     if kind == 'signal':
@@ -1734,6 +1996,19 @@ def _check_payload(program, kind, payload):
     elif kind == 'migrate':
         rules.require(rules.integer(payload.get('version'), 1, 2**63 - 1), 'Name the approved version to move onto.')
         rules.require('phase' not in payload or rules.identifier(payload['phase']), 'Name the phase to land in.')
+    elif kind in ('objective', 'quest'):
+        q = quests.index(program).get(payload.get('quest'))
+        rules.require(q is not None, 'This story has no such quest.')
+        dos = ('complete', 'progress', 'reveal', 'fail', 'reset') if kind == 'objective' else ('give', 'take', 'complete', 'fail')
+        rules.require(payload.get('do') in dos, 'Choose one of: ' + ', '.join(dos) + '.')
+        rules.require(isinstance(payload.get('player'), str) and payload['player'], 'Choose a wolf (or the story, for a quest of the whole story).')
+        if kind == 'objective':
+            rules.require(any(o['id'] == payload.get('objective') for o in q['objectives']), f'Quest {q["id"]} has no such objective.')
+            if payload['do'] == 'progress':
+                rules.require(rules.integer(payload.get('amount'), 0, 1000000), 'Set the progress to a number (0 to the goal).')
+    elif kind == 'participant':
+        rules.require(payload.get('do') in ('add', 'remove'), 'Add a wolf, or remove one.')
+        rules.require(rules.identifier(payload.get('player')), 'Choose a wolf.')
     elif kind == 'scene':
         rules.require(payload.get('scene') in {sc['id'] for sc in program.get('scenes', [])}, 'This story has no such scene.')
         rules.require(isinstance(payload.get('player'), str) and payload['player'], 'Choose a wolf, or the world.')
@@ -1844,6 +2119,7 @@ class Steer:
         _require(row, 'Unknown run.')
         self.program, self.state, self.status, self.cursor, self.approver, self.receipts, self.run_digest, self.problem, \
             self.title = row
+        _players_in(conn, run, self.state)
         self.trace = []
         self.moved = None
         self.report = None
@@ -1860,7 +2136,7 @@ class Steer:
         world_save(self.conn, self.world, self.run, self.program, self.state, self.world_loaded)
         self.conn.execute(
             'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s,status=%s,problem=%s WHERE id=%s',
-            (json.dumps(self.state), self.cursor, status or self.status, self.problem, self.run))
+            (_dump(self.conn, self.run, self.state), self.cursor, status or self.status, self.problem, self.run))
         if status:
             self.status = status
 
@@ -2010,7 +2286,7 @@ class Steer:
     def _transition(self, target, actor):
         """As rules.dispatch moves a run: the closing visit's missions kept, the visit's timers and once-marks dropped."""
         _require(any(p['id'] == target for p in self.program['phases']), 'No such phase.')
-        rules.leave_visit(self.phase(), self.state, target, self.day(), actor)
+        rules.leave_visit(self.phase(), self.state, target, self.day(), actor, self.program)
         return True
 
     def do_enter(self):
@@ -2131,6 +2407,123 @@ class Steer:
                 f'(order #{receipt}).' + (' It counts when a wolf of the story next does something.' if done else '')), {
             'step': was[0], 'of': len(m['objectives'])}, {'step': record['tracks'].get(key, [0, 0])[0], 'of': len(m['objectives'])}
 
+    # --- quests and who takes part (doc 85, 5.4 and Phase 6)
+    def _quest_run(self, facts):
+        return quests.Run(self.program, self.phase(), self.state, self.day(), self.elapsed(), facts.append)
+
+    def _follow(self, facts):
+        """The story's own facts a command made ("quest completed"...), through the rules as play would send them."""
+        for fact in facts:
+            if self.dispatch(fact):
+                self.moved = True
+                return
+
+    def _copy(self, q, wolf):
+        if q.get('scope') == 'story':
+            c = self.state.get('quests', {}).get(q['id'], {}).get('story')
+            _require(c is not None, f'{q["title"]} has not started for the story.')
+            return 'story', c
+        holder, c = quests.copy_of(q, self.state, self.cohort(wolf))
+        _require(c is not None, f'{wolf} has no copy of {q["title"]}.')
+        return holder, c
+
+    def do_objective(self):
+        self.flow_ready()
+        q = quests.index(self.program)[self.payload['quest']]
+        o = next(o for o in q['objectives'] if o['id'] == self.payload['objective'])
+        wolf, do = self.payload['player'], self.payload['do']
+        holder, c = self._copy(q, wolf)
+        rec = c['objectives'].setdefault(o['id'], {})
+        was = dict(rec)
+        facts = []
+        run = self._quest_run(facts)
+        actor = wolf if wolf != 'story' else ''
+        if do == 'reset':
+            c['objectives'].pop(o['id'], None)
+            if c['status'] == 'ready':
+                c['status'] = 'active'
+        elif do == 'progress':
+            _require(c['status'] == 'active', f'That copy is {c["status"]}.')
+            if rec.get('done') and self.payload['amount'] < o.get('goal', 1):
+                rec.pop('done', None)
+            if not rec.get('done'):
+                rec['n'] = min(self.payload['amount'], o.get('goal', 1))
+                if actor:
+                    run.credit(c, actor)
+                if rec['n'] >= o.get('goal', 1):
+                    run.objective_done(q, holder, c, o, actor)
+        elif do == 'complete':
+            _require(c['status'] == 'active', f'That copy is {c["status"]}.')
+            if actor:
+                run.credit(c, actor)
+            run.objective_done(q, holder, c, o, actor)
+        elif do == 'reveal':
+            rec['shown'] = True
+        elif do == 'fail':
+            _require(not rec.get('done'), 'That objective is done: reset it first.')
+            rec.update(failed=True, shown=True)
+            if not o.get('optional'):
+                run.fail(q, holder, c, actor)
+        if not c['objectives'].get(o['id']):
+            c['objectives'].pop(o['id'], None)
+        self._follow(facts)
+        now = c['objectives'].get(o['id'], {})
+        return (f'{q["title"]} for {holder}: "{o["label"]}" {do} by hand' + (f' (the copy is {c["status"]} now)' if c['status'] != 'active' else '')
+                + '; the journal is told.'), {'objective': was, 'status': None}, {'objective': now, 'status': c['status']}
+
+    def do_quest(self):
+        self.flow_ready()
+        q = quests.index(self.program)[self.payload['quest']]
+        wolf, do = self.payload['player'], self.payload['do']
+        facts = []
+        run = self._quest_run(facts)
+        if do == 'give':
+            _require(rules.identifier(wolf), 'Choose a wolf.')
+            why = run.start(q, wolf, invited=True)
+            _require(not why, why)
+            self._follow(facts)
+            holder, c = quests.copy_of(q, self.state, wolf)
+            return f'{q["title"]} given to {wolf} by hand; the journal is told.', {'status': None}, {'status': c['status'], 'holder': holder}
+        holder, c = self._copy(q, wolf)
+        was = c['status']
+        if do == 'take':
+            del self.state['quests'][q['id']][holder]
+            if not self.state['quests'][q['id']]:
+                del self.state['quests'][q['id']]
+            return f'{q["title"]} taken away from {holder}; nothing it gave is taken back.', {'status': was}, {'status': None}
+        _require(c['status'] in quests.UNDER_WAY, f'That copy is {c["status"]}.')
+        if do == 'complete':
+            if wolf != 'story':
+                run.credit(c, wolf)
+            run.complete(q, holder, c, wolf if wolf != 'story' else '')
+        else:
+            run.fail(q, holder, c, wolf if wolf != 'story' else '')
+        self._follow(facts)
+        rewards = [e for e in self.state.get('triggerEffects', []) if e.get('reward') == q['id']]
+        return (f'{q["title"]} {"completed" if do == "complete" else "failed"} for {holder} by hand'
+                + (f'; {len(rewards)} reward order{"s" if len(rewards) != 1 else ""} to send, as play would give them.' if rewards else '.')), \
+            {'status': was}, {'status': c['status'], 'rewards': len(rewards)}
+
+    def do_participant(self):
+        self.flow_ready()
+        wolf, do = self.payload['player'], self.payload['do']
+        before = len(self.state['cohort'])
+        if do == 'add':
+            _require(wolf not in self.state['cohort'], f'{wolf} is in the story already.')
+            _require(quests.add_wolf(self.program, self.state, wolf), 'The story has all the wolves it can take (its cap).')
+            if not self.state.get('playerRows') and quests.relevant(self.program):
+                self.state['playerRows'] = True
+            text = f'{wolf} taken into the story; the game is told.'
+        else:
+            self.cohort(wolf)
+            quests.remove_wolf(self.program, self.state, wolf, self.day())
+            text = f'{wolf} taken out of the story (their quests under way abandoned); the game is told.'
+        if 'cohortSent' not in self.state:
+            # (A story told of its audience only with its first phase until now: the game has that audience.)
+            self.state['cohortSent'] = [w for w in self.state['cohort'] if w != wolf] if do == 'add' else [*self.state['cohort'], wolf]
+        self.state.pop('journalMark', None)
+        return text, {'wolves': before}, {'wolves': len(self.state['cohort'])}
+
     def do_order(self):
         receipt, do = self.payload['receipt'], self.payload['do']
         _require(self.status == 'paused', 'Only a paused story has a stuck order.')
@@ -2218,6 +2611,12 @@ class Steer:
                    FROM dm.story_releases r WHERE r.id=%s""", (self.run,))
         phase = rules.phase_of(new_program, state)
         state['entrySent'] = True
+        if quests.relevant(new_program) and not state.get('playerRows'):
+            # (Doc 85, Phase 6: onto a version with quests, each wolf's own state goes into its row from now on; the game
+            # has the audience the run has.)
+            rules.require(_players_table(self.conn), 'Apply migration 0075 before moving a story onto a version with quests.')
+            state.update(playerRows=True, cohortSent=list(state['cohort']))
+        state.pop('journalMark', None)
         receipt = queue(self.conn, self.by, 'story.phase', self.run, {
             'revise': True, 'phase': state['phase'], 'journal': phase['journal'], 'title': new_program['title'],
             'players': state['cohort'], 'visit': state['visits'], 'end': False, 'guestVoices': phase.get('guestVoices', []),
@@ -2320,7 +2719,7 @@ def stopping(conn, run):
                      ('' if status == 'applied' else f'The game had no such story: {result}', run))
     elif status == 'expired':
         state['stopReceipt'] = queue(conn, 'story-runner', 'story.stop', run, {})
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
 
 
 # ------------------------------------------------------------------------------------------- moving onto a new version
@@ -2349,6 +2748,7 @@ def approve_version(conn, world, who, program, digest, run):
                        (world, run)).fetchone()
     rules.require(row, 'Unknown run.')
     old, state, status, current = row
+    _players_in(conn, run, state)
     rules.require(status in STEERED and state, f'This run is {status}: only a live run is moved onto a new version.')
     rules.require(program['id'] == old['id'], f'A new version keeps its story\'s id ("{old["id"]}"): this is another story.')
     rules.require(digest != current, 'The run is on this version already.')
@@ -2412,7 +2812,7 @@ def settle_move(conn, run):
     if delivery == 'expired':
         again = conn.execute('SELECT kind,target_id,payload,requested_by FROM dm.actions WHERE id=%s', (receipt,)).fetchone()
         state['moveReceipt'] = queue(conn, again[3], again[0], again[1], again[2])
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
         conn.execute('UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
                      (state['moveReceipt'], run, state['visits']))
         if version:
@@ -2420,7 +2820,7 @@ def settle_move(conn, run):
         return
     if delivery == 'applied' or not version:
         del state['moveReceipt']
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
         if version:
             conn.execute("UPDATE dm.story_versions SET status='current',settled_at=statement_timestamp() WHERE id=%s", (version[0],))
         return
@@ -2436,14 +2836,17 @@ def settle_move(conn, run):
     conn.execute("UPDATE dm.story_versions SET status='refused',settled_at=statement_timestamp(),problem=%s WHERE id=%s",
                  (f'The game refused it: {result}'[:500], vid))
     if back:
+        if not before.get('playerRows') and _players_table(conn):
+            conn.execute('DELETE FROM dm.story_player_state WHERE run=%s', (run,))   # (Back to a state kept whole.)
+        before.pop('journalMark', None)
         conn.execute("UPDATE dm.story_versions SET status='current' WHERE id=%s", (back[0],))
         conn.execute('UPDATE dm.story_releases SET program=%s::jsonb,digest=%s,approved_by=%s,state=%s::jsonb WHERE id=%s',
-                     (json.dumps(back[1]), from_digest, back[2], json.dumps(before), run))
+                     (json.dumps(back[1]), from_digest, back[2], _dump(conn, run, before), run))
     else:
         # (No record of the version it came from: it stays on the new one, paused, for the admin to look at.)
         del state['moveReceipt']
         conn.execute("UPDATE dm.story_releases SET state=%s::jsonb,status='paused',problem=%s WHERE id=%s",
-                     (json.dumps(state), f'The game refused version {digest[:8]} and the version before it is not recorded.', run))
+                     (_dump(conn, run, state), f'The game refused version {digest[:8]} and the version before it is not recorded.', run))
     conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
                  ('story.migrate', run, f'"{program["title"]}" went back to version {from_digest[:8]}: the game refused version '
                   f'{digest[:8]} (order #{receipt}: {result}).'[:2000], 'story-runner'))
@@ -2712,8 +3115,11 @@ def _stall(conn, world, program, state, limits):
     off, used up, waiting for a wolf who has been gone `goneDays`, or a signal nothing left can send). None when it can
     move."""
     phase = rules.phase_of(program, state)
-    if not (phase['exits'] or phase.get('triggers')) or state.get('waiting'):
+    if not rules.ongoing(phase) or state.get('waiting'):
         return None   # (Version 2: a trigger waiting part-way through its actions goes on by itself.)
+    if phase.get('_quests') and not phase['exits'] and not any(a['do'] == 'enter' for t in phase.get('triggers', [])
+                                                              for _, a in rules.triggers.walk(t['actions'])):
+        return None   # (Doc 85, Phase 6: a phase of quests with nowhere to go, a standing errand, is not meant to move on.)
     judged = listeners(program, state, per_wolf=False)
     if any(i['can'] for i in judged if not i['needsWolves']):
         return None
@@ -2748,6 +3154,7 @@ def _load(conn, world, run):
            WHERE world_id=%s AND id=%s""", (world, run)).fetchone()
     rules.require(row, 'Unknown run.')
     rules.require(row[1] and row[2] in (*STEERED, 'stopping'), 'This run is not running: there is nothing to explain.')
+    _players_in(conn, run, row[1])
     return row
 
 
@@ -2894,7 +3301,7 @@ def _outcome(program, before, after, trace, moved, actor):
     if moved:
         landing = rules.phase_of(program, after)
         out['entryEffects'] = entry_effects(landing, after)
-        out['ending'] = not (landing['exits'] or landing.get('triggers'))
+        out['ending'] = not rules.ongoing(landing)
         out['journal'] = landing['journal']
     return out
 
@@ -2987,7 +3394,7 @@ def preview(conn, world, run, who, kind, payload, may=None):
                                *after.get('triggerEffects', [])] if steer.moved else list(after.get('triggerEffects', []))
                 if steer.moved:
                     out['journal'] = landing['journal']
-                    out['ending'] = not (landing['exits'] or landing.get('triggers'))
+                    out['ending'] = not rules.ongoing(landing)
                 out['missions'] = _missions_moved(rules.phase_of(program, before), before.get('missions', {}), after.get('missions', {})) \
                     if not steer.moved and kind != 'migrate' else []
             raise psycopg.Rollback()
@@ -3017,11 +3424,11 @@ def explain(conn, world, run, data=None, who='', may=None):
     judged = listeners(program, state, recent=recent, day=now['day'])
     phase = rules.phase_of(program, state)
     stall = None
-    if status == 'running' and (phase['exits'] or phase.get('triggers')) and not any(i['can'] for i in judged):
+    if status == 'running' and rules.ongoing(phase) and not any(i['can'] for i in judged):
         stall = _stall(conn, world, program, state, limits)
     return {'run': run, 'phase': state['phase'], 'visit': state['visits'], 'status': status, 'day': now['day'],
             'listeners': judged, 'timers': _timers_ahead(state, now['day'], speed), 'speed': speed, 'recent': recent,
-            'goneDays': limits['goneDays'], 'stall': stall, 'ending': not (phase['exits'] or phase.get('triggers')),
+            'goneDays': limits['goneDays'], 'stall': stall, 'ending': not rules.ongoing(phase),
             # (The events its missions' objectives take: a "what if" may try those too.)
             'missionEvents': sorted({o['on'] for m in phase.get('missions', []) for o in m['objectives']})}
 
