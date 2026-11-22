@@ -649,6 +649,15 @@ class Game
     // Every other dm.actions act, as applyDmActions applies a row {id, kind, target_id, requested_by, payload}: public
     // for the tests, which have no dm.actions table.
     Result applyDmAct(std::vector<PgValue> row);
+    // The story runner's "needs you" alerts (Docs/Design/85-story-triggers-and-campaign-control.md, 5.6; Phase 3), as
+    // dm.story_alerts_for_game answers them (migration 0072: what the game may know of the stories, and nothing else):
+    // {running, beatAge, runnerSeconds, alerts: [{key, text}]}. Each alert new since the last reading is told to every
+    // Dungeon Master in the world in the Dev Console (a devNotice), once; the runner down while stories should run is one
+    // of them. While the runner is down its last alerts still stand, and an alert that goes for fewer than five readings
+    // (about a minute) and comes back is not told again. Returns how many were new. Public for the tests; watchStoryAlerts reads the database every 15 s.
+    int readStoryAlerts(const json::Value& reply);
+    // The alerts still standing (key, words), as last read: a Dungeon Master who comes in is told these.
+    const std::map<std::string, std::string>& storyAlerts() const { return storyAlerts_; }
     // The community world's guards on the host's tools (Docs/Design/78-hosts-run-their-own-worlds.md, 8; Phase M1),
     // enforced here, at the point of use, whatever the tool asked: with cheats off (neither --dev-tools nor
     // --host-cheats), character.gift and account.unlock are refused, character.dm too without --dev-tools, and the
@@ -2135,6 +2144,12 @@ class Game
     std::uint64_t sequence_ = 1, revision_ = 0;
     double dmExpiryAccumulator_ = 60;
     bool dmNotified_ = true;
+    void watchStoryAlerts(double dt);
+    void tellStoryAlert(Connection* c, const std::string& text);
+    double storyAlertAccumulator_ = 0;
+    int storyAlertsReadable_ = -1;                   // (-1 not asked yet; 0 a database without migration 0072; 1 it has it.)
+    std::map<std::string, std::string> storyAlerts_; // (Doc 85, 5.6: key -> words, as last read.)
+    std::map<std::string, int> storyAlertsGone_;     // (An alert told that has not been read since: how many readings ago.)
     unsigned snapshotPhase_ = 0;
     double saveSoonIn_ = -1, snapshotAccumulator_ = 0, saveAccumulator_ = 0, snapshotSaveAccumulator_ = 0,
            releaseAccumulator_ = 0, dmAccumulator_ = 0, spawnAccumulator_ = 0, prefetchAccumulator_ = 0, streamLogAccumulator_ = 0;

@@ -6,7 +6,27 @@ import {editableRegion} from './StoryRegions';
 import {editableRule} from './StoryTriggerEditor';
 import {download} from '../lib/api';
 
-import {StoryPhaseEditor, type WorldProgram as Program, type ProgramCatalogue as Catalogue} from './StoryPhaseEditor';
+import {StoryPhaseEditor, type Jump, type WorldProgram as Program, type ProgramCatalogue as Catalogue} from './StoryPhaseEditor';
+import {problemList, problemPlace, type Problem, type Problems} from '../lib/campaigns';
+
+/** Every problem of the draft at once, each with [Go] (Docs/Design/85, Phase 3; 4.2's Problems list): the program's errors,
+ *  what the world says (a Dungeon Master's: unknown residents, tiles outside a cell, what approval would refuse), the
+ *  warnings the program alone can tell, and the triggers the last rehearsal did not reach. */
+export function ProblemsList({found, untried, phases, go, asking}: {found: Problems | null; untried?: string[]; phases: string[];
+    go?: (p: Problem) => void; asking: boolean}) {
+    if (!found) return <section className="story-problems"><h4>Problems</h4><p className="hint">{asking ? 'Checking the draft…' : 'Not checked yet.'}</p></section>;
+    const list = problemList(found.problems, untried, phases);
+    const errors = list.filter(p => p.level === 'error').length, warnings = list.length - errors;
+    return <section className="story-problems" aria-label="Problems">
+        <h4>Problems · {errors ? `${errors} error${errors === 1 ? '' : 's'}` : <span className="ok">no errors</span>}{warnings ? ` · ${warnings} warning${warnings === 1 ? '' : 's'}` : ''}
+            {asking ? <small className="hint"> · checking…</small> : null}</h4>
+        {list.length > 0 && <ul>{list.map((p, i) => <li key={i} className={p.level}>
+            <span>{p.level === 'error' ? '✖' : '⚠'}</span>
+            <span>{p.text}<small>{problemPlace(p)}{p.world ? ` · from the world${p.blocks ? ': approval refuses this' : ''}` : ''}</small></span>
+            {go && p.at.kind !== 'source' ? <button onClick={() => go(p)}>Go</button> : <span />}</li>)}</ul>}
+        {!errors && !found.world && <p className="hint">The world's references are checked for a Dungeon Master once the draft has no error.</p>}
+    </section>;
+}
 
 interface TraceTile {cell?:string;x?:number;y?:number}
 function tracePlace({cell,x,y}:TraceTile) {
@@ -30,6 +50,25 @@ export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, can
     const [resident,setResident] = useState<{resident:{id:string;name:string}}>();
     const [feedback,setFeedback] = useState('');
     const [busy,setBusy] = useState(false);
+    const [problems,setProblems] = useState<Problems|null>(null);
+    const [checking,setChecking] = useState(false);
+    const [jump,setJump] = useState<Jump>();
+    // Every problem at once, asked again half a second after the last edit (doc 85, Phase 3).
+    useEffect(() => {
+        let active = true;
+        const timer = window.setTimeout(() => {
+            let parsed: unknown;
+            try { parsed = JSON.parse(source); } catch (e) {
+                setChecking(false);
+                setProblems({problems:[{level:'error',text:'The program JSON does not parse: '+(e as Error).message,path:'',at:{kind:'source'}}],errors:1,warnings:0,world:false,digest:null});
+                return;
+            }
+            setChecking(true);
+            storyProgram<Problems>(target,'problems',{program:parsed}).then(p => {if (active) setProblems(p);})
+                .catch(() => {if (active) setProblems(null);}).finally(() => {if (active) setChecking(false);});
+        }, 500);
+        return () => {active = false; window.clearTimeout(timer);};
+    }, [source, target]);
     useEffect(() => {
         let active = true;
         storyProgram<Catalogue>(target,'catalog').then(c => {
@@ -72,10 +111,14 @@ export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, can
                 if (!source || window.confirm('Replace this draft with the imported story?')) edit(await f.text());
             });
         }}/></label>
-        </div>{catalog && program && editableGraph &&
+        </div>
+        <ProblemsList found={problems} untried={report?.uncoveredTriggers} phases={Array.isArray(program?.phases) ? program.phases.map(p => String(p?.id)) : []} asking={checking}
+            go={editableGraph ? p => setJump(j => ({seq: (j?.seq ?? 0) + 1, at: p.at})) : undefined}/>
+        {program && !editableGraph && <p className="hint" role="status">The forms cannot show this draft as it is: fix the problems above in Program JSON below, and the forms come back.</p>}
+        {catalog && program && editableGraph &&
             <><EmbeddedScenes target={target} libraryKey={sceneLibraryKey} program={program} examples={catalog.sceneExamples ?? {}} edit={p=>edit(pretty(p))}/>
             <StoryPhaseEditor world={world} start={id=>{if(window.confirm('Replace this draft with the selected event story?'))
-                void perform(async()=>edit(pretty((await storyProgram<{program:Program}>(target,'draft-event',{eventType:id})).program)));}} program={program} catalog={catalog} onEdit={p=>edit(pretty(p))}/></>}
+                void perform(async()=>edit(pretty((await storyProgram<{program:Program}>(target,'draft-event',{eventType:id})).program)));}} program={program} catalog={catalog} onEdit={p=>edit(pretty(p))} jump={jump}/></>}
         <details><summary>Program JSON and rehearsal cases</summary><label>Program JSON<textarea rows={18} spellCheck={false} value={source} onChange={e => edit(e.target.value)}/></label></details>
         <button disabled={!source} onClick={() => download('world-story.json',source)}>Export draft</button>
         <button disabled={!source} onClick={() => void perform(async () => setReport(await storyProgram<Report>(target,'rehearse',{program:JSON.parse(source)})))}>Rehearse all paths</button>

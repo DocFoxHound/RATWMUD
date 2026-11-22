@@ -3,22 +3,40 @@
 // a reason of a few words (shown in the timeline and the audit), and for stop, going back and skipping an order the story's
 // title typed. The reply is the command's id; the console shows it "sent", then "done" or "refused: why" once the runner has
 // taken it (within a tick).
-import {useState} from 'react';
-import {commandLine, nameOf, typedTitle, wayOf, type CommandKind, type Controls, type RunDetail, type RunRow} from '../../lib/campaigns';
+import {useEffect, useState} from 'react';
+import {storyProgram, type Target} from '../api';
+import {commandLine, nameOf, previewLines, typedTitle, wayOf, type CommandKind, type Controls, type Preview, type RunDetail, type RunRow} from '../../lib/campaigns';
+import {WhyNotPanel} from './Explain';
 
 /** A command waiting for the admin's second click. */
 export interface Ask { kind: CommandKind; payload: Record<string, unknown>; title: string; does: string[]; warn?: string; way?: 'on' | 'back' | 'again' }
 export type SteerFn = (ask: Ask) => void;
 
-export function AskDialog({ask, row, names, busy, send, cancel}: {ask: Ask; row: RunRow; names: Record<string, string>; busy: boolean;
-    send: (reason: string, force: boolean) => void; cancel: () => void}) {
+/** Since Phase 3 the dialog's "This will do" is a dry run (doc 85, 5.5): the command taken by the runner's own code on the run
+ *  as it stands, rolled back (the op `explain` with `command`); what the program says it does stays while it is asked, and
+ *  if it cannot be. */
+export function AskDialog({ask, row, names, busy, send, cancel, target, dryRun}: {ask: Ask; row: RunRow; names: Record<string, string>; busy: boolean;
+    send: (reason: string, force: boolean) => void; cancel: () => void; target?: Target; dryRun?: Preview}) {
     const [reason, setReason] = useState(''), [typed, setTyped] = useState(''), [force, setForce] = useState(false);
+    const [preview, setPreview] = useState<Preview | null>(dryRun ?? null), [asked, setAsked] = useState(false);
+    useEffect(() => {
+        if (!target || dryRun) return;
+        let live = true;
+        setAsked(true);
+        storyProgram<Preview>(target, 'explain', {run: row.run, command: {kind: ask.kind, payload: ask.payload}})
+            .then(p => { if (live) setPreview(p); }, () => { if (live) setPreview(null); })
+            .finally(() => { if (live) setAsked(false); });
+        return () => { live = false; };
+    }, [target, row.run, ask.kind, JSON.stringify(ask.payload)]); // eslint-disable-line react-hooks/exhaustive-deps
+    const does = preview ? previewLines(preview, names) : ask.does;
     const needsTitle = typedTitle(ask.kind, ask.payload, ask.way);
     const ready = reason.trim().length >= 6 && reason.trim().split(/\s+/).length >= 2 && (!needsTitle || typed.trim() === row.title);
     return <div className="camp-ask" role="dialog" aria-label={ask.title}>
         <h3>{ask.title}</h3>
         <p className="camp-ask-line">You: {commandLine(ask.kind, ask.payload, names)}</p>
-        {ask.does.length > 0 && <><b>This will do:</b><ul>{ask.does.map((d, i) => <li key={i}>{d}</li>)}</ul></>}
+        {does.length > 0 && <><b>This will do{preview ? '' : asked ? ' (asking the runner for a dry run…)' : ''}:</b>
+            <ul className={preview?.outcome === 'refused' ? 'camp-ask-refused' : ''}>{does.map((d, i) => <li key={i}>{d}</li>)}</ul>
+            {preview && <p className="hint">A dry run on the story as it stands now; it is taken as it stands when the runner gets it.</p>}</>}
         {ask.warn && <p className="camp-ask-warn">{ask.warn}</p>}
         <label className="field"><span>Why (shown in the timeline and the audit)</span>
             <input autoFocus value={reason} maxLength={300} placeholder="e.g. two coils were handed over before the story saw them"
@@ -93,19 +111,28 @@ export function SteerBar({row, detail, names, steer, busy}: {row: RunRow; detail
 }
 
 /** The Triggers tab (doc 85, 5.3): the phase's triggers and the campaign's, each on or off, how often fired, [Fire…]. */
-export function TriggersPanel({detail, names, canSteer, steer, busy, counts}: {detail: RunDetail; names: Record<string, string>; canSteer: boolean;
-    steer: SteerFn; busy: boolean; counts: Record<string, {count: number; last: string | null; day: number | null}>}) {
+/** Fire a trigger now (5.4), as asked from the Triggers tab and the Overview. */
+export function fireAsk(t: {id: string; actions: string[]}, wolf: string, check: boolean, names: Record<string, string>): Ask {
+    return {kind: 'fire', payload: {trigger: t.id, check, ...(wolf ? {actor: wolf} : {})},
+        title: `Fire ${t.id} now`, does: [`Runs its actions as if its event had happened${wolf ? ' for ' + nameOf(names, wolf) : ''}: ${t.actions.join(' → ')}.`,
+            check ? 'Its conditions and once-only rule are checked first; refused if they say no.' : 'Unchecked: its conditions and once-only rule are not asked.',
+            'Marked "by hand" in the history.']};
+}
+
+export function TriggersPanel({detail, names, canSteer, steer, busy, counts, target}: {detail: RunDetail; names: Record<string, string>; canSteer: boolean;
+    steer: SteerFn; busy: boolean; counts: Record<string, {count: number; last: string | null; day: number | null}>; target?: Target}) {
     const c: Controls | null | undefined = detail.controls;
     const [wolves, setWolves] = useState<Record<string, string>>({}), [checks, setChecks] = useState<Record<string, boolean>>({});
+    const [why, setWhy] = useState<string | null>(null);
     if (!c) return <p className="hint">This run has ended: it has no triggers to steer.</p>;
     const cohort = detail.state?.cohort ?? [];
     return <div className="camp-triggers">
-        <table className="dm-table"><thead><tr><th>Trigger</th><th>When</th><th>Does</th><th>Fired</th><th>On</th>{canSteer && <th>By hand</th>}</tr></thead>
-            <tbody>{c.triggers.map(t => {
+        <table className="dm-table"><thead><tr><th>Trigger</th><th>When</th><th>Does</th><th>Fired</th><th>On</th>{canSteer && <th>By hand</th>}{target && <th></th>}</tr></thead>
+            <tbody>{c.triggers.flatMap(t => {
                 const n = counts[t.id];
                 const check = checks[t.id] ?? true;
                 const wolf = wolves[t.id] ?? '';
-                return <tr key={t.key} className={t.off ? 'off' : ''}>
+                const rows = [<tr key={t.key} className={t.off ? 'off' : ''}>
                     <td><b>{t.id}</b><small>{t.scope === 'campaign' ? 'campaign' : 'this phase'} · {t.once === 'each' ? 'every time' : 'once per ' + t.once}</small></td>
                     <td>{t.on}{t.signal ? ` "${t.signal}"` : ''}{t.hasConditions ? <small>with conditions</small> : null}</td>
                     <td>{t.actions.join(' → ')}</td>
@@ -120,12 +147,13 @@ export function TriggersPanel({detail, names, canSteer, steer, busy, counts}: {d
                             <option value="">{t.needsWolf ? 'choose a wolf…' : 'no wolf'}</option>
                             {cohort.map(id => <option key={id} value={id}>{nameOf(names, id)}</option>)}</select>
                         <label className="camp-check"><input type="checkbox" checked={check} onChange={e => setChecks(x => ({...x, [t.id]: e.target.checked}))} /> check</label>
-                        <button disabled={busy || (t.needsWolf && !wolf)} onClick={() => steer({kind: 'fire', payload: {trigger: t.id, check, ...(wolf ? {actor: wolf} : {})},
-                            title: `Fire ${t.id} now`, does: [`Runs its actions as if its event had happened${wolf ? ' for ' + nameOf(names, wolf) : ''}: ${t.actions.join(' → ')}.`,
-                                check ? 'Its conditions and once-only rule are checked first; refused if they say no.' : 'Unchecked: its conditions and once-only rule are not asked.',
-                                'Marked "by hand" in the history.']})}>Fire…</button>
+                        <button disabled={busy || (t.needsWolf && !wolf)} onClick={() => steer(fireAsk(t, wolf, check, names))}>Fire…</button>
                     </td>}
-                </tr>;
+                    {target && <td><button onClick={() => setWhy(why === t.id ? null : t.id)}>{why === t.id ? 'Hide' : 'Why not?'}</button></td>}
+                </tr>];
+                if (target && why === t.id) rows.push(<tr key={t.key + ':why'} className="camp-why-row"><td colSpan={canSteer ? 7 : 6}>
+                    <WhyNotPanel target={target} run={detail.run} which={{trigger: t.id}} names={names} close={() => setWhy(null)} /></td></tr>);
+                return rows;
             })}</tbody></table>
         {c.offElsewhere.length > 0 && <p className="hint">Also turned off, in other phases: {c.offElsewhere.join(', ')}.</p>}
     </div>;

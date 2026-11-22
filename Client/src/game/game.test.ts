@@ -1238,4 +1238,8 @@ test('the Dev Console: only a Dungeon Master has it; slash commands go to it, ne
     s.receiveEvent({type: 'devResult', command: '/fight-end-myself', ok: false, text: "You aren't in a fight."});
     assert.deepEqual(s.devLog, [{command: '/fight-end-myself', ok: false, text: "You aren't in a fight."}], 'the answer goes to its log');
     assert.equal(s.posts.length, 0, 'not into the story');
+    // A word from the Campaigns console's alerts (doc 85, 5.6): into the same log, under who said it, never the story.
+    s.receiveEvent({type: 'devNotice', from: 'Campaigns', text: 'Story "Breach" is paused.'});
+    assert.deepEqual(s.devLog.at(-1), {command: '', ok: false, text: 'Story "Breach" is paused.', notice: 'Campaigns'});
+    assert.equal(s.posts.length, 0, 'a notice is not a post either');
 });

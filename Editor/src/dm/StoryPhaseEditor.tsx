@@ -1,4 +1,5 @@
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
+import type {Problem} from '../lib/campaigns';
 import {cueEvent,SceneCueFilter} from './SceneCueFilter';
 import type {Scene} from './scenes';
 import type {Project} from '../model/model.mjs';
@@ -13,7 +14,7 @@ interface Exit {
     on:string; to:string; match?:Record<string,string>; afterDays?:number; percent?:number; players?:number; participant?:boolean;
 }
 interface Phase {campaignRules?:boolean;triggers?:Trigger[]; missions?:Mission[]; guestVoices?:string[]; id:string; journal:string; effects:Effect[]; exits:Exit[]}
-export interface WorldProgram {scenes?:Scene[];regions?:Region[];triggers?:Trigger[];start:string; tests:Scenario[]; id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]}
+export interface WorldProgram {scenes?:Scene[];regions?:Region[];triggers?:Trigger[];start:string; tests:Scenario[]; id:string; title:string; audience:{kind:string; days?:number; players?:string[]}; phases:Phase[]; quietAfterHours?:number}
 export interface ProgramCatalogue {sceneExamples?:Record<string,Scene>;blank:WorldProgram;triggerRules:{events:string[]}; eventTypes:EventType[]; missionEvents:string[]; missionMeasures:Record<string,string[]>; events:string[]; effects:Record<string,string[]>; examples:Record<string,WorldProgram>}
 
 function newExit(on:string, to:string):Exit {
@@ -41,10 +42,41 @@ function regionReferences(program:WorldProgram) {
     return refs;
 }
 
-export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Project|null;start:(id:string)=>void; program:WorldProgram; catalog:ProgramCatalogue; onEdit:(p:WorldProgram)=>void}) {
+/** Where the Problems list asks the editor to go (doc 85, Phase 3): a problem's place, and a number that changes each time. */
+export interface Jump {seq:number; at:Problem['at']}
+const JUMP_SECTION:Record<string,string>={trigger:'triggers',mission:'missions',missions:'missions',exit:'exits',exits:'exits',effect:'exits',phase:'journal',
+    region:'regions',regions:'regions',settings:'settings',program:'settings',case:'tests',tests:'tests',scene:'scenes',scenes:'scenes',phases:'phases'};
+
+export function StoryPhaseEditor({world,program,catalog,onEdit,start,jump}: {world:Project|null;start:(id:string)=>void; program:WorldProgram; catalog:ProgramCatalogue; onEdit:(p:WorldProgram)=>void; jump?:Jump}) {
     const [index,setIndex] = useState(0);
     const [scope,setScope]=useState<'phase'|'campaign'>('phase');
     const [ruleIndex,setRuleIndex]=useState(0);
+    const root=useRef<HTMLDivElement>(null);
+    // Go to a problem (the Problems list's [Go]): its phase, the trigger in its list, then the section opened and shown.
+    useEffect(()=>{
+        if(!jump)return;
+        const at=jump.at;
+        if(typeof at.phase==='number' && at.phase<program.phases.length)setIndex(at.phase);
+        if(at.kind==='trigger'){
+            const list=(at.phase===null||at.phase===undefined?program.triggers:program.phases[at.phase]?.triggers) ?? [];
+            const i=at.index ?? list.findIndex(t=>t.id===at.id);
+            setScope(at.phase===null||at.phase===undefined?'campaign':'phase'); setRuleIndex(Math.max(0,i));
+        }
+        const section=JUMP_SECTION[at.kind];
+        const timer=window.setTimeout(()=>{
+            const box=root.current;
+            if(!box)return;
+            const target=(at.kind==='exit'&&box.querySelector(`[data-jump-exit="${at.index}"]`))||(at.kind==='effect'&&box.querySelector(`[data-jump-effect="${at.index}"]`))
+                ||box.querySelector(`[data-jump="${section}"]`);
+            if(!(target instanceof HTMLElement))return;
+            for(let el:HTMLElement|null=target;el;el=el.parentElement)if(el instanceof HTMLDetailsElement)el.open=true;
+            if(target instanceof HTMLDetailsElement)target.open=true;
+            target.scrollIntoView({block:'center'});
+            target.classList.add('story-jumped');
+            window.setTimeout(()=>target.classList.remove('story-jumped'),1600);
+        },60);
+        return ()=>window.clearTimeout(timer);
+    },[jump?.seq]); // eslint-disable-line react-hooks/exhaustive-deps
     function goPhase(i:number) {setIndex(i);setRuleIndex(0);}
     function goScope(s:'phase'|'campaign') {setScope(s);setRuleIndex(0);}
     const at = Math.min(index,program.phases.length-1);
@@ -76,7 +108,7 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
     }
     function exit(i:number, value:Exit) {update({exits:phase.exits.map((e,n)=>n===i?value:e)});}
     function effect(i:number, value:Effect) {update({effects:phase.effects.map((e,n)=>n===i?value:e)});}
-    return <><details className="story-settings"><summary>Campaign settings</summary><label>Story ID<input value={program.id} onChange={e=>onEdit({...program,id:e.target.value})}/></label><label>Campaign title<input value={program.title} onChange={e=>onEdit({...program,title:e.target.value})}/></label>
+    return <div ref={root} className="story-phase-editor"><details className="story-settings" data-jump="settings"><summary>Campaign settings</summary><label>Story ID<input value={program.id} onChange={e=>onEdit({...program,id:e.target.value})}/></label><label>Campaign title<input value={program.title} onChange={e=>onEdit({...program,title:e.target.value})}/></label>
         <label>Audience<select aria-label="Audience" value={program.audience.kind} onChange={e=>onEdit({...program,
             audience:e.target.value==='active'?{kind:'active',days:7}:{kind:'players',players:[]}})}>
             <option value="active">Recently active players</option><option value="players">Specific players</option></select></label>
@@ -85,14 +117,17 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
             : <label>Player character IDs, one per line<textarea value={(program.audience.players ?? []).join('\n')}
                 onChange={e=>onEdit({...program,audience:{kind:'players',players:e.target.value.split('\n')}})}/></label>}
         <label>Opening phase<select value={program.start} onChange={e=>onEdit({...program,start:e.target.value})}>
-            {program.phases.map(p=><option key={p.id}>{p.id}</option>)}</select></label></details>
-        <StoryRegions world={world} regions={regions} change={changeRegions} used={id=>refs.some(([obj,key])=>obj[key]===id)}/>
-        <div className="phase-strip"><h4>Campaign phases</h4><nav aria-label="Campaign phases">{program.phases.map((p,i)=><button key={i}
+            {program.phases.map(p=><option key={p.id}>{p.id}</option>)}</select></label>
+        <label>"Quiet" alert after real hours (the Campaigns console; 0: never, this one is slow on purpose; empty: the world's rule)
+            <input type="number" min="0" max="8760" value={program.quietAfterHours ?? ''} onChange={e=>{const {quietAfterHours,...rest}=program; void quietAfterHours;
+                onEdit(e.target.value===''?rest:{...rest,quietAfterHours:e.target.valueAsNumber});}}/></label></details>
+        <div data-jump="regions"><StoryRegions world={world} regions={regions} change={changeRegions} used={id=>refs.some(([obj,key])=>obj[key]===id)}/></div>
+        <div className="phase-strip" data-jump="phases"><h4>Campaign phases</h4><nav aria-label="Campaign phases">{program.phases.map((p,i)=><button key={i}
             aria-current={at===i?'step':undefined} onClick={()=>goPhase(i)}>{p.id}</button>)}</nav>
         <button onClick={()=>{let n=program.phases.length+1; while(program.phases.some(p=>p.id==='phase-'+n)) n++;
             onEdit({...program,phases:[...program.phases,{id:'phase-'+n,journal:'',effects:[],exits:[]}]});goPhase(program.phases.length);
         }}>Add phase</button></div>
-        <details className="phase-journal"><summary>Player journal · {phase.journal||phase.id}</summary>
+        <details className="phase-journal" data-jump="journal"><summary>Player journal · {phase.journal||phase.id}</summary>
             <label>Phase name<input key={phase.id} defaultValue={phase.id} onChange={e=>e.target.setCustomValidity('')} onBlur={e=>{
                 const name=e.target.value.trim();
                 if(name===phase.id)return;
@@ -106,20 +141,20 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
             <button aria-pressed={scope==='campaign'} onClick={()=>goScope('campaign')}>Campaign triggers</button></div>
         {scope==='campaign' && <label><input type="checkbox" checked={phase.campaignRules ?? !!(phase.triggers?.length || phase.exits.length)}
             onChange={e=>update({campaignRules:e.target.checked})}/>Run campaign triggers during {phase.id}</label>}
-        <StoryTriggerEditor cueEffects={cueEffects} scenes={program.scenes ?? []} regions={regions} index={ruleIndex} select={setRuleIndex}
+        <div data-jump="triggers"><StoryTriggerEditor cueEffects={cueEffects} scenes={program.scenes ?? []} regions={regions} index={ruleIndex} select={setRuleIndex}
             ruleGroups={[{phase:null,label:'Campaign',rules:program.triggers ?? [],missions:[]},
                 ...program.phases.map((p,i)=>({phase:i,label:p.id,rules:p.triggers ?? [],missions:p.missions ?? []}))]}
             navigate={(target,rule)=>{if(target!==null)setIndex(target);setScope(target===null?'campaign':'phase');setRuleIndex(rule);}}
             key={scope+'-'+phase.id} campaign={scope==='campaign'} triggers={(scope==='campaign'?program.triggers:phase.triggers) ?? []} sources={catalog.eventTypes} events={catalog.triggerRules.events} effects={catalog.effects}
             phases={program.phases.map(p=>p.id)} missions={phase.missions ?? []} change={triggers=>{if(scope==='phase') update({triggers});
-                else onEdit({...program,triggers,phases:program.phases.map((p,i)=>i===at && !program.triggers?.length && p.campaignRules===undefined?{...p,campaignRules:true}:p)});}} changeMissions={missions=>update({missions})}/>
-        <details className="phase-tools"><summary>Journal missions · {phase.missions?.length ?? 0}</summary>
+                else onEdit({...program,triggers,phases:program.phases.map((p,i)=>i===at && !program.triggers?.length && p.campaignRules===undefined?{...p,campaignRules:true}:p)});}} changeMissions={missions=>update({missions})}/></div>
+        <details className="phase-tools" data-jump="missions"><summary>Journal missions · {phase.missions?.length ?? 0}</summary>
         <StoryMissions events={catalog.eventTypes} triggers={catalog.missionEvents} measures={catalog.missionMeasures} missions={phase.missions ?? []}
             change={missions=>update({missions,exits:phase.exits.map(edge=>edge.on==='missions completed'
                 ? {...edge,missions:edge.missions?.filter(id=>missions.some(m=>m.id===id))}:edge)})} start={start}/></details>
-        <details className="phase-tools"><summary>Phase exits and entry effects</summary>
+        <details className="phase-tools" data-jump="exits"><summary>Phase exits and entry effects</summary>
         {!phase.exits.length && !phase.triggers?.length && !(program.triggers?.length && phase.campaignRules) && <p>This phase ends the story.</p>}
-        {phase.exits.map((edge,i)=><fieldset key={i}><label>When<select aria-label="When" value={edge.on} onChange={e=>exit(i,newExit(e.target.value,edge.to))}>
+        {phase.exits.map((edge,i)=><fieldset key={i} data-jump-exit={i}><label>When<select aria-label="When" value={edge.on} onChange={e=>exit(i,newExit(e.target.value,edge.to))}>
             {[...catalog.events,'missions completed'].map(on=><option key={on}>{on}</option>)}</select></label>
             <label>Continue to<select value={edge.to} onChange={e=>exit(i,{...edge,to:e.target.value})}>
                 {program.phases.map(p=><option key={p.id}>{p.id}</option>)}</select></label>
@@ -143,11 +178,11 @@ export function StoryPhaseEditor({world,program,catalog,onEdit,start}: {world:Pr
         <button onClick={()=>update({exits:[...phase.exits,newExit('conversation',program.phases[(at+1)%program.phases.length].id)]})}>Add phase exit</button>
         <label>Optional guest speakers (resident IDs, one per line)<textarea rows={2}
             value={(phase.guestVoices ?? []).join('\n')} onChange={e=>update({guestVoices:e.target.value ? e.target.value.split('\n') : []})}/></label>
-        <h4>When this phase opens</h4>{phase.effects.map((e,i)=><fieldset key={i}><legend>{effectName(e.kind)}</legend>
+        <h4>When this phase opens</h4>{phase.effects.map((e,i)=><fieldset key={i} data-jump-effect={i}><legend>{effectName(e.kind)}</legend>
             <StoryEffectFields scenes={program.scenes ?? []} regions={regions} effect={e} fields={catalog.effects[e.kind] ?? []} change={next=>effect(i,next)}/>
             <button onClick={()=>update({effects:phase.effects.filter((_,n)=>n!==i)})}>Remove effect</button></fieldset>)}
         <label>Add phase effect<select value="" onChange={e=>{const kind=e.target.value; const next=makeEffect(kind,catalog.effects[kind],regionIds,program.scenes);
             update({effects:[...phase.effects,next]});}}><option value="">Choose an effect</option>
             {Object.keys(catalog.effects).map(kind=><option key={kind} value={kind}>{effectName(kind)}</option>)}</select></label>
-        </details><StoryRehearsalEditor regions={regions} cases={program.tests} events={catalog.events} phases={program.phases.map(p=>p.id)} change={tests=>onEdit({...program,tests})}/></>;
+        </details><div data-jump="tests"><StoryRehearsalEditor regions={regions} cases={program.tests} events={catalog.events} phases={program.phases.map(p=>p.id)} change={tests=>onEdit({...program,tests})}/></div></div>;
 }

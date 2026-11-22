@@ -2718,7 +2718,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body(1024 * 1024)
                 target = self.posted(data)
                 op = data.get('op')
-                if op not in ('catalog', 'draft-event', 'rehearse', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
+                if op not in ('catalog', 'draft-event', 'rehearse', 'problems', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
                     raise DMError('A Dungeon Master account is required.', 403)
                 try:
                     if op == 'catalog':
@@ -2729,6 +2729,10 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         return self.reply(200, {'program': story_library.draft(data.get('eventType'))})
                     if op == 'rehearse':
                         return self.reply(200, story_program.review(data.get('program')))
+                    if op == 'problems' and RANK[who['role']] < RANK['dm']:
+                        # (Doc 85, Phase 3: every problem of a draft at once. A viewer drafts and rehearses; the world's
+                        # references are a Dungeon Master's, as the atlas search is.)
+                        return self.reply(200, story_runner.program_problems(None, None, data.get('program'), with_world=False))
                     with dm.connect(target) as conn, conn.transaction():
                         if not conn.execute("SELECT to_regclass('dm.story_releases') IS NOT NULL").fetchone()[0]:
                             raise DMError('This world needs migration 0067 to use world stories.', 409)
@@ -2762,6 +2766,21 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                                    'wolves': not hosted or bool(who.get('mayActOnWolves'))}
                             result = (story_runner.command(conn, world, who['username'], data, may) if op == 'command'
                                       else story_runner.hold_all(conn, world, who['username'], data))
+                        elif op == 'explain':
+                            # A read (doc 85, 5.5 and Phase 3): what a run waits for, why a trigger has not fired, what an
+                            # event would do, what a console command would do (a dry run, rolled back).
+                            may = {'relations': not hosted or RANK[who['role']] >= RANK['builder'],
+                                   'wolves': not hosted or bool(who.get('mayActOnWolves'))}
+                            result = story_runner.explain(conn, world, data.get('run', ''), data, who['username'], may)
+                        elif op == 'problems':
+                            result = story_runner.program_problems(conn, world, data.get('program'))
+                        elif op == 'alerts':   # (The tab bar's count, LIVE's line: doc 85, 5.6.)
+                            result = story_runner.alert_summary(conn, world)
+                        elif op == 'alert-rules':
+                            # Changing the alert rules is the owner's on a hosted world (5.7); in the user's own studio a dm's.
+                            if hosted and who['role'] != 'owner':
+                                raise DMError("Only the world's owner may change its alert rules.", 403)
+                            result = story_runner.set_alert_rules(conn, world, who['username'], data)
                         elif op == 'atlas.search':
                             result = story_runner.atlas(conn, world, data.get('query',''))
                         elif op == 'npc.context':

@@ -5,14 +5,15 @@
 // command to the story runner's inbox, asked twice, with a reason, audited; and the runner's heartbeat in the bar.
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {atLeast, dmApi, maySteer, storyProgram, worldLabel, type Live, type Me, type Target} from './api';
-import {newKey, mergeTimeline, sinceOf, type Overview, type RunDetail, type TimelineCursor, type TimelineItem, type TimelinePage, type WorldEvent} from '../lib/campaigns';
+import {newKey, mergeTimeline, sinceOf, steerable, type Explained, type Overview, type RunDetail, type TimelineCursor, type TimelineItem, type TimelinePage,
+    type WorldEvent} from '../lib/campaigns';
 import {CampaignList} from './campaigns/CampaignList';
 import {CampaignView, type ViewTab} from './campaigns/CampaignView';
 
 export const POLL_MS = 2000;
 
 /** What the render smoke (and a test) hands the tab instead of asking the DM tool. */
-export interface CampaignsInitial { overview: Overview; detail?: RunDetail; timeline?: TimelinePage; live?: Live; tab?: ViewTab }
+export interface CampaignsInitial { overview: Overview; detail?: RunDetail; timeline?: TimelinePage; live?: Live; tab?: ViewTab; explained?: Explained }
 
 export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Target; focus?: string; initial?: CampaignsInitial}) {
     const [overview, setOverview] = useState<Overview | null>(initial?.overview ?? null);
@@ -25,6 +26,9 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
     const [live, setLive] = useState<Live | null>(initial?.live ?? null);
     const [problem, setProblem] = useState('');
     const [tab, setTab] = useState<ViewTab>(initial?.tab ?? 'overview');
+    const [explained, setExplained] = useState<Explained | null>(initial?.explained ?? null);
+    const tabNow = useRef(tab);
+    tabNow.current = tab;
     const program = useRef<RunDetail['program']>(initial?.detail?.program);
     const since = useRef<TimelineCursor | null>(initial?.timeline?.since ?? null);
     const busy = useRef(false);
@@ -54,6 +58,10 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
                 if (!since.current) setEarlier(page.before);
                 setEvents(e => ({...e, ...page.events}));
                 learn(page.names);
+                // What it waits for, explained (doc 85, 5.5; Phase 3): while the Overview is open, with every refresh.
+                const row = list.runs.find(r => r.run === run);
+                if (tabNow.current === 'overview' && row && steerable(row.status))
+                    setExplained(await storyProgram<Explained>(target, 'explain', {run}).catch(() => null));
             }
             setProblem('');
         } catch (e) { setProblem((e as Error).message); }
@@ -64,7 +72,7 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
     useEffect(() => {
         if (initial?.detail?.run === selected) return;
         since.current = null; program.current = undefined;
-        setItems([]); setEvents({}); setEarlier(null); setDetail(null);
+        setItems([]); setEvents({}); setEarlier(null); setDetail(null); setExplained(null);
     }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (!canSee || initial) return;
@@ -105,9 +113,9 @@ export function CampaignsTab({me, target, focus, initial}: {me: Me; target: Targ
         </div>
         {problem && <p className="error">{problem === 'Not found.' ? 'The DM host is older than this page: restart it.' : problem}</p>}
         {!selected || !run ? <CampaignList overview={overview} live={live} names={names} open={id => { setSelected(id); setTab('overview'); }}
-            holdAll={maySteer(me) && (!me.hosted || me.role === 'owner') ? holdAll : undefined} />
+            holdAll={maySteer(me) && (!me.hosted || me.role === 'owner') ? holdAll : undefined} target={target} mayRule={!me.hosted || me.role === 'owner'} />
             : <CampaignView me={me} target={target} row={run} detail={detail?.run === selected ? detail : null} items={items} events={events}
                 names={names} now={overview!.now} live={live} tab={tab} setTab={setTab} earlier={earlier ? more : undefined}
-                refresh={() => poll(selected)} />}
+                refresh={() => poll(selected)} explained={explained?.run === selected ? explained : null} />}
     </div>;
 }

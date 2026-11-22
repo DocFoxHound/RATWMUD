@@ -161,3 +161,88 @@ test('held, stopping and the runner in the list and the alerts', () => {
         {on: 'game', stopping: true, order: {id: 9, kind: 'story.stop', target: 'w', status: 'queued', result: '', by: 'm', at: null, doneAt: null}}], names, 10);
     assert.deepEqual(lines.map(l => l.text), ['held by martin ("a check"): resume it to carry on', 'to acknowledge the stop (order #9)']);
 });
+
+// ------------------------------------------------------------------------------------------------- Phase 3: Explain it
+import {
+    condLines, condText, eventText, judgedState, outcomeLines, previewLines, problemList, problemPlace, secondsText, stepText, stuckReasons, summaryLines,
+    wouldFireFor, type CondNode, type Judged, type Preview, type Problem,
+} from './campaigns.ts';
+
+test('a judged condition in words, true false or unknown, with its values', () => {
+    const counter: CondNode = {test: 'counter', key: 'stores', scope: 'story', op: '>=', value: 2, expected: 5, verdict: false};
+    assert.equal(condText(counter), 'stores ≥ 5 ✘ (stores is 2)');
+    assert.equal(condText({test: 'field', field: 'item', op: '=', expected: 'rope', value: null, verdict: null, needs: 'event'}), 'item = "rope" ? (the event brings it)');
+    assert.equal(condText({test: 'counter', key: 'hauled', scope: 'player', op: '>', expected: 1, value: 3, verdict: true, wolf: 'player-ash'}, names),
+        'hauled (the wolf\'s) > 1 ✔ (hauled (the wolf\'s) is 3 for Ash Greymantle)');
+    assert.equal(condText({test: 'region', region: 'breach', verdict: null, needs: 'place'}), 'it happens inside breach ? (the event brings its place)');
+    const tree: CondNode = {test: 'any', verdict: false, conditions: [counter, {test: 'not', verdict: false, condition: {test: 'mission', id: 'm', verdict: true}}]};
+    assert.deepEqual(condLines(tree).map(l => [l.depth, l.verdict]), [[0, false], [1, false], [1, false], [2, true]]);
+    assert.equal(condLines(undefined).length, 0);
+});
+
+test('a judged trigger: its event, where it stands, the wolves it would fire for', () => {
+    const coil: Judged = {source: 'trigger', id: 'offer-a-coil', on: 'gift', match: {item: 'rope', target: 'rm111'}, needsWolves: true, can: true,
+        forWolves: ['player-ash', 'player-birch', 'player-elm']};
+    assert.equal(eventText(coil, names), 'when gift (item rope, target Ivo Tarmarsh)');
+    assert.equal(eventText({on: 'story signal', signal: 'watch-round'}), 'when signal "watch-round"');
+    assert.equal(judgedState(coil, names, 10).text, 'waits for its event');
+    assert.equal(wouldFireFor(coil, new Set(['player-ash']), names), 'would fire for: Ash Greymantle (here now) and 2 away');
+    assert.equal(wouldFireFor(coil, new Set(), names), 'for 3 wolves of the story, none here now');
+    assert.equal(judgedState({...coil, off: true}, names, 10).tone, 'alert');
+    assert.equal(judgedState({...coil, used: true, once: 'campaign'}, names, 10).text, 'fired: once per campaign');
+    assert.equal(judgedState({...coil, cannot: 'gone', can: false}, names, 10).text, 'waits for a wolf of the story: none has been about lately');
+    assert.equal(judgedState({source: 'trigger', id: 'c', on: 'clock', due: 12, needsWolves: false, can: true}, names, 10).text, 'due day 12.0 (in 2 days)');
+    assert.equal(judgedState({source: 'trigger', id: 's', on: 'story signal', signal: 'x', needsWolves: false, can: true,
+        timers: [{timer: 'x', signal: 'x', at: 20, clock: 'game'}], senders: []}, names, 10).text, 'timer x sends it (day 20.0)');
+    assert.equal(judgedState({source: 'exit', index: 0, on: 'gift', to: 'b', needsWolves: true, can: true, votes: {have: 1, need: 2, wolves: []}}, names, 10).text,
+        '1 of 2 wolves so far');
+});
+
+test('why an event did not fire it, in words', () => {
+    assert.equal(stepText({verdict: 'filter', field: 'item', expected: 'rope', actual: 'nail'}), 'its item was "nail"; it wants "rope"');
+    assert.equal(stepText({verdict: 'outsider', wolf: 'player-elm'}, names), 'Elm Sandpaw is not in the story');
+    assert.equal(stepText({verdict: 'used', once: 'player', wolf: 'player-ash'}, names), 'already fired for Ash Greymantle (once per player)');
+    assert.match(stepText({verdict: 'conditions', conditions: {test: 'counter', key: 'stores', scope: 'story', op: '>=', value: 2, expected: 5, verdict: false}}),
+        /its conditions said no: stores ≥ 5 ✘ \(stores is 2\) \(today's values\)/);
+    assert.equal(stepText({verdict: 'fired'}), 'it fired');
+});
+
+test('a dry run: what an event or a command would do', () => {
+    const fired = {id: 0, visit: 2, phase: 'p', trigger: 'offer-a-coil', actor: 'player-ash', day: 10, actions: ['add']};
+    assert.deepEqual(outcomeLines({fired: [fired], changes: [{what: 'counter', key: 'stores', scope: 'story', before: 0, after: 4}], missions: [], moved: true,
+        phase: 'deep-freeze', visit: 3, entryEffects: [{kind: 'band.override', npc: 'rm111'}]}, names), [
+        'fires offer-a-coil for Ash Greymantle: add', 'sets stores 0 → 4', 'moves to deep-freeze (visit 3)', 'then its entry effects: band.override → Ivo Tarmarsh']);
+    const p: Preview = {run: 'w', kind: 'set', payload: {}, outcome: 'done', text: 'stores set 0 → 9.', orders: [], fired: [], moved: false, phase: 'p', visit: 2,
+        changes: [{what: 'counter', key: 'stores', scope: 'story', before: 0, after: 9}], missions: []};
+    assert.deepEqual(previewLines(p), ['stores set 0 → 9.', 'sets stores 0 → 9']);
+    assert.deepEqual(previewLines({...p, outcome: 'refused', text: 'No.'}), ['The runner would refuse it now: No.']);
+    assert.deepEqual(previewLines({...p, outcome: 'waits', text: 'It would wait.'}), ['It would wait.']);
+});
+
+test('the new alerts, the summary outside the tab, and times', () => {
+    assert.equal(alertText({kind: 'stuck', needsYou: true, phase: 'hold', reasons: {used: 2, unsent: 1}, goneDays: 14}, names),
+        'Cannot move on from hold: nothing in it can still fire by itself (2 used up, 1 a signal nothing sends). Fire a trigger, set a variable or go to a phase.');
+    assert.equal(stuckReasons({reasons: {gone: 1}, goneDays: 30}), '1 waiting for wolves gone 30 days');
+    assert.equal(alertText({kind: 'overdue', needsYou: false, signal: 'watch-round', seconds: 400}, names), 'Timer watch-round is overdue by 7 min and has not fired: is the story waiting on the game?');
+    assert.equal(alertText({kind: 'full', needsYou: false, wolves: 455, cap: 500}, names), 'Its audience is nearly full: 455 of 500 wolves.');
+    assert.equal(secondsText(3000), '≈ 50 min');
+    assert.equal(secondsText(45, false), '45 s');
+    assert.equal(secondsText(7380), '≈ 2.1 h');
+    assert.deepEqual(summaryLines({runner: {beatAt: null, age: null}, runnerDown: true, live: 1, needsYou: 2, at: '', runs: [{run: 'w', title: 'T', status: 'paused',
+        kinds: ['paused'], text: 'Story "T" is paused.'}]}), ['The story runner has not run on this world: no story moves until it does.', 'Story "T" is paused.']);
+    assert.deepEqual(summaryLines(null), []);
+});
+
+test('the Problems list: where each problem is, in order', () => {
+    const at = (a: Problem['at']): Problem => ({level: 'error', text: 'x', path: '', at: a});
+    assert.equal(problemPlace(at({kind: 'trigger', phase: 1, phaseId: 'ferry-watch', index: 0, id: 'begin-deep-freeze', part: 'actions[1]'})),
+        'Phase ferry-watch › trigger begin-deep-freeze › action 2');
+    assert.equal(problemPlace(at({kind: 'trigger', phase: null, index: 1, id: 'offer-a-coil', part: 'if'})), 'Campaign triggers › trigger offer-a-coil › conditions');
+    assert.equal(problemPlace(at({kind: 'mission', phase: 0, phaseId: 'survey', index: 2, id: 'boats', part: 'objectives[0]'})), 'Phase survey › mission boats › objective 1');
+    assert.equal(problemPlace(at({kind: 'case', index: 0, id: 'A shared defence', part: 'events[3]'})), 'rehearsal case A shared defence › fact 4');
+    assert.equal(problemPlace(at({kind: 'settings'})), 'Campaign settings');
+    const list = problemList([{level: 'warning', text: 'w', path: '', at: {kind: 'settings'}}, {level: 'error', text: 'e', path: '', at: {kind: 'settings'}},
+        {level: 'warning', text: 'b', path: '', world: true, blocks: true, at: {kind: 'settings'}}], ['Campaign / open-ledger', 'hold/count-defeat'], ['hold']);
+    assert.deepEqual(list.map(p => p.text), ['e', 'b', 'w', 'No rehearsal case reaches this trigger.', 'No rehearsal case reaches this trigger.']);
+    assert.deepEqual(list.slice(3).map(p => [p.at.phase, p.at.id]), [[null, 'open-ledger'], [0, 'count-defeat']]);
+});

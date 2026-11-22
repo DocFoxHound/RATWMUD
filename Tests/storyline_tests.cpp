@@ -829,6 +829,58 @@ void sources()
     fs::remove_all(root);
     fs::remove(save);
 }
+// The story runner's "needs you" alerts in the Dev Console (doc 85, 5.6; Phase 3): each told once to the Dungeon Masters in
+// the world, never to anyone else; the runner down while stories should run is one of them; a Dungeon Master who comes in
+// later is told those still standing.
+void storyAlertsInTheDevConsole()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyalerts-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeStrip(root), save);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 1, 9.5);
+        t.g.world().entity(t.ash.entityId)->dungeonMaster = true;
+        const auto notices = [](const Client& c) {
+            std::vector<std::string> out;
+            for (const auto& m : c.events)
+                if (m.string("type") == "devNotice")
+                    out.push_back(m.string("text"));
+            return out;
+        };
+        t.ash.events.clear();
+        t.bo.events.clear();
+        const auto paused = parsed(R"({"running":1,"beatAge":2.5,"runnerSeconds":30,
+            "alerts":[{"key":"world-a:paused:3","run":"world-a","kind":"paused","text":"Story \"Breach\" is paused."}]})");
+        expect(t.g.readStoryAlerts(paused) == 1, "one alert, new");
+        expect(notices(t.ash) == std::vector<std::string>{"Story \"Breach\" is paused."}, "the Dungeon Master is told");
+        expect(notices(t.bo).empty(), "a wolf who is not a Dungeon Master is told nothing");
+        expect(t.g.readStoryAlerts(paused) == 0 && notices(t.ash).size() == 1, "told once, not on every reading");
+        const auto down = parsed(R"({"running":2,"beatAge":95,"runnerSeconds":30,"alerts":[]})");
+        expect(t.g.readStoryAlerts(down) == 1, "the runner down is an alert of its own");
+        expect(notices(t.ash).size() == 2 && notices(t.ash)[1].find("has not beaten for 95 s: 2 stories are not moving") != std::string::npos,
+               "the runner down, in words: " + notices(t.ash).back());
+        expect(t.g.storyAlerts().count("world-a:paused:3"), "while the runner is down the story's alert still stands");
+        expect(t.g.readStoryAlerts(paused) == 0 && notices(t.ash).size() == 2, "the runner back: the paused story is not told again");
+        const auto quiet = parsed(R"({"running":0,"beatAge":2,"alerts":[]})");
+        expect(t.g.readStoryAlerts(quiet) == 0 && t.g.storyAlerts().empty(), "nothing running: nothing to tell, and the alerts are gone");
+        expect(t.g.readStoryAlerts(paused) == 0, "back within a minute: not told again");
+        for (int i = 0; i < 6; ++i)
+            t.g.readStoryAlerts(quiet);
+        expect(t.g.readStoryAlerts(paused) == 1 && notices(t.ash).size() == 3, "gone for long, then back: told again");
+        expect(t.g.readStoryAlerts(parsed(R"({"running":1,"beatAge":null,"alerts":[]})")) == 1 &&
+                   notices(t.ash).back().find("never run on this world") != std::string::npos, "a runner that never ran");
+        // Bo made a Dungeon Master now: told what still stands.
+        t.bo.events.clear();
+        expect(t.g.applyDmAct({"7", "character.dm", t.bo.entityId, "dm", R"({"dungeonMaster":true})"}).ok, "Bo is a Dungeon Master");
+        const auto bo = notices(t.bo);
+        expect(bo.size() == 2 && std::count(bo.begin(), bo.end(), std::string("Story \"Breach\" is paused.")) == 1,
+               "told the alerts still standing: the paused story and the runner");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 } // namespace
 
 int main()
@@ -843,6 +895,7 @@ int main()
         scenePanels();
         sceneAiNeedsAnAudience();
         storyAreaEffects();
+        storyAlertsInTheDevConsole();
         inTheGame();
         sources();
     }

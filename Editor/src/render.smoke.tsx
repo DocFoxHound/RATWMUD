@@ -15,7 +15,10 @@ import {ProsperityTab} from './dm/ProsperityTab';
 import {MyWorldTab} from './dm/MyWorldTab';
 import type {MyWorld} from './dm/api';
 import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
-import type {Order, RunDetail, RunRow} from './lib/campaigns';
+import type {Explained, Order, Preview, Problems, RunDetail, RunRow} from './lib/campaigns';
+import {AskDialog} from './dm/campaigns/Steer';
+import {ProblemsList} from './dm/StoryProgramPanel';
+import {DmSuite} from './dm/DmApp';
 
 const none = () => {};
 const view = (slim: boolean): EconomyData => ({
@@ -140,6 +143,31 @@ const campaignPaused: CampaignsInitial = {...campaignList, tab: 'orders', detail
     {...refused, id: 5513, kind: 'story.phase', target: pausedRow.run, status: 'applied', result: ''}]}),
     timeline: {run: pausedRow.run, names, events: {}, before: null, since: {}, now: at, items: []}};
 
+// (Doc 85, Phase 3: what the run waits for, explained; a dry run's "this will do"; a stuck run; the Problems list.)
+const explained: Explained = {run: runningRow.run, phase: 'ferry-watch', visit: 2, status: 'running', day: 12.9, speed: 1 / 1800, recent: ['player-ash'], goneDays: 14,
+    stall: null, ending: false,
+    listeners: [
+        {source: 'trigger', id: 'offer-a-coil', on: 'gift', match: {item: 'rope', target: 'rm111'}, scope: 'campaign', once: 'each', audience: 'participant',
+            off: false, used: false, actions: ['add'], enters: null, forWolves: ['player-ash', 'player-birch', 'player-elm'], needsWolves: true, can: true},
+        {source: 'trigger', id: 'stocked-at-thaw', on: 'story signal', signal: 'spring-council', scope: 'campaign', once: 'each', audience: 'world', off: false,
+            used: false, actions: ['enter'], enters: 'ferries-reopen', needsWolves: false, can: true, senders: [],
+            timers: [{timer: 'spring-council', signal: 'spring-council', at: 90, clock: 'game'}],
+            conditions: {test: 'counter', key: 'stores', scope: 'story', op: '>=', value: 2, expected: 5, verdict: false}},
+        {source: 'trigger', id: 'open-winter-ledger', on: 'arrival', scope: 'campaign', once: 'campaign', audience: 'participant', off: false, used: true,
+            actions: ['schedule', 'enter'], needsWolves: true, can: false, cannot: 'used'}],
+    timers: [{name: 'watch-round', signal: 'watch-round', at: 17, clock: 'game', actor: 'player-ash', repeat: 7, scope: 'campaign', left: 4.1, seconds: 7380}]};
+const dryRun: Preview = {run: runningRow.run, kind: 'enter', payload: {phase: 'deep-freeze', effects: true}, outcome: 'done',
+    text: 'Entered deep-freeze (moved on), with its entry effects.', orders: [{kind: 'story.phase', target: runningRow.run, payload: {}}], fired: [], changes: [],
+    missions: [], moved: true, phase: 'deep-freeze', visit: 3, next: [{kind: 'band.override', npc: 'rm111', band: 'poor', days: 28}]};
+const problems: Problems = {errors: 2, warnings: 2, world: false, digest: null, problems: [
+    {level: 'error', text: 'Choose a counter name and scope.', path: 'phases[1].triggers[0].actions[1]',
+        at: {kind: 'trigger', phase: 1, phaseId: 'ferry-watch', index: 0, id: 'begin-deep-freeze', part: 'actions[1]'}},
+    {level: 'error', text: 'Each phase needs a unique ID and journal entry.', path: 'phases[3]', at: {kind: 'phase', phase: 3, phaseId: 'ferries-reopen'}},
+    {level: 'warning', text: 'Signal "releif" is sent but nothing listens for it.', path: 'triggers[1].actions[1]',
+        at: {kind: 'trigger', phase: null, index: 1, id: 'offer-a-coil', part: 'actions[1]'}},
+    {level: 'warning', world: true, blocks: true, text: 'Unknown npc in this world: rm404', path: 'phases[2].effects[1]',
+        at: {kind: 'effect', phase: 2, phaseId: 'deep-freeze', index: 1}}]};
+
 export function renderAll(): Record<string, string> {
     const me = {username: 'dm-user', role: 'dm'} as unknown as Me;
     const out: Record<string, string> = {};
@@ -172,5 +200,18 @@ export function renderAll(): Record<string, string> {
         detail: {...campaignRunning.detail!, status: 'held'}}} />);
     out['Campaigns (hosted dm)'] = renderToString(<CampaignsTab me={{username: 'pell#3f2a1c', role: 'dm', hosted: true} as Me} target="dev" initial={campaignRunning} />);
     out['Campaigns (viewer)'] = renderToString(<CampaignsTab me={{username: 'v', role: 'viewer'} as Me} target="dev" initial={campaignList} />);
+    // (Doc 85, Phase 3.)
+    out['Campaigns (explained)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, explained}} />);
+    out['Campaigns (stuck)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview,
+        runs: [{...runningRow, alerts: [{kind: 'stuck', needsYou: true, phase: 'ferry-watch', reasons: {used: 1, gone: 1, unsent: 2}, goneDays: 14},
+            {kind: 'overdue', needsYou: false, timer: 'watch-round', signal: 'watch-round', seconds: 600}, {kind: 'full', needsYou: false, wolves: 460, cap: 500}]}]}}} />);
+    out['Campaigns (dry run)'] = renderToString(<AskDialog ask={{kind: 'enter', payload: {phase: 'deep-freeze', effects: true}, title: 'Go to deep-freeze',
+        does: ['what the program says']}} row={runningRow} names={names} busy={false} send={none} cancel={none} target="dev" dryRun={dryRun} />);
+    out['Campaigns (refused dry run)'] = renderToString(<AskDialog ask={{kind: 'fire', payload: {trigger: 'stocked-at-thaw'}, title: 'Fire stocked-at-thaw now', does: []}}
+        row={runningRow} names={names} busy={false} send={none} cancel={none} target="dev"
+        dryRun={{run: runningRow.run, kind: 'fire', payload: {trigger: 'stocked-at-thaw'}, outcome: 'refused', text: 'Its conditions are false just now.'}} />);
+    out['Story problems'] = renderToString(<ProblemsList found={problems} untried={['ferry-watch/begin-deep-freeze']} phases={['enrol', 'ferry-watch']} go={none} asking={false} />);
+    out['DM tab bar'] = renderToString(<DmSuite me={me} target="dev" alertsInitial={{runner: {beatAt: earlier, age: 95}, runnerDown: true, live: 2, needsYou: 2, at,
+        runs: [{run: 'world-77ab', title: 'Two ways across Reed Ford', status: 'paused', kinds: ['paused'], text: 'Story "Two ways across Reed Ford" is paused.'}]}} />);
     return out;
 }

@@ -1106,6 +1106,99 @@ void Game::watchReleases(double dt)
     }
 }
 
+// The story runner's "needs you" alerts in the Dev Console (doc 85, 5.6 and Phase 3): read every 15 s from what the
+// database lets the game know of the stories (dm.story_alerts_for_game, migration 0072), each told once to the Dungeon
+// Masters in the world. Never on a scratch server (it applies no orders either), nor without the migration.
+void Game::watchStoryAlerts(double dt)
+{
+    if (options_.scratch || options_.database.empty() || liveWorldId_.empty() || storyAlertsReadable_ == 0)
+        return;
+    if ((storyAlertAccumulator_ += dt) < 15)
+        return;
+    storyAlertAccumulator_ = 0;
+    if (storyAlertsReadable_ < 0)
+    {
+        const auto has = worldDb_.exec("SELECT to_regprocedure('dm.story_alerts_for_game(text)') IS NOT NULL");
+        if (!has.ok)
+            return;
+        storyAlertsReadable_ = has.rows.size() && has.rows[0].size() && has.rows[0][0] && *has.rows[0][0] == "t" ? 1 : 0;
+        if (!storyAlertsReadable_)
+            return;
+    }
+    const auto got = worldDb_.exec("SELECT dm.story_alerts_for_game($1)::text", {liveWorldId_});
+    json::Value reply;
+    std::string problem;
+    if (got.ok && got.rows.size() && got.rows[0].size() && got.rows[0][0] && json::parse(*got.rows[0][0], reply, problem))
+        readStoryAlerts(reply);
+}
+
+void Game::tellStoryAlert(Connection* c, const std::string& text)
+{
+    auto notice = json::Value::object();
+    notice.add("type", "devNotice");
+    notice.add("from", "Campaigns");
+    notice.add("text", text);
+    send(c, notice);
+}
+
+int Game::readStoryAlerts(const json::Value& reply)
+{
+    if (!reply.isObject())
+        return 0;
+    std::map<std::string, std::string> now;
+    // The runner down while stories should be running: worked out here, from how long since it last beat.
+    const double running = reply.number("running");
+    const auto* age = reply.find("beatAge");
+    const double limit = reply.number("runnerSeconds", 30);
+    if (running > 0 && (!age || age->isNull() || age->asNumber(0) > limit))
+    {
+        const int stories = int(running);
+        now["runner"] = std::string(age && !age->isNull() ? "The story runner has not beaten for " + std::to_string(int(age->asNumber(0))) + " s"
+                                                           : "The story runner has never run on this world") +
+                        ": " + std::to_string(stories) + (stories == 1 ? " story is" : " stories are") +
+                        " not moving. Start it (python3 tools/story_runner.py --world ...), then see Campaigns.";
+    }
+    if (now.count("runner"))
+    {
+        // (While it is down its last alerts still stand: they are not read again, nor told again when it is back.)
+        for (const auto& [key, text] : storyAlerts_)
+            if (key != "runner")
+                now[key] = text;
+    }
+    else
+        // (Its own alerts are trusted only while it is beating: the database drops them after five minutes anyway.)
+        for (const auto& a : reply.array("alerts"))
+            if (a.isObject() && !a.string("key").empty() && !a.string("text").empty())
+                now[a.string("key").substr(0, 200)] = a.string("text").substr(0, 400);
+    // An alert that went and comes back within five readings (a story waiting a moment on the game) is not told again.
+    std::set<std::string> known;
+    for (const auto& [key, text] : storyAlerts_)
+        known.insert(key);
+    for (const auto& [key, misses] : storyAlertsGone_)
+        known.insert(key);
+    for (const auto& [key, text] : storyAlerts_)
+        if (!now.count(key))
+            storyAlertsGone_[key] = 0;
+    for (auto it = storyAlertsGone_.begin(); it != storyAlertsGone_.end();)
+        if (now.count(it->first) || ++it->second > 5)
+            it = storyAlertsGone_.erase(it);
+        else
+            ++it;
+    int told = 0;
+    for (const auto& [key, text] : now)
+    {
+        if (known.count(key))
+            continue;
+        ++told;
+        note("info", "RATW_STORY_ALERT " + key + ": " + text);
+        for (auto* c : clients_)
+            if (const auto* e = c->entityId.empty() ? nullptr : world_.entity(c->entityId); e && e->dungeonMaster && devConsoleAllowed())
+                tellStoryAlert(c, text);
+    }
+    storyAlerts_ = std::move(now);
+    return told;
+}
+
 void Game::applyDmActions(double dt)
 {
     if (options_.scratch)
@@ -1931,7 +2024,12 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             online->dungeonMaster = on;
             characters_[target] = *online;
             if (auto* c = clientOf(target))
+            {
                 system(c, on ? "You are a Dungeon Master: the Dev Console is yours (the ` key)." : "You are no longer a Dungeon Master.");
+                if (on && devConsoleAllowed())
+                    for (const auto& [key, words] : storyAlerts_)
+                        tellStoryAlert(c, words);
+            }
             outcome = {true, told(*online), {}};
         }
         else if (auto saved = characters_.find(target); saved != characters_.end())
@@ -2843,6 +2941,9 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     tiesOnEnter(actor);                            // A tie made while they were away (doc 52, 4).
     for (const auto& words : hostNotes)
         system(c, "While you were away: " + words);
+    if (player.dungeonMaster && devConsoleAllowed())   // (A Dungeon Master is told the stories that still need them: doc 85, 5.6.)
+        for (const auto& [key, text] : storyAlerts_)
+            tellStoryAlert(c, text);
     sendSafety(c);                                 // And their mutes and blocks.
     cameOrWent(c, true);                           // Their friends, and private messages kept for them (doc 50, 4).
     if (const auto away = absences_.find(actor); away != absences_.end())
@@ -3504,6 +3605,7 @@ void Game::tick(double dt)
     watchReleases(real);
     watchMaintenance(real);                         // (After the notifications are read.)
     applyDmActions(real);
+    watchStoryAlerts(real);
     feedWatch(real);
     runSpawns(dt);
     makeResidents();

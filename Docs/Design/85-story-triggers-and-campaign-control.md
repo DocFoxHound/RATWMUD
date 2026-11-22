@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 and 2 are built (section 6, "Phase 1 as built" and "Phase 2 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1, 2 and 3 are built (section 6, "Phase 1 as built", "Phase 2 as built" and "Phase 3 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -14,8 +14,9 @@ quests are made here; steering a running campaign on a hosted world is the owner
 "may steer campaigns" permission; and the recommendations stand for the rest. Where a decision below was waiting on one
 of these answers, it now says **decided (user, 2026-11-21)**.
 
-**Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`, and Phase 2 ("Steer it"), on branch `r3-camp-p2` (from `r3-camp-p1`):
-see "Phase 1 as built" and "Phase 2 as built" in section 6.
+**Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`, Phase 2 ("Steer it"), on branch `r3-camp-p2` (from `r3-camp-p1`), and
+Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A: see "Phase 1 as built", "Phase 2 as built" and
+"Phase 3 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -1484,6 +1485,103 @@ the program format.
 - Slice end: the full suite; end to end on a test world: publish a bundled example, drive it with events, hold,
   set, fire, jump, stop from the console; one review-and-fix.
 
+**Phase 3 as built** (2026-11-22, branch `r3-camp-p3`, on `r3-camp-p2`). Migration `0072`, no new game order, one program field.
+- **The dry run** (`tools/story_runner.py`, "explaining: Explain it"; op `explain` on `/api/dm/story-program`, a read for a DM).
+  `explain {run}` judges every trigger and exit of the run's phase (`listeners()`): on or off, used up and for which wolves, its
+  conditions as a tree of true, false and unknown with the values behind each test (`story_triggers.judge`, the recording form of
+  `satisfied`, Python only; the parity test checks it gives `satisfied`'s verdict), judged on a stand-in event of the trigger's own
+  filters so a test of what the event brings is "unknown (the event brings it)"; its due day (a delay), its senders and timers (a
+  signal), its gate (votes, prerequisites, missions ready and missing); `forWolves`, the wolves of the story it could fire for now
+  (per wolf for participant and per-wolf triggers and conditions on player counters); and `can`, whether it can still fire by
+  itself. With it: the run's timers soonest first, each with an estimate in real seconds from the world's speed (`world_speed`:
+  game days per second over the last hour of the log), and the stall. `explain {run, trigger|exit}` is **Why not?**: the head as above
+  and its kind's last 10 events up to the cursor, each with where it stopped (`_step`: a scene or region of another story, before
+  this visit, a filter that did not match with what it held and wanted (gift's base item as the rules read it), a wolf not in the
+  story, turned off, already fired (once-rules), its conditions with today's values, or "fired", from the trigger history); a signal,
+  a delay, a direction or a mission gate is not in the log, and says what can send it. `explain {run, fact}` is **What if**: a made-up
+  event or story signal through `rules.advance`/`dispatch` on a copy of the state at today's day: the triggers fired, the values
+  changed, mission steps, the effects it would send, the phase it would land in with that phase's journal and entry effects, and
+  for each trigger of its kind that did not fire, where it stopped. `explain {run, command}` is **"this will do"**: the command taken
+  by `Steer` itself (unlocked: `Steer(..., lock=False)`) inside a savepoint that is rolled back (`psycopg.Rollback`), `queue()`
+  recording the orders it would send (`_recording`): its verdict (done, refused with the runner's words, or "waits" for the game),
+  its words, before and after, the firings, the orders at once, and what the run sends next (the new visit's entry effects, the
+  triggers' effects). Nothing is saved, queued, notified or audited (the test counts the tables); a dry run's order numbers are
+  not the ones the real command gets (the sequence moves).
+- **Every problem at once** (`story_program.problems`, op `problems`). `validate` was cut into its own checks (`_check_header`,
+  `_check_audience`, `_check_region`, `_check_scene`, `_check_phase_head`, `_check_entry_effect`, `_check_exit`, `_check_graph`,
+  `_check_case`, `_check_fact`; `story_triggers._check_trigger` and `_check_condition`), called in the same order, so it says what it
+  said. `problems` runs them part by part and lists every error with its `path` (`phases[1].triggers[0].actions[1]`) and `at` (for an
+  editor: `{kind, phase, phaseId, index, id, part}`); a trigger is narrowed to its head, its conditions (`.if`) and each action
+  (`trigger_problems`); a broken list is read as empty for the rest of the walk; reachability waits for every phase to be sound.
+  `validate`'s own verdict is its safety net, and the seeded test (3,200 mutations of the examples) checks the walk agrees with
+  `validate` on its own, net off. Rehearsal cases' errors are listed too. Then the warnings the program alone can tell (a signal sent
+  that nothing hears, one heard that nothing sends, a timer cancelled that nothing starts, a counter read that nothing sets) and, for a
+  Dungeon Master once the draft has no error, the world's (`reference_problems`): everything `references` checks, marked `blocks`
+  (approval refuses it), and what it does not (known problem 4), as warnings: markets and harvest areas (the checkpoint's report),
+  towns (regions), ships (due now), the tiles of `npc.move` and `project.post`, an exit's and a prerequisite's filters, wolves and items
+  in filters. `references()` and what approval refuses are unchanged. A viewer gets the program's problems without the world's.
+- **Alerts** (5.6). `_alerts` gained **stuck** ("cannot move on", needs you: an ongoing phase, nothing waiting on the game, and no
+  trigger or exit that can still fire: each off, used up, waiting for wolves none of whom did anything for `goneDays`, or a signal
+  that nothing left can send, worked to a fixed point), **overdue** (a timer due more than `overdueSeconds` ago in real time, from
+  the world's speed) and **full** (the audience at `fullPercent` of 500). `ALERTS` gained those three rules; **each world's rules** are
+  `dm.story_alert_rules` (migration `0072`; op `alert-rules`, the owner's on a hosted world, audited `story.alert-rules`; `null` puts a
+  rule back), and a program may set `quietAfterHours` (0 to 8760; 0 means "slow on purpose"), a new optional top-level field of format
+  1. A run's "waiting on" no longer lists triggers that are off or used up. A damaged release no longer breaks the list.
+- **Outside the tab.** Op `alerts` (`alert_summary`): the runner down, how many need the admin, those runs in words. The Editor's
+  `useCampaignAlerts` asks it every 10 s: a count on the Campaigns tab (⚠ when the runner is down; the words as its title) and a line
+  on LIVE with "Open Campaigns". **The Dev Console:** every 10 s with its heartbeat the runner leaves its "needs you" alerts and how many
+  stories are live in `dm.story_runner` (`alerts`, `alerts_at`, `live`: 0072); the game may read only
+  `dm.story_alerts_for_game(world)` (SECURITY DEFINER: running count, the beat's age, the runner rule, the runner's alerts under five
+  minutes old), every 15 s (`Game::watchStoryAlerts`, never on a scratch server), and tells each alert once to every Dungeon Master in
+  the world (`readStoryAlerts`, a `devNotice`), the runner down worked out in the game itself; a Dungeon Master who comes in, or is
+  made one, is told those still standing. The client keeps a notice in the console's log under "⚑ Campaigns" and toasts it.
+- **The Editor.** `campaigns/Explain.tsx`: the Overview's *Waiting for* (each trigger and exit as a line with where it stands, its
+  conditions marked ✔ ✘ ?, "would fire for: Ash, Birch (here now) and 1 away", Fire… and Why not?; those off or used up folded), *Next
+  by itself*, *What if…* (an event or signal, by a wolf, its fields and place). `AskDialog`'s "This will do" is the dry run (the
+  program's own words while it is asked, or if it cannot be; a refusal in red). The Triggers tab has Why not? per trigger. The list has
+  *Alert rules…*. Story Creator's `ProblemsList` (asked half a second after each edit; a JSON that does not parse is a problem too; "the
+  forms cannot show this draft" when they cannot) with **Go**: `StoryPhaseEditor` takes a `jump` and opens the phase, the trigger in its
+  list, the section, and outlines it; Campaign settings has the quiet hours.
+- **Tests:** `tools/test_story_explain.py` (judged triggers and the counter's value, `judge` against `satisfied` on every combination,
+  why not with each verdict, an exit's, what if with nothing saved, the dry run of fire/enter/set and a refusal and a wait with the
+  tables counted, stuck with goneDays from the world's rules, overdue at a measured speed, full, the rules and quiet hours, the summary
+  and the alerts left for the game read as `ratw_game` (and the story tables still closed to it), reference problems with their paths,
+  and the route: a DM, a viewer, a hosted owner and DM); `tools/test_story_problems.py` (every example and the 100 library drafts clean,
+  a draft broken in seven places, duplicates and reachability, the 3,200 seeded mutations, the warnings); `Tests/storyline_tests.cpp`
+  (the Dev Console notices: told once, Dungeon Masters only, the runner down, a new Dungeon Master told what stands); the client's
+  `devNotice`; `Editor/src/lib/campaigns.test.ts` (conditions, judged states, wolves, why-not words, dry-run lines, the new alerts, the
+  summary, problem places and order); the render smoke (explained, stuck, two dry runs, the Problems list, the tab bar with the count
+  and LIVE's line). The P1/P2 suites pass unchanged. **The slice's full suite:** ctest 121 of 121 (one timing scorecard,
+  `talk_scorecard_quick`, failed under `-j8` load beside the Python suite and passes alone); Python 1,140 tests with 9 failures, every
+  one failing the same on `r3-camp-p2` (live edit, the map and terrain exporters, the progression catalogue, two of world admin's,
+  two of the world package's, and the Dungeon Master mark's browser check, whose `devconsole.mjs` waits for a `.top.dev` button the
+  client no longer has); the Editor's and the client's tests and type checks, and the render smoke.
+- **End to end** (the slice's), on a throwaway Greyfen world with a real game server, its browser client and four wolves: the bundled
+  "The breach at Greyfen" published (its bandit camp spawned by the game), driven by `bandit falls` events in and out of the breach
+  (why not and what if checked against them), then through the route as the console does, each control's dry run asked first and
+  compared with what the runner then did: hold (a held story read nothing), set, resume catching up, fire `count-defeat` unchecked (to
+  the council, whose residents walked, posed and spoke in the game until it opened relief by itself), go back to `hold` without its
+  entry effects, stop (stopped once the game acknowledged). A small "evening bell" left with nothing to move it (its timer cancelled
+  from the console) raised "cannot move on"; the runner held off for a minute raised the runner alert on the tab bar, LIVE and a DM
+  wolf's Dev Console. Screenshots in `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p3/`.
+- **The slice's review and fix:** a signal (or a mission gate) a running timer feeds is never "gone" (a timer sends as the wolf who
+  started it: no false "cannot move on"); the heartbeat's alerts can no longer stop the runner (database and other errors are
+  swallowed in their savepoint; a damaged run no longer breaks the list); a dry run's every failure is "refused", never a 500; each
+  visit keeps `state.visitCursor` (the event that opened it), so Why not? tells this visit's events from the last one's by the log,
+  not the day (older runs fall back to the day), and skips the story's own `story phase`; a made-up scene or region event is this
+  story's and this visit's; the game keeps the runner's last alerts standing while it is down and does not tell again an alert that
+  went for under five readings; the Problems list's "checking…" clears on a JSON that does not parse.
+- **Not in Phase 3, on purpose:** "who else has this campaign open"; stepping through a rehearsal with `explain` (4.5, Phase 4's
+  workbench); world variables, parties and quests in the judgements (Phases 5, 6, 10); a per-program `goneDays`; the Dev Console told
+  of alerts other than "needs you".
+- **For Phase 4:** migrations are now 0073 (drafts), 0074 (5b), 0075 (Phase 6), 0076 (Phase 8). `story_program.problems` and its
+  `at` locations are the Problems panel's source (4.6): the workbench should keep `at`'s shape (`kind`, `phase` index or null for the
+  campaign, `index`, `id`, `part` like `actions[2]`, `if`, `objectives[0]`, `events[3]`) or map it; `ProblemsList` and `problemPlace`
+  (`Editor/src/lib/campaigns.ts`) can move to the workbench as they are. `story_triggers.judge` and `listeners()` are what "step
+  through" (4.5) needs on a rehearsal's state. The catalogue (Phase 4's first item) should give the condition and event sentences that
+  `condText`/`eventText` now make by hand. `program_warnings` is where signal and counter cross-checks live; the rename-a-signal tool can
+  reuse `_signal_uses`. `quietAfterHours` is a top-level program field the workbench must keep on a round trip.
+
 ### Slice B: the editor and the language
 
 **Phase 4: The catalogue and the workbench. About 18 hours.**
@@ -1492,7 +1590,7 @@ the program format.
 - The workbench of section 4 on today's vocabulary: tree, folders, notes, sentences, pickers, search,
   duplicate, copy and paste, undo, drag, Problems, exits shown as triggers, "New small story" from a library
   entry. Op `refs`.
-- Migration `0072`: `dm.story_drafts`; the draft ops. The two old tabs removed.
+- Migration `0073` (Phase 3 took `0072`): `dm.story_drafts`; the draft ops. The two old tabs removed.
 - Tests: the render smoke over all 8 examples and the 100 library drafts; a round trip (open, save, compare) for
   each, so the workbench never changes a program it did not edit.
 
@@ -1515,8 +1613,8 @@ the program format.
   version no longer has). The current phase must exist in the new version, or the admin names the phase to land in.
   A version 1 run moves onto a version 2 program (Phase 5) the same way.
 - The move is a command, `migrate {release}`, in the Phase 2 inbox, taken between two world events; nothing is
-  delivered by the move itself (a phase's entry effects are not run again). Migration `0073`
-  (Phases 6 and 8 then take `0074` and `0075`): `dm.story_versions(run, digest, program, approved_by, moved_at,
+  delivered by the move itself (a phase's entry effects are not run again). Migration `0074`
+  (Phases 6 and 8 then take `0075` and `0076`; Phase 3 took `0072`, Phase 4 `0073`): `dm.story_versions(run, digest, program, approved_by, moved_at,
   moved_by, report jsonb)`, one row per version a run has been on; the release row keeps the current one.
 - The console: "Move onto a new version…" shows the migration report (kept, reset, dropped) and waits for a second
   click and a reason; the timeline and the Audit say "moved to version b7e1 by martin"; the header names the
@@ -1535,7 +1633,7 @@ the program format.
   quest" are in this phase in full; doc 58's templates stay and are offered as starting points.
 - Coin rewards name a purse (**decided, user, 2026-11-21**, question 4): a quest's `character.grant` reward says
   which town, House or faction pays, and is refused (and, with `ifRefused`, held or skipped) when the purse is short.
-- Migration `0074`: `dm.story_player_state`; the cap raised.
+- Migration `0075`: `dm.story_player_state`; the cap raised.
 - The client's journal: optional, hidden, failed, trackers, abandon.
 - The Quest editor, "New small quest", and the console's Quests grid with every control.
 - Tests: rehearsals for each scope, any-order, fail, repeat; a game test for the offer in the window.
@@ -1550,7 +1648,7 @@ the program format.
   run can read, and seconds from an event to its effect. Bars: 1,000 a second; 5 seconds.
 
 **Phase 8: Facts and new events from the game. About 14 hours.**
-- Migration `0075`: `game.story_facts`, written with each save for live runs from their watch lists.
+- Migration `0076`: `game.story_facts`, written with each save for live runs from their watch lists.
 - The conditions over facts (3.4); rehearsal cases that state facts.
 - The new events of 3.3, the watched ones through the watch list; signing in inside a region counts.
 - Tests: one game test per new event; a `world_check` run to show the cost with no story live is nil and with

@@ -24,8 +24,12 @@ export type Waiting =
     | {on: 'wolves'; events: string[]; what: Listening[]}
     | {on: 'end'};
 export interface Alert {
-    kind: 'paused' | 'held' | 'runner' | 'game' | 'behind' | 'quiet'; needsYou: boolean; problem?: string; order?: Order; events?: number; seconds?: number;
-    hours?: number; since?: string; wolfSeen?: string; by?: string; reason?: string; age?: number | null; beatAt?: string | null; runner?: boolean;
+    kind: 'paused' | 'held' | 'runner' | 'game' | 'behind' | 'quiet' | 'stuck' | 'overdue' | 'full'; needsYou: boolean; problem?: string; order?: Order;
+    events?: number; seconds?: number; hours?: number; since?: string; wolfSeen?: string; by?: string; reason?: string; age?: number | null;
+    beatAt?: string | null; runner?: boolean;
+    // (Phase 3: cannot move on, a timer overdue, the audience nearly full.)
+    phase?: string; reasons?: Partial<Record<Cannot, number>>; goneDays?: number; timer?: string; signal?: string; at?: number; clock?: string;
+    wolves?: number; cap?: number;
 }
 export interface MissionSummary { id: string; title: string; mode: 'individual' | 'group' | 'either'; completed: number; required: number; ready: boolean; optional: boolean }
 export interface Objective { label: string; on: string; goal?: number; measure?: string; match?: Record<string, string>; signal?: string }
@@ -41,7 +45,7 @@ export interface RunRow {
 /** The story runner's heartbeat (doc 85, 5.6; Phase 2). */
 export interface Beat { beatAt: string | null; age: number | null; startedAt?: string; pid?: number; version?: string; behind?: number }
 export interface Now { day: number | null; newest: number; at: string }
-export interface Overview { runs: RunRow[]; now: Now; names: Record<string, string>; thresholds?: Record<string, number>; runner?: Beat | null }
+export interface Overview { runs: RunRow[]; now: Now; names: Record<string, string>; thresholds?: Record<string, number>; runner?: Beat | null; speed?: number | null }
 export interface Region { id: string; cell: string; x1: number; y1: number; x2: number; y2: number }
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
@@ -216,6 +220,9 @@ export function alertText(a: Alert, names: Record<string, string>): string {
         : `The story runner has not beaten for ${a.age < 120 ? Math.round(a.age) + ' s' : Math.round(a.age / 60) + ' min'}: is it running?`;
     if (a.kind === 'game') return `The game has not answered ${a.order ? orderLine(a.order, names) + ' (#' + a.order.id + ')' : 'an order'} for ${Math.round((a.order?.age ?? 0) / 60)} min: is the game server running?`;
     if (a.kind === 'behind') return `Falling behind: ${a.events} world event${a.events === 1 ? '' : 's'} unread, the oldest ${Math.round(a.seconds ?? 0)} s old.${a.runner ? '' : ' Is the story runner running?'}`;
+    if (a.kind === 'stuck') return `Cannot move on from ${a.phase}: nothing in it can still fire by itself (${stuckReasons(a)}). Fire a trigger, set a variable or go to a phase.`;
+    if (a.kind === 'overdue') return `Timer ${a.signal ?? a.timer} is overdue by ${secondsText(a.seconds ?? 0, false)} and has not fired: is the story waiting on the game?`;
+    if (a.kind === 'full') return `Its audience is nearly full: ${a.wolves} of ${a.cap} wolves.`;
     return `Quiet for ${Math.round(a.hours ?? 0)} h while its wolves were about: nothing fired and no mission moved.`;
 }
 
@@ -368,4 +375,219 @@ export function firingCounts(items: TimelineItem[]): Record<string, {count: numb
         if (!o.last || (i.at && i.at > o.last)) { o.last = i.at; o.day = i.day; }
     }
     return out;
+}
+
+// ------------------------------------------------------------------------------------------------- explaining (Phase 3)
+// What tools/story_runner.explain answers (doc 85, 5.5): every trigger and exit judged; why one has not fired; what an
+// event would do; what a console command would do (a dry run on the runner's own code, rolled back).
+
+/** A condition, judged: true, false or unknown (null), with the values behind it (story_triggers.judge). */
+export interface CondNode {
+    test: 'all' | 'any' | 'not' | 'counter' | 'field' | 'region' | 'mission'; verdict: boolean | null; conditions?: CondNode[]; condition?: CondNode;
+    key?: string; scope?: string; field?: string; op?: string; value?: unknown; expected?: unknown; wolf?: string; why?: string; needs?: 'event' | 'wolf' | 'place';
+    region?: string; id?: string;
+}
+export type Cannot = 'off' | 'used' | 'gone' | 'unsent';
+/** One trigger or exit of the phase, judged as the run stands. */
+export interface Judged extends Listening {
+    key?: string; off?: boolean; used?: boolean; usedFor?: string[]; actions?: string[]; enters?: string | null; conditions?: CondNode;
+    due?: number; senders?: {trigger: string; off: boolean}[]; timers?: {timer: string; signal: string; at: number; clock: string}[];
+    forWolves?: string[]; needsWolves: boolean; can: boolean; cannot?: Cannot;
+    votes?: {have: number; need: number; wolves: string[]}; prerequisites?: {steps: number; progress: Record<string, number>};
+    ready?: string[]; missing?: string[]; participant?: boolean; minCoins?: number; minQuantity?: number;
+}
+export interface TimerAhead { name: string; signal: string; at: number; clock: 'game' | 'real'; actor: string; repeat: number; scope: string; left: number | null; seconds: number | null }
+export interface Explained {
+    run: string; phase: string; visit: number; status: string; day: number | null; listeners: Judged[]; timers: TimerAhead[]; speed: number | null;
+    recent: string[]; goneDays: number; missionEvents?: string[]; stall: (Alert & {what?: {source: string; id?: string; index?: number; on: string; cannot: Cannot}[]}) | null; ending: boolean;
+}
+export interface Step {
+    verdict: 'fired' | 'filter' | 'outsider' | 'off' | 'used' | 'conditions' | 'before' | 'other' | 'would' | 'early';
+    field?: string; expected?: unknown; actual?: unknown; wolf?: string; once?: string; conditions?: CondNode; text?: string; due?: number;
+}
+export interface WhyNot {
+    run: string; phase: string; visit: number; listener: Judged; events: (Step & {event: WorldEvent})[]; unread: number; notLogged?: string;
+    recent?: {id: number; visit: number; trigger: string; day: number; at: string}[];
+}
+export interface Outcome {
+    fired: Firing[]; changes: Change[]; missions: {mission: string; title: string; who: string; before: [number, number]; after: [number, number]; of: number}[];
+    effects?: Effect[]; moved: boolean; phase: string; visit: number; entryEffects?: Effect[]; ending?: boolean; journal?: string;
+}
+export interface WhatIf extends Outcome { run: string; fact: Record<string, unknown>; day: number; notFired: (Step & {trigger: string})[] }
+export interface Preview extends Partial<Outcome> {
+    run: string; kind: CommandKind; payload: Record<string, unknown>; outcome: 'done' | 'refused' | 'waits'; text: string;
+    before?: Record<string, unknown>; after?: Record<string, unknown>; orders?: {kind: string; target: string; payload: Record<string, unknown>}[];
+    next?: Effect[]; status?: string;
+}
+
+const OPS: Record<string, string> = {'=': '=', '!=': '≠', '>': '>', '>=': '≥', '<': '<', '<=': '≤'};
+const mark = (v: boolean | null) => (v === true ? '✔' : v === false ? '✘' : '?');
+const shown = (v: unknown, names: Record<string, string>) => (typeof v === 'string' ? (v ? `"${nameOf(names, v)}"` : 'nothing') : String(v));
+
+/** One judged test in words: "stores ≥ 5 ✘ (stores is 2)", "item = rope ? (the event brings it)". */
+export function condText(c: CondNode, names: Record<string, string> = {}): string {
+    if (c.test === 'all' || c.test === 'any') return `${c.test === 'all' ? 'all' : 'any'} of these ${mark(c.verdict)}`;
+    if (c.test === 'not') return `not ${mark(c.verdict)}`;
+    if (c.test === 'mission') return `mission ${c.id} is ready ${mark(c.verdict)}`;
+    if (c.test === 'region') {
+        const v = c.value as {cell?: string; x?: number; y?: number} | undefined;
+        return `it happens inside ${c.region} ${mark(c.verdict)}${c.needs === 'place' ? (v?.cell ? ' (the event has no tile)' : ' (the event brings its place)')
+            : v?.cell ? ` (it was at ${nameOf(names, v.cell)} (${v.x}, ${v.y}))` : ''}`;
+    }
+    const what = c.test === 'counter' ? `${c.key}${c.scope === 'player' ? ' (the wolf\'s)' : ''}` : c.field ?? '';
+    const head = `${what} ${OPS[c.op ?? '='] ?? c.op} ${shown(c.expected, names)} ${mark(c.verdict)}`;
+    if (c.needs === 'event') return `${head} (the event brings it)`;
+    if (c.needs === 'wolf') return `${head} (each wolf's own)`;
+    if (c.why) return `${head} (${c.wolf ? nameOf(names, c.wolf) + ' is' : 'the wolf is'} ${c.why})`;
+    return `${head} (${what} is ${shown(c.value, names)}${c.wolf ? ' for ' + nameOf(names, c.wolf) : ''})`;
+}
+/** A judged condition tree as indented lines, for the Overview and [Why not?]. */
+export function condLines(c: CondNode | undefined, names: Record<string, string> = {}, depth = 0): {depth: number; text: string; verdict: boolean | null}[] {
+    if (!c) return [];
+    const kids = c.conditions ?? (c.condition ? [c.condition] : []);
+    return [{depth, text: condText(c, names), verdict: c.verdict}, ...kids.flatMap(k => condLines(k, names, depth + 1))];
+}
+/** "when a wolf gives (item rope, target Ivo Tarmarsh)", "when signal "watch-round"". */
+export function eventText(l: Pick<Listening, 'on' | 'signal' | 'match'> & {missions?: string[]; afterDays?: number}, names: Record<string, string> = {}): string {
+    if (l.on === 'story signal') return `when signal "${l.signal}"`;
+    if (l.on === 'clock') return `after ${l.afterDays} game day${l.afterDays === 1 ? '' : 's'} in the phase`;
+    if (l.on === 'dm signal') return `when a Dungeon Master directs "${l.match?.detail ?? ''}"`;
+    if (l.on === 'missions completed') return `when missions ${(l.missions ?? []).join(', ')} are done`;
+    const filters = Object.entries(l.match ?? {}).map(([k, v]) => `${k} ${nameOf(names, v)}`).join(', ');
+    return `when ${l.on}${filters ? ` (${filters})` : ''}`;
+}
+/** Where a judged trigger or exit stands, in a few words, and its tone. */
+export function judgedState(l: Judged, names: Record<string, string>, day: number | null): {text: string; tone: Tone} {
+    if (l.off) return {text: 'turned off', tone: 'alert'};
+    if (l.used && l.once === 'visit') return {text: 'fired: once per visit', tone: 'done'};
+    if (l.used && l.once === 'campaign') return {text: 'fired: once per campaign', tone: 'done'};
+    if (l.used) return {text: `fired for every wolf (once per ${l.once === 'member' ? 'campaign' : 'visit'} each)`, tone: 'done'};
+    if (l.cannot === 'gone') return {text: 'waits for a wolf of the story: none has been about lately', tone: 'alert'};
+    if (l.cannot === 'unsent') return {text: 'nothing left can send its signal (only the console)', tone: 'alert'};
+    if (l.due !== undefined && day !== null) return {text: l.due <= day ? `due now (day ${l.due.toFixed(1)})` : `due day ${l.due.toFixed(1)} (in ${days(l.due - day)})`, tone: 'normal'};
+    if (l.on === 'story signal') {
+        const t = (l.timers ?? [])[0];
+        const by = (l.senders ?? []).filter(s => !s.off).map(s => s.trigger);
+        return {text: t ? `timer ${t.timer} sends it (day ${t.at.toFixed(1)})` : by.length ? `sent by ${by.join(', ')}` : 'waits for its signal', tone: 'normal'};
+    }
+    if (l.votes) return {text: `${l.votes.have} of ${l.votes.need} wolves so far`, tone: 'normal'};
+    if (l.missing?.length) return {text: `waits for ${l.missing.join(', ')} (done: ${l.ready?.join(', ') || 'none'})`, tone: 'normal'};
+    if (l.usedFor?.length) return {text: `waits for its event · fired for ${l.usedFor.map(w => nameOf(names, w)).join(', ')}`, tone: 'normal'};
+    return {text: 'waits for its event', tone: 'normal'};
+}
+/** "would fire for: Ash, Birch (here now)": the wolves it could fire for, those in the world first. */
+export function wouldFireFor(l: Judged, here: Set<string>, names: Record<string, string>): string {
+    if (!l.forWolves || l.off || l.used) return '';
+    if (!l.forWolves.length) return 'for no wolf of the story now';
+    const now = l.forWolves.filter(w => here.has(w)), away = l.forWolves.length - now.length;
+    if (!now.length) return `for ${l.forWolves.length} ${l.forWolves.length === 1 ? 'wolf' : 'wolves'} of the story, none here now`;
+    return `would fire for: ${now.slice(0, 6).map(w => nameOf(names, w)).join(', ')} (here now)${away ? ` and ${away} away` : ''}`;
+}
+/** "≈ 50 min" (or "in 50 min" with `about` false). */
+export function secondsText(s: number, about = true): string {
+    const pre = about ? '≈ ' : '';
+    if (s < 120) return `${pre}${Math.round(s)} s`;
+    if (s < 5400) return `${pre}${Math.round(s / 60)} min`;
+    if (s < 86400 * 2) return `${pre}${Math.round(s / 360) / 10} h`;
+    return `${pre}${Math.round(s / 8640) / 10} days`;
+}
+export function stuckReasons(a: Pick<Alert, 'reasons' | 'goneDays'>): string {
+    const words: Record<Cannot, string> = {off: 'turned off', used: 'used up', gone: `waiting for wolves gone ${a.goneDays ?? 14} days`, unsent: 'a signal nothing sends'};
+    return Object.entries(a.reasons ?? {}).map(([k, n]) => `${n} ${words[k as Cannot] ?? k}`).join(', ');
+}
+/** Why one event did not fire a trigger, in words. */
+export function stepText(s: Step, names: Record<string, string> = {}): string {
+    switch (s.verdict) {
+        case 'fired': return 'it fired';
+        case 'filter': return s.field === 'kind' ? `another kind of event (${s.actual})` : `its ${s.field} was ${shown(s.actual, names)}; it wants ${shown(s.expected, names)}`;
+        case 'outsider': return `${s.wolf ? nameOf(names, s.wolf) : 'nobody'} is not in the story`;
+        case 'off': return 'it is turned off';
+        case 'used': return `already fired${s.wolf ? ' for ' + nameOf(names, s.wolf) : ''} (once per ${s.once})`;
+        case 'conditions': return `its conditions said no: ${condLines(s.conditions, names).filter(l => l.verdict !== true).slice(0, 3).map(l => l.text).join('; ')} (today's values)`;
+        case 'before': return 'before this visit of the phase opened';
+        case 'early': return `before its delay (due day ${s.due?.toFixed(1)})`;
+        case 'other': return s.text ?? 'for another story';
+        default: return s.text ?? 'it would fire on this event now';
+    }
+}
+/** A dry run's outcome as lines: the triggers it fires and what they change, missions, effects, the phase it lands in. */
+export function outcomeLines(o: Partial<Outcome>, names: Record<string, string> = {}): string[] {
+    const out: string[] = [];
+    for (const f of o.fired ?? []) out.push(`fires ${f.trigger}${f.actor ? ' for ' + nameOf(names, f.actor) : ''}: ${f.actions.join(' → ')}`);
+    for (const c of o.changes ?? []) if (c.before !== c.after) out.push(`sets ${changeText(c, names)}`);
+    for (const m of o.missions ?? []) out.push(`${m.title}${m.who !== 'group' ? ' (' + nameOf(names, m.who) + ')' : ''}: step ${m.before[0]} → ${m.after[0]} of ${m.of}`);
+    for (const e of o.effects ?? []) out.push(`then sends ${effectLine(e, names)}`);
+    if (o.moved) {
+        out.push(`moves to ${o.phase} (visit ${o.visit})${o.ending ? ': an ending' : ''}`);
+        if (o.entryEffects?.length) out.push(`then its entry effects: ${o.entryEffects.map(e => effectLine(e, names)).join(', ')}`);
+    }
+    return out;
+}
+/** "This will do" for a console command, from its dry run (the runner's own code on the run as it stands, rolled back). */
+export function previewLines(p: Preview, names: Record<string, string> = {}): string[] {
+    if (p.outcome === 'refused') return [`The runner would refuse it now: ${p.text}`];
+    if (p.outcome === 'waits') return [p.text];
+    const out = [p.text];
+    for (const o of p.orders ?? []) out.push(`sends ${o.kind}${o.target && !o.target.startsWith('world-') ? ' → ' + nameOf(names, o.target) : ''} to the game now`);
+    out.push(...outcomeLines({...p, effects: [], entryEffects: []}, names).filter(l => !l.startsWith('moves to')));
+    if (p.moved) out.push(`it is then in ${p.phase} (visit ${p.visit})${p.ending ? ': an ending' : ''}`);
+    if (p.next?.length) out.push(`then it sends, one by one: ${p.next.map(e => effectLine(e, names)).join(', ')}`);
+    return out;
+}
+
+// ------------------------------------------------------------------------------------------------- outside the tab
+/** The op `alerts`: the tab bar's count and LIVE's line (doc 85, 5.6). */
+export interface AlertSummary {
+    runner: Beat | null; runnerDown: boolean; live: number; needsYou: number; at: string;
+    runs: {run: string; title: string; status: string; kinds: string[]; text: string}[];
+}
+/** LIVE's line: the most pressing first (the runner down, then each story that needs you). */
+export function summaryLines(s: AlertSummary | null): string[] {
+    if (!s) return [];
+    const out: string[] = [];
+    if (s.runnerDown) out.push(s.runner?.age == null ? 'The story runner has not run on this world: no story moves until it does.'
+        : `The story runner has not beaten for ${secondsText(s.runner.age, false)}: ${s.live} stor${s.live === 1 ? 'y is' : 'ies are'} not moving.`);
+    out.push(...s.runs.map(r => r.text));
+    return out;
+}
+
+// ------------------------------------------------------------------------------------------------- Problems (Story Creator)
+/** One problem of a draft (story_program.problems and story_runner.reference_problems). */
+export interface Problem {
+    level: 'error' | 'warning'; text: string; path: string; world?: boolean; blocks?: boolean;
+    at: {kind: string; phase?: number | null; phaseId?: string | null; index?: number; id?: string | null; part?: string};
+}
+export interface Problems { problems: Problem[]; errors: number; warnings: number; world: boolean; digest: string | null }
+/** Where a problem is, in words: "Phase ferry-watch › trigger begin-deep-freeze › action 2". */
+export function problemPlace(p: Problem): string {
+    const a = p.at ?? {kind: 'program'};
+    const parts: string[] = [];
+    if (a.phase === null && a.kind === 'trigger') parts.push('Campaign triggers');
+    else if (a.phase !== undefined && a.phase !== null) parts.push(`Phase ${a.phaseId ?? '#' + (a.phase + 1)}`);
+    const one: Record<string, string> = {trigger: 'trigger', mission: 'mission', exit: 'exit', effect: 'entry effect', region: 'region', scene: 'scene', case: 'rehearsal case'};
+    if (one[a.kind]) parts.push(`${one[a.kind]} ${a.id ?? '#' + ((a.index ?? 0) + 1)}`);
+    else if (a.kind === 'settings') parts.push('Campaign settings');
+    else if (a.kind === 'program') parts.push('The program');
+    else if (a.kind === 'tests') parts.push('Rehearsal cases');
+    else if (!parts.length) parts.push(a.kind);
+    const part = a.part ?? '';
+    const n = /\[(\d+)\]/.exec(part);
+    if (part === 'if') parts.push('conditions');
+    else if (part.startsWith('actions')) parts.push(`action ${Number(n?.[1] ?? 0) + 1}`);
+    else if (part.startsWith('objectives')) parts.push(`objective ${Number(n?.[1] ?? 0) + 1}`);
+    else if (part.startsWith('events')) parts.push(`fact ${Number(n?.[1] ?? 0) + 1}`);
+    else if (part.startsWith('prerequisites')) parts.push(`prerequisite ${Number(n?.[1] ?? 0) + 1}`);
+    return parts.join(' › ');
+}
+/** The Problems list in order: errors, then what would stop approval, then the other warnings; the rehearsal's untried
+ *  triggers (from its last report) join the warnings. */
+export function problemList(found: Problem[], uncoveredTriggers: string[] = [], phases: string[] = []): Problem[] {
+    const untried: Problem[] = uncoveredTriggers.map(name => {
+        const [scope, id] = name.startsWith('Campaign / ') ? [null, name.slice(11)] : [name.split('/')[0], name.split('/').slice(1).join('/')];
+        const phase = scope === null ? null : phases.indexOf(scope);
+        return {level: 'warning', text: 'No rehearsal case reaches this trigger.', path: '', at: {kind: 'trigger', phase: phase === -1 ? undefined : phase,
+            phaseId: scope, id}};
+    });
+    const rank = (p: Problem) => (p.level === 'error' ? 0 : p.blocks ? 1 : 2);
+    return [...found, ...untried].map((p, i) => ({p, i})).sort((a, b) => rank(a.p) - rank(b.p) || a.i - b.i).map(x => x.p);
 }

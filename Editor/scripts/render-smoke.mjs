@@ -42,10 +42,22 @@ try {
         'Campaigns (held)': ['▶ Resume', 'Resume from now', 'Held by martin', '4 world events wait'],
         'Campaigns (hosted dm)': ['needs its owner, or the owner&#x27;s'],
         'Campaigns (viewer)': ['it needs a Dungeon Master account'],
+        // (Doc 85, Phase 3: "Waiting for" explained, the stuck alert, a dry run's "this will do", the Problems list, the tab bar.)
+        'Campaigns (explained)': ['offer-a-coil', 'would fire for: Ash Greymantle (here now) and 2 away', 'stores ≥ 5 ✘ (stores is 2)',
+            'timer spring-council sends it (day 90.0)', 'then enters ferries-reopen', '1 turned off or used up', 'Why not?', 'Next by itself',
+            'watch-round day 17.0 (in 4.1 days) · ≈ 2.1 h · every 7 days', 'What if…', 'What would happen?', 'Fire…'],
+        'Campaigns (stuck)': ['Cannot move on from ferry-watch', '1 used up, 1 waiting for wolves gone 14 days, 2 a signal nothing sends',
+            'Timer watch-round is overdue by 10 min', 'nearly full: 460 of 500'],
+        'Campaigns (dry run)': ['This will do', 'Entered deep-freeze (moved on), with its entry effects.', 'sends story.phase to the game now',
+            'it is then in deep-freeze (visit 3)', 'then it sends, one by one: band.override → Ivo Tarmarsh', 'A dry run on the story as it stands now'],
+        'Campaigns (refused dry run)': ['The runner would refuse it now: Its conditions are false just now.'],
+        'Story problems': ['2 errors', '3 warnings', 'Phase ferry-watch › trigger begin-deep-freeze › action 2', 'Phase ferries-reopen',
+            'Campaign triggers › trigger offer-a-coil › action 2', 'from the world: approval refuses this', 'No rehearsal case reaches this trigger.', 'Go'],
+        'DM tab bar': ['⚑ Campaigns', '⚠ 2', 'The story runner has not beaten for 95 s: 2 stories are not moving.', 'Open Campaigns'],
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
     const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days'],
-        'Campaigns (hosted dm)': ['⏸ Hold', 'Go to phase…'], 'Campaigns (held)': ['⏸ Hold']};
+        'Campaigns (hosted dm)': ['⏸ Hold', 'Go to phase…'], 'Campaigns (held)': ['⏸ Hold'], 'Campaigns (dry run)': ['what the program says']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {
         assert.ok(text.length > 100, `${name}: rendered`);

@@ -4,9 +4,10 @@
 // and guest-line tickets stay, for the author bridge.
 import {useState} from 'react';
 import {atLeast, maySteer, storyProgram, type Live, type Me, type Target} from '../api';
-import {ago, alertText, commandLine, firingCounts, nameOf, newKey, phaseStrip, steerable, waitingLines, type Now, type RunDetail, type RunRow,
-    type TimelineItem, type WorldEvent} from '../../lib/campaigns';
-import {AskDialog, SteerBar, TriggersPanel, type Ask} from './Steer';
+import {ago, alertText, commandLine, firingCounts, nameOf, newKey, phaseStrip, steerable, waitingLines, type Explained, type FramePerson, type Now,
+    type RunDetail, type RunRow, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
+import {AskDialog, fireAsk, SteerBar, TriggersPanel, type Ask} from './Steer';
+import {NextByItself, WaitingFor, WhatIfPanel} from './Explain';
 import {Audit} from './Audit';
 import {Timeline, TimelineRow} from './Timeline';
 import {StatePanel} from './StatePanel';
@@ -20,10 +21,10 @@ const TABS: {id: ViewTab; label: string}[] = [
     {id: 'missions', label: 'Missions'}, {id: 'wolves', label: 'Wolves & map'}, {id: 'orders', label: 'Orders'}, {id: 'audit', label: 'Audit'},
 ];
 
-export function CampaignView({me, target, row, detail, items, events, names, now, live, tab, setTab, earlier, refresh}: {
+export function CampaignView({me, target, row, detail, items, events, names, now, live, tab, setTab, earlier, refresh, explained}: {
     me: Me; target: Target; row: RunRow; detail: RunDetail | null; items: TimelineItem[]; events: Record<string, WorldEvent>;
     names: Record<string, string>; now: Now; live: Live | null; tab: ViewTab; setTab: (t: ViewTab) => void; earlier?: () => void;
-    refresh: () => Promise<void> | void}) {
+    refresh: () => Promise<void> | void; explained?: Explained | null}) {
     const [ticket, setTicket] = useState(''), [said, setSaid] = useState(''), [busy, setBusy] = useState(false);
     const [mapFocus, setMapFocus] = useState<{cell: string; x: number; y: number} | null>(null);
     const [ask, setAsk] = useState<Ask | null>(null), [sent, setSent] = useState<number | null>(null);
@@ -31,7 +32,10 @@ export function CampaignView({me, target, row, detail, items, events, names, now
     const canSteer = maySteer(me) && steerable(row.status) && !!detail?.controls;
     const state = detail?.state ?? null;
     const strip = detail ? phaseStrip(detail.history, detail.phases, row.phase) : {path: [], next: []};
-    const lines = waitingLines(row.waiting, names, now.day, state?.publishedAt, now.at);
+    // (The pressing waits stay first: the admin, the game, orders to send. The phase's triggers and exits are explained below.)
+    const lines = waitingLines(row.waiting, names, now.day, state?.publishedAt, now.at)
+        .filter((_, i) => !explained || ['publish', 'admin', 'game', 'send', 'end'].includes(row.waiting?.[i]?.on ?? ''));
+    const here = new Set(((live?.frame?.people ?? []) as FramePerson[]).filter(p => p[2] === 'p').map(p => p[0]));
     const alerts = row.alerts ?? [];
     const act = async (work: () => Promise<unknown>, done: string) => {
         setBusy(true); setSaid('');
@@ -56,7 +60,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
         {canSteer && detail && <div className="camp-steer"><SteerBar row={row} detail={detail} names={names} steer={setAsk} busy={busy} /></div>}
         {!canSteer && canDirect && steerable(row.status) && me.hosted && <p className="hint camp-pad-x">Steering this world's campaigns needs its owner, or the owner's
             "may steer campaigns" for your account (My world, Editor accounts).</p>}
-        {ask && <AskDialog key={ask.title + JSON.stringify(ask.payload)} ask={ask} row={row} names={names} busy={busy} send={send} cancel={() => setAsk(null)} />}
+        {ask && <AskDialog key={ask.title + JSON.stringify(ask.payload)} ask={ask} row={row} names={names} busy={busy} send={send} cancel={() => setAsk(null)}
+            target={target} />}
         <div className="camp-strip" aria-label="Phases">
             {strip.path.map((p, i) => <span key={i} className={i === strip.path.length - 1 && row.phase === p ? 'now' : ''}>{i ? '▸ ' : ''}{i === strip.path.length - 1 && row.phase === p ? `[${p}]` : p}</span>)}
             {strip.next.length > 0 && <span className="next">▸ next: {strip.next.join(' or ')}</span>}
@@ -73,8 +78,15 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                     {alerts.length ? <ul className="camp-alerts">{alerts.map(a => <li key={a.kind} className={a.needsYou ? 'needs' : ''}>{alertText(a, names)}</li>)}</ul>
                         : <p className="hint">(nothing)</p>}
                     <h3>Waiting for</h3>
-                    {lines.length ? <ul className="camp-waiting">{lines.map((l, i) => <li key={i} className={l.tone}><b>{l.who}</b> {l.text}</li>)}</ul>
-                        : <p className="hint">{row.status === 'complete' ? 'It has ended.' : row.status === 'stopped' ? 'It was stopped.' : '(nothing)'}</p>}
+                    {lines.length > 0 && <ul className="camp-waiting">{lines.map((l, i) => <li key={i} className={l.tone}><b>{l.who}</b> {l.text}</li>)}</ul>}
+                    {steerable(row.status) ? <WaitingFor explained={explained ?? null} names={names} here={here} busy={busy} target={target} run={row.run}
+                        steer={canSteer ? setAsk : undefined} fire={canSteer ? l => setAsk(fireAsk({id: l.id!, actions: l.actions ?? []},
+                            l.needsWolves ? (l.forWolves ?? []).find(w => here.has(w)) ?? (l.forWolves ?? [])[0] ?? '' : '', true, names)) : undefined} />
+                        : !lines.length && <p className="hint">{row.status === 'complete' ? 'It has ended.' : row.status === 'stopped' ? 'It was stopped.' : '(nothing)'}</p>}
+                    {steerable(row.status) && <><h3>Next by itself</h3>
+                        <NextByItself explained={explained ?? null} names={names} publishedAt={state?.publishedAt} nowIso={now.at} />
+                        <h3>What if… <small>(a dry run: nothing is saved or sent)</small></h3>
+                        <WhatIfPanel target={target} run={row.run} names={names} cohort={state?.cohort ?? []} explained={explained ?? null} /></>}
                     {canDirect && row.status === 'running' && (detail.signals.length > 0 || detail.guestVoices.length > 0) && <details>
                         <summary>One-use tickets for the author bridge</summary>
                         <h3>Directions</h3>
@@ -96,7 +108,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
                 </div>
                 : tab === 'timeline' ? <Timeline items={items} events={events} names={names} now={now.at} earlier={earlier} onMap={showOnMap}
                     triggers={[...new Set(items.flatMap(i => (i.type === 'trigger' ? [i.trigger] : [])))]} cohort={state?.cohort ?? []} />
-                : tab === 'triggers' ? <TriggersPanel detail={detail} names={names} canSteer={canSteer} steer={setAsk} busy={busy} counts={firingCounts(items)} />
+                : tab === 'triggers' ? <TriggersPanel detail={detail} names={names} canSteer={canSteer} steer={setAsk} busy={busy} counts={firingCounts(items)}
+                    target={steerable(row.status) ? target : undefined} />
                 : tab === 'state' ? <StatePanel detail={detail} names={names} now={now} items={items} steer={canSteer ? setAsk : undefined} busy={busy} />
                 : tab === 'missions' ? <MissionGrid detail={detail} names={names} live={live} steer={canSteer ? setAsk : undefined} busy={busy} />
                 : tab === 'audit' ? <Audit detail={detail} names={names} now={now.at} />

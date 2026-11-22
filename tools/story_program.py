@@ -602,33 +602,26 @@ def possible_effects(phase):
     ]
 
 
-def validate(p):
-    shape(
-        p,
-        ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests'),
-        ('triggers', 'regions', 'scenes'),
+def _check_scene(scene, scene_docs):
+    story_scenes.validate(scene)
+    require(scene['id'] not in scene_docs, 'Embedded scenes need distinct IDs.')
+    scene_docs[scene['id']] = scene
+
+
+def _check_region(r, names):
+    shape(r, ('id', 'cell', 'x1', 'y1', 'x2', 'y2'))
+    require(
+        identifier(r['id']) and r['id'] not in names and identifier(r['cell']),
+        'Give each region a unique ID and a cell.',
     )
-    scenes = p.get('scenes', [])
-    require(isinstance(scenes, list) and len(scenes) <= 32, 'Choose up to 32 embedded scenes.')
-    scene_docs = {}
-    for scene in scenes:
-        story_scenes.validate(scene)
-        require(scene['id'] not in scene_docs, 'Embedded scenes need distinct IDs.')
-        scene_docs[scene['id']]=scene
-    rectangles = p.get('regions', [])
-    require(isinstance(rectangles, list) and len(rectangles) <= 128, 'Choose up to 128 named regions.')
-    names = set()
-    for r in rectangles:
-        shape(r, ('id', 'cell', 'x1', 'y1', 'x2', 'y2'))
-        require(
-            identifier(r['id']) and r['id'] not in names and identifier(r['cell']),
-            'Give each region a unique ID and a cell.',
-        )
-        require(
-            all(integer(r[k], 0, 4095) for k in ('x1', 'y1', 'x2', 'y2')) and r['x1'] <= r['x2'] and r['y1'] <= r['y2'],
-            'Choose ordered, inclusive tile bounds for the region.',
-        )
-        names.add(r['id'])
+    require(
+        all(integer(r[k], 0, 4095) for k in ('x1', 'y1', 'x2', 'y2')) and r['x1'] <= r['x2'] and r['y1'] <= r['y2'],
+        'Choose ordered, inclusive tile bounds for the region.',
+    )
+    names.add(r['id'])
+
+
+def _check_header(p):
     require(
         p['format'] == 'ratw-story-program' and type(p['version']) is int and p['version'] == 1,
         'Unknown story format or version.',
@@ -637,7 +630,12 @@ def validate(p):
         identifier(p['id']) and word(p['title'], 100),
         'Give this story an ID and title.',
     )
-    a = p['audience']
+    # (Doc 85, 5.6: a program may set its own "quiet" alert, or 0 for "this one is slow on purpose".)
+    require('quietAfterHours' not in p or integer(p['quietAfterHours'], 0, 8760),
+            'Quiet after: 0 (never) to 8760 hours.')
+
+
+def _check_audience(a):
     if isinstance(a, dict) and a.get('kind') == 'active':
         shape(a, ('kind', 'days'))
         require(
@@ -654,156 +652,170 @@ def validate(p):
             and len(set(a['players'])) == len(a['players']),
             'Choose distinct player character IDs.',
         )
-    require(
-        isinstance(p['phases'], list) and 1 <= len(p['phases']) <= 100,
-        'A story has 1–100 phases.',
+
+
+def _check_phase_head(p, phase, ids):
+    """A phase's own shape, id, journal, guest voices and number of effects; its effective form (campaign triggers,
+    regions and scenes joined)."""
+    shape(
+        phase,
+        ('id', 'journal', 'effects', 'exits'),
+        ('guestVoices', 'missions', 'triggers', 'campaignRules'),
     )
-    shared = p.get('triggers', [])
     require(
-        isinstance(shared, list) and len(shared) <= 64,
-        'Choose up to 64 campaign triggers.',
+        isinstance(phase.get('triggers', []), list) and type(phase.get('campaignRules', True)) is bool,
+        'Invalid phase trigger settings.',
     )
-    # Validate campaign rules even when every phase opts out. Mission conditions refer to local journals.
-    triggers.validate({'id': 'campaign', 'missions': [], 'triggers': shared, '_regions': region_index(p), '_scenes': scene_docs})
-    ids = set()
-    for phase in p['phases']:
-        shape(
-            phase,
-            ('id', 'journal', 'effects', 'exits'),
-            ('guestVoices', 'missions', 'triggers', 'campaignRules'),
-        )
+    phase = effective_phase(p, phase)
+    pid = phase['id']
+    require(
+        identifier(pid) and pid not in ids and word(phase['journal'], 600),
+        'Each phase needs a unique ID and journal entry.',
+    )
+    ids.add(pid)
+    voices = phase.get('guestVoices', [])
+    require(
+        isinstance(voices, list)
+        and len(voices) <= 8
+        and all(identifier(v) for v in voices)
+        and len(set(voices)) == len(voices)
+        and (not voices or phase['exits'] or phase.get('triggers')),
+        f'{pid}: choose up to eight distinct guest speakers in an ongoing phase.',
+    )
+    require(
+        isinstance(phase['effects'], list) and len(phase['effects']) <= 12,
+        f'{pid}: too many effects.',
+    )
+    return phase
+
+
+def _check_entry_effect(effect, phase, speakers):
+    pid = phase['id']
+    validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
+    if effect['kind'] == 'npc.line':
         require(
-            isinstance(phase.get('triggers', []), list) and type(phase.get('campaignRules', True)) is bool,
-            'Invalid phase trigger settings.',
+            effect['npc'] not in speakers,
+            f'{pid}: two lines for the same resident.',
         )
-        phase = effective_phase(p, phase)
-        pid = phase['id']
+        speakers.add(effect['npc'])
+
+
+def _check_exit(e, phase, mission_ids):
+    pid = phase['id']
+    if isinstance(e, dict) and e.get('on') == MISSION_GATE:
+        shape(e, ('on', 'to', 'missions'))
+        names = e['missions']
         require(
-            identifier(pid) and pid not in ids and word(phase['journal'], 600),
-            'Each phase needs a unique ID and journal entry.',
+            identifier(e['to'])
+            and isinstance(names, list)
+            and names
+            and all(identifier(k) and k in mission_ids for k in names)
+            and len(set(names)) == len(names),
+            'A mission exit must name distinct missions from this phase.',
         )
-        ids.add(pid)
-        voices = phase.get('guestVoices', [])
+        return
+    shape(
+        e,
+        ('on', 'to'),
+        (
+            'match',
+            'afterDays',
+            'players',
+            'percent',
+            'minQuantity',
+            'minCoins',
+            'participant',
+            'prerequisites',
+        ),
+    )
+    require(
+        e['on'] in EVENTS and identifier(e['to']),
+        f'{pid}: unknown trigger or destination.',
+    )
+    m = e.get('match', {})
+    require(
+        isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()),
+        f'{pid}: invalid event filter.',
+    )
+    check_region_source(e, phase.get('_regions'))
+    require(
+        'participant' not in e or type(e['participant']) is bool,
+        f'{pid}: participant must be true or false.',
+    )
+    for key, hi in [
+        ('players', 500),
+        ('percent', 100),
+        ('minQuantity', 1000000),
+        ('minCoins', 1000000000),
+    ]:
+        if key in e:
+            require(integer(e[key], 1, hi), f'{pid}: invalid {key}.')
+    require(
+        not ('players' in e and 'percent' in e),
+        f'{pid}: choose one participation gate.',
+    )
+    if 'prerequisites' in e:
+        steps = e['prerequisites']
         require(
-            isinstance(voices, list)
-            and len(voices) <= 8
-            and all(identifier(v) for v in voices)
-            and len(set(voices)) == len(voices)
-            and (not voices or phase['exits'] or phase.get('triggers')),
-            f'{pid}: choose up to eight distinct guest speakers in an ongoing phase.',
+            isinstance(steps, list)
+            and 1 <= len(steps) <= 8
+            and (e.get('participant') or 'percent' in e or 'players' in e),
+            'Prerequisites require a participation gate.',
         )
-        require(
-            isinstance(phase['effects'], list) and len(phase['effects']) <= 12,
-            f'{pid}: too many effects.',
-        )
-        speakers = set()
-        for effect in phase['effects']:
-            validate_effect(effect, pid, phase.get('_regions'), phase.get('_scenes'))
-            kind = effect['kind']
-            if kind == 'npc.line':
-                require(
-                    effect['npc'] not in speakers,
-                    f'{pid}: two lines for the same resident.',
-                )
-                speakers.add(effect['npc'])
-        require(
-            isinstance(phase['exits'], list) and len(phase['exits']) <= 16,
-            f'{pid}: too many exits.',
-        )
-        mission_ids = validate_missions(phase)
-        triggers.validate(phase)
-        for mission in phase.get('missions', []):
-            for objective in mission['objectives']:
-                check_region_source(objective, phase.get('_regions'))
-        for e in phase['exits']:
-            if isinstance(e, dict) and e.get('on') == MISSION_GATE:
-                shape(e, ('on', 'to', 'missions'))
-                names = e['missions']
-                require(
-                    identifier(e['to'])
-                    and isinstance(names, list)
-                    and names
-                    and all(identifier(k) and k in mission_ids for k in names)
-                    and len(set(names)) == len(names),
-                    'A mission exit must name distinct missions from this phase.',
-                )
-                continue
-            shape(
-                e,
-                ('on', 'to'),
-                (
-                    'match',
-                    'afterDays',
-                    'players',
-                    'percent',
-                    'minQuantity',
-                    'minCoins',
-                    'participant',
-                    'prerequisites',
-                ),
-            )
+        for step in steps:
+            shape(step, ('on',), ('match',))
             require(
-                e['on'] in EVENTS and identifier(e['to']),
-                f'{pid}: unknown trigger or destination.',
+                step['on'] in EVENTS and step['on'] not in ('clock', 'dm signal'),
+                'Choose a player event as a prerequisite.',
             )
-            m = e.get('match', {})
+            fields = step.get('match', {})
             require(
-                isinstance(m, dict) and all(k in FIELDS and word(v, 400) for k, v in m.items()),
-                f'{pid}: invalid event filter.',
+                isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
+                'Invalid prerequisite filter.',
             )
-            check_region_source(e, phase.get('_regions'))
-            require(
-                'participant' not in e or type(e['participant']) is bool,
-                f'{pid}: participant must be true or false.',
-            )
-            for key, hi in [
-                ('players', 500),
-                ('percent', 100),
-                ('minQuantity', 1000000),
-                ('minCoins', 1000000000),
-            ]:
-                if key in e:
-                    require(integer(e[key], 1, hi), f'{pid}: invalid {key}.')
-            require(
-                not ('players' in e and 'percent' in e),
-                f'{pid}: choose one participation gate.',
-            )
-            if 'prerequisites' in e:
-                steps = e['prerequisites']
-                require(
-                    isinstance(steps, list)
-                    and 1 <= len(steps) <= 8
-                    and (e.get('participant') or 'percent' in e or 'players' in e),
-                    'Prerequisites require a participation gate.',
-                )
-                for step in steps:
-                    shape(step, ('on',), ('match',))
-                    require(
-                        step['on'] in EVENTS and step['on'] not in ('clock', 'dm signal'),
-                        'Choose a player event as a prerequisite.',
-                    )
-                    fields = step.get('match', {})
-                    require(
-                        isinstance(fields, dict) and all(k in FIELDS and word(v, 400) for k, v in fields.items()),
-                        'Invalid prerequisite filter.',
-                    )
-                    check_region_source(step, phase.get('_regions'))
-            if 'afterDays' in e or e['on'] == 'clock':
-                require(
-                    number(e.get('afterDays'), 1 / 1440, 36500),
-                    f'{pid}: set a positive game-time delay.',
-                )
-            if e['on'] == 'clock':
-                require(
-                    not (set(e) - {'on', 'to', 'afterDays'}),
-                    f'{pid}: clock exits only take a delay.',
-                )
-            if e['on'] == 'dm signal':
-                require(
-                    set(e) == {'on', 'to', 'match'} and set(m) == {'detail'} and word(m.get('detail'), 80),
-                    f'{pid}: name the permitted DM signal.',
-                )
+            check_region_source(step, phase.get('_regions'))
+    if 'afterDays' in e or e['on'] == 'clock':
+        require(
+            number(e.get('afterDays'), 1 / 1440, 36500),
+            f'{pid}: set a positive game-time delay.',
+        )
+    if e['on'] == 'clock':
+        require(
+            not (set(e) - {'on', 'to', 'afterDays'}),
+            f'{pid}: clock exits only take a delay.',
+        )
+    if e['on'] == 'dm signal':
+        require(
+            set(e) == {'on', 'to', 'match'} and set(m) == {'detail'} and word(m.get('detail'), 80),
+            f'{pid}: name the permitted DM signal.',
+        )
+
+
+def _check_phase(p, raw, ids):
+    """One phase whole (validate's loop body)."""
+    phase = _check_phase_head(p, raw, ids)
+    speakers = set()
+    for effect in phase['effects']:
+        _check_entry_effect(effect, phase, speakers)
+    require(
+        isinstance(phase['exits'], list) and len(phase['exits']) <= 16,
+        f'{phase["id"]}: too many exits.',
+    )
+    mission_ids = validate_missions(phase)
+    triggers.validate(phase)
+    for mission in phase.get('missions', []):
+        for objective in mission['objectives']:
+            check_region_source(objective, phase.get('_regions'))
+    for e in phase['exits']:
+        _check_exit(e, phase, mission_ids)
+
+
+def _check_start(p, ids):
     require(identifier(p['start']) and p['start'] in ids, 'Unknown opening phase.')
+
+
+def _check_graph(p, ids):
+    """Every phase reachable from the opening one; rewards for $actor; a speaking phase has an exit."""
     phases = {s['id']: s for s in phases_of(p)}
     reached, todo = set(), [p['start']]
     while todo:
@@ -815,25 +827,325 @@ def validate(p):
         todo.extend(e['to'] for e in triggers.routes(phases[pid]))
     require(reached == ids, 'Unreachable phases: ' + ', '.join(sorted(ids - reached)))
     for phase in phases.values():
-        if any(effect.get('player') == '$actor' for effect in phase['effects']):
-            incoming = [e for other in phases.values() for e in triggers.routes(other) if e['to'] == phase['id']]
-            require(
-                phase['id'] != p['start']
-                and all(
-                    e['on'] == MISSION_GATE or e.get('participant') or 'players' in e or 'percent' in e
-                    for e in incoming
-                ),
-                'A reward for $actor requires a participating player on every incoming path.',
-            )
+        _check_phase_paths(p, phases, phase)
+
+
+def _check_phase_paths(p, phases, phase):
+    if any(effect.get('player') == '$actor' for effect in phase['effects']):
+        incoming = [e for other in phases.values() for e in triggers.routes(other) if e['to'] == phase['id']]
         require(
-            phase['exits'] or phase.get('triggers') or all(e['kind'] != 'npc.line' for e in phase['effects']),
-            'A speaking phase needs an exit.',
+            phase['id'] != p['start']
+            and all(
+                e['on'] == MISSION_GATE or e.get('participant') or 'players' in e or 'percent' in e
+                for e in incoming
+            ),
+            'A reward for $actor requires a participating player on every incoming path.',
         )
+    require(
+        phase['exits'] or phase.get('triggers') or all(e['kind'] != 'npc.line' for e in phase['effects']),
+        'A speaking phase needs an exit.',
+    )
+
+
+def _check_tests(p):
     require(
         isinstance(p['tests'], list) and 1 <= len(p['tests']) <= 32,
         'Include 1–32 rehearsal cases.',
     )
+
+
+TOP_REQUIRED = ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests')
+TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours')
+
+
+def validate(p):
+    shape(p, TOP_REQUIRED, TOP_OPTIONAL)
+    scenes = p.get('scenes', [])
+    require(isinstance(scenes, list) and len(scenes) <= 32, 'Choose up to 32 embedded scenes.')
+    scene_docs = {}
+    for scene in scenes:
+        _check_scene(scene, scene_docs)
+    rectangles = p.get('regions', [])
+    require(isinstance(rectangles, list) and len(rectangles) <= 128, 'Choose up to 128 named regions.')
+    names = set()
+    for r in rectangles:
+        _check_region(r, names)
+    _check_header(p)
+    _check_audience(p['audience'])
+    require(
+        isinstance(p['phases'], list) and 1 <= len(p['phases']) <= 100,
+        'A story has 1–100 phases.',
+    )
+    shared = p.get('triggers', [])
+    require(
+        isinstance(shared, list) and len(shared) <= 64,
+        'Choose up to 64 campaign triggers.',
+    )
+    # Validate campaign rules even when every phase opts out. Mission conditions refer to local journals.
+    triggers.validate(campaign_scope(p, scene_docs))
+    ids = set()
+    for phase in p['phases']:
+        _check_phase(p, phase, ids)
+    _check_start(p, ids)
+    _check_graph(p, ids)
+    _check_tests(p)
     return p
+
+
+def campaign_scope(p, scene_docs=None):
+    """The pseudo-phase campaign triggers are checked in (no missions: they refer to a phase's own journal)."""
+    if scene_docs is None:
+        scene_docs = {s['id']: s for s in p.get('scenes', []) if isinstance(s, dict) and 'id' in s}
+    return {'id': 'campaign', 'missions': [], 'triggers': p.get('triggers', []), '_regions': region_index(p), '_scenes': scene_docs}
+
+
+# ----------------------------------------------------------------------------------------------------- every problem
+# Doc 85, Phase 3 ("Explain it") and 4.2's Problems list: every problem of a draft at once, each with where it is, where
+# `validate` raises on the first. Built from validate's own checks run part by part, so the two cannot disagree: a draft
+# with no error here passes `validate`, and one `validate` refuses has at least one (tools/test_story_problems.py).
+
+_ERRORS = (ValueError, KeyError, TypeError, AttributeError, IndexError, StopIteration)
+
+
+def problems(p):
+    """Every problem of a draft (see _problems); should the walk itself fail on a draft too broken to walk, validate's
+    first error stands alone."""
+    try:
+        return _problems(p)
+    except _ERRORS:
+        try:
+            validate(p)
+            return []
+        except _ERRORS as error:
+            return [{'level': 'error', 'text': triggers._message(error), 'path': '', 'at': {'kind': 'program'}}]
+
+
+def _problems(p):
+    """Every error in a draft, each {level, text, path, at}: `path` names the part ("phases[2].triggers[0].actions[1]"),
+    `at` is for an editor to go there ({kind, phase, index, id, part}); then the warnings the program alone can tell
+    (signals nothing listens for, counters read that nothing sets, timers cancelled that nothing starts)."""
+    out = []
+
+    def add(path, at, text, level='error'):
+        out.append({'level': level, 'text': text, 'path': path, 'at': at})
+
+    def attempt(path, at, check, *args):
+        try:
+            check(*args)
+            return True
+        except _ERRORS as error:
+            add(path, at, triggers._message(error))
+            return False
+
+    if not isinstance(p, dict):
+        add('', {'kind': 'program'}, 'A story program is a JSON object.')
+        return out
+    missing, extra = set(TOP_REQUIRED) - p.keys(), p.keys() - set(TOP_REQUIRED) - set(TOP_OPTIONAL)
+    if missing or extra:
+        add('', {'kind': 'program'}, f'Missing fields {sorted(missing)}, unexpected fields {sorted(extra)}.')
+    program = {'kind': 'settings'}
+    if {'format', 'version', 'id', 'title'} <= p.keys():
+        attempt('', program, _check_header, p)
+    if 'audience' in p:
+        attempt('audience', program, _check_audience, p['audience'])
+    scene_docs = {}
+    scenes = p.get('scenes', [])
+    if attempt('scenes', {'kind': 'scenes'}, require, isinstance(scenes, list) and len(scenes) <= 32, 'Choose up to 32 embedded scenes.'):
+        for i, scene in enumerate(scenes):
+            attempt(f'scenes[{i}]', {'kind': 'scene', 'index': i, 'id': scene.get('id') if isinstance(scene, dict) else None},
+                    _check_scene, scene, scene_docs)
+    names = set()
+    rectangles = p.get('regions', [])
+    if attempt('regions', {'kind': 'regions'}, require, isinstance(rectangles, list) and len(rectangles) <= 128,
+               'Choose up to 128 named regions.'):
+        for i, r in enumerate(rectangles):
+            attempt(f'regions[{i}]', {'kind': 'region', 'index': i, 'id': r.get('id') if isinstance(r, dict) else None},
+                    _check_region, r, names)
+
+    # (From here the draft is walked as validate would see it, its broken lists read as empty, so one broken list does not
+    # stop the rest being checked: what was wrong with each list is told above.)
+    raw_p, p = p, dict(p)
+    for key in ('regions', 'scenes', 'triggers'):
+        items = p.get(key, [])
+        p[key] = [x for x in items if isinstance(x, dict) and isinstance(x.get('id'), str)] if isinstance(items, list) else []
+    if not p['scenes'] and 'scenes' not in raw_p:
+        del p['scenes']
+
+    def trigger_list(rules_, scope, path, where, ids_taken=(), joined=True):
+        """Each trigger of a list, then the list (its length, its signal cycles) once each is sound (and, for a phase that
+        runs them, the campaign triggers joined to it)."""
+        if not attempt(path, where, require, isinstance(rules_, list) and len(rules_) <= 64,
+                       'Choose up to 64 triggers per phase.' if where.get('phase') is not None else 'Choose up to 64 campaign triggers.'):
+            return
+        seen, sound = set(ids_taken), True
+        for i, t in enumerate(rules_):
+            tid = t.get('id') if isinstance(t, dict) and isinstance(t.get('id'), str) else None
+            at = {**where, 'kind': 'trigger', 'index': i, 'id': tid}
+            if tid in seen:
+                add(f'{path}[{i}]', at, 'Give every trigger in the phase a unique ID.' if where.get('phase') is not None
+                    else 'Give every campaign trigger a unique ID.')
+                sound = False
+                continue
+            found = triggers.trigger_problems(t, scope, seen - {tid})
+            for part, text in found:
+                add(f'{path}[{i}]{part}', {**at, **({'part': part[1:]} if part else {})}, text)
+            sound = sound and not found
+            if tid is not None:
+                seen.add(tid)
+        if sound and joined:
+            attempt(path, where, triggers.validate, scope)
+        return sound
+
+    shared = raw_p.get('triggers', [])
+    shared_sound = trigger_list(shared, campaign_scope(p, scene_docs), 'triggers', {'phase': None}) and shared == p['triggers']
+    shared_ids = {t.get('id') for t in shared if isinstance(t, dict) and isinstance(t.get('id'), str)} if isinstance(shared, list) else set()
+    ids = set()
+    phases = p.get('phases')
+    if not attempt('phases', {'kind': 'phases'}, require, isinstance(phases, list) and 1 <= len(phases) <= 100,
+                   'A story has 1–100 phases.'):
+        phases = []
+    sound_phases = True
+    for pi, raw in enumerate(phases):
+        pid = raw.get('id') if isinstance(raw, dict) and isinstance(raw.get('id'), str) else None
+        where = {'phase': pi, 'phaseId': pid}
+        before = len(out)
+        try:
+            phase = _check_phase_head(p, raw, ids)
+        except _ERRORS as error:
+            add(f'phases[{pi}]', {**where, 'kind': 'phase'}, triggers._message(error))
+            sound_phases = False
+            if not isinstance(raw, dict) or not isinstance(raw.get('effects'), list) or not isinstance(raw.get('exits'), list) \
+                    or not isinstance(pid, str):
+                continue
+            ids.add(pid)
+            try:
+                phase = effective_phase(p, raw)
+            except _ERRORS:
+                continue
+        speakers = set()
+        for i, effect in enumerate(phase.get('effects', [])):
+            attempt(f'phases[{pi}].effects[{i}]', {**where, 'kind': 'effect', 'index': i}, _check_entry_effect, effect, phase, speakers)
+        mission_ids = set()
+        missions = phase.get('missions', [])
+        if attempt(f'phases[{pi}].missions', {**where, 'kind': 'missions'}, require, isinstance(missions, list) and len(missions) <= 16,
+                   'Choose up to 16 missions in a phase.'):
+            for i, m in enumerate(missions):
+                mid = m.get('id') if isinstance(m, dict) and isinstance(m.get('id'), str) else None
+                at = {**where, 'kind': 'mission', 'index': i, 'id': mid}
+                if mid in mission_ids:
+                    add(f'phases[{pi}].missions[{i}]', at, 'Each mission needs a unique ID and title.')
+                    continue
+                if attempt(f'phases[{pi}].missions[{i}]', at, validate_missions, {**phase, 'missions': [m]}):
+                    for j, objective in enumerate(m['objectives']):
+                        attempt(f'phases[{pi}].missions[{i}].objectives[{j}]', {**at, 'part': f'objectives[{j}]'},
+                                check_region_source, objective, phase.get('_regions'))
+                if mid is not None:
+                    mission_ids.add(mid)
+        own = raw.get('triggers', []) if isinstance(raw, dict) else []
+        trigger_list(own, phase, f'phases[{pi}].triggers', where, shared_ids if phase.get('_sharedIds') else (),
+                     joined=bool(shared_sound or not phase.get('_sharedIds')))
+        exits = phase.get('exits', [])
+        if attempt(f'phases[{pi}].exits', {**where, 'kind': 'exits'}, require, isinstance(exits, list) and len(exits) <= 16,
+                   f'{pid}: too many exits.'):
+            for i, e in enumerate(exits):
+                attempt(f'phases[{pi}].exits[{i}]', {**where, 'kind': 'exit', 'index': i}, _check_exit, e, phase, mission_ids)
+        sound_phases = sound_phases and len(out) == before
+    if 'start' in p:
+        attempt('start', program, _check_start, p, ids)
+    if sound_phases and not any(e['level'] == 'error' for e in out):
+        # (Reachability and the paths into a phase need every phase sound: a broken one would only add noise.)
+        attempt('phases', {'kind': 'phases'}, _check_graph, p, ids)
+    if 'tests' in p:
+        attempt('tests', {'kind': 'tests'}, _check_tests, p)
+        for i, case in enumerate(p['tests'] if isinstance(p['tests'], list) else []):
+            at = {'kind': 'case', 'index': i, 'id': case.get('name') if isinstance(case, dict) else None}
+            if attempt(f'tests[{i}]', at, _check_case, p, case):
+                for j, ev in enumerate(case['events']):
+                    attempt(f'tests[{i}].events[{j}]', {**at, 'part': f'events[{j}]'}, _check_fact, ev)
+    # The safety net: validate's own verdict. (Rehearsal cases are not validate's: review checks them.)
+    structural = [e for e in out if not e['path'].startswith('tests[')]
+    try:
+        validate(raw_p)
+        if structural:
+            # (Never a problem validate does not see: the walk above is validate's checks part by part.)
+            out = [e for e in out if e['path'].startswith('tests[')]
+    except _ERRORS as error:
+        if not structural:
+            add('', {'kind': 'program'}, triggers._message(error))
+    if not any(e['level'] == 'error' for e in out):
+        out += program_warnings(p)
+    return out
+
+
+def _signal_uses(p):
+    """Where each signal is sent (emit, schedule), heard (story-signal triggers and objectives) and cancelled."""
+    sent, heard, cancelled, started = {}, {}, {}, {}
+    scopes = [(None, 'triggers', p.get('triggers', []))] + [
+        (i, f'phases[{i}].triggers', ph.get('triggers', [])) for i, ph in enumerate(p['phases'])]
+    for pi, path, rules_ in scopes:
+        for ti, t in enumerate(rules_):
+            at = {'phase': pi, 'kind': 'trigger', 'index': ti, 'id': t['id']}
+            if t['on'] == triggers.SIGNAL:
+                heard.setdefault(t['signal'], []).append((f'{path}[{ti}]', at))
+            for ai, a in enumerate(t['actions']):
+                where = (f'{path}[{ti}].actions[{ai}]', {**at, 'part': f'actions[{ai}]'})
+                if a['do'] in ('emit', 'schedule'):
+                    sent.setdefault(a['signal'], []).append(where)
+                if a['do'] == 'schedule':
+                    started.setdefault(a['signal'], []).append(where)
+                if a['do'] == 'cancel':
+                    cancelled.setdefault(a['signal'], []).append(where)
+    for pi, ph in enumerate(p['phases']):
+        for mi, m in enumerate(ph.get('missions', [])):
+            for oi, o in enumerate(m['objectives']):
+                if 'signal' in o:
+                    heard.setdefault(o['signal'], []).append(
+                        (f'phases[{pi}].missions[{mi}].objectives[{oi}]', {'phase': pi, 'kind': 'mission', 'index': mi, 'id': m['id']}))
+    return sent, heard, cancelled, started
+
+
+def program_warnings(p):
+    """What the program alone can tell is likely a mistake (doc 85, 4.2's warnings; 1.6: "a misspelt name is a new counter
+    that reads 0, and nothing warns"): a signal sent that nothing hears, one heard that nothing sends (only the console
+    could), a timer cancelled that nothing starts, a counter read that nothing sets."""
+    out = []
+    sent, heard, cancelled, started = _signal_uses(p)
+    for name, places in sorted(sent.items()):
+        if name not in heard:
+            path, at = places[0]
+            out.append({'level': 'warning', 'text': f'Signal "{name}" is sent but nothing listens for it.', 'path': path, 'at': at})
+    for name, places in sorted(heard.items()):
+        if name not in sent:
+            path, at = places[0]
+            out.append({'level': 'warning', 'text': f'Nothing in the story sends signal "{name}": only the Campaigns console could.',
+                        'path': path, 'at': at})
+    for name, places in sorted(cancelled.items()):
+        if name not in started:
+            path, at = places[0]
+            out.append({'level': 'warning', 'text': f'Timer "{name}" is cancelled but nothing starts it.', 'path': path, 'at': at})
+    read, written = {}, set()
+
+    def walk(c, where):
+        if c['test'] in ('all', 'any'):
+            for child in c['conditions']:
+                walk(child, where)
+        elif c['test'] == 'not':
+            walk(c['condition'], where)
+        elif c['test'] == 'counter':
+            read.setdefault((c['scope'], c['key']), where)
+
+    scopes = [(None, 'triggers', p.get('triggers', []))] + [
+        (i, f'phases[{i}].triggers', ph.get('triggers', [])) for i, ph in enumerate(p['phases'])]
+    for pi, path, rules_ in scopes:
+        for ti, t in enumerate(rules_):
+            if 'if' in t:
+                walk(t['if'], (f'{path}[{ti}].if', {'phase': pi, 'kind': 'trigger', 'index': ti, 'id': t['id'], 'part': 'if'}))
+            written.update((a['scope'], a['key']) for a in t['actions'] if a['do'] in ('set', 'add'))
+    for (scope, key), (path, at) in sorted(read.items()):
+        if (scope, key) not in written:
+            out.append({'level': 'warning', 'path': path, 'at': at,
+                        'text': f'Counter "{key}" ({scope}) is read but nothing sets it: it stays 0 (a misspelt name?).'})
+    return out
 
 
 def digest(program):
@@ -1018,6 +1330,57 @@ def mission_credits(missions):
     return credits
 
 
+def _check_case(p, case):
+    """A rehearsal case's shape, name, audience and lists (review's checks, before it runs the case)."""
+    shape(
+        case,
+        ('name', 'cohort', 'events', 'expect'),
+        (
+            'expectEffects',
+            'expectMissions',
+            'expectMissionVisits',
+            'expectTriggers',
+            'expectCounters',
+        ),
+    )
+    require(
+        word(case['name'], 100)
+        and isinstance(case['cohort'], list)
+        and len(case['cohort']) <= 500
+        and all(identifier(v) for v in case['cohort']),
+        'Invalid rehearsal name or cohort.',
+    )
+    if p['audience']['kind'] == 'players':
+        require(
+            set(case['cohort']) == set(p['audience']['players']),
+            'Use the fixed audience in the rehearsal.',
+        )
+    require(
+        isinstance(case['events'], list)
+        and len(case['events']) <= 256
+        and isinstance(case['expect'], list)
+        and all(identifier(v) for v in case['expect']),
+        'Invalid rehearsal events or expected phases.',
+    )
+
+
+def _check_fact(ev):
+    """One rehearsal fact's shape and values."""
+    shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y'))
+    require(
+        identifier(ev['id'])
+        and ev['kind'] in EVENTS
+        and (
+            ('x' not in ev and 'y' not in ev)
+            or (identifier(ev.get('cell')) and integer(ev.get('x'), 0, 4095) and integer(ev.get('y'), 0, 4095))
+        )
+        and number(ev['day'], 0, 1e8)
+        and all(isinstance(ev[k], str) and len(ev[k]) <= 400 for k in FIELDS if k in ev)
+        and all(integer(ev[k], -(10**12), 10**12) for k in ('quantity', 'coins') if k in ev),
+        'Invalid rehearsal fact.',
+    )
+
+
 def review(p, budget=None):
     """Rehearse every case, within a work and time budget (RehearsalBudget). Too large a request is refused politely."""
     if not _rehearsals.acquire(timeout=REHEARSAL_SECONDS):
@@ -1034,36 +1397,7 @@ def _review(p):
     validate(p)
     reports = []
     for case in p['tests']:
-        shape(
-            case,
-            ('name', 'cohort', 'events', 'expect'),
-            (
-                'expectEffects',
-                'expectMissions',
-                'expectMissionVisits',
-                'expectTriggers',
-                'expectCounters',
-            ),
-        )
-        require(
-            word(case['name'], 100)
-            and isinstance(case['cohort'], list)
-            and len(case['cohort']) <= 500
-            and all(identifier(v) for v in case['cohort']),
-            'Invalid rehearsal name or cohort.',
-        )
-        if p['audience']['kind'] == 'players':
-            require(
-                set(case['cohort']) == set(p['audience']['players']),
-                'Use the fixed audience in the rehearsal.',
-            )
-        require(
-            isinstance(case['events'], list)
-            and len(case['events']) <= 256
-            and isinstance(case['expect'], list)
-            and all(identifier(v) for v in case['expect']),
-            'Invalid rehearsal events or expected phases.',
-        )
+        _check_case(p, case)
         state = begin(p, case['cohort'], 0)
         path, intended, last_day, seen = [], [], 0, {}
         visit_credits, trace = [], []
@@ -1071,19 +1405,7 @@ def _review(p):
 
         record_entry(p, state, path, intended, visit_credits)
         for ev in case['events']:
-            shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y'))
-            require(
-                identifier(ev['id'])
-                and ev['kind'] in EVENTS
-                and (
-                    ('x' not in ev and 'y' not in ev)
-                    or (identifier(ev.get('cell')) and integer(ev.get('x'), 0, 4095) and integer(ev.get('y'), 0, 4095))
-                )
-                and number(ev['day'], 0, 1e8)
-                and all(isinstance(ev[k], str) and len(ev[k]) <= 400 for k in FIELDS if k in ev)
-                and all(integer(ev[k], -(10**12), 10**12) for k in ('quantity', 'coins') if k in ev),
-                'Invalid rehearsal fact.',
-            )
+            _check_fact(ev)
             if ev['id'] in seen:
                 require(ev == seen[ev['id']], 'A repeated event ID has different contents.')
                 continue

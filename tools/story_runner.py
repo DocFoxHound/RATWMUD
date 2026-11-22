@@ -4,6 +4,7 @@ import argparse
 import datetime
 import hashlib
 import json
+import math
 import secrets
 import time
 import uuid
@@ -193,7 +194,16 @@ def approve(conn, world, who, program, digest):
     return {'run': run, 'ticket': ticket, 'digest': digest}
 
 
+# A dry run of a console command (doc 85, 5.5: "this will do") records the orders it would send; the transaction it runs in
+# is rolled back, so nothing it queued reaches the game.
+import contextvars as _contextvars
+_recording = _contextvars.ContextVar('story_orders_recorded', default=None)
+
+
 def queue(conn, who, kind, target, payload):
+    recording = _recording.get()
+    if recording is not None:
+        recording.append({'kind': kind, 'target': target, 'payload': payload})
     receipt = conn.execute(
         """INSERT INTO dm.actions(kind,target_id,payload,requested_by)
                            VALUES (%s,%s,%s::jsonb,%s) RETURNING id""",
@@ -215,6 +225,7 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
     state.pop('quietEntry', None)
     if quiet:
         state['quietEntry'] = True
+    state['visitCursor'] = cursor   # (Doc 85 Phase 3: "why not?" tells this visit's events from the last one's by it.)
     if state.get('triggerEffects'):
         state['arrivalEffects'] = state.pop('triggerEffects')
     previous = state.pop('previousMissions', [])
@@ -756,8 +767,13 @@ def direct(conn, world, op, data):
 # dm.story_transitions, dm.story_trigger_history, dm.actions), with names for every id. Nothing here writes.
 
 LIVE_STATUSES = ('approved', 'running', 'paused', 'held', 'stopping')
-# The first values of doc 85, 5.6 (adjustable per world later, Phase 3).
-ALERTS = {'gameSeconds': 60, 'behindEvents': 2000, 'behindSeconds': 60, 'quietHours': 24, 'runnerSeconds': 30}
+# The first values of doc 85, 5.6; each world's owner may change them (dm.story_alert_rules, migration 0072: Phase 3), and a
+# program may set its own quiet hours (`quietAfterHours`, 0 for "slow on purpose").
+ALERTS = {'gameSeconds': 60, 'behindEvents': 2000, 'behindSeconds': 60, 'quietHours': 24, 'runnerSeconds': 30,
+          'overdueSeconds': 300, 'goneDays': 14, 'fullPercent': 90}
+ALERT_BOUNDS = {'gameSeconds': (5, 86400), 'behindEvents': (10, 10**7), 'behindSeconds': (5, 86400), 'quietHours': (0, 8760),
+                'runnerSeconds': (5, 3600), 'overdueSeconds': (10, 86400), 'goneDays': (1, 365), 'fullPercent': (50, 100)}
+AUDIENCE_CAP = 500
 RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt')
 STEERED = ('running', 'paused', 'held')   # (The statuses a command may steer.)
 TIMELINE_PAGE = 60
@@ -862,7 +878,9 @@ def _waiting(program, state, status, problem, receipts, orders):
         out.append({'on': 'timer', 'name': key, 'signal': timer.get('signal', key), 'at': timer['at'],
                     'clock': timer.get('clock', 'game'), 'actor': timer.get('actor', ''),
                     'repeat': timer.get('interval', 0), 'scope': timer.get('scope', 'visit')})
-    listening = _listening(phase)
+    # (Triggers turned off or used up wait for nothing: doc 85 Phase 3, the same reading as "cannot move on".)
+    spent = {i['id'] for i in listeners(program, state, per_wolf=False) if i['source'] == 'trigger' and (i.get('off') or i.get('used'))}
+    listening = [e for e in _listening(phase) if e.get('id') not in spent or e['source'] != 'trigger']
     for edge in listening:
         if edge['on'] == 'clock':
             out.append({'on': 'clock', 'at': state['entered'] + edge.get('afterDays', 0), 'what': edge})
@@ -917,9 +935,12 @@ def _behind(conn, world, cursor, newest, now):
     return {'events': newest - cursor, 'seconds': round((now - first[0]).total_seconds(), 1) if first else 0}
 
 
-def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, runner=None, held=None):
+def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, runner=None, held=None, ctx=None):
     """Doc 85, 5.6: paused, held, the runner not running (Phase 2's heartbeat), the game not answering, falling behind,
-    quiet."""
+    quiet; and Phase 3's: cannot move on, a timer overdue, the audience nearly full. `ctx` carries the world's rules,
+    the program and state, the world's speed and day."""
+    ctx = ctx or {}
+    limits = ctx.get('rules') or ALERTS
     out = []
     if status == 'paused':
         out.append({'kind': 'paused', 'needsYou': True, 'problem': problem})
@@ -928,18 +949,22 @@ def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, ru
                     'events': behind['events']})
     if status not in (*STEERED, 'stopping'):
         return out
-    down = runner is not None and status in ('running', 'stopping') and (runner.get('age') is None or runner['age'] > ALERTS['runnerSeconds'])
+    down = runner is not None and status in ('running', 'stopping') and (runner.get('age') is None or runner['age'] > limits['runnerSeconds'])
     if down:
         out.append({'kind': 'runner', 'needsYou': True, 'age': runner.get('age'), 'beatAt': runner.get('beatAt')})
     game = next((w for w in waiting if w['on'] == 'game'), None)
-    if game and game['order']['age'] > ALERTS['gameSeconds']:
+    if game and game['order']['age'] > limits['gameSeconds']:
         out.append({'kind': 'game', 'needsYou': False, 'order': game['order']})
-    elif status == 'running' and not down and (behind['events'] > ALERTS['behindEvents'] or behind['seconds'] > ALERTS['behindSeconds']):
+    elif status == 'running' and not down and (behind['events'] > limits['behindEvents'] or behind['seconds'] > limits['behindSeconds']):
         out.append({'kind': 'behind', 'needsYou': False, **behind, 'runner': runner is not None})
-    if status == 'running' and cohort:
+    program, state = ctx.get('program'), ctx.get('state')
+    quiet_hours = limits['quietHours']
+    if program and 'quietAfterHours' in program:
+        quiet_hours = program['quietAfterHours']
+    if status == 'running' and cohort and quiet_hours:
         moments = [m for m in (last.get('trigger', {}).get('at'), last.get('phase', {}).get('at'), last.get('order')) if m]
         latest = max(moments) if moments else None
-        if latest and (now - latest).total_seconds() > ALERTS['quietHours'] * 3600:
+        if latest and (now - latest).total_seconds() > quiet_hours * 3600:
             # Quiet only counts while its wolves were about: someone of the audience did something since.
             seen = conn.execute(
                 """SELECT max(e.at) FROM unnest(%s::text[]) a(id) CROSS JOIN LATERAL
@@ -950,6 +975,20 @@ def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now, ru
             if seen and seen > latest:
                 out.append({'kind': 'quiet', 'needsYou': False, 'hours': round((now - latest).total_seconds() / 3600, 1),
                             'since': _iso(latest), 'wolfSeen': _iso(seen)})
+    if program and state and status == 'running':
+        settled = not any(w['on'] in ('game', 'send', 'admin') for w in waiting)
+        if settled:
+            stall = _stall(conn, world, program, state, limits)
+            if stall:
+                out.append({'kind': 'stuck', 'needsYou': True, **stall})
+        for key, timer in sorted(state.get('timers', {}).items()):
+            late = _overdue_seconds(timer, ctx.get('day'), state, ctx.get('speed'))
+            if late is not None and late > limits['overdueSeconds']:
+                out.append({'kind': 'overdue', 'needsYou': False, 'timer': key, 'signal': timer.get('signal', key),
+                            'at': timer['at'], 'clock': timer.get('clock', 'game'), 'seconds': round(late)})
+                break
+    if cohort and len(cohort) >= AUDIENCE_CAP * limits['fullPercent'] / 100:
+        out.append({'kind': 'full', 'needsYou': False, 'wolves': len(cohort), 'cap': AUDIENCE_CAP})
     return out
 
 
@@ -965,7 +1004,7 @@ def _run_receipts(conn, run, receipts, state):
     return by_visit
 
 
-def _row_view(conn, world, row, now, last, runner=None):
+def _row_view(conn, world, row, now, last, runner=None, ctx=None):
     run, title, st, digest, who, approved_at, state, problem, cursor, receipts, program = row
     view = {'run': run, 'title': title, 'status': st, 'digest': digest, 'approver': who, 'approvedAt': _iso(approved_at),
             'phase': state.get('phase') if state else None, 'problem': problem}
@@ -987,7 +1026,8 @@ def _row_view(conn, world, row, now, last, runner=None):
         # (A firing and the visit it opened share a moment: the visit is the newer.)
         last={**max(moment, key=lambda m: (m['at'], m['type'] == 'phase')), 'at': _iso(max(m['at'] for m in moment))}
         if moment else None,
-        alerts=_alerts(conn, world, st, problem, waiting, behind, last, state.get('cohort', []), now['at'], runner, state.get('held')),
+        alerts=_alerts(conn, world, st, problem, waiting, behind, last, state.get('cohort', []), now['at'], runner, state.get('held'),
+                       {**(ctx or {}), 'program': program, 'state': state, 'day': now['day']}),
         ending=not (phase['exits'] or phase.get('triggers')),
     )
     return view
@@ -1013,9 +1053,17 @@ def overview(conn, world):
     last = _last_activity(conn, [r[0] for r in rows if r[2] in LIVE_STATUSES])
     beat = runner_beat(conn, world)
     queued = _queued_counts(conn, [r[0] for r in rows if r[2] in LIVE_STATUSES])
+    limits = alert_rules(conn, world)
+    ctx = {'rules': limits, 'speed': world_speed(conn, world)}
     runs = []
     for r in rows:
-        view = _row_view(conn, world, r, now, last.get(r[0], {}), beat)
+        try:
+            view = _row_view(conn, world, r, now, last.get(r[0], {}), beat, ctx)
+        except (ValueError, KeyError, TypeError, IndexError, StopIteration, AttributeError) as error:
+            # (A damaged release must not hide the others, nor stop the heartbeat that reads this list.)
+            view = {'run': r[0], 'title': r[1], 'status': r[2], 'digest': r[3], 'approver': r[4], 'approvedAt': _iso(r[5]),
+                    'phase': (r[6] or {}).get('phase') if isinstance(r[6], dict) else None,
+                    'problem': r[7] or f'Cannot read this story: {type(error).__name__} {error}'[:240], 'alerts': [], 'waiting': []}
         if queued.get(r[0]):
             view['commandsQueued'] = queued[r[0]]
         if r[0] in ended:
@@ -1023,7 +1071,7 @@ def overview(conn, world):
         runs.append(view)
     ids = {i for v in runs for i in [*v.get('cohort', []), (v.get('last') or {}).get('actor', '')]}
     return {'runs': runs, 'now': {'day': now['day'], 'newest': now['newest'], 'at': _iso(now['at'])},
-            'names': names(conn, world, ids), 'thresholds': ALERTS, 'runner': beat}
+            'names': names(conn, world, ids), 'thresholds': limits, 'speed': ctx['speed'], 'runner': beat}
 
 
 def _program_ids(program):
@@ -1103,7 +1151,8 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         ).fetchall()
     now = _now(conn, world)
     beat = runner_beat(conn, world)
-    view = _row_view(conn, world, row, now, _last_activity(conn, [run]).get(run, {}) if st in LIVE_STATUSES else {}, beat)
+    ctx = {'rules': alert_rules(conn, world), 'speed': world_speed(conn, world)}
+    view = _row_view(conn, world, row, now, _last_activity(conn, [run]).get(run, {}) if st in LIVE_STATUSES else {}, beat, ctx)
     receipt_visits = _run_receipts(conn, run, row[9], state)
     orders = _orders(conn, sorted(receipt_visits, reverse=True)[:60])
     trace_rows = [{'id': r[0], 'visit': r[1], **r[2]} for r in trace[:50]]
@@ -1151,6 +1200,7 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'runner': beat,
         'commands': commands_of(conn, run),
         'controls': controls(program, state) if state and st in STEERED else None,
+        'speed': ctx['speed'],
     }
     if have != row[3]:
         result['program'] = program
@@ -1301,7 +1351,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc85-phase2'
+RUNNER_VERSION = 'doc85-phase3'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
                  'order', 'tell', 'scene')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
@@ -1335,6 +1385,7 @@ def heartbeat(conn, world):
                started_at=CASE WHEN dm.story_runner.pid=excluded.pid THEN dm.story_runner.started_at ELSE excluded.started_at END""",
         (world, os.getpid(), RUNNER_VERSION, max(0, behind)),
     )
+    _beat_alerts(conn, world)
 
 
 def runner_beat(conn, world):
@@ -1645,12 +1696,13 @@ class Steer:
     """One command, taken: the run as it stands (locked), and the work of each kind. Every method returns the
     result's text and its values before and after, or raises Refused or Wait."""
 
-    def __init__(self, conn, world, run, clock, cmd):
+    def __init__(self, conn, world, run, clock, cmd, lock=True):
         self.conn, self.world, self.run, self.clock = conn, world, run, clock
         self.id, self.key, self.visit, self.digest, self.kind, self.payload, self.reason, self.by, self.age = cmd
         row = conn.execute(
             """SELECT program,state,status,cursor,approved_by,receipts,digest,problem,program->>'title' FROM dm.story_releases
-               WHERE world_id=%s AND id=%s FOR UPDATE""", (world, run)).fetchone()
+               WHERE world_id=%s AND id=%s""" + (' FOR UPDATE' if lock else ''), (world, run)).fetchone()
+        _require(row, 'Unknown run.')
         self.program, self.state, self.status, self.cursor, self.approver, self.receipts, self.run_digest, self.problem, \
             self.title = row
         self.trace = []
@@ -2065,6 +2117,790 @@ def stopping(conn, run):
     elif status == 'expired':
         state['stopReceipt'] = queue(conn, 'story-runner', 'story.stop', run, {})
         conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+
+
+# ------------------------------------------------------------------------------------------- explaining: "Explain it"
+# Doc 85, 5.5 and 5.6, Phase 3. Reads only. `explain` answers: what a run waits for (every trigger and exit of its phase,
+# each condition true, false or unknown with the values behind it, and for which of its wolves it could fire); why one
+# has not fired (its last events and where each stopped); what a made-up event would do; and what a console command would
+# do (the command run by the runner's own code on the run as it stands, in a transaction that is rolled back). Nothing is
+# saved. The stall alert ("cannot move on") and the overdue timer are worked out from the same reading.
+
+EXPLAIN_EVENTS = 10
+
+
+def alert_rules(conn, world):
+    """The world's alert rules: doc 85, 5.6's first values, with what its owner changed (dm.story_alert_rules, 0072)."""
+    limits = dict(ALERTS)
+    if conn.execute("SELECT to_regclass('dm.story_alert_rules') IS NOT NULL").fetchone()[0]:
+        row = conn.execute('SELECT rules FROM dm.story_alert_rules WHERE world_id=%s', (world,)).fetchone()
+        for key, value in ((row[0] if row else None) or {}).items():
+            if key in ALERT_BOUNDS and _days(value, *ALERT_BOUNDS[key]):
+                limits[key] = value
+    return limits
+
+
+def set_alert_rules(conn, world, who, data):
+    """The owner's change to the alert rules (5.7: "change the alert rules" is the owner's). Unknown keys and values out
+    of bounds are refused; a key set to null goes back to the first value. Audited."""
+    rules.require(conn.execute("SELECT to_regclass('dm.story_alert_rules') IS NOT NULL").fetchone()[0],
+                  'This world needs migration 0072 to keep its own alert rules.')
+    asked = data.get('rules')
+    rules.require(isinstance(asked, dict) and asked, 'Send the rules to change.')
+    rules.require(set(asked) <= set(ALERT_BOUNDS), 'Unknown alert rule: ' + ', '.join(sorted(set(asked) - set(ALERT_BOUNDS))))
+    row = conn.execute('SELECT rules FROM dm.story_alert_rules WHERE world_id=%s FOR UPDATE', (world,)).fetchone()
+    kept = dict((row[0] if row else None) or {})
+    for key, value in asked.items():
+        if value is None:
+            kept.pop(key, None)
+            continue
+        low, high = ALERT_BOUNDS[key]
+        rules.require(_days(value, low, high), f'{key}: {low} to {high}.')
+        kept[key] = value
+    conn.execute(
+        """INSERT INTO dm.story_alert_rules(world_id,rules,updated_by) VALUES (%s,%s::jsonb,%s)
+           ON CONFLICT (world_id) DO UPDATE SET rules=excluded.rules,updated_by=excluded.updated_by,updated_at=now()""",
+        (world, json.dumps(kept), str(who)[:80]))
+    conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
+                 ('story.alert-rules', world, ('Alert rules: ' + json.dumps(kept, sort_keys=True))[:2000], str(who)[:80]))
+    return {'rules': alert_rules(conn, world), 'changed': kept}
+
+
+def world_speed(conn, world):
+    """Game days per real second, from the world's log over about the last hour (None when it cannot tell): to say "in
+    2.1 days (about 50 min)" of a game-clock timer."""
+    newest = conn.execute(
+        'SELECT id,game_day,extract(epoch from recorded_at)::float8 FROM game.events WHERE world_id=%s ORDER BY id DESC LIMIT 1',
+        (world,)).fetchone()
+    if not newest or newest[1] is None:
+        return None
+    older = conn.execute(
+        """SELECT game_day,extract(epoch from recorded_at)::float8 FROM game.events WHERE world_id=%s AND id>%s
+           AND recorded_at >= to_timestamp(%s) - interval '1 hour' AND game_day IS NOT NULL ORDER BY id LIMIT 1""",
+        (world, max(0, newest[0] - 20000), newest[2])).fetchone()
+    if not older or newest[2] - older[1] < 120 or newest[1] <= older[0]:
+        return None
+    return round((newest[1] - older[0]) / (newest[2] - older[1]), 9)
+
+
+def _estimate(left_days, clock, speed):
+    """Real seconds until a timer is due (game days through the world's speed; a real-clock one is in real days)."""
+    if clock == 'real':
+        return left_days * 86400
+    return left_days / speed if speed else None
+
+
+def _overdue_seconds(timer, day, state, speed):
+    """How long ago (real seconds) a timer fell due and did not fire, or None."""
+    if timer.get('clock') == 'real':
+        published = state.get('publishedAt')
+        if not published:
+            return None
+        late = (time.time() - published) / 86400 - timer['at']
+        return late * 86400 if late > 0 else None
+    if day is None or timer['at'] >= day or not speed:
+        return None
+    return (day - timer['at']) / speed
+
+
+def _filter_miss(rule, fact):
+    """The first filter of an exit, trigger or objective that a fact does not meet, as {field, expected, actual}; None when
+    it meets them all (story_program.matches, word by word)."""
+    kind = fact['kind']
+    if rule['on'] == 'gift' and kind == 'gift again':
+        kind = 'gift'
+    if rule['on'] != kind:
+        return {'field': 'kind', 'expected': rule['on'], 'actual': fact['kind']}
+    if rule.get('signal') != fact.get('signal'):
+        return {'field': 'signal', 'expected': rule.get('signal'), 'actual': fact.get('signal')}
+    for key, expected in rule.get('match', {}).items():
+        actual = fact.get(key, '') or ''
+        if key == 'item' and rule['on'] in ('gift', 'gift again') and not any(mark in expected for mark in '~@'):
+            actual = __import__('re').split('[~@]', actual, maxsplit=1)[0]
+        if actual != expected:
+            return {'field': key, 'expected': expected, 'actual': fact.get(key, '') or ''}
+    for key, field in (('minCoins', 'coins'), ('minQuantity', 'quantity')):
+        if key in rule and (fact.get(field) or 0) < rule[key]:
+            return {'field': field, 'expected': '>= ' + str(rule[key]), 'actual': fact.get(field) or 0}
+    return None
+
+
+def _ready(phase, state):
+    return lambda: {m['id'] for m in rules.mission_snapshot(phase, state) if m['ready']}
+
+
+def _uses_player_counters(c):
+    if c['test'] in ('all', 'any'):
+        return any(_uses_player_counters(child) for child in c['conditions'])
+    if c['test'] == 'not':
+        return _uses_player_counters(c['condition'])
+    return c['test'] == 'counter' and c['scope'] == 'player'
+
+
+def _once_marks(phase, state, t):
+    """Who a trigger's once-rule has already used up: '*' (the visit or the run), wolves, or nobody."""
+    repeat = t.get('once', 'each')
+    if repeat == 'each':
+        return repeat, []
+    bucket = 'campaignFired' if repeat in ('campaign', 'member') else 'fired'
+    token = t['id'] if bucket == 'fired' or t['id'] in phase.get('_sharedIds', ()) else phase['id'] + '/' + t['id']
+    return repeat, list(state.get(bucket, {}).get(token, []))
+
+
+def _signal_senders(phase, state, name):
+    """What can send a story signal in this phase now: its triggers that emit or schedule it, and timers running for it."""
+    disabled = set(state.get('disabled', ()))
+    senders = [{'trigger': t['id'], 'off': rules.triggers.trigger_key(phase, t['id']) in disabled}
+               for t in phase.get('triggers', []) for a in t['actions'] if a['do'] in ('emit', 'schedule') and a['signal'] == name]
+    timers = [{'timer': k, 'signal': v.get('signal', k), 'at': v['at'], 'clock': v.get('clock', 'game')} for k, v in state.get('timers', {}).items()
+              if v.get('signal', k) == name]
+    return senders, timers
+
+
+def _recent_wolves(conn, world, cohort, days):
+    """The wolves of the story who did anything in the world in the last `days` real days."""
+    if not cohort:
+        return set()
+    return {r[0] for r in conn.execute(
+        """SELECT a.id FROM unnest(%s::text[]) a(id) WHERE EXISTS (SELECT 1 FROM game.events e WHERE e.world_id=%s AND e.actor=a.id
+           AND e.recorded_at >= now() - %s * interval '1 day')""", (cohort, world, days))}
+
+
+def listeners(program, state, per_wolf=True, recent=None):
+    """Every trigger and exit of the run's phase, judged as the run stands (doc 85, 5.5's "what is this story waiting
+    for?"): on or off, used up or not (and for whom), its conditions as a tree of true, false and unknown with values (on
+    a stand-in event of its own filters: what the event brings is unknown until it comes), its due day, its senders (a
+    signal), its gate (an exit), and `can`: whether it can still fire by itself (the stall alert's test). With `per_wolf`
+    the wolves of the story it could fire for now. `recent`: the wolves seen lately (None: not asked)."""
+    phase = rules.phase_of(program, state)
+    cohort = state.get('cohort', [])
+    disabled = set(state.get('disabled', ()))
+    ready = _ready(phase, state)
+    out = []
+    for t in phase.get('triggers', []):
+        key = rules.triggers.trigger_key(phase, t['id'])
+        repeat, used_by = _once_marks(phase, state, t)
+        personal = t.get('audience') == 'participant' or repeat in ('player', 'member')
+        item = {'source': 'trigger', 'id': t['id'], 'key': key, 'on': t['on'], 'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
+                'once': repeat, 'audience': t.get('audience', 'world'), 'off': key in disabled,
+                'actions': [a['effect']['kind'] if a['do'] == 'effect' else a['do'] for a in t['actions']],
+                'enters': next((a['phase'] for a in t['actions'] if a['do'] == 'enter'), None),
+                **{k: t[k] for k in ('match', 'signal', 'afterDays') if k in t}}
+        if repeat in ('visit', 'campaign'):
+            item['used'] = '*' in used_by
+        elif repeat in ('player', 'member'):
+            item['usedFor'] = used_by
+            item['used'] = bool(cohort) and set(cohort) <= set(used_by)
+        else:
+            item['used'] = False
+        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': '', 'id': None, **t.get('match', {})}
+        known = set(t.get('match', {}))
+        if 'if' in t:
+            item['conditions'] = rules.triggers.judge(t['if'], state, stand_in, ready, phase.get('_regions'), known)
+        if t['on'] == 'clock':
+            item['due'] = state['entered'] + t['afterDays']
+        if t['on'] == rules.triggers.SIGNAL:
+            senders, timers = _signal_senders(phase, state, t['signal'])
+            item['senders'], item['timers'] = senders, timers
+        if per_wolf and (personal or ('if' in t and _uses_player_counters(t['if']))):
+            could = []
+            for wolf in cohort:
+                if repeat in ('player', 'member') and wolf in used_by:
+                    continue
+                if 'if' in t:
+                    verdict = rules.triggers.judge(t['if'], state, {**stand_in, 'actor': wolf}, ready, phase.get('_regions'),
+                                                   known | {'actor'})['verdict']
+                    if verdict is False:
+                        continue
+                could.append(wolf)
+            item['forWolves'] = could
+        item['needsWolves'] = personal
+        out.append(item)
+    for index, edge in enumerate(phase['exits']):
+        item = {'source': 'exit', 'index': index, 'on': edge['on'], 'to': edge['to'],
+                **{k: edge[k] for k in ('match', 'afterDays', 'missions', 'players', 'percent', 'participant', 'minCoins', 'minQuantity') if k in edge}}
+        gate = edge.get('participant') or 'players' in edge or 'percent' in edge or edge['on'] == rules.MISSION_GATE
+        item['needsWolves'] = bool(gate)
+        if 'players' in edge or 'percent' in edge:
+            votes = state.get('votes', {}).get(str(index), [])
+            item['votes'] = {'have': len(votes), 'need': edge.get('players', max(1, math.ceil(len(cohort) * edge.get('percent', 100) / 100))),
+                             'wolves': votes}
+        if edge.get('prerequisites'):
+            item['prerequisites'] = {'steps': len(edge['prerequisites']), 'progress': state.get('progress', {}).get(str(index), {})}
+        if edge['on'] == rules.MISSION_GATE:
+            done = ready()
+            item['ready'] = [m for m in edge['missions'] if m in done]
+            item['missing'] = [m for m in edge['missions'] if m not in done]
+        if edge['on'] == 'clock' or 'afterDays' in edge:
+            item['due'] = state['entered'] + edge.get('afterDays', 0)
+        out.append(item)
+    # Can each still fire by itself? Off or used up: no. On a wolf's doing: only while a wolf of the story is about. A
+    # signal: only while something that can still fire sends it, or a timer runs for it (worked out to a fixed point).
+    # (A running timer sends its signal as the wolf who started it, gone or not: what it feeds is never "gone".)
+    timed = {t.get('signal', k) for k, t in state.get('timers', {}).items()}
+    fed = {m['id'] for m in phase.get('missions', []) if any(o.get('signal') in timed for o in m['objectives'])}
+    for item in out:
+        if item.get('off') or item.get('used'):
+            item['can'], item['cannot'] = False, 'off' if item.get('off') else 'used'
+        elif item['on'] == rules.triggers.SIGNAL and item['timers']:
+            item['can'] = True
+        elif item['on'] == rules.MISSION_GATE and set(item.get('missing', [])) & fed:
+            item['can'] = True
+        elif item['needsWolves'] and recent is not None and not (set(recent) - set(item.get('usedFor', []))):
+            item['can'], item['cannot'] = False, 'gone'
+        elif item['on'] == rules.triggers.SIGNAL:
+            item['can'] = bool(item['timers'])
+        else:
+            item['can'] = True
+    changed = True
+    while changed:
+        changed = False
+        able = {i['id'] for i in out if i['source'] == 'trigger' and i['can']}
+        for item in out:
+            if item['on'] == rules.triggers.SIGNAL and not item['can'] and not item.get('cannot'):
+                if any(sender['trigger'] in able for sender in item['senders']):
+                    item['can'], changed = True, True
+    for item in out:
+        if not item['can'] and not item.get('cannot'):
+            item['cannot'] = 'unsent'
+    return out
+
+
+def _stall(conn, world, program, state, limits):
+    """Doc 85, 5.6's "cannot move on": an ongoing phase none of whose triggers and exits can still fire by itself (each
+    off, used up, waiting for a wolf who has been gone `goneDays`, or a signal nothing left can send). None when it can
+    move."""
+    phase = rules.phase_of(program, state)
+    if not (phase['exits'] or phase.get('triggers')):
+        return None
+    judged = listeners(program, state, per_wolf=False)
+    if any(i['can'] for i in judged if not i['needsWolves']):
+        return None
+    recent = _recent_wolves(conn, world, state.get('cohort', []), limits['goneDays']) if any(i['needsWolves'] for i in judged) else set()
+    judged = listeners(program, state, per_wolf=False, recent=recent)
+    if any(i['can'] for i in judged):
+        return None
+    why = Counter(i['cannot'] for i in judged)
+    return {'phase': state['phase'], 'reasons': dict(why), 'goneDays': limits['goneDays'],
+            'what': [{'source': i['source'], 'id': i.get('id'), 'index': i.get('index'), 'on': i['on'], 'cannot': i['cannot']} for i in judged][:24]}
+
+
+def _timers_ahead(state, day, speed):
+    """What will happen next by itself: the run's timers, soonest first, with the day and an estimate in real time."""
+    out = []
+    published = state.get('publishedAt')
+    elapsed = (time.time() - published) / 86400 if published else None
+    for key, timer in state.get('timers', {}).items():
+        clock = timer.get('clock', 'game')
+        now = elapsed if clock == 'real' else day
+        left = None if now is None else timer['at'] - now
+        out.append({'name': key, 'signal': timer.get('signal', key), 'at': timer['at'], 'clock': clock, 'actor': timer.get('actor', ''),
+                    'repeat': timer.get('interval', 0), 'scope': timer.get('scope', 'visit'), 'left': left,
+                    'seconds': None if left is None else _estimate(max(0, left), clock, speed)})
+    out.sort(key=lambda t: (t['seconds'] is None, t['seconds'] if t['seconds'] is not None else t['at']))
+    return out
+
+
+def _load(conn, world, run):
+    row = conn.execute(
+        """SELECT program,state,status,cursor,receipts,digest,approved_by,program->>'title' FROM dm.story_releases
+           WHERE world_id=%s AND id=%s""", (world, run)).fetchone()
+    rules.require(row, 'Unknown run.')
+    rules.require(row[1] and row[2] in (*STEERED, 'stopping'), 'This run is not running: there is nothing to explain.')
+    return row
+
+
+def _event_view(r):
+    return dict(zip(('id', 'kind', 'day', 'actor', 'target', 'cell', 'item', 'quantity', 'coins', 'detail', 'x', 'y', 'at'),
+                    (*r[:12], _iso(r[12]))))
+
+
+def _step(phase, state, run, t, fact, fired_events):
+    """Where a fact stopped on its way through one trigger, as the runner and the rules take it (doc 85, 5.5's "why has
+    this one not fired?"): {verdict, ...}. Once-rules and conditions are judged with the values as they are now."""
+    if fact.get('id') in fired_events:
+        return {'verdict': 'fired'}
+    if fact['kind'] in rules.SCENE_EVENTS and (fact.get('target') != run or fact.get('quantity') != state['visits']):
+        return {'verdict': 'other', 'text': 'a scene of another story or another visit'}
+    if fact['kind'] in rules.REGION_EVENTS and fact.get('detail') != run:
+        return {'verdict': 'other', 'text': "another story's region"}
+    if fact['kind'] == 'story phase' and fact.get('actor') == run:
+        return {'verdict': 'other', 'text': "the story's own change of phase"}
+    if _before_visit(state, fact):
+        return {'verdict': 'before', 'text': 'before this visit of the phase opened'}
+    miss = _filter_miss(t, fact)
+    if miss:
+        return {'verdict': 'filter', **miss}
+    actor = fact.get('actor', '')
+    repeat, used_by = _once_marks(phase, state, t)
+    if (t.get('audience') == 'participant' or repeat in ('player', 'member')) and actor not in state['cohort']:
+        return {'verdict': 'outsider', 'wolf': actor}
+    if rules.triggers.trigger_key(phase, t['id']) in set(state.get('disabled', ())):
+        return {'verdict': 'off'}
+    owner = actor if repeat in ('player', 'member') else '*'
+    if repeat != 'each' and owner in used_by:
+        return {'verdict': 'used', 'once': repeat, **({'wolf': actor} if owner != '*' else {})}
+    if 'if' in t:
+        tree = rules.triggers.judge(t['if'], state, fact, _ready(phase, state), phase.get('_regions'))
+        if tree['verdict'] is not True:
+            return {'verdict': 'conditions', 'conditions': tree}
+    return {'verdict': 'would', 'text': 'it would fire on this event now'}
+
+
+def _before_visit(state, fact):
+    """Whether a logged event came before the run's current visit: by the cursor the visit opened at (state.visitCursor,
+    since Phase 3: the event that moved it, already the last phase's), or for an older run by the game day."""
+    if isinstance(fact.get('id'), int) and isinstance(state.get('visitCursor'), int):
+        return fact['id'] <= state['visitCursor']
+    return fact.get('day') is not None and fact['day'] <= state['entered'] and fact.get('id') is not None
+
+
+def _exit_step(phase, state, edge, fact):
+    actor = fact.get('actor', '')
+    if _before_visit(state, fact):
+        return {'verdict': 'before', 'text': 'before this visit of the phase opened'}
+    if (edge.get('participant') or 'players' in edge or 'percent' in edge) and actor not in state['cohort']:
+        return {'verdict': 'outsider', 'wolf': actor}
+    miss = _filter_miss(edge, fact)
+    if miss:
+        return {'verdict': 'filter', **miss}
+    if fact.get('day') is not None and fact['day'] < state['entered'] + edge.get('afterDays', 0):
+        return {'verdict': 'early', 'due': state['entered'] + edge.get('afterDays', 0)}
+    return {'verdict': 'would', 'text': 'it matches: as a vote or a step towards it'}
+
+
+def why_not(conn, world, run, which):
+    """Why has this one not fired? (doc 85, 5.5): a trigger (by id) or an exit (by index) of the run's phase, judged now,
+    and its last events (up to 10) with where each stopped."""
+    program, state, status, cursor, receipts, digest, who, title = _load(conn, world, run)
+    phase = rules.phase_of(program, state)
+    judged = listeners(program, state)
+    if isinstance(which, dict) and 'exit' in which:
+        rules.require(rules.integer(which['exit'], 0, 15) and which['exit'] < len(phase['exits']), 'No such exit in this phase.')
+        rule, head, kinds = phase['exits'][which['exit']], next(i for i in judged if i['source'] == 'exit' and i['index'] == which['exit']), None
+    else:
+        tid = which.get('trigger') if isinstance(which, dict) else which
+        rule = next((t for t in phase.get('triggers', []) if t['id'] == tid), None)
+        rules.require(rule, f'Trigger {tid} is not in phase {state["phase"]}.')
+        head = next(i for i in judged if i['source'] == 'trigger' and i['id'] == tid)
+    out = {'run': run, 'phase': state['phase'], 'visit': state['visits'], 'listener': head, 'events': [], 'unread': 0}
+    on = rule['on']
+    if on in ('clock', 'dm signal', rules.triggers.SIGNAL, rules.MISSION_GATE):
+        # (Not in the world's log: a delay, a direction, a signal, the journal's missions. Its head says what it waits for.)
+        out['notLogged'] = on
+        if on == rules.triggers.SIGNAL:
+            out['recent'] = [dict(zip(('id', 'visit', 'trigger', 'day', 'at'), (r[0], r[1], r[2], r[3], _iso(r[4])))) for r in conn.execute(
+                """SELECT id,visit,entry->>'trigger',(entry->>'day')::float8,recorded_at FROM dm.story_trigger_history
+                   WHERE run=%s AND entry->>'signal'=%s ORDER BY id DESC LIMIT 5""", (run, rule['signal']))]
+        return out
+    kinds = [on, 'gift again'] if on == 'gift' else [on]
+    rows = conn.execute(
+        """SELECT id,kind,game_day,actor,target,cell,item,quantity,coins,detail,x,y,recorded_at FROM game.events
+           WHERE world_id=%s AND kind=ANY(%s) AND id<=%s ORDER BY id DESC LIMIT %s""",
+        (world, kinds, cursor, EXPLAIN_EVENTS)).fetchall()
+    out['unread'] = conn.execute('SELECT count(*) FROM game.events WHERE world_id=%s AND kind=ANY(%s) AND id>%s',
+                                 (world, kinds, cursor)).fetchone()[0]
+    fired = set()
+    if 'id' in rule:
+        fired = {int(r[0]) for r in conn.execute(
+            """SELECT entry->>'event' FROM dm.story_trigger_history WHERE run=%s AND entry->>'trigger'=%s
+               AND entry->>'event' ~ '^[0-9]+$' ORDER BY id DESC LIMIT 200""", (run, rule['id']))}
+    for r in rows:
+        fact = dict(zip(EVENT_COLUMNS, r[:12]))
+        step = _step(phase, state, run, rule, fact, fired) if 'id' in rule else _exit_step(phase, state, rule, fact)
+        out['events'].append({'event': _event_view(r), **step})
+    return out
+
+
+def _validate_fact(fact):
+    rules.require(isinstance(fact, dict), 'Describe the event.')
+    known = {'kind', 'signal', 'actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins', 'x', 'y'}
+    rules.require(set(fact) <= known, 'Unknown field in the event: ' + ', '.join(sorted(set(fact) - known)))
+    kind = fact.get('kind')
+    rules.require(kind == rules.triggers.SIGNAL or (kind in rules.EVENTS and kind not in ('clock', 'dm signal', 'story phase')),
+                  'Choose a world event, or a story signal.')
+    rules.require(kind != rules.triggers.SIGNAL or rules.identifier(fact.get('signal')), 'Name the signal.')
+    for k in rules.FIELDS:
+        rules.require(k not in fact or (isinstance(fact[k], str) and len(fact[k]) <= 400), f'Invalid {k}.')
+    for k in ('quantity', 'coins'):
+        rules.require(k not in fact or rules.integer(fact[k], -(10**12), 10**12), f'Invalid {k}.')
+    rules.require(('x' not in fact and 'y' not in fact) or (rules.identifier(fact.get('cell')) and rules.integer(fact.get('x'), 0, 4095)
+                  and rules.integer(fact.get('y'), 0, 4095)), 'A place needs a cell, x and y.')
+    return {'id': None, 'detail': '', 'target': '', 'item': '', 'cell': '', 'actor': '', 'quantity': 0, 'coins': 0, **fact}
+
+
+def _missions_moved(phase, before, after):
+    """Mission progress a dry run made: [{mission, title, who, before, after, of}]."""
+    out = []
+    for m in phase.get('missions', []):
+        a = before.get(m['id'], {}).get('tracks', {})
+        b = after.get(m['id'], {}).get('tracks', {})
+        for who in sorted(set(a) | set(b)):
+            if a.get(who) != b.get(who):
+                out.append({'mission': m['id'], 'title': m['title'], 'who': who, 'before': a.get(who, [0, 0]), 'after': b.get(who, [0, 0]),
+                            'of': len(m['objectives'])})
+    return out
+
+
+def _outcome(program, before, after, trace, moved, actor):
+    """What a dry run would do, from the state before and after: the triggers fired, the values changed, mission progress,
+    the effects it would send, and the phase it would be in (with that phase's entry effects to follow)."""
+    phase = rules.phase_of(program, before)
+    out = {'fired': trace, 'changes': _diff(_values(before, actor), _values(after, actor)),
+           'missions': _missions_moved(phase, before.get('missions', {}), after.get('missions', {}) if not moved else
+                                       {m['id']: {'tracks': m['tracks']} for m in after.get('previousMissions', [])}),
+           'effects': list(after.get('triggerEffects', [])), 'moved': bool(moved), 'phase': after['phase'], 'visit': after['visits']}
+    if moved:
+        landing = rules.phase_of(program, after)
+        out['entryEffects'] = entry_effects(landing, after)
+        out['ending'] = not (landing['exits'] or landing.get('triggers'))
+        out['journal'] = landing['journal']
+    return out
+
+
+def what_if(conn, world, run, fact):
+    """What if this happened? (doc 85, 5.5): a made-up event (or story signal) through the rules on a copy of the run's
+    state, now. Nothing is saved, and no order is sent. With, for each trigger of the phase that listens for its kind and
+    did not fire, where it stopped."""
+    program, state, status, cursor, receipts, digest, who, title = _load(conn, world, run)
+    fact = _validate_fact(fact)
+    if fact['kind'] in rules.SCENE_EVENTS:
+        fact.update(target=run, quantity=state['visits'])     # (A made-up scene event is this story's, this visit's.)
+    if fact['kind'] in rules.REGION_EVENTS:
+        fact['detail'] = run
+    rules.require(not fact['actor'] or fact['actor'] in state['cohort'] or fact['kind'] != rules.triggers.SIGNAL,
+                  'That wolf is not in this story.')
+    phase = rules.phase_of(program, state)
+    day = max(game_day(conn, world), state['entered'])
+    published = state.get('publishedAt', 0)
+    elapsed = max(0, (time.time() - published) / 86400) if published else 0
+    copy = json.loads(json.dumps(state))
+    trace = []
+    if fact['kind'] == rules.triggers.SIGNAL:
+        moved = rules.dispatch(program, phase, copy, fact, day, trace, elapsed)
+    else:
+        moved = rules.advance(program, copy, {**fact, 'day': day}, day, trace, elapsed)
+    out = {'run': run, 'fact': fact, 'day': day, **_outcome(program, state, copy, trace, moved, fact['actor'])}
+    fired = {f['trigger'] for f in trace}
+    out['notFired'] = [{'trigger': t['id'], **_step(phase, state, run, t, {**fact, 'day': day}, set())}
+                       for t in phase.get('triggers', []) if t['id'] not in fired and
+                       (t['on'] == fact['kind'] or (t['on'] == 'gift' and fact['kind'] == 'gift again'))][:16]
+    return out
+
+
+def preview(conn, world, run, who, kind, payload, may=None):
+    """What a console command would do (doc 85, 5.5: "this will do", shown before every [Fire…] and [Go to phase]): the
+    command taken by the runner's own code (Steer) on the run as it stands, in a transaction that is then rolled back.
+    Its verdict (done, refused with why, or waiting for the game), its words, the values before and after, the triggers it
+    fires, the orders it would send at once, and what the run would send next (the new phase's entry effects, the
+    triggers' effects). Nothing is saved, queued or audited."""
+    import psycopg
+
+    rules.require(kind in COMMAND_KINDS, 'Unknown command.')
+    payload = payload or {}
+    row = conn.execute('SELECT program,state,status,digest FROM dm.story_releases WHERE world_id=%s AND id=%s', (world, run)).fetchone()
+    rules.require(row, 'Unknown run.')
+    program, state, status, digest = row
+    rules.require(status in STEERED and state, f'This run is {status}: there is nothing to steer.')
+    _check_payload(program, kind, payload)
+    _may_release(program, kind, payload, may)
+    day = None
+
+    def clock():
+        nonlocal day
+        if day is None:
+            day = game_day(conn, world)
+        return day
+
+    recorded = []
+    out = {'run': run, 'kind': kind, 'payload': payload}
+    token = _recording.set(recorded)
+    try:
+        with conn.transaction():
+            steer = Steer(conn, world, run, clock, (0, 'preview', state['visits'], digest, kind, payload, 'a dry run', str(who)[:80], 0),
+                          lock=False)
+            before = json.loads(json.dumps(steer.state))
+            try:
+                result = steer.take()
+                out.update(outcome='done', text=result['text'], before=result['before'], after=result['after'])
+            except Wait:
+                out.update(outcome='waits', text='It would wait: the story is still sending the orders of this visit to the game. '
+                           f'It is taken once the game has answered them (refused after {FLOW_WAIT_SECONDS} s).')
+            except (Refused, ValueError, KeyError, TypeError, IndexError, StopIteration, AttributeError, psycopg.Error) as why:
+                # (As take_commands records them: the runner would refuse it, or could not carry it out.)
+                out.update(outcome='refused', text=str(why) if isinstance(why, (Refused, ValueError)) else
+                           f'Could not carry it out: {type(why).__name__} {why}'[:300])
+            after = steer.state
+            out.update(orders=list(recorded), fired=steer.trace, moved=bool(steer.moved),
+                       changes=_diff(_values(before, steer.payload.get('actor') or steer.payload.get('player') or ''),
+                                     _values(after, steer.payload.get('actor') or steer.payload.get('player') or '')),
+                       phase=after['phase'], visit=after['visits'], status=steer.status)
+            if out['outcome'] == 'done':
+                # (What the run sends next, after the command: entry effects of a new visit, the triggers' effects.)
+                landing = rules.phase_of(program, after)
+                out['next'] = [*(after.get('arrivalEffects', []) if steer.moved else []), *entry_effects(landing, after),
+                               *after.get('triggerEffects', [])] if steer.moved else list(after.get('triggerEffects', []))
+                if steer.moved:
+                    out['journal'] = landing['journal']
+                    out['ending'] = not (landing['exits'] or landing.get('triggers'))
+                out['missions'] = _missions_moved(rules.phase_of(program, before), before.get('missions', {}), after.get('missions', {})) \
+                    if not steer.moved else []
+            raise psycopg.Rollback()
+    finally:
+        _recording.reset(token)
+    return out
+
+
+def explain(conn, world, run, data=None, who='', may=None):
+    """The op `explain` (doc 85, 5.5): with nothing more, what the run waits for ({listeners, timers, stall}); with
+    `trigger` or `exit`, why it has not fired; with `fact`, what if it happened; with `command`, what that console command
+    would do."""
+    data = data or {}
+    if 'command' in data:
+        c = data['command'] if isinstance(data['command'], dict) else {}
+        return preview(conn, world, run, who, c.get('kind'), c.get('payload'), may)
+    if 'fact' in data:
+        return what_if(conn, world, run, data['fact'])
+    if 'trigger' in data or 'exit' in data:
+        return why_not(conn, world, run, {k: data[k] for k in ('trigger', 'exit') if k in data})
+    program, state, status, cursor, receipts, digest, approver, title = _load(conn, world, run)
+    limits = alert_rules(conn, world)
+    speed = world_speed(conn, world)
+    now = _now(conn, world)
+    recent = sorted(_recent_wolves(conn, world, state.get('cohort', []), limits['goneDays']))
+    judged = listeners(program, state, recent=recent)
+    phase = rules.phase_of(program, state)
+    stall = None
+    if status == 'running' and (phase['exits'] or phase.get('triggers')) and not any(i['can'] for i in judged):
+        stall = _stall(conn, world, program, state, limits)
+    return {'run': run, 'phase': state['phase'], 'visit': state['visits'], 'status': status, 'day': now['day'],
+            'listeners': judged, 'timers': _timers_ahead(state, now['day'], speed), 'speed': speed, 'recent': recent,
+            'goneDays': limits['goneDays'], 'stall': stall, 'ending': not (phase['exits'] or phase.get('triggers')),
+            # (The events its missions' objectives take: a "what if" may try those too.)
+            'missionEvents': sorted({o['on'] for m in phase.get('missions', []) for o in m['objectives']})}
+
+
+# ----- the alerts outside the Campaigns tab (doc 85, 5.6: a count on the tab bar, a line on LIVE, the Dev Console)
+
+def _alert_words(title, alert):
+    """One line for a "needs you" alert, for the game's Dev Console (plain words: the game relays them as they are)."""
+    if alert['kind'] == 'paused':
+        return f'Story "{title}" is paused: {(alert.get("problem") or "the game refused an order").rstrip(". ")}. Retry or skip it in Campaigns.'
+    if alert['kind'] == 'stuck':
+        return f'Story "{title}" cannot move on from {alert.get("phase")}: nothing in it can still fire by itself. See Campaigns.'
+    return f'Story "{title}" needs you ({alert["kind"]}). See Campaigns.'
+
+
+def alert_summary(conn, world, view=None):
+    """The op `alerts`: what the tab bar and LIVE show (doc 85, 5.6): whether the runner is down while stories should be
+    running, how many runs need the admin, and those runs with their "needs you" alerts."""
+    view = view or overview(conn, world)
+    runs, down = [], False
+    for r in view['runs']:
+        needs = [a for a in r.get('alerts', []) if a.get('needsYou')]
+        down = down or any(a['kind'] == 'runner' for a in needs)
+        others = [a for a in needs if a['kind'] != 'runner']
+        if others or r['status'] == 'approved':
+            runs.append({'run': r['run'], 'title': r['title'], 'status': r['status'], 'kinds': [a['kind'] for a in others] or ['publish'],
+                         'text': _alert_words(r['title'], others[0]) if others else f'Story "{r["title"]}" is approved, waiting to be published.'})
+    beat = view.get('runner')
+    live = sum(r['status'] in ('running', 'stopping') for r in view['runs'])
+    return {'runner': beat, 'runnerDown': down, 'live': live, 'needsYou': len(runs) + (1 if down else 0), 'runs': runs,
+            'at': view['now']['at']}
+
+
+_GAME_ALERTS_EVERY = 10.0
+_game_alerts_at = {}
+
+
+def _game_alerts(conn, world):
+    """The "needs you" alerts the runner leaves for the game's Dev Console (dm.story_runner.alerts, 0072): each with a key
+    (run and kind), so the game says each once."""
+    view = overview(conn, world)
+    out = []
+    for r in view['runs']:
+        for a in r.get('alerts', []):
+            if a.get('needsYou') and a['kind'] != 'runner':
+                out.append({'key': f'{r["run"]}:{a["kind"]}:{r.get("visit")}', 'run': r['run'], 'kind': a['kind'], 'text': _alert_words(r['title'], a)})
+    return out[:20], sum(r['status'] in ('running', 'stopping') for r in view['runs'])
+
+
+def _beat_alerts(conn, world):
+    """Every ten seconds, with the heartbeat: the alerts for the game (when migration 0072 is there)."""
+    if time.monotonic() - _game_alerts_at.get(world, -1e9) < _GAME_ALERTS_EVERY:
+        return
+    import psycopg
+
+    if not conn.execute("SELECT to_regprocedure('dm.story_alerts_for_game(text)') IS NOT NULL").fetchone()[0]:
+        return
+    _game_alerts_at[world] = time.monotonic()
+    try:
+        with conn.transaction():
+            alerts, live = _game_alerts(conn, world)
+            conn.execute('UPDATE dm.story_runner SET alerts=%s::jsonb,alerts_at=statement_timestamp(),live=%s WHERE world_id=%s',
+                         (json.dumps(alerts), live, world))
+    except (ValueError, KeyError, TypeError, IndexError, StopIteration, AttributeError, psycopg.Error):
+        pass   # (The alerts are a courtesy: the heartbeat and the stories go on without them. A lost connection fails the
+               # tick's next statement, as before.)
+
+
+# ----- every problem of a draft, with the world's (doc 85, Phase 3; known problem 4)
+
+def _effect_sites(program):
+    """Every effect of a program with where it is: entry effects, and the effects of every trigger's actions."""
+    for pi, ph in enumerate(program['phases']):
+        for ei, e in enumerate(ph['effects']):
+            yield f'phases[{pi}].effects[{ei}]', {'phase': pi, 'phaseId': ph['id'], 'kind': 'effect', 'index': ei}, e
+    lists = [(None, None, 'triggers', program.get('triggers', []))] + [
+        (i, ph['id'], f'phases[{i}].triggers', ph.get('triggers', [])) for i, ph in enumerate(program['phases'])]
+    for pi, pid, path, rules_ in lists:
+        for ti, t in enumerate(rules_):
+            for ai, a in enumerate(t['actions']):
+                if a['do'] == 'effect':
+                    yield (f'{path}[{ti}].actions[{ai}]', {'phase': pi, 'phaseId': pid, 'kind': 'trigger', 'index': ti, 'id': t['id'],
+                           'part': f'actions[{ai}]'}, a['effect'])
+
+
+def _filter_sites(program):
+    """Every rule with filters, with where it is and what it is: exits and their prerequisites, triggers, objectives."""
+    lists = [(None, None, 'triggers', program.get('triggers', []))] + [
+        (i, ph['id'], f'phases[{i}].triggers', ph.get('triggers', [])) for i, ph in enumerate(program['phases'])]
+    for pi, pid, path, rules_ in lists:
+        for ti, t in enumerate(rules_):
+            yield f'{path}[{ti}]', {'phase': pi, 'phaseId': pid, 'kind': 'trigger', 'index': ti, 'id': t['id']}, 'trigger', t
+    for pi, ph in enumerate(program['phases']):
+        for xi, e in enumerate(ph['exits']):
+            at = {'phase': pi, 'phaseId': ph['id'], 'kind': 'exit', 'index': xi}
+            yield f'phases[{pi}].exits[{xi}]', at, 'exit', e
+            for si, step in enumerate(e.get('prerequisites', [])):
+                yield f'phases[{pi}].exits[{xi}].prerequisites[{si}]', {**at, 'part': f'prerequisites[{si}]'}, 'prerequisite', step
+        for mi, m in enumerate(ph.get('missions', [])):
+            for oi, o in enumerate(m['objectives']):
+                yield (f'phases[{pi}].missions[{mi}].objectives[{oi}]', {'phase': pi, 'phaseId': ph['id'], 'kind': 'mission', 'index': mi,
+                       'id': m['id'], 'part': f'objectives[{oi}]'}, 'objective', o)
+
+
+def _tile_words(conn, world, cell, x, y):
+    dimensions = conn.execute(
+        'SELECT width,height FROM world.cells WHERE world_id=%s AND id=%s '
+        'UNION ALL SELECT width,height FROM world.interiors WHERE world_id=%s AND id=%s',
+        (world, cell, world, cell),
+    ).fetchone()
+    return None if dimensions and x < dimensions[0] and y < dimensions[1] else f'Tile ({x},{y}) lies outside {cell}.'
+
+
+def reference_problems(conn, world, program):
+    """Every reference of a program checked against this world, each with where it is (doc 85, Phase 3): what approval
+    checks (`blocks`: approval refuses it, as `references` does), and what it does not (known problem 4: ships, areas,
+    towns and markets, the tiles of npc.move and project.post, exits' filters and prerequisites, the wolves and items in
+    filters), which the game would refuse when the order comes, pausing the run, or which would make a trigger never fire."""
+    out = []
+
+    def add(path, at, text, blocks):
+        out.append({'level': 'warning', 'world': True, 'blocks': blocks, 'text': text, 'path': path, 'at': at})
+
+    def exists(table, column, value):
+        return conn.execute(f'SELECT 1 FROM {table} WHERE world_id=%s AND {column}=%s', (world, value)).fetchone() is not None
+
+    for i, r in enumerate(program.get('regions', [])):
+        words = _tile_words(conn, world, r['cell'], r['x2'], r['y2'])
+        if words:
+            add(f'regions[{i}]', {'kind': 'region', 'index': i, 'id': r['id']}, words, True)
+    tables = {'npc': ('dm.story_residents', 'id'), 'resident': ('dm.story_residents', 'id'), 'player': ('game.characters', 'key'),
+              'faction': ('live.factions', 'id'), 'other': ('live.factions', 'id'), 'place': ('world.areas', 'id'), 'cell': ('world.areas', 'id')}
+    society = conn.execute("SELECT payload::jsonb->'society' FROM game.checkpoints WHERE world_id=%s", (world,)).fetchone()
+    society = society[0] if society and isinstance(society[0], dict) else {}
+    report = society.get('report') if isinstance(society.get('report'), dict) else {}
+    board = society.get('board') if isinstance(society.get('board'), dict) else {}
+    markets = {m.get('id') for m in report.get('markets', []) if isinstance(m, dict)} or set(board.get('cell') or {})
+    areas = {a.get('id') for a in report.get('areas', []) if isinstance(a, dict)}
+    ships = {s.get('id') for s in board.get('ships', []) or [] if isinstance(s, dict)}
+    towns = {r[0] for r in conn.execute(
+        """SELECT region FROM world.cells WHERE world_id=%s AND region<>'unassigned' UNION SELECT region FROM world.interiors
+           WHERE world_id=%s AND region<>'unassigned'""", (world, world))}
+    templates = {t['id'] for t in json.loads((DATA / 'Storylines/templates.json').read_text())['templates'] if t.get('source') == 'dm'}
+    items = {item['id'] for item in json.loads((DATA / 'Items/items.json').read_text())['items']}
+    projects = {k['id'] for k in json.loads((DATA / 'Town/projects.json').read_text())['kinds']}
+    for path, at, e in _effect_sites(program):
+        for key, value in e.items():
+            if key in tables and value != '$actor' and not (e['kind'] == 'scene.play' and key == 'player' and value == 'world'):
+                if not exists(*tables[key], value):
+                    add(path, at, f'Unknown {key} in this world: {value}', True)
+        kind = e['kind']
+        if kind == 'storyline.give' and e['template'] not in templates:
+            add(path, at, 'Unknown DM quest template.', True)
+        if kind in ('npc.walk', 'npc.move', 'project.post'):
+            words = _tile_words(conn, world, e['cell'], e['x'], e['y'])
+            if words:
+                add(path, at, words, kind == 'npc.walk')
+        if kind == 'story.area.item' and e['item'] not in items:
+            add(path, at, 'Unknown item for a region grant.', True)
+        if kind == 'project.post' and e['project'] not in projects:
+            add(path, at, 'Unknown town project.', True)
+        if kind == 'times.nudge' and markets and e['market'] not in markets:
+            add(path, at, f'No market "{e["market"]}" in this world (as last saved): the game would refuse it.', False)
+        if kind == 'harvest.override' and areas and e['area'] not in areas:
+            add(path, at, f'No harvest area "{e["area"]}" in this world (as last saved): the game would refuse it.', False)
+        if kind in ('festival.call', 'project.post') and towns and e['town'] not in towns:
+            add(path, at, f'No town "{e["town"]}" in this world: the game would refuse it.', False)
+        if kind == 'ship.storm' and e['ship'] not in ships:
+            add(path, at, f'Ship "{e["ship"]}" is not due in this world now (as last saved): the game would refuse it unless it is '
+                'due when the order comes.', False)
+    for si, scene in enumerate(program.get('scenes', [])):
+        at = {'kind': 'scene', 'index': si, 'id': scene['id']}
+        for name in ('area', 'camera'):
+            if name in scene:
+                place = scene[name]
+                words = _tile_words(conn, world, place['cell'], place.get('x2', place.get('x')), place.get('y2', place.get('y')))
+                if words:
+                    add(f'scenes[{si}].{name}', at, words, True)
+        for role in scene['cast']:
+            if 'npc' in role and not exists('dm.story_residents', 'id', role['npc']):
+                add(f'scenes[{si}].cast', at, f'Unknown npc in this world: {role["npc"]}', True)
+            elif 'npc' not in role and 'cell' in role.get('selector', {}) and not exists('world.areas', 'id', role['selector']['cell']):
+                add(f'scenes[{si}].cast', at, f'Unknown cell in this world: {role["selector"]["cell"]}', True)
+        for beat in scene['beats']:
+            if beat['type'] == 'move':
+                words = _tile_words(conn, world, beat['cell'], beat['x'], beat['y'])
+                if words:
+                    add(f'scenes[{si}].beats', at, words, True)
+    for pi, ph in enumerate(program['phases']):
+        for npc in ph.get('guestVoices', []):
+            if not exists('dm.story_residents', 'id', npc):
+                add(f'phases[{pi}].guestVoices', {'phase': pi, 'phaseId': ph['id'], 'kind': 'phase'}, f'Unknown npc in this world: {npc}', True)
+    for player in program['audience'].get('players', []):
+        if not exists('game.characters', 'key', player):
+            add('audience', {'kind': 'settings'}, f'Unknown player in this world: {player}', True)
+
+    def character(value):
+        return exists('dm.story_residents', 'id', value) or exists('game.characters', 'key', value)
+
+    for path, at, what, rule in _filter_sites(program):
+        filters = rule.get('match', {})
+        # (Approval checks these of objectives and triggers; an exit's and a prerequisite's are new: known problem 4.)
+        blocks = what in ('trigger', 'objective')
+        if filters.get('cell') and not exists('world.areas', 'id', filters['cell']):
+            add(path, at, f'Unknown cell in this world: {filters["cell"]}', blocks)
+        if rule['on'] == 'enter place' and filters.get('target') and not exists('world.areas', 'id', filters['target']):
+            add(path, at, f'Unknown place in this world: {filters["target"]}', blocks)
+        if rule['on'] in ('conversation', 'gift', 'gift again') and filters.get('target') and not character(filters['target']):
+            add(path, at, f'Unknown mission character in this world: {filters["target"]}', blocks)
+        if filters.get('actor') and not character(filters['actor']):
+            add(path, at, f'No wolf or resident "{filters["actor"]}" in this world: this never matches.', False)
+        if filters.get('item') and __import__('re').split('[~@]', filters['item'], maxsplit=1)[0] not in items:
+            add(path, at, f'No item "{filters["item"]}" in the item catalogue: this never matches.', False)
+    return out
+
+
+def program_problems(conn, world, program, with_world=True):
+    """The op `problems` (doc 85, Phase 3; 4.2's Problems list): every error of the draft at once, the warnings the program
+    alone can tell, and (for a Dungeon Master, once the draft has no error) the world's."""
+    out = rules.problems(program)
+    errors = sum(p['level'] == 'error' for p in out)
+    if with_world and not errors and conn is not None:
+        out += reference_problems(conn, world, program)
+    return {'problems': out, 'errors': errors, 'warnings': len(out) - errors, 'world': bool(with_world and not errors and conn is not None),
+            'digest': rules.digest(program) if not errors else None}
 
 
 def atlas(conn, world, query):

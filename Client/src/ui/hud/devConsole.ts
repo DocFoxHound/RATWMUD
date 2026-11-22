@@ -104,6 +104,11 @@ export class DevConsole {
             this.log.replaceChildren();
             if (!s.devLog.length) el('div', 'dev-console-entry muted', this.log, 'Nothing run yet. Type / to see the commands.');
             for (const entry of s.devLog) {
+                if (entry.notice) {
+                    // (Not an answer to a command: a word from outside, e.g. a story that needs a Dungeon Master.)
+                    el('div', 'dev-console-entry notice', this.log, `⚑ ${entry.notice}: ${entry.text}`);
+                    continue;
+                }
                 el('div', 'dev-console-entry command', this.log, `> ${entry.command}`);
                 el('div', entry.ok ? 'dev-console-entry ok' : 'dev-console-entry refused', this.log, entry.text);
             }

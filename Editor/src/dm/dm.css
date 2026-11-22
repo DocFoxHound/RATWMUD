@@ -355,3 +355,54 @@
 .camp-audit td:last-child { max-width: 420px; }
 .camp-pad-x { padding: 0 12px 6px; }
 .camp-hold-all { margin-left: auto; }
+/* Doc 85, Phase 3 ("Explain it"): what a run waits for, judged; why not; what if; the dry run; the alerts outside the tab. */
+.tab-badge { display: inline-block; margin-left: 6px; min-width: 16px; padding: 0 5px; border-radius: 8px; background: var(--danger); color: #fff;
+    font-size: 10.5px; font-weight: 700; line-height: 16px; text-align: center; }
+.tab-badge.down { background: #b3412f; }
+.live-campaigns { display: flex; gap: 10px; align-items: center; padding: 4px 8px; border-left: 3px solid var(--danger); background: #241a18;
+    font-size: 12.5px; color: var(--paper); }
+.live-campaigns span { flex: 1; min-width: 0; }
+.camp-judged-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.camp-judged { padding: 6px 10px; border-left: 3px solid var(--sage); background: #161d1b; font-size: 13px; }
+.camp-judged.done, .camp-judged.cannot { border-left-color: var(--line); opacity: .82; }
+.camp-judged.alert { border-left-color: var(--danger); }
+.camp-judged-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; }
+.camp-judged-head > span:first-child { flex: 1 1 340px; min-width: 0; }
+.camp-judged-state { color: var(--muted); font-size: 12px; }
+.camp-judged.alert .camp-judged-state { color: var(--danger); }
+.camp-judged-buttons { display: flex; gap: 4px; }
+.camp-judged-more { display: block; color: var(--faint); font-size: 12px; margin-top: 2px; }
+.camp-conds { margin: 3px 0 0; padding: 0; list-style: none; font-family: var(--mono); font-size: 12px; }
+.camp-conds li.yes { color: var(--ok); }
+.camp-conds li.no { color: var(--danger); }
+.camp-conds li.unknown { color: var(--faint); }
+.camp-spent summary { cursor: pointer; color: var(--faint); font-size: 12.5px; margin: 6px 0; }
+.camp-stall { padding: 6px 10px; border-left: 3px solid var(--danger); background: #241a18; margin: 0 0 8px; font-size: 13px; }
+.camp-whynot { margin-top: 6px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #121816; font-size: 12.5px; }
+.camp-whynot-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.camp-steps { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 2px; }
+.camp-steps li { display: grid; grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; padding: 2px 6px; border-left: 2px solid var(--line); }
+.camp-steps li.fired { border-left-color: var(--ok); }
+.camp-steps li.filter, .camp-steps li.outsider, .camp-steps li.conditions, .camp-steps li.off, .camp-steps li.used { border-left-color: var(--amber); }
+.camp-steps li b { font-weight: 500; color: var(--paper); }
+.camp-why-row td { background: #101514; }
+.camp-whatif .camp-controls { align-items: center; }
+.camp-whatif input { width: 90px; }
+.camp-whatif input.short { width: 52px; }
+.camp-whatif select { width: auto; max-width: 260px; }
+.camp-whatif-out { margin-top: 6px; padding: 6px 10px; border-left: 3px solid var(--blue); background: #141a1d; font-size: 13px; }
+.camp-whatif-out ul { margin: 2px 0 6px; padding-left: 18px; }
+.camp-ask-refused li { color: var(--danger); }
+.camp-rules { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: end; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; }
+.camp-rules label { display: grid; gap: 2px; font-size: 12px; color: var(--muted); }
+.camp-rules input { width: 90px; }
+/* The Story Creator's Problems list (doc 85, Phase 3; 4.2). */
+.story-problems { margin: 8px 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: #131917; }
+.story-problems h4 { margin: 0 0 4px; font-size: 12.5px; }
+.story-problems ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; max-height: 280px; overflow: auto; }
+.story-problems li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 6px; align-items: baseline; font-size: 12.5px; }
+.story-problems li.error > span:first-child { color: var(--danger); }
+.story-problems li.warning > span:first-child { color: var(--amber); }
+.story-problems li small { display: block; color: var(--faint); }
+.story-problems .ok { color: var(--ok); }
+.story-jumped { outline: 2px solid var(--amber); outline-offset: 2px; transition: outline-color 1.5s; }
