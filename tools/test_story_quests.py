@@ -301,8 +301,27 @@ class QuestRuns(unittest.TestCase):
         self.examples = {**self.examples, 'carter-axle': small, 'ford-campaign': campaign}
 
     def orders(self, kind=None):
+        """The orders sent, each order of a batch (doc 85, Phase 7: story.effects) as one of its own with the batch's id."""
         rows = self.conn.execute('SELECT id,kind,target_id,payload,status FROM dm.actions ORDER BY id').fetchall()
-        return [dict(zip(('id', 'kind', 'target', 'payload', 'status'), r)) for r in rows if kind is None or r[1] == kind]
+        out = []
+        for r in rows:
+            if r[1] == 'story.effects':
+                out.extend({'id': r[0], 'kind': i['kind'], 'target': i['target'], 'payload': i['payload'], 'status': r[4], 'n': n}
+                           for n, i in enumerate(r[3]['items']))
+            else:
+                out.append(dict(zip(('id', 'kind', 'target', 'payload', 'status'), r)))
+        return [o for o in out if kind is None or o['kind'] == kind]
+
+    def refuse(self, order, text):
+        """The game refusing one order (in a batch: that item, the rest applied)."""
+        self.conn.execute('SET LOCAL ROLE ratw_game')
+        if 'n' in order:
+            items = self.conn.execute('SELECT payload FROM dm.actions WHERE id=%s', (order['id'],)).fetchone()[0]['items']
+            result = [{'ok': n != order['n'], 'text': text if n == order['n'] else 'ok'} for n in range(len(items))]
+            self.conn.execute("UPDATE dm.actions SET status='applied',result=%s,done_at=now() WHERE id=%s", (json.dumps(result), order['id']))
+        else:
+            self.conn.execute("UPDATE dm.actions SET status='refused',result=%s,done_at=now() WHERE id=%s", (text, order['id']))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
 
     def rows(self):
         return dict(self.conn.execute('SELECT player,state FROM dm.story_player_state WHERE run=%s', (self.run_id,)).fetchall())
@@ -348,9 +367,7 @@ class QuestRuns(unittest.TestCase):
         deeds = self.orders('deed.award')
         self.assertEqual(deeds[0]['target'], 'player-ash')
         # The purse was short: the game refused; the story notes it and carries on.
-        self.conn.execute('SET LOCAL ROLE ratw_game')
-        self.conn.execute("UPDATE dm.actions SET status='refused',result='The purse is short (3p).',done_at=now() WHERE id=%s", (grants[0]['id'],))
-        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.refuse(grants[0], 'The purse is short (3p).')
         self.settle(3)
         one = self.one()
         self.assertEqual(one['status'], 'running')
@@ -374,6 +391,7 @@ class QuestRuns(unittest.TestCase):
         self.settle(2)
         status, result = self.steer('objective', {'quest': 'axle', 'objective': 'bring', 'player': 'player-birch', 'do': 'progress', 'amount': 1})
         self.assertEqual(status, 'done', result)
+        self.settle(1)   # (Doc 85, Phase 7: the journal's orders are waited for as every order is, before the next flow command.)
         status, result = self.steer('objective', {'quest': 'axle', 'objective': 'thief', 'player': 'player-birch', 'do': 'reveal'})
         self.assertEqual(status, 'done', result)
         self.settle(2)

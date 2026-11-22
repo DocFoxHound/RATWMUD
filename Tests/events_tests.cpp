@@ -2628,6 +2628,47 @@ const std::vector<EventCrash>& eventCrashes()
              expect(act && act->boolean("ok") && act->string("text") == "Granted 40p: for the bridge.",
                     "dm_grant: its dm.actions id in the record, after the crash");
          }},
+        // Doc 85, Phase 7: a story's batch (story.effects) cut short by a crash after its first order: taken again, the first is
+        // answered from the batch's receipt (never paid twice) and only the second applied; taken a third time, nothing more.
+        {"dm_story_batch",
+         [](game::Game& g) {
+             Client bea;
+             enterAt(g, bea, 85, "bea", "east");
+             const auto id = bea.entityId;
+             g.disconnect(&bea);
+             dmCheckpoint(g);
+             const auto before = g.world().society().account(id)->cash;
+             const std::string first = R"({"kind":"character.grant","target":")" + id + R"(","payload":{"coins":40,"reason":"for the bridge"}})";
+             std::uint64_t seq = 0;
+             const auto r = g.applyStoryEffects({"8080", "story.effects", "world-batch", "dm", R"({"visit":1,"items":[)" + first + "]}"}, seq);
+             expect(r.ok && r.message.rfind("[{\"ok\":true", 0) == 0 && seq > 0, "dm_story_batch: the first order applied: " + r.message);
+             expect(g.world().society().account(id)->cash == before + 40, "dm_story_batch: paid 40p");
+             dmTold(g);
+             auto was = json::Value::object();
+             was.add("player", id);
+             was.add("cash", double(g.world().society().account(id)->cash));   // (Its passes may pay it a stipend too.)
+             was.add("first", first);
+             return was;
+         },
+         [](game::Game& g, const json::Value& was) {
+             const auto id = was.string("player");
+             // (Checked twice over one restart: the second time, the batch was taken again already.)
+             const double cash = double(g.world().society().account(id)->cash);
+             expect(cash == was.number("cash") || cash == was.number("cash") + 5, "dm_story_batch: paid once after the crash: " +
+                    std::to_string(cash) + " for " + std::to_string(was.number("cash")));
+             const std::string second = R"({"kind":"character.grant","target":")" + id + R"(","payload":{"coins":5,"reason":"for the ford"}})";
+             const std::string row = R"({"visit":1,"items":[)" + was.string("first") + "," + second + "]}";
+             std::uint64_t seq = 0;
+             auto r = g.applyStoryEffects({"8080", "story.effects", "world-batch", "dm", row}, seq);
+             json::Value results;
+             std::string problem;
+             expect(json::parse(r.message, results, problem) && results.size() == 2 && results.items()[0].boolean("ok") &&
+                        results.items()[1].boolean("ok"), "dm_story_batch: both answered: " + r.message);
+             expect(double(g.world().society().account(id)->cash) == was.number("cash") + 5,
+                    "dm_story_batch: the first answered from the receipt, only the second paid");
+             r = g.applyStoryEffects({"8080", "story.effects", "world-batch", "dm", row}, seq);
+             expect(double(g.world().society().account(id)->cash) == was.number("cash") + 5, "dm_story_batch: taken again, nothing paid twice");
+         }},
         {"dm_slider",
          [](game::Game& g) {
              dmCheckpoint(g);

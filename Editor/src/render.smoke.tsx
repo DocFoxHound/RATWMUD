@@ -183,6 +183,16 @@ const campaignPaused: CampaignsInitial = {...campaignList, tab: 'orders', detail
     {...refused, id: 5513, kind: 'story.phase', target: pausedRow.run, status: 'applied', result: ''}]}),
     timeline: {run: pausedRow.run, names, events: {}, before: null, since: {}, now: at, items: []}};
 
+// (Doc 85, Phase 7: a batch stuck at its second order, one sent for the wolf to come back, and an effect waiting for its wolf.)
+const batch: Order = {...refused, id: 5520, kind: 'story.effects', target: pausedRow.run, status: 'applied', result: '1 of 3 applied, 1 refused',
+    items: [{n: 0, kind: 'npc.speak', target: 'rm111', ifRefused: 'pause', status: 'applied', result: 'ok'},
+        {n: 1, kind: 'deed.award', target: 'player-ash', ifRefused: 'pause', status: 'refused', result: 'that wolf is not in the world just now'},
+        {n: 2, kind: 'item.give', target: 'player-birch', ifRefused: 'when here', status: 'held', result: 'Not applied: an order before it was refused.'}]};
+const campaignBatch: CampaignsInitial = {...campaignPaused, detail: {...campaignPaused.detail!, orders: [batch, ...campaignPaused.detail!.orders],
+    whenHere: [{wolf: 'player-birch', kind: 'character.grant', until: 1795400000, refused: 'The purse is short (3p).', receipt: 5511}]},
+    overview: {...campaignPaused.overview, runs: campaignPaused.overview.runs.map(r => r.run === pausedRow.run
+        ? {...r, waiting: [{on: 'admin', problem: 'Story action 5520 (deed.award for player-ash) refused', order: batch}]} : r)}};
+
 // (Doc 85, Phase 6: the console's quests, each wolf's copy, a party's, the living audience and the wolves' parties.)
 const ropeQuest: QuestBoard = {id: 'rope', title: 'Rope for the carter', scope: 'player', repeat: 'weekly', giver: 'rm111', open: true,
     objectives: [{id: 'ask', label: 'Ask the carter what he needs.'}, {id: 'bring', label: 'Bring him two coils of rope.', goal: 2, measure: 'quantity', after: ['ask']},
@@ -246,6 +256,7 @@ export function renderAll(): Record<string, string> {
     out['Campaigns'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignList} />);
     out['Campaigns (running)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignRunning} />);
     out['Campaigns (paused)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignPaused} />);
+    out['Campaigns (a batch stuck)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignBatch} />);
     out['Campaigns (triggers)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, tab: 'triggers'}} />);
     out['Campaigns (audit)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, tab: 'audit'}} />);
     out['Campaigns (held)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning,

@@ -249,10 +249,48 @@ bool DbStore::write(const Checkpoint& save, const std::vector<WorldEvent>& event
         result = pg_.exec("SELECT game.record_events($1, $2::jsonb)", {worldId_, eventsJson(events)});
         if (!result.ok)
             return failed(result);
+        result = pg_.exec("SELECT pg_notify('ratw_events', $1)", {worldId_});   // (The story runner wakes: doc 85, Phase 7.)
+        if (!result.ok)
+            return failed(result);
     }
     result = pg_.exec("COMMIT");
     pgError_ = result.error;
     return result.ok;
+}
+
+bool DbStore::writeEvents(const std::vector<WorldEvent>& events)
+{
+    // (Doc 85, Phase 7.) Only events, in one transaction, in the order they happened; the next checkpoint follows them.
+    const auto failed = [this](const PgResult& r) {
+        pgError_ = r.error;
+        pg_.exec("ROLLBACK");
+        return false;
+    };
+    auto result = pg_.exec("BEGIN");
+    if (!result.ok)
+        return failed(result);
+    result = pg_.exec("SELECT game.record_events($1, $2::jsonb)", {worldId_, eventsJson(events)});
+    if (!result.ok)
+        return failed(result);
+    result = pg_.exec("SELECT pg_notify('ratw_events', $1)", {worldId_});
+    if (!result.ok)
+        return failed(result);
+    result = pg_.exec("COMMIT");
+    pgError_ = result.error;
+    return result.ok;
+}
+
+void DbStore::flushEventsInBackground()
+{
+    {
+        std::lock_guard<std::mutex> guard(queueLock_);
+        if (!opened() || !eventsSupported_ || backgroundFailed_ || pendingEvents_.empty() || pending_)
+            return;
+        eventsOnly_ = true;
+        if (!writerThread_.joinable())
+            writerThread_ = std::thread([this] { writer(); });
+    }
+    wake_.notify_all();
 }
 
 void DbStore::writer()
@@ -260,7 +298,30 @@ void DbStore::writer()
     std::unique_lock<std::mutex> queue(queueLock_);
     for (;;)
     {
-        wake_.wait(queue, [this] { return stopping_ || pending_.has_value(); });
+        wake_.wait(queue, [this] { return stopping_ || pending_.has_value() || eventsOnly_; });
+        if (!pending_ && eventsOnly_ && !stopping_)
+        {
+            // Events alone (flushEventsInBackground): a failure keeps them, in order, for the next checkpoint.
+            eventsOnly_ = false;
+            std::vector<WorldEvent> events;
+            events.swap(pendingEvents_);
+            if (events.empty())
+                continue;
+            writing_ = true;
+            queue.unlock();
+            bool ok;
+            {
+                std::lock_guard<std::mutex> connection(pgLock_);
+                ok = writeEvents(events);
+            }
+            queue.lock();
+            writing_ = false;
+            if (!ok)
+                pendingEvents_.insert(pendingEvents_.begin(), std::make_move_iterator(events.begin()), std::make_move_iterator(events.end()));
+            idle_.notify_all();
+            continue;
+        }
+        eventsOnly_ = false;
         if (!pending_)
             return;
         Checkpoint next = std::move(*pending_);

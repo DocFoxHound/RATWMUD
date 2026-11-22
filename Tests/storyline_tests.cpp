@@ -462,6 +462,30 @@ void storyAreaEffects()
         expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":2,"to":"participants","text":"Late."})"}).ok, "another visit is refused");
         expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":1,"to":"participants","text":"two\nlines"})"}).ok,
                "one line only");
+        // A story's batch (doc 85, Phase 7: story.effects): each order applied as it would be alone and answered on its own; one
+        // refused that says "skip" lets the rest go on, one that pauses (the default) holds those after it, not applied.
+        {
+            const std::string told = R"({"kind":"story.tell","target":"world-area-test","payload":{"visit":1,"title":"Breach","text":"Hold.","to":"participants"}})";
+            const std::string late = R"({"kind":"story.tell","target":"world-area-test","payload":{"visit":2,"to":"participants","text":"Late."}})";
+            const auto batch = [&](const std::string& items) {
+                std::uint64_t seq = 0;
+                const auto r = t.g.applyStoryEffects({"20", "story.effects", run, "dm", R"({"visit":1,"items":[)" + items + "]}"}, seq);
+                json::Value v;
+                std::string problem;
+                json::parse(r.message, v, problem);
+                return std::make_pair(r, v);
+            };
+            auto [r1, v1] = batch(told + "," + late.substr(0, late.size() - 1) + R"(,"ifRefused":"skip"},)" + told);
+            expect(v1.isArray() && v1.size() == 3 && v1.items()[0].boolean("ok") && !v1.items()[1].boolean("ok") && v1.items()[2].boolean("ok"),
+                   "a skipped refusal lets the rest go on: " + r1.message);
+            auto [r2, v2] = batch(told + "," + late + "," + told);
+            expect(v2.size() == 3 && v2.items()[0].boolean("ok") && !v2.items()[1].boolean("ok") && !v2.items()[1].boolean("held") &&
+                       v2.items()[2].boolean("held") && !v2.items()[2].boolean("ok"),
+                   "a refusal that pauses holds the rest: " + r2.message);
+            expect(!batch(R"({"kind":"story.effects","target":"x","payload":{}})").second.items()[0].boolean("ok"), "no batch inside a batch");
+            std::uint64_t seq = 0;
+            expect(!t.g.applyStoryEffects({"21", "story.effects", run, "dm", R"({"visit":1,"items":[]})"}, seq).ok, "an empty batch is refused");
+        }
         // A revision (doc 85, Phase 5b): the run moved onto a new version keeps its visit; the game takes the new words and
         // regions for it, checked whole first.
         auto revised = phase;

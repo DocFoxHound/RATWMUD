@@ -239,6 +239,8 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
     state.pop('skipped', None)
     state.pop('quietEntry', None)
     state.pop('entrySent', None)
+    state.pop('endSent', None)
+    state['entryDone'] = 0   # (Doc 85, Phase 7: the opening effects are sent in batches and counted here.)
     if quiet:
         state['quietEntry'] = True
     state['visitCursor'] = cursor   # (Doc 85 Phase 3: "why not?" tells this visit's events from the last one's by it.)
@@ -430,52 +432,269 @@ def write_relation(conn, w, faction_id, other_id, disposition, stance, reason, u
     )
 
 
-def submit_effect(conn, world, run, who, state, effect, phase):
-    effect = {k: v for k, v in effect.items() if k != 'reward'}   # (A quest's reward: Phase 6. The mark is the runner's.)
+# ----- sending effects to the game (doc 85, 3.5 and Phase 7: batched, a result for each, and what to do when refused)
+# A tick's orders for the game go together: one `story.effects` order holding them all (a list, a result for each), or the
+# order itself when there is only one. The game applies them in order, as it would each one alone, and stops at one it
+# refuses whose `ifRefused` is "pause": the rest wait with the run until it is retried or the refused one skipped. One it
+# refuses with "skip" is noted in the history and the story carries on; with "when here" it is held for its wolf
+# (`state.whenHere`) and sent again the next time that wolf comes into the world, for up to its `waitDays`. The batch's
+# receipt is `state.batchReceipt` (one of RECEIPT_KEYS, as every order a run waits for), the items in `state.batch`.
+
+BATCH_MAX = 64              # (Core's Game::StoryEffectsMax.)
+EFFECTS_A_BATCH = BATCH_MAX - 3   # (Effects in one batch: room after them for the journal's three orders.)
+EVENT_PAGE = 1000           # (Events read at a time; a run reads page after page until it has caught up.)
+READ_BUDGET = 1.0           # (Seconds a run may read for in one tick before the others, and the commands, have a turn.)
+WHEN_HERE_DAYS = 7          # (A held effect waits this many real days for its wolf unless it says: story_program.WAIT_DAYS.)
+WHEN_HERE_KEEP = 500        # (Held effects a run keeps at most; the oldest go first, noted.)
+PRIVATE_EFFECT_KEYS = ('reward', 'ifRefused', 'waitDays', '_until', '_tries')
+
+
+def refusal(effect):
+    """What the runner does when the game refuses this effect: its `ifRefused`, else "when here" for a quest's reward and
+    "pause" for anything else (doc 85, 3.5)."""
+    how = effect.get('ifRefused')
+    if how in rules.REFUSALS:
+        return how
+    return 'when here' if effect.get('reward') and isinstance(effect.get('player'), str) and effect['player'] not in ('', 'world') else 'pause'
+
+
+def order_of(conn, world, run, who, state, effect, phase):
+    """The game order an effect becomes, (kind, target, payload); None when it cannot be (the run is paused, and says why)."""
+    effect = {k: v for k, v in effect.items() if k not in PRIVATE_EFFECT_KEYS}   # (The runner's marks: Phases 6 and 7.)
     kind = effect['kind']
     if kind == 'scene.play':
         player = state['actor'] if effect['player'] == '$actor' else effect['player']
-        return queue(
-            conn,
-            who,
-            'story.scene',
-            run,
-            {
-                'scene': phase['_scenes'][effect['scene']],
-                'cue': effect['cue'],
-                'player': player,
-                'visit': state['visits'],
-            },
-        )
+        return 'story.scene', run, {'scene': phase['_scenes'][effect['scene']], 'cue': effect['cue'], 'player': player,
+                                    'visit': state['visits']}
     if kind in rules.SCENE_EFFECTS:
         payload = {k: v for k, v in effect.items() if k not in ('kind', 'npc')}
-        return queue(conn, who, kind, effect['npc'], {**payload, 'run': run, 'visit': state['visits']})
+        return kind, effect['npc'], {**payload, 'run': run, 'visit': state['visits']}
     if kind.startswith('story.area.'):
         bounds = phase['_regions'][effect['region']]
         payload = {k: v for k, v in bounds.items() if k != 'id'}
         payload.update({k: v for k, v in effect.items() if k != 'kind'})
-        return queue(conn, who, kind.replace('story.area.', 'story.area_'), run, {**payload, 'visit': state['visits']})
-    if effect['kind'] == 'faction.relation':
+        return kind.replace('story.area.', 'story.area_'), run, {**payload, 'visit': state['visits']}
+    if kind == 'faction.relation':
         faction, other = effect['faction'], effect['other']
         found = conn.execute(
             'SELECT id FROM live.factions WHERE world_id=%s AND id IN (%s,%s) FOR KEY SHARE', (world, faction, other)
         ).fetchall()
         if len(found) != 2:
-            conn.execute(
-                "UPDATE dm.story_releases SET status='paused',problem='A faction no longer exists.' WHERE id=%s",
-                (run,),
-            )
+            conn.execute("UPDATE dm.story_releases SET status='paused',problem='A faction no longer exists.' WHERE id=%s", (run,))
             return None
         write_relation(conn, world, faction, other, effect['disposition'], effect['stance'], effect['reason'], who)
-        receipt = queue(conn, who, 'factions.sync', faction, {'story': run, 'other': other})
-    elif effect['kind'] == 'story.finish':
-        receipt = queue(conn, who, 'story.finish', run, {})
+        return 'factions.sync', faction, {'story': run, 'other': other}
+    if kind == 'story.finish':
+        return 'story.finish', run, {}
+    return action(effect, state['actor'])
+
+
+def submit_effect(conn, world, run, who, state, effect, phase):
+    """One effect as an order of its own (a visit's story.finish; the older one-at-a-time path)."""
+    order = order_of(conn, world, run, who, state, effect, phase)
+    return None if order is None else queue(conn, who, *order)
+
+
+def _note(conn, run, state, title, text, effects=()):
+    """A line in the run's history (the timeline shows it) for something the runner did with an order."""
+    conn.execute('INSERT INTO dm.story_trigger_history(run,visit,entry) VALUES (%s,%s,%s::jsonb)',
+                 (run, state['visits'], json.dumps({'trigger': title, 'scope': 'order', 'phase': state['phase'],
+                                                    'notes': [text[:300]], 'actions': [], 'effects': list(effects)})))
+
+
+def _keep_receipt(conn, run, state, receipt):
+    conn.execute('UPDATE dm.story_releases SET receipts=array_append(receipts,%s::bigint) WHERE id=%s', (receipt, run))
+    conn.execute('UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
+                 (receipt, run, state['visits']))
+
+
+def send_batch(conn, world, run, who, state, phase, effects, orders=()):
+    """Sends effects (and the journal's own orders after them: `orders`, as (kind, target, payload)) to the game as one
+    order: `story.effects` for two or more, the order itself for one. Returns the receipt, None when nothing went (an
+    effect could not be made: the run is paused) or there was nothing to send."""
+    items = []
+    for e in effects:
+        order = order_of(conn, world, run, who, state, e, phase)
+        if order is None:
+            return None
+        items.append({'effect': e, 'order': order, 'ifRefused': refusal(e)})
+    items.extend({'effect': None, 'order': tuple(o), 'ifRefused': 'pause'} for o in orders)
+    if not items:
+        return None
+    if len(items) == 1:
+        receipt = queue(conn, who, *items[0]['order'])
     else:
-        receipt = queue(conn, who, *action(effect, state['actor']))
+        receipt = queue(conn, who, 'story.effects', run, {'visit': state['visits'], 'items': [
+            {'kind': i['order'][0], 'target': i['order'][1], 'payload': i['order'][2], 'ifRefused': i['ifRefused']} for i in items]})
+    state['batch'] = {'receipt': receipt, 'plain': len(items) == 1,
+                      'items': [{'effect': i['effect'], 'kind': i['order'][0], 'target': i['order'][1], 'payload': i['order'][2],
+                                 'ifRefused': i['ifRefused']} for i in items]}
+    state['batchReceipt'] = receipt
+    _keep_receipt(conn, run, state, receipt)
     return receipt
 
 
+def _results(batch, status, result):
+    """Each item's outcome, {ok, text, held?}, as the game answered the batch's order."""
+    if batch.get('plain'):
+        return [{'ok': status == 'applied', 'text': result or ''}]
+    try:
+        parsed = json.loads(result) if isinstance(result, str) and result.startswith('[') else None
+    except ValueError:
+        parsed = None
+    if not isinstance(parsed, list):
+        return [{'ok': True, 'text': result or ''} for _ in batch['items']]   # (Answered as one: every item applied.)
+    return [r if isinstance(r, dict) else {'ok': bool(r)} for r in parsed] + [
+        {'ok': False, 'held': True, 'text': 'No answer for this order.'} for _ in batch['items'][len(parsed):]]
+
+
+def _wolf_of(item):
+    e = item.get('effect') or {}
+    wolf = e.get('player')
+    return wolf if isinstance(wolf, str) and wolf not in ('', 'world', '$actor', '$each') else None
+
+
+def _refused(conn, run, state, item, receipt, text, how):
+    """An item the game refused that is not to pause the story: noted, and held for its wolf when it says "when here"."""
+    e = item.get('effect') or {}
+    wolf = _wolf_of(item)
+    if e.get('reward'):
+        refused = state.setdefault('rewardsRefused', [])
+        refused.append({'receipt': receipt, 'status': 'refused', 'result': str(text)[:200], 'kind': item['kind'], 'player': wolf})
+        del refused[:-50]
+    if how == 'when here' and wolf:
+        until = e.get('_until') or time.time() + 86400 * e.get('waitDays', WHEN_HERE_DAYS)
+        held = state.setdefault('whenHere', [])
+        held.append({'wolf': wolf, 'effect': {**e, '_until': until, '_tries': e.get('_tries', 0) + 1}, 'until': until,
+                     'refused': str(text)[:200], 'receipt': receipt, 'at': time.time()})
+        if len(held) > WHEN_HERE_KEEP:
+            gone = held.pop(0)
+            _note(conn, run, state, 'order held', f'Gave up holding {gone["effect"]["kind"]} for {gone["wolf"]}: too many held.')
+        _note(conn, run, state, 'quest reward' if e.get('reward') else 'order held',
+              ('A reward was not given yet' if e.get('reward') else f'{item["kind"]} was refused') +
+              f' ({item["kind"]} for {wolf}, order #{receipt}: {text}); held until they are next in the world.', [item['kind']])
+    else:
+        _note(conn, run, state, 'quest reward' if e.get('reward') else 'order skipped',
+              (f'A reward was not given' if e.get('reward') else f'{item["kind"]} was skipped') + f' (order #{receipt} refused: {text}).',
+              [item['kind']])
+
+
+def settle_batch(conn, run, state):
+    """The batch a run sent, as the game has answered it: "wait" (not yet), "paused" (an order that matters was refused,
+    or the batch as a whole was refused or expired: `state.batch.stuck` says from which item it waits), or "done"."""
+    b = state.get('batch')
+    if not b:
+        state.pop('batchReceipt', None)
+        return 'done'
+    receipt = b['receipt']
+    status, result = _order_status(conn, receipt)
+    if status == 'queued':
+        return 'wait'
+    if status is None or (status != 'applied' and not (b.get('plain') and status == 'refused')):
+        b['stuck'] = b.get('stuck', 0)
+        b['whole'] = True   # (The order itself was not taken: retried, it may turn out applied after all.)
+        conn.execute("UPDATE dm.story_releases SET status='paused',problem=%s WHERE id=%s",
+                     (f'Story action {receipt} {status}: {result}'[:500], run))
+        return 'paused'
+    for n, (item, r) in enumerate(zip(b['items'], _results(b, status, result))):
+        if n < b.get('settled', 0) or r.get('ok'):
+            continue
+        how = item['ifRefused']
+        if how == 'pause' or r.get('held'):
+            b['stuck'] = n
+            b['settled'] = n
+            what = item['kind'] + (f' for {item["target"]}' if item.get('target') and item['target'] != run else '')
+            conn.execute("UPDATE dm.story_releases SET status='paused',problem=%s WHERE id=%s",
+                         (f'Story action {receipt} ({what}) refused: {r.get("text", "")}'[:500], run))
+            return 'paused'
+        _refused(conn, run, state, item, receipt, r.get('text', ''), how)
+        if b.get('plain'):
+            state.setdefault('skipped', []).append(receipt)   # (Its row says refused; the visit treats it as answered.)
+    del state['batch']
+    state.pop('batchReceipt', None)
+    return 'done'
+
+
+def resend_batch(conn, world, run, who, state, phase, do):
+    """A paused run's stuck batch, moved on by an admin: "retry" sends the stuck item and those after it again, "skip"
+    the ones after it, "when-here" holds the stuck one for its wolf and sends the rest. Returns (text, the new receipt or
+    None)."""
+    b = state['batch']
+    if b.get('whole') and _order_status(conn, b['receipt'])[0] == 'applied':
+        # (The game answered it after the pause, from its journal after a restart: nothing is sent twice; the next tick
+        # reads each item's outcome.)
+        b.pop('whole')
+        b.pop('stuck', None)
+        return 'it was answered after all: nothing is sent again', None
+    b.pop('whole', None)
+    start = b.get('stuck', 0)
+    items = b['items'][start:]
+    stuck = items[0] if items else None
+    if do == 'when-here':
+        rules.require(stuck and _wolf_of(stuck), 'Only an order to one wolf can wait for them.')
+        _refused(conn, run, state, {**stuck, 'effect': {**stuck['effect']}}, b['receipt'], 'held by an admin', 'when here')
+        items = items[1:]
+    elif do == 'skip':
+        if stuck:
+            _note(conn, run, state, 'order skipped', f'{stuck["kind"]} skipped by an admin (order #{b["receipt"]}).', [stuck['kind']])
+        items = items[1:]
+    del state['batch']
+    state.pop('batchReceipt', None)
+    state.setdefault('skipped', []).append(b['receipt'])   # (Settled: the visit no longer waits on its row.)
+    if not items:
+        return 'nothing more to send', None
+    # (The orders as they were made, sent again: an effect is not made again from a state that has moved on.)
+    if len(items) == 1:
+        receipt = queue(conn, who, items[0]['kind'], items[0]['target'], items[0]['payload'])
+    else:
+        receipt = queue(conn, who, 'story.effects', run, {'visit': state['visits'], 'items': [
+            {k: i[k] for k in ('kind', 'target', 'payload', 'ifRefused')} for i in items]})
+    state['batch'] = {'receipt': receipt, 'plain': len(items) == 1, 'items': items}
+    state['batchReceipt'] = receipt
+    _keep_receipt(conn, run, state, receipt)
+    return f'{len(items)} order{"s" if len(items) != 1 else ""} sent again as #{receipt}', receipt
+
+
+def held_back(conn, run, state, wolf=None):
+    """Effects held for their wolf (`state.whenHere`): those of `wolf` (who has just come into the world) taken back
+    into the run's waiting effects; any whose wait is over dropped, noted."""
+    held = state.get('whenHere')
+    if not held:
+        return False
+    now, keep, moved = time.time(), [], False
+    for h in held:
+        if h['until'] < now:
+            _note(conn, run, state, 'order held', f'Stopped waiting for {h["wolf"]} to give them {h["effect"]["kind"]} (refused: {h["refused"]}).')
+            moved = True
+        elif wolf and h['wolf'] == wolf:
+            state.setdefault('triggerEffects', []).append(h['effect'])
+            moved = True
+        else:
+            keep.append(h)
+    if keep:
+        state['whenHere'] = keep
+    else:
+        state.pop('whenHere', None)
+    return moved
+
+
+def entry_done(state, receipts):
+    """How many of the visit's opening effects (a trigger's carried over, then the phase's) have been sent. Kept in
+    `state.entryDone` since Phase 7; a visit opened by an older runner counts its receipts (one order each)."""
+    if 'entryDone' in state:
+        return state['entryDone']
+    return max(0, len(receipts) - 1) if receipts else 0
+
+
+def _end_sent(state, receipts, effects):
+    if 'entryDone' in state:
+        return bool(state.get('endSent'))
+    return bool(receipts) and len(receipts) - 1 > len(effects)
+
+
 def delivered(conn, world, run, phase, state, who, receipts):
+    """The visit's opening, sent and answered: its phase order, then its opening effects in batches, then an ending's
+    story.finish (once its scenes are over). True once all of it was applied (or skipped)."""
     status, result = conn.execute('SELECT status,result FROM dm.actions WHERE id=%s', (receipts[-1],)).fetchone()
     if status != 'applied' and receipts[-1] not in state.get('skipped', ()):
         if status != 'queued':
@@ -485,32 +704,33 @@ def delivered(conn, world, run, phase, state, who, receipts):
             )
         return False
     effects = [*state.get('arrivalEffects', []), *entry_effects(phase, state)]
-    if effects and not rules.ongoing(phase):
-        effects.append({'kind': 'story.finish'})
-    if len(receipts) > len(effects):
+    end_sent = _end_sent(state, receipts, effects)
+    done = min(entry_done(state, receipts), len(effects))
+    state['entryDone'] = done
+    if end_sent:
+        state['endSent'] = True
+    if done < len(effects):
+        chunk = effects[done:done + BATCH_MAX]
+        if send_batch(conn, world, run, who, state, phase, chunk) is not None:
+            state['entryDone'] = done + len(chunk)
+        return False
+    if not effects or rules.ongoing(phase) or end_sent:
         return True
-    effect = effects[len(receipts) - 1]
-    if effect['kind'] == 'story.finish':
-        # Acceptance starts playback. Keep this visit open until every terminal presentation has ended.
-        pending = Counter(e['cue'] for e in effects if e['kind'] == 'scene.play')
-        if pending:
-            rows = conn.execute(
-                """SELECT detail,count(*) FROM game.events WHERE world_id=%s AND target=%s AND quantity=%s
-                       AND kind IN ('scene finished','scene failed') AND detail=ANY(%s) GROUP BY detail""",
-                (world, run, state['visits'], list(pending)),
-            )
-            if pending - Counter(dict(rows)):
-                return False
-    receipt = submit_effect(conn, world, run, who, state, effect, phase)
+    # Acceptance starts playback. Keep this visit open until every terminal presentation has ended.
+    pending = Counter(e['cue'] for e in effects if e['kind'] == 'scene.play')
+    if pending:
+        rows = conn.execute(
+            """SELECT detail,count(*) FROM game.events WHERE world_id=%s AND target=%s AND quantity=%s
+                   AND kind IN ('scene finished','scene failed') AND detail=ANY(%s) GROUP BY detail""",
+            (world, run, state['visits'], list(pending)),
+        )
+        if pending - Counter(dict(rows)):
+            return False
+    receipt = submit_effect(conn, world, run, who, state, {'kind': 'story.finish'}, phase)
     if receipt is None:
         return False
-    conn.execute(
-        'UPDATE dm.story_releases SET receipts=array_append(receipts,%s::bigint) WHERE id=%s', (receipt, run)
-    )
-    conn.execute(
-        'UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
-        (receipt, run, state['visits']),
-    )
+    state['endSent'] = True
+    _keep_receipt(conn, run, state, receipt)
     return False
 
 
@@ -682,21 +902,24 @@ def _mark(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()[:16]
 
 
-def sync_journal(conn, run, program, state, who):
+def sync_journal(conn, run, program, state, who, collect=None):
     """Tells the game what changed of who takes part (`story.cohort`) and of the quests: the givers' offers, the story's
-    choices in residents' windows, and each wolf's journal whose quests or trackers changed (`story.quests`). The orders'
-    receipts are waited for (`questReceipts`). False when nothing needed sending."""
+    choices in residents' windows, and each wolf's journal whose quests or trackers changed (`story.quests`). With
+    `collect` (a list), the orders are put there, as (kind, target, payload), to go in the tick's batch (doc 85, Phase 7:
+    waited for as every order is); without, they are sent at once and waited for in `questReceipts`. False when nothing
+    needed sending."""
     if not quests.relevant(program) and 'cohortSent' not in state:
         return False
     mark = _mark([quests.fingerprint(program, state), state['cohort']])
     if state.get('journalMark') == mark:
         return False
     receipts = []
+    send = queue if collect is None else (lambda _c, _w, kind, target, payload: collect.append((kind, target, payload)) or 0)
     sent = set(state.get('cohortSent', []))
     now = set(state['cohort'])
     add, remove = sorted(now - sent), sorted(sent - now)
     if add or remove:
-        receipts.append(queue(conn, who, 'story.cohort', run, {'visit': state['visits'], 'add': add, 'remove': remove}))
+        receipts.append(send(conn, who, 'story.cohort', run, {'visit': state['visits'], 'add': add, 'remove': remove}))
         state['cohortSent'] = list(state['cohort'])
     payload = {'visit': state['visits']}
     offers, choices = quests.offers(program, state), quests.choices(state)
@@ -723,8 +946,10 @@ def sync_journal(conn, run, program, state, who):
         payload['wolves'] = wolves
     state.pop('toasts', None)
     if len(payload) > 1:
-        receipts.append(queue(conn, who, 'story.quests', run, payload))
+        receipts.append(send(conn, who, 'story.quests', run, payload))
     state['journalMark'] = _mark([quests.fingerprint(program, state), state['cohort']])
+    if collect is not None:
+        return 'sent' if receipts else 'changed'
     if receipts:
         state['questReceipts'] = receipts
         conn.execute('UPDATE dm.story_transitions SET receipts=receipts||%s::bigint[] WHERE run=%s AND visit=%s',
@@ -751,12 +976,15 @@ def _quest_receipts(conn, run, state):
 
 
 def tick_run(conn, world, run, clock):
+    """One run's turn: returns what it is left waiting on, "game" (an order it sent), "more" (events still to read)
+    or None."""
     holder = {}
     try:
         _tick_run(conn, world, run, clock, holder)
     finally:
         if holder.get('loaded') is not None:
             world_save(conn, world, run, holder['program'], holder['state'], holder['loaded'])
+    return holder.get('left')
 
 
 def _finish(conn, run, who, state):
@@ -774,6 +1002,32 @@ def _finish(conn, run, who, state):
                  (receipt, run, state['visits']))
 
 
+def _send_waiting(conn, world, run, who, program, phase, state, missions_before):
+    """What the run has to tell the game, sent in one batch (doc 85, Phase 7): its trigger effects (EFFECTS_A_BATCH at
+    most), then, once those have all gone, the journal's orders (who takes part, the quests) and the missions' progress.
+    True when a batch went (the run waits for it)."""
+    effects = state.get('triggerEffects', [])
+    chunk, rest = effects[:EFFECTS_A_BATCH], effects[EFFECTS_A_BATCH:]
+    orders = []
+    if not rest:
+        sync_journal(conn, run, program, state, who, collect=orders)
+    if not rest and missions_before is not None and missions_before != json.dumps(state.get('missions', {})):
+        snapshot = rules.mission_snapshot(phase, state)
+        orders.append(('story.missions', run, {'visit': state['visits'], 'missions': snapshot}))
+        conn.execute('UPDATE dm.story_transitions SET missions=%s::jsonb WHERE run=%s AND visit=%s',
+                     (json.dumps(snapshot), run, state['visits']))
+    if not chunk and not orders:
+        return False
+    if rest:
+        state['triggerEffects'] = rest
+    else:
+        state.pop('triggerEffects', None)
+    if send_batch(conn, world, run, who, state, phase, chunk, orders) is None:
+        state['triggerEffects'] = effects   # (Paused before anything went: kept as they were.)
+        return False
+    return True
+
+
 def _tick_run(conn, world, run, clock, holder):
     row = conn.execute(
         """SELECT program,state,cursor,approved_by,receipts FROM dm.story_releases
@@ -784,14 +1038,22 @@ def _tick_run(conn, world, run, clock, holder):
         return
     p, state, cursor, who, receipts = row
     if 'moveReceipt' in state:
+        holder['left'] = 'game'
         return   # (Moving onto a new version: nothing is read until the game has the new version's words; settle_move.)
     _players_in(conn, run, state)
     holder.update(program=p, state=state, loaded=world_load(conn, world, p, state))
     phase = rules.phase_of(p, state)
+
+    def save(**more):
+        sets = ''.join(f',{k}=%s' for k in more)
+        conn.execute(f'UPDATE dm.story_releases SET state=%s::jsonb{sets} WHERE id=%s', (_dump(conn, run, state), *more.values(), run))
+
     if not _quest_receipts(conn, run, state):
-        return
+        holder['left'] = 'game'
+        return   # (An older runner's journal orders.)
     receipt_key = next((key for key in ('missionReceipt', 'triggerReceipt', 'rewardReceipt') if key in state), None)
     if receipt_key:
+        # (One order waited for alone: a mission set by hand, the finish, or an older runner's one-at-a-time effect.)
         pending = state[receipt_key]
         delivery, message = conn.execute('SELECT status,result FROM dm.actions WHERE id=%s', (pending,)).fetchone()
         if delivery == 'queued' or (delivery != 'applied' and pending not in state.get('skipped', ()) and receipt_key != 'rewardReceipt'):
@@ -800,46 +1062,46 @@ def _tick_run(conn, world, run, clock, holder):
                     "UPDATE dm.story_releases SET status='paused',problem=%s WHERE id=%s",
                     (f'Story action {pending} {delivery}: {message}', run),
                 )
+            holder['left'] = 'game'
             return
         if receipt_key == 'rewardReceipt' and delivery != 'applied':
-            # (Doc 85, 3.5 and Phase 6: a reward to one wolf the game refused is noted and the story carries on: a purse
-            # short, a full pack, a wolf away. Phase 7 adds "when here".)
             refused = state.setdefault('rewardsRefused', [])
             refused.append({'receipt': pending, 'status': delivery, 'result': str(message)[:200]})
             del refused[:-50]
-            conn.execute('INSERT INTO dm.story_trigger_history(run,visit,entry) VALUES (%s,%s,%s::jsonb)',
-                         (run, state['visits'], json.dumps({'trigger': 'quest reward', 'scope': 'quest', 'phase': state['phase'],
-                                                             'notes': [f'A reward was not given (order #{pending} {delivery}: {message}).'[:300]],
-                                                             'actions': [], 'effects': []})))
+            _note(conn, run, state, 'quest reward', f'A reward was not given (order #{pending} {delivery}: {message}).')
         del state[receipt_key]
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
+        save()
+    if held_back(conn, run, state):                  # (Held effects whose wait is over: dropped, noted.)
+        save()
+    had = 'batch' in state
+    settled = settle_batch(conn, run, state)
+    if settled != 'done':
+        if settled == 'paused':
+            save()
+        holder['left'] = 'game' if settled == 'wait' else None
+        return
+    if had:
+        save()
     if not delivered(conn, world, run, phase, state, who, receipts):
+        save()
+        holder['left'] = 'game' if conn.execute("SELECT status FROM dm.story_releases WHERE id=%s", (run,)).fetchone()[0] == 'running' else None
         return
-    if state.get('triggerEffects'):
-        effect = state['triggerEffects'].pop(0)
-        receipt = submit_effect(conn, world, run, who, state, effect, phase)
-        if receipt is not None:
-            state['rewardReceipt' if effect.get('reward') else 'triggerReceipt'] = receipt
-            conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
-            conn.execute(
-                'UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
-                (receipt, run, state['visits']),
-            )
+    # (A batch's worth of effects still to send goes before anything more is read, and all of it before the story ends;
+    # fewer go with what this tick reads.)
+    if (len(state.get('triggerEffects', ())) >= EFFECTS_A_BATCH or state.get('outcome') or not rules.ongoing(phase)) and \
+            _send_waiting(conn, world, run, who, p, phase, state, None):
+        save()
+        holder['left'] = 'game'
         return
-    # (Doc 85, Phase 6: who takes part, the givers' offers and each wolf's quests, told to the game before more is read.)
-    told = sync_journal(conn, run, p, state, who)
-    if told:
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
-        if told == 'sent':
-            return
     if state.get('outcome'):
         _finish(conn, run, who, state)
+        holder['left'] = 'game'
         return
     if not rules.ongoing(phase):
-        conn.execute("UPDATE dm.story_releases SET status='complete' WHERE id=%s", (run,))
+        conn.execute("UPDATE dm.story_releases SET status='complete',state=%s::jsonb WHERE id=%s", (_dump(conn, run, state), run))
         return
     if _wants_parties(p) and _parties_from_save(conn, world, state):
-        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (_dump(conn, run, state), run))
+        save()
     # The clock read precedes the log read: an older query can never advance past a newly committed backlog.
     has_clock = bool(state.get('timers')) or bool(state.get('waiting')) or any(
         e['on'] == 'clock' for e in [*phase['exits'], *phase.get('triggers', [])]
@@ -848,11 +1110,6 @@ def _tick_run(conn, world, run, clock, holder):
     prior_clock = json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]) if has_clock else None
     published_at = state.get('publishedAt', 0)
     wall_elapsed = max(0, (time.time() - published_at) / 86400) if published_at else 0
-    rows = conn.execute(
-        """SELECT id,kind,game_day,actor,target,cell,item,quantity,coins,detail,x,y,extract(epoch from recorded_at)::float8 FROM game.events
-                           WHERE world_id=%s AND id>%s ORDER BY id LIMIT 128""",
-        (world, cursor),
-    ).fetchall()
     before = json.dumps(state.get('missions', {})) if phase.get('missions') else None
 
     def dispatch(fact, day, elapsed):
@@ -869,60 +1126,96 @@ def _tick_run(conn, world, run, clock, holder):
             )
         return moved
 
-    for row in rows:
-        fact = dict(zip(EVENT_COLUMNS, row))
-        elapsed = max(0, (row[-1] - published_at) / 86400) if published_at else 0
-        if dispatch({'kind': 'clock'}, fact['day'], elapsed):
-            enter(conn, run, p, who, state, cursor, 'clock')
-            return
-        if state.get('triggerEffects') or state.get('outcome'):
+    # Doc 85, Phase 7: read page after page until caught up (or the run has a batch's worth to send, or its turn is up),
+    # instead of 128 events a tick; effects gather while it reads and go together after.
+    deadline = time.monotonic() + READ_BUDGET
+    read = 0
+    caught_up = False
+    stopped = False
+    latest = state.get('lastDay', 0)
+    while not stopped:
+        rows = conn.execute(
+            """SELECT id,kind,game_day,actor,target,cell,item,quantity,coins,detail,x,y,extract(epoch from recorded_at)::float8 FROM game.events
+                               WHERE world_id=%s AND id>%s ORDER BY id LIMIT %s""",
+            (world, cursor, EVENT_PAGE),
+        ).fetchall()
+        read += len(rows)
+        for row in rows:
+            fact = dict(zip(EVENT_COLUMNS, row))
+            elapsed = max(0, (row[-1] - published_at) / 86400) if published_at else 0
+            if dispatch({'kind': 'clock'}, fact['day'], elapsed):
+                enter(conn, run, p, who, state, cursor, 'clock')
+                holder['left'] = 'game'
+                return
+            if len(state.get('triggerEffects', ())) >= EFFECTS_A_BATCH or state.get('outcome'):
+                stopped = True
+                break
+            cursor = fact['id']
+            latest = max(latest, fact['day'] or 0)
+            if fact['kind'] == 'arrival' and state.get('whenHere'):
+                held_back(conn, run, state, fact['actor'])   # (Effects held for this wolf: sent again now they are here.)
+            if fact['kind'] in ('dm signal', 'clock', rules.triggers.SIGNAL) or (
+                fact['kind'] == 'story phase' and fact['actor'] == run
+            ):
+                continue
+            if fact['kind'] in rules.SCENE_EVENTS and (fact['target'] != run or fact['quantity'] != state['visits']):
+                continue
+            if fact['kind'] in rules.REGION_EVENTS and fact['detail'] != run:
+                continue
+            if fact['kind'] in quests.GAME_EVENTS and fact['target'] != run:
+                continue   # (Another story's quest or choice.)
+            if fact['kind'] == quests.LEAVES:
+                fact['mine'] = fact['target'] == run
+            if dispatch(fact, fact['day'], elapsed):
+                enter(conn, run, p, who, state, cursor, 'event ' + str(cursor))
+                holder['left'] = 'game'
+                return
+            if len(state.get('triggerEffects', ())) >= EFFECTS_A_BATCH or state.get('outcome'):
+                stopped = True
+                break
+        if len(rows) < EVENT_PAGE:
+            caught_up = not stopped
             break
-        cursor = fact['id']
-        if fact['kind'] in ('dm signal', 'clock', rules.triggers.SIGNAL) or (
-            fact['kind'] == 'story phase' and fact['actor'] == run
-        ):
-            continue
-        if fact['kind'] in rules.SCENE_EVENTS and (fact['target'] != run or fact['quantity'] != state['visits']):
-            continue
-        if fact['kind'] in rules.REGION_EVENTS and fact['detail'] != run:
-            continue
-        if fact['kind'] in quests.GAME_EVENTS and fact['target'] != run:
-            continue   # (Another story's quest or choice.)
-        if fact['kind'] == quests.LEAVES:
-            fact['mine'] = fact['target'] == run
-        if dispatch(fact, fact['day'], elapsed):
-            enter(conn, run, p, who, state, cursor, 'event ' + str(cursor))
-            return
-        if state.get('triggerEffects') or state.get('outcome'):
+        if time.monotonic() > deadline:
             break
+    if latest:
+        state['lastDay'] = latest
+    if day is not None:
+        day = max(day, latest)   # (Events reach the log between saves now: the clock is never behind the newest read.)
     if (
         not state.get('triggerEffects')
         and not state.get('outcome')
         and day is not None
-        and len(rows) < 128
+        and caught_up
         and dispatch({'kind': 'clock'}, day, wall_elapsed)
     ):
         enter(conn, run, p, who, state, cursor, 'clock')
-    elif rows or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')])):
-        if not state.get('triggerEffects') and not state.get('outcome'):
-            sync_journal(conn, run, p, state, who)   # (Doc 85, Phase 6: what this tick changed of quests, told at once.)
-        if before is not None and before != json.dumps(state.get('missions', {})):
-            snapshot = rules.mission_snapshot(phase, state)
-            receipt = queue(conn, who, 'story.missions', run, {'visit': state['visits'], 'missions': snapshot})
-            state['missionReceipt'] = receipt
-            conn.execute(
-                'UPDATE dm.story_transitions SET missions=%s::jsonb,receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
-                (json.dumps(snapshot), receipt, run, state['visits']),
-            )
-        conn.execute(
-            'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s WHERE id=%s', (_dump(conn, run, state), cursor, run)
-        )
+        holder['left'] = 'game'
+        return
+    if not caught_up:
+        holder['left'] = 'more'
+    changed = read or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]))
+    # (What it has to tell the game, together: this tick's effects and those left over, the journal after a command.)
+    sent = _send_waiting(conn, world, run, who, p, phase, state, before)
+    if sent:
+        holder['left'] = holder.get('left') or 'game'
+    if changed or sent:
+        save(cursor=cursor)
+
+
+_BEATS = {}   # (connection, world) -> when this process last wrote its heartbeat (doc 85, Phase 7: a tick may come ten times a second)
 
 
 def tick(conn, world):
+    """Every live run's turn. Returns what is left: {'game': a run waits for the game's answer (or a command for its
+    turn), 'more': a run has events still to read}; the loop looks again at once, soon, or when woken."""
     steering = conn.execute("SELECT to_regclass('dm.story_commands') IS NOT NULL").fetchone()[0]
-    if steering:
+    beat_key = (conn.info.backend_pid, world)
+    if steering and time.monotonic() - _BEATS.get(beat_key, -1e9) >= 1:
+        _BEATS[beat_key] = time.monotonic()
         heartbeat(conn, world)
+    elif steering:
+        _beat_alerts(conn, world)   # (Its own ten seconds.)
     runs = conn.execute(
         """SELECT id,cursor,state->>'visits' FROM dm.story_releases r WHERE world_id=%s AND (status IN ('running','stopping')
            OR (%s AND status IN ('paused','held') AND EXISTS (SELECT 1 FROM dm.story_commands c WHERE c.run=r.id AND c.status='queued'))
@@ -940,6 +1233,7 @@ def tick(conn, world):
 
     import psycopg
 
+    left = {'game': False, 'more': False}
     for run, cursor, visit in runs:
         try:
             with conn.transaction():
@@ -947,8 +1241,14 @@ def tick(conn, world):
                     settle_move(conn, run)
                     take_commands(conn, world, run, clock)
                     stopping(conn, run)
-                tick_run(conn, world, run, clock)
+                waits = tick_run(conn, world, run, clock)
+                if waits in left:
+                    left[waits] = True
+                if steering and conn.execute(
+                        "SELECT 1 FROM dm.story_commands WHERE run=%s AND status='queued' LIMIT 1", (run,)).fetchone():
+                    left['game'] = True   # (A command waiting for the game, or for its turn: looked at again soon.)
         except (psycopg.errors.DeadlockDetected, psycopg.errors.SerializationFailure):
+            left['more'] = True
             continue  # The poll can retry the transaction with an unchanged cursor.
         except (
             ValueError,
@@ -974,6 +1274,7 @@ def tick(conn, world):
                         visit,
                     ),
                 )
+    return left
 
 
 def direct(conn, world, op, data):
@@ -999,6 +1300,14 @@ def direct(conn, world, op, data):
     rules.require(row, 'Unknown run.')
     p, state, status, cursor, who, receipts = row
     pending_key = next((k for k in ('missionReceipt', 'triggerReceipt') if state and k in state), None)
+    if op == 'retry' and status == 'paused' and state and state.get('batch'):
+        # (Doc 85, Phase 7: a batch stuck at one of its orders: that one and those after it, sent again.)
+        rules.require(_order_status(conn, state['batchReceipt'])[0] != 'queued', 'Wait for the game to answer.')
+        _players_in(conn, run, state)
+        text, receipt = resend_batch(conn, world, run, data['operator'], state, rules.phase_of(p, state), 'retry')
+        conn.execute("UPDATE dm.story_releases SET status='running',problem='',state=%s::jsonb WHERE id=%s",
+                     (_dump(conn, run, state), run))
+        return {'run': run, 'status': 'running', 'receipt': receipt}
     if op == 'retry':
         rules.require(status == 'paused' and receipts, 'Choose a paused run with a refused action.')
         previous = conn.execute(
@@ -1048,12 +1357,10 @@ def direct(conn, world, op, data):
             any(e['on'] == 'dm signal' and e['match']['detail'] == signal for e in phase['exits']),
             'No such direction in this phase.',
         )
+    # (A guest line needs the phase in the game. A direction does not wait for anything here: since doc 85 Phase 7 it is a
+    # command in the runner's inbox, which lands it between two world events once the visit's orders are answered.)
     rules.require(
-        not pending_key
-        and not state.get('triggerEffects')
-        and len(receipts)
-        == 1 + len(state.get('arrivalEffects', [])) + sum(e['kind'] != 'npc.line' for e in phase['effects'])
-        and conn.execute('SELECT status FROM dm.actions WHERE id=%s', (receipts[-1],)).fetchone()[0] == 'applied',
+        op not in ('voice', 'voice-ticket') or (not pending_key and _settled(conn, p, state, receipts)),
         'Wait for the game to acknowledge the phase and its effects.',
     )
     if op in ('voice-ticket', 'signal-ticket'):
@@ -1075,15 +1382,21 @@ def direct(conn, world, op, data):
             (receipt, ticket_hash(data['ticket'])),
         )
         return {'run': run, 'receipt': receipt}
-    day = game_day(conn, world)
-    pending = conn.execute(
-        'SELECT 1 FROM game.events WHERE world_id=%s AND id>%s LIMIT 1', (world, cursor)
+    # Doc 85, Phase 7 (known problem 2): a direction is no longer refused while world events wait past the cursor, which on a
+    # busy world was nearly always. It goes into the command inbox (Phase 2) as a `signal` command for the direction only;
+    # the runner takes it at the cursor, between two world events, and the ticket is used once.
+    rules.require(_steering(conn), 'This world needs migration 0071 for directions.')
+    key = 'ticket-' + ticket_hash(data['ticket'])[:40]
+    row = conn.execute("SELECT digest FROM dm.story_releases WHERE id=%s", (run,)).fetchone()
+    inserted = conn.execute(
+        f"""INSERT INTO dm.story_commands(run,key,visit,digest,kind,payload,reason,requested_by)
+            VALUES (%s,%s,%s,%s,'signal',%s::jsonb,%s,%s) ON CONFLICT (run,key) DO NOTHING RETURNING id""",
+        (run, key, visit, row[0], json.dumps({'name': signal, 'direction': True}),
+         f'A direction redeemed from a ticket granted by {grantor}.'[:300], str(grantor)[:80]),
     ).fetchone()
-    rules.require(not pending, 'World events are waiting. Retry after the runner catches up.')
-    rules.require(rules.advance(p, state, {'kind': 'dm signal', 'detail': signal}, day), 'Direction did not match.')
-    enter(conn, run, p, who, state, cursor, 'DM signal: ' + signal)
     conn.execute('UPDATE dm.story_signals SET used=true WHERE ticket_hash=%s', (ticket_hash(data['ticket']),))
-    return {'run': run, 'phase': state['phase']}
+    conn.execute("SELECT pg_notify('ratw_story',%s)", (json.dumps({'run': run, 'command': inserted[0] if inserted else None}),))
+    return {'run': run, 'status': 'queued', 'command': inserted[0] if inserted else None, 'phase': state['phase']}
 
 
 # ----------------------------------------------------------------------------------------------- the Campaigns console
@@ -1098,7 +1411,7 @@ ALERTS = {'gameSeconds': 60, 'behindEvents': 2000, 'behindSeconds': 60, 'quietHo
 ALERT_BOUNDS = {'gameSeconds': (5, 86400), 'behindEvents': (10, 10**7), 'behindSeconds': (5, 86400), 'quietHours': (0, 8760),
                 'runnerSeconds': (5, 3600), 'overdueSeconds': (10, 86400), 'goneDays': (1, 365), 'fullPercent': (50, 100)}
 AUDIENCE_CAP = 500   # (A fixed or active audience; an open or everyone audience holds up to 5,000: story_quests.)
-RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt', 'moveReceipt', 'rewardReceipt')   # (moveReceipt: Phase 5b's move; rewardReceipt: Phase 6's.)
+RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt', 'moveReceipt', 'rewardReceipt', 'batchReceipt')   # (moveReceipt: Phase 5b's move; rewardReceipt: Phase 6's; batchReceipt: Phase 7's batch.)
 STEERED = ('running', 'paused', 'held')   # (The statuses a command may steer.)
 TIMELINE_PAGE = 60
 
@@ -1142,19 +1455,49 @@ def _effects_due(program, state):
     return phase, effects
 
 
+def _unsent(state, receipts, effects):
+    """Of a visit's opening (`_effects_due`), what has not gone to the game yet."""
+    opening = [e for e in effects if e['kind'] != 'story.finish']
+    done = min(entry_done(state, receipts), len(opening))
+    rest = opening[done:]
+    if len(opening) < len(effects) and not _end_sent(state, receipts, opening):
+        rest.append(effects[-1])
+    return rest
+
+
 def _orders(conn, ids):
     if not ids:
         return {}
     rows = conn.execute(
         """SELECT id,kind,target_id,status,result,requested_by,requested_at,done_at,
-                  extract(epoch from statement_timestamp()-requested_at)::float8 FROM dm.actions WHERE id=ANY(%s)""",
+                  extract(epoch from statement_timestamp()-requested_at)::float8,
+                  CASE WHEN kind='story.effects' THEN payload->'items' END FROM dm.actions WHERE id=ANY(%s)""",
         (list(ids),),
     )
-    return {
-        r[0]: {'id': r[0], 'kind': r[1], 'target': r[2], 'status': r[3], 'result': r[4], 'by': r[5],
-               'at': _iso(r[6]), 'doneAt': _iso(r[7]), 'age': round(r[8], 1)}
-        for r in rows
-    }
+    out = {}
+    for r in rows:
+        view = {'id': r[0], 'kind': r[1], 'target': r[2], 'status': r[3], 'result': r[4], 'by': r[5],
+                'at': _iso(r[6]), 'doneAt': _iso(r[7]), 'age': round(r[8], 1)}
+        if r[1] == 'story.effects':
+            view.update(_batch_view(r[9] or [], r[3], r[4]))
+        out[r[0]] = view
+    return out
+
+
+def _batch_view(items, status, result):
+    """A batch's orders (doc 85, Phase 7) as the console shows them: each item with its own outcome, and the batch's
+    result in words."""
+    answers = _results({'items': items}, status, result) if status == 'applied' else []
+    out = []
+    for n, item in enumerate(items):
+        a = answers[n] if n < len(answers) else None
+        out.append({'n': n, 'kind': item.get('kind'), 'target': item.get('target'), 'ifRefused': item.get('ifRefused', 'pause'),
+                    'status': status if a is None else 'applied' if a.get('ok') else 'held' if a.get('held') else 'refused',
+                    'result': '' if a is None else a.get('text', '')})
+    done = sum(i['status'] == 'applied' for i in out)
+    words = (f'{done} of {len(out)} applied' + (f', {sum(i["status"] == "refused" for i in out)} refused' if done < len(out) else '')
+             if answers else result)
+    return {'items': out, 'result': words}
 
 
 def _listening(phase):
@@ -1193,7 +1536,7 @@ def _waiting(program, state, status, problem, receipts, orders):
             out.append({'on': 'game', 'order': orders[i]})
             break
     phase, effects = _effects_due(program, state)
-    unsent = effects[max(0, len(receipts) - 1):] if receipts else effects
+    unsent = _unsent(state, receipts, effects) if receipts else effects
     unsent = [*unsent, *state.get('triggerEffects', [])]
     if unsent:
         out.append({'on': 'send', 'effects': unsent})
@@ -1521,9 +1864,14 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'trace': trace_rows,
         'beforeTrigger': trace[49][0] if len(trace) > 50 else None,
         'actions': [
-            dict(zip(('id', 'kind', 'status', 'result'), r))
-            for r in conn.execute('SELECT id,kind,status,result FROM dm.actions WHERE id=ANY(%s) ORDER BY id', (ids,))
+            {**dict(zip(('id', 'kind', 'status', 'result'), r[:4])),
+             **({'items': _batch_view(r[4] or [], r[2], r[3])['items']} if r[1] == 'story.effects' else {})}
+            for r in conn.execute("""SELECT id,kind,status,result,CASE WHEN kind='story.effects' THEN payload->'items' END
+                                     FROM dm.actions WHERE id=ANY(%s) ORDER BY id""", (ids,))
         ],
+        # (Doc 85, Phase 7: effects the game refused that wait for their wolf to come back, and until when.)
+        'whenHere': [{'wolf': h['wolf'], 'kind': h['effect']['kind'], 'until': h['until'], 'refused': h['refused'],
+                      'receipt': h['receipt']} for h in (state.get('whenHere', []) if state else [])],
         'orders': [{**o, 'visit': receipt_visits.get(i)} for i, o in sorted(orders.items(), reverse=True)],
         'missionsNow': rules.mission_snapshot(rules.phase_of(program, state), state) if state and mission_program else [],
         'directed': directed(program),
@@ -1951,12 +2299,13 @@ def _check_payload(program, kind, payload):
     rules.require(isinstance(payload, dict) and len(json.dumps(payload)) <= 4000, 'A small command, please.')
     known = {'force', 'catchUp', 'name', 'actor', 'trigger', 'check', 'phase', 'effects', 'key', 'scope', 'player',
              'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version',
-             'quest', 'objective', 'amount'}
+             'quest', 'objective', 'amount', 'direction'}
     rules.require(set(payload) <= known, 'Unknown field in the command: ' + ', '.join(sorted(set(payload) - known)))
     phases = rules.phases_of(program)
     if kind == 'signal':
-        rules.require(rules.identifier(payload.get('name')) and any(payload['name'] in _signals_heard(ph) for ph in phases),
-                      'Nothing in this story listens for that signal.')
+        # (A direction's name is the words of its `dm signal` exit, which may have spaces: doc 85, Phase 7.)
+        rules.require((rules.identifier(payload.get('name')) or (payload.get('direction') is True and rules.word(payload.get('name'), 200)))
+                      and any(payload['name'] in _signals_heard(ph) for ph in phases), 'Nothing in this story listens for that signal.')
     elif kind in ('fire', 'enable', 'disable'):
         rules.require(rules.identifier(payload.get('trigger')) and any(
             t['id'] == payload['trigger'] for ph in phases for t in ph.get('triggers', [])), 'This story has no such trigger.')
@@ -1985,8 +2334,8 @@ def _check_payload(program, kind, payload):
         rules.require(payload.get('do') in ('complete', 'reset'), 'Complete or reset a mission (today\'s missions: doc 85, 5.4).')
         rules.require(any(m['id'] == payload.get('mission') for ph in phases for m in ph.get('missions', [])), 'This story has no such mission.')
     elif kind == 'order':
-        rules.require(payload.get('do') in ('retry', 'skip') and rules.integer(payload.get('receipt'), 1, 2**63 - 1),
-                      'Retry or skip an order by its number.')
+        rules.require(payload.get('do') in ('retry', 'skip', 'when-here') and rules.integer(payload.get('receipt'), 1, 2**63 - 1),
+                      'Retry, skip, or hold for its wolf an order by its number.')
     elif kind == 'tell':
         text = payload.get('text')
         rules.require(rules.word(text, 300) and '\n' not in text and '\r' not in text, 'One line of up to 300 characters.')
@@ -2101,7 +2450,7 @@ def _settled(conn, program, state, receipts):
     if any(k in state for k in RECEIPT_KEYS) or state.get('triggerEffects'):
         return False
     _, effects = _effects_due(program, state)
-    if not receipts or len(receipts) <= len(effects):
+    if not receipts or _unsent(state, receipts, effects):
         return False
     return receipts[-1] in state.get('skipped', ()) or _order_status(conn, receipts[-1])[0] == 'applied'
 
@@ -2227,7 +2576,9 @@ class Steer:
         phase = self.phase()
         _require(name in _signals_heard(phase), f'Nothing in phase {phase["id"]} listens for "{name}" now.')
         before_phase = self.state['phase']
-        moved = self.dispatch({'kind': rules.triggers.SIGNAL, 'signal': name, 'actor': actor, 'id': None})
+        # (A direction redeemed from a ticket, doc 85 Phase 7: the `dm signal` exit only, as direct() dispatched it.)
+        moved = False if self.payload.get('direction') else self.dispatch(
+            {'kind': rules.triggers.SIGNAL, 'signal': name, 'actor': actor, 'id': None})
         if not moved and any(e['on'] == 'dm signal' and e['match']['detail'] == name for e in phase['exits']):
             moved = self.dispatch({'kind': 'dm signal', 'detail': name, 'actor': actor, 'id': None})
         self.moved = moved
@@ -2531,6 +2882,23 @@ class Steer:
         stuck = self.state[pending_key] if pending_key else (self.receipts[-1] if self.receipts else None)
         _require(receipt == stuck, f'Order #{receipt} is not the one this story is stuck on (#{stuck}).')
         status, result = _order_status(self.conn, receipt)
+        if pending_key == 'batchReceipt' and self.state.get('batch'):
+            # (Doc 85, Phase 7: a batch stuck at one of its orders: that one and those after it sent again, or the rest
+            # without it, or it held for its wolf and the rest sent.)
+            b = self.state['batch']
+            item = b['items'][b.get('stuck', 0)] if b.get('stuck', 0) < len(b['items']) else None
+            _require(status != 'queued', f'Order #{receipt} is queued: wait for the game.')
+            _require(do != 'when-here' or (item and _wolf_of(item)), 'Only an order to one wolf can wait for them to come back.')
+            text, again = resend_batch(self.conn, self.world, self.run, self.by, self.state, self.phase(), do)
+            if again:
+                self.note_order(again)
+            self.problem = ''
+            self.save('running')
+            what = item['kind'] if item else 'the batch'
+            verb = {'retry': 'sent again', 'skip': 'skipped', 'when-here': 'held for its wolf'}[do]
+            return f'Order #{receipt} ({what}) {verb}; {text}.', {'status': 'paused', 'order': receipt}, {
+                'status': 'running', 'order': again or ('skipped' if do == 'skip' else 'held')}
+        _require(do != 'when-here', 'Only an order to one wolf can wait for them to come back.')
         if status == 'applied':
             self.problem = ''
             self.save('running')
@@ -3765,12 +4133,46 @@ def main():
     if not rules.triggers.story_native.interpreter():
         parser.error('Build ratw_server and its ratw_story library, or set RATW_STORY_LIBRARY to that library.')
     with world_db.connect(args.world, 'dm') as conn:
-        world = world_id(conn)
-        while True:
-            tick(conn, world)
-            if args.once:
-                return
-            time.sleep(2)
+        serve(conn, world_id(conn), once=args.once)
+
+
+IDLE_SECONDS = 2.0      # (With nothing to do and nothing heard: looked at again this often, as before Phase 7.)
+ANSWER_SECONDS = 0.05   # (Waiting for the game's answer to an order: looked at this often.)
+PRUNE_SECONDS = 3600
+
+
+def serve(conn, world, once=False, stop=None):
+    """The runner's loop (doc 85, Phase 7). Woken by the world's events reaching the log (channel ratw_events, which the
+    game's saves and its event writes notify), by a command from the console (ratw_story), or by its own timeout: at
+    once while a run still has events to read, every ANSWER_SECONDS while one waits for the game, every IDLE_SECONDS
+    otherwise. `conn` must be in autocommit (world_db.connect's default). `stop`: a callable, true to end (tests)."""
+    conn.execute('LISTEN ratw_events')
+    conn.execute('LISTEN ratw_story')
+    pruned = 0.0
+    while True:
+        left = tick(conn, world)
+        if time.monotonic() - pruned >= PRUNE_SECONDS:
+            pruned = time.monotonic()
+            prune_history(conn, world)
+        if once or (stop and stop()):
+            return
+        if left['more']:
+            continue
+        for _ in conn.notifies(timeout=ANSWER_SECONDS if left['game'] else IDLE_SECONDS, stop_after=1):
+            pass
+
+
+HISTORY_DAYS = 90       # (Doc 85, Phase 7: a run's trigger history is kept for 90 days, and its newest 10,000 always.)
+HISTORY_KEEP = 10000
+
+
+def prune_history(conn, world, days=HISTORY_DAYS, keep=HISTORY_KEEP):
+    """Old trigger history goes by the rule (migration 0078's dm.prune_story_history). How many rows went (0 on a world
+    without the migration)."""
+    if not conn.execute("SELECT to_regprocedure('dm.prune_story_history(text,integer,integer)') IS NOT NULL").fetchone()[0]:
+        return 0
+    with conn.transaction():
+        return conn.execute('SELECT dm.prune_story_history(%s,%s,%s)', (world, days, keep)).fetchone()[0]
 
 
 if __name__ == '__main__':

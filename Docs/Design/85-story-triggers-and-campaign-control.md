@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b and 6 are built (section 6, "Phase 1 as built" to "Phase 6 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b, 6 and 7 are built (section 6, "Phase 1 as built" to "Phase 7 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -18,8 +18,8 @@ of these answers, it now says **decided (user, 2026-11-21)**.
 Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A, and Phase 4 (the catalogue and the
 workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
 (from `r3-camp-p4`), and Phase 5b (moving a running campaign onto a new version), on branch `r3-camp-p5b` (from `r3-camp-p5`),
-which closes Slice B, and Phase 6 (quests and a living audience), on branch `r3-camp-p6` (from `r3-camp-p5b`): see "Phase 1 as
-built" to "Phase 6 as built" in section 6.
+which closes Slice B, Phase 6 (quests and a living audience), on branch `r3-camp-p6` (from `r3-camp-p5b`), and Phase 7 (batched
+effects and a faster runner), on branch `r3-camp-p7` (from `r3-camp-p6`): see "Phase 1 as built" to "Phase 7 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -349,7 +349,8 @@ Limits, all enforced when a program is checked:
 | A request to Studio | 1 MiB |
 | Phase steps the game keeps for the journal | the last 32 |
 
-Known problems. The first five are the ones left open by our review.
+Known problems. The first five are the ones left open by our review. (Phase 7 fixed 1, 2, 3 and 11, gave 6 to the author
+(`ifRefused`), and brought 7 to about two seconds while a story is live: "Phase 7 as built".)
 
 1. **A scene's outcome saves the game on the game thread.** When a scene beat settles (a vote, a reply, a
    resident arriving) the game calls `Game::save` at once so the runner sees the event quickly:
@@ -2009,6 +2010,101 @@ world's variables; 0074 to 0076 stay Phase 5b's, 6's and 8's); no new game order
 - Old trigger history pruned by a rule (keep 90 days or the last 10,000 per run).
 - Measured with a load of events on a test world (at most 250 players, by the standing rule): events a second a
   run can read, and seconds from an event to its effect. Bars: 1,000 a second; 5 seconds.
+
+**Phase 7 as built** (2026-11-22, branch `r3-camp-p7`, on `r3-camp-p6`). Migration `0078`; one new game order (`story.effects`); one
+optional field on every world effect (`ifRefused`, with `waitDays`). The rules stay in the outside runner (question 1); this phase makes
+it fast. Known problems 1, 2, 3 and 11 are gone, 6 is the author's choice now, and 7 is about two seconds while a story is live.
+- **Batched effects** (`tools/story_runner.py`, "sending effects to the game"; `Game::applyStoryEffects`, `Core/RatwGameStorylines.cpp`).
+  What a turn of the runner has for the game goes in one order: `story.effects {run, visit, items: [{kind, target, payload, ifRefused}]}`
+  (or the order itself when there is one), up to 64 items: 61 effects, then the journal's own orders (`story.cohort`, `story.quests`,
+  `story.missions`). The game applies the items in order, each exactly as its own order would be (the community world's guards, the
+  economy's journal, the purse), and answers with a JSON array, a result for each (`{ok, text}`); the row is `applied` once what it
+  journalled is committed. An item refused whose `ifRefused` is `pause` (or absent) stops the batch there: the rest come back `{ok: false,
+  held: true}` and wait with the run. A visit's opening effects go the same way, after its `story.phase` is applied (a phase with twelve
+  entry effects opens in two round trips, not thirteen), counted in `state.entryDone` (an older visit counts its receipts as before), the
+  ending's `story.finish` alone after them (`state.endSent`). `state.batch` holds the items as made (so a retry sends the same orders) and
+  `state.batchReceipt` is one of `RECEIPT_KEYS`: every reader of a run's pending orders (the console's waiting-on and Orders, flow commands'
+  wait, `_run_receipts`) sees it. **Journal orders are waited for like every other order** now: `questReceipts` is read only for runs an
+  older runner left mid-wait (so a flow command right after another that changed a quest waits for the journal's answer: a few hundred ms).
+- **Crash-safe, item by item.** In the game, the batch's receipt (`dmActs[id]`, with `batch: true` and `items` by index) is set as each
+  item is applied, so every journal record an item writes carries what the items before it came to; an economy item's own receipt is
+  `dmActs["<id>.<n>"]`. A crash part-way through leaves the row queued: taken again, the items with a receipt are answered from it and only
+  the rest applied (none twice, none lost; an item that journals nothing is applied again, as a lone order would be). The restart's
+  first pass skips batch receipts when it answers rows from `dmActs`, puts a batch the old server let expire back to `queued`, and never lets
+  one with a receipt expire. In the runner nothing changed in kind: a tick (events read, history, state, cursor, the orders queued) is one
+  transaction, so a runner killed anywhere leaves either all of a tick or none, and a batch in flight is waited for, never sent twice.
+- **ifRefused** (`story_program.REFUSALS`, `check_refusal`; doc 3.5): on any effect the game applies (not the story's own effects, not
+  `npc.line`): `pause` (the default, today's behaviour), `skip` (a note in the history, the story carries on), `when here` (an effect to one
+  wolf, not a scene: held in `state.whenHere` and sent again when that wolf next comes into the world, an `arrival` event, for up to
+  `waitDays` real days, 1 to 90, 7 when not said; past it, dropped and noted; at most 500 held). **A quest's reward is `when here` unless it
+  says otherwise** (Phase 6's "noted and skipped" becomes "noted and held"; `rewardsRefused` still lists it). Version 1 programs may use it
+  too (an optional field). The console's stuck order: **Retry** (the stuck item and those after it, as they were made), **Retry when <wolf>
+  is next here** (a new `order` kind, `when-here`: the stuck item held, the rest sent), **Skip it and carry on**; a batch the game answered
+  after the pause (from its journal, after a restart) resumes without sending anything again. `status` gains `whenHere`, and each batch in
+  `orders`/`actions` its `items` with their own outcomes.
+- **A faster runner.** It reads page after page of 1,000 events until it has caught up (not 128 a tick), for up to a second a run before
+  the next run and the commands have a turn (`EVENT_PAGE`, `READ_BUDGET`), and stops early only for a full batch, a phase change or an
+  ending. Effects gather while it reads and go together after; while a batch is out, the run reads nothing (so a refusal that pauses still
+  stops the story before anything later is told the game). `serve()` replaces `sleep(2)`: it `LISTEN`s on `ratw_events` (every write of
+  the game's events notifies it, a save's or an early one) and `ratw_story` (the console's commands), looks again at once while a run has
+  events left, every 50 ms while one waits for the game, and every 2 s otherwise. The heartbeat is written once a second at most. The
+  clock is never behind the newest event read (`state.lastDay`): events now reach the log between saves.
+- **The game** (`Core/RatwGame.cpp`, `RatwDbStore.cpp`). While a world story of the runner is live (`storyLive`), the world's events go to
+  the log every second between saves, in a small transaction of their own on the store's worker (`DbStore::flushEventsInBackground`,
+  `Game::flushStoryEvents`; the game thread only hands them over), never while a save is asked for or a snapshot is being written, so an
+  outcome's events always go with the checkpoint that holds its state. **Scene outcomes no longer save on the game thread** (known problem
+  1): a beat settled or a resident's scene order done asks for a save within half a second (`saveSoon(StoryOutcomeSeconds)`), written in the
+  background (a forked snapshot); a scene's request to the Mind is sent once that save is stored (`dispatchSceneRequests`), so a crash can
+  never send it twice. A save asked for while a snapshot is still being written is taken as soon as that one is done (it used to wait for
+  the next round save). The DM's orders are looked for every quarter of a second once notified (was a second).
+- **A direction on a busy world** (known problem 2): `direct('signal')` (a ticket from the author bridge) puts a `signal` command for the
+  direction only (`direction: true`, the exit's words may have spaces) in the inbox and returns `queued`; the runner lands it between two
+  world events. Issuing a direction ticket no longer waits for the phase's effects to be acknowledged (a guest line still does).
+- **History by a rule** (known problem 11): migration `0078_story_history_rule.sql`, `dm.prune_story_history(world, days, keep)` (security
+  definer), called by the runner once an hour (`prune_history`): an entry older than 90 days goes unless it is among its run's newest 10,000.
+- **The Editor**: each world effect in the workbench has an **if refused** box (pause the story · note it, carry on · wait for the wolf, up to
+  N days; a reward says "wait for the wolf" when left alone); the console's Orders shows a batch's orders each with its outcome, NOT SENT for
+  those held behind a refusal, the effects **waiting for their wolf**, and the three ways on.
+- **Measured.** *The runner* (`tools/bench_story_runner.py`: a throwaway database, four live stories (winter-ferries, reed-ford, a tally
+  with rules on every `economy` event, and a reward story giving a deed on about one in 25), a real stretch of Ridgemere 3's own log
+  (20,001 events, read from its database, never written), the game stood in for at each version's polling): Ridgemere 3's busiest save is
+  **2,681 events at once** (the day's turn; its busiest hour about 3,300). *Before* (Phase 6's runner, game polling every second): that save
+  took **127 s** to read through (21 events a second for the story with effects), its effects reached the game **60 s** after their events
+  (median; 117 s at worst); at a steady **1,000 events a second** for 20 s it fell behind for good (19,903 behind when the writing stopped,
+  effects up to 57 s late, still behind a minute on). *After*: the busiest save read through in **0.96 s** (2,800 events a second, 11,200 a
+  second summed over the four stories), effects applied **0.86 s** after their events; at 1,000 a second it never fell more than a second's
+  write behind, caught up 0.35 s after the last, effects applied **0.14 s** after their events (median; 0.40 s p95, 0.42 s at worst); a
+  backlog of all 20,001 at once read through in 8.2 s (**2,430 events a second**, 9,700 over the four). Bars met: 1,000 a second, 5 seconds.
+  *The game thread* (`/home/martinb/.claude/jobs/ee03c49e/tmp/camp-p7/outcomes.py`: a throwaway copy of DEV's database, Ridgemere 2.0 with
+  1,083 residents and 241 cells, the size of Ridgemere 3's 1,086 and 241, read only from DEV; a real game server and the real runner of each
+  version; six residents each saying a line again as soon as the story sees the last one said, 90 s): *before*, each line's outcome saved the
+  whole world on the game thread, **95-120 ms** a time (670 ms the first), and a resident's next line came **58 s** after the last (median;
+  65 s at worst; 14 lines in 90 s); *after*, the early saves cost the game thread **about 9 ms** each (a fork; 19 ms the first), the worst pass
+  43 ms was the schedules, and the next line came **1.0 s** after the last (median; 1.5 s p95, 1.75 s at worst; 510 lines). Bar (a vote to the
+  next beat): 5 s. With no outcome to save, the same world's events reached the log a second after they happened (`flush_check.py`), and the
+  runner's rules saw each within 0.6 s: about 2 s from an event in the game to its effect applied.
+- **Tests:** `tools/test_story_speed.py` (a tick's effects in batches of 61 in order and the runner reading on while they gather, 1,200
+  effects in 20 round trips; a refusal that pauses holding the rest, retry sending the stuck one and those after it, held for its wolf and
+  sent again on arrival; skip; when here and its wait running out; a reward's default; the checks of `ifRefused`; a direction landing while
+  world events wait; the history's rule; the loop woken by the world's events in well under its 2 s; and **the real runner process killed
+  six times or more** (mid-read, mid-batch, with a batch waiting for the game, the game answering some while it is down) over 3,000 events:
+  every one of the 200 effects sent once, no event answered twice, none lost, never paused); `Tests/events_tests.cpp` (`dm_story_batch`
+  in the crash cases, through a file and through PostgreSQL: a batch cut short by a crash after its first order, taken again after the
+  restart: the first answered from its receipt and paid once, only the second applied, taken a third time nothing paid twice);
+  `Tests/storyline_tests.cpp` (a batch in the game: skip goes on, pause holds the rest, no batch inside a batch, an empty one refused).
+  Updated for the new behaviour: `test_story_program.py` (effects gather while the runner reads; the entry effects in one batch; a
+  direction queued and landed), `test_story_quests.py` (orders read inside batches; a refused reward held), `campaigns.test.ts`. The P1-P6
+  suites, `test_story_scene_live`, `test_story_siege_live`, `test_studio`, `test_world_db`, the Editor's tests, type check and render smoke
+  (a batch stuck, an effect waiting for its wolf) pass; `test_dungeon_master`'s two errors need `talk_check` built, as before.
+- **Not in Phase 7, on purpose:** "change target" for a stuck order (3.5's fourth way); per-world settings for the batch size, the read
+  budget or the history's rule; the early event writes for a world with no live story (it pays nothing, as before); facts with those writes
+  (Phase 8).
+- **For Phase 8:** events now reach `game.events` between saves while a story is live (`DbStore::writeEvents`, on the store's worker), so
+  `game.story_facts` must be written in the same transaction as each write of events, the early ones too, not only with a checkpoint, or a
+  fact is older than the event beside it. A new event that must agree with state the game keeps (as a scene's outcome does with the order it
+  retires) should ask for `saveSoon(StoryOutcomeSeconds)` in the tick it is recorded, which holds the early writes until that save. The
+  runner's clock is `max(checkpoint, newest event read)` (`state.lastDay`). Migrations: 0076 is still Phase 8's; 0078 is taken. A rule
+  reading facts runs inside the paged read (`EVENT_PAGE` at a time): read the facts for a page at once, not per event.
 
 **Phase 8: Facts and new events from the game. About 14 hours.**
 - Migration `0076`: `game.story_facts`, written with each save for live runs from their watch lists.

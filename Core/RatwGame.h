@@ -118,6 +118,8 @@ class Store
     virtual bool saveInBackground(DbStore::Build build, std::uint64_t revision) = 0;
     virtual bool flush() = 0;
     virtual void queueEvents(std::vector<WorldEvent> events) = 0;
+    // The events queued so far to the log now, without a checkpoint (doc 85, Phase 7); a store without a log: nothing.
+    virtual void flushEvents() {}
     virtual std::vector<std::pair<std::string, std::string>> externalNpcStates() = 0;
     virtual std::string error() const = 0;
     // The journal of valuable changes (RatwJournal.h; Docs/Design/31-responsiveness.md, Phase 2), and its records after
@@ -649,6 +651,9 @@ class Game
     // Every other dm.actions act, as applyDmActions applies a row {id, kind, target_id, requested_by, payload}: public
     // for the tests, which have no dm.actions table.
     Result applyDmAct(std::vector<PgValue> row);
+    // Doc 85, Phase 7: a story's batch (story.effects), each item applied as its own order and answered; those done before a
+    // crash answered from the batch's receipt (RatwGameStorylines.cpp). `seq`: the last journal record it wrote, or 0.
+    Result applyStoryEffects(const std::vector<PgValue>& row, std::uint64_t& seq);
     // The story runner's "needs you" alerts (Docs/Design/85-story-triggers-and-campaign-control.md, 5.6; Phase 3), as
     // dm.story_alerts_for_game answers them (migration 0072: what the game may know of the stories, and nothing else):
     // {running, beatAge, runnerSeconds, alerts: [{key, text}]}. Each alert new since the last reading is told to every
@@ -699,6 +704,13 @@ class Game
     // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
     // consolidated every AutosaveSeconds.
     static constexpr double AutosaveSeconds = 15, SnapshotSeconds = 30, SaveSoonSeconds = 3;
+    // Doc 85, Phase 7: a story's outcome (a scene beat settled, a resident arrived for a story) asks for a save this soon,
+    // written in the background, never on the game thread; while a world story is live, the world's events go to the log
+    // this often between saves (in their own small write), so the story runner sees them in a second or two; the DM's
+    // orders are looked for this often once notified (a story's orders, answered within a quarter of a second).
+    static constexpr double StoryOutcomeSeconds = 0.5, StoryEventsSeconds = 1, DmPollSeconds = 0.25;
+    // A story's batch of effects (story.effects): at most this many orders in one.
+    static constexpr std::size_t StoryEffectsMax = 64;
     static constexpr unsigned SnapshotPhases = 4;
 
   private:
@@ -2539,7 +2551,21 @@ class Game
 
     // Saving.
     void saveSoon();
+    void saveSoon(double seconds);                  // (Sooner than SaveSoonSeconds, if asked sooner: doc 85, Phase 7.)
     void autosave();
+    bool snapshotBusy();                            // (A forked snapshot is still being written.)
+    bool storyLive() const;                         // (A world story of the story runner is running.)
+    void flushStoryEvents(double real);             // (Doc 85, Phase 7: the events to the log between saves.)
+    double storyEventsAccumulator_ = 0;
+    // A scene's request to the Mind waits until the save that consumed it is stored (never dispatched twice after a crash).
+    struct SceneRequest
+    {
+        std::uint64_t revision;
+        std::string run, instance, beat;
+        json::Value context;
+    };
+    std::vector<SceneRequest> sceneRequestsAfterSave_;
+    void dispatchSceneRequests();
     DbStore::Build capture();
 
     // ------------------------------------------------------------------ The journal and snapshots (RatwGameJournal.cpp)

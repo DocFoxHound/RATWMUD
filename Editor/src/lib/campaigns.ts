@@ -6,7 +6,12 @@ export type OrderStatus = 'queued' | 'applied' | 'refused' | 'expired';
 export interface Order {
     id: number; kind: string; target: string; status: OrderStatus; result: string; by: string; at: string | null;
     doneAt: string | null; age?: number; visit?: number | null;
+    /** Doc 85, Phase 7: a batch (story.effects), its orders each with its own outcome. */
+    items?: OrderItem[];
 }
+export interface OrderItem {n: number; kind: string; target: string; ifRefused: 'pause' | 'skip' | 'when here'; status: OrderStatus | 'held'; result: string}
+/** An effect the game refused that waits for its wolf to come back (doc 85, Phase 7: ifRefused "when here"). */
+export interface HeldForWolf {wolf: string; kind: string; until: number; refused: string; receipt: number}
 export type Effect = Record<string, unknown> & {kind: string};
 /** One thing the phase still reacts to (an exit or a trigger), as the runner lists it. */
 export interface Listening {
@@ -141,6 +146,8 @@ export interface RunDetail extends RunRow {
     versions?: Version[];
     /** Phase 6: the story's quests with every copy (each wolf's, each party's, the story's), the audience, and each wolf's party. */
     quests?: QuestBoard[]; audience?: Audience; parties?: Record<string, string>;
+    /** Phase 7: effects the game refused, held for their wolf until they are next in the world. */
+    whenHere?: HeldForWolf[];
 }
 export type QuestStatus = 'offered' | 'active' | 'ready' | 'done' | 'failed' | 'abandoned' | 'expired';
 /** One copy of a quest (story_runner.status's `quests`): a wolf's own, a party's, or the story's one copy. */
@@ -236,8 +243,13 @@ export function dueText(at: number, clock: 'game' | 'real' | undefined, day: num
 
 // ------------------------------------------------------------------------------------------------- what it waits for
 
-export function orderLine(o: Order, names: Record<string, string>): string {
+export function orderLine(o: Order | OrderItem, names: Record<string, string>): string {
+    if ('items' in o && o.items?.length) return `${o.items.length} orders together (${[...new Set(o.items.map(i => i.kind))].join(', ')})`;
     return `${o.kind}${o.target && !o.target.startsWith('world-') ? ' → ' + nameOf(names, o.target) : ''}`;
+}
+/** A batch's order a paused story is stuck on (the first refused one whose story pauses), if any. */
+export function stuckItem(o: Order): OrderItem | undefined {
+    return o.items?.find(i => i.status === 'refused' && i.ifRefused === 'pause') ?? o.items?.find(i => i.status === 'held');
 }
 export function effectLine(e: Effect, names: Record<string, string>): string {
     const who = ['player', 'npc', 'town', 'market', 'faction', 'region', 'scene', 'ship', 'area'].map(k => e[k]).find(v => typeof v === 'string') as string | undefined;
@@ -421,7 +433,7 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
         case 'set': return `set ${p.key}${wolf} to ${p.value}`;
         case 'timer': return `${p.do} timer ${p.name ?? p.signal}${p.days !== undefined ? ` (${Number(p.days) > 0 && p.do === 'shift' ? '+' : ''}${p.days} days)` : ''}`;
         case 'mission': return `${p.do === 'complete' ? 'completed' : 'reset'} ${p.mission}${wolf}`;
-        case 'order': return `${p.do === 'skip' ? 'skipped' : 'retried'} order #${p.receipt}`;
+        case 'order': return `${p.do === 'skip' ? 'skipped' : p.do === 'when-here' ? 'held for its wolf' : 'retried'} order #${p.receipt}`;
         case 'tell': return `told ${p.to === 'wolf' ? nameOf(names, String(p.player)) : p.to === 'region' ? 'the wolves in ' + p.region : 'the story\'s wolves'}: "${p.text}"`;
         case 'scene': return `started scene ${p.scene} for ${p.player === 'world' ? 'the world' : nameOf(names, String(p.player))}`;
         case 'migrate': return `moved it onto approved version #${p.version}${p.phase ? `, landing in ${p.phase}` : ''}`;

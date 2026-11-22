@@ -373,6 +373,13 @@ export function actionParts(cat: Catalogue, a: Action, names: Names): Part[] {
     return itemParts(item, record as Json, names);
 }
 
+/** An effect the game applies, so the game may refuse it (doc 85, Phase 7: its `ifRefused`): not the story's own, not a
+ *  phase's line. */
+export function refusable(cat: Catalogue, kind: string): boolean {
+    const item = itemOf(cat.effects, kind);
+    return !!item && !(item as CatItem & {story?: boolean}).story && kind !== 'npc.line';
+}
+
 export function effectParts(cat: Catalogue, e: Effect, names: Names): Part[] {
     const item = itemOf(cat.effects, e.kind);
     if (!item) return [{text: 'the world effect ' + e.kind}];

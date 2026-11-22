@@ -351,3 +351,17 @@ test('the Quests grid sends the commands of doc 85 5.4 exactly: objective and qu
     assert.equal(commandLine('participant', {player: 'player-elm', do: 'remove'}, names), 'took out Elm Sandpaw of the story');
     assert.equal(problemPlace({level: 'error', text: 'x', path: 'quests[1].rewards[0]', at: {kind: 'quest', index: 1, id: 'thief', part: 'rewards[0]'}}), 'quest thief › reward 1');
 });
+
+import {orderLine, stuckItem} from './campaigns.ts';
+
+test('a batch of orders: its line, and the order it is stuck on (doc 85, Phase 7)', () => {
+    const batch = {id: 9, kind: 'story.effects', target: 'world-1', status: 'applied' as const, result: '', by: 'dm', at: null, doneAt: null,
+        items: [{n: 0, kind: 'npc.speak', target: 'rm111', ifRefused: 'pause' as const, status: 'applied' as const, result: 'ok'},
+            {n: 1, kind: 'deed.award', target: 'player-ash', ifRefused: 'pause' as const, status: 'refused' as const, result: 'away'},
+            {n: 2, kind: 'deed.award', target: 'player-elm', ifRefused: 'pause' as const, status: 'held' as const, result: ''}]};
+    assert.equal(orderLine(batch, {}), '3 orders together (npc.speak, deed.award)');
+    assert.equal(stuckItem(batch)?.n, 1);
+    assert.equal(orderLine(stuckItem(batch)!, {'player-ash': 'Ash'}), 'deed.award → Ash');
+    assert.equal(stuckItem({...batch, items: [batch.items[0]]}), undefined);
+    assert.equal(commandLine('order', {receipt: 9, do: 'when-here'}, {}), 'held for its wolf order #9');
+});

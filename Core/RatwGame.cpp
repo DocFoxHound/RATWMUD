@@ -62,6 +62,7 @@ class DatabaseStore final : public Store
     bool saveInBackground(DbStore::Build build, std::uint64_t revision) override { return db.saveInBackground(std::move(build), revision); }
     bool flush() override { return db.flush(); }
     void queueEvents(std::vector<WorldEvent> events) override { db.queueEvents(std::move(events)); }
+    void flushEvents() override { db.flushEventsInBackground(); }
     std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return db.externalNpcStates(); }
     std::string error() const override { return db.error(); }
     journal::Writer* journal() override { return writer.get(); }
@@ -1206,11 +1207,14 @@ void Game::applyDmActions(double dt)
     if (options_.database.empty())
         return;
     releaseDmStatuses();                            // (Rows applied whose records have committed since: told now.)
-    if ((dmAccumulator_ += dt) < 1)
+    // (Every DmPollSeconds once notified, so a story's orders are answered within a quarter of a second, not a second:
+    // doc 85, Phase 7. The minute's expiry counts real seconds.)
+    if ((dmAccumulator_ += dt) < DmPollSeconds)
         return;
+    const double polled = dmAccumulator_;
     dmAccumulator_ = 0;
     readNotifications();
-    const bool minute = (dmExpiryAccumulator_ += 1) >= 60;
+    const bool minute = (dmExpiryAccumulator_ += polled) >= 60;
     if (!dmNotified_ && !minute)
         return;
     dmNotified_ = false;
@@ -1229,17 +1233,27 @@ void Game::applyDmActions(double dt)
                     "UPDATE dm.actions a SET status = CASE WHEN (j.value->>'ok')::boolean THEN 'applied' ELSE 'refused' END, "
                     "result = j.value->>'text', done_at = now() FROM jsonb_each($1::jsonb) AS j "
                     "WHERE a.id::text = j.key AND a.kind = j.value->>'kind' AND a.target_id = j.value->>'target' "
+                    "AND NOT coalesce((j.value->>'batch')::boolean, false) "
                     "AND a.status IN ('queued', 'expired') RETURNING a.kind, a.target_id, a.result",
                     {json::dump(dmActs_)});
                 for (const auto& row : answered.rows)
                     if (row.size() > 2 && row[0] && row[1] && row[2])
                         note("info", "RATW_DM_ACTION " + *row[0] + " " + *row[1] + ": already applied before the restart: " + *row[2]);
+                // (A story's batch taken part-way before the restart is taken again, its items done answered from its
+                // receipt and the rest applied: doc 85, Phase 7. One the old server let expire meanwhile comes back.)
+                worldDb_.exec("UPDATE dm.actions a SET status = 'queued', result = NULL, done_at = NULL FROM jsonb_each($1::jsonb) AS j "
+                              "WHERE a.id::text = j.key AND a.kind = 'story.effects' AND coalesce((j.value->>'batch')::boolean, false) "
+                              "AND a.status = 'expired'",
+                              {json::dump(dmActs_)});
             }
         }
         // (Never a row applied whose record is still being written: it is answered once the record is committed.)
         std::string waiting = "{";
         for (const auto& w : dmStatusWaiting_)
             waiting += (waiting.size() > 1 ? "," : "") + w.id;
+        for (const auto& [id, act] : dmActs_.fields())   // (A batch part-way through is never let expire: doc 85, Phase 7.)
+            if (act.isObject() && act.boolean("batch") && std::all_of(id.begin(), id.end(), [](char ch) { return ch >= '0' && ch <= '9'; }))
+                waiting += (waiting.size() > 1 ? "," : "") + id;
         worldDb_.exec("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now() "
                       "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes' AND NOT (id::text = ANY($1::text[]))",
                       {waiting + "}"});
@@ -1265,6 +1279,24 @@ void Game::applyDmActions(double dt)
         // the journal's record holds it, so it is answered from there, never applied again.)
         if (std::any_of(dmStatusWaiting_.begin(), dmStatusWaiting_.end(), [&](const DmStatus& w) { return w.id == *row[0]; }))
             continue;
+        if (kind == "story.effects")
+        {
+            // Doc 85, Phase 7: a story's batch, each item answered (applyStoryEffects), the items done before a crash from
+            // the batch's receipt. "Applied" (the batch was taken; each item's own outcome in the result) once what it
+            // journalled is committed.
+            std::uint64_t batchSeq = 0;
+            const auto outcome = applyStoryEffects(row, batchSeq);
+            const bool taken = outcome.message.rfind("[", 0) == 0;
+            changed |= outcome.ok;
+            auto* writer = store_ ? store_->journal() : nullptr;
+            if (writer && batchSeq && writer->committed() < batchSeq)
+                dmStatusWaiting_.push_back({*row[0], taken ? "applied" : "refused", outcome.message, batchSeq});
+            else
+                worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                              {*row[0], std::string(taken ? "applied" : "refused"), outcome.message});
+            logEvent("operator", row[3] ? *row[3] : "", target, kind + (taken ? ": applied" : ": refused"));
+            continue;
+        }
         // (The same kind and target too: a database whose dm.actions numbering began again never matches an old act.)
         if (const auto* done = dmActs_.find(*row[0]); done && done->isObject() && done->string("kind") == kind && done->string("target") == target)
         {
@@ -3643,9 +3675,18 @@ void Game::tick(double dt)
     }
     if (saveSoonIn_ >= 0 && (saveSoonIn_ -= real) < 0)
     {
-        snapshotSaveAccumulator_ = 0;
-        autosave();
+        // (A snapshot still being written takes nothing new: this save is taken as soon as it is done, not at the next
+        // round one: doc 85, Phase 7.)
+        if (snapshotBusy())
+            saveSoonIn_ = 0.25;
+        else
+        {
+            snapshotSaveAccumulator_ = 0;
+            autosave();
+        }
     }
+    flushStoryEvents(real);
+    dispatchSceneRequests();
     if (saveAccumulator_ >= AutosaveSeconds)
     {
         saveAccumulator_ = 0;
@@ -7195,6 +7236,49 @@ void Game::saveSoon()
 {
     if (saveSoonIn_ < 0)
         saveSoonIn_ = SaveSoonSeconds;
+}
+
+void Game::saveSoon(double seconds)
+{
+    if (saveSoonIn_ < 0 || seconds < saveSoonIn_)
+        saveSoonIn_ = std::max(0.0, seconds);
+}
+
+bool Game::snapshotBusy()
+{
+    if (snapshotChild_ > 0)
+        reapSnapshot(false);
+    return snapshotChild_ > 0;
+}
+
+bool Game::storyLive() const
+{
+    for (const auto& [id, story] : storylines_.all())
+        if (story.source == "storykeeper" && story.live())
+            return true;
+    return false;
+}
+
+void Game::flushStoryEvents(double real)
+{
+    // Doc 85, Phase 7. While a world story of the runner is live, the world's events go to the log every
+    // StoryEventsSeconds in a small write of their own on the store's worker (the game thread only hands them over), so the
+    // runner reads them a second after they happen instead of at the next save, up to 30 s later. Never while a save is
+    // asked for or a snapshot is being written: the events then go with that checkpoint, in the same transaction as the
+    // state they belong with (a scene's outcome and the order it retired, a resident's arrival and its cue), so a crash
+    // never leaves the log telling the runner of an outcome the restored world does not hold. Other events may reach the
+    // log before the state beside them is saved, as a trade's reach the journal: what they tell happened, and a crash
+    // before the next save loses only what was never durable (where a wolf stood), never the event's record.
+    if ((storyEventsAccumulator_ += real) < StoryEventsSeconds)
+        return;
+    storyEventsAccumulator_ = 0;
+    if (!store_ || !store_->database() || !storageReady_ || saveSoonIn_ >= 0 || snapshotChild_ > 0 || !storyLive())
+        return;
+    auto events = world_.takeEvents();
+    if (events.empty())
+        return;
+    store_->queueEvents(std::move(events));
+    store_->flushEvents();
 }
 
 DbStore::Build Game::capture()

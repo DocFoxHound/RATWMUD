@@ -635,24 +635,47 @@ void Game::tickCinematics()
     {
         storylines_.touch();
         ++revision_;
-        // Commit the run and its world facts together, and persist a consumed AI request before dispatch.
-        // Intermediate beats only change the story book. Their stage, deadline and text replay from the journal.
-        if (worldEvents() != eventsBefore || !requests.empty()) save();
+        // Commit the run and its world facts together, and persist a consumed AI request before dispatch: in an early
+        // save on the store's worker (doc 85, Phase 7: never a whole save waited for on the game thread, which stopped a
+        // big world for as long as it took), whose checkpoint carries the outcome's events with the state they belong
+        // with; a crash before it loses both, and the beat is played again. Intermediate beats only change the story
+        // book. Their stage, deadline and text replay from the journal.
+        if (worldEvents() != eventsBefore || !requests.empty()) saveSoon(StoryOutcomeSeconds);
         else record(StoryBook);
     }
+    // (A request is sent once the save that consumed it is stored: dispatchSceneRequests, each tick.)
     for (auto& request : requests)
+        if (storageReady_)
+            sceneRequestsAfterSave_.push_back({revision_, request.run, request.instance, request.beat, std::move(request.context)});
+    dispatchSceneRequests();
+}
+
+void Game::dispatchSceneRequests()
+{
+    if (sceneRequestsAfterSave_.empty())
+        return;
+    const std::uint64_t stored = store_ ? store_->storedRevision() : UINT64_MAX;
+    for (auto it = sceneRequestsAfterSave_.begin(); it != sceneRequestsAfterSave_.end();)
     {
-        if (!storageReady_) continue;
-        const auto run=request.run, instance=request.instance, id=request.beat;
-        mind_.sceneLine(request.context,[this,run,instance,id](const std::string& line) {
-            auto* story=storylines_.find(run);
-            if (!story || !story->live()) return;
-            const auto found=story->cinematics.find(instance);
-            if (found==story->cinematics.end()) return;
-            auto& active=found->second;
-            if (active.string("beat")==id && active.boolean("generating") && sceneTime()<active.number("end"))
-                active.set("generated",words(Value(line),600) ? line : "");
-        });
+        if (storageReady_ && stored < it->revision)
+        {
+            ++it;
+            continue;
+        }
+        if (storageReady_)
+        {
+            const auto run=it->run, instance=it->instance, id=it->beat;
+            mind_.sceneLine(it->context,[this,run,instance,id](const std::string& line) {
+                auto* story=storylines_.find(run);
+                if (!story || !story->live()) return;
+                const auto found=story->cinematics.find(instance);
+                if (found==story->cinematics.end()) return;
+                auto& active=found->second;
+                if (active.string("beat")==id && active.boolean("generating") && sceneTime()<active.number("end"))
+                    active.set("generated",words(Value(line),600) ? line : "");
+            });
+        }
+        it = sceneRequestsAfterSave_.erase(it);
     }
 }
 

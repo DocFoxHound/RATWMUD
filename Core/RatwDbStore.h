@@ -52,6 +52,10 @@ class DbStore
     static constexpr std::size_t EventsQueued = 200000;
     // Events for game.events, written with the next checkpoint (if the database has the log; else let go).
     void queueEvents(std::vector<WorldEvent> events);
+    // The events queued so far written on the worker in a small transaction of their own, without a checkpoint (doc 85,
+    // Phase 7: a live world story sees them in a second, not at the next save). Nothing if a checkpoint is waiting: it
+    // carries them. Each write of events says so on channel ratw_events (the story runner listens).
+    void flushEventsInBackground();
     bool logsEvents() const { return eventsSupported_; }
     bool deltasSupported() const { return deltasSupported_; }
     // The highest revision whose checkpoint has been written (0 for none yet in this run).
@@ -91,7 +95,8 @@ class DbStore
     std::condition_variable wake_, idle_;
     std::optional<Checkpoint> pending_;
     std::vector<WorldEvent> pendingEvents_;
-    bool writing_ = false, stopping_ = false, backgroundFailed_ = false;
+    bool writing_ = false, stopping_ = false, backgroundFailed_ = false, eventsOnly_ = false;
+    bool writeEvents(const std::vector<WorldEvent>& events);
     std::string backgroundError_;
     std::thread writerThread_;
     std::function<void(const std::string&)> log_;

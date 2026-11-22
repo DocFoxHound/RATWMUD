@@ -599,10 +599,115 @@ void Game::tickStoryScenes(double dt)
     {
         // The cue and post-arrival position leave with the checkpoint that marks the direction
         // complete. A storybook-only journal record could retire the order before its cue survived.
+        // (An early save on the store's worker, never one waited for here: doc 85, Phase 7.)
         storylines_.touch();
         ++revision_;
-        save();
+        saveSoon(StoryOutcomeSeconds);
     }
+}
+
+// Doc 85, Phase 7: a story's effects in one order, story.effects {run, visit, items: [{kind, target, payload, ifRefused}]},
+// each item applied as its own order would be (the community world's guards, the economy's journal) and answered with a
+// result of its own: the order's result is a JSON array of {ok, text}, one for each item, in order. An item refused whose
+// ifRefused is "pause" (or absent) stops the batch there: the items after it are not applied ({ok: false, held: true}),
+// and the runner sends them again when the run is retried or the refused one skipped. The batch's receipt (dmActs) holds
+// what each item that journalled something came to, as each is applied, so a crash part-way through answers those from
+// it when the row is taken again and applies only the rest: none twice, none lost. `seq` is the last journal record the
+// batch wrote (0 for none): the row is told "applied" once it is committed.
+Result Game::applyStoryEffects(const std::vector<PgValue>& row, std::uint64_t& seq)
+{
+    seq = 0;
+    const std::string id = row[0] ? *row[0] : std::string(), target = row[2] ? *row[2] : std::string();
+    json::Value payload;
+    std::string problem;
+    if (row.size() < 5 || !row[4] || !json::parse(*row[4], payload, problem) || !payload.isObject() || !payload["items"].isArray())
+        return {false, "Invalid story effects.", target};
+    const auto& items = payload.array("items");
+    if (items.empty() || items.size() > StoryEffectsMax)
+        return {false, "A story's batch holds 1 to " + std::to_string(StoryEffectsMax) + " orders.", target};
+    json::Value entry = json::Value::object();
+    if (const auto* kept = dmActs_.find(id); kept && kept->isObject() && kept->boolean("batch"))
+        entry = *kept;                              // (Taken again after a crash: what each item came to, so far.)
+    entry.set("batch", true);
+    entry.set("kind", "story.effects");
+    entry.set("target", target);
+    if (!entry["items"].isObject())
+        entry.set("items", json::Value::object());
+    const auto seqBefore = journalSeq_;
+    auto results = json::Value::array();
+    bool stopped = false, any = false;
+    std::size_t applied = 0, refused = 0;
+    for (std::size_t n = 0; n < items.size(); ++n)
+    {
+        const auto& item = items[n];
+        const std::string key = std::to_string(n), flat = id + "." + key;
+        auto r = json::Value::object();
+        if (stopped)
+        {
+            r.add("ok", false);
+            r.add("held", true);
+            r.add("text", "Not applied: an order before it was refused.");
+            results.push(std::move(r));
+            continue;
+        }
+        Result outcome{false, "", target};
+        const json::Value* done = entry["items"].find(key);
+        if (!done)
+            done = dmActs_.find(flat);              // (An economy act's own receipt: applyEconomyCommand's.)
+        const std::string kind = item.string("kind"), to = item.string("target");
+        if (done && done->isObject())
+            outcome = {done->boolean("ok"), done->string("text"), to};
+        else if (!item.isObject() || kind.empty() || kind == "story.effects" || kind == "economy.sync" || kind == "story.phase" ||
+                 kind == "story.stop" || kind == "story.finish" || (item.has("payload") && !item["payload"].isObject()))
+            outcome = {false, "Not an order a story's batch may hold.", to};
+        else
+        {
+            auto act = json::Value::object();       // (What record() writes while the item is applied: applyDmActions.)
+            act.add("ok", true);
+            act.add("text", "Applied (the server stopped before it could say what it did).");
+            act.add("kind", kind);
+            act.add("target", to);
+            entry.find("items")->set(key, std::move(act));
+            dmActs_.set(id, entry);
+            actingFor_ = id;
+            const auto before = journalSeq_;
+            const json::Value orderPayload = item.has("payload") ? item["payload"] : json::Value::object();
+            if (economyCommand(kind))
+                outcome = applyEconomyCommand(kind, to, orderPayload, flat);
+            else
+                outcome = applyDmAct({row[0], kind, to, row.size() > 3 ? row[3] : PgValue(), json::dump(orderPayload)});
+            actingFor_.clear();
+            dmActs_.erase(flat);
+            if (journalSeq_ != before)
+            {
+                auto kept = json::Value::object();
+                kept.add("ok", outcome.ok);
+                kept.add("text", outcome.message);
+                kept.add("kind", kind);
+                kept.add("target", to);
+                entry.find("items")->set(key, std::move(kept));
+            }
+            else
+                entry.find("items")->erase(key);   // (Nothing durable: after a crash it is applied again, as an order would be.)
+            dmActs_.set(id, entry);
+        }
+        r.add("ok", outcome.ok);
+        r.add("text", outcome.message);
+        results.push(std::move(r));
+        any |= outcome.ok;
+        outcome.ok ? ++applied : ++refused;
+        if (!outcome.ok && item.string("ifRefused", "pause") == "pause")
+            stopped = true;
+    }
+    dmActs_.erase(id);
+    if (journalSeq_ != seqBefore || entry["items"].size())
+    {
+        keepDmAct(id, std::move(entry));            // (For the checkpoint: the row is never applied again after a crash.)
+        seq = journalSeq_ != seqBefore ? journalSeq_ : 0;
+    }
+    note("info", "RATW_STORY_EFFECTS " + target + " #" + id + ": " + std::to_string(applied) + " applied, " + std::to_string(refused) +
+                     " refused" + (stopped ? ", the rest held" : ""));
+    return {any || items.empty(), json::dump(results), target};
 }
 
 // The DM runner owns transitions. Only reached phases and their audience enter the game checkpoint.

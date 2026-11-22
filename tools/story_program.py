@@ -269,16 +269,43 @@ def _param_ok(param, v, regions):
     return identifier(v) or (kind == 'wolf' and v == '$actor')
 
 
+# Doc 85, 3.5 and Phase 7: what the runner does when the game refuses an effect it sent. Any effect the game applies may
+# say: "pause" the story (the default, and today's), "skip" it (noted in the history; the story carries on), or "when
+# here": hold it for its wolf and send it again the next time they come into the world, for up to `waitDays` real days (7
+# when not said). A quest's reward is "when here" unless it says otherwise. Words the engines ignore; the runner's.
+REFUSALS = ('pause', 'skip', 'when here')
+REFUSAL_FIELDS = ('ifRefused', 'waitDays')
+WAIT_DAYS = (1, 90)
+
+
+def refusable(kind):
+    """An effect that becomes a game order (so the game may refuse it): not the story's own, not a phase's line."""
+    return kind in EFFECTS and kind not in quests.STORY_EFFECTS and kind != 'npc.line'
+
+
+def check_refusal(effect, pid):
+    how = effect.get('ifRefused', 'pause')
+    require(how in REFUSALS, f'{pid}: ifRefused is one of: pause, skip, when here.')
+    if how == 'when here':
+        require(effect.get('kind') != 'scene.play' and isinstance(effect.get('player'), str) and effect['player'] not in ('', 'world'),
+                f'{pid}: "when here" holds an effect for its wolf: only an effect to one wolf may wait for them.')
+    if 'waitDays' in effect:
+        require(how == 'when here' and integer(effect['waitDays'], *WAIT_DAYS),
+                f'{pid}: waitDays (1 to 90) goes with ifRefused "when here".')
+
+
 def validate_effect(effect, pid, regions=None, scenes=None):
     kind = effect.get('kind') if isinstance(effect, dict) else None
     require(isinstance(kind, str) and kind in EFFECTS, f'{pid}: unknown effect.')
-    # (Doc 85, Phase 6: a parameter marked "optional" may be left out.)
+    # (Doc 85, Phase 6: a parameter marked "optional" may be left out. Phase 7: ifRefused and waitDays on any game effect.)
     shape(effect, ('kind', *(p['key'] for p in EFFECT_PARAMS[kind] if not p.get('optional'))),
-          tuple(p['key'] for p in EFFECT_PARAMS[kind] if p.get('optional')))
+          (*(p['key'] for p in EFFECT_PARAMS[kind] if p.get('optional')), *(REFUSAL_FIELDS if refusable(kind) else ())))
     for param in EFFECT_PARAMS[kind]:
         if param.get('optional') and param['key'] not in effect:
             continue
         require(_param_ok(param, effect[param['key']], regions), f"{pid}: invalid {kind}.{param['key']}.")
+    if refusable(kind):
+        check_refusal(effect, pid)
     if kind == 'character.grant':
         require(quests.check_purse(effect['purse']), f'{pid}: name a purse that pays: town:<town>, town:<town>:works, till:<id> or chapter:<id>.')
     if kind == 'scene.play':

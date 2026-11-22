@@ -2,7 +2,7 @@
 // catalogue, every parameter a slot with the picker for its type. Also the action list that a phase's entry effects share.
 import {useState} from 'react';
 import {
-    actionItem, actionParts, allActions, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, itemOf, newAction,
+    actionItem, actionParts, allActions, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, itemOf, newAction, refusable,
     newCondition, triggersOf, usesOf, withEvent, withTriggers, type Action, type Condition, type Effect, type Part, type Program, type Ref,
     type Slot, type Trigger,
 } from '../../lib/workbench';
@@ -160,6 +160,8 @@ export function ActionList({actions, change, problems, entry = false, max = 12, 
                     set(next as Action);
                 }}/>
                 {help && <small className="wb-help" title={help.help + (help.actsOnWolves ? " (Acts on players' wolves.)" : '')}>?</small>}
+                {a.do === 'effect' && refusable(cat, a.effect.kind) && <RefusalPicker effect={a.effect} reward={rewards}
+                    change={effect => set({...a, effect} as Action)}/>}
                 <span className="wb-tools"><button type="button" disabled={!i} onClick={() => move(i, i - 1)} title="Earlier" aria-label={'Move action ' + (i + 1) + ' earlier'}>↑</button>
                     <button type="button" disabled={i === actions.length - 1} onClick={() => move(i, i + 1)} title="Later" aria-label={'Move action ' + (i + 1) + ' later'}>↓</button>
                     <button type="button" className="wb-x" onClick={() => change(actions.filter((_, n) => n !== i))} title="Remove" aria-label={'Remove action ' + (i + 1)}>×</button></span>
@@ -175,6 +177,28 @@ export function ActionList({actions, change, problems, entry = false, max = 12, 
             }}/>
             : <button type="button" className="wb-add" onClick={() => setAdding(true)}>{rewards ? '+ reward' : entry ? '+ effect' : '+ action'}</button>}</li>}
     </ol>;
+}
+
+/** Doc 85, 3.5 and Phase 7: what the runner does if the game refuses a world effect: pause the story (the default), note
+ *  it and carry on, or hold it for its wolf until they are next in the world (for up to so many days). */
+function RefusalPicker({effect, reward, change}: {effect: Effect; reward: boolean; change: (e: Effect) => void}) {
+    const how = typeof effect.ifRefused === 'string' ? effect.ifRefused : '';
+    const toWolf = typeof effect.player === 'string' && effect.player !== '' && effect.player !== 'world' && effect.kind !== 'scene.play';
+    const set = (next: string, days?: number) => {
+        const {ifRefused: _i, waitDays: _w, ...rest} = effect; void _i; void _w;
+        change({...rest, ...(next ? {ifRefused: next} : {}), ...(next === 'when here' && days ? {waitDays: days} : {})} as Effect);
+    };
+    return <span className="wb-refusal" title="If the game refuses it (a wolf away, a purse short, a full pack)">
+        <select aria-label="If the game refuses it" value={how} onChange={e => set(e.target.value, typeof effect.waitDays === 'number' ? effect.waitDays : undefined)}>
+            <option value="">{reward && toWolf ? 'if refused: wait for the wolf' : 'if refused: pause the story'}</option>
+            <option value="pause">if refused: pause the story</option>
+            <option value="skip">if refused: note it, carry on</option>
+            {toWolf && <option value="when here">if refused: wait for the wolf</option>}
+        </select>
+        {how === 'when here' && <label> up to <input type="number" min={1} max={90} aria-label="Days to wait for the wolf"
+            value={typeof effect.waitDays === 'number' ? effect.waitDays : 7}
+            onChange={e => set('when here', Math.max(1, Math.min(90, Math.round(Number(e.target.value) || 7))))}/> days</label>}
+    </span>;
 }
 
 /** A phase's entry effects, as the action list shows them (effects only). */
