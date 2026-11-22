@@ -2384,6 +2384,18 @@ own), 17 of them orders new to the game; the catalogue's permission marks drive 
   values, the world variable read (23), fired again for Willow: chapter 2 finishes and chapter 3 starts (24-26); the workbench's Start
   the next chapter (30), a small quest from a library event (31); the guide (40-46: the start, a small quest, a campaign, what is
   undone, troubleshooting, a search, story.start's entry).
+- **The end-of-work check across all phases** (on a machine loaded to 80-115 by other sessions): ctest 123 of 123 but
+  `talk_scorecard_quick`, a timing gate that failed in the full run and passes alone three times out of three (Phase 9's build passes
+  and fails it the same); Python, every `tools/test_*.py` one at a time with `RATW_STORY_TEST_DSN` set (so `test_story_program`'s 17
+  runtime tests ran too), 1,263 tests with 10 failures, each one failing the same before this phase: the known nine (live edit, the
+  map and terrain exporters, the progression catalogue, the Dungeon Master mark's browser check in `test_live_map`, two of world
+  admin's, two of the world package's) and `test_story_facts_live` (a wolf's walk timed against the event flush: it passes alone and
+  fails the same on `r3-camp-p9`'s build under this load). Every P1-P9 story suite, `test_studio`, `test_dungeon_master`,
+  `test_world_db`, the live scene and siege tests pass. The Editor's tests (78 and 135), type check, render smoke (59 panels; the
+  workbench over 108, 11 and 2 programs, none edited) and build; the client's tests (244) and build.
+- **Going live** on `ratw_ridgemere3` needs, in order, the migrations no phase has applied there: 0071, 0072, 0073, 0074, 0075, 0076,
+  0077, 0078, 0079 (`world_db.migrate` applies them in that order); the game server rebuilt from this branch; the story runner
+  restarted (`tools/story_runner.py --world KEY`); the Editor (Studio and the desktop shell's Editor) and the client released from it.
 
 Total: about 147 hours (the ten phases' 137, and Phase 5b's 10). Later, not planned here: `belief.plant` and
 `npc.brief`, camera moves and fades in scenes, a cast chosen by a query (doc 34, 5.1), priorities between stories,
