@@ -19,13 +19,14 @@ import {EconomyTab} from './EconomyTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StoryCreator} from './StoryCreator';
+import {CampaignsTab} from './CampaignsTab';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
 import {MyWorldTab} from './MyWorldTab';
 import {greyed, sureText} from '../lib/acts';
 import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie, worldLabel} from './api';
 
-type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
+type Tab = 'npcs' | 'chapters' | 'stories' | 'campaigns' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
 // Making NPCs, their routes and areas, factions and talk are Atlas's (doc 66, section 3): the NPC tab here is live life.
 const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string}[] = [
@@ -33,6 +34,8 @@ const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string
     {id: 'npcs', label: 'NPC Life', icon: '☺', ready: true, blurb: ''},
     {id: 'chapters', label: 'Chapters', icon: '♞', ready: true, blurb: ''},
     {id: 'stories', label: 'Story Creator', icon: '✦', ready: true, blurb: ''},
+    // The running world stories, watched live (Docs/Design/85-story-triggers-and-campaign-control.md, section 5).
+    {id: 'campaigns', label: 'Campaigns', icon: '⚑', ready: true, blurb: ''},
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
     {id: 'prosperity', label: 'Prosperity', icon: '¤', ready: true, blurb: ''},
     // The staged economy's levers, applied to the running server (doc 79, 12); Prosperity is its read model and acts.
@@ -68,6 +71,7 @@ export function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
 export function DmSuite({me, target}: {me: Me; target: Target}) {
     const [tab, setTab] = useState<Tab>('live');
     const [openStories, setOpenStories] = useState(false);
+    const [campaign, setCampaign] = useState<string | undefined>();   // A run Story Creator just approved or published.
     const current = TABS.find(t => t.id === tab)!;
     // A host's Editor (doc 78, 2 and 7): one world, no imports or releases; its server tab is My world (status, Close and
     // Open, Restart, backups, settings, AI use, history).
@@ -84,7 +88,8 @@ export function DmSuite({me, target}: {me: Me; target: Target}) {
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : tab === 'stories' ? <StoryCreator key={JSON.stringify([target, me.username])} me={me} target={target}
-                openPersonal={() => {setOpenStories(true); setTab('players');}} />
+                openPersonal={() => {setOpenStories(true); setTab('players');}} openCampaigns={run => {setCampaign(run); setTab('campaigns');}} />
+            : tab === 'campaigns' ? <CampaignsTab me={me} target={target} key={target} focus={campaign} />
             : tab === 'health' ? <HealthTab target={target} key={target} />
             : tab === 'server' ? (me.hosted ? <MyWorldTab me={me} key={target} /> : <ServerTab me={me} target={target} key={target} />)
             : tab === 'prosperity' ? <ProsperityTab target={target} key={target} me={me} />

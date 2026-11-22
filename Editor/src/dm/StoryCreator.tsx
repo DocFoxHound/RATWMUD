@@ -24,7 +24,8 @@ function read(key: string) {
     } catch { return {book: blank(), raw: null, error: 'The saved story library could not be read. Browser storage may be unavailable.'}; }
 }
 
-export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target; openPersonal: () => void}) {
+export function StoryCreator({me, target, openPersonal, openCampaigns}: {me: Me; target: Target; openPersonal: () => void;
+    openCampaigns?: (run: string) => void}) {
     const key = 'ratw.story-creator.v1.' + JSON.stringify([target, me.account || me.username]);
     const [store, setStore] = useState(() => read(key));
     const fileInput = useRef<HTMLInputElement>(null);
@@ -107,7 +108,7 @@ export function StoryCreator({me, target, openPersonal}: {me: Me; target: Target
             openProgram={p=>{if(window.confirm('Open this release in World stories and replace the current world-story draft?')){
                 try{localStorage.setItem(key+'.world-program',JSON.stringify(p,null,2));setMode('program');}
                 catch{setFileError('Could not save the release draft. Browser storage is unavailable.');}
-            }}}/>:mode === 'program' ? <StoryProgramPanel sceneLibraryKey={key+'.scenes'} world={world} canDirect={editable} key={key} target={target} storageKey={key + '.world-program'}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
+            }}}/>:mode === 'program' ? <StoryProgramPanel sceneLibraryKey={key+'.scenes'} world={world} canDirect={editable} key={key} target={target} storageKey={key + '.world-program'} openCampaigns={openCampaigns}/> : mode === 'write' ? <div className="story-columns"><section className="dm-panel">
             <fieldset disabled={!editable}><label>Story title<input value={draft.title} onChange={e => edit({title:e.target.value})}/></label>
             <StoryPicker world={world} roster={roster} resident={draft.resident} place={draft.place}
                 onResident={resident => edit({resident})} onPlace={place => edit({place})} />

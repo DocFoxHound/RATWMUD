@@ -28,9 +28,16 @@ try {
             // (M9: Share my world, ready: the file, its size and where it is.)
             'Share my world', 'Ready: ashfall-2026-11-12.ratwpkg (46 MB)', 'C:\\Users\\Ann\\OneDrive\\ratw-world\\manage\\shared\\ashfall-2026-11-12.ratwpkg'],
         'My world (dm)': ['Your sign-ins', 'are for its owner', 'Only the world&#x27;s owner can do this.', 'Making the file…'],
+        // (Doc 85, Phase 1: the Campaigns console, a running and a paused run.)
+        'Campaigns': ['Ninety days on the winter ferries', '1 here now', '1 needs you', 'watch-round day 17.0 (in 4.1 days), every 7 days',
+            'offer-a-coil · Birch Oakenfall', 'Paused: Action 5514 refused', 'Ended 1'],
+        'Campaigns (running)': ['Waiting for', 'enrol', '[ferry-watch]', 'next: deep-freeze', 'offer-a-coil', 'Birch Oakenfall', 'Reed Ford (31, 36)',
+            'offer-a-coil: when gift (item rope, target Ivo Tarmarsh)', 'Stop…'],
+        'Campaigns (paused)': ['Retry the refused order', 'deed.award → Ash Greymantle', 'REFUSED', 'waiting behind #5514', 'story.practice → Ash Greymantle'],
+        'Campaigns (viewer)': ['it needs a Dungeon Master account'],
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
-    const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139']};
+    const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {
         assert.ok(text.length > 100, `${name}: rendered`);

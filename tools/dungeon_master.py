@@ -2744,7 +2744,12 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         elif op in ('signal', 'signal-ticket', 'voice', 'voice-ticket', 'retry', 'stop'):
                             result = story_runner.direct(conn, world, op, {**data, 'operator':who['username']})
                         elif op == 'status':
-                            result = story_runner.status(conn, world, data.get('run'), data.get('beforeVisit'), data.get('beforeTrigger'))
+                            result = story_runner.status(conn, world, data.get('run'), data.get('beforeVisit'), data.get('beforeTrigger'),
+                                                         data.get('since'), data.get('have'))
+                        elif op == 'timeline':   # (The Campaigns console, doc 85, 5.3: a read.)
+                            result = story_runner.timeline(conn, world, data.get('run', ''), data.get('before'), data.get('since'),
+                                                           data.get('kinds'), data.get('wolf') or None, data.get('trigger') or None,
+                                                           data.get('limit', story_runner.TIMELINE_PAGE))
                         elif op == 'atlas.search':
                             result = story_runner.atlas(conn, world, data.get('query',''))
                         elif op == 'npc.context':

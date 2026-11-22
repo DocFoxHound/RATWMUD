@@ -14,6 +14,8 @@ import {MarketPanel} from './studio/MarketPanel';
 import {ProsperityTab} from './dm/ProsperityTab';
 import {MyWorldTab} from './dm/MyWorldTab';
 import type {MyWorld} from './dm/api';
+import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
+import type {Order, RunDetail, RunRow} from './lib/campaigns';
 
 const none = () => {};
 const view = (slim: boolean): EconomyData => ({
@@ -81,6 +83,47 @@ const myWorld = (owner: boolean): MyWorld => ({
     ...(owner ? {folder: 'C:\\Users\\Ann\\OneDrive\\ratw-world', exits: [{at: now - 600, code: 139, lines: ['the world server stopped']}]} : {}),
 } as unknown as MyWorld);
 
+
+// The Campaigns console (doc 85, Phase 1): a running and a paused run as tools/story_runner.py's status and timeline
+// give them.
+const at = '2026-11-21T10:00:00+00:00', earlier = '2026-11-21T07:00:00+00:00';
+const refused: Order = {id: 5514, kind: 'deed.award', target: 'player-ash', status: 'refused', result: 'that wolf is not in the world just now',
+    by: 'martin', at: earlier, doneAt: earlier, age: 10800};
+const runningRow: RunRow = {run: 'world-9f2c', title: 'Ninety days on the winter ferries', status: 'running', digest: 'a41c9e00', approver: 'martin',
+    approvedAt: earlier, phase: 'ferry-watch', problem: '', visit: 2, entered: 10, cohort: ['player-ash', 'player-birch', 'player-elm'], wolves: 3,
+    missions: [], behind: {events: 0, seconds: 0}, alerts: [], ending: false,
+    last: {type: 'trigger', trigger: 'offer-a-coil', actor: 'player-birch', day: 12.5, at, phase: 'ferry-watch'},
+    waiting: [{on: 'timer', name: 'watch-round', signal: 'watch-round', at: 17, clock: 'game', actor: 'player-ash', repeat: 7, scope: 'campaign'},
+        {on: 'timer', name: 'first-freeze', signal: 'first-freeze', at: 38, clock: 'game', actor: 'player-ash', repeat: 0, scope: 'campaign'},
+        {on: 'wolves', events: ['gift'], what: [{source: 'trigger', id: 'offer-a-coil', on: 'gift', match: {item: 'rope', target: 'rm111'}}]}]};
+const pausedRow: RunRow = {run: 'world-77ab', title: 'Two ways across Reed Ford', status: 'paused', digest: 'c0ffee11', approver: 'martin', approvedAt: earlier,
+    phase: 'crossing', problem: 'Action 5514 refused: that wolf is not in the world just now', visit: 3, entered: 11, cohort: ['player-ash', 'player-birch'],
+    wolves: 2, missions: [{id: 'passengers', title: 'Account for the passengers', mode: 'individual', completed: 1, required: 2, ready: false, optional: false}],
+    behind: {events: 0, seconds: 0}, last: {type: 'phase', phase: 'crossing', day: 11, at: earlier, visit: 3, cause: 'event 4102'}, ending: false,
+    alerts: [{kind: 'paused', needsYou: true, problem: 'Action 5514 refused: that wolf is not in the world just now'}],
+    waiting: [{on: 'admin', problem: 'Action 5514 refused', order: refused}, {on: 'send', effects: [{kind: 'story.practice', player: 'player-ash', skill: 'travel'}]}]};
+const names = {'player-ash': 'Ash Greymantle', 'player-birch': 'Birch Oakenfall', 'player-elm': 'Elm Sandpaw', rm111: 'Ivo Tarmarsh', ford: 'Reed Ford'};
+const campaignList: CampaignsInitial = {overview: {runs: [runningRow, pausedRow, {run: 'world-old', title: 'The hidden pup', status: 'complete', digest: 'beef',
+    approver: 'martin', approvedAt: earlier, phase: null, problem: '', visit: 4, wolves: 9}], now: {day: 12.9, newest: 48211, at}, names},
+    live: {target: 'dev', frame: {day: 12.9, people: [['player-ash', 'Ash Greymantle', 'p', 'ford', 31, 36, 0, '', 'walking'],
+        ['player-birch', 'Birch Oakenfall', 'o', 'ford', 3, 4, 0, '', '']], shops: []}, age: 2, events: [], actions: []}};
+const detailOf = (row: RunRow, extra: Partial<RunDetail>): RunDetail => ({...row, state: {phase: row.phase!, entered: row.entered!, cohort: row.cohort!, votes: {}, visits: row.visit!, actor: '',
+    counters: {story: {stores: 5, watches: 1}, player: {'player-birch': {hauled: 2}}},
+    timers: {'watch-round': {signal: 'watch-round', at: 17, clock: 'game', actor: 'player-ash', interval: 7, scope: 'campaign'}}},
+    program: {id: 'winter-ferries', title: row.title}, approvedBy: 'martin', cursor: 48211, now: {day: 12.9, newest: 48211, at}, guestVoices: [], directions: [], signals: [],
+    history: [{visit: 2, phase: row.phase!, day: 10, cause: 'event 47002', receipts: [5512]}, {visit: 1, phase: 'enrol', day: 10, cause: 'published', receipts: [5510]}],
+    trace: [], actions: [], orders: [], missionsNow: [], directed: ['rm111'], regions: [{id: 'landing', cell: 'ford', x1: 29, y1: 34, x2: 34, y2: 38}],
+    phases: [{id: 'enrol', to: ['ferry-watch'], missions: 0}, {id: row.phase!, to: ['deep-freeze'], missions: 0}], start: 'enrol', listening: [], names, ...extra});
+const campaignRunning: CampaignsInitial = {...campaignList, tab: 'overview', detail: detailOf(runningRow, {}), timeline: {run: runningRow.run, names, events: {
+    '47002': {id: 47002, kind: 'gift', actor: 'player-birch', target: 'rm111', cell: 'ford', item: 'rope', quantity: 2, coins: 0, detail: '', day: 12.5, x: 31, y: 36, at}},
+    before: null, since: {visit: 2, trigger: 9, order: 5513, at}, now: at, items: [
+        {key: 't:9', type: 'trigger', id: 9, visit: 2, phase: 'ferry-watch', trigger: 'offer-a-coil', actor: 'player-birch', day: 12.5, actions: ['add'], event: 47002, on: 'gift', cell: 'ford', x: 31, y: 36, at},
+        {key: 'o:5513', type: 'order', id: 5513, kind: 'story.phase', target: runningRow.run, status: 'applied', result: '', by: 'martin', at: earlier, doneAt: earlier, visit: 2},
+        {key: 'v:2', type: 'phase', visit: 2, phase: 'ferry-watch', day: 10, cause: 'event 47001', receipts: [5513], at: earlier}]}};
+const campaignPaused: CampaignsInitial = {...campaignList, tab: 'orders', detail: detailOf(pausedRow, {orders: [refused,
+    {...refused, id: 5513, kind: 'story.phase', target: pausedRow.run, status: 'applied', result: ''}]}),
+    timeline: {run: pausedRow.run, names, events: {}, before: null, since: {}, now: at, items: []}};
+
 export function renderAll(): Record<string, string> {
     const me = {username: 'dm-user', role: 'dm'} as unknown as Me;
     const out: Record<string, string> = {};
@@ -102,5 +145,9 @@ export function renderAll(): Record<string, string> {
     out['My world (share failed)'] = renderToString(<MyWorldTab me={{username: 'host-k7q2#3f2a1c', role: 'owner', hosted: true} as Me}
         initial={{...myWorld(true), share: {state: 'failed', at: now, started: now, file: null, size: null, kept: 3, thisHour: 1, perHour: 3,
             waiting: false, snapshot: false, files: [], problem: {code: 'disk', free: 300 * 1024 ** 2, need: 1280 * 1024 ** 2, where: 'folder'}}}} />);
+    out['Campaigns'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignList} />);
+    out['Campaigns (running)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignRunning} />);
+    out['Campaigns (paused)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignPaused} />);
+    out['Campaigns (viewer)'] = renderToString(<CampaignsTab me={{username: 'v', role: 'viewer'} as Me} target="dev" initial={campaignList} />);
     return out;
 }

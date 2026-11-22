@@ -13,20 +13,18 @@ function tracePlace({cell,x,y}:TraceTile) {
     return cell && x!==undefined && y!==undefined?' · '+cell+' ('+x+', '+y+')':'';
 }
 interface Report {uncoveredTriggers?:string[]; uncovered:string[]; voices:{phase:string;npc:string}[]; digest: string; passed: boolean; tests: {triggers?:(TraceTile & {phase:string;trigger:string;event?:string;on:string;signal?:string})[]; counters?:Record<string,unknown>; missionVisits?:{phase:string;visit:number;credits:Record<string,string[]>}[]; name:string; passed:boolean; path:string[]; expected:string[]; effects:Record<string,unknown>[]}[]; effects: Record<string,unknown>[]}
-interface Release {run:string; title:string; status:string; phase:string; problem:string}
-interface Details {trace?:(TraceTile & {id:number;visit:number;phase:string;trigger:string;actor:string;day:number;actions:string[]})[]; beforeVisit?:number;beforeTrigger?:number;guestVoices:string[]; directions:{npc:string;visit:number;receipt:number;status:string}[]; status:string; state:{counters?:Record<string,unknown>;timers?:Record<string,{at:number;clock?:string}>;cohort:string[]; votes:Record<string,string[]>} | null; signals:string[]; history:{visit:number;phase:string;day:number;cause:string;missions?:{id:string;title:string;completed:number;required:number;ready:boolean}[]}[];
-    actions:{id:number;kind:string;status:string;result:string}[]}
 const pretty = (value: unknown) => JSON.stringify(value,null,2);
 
-export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, canDirect}: {sceneLibraryKey:string;world:Project|null;target:Target; storageKey:string; canDirect:boolean}) {
+// A story approved and published here is watched and directed in the Campaigns tab (Docs/Design/85, 5.1: the Releases
+// panel that was beside the editor moved there).
+export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, canDirect, openCampaigns}: {sceneLibraryKey:string;world:Project|null;target:Target; storageKey:string; canDirect:boolean;
+    openCampaigns?:(run:string)=>void}) {
     const [catalog,setCatalog] = useState<Catalogue>();
     const [source,setSource] = useState(() => { try { return localStorage.getItem(storageKey) ?? ''; } catch { return ''; } });
     const [report,setReport] = useState<Report>();
     const [ticket,setTicket] = useState('');
-    const [runs,setRuns] = useState<Release[]>([]);
     const [selected,setSelected] = useState('');
-    const [details,setDetails] = useState<Details>();
-    const [direction,setDirection] = useState('');
+    const [published,setPublished] = useState('');
     const [search,setSearch] = useState('');
     const [places,setPlaces] = useState<{kind:string;id:string;name:string}[]>([]);
     const [resident,setResident] = useState<{resident:{id:string;name:string}}>();
@@ -39,33 +37,15 @@ export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, can
         }).catch(e => {if (active) setFeedback(e.message);});
         return () => {active = false;};
     }, [target]);
-    useEffect(() => {
-        let active = true;
-        if (!canDirect) return;
-        storyProgram<{runs:Release[]}>(target,'status').then(r => {if (active) setRuns(r.runs);})
-            .catch(e => {if (active) setFeedback(e.message);});
-        return () => {active=false;};
-    }, [target]);
     let program: Program | undefined;
     try {program = JSON.parse(source);} catch { /* Raw editing includes incomplete JSON. */ }
     function edit(text:string) {
-        setSource(text); setTicket(''); setReport(undefined); setFeedback('');
+        setSource(text); setTicket(''); setReport(undefined); setFeedback(''); setPublished('');
         try {localStorage.setItem(storageKey,text);} catch {setFeedback('Browser storage is full or unavailable. Export a copy to keep this draft.');}
     }
     async function perform(work:()=>Promise<void>) {
         setBusy(true); setFeedback('');
         try {await work();} catch (e) {setFeedback(e instanceof Error ? e.message : String(e));} finally {setBusy(false);}
-    }
-    async function refresh(run=selected) {
-        const list = await storyProgram<{runs:Release[]}>(target,'status');
-        setRuns(list.runs);
-        if (run) {setDetails(await storyProgram<Details>(target,'status',{run})); setSelected(run);}
-    }
-    async function earlier(kind:'beforeVisit'|'beforeTrigger'){
-        if(!details?.[kind]) return;
-        const page=await storyProgram<Details>(target,'status',{run:selected,[kind]:details[kind]});
-        setDetails(kind==='beforeVisit'?{...details,history:[...details.history,...page.history],beforeVisit:page.beforeVisit}
-            :{...details,trace:[...(details.trace ?? []),...(page.trace ?? [])],beforeTrigger:page.beforeTrigger});
     }
     const editableGraph = program && (program.regions===undefined || (Array.isArray(program.regions) && program.regions.every(editableRegion))) && (program.triggers===undefined || (Array.isArray(program.triggers) && program.triggers.every(editableRule))) && Array.isArray(program.tests) && program.tests.every(c=>c && typeof c.name==='string'
         && (c.expectEffects===undefined || (Array.isArray(c.expectEffects) && c.expectEffects.every(e=>e && typeof e.phase==='string')))
@@ -116,40 +96,16 @@ export function StoryProgramPanel({sceneLibraryKey,world,target, storageKey, can
             <details><summary>Version fingerprint</summary><code>{report.digest}</code></details>
             <button disabled={!canDirect || !reviewed || busy || !!ticket} onClick={() => void perform(async () => {
                 const r=await storyProgram<{ticket:string;run:string}>(target,'approve',{program,digest:report.digest});
-                setTicket(r.ticket); setSelected(r.run); await refresh(r.run);
+                setTicket(r.ticket); setSelected(r.run);
             })}>Approve this version for {worldName(target)}</button></section>}
         {ticket && <fieldset disabled={busy}><label>Publication ticket<input readOnly value={ticket} onFocus={e=>e.target.select()}/></label>
-            <button onClick={() => void perform(async () => {const r=await storyProgram<{run:string}>(target,'publish',{ticket}); setTicket(''); await refresh(r.run);})}>Publish approved story</button></fieldset>}
+            <button onClick={() => void perform(async () => {const r=await storyProgram<{run:string}>(target,'publish',{ticket}); setTicket(''); setPublished(r.run);})}>Publish approved story</button>
+            {openCampaigns && selected && <button onClick={()=>openCampaigns(selected)}>Open in Campaigns</button>}</fieldset>}
+        {published && <p className="hint">Published. {openCampaigns && <button onClick={()=>openCampaigns(published)}>Open in Campaigns</button>}</p>}
         {feedback && <p role="alert">{feedback}</p>}
-    </section>{canDirect && <aside className="dm-panel"><h3>Releases in {worldName(target)}</h3>
-        <button disabled={busy} onClick={() => void perform(() => refresh())}>Refresh releases</button>
-        {runs.length===0 && <p>No releases listed.</p>}
-        <ul>{runs.map(r=><li key={r.run}><button disabled={busy} aria-pressed={r.run===selected} onClick={()=>void perform(async()=>{setDirection(''); await refresh(r.run);})}>{r.title} · {r.status}</button>
-            {r.problem && <p>{r.problem}</p>}</li>)}</ul>
-        {details && <>{details.state && <p>{details.state.cohort.length} eligible players
-            {Object.entries(details.state.votes).map(([i,players])=> <span key={i}> · Trigger {Number(i)+1} has {players.length} participants</span>)}</p>}
-            {details.state?.counters && <details><summary>Story and player counters</summary><pre>{pretty(details.state.counters)}</pre></details>}
-            {details.state?.timers && Object.keys(details.state.timers).length>0 && <details><summary>Active timers</summary><ul>{Object.entries(details.state.timers).map(([name,t])=><li key={name}>{name} · {t.clock==='real'?'real day since publication':'world day'} {Number(t.at.toFixed(3))}</li>)}</ul></details>}
-            <h4>Run history</h4><ol>{details.history.map(h=><li key={h.visit}>{h.phase} · day {h.day.toFixed(2)} · {h.cause}{!!h.missions?.length && <ul>{h.missions.map(m=><li key={m.id}>{m.title} · {m.ready?'complete':m.completed+' / '+m.required+' completions'}</li>)}</ul>}</li>)}</ol>
-            {details.beforeVisit && <button disabled={busy} onClick={()=>void perform(()=>earlier('beforeVisit'))}>Earlier phase visits</button>}
-            {!!details.trace?.length && <details><summary>Live trigger history</summary><ol>{details.trace.map(t=><li key={t.id}>{t.trigger} · {t.phase} · day {Number(t.day.toFixed(2))}
-                {t.actor?' · '+t.actor:''}{tracePlace(t)}<br/>{t.actions.join(' → ')}</li>)}</ol>
-                {details.beforeTrigger && <button disabled={busy} onClick={()=>void perform(()=>earlier('beforeTrigger'))}>Earlier trigger firings</button>}</details>}
-            <ul>{details.actions.map(a=><li key={a.id}>{a.kind} · {a.status} {a.result}</li>)}</ul>
-            {details.signals.map(signal=><button key={signal} disabled={busy} onClick={()=>void perform(async()=>{
-                const r=await storyProgram<{ticket:string}>(target,'signal-ticket',{run:selected,signal}); setDirection(r.ticket);
-            })}>Allow direction “{signal}” once</button>)}
-            {details.guestVoices?.map(npc=><button key={npc} disabled={busy} onClick={()=>void perform(async()=>{
-                const r=await storyProgram<{ticket:string}>(target,'voice-ticket',{run:selected,npc}); setDirection(r.ticket);
-            })}>Allow one guest line for {npc}</button>)}
-            {details.directions?.map(d=><p key={d.receipt}>{d.npc} · visit {d.visit} · {d.status}</p>)}
-            {direction && <label>Direction ticket<input readOnly value={direction} onFocus={e=>e.target.select()}/></label>}
-            {details.status==='paused' && details.actions.at(-1)?.status==='refused' && <button disabled={busy}
-                onClick={()=>void perform(async()=>{await storyProgram(target,'retry',{run:selected}); await refresh();})}>Retry refused or expired action</button>}
-            {['approved','running','paused'].includes(details.status) && <button disabled={busy} onClick={()=>{
-                if(window.confirm('Stop this run and cancel future phases? Effects already delivered stay in the world.'))
-                    void perform(async()=>{await storyProgram(target,'stop',{run:selected}); setDirection(''); setTicket(''); await refresh();});
-            }}>Stop run</button>}</>}
+    </section>{canDirect && <aside className="dm-panel"><h3>For an author</h3>
+        <p className="hint">The stories running in {worldName(target)} are watched in the Campaigns tab.
+            {openCampaigns && <> <button onClick={()=>openCampaigns('')}>Open Campaigns</button></>}</p>
         <details><summary>World references for an author</summary>
             <label>Search Atlas names and IDs<input value={search} onChange={e=>setSearch(e.target.value)}/></label>
             <button disabled={busy} onClick={()=>void perform(async()=>{const r=await storyProgram<{matches:typeof places}>(target,'atlas.search',{query:search}); setPlaces(r.matches); setResident(undefined);})}>Find references</button>

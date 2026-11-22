@@ -1,6 +1,7 @@
 """World-scoped approval, delivery and deterministic event consumption for DM story programs."""
 
 import argparse
+import datetime
 import hashlib
 import json
 import secrets
@@ -731,45 +732,355 @@ def direct(conn, world, op, data):
     return {'run': run, 'phase': state['phase']}
 
 
-def status(conn, world, run=None, before_visit=None, before_trigger=None):
-    if not run:
-        rows = conn.execute(
-            """SELECT id,program->>'title',status,digest,approved_by,state->>'phase',problem
-                               FROM dm.story_releases WHERE world_id=%s ORDER BY approved_at DESC LIMIT 100""",
-            (world,),
-        )
-        return {
-            'runs': [dict(zip(('run', 'title', 'status', 'digest', 'approver', 'phase', 'problem'), r)) for r in rows]
-        }
+# ----------------------------------------------------------------------------------------------- the Campaigns console
+# Doc 85, section 5 and Phase 1 ("See it"): reads over the tables the runner already keeps (dm.story_releases,
+# dm.story_transitions, dm.story_trigger_history, dm.actions), with names for every id. Nothing here writes.
+
+LIVE_STATUSES = ('approved', 'running', 'paused')
+# The first values of doc 85, 5.6 (adjustable per world later, Phase 3).
+ALERTS = {'gameSeconds': 60, 'behindEvents': 2000, 'behindSeconds': 60, 'quietHours': 24}
+RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt')
+TIMELINE_PAGE = 60
+
+
+def _iso(moment):
+    return moment.isoformat() if moment is not None else None
+
+
+def names(conn, world, ids):
+    """Names for the ids a console shows (residents, wolves, places, factions): never a bare id where a name exists."""
+    ids = sorted({i for i in ids if isinstance(i, str) and i and i != '$actor'})
+    if not ids:
+        return {}
+    rows = conn.execute(
+        """SELECT id,name FROM dm.story_residents WHERE world_id=%s AND id=ANY(%s)
+           UNION ALL SELECT key,name FROM game.characters WHERE world_id=%s AND key=ANY(%s) AND name IS NOT NULL
+           UNION ALL SELECT id,name FROM world.cells WHERE world_id=%s AND id=ANY(%s)
+           UNION ALL SELECT id,name FROM world.interiors WHERE world_id=%s AND id=ANY(%s)
+           UNION ALL SELECT id,name FROM live.factions WHERE world_id=%s AND id=ANY(%s)""",
+        (world, ids) * 5,
+    )
+    return {i: n for i, n in rows if n}
+
+
+def _now(conn, world):
+    """The world's clock and log as the console sees them: game day (None before the first save), newest event, now."""
     row = conn.execute(
-        'SELECT status,state,problem,receipts,program FROM dm.story_releases WHERE world_id=%s AND id=%s',
+        """SELECT (SELECT (payload::jsonb->>'calendarDays')::float8 FROM game.checkpoints WHERE world_id=%s),
+                  (SELECT id FROM game.events WHERE world_id=%s ORDER BY id DESC LIMIT 1), statement_timestamp()""",
+        (world, world),
+    ).fetchone()
+    return {'day': row[0], 'newest': row[1] or 0, 'at': row[2]}
+
+
+def _effects_due(program, state):
+    """A visit's orders in the order the runner sends them: the phase order (already sent), then entry effects."""
+    phase = rules.phase_of(program, state)
+    effects = [*state.get('arrivalEffects', []), *(e for e in phase['effects'] if e['kind'] != 'npc.line')]
+    if effects and not (phase['exits'] or phase.get('triggers')):
+        effects.append({'kind': 'story.finish'})
+    return phase, effects
+
+
+def _orders(conn, ids):
+    if not ids:
+        return {}
+    rows = conn.execute(
+        """SELECT id,kind,target_id,status,result,requested_by,requested_at,done_at,
+                  extract(epoch from statement_timestamp()-requested_at)::float8 FROM dm.actions WHERE id=ANY(%s)""",
+        (list(ids),),
+    )
+    return {
+        r[0]: {'id': r[0], 'kind': r[1], 'target': r[2], 'status': r[3], 'result': r[4], 'by': r[5],
+               'at': _iso(r[6]), 'doneAt': _iso(r[7]), 'age': round(r[8], 1)}
+        for r in rows
+    }
+
+
+def _listening(phase):
+    """What the phase can still react to: its exits and triggers, as plain facts for the console to word."""
+    out = []
+    for index, edge in enumerate(phase['exits']):
+        out.append({'source': 'exit', 'index': index, 'on': edge['on'], 'to': edge['to'],
+                    **{k: edge[k] for k in ('match', 'afterDays', 'missions', 'players', 'percent', 'signal') if k in edge}})
+    for t in phase.get('triggers', []):
+        out.append({'source': 'trigger', 'id': t['id'], 'on': t['on'],
+                    'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
+                    'once': t.get('once', 'each'), 'audience': t.get('audience', 'world'),
+                    **{k: t[k] for k in ('match', 'afterDays', 'signal') if k in t}})
+    return out
+
+
+def _waiting(program, state, status, problem, receipts, orders):
+    """What a run is waiting for, most pressing first (doc 85, 5.2): the admin, the game, the clock, the wolves.
+    Raw facts; Editor/src/lib/campaigns.ts words them."""
+    if status == 'approved':
+        return [{'on': 'publish'}]
+    if status not in ('running', 'paused') or not state:
+        return []
+    out = []
+    pending = [state[k] for k in RECEIPT_KEYS if k in state]
+    if status == 'paused':
+        stuck = next((orders[i] for i in [*pending, *(receipts[-1:])] if i in orders and orders[i]['status'] != 'applied'), None)
+        out.append({'on': 'admin', 'problem': problem, **({'order': stuck} if stuck else {})})
+    for i in [*pending, *(receipts[-1:])]:
+        if i in orders and orders[i]['status'] == 'queued':
+            out.append({'on': 'game', 'order': orders[i]})
+            break
+    phase, effects = _effects_due(program, state)
+    unsent = effects[max(0, len(receipts) - 1):] if receipts else effects
+    unsent = [*unsent, *state.get('triggerEffects', [])]
+    if unsent:
+        out.append({'on': 'send', 'effects': unsent})
+    timers = sorted(state.get('timers', {}).items(), key=lambda kv: (kv[1].get('clock', 'game'), kv[1]['at'], kv[0]))
+    for key, timer in timers[:8]:
+        out.append({'on': 'timer', 'name': key, 'signal': timer.get('signal', key), 'at': timer['at'],
+                    'clock': timer.get('clock', 'game'), 'actor': timer.get('actor', ''),
+                    'repeat': timer.get('interval', 0), 'scope': timer.get('scope', 'visit')})
+    listening = _listening(phase)
+    for edge in listening:
+        if edge['on'] == 'clock':
+            out.append({'on': 'clock', 'at': state['entered'] + edge.get('afterDays', 0), 'what': edge})
+    for edge in listening:
+        if edge['on'] == 'dm signal':
+            out.append({'on': 'direction', 'signal': edge.get('match', {}).get('detail', ''), 'what': edge})
+    wolves = [e for e in listening if e['on'] not in ('clock', 'dm signal', rules.triggers.SIGNAL)]
+    if wolves:
+        out.append({'on': 'wolves', 'events': sorted({e['on'] for e in wolves}), 'what': wolves[:16]})
+    if not (phase['exits'] or phase.get('triggers')) and not unsent:
+        out.append({'on': 'end'})
+    return out
+
+
+def _last_activity(conn, runs):
+    """For each run: its newest firing and its newest phase visit (with the real time of its newest order)."""
+    last = {r: {} for r in runs}
+    if not runs:
+        return last
+    for run, id_, entry, at in conn.execute(
+        """SELECT DISTINCT ON (run) run,id,entry,recorded_at FROM dm.story_trigger_history WHERE run=ANY(%s)
+           ORDER BY run,id DESC""",
+        (list(runs),),
+    ):
+        last[run]['trigger'] = {'type': 'trigger', 'id': id_, 'trigger': entry.get('trigger'), 'actor': entry.get('actor', ''),
+                                'day': entry.get('day'), 'phase': entry.get('phase'), 'at': at}
+    for run, visit, phase, day, cause, first, newest in conn.execute(
+        """SELECT DISTINCT ON (t.run) t.run,t.visit,t.phase,t.game_day,t.cause,
+                  (SELECT requested_at FROM dm.actions WHERE id=t.receipts[1]),
+                  (SELECT requested_at FROM dm.actions WHERE id=(SELECT max(x) FROM unnest(t.receipts) x))
+           FROM dm.story_transitions t WHERE t.run=ANY(%s) ORDER BY t.run,t.visit DESC""",
+        (list(runs),),
+    ):
+        last[run]['phase'] = {'type': 'phase', 'visit': visit, 'phase': phase, 'day': day, 'cause': cause, 'at': first}
+        last[run]['order'] = newest
+    return last
+
+
+def _summary_missions(phase, state):
+    return [
+        {k: m[k] for k in ('id', 'title', 'mode', 'completed', 'required', 'ready', 'optional')}
+        for m in rules.mission_snapshot(phase, state)
+    ] if phase.get('missions') else []
+
+
+def _behind(conn, world, cursor, newest, now):
+    if newest <= cursor:
+        return {'events': 0, 'seconds': 0}
+    first = conn.execute(
+        'SELECT recorded_at FROM game.events WHERE world_id=%s AND id>%s ORDER BY id LIMIT 1', (world, cursor)
+    ).fetchone()
+    return {'events': newest - cursor, 'seconds': round((now - first[0]).total_seconds(), 1) if first else 0}
+
+
+def _alerts(conn, world, status, problem, waiting, behind, last, cohort, now):
+    """Doc 85, 5.6: the alerts that need nothing new (Phase 1): paused, the game not answering, falling behind, quiet."""
+    out = []
+    if status == 'paused':
+        out.append({'kind': 'paused', 'needsYou': True, 'problem': problem})
+    if status not in ('running', 'paused'):
+        return out
+    game = next((w for w in waiting if w['on'] == 'game'), None)
+    if game and game['order']['age'] > ALERTS['gameSeconds']:
+        out.append({'kind': 'game', 'needsYou': False, 'order': game['order']})
+    elif status == 'running' and (behind['events'] > ALERTS['behindEvents'] or behind['seconds'] > ALERTS['behindSeconds']):
+        out.append({'kind': 'behind', 'needsYou': False, **behind})
+    if status == 'running' and cohort:
+        moments = [m for m in (last.get('trigger', {}).get('at'), last.get('phase', {}).get('at'), last.get('order')) if m]
+        latest = max(moments) if moments else None
+        if latest and (now - latest).total_seconds() > ALERTS['quietHours'] * 3600:
+            # Quiet only counts while its wolves were about: someone of the audience did something since.
+            seen = conn.execute(
+                """SELECT max(e.at) FROM unnest(%s::text[]) a(id) CROSS JOIN LATERAL
+                   (SELECT recorded_at AS at FROM game.events WHERE world_id=%s AND actor<>'' AND actor=a.id
+                    ORDER BY id DESC LIMIT 1) e""",
+                (cohort, world),
+            ).fetchone()[0]
+            if seen and seen > latest:
+                out.append({'kind': 'quiet', 'needsYou': False, 'hours': round((now - latest).total_seconds() / 3600, 1),
+                            'since': _iso(latest), 'wolfSeen': _iso(seen)})
+    return out
+
+
+def _run_receipts(conn, run, receipts, state):
+    """Every order a run has sent: each visit's receipts, the current visit's, and one waiting for its answer."""
+    by_visit = {}
+    for visit, ids in conn.execute('SELECT visit,receipts FROM dm.story_transitions WHERE run=%s', (run,)):
+        for i in ids:
+            by_visit.setdefault(i, visit)
+    extra = [*(receipts or []), *((state[k] for k in RECEIPT_KEYS if k in state) if state else [])]
+    for i in extra:
+        by_visit.setdefault(i, state.get('visits') if state else None)
+    return by_visit
+
+
+def _row_view(conn, world, row, now, last):
+    run, title, st, digest, who, approved_at, state, problem, cursor, receipts, program = row
+    view = {'run': run, 'title': title, 'status': st, 'digest': digest, 'approver': who, 'approvedAt': _iso(approved_at),
+            'phase': state.get('phase') if state else None, 'problem': problem}
+    if st == 'approved':
+        view['waiting'] = [{'on': 'publish'}]
+    if not state or program is None:
+        if st in ('complete', 'stopped') and state:
+            view.update(visit=state.get('visits'), wolves=len(state.get('cohort', [])))
+        return view
+    phase = rules.phase_of(program, state)
+    pending = [state[k] for k in RECEIPT_KEYS if k in state]
+    orders = _orders(conn, [*pending, *receipts[-1:]])
+    waiting = _waiting(program, state, st, problem, receipts, orders)
+    behind = _behind(conn, world, cursor, now['newest'], now['at']) if st == 'running' else {'events': 0, 'seconds': 0}
+    moment = [m for m in (last.get('trigger'), last.get('phase')) if m and m.get('at')]
+    view.update(
+        visit=state['visits'], entered=state['entered'], cohort=state.get('cohort', []), wolves=len(state.get('cohort', [])),
+        missions=_summary_missions(phase, state), waiting=waiting, behind=behind,
+        # (A firing and the visit it opened share a moment: the visit is the newer.)
+        last={**max(moment, key=lambda m: (m['at'], m['type'] == 'phase')), 'at': _iso(max(m['at'] for m in moment))}
+        if moment else None,
+        alerts=_alerts(conn, world, st, problem, waiting, behind, last, state.get('cohort', []), now['at']),
+        ending=not (phase['exits'] or phase.get('triggers')),
+    )
+    return view
+
+
+def overview(conn, world):
+    """The Campaigns list (doc 85, 5.2): every run of this world (100 newest), and for the live ones where each is,
+    who is in it, what happened last, what it is waiting for and its alerts."""
+    now = _now(conn, world)
+    rows = conn.execute(
+        """SELECT id,program->>'title',status,digest,approved_by,approved_at,
+                  CASE WHEN status=ANY(%s) THEN state END,problem,cursor,receipts,
+                  CASE WHEN status=ANY(%s) THEN program END
+           FROM dm.story_releases WHERE world_id=%s ORDER BY approved_at DESC LIMIT 100""",
+        (list(LIVE_STATUSES), list(LIVE_STATUSES), world),
+    ).fetchall()
+    # (An ended run's state is read only for its counts: its audience can be 500 ids.)
+    ended = {r: (v, n) for r, v, n in conn.execute(
+        """SELECT id,(state->>'visits')::int,jsonb_array_length(coalesce(state->'cohort','[]'::jsonb)) FROM dm.story_releases
+           WHERE world_id=%s AND NOT status=ANY(%s) AND state IS NOT NULL ORDER BY approved_at DESC LIMIT 100""",
+        (world, list(LIVE_STATUSES)),
+    )}
+    last = _last_activity(conn, [r[0] for r in rows if r[2] in LIVE_STATUSES])
+    runs = []
+    for r in rows:
+        view = _row_view(conn, world, r, now, last.get(r[0], {}))
+        if r[0] in ended:
+            view.update(visit=ended[r[0]][0], wolves=ended[r[0]][1])
+        runs.append(view)
+    ids = {i for v in runs for i in [*v.get('cohort', []), (v.get('last') or {}).get('actor', '')]}
+    return {'runs': runs, 'now': {'day': now['day'], 'newest': now['newest'], 'at': _iso(now['at'])},
+            'names': names(conn, world, ids), 'thresholds': ALERTS}
+
+
+def _program_ids(program):
+    """The ids a program names (residents, wolves, places, factions), for the console's names."""
+    ids = set(program['audience'].get('players', []))
+    for phase in rules.phases_of(program):
+        for e in rules.possible_effects(phase):
+            ids.update(v for k, v in e.items() if k in ('npc', 'player', 'resident', 'faction', 'other', 'cell', 'place', 'town'))
+        ids.update(phase.get('guestVoices', []))
+        for t in [*phase['exits'], *phase.get('triggers', []), *(o for m in phase.get('missions', []) for o in m['objectives'])]:
+            ids.update(v for k, v in t.get('match', {}).items() if k in ('actor', 'target', 'cell'))
+    for r in program.get('regions', []):
+        ids.add(r['cell'])
+    for scene in program.get('scenes', []):
+        ids.update(role['npc'] for role in scene.get('cast', []) if 'npc' in role)
+    return ids
+
+
+def directed(program):
+    """The residents a program directs or names (effects, guest voices, scene casts): marked on the console's map."""
+    out = set()
+    for phase in rules.phases_of(program):
+        for e in rules.possible_effects(phase):
+            if 'npc' in e:
+                out.add(e['npc'])
+        out.update(phase.get('guestVoices', []))
+    for scene in program.get('scenes', []):
+        out.update(role['npc'] for role in scene.get('cast', []) if 'npc' in role)
+    return sorted(out)
+
+
+def status(conn, world, run=None, before_visit=None, before_trigger=None, since=None, have=None):
+    """One run's state, history (100 visits a page), trigger firings (50 a page) and orders; with no run, the list.
+    Grown for the Campaigns console (doc 85, 5.9): the program (unless `have` is its digest), names for every id,
+    the current missions, what it waits for, its alerts, and `since` ({visit, trigger}) so a poll gets only what is
+    new."""
+    if not run:
+        return overview(conn, world)
+    row = conn.execute(
+        """SELECT id,program->>'title',status,digest,approved_by,approved_at,state,problem,cursor,receipts,program
+           FROM dm.story_releases WHERE world_id=%s AND id=%s""",
         (world, run),
     ).fetchone()
     rules.require(row, 'Unknown run.')
-    st, state, problem, ids, program = row
+    st, state, problem, ids, program = row[2], row[6], row[7], row[9], row[10]
     mission_program = any(p.get('missions') for p in rules.phases_of(program))
     if state:
-        ids = [*ids, *(state[k] for k in ('missionReceipt', 'triggerReceipt') if k in state)]
+        ids = [*ids, *(state[k] for k in RECEIPT_KEYS if k in state)]
     projection = ',missions' if mission_program else ''
-    for boundary in (before_visit, before_trigger):
-        rules.require(boundary is None or rules.integer(boundary, 1, 2**63 - 1), 'Invalid history cursor.')
-    visit_clause = ' AND visit < %s' if before_visit is not None else ''
+    since = since if isinstance(since, dict) else {}
+    for boundary in (before_visit, before_trigger, since.get('visit'), since.get('trigger')):
+        rules.require(boundary is None or rules.integer(boundary, 0, 2**63 - 1), 'Invalid history cursor.')
+    clauses, args = [], [run]
+    if before_visit is not None:
+        clauses.append(' AND visit < %s')
+        args.append(before_visit)
+    if since.get('visit') is not None:
+        clauses.append(' AND visit > %s')
+        args.append(since['visit'])
     history = conn.execute(
-        f'SELECT visit,phase,game_day,cause,receipts{projection} FROM dm.story_transitions WHERE run=%s{visit_clause} ORDER BY visit DESC LIMIT 101',
-        (run, before_visit) if visit_clause else (run,),
+        f'SELECT visit,phase,game_day,cause,receipts{projection} FROM dm.story_transitions WHERE run=%s{"".join(clauses)} '
+        'ORDER BY visit DESC LIMIT 101',
+        args,
     ).fetchall()
     trace = []
     if any(ph.get('triggers') for ph in rules.phases_of(program)):
-        trace_clause = ' AND id < %s' if before_trigger is not None else ''
+        clauses, args = [], [run]
+        if before_trigger is not None:
+            clauses.append(' AND id < %s')
+            args.append(before_trigger)
+        if since.get('trigger') is not None:
+            clauses.append(' AND id > %s')
+            args.append(since['trigger'])
         trace = conn.execute(
-            f'SELECT id,visit,entry FROM dm.story_trigger_history WHERE run=%s{trace_clause} ORDER BY id DESC LIMIT 51',
-            (run, before_trigger) if trace_clause else (run,),
+            f'SELECT id,visit,entry FROM dm.story_trigger_history WHERE run=%s{"".join(clauses)} ORDER BY id DESC LIMIT 51',
+            args,
         ).fetchall()
-    return {
+    now = _now(conn, world)
+    view = _row_view(conn, world, row, now, _last_activity(conn, [run]).get(run, {}) if st in LIVE_STATUSES else {})
+    receipt_visits = _run_receipts(conn, run, row[9], state)
+    orders = _orders(conn, sorted(receipt_visits, reverse=True)[:60])
+    trace_rows = [{'id': r[0], 'visit': r[1], **r[2]} for r in trace[:50]]
+    who = {*(state.get('cohort', []) if state else []), *_program_ids(program),
+           *(t.get('actor', '') for t in trace_rows), *(o['target'] for o in orders.values())}
+    result = {
+        **view,
         'run': run,
         'status': st,
         'state': state,
         'problem': problem,
+        'approvedBy': row[4],
+        'cursor': row[8],
+        'now': {'day': now['day'], 'newest': now['newest'], 'at': _iso(now['at'])},
         'guestVoices': rules.phase_of(program, state).get('guestVoices', []) if state and st == 'running' else [],
         'directions': [
             dict(zip(('npc', 'visit', 'receipt', 'status'), r))
@@ -784,13 +1095,137 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None):
         else [],
         'history': [dict(zip(('visit', 'phase', 'day', 'cause', 'receipts', 'missions'), r)) for r in history[:100]],
         'beforeVisit': history[99][0] if len(history) > 100 else None,
-        'trace': [{'id': row[0], 'visit': row[1], **row[2]} for row in trace[:50]],
+        'trace': trace_rows,
         'beforeTrigger': trace[49][0] if len(trace) > 50 else None,
         'actions': [
             dict(zip(('id', 'kind', 'status', 'result'), r))
             for r in conn.execute('SELECT id,kind,status,result FROM dm.actions WHERE id=ANY(%s) ORDER BY id', (ids,))
         ],
+        'orders': [{**o, 'visit': receipt_visits.get(i)} for i, o in sorted(orders.items(), reverse=True)],
+        'missionsNow': rules.mission_snapshot(rules.phase_of(program, state), state) if state and mission_program else [],
+        'directed': directed(program),
+        'regions': program.get('regions', []),
+        'phases': [{'id': p['id'], 'to': sorted({e['to'] for e in p['exits']} | {
+            a['phase'] for t in [*rules.effective_phase(program, p).get('triggers', [])] for a in t['actions'] if a['do'] == 'enter'}),
+            'missions': len(p.get('missions', []))} for p in program['phases']],
+        'start': program['start'],
+        'listening': _listening(rules.phase_of(program, state)) if state else [],
+        'names': names(conn, world, who),
     }
+    if have != row[3]:
+        result['program'] = program
+    return result
+
+
+def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, trigger=None, limit=TIMELINE_PAGE):
+    """One list, newest first, merged from phase visits, triggers fired and orders with their receipts (doc 85, 5.3;
+    admin commands join it in Phase 2). `before` pages back ({visit, trigger, order}); `since` ({visit, trigger,
+    order, at}) returns only what is newer, and the orders answered since `at`."""
+    row = conn.execute('SELECT program,state,receipts FROM dm.story_releases WHERE world_id=%s AND id=%s', (world, run)).fetchone()
+    rules.require(row, 'Unknown run.')
+    program, state, receipts = row
+    before = before if isinstance(before, dict) else {}
+    since = since if isinstance(since, dict) else {}
+    for value in (*before.values(), *(v for k, v in since.items() if k != 'at')):
+        rules.require(value is None or rules.integer(value, 0, 2**63 - 1), 'Invalid timeline cursor.')
+    rules.require(rules.integer(limit, 1, 200), 'Ask for 1 to 200 timeline rows.')
+    kinds = set(kinds or ('phase', 'trigger', 'order'))
+    rules.require(kinds <= {'phase', 'trigger', 'order'}, 'Unknown timeline filter.')
+    for value in (wolf, trigger):
+        rules.require(value is None or (isinstance(value, str) and 0 < len(value) <= 120), 'Invalid timeline filter.')
+    paging = not since
+    take = limit + 1 if paging else 201
+    mission_program = any(p.get('missions') for p in rules.phases_of(program))
+    items = []
+    if 'phase' in kinds:
+        clauses, args = [], [run]
+        for key, op, source in (('visit', '<', before), ('visit', '>', since)):
+            if source.get(key) is not None:
+                clauses.append(f' AND t.visit {op} %s')
+                args.append(source[key])
+        rows = conn.execute(
+            f"""SELECT t.visit,t.phase,t.game_day,t.cause,t.receipts,{'t.missions' if mission_program else 'NULL'},
+                       (SELECT requested_at FROM dm.actions WHERE id=t.receipts[1])
+                FROM dm.story_transitions t WHERE t.run=%s{''.join(clauses)} ORDER BY t.visit DESC LIMIT {take}""",
+            args,
+        ).fetchall()
+        items += [{'key': f'v:{r[0]}', 'type': 'phase', 'visit': r[0], 'phase': r[1], 'day': r[2], 'cause': r[3],
+                   'receipts': r[4], 'missions': r[5], 'at': r[6], 'seq': r[0]} for r in rows]
+    if 'trigger' in kinds:
+        clauses, args = [], [run]
+        for key, op, source in (('trigger', '<', before), ('trigger', '>', since)):
+            if source.get(key) is not None:
+                clauses.append(f' AND id {op} %s')
+                args.append(source[key])
+        if wolf:
+            clauses.append(" AND entry->>'actor'=%s")
+            args.append(wolf)
+        if trigger:
+            clauses.append(" AND entry->>'trigger'=%s")
+            args.append(trigger)
+        rows = conn.execute(
+            f"""SELECT id,visit,entry,recorded_at FROM dm.story_trigger_history WHERE run=%s{''.join(clauses)}
+                ORDER BY id DESC LIMIT {take}""",
+            args,
+        ).fetchall()
+        items += [{**r[2], 'key': f't:{r[0]}', 'type': 'trigger', 'id': r[0], 'visit': r[1], 'at': r[3], 'seq': r[0]}
+                  for r in rows]
+    receipt_visits = _run_receipts(conn, run, receipts, state)
+    if 'order' in kinds and receipt_visits:
+        clauses, args = [], [sorted(receipt_visits)]
+        if before.get('order') is not None:
+            clauses.append(' AND id < %s')
+            args.append(before['order'])
+        if since:
+            # New orders, and older ones answered since the last poll (with a few seconds' overlap: the console
+            # merges by key).
+            clauses.append(" AND (id > %s OR status='queued' OR done_at >= %s::timestamptz - interval '5 seconds')")
+            args += [since.get('order') or 0, since.get('at') or '-infinity']
+        if wolf:
+            clauses.append(' AND target_id=%s')
+            args.append(wolf)
+        rows = conn.execute(
+            f"""SELECT id,kind,target_id,status,result,requested_by,requested_at,done_at FROM dm.actions
+                WHERE id=ANY(%s){''.join(clauses)} ORDER BY id DESC LIMIT {take}""",
+            args,
+        ).fetchall()
+        items += [{'key': f'o:{r[0]}', 'type': 'order', 'id': r[0], 'kind': r[1], 'target': r[2], 'status': r[3],
+                   'result': r[4], 'by': r[5], 'at': r[6], 'doneAt': _iso(r[7]), 'visit': receipt_visits.get(r[0]),
+                   'seq': r[0]} for r in rows]
+    # Newest first. One tick's work shares a moment: a firing (still in the visit it fired in) comes before the visit it
+    # opened, and in one visit the visit opened, then its firings, then its orders.
+    rank = {'phase': 0, 'trigger': 1, 'order': 2}
+    epoch = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
+    items.sort(key=lambda i: (i['at'] or epoch, i.get('visit') or 0, rank[i['type']], i['seq']), reverse=True)
+    more = False
+    if paging and len(items) > limit:
+        more, items = True, items[:limit]
+    cursor = dict(before)
+    for name, key in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order')):
+        seqs = [i['seq'] for i in items if i['type'] == name]
+        if seqs:
+            cursor[key] = min(seqs)
+    events = {}
+    event_ids = [i['event'] for i in items if i['type'] == 'trigger' and isinstance(i.get('event'), int)]
+    if event_ids:
+        for r in conn.execute(
+            """SELECT id,kind,actor,target,cell,item,quantity,coins,detail,game_day,x,y,recorded_at FROM game.events
+               WHERE world_id=%s AND id=ANY(%s)""",
+            (world, event_ids),
+        ):
+            events[str(r[0])] = {**dict(zip(EVENT_COLUMNS[:2], r[:2])), 'actor': r[2], 'target': r[3], 'cell': r[4], 'item': r[5],
+                                 'quantity': r[6], 'coins': r[7], 'detail': r[8], 'day': r[9], 'x': r[10], 'y': r[11],
+                                 'at': _iso(r[12])}
+    now = _now(conn, world)
+    newest = {k: max([i['seq'] for i in items if i['type'] == name] + [since.get(k) or 0])
+              for name, k in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'))}
+    for i in items:
+        i['at'] = _iso(i['at'])
+        del i['seq']
+    who = {*(i.get('actor', '') for i in items), *(i.get('target', '') for i in items),
+           *(e[k] for e in events.values() for k in ('actor', 'target', 'cell')), *(i.get('cell', '') for i in items)}
+    return {'run': run, 'items': items, 'events': events, 'names': names(conn, world, who),
+            'before': cursor if more else None, 'since': {**newest, 'at': _iso(now['at'])}, 'now': _iso(now['at'])}
 
 
 def atlas(conn, world, query):

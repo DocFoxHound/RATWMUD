@@ -1306,6 +1306,61 @@ order to the game.
 - Done when: an admin can leave the tab open and answer "is it alive, where is it, who is in it, what happened
   last, what is it waiting for" without pressing anything.
 
+**Phase 1 as built** (2026-11-21, branch `r3-camp-p1`). No engine change, no migration, no new order.
+- **The runner's reads** (`tools/story_runner.py`, the section "the Campaigns console"). `status()` with no run is
+  now `overview()`: the 100 newest runs, and for each live one (`approved`, `running`, `paused`) its visit, day
+  entered, audience, mission summary, `last` (the newest firing or visit, with its real time), `waiting`, `behind`
+  and `alerts`; an ended run gives only its counts (its state is not read). `status(run, ..., since, have)` keeps
+  every key it had and adds the program (left out when `have` is its digest), `names`, `orders` (the 60 newest of
+  the run, each with its visit), `missionsNow`, `directed` (residents its effects, guest voices and scenes name),
+  `regions`, `phases` (each with where it can go), `listening`, `waiting` and `alerts`; `since: {visit, trigger}`
+  returns only newer history and firings. New `timeline(run, before, since, kinds, wolf, trigger, limit)` merges
+  phase visits, firings and orders, newest first, with the world events behind the firings and names; `before`
+  pages back per source, `since` returns what is newer **and the orders answered since the last poll** (from
+  `dm.actions.done_at`, with five seconds' overlap: the console merges by key). One tick's work shares a moment, so
+  the order is by time, then visit, then "the visit opened, its firings, its orders". `names()` reads residents,
+  wolves, places and factions.
+- **Which orders are a run's:** the union of every visit's `receipts`, the release's `receipts` and a pending
+  `missionReceipt`/`triggerReceipt`; `dm.actions` has no run column and needs none.
+- **What it waits for** is raw facts from the runner (`publish`, `admin` with the stuck order, `game` with the order
+  and its age, `send` with the orders still to send, `timer`, `clock`, `direction`, `wolves` with what the phase
+  listens for, `end`); `Editor/src/lib/campaigns.ts` words them and picks the headline (the admin, then the game,
+  then the soonest timer or delay, then a direction, then wolves).
+- **Alerts as built:** `paused` (needs you); `game` (an order the run waits on, queued over 60 s); `behind` (over
+  2,000 events or the oldest unread over 60 s, and not while it waits on the game, since the cursor rightly stands
+  still then; it says "is the story runner running?" until Phase 2's heartbeat); `quiet` (no firing, visit or order
+  for 24 real hours **and** a wolf of the audience did something in the world since, read per wolf from
+  `events_actor`). Thresholds are `story_runner.ALERTS`; per world and per program come with Phase 3.
+- **Who is here now** comes from the LIVE frame (`dmApi.live`), which the console polls as LIVE does (so the game
+  keeps writing frames while it is open); the runner knows nothing of who is signed in.
+- **The route:** `op: 'timeline'` on `/api/dm/story-program`, and `since`/`have` on `status`; both need a DM
+  (`viewer` gets 403), as `status` did.
+- **The Editor:** `Editor/src/dm/CampaignsTab.tsx` (polls every 2 s while visible: the list, the frame, and for the
+  open run `status` with `have` and `timeline` with `since`) and `Editor/src/dm/campaigns/` (`CampaignList`,
+  `CampaignView` with Overview, Timeline, Variables & timers, Missions, Wolves & map and Orders, `Timeline`,
+  `StatePanel`, `MissionGrid`, `WolvesMap`, `Orders`); a `campaigns` tab (⚑) after Story Creator. The Releases panel
+  is gone from `StoryProgramPanel.tsx` (its "World references for an author" stays there); approving shows "Open in
+  Campaigns" beside the publication ticket and after publishing. Stop, Retry (now for `expired` too, and named for
+  what it retries), the direction and guest-line tickets moved to the campaign's header and Overview. The tab is
+  called **Missions**, not Quests, until Phase 6.
+- **Not in Phase 1, on purpose:** values before and after in the timeline ("watches 5 → 6": the trigger history
+  keeps the action kinds only), parties (nothing tells the runner), the count on the DM tab bar and the line on
+  LIVE (Phase 3), the runner's heartbeat (Phase 2).
+- **Tests:** `tools/test_story_console.py` (a throwaway migrated database: the list, one run, the timeline's merge,
+  `since` and paging, the four alerts, an approved and a stopped run, and the route for a DM and a viewer);
+  `Editor/src/lib/campaigns.test.ts` (merging polls and pages, waiting-on, alerts, wolves on the frame, the mission
+  grid, the list's counts); the render smoke renders the tab with a list, a running run, a paused run's orders and a
+  viewer.
+- **Seen:** on a throwaway Greyfen world with a real game server, three signed-in wolves (one signed out), a
+  three-phase sample campaign driven by moving the wolves through two regions (a mission each, a group mission,
+  timers, deeds) and a second one paused by a refused deed; screenshots in
+  `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p1/`.
+- **For Phase 2:** add `held` and `stopping` to `LIVE_STATUSES`, `_waiting`, `_alerts` and `listCounts`; admin
+  commands become a fourth timeline source (`dm.story_commands`, key `c:<id>`; give them a rank after orders at one
+  moment); `waiting` gains `{on: 'admin'}` for a held run; the header's `camp-controls` row is where the new
+  controls go (`atLeast(me, 'dm')` there becomes "owner, or may steer campaigns" on a hosted world); write the
+  values before and after into each firing's history entry so the timeline can show them.
+
 **Phase 2: Steer it. About 16 hours.**
 - Migration `0071`: `dm.story_commands`, `dm.story_runner`, statuses `held` and `stopping`.
 - `story_runner.command`, `take_commands`, the heartbeat; the commands of 5.4 that today's engine can carry:
