@@ -84,6 +84,21 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         'Campaigns (dry run)': ['This will do', 'Entered deep-freeze (moved on), with its entry effects.', 'sends story.phase to the game now',
             'it is then in deep-freeze (visit 3)', 'then it sends, one by one: band.override → Ivo Tarmarsh', 'A dry run on the story as it stands now'],
         'Campaigns (refused dry run)': ['The runner would refuse it now: Its conditions are false just now.'],
+        // (Doc 85, Phase 5b: a new version approved for a running campaign, and moving the run onto it.)
+        'Campaigns (new version)': ['⇪ Move onto a new version…'],
+        'Campaigns (move)': ['Version b7e1c2d4', 'approved by ann', 'version 1 → 2 of the format', 'What changed', 'Triggers: 1 added (early-thaw)',
+            'offer-a-coil: words only', 'Variables: 1 retyped (watches: number → switch)', 'Timers: watch-round started differently; first-freeze never started now',
+            'Dropped (the new version has no place for it) · 1', 'timer first-freeze, due day 38.0: nothing in the new version listens for its signal.',
+            'Reset (starts again) · 1', 'mission ferry-line', 'hauled.player (Birch Oakenfall) = 2: renamed from hauled', 'Move onto this version…'],
+        'Campaigns (move, phase gone)': ['Phase ferry-watch is not in the new version. Land in:', 'the-watch', 'name the phase to land in'],
+        'Campaigns (moved)': ['Versions', 'b7e1c2d4', 'the version it is on', 'a41c9e00', '>left<', 'moved it onto approved version #2',
+            'version a41c9e00 → b7e1c2d4', 'the freeze came early this year'],
+        'Campaigns (moved, timeline)': ['moved to version b7e1c2d4 by martin (from a41c9e00): 4 kept, 1 reset, 1 back to their first value, 1 dropped',
+            'the game refused version c9d0e1f2: back on b7e1c2d4', 'does not fit its live cell'],
+        'Campaigns (moving)': ['Moving onto a new version: the game is being told its words for this visit'],
+        'Campaigns (move dry run)': ['This will do', 'Moving onto version b7e1c2d4', 'sends story.phase to the game now',
+            'Dropped (the new version has no place for it): timer first-freeze', 'Reset (starts again): mission ferry-line',
+            'Version 1 did not count firings'],
         'Story problems': ['2 errors', '3 warnings', 'Phase ferry-watch › trigger begin-deep-freeze › action 2', 'Phase ferries-reopen',
             'Campaign triggers › trigger offer-a-coil › action 2', 'from the world: approval refuses this', 'No rehearsal case reaches this trigger.', 'Go'],
         'DM tab bar': ['⚑ Campaigns', '⚠ 2', 'The story runner has not beaten for 95 s: 2 stories are not moving.', 'Open Campaigns'],
@@ -96,7 +111,8 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         'My world (share failed)': ['the disk that holds the world folder is nearly full (300 MB free; making the file needs about 1.3 GB)'],
     };
     const absent = {'My world (dm)': ['The world folder', 'OneDrive', 'exit 139'], 'Campaigns (viewer)': ['Ninety days'],
-        'Campaigns (hosted dm)': ['⏸ Hold', 'Go to phase…'], 'Campaigns (held)': ['⏸ Hold'], 'Campaigns (dry run)': ['what the program says']};
+        'Campaigns (hosted dm)': ['⏸ Hold', 'Go to phase…'], 'Campaigns (held)': ['⏸ Hold'], 'Campaigns (dry run)': ['what the program says'],
+        'Campaigns (running)': ['Move onto a new version'], 'Campaigns (move)': ['Land in:']};
     if (process.env.RENDER_DUMP) for (const [name, text] of Object.entries(html)) console.log(`== ${name}\n${text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 700)}`);
     for (const [name, text] of Object.entries(html)) {
         assert.ok(text.length > 100, `${name}: rendered`);

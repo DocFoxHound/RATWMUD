@@ -462,6 +462,35 @@ void storyAreaEffects()
         expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":2,"to":"participants","text":"Late."})"}).ok, "another visit is refused");
         expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":1,"to":"participants","text":"two\nlines"})"}).ok,
                "one line only");
+        // A revision (doc 85, Phase 5b): the run moved onto a new version keeps its visit; the game takes the new words and
+        // regions for it, checked whole first.
+        auto revised = phase;
+        revised.set("revise", true);
+        revised.set("journal", "Hold the gate.");
+        revised.set("title", "Breach, revised");
+        revised.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":6,"x2":9,"y1":8,"y2":8}])"));
+        auto badFit = revised;
+        badFit.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":6,"x2":9000,"y1":8,"y2":8}])"));
+        expect(!t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(badFit)}).ok &&
+               t.g.storylineBook().find(run)->steps.back().text == "Hold the wall.", "a revision that does not fit changes nothing");
+        auto otherVisit = revised;
+        otherVisit.set("visit", 2);
+        expect(!t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(otherVisit)}).ok, "only the visit the story is in is revised");
+        auto ending = revised;
+        ending.set("end", true);
+        expect(!t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(ending)}).ok, "a revision never ends the story");
+        expect(!t.g.applyDmAct({"7", "story.phase", "world-no-such", "dm", json::dump(revised)}).ok, "nor makes one");
+        const auto revision = t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(revised)});
+        const auto* book = t.g.storylineBook().find(run);
+        expect(revision.ok && book->steps.size() == 1 && book->steps.back().text == "Hold the gate." && book->title == "Breach, revised" &&
+               book->sourceRef == "1" && book->regions.at("wall").x1 == 6, "revised in place: one step, the new words and region: " + revision.message);
+        expect(!tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})").ok &&
+               tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":6,"x2":9,"y1":8,"y2":8})").ok,
+               "the region is the new version's now");
+        expect(t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(phase)}).message == "Phase already received.",
+               "the visit's own phase order stays harmless");
+        revised.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8}])"));
+        expect(t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(revised)}).ok, "and back (the area effects below use the first bounds)");
         auto area = parsed(R"({"region":"wall","visit":1,"cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})");
         auto apply = [&](const char* effect) {
             return t.g.applyDmAct({"2", std::string("story.area_") + effect, run, "dm", json::dump(area)});

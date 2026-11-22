@@ -593,3 +593,29 @@
 .wb-operand .wb-chips { flex-wrap: wrap; }
 .camp-note { color: var(--amber-2); font-style: italic; }
 .camp-outcome { padding: 6px 10px; border-left: 3px solid var(--amber); background: #1d2a25; }
+/* Moving a running campaign onto a new version (doc 85, Phase 5b). */
+.camp-move { padding: 10px 14px; border: 1px solid #34505d; border-left: 3px solid var(--blue); background: #161c1f; border-radius: 6px;
+    width: min(100%, 900px); display: grid; gap: 6px; font-size: 13px; }
+.camp-move header { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: baseline; }
+.camp-move header .wb-close { margin-left: auto; }
+.camp-move h4 { margin: 4px 0 0; font-size: 13px; color: var(--paper); }
+.camp-move ul { margin: 0; padding-left: 18px; }
+.camp-move details summary { cursor: pointer; color: var(--muted); }
+.camp-migrate.dropped summary { color: var(--danger); }
+.camp-migrate.reset summary, .camp-migrate.defaulted summary { color: var(--amber); }
+.camp-migrate.added summary { color: var(--blue); }
+.camp-migrate.kept summary { color: var(--ok); }
+.camp-move .camp-ask-refused, p.camp-ask-refused { color: var(--danger); margin: 0; }
+.camp-move .camp-land { display: flex; flex-direction: row; gap: 8px; align-items: center; justify-content: flex-start; font-size: 13px; color: var(--paper); }
+.camp-move .camp-land select { width: auto; }
+.camp-moving { color: var(--blue); }
+.camp-timeline li.version { border-left-color: var(--blue); }
+.camp-timeline li.version.refused { border-left-color: var(--danger); }
+.camp-versions { margin-bottom: 12px; }
+.camp-versions h3 { margin: 0 0 6px; font-size: 14px; }
+.camp-version.current { color: var(--ok); }
+.camp-version.approved, .camp-version.moving { color: var(--blue); }
+.camp-version.refused { color: var(--danger); }
+.camp-version.past, .camp-version.withdrawn { color: var(--faint); }
+.wb-approval .wb-for-run { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.wb-approval .wb-for-run select { width: auto; max-width: 340px; }

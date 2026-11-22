@@ -41,6 +41,8 @@ export interface RunRow {
     run: string; title: string; status: string; digest: string; approver: string; approvedAt: string | null; phase: string | null; problem: string;
     visit?: number; entered?: number; cohort?: string[]; wolves?: number; missions?: MissionSummary[]; waiting?: Waiting[];
     behind?: {events: number; seconds: number}; last?: Last | null; alerts?: Alert[]; ending?: boolean; commandsQueued?: number;
+    /** The story's own id and format (1 or 2), and whether it is moving onto a new version (doc 85, Phase 5b). */
+    storyId?: string; format?: number; moving?: boolean;
 }
 /** The story runner's heartbeat (doc 85, 5.6; Phase 2). */
 export interface Beat { beatAt: string | null; age: number | null; startedAt?: string; pid?: number; version?: string; behind?: number }
@@ -76,7 +78,32 @@ export function valueText(v: Value | undefined, type: string | undefined, names:
 }
 /** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
 export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: Value; after: Value; type?: string }
-export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene';
+export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene' | 'migrate';
+/** One thing a move onto a new version keeps, resets, defaults, drops or adds (story_program.migration), with why. */
+export interface MigrationLine {
+    what: 'phase' | 'variable' | 'timer' | 'wait' | 'mission' | 'fired' | 'count' | 'off' | 'vote' | 'steps' | 'seed'; key: string;
+    scope?: string; wolf?: string; party?: string; value?: Value; why?: string; renamed?: string; at?: number; wolves?: string[];
+}
+interface Changes { added: string[]; removed: string[]; changed: {id: string; what: string[]; wordsOnly?: boolean}[] }
+/** What changed from one approved program to another (story_program.version_diff). */
+export interface VersionDiff {
+    triggers: Changes & {newlyOff?: string[]}; phases: Changes; regions: Changes; scenes: Changes;
+    variables: {added: {id: string; scope: string; type: string}[]; removed: {id: string; scope: string}[]; retyped: {id: string; scope: string; from: string; to: string}[];
+        rescoped: {id: string; from: string; to: string}[]; changed: {id: string; scope: string; what: string[]}[]; renamed?: {id: string; scope: string; to: string}[]};
+    missions: {added: {phase: string; id: string}[]; removed: {phase: string; id: string}[]; changed: {phase: string; id: string; what: string[]; objectives: boolean}[]};
+    timers: {added: string[]; removed: string[]; changed: string[]}; header: string[]; tests: boolean; same: boolean;
+}
+export interface MigrationReport {
+    kept: MigrationLine[]; reset: MigrationLine[]; defaulted: MigrationLine[]; dropped: MigrationLine[]; added: MigrationLine[]; warnings: string[];
+    blocked: string | null; diff?: VersionDiff; phase?: {from: string; to: string | null; choices: string[]; gone: boolean};
+    from?: {digest: string; version: number; title: string}; to?: {digest: string; version: number; title: string};
+}
+/** A version a run has been on, or one approved for it (dm.story_versions, migration 0074). */
+export interface Version {
+    id: number; digest: string; approvedBy: string; approvedAt: string | null; status: 'approved' | 'moving' | 'current' | 'past' | 'refused' | 'withdrawn';
+    from: string | null; movedAt: string | null; movedBy: string | null; command: number | null; visit: number | null; day: number | null;
+    report: MigrationReport | null; order: number | null; settledAt: string | null; problem: string; title?: string;
+}
 /** An admin's command (dm.story_commands): what was asked, why, by whom, and once the runner took it, the result. */
 export interface Command {
     id: number; key: string; visit: number | null; digest: string; kind: CommandKind; payload: Record<string, unknown>; reason: string; by: string;
@@ -104,21 +131,24 @@ export interface RunDetail extends RunRow {
     history: Visit[]; trace: Firing[]; actions: {id: number; kind: string; status: string; result: string}[]; orders: Order[];
     missionsNow: Mission[]; directed: string[]; regions: Region[]; phases: {id: string; to: string[]; missions: number}[]; start: string;
     listening: Listening[]; names: Record<string, string>; runner?: Beat | null; commands?: Command[]; controls?: Controls | null;
+    versions?: Version[];
 }
 export type TimelineItem =
     | {key: string; type: 'phase'; at: string | null; visit: number; phase: string; day: number; cause: string; receipts: number[]; missions?: Mission[] | null}
     | ({key: string; type: 'trigger'; at: string | null} & Firing)
     | ({key: string; type: 'order'; at: string | null} & Order)
-    | ({key: string; type: 'command'; at: string | null; command: CommandKind; askedAt: string | null} & Omit<Command, 'kind' | 'at'>);
+    | ({key: string; type: 'command'; at: string | null; command: CommandKind; askedAt: string | null} & Omit<Command, 'kind' | 'at'>)
+    | ({key: string; type: 'version'; at: string | null; phase: string | null; phaseFrom: string | null; warnings: string[];
+        counts: Record<'kept' | 'reset' | 'defaulted' | 'dropped' | 'added', number>} & Omit<Version, 'report'>);
 export interface WorldEvent { id: number; kind: string; actor: string; target: string; cell: string; item: string; quantity: number; coins: number; detail: string; day: number; x: number | null; y: number | null; at: string }
-export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; at?: string }
+export interface TimelineCursor { visit?: number; trigger?: number; order?: number; command?: number; version?: number; at?: string }
 export interface TimelinePage { run: string; items: TimelineItem[]; events: Record<string, WorldEvent>; names: Record<string, string>; before: TimelineCursor | null; since: TimelineCursor; now: string }
 
 export const nameOf = (names: Record<string, string>, id: string | null | undefined) => (id ? names[id] ?? id : '');
 
 // ------------------------------------------------------------------------------------------------- the timeline
 
-const RANK = {phase: 0, trigger: 1, order: 2, command: 3} as const;
+const RANK = {phase: 0, trigger: 1, order: 2, command: 3, version: 4} as const;
 const seqOf = (i: TimelineItem) => (i.type === 'phase' ? i.visit : i.id);
 /** Newest first, as the runner sorts (tools/story_runner.timeline): by time, then visit, then a visit opened before its
  *  firings, its orders and the admin's commands, then by id. */
@@ -137,12 +167,12 @@ export function mergeTimeline(known: TimelineItem[], fresh: TimelineItem[]): Tim
 export function sinceOf(items: TimelineItem[], previous: TimelineCursor, at: string): TimelineCursor {
     const most = (type: TimelineItem['type'], had?: number) => Math.max(had ?? 0, ...items.filter(i => i.type === type).map(seqOf));
     return {visit: most('phase', previous.visit), trigger: most('trigger', previous.trigger), order: most('order', previous.order),
-        command: most('command', previous.command), at};
+        command: most('command', previous.command), version: most('version', previous.version), at};
 }
 export type TimelineFilter = 'all' | 'phase' | 'trigger' | 'order' | 'command';
 export function filterTimeline(items: TimelineItem[], kind: TimelineFilter, wolf = '', trigger = ''): TimelineItem[] {
     const wolfOf = (i: Extract<TimelineItem, {type: 'command'}>) => String(i.payload?.actor ?? i.payload?.player ?? '');
-    return items.filter(i => (kind === 'all' || i.type === kind)
+    return items.filter(i => (kind === 'all' || i.type === kind || (kind === 'command' && i.type === 'version'))
         && (!wolf || (i.type === 'trigger' ? i.actor === wolf : i.type === 'order' ? i.target === wolf : i.type === 'command' ? wolfOf(i) === wolf : true))
         && (!trigger || (i.type === 'trigger' && i.trigger === trigger) || (i.type === 'command' && i.payload?.trigger === trigger)));
 }
@@ -328,7 +358,11 @@ export function phasePath(history: Visit[]): string[] {
 }
 /** The phase strip: the phases this run has been through (in order) and where it can go from the current one. */
 export function phaseStrip(history: Visit[], phases: {id: string; to: string[]}[], current: string | null): {path: string[]; next: string[]} {
-    return {path: phasePath(history), next: phases.find(p => p.id === current)?.to ?? []};
+    // (A run moved onto a new version that no longer has its phase carries on, in the same visit, as the phase it landed in:
+    // doc 85, Phase 5b. The strip ends there.)
+    const path = phasePath(history);
+    if (current && path.length && path[path.length - 1] !== current) path.push(current);
+    return {path, next: phases.find(p => p.id === current)?.to ?? []};
 }
 
 // ------------------------------------------------------------------------------------------------- steering (Phase 2)
@@ -350,7 +384,7 @@ export function changeText(c: Change, names: Record<string, string> = {}): strin
 const PRETTY: Record<CommandKind, string> = {
     hold: 'held it', resume: 'resumed it', stop: 'stopped it', signal: 'sent a signal', fire: 'fired a trigger', enable: 'turned a trigger on',
     disable: 'turned a trigger off', enter: 'went to a phase', set: 'set a variable', timer: 'changed a timer', mission: 'changed a mission',
-    order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene',
+    order: 'dealt with an order', tell: 'told the wolves', scene: 'started a scene', migrate: 'moved it onto a new version',
 };
 /** One line for a command: who did what, to what (before the runner's own words come back). */
 export function commandLine(kind: CommandKind, payload: Record<string, unknown>, names: Record<string, string>): string {
@@ -367,6 +401,7 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
         case 'order': return `${p.do === 'skip' ? 'skipped' : 'retried'} order #${p.receipt}`;
         case 'tell': return `told ${p.to === 'wolf' ? nameOf(names, String(p.player)) : p.to === 'region' ? 'the wolves in ' + p.region : 'the story\'s wolves'}: "${p.text}"`;
         case 'scene': return `started scene ${p.scene} for ${p.player === 'world' ? 'the world' : nameOf(names, String(p.player))}`;
+        case 'migrate': return `moved it onto approved version #${p.version}${p.phase ? `, landing in ${p.phase}` : ''}`;
         default: return PRETTY[kind] ?? kind;
     }
 }
@@ -374,10 +409,10 @@ export function commandLine(kind: CommandKind, payload: Record<string, unknown>,
 export function beforeAfter(c: Pick<Command, 'result'>): string {
     const r = c.result;
     if (!r?.before || !r.after) return '';
-    const keys = [...new Set([...Object.keys(r.before), ...Object.keys(r.after)])].filter(k => ['status', 'phase', 'value', 'at', 'on', 'step', 'visit'].includes(k));
-    const v = (x: unknown) => (x === null || x === undefined ? '—' : typeof x === 'boolean' ? (x ? 'on' : 'off')
-        : typeof x === 'number' && !Number.isInteger(x) ? x.toFixed(1) : String(x));
-    return keys.filter(k => r.before![k] !== r.after![k]).map(k => `${k} ${v(r.before![k])} → ${v(r.after![k])}`).join(' · ');
+    const keys = [...new Set([...Object.keys(r.before), ...Object.keys(r.after)])].filter(k => ['status', 'phase', 'value', 'at', 'on', 'step', 'visit', 'version'].includes(k));
+    const v = (x: unknown, k: string) => (x === null || x === undefined ? '—' : typeof x === 'boolean' ? (x ? 'on' : 'off')
+        : typeof x === 'number' && !Number.isInteger(x) ? x.toFixed(1) : k === 'version' ? String(x).slice(0, 8) : String(x));
+    return keys.filter(k => r.before![k] !== r.after![k]).map(k => `${k} ${v(r.before![k], k)} → ${v(r.after![k], k)}`).join(' · ');
 }
 /** Ask the reason again for these, and the story's title typed (5.8, rule 2). */
 export const typedTitle = (kind: CommandKind, payload: Record<string, unknown>, way?: 'back' | 'on' | 'again') =>
@@ -440,6 +475,8 @@ export interface Preview extends Partial<Outcome> {
     run: string; kind: CommandKind; payload: Record<string, unknown>; outcome: 'done' | 'refused' | 'waits'; text: string;
     before?: Record<string, unknown>; after?: Record<string, unknown>; orders?: {kind: string; target: string; payload: Record<string, unknown>}[];
     next?: Effect[]; status?: string;
+    /** A move onto a new version (doc 85, Phase 5b): the migration report as the dry run worked it out. */
+    migration?: MigrationReport;
 }
 
 const OPS: Record<string, string> = {'=': '=', '!=': '≠', '>': '>', '>=': '≥', '<': '<', '<=': '≤'};
@@ -577,7 +614,84 @@ export function previewLines(p: Preview, names: Record<string, string> = {}): st
     out.push(...outcomeLines({...p, effects: [], entryEffects: []}, names).filter(l => !l.startsWith('moves to')));
     if (p.moved) out.push(`it is then in ${p.phase} (visit ${p.visit})${p.ending ? ': an ending' : ''}`);
     if (p.next?.length) out.push(`then it sends, one by one: ${p.next.map(e => effectLine(e, names)).join(', ')}`);
+    if (p.migration) {
+        for (const g of migrationGroups(p.migration, names)) if (g.group !== 'kept') out.push(`${g.title}: ${g.lines.map(l => l.replace(/\.$/, '')).join('; ')}`);
+        out.push(...p.migration.warnings);
+    }
     return out;
+}
+
+// ------------------------------------------------------------------------------------------------- a new version
+const short = (digest: string | null | undefined) => (digest ?? '').slice(0, 8);
+export {short as shortDigest};
+/** One line of a migration report: "stores (the story's) = 3", "hauled (Ash) = 2 — renamed from hauled", "timer watch-round, due day 56.0". */
+export function migrationLine(l: MigrationLine, names: Record<string, string> = {}): string {
+    const whose = l.wolf ? ` (${nameOf(names, l.wolf)})` : l.party ? ` (party of ${nameOf(names, l.party)})` : l.scope === 'story' ? '' : l.scope ? ` (${l.scope})` : '';
+    const value = l.value === undefined ? '' : ` = ${valueText(l.value, typeof l.value === 'number' ? 'number' : undefined, names)}`;
+    const head = l.what === 'variable' ? `${l.key}${whose}${value}`
+        : l.what === 'timer' ? `timer ${l.key.split('/')[0]}${l.key.includes('/') ? ` (${nameOf(names, l.key.split('/')[1])})` : ''}${l.at !== undefined ? `, due day ${l.at.toFixed(1)}` : ''}`
+        : l.what === 'wait' ? `the wait in ${l.key}${l.wolf ? ` for ${nameOf(names, l.wolf)}` : ''}${l.at !== undefined ? ` (resumes day ${l.at.toFixed(1)})` : ''}`
+        : l.what === 'mission' ? `mission ${l.key}`
+        : l.what === 'fired' ? `${l.key} already fired${l.wolves?.length ? ` for ${l.wolves.map(w => nameOf(names, w)).join(', ')}` : ''}`
+        : l.what === 'count' ? `how often ${l.key} fired`
+        : l.what === 'off' ? `${l.key} turned off`
+        : l.what === 'vote' ? `the votes for ${l.key}`
+        : l.what === 'steps' ? `the steps taken towards ${l.key}`
+        : l.what === 'phase' ? `phase ${l.key}`
+        : l.what === 'seed' ? 'its rolls' : l.key;
+    return l.why ? `${head}: ${l.why}` : head;
+}
+export type MigrationGroup = 'kept' | 'reset' | 'defaulted' | 'dropped' | 'added';
+const GROUP_TITLES: Record<MigrationGroup, string> = {
+    kept: 'Kept', reset: 'Reset (starts again)', defaulted: 'Back to its first value', dropped: 'Dropped (the new version has no place for it)', added: 'New',
+};
+/** A migration report as groups of lines, the most telling first: what goes, what starts again, what is new, what stays. */
+export function migrationGroups(r: MigrationReport, names: Record<string, string> = {}): {group: MigrationGroup; title: string; lines: string[]}[] {
+    return (['dropped', 'reset', 'defaulted', 'added', 'kept'] as MigrationGroup[])
+        .filter(g => r[g]?.length).map(g => ({group: g, title: GROUP_TITLES[g], lines: r[g].map(l => migrationLine(l, names))}));
+}
+/** What changed between the two versions, a line a part: "Triggers: 1 added (early-thaw); 2 changed (open-winter-ledger: actions; offer-a-coil: words only)". */
+export function diffLines(d: VersionDiff | undefined): string[] {
+    if (!d) return [];
+    if (d.same && !d.variables.renamed?.length) return ['Nothing the story does has changed (its rehearsals may have).'];
+    const out: string[] = [];
+    const part = (title: string, c: Changes) => {
+        const bits = [c.added.length && `${c.added.length} added (${c.added.join(', ')})`,
+            c.changed.length && `${c.changed.length} changed (${c.changed.map(x => `${x.id}: ${x.wordsOnly ? 'words only' : x.what.join(', ')}`).join('; ')})`,
+            c.removed.length && `${c.removed.length} removed (${c.removed.join(', ')})`].filter(Boolean);
+        if (bits.length) out.push(`${title}: ${bits.join('; ')}`);
+    };
+    part('Triggers', d.triggers);
+    const v = d.variables, vb = [v.added.length && `${v.added.length} added (${v.added.map(x => `${x.id}, a ${x.type}`).join('; ')})`,
+        v.retyped.length && `${v.retyped.length} retyped (${v.retyped.map(x => `${x.id}: ${x.from} → ${x.to}`).join('; ')})`,
+        v.rescoped.length && `${v.rescoped.length} moved (${v.rescoped.map(x => `${x.id}: ${x.from}'s → ${x.to}'s`).join('; ')})`,
+        v.changed.length && `${v.changed.length} changed (${v.changed.map(x => `${x.id}: ${x.what.join(', ')}`).join('; ')})`,
+        v.removed.length && `${v.removed.length} removed (${v.removed.map(x => x.id).join(', ')})`,
+        v.renamed?.length && `${v.renamed.length} renamed (${v.renamed.map(x => `${x.scope}'s ${x.id} → ${x.to}`).join('; ')})`].filter(Boolean);
+    if (vb.length) out.push(`Variables: ${vb.join('; ')}`);
+    part('Phases', d.phases);
+    const m = d.missions, mb = [m.added.length && `${m.added.length} added (${m.added.map(x => `${x.phase}/${x.id}`).join(', ')})`,
+        m.changed.length && `${m.changed.length} changed (${m.changed.map(x => `${x.phase}/${x.id}${x.objectives ? ': its objectives' : ''}`).join(', ')})`,
+        m.removed.length && `${m.removed.length} removed (${m.removed.map(x => `${x.phase}/${x.id}`).join(', ')})`].filter(Boolean);
+    if (mb.length) out.push(`Missions: ${mb.join('; ')}`);
+    const t = d.timers, tb = [t.added.length && `${t.added.join(', ')} new`, t.changed.length && `${t.changed.join(', ')} started differently`,
+        t.removed.length && `${t.removed.join(', ')} never started now`].filter(Boolean);
+    if (tb.length) out.push(`Timers: ${tb.join('; ')}`);
+    part('Regions', d.regions);
+    part('Scenes', d.scenes);
+    if (d.header.length) out.push(`Also changed: ${d.header.join(', ')}`);
+    return out;
+}
+/** A move on the timeline: "moved to version b7e1c2d4 by martin (from a41c0f9e): 12 kept, 1 reset, 2 dropped". */
+export function versionLine(i: Extract<TimelineItem, {type: 'version'}>): string {
+    const c = i.counts;
+    const counts = [`${c.kept} kept`, c.reset && `${c.reset} reset`, c.defaulted && `${c.defaulted} back to their first value`, c.dropped && `${c.dropped} dropped`]
+        .filter(Boolean).join(', ');
+    const landed = i.phase && i.phaseFrom && i.phase !== i.phaseFrom ? `, landing in ${i.phase} (${i.phaseFrom} is gone)` : '';
+    const who = (i.movedBy ?? '').split('#')[0];
+    if (i.status === 'refused') return `the game refused version ${short(i.digest)}: back on ${short(i.from)} (moved by ${who})`;
+    if (i.status === 'moving') return `moving to version ${short(i.digest)} by ${who} (from ${short(i.from)})${landed}: waiting for the game`;
+    return `moved to version ${short(i.digest)} by ${who} (from ${short(i.from)})${landed}: ${counts}`;
 }
 
 // ------------------------------------------------------------------------------------------------- outside the tab

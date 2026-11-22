@@ -2,7 +2,7 @@
 // orders with their receipts, and the admin's commands (Phase 2), newest first, with who, where and when; [Show] opens the
 // world event behind a firing.
 import {useState} from 'react';
-import {ago, beforeAfter, causeText, changeText, commandLine, filterTimeline, nameOf, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
+import {ago, beforeAfter, causeText, changeText, commandLine, filterTimeline, nameOf, versionLine, type TimelineFilter, type TimelineItem, type WorldEvent} from '../../lib/campaigns';
 
 type Place = {cell: string; x: number; y: number};
 const FILTERS: {id: TimelineFilter; label: string}[] = [{id: 'all', label: 'All'}, {id: 'phase', label: 'Phases'}, {id: 'trigger', label: 'Triggers'},
@@ -23,6 +23,9 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
                 {' '}<q>{i.reason}</q></span>
             {(i.result?.text || change) && <small>{i.result?.text}{change ? ` · ${change}` : ''}</small>}</li>;
     }
+    if (i.type === 'version') return <li className={`version ${i.status}`}>{when(i, now)}
+        <span>⇪ {versionLine(i)}</span>
+        {(i.problem || i.warnings.length > 0) && <small>{[i.problem, ...i.warnings].filter(Boolean).join(' · ')}</small>}</li>;
     if (i.type === 'order') return <li className={`order ${i.status}`}>{when(i, now)}
         <span>→ order #{i.id} <b>{i.kind}</b>{i.target && !i.target.startsWith('world-') ? ' → ' + nameOf(names, i.target) : ''} · <span className={`camp-order ${i.status}`}>{i.status}</span>
             {i.doneAt && i.status !== 'queued' ? ` ${new Date(i.doneAt).toLocaleTimeString()}` : ''}</span>

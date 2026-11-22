@@ -2753,7 +2753,9 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                                 program = story_program.validate(data.get('program'))
                                 if any(e['kind']=='faction.relation' for ph in story_program.phases_of(program) for e in story_program.possible_effects(ph)):
                                     raise DMError('A builder or owner must approve changes to faction relations on this world.', 403)
-                            result = story_runner.approve(conn, world, who['username'], data.get('program'), data.get('digest'))
+                            # (With `forRun`: approved as a new version of that live run, to move it onto: doc 85, Phase 5b.)
+                            result = story_runner.approve(conn, world, who['username'], data.get('program'), data.get('digest'),
+                                                          data.get('forRun') or None)
                         elif op == 'publish':
                             result = story_runner.publish(conn, world, data.get('ticket'))
                         elif op in ('signal', 'signal-ticket', 'voice', 'voice-ticket', 'retry', 'stop'):

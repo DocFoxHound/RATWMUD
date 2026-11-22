@@ -27,8 +27,8 @@ test('the timeline merges a poll into what it holds: one row per key, the newer 
     // An earlier page joins at the end.
     const earlier = mergeTimeline(after, [firing(3, '2026-11-21T08:00:00Z')]);
     assert.equal(earlier.at(-1)?.key, 't:3');
-    assert.deepEqual(sinceOf(earlier, {}, '2026-11-21T10:02:00Z'), {visit: 2, trigger: 8, order: 2, command: 0, at: '2026-11-21T10:02:00Z'});
-    assert.deepEqual(sinceOf([], {visit: 4, trigger: 9}, 'now'), {visit: 4, trigger: 9, order: 0, command: 0, at: 'now'}, 'an empty poll keeps the cursor');
+    assert.deepEqual(sinceOf(earlier, {}, '2026-11-21T10:02:00Z'), {visit: 2, trigger: 8, order: 2, command: 0, version: 0, at: '2026-11-21T10:02:00Z'});
+    assert.deepEqual(sinceOf([], {visit: 4, trigger: 9}, 'now'), {visit: 4, trigger: 9, order: 0, command: 0, version: 0, at: 'now'}, 'an empty poll keeps the cursor');
     assert.deepEqual(filterTimeline(after, 'trigger', 'player-birch').map(i => i.key), ['t:8']);
     assert.deepEqual(filterTimeline(after, 'all', 'player-birch').map(i => i.key), ['t:8', 'v:2', 'v:1'], 'a wolf filter keeps the phases');
 });
@@ -253,4 +253,41 @@ test('version 2: a problem in a nested action says where (doc 85, Phase 5)', asy
     assert.equal(at('actions[3].elif[0].then[1]'), 'Phase gather › trigger rope › action 4 › else if 1 › 2');
     assert.equal(at('actions[0].actions[1].then[0]'), 'Phase gather › trigger rope › action 1 › for each 2 › then 1');
     assert.equal(at('actions[2].choices[1].actions[0]'), 'Phase gather › trigger rope › action 3 › choice 2 › 1');
+});
+
+test('a move onto a new version in words: the report, the diff, the timeline, the command (doc 85, Phase 5b)', async () => {
+    const {diffLines, migrationGroups, migrationLine, previewLines, versionLine} = await import('./campaigns.ts');
+    assert.equal(migrationLine({what: 'variable', key: 'hauled.player', scope: 'player', wolf: 'player-ash', value: 2, renamed: 'hauled', why: 'renamed from hauled.'}, names),
+        'hauled.player (Ash Greymantle) = 2: renamed from hauled.');
+    assert.equal(migrationLine({what: 'timer', key: 'watch-round/player-birch', at: 17}, names), 'timer watch-round (Birch Oakenfall), due day 17.0');
+    assert.equal(migrationLine({what: 'wait', key: 'watch/ring', wolf: 'player-ash', at: 2}, names), 'the wait in watch/ring for Ash Greymantle (resumes day 2.0)');
+    assert.equal(migrationLine({what: 'fired', key: 'offer-a-coil', wolves: ['player-elm']}, names), 'offer-a-coil already fired for Elm Sandpaw');
+    const report = {kept: [{what: 'variable' as const, key: 'stores', scope: 'story', value: 5}], reset: [], defaulted: [],
+        dropped: [{what: 'timer' as const, key: 'first-freeze', at: 38, why: 'nothing listens.'}], added: [], warnings: ['Counts start now.'], blocked: null};
+    assert.deepEqual(migrationGroups(report).map(g => [g.group, g.lines]), [['dropped', ['timer first-freeze, due day 38.0: nothing listens.']], ['kept', ['stores = 5']]]);
+    const empty = {added: [], removed: [], changed: []};
+    const diff = {same: false, header: ['title'], tests: false, triggers: {...empty, added: ['early-thaw'], changed: [{id: 'offer-a-coil', what: ['note'], wordsOnly: true}]},
+        phases: empty, regions: empty, scenes: empty, timers: {added: [], removed: ['first-freeze'], changed: []},
+        variables: {added: [], removed: [], retyped: [{id: 'watches', scope: 'story', from: 'number', to: 'switch'}], rescoped: [], changed: []},
+        missions: {added: [], removed: [], changed: [{phase: 'survey', id: 'boats', what: ['objectives'], objectives: true}]}};
+    assert.deepEqual(diffLines(diff), ['Triggers: 1 added (early-thaw); 1 changed (offer-a-coil: words only)', 'Variables: 1 retyped (watches: number → switch)',
+        'Missions: 1 changed (survey/boats: its objectives)', 'Timers: first-freeze never started now', 'Also changed: title']);
+    assert.deepEqual(diffLines({...diff, same: true}), ['Nothing the story does has changed (its rehearsals may have).']);
+    const item = {key: 'm:2', type: 'version' as const, id: 2, digest: 'b7e1c2d4aa', from: 'a41c9e00ff', status: 'current' as const, approvedBy: 'ann', approvedAt: null,
+        movedAt: null, movedBy: 'martin#a1', command: 3, visit: 2, day: 12, order: 9, settledAt: null, problem: '', at: '2026-11-22T10:00:00Z', phase: 'the-watch',
+        phaseFrom: 'ferry-watch', warnings: [], counts: {kept: 4, reset: 0, defaulted: 0, dropped: 2, added: 1}};
+    assert.equal(versionLine(item), 'moved to version b7e1c2d4 by martin (from a41c9e00), landing in the-watch (ferry-watch is gone): 4 kept, 2 dropped');
+    assert.equal(versionLine({...item, status: 'refused'}), 'the game refused version b7e1c2d4: back on a41c9e00 (moved by martin)');
+    assert.equal(versionLine({...item, status: 'moving'}).endsWith('waiting for the game'), true);
+    // On the timeline: under Admin, and the poll's cursor for it.
+    const items = [item, visit(1, '2026-11-21T09:59:00Z')];
+    assert.deepEqual(filterTimeline(items, 'command').map(i => i.key), ['m:2']);
+    assert.equal(sinceOf(items, {}, 'now').version, 2);
+    assert.deepEqual(phaseStrip([{visit: 1, phase: 'gather', day: 1, cause: 'published', receipts: []}], [{id: 'muster', to: ['gate']}], 'muster'),
+        {path: ['gather', 'muster'], next: ['gate']}, 'a run that landed in a renamed phase');
+    assert.equal(commandLine('migrate', {version: 3, phase: 'the-watch'}, names), 'moved it onto approved version #3, landing in the-watch');
+    assert.equal(beforeAfter({result: {text: '', before: {version: 'a41c9e00ff', phase: 'ferry-watch'}, after: {version: 'b7e1c2d4aa', phase: 'ferry-watch'}}}),
+        'version a41c9e00 → b7e1c2d4');
+    const lines = previewLines({run: 'world-1', kind: 'migrate', payload: {version: 3}, outcome: 'done', text: 'Moving onto version b7e1c2d4.', migration: report, moved: false});
+    assert.deepEqual(lines, ['Moving onto version b7e1c2d4.', 'Dropped (the new version has no place for it): timer first-freeze, due day 38.0: nothing listens', 'Counts start now.']);
 });

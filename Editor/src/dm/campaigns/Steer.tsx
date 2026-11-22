@@ -5,7 +5,8 @@
 // taken it (within a tick).
 import {useEffect, useState} from 'react';
 import {storyProgram, type Target} from '../api';
-import {commandLine, nameOf, previewLines, typedTitle, wayOf, type CommandKind, type Controls, type Preview, type RunDetail, type RunRow} from '../../lib/campaigns';
+import {ago, commandLine, diffLines, migrationGroups, nameOf, previewLines, shortDigest, typedTitle, wayOf, type CommandKind, type Controls, type Preview, type RunDetail,
+    type RunRow, type Version} from '../../lib/campaigns';
 import {WhyNotPanel} from './Explain';
 
 /** A command waiting for the admin's second click. */
@@ -57,7 +58,9 @@ export function SteerBar({row, detail, names, steer, busy}: {row: RunRow; detail
     const c = detail.controls;
     const [signal, setSignal] = useState(''), [phase, setPhase] = useState(''), [effects, setEffects] = useState(true), [telling, setTelling] = useState(false);
     const [to, setTo] = useState<'participants' | 'wolf' | 'region'>('participants'), [wolf, setWolf] = useState(''), [region, setRegion] = useState(''), [text, setText] = useState('');
+    const [moving, setMoving] = useState(false);
     if (!c) return null;
+    const approved = (detail.versions ?? []).find(v => v.status === 'approved');
     const cohort = detail.state?.cohort ?? [];
     const pickedSignal = signal || c.signals[0] || '';
     const pickedPhase = phase || c.phases.find(p => p !== row.phase) || '';
@@ -92,7 +95,10 @@ export function SteerBar({row, detail, names, steer, busy}: {row: RunRow; detail
                     warn: way !== 'on' ? 'Nothing is undone: what the world was given stays given (doc 85, 5.1 rule 5).' : undefined})}>Go to phase…</button>
             </span>
             <button disabled={busy} onClick={() => setTelling(t => !t)}>✉ Tell the wolves…</button>
+            {approved && <button disabled={busy || row.moving} className={moving ? 'on' : ''} onClick={() => setMoving(m => !m)}
+                title="A newly approved version of this story is waiting: move the run onto it">⇪ Move onto a new version…</button>}
         </div>
+        {moving && approved && <MovePanel row={row} detail={detail} version={approved} names={names} busy={busy} steer={steer} close={() => setMoving(false)} />}
         {telling && <div className="camp-tell">
             <select value={to} onChange={e => setTo(e.target.value as typeof to)} aria-label="To">
                 <option value="participants">the story's wolves</option><option value="wolf">one wolf</option>
@@ -108,6 +114,46 @@ export function SteerBar({row, detail, names, steer, busy}: {row: RunRow; detail
             <button onClick={() => setTelling(false)}>×</button>
         </div>}
     </>;
+}
+
+/** "Move onto a new version…" (doc 85, Phase 5b): what changed between the version the run is on and the one approved for it,
+ *  what the run keeps, resets, defaults and drops (worked out against the run as it stands), the phase to land in when the
+ *  new version no longer has the one it is in; then the command, asked twice with a reason, its dry run shown first. */
+export function MovePanel({row, detail, version: v, names, busy, steer, close}: {row: RunRow; detail: RunDetail; version: Version; names: Record<string, string>;
+    busy: boolean; steer: SteerFn; close: () => void}) {
+    const r = v.report;
+    const gone = !!r?.phase?.gone;
+    const [land, setLand] = useState('');
+    const choices = (r?.phase?.choices ?? []);
+    const blocked = r?.blocked && !(gone && land) ? r.blocked : null;
+    const groups = r ? migrationGroups(r, names) : [];
+    const now = detail.now?.at ?? new Date().toISOString();
+    return <div className="camp-move" role="region" aria-label="Move onto a new version">
+        <header><b>Version {shortDigest(v.digest)}</b> · approved by {v.approvedBy.split('#')[0]} {ago(v.approvedAt, now)}
+            {v.title && v.title !== row.title ? <> · now called “{v.title}”</> : null}
+            <span className="hint"> · the run is on {shortDigest(row.digest)}{r?.from && r.to && r.from.version !== r.to.version ? ` (version ${r.from.version} → ${r.to.version} of the format)` : ''}</span>
+            <button className="wb-close" onClick={close} aria-label="Close">×</button></header>
+        <h4>What changed</h4>
+        <ul className="camp-diff">{diffLines(r?.diff).map((l, i) => <li key={i}>{l}</li>)}</ul>
+        {gone && <label className="field camp-land"><span>Phase {r?.phase?.from} is not in the new version. Land in:</span>
+            <select value={land} onChange={e => setLand(e.target.value)} aria-label="Phase to land in"><option value="">choose…</option>
+                {choices.map(p => <option key={p}>{p}</option>)}</select></label>}
+        {blocked && <p className="camp-ask-refused">{blocked}</p>}
+        {!gone && <><h4>For this run, as it stands (visit {row.visit}, {row.phase})</h4>
+            {groups.map(g => <details key={g.group} open={g.group !== 'kept'} className={`camp-migrate ${g.group}`}>
+                <summary>{g.title} · {g.lines.length}</summary><ul>{g.lines.map((l, i) => <li key={i}>{l}</li>)}</ul></details>)}
+            {!!r?.warnings.length && <ul className="camp-ask-warn">{r.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>}</>}
+        {gone && land && <p className="hint">What it keeps when it lands in {land} is worked out by the dry run when you ask.</p>}
+        <div className="camp-controls">
+            <button className="primary" disabled={busy || !!blocked || (gone && !land)} onClick={() => steer({kind: 'migrate',
+                payload: {version: v.id, ...(gone ? {phase: land} : {})}, title: `Move onto version ${shortDigest(v.digest)}`,
+                does: ['The run carries on in the new version, in the same visit, between two world events.',
+                    'The game is told the new words, regions and missions of this visit; its entry effects are not sent again.',
+                    'If the game refuses the new version, the run goes back to this one.'],
+                warn: 'Nothing the world was given is taken back (doc 85, 5.8 rule 7). Commands made against the old version are refused once it has moved.'})}>Move onto this version…</button>
+            <button onClick={close}>Not now</button>
+        </div>
+    </div>;
 }
 
 /** The Triggers tab (doc 85, 5.3): the phase's triggers and the campaign's, each on or off, how often fired, [Fire…]. */

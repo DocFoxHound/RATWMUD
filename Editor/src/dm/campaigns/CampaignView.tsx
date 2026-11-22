@@ -57,6 +57,8 @@ export function CampaignView({me, target, row, detail, items, events, names, now
             <div><small>{row.run} · version {row.digest.slice(0, 6)} · approved by {row.approver}{row.approvedAt ? ' ' + ago(row.approvedAt, now.at) : ''}</small>
                 <h2>{row.title} <span className={`camp-status ${row.status}`}>{row.status}</span>{row.visit ? <small> visit {row.visit}</small> : null}</h2></div>
         </header>
+        {row.moving && <p className="hint camp-pad-x camp-moving">⇪ Moving onto a new version: the game is being told its words for this visit. Until it answers,
+            the story reads nothing and takes no other command; if the game refuses, it goes back.</p>}
         {canSteer && detail && <div className="camp-steer"><SteerBar row={row} detail={detail} names={names} steer={setAsk} busy={busy} /></div>}
         {!canSteer && canDirect && steerable(row.status) && me.hosted && <p className="hint camp-pad-x">Steering this world's campaigns needs its owner, or the owner's
             "may steer campaigns" for your account (My world, Editor accounts).</p>}

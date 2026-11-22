@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 5 are built (section 6, "Phase 1 as built" to "Phase 5 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 5 and 5b are built (section 6, "Phase 1 as built" to "Phase 5b as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -16,8 +16,9 @@ of these answers, it now says **decided (user, 2026-11-21)**.
 
 **Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`, Phase 2 ("Steer it"), on branch `r3-camp-p2` (from `r3-camp-p1`), and
 Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A, and Phase 4 (the catalogue and the
-workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), and Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
-(from `r3-camp-p4`): see "Phase 1 as built" to "Phase 5 as built" in section 6.
+workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
+(from `r3-camp-p4`), and Phase 5b (moving a running campaign onto a new version), on branch `r3-camp-p5b` (from `r3-camp-p5`),
+which closes Slice B: see "Phase 1 as built" to "Phase 5b as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -1783,6 +1784,103 @@ world's variables; 0074 to 0076 stay Phase 5b's, 6's and 8's); no new game order
 - Tests: kept, reset and dropped on fixture runs of the 8 examples edited three ways; a phase that no longer
   exists; a timer whose listener went; moving twice; a command made against the old version refused after the move.
 - Slice end (B): full suite; one review-and-fix.
+
+**Phase 5b as built** (2026-11-22, branch `r3-camp-p5b`, on `r3-camp-p5`). Migration `0074`; no new game order (`story.phase` gains
+`revise`); no change to the program format.
+- **The migration** (`tools/story_program.py`, "moving a running campaign onto a new version"; pure). `version_diff(old, new)`:
+  triggers by the state's keys (a campaign trigger by id, a phase's as `phase/id`) added, removed and changed with the fields that
+  changed (`wordsOnly` when only `folder`/`note`), variables (by scope and name; a version 1 story's counters as it reads and
+  writes them: `declared()`) added, removed, retyped, rescoped, changed and, version 1 onto 2, `renamed` (a wolf's counter named
+  in both scopes is `<name>.player`, as `upgrade` names it), phases, missions (and whether their objectives changed), timers (the
+  signals the story can start, and how), regions, scenes, the header fields, `same`. `migration(old, new, state, land, run, began)`
+  returns the new state and a report of what is **kept**, **reset**, **defaulted** (back to its first value), **dropped** and
+  **added**, each line with why, plus `warnings`, the `phase` mapping (`from`, `to`, `choices`, `gone`) and `blocked`: the same
+  story id; the run stays in its phase, and only when the new version has no such phase may (and must) the admin name one to
+  land in, which is not an ending (the visit carries on as that phase; keys of the old phase's triggers follow it); scene initiators
+  in the run's audience. Variables kept by name, scope and type when the value fits the new type (a region that still exists, a
+  number in bounds); retyped, rescoped or not fitting: defaulted; gone: dropped; world variables are the world's (a retyped one is
+  warned about). Timers kept while their signal still has a listener (a visit timer in the landing phase, a campaign one anywhere);
+  a changed schedule keeps the running timer's time. Once-marks kept by trigger when its once-rule still uses that mark (else
+  dropped: it may fire again); counts and turned-off keys by trigger; a trigger **newly off** (`"enabled": false` and new, or on
+  before) is turned off, one newly on stays as the run has it (warned). A **wait** is kept only when its trigger is there and what
+  it still has to run is unchanged (`_remaining`: the list its `next` points into, whole, and after each action it is inside the
+  rest of that action's list), else dropped. A mission's progress is kept when its objectives and mode are unchanged, else reset;
+  an exit's votes and steps when that exit (by index) is unchanged. Version 1 onto 2 gets `seed` (the run's id) and `began` (the day
+  of its first visit); version 2 onto 1 drops waits, counts, rolls and personal endings. The audience stays the run's (warned when
+  the new version's differs).
+- **Approving "as a new version of run X"** (op `approve` with `forRun`): the ordinary approval (rehearsed, every phase covered,
+  the world's references, the hosted checks: `faction.relation` needs a builder, wolves' harm "may act on wolves", the map's "ahead"
+  check, since it is op `approve`), then `approve_version`: a live run of the same story id, not already on that digest; a row in
+  `dm.story_versions` (`approved`; an older approval of the run waiting is `withdrawn`). The reply is the report against the run as
+  it stands. No ticket, nothing published.
+- **Migration `0074_story_versions.sql`**: `dm.story_versions(run, digest, program, approved_by, approved_at, status (approved,
+  moving, current, past, refused, withdrawn), from_digest, moved_at, moved_by, command, visit, at_event, game_day, report,
+  state_before, receipt, settled_at, problem)`, one row per version a run has been on or has had approved; the release row keeps the
+  current program, digest and approver (`approved_at` stays the run's first). Closed to the game. Not applied to `ratw_ridgemere3`.
+- **The move** is the inbox's command `migrate {version, phase?}` (visit- and digest-bound as every command; a flow command: it waits
+  for the run to have sent and had answered its visit's orders, and on a held or paused run part-way through is refused). `Steer.
+  do_migrate` works the report out again against the run then, refuses what is `blocked`, writes the version it leaves (the one it
+  was published on gets its row now, as `past`), changes the release's program, digest and approver, sets the state (with
+  `entrySent`: the visit's entry effects are those already sent, so a new entry effect of this phase is never sent by the move),
+  and sends the game **`story.phase` with `revise: true`** for the same visit: the new title, journal, regions, guest voices, lines
+  and missions (`state.moveReceipt`; also kept in the visit's receipts for the Orders tab). Until the game answers, the run reads no
+  events (`_tick_run` returns) and takes no command but hold, resume and stop. `settle_move` (each tick, held and paused runs too):
+  applied, the version is `current`; **refused, the run goes back**: the old program, digest, approver and `state_before` (a hold made
+  meanwhile kept), the version `refused` with the game's words, an audit row `story.migrate` by the runner; expired, sent again.
+  Commands queued against the old digest are refused once it has moved. Rewards and world changes already delivered stay.
+- **The game** (`Game::applyWorldStoryPhase`, `Core/RatwGameStorylines.cpp`): `revise` is accepted only for the visit a live world story
+  is in, never with `end`; checked whole (regions fit their cells, speakers exist) before anything changes; it replaces the title,
+  regions (and the region watch), speakers, lines and the last step's title, journal and missions, with no new step, no toast and no
+  event; scenes under way go on. `story.tell` and area effects then use the new regions.
+- **Reads**: `status` gains `versions` (newest first; an approval not moved onto carries a fresh report against the run now) and each
+  row `storyId`, `format`, `moving`; `timeline` a fifth source, `version` (`m:<id>`, ranked after commands; a poll gets new ones,
+  one still moving and those settled since), with the counts, the phase landed in and the warnings. The dry run (`explain {command:
+  {kind: 'migrate'}}`) returns the report as `migration`.
+- **The Editor**: the Story Creator's approval has "or as a new version of a running campaign" (the live runs of this story id) and
+  shows the diff and the counts, with "Open in Campaigns". The console's steering row has **⇪ Move onto a new version…** when one is
+  approved: `MovePanel` (what changed, in lines; for this run as it stands: dropped, reset, back to its first value, new, kept, each
+  line with why; warnings; "Land in:" when its phase is gone) and then `AskDialog` with the dry run's lines and a reason. The header
+  says when it is moving; the timeline shows "moved to version b7e1c2d4 by martin (from a41c9e00): 9 kept, 4 dropped" and "the game
+  refused version …: back on …" (under Admin); Audit has a **Versions** table; the phase strip ends in the phase it landed in.
+- **Tests:** `tools/test_story_versions.py` (pure: the 8 examples at every step of every rehearsal, edited three ways: words only
+  (the state unchanged, nothing reset, defaulted or dropped), made version 2 (every counter kept by upgrade's names, the rest of the
+  rehearsal giving the same phases and story counters), a trigger of the phase taken away (its marks and waits gone, nothing else);
+  a version 1 run onto version 2 with a counter named in both scopes; a phase taken away (blocked, then landed, keys following); a
+  variable retyped and one rescoped; a wait part-way through a list kept and resuming in the new version, dropped when what it still
+  runs changed, when an action before it changed, when its trigger went; a timer whose listener went; missions kept and reset; a
+  trigger newly off; the diff. In a throwaway database: a version 1 run moved onto version 2 (the dry run saves and sends nothing,
+  the revise order, nothing read while moving, other commands refused meanwhile, a command queued against the old version refused,
+  the versions, the timeline, the audit, carrying on as version 2), refused by the game and back (held meanwhile, still held), moving
+  twice with a phase taken away, entry effects not sent again and an older approval withdrawn, a version 2 run with a wait moved and
+  resuming; the route: approve for a run (a viewer refused, another story refused), the move needing "may steer campaigns" on a hosted
+  world); `Tests/storyline_tests.cpp` (a revise: a region that does not fit changes nothing, another visit, `end`, an unknown story
+  refused; revised in place with one step, the new words and region; `story.tell` with the new region only); `campaigns.test.ts`
+  (report lines, groups, the diff, the timeline line and filter, the cursor, the command, before and after, the dry run, the phase
+  strip after a landing); the render smoke (the button, the panel, the panel with "Land in:", moved, its timeline, moving, the dry
+  run).
+- **Seen:** on a throwaway Greyfen database (three wolves; a version 1 tally, the version 2 rope ledger and the bell with its waits,
+  published and driven by hand; a loop standing in for the game and the runner, refusing a revision with a region called "pier"),
+  screenshots in `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p5b/`: the bell's Move panel (four waits dropped, three kept, a
+  new variable), the dry run, moved (timeline, audit, variables); the ledger moved onto a version the game refused and back; the
+  ledger moved onto a version without its phase, landing in `muster`, and its Versions; the tally's version 2 approved from the Story
+  Creator as a new version of its run, moved, `tally.player` in its variables.
+- **The slice's full suite:** ctest 121 of 121 (`talk_scorecard_quick`, a timing scorecard, failed under `-j6` load beside the Python
+  suite and passes alone); Python 1,193 tests with 8 failures, each one of Phase 3's known list, failing the same before this phase
+  (live edit, the map and terrain exporters, the progression catalogue, two of world admin's, two of the world package's); the
+  Editor's tests (118 and 78), type check and render smoke (43 panels; the workbench over 108 and 10 programs).
+- **The slice's review and fix:** a refusal with no record of the version it came from leaves the run paused on the new one rather
+  than stuck moving; the strip after a landing; the diff names upgrade's renames as renames, not a variable moved.
+- **Not in Phase 5b, on purpose:** moving onto another story (a new id); changing the run's audience (Phase 6's participants); a
+  wait kept when only the actions before it changed (the list it points into must be unchanged); converting a retyped value (it
+  starts again); landing in another phase when the current one still exists (move, then go to phase); withdrawing an approval by
+  hand (a newer one withdraws it).
+- **For Phase 6:** migrations are now 0075 (Phase 6) and 0076 (Phase 8). A run may be on a program it was not published with: read
+  the program from the release each time, never cache it by run id (the digest changes; `status`'s `have` already keys on it).
+  Quests and `dm.story_player_state` must join `story_program.migration`: quest progress kept by quest id when its objectives are
+  unchanged, reset otherwise, as missions are, and per-wolf state moved out of `state` must be carried (and put back by a refused
+  move, `state_before`). `participant.add`/`remove` changes `state.cohort`, which a move keeps as it is. The game's `story.phase`
+  `revise` replaces the last step's missions; the journal's quest payloads will need the same in-place update. `RECEIPT_KEYS` now
+  holds `moveReceipt`.
 
 ### Slice C: quests, the world, and speed
 

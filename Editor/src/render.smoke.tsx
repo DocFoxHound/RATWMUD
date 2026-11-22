@@ -15,8 +15,8 @@ import {ProsperityTab} from './dm/ProsperityTab';
 import {MyWorldTab} from './dm/MyWorldTab';
 import type {MyWorld} from './dm/api';
 import {CampaignsTab, type CampaignsInitial} from './dm/CampaignsTab';
-import type {Explained, Order, Preview, Problems, RunDetail, RunRow} from './lib/campaigns';
-import {AskDialog} from './dm/campaigns/Steer';
+import type {Explained, MigrationReport, Order, Preview, Problems, RunDetail, RunRow, TimelineItem, Version} from './lib/campaigns';
+import {AskDialog, MovePanel} from './dm/campaigns/Steer';
 import {ProblemsList} from './dm/StoryProgramPanel';
 import {Workbench, type FullCatalogue} from './dm/triggers/Workbench';
 import {RehearsalStrip, type Report, type Steps} from './dm/triggers/Rehearsal';
@@ -145,6 +145,36 @@ const campaignRunning: CampaignsInitial = {...campaignList, tab: 'overview', det
             changes: [{what: 'counter', scope: 'story', key: 'stores', before: 1, after: 3}]},
         {key: 'o:5513', type: 'order', id: 5513, kind: 'story.phase', target: runningRow.run, status: 'applied', result: '', by: 'martin', at: earlier, doneAt: earlier, visit: 2},
         {key: 'v:2', type: 'phase', visit: 2, phase: 'ferry-watch', day: 10, cause: 'event 47001', receipts: [5513], at: earlier}]}};
+// (Doc 85, Phase 5b: a new version approved for the running campaign, its report, the move on the timeline and in Audit.)
+const migration: MigrationReport = {blocked: null, warnings: ['Version 1 did not count firings: "fired" conditions count from now.'],
+    phase: {from: 'ferry-watch', to: 'ferry-watch', choices: ['enrol', 'ferry-watch', 'deep-freeze'], gone: false},
+    from: {digest: 'a41c9e00', version: 1, title: 'Ninety days on the winter ferries'}, to: {digest: 'b7e1c2d4', version: 2, title: 'Ninety days on the winter ferries'},
+    kept: [{what: 'phase', key: 'ferry-watch', why: 'Visit 2 of ferry-watch carries on (its entry effects are not sent again).'},
+        {what: 'variable', key: 'stores', scope: 'story', value: 5}, {what: 'variable', key: 'hauled.player', scope: 'player', wolf: 'player-birch', value: 2, renamed: 'hauled',
+            why: 'renamed from hauled (a version 1 counter named in both scopes).'}, {what: 'timer', key: 'watch-round', at: 17}],
+    reset: [{what: 'mission', key: 'ferry-line', why: 'its objectives (or who plays it) changed: its progress starts again.'}],
+    defaulted: [{what: 'variable', key: 'watches', scope: 'story', value: 1, why: 'it was a number, it is a switch now: it starts at its first value.'}],
+    dropped: [{what: 'timer', key: 'first-freeze', at: 38, why: 'nothing in the new version listens for its signal.'}],
+    added: [{what: 'off', key: 'ferry-watch/begin-deep-freeze', why: 'the new version starts it turned off.'}],
+    diff: {same: false, header: ['version'], tests: true, triggers: {added: ['early-thaw'], removed: [], newlyOff: ['ferry-watch/begin-deep-freeze'],
+        changed: [{id: 'offer-a-coil', what: ['note'], wordsOnly: true}, {id: 'open-winter-ledger', what: ['actions']}]},
+        variables: {added: [], removed: [], retyped: [{id: 'watches', scope: 'story', from: 'number', to: 'switch'}], rescoped: [], changed: []},
+        phases: {added: [], removed: [], changed: [{id: 'ferry-watch', what: ['journal', 'triggers']}]}, missions: {added: [], removed: [], changed: []},
+        timers: {added: [], removed: ['first-freeze'], changed: ['watch-round']}, regions: {added: [], removed: [], changed: []}, scenes: {added: [], removed: [], changed: []}}};
+const approvedVersion: Version = {id: 3, digest: 'b7e1c2d4aa', approvedBy: 'ann#c2', approvedAt: at, status: 'approved', from: null, movedAt: null, movedBy: null,
+    command: null, visit: null, day: null, report: migration, order: null, settledAt: null, problem: '', title: runningRow.title};
+const versions: Version[] = [
+    {...approvedVersion, id: 2, digest: 'b7e1c2d4aa', status: 'current', from: 'a41c9e00', movedAt: at, movedBy: 'martin#a1', visit: 2, day: 12.6, order: 5530, settledAt: at},
+    {...approvedVersion, id: 1, digest: 'a41c9e00', approvedBy: 'martin', approvedAt: earlier, status: 'past', movedAt: earlier, visit: 1, report: null}];
+const movedItem: TimelineItem = {key: 'm:2', type: 'version', id: 2, digest: 'b7e1c2d4aa', from: 'a41c9e00', status: 'current', approvedBy: 'ann#c2', approvedAt: at,
+    movedAt: at, movedBy: 'martin#a1', command: 14, visit: 2, day: 12.6, order: 5530, settledAt: at, problem: '', at, phase: 'ferry-watch', phaseFrom: 'ferry-watch',
+    warnings: [], counts: {kept: 4, reset: 1, defaulted: 1, dropped: 1, added: 1}};
+const campaignMoved: CampaignsInitial = {...campaignRunning, tab: 'audit', detail: {...campaignRunning.detail!, digest: 'b7e1c2d4aa', versions,
+    commands: [{id: 14, key: 'cabc12345679', visit: 2, digest: 'a41c9e00', kind: 'migrate', payload: {version: 2}, reason: 'the freeze came early this year',
+        by: 'martin#a1', at, status: 'done', doneAt: at, result: {text: 'Moving onto version b7e1c2d4 (from a41c9e00), in ferry-watch, visit 2: 4 kept, 1 reset, 1 defaulted, 1 dropped.',
+            before: {version: 'a41c9e00', phase: 'ferry-watch'}, after: {version: 'b7e1c2d4aa', phase: 'ferry-watch'}}}, ...campaignRunning.detail!.commands!]},
+    timeline: {...campaignRunning.timeline!, items: [movedItem, {...movedItem, key: 'm:4', id: 4, status: 'refused', digest: 'c9d0e1f2',
+        from: 'b7e1c2d4aa', problem: 'The game refused it: Story region does not fit its live cell: pier'}, ...campaignRunning.timeline!.items]}};
 const campaignPaused: CampaignsInitial = {...campaignList, tab: 'orders', detail: detailOf(pausedRow, {orders: [refused,
     {...refused, id: 5513, kind: 'story.phase', target: pausedRow.run, status: 'applied', result: ''}]}),
     timeline: {run: pausedRow.run, names, events: {}, before: null, since: {}, now: at, items: []}};
@@ -216,6 +246,22 @@ export function renderAll(): Record<string, string> {
     out['Campaigns (refused dry run)'] = renderToString(<AskDialog ask={{kind: 'fire', payload: {trigger: 'stocked-at-thaw'}, title: 'Fire stocked-at-thaw now', does: []}}
         row={runningRow} names={names} busy={false} send={none} cancel={none} target="dev"
         dryRun={{run: runningRow.run, kind: 'fire', payload: {trigger: 'stocked-at-thaw'}, outcome: 'refused', text: 'Its conditions are false just now.'}} />);
+    out['Campaigns (new version)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning,
+        detail: {...campaignRunning.detail!, versions: [approvedVersion, ...versions.slice(1).map(v => ({...v, status: 'current' as const}))]}}} />);
+    out['Campaigns (move)'] = renderToString(<MovePanel row={runningRow} detail={campaignRunning.detail!} version={approvedVersion} names={names} busy={false}
+        steer={none} close={none} />);
+    out['Campaigns (move, phase gone)'] = renderToString(<MovePanel row={runningRow} detail={campaignRunning.detail!} names={names} busy={false} steer={none} close={none}
+        version={{...approvedVersion, report: {...migration, blocked: 'Phase ferry-watch is not in the new version: name the phase to land in.',
+            phase: {from: 'ferry-watch', to: null, choices: ['enrol', 'the-watch', 'deep-freeze'], gone: true}}}} />);
+    out['Campaigns (moved)'] = renderToString(<CampaignsTab me={me} target="dev" initial={campaignMoved} />);
+    out['Campaigns (moved, timeline)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignMoved, tab: 'timeline'}} />);
+    out['Campaigns (moving)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, overview: {...campaignList.overview,
+        runs: [{...runningRow, moving: true}]}}} />);
+    out['Campaigns (move dry run)'] = renderToString(<AskDialog ask={{kind: 'migrate', payload: {version: 3}, title: 'Move onto version b7e1c2d4', does: []}}
+        row={runningRow} names={names} busy={false} send={none} cancel={none} target="dev"
+        dryRun={{run: runningRow.run, kind: 'migrate', payload: {version: 3}, outcome: 'done', migration, moved: false, phase: 'ferry-watch', visit: 2,
+            text: 'Moving onto version b7e1c2d4 (from a41c9e00), in ferry-watch, visit 2: 4 kept, 1 reset, 1 defaulted, 1 dropped.',
+            orders: [{kind: 'story.phase', target: runningRow.run, payload: {revise: true}}]}} />);
     out['Story problems'] = renderToString(<ProblemsList found={problems} untried={['ferry-watch/begin-deep-freeze']} phases={['enrol', 'ferry-watch']} go={none} asking={false} />);
     out['DM tab bar'] = renderToString(<DmSuite me={me} target="dev" alertsInitial={{runner: {beatAt: earlier, age: 95}, runnerDown: true, live: 2, needsYou: 2, at,
         runs: [{run: 'world-77ab', title: 'Two ways across Reed Ford', status: 'paused', kinds: ['paused'], text: 'Story "Two ways across Reed Ford" is paused.'}]}} />);

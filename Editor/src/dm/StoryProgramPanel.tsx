@@ -5,7 +5,7 @@ import {download} from '../lib/api';
 import {commit, editable, historyOf, namesOf, pretty, redo, refOfProblem, undo, wordingOf, type History, type Program, type Ref, type Refs} from '../lib/workbench';
 import {BenchContext} from './triggers/context';
 import {WordingContext} from './campaigns/Explain';
-import type {Problems} from '../lib/campaigns';
+import {diffLines, migrationGroups, type MigrationReport, type Problems} from '../lib/campaigns';
 import {Workbench, type FullCatalogue} from './triggers/Workbench';
 import {ProblemsList} from './triggers/Problems';
 import {RehearsalStrip, type Report, type Steps} from './triggers/Rehearsal';
@@ -45,6 +45,10 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
     const [ticket, setTicket] = useState('');
     const [selected, setSelected] = useState('');
     const [published, setPublished] = useState('');
+    // Approve as a new version of a running campaign (doc 85, Phase 5b): the live runs of this story, and what came of it.
+    const [liveRuns, setLiveRuns] = useState<{run: string; title: string; status: string; phase: string | null; visit?: number; digest: string}[]>([]);
+    const [forRun, setForRun] = useState('');
+    const [asVersion, setAsVersion] = useState<{run: string; version: number; report: MigrationReport} | null>(null);
     const [search, setSearch] = useState('');
     const [places, setPlaces] = useState<{kind: string; id: string; name: string}[]>([]);
     const [resident, setResident] = useState<{resident: {id: string; name: string}}>();
@@ -159,6 +163,16 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
         });
     }
     const reviewed = report?.passed && !report.uncovered?.length && program;
+    const storyId = (program as Program | undefined)?.id;
+    useEffect(() => {
+        // (The live runs of this story, once it rehearses clean: what "as a new version of" may name.)
+        if (!canDirect || !reviewed || !storyId) { setLiveRuns([]); return; }
+        let active = true;
+        storyProgram<{runs: {run: string; title: string; status: string; phase: string | null; visit?: number; digest: string; storyId?: string}[]}>(target, 'status')
+            .then(o => { if (active) setLiveRuns(o.runs.filter(r => r.storyId === storyId && ['running', 'paused', 'held'].includes(r.status))); })
+            .catch(() => { if (active) setLiveRuns([]); });
+        return () => { active = false; };
+    }, [canDirect, reviewed, storyId, target]);
     const status = !canDirect ? 'Drafts stay in this browser' : meta.id ? (dirty ? 'Unsaved changes' : `Saved ${clock(meta.savedAt)} · version ${meta.version}`) : dirty ? 'Not saved on the server yet' : '';
     const phases = Array.isArray((program as Program | undefined)?.phases) ? (program as Program).phases.map(p => String(p?.id)) : [];
     return <div className="story-columns program-workspace"><section className="dm-panel">
@@ -224,7 +238,24 @@ export function StoryProgramPanel({sceneLibraryKey, world, target, storageKey, c
             <button disabled={!canDirect || !reviewed || busy || !!ticket} onClick={() => void perform(async () => {
                 const r = await storyProgram<{ticket: string; run: string}>(target, 'approve', {program, digest: report.digest});
                 setTicket(r.ticket); setSelected(r.run);
-            })}>Approve this version for {worldName(target)}</button></section>}
+            })}>Approve this version for {worldName(target)}</button>
+            {liveRuns.length > 0 && <div className="wb-for-run">
+                <span>or as a new version of a running campaign:</span>
+                <select value={forRun} onChange={e => setForRun(e.target.value)} aria-label="Running campaign">
+                    <option value="">choose a run…</option>
+                    {liveRuns.map(r => <option key={r.run} value={r.run} disabled={r.digest === report.digest}>{r.title} · {r.status} · {r.phase}{r.visit ? ` (visit ${r.visit})` : ''}
+                        {r.digest === report.digest ? ' · on this version' : ''}</option>)}</select>
+                <button disabled={!canDirect || !reviewed || busy || !forRun} onClick={() => void perform(async () => {
+                    const r = await storyProgram<{run: string; version: number; report: MigrationReport}>(target, 'approve', {program, digest: report.digest, forRun});
+                    setAsVersion(r);
+                })}>Approve as its new version</button></div>}
+            {asVersion && <div className="wb-as-version" role="status">
+                <p>Approved as a new version of <code>{asVersion.run}</code>: nothing has moved yet. Move the run onto it from Campaigns (it asks first, with a reason).
+                    {openCampaigns && <> <button onClick={() => openCampaigns(asVersion.run)}>Open in Campaigns</button></>}</p>
+                {asVersion.report.blocked && <p className="hint">{asVersion.report.blocked}</p>}
+                <ul>{diffLines(asVersion.report.diff).map((l, i) => <li key={'d' + i}>{l}</li>)}</ul>
+                {!asVersion.report.blocked && <p className="hint">For the run as it stands: {migrationGroups(asVersion.report).map(g => `${g.lines.length} ${g.group}`).join(', ')}.</p>}
+            </div>}</section>}
         {ticket && <fieldset disabled={busy}><label>Publication ticket<input readOnly value={ticket} onFocus={e => e.target.select()}/></label>
             <button onClick={() => void perform(async () => { const r = await storyProgram<{run: string}>(target, 'publish', {ticket}); setTicket(''); setPublished(r.run); })}>Publish approved story</button>
             {openCampaigns && selected && <button onClick={() => openCampaigns(selected)}>Open in Campaigns</button>}</fieldset>}

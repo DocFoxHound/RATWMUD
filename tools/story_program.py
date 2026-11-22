@@ -1477,3 +1477,449 @@ def _review(p):
         'voices': [{'phase': s['id'], 'npc': npc} for s in p['phases'] for npc in s.get('guestVoices', [])],
         'effects': [{'phase': s['id'], **e} for s in phases_of(p) for e in possible_effects(s)],
     }
+
+
+# ------------------------------------------------------------------------- moving a running campaign onto a new version
+# Doc 85, Phase 5b (the user's answer to question 5, 2026-11-21: yes). A ninety-day campaign that needs a fix on day 40
+# keeps its wolves, its phase, its variables and its missions. `version_diff` says what changed between two approved
+# programs; `migration` maps a running state onto the new one: what is kept, reset, defaulted or dropped, each with why.
+# Pure: the runner (story_runner.Steer.do_migrate) takes it as a command between two world events, and nothing is
+# delivered by the move itself.
+
+def _json(v):
+    return json.dumps(v, sort_keys=True, separators=(',', ':'))
+
+
+def _trigger_table(p):
+    """Every trigger of a program by the key the state uses for it (a campaign trigger by its id, a phase's own as
+    phase/id), with where it lives."""
+    out = {t['id']: {'rule': t, 'scope': 'campaign', 'phase': None} for t in p.get('triggers', [])}
+    for ph in p['phases']:
+        for t in ph.get('triggers', []):
+            out[ph['id'] + '/' + t['id']] = {'rule': t, 'scope': 'phase', 'phase': ph['id']}
+    return out
+
+
+def _changed_fields(a, b, skip=()):
+    return sorted(k for k in set(a) | set(b) if k not in skip and _json(a.get(k)) != _json(b.get(k)))
+
+
+def declared(p):
+    """What a program keeps in `counters`, by (scope, name): a version 2 story's declarations; a version 1 story's
+    counters as its triggers read or write them (whole numbers that start at 0)."""
+    if p.get('version') == 2:
+        return {(d['scope'], d['id']): d for d in variables_of(p).values()}
+    out = {}
+    for t in [*p.get('triggers', []), *(t for ph in p['phases'] for t in ph.get('triggers', []))]:
+        for c in (triggers.conditions_in(t['if']) if 'if' in t else ()):
+            if c.get('test') == 'counter':
+                out[(c['scope'], c['key'])] = {'id': c['key'], 'scope': c['scope'], 'type': 'number'}
+        for _, a in triggers.walk(t['actions']):
+            if a['do'] in ('set', 'add') and 'key' in a:
+                out[(a['scope'], a['key'])] = {'id': a['key'], 'scope': a['scope'], 'type': 'number'}
+    return out
+
+
+def _schedules_of(p):
+    out = {}
+    for t in [*p.get('triggers', []), *(t for ph in p['phases'] for t in ph.get('triggers', []))]:
+        for _, a in triggers.walk(t['actions']):
+            if a['do'] == 'schedule':
+                out.setdefault(a['signal'], []).append({k: a.get(k) for k in ('days', 'repeat', 'scope', 'clock', 'owner')})
+    return out
+
+
+def _story_signals_heard(phase):
+    """The story signals a phase (with its campaign triggers) reacts to: what a running timer needs to still be heard."""
+    heard = {t['signal'] for t in phase.get('triggers', []) if t['on'] == triggers.SIGNAL}
+    heard |= {o['signal'] for m in phase.get('missions', []) for o in m['objectives'] if 'signal' in o}
+    return heard
+
+
+def version_diff(old, new):
+    """What changed from one approved program to another, for the admin to read before moving a run (doc 85, Phase 5b):
+    triggers, variables, phases, missions, timers (the signals the story can start), regions, scenes and the header."""
+    validate(old)
+    validate(new)
+
+    def by_id(items):
+        return {x['id']: x for x in items}
+
+    def compare(a, b, skip=()):
+        added = sorted(set(b) - set(a))
+        removed = sorted(set(a) - set(b))
+        changed = [{'id': k, 'what': _changed_fields(a[k], b[k], skip)} for k in sorted(set(a) & set(b))
+                   if _json({f: v for f, v in a[k].items() if f not in skip}) != _json({f: v for f, v in b[k].items() if f not in skip})]
+        return {'added': added, 'removed': removed, 'changed': changed}
+
+    ta, tb = _trigger_table(old), _trigger_table(new)
+    trig = compare({k: v['rule'] for k, v in ta.items()}, {k: v['rule'] for k, v in tb.items()})
+    for c in trig['changed']:
+        c['wordsOnly'] = set(c['what']) <= {'folder', 'note'}
+    da, db = declared(old), declared(new)
+    names_a = {f'{sc}:{n}': d for (sc, n), d in da.items()}
+    names_b = {f'{sc}:{n}': d for (sc, n), d in db.items()}
+    plain_a, plain_b = {}, {}
+    for (sc, n), d in da.items():
+        plain_a.setdefault(n, []).append(d)
+    for (sc, n), d in db.items():
+        plain_b.setdefault(n, []).append(d)
+    variables = {'added': [], 'removed': [], 'retyped': [], 'rescoped': [], 'changed': [], 'renamed': []}
+    if old.get('version') != 2 and new.get('version') == 2:
+        # (Version 1 onto version 2: a wolf's counter named in both scopes is `<name>.player` now, as `upgrade` names it.)
+        for (sc, n) in sorted(da):
+            if sc == 'player' and ('story', n) in da and ('player', n + '.player') in db and ('player', n) not in db:
+                variables['renamed'].append({'id': n, 'scope': 'player', 'to': n + '.player'})
+                names_a.pop(f'player:{n}')
+                names_b.pop(f'player:{n}.player')
+    for key in sorted(set(names_a) | set(names_b)):
+        a, b = names_a.get(key), names_b.get(key)
+        sc, n = key.split(':', 1)
+        if a and b:
+            if a['type'] != b['type'] or a.get('clock', 'game') != b.get('clock', 'game'):
+                variables['retyped'].append({'id': n, 'scope': sc, 'from': a['type'], 'to': b['type']})
+            elif _json(a) != _json(b):
+                variables['changed'].append({'id': n, 'scope': sc, 'what': _changed_fields(a, b)})
+        elif a and n in plain_b and not any(d['scope'] == sc for d in plain_b[n]):
+            if not any(x['id'] == n and x['scope'] == sc for x in variables['rescoped']):
+                variables['rescoped'].append({'id': n, 'from': sc, 'to': plain_b[n][0]['scope']})
+        elif b and n in plain_a and not any(d['scope'] == sc for d in plain_a[n]):
+            continue   # (The other end of a rescope, listed once.)
+        elif a:
+            variables['removed'].append({'id': n, 'scope': sc})
+        else:
+            variables['added'].append({'id': n, 'scope': sc, 'type': b['type']})
+    pa, pb = by_id(old['phases']), by_id(new['phases'])
+    phases = compare(pa, pb)
+    missions = {'added': [], 'removed': [], 'changed': []}
+    for pid in sorted(set(pa) & set(pb)):
+        ma, mb = by_id(pa[pid].get('missions', [])), by_id(pb[pid].get('missions', []))
+        missions['added'] += [{'phase': pid, 'id': m} for m in sorted(set(mb) - set(ma))]
+        missions['removed'] += [{'phase': pid, 'id': m} for m in sorted(set(ma) - set(mb))]
+        missions['changed'] += [{'phase': pid, 'id': m, 'what': _changed_fields(ma[m], mb[m]),
+                                 'objectives': _json(ma[m]['objectives']) != _json(mb[m]['objectives']) or ma[m]['mode'] != mb[m]['mode']}
+                                for m in sorted(set(ma) & set(mb)) if _json(ma[m]) != _json(mb[m])]
+    sa, sb = _schedules_of(old), _schedules_of(new)
+    timers = {'added': sorted(set(sb) - set(sa)), 'removed': sorted(set(sa) - set(sb)),
+              'changed': sorted(s for s in set(sa) & set(sb) if _json(sa[s]) != _json(sb[s]))}
+    out = {
+        'triggers': trig, 'variables': variables, 'phases': phases, 'missions': missions, 'timers': timers,
+        'regions': compare(by_id(old.get('regions', [])), by_id(new.get('regions', []))),
+        'scenes': compare(by_id(old.get('scenes', [])), by_id(new.get('scenes', []))),
+        'header': _changed_fields({k: v for k, v in old.items() if k not in ('phases', 'triggers', 'variables', 'regions', 'scenes', 'tests')},
+                                  {k: v for k, v in new.items() if k not in ('phases', 'triggers', 'variables', 'regions', 'scenes', 'tests')}),
+        'tests': _json(old['tests']) != _json(new['tests']),
+    }
+    out['same'] = not any(out[k]['added'] or out[k]['removed'] or out[k]['changed']
+                          for k in ('triggers', 'phases', 'missions', 'regions', 'scenes', 'timers')) \
+        and not any(out['variables'].values()) and not out['header']
+    return out
+
+
+def _remaining(actions, address):
+    """What a wait at `address` (its `next`) still has to run: the list it points into, and after each action it is
+    inside, the rest of that action's list. None when the address no longer points anywhere."""
+    out, lst, i = [], actions, 0
+    while i < len(address) - 1:
+        index, name = address[i], address[i + 1]
+        if not isinstance(index, int) or index >= len(lst):
+            return None
+        holder = lst[index]
+        out.append((holder.get('do'), lst[index + 1:]))
+        try:
+            lst = triggers.branch(holder, name)
+        except (KeyError, IndexError, ValueError, TypeError, AttributeError):
+            return None
+        i += 2
+    if not isinstance(address[-1], int) or address[-1] > len(lst):
+        return None
+    out.append(('list', lst))
+    return out
+
+
+def migration(old, new, state, land=None, run='', began=None):
+    """A running story's state carried onto a new version of its program (doc 85, Phase 5b). Returns (state, report);
+    the state is None when the move cannot be made as asked (report['blocked'] says why: the current phase is gone and no
+    phase to land in was named, or the one named cannot hold the run).
+
+    Kept: the phase (or the one named to land in), the visit and its day, the audience; variables by name, scope and
+    type (a version 1 run's counters by `upgrade`'s names, a wolf's counter named in both scopes as `<name>.player`);
+    timers whose signal still has a listener; a mission's progress when its objectives and mode are unchanged; the
+    once-marks, counts and turned-off triggers by trigger; votes and steps of an exit that is unchanged; a wait only when
+    what it still has to run is unchanged. Reset: a mission whose objectives changed. Defaulted: a variable retyped,
+    rescoped or holding what its new type cannot. Dropped: what the new version no longer has. Triggers newly off in the
+    new version ("enabled": false) are turned off in the run; those newly on stay as the run has them."""
+    validate(old)
+    validate(new)
+    state = json.loads(json.dumps(state))
+    report = {'kept': [], 'reset': [], 'defaulted': [], 'dropped': [], 'added': [], 'warnings': [], 'blocked': None}
+    kept, reset, defaulted, dropped, added, warn = (report[k] for k in ('kept', 'reset', 'defaulted', 'dropped', 'added', 'warnings'))
+    report['diff'] = version_diff(old, new)
+    report['from'] = {'digest': digest(old), 'version': old['version'], 'title': old['title']}
+    report['to'] = {'digest': digest(new), 'version': new['version'], 'title': new['title']}
+    here = state['phase']
+    new_ids = [ph['id'] for ph in new['phases']]
+    report['phase'] = {'from': here, 'to': None, 'choices': new_ids, 'gone': here not in new_ids}
+    if new['id'] != old['id']:
+        report['blocked'] = 'A new version keeps its story\'s id ("' + old['id'] + '"): this is another story.'
+        return None, report
+    if here in new_ids:
+        if land not in (None, '', here):
+            report['blocked'] = f'Phase {here} is in the new version: the run stays in it (move it, then go to another phase).'
+            return None, report
+        land = here
+    elif not land:
+        report['blocked'] = f'Phase {here} is not in the new version: name the phase to land in.'
+        return None, report
+    elif land not in new_ids:
+        report['blocked'] = f'The new version has no phase {land}.'
+        return None, report
+    report['phase']['to'] = land
+    old_phase = phase_of(old, state)
+    landing = effective_phase(new, next(ph for ph in new['phases'] if ph['id'] == land))
+    if not (landing['exits'] or landing.get('triggers')):
+        report['blocked'] = f'Phase {land} ends the story: land in an ongoing phase (then go to {land} from the console).'
+        return None, report
+    cohort = state['cohort']
+    for ph in phases_of(new):
+        for e in possible_effects(ph):
+            if e['kind'] == 'scene.play' and e['player'] not in ('$actor', '$each', 'world') and e['player'] not in cohort:
+                report['blocked'] = f'Scene initiator {e["player"]} is not in this run\'s audience.'
+                return None, report
+    if land != here:
+        kept.append({'what': 'phase', 'key': land, 'why': f'{here} is not in the new version: the visit carries on as {land}, its entry effects not sent again.'})
+    else:
+        kept.append({'what': 'phase', 'key': land, 'why': f'Visit {state["visits"]} of {land} carries on (its entry effects are not sent again).'})
+    rename_phase = (lambda key: land + key[len(here):] if land != here and key.startswith(here + '/') else key)
+    v2 = new.get('version') == 2
+
+    # ---- variables (counters): by name, scope and type
+    da, db = declared(old), declared(new)
+    names_v1_both = set()
+    if old.get('version') != 2 and v2:
+        names_v1_both = {n for (sc, n) in da if sc == 'player' and ('story', n) in da}
+    counters = state.get('counters', {})
+    out = {}
+
+    def put(scope, owner, name, value):
+        bucket = out.setdefault(scope, {})
+        if scope in ('player', 'party'):
+            bucket = bucket.setdefault(owner, {})
+        bucket[name] = value
+
+    def fits(d, value):
+        kind = d['type']
+        if kind == 'timer':
+            return isinstance(value, (int, float)) and not isinstance(value, bool)
+        if kind == 'number':
+            return integer(value, -triggers.LIMIT, triggers.LIMIT)
+        return _initial_ok(kind, value, set(region_index(new)))
+
+    def carry(scope, owner, name, value):
+        whose = {'wolf': owner} if scope == 'player' else {'party': owner} if scope == 'party' else {}
+        candidates = [name + '.player', name] if scope == 'player' and name in names_v1_both else [name]
+        target = next((c for c in candidates if (scope, c) in db), None)
+        if target is None:
+            other = next((d for (sc, n), d in db.items() if n == name), None)
+            if other:
+                defaulted.append({'what': 'variable', 'key': name, 'scope': scope, **whose, 'value': value,
+                                  'why': f'it is now {other["scope"]}\'s, not {scope}\'s: it starts at its first value there.'})
+            else:
+                dropped.append({'what': 'variable', 'key': name, 'scope': scope, **whose, 'value': value,
+                                'why': 'the new version no longer has it.'})
+            return
+        d, before = db[(scope, target)], da.get((scope, name))
+        if before and (before['type'] != d['type'] or before.get('clock', 'game') != d.get('clock', 'game')):
+            defaulted.append({'what': 'variable', 'key': target, 'scope': scope, **whose, 'value': value,
+                              'why': f'it was a {before["type"]}, it is a {d["type"]} now: it starts at its first value.'})
+            return
+        if not fits(d, value):
+            defaulted.append({'what': 'variable', 'key': target, 'scope': scope, **whose, 'value': value,
+                              'why': f'{value!r} is not a {d["type"]} the new version allows: it starts at its first value.'})
+            return
+        put(scope, owner, target, value)
+        kept.append({'what': 'variable', 'key': target, 'scope': scope, **whose, 'value': value,
+                     **({'renamed': name, 'why': f'renamed from {name} (a version 1 counter named in both scopes).'} if target != name else {})})
+
+    for scope in ('story',):
+        for name, value in sorted(counters.get(scope, {}).items()):
+            carry(scope, '', name, value)
+    for scope in ('player', 'party'):
+        for owner, values in sorted(counters.get(scope, {}).items()):
+            for name, value in sorted(values.items()):
+                carry(scope, owner, name, value)
+    if out:
+        state['counters'] = out
+    else:
+        state.pop('counters', None)
+    for (sc, n), d in sorted(db.items()):
+        if (sc, n) not in da and not any(nn == n for _, nn in da) and not any(x.get('renamed') and x['key'] == n for x in kept):
+            if sc == 'world':
+                added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'kept by the world: this story reads what the world holds.'})
+            else:
+                added.append({'what': 'variable', 'key': n, 'scope': sc, 'why': 'new: it starts at its first value.'})
+    for (sc, n), d in sorted(db.items()):
+        if sc == 'world' and (sc, n) in da and da[(sc, n)]['type'] != d['type']:
+            warn.append(f'World variable {n} is a {d["type"]} now: a value the world keeps as a {da[(sc, n)]["type"]} is not read by this story.')
+
+    # ---- timers: kept while their signal still has a listener
+    heard_here = _story_signals_heard(landing)
+    heard_any = set().union(*(_story_signals_heard(ph) for ph in phases_of(new)))
+    sched_old, sched_new = _schedules_of(old), _schedules_of(new)
+    timers_now = {}
+    for key, t in sorted(state.get('timers', {}).items()):
+        signal = t.get('signal', key.split('/')[0])
+        heard = heard_any if t.get('scope') == 'campaign' else heard_here
+        if signal in heard:
+            timers_now[key] = t
+            line = {'what': 'timer', 'key': key, 'at': t['at']}
+            if signal in sched_old and signal in sched_new and _json(sched_old[signal]) != _json(sched_new[signal]):
+                line['why'] = 'it keeps its time; the new version starts it differently from now on.'
+            kept.append(line)
+        else:
+            dropped.append({'what': 'timer', 'key': key, 'at': t['at'],
+                            'why': 'nothing in the new version listens for its signal' + ('' if t.get('scope') == 'campaign' else f' in {land}') + '.'})
+    if timers_now:
+        state['timers'] = timers_now
+    else:
+        state.pop('timers', None)
+
+    # ---- triggers: once-marks, counts, turned off, waits
+    ta, tb = _trigger_table(old), _trigger_table(new)
+    same_rule = lambda k_old, k_new: k_old in ta and k_new in tb and _json(ta[k_old]['rule']) == _json(tb[k_new]['rule'])
+    shared_new = landing.get('_sharedIds', set())
+    BUCKET = {'visit': 'fired', 'player': 'fired', 'campaign': 'campaignFired', 'member': 'campaignFired'}
+    for bucket in ('fired', 'campaignFired'):
+        marks = {}
+        for token, owners in sorted(state.get(bucket, {}).items()):
+            key = rename_phase(token)
+            if bucket == 'fired':
+                rule = next((t for t in landing.get('triggers', []) if t['id'] == token), None)
+            else:
+                rule = tb.get(key, {}).get('rule')
+            if rule is None:
+                dropped.append({'what': 'fired', 'key': token, 'why': 'the new version has no such trigger here.'})
+            elif BUCKET.get(rule.get('once', 'each')) != bucket:
+                dropped.append({'what': 'fired', 'key': token, 'why': f'it fires {rule.get("once", "each")} now: it may fire again.'})
+            else:
+                marks[key] = owners
+                old_k, new_k = (token, key) if bucket == 'campaignFired' else (
+                    triggers.trigger_key(old_phase, token), triggers.trigger_key(landing, token))
+                kept.append({'what': 'fired', 'key': new_k, 'wolves': [w for w in owners if w != '*'],
+                             **({} if same_rule(old_k, new_k) else {'why': 'it has changed, and still counts as fired.'})})
+        if marks:
+            state[bucket] = marks
+        else:
+            state.pop(bucket, None)
+    if v2:
+        counts = {}
+        for scope, values in sorted(state.get('counts', {}).items()):
+            for token, n in sorted(values.items()):
+                key = rename_phase(token)
+                if key in tb:
+                    counts.setdefault(scope, {})[key] = n
+                else:
+                    dropped.append({'what': 'count', 'key': token, 'why': 'the new version has no such trigger.'})
+        if counts:
+            state['counts'] = counts
+        else:
+            state.pop('counts', None)
+        if old.get('version') != 2:
+            warn.append('Version 1 did not count firings: "fired" conditions count from now.')
+    elif state.pop('counts', None):
+        warn.append('Version 1 does not count firings: the counts are dropped.')
+    off = set()
+    for token in sorted(state.get('disabled', ())):
+        key = rename_phase(token)
+        if key in tb:
+            off.add(key)
+            kept.append({'what': 'off', 'key': key})
+        else:
+            dropped.append({'what': 'off', 'key': token, 'why': 'the new version has no such trigger.'})
+    for key, item in sorted(tb.items()):
+        was = ta.get(key) or ta.get(here + key[len(land):] if land != here and key.startswith(land + '/') else None)
+        if item['rule'].get('enabled') is False and v2 and (was is None or was['rule'].get('enabled') is not False):
+            if key not in off:
+                off.add(key)
+                added.append({'what': 'off', 'key': key, 'why': 'the new version starts it turned off.'})
+        elif was is not None and was['rule'].get('enabled') is False and item['rule'].get('enabled') is not False and key in off:
+            warn.append(f'{key} starts on in the new version; it stays off in this run (turn it on from Triggers).')
+    if off:
+        state['disabled'] = sorted(off)
+    else:
+        state.pop('disabled', None)
+    waits = []
+    for w in state.get('waiting', []):
+        old_key = w['trigger'] if w['scope'] == 'campaign' else here + '/' + w['trigger']
+        new_key = w['trigger'] if w['scope'] == 'campaign' else land + '/' + w['trigger']
+        line = {'what': 'wait', 'key': new_key, 'at': w['at'], 'next': w['next'], **({'wolf': w['actor']} if w.get('actor') else {})}
+        if not v2:
+            dropped.append({**line, 'why': 'version 1 has no waits: the rest of its actions will not run.'})
+            continue
+        a, b = ta.get(old_key), tb.get(new_key)
+        if b is None:
+            dropped.append({**line, 'why': 'the new version has no such trigger: the rest of its actions will not run.'})
+            continue
+        if w['scope'] != 'campaign' and w['trigger'] in shared_new:
+            dropped.append({**line, 'why': 'it is a campaign trigger now: the rest of its actions will not run.'})
+            continue
+        rest_a = _remaining(a['rule']['actions'], w['next']) if a else None
+        rest_b = _remaining(b['rule']['actions'], w['next'])
+        if rest_a is None or rest_b is None or _json(rest_a) != _json(rest_b):
+            dropped.append({**line, 'why': 'what it still had to run has changed: the rest of its actions will not run.'})
+            continue
+        waits.append({**w, 'phase': land if w['scope'] != 'campaign' else w['phase']})
+        kept.append({**line, 'why': 'what it still has to run is unchanged: it resumes as it would have.'})
+    if waits:
+        state['waiting'] = waits
+    else:
+        state.pop('waiting', None)
+
+    # ---- missions, and an exit's votes and steps
+    ma = {m['id']: m for m in old_phase.get('missions', [])}
+    mb = {m['id']: m for m in landing.get('missions', [])}
+    ledger = {}
+    for mid, record in sorted(state.get('missions', {}).items()):
+        if mid not in mb:
+            dropped.append({'what': 'mission', 'key': mid, 'why': f'{land} has no such mission in the new version.'})
+        elif mid in ma and _json(ma[mid]['objectives']) == _json(mb[mid]['objectives']) and ma[mid]['mode'] == mb[mid]['mode']:
+            ledger[mid] = record
+            kept.append({'what': 'mission', 'key': mid, **({'why': 'it has changed; its objectives have not: progress kept.'}
+                                                          if _json(ma[mid]) != _json(mb[mid]) else {})})
+        else:
+            reset.append({'what': 'mission', 'key': mid, 'why': 'its objectives (or who plays it) changed: its progress starts again.'})
+    for mid in sorted(set(mb) - set(ma)):
+        added.append({'what': 'mission', 'key': mid, 'why': 'new in this phase: nobody has made progress yet.'})
+    if ledger:
+        state['missions'] = ledger
+    else:
+        state.pop('missions', None)
+    for field in ('votes', 'progress'):
+        held = {}
+        for index, value in sorted(state.get(field, {}).items()):
+            i = int(index)
+            same = i < len(old_phase['exits']) and i < len(landing['exits']) and _json(old_phase['exits'][i]) == _json(landing['exits'][i])
+            if same:
+                held[index] = value
+                kept.append({'what': 'vote' if field == 'votes' else 'steps', 'key': f'exit {i + 1}'})
+            elif value:
+                dropped.append({'what': 'vote' if field == 'votes' else 'steps', 'key': f'exit {i + 1}',
+                                'why': 'that exit has changed: its count starts again.'})
+        if field in state:
+            state[field] = held
+
+    # ---- version 2's own memory
+    if v2:
+        if old.get('version') != 2:
+            state.setdefault('seed', run or new['id'])
+            state.setdefault('began', began if began is not None else state['entered'])
+            added.append({'what': 'seed', 'key': 'rolls', 'why': 'version 2 rolls from the run\'s own seed from now on.'})
+    else:
+        for key in ('seed', 'began', 'draws', 'rolls', 'outcomes', 'parties'):
+            if state.pop(key, None) is not None and key == 'outcomes':
+                warn.append("Version 1 has no endings of a wolf's own: those recorded are dropped.")
+    if _json(old['audience']) != _json(new['audience']):
+        warn.append(f'The audience stays this run\'s {len(cohort)} wolves: the new version\'s audience is for new runs.')
+    report['diff']['triggers']['newlyOff'] = sorted(x['key'] for x in added if x['what'] == 'off')
+    state['phase'] = land
+    return state, report

@@ -579,9 +579,19 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     if (prior && (prior->kind != "world" || prior->source != "storykeeper"))
         return {false, "Story ID belongs to another story.", run};
     const auto revision = std::to_string(int(visit));
-    if (prior && prior->sourceRef == revision)
+    // A revision (doc 85, Phase 5b): a running story moved onto a newly approved version of itself keeps the visit it is
+    // in. The game takes the new version's title, journal, regions, speakers and missions for that visit; nothing is
+    // replayed, nobody is toasted, scenes under way go on. Refused unless it is the visit the live story is in, and,
+    // like a phase, checked whole before anything changes (the runner then puts the run back on its old version).
+    const bool revise = p.boolean("revise");
+    if (revise)
+    {
+        if (!prior || !prior->live() || prior->sourceRef != revision || prior->steps.empty() || p.boolean("end"))
+            return {false, "Only the visit a live world story is in can be revised.", run};
+    }
+    else if (prior && prior->sourceRef == revision)
         return {true, "Phase already received.", run};
-    if ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1)))
+    if (!revise && ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1))))
         return {false, "World story phases arrived out of order.", run};
     storylines::Storyline story = prior ? *prior : storylines::Storyline{};
     if (!storylines::readRegions(p["regions"], story.regions))
@@ -591,6 +601,37 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
         const auto* cell = world_.cell(r.cell);
         if (!cell || r.x2 >= cell->width || r.y2 >= cell->height)
             return {false, "Story region does not fit its live cell: " + id, run};
+    }
+    if (revise)
+    {
+        story.title = p.string("title");
+        story.admitted.clear();
+        for (const auto& voice : p.array("guestVoices"))
+        {
+            if (!voice.isString() || !world_.society().resident(voice.asString()))
+                return {false, "A guest speaker is missing.", run};
+            story.admitted.insert(voice.asString());
+        }
+        story.cast.clear();
+        for (const auto& line : p.array("lines"))
+        {
+            if (!world_.society().resident(line.string("npc")) || line.string("text").empty())
+                return {false, "A speaking resident is missing.", run};
+            story.cast.push_back({line.string("npc"), line.string("text")});
+        }
+        auto& step = story.steps.back();
+        step.title = p.string("phase");
+        step.text = p.string("journal");
+        step.missions = p["missions"];
+        if (!step.objectives.empty()) step.objectives.front().line = step.text;
+        story.lastActivity = now();
+        for (const auto* client : clients_) observeStoryTile(client->entityId);
+        const auto& kept = storylines_.add(std::move(story));
+        if (!kept.regions.empty()) storiesWatchingRegions_.insert(run);
+        else storiesWatchingRegions_.erase(run);
+        for (const auto* client : clients_) observeStoryTile(client->entityId);
+        record(StoryBook);
+        return {true, "World story revised.", run};
     }
     story.id = run;
     story.kind = "world";

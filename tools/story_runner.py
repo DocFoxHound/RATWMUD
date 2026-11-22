@@ -181,13 +181,15 @@ def references(conn, world, program):
                 )
 
 
-def approve(conn, world, who, program, digest):
+def approve(conn, world, who, program, digest, for_run=None):
     report = rules.review(program)
     rules.require(
         report['passed'] and digest == report['digest'], 'Rehearse this exact version successfully before approval.'
     )
     rules.require(not report['uncovered'], 'Rehearse the remaining phases: ' + ', '.join(report['uncovered']))
     references(conn, world, program)
+    if for_run is not None:
+        return approve_version(conn, world, who, program, digest, for_run)
     run, ticket = 'world-' + uuid.uuid4().hex, secrets.token_urlsafe(32)
     conn.execute(
         """INSERT INTO dm.story_releases(id,world_id,digest,program,approved_by,ticket_hash,status)
@@ -218,7 +220,8 @@ def queue(conn, who, kind, target, payload):
 
 def entry_effects(phase, state):
     """A visit's entry effects as the runner sends them (none when an admin entered it "without its effects")."""
-    return [] if state.get('quietEntry') else [e for e in phase['effects'] if e['kind'] != 'npc.line']
+    # (After a move onto a new version, doc 85 Phase 5b, the visit's entry effects are those it already sent: none more.)
+    return [] if state.get('quietEntry') or state.get('entrySent') else [e for e in phase['effects'] if e['kind'] != 'npc.line']
 
 
 def enter(conn, run, program, who, state, cursor, cause, quiet=False):
@@ -226,6 +229,7 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
     state.pop('arrivalEffects', None)
     state.pop('skipped', None)
     state.pop('quietEntry', None)
+    state.pop('entrySent', None)
     if quiet:
         state['quietEntry'] = True
     state['visitCursor'] = cursor   # (Doc 85 Phase 3: "why not?" tells this visit's events from the last one's by it.)
@@ -563,6 +567,8 @@ def _tick_run(conn, world, run, clock, holder):
     if not row:
         return
     p, state, cursor, who, receipts = row
+    if 'moveReceipt' in state:
+        return   # (Moving onto a new version: nothing is read until the game has the new version's words; settle_move.)
     holder.update(program=p, state=state, loaded=world_load(conn, world, p, state))
     phase = rules.phase_of(p, state)
     receipt_key = next((key for key in ('missionReceipt', 'triggerReceipt') if key in state), None)
@@ -676,7 +682,8 @@ def tick(conn, world):
         heartbeat(conn, world)
     runs = conn.execute(
         """SELECT id,cursor,state->>'visits' FROM dm.story_releases r WHERE world_id=%s AND (status IN ('running','stopping')
-           OR (%s AND status IN ('paused','held') AND EXISTS (SELECT 1 FROM dm.story_commands c WHERE c.run=r.id AND c.status='queued')))
+           OR (%s AND status IN ('paused','held') AND EXISTS (SELECT 1 FROM dm.story_commands c WHERE c.run=r.id AND c.status='queued'))
+           OR (status IN ('paused','held') AND state ? 'moveReceipt'))
            ORDER BY id""",
         (world, steering),
     ).fetchall()
@@ -694,6 +701,7 @@ def tick(conn, world):
         try:
             with conn.transaction():
                 if steering:
+                    settle_move(conn, run)
                     take_commands(conn, world, run, clock)
                     stopping(conn, run)
                 tick_run(conn, world, run, clock)
@@ -847,7 +855,7 @@ ALERTS = {'gameSeconds': 60, 'behindEvents': 2000, 'behindSeconds': 60, 'quietHo
 ALERT_BOUNDS = {'gameSeconds': (5, 86400), 'behindEvents': (10, 10**7), 'behindSeconds': (5, 86400), 'quietHours': (0, 8760),
                 'runnerSeconds': (5, 3600), 'overdueSeconds': (10, 86400), 'goneDays': (1, 365), 'fullPercent': (50, 100)}
 AUDIENCE_CAP = 500
-RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt')
+RECEIPT_KEYS = ('missionReceipt', 'triggerReceipt', 'moveReceipt')   # (moveReceipt: Phase 5b's move.)
 STEERED = ('running', 'paused', 'held')   # (The statuses a command may steer.)
 TIMELINE_PAGE = 60
 
@@ -1083,6 +1091,10 @@ def _row_view(conn, world, row, now, last, runner=None, ctx=None):
             'phase': state.get('phase') if state else None, 'problem': problem}
     if st == 'approved':
         view['waiting'] = [{'on': 'publish'}]
+    if program is not None:
+        view.update(storyId=program.get('id'), format=program.get('version'))
+    if state and 'moveReceipt' in state:
+        view['moving'] = True
     if not state or program is None:
         if st in ('complete', 'stopped') and state:
             view.update(visit=state.get('visits'), wolves=len(state.get('cohort', [])))
@@ -1274,6 +1286,8 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'runner': beat,
         'commands': commands_of(conn, run),
         'controls': controls(program, state) if state and st in STEERED else None,
+        # (Doc 85, Phase 5b: the versions it has been on, and those approved for it and not moved onto yet.)
+        'versions': versions_of(conn, run, program, state, st),
         'speed': ctx['speed'],
     }
     if have != row[3]:
@@ -1293,8 +1307,8 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
     for value in (*before.values(), *(v for k, v in since.items() if k != 'at')):
         rules.require(value is None or rules.integer(value, 0, 2**63 - 1), 'Invalid timeline cursor.')
     rules.require(rules.integer(limit, 1, 200), 'Ask for 1 to 200 timeline rows.')
-    kinds = set(kinds or ('phase', 'trigger', 'order', 'command'))
-    rules.require(kinds <= {'phase', 'trigger', 'order', 'command'}, 'Unknown timeline filter.')
+    kinds = set(kinds or ('phase', 'trigger', 'order', 'command', 'version'))
+    rules.require(kinds <= {'phase', 'trigger', 'order', 'command', 'version'}, 'Unknown timeline filter.')
     for value in (wolf, trigger):
         rules.require(value is None or (isinstance(value, str) and 0 < len(value) <= 120), 'Invalid timeline filter.')
     paging = not since
@@ -1380,16 +1394,37 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
             view = _command_view(r)
             items.append({**view, 'key': f'c:{r[0]}', 'type': 'command', 'command': view.pop('kind'),
                           'at': r[11] or r[8], 'askedAt': view.pop('at'), 'seq': r[0]})
+    if 'version' in kinds and not wolf and not trigger and _versions_table(conn):
+        # Moves onto a new version (doc 85, Phase 5b: "moved to version b7e1 by martin"), when taken; a poll gets new ones,
+        # one still waiting for the game, and those the game answered since `at`.
+        clauses, args = [], [run]
+        if before.get('version') is not None:
+            clauses.append(' AND id < %s')
+            args.append(before['version'])
+        if since:
+            clauses.append(" AND (id > %s OR status='moving' OR settled_at >= %s::timestamptz - interval '5 seconds')")
+            args += [since.get('version') or 0, since.get('at') or '-infinity']
+        rows = conn.execute(
+            f"""SELECT {VERSION_COLUMNS} FROM dm.story_versions WHERE run=%s AND from_digest IS NOT NULL{''.join(clauses)}
+                ORDER BY id DESC LIMIT {take}""", args).fetchall()
+        for r in rows:
+            view = _version_view(r)
+            report = view.pop('report') or {}
+            items.append({**view, 'key': f'm:{r[0]}', 'type': 'version', 'at': r[6], 'seq': r[0],
+                          'counts': {k: len(report.get(k, [])) for k in ('kept', 'reset', 'defaulted', 'dropped', 'added')},
+                          'phase': (report.get('phase') or {}).get('to'), 'phaseFrom': (report.get('phase') or {}).get('from'),
+                          'warnings': report.get('warnings', [])})
     # Newest first. One tick's work shares a moment: a firing (still in the visit it fired in) comes before the visit it
-    # opened, and in one visit the visit opened, then its firings, then its orders, then the admin's commands.
-    rank = {'phase': 0, 'trigger': 1, 'order': 2, 'command': 3}
+    # opened, and in one visit the visit opened, then its firings, then its orders, then the admin's commands (and a move
+    # onto a new version after the command that made it).
+    rank = {'phase': 0, 'trigger': 1, 'order': 2, 'command': 3, 'version': 4}
     epoch = datetime.datetime.min.replace(tzinfo=datetime.timezone.utc)
     items.sort(key=lambda i: (i['at'] or epoch, i.get('visit') or 0, rank[i['type']], i['seq']), reverse=True)
     more = False
     if paging and len(items) > limit:
         more, items = True, items[:limit]
     cursor = dict(before)
-    for name, key in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'), ('command', 'command')):
+    for name, key in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'), ('command', 'command'), ('version', 'version')):
         seqs = [i['seq'] for i in items if i['type'] == name]
         if seqs:
             cursor[key] = min(seqs)
@@ -1406,7 +1441,7 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
                                  'at': _iso(r[12])}
     now = _now(conn, world)
     newest = {k: max([i['seq'] for i in items if i['type'] == name] + [since.get(k) or 0])
-              for name, k in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'), ('command', 'command'))}
+              for name, k in (('phase', 'visit'), ('trigger', 'trigger'), ('order', 'order'), ('command', 'command'), ('version', 'version'))}
     for i in items:
         i['at'] = _iso(i['at'])
         del i['seq']
@@ -1425,9 +1460,9 @@ def timeline(conn, world, run, before=None, since=None, kinds=None, wolf=None, t
 # after, in the command's row and in dm.audit. A command can release only what was approved (5.1, rule 4): it fires a
 # trigger the program has, enters a phase it has, sets a counter it names; nothing adds a trigger or changes a rule.
 
-RUNNER_VERSION = 'doc85-phase3'
+RUNNER_VERSION = 'doc85-phase5b'
 COMMAND_KINDS = ('hold', 'resume', 'stop', 'signal', 'fire', 'enable', 'disable', 'enter', 'set', 'timer', 'mission',
-                 'order', 'tell', 'scene')
+                 'order', 'tell', 'scene', 'migrate')
 # Flow commands move the story (dispatch a fact, run actions, open a visit, send the journal): they wait while the run is
 # still sending a visit's orders, and are refused on a paused or held run that is part-way through sending.
 FLOW = ('signal', 'fire', 'enter', 'mission')
@@ -1654,7 +1689,7 @@ def _check_payload(program, kind, payload):
     """The checks a command passes whatever the run's state (made again when it is taken, against the state then)."""
     rules.require(isinstance(payload, dict) and len(json.dumps(payload)) <= 4000, 'A small command, please.')
     known = {'force', 'catchUp', 'name', 'actor', 'trigger', 'check', 'phase', 'effects', 'key', 'scope', 'player',
-             'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue'}
+             'value', 'do', 'days', 'signal', 'mission', 'receipt', 'to', 'region', 'text', 'scene', 'cue', 'version'}
     rules.require(set(payload) <= known, 'Unknown field in the command: ' + ', '.join(sorted(set(payload) - known)))
     phases = rules.phases_of(program)
     if kind == 'signal':
@@ -1696,6 +1731,9 @@ def _check_payload(program, kind, payload):
         rules.require(payload.get('to') in ('participants', 'wolf', 'region'), 'Tell the participants, a wolf or a region.')
         if payload['to'] == 'region':
             rules.require(payload.get('region') in rules.region_index(program), 'This story has no such region.')
+    elif kind == 'migrate':
+        rules.require(rules.integer(payload.get('version'), 1, 2**63 - 1), 'Name the approved version to move onto.')
+        rules.require('phase' not in payload or rules.identifier(payload['phase']), 'Name the phase to land in.')
     elif kind == 'scene':
         rules.require(payload.get('scene') in {sc['id'] for sc in program.get('scenes', [])}, 'This story has no such scene.')
         rules.require(isinstance(payload.get('player'), str) and payload['player'], 'Choose a wolf, or the world.')
@@ -1808,6 +1846,7 @@ class Steer:
             self.title = row
         self.trace = []
         self.moved = None
+        self.report = None
         self.world_loaded = world_load(conn, world, self.program, self.state) if self.state else None
 
     # --- common
@@ -2146,12 +2185,76 @@ class Steer:
         self.note_order(receipt)
         return f'Scene {scene["id"]} started for {player} (order #{receipt}).', {}, {'order': receipt}
 
+    def do_migrate(self):
+        """Move the run onto a newly approved version (doc 85, Phase 5b): the migration report worked out against the run
+        as it stands, the release's program and digest changed, the state carried over, and the game told the new
+        version's words and regions for this visit (`story.phase` with `revise`). Until the game answers, the run reads
+        nothing; if it refuses, the run goes back (settle_move). Nothing is delivered by the move itself."""
+        self.flow_ready()
+        version = self.conn.execute(
+            """SELECT id,digest,program,approved_by,approved_at,status FROM dm.story_versions WHERE id=%s AND run=%s FOR UPDATE""",
+            (self.payload['version'], self.run)).fetchone()
+        _require(version, 'This run has no such approved version.')
+        vid, new_digest, new_program, approver, approved_at, vstatus = version
+        _require(vstatus == 'approved', f'That version is {vstatus}, not waiting to be moved onto.')
+        _require(new_digest != self.run_digest, 'The run is on that version already.')
+        began = self.conn.execute('SELECT game_day FROM dm.story_transitions WHERE run=%s ORDER BY visit LIMIT 1', (self.run,)).fetchone()
+        before_state = json.loads(json.dumps(self.state))
+        state, report = rules.migration(self.program, new_program, self.state, self.payload.get('phase'), self.run,
+                                        began[0] if began else None)
+        self.report = report
+        _require(state is not None, report['blocked'] or 'It cannot be moved as asked.')
+        old_digest, old_program, old_phase = self.run_digest, self.program, self.state['phase']
+        current = self.conn.execute("SELECT id FROM dm.story_versions WHERE run=%s AND status='current'", (self.run,)).fetchone()
+        if current:
+            self.conn.execute("UPDATE dm.story_versions SET status='past' WHERE id=%s", (current[0],))
+        else:
+            # (The version it was published on, recorded at its first move: one row per version a run has been on.)
+            self.conn.execute(
+                """INSERT INTO dm.story_versions(run,digest,program,approved_by,approved_at,status,moved_at,visit,game_day)
+                   SELECT r.id,r.digest,r.program,r.approved_by,r.approved_at,'past',
+                          (SELECT requested_at FROM dm.actions WHERE id=(SELECT receipts[1] FROM dm.story_transitions WHERE run=r.id AND visit=1)),
+                          1,(SELECT game_day FROM dm.story_transitions WHERE run=r.id AND visit=1)
+                   FROM dm.story_releases r WHERE r.id=%s""", (self.run,))
+        phase = rules.phase_of(new_program, state)
+        state['entrySent'] = True
+        receipt = queue(self.conn, self.by, 'story.phase', self.run, {
+            'revise': True, 'phase': state['phase'], 'journal': phase['journal'], 'title': new_program['title'],
+            'players': state['cohort'], 'visit': state['visits'], 'end': False, 'guestVoices': phase.get('guestVoices', []),
+            'missions': rules.mission_snapshot(phase, state), 'previousMissions': [], 'regions': new_program.get('regions', []),
+            'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line']})
+        state['moveReceipt'] = receipt
+        self.note_order(receipt)
+        self.conn.execute(
+            """UPDATE dm.story_versions SET status='moving',from_digest=%s,moved_at=statement_timestamp(),moved_by=%s,command=%s,
+                      visit=%s,at_event=%s,game_day=%s,report=%s::jsonb,state_before=%s::jsonb,receipt=%s WHERE id=%s""",
+            (old_digest, self.by, self.id or None, state['visits'], self.cursor, self.day(), json.dumps(report), json.dumps(before_state),
+             receipt, vid))
+        self.conn.execute(
+            'UPDATE dm.story_releases SET program=%s::jsonb,digest=%s,approved_by=%s WHERE id=%s',
+            (json.dumps(new_program), new_digest, approver, self.run))
+        # (Older approvals of this run waiting to be moved onto were made against the version it has left.)
+        self.conn.execute("UPDATE dm.story_versions SET status='withdrawn',problem=%s WHERE run=%s AND status='approved'",
+                          (f'The run moved onto {new_digest[:8]} first.', self.run))
+        self.program, self.state, self.run_digest, self.approver = new_program, state, new_digest, approver
+        self.world_loaded = None
+        counts = {k: len(report[k]) for k in ('kept', 'reset', 'defaulted', 'dropped', 'added')}
+        landed = state['phase'] + (f' (from {old_phase}, which it no longer has)' if state['phase'] != old_phase else '')
+        text = (f'Moving onto version {new_digest[:8]} (from {old_digest[:8]}), in {landed}, visit {state["visits"]}: '
+                f'{counts["kept"]} kept, {counts["reset"]} reset, {counts["defaulted"]} defaulted, {counts["dropped"]} dropped. '
+                f'Order #{receipt} tells the game; if it refuses, the run goes back.')
+        return text, {'version': old_digest, 'phase': old_phase, 'title': old_program['title']}, {
+            'version': new_digest, 'phase': state['phase'], 'order': receipt, 'counts': counts, 'versionRow': vid,
+            'warnings': report['warnings']}
+
     # --- the whole
     def take(self):
         _require(self.digest == self.run_digest, 'Made against another version of the story.')
         _require(self.status in (*STEERED,), f'The run is {self.status}.')
         _require(self.kind not in VISITED or self.visit == self.state['visits'] or self.payload.get('force') is True,
                  f'Made for visit {self.visit}; the story has moved on to visit {self.state["visits"]} ({self.state["phase"]}).')
+        _require(self.kind in ('hold', 'resume', 'stop') or 'moveReceipt' not in self.state,
+                 'It is moving onto a new version: wait for the game to take it (a few seconds).')
         _check_payload(self.program, self.kind, self.payload)
         self.visit_before, cursor = self.state['visits'], self.cursor
         text, before, after = getattr(self, 'do_' + self.kind)()
@@ -2218,6 +2321,132 @@ def stopping(conn, run):
     elif status == 'expired':
         state['stopReceipt'] = queue(conn, 'story-runner', 'story.stop', run, {})
         conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+
+
+# ------------------------------------------------------------------------------------------- moving onto a new version
+# Doc 85, Phase 5b. A running campaign moved onto a newly approved version of its story keeps its wolves, its phase (or the
+# one the admin names when the new version no longer has it), its variables, timers, waits and missions where they still
+# fit (story_program.migration). Approving "as a new version of run X" is the ordinary rehearsal and approval, kept in
+# dm.story_versions (migration 0074); the move is the inbox's `migrate` command, taken between two world events, with
+# the release's program, digest and approver changed and the game told the new version's words and regions for the
+# visit the run is in. If the game refuses that, the run goes back to the version it was on (settle_move).
+
+VERSION_COLUMNS = ('id,digest,approved_by,approved_at,status,from_digest,moved_at,moved_by,command,visit,at_event,game_day,'
+                   'report,receipt,settled_at,problem')
+
+
+def _versions_table(conn):
+    return conn.execute("SELECT to_regclass('dm.story_versions') IS NOT NULL").fetchone()[0]
+
+
+def approve_version(conn, world, who, program, digest, run):
+    """Approve a program as a new version of a live run (op `approve` with `forRun`): rehearsed and checked as any
+    approval (approve() has done that), kept until the run is moved onto it. The reply carries the migration report
+    against the run as it stands now."""
+    rules.require(_versions_table(conn), 'This world needs migration 0074 to move a running story onto a new version.')
+    rules.require(isinstance(run, str) and 0 < len(run) <= 80, 'Unknown run.')
+    row = conn.execute('SELECT program,state,status,digest FROM dm.story_releases WHERE world_id=%s AND id=%s FOR UPDATE',
+                       (world, run)).fetchone()
+    rules.require(row, 'Unknown run.')
+    old, state, status, current = row
+    rules.require(status in STEERED and state, f'This run is {status}: only a live run is moved onto a new version.')
+    rules.require(program['id'] == old['id'], f'A new version keeps its story\'s id ("{old["id"]}"): this is another story.')
+    rules.require(digest != current, 'The run is on this version already.')
+    same = conn.execute("SELECT id FROM dm.story_versions WHERE run=%s AND digest=%s AND status='approved'", (run, digest)).fetchone()
+    if same:
+        vid = same[0]
+    else:
+        conn.execute("UPDATE dm.story_versions SET status='withdrawn',problem=%s WHERE run=%s AND status='approved'",
+                     (f'{str(who)[:80]} approved a newer version.', run))
+        vid = conn.execute(
+            """INSERT INTO dm.story_versions(run,digest,program,approved_by) VALUES (%s,%s,%s::jsonb,%s) RETURNING id""",
+            (run, digest, json.dumps(program), str(who)[:80])).fetchone()[0]
+    _, report = rules.migration(old, program, state, run=run)
+    return {'run': run, 'version': vid, 'digest': digest, 'report': report}
+
+
+def _version_view(r):
+    out = dict(zip(VERSION_COLUMNS.split(','), r))
+    for k in ('approved_at', 'moved_at', 'settled_at'):
+        out[k] = _iso(out[k])
+    return {'id': out['id'], 'digest': out['digest'], 'approvedBy': out['approved_by'], 'approvedAt': out['approved_at'],
+            'status': out['status'], 'from': out['from_digest'], 'movedAt': out['moved_at'], 'movedBy': out['moved_by'],
+            'command': out['command'], 'visit': out['visit'], 'atEvent': out['at_event'], 'day': out['game_day'],
+            'report': out['report'], 'order': out['receipt'], 'settledAt': out['settled_at'], 'problem': out['problem']}
+
+
+def versions_of(conn, run, program=None, state=None, status=None):
+    """A run's versions, newest first (the console's "Move onto a new version…" and the timeline): for an approval not yet
+    moved onto, the migration report against the run as it stands now."""
+    if not _versions_table(conn):
+        return []
+    rows = conn.execute(f'''SELECT {VERSION_COLUMNS} FROM dm.story_versions WHERE run=%s
+                           ORDER BY coalesce(moved_at,approved_at) DESC,id DESC LIMIT 40''', (run,)).fetchall()
+    out = [_version_view(r) for r in rows]
+    for v in out:
+        if v['status'] == 'approved' and program and state and status in STEERED:
+            new = conn.execute('SELECT program FROM dm.story_versions WHERE id=%s', (v['id'],)).fetchone()[0]
+            try:
+                _, v['report'] = rules.migration(program, new, state, run=run)
+            except ValueError as why:
+                v['report'] = {'blocked': str(why)}
+            v['title'] = new['title']
+    return out
+
+
+def settle_move(conn, run):
+    """A move waits for the game's answer to its order (story.phase with `revise`). Applied: the run is on its new version.
+    Refused: the run goes back to the version it was on, with what it held before the move (a hold since stays). Expired
+    (the game was down): sent again."""
+    row = conn.execute("SELECT state,status,program,digest FROM dm.story_releases WHERE id=%s AND state ? 'moveReceipt' FOR UPDATE",
+                       (run,)).fetchone()
+    if not row:
+        return
+    state, status, program, digest = row
+    receipt = state['moveReceipt']
+    delivery, result = _order_status(conn, receipt)
+    version = conn.execute(
+        "SELECT id,from_digest,state_before FROM dm.story_versions WHERE run=%s AND status='moving' AND receipt=%s", (run, receipt)).fetchone()
+    if delivery == 'queued' or delivery is None:
+        return
+    if delivery == 'expired':
+        again = conn.execute('SELECT kind,target_id,payload,requested_by FROM dm.actions WHERE id=%s', (receipt,)).fetchone()
+        state['moveReceipt'] = queue(conn, again[3], again[0], again[1], again[2])
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        conn.execute('UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
+                     (state['moveReceipt'], run, state['visits']))
+        if version:
+            conn.execute('UPDATE dm.story_versions SET receipt=%s WHERE id=%s', (state['moveReceipt'], version[0]))
+        return
+    if delivery == 'applied' or not version:
+        del state['moveReceipt']
+        conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+        if version:
+            conn.execute("UPDATE dm.story_versions SET status='current',settled_at=statement_timestamp() WHERE id=%s", (version[0],))
+        return
+    # Refused: back to the version it was on.
+    vid, from_digest, before = version
+    back = conn.execute("""SELECT id,program,approved_by,approved_at FROM dm.story_versions WHERE run=%s AND digest=%s AND status='past'
+                           ORDER BY id DESC LIMIT 1""", (run, from_digest)).fetchone()
+    for key in ('held',):
+        if key in state:
+            before[key] = state[key]
+        else:
+            before.pop(key, None)
+    conn.execute("UPDATE dm.story_versions SET status='refused',settled_at=statement_timestamp(),problem=%s WHERE id=%s",
+                 (f'The game refused it: {result}'[:500], vid))
+    if back:
+        conn.execute("UPDATE dm.story_versions SET status='current' WHERE id=%s", (back[0],))
+        conn.execute('UPDATE dm.story_releases SET program=%s::jsonb,digest=%s,approved_by=%s,state=%s::jsonb WHERE id=%s',
+                     (json.dumps(back[1]), from_digest, back[2], json.dumps(before), run))
+    else:
+        # (No record of the version it came from: it stays on the new one, paused, for the admin to look at.)
+        del state['moveReceipt']
+        conn.execute("UPDATE dm.story_releases SET state=%s::jsonb,status='paused',problem=%s WHERE id=%s",
+                     (json.dumps(state), f'The game refused version {digest[:8]} and the version before it is not recorded.', run))
+    conn.execute('INSERT INTO dm.audit (at, action, target, detail, who) VALUES (extract(epoch from now()), %s, %s, %s, %s)',
+                 ('story.migrate', run, f'"{program["title"]}" went back to version {from_digest[:8]}: the game refused version '
+                  f'{digest[:8]} (order #{receipt}: {result}).'[:2000], 'story-runner'))
 
 
 # ------------------------------------------------------------------------------------------- explaining: "Explain it"
@@ -2744,6 +2973,9 @@ def preview(conn, world, run, who, kind, payload, may=None):
                 out.update(outcome='refused', text=str(why) if isinstance(why, (Refused, ValueError)) else
                            f'Could not carry it out: {type(why).__name__} {why}'[:300])
             after = steer.state
+            program = steer.program   # (A move onto a new version changes it, doc 85 Phase 5b.)
+            if steer.report is not None:
+                out['migration'] = steer.report
             out.update(orders=list(recorded), fired=steer.trace, moved=bool(steer.moved),
                        changes=_diff(_values(before, steer.payload.get('actor') or steer.payload.get('player') or ''),
                                      _values(after, steer.payload.get('actor') or steer.payload.get('player') or '')),
@@ -2757,7 +2989,7 @@ def preview(conn, world, run, who, kind, payload, may=None):
                     out['journal'] = landing['journal']
                     out['ending'] = not (landing['exits'] or landing.get('triggers'))
                 out['missions'] = _missions_moved(rules.phase_of(program, before), before.get('missions', {}), after.get('missions', {})) \
-                    if not steer.moved else []
+                    if not steer.moved and kind != 'migrate' else []
             raise psycopg.Rollback()
     finally:
         _recording.reset(token)
