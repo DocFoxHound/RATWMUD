@@ -92,6 +92,29 @@ bool Society::grantPlayer(const std::string& player, std::int64_t coins, const s
     return true;
 }
 
+bool Society::payPlayerFrom(const std::string& purse, const std::string& player, std::int64_t coins, const std::string& reason,
+                            std::string& problem)
+{
+    const auto words = json::utf8Prefix(reason, 80);
+    if (!playerAccountId(player) || !account(player))
+        return problem = "That player has no purse yet.", false;
+    if (coins <= 0 || coins > status::GrantsMost)
+        return problem = "Pay 1 to " + std::to_string(status::GrantsMost) + " pennies.", false;
+    if (words.empty() || words.size() != reason.size() || !market::plainWords(words, 80))
+        return problem = "A reason is needed: plain words, 80 at most.", false;
+    const auto* from = account(purse);
+    if (purse.empty() || purse == "made" || playerAccountId(purse) || !from)
+        return problem = "There is no such purse to pay from.", false;
+    if (from->cash < coins)
+        return problem = "The purse is short (" + std::to_string(from->cash) + "p).", false;
+    const auto room = std::max<std::int64_t>(0, statusTable().cap("grantsADay") - faucetToday(holderOf(player), "grant"));
+    if (coins > room)
+        return problem = "Over the day's grants for that player (" + std::to_string(room) + "p left today).", false;
+    if (!shift(purse, player, "", 0, coins, "dm grant: story reward: " + words))
+        return problem = "The reward could not be paid (the purse is full).", false;
+    return true;
+}
+
 // ---- Reset prices (12; 7.3) ----
 
 bool Society::resetPrices(const std::string& market, double now, const std::string& words)

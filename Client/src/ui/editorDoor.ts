@@ -682,7 +682,12 @@ export class EditorDoor {
                 const wolves = el('input', {type: 'checkbox', checked: a.mayActOnWolves});
                 wolves.addEventListener('change', () => void this.change('wolves', {username: a.username, allowed: wolves.checked},
                     wolves.checked ? `Let ${a.username} kill, injure, move or bring back players' wolves?` : `Stop ${a.username} acting on players' wolves?`));
+                // (Doc 85, 5.7: hold, fire, jump and set a running world story; every intervention is logged.)
+                const steer = el('input', {type: 'checkbox', checked: !!a.maySteerCampaigns});
+                steer.addEventListener('change', () => void this.change('steer', {username: a.username, allowed: steer.checked},
+                    steer.checked ? `Let ${a.username} steer running campaigns (hold, fire, jump, set)? Every change is logged.` : `Stop ${a.username} steering running campaigns?`));
                 buttons.push(role, el('label', {className: 'door-check editor-wolves'}, wolves, el('span', {}, 'MAY ACT ON PLAYERS\' WOLVES')),
+                    el('label', {className: 'door-check editor-steer'}, steer, el('span', {}, 'MAY STEER CAMPAIGNS')),
                     this.button('NEW CODE', () => void this.change('reset', {username: a.username},
                         `Give ${a.username} a new Editor code? Their password, sessions and devices stop working.`)));
             }
@@ -710,15 +715,17 @@ export class EditorDoor {
         const line = el('p', {className: 'muted small'}, ROLE_LINES.dm);
         role.addEventListener('change', () => { line.textContent = ROLE_LINES[role.value] ?? ''; });
         const wolves = el('input', {type: 'checkbox'});
+        const steer = el('input', {type: 'checkbox'});
         const add = el('form', {className: 'editor-add'},
             el('label', {}, el('span', {}, 'ADD A CO-BUILDER'), name), el('label', {}, el('span', {}, 'ROLE'), role),
             el('label', {className: 'door-check'}, wolves, el('span', {}, 'MAY ACT ON PLAYERS\' WOLVES')),
+            el('label', {className: 'door-check'}, steer, el('span', {}, 'MAY STEER CAMPAIGNS')),
             el('button', {type: 'submit', className: 'primary', textContent: 'ADD'}));
         add.addEventListener('submit', e => {
             e.preventDefault();
             const who = name.value.trim().toLowerCase();
             if (!who) return this.say('Give the co-builder an account name.', true);
-            void this.change('add', {username: who, role: role.value, mayActOnWolves: wolves.checked},
+            void this.change('add', {username: who, role: role.value, mayActOnWolves: wolves.checked, maySteerCampaigns: steer.checked},
                 `Add ${who} with the role ${role.value}? They need the RATW desktop client, and your Editor port open to them (RATW_EDITOR_BIND=0.0.0.0 in .env, ` +
                 'and from outside your home a forwarded port).');
         });

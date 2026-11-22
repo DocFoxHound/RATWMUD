@@ -45,7 +45,7 @@ type Pick = {kind: 'move'; who: LivePerson} | {kind: 'revive'; who: LivePerson} 
  *  `stays` is always false in the DM.) */
 interface SpawnDraft { place: Place; name: string; role: Role; copy: string; stays: boolean; minutes: number }
 
-export function LiveTab({me, target}: {me: Me; target: Target}) {
+export function LiveTab({me, target, campaigns, openCampaigns}: {me: Me; target: Target; campaigns?: string[]; openCampaigns?: () => void}) {
     const [problem, setProblem] = useState('');
     const world = useWorld(target, setProblem);
     const [live, setLive] = useState<Live | null>(null);
@@ -429,6 +429,11 @@ export function LiveTab({me, target}: {me: Me; target: Target}) {
                             {canAct && <button className="primary" onClick={() => { setSelected(null); setPick({kind: 'spawn'}); }}>+ Bring a visitor</button>}
                             <button onClick={() => setRail(r => !r)} title="Show or hide the side panel">{rail ? 'Hide panel ▸' : '◂ Panel'}</button></>}
                 </div>
+                {campaigns && campaigns.length > 0 && <div className="live-campaigns" role="status">
+                    {/* (Doc 85, 5.6: the running stories that need a Dungeon Master, and the story runner down, here too.) */}
+                    <span>⚑ {campaigns[0]}{campaigns.length > 1 ? ` (and ${campaigns.length - 1} more)` : ''}</span>
+                    {openCampaigns && <button onClick={openCampaigns}>Open Campaigns</button>}
+                </div>}
             </div>
             {noMapYet(world) ? <div className="dm-center"><p className="hint">{NO_MAP_YET}</p></div>
                 : surface && world ? <MapView surface={surface} world={world} markers={markers} overlay={overlay} selected={selected} mode={mode} cluster={4}

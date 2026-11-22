@@ -5,6 +5,7 @@ import {arr, bool, isObject, num, obj, str, type Json} from '../../game/json.ts'
 import type {GameState} from '../../game/state.ts';
 import {button, el} from './dom.ts';
 import {ask} from '../dialog.ts';
+import {noteLines, questButtons, questLines, questMessage, questStatus, trackerLines} from '../../game/quests.ts';
 
 /** Moves the record at `i` one place up (-1) or down (+1); the same order if it can't. */
 export function moveRecord(order: readonly string[], i: number, by: -1 | 1): string[] {
@@ -89,6 +90,27 @@ export function renderStoryline(box: HTMLElement, s: GameState, t: Json) {
                 button('TAKE', 'small', row, () => send('take', {step: i, objective: k}));
         });
     });
+    // A world story's quests (doc 85, Phase 6): each with its state, objectives and buttons; then its trackers.
+    for (const q of arr(t, 'quests').filter(isObject)) {
+        const quest = el('div', 'story-quest', box);
+        const head = el('div', 'story-row', quest);
+        el('span', 'small gold', head, `◇ ${str(q, 'title')}`);
+        el('span', 'muted small', head, ` · ${questStatus(q)}`);
+        for (const line of questLines(q))
+            el('div', line.tone === 'open' || line.tone === 'done' ? 'small' : 'muted small', quest, line.text)
+                .style.textDecoration = line.tone === 'failed' ? 'line-through' : '';
+        const buttons = questButtons(q);
+        if (buttons.length) {
+            const row = el('div', 'story-row', quest);
+            for (const b of buttons)
+                button(b.label, 'small', row, async () => {
+                    if (!b.confirm || await ask(b.confirm)) s.send(questMessage(str(t, 'id'), str(q, 'id'), b.verb));
+                });
+        }
+    }
+    for (const line of trackerLines(t)) el('div', 'muted small', box, line);
+    // Its notes (doc 85, Phase 9: lines the story added to this wolf's journal).
+    for (const line of noteLines(t)) el('div', 'small', box, line);
     const people = arr(t, 'participants').filter(isObject);
     if (people.length) el('div', 'muted small', box, people.map(p => `${str(p, 'name')} (${str(p, 'where')})`).join(', '));
     if (bool(t, 'invited')) {

@@ -66,6 +66,46 @@ const Warrant* World::warrantFor(const std::string& person) const
     return nullptr;
 }
 
+Result World::storyWarrant(const std::string& person, const std::string& town, std::int64_t fine, const std::string& words)
+{
+    const auto* p = entity(person);
+    if (!p || p->dead)
+        return {false, "That one is not in the world.", person};
+    if (town.empty() || std::none_of(cells_.begin(), cells_.end(), [&](const auto& c) { return lawTown(c.first) == town; }))
+        return {false, "That town keeps no watch.", town};
+    Warrant* w = nullptr;
+    for (auto& existing : crime_.warrants)
+        if (existing.person == person && existing.town == town)
+            w = &existing;
+    if (!w)
+    {
+        crime_.warrants.push_back({person, town, {}, {}, 0, calendarDays_});
+        w = &crime_.warrants.back();
+    }
+    w->fine += std::clamp<std::int64_t>(fine, 0, 200);
+    recordEvent({"warrant", person, {}, p->cellId, 0, 0, {}, 0, 0, "wanted by the watch of " + town + " for " + words});
+    noticesCrime_ = true;
+    if (!p->npc)
+        notice(person, "Word has reached the watch of " + town + ". You are wanted: " + words + ".", false, true);
+    return {true, "Wanted by the watch of " + town + ".", person};
+}
+
+Result World::liftWarrant(const std::string& person, const std::string& town)
+{
+    const auto it = std::find_if(crime_.warrants.begin(), crime_.warrants.end(),
+                                 [&](const Warrant& w) { return w.person == person && w.town == town; });
+    if (it == crime_.warrants.end())
+        return {false, "The watch there wants nobody of that name.", person};
+    crime_.warrants.erase(it);
+    for (auto p = pursuits_.begin(); p != pursuits_.end();)
+        p = p->second == person ? pursuits_.erase(p) : std::next(p);
+    confrontations_.erase(person);
+    noticesCrime_ = true;
+    if (const auto* e = entity(person); e && !e->npc)
+        notice(person, "The watch of " + town + " no longer wants you.", false, true);
+    return {true, "The warrant is lifted.", person};
+}
+
 const Custody* World::custodyOf(const std::string& person) const
 {
     for (const auto& c : crime_.custody)
@@ -202,6 +242,8 @@ void World::witness(Incident& inc, double sleight)
         if (chance(id + inc.id, 1) >= noticed)
             continue;
         inc.witnesses.push_back({id, identified, clarity, guardOnDuty(id)});
+        if (storyListens("crime seen"))   // (Doc 85, Phase 8: the witness acts; the offender, the victim, the kind.)
+            recordEvent({"crime seen", id, identified ? inc.offender : std::string(), inc.cell, 0, 0, inc.victim, 0, 0, inc.kind});
         if (id == inc.victim)
             victimNews(inc, identified);            // (Their own news only now they've noticed: doc 84, the slice-end review.)
         if (!e.npc)

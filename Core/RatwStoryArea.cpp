@@ -1,8 +1,11 @@
 #include "RatwGame.h"
 #include "RatwStoryRegion.h"
+#include "RatwNames.h"
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
+#include <set>
 
 namespace ratw::game
 {
@@ -90,5 +93,142 @@ Result Game::applyStoryArea(const std::string& kind, const std::string& run, con
         tellActedOn(id, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
     return {true, "Area effect reached " + std::to_string(here.size()) + " participants" +
                       (full.empty() ? std::string(".") : "; " + std::to_string(full.size()) + " had no room."), run};
+}
+// A story's reward to one wolf (doc 85, Phase 6: a quest's rewards, and a trigger's): an item into the pack (item.give
+// {item, quantity 1..20}), or a few points of standing with a faction (standing.adjust {faction, points -10..10, reason}):
+// the wolf's Chapter's standing, as a faction's missions move it. Refused when the wolf isn't in the world, the item is
+// unknown or the pack full, or the wolf has no Chapter.
+Result Game::applyStoryReward(const std::string& kind, const std::string& wolf, const json::Value& payload)
+{
+    const auto* e = world_.entity(wolf);
+    if (!e || e->npc || e->dead)
+        return {false, "That wolf is not in the world just now.", wolf};
+    if (kind == "item.give")
+    {
+        const auto good = payload.string("item");
+        const int quantity = countField(payload, "quantity", 20);
+        if (!quantity || !itemValid(good))
+            return {false, "Give a known item, 1 to 20 of it.", wolf};
+        if (!world_.society().canCreate(wolf, good, quantity))
+        {
+            tellActedOn(wolf, "You have no room to carry " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+            return {false, "Their pack is full.", wolf};
+        }
+        world_.society().create(wolf, good, quantity, "dm grant: story reward");
+        recordCharacters(Economy, {wolf});
+        tellActedOn(wolf, "You receive " + std::to_string(quantity) + " " + Society::itemName(good) + ".");
+        return {true, "Gave " + std::to_string(quantity) + " " + Society::itemName(good) + ".", wolf};
+    }
+    const auto factionId = payload.string("faction");
+    const auto& points = payload["points"];
+    const double n = points.asNumber();
+    const auto reason = json::utf8Prefix(payload.string("reason"), 80);
+    const auto* f = factions_.find(factionId);
+    if (!f)
+        return {false, "There is no such faction.", wolf};
+    if (!points.isNumber() || n < -10 || n > 10 || n == 0 || std::floor(n) != n || reason.empty())
+        return {false, "Change standing by -10 to 10 points, with a reason.", wolf};
+    const auto* chapter = chapters_.of(wolf);
+    if (!chapter)
+        return {false, "That wolf has no Chapter to stand with a faction.", wolf};
+    const double moved = factions_.change(factionId, chapter->id, n, "story", world_.calendarDays());
+    saveSoon();
+    tellActedOn(wolf, std::string("Your Chapter's standing with ") + f->name + (moved >= 0 ? " rises" : " falls") + ": " + reason + ".");
+    return {true, "Standing with " + f->name + " moved " + std::to_string(int(moved)) + ".", wolf};
+}
+
+// A Dungeon Master's words to a world story's wolves (doc 85, Phase 2, story.tell): to all of them, one of them, or the ones
+// standing in one of its regions. {visit, text, to: participants | wolf | region, player?, region?, title?}. A wolf in the
+// world sees it as a banner and a line; one away is told when back (tellActedOn: on a community world, kept with the wolf).
+// Never refused for whoever is away: a message must not pause the story.
+Result Game::applyStoryTell(const std::string& run, const json::Value& payload)
+{
+    const auto* release = storylines_.find(run);
+    const int visit = countField(payload, "visit", 1000000000);
+    if (!visit || !release || release->kind != "world" || release->source != "storykeeper" || !release->live() ||
+        release->sourceRef != std::to_string(visit))
+        return {false, "This story visit is no longer active.", run};
+    const auto text = payload.string("text"), to = payload.string("to");
+    if (text.empty() || json::utf8Prefix(text, 300) != text || text.find_first_of("\r\n") != std::string::npos)
+        return {false, "A story message is one line of up to 300 characters.", run};
+    std::optional<story::Region> area;
+    if (to == "region")
+    {
+        area = story::Region::read(payload["region"]);
+        const auto bound = release->regions.find(payload["region"].string("id"));
+        if (!area || bound == release->regions.end() || bound->second.cell != area->cell || bound->second.x1 != area->x1 ||
+            bound->second.y1 != area->y1 || bound->second.x2 != area->x2 || bound->second.y2 != area->y2)
+            return {false, "The region differs from the published story.", run};
+    }
+    else if (to == "wolf" || to == "party")
+    {
+        const auto found = release->participants.find(payload.string("player"));
+        if (found == release->participants.end() || !found->second.active())
+            return {false, "That wolf is not in this story.", run};
+    }
+    else if (to != "participants" && to != "world")
+        return {false, "Tell the participants, a wolf, a party, a region or the world.", run};
+    // (Doc 85, Phase 9: a line may be said by a resident of the world, named as the wolf knows them.)
+    const auto from = payload.string("from");
+    const auto* speaker = from.empty() ? nullptr : world_.entity(from);
+    if (!from.empty() && (!speaker || !speaker->npc))
+        return {false, "The one who says it must be a resident.", run};
+    const auto title = payload.string("title", release->title);
+    const auto wordsFor = [&](const std::string& wolf) {
+        const auto said = speaker ? names::capitalised(labelFor(wolf, from)) + ": \u201c" + text + "\u201d" : text;
+        return (title.empty() ? std::string() : "\"" + title + "\": ") + said;
+    };
+    int told = 0, away = 0;
+    if (to == "world" || to == "party")
+    {
+        // Everyone in the world (an announcement), or the wolf's party in the world (the wolf alone in none); nobody away.
+        std::set<std::string> whom;
+        if (to == "party")
+        {
+            whom.insert(payload.string("player"));
+            if (const auto* party = parties_.of(payload.string("player")))
+                whom.insert(party->members.begin(), party->members.end());
+        }
+        for (auto* c : clients_)
+        {
+            const auto* e = world_.entity(c->entityId);
+            if (!e || e->npc || (to == "party" && !whom.count(c->entityId)))
+                continue;
+            storylineToast(c, wordsFor(c->entityId));
+            ++told;
+        }
+        if (to == "party" && !clientOf(payload.string("player")))
+        {
+            tellActedOn(payload.string("player"), wordsFor(payload.string("player")));
+            ++away;
+        }
+        return {true, "Told " + std::to_string(told) + " in the world" + (away ? "; the wolf away, told when back." : "."), run};
+    }
+    for (const auto& [id, participant] : release->participants)
+    {
+        if (!participant.active() || (to == "wolf" && id != payload.string("player")))
+            continue;
+        auto* c = clientOf(id);
+        const auto* e = world_.entity(id);
+        if (area)
+        {
+            if (!c || !e || e->npc || e->offstage)
+                continue;
+            const auto [x, y] = world_.eventTile(*e);
+            if (!area->contains(e->cellId, x, y))
+                continue;
+        }
+        if (c)
+        {
+            storylineToast(c, wordsFor(id));
+            ++told;
+        }
+        else
+        {
+            tellActedOn(id, wordsFor(id));
+            ++away;
+        }
+    }
+    return {true, "Told " + std::to_string(told) + " in the world" + (away ? "; " + std::to_string(away) + " away, told when back." : "."), run};
 }
 } // namespace ratw::game

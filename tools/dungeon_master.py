@@ -47,6 +47,7 @@ import world_db
 import story_program
 import story_library
 import story_scenes
+import story_drafts
 import story_runner
 import world_store as S
 
@@ -206,6 +207,9 @@ ID = re.compile(r'^[a-z][a-z0-9_]{0,39}$')          # Within ratw_id (48), leavi
 # Ranks (migration 0063 widened the roles for a host's Editor accounts: Docs/Design/78, 6.3). In the user's own studio
 # nothing changes: Atlas needs dm, and only admin gets character.dm. A host's Editor (tools/world_admin.py) never signs
 # in an admin row; there Atlas needs builder and My world's actions and the accounts need owner.
+# (Doc 85, Phases 9 and 10: the effects marked needsBuilder in the trigger catalogue: factions, standing, prices and projects.)
+BUILDER_STORY = ('A builder or owner must approve a story that changes standing with a faction or the economy on '
+                 'this world: ')
 RANK = {'viewer': 0, 'dm': 1, 'builder': 2, 'owner': 3, 'admin': 4}
 PLAIN_ID = re.compile(r'^[^\s\x00-\x1f\x7f]+$')       # An account or good id: no spaces or control characters.
 MIME = {'.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.png': 'image/png',
@@ -2718,7 +2722,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body(1024 * 1024)
                 target = self.posted(data)
                 op = data.get('op')
-                if op not in ('catalog', 'draft-event', 'rehearse', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
+                if op not in ('catalog', 'draft-event', 'rehearse', 'rehearse-step', 'problems', 'refs', 'upgrade', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
                     raise DMError('A Dungeon Master account is required.', 403)
                 try:
                     if op == 'catalog':
@@ -2729,6 +2733,20 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         return self.reply(200, {'program': story_library.draft(data.get('eventType'))})
                     if op == 'rehearse':
                         return self.reply(200, story_program.review(data.get('program')))
+                    if op == 'upgrade':
+                        # (Doc 85, Phase 5: a version 1 program as version 2, doing the same; the Story Creator's "Make it
+                        # version 2". Pure: nothing is read or written.)
+                        return self.reply(200, {'program': story_program.upgrade(data.get('program'))})
+                    if op == 'rehearse-step':
+                        # (Doc 85, 4.5 and Phase 4: one rehearsal case fact by fact, each step with what the phase then
+                        # listens for, judged as the console's explain judges a running story.)
+                        return self.reply(200, story_runner.rehearse_steps(data.get('program'), data.get('case')))
+                    if op == 'refs' and RANK[who['role']] < RANK['dm']:
+                        return self.reply(200, story_runner.static_refs())   # (A viewer's pickers: what every world has.)
+                    if op == 'problems' and RANK[who['role']] < RANK['dm']:
+                        # (Doc 85, Phase 3: every problem of a draft at once. A viewer drafts and rehearses; the world's
+                        # references are a Dungeon Master's, as the atlas search is.)
+                        return self.reply(200, story_runner.program_problems(None, None, data.get('program'), with_world=False))
                     with dm.connect(target) as conn, conn.transaction():
                         if not conn.execute("SELECT to_regclass('dm.story_releases') IS NOT NULL").fetchone()[0]:
                             raise DMError('This world needs migration 0067 to use world stories.', 409)
@@ -2736,15 +2754,79 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         if op == 'approve':
                             if hosted and RANK[who['role']] < RANK['builder']:
                                 program = story_program.validate(data.get('program'))
-                                if any(e['kind']=='faction.relation' for ph in story_program.phases_of(program) for e in story_program.possible_effects(ph)):
+                                # (Doc 85, Phase 9: every effect on factions, from the catalogue's needsBuilder: standing too.)
+                                kinds = {e['kind'] for ph in story_program.phases_of(program) for e in story_program.possible_effects(ph)}
+                                if 'faction.relation' in kinds:
                                     raise DMError('A builder or owner must approve changes to faction relations on this world.', 403)
-                            result = story_runner.approve(conn, world, who['username'], data.get('program'), data.get('digest'))
+                                if kinds & story_program.BUILDER_EFFECTS:
+                                    raise DMError(BUILDER_STORY + ', '.join(sorted(kinds & story_program.BUILDER_EFFECTS)) + '.', 403)
+                            # (With `forRun`: approved as a new version of that live run, to move it onto: doc 85, Phase 5b.)
+                            result = story_runner.approve(conn, world, who['username'], data.get('program'), data.get('digest'),
+                                                          data.get('forRun') or None)
+                        elif op == 'campaign.approve':
+                            # (Doc 85, Phase 10: several stories approved together as a campaign, its chapters in order; each
+                            # needs what its own approval would.)
+                            chapters = ((data.get('campaign') or {}).get('chapters') or []) if isinstance(data.get('campaign'), dict) else []
+                            if hosted and RANK[who['role']] < RANK['builder']:
+                                for ch in chapters:
+                                    program = story_program.validate((ch or {}).get('program') if isinstance(ch, dict) else None)
+                                    kinds = {e['kind'] for ph in story_program.phases_of(program) for e in story_program.possible_effects(ph)}
+                                    if kinds & story_program.BUILDER_EFFECTS:
+                                        raise DMError(BUILDER_STORY + ', '.join(sorted(kinds & story_program.BUILDER_EFFECTS)) + '.', 403)
+                            result = story_runner.approve_campaign(conn, world, who['username'], data)
+                        elif op == 'campaigns':   # (Doc 85, Phase 10: the campaigns as their chapters; a read.)
+                            result = {'campaigns': story_runner.campaigns(conn, world)}
+                        elif op == 'world-vars':   # (Doc 85, Phase 10: the world's variables, and who changed them; a read.)
+                            result = {**story_runner.world_vars(conn, world), 'audit': story_runner.world_var_audit(conn, world)}
+                        elif op == 'world-var':
+                            # Declaring or setting a world variable steers every story that reads it: on a hosted world the
+                            # owner, or "may steer campaigns" (5.7). Audited.
+                            if hosted and who['role'] != 'owner' and not who.get('maySteerCampaigns'):
+                                raise DMError("Changing the world's variables on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.', 403)
+                            result = story_runner.world_var(conn, world, who['username'], data)
                         elif op == 'publish':
                             result = story_runner.publish(conn, world, data.get('ticket'))
                         elif op in ('signal', 'signal-ticket', 'voice', 'voice-ticket', 'retry', 'stop'):
                             result = story_runner.direct(conn, world, op, {**data, 'operator':who['username']})
                         elif op == 'status':
-                            result = story_runner.status(conn, world, data.get('run'), data.get('beforeVisit'), data.get('beforeTrigger'))
+                            result = story_runner.status(conn, world, data.get('run'), data.get('beforeVisit'), data.get('beforeTrigger'),
+                                                         data.get('since'), data.get('have'))
+                        elif op == 'timeline':   # (The Campaigns console, doc 85, 5.3: a read.)
+                            result = story_runner.timeline(conn, world, data.get('run', ''), data.get('before'), data.get('since'),
+                                                           data.get('kinds'), data.get('wolf') or None, data.get('trigger') or None,
+                                                           data.get('limit', story_runner.TIMELINE_PAGE))
+                        elif op in ('command', 'hold-all'):
+                            # Steering a running campaign (doc 85, Phase 2; 5.7): on a hosted world the owner always, any
+                            # other account only with "may steer campaigns" (and "hold all" is the owner's). Every command is
+                            # audited when the runner takes it. In the user's own studio a dm may steer.
+                            if hosted and who['role'] != 'owner' and (op == 'hold-all' or not who.get('maySteerCampaigns')):
+                                raise DMError("Steering a running story on this world needs its owner, or the owner's "
+                                              '"may steer campaigns" for your account.' if op == 'command'
+                                              else 'Only the world\'s owner may hold every story at once.', 403)
+                            may = {'relations': not hosted or RANK[who['role']] >= RANK['builder'],
+                                   'wolves': not hosted or bool(who.get('mayActOnWolves'))}
+                            result = (story_runner.command(conn, world, who['username'], data, may) if op == 'command'
+                                      else story_runner.hold_all(conn, world, who['username'], data))
+                        elif op == 'explain':
+                            # A read (doc 85, 5.5 and Phase 3): what a run waits for, why a trigger has not fired, what an
+                            # event would do, what a console command would do (a dry run, rolled back).
+                            may = {'relations': not hosted or RANK[who['role']] >= RANK['builder'],
+                                   'wolves': not hosted or bool(who.get('mayActOnWolves'))}
+                            result = story_runner.explain(conn, world, data.get('run', ''), data, who['username'], may)
+                        elif op == 'problems':
+                            result = story_runner.program_problems(conn, world, data.get('program'))
+                        elif op == 'alerts':   # (The tab bar's count, LIVE's line: doc 85, 5.6.)
+                            result = story_runner.alert_summary(conn, world)
+                        elif op == 'alert-rules':
+                            # Changing the alert rules is the owner's on a hosted world (5.7); in the user's own studio a dm's.
+                            if hosted and who['role'] != 'owner':
+                                raise DMError("Only the world's owner may change its alert rules.", 403)
+                            result = story_runner.set_alert_rules(conn, world, who['username'], data)
+                        elif op == 'refs':   # (Doc 85, 4.3: what the Story Creator's pickers may name in this world.)
+                            result = story_runner.refs(conn, world)
+                        elif op in story_drafts.OPERATIONS:   # (Doc 85, 4.1 decision 5: drafts kept on the server, 0073.)
+                            result = story_drafts.request(conn, world, who['username'], RANK[who['role']], data)
                         elif op == 'atlas.search':
                             result = story_runner.atlas(conn, world, data.get('query',''))
                         elif op == 'npc.context':

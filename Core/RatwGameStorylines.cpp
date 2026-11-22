@@ -312,6 +312,29 @@ Value Game::journalView(const std::string& viewer)
             steps.push(j);
         }
         o.add("steps", steps);
+        if (s->source == "storykeeper")
+            if (const auto f = s->questViews.find(viewer); f != s->questViews.end())
+            {
+                // Doc 85, Phase 6: the quests the runner made for this wolf, as they may see them; the giver by name as the
+                // wolf knows them.
+                auto quests = Value::array();
+                for (auto q : f->second.array("quests"))
+                {
+                    if (const auto giver = q.string("giver"); !giver.empty())
+                        q.set("giverName", names::capitalised(labelFor(viewer, giver)));
+                    q.set("title", storyWords(viewer, q.string("title")));
+                    quests.push(std::move(q));
+                }
+                if (quests.size()) o.add("quests", std::move(quests));
+                if (f->second.array("trackers").size()) o.add("trackers", f->second["trackers"]);
+            }
+        if (s->source == "storykeeper")
+        {
+            // Doc 85, Phase 9: the story's notes in this wolf's journal, and its markers on their maps.
+            const auto extras = storyJournalExtras(*s, viewer);
+            for (const auto& [key, value] : extras.fields())
+                o.add(key, value);
+        }
         if (s->kind == "tale")
         {
             auto who = Value::array();
@@ -382,6 +405,28 @@ bool Game::storylineCommand(Connection* c, const Value& j, Result& result)
         const bool ok = storylines_.take(s->id, std::size_t(j.number("step")), std::size_t(j.number("objective")), id);
         result = {ok, ok ? "You're on it: the others see so." : "That part can't be taken now.", {}};
     }
+    else if (verb == "quest_accept" || verb == "quest_decline" || verb == "quest_abandon")
+    {
+        // A world story's quest from the journal (doc 85, Phase 6): accepted or declined when it was offered with no giver,
+        // abandoned while under way. The runner reads the event and keeps the ledger.
+        const auto quest = j.string("quest");
+        const auto* view = s->source == "storykeeper" && s->live() ? s->questView(id, quest) : nullptr;
+        const auto status = view ? view->string("status") : std::string();
+        if (!view)
+            result = {false, "That quest isn't in your journal.", {}};
+        else if (verb != "quest_abandon" && !view->boolean("accept"))
+            result = {false, "That quest is taken up with whoever gives it.", {}};
+        else if (verb == "quest_abandon" && (!view->boolean("abandon") || (status != "active" && status != "ready")))
+            result = {false, "That quest can't be put aside.", {}};
+        else
+        {
+            storyQuestEvent(verb == "quest_accept" ? "quest accepted" : verb == "quest_decline" ? "quest declined" : "quest abandoned", id,
+                            s->id, "", quest);
+            result = {true, verb == "quest_accept" ? "You take on: " + view->string("title") + "."
+                            : verb == "quest_decline" ? std::string("You let it pass, for now.") : "You put aside: " + view->string("title") + ".",
+                      {}};
+        }
+    }
     else if (verb == "abandon" || verb == "leave")
     {
         auto& me = s->participants[id];
@@ -416,6 +461,8 @@ Result Game::directSceneResident(const std::string& kind, const std::string& npc
     for (const auto& other : storylines_.activeScenes())
         if (other != run && storylines_.find(other)->sceneOrders.count(npc))
             return {false, "Another story is directing this resident.", npc};
+    if (heldByAnotherStory(npc, run))               // (Doc 85, Phase 9: npc.hold keeps a resident for its story.)
+        return {false, "Another story holds this resident.", npc};
     const auto prior = story->sceneOrders.find(npc);
     if (prior != story->sceneOrders.end() && !prior->second.done)
         return {false, "Wait for this resident's pending scene cue.", npc};
@@ -561,10 +608,115 @@ void Game::tickStoryScenes(double dt)
     {
         // The cue and post-arrival position leave with the checkpoint that marks the direction
         // complete. A storybook-only journal record could retire the order before its cue survived.
+        // (An early save on the store's worker, never one waited for here: doc 85, Phase 7.)
         storylines_.touch();
         ++revision_;
-        save();
+        saveSoon(StoryOutcomeSeconds);
     }
+}
+
+// Doc 85, Phase 7: a story's effects in one order, story.effects {run, visit, items: [{kind, target, payload, ifRefused}]},
+// each item applied as its own order would be (the community world's guards, the economy's journal) and answered with a
+// result of its own: the order's result is a JSON array of {ok, text}, one for each item, in order. An item refused whose
+// ifRefused is "pause" (or absent) stops the batch there: the items after it are not applied ({ok: false, held: true}),
+// and the runner sends them again when the run is retried or the refused one skipped. The batch's receipt (dmActs) holds
+// what each item that journalled something came to, as each is applied, so a crash part-way through answers those from
+// it when the row is taken again and applies only the rest: none twice, none lost. `seq` is the last journal record the
+// batch wrote (0 for none): the row is told "applied" once it is committed.
+Result Game::applyStoryEffects(const std::vector<PgValue>& row, std::uint64_t& seq)
+{
+    seq = 0;
+    const std::string id = row[0] ? *row[0] : std::string(), target = row[2] ? *row[2] : std::string();
+    json::Value payload;
+    std::string problem;
+    if (row.size() < 5 || !row[4] || !json::parse(*row[4], payload, problem) || !payload.isObject() || !payload["items"].isArray())
+        return {false, "Invalid story effects.", target};
+    const auto& items = payload.array("items");
+    if (items.empty() || items.size() > StoryEffectsMax)
+        return {false, "A story's batch holds 1 to " + std::to_string(StoryEffectsMax) + " orders.", target};
+    json::Value entry = json::Value::object();
+    if (const auto* kept = dmActs_.find(id); kept && kept->isObject() && kept->boolean("batch"))
+        entry = *kept;                              // (Taken again after a crash: what each item came to, so far.)
+    entry.set("batch", true);
+    entry.set("kind", "story.effects");
+    entry.set("target", target);
+    if (!entry["items"].isObject())
+        entry.set("items", json::Value::object());
+    const auto seqBefore = journalSeq_;
+    auto results = json::Value::array();
+    bool stopped = false, any = false;
+    std::size_t applied = 0, refused = 0;
+    for (std::size_t n = 0; n < items.size(); ++n)
+    {
+        const auto& item = items[n];
+        const std::string key = std::to_string(n), flat = id + "." + key;
+        auto r = json::Value::object();
+        if (stopped)
+        {
+            r.add("ok", false);
+            r.add("held", true);
+            r.add("text", "Not applied: an order before it was refused.");
+            results.push(std::move(r));
+            continue;
+        }
+        Result outcome{false, "", target};
+        const json::Value* done = entry["items"].find(key);
+        if (!done)
+            done = dmActs_.find(flat);              // (An economy act's own receipt: applyEconomyCommand's.)
+        const std::string kind = item.string("kind"), to = item.string("target");
+        if (done && done->isObject())
+            outcome = {done->boolean("ok"), done->string("text"), to};
+        else if (!item.isObject() || kind.empty() || kind == "story.effects" || kind == "economy.sync" || kind == "story.phase" ||
+                 kind == "story.stop" || kind == "story.finish" || (item.has("payload") && !item["payload"].isObject()))
+            outcome = {false, "Not an order a story's batch may hold.", to};
+        else
+        {
+            auto act = json::Value::object();       // (What record() writes while the item is applied: applyDmActions.)
+            act.add("ok", true);
+            act.add("text", "Applied (the server stopped before it could say what it did).");
+            act.add("kind", kind);
+            act.add("target", to);
+            entry.find("items")->set(key, std::move(act));
+            dmActs_.set(id, entry);
+            actingFor_ = id;
+            const auto before = journalSeq_;
+            const json::Value orderPayload = item.has("payload") ? item["payload"] : json::Value::object();
+            if (economyCommand(kind))
+                outcome = applyEconomyCommand(kind, to, orderPayload, flat);
+            else
+                outcome = applyDmAct({row[0], kind, to, row.size() > 3 ? row[3] : PgValue(), json::dump(orderPayload)});
+            actingFor_.clear();
+            dmActs_.erase(flat);
+            if (journalSeq_ != before)
+            {
+                auto kept = json::Value::object();
+                kept.add("ok", outcome.ok);
+                kept.add("text", outcome.message);
+                kept.add("kind", kind);
+                kept.add("target", to);
+                entry.find("items")->set(key, std::move(kept));
+            }
+            else
+                entry.find("items")->erase(key);   // (Nothing durable: after a crash it is applied again, as an order would be.)
+            dmActs_.set(id, entry);
+        }
+        r.add("ok", outcome.ok);
+        r.add("text", outcome.message);
+        results.push(std::move(r));
+        any |= outcome.ok;
+        outcome.ok ? ++applied : ++refused;
+        if (!outcome.ok && item.string("ifRefused", "pause") == "pause")
+            stopped = true;
+    }
+    dmActs_.erase(id);
+    if (journalSeq_ != seqBefore || entry["items"].size())
+    {
+        keepDmAct(id, std::move(entry));            // (For the checkpoint: the row is never applied again after a crash.)
+        seq = journalSeq_ != seqBefore ? journalSeq_ : 0;
+    }
+    note("info", "RATW_STORY_EFFECTS " + target + " #" + id + ": " + std::to_string(applied) + " applied, " + std::to_string(refused) +
+                     " refused" + (stopped ? ", the rest held" : ""));
+    return {any || items.empty(), json::dump(results), target};
 }
 
 // The DM runner owns transitions. Only reached phases and their audience enter the game checkpoint.
@@ -573,24 +725,76 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     const double visit = p.number("visit", 0);
     if (run.rfind("world-", 0) != 0 || run.size() > 80 || visit < 1 || visit > 1000000000 || visit != int(visit) ||
         p.string("title").empty() || p.string("phase").empty() || p.string("journal").empty() ||
-        p.array("players").size() > 500 || p.array("lines").size() > 12 || p.array("guestVoices").size() > 8)
+        p.array("players").size() > 5000 || p.array("lines").size() > 12 || p.array("guestVoices").size() > 8)
         return {false, "Invalid world story phase or audience.", run};
     auto* prior = storylines_.find(run);
     if (prior && (prior->kind != "world" || prior->source != "storykeeper"))
         return {false, "Story ID belongs to another story.", run};
     const auto revision = std::to_string(int(visit));
-    if (prior && prior->sourceRef == revision)
+    // A revision (doc 85, Phase 5b): a running story moved onto a newly approved version of itself keeps the visit it is
+    // in. The game takes the new version's title, journal, regions, speakers and missions for that visit; nothing is
+    // replayed, nobody is toasted, scenes under way go on. Refused unless it is the visit the live story is in, and,
+    // like a phase, checked whole before anything changes (the runner then puts the run back on its old version).
+    const bool revise = p.boolean("revise");
+    if (revise)
+    {
+        if (!prior || !prior->live() || prior->sourceRef != revision || prior->steps.empty() || p.boolean("end"))
+            return {false, "Only the visit a live world story is in can be revised.", run};
+    }
+    else if (prior && prior->sourceRef == revision)
         return {true, "Phase already received.", run};
-    if ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1)))
+    if (!revise && ((!prior && visit != 1) || (prior && prior->sourceRef != std::to_string(int(visit) - 1))))
         return {false, "World story phases arrived out of order.", run};
     storylines::Storyline story = prior ? *prior : storylines::Storyline{};
     if (!storylines::readRegions(p["regions"], story.regions))
         return {false, "Invalid world story region.", run};
+    // What the story asks the game to tell it (doc 85, Phase 8): the world's facts and the watched events it names.
+    if (const auto* watch = p.find("watch"); watch && !watch->isNull())
+    {
+        if (!watch->isObject() || json::dump(*watch).size() > 64 * 1024)
+            return {false, "Invalid world story watch list.", run};
+        story.watch = *watch;
+    }
+    else
+        story.watch = Value();
     for (const auto& [id, r] : story.regions)
     {
         const auto* cell = world_.cell(r.cell);
         if (!cell || r.x2 >= cell->width || r.y2 >= cell->height)
             return {false, "Story region does not fit its live cell: " + id, run};
+    }
+    if (revise)
+    {
+        story.title = p.string("title");
+        story.admitted.clear();
+        for (const auto& voice : p.array("guestVoices"))
+        {
+            if (!voice.isString() || !world_.society().resident(voice.asString()))
+                return {false, "A guest speaker is missing.", run};
+            story.admitted.insert(voice.asString());
+        }
+        story.cast.clear();
+        for (const auto& line : p.array("lines"))
+        {
+            if (!world_.society().resident(line.string("npc")) || line.string("text").empty())
+                return {false, "A speaking resident is missing.", run};
+            story.cast.push_back({line.string("npc"), line.string("text")});
+        }
+        auto& step = story.steps.back();
+        step.title = p.string("phase");
+        step.text = p.string("journal");
+        step.missions = p["missions"];
+        if (!step.objectives.empty()) step.objectives.front().line = step.text;
+        story.lastActivity = now();
+        for (const auto* client : clients_) observeStoryTile(client->entityId);
+        const auto& kept = storylines_.add(std::move(story));
+        if (!kept.regions.empty()) storiesWatchingRegions_.insert(run);
+        else storiesWatchingRegions_.erase(run);
+        for (const auto* client : clients_) observeStoryTile(client->entityId);
+        refreshStoryWatch();
+        recountStoryRegions(run);
+        record(StoryBook);
+        return {true, "World story revised.", run};
     }
     story.id = run;
     story.kind = "world";
@@ -638,12 +842,15 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     story.lastActivity = now();
     if (p.boolean("end")) story.ended = now();
     if (prior && prior->live()) releaseSceneResidents(*prior);
+    if (p.boolean("end")) endStoryWorld(story);    // (Doc 85, Phase 9: an ending undoes what its world effects left.)
     // Sample pending movement against the previous watches before changing this run.
     for (const auto* client : clients_) observeStoryTile(client->entityId);
     const auto& kept = storylines_.add(std::move(story));
     if (kept.live() && !kept.regions.empty()) storiesWatchingRegions_.insert(run);
     else storiesWatchingRegions_.erase(run);
     for (const auto* client : clients_) observeStoryTile(client->entityId);
+    refreshStoryWatch();
+    recountStoryRegions(run);
     for (const auto& [who, member] : kept.participants)
         if (member.active()) if (auto* client = clientOf(who)) storylineToast(client, kept.title + ": " + p.string("journal"));
     logEvent("story phase", run, p.string("phase"), kept.title);
@@ -697,6 +904,8 @@ void Game::storylinesLoad(const Value& saved)
     for (const auto& [id, s] : storylines_.all())
         if (s.source == "storykeeper" && s.live() && !s.regions.empty()) storiesWatchingRegions_.insert(id);
     journalViews_.clear();
+    storyOccupants_.clear();
+    refreshStoryWatch();
 }
 
 void Game::storylinesFromEvent(const WorldEvent& e)
@@ -826,5 +1035,184 @@ void Game::offerChain(const Contract& done)
     }
     else
         world_.withdrawContract(k.id);              // (No room in its journal: the work goes back.)
+}
+
+// ------------------------------------------------------------------ A world story's quests (doc 85, Phase 6)
+// The runner keeps each quest's ledger (who holds it, how far each objective is, who may take it); the game is told what
+// each wolf may see (`story.quests`), shows it in the journal and in the residents' dialogue windows, and writes what the
+// wolves do with it as events the runner reads (quest accepted, declined, handed in, abandoned; dialogue choice).
+namespace
+{
+constexpr std::size_t StoryAudienceMost = 5000, StoryOffersMost = 64, StoryChoicesMost = 64, QuestViewsMost = 64,
+                      TrackersMost = 16;
+
+bool plainId(const Value& v)
+{
+    return v.isString() && !v.asString().empty() && v.asString().size() <= 80;
+}
+
+bool endedQuest(const std::string& status)
+{
+    return status == "done" || status == "failed" || status == "abandoned" || status == "expired";
+}
+} // namespace
+
+Result Game::applyStoryCohort(storylines::Storyline& story, const Value& p)
+{
+    const auto& add = p.array("add");
+    const auto& remove = p.array("remove");
+    if (add.size() > StoryAudienceMost || remove.size() > StoryAudienceMost ||
+        !std::all_of(add.begin(), add.end(), plainId) || !std::all_of(remove.begin(), remove.end(), plainId))
+        return {false, "Invalid story audience change.", story.id};
+    std::size_t active = 0;
+    for (const auto& [id, member] : story.participants)
+        active += member.active();
+    for (const auto& who : add)
+        if (const auto f = story.participants.find(who.asString()); f == story.participants.end() || !f->second.active())
+            ++active;
+    if (active > StoryAudienceMost)
+        return {false, "A world story takes 5000 wolves at most.", story.id};
+    for (const auto& who : add)
+    {
+        auto& member = story.participants[who.asString()];
+        if (!member.active() || member.joined == 0)
+            member = {now(), -1};
+    }
+    for (const auto& who : remove)
+        if (const auto f = story.participants.find(who.asString()); f != story.participants.end() && f->second.active())
+        {
+            f->second.left = now();
+            story.tracking.erase(who.asString());
+            story.questViews.erase(who.asString());
+        }
+    storylines_.touch();
+    record(StoryBook);
+    return {true, "The story's wolves: " + std::to_string(add.size()) + " in, " + std::to_string(remove.size()) + " out.", story.id};
+}
+
+Result Game::applyStoryQuests(storylines::Storyline& story, const Value& p)
+{
+    if ((p.has("offers") && (!p["offers"].isArray() || p.array("offers").size() > StoryOffersMost)) ||
+        (p.has("choices") && (!p["choices"].isArray() || p.array("choices").size() > StoryChoicesMost)) ||
+        (p.has("wolves") && (!p["wolves"].isObject() || p["wolves"].size() > StoryAudienceMost)))
+        return {false, "Invalid story quests.", story.id};
+    for (const auto& o : p.array("offers"))
+        if (!plainId(o["quest"]) || o.string("title").empty() ||
+            (o.string("npc").empty() ? !plainId(o["board"]) : !world_.society().resident(o.string("npc"))))
+            return {false, "A quest offer needs its quest, title and a resident who offers it, or a town's board.", story.id};
+    for (const auto& c : p.array("choices"))
+        if (!plainId(c["id"]) || !plainId(c["npc"]) || c.string("words").empty() || !world_.society().resident(c.string("npc")))
+            return {false, "A story choice needs its name, words and a resident.", story.id};
+    for (const auto& [wolf, entry] : p["wolves"].fields())
+        if (wolf.empty() || wolf.size() > 80 || !entry.isObject() || entry.array("quests").size() > QuestViewsMost ||
+            entry.array("trackers").size() > TrackersMost)
+            return {false, "Invalid quest journal for " + wolf + ".", story.id};
+    if (p.has("offers")) story.offers = p["offers"];
+    if (p.has("choices")) story.choices = p["choices"];
+    std::size_t wolves = 0;
+    for (const auto& [wolf, entry] : p["wolves"].fields())
+    {
+        auto kept = Value::object();
+        kept.add("quests", entry["quests"].isArray() ? entry["quests"] : Value::array());
+        kept.add("trackers", entry["trackers"].isArray() ? entry["trackers"] : Value::array());
+        if (!kept.array("quests").size() && !kept.array("trackers").size())
+            story.questViews.erase(wolf);
+        else
+            story.questViews[wolf] = std::move(kept);
+        ++wolves;
+        if (const auto toast = entry.string("toast"); !toast.empty())
+            if (auto* c = clientOf(wolf))
+                storylineToast(c, story.title + ": " + json::utf8Prefix(toast, 300));
+    }
+    storylines_.touch();
+    record(StoryBook);
+    return {true, "Story quests recorded (" + std::to_string(wolves) + " journals).", story.id};
+}
+
+bool Game::storyOfferOpen(const storylines::Storyline& s, const Value& offer, const std::string& wolf) const
+{
+    if (!s.live() || offer.boolean("full"))
+        return false;
+    if (offer.string("who") == "participants" && !s.takesPart(wolf))
+        return false;
+    if (const auto region = offer.string("region"); !region.empty())
+    {
+        const auto r = s.regions.find(region);
+        const auto* e = world_.entity(wolf);
+        if (r == s.regions.end() || !e || !r->second.contains(e->cellId, int(std::floor(e->position.x)), int(std::floor(e->position.y))))
+            return false;
+    }
+    const auto* view = s.questView(wolf, offer.string("quest"));
+    if (!view)
+        return true;
+    const auto status = view->string("status");
+    if (status == "offered")
+        return true;
+    if (!endedQuest(status))
+        return false;
+    const auto* again = view->find("again");
+    return again && again->isNumber() && again->asNumber() <= world_.calendarDays();
+}
+
+std::vector<Game::StoryChoice> Game::storyChoicesFor(const std::string& wolf, const std::string& npc) const
+{
+    std::vector<StoryChoice> out;
+    for (const auto& [id, s] : storylines_.all())
+    {
+        if (s.source != "storykeeper" || !s.live())
+            continue;
+        for (const auto& o : s.offers.items())
+            if (!npc.empty() && o.string("npc") == npc && storyOfferOpen(s, o, wolf))
+                out.push_back({"offer", id, o.string("quest"), o.string("ask", "Ask about: " + o.string("title"))});
+        if (const auto f = s.questViews.find(wolf); f != s.questViews.end())
+            for (const auto& v : f->second.array("quests"))
+                if (v.boolean("handIn") && v.string("status") == "ready" && v.string("giver") == npc)
+                {
+                    std::string words = "About " + v.string("title") + ": it's done.";
+                    for (const auto& o : s.offers.items())
+                        if (o.string("quest") == v.string("id") && !o.string("handIn").empty())
+                            words = o.string("handIn");
+                    out.push_back({"handin", id, v.string("id"), words});
+                }
+        for (const auto& c : s.choices.items())
+        {
+            if (c.string("npc") != npc || !s.takesPart(wolf))
+                continue;
+            const auto& players = c["players"];
+            const auto has = [&](const Value& list) {
+                return std::any_of(list.items().begin(), list.items().end(), [&](const Value& w) { return w.asString("") == wolf; });
+            };
+            if (players.isArray() && !has(players))
+                continue;
+            if (c.boolean("once") && has(c["picked"]))
+                continue;
+            out.push_back({"choice", id, c.string("id"), c.string("words")});
+        }
+    }
+    return out;
+}
+
+const Value* Game::storyOffer(const std::string& run, const std::string& quest) const
+{
+    const auto* s = storylines_.find(run);
+    if (!s)
+        return nullptr;
+    for (const auto& o : s->offers.items())
+        if (o.string("quest") == quest)
+            return &o;
+    return nullptr;
+}
+
+void Game::storyQuestEvent(const char* kind, const std::string& wolf, const std::string& run, const std::string& npc,
+                           const std::string& id)
+{
+    WorldEvent e;
+    e.kind = kind;
+    e.actor = wolf;
+    e.target = run;
+    e.item = npc;
+    e.detail = id;
+    world_.recordEvent(std::move(e));
+    saveSoon();
 }
 } // namespace ratw::game

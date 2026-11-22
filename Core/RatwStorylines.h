@@ -97,6 +97,20 @@ struct Storyline
     std::set<std::string> admitted;                 // Strangers its storyteller admitted (doc 58, 6: calls).
     bool calledOn = false;                          // A call up on a town's board (strangers may ask to join).
     std::string calledTown, callText;
+    // A world story's quests (doc 85, Phase 6: the runner's `story.quests`): each wolf's journal entries (`quests`: the
+    // views the runner made for them, `trackers`), the quests its residents offer, and the story choices laid over their
+    // dialogue windows (npc.offer). The game shows them and checks them; the runner keeps the ledger.
+    std::map<std::string, json::Value> questViews;
+    json::Value offers, choices;
+    // What the runner asked the game to tell this world story (doc 85, Phase 8: its watch list, with each story.phase): the
+    // sections of the world's facts and what of each, and the watched events ({} for none).
+    json::Value watch;
+    // What a world story did to the world that the game undoes when it ends (doc 85, Phase 9): `doors` (each door it
+    // locked or unlocked, with the lock it had), `npcs` (residents it holds), `follow` (residents it sent along with a
+    // wolf), `visitors`, `mantles`, `notices` (its notices' ids), `weather` (each place: until when, and what it was),
+    // and what it shows: `pings` (its markers on the maps), `notes` (its lines in the journal). {} for none.
+    json::Value held;
+    const json::Value* questView(const std::string& wolf, const std::string& quest) const;
     std::size_t current() const;                    // The first step not done (steps.size() when all are).
     bool takesPart(const std::string& who) const;
     bool live() const { return state == "running"; }

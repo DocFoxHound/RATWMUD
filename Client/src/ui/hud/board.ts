@@ -34,6 +34,16 @@ export function renderBoard(panel: HTMLElement, s: GameState) {
         el('span', '', row, `${str(w, 'text')}${num(w, 'reward') ? ` · ${num(w, 'reward')}p` : ''}`);
         if (bool(w, 'canTake')) button('TAKE IT ON', 'small', row, () => send('take', {id: str(w, 'id')}));
     }
+    // A world story's quests pinned here (doc 85, Phase 6): taken on from the board.
+    const quests = arr(b, 'quests').filter(isObject);
+    if (quests.length) {
+        el('div', 'label muted', panel, 'QUESTS');
+        for (const q of quests) {
+            const row = el('div', 'story-row', panel);
+            el('span', '', row, `${str(q, 'title')}${str(q, 'text') ? ` · ${str(q, 'text')}` : ''}`);
+            button('TAKE IT ON', 'small', row, () => send('quest', {run: str(q, 'run'), quest: str(q, 'quest')}));
+        }
+    }
     // The town's projects (doc 57, 4): what each needs, and a gift from here.
     const projects = arr(obj(s.snapshot, 'self'), 'townProjects').filter(isObject);
     if (projects.length) {

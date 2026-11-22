@@ -249,7 +249,10 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
     {
         const auto today = std::int64_t(std::floor(world_.calendarDays()));
         const auto week = today / calendar::DaysPerWeek;
-        const auto day = std::int64_t(std::lround(clampedNumber(payload, "day", double(today), double((week + 2) * calendar::DaysPerWeek - 1), double(today))));
+        auto day = std::int64_t(std::lround(clampedNumber(payload, "day", double(today), double((week + 2) * calendar::DaysPerWeek - 1), double(today))));
+        if (payload.has("inDays"))                  // (Doc 85, Phase 9: a story counts from today, the rule's bounds kept.)
+            day = std::min<std::int64_t>(today + std::int64_t(std::lround(clampedNumber(payload, "inDays", 0, 13, 0))),
+                                         (week + 2) * calendar::DaysPerWeek - 1);
         const double hour = clampedNumber(payload, "hour", 0, 23, 9);
         std::string problem;
         if (!world_.roadMarket(target))
@@ -262,6 +265,20 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             outcome = {true, id + ": " + (e ? e->words : payload.string("kind")) + " at " + world_.marketWords(target) + ", " +
                                  calendar::weekdayName(calendar::weekdayOf(double(day) + .5)) + ".", id};
         }
+    }
+    else if (kind == "event.cancel" && payload.has("kind"))
+    {
+        // Doc 85, Phase 9: a story names the market and the kind of event: the soonest such one still to come or on.
+        const market::StagedEvent* soonest = nullptr;
+        for (const auto& e : world_.society().stagedBoard().events)
+            if (e.market == target && e.kind == payload.string("kind") && (e.status == "due" || e.status == "on") &&
+                (!soonest || e.day < soonest->day))
+                soonest = &e;
+        const auto id = soonest ? soonest->id : std::string();
+        const auto words = soonest ? soonest->words : std::string();
+        outcome = !id.empty() && world_.cancelStagedEvent(id)
+                      ? Result{true, (words.empty() ? id : words) + " at " + world_.marketWords(target) + " is called off.", id}
+                      : Result{false, "No such event still to come or on at " + world_.marketWords(target) + ".", target};
     }
     else if (kind == "event.cancel")
     {
@@ -341,7 +358,25 @@ Result Game::applyEconomyCommand(const std::string& kind, const std::string& tar
             who = e->name;
         else if (const auto saved = characters_.find(target); saved != characters_.end() && !saved->second.name.empty())
             who = saved->second.name;
-        if (society.grantPlayer(target, coins, reason, problem, &moved))
+        // A story's reward names the purse that pays it (doc 85, Phase 6): a town's treasury (town:<id>), its works, watch
+        // or church (town:<id>:works), a business's till, a Chapter's treasury. Without one, a DM's grant as ever.
+        // (A world with no towns on its roads, a single settlement like Greyfen Crossing: its one treasury. The same reading
+        // as "purse crossed" watches: storyPurseAccount.)
+        const auto purse = storyPurseAccount(payload.string("purse"));
+        if (payload.has("purse"))
+        {
+            if (society.payPlayerFrom(purse, target, coins, reason, problem))
+            {
+                outcome = {true, "Paid " + std::to_string(coins) + "p to " + who + " from " + payload.string("purse") + ": " + reason + ".", target};
+                told = clientOf(target);
+                tell = "You are paid " + std::to_string(coins) + " pennies: " + reason + ".";
+                if (!told)
+                    tellActedOn(target, tell);
+            }
+            else
+                outcome = {false, problem, target};
+        }
+        else if (society.grantPlayer(target, coins, reason, problem, &moved))
         {
             // (A fine is at most what the player holds: the DM and the player told what was taken, not what was asked.)
             outcome = {true, (coins > 0 ? "Granted " : "Fined ") + std::to_string(moved) + "p" +

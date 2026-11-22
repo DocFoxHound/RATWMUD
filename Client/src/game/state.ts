@@ -250,7 +250,7 @@ export class GameState {
      *  offers ([name, help], as it last said), and each command run with the server's answer, newest last. */
     devConsole = false;
     devCommands: [string, string][] = [];
-    devLog: {command: string; ok: boolean; text: string}[] = [];
+    devLog: {command: string; ok: boolean; text: string; notice?: string}[] = [];
     private devCommandsAsked = false;
     contextTarget = '';
     /** Combat sound (doc 37, phase 3): 0 off, up to 1; Settings cycles it, and it is kept on this computer. */
@@ -1385,6 +1385,14 @@ export class GameState {
             this.devLog.push({command: str(e, 'command'), ok: bool(e, 'ok'), text: str(e, 'text')});
             if (this.devLog.length > 30) this.devLog.splice(0, this.devLog.length - 30);
             if (!this.devConsole) this.showToast(str(e, 'text').split('\n')[0]);
+            return;
+        }
+        if (type === 'devNotice') {
+            // A word to the Dungeon Masters from outside the console (Docs/Design/85, 5.6: a story that needs them, the story
+            // runner down): kept in its log under who said it, and said in a toast.
+            this.devLog.push({command: '', ok: false, text: str(e, 'text'), notice: str(e, 'from') || 'Notice'});
+            if (this.devLog.length > 30) this.devLog.splice(0, this.devLog.length - 30);
+            if (!this.devConsole) this.showToast(str(e, 'from') ? `${str(e, 'from')}: ${str(e, 'text')}` : str(e, 'text'));
             return;
         }
         if (type === 'devCommands') {

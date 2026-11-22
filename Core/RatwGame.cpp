@@ -62,6 +62,8 @@ class DatabaseStore final : public Store
     bool saveInBackground(DbStore::Build build, std::uint64_t revision) override { return db.saveInBackground(std::move(build), revision); }
     bool flush() override { return db.flush(); }
     void queueEvents(std::vector<WorldEvent> events) override { db.queueEvents(std::move(events)); }
+    void queueFacts(std::string facts) override { db.queueFacts(std::move(facts)); }
+    void flushEvents() override { db.flushEventsInBackground(); }
     std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return db.externalNpcStates(); }
     std::string error() const override { return db.error(); }
     journal::Writer* journal() override { return writer.get(); }
@@ -1106,6 +1108,99 @@ void Game::watchReleases(double dt)
     }
 }
 
+// The story runner's "needs you" alerts in the Dev Console (doc 85, 5.6 and Phase 3): read every 15 s from what the
+// database lets the game know of the stories (dm.story_alerts_for_game, migration 0072), each told once to the Dungeon
+// Masters in the world. Never on a scratch server (it applies no orders either), nor without the migration.
+void Game::watchStoryAlerts(double dt)
+{
+    if (options_.scratch || options_.database.empty() || liveWorldId_.empty() || storyAlertsReadable_ == 0)
+        return;
+    if ((storyAlertAccumulator_ += dt) < 15)
+        return;
+    storyAlertAccumulator_ = 0;
+    if (storyAlertsReadable_ < 0)
+    {
+        const auto has = worldDb_.exec("SELECT to_regprocedure('dm.story_alerts_for_game(text)') IS NOT NULL");
+        if (!has.ok)
+            return;
+        storyAlertsReadable_ = has.rows.size() && has.rows[0].size() && has.rows[0][0] && *has.rows[0][0] == "t" ? 1 : 0;
+        if (!storyAlertsReadable_)
+            return;
+    }
+    const auto got = worldDb_.exec("SELECT dm.story_alerts_for_game($1)::text", {liveWorldId_});
+    json::Value reply;
+    std::string problem;
+    if (got.ok && got.rows.size() && got.rows[0].size() && got.rows[0][0] && json::parse(*got.rows[0][0], reply, problem))
+        readStoryAlerts(reply);
+}
+
+void Game::tellStoryAlert(Connection* c, const std::string& text)
+{
+    auto notice = json::Value::object();
+    notice.add("type", "devNotice");
+    notice.add("from", "Campaigns");
+    notice.add("text", text);
+    send(c, notice);
+}
+
+int Game::readStoryAlerts(const json::Value& reply)
+{
+    if (!reply.isObject())
+        return 0;
+    std::map<std::string, std::string> now;
+    // The runner down while stories should be running: worked out here, from how long since it last beat.
+    const double running = reply.number("running");
+    const auto* age = reply.find("beatAge");
+    const double limit = reply.number("runnerSeconds", 30);
+    if (running > 0 && (!age || age->isNull() || age->asNumber(0) > limit))
+    {
+        const int stories = int(running);
+        now["runner"] = std::string(age && !age->isNull() ? "The story runner has not beaten for " + std::to_string(int(age->asNumber(0))) + " s"
+                                                           : "The story runner has never run on this world") +
+                        ": " + std::to_string(stories) + (stories == 1 ? " story is" : " stories are") +
+                        " not moving. Start it (python3 tools/story_runner.py --world ...), then see Campaigns.";
+    }
+    if (now.count("runner"))
+    {
+        // (While it is down its last alerts still stand: they are not read again, nor told again when it is back.)
+        for (const auto& [key, text] : storyAlerts_)
+            if (key != "runner")
+                now[key] = text;
+    }
+    else
+        // (Its own alerts are trusted only while it is beating: the database drops them after five minutes anyway.)
+        for (const auto& a : reply.array("alerts"))
+            if (a.isObject() && !a.string("key").empty() && !a.string("text").empty())
+                now[a.string("key").substr(0, 200)] = a.string("text").substr(0, 400);
+    // An alert that went and comes back within five readings (a story waiting a moment on the game) is not told again.
+    std::set<std::string> known;
+    for (const auto& [key, text] : storyAlerts_)
+        known.insert(key);
+    for (const auto& [key, misses] : storyAlertsGone_)
+        known.insert(key);
+    for (const auto& [key, text] : storyAlerts_)
+        if (!now.count(key))
+            storyAlertsGone_[key] = 0;
+    for (auto it = storyAlertsGone_.begin(); it != storyAlertsGone_.end();)
+        if (now.count(it->first) || ++it->second > 5)
+            it = storyAlertsGone_.erase(it);
+        else
+            ++it;
+    int told = 0;
+    for (const auto& [key, text] : now)
+    {
+        if (known.count(key))
+            continue;
+        ++told;
+        note("info", "RATW_STORY_ALERT " + key + ": " + text);
+        for (auto* c : clients_)
+            if (const auto* e = c->entityId.empty() ? nullptr : world_.entity(c->entityId); e && e->dungeonMaster && devConsoleAllowed())
+                tellStoryAlert(c, text);
+    }
+    storyAlerts_ = std::move(now);
+    return told;
+}
+
 void Game::applyDmActions(double dt)
 {
     if (options_.scratch)
@@ -1113,11 +1208,14 @@ void Game::applyDmActions(double dt)
     if (options_.database.empty())
         return;
     releaseDmStatuses();                            // (Rows applied whose records have committed since: told now.)
-    if ((dmAccumulator_ += dt) < 1)
+    // (Every DmPollSeconds once notified, so a story's orders are answered within a quarter of a second, not a second:
+    // doc 85, Phase 7. The minute's expiry counts real seconds.)
+    if ((dmAccumulator_ += dt) < DmPollSeconds)
         return;
+    const double polled = dmAccumulator_;
     dmAccumulator_ = 0;
     readNotifications();
-    const bool minute = (dmExpiryAccumulator_ += 1) >= 60;
+    const bool minute = (dmExpiryAccumulator_ += polled) >= 60;
     if (!dmNotified_ && !minute)
         return;
     dmNotified_ = false;
@@ -1136,17 +1234,27 @@ void Game::applyDmActions(double dt)
                     "UPDATE dm.actions a SET status = CASE WHEN (j.value->>'ok')::boolean THEN 'applied' ELSE 'refused' END, "
                     "result = j.value->>'text', done_at = now() FROM jsonb_each($1::jsonb) AS j "
                     "WHERE a.id::text = j.key AND a.kind = j.value->>'kind' AND a.target_id = j.value->>'target' "
+                    "AND NOT coalesce((j.value->>'batch')::boolean, false) "
                     "AND a.status IN ('queued', 'expired') RETURNING a.kind, a.target_id, a.result",
                     {json::dump(dmActs_)});
                 for (const auto& row : answered.rows)
                     if (row.size() > 2 && row[0] && row[1] && row[2])
                         note("info", "RATW_DM_ACTION " + *row[0] + " " + *row[1] + ": already applied before the restart: " + *row[2]);
+                // (A story's batch taken part-way before the restart is taken again, its items done answered from its
+                // receipt and the rest applied: doc 85, Phase 7. One the old server let expire meanwhile comes back.)
+                worldDb_.exec("UPDATE dm.actions a SET status = 'queued', result = NULL, done_at = NULL FROM jsonb_each($1::jsonb) AS j "
+                              "WHERE a.id::text = j.key AND a.kind = 'story.effects' AND coalesce((j.value->>'batch')::boolean, false) "
+                              "AND a.status = 'expired'",
+                              {json::dump(dmActs_)});
             }
         }
         // (Never a row applied whose record is still being written: it is answered once the record is committed.)
         std::string waiting = "{";
         for (const auto& w : dmStatusWaiting_)
             waiting += (waiting.size() > 1 ? "," : "") + w.id;
+        for (const auto& [id, act] : dmActs_.fields())   // (A batch part-way through is never let expire: doc 85, Phase 7.)
+            if (act.isObject() && act.boolean("batch") && std::all_of(id.begin(), id.end(), [](char ch) { return ch >= '0' && ch <= '9'; }))
+                waiting += (waiting.size() > 1 ? "," : "") + id;
         worldDb_.exec("UPDATE dm.actions SET status = 'expired', result = 'Not applied within ten minutes.', done_at = now() "
                       "WHERE status = 'queued' AND requested_at < now() - interval '10 minutes' AND NOT (id::text = ANY($1::text[]))",
                       {waiting + "}"});
@@ -1172,6 +1280,24 @@ void Game::applyDmActions(double dt)
         // the journal's record holds it, so it is answered from there, never applied again.)
         if (std::any_of(dmStatusWaiting_.begin(), dmStatusWaiting_.end(), [&](const DmStatus& w) { return w.id == *row[0]; }))
             continue;
+        if (kind == "story.effects")
+        {
+            // Doc 85, Phase 7: a story's batch, each item answered (applyStoryEffects), the items done before a crash from
+            // the batch's receipt. "Applied" (the batch was taken; each item's own outcome in the result) once what it
+            // journalled is committed.
+            std::uint64_t batchSeq = 0;
+            const auto outcome = applyStoryEffects(row, batchSeq);
+            const bool taken = outcome.message.rfind("[", 0) == 0;
+            changed |= outcome.ok;
+            auto* writer = store_ ? store_->journal() : nullptr;
+            if (writer && batchSeq && writer->committed() < batchSeq)
+                dmStatusWaiting_.push_back({*row[0], taken ? "applied" : "refused", outcome.message, batchSeq});
+            else
+                worldDb_.exec("UPDATE dm.actions SET status = $2, result = $3, done_at = now() WHERE id = $1 AND status = 'queued'",
+                              {*row[0], std::string(taken ? "applied" : "refused"), outcome.message});
+            logEvent("operator", row[3] ? *row[3] : "", target, kind + (taken ? ": applied" : ": refused"));
+            continue;
+        }
         // (The same kind and target too: a database whose dm.actions numbering began again never matches an old act.)
         if (const auto* done = dmActs_.find(*row[0]); done && done->isObject() && done->string("kind") == kind && done->string("target") == target)
         {
@@ -1334,6 +1460,8 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         if (const auto space = npc.find(' '); space != std::string::npos)
             mantle = npc.substr(space + 1), npc = npc.substr(0, space);
         outcome = kind == "mantle.assign" ? assignMantle(npc, mantle) : releaseMantle(npc);
+        if (outcome.ok && kind == "mantle.assign" && payload.isObject() && payload.has("run"))
+            noteStoryHeld(payload, "mantles", npc);   // (Doc 85, Phase 9: released when the story ends.)
     }
     else if (kind == "deed.award" || kind == "deed.revoke")
     {
@@ -1343,7 +1471,14 @@ Result Game::applyDmAct(std::vector<PgValue> row)
         std::string problem;
         if (row.size() > 4 && row[4])
             json::parse(*row[4], payload, problem);
-        if (kind == "deed.revoke")
+        if (kind == "deed.revoke" && payload.isObject() && payload.has("detail"))
+        {
+            // (Doc 85, Phase 9: a story names the wolf and the deed's words; the newest such deed by a DM or a story.)
+            const auto id = storyDeed(target, payload.string("detail"));
+            outcome = !id.empty() && revokeDeed(id) ? Result{true, "Revoked the deed " + id + ".", target}
+                                                    : Result{false, "That wolf has no such deed standing.", target};
+        }
+        else if (kind == "deed.revoke")
             outcome = revokeDeed(target) ? Result{true, "Revoked.", target} : Result{false, "No such deed.", target};
         else if (const auto* doer = world_.entity(target); !doer || doer->npc)
             outcome = {false, "Award deeds to player characters.", target};
@@ -1474,6 +1609,7 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             if (finished && !story->steps.empty() && !story->steps.back().objectives.empty())
                 story->steps.back().objectives.front().doneAt = now();
             if (story->live()) releaseSceneResidents(*story);
+            endStoryWorld(*story);                  // (Doc 85, Phase 9: its locks, holds, strangers, notices, weather undone.)
             story->sceneOrders.clear();
             story->cinematics.clear();
             storylines_.end(target, finished ? "done" : "abandoned", now());
@@ -1502,6 +1638,20 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = {true, "Mission progress recorded.", target};
         }
     }
+    else if (kind == "story.cohort" || kind == "story.quests")
+    {
+        // Doc 85, Phase 6: a living audience (wolves taken into a world story, or out), and its quests: each wolf's journal
+        // entries, the quests its residents offer and the story choices laid over their windows. The runner keeps the
+        // ledger; the game shows it, and checks a choice again when it is picked.
+        json::Value payload;
+        std::string problem;
+        auto* story = storylines_.find(target);
+        if (!row[4] || !json::parse(*row[4], payload, problem) || !payload.isObject() || !story || story->source != "storykeeper" ||
+            !story->live())
+            outcome = {false, "That world story is not running.", target};
+        else
+            outcome = kind == "story.cohort" ? applyStoryCohort(*story, payload) : applyStoryQuests(*story, payload);
+    }
     else if (kind == "story.phase")
     {
         json::Value payload;
@@ -1523,8 +1673,12 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = giveStoryline(target, payload.string("template"), payload.object("cast"), "dm", "");
         else
         {
-            const auto ticked = storylines_.tick(target, std::size_t(payload.number("step")), std::size_t(payload.number("objective")), "dm",
-                                                 now(), true);
+            // (Doc 85, Phase 9: a story names the wolf, the template, and the step and objective counted from 1.)
+            const bool byTemplate = payload.isObject() && payload.has("template");
+            const auto id = byTemplate ? storyStoryline(target, payload.string("template")) : target;
+            const auto step = std::size_t(std::max(0., payload.number("step") - (byTemplate ? 1 : 0)));
+            const auto objective = std::size_t(std::max(0., payload.number("objective") - (byTemplate ? 1 : 0)));
+            const auto ticked = id.empty() ? std::vector<storylines::Progress>{} : storylines_.tick(id, step, objective, "dm", now(), true);
             storylineProgress(ticked);
             outcome = ticked.empty() ? Result{false, "Nothing to tick there.", target} : Result{true, "Ticked.", target};
         }
@@ -1556,6 +1710,13 @@ Result Game::applyDmAct(std::vector<PgValue> row)
                   : kind == "project.cancel"   ? cancelProject(target, "cancelled by the Dungeon Master")
                   : kind == "project.complete" ? completeProject(target)
                                                : removeProject(target);
+        if (kind != "project.post" && payload.isObject() && payload.has("kind"))
+        {
+            // (Doc 85, Phase 9: a story names the town and the kind: the open project of that kind there.)
+            const auto id = storyProject(target, payload.string("kind"));
+            outcome = id.empty() ? Result{false, "No such project open in " + target + ".", target}
+                      : kind == "project.cancel" ? cancelProject(id, "called off by a story") : completeProject(id);
+        }
     }
     else if (kind == "nickname.drop" || kind == "nickname.restore")
     {
@@ -1669,10 +1830,34 @@ Result Game::applyDmAct(std::vector<PgValue> row)
                 if (const auto* e = world_.entity(c->entityId); e && world_.communityOf(e->cellId) == target)
                     system(c, "Word goes round: " + outcome.message);
     }
+    else if (kind == "npc.kill" && row.size() > 4 && row[4] && row[4]->find("\"run\"") != std::string::npos && isProtected(target))
+        outcome = {false, "A story never kills a protected resident.", target};   // (Doc 85, Phase 9.)
     else if (kind == "npc.kill" || kind == "npc.revive")
     {
         const auto* npc = world_.entity(target);
         outcome = npc && npc->npc ? world_.setDead(target, kind == "npc.kill") : Result{false, "No such NPC.", {}};
+    }
+    else if (storyWorldOrder(kind))
+    {
+        // Doc 85, Phase 9: a world story's new world effects (RatwGameStoryWorld.cpp).
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem) && payload.isObject() ? applyStoryWorld(kind, target, payload)
+                                                                                       : Result{false, "Invalid story effect.", target};
+    }
+    else if (kind == "story.tell")
+    {
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem) ? applyStoryTell(target, payload)
+                                                                  : Result{false, "Invalid story message.", target};
+    }
+    else if (kind == "item.give" || kind == "standing.adjust")
+    {
+        json::Value payload;
+        std::string problem;
+        outcome = row[4] && json::parse(*row[4], payload, problem) ? applyStoryReward(kind, target, payload)
+                                                                  : Result{false, "Invalid reward.", target};
     }
     else if (kind.rfind("story.area_", 0) == 0)
     {
@@ -1924,7 +2109,12 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             online->dungeonMaster = on;
             characters_[target] = *online;
             if (auto* c = clientOf(target))
+            {
                 system(c, on ? "You are a Dungeon Master: the Dev Console is yours (the ` key)." : "You are no longer a Dungeon Master.");
+                if (on && devConsoleAllowed())
+                    for (const auto& [key, words] : storyAlerts_)
+                        tellStoryAlert(c, words);
+            }
             outcome = {true, told(*online), {}};
         }
         else if (auto saved = characters_.find(target); saved != characters_.end())
@@ -1954,6 +2144,8 @@ Result Game::applyDmAct(std::vector<PgValue> row)
             outcome = world_.addVisitor(target, payload.string("name"), description, like ? like->appearance : Appearance{},
                                         payload.string("cell"), wire::number(payload, "x", -1), wire::number(payload, "y", -1),
                                         wire::number(payload, "minutes", 0));
+            if (outcome.ok && payload.has("run"))
+                noteStoryHeld(payload, "visitors", target);   // (Doc 85, Phase 9: sent away when the story ends.)
         }
     }
     return outcome;
@@ -2392,9 +2584,9 @@ void Game::connect(Connection* c)
 
 namespace
 {
-template<class Tile>
+template<class Tile, class Crossed>
 void recordRegionCrossings(World& world, const storylines::Book& book, const std::set<std::string>& watches,
-                           const std::string& actor, const Tile& previous, const Tile& current)
+                           const std::string& actor, const Tile& previous, const Tile& current, Crossed crossed)
 {
     for (const auto& run : watches)
     {
@@ -2407,6 +2599,7 @@ void recordRegionCrossings(World& world, const storylines::Book& book, const std
             const auto& at = inside ? current : previous;
             world.recordEvent({inside ? "region entered" : "region left", actor, id, at.cell,
                                 0, 0, {}, 0, 0, run, at.x, at.y});
+            crossed(run, id, inside, at.cell, at.x, at.y);   // (A region's count of story wolves: doc 85, Phase 8.)
         }
     }
 }
@@ -2424,7 +2617,10 @@ void Game::observeStoryTile(const std::string& actor)
     if (it->second.cell == current.cell && it->second.x == x && it->second.y == y) return;
     const auto previous = it->second;
     it->second = current;
-    recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, actor, previous, current);
+    recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, actor, previous, current,
+                           [&](const std::string& run, const std::string& region, bool inside, const std::string& cell, int x, int y) {
+                               storyRegionCrossed(run, region, actor, inside, cell, x, y);
+                           });
 }
 
 void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy)
@@ -2460,7 +2656,10 @@ void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double fac
                 const int dx = (endX > seen->second.x) - (endX < seen->second.x);
                 const int dy = (endY > seen->second.y) - (endY < seen->second.y);
                 const StoryTile next{player->cellId, seen->second.x + dx, seen->second.y + dy};
-                recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, id, seen->second, next);
+                recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, id, seen->second, next,
+                                      [&](const std::string& run, const std::string& region, bool inside, const std::string& cell, int x, int y) {
+                                          storyRegionCrossed(run, region, id, inside, cell, x, y);
+                                      });
                 seen->second = next;
             }
         }
@@ -2810,6 +3009,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     world_.observe(actor);
     observeStoryTile(actor);
     logEvent("arrival", actor);
+    storyArrivedInside(actor);                     // (Signing in inside a story's region counts: doc 85, Phase 8.)
     record(Economy | Character, actor);
     if (!storageReady_)
     {
@@ -2836,6 +3036,9 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     tiesOnEnter(actor);                            // A tie made while they were away (doc 52, 4).
     for (const auto& words : hostNotes)
         system(c, "While you were away: " + words);
+    if (player.dungeonMaster && devConsoleAllowed())   // (A Dungeon Master is told the stories that still need them: doc 85, 5.6.)
+        for (const auto& [key, text] : storyAlerts_)
+            tellStoryAlert(c, text);
     sendSafety(c);                                 // And their mutes and blocks.
     cameOrWent(c, true);                           // Their friends, and private messages kept for them (doc 50, 4).
     if (const auto away = absences_.find(actor); away != absences_.end())
@@ -2876,6 +3079,7 @@ void Game::leaveCharacter(Connection* c)
         characters_[e->id].awayInBed = world_.bedIsTheirs(*e);   // (Only a bed it has a right to rests it fully: doc 54.)
         characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0 || (lodgingOf(e->id) && innUpstairs(e->cellId) && lodgingOf(e->id)->cell == e->cellId);
         observeStoryTile(id);
+        storyLeftWorld(id);                         // (A region's count of story wolves goes down: doc 85, Phase 8.)
         lastStoryTile_.erase(id);
         logEvent("departure", id);
         if (const auto* fight = world_.battleOf(id); fight && !fight->over)
@@ -3359,6 +3563,7 @@ void Game::tick(double dt)
                 if (cinematicLocks(e->id)) world_.holdForScene(e->id);
             }
         tickStoryScenes(dt);
+        tickStoryWorld(dt);
         world_.tick(dt);
     }
     if (!storiesWatchingRegions_.empty())
@@ -3429,6 +3634,7 @@ void Game::tick(double dt)
     campTick(dt);
     projectTick(dt);                                // (Town projects: doc 57, 4.)
     storylineTick(dt);                              // (Storylines' places, chains, idle tales: doc 58.)
+    storyWatchTick(real);                           // (What the live stories watch: the calendar, the weather; doc 85, Phase 8.)
     tendStorytellers(dt);                           // (Visitors, the kept log, credits: doc 58.)
     holdTick(dt);
     refreshChapterViews(real);
@@ -3497,6 +3703,7 @@ void Game::tick(double dt)
     watchReleases(real);
     watchMaintenance(real);                         // (After the notifications are read.)
     applyDmActions(real);
+    watchStoryAlerts(real);
     feedWatch(real);
     runSpawns(dt);
     makeResidents();
@@ -3513,9 +3720,18 @@ void Game::tick(double dt)
     }
     if (saveSoonIn_ >= 0 && (saveSoonIn_ -= real) < 0)
     {
-        snapshotSaveAccumulator_ = 0;
-        autosave();
+        // (A snapshot still being written takes nothing new: this save is taken as soon as it is done, not at the next
+        // round one: doc 85, Phase 7.)
+        if (snapshotBusy())
+            saveSoonIn_ = 0.25;
+        else
+        {
+            snapshotSaveAccumulator_ = 0;
+            autosave();
+        }
     }
+    flushStoryEvents(real);
+    dispatchSceneRequests();
     if (saveAccumulator_ >= AutosaveSeconds)
     {
         saveAccumulator_ = 0;
@@ -5195,7 +5411,16 @@ void Game::followTransition(const std::string& id, const std::string& previousCe
     if (!leader)
         return;
     if (!leader->npc)
+    {
         logEvent("enter place", id, leader->cellId, previousCell);
+        // (Doc 85, Phase 8: into or out of an interior, for a story that listens.)
+        const auto* from = world_.cell(previousCell);
+        const auto* to = world_.cell(leader->cellId);
+        if (from && !from->outdoors && world_.storyListens("building left"))
+            world_.recordEvent({"building left", id, previousCell, leader->cellId, 0, 0, {}, 0, 0, leader->cellId});
+        if (to && !to->outdoors && world_.storyListens("building entered"))
+            world_.recordEvent({"building entered", id, leader->cellId, leader->cellId, 0, 0, {}, 0, 0, previousCell});
+    }
     // A party's residents cross with whoever they follow: the leader, or the one in the world (doc 32).
     const auto* p = parties_.of(id);
     if (!p || (p->leader != id && clientOf(p->leader)))
@@ -5914,6 +6139,13 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok && buy && buy->asBool())
             if (const auto* after = world_.society().account(id))
                 afterFactionTrade(id, j.string("target"), before - after->cash);
+        if (result.ok && world_.storyListens("trade done"))   // (Doc 85, Phase 8: a trade done, for a story that listens.)
+        {
+            const auto* after = world_.society().account(id);
+            const std::int64_t moved = after ? after->cash - before : 0;
+            world_.recordEvent({"trade done", id, j.string("target"), player->cellId, 0, 0, json::utf8Prefix(j.string("item"), 40),
+                                int(qty), moved < 0 ? -moved : moved, buy->asBool() ? "bought" : "sold"});
+        }
         {
             // The shop window's receipt: the line it sent, done or refused, in the world's words.
             auto receipt = Value::object();
@@ -6055,6 +6287,7 @@ void Game::command(Connection* c, const std::string& raw)
     {
         if (!partyCommand(c, j, result))
             result = {false, "That isn't something a party does.", {}};
+        partyEvents();
         report = true;
     }
     else if (type == "safety")
@@ -7066,6 +7299,48 @@ void Game::saveSoon()
         saveSoonIn_ = SaveSoonSeconds;
 }
 
+void Game::saveSoon(double seconds)
+{
+    if (saveSoonIn_ < 0 || seconds < saveSoonIn_)
+        saveSoonIn_ = std::max(0.0, seconds);
+}
+
+bool Game::snapshotBusy()
+{
+    if (snapshotChild_ > 0)
+        reapSnapshot(false);
+    return snapshotChild_ > 0;
+}
+
+bool Game::storyLive() const
+{
+    for (const auto& [id, story] : storylines_.all())
+        if (story.source == "storykeeper" && story.live())
+            return true;
+    return false;
+}
+
+void Game::flushStoryEvents(double real)
+{
+    // Doc 85, Phase 7. While a world story of the runner is live, the world's events go to the log every
+    // StoryEventsSeconds in a small write of their own on the store's worker (the game thread only hands them over), so the
+    // runner reads them a second after they happen instead of at the next save, up to 30 s later. Never while a save is
+    // asked for or a snapshot is being written: the events then go with that checkpoint, in the same transaction as the
+    // state they belong with (a scene's outcome and the order it retired, a resident's arrival and its cue), so a crash
+    // never leaves the log telling the runner of an outcome the restored world does not hold. Other events may reach the
+    // log before the state beside them is saved, as a trade's reach the journal: what they tell happened, and a crash
+    // before the next save loses only what was never durable (where a wolf stood), never the event's record.
+    if ((storyEventsAccumulator_ += real) < StoryEventsSeconds)
+        return;
+    storyEventsAccumulator_ = 0;
+    if (!store_ || !store_->database() || !storageReady_ || saveSoonIn_ >= 0 || snapshotChild_ > 0 || !storyLive())
+        return;
+    if (!world_.hasEvents())
+        return;
+    handEventsToStore();                           // (With the world's facts, while a story asks: doc 85, Phase 8.)
+    store_->flushEvents();
+}
+
 DbStore::Build Game::capture()
 {
     // Copied here, on the game thread; the document is made from the copy on the store's worker.
@@ -7192,7 +7467,7 @@ void Game::autosave()
         return;
     if (options_.forkSnapshots && forkFailures_ < 3 && forkSnapshot())
         return;
-    store_->queueEvents(world_.takeEvents());
+    handEventsToStore();
     journalCheckpoint();
     const auto seq = journalSeq_;
     if (!store_->saveInBackground(capture(), revision_))
@@ -7332,7 +7607,7 @@ void Game::save()
     if (!store_)
         return;
     reapSnapshot(true);                            // A snapshot under way is finished and handed over first.
-    store_->queueEvents(world_.takeEvents());
+    handEventsToStore();
     if (storageReady_)
         journalCheckpoint();
     const auto seq = journalSeq_;
@@ -7432,6 +7707,7 @@ void Game::load(const std::string& payload)
                 note("info", "RATW_CHEATS " + id + "'s Dungeon Master mark is cleared: a community world without --dev-tools has no Dev Console.");
             }
     parties_.load(state.parties);
+    partyEvents(true);
     aliases_.clear();
     for (const auto& [who, list] : state.aliases.fields())
         for (const auto& a : list.items())

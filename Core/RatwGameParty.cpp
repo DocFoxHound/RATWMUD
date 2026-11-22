@@ -186,12 +186,46 @@ void Game::partyChat(Connection* c, const Entity& speaker, const std::string& te
         }
 }
 
+void Game::partyEvents(bool quiet)
+{
+    // Who is in which party now, against what the log last said: one "party left" and one "party joined" for each change
+    // (a disband: a left for each wolf; a party of two losing one: both). Players only; a resident companion is not told.
+    std::map<std::string, std::string> now;
+    std::map<std::string, std::string> leaders;
+    for (const auto& [id, p] : parties_.all())
+    {
+        for (const auto& m : p.members)
+            now[m] = id;
+        if (!p.members.empty())
+            leaders[id] = p.leader;
+    }
+    if (!quiet)
+    {
+        // (Doc 85, Phase 8: a party made and a party broken up, for a story that listens.)
+        for (const auto& [id, leader] : partyLeaders_)
+            if (!leaders.count(id) && world_.storyListens("party ended"))
+                logEvent("party ended", leader, id);
+        for (const auto& [id, leader] : leaders)
+            if (!partyLeaders_.count(id) && world_.storyListens("party formed"))
+                logEvent("party formed", leader, id);
+        for (const auto& [who, party] : partyLogged_)
+            if (const auto f = now.find(who); f == now.end() || f->second != party)
+                logEvent("party left", who, party);
+        for (const auto& [who, party] : now)
+            if (const auto f = partyLogged_.find(who); f == partyLogged_.end() || f->second != party)
+                logEvent("party joined", who, party);
+    }
+    partyLogged_ = std::move(now);
+    partyLeaders_ = std::move(leaders);
+}
+
 void Game::partyTick(double dt)
 {
     partyAccumulator_ += dt;
     if (partyAccumulator_ < 0.25)
         return;
     partyAccumulator_ = 0;
+    partyEvents();
     const double t = world_.time();
     // Places kept and lost: a member out of the world too long loses theirs.
     for (const auto& [who, partyId] : parties_.tick(now(), [&](const std::string& m) { return clientOf(m) != nullptr; }))

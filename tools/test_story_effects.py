@@ -1,0 +1,371 @@
+"""Doc 85, Phase 9: the new world effects (Docs/Design/85-story-triggers-and-campaign-control.md, 3.5).
+
+The catalogue's 31 new effects with typed parameters and sentences; the checks (each one sound, each one's parts that go
+together, its bounds, a tracker that is a shown variable); the game order each becomes (story_runner.world_order); a
+tracker hidden and shown again by the story itself; the hosted permissions read from the catalogue (acting on wolves,
+factions); and, in a throwaway database, the world's references checked at approval (doors, towns, tiles, items, strangers,
+mantles, templates) and a published story sending them to the game in one batch, the console's Tell to a party and the
+world. The game applying each is Tests/story_world_tests.cpp.
+"""
+import copy
+import json
+import secrets
+import threading
+import unittest
+import urllib.error
+import urllib.request
+from http.server import ThreadingHTTPServer
+
+import dungeon_master as D
+import story_program as rules
+import story_quests as quests
+import story_runner as runner
+import studio
+import test_story_console as console
+import world_db as W
+from test_story_console import admin, WOLVES
+from test_world_db import database_available
+
+CAT = rules.CATALOGUE
+NEW = ('story.tell', 'journal.note', 'story.ping', 'story.tracker', 'item.take', 'warrant.issue', 'warrant.clear', 'visitor.add',
+       'visitor.leave', 'mantle.assign', 'mantle.release', 'npc.kill', 'npc.hold', 'npc.release', 'npc.follow', 'npc.unfollow',
+       'door.lock', 'door.unlock', 'door.open', 'door.close', 'item.place', 'board.post', 'weather.set', 'event.add', 'event.cancel',
+       'prices.reset', 'project.complete', 'project.cancel', 'deed.revoke', 'storyline.tick', 'scene.stop')
+GATE = {'id': 'gate', 'cell': 'gate', 'x1': 1, 'y1': 1, 'x2': 4, 'y2': 4}
+
+# One sound example of each (the acting wolf where a wolf is named).
+GOOD = {
+    'story.tell': {'to': 'party', 'player': '$actor', 'text': 'Stay together.', 'from': 'rm111'},
+    'journal.note': {'text': 'The tracks lead east.'},
+    'story.ping': {'cell': 'gate', 'x': 2, 'y': 3, 'label': 'The tracks', 'minutes': 30},
+    'story.tracker': {'shown': False, 'var': 'ropes'},
+    'item.take': {'player': '$actor', 'item': 'rope', 'quantity': 2},
+    'warrant.issue': {'player': '$actor', 'town': 'greyfen', 'fine': 12, 'reason': 'breaking the curfew'},
+    'warrant.clear': {'player': '$actor', 'town': 'greyfen'},
+    'visitor.add': {'visitor': 'pale-rider', 'name': 'The Pale Rider', 'cell': 'gate', 'x': 2, 'y': 2, 'minutes': 30, 'like': 'rm111'},
+    'visitor.leave': {'visitor': 'pale-rider'},
+    'mantle.assign': {'npc': 'rm111', 'mantle': 'mt001'},
+    'mantle.release': {'npc': 'rm111'},
+    'npc.kill': {'npc': 'rm119'},
+    'npc.hold': {'npc': 'rm112'},
+    'npc.release': {'npc': 'rm112'},
+    'npc.follow': {'npc': 'rm113', 'player': '$actor'},
+    'npc.unfollow': {'npc': 'rm113'},
+    'door.lock': {'door': 'link_inn_a'},
+    'door.unlock': {'door': 'link_inn_a'},
+    'door.open': {'door': 'link_inn_a'},
+    'door.close': {'door': 'link_inn_a'},
+    'item.place': {'item': 'rope', 'quantity': 2, 'cell': 'gate', 'x': 3, 'y': 3},
+    'board.post': {'town': 'greyfen', 'text': 'Bar your doors tonight.', 'days': 3},
+    'weather.set': {'place': 'gate', 'weather': 'snow', 'hours': 6},
+    'event.add': {'market': 'greyfen', 'event': 'drovers_in', 'days': 1},
+    'event.cancel': {'market': 'greyfen', 'event': 'drovers_in'},
+    'prices.reset': {'market': 'all', 'words': 'the roads are open again'},
+    'project.complete': {'town': 'greyfen', 'project': 'granary'},
+    'project.cancel': {'town': 'greyfen', 'project': 'granary'},
+    'deed.revoke': {'player': '$actor', 'detail': 'Held the bridge.'},
+    'storyline.tick': {'player': '$actor', 'template': 'the-debt', 'step': 2, 'objective': 1},
+    'scene.stop': {},
+}
+
+
+def program(effects=(), entry=(), audience=None):
+    """A version 2 story whose one phase sends `entry` as it opens and whose trigger sends `effects` (for the acting wolf)."""
+    return {
+        'format': 'ratw-story-program', 'version': 2, 'id': 'long-night', 'title': 'The long night',
+        'audience': audience or {'kind': 'players', 'players': list(WOLVES)}, 'start': 'dark', 'regions': [GATE],
+        'variables': [{'id': 'ropes', 'type': 'number', 'scope': 'story', 'show': 'Ropes delivered'},
+                      {'id': 'quiet', 'type': 'switch', 'scope': 'story'}],
+        'phases': [{'id': 'dark', 'journal': 'Something is coming down the road.', 'effects': list(entry), 'exits': [],
+                    # (12 effects a trigger, in order; each trigger once in the campaign.)
+                    'triggers': [{'id': f'seen-{n}', 'on': 'arrival', 'audience': 'participant', 'once': 'campaign',
+                                  'actions': [{'do': 'effect', 'effect': e} for e in chunk]}
+                                 for n, chunk in enumerate([list(effects)[i:i + 12] for i in range(0, len(effects), 12)] or [[]])
+                                 if chunk] or [{'id': 'seen', 'on': 'arrival', 'audience': 'participant', 'actions': [{'do': 'note', 'text': 'x'}]}]}],
+        'tests': [{'name': 'Ash comes in', 'cohort': list(WOLVES), 'events': [{'id': 'e1', 'kind': 'arrival', 'actor': 'player-ash', 'day': 1}],
+                   'expect': ['dark']}],
+    }
+
+
+def effect(kind, **more):
+    return {'kind': kind, **GOOD[kind], **more}
+
+
+class Catalogue(unittest.TestCase):
+    def test_the_new_effects_are_in_the_catalogue_with_typed_parameters_and_sentences(self):
+        ids = [e['id'] for e in CAT['effects']]
+        self.assertEqual(len(ids), 71)   # (Phase 10's story.start, the story's own: not a game order.)
+        self.assertNotIn('story.start', runner.WORLD_ORDERS)
+        for kind in NEW:
+            with self.subTest(kind=kind):
+                self.assertIn(kind, ids)
+                item = next(e for e in CAT['effects'] if e['id'] == kind)
+                self.assertTrue(item['title'] and item['help'] and item['sentence'])
+                self.assertIn(item['group'], {g['id'] for g in CAT['actionGroups']})
+                for p in item['params']:
+                    self.assertIn(p['type'], CAT['types'])
+        self.assertEqual(set(NEW) - {'story.tracker'}, set(runner.WORLD_ORDERS), 'every game order has its mapping')
+        self.assertIn('story.tracker', quests.STORY_EFFECTS, 'the tracker is the story\'s own')
+
+    def test_the_lists_the_catalogue_names_are_the_games(self):
+        market = json.loads((runner.DATA / 'Economy/market.json').read_text())['events']['list']
+        event = next(p for p in rules.EFFECT_PARAMS['event.add'] if p['key'] == 'event')
+        self.assertEqual(event['values'], [e['id'] for e in market])
+        weather = next(p for p in rules.EFFECT_PARAMS['weather.set'] if p['key'] == 'weather')
+        self.assertEqual(sorted(weather['values']), sorted(['clear', 'rain', 'fog', 'snow', 'overcast', 'storm', 'sandstorm']))
+        # (Nothing for the calendar: a story never moves the day or the hour.)
+        self.assertFalse([e for e in CAT['effects'] if any(w in e['id'] for w in ('calendar', 'time.', 'clock', 'hour', 'day'))])
+
+    def test_who_may_send_them_on_a_hosted_world(self):
+        self.assertEqual(rules.WOLF_EFFECTS, {'character.injury', 'story.area.damage', 'item.take', 'warrant.issue'})
+        # (Doc 85, Phase 10: the economy's effects need a builder or the owner too: prices and projects.)
+        self.assertEqual(rules.BUILDER_EFFECTS, {'faction.relation', 'standing.adjust', 'prices.reset', 'project.complete', 'project.cancel'})
+        self.assertEqual(studio.STORY_WOLF_KINDS, rules.WOLF_EFFECTS)
+        self.assertEqual(runner.WOLF_EFFECTS, rules.WOLF_EFFECTS)
+        p = program([effect('item.take')])
+        self.assertIn('item.take', studio.story_effect_kinds(p) & studio.STORY_WOLF_KINDS, 'approval needs "may act on wolves"')
+        p = program()
+        p['quests'] = [{'id': 'q', 'title': 'Q', 'rewards': [effect('warrant.issue')]}]
+        self.assertIn('warrant.issue', studio.story_effect_kinds(p), "a quest's rewards are read too")
+        self.assertRaisesRegex(ValueError, "may act on players", runner._may_release, program([effect('item.take')]), 'fire', {},
+                               {'relations': True, 'wolves': False})
+        self.assertRaisesRegex(ValueError, 'standing with a faction', runner._may_release,
+                               program([{'kind': 'standing.adjust', 'player': '$actor', 'faction': 'watch', 'points': 2, 'reason': 'well done'}]),
+                               'fire', {}, {'relations': False, 'wolves': True})
+        runner._may_release(program([effect('weather.set'), effect('event.add'), effect('story.tell')]), 'fire', {},
+                            {'relations': False, 'wolves': False})
+        for kind in ('prices.reset', 'project.complete', 'project.cancel'):
+            self.assertRaisesRegex(ValueError, 'the economy', runner._may_release, program([effect(kind)]), 'fire', {},
+                                   {'relations': False, 'wolves': True})
+
+
+class Checks(unittest.TestCase):
+    def ok(self, *effects, entry=()):
+        return rules.validate(program(effects, entry))
+
+    def bad(self, pattern, *effects, entry=()):
+        self.assertRaisesRegex(ValueError, pattern, rules.validate, program(effects, entry))
+
+    def test_each_is_sound(self):
+        for kind in NEW:
+            with self.subTest(kind=kind):
+                self.ok(effect(kind))
+                if kind != 'story.tracker':
+                    self.ok(entry=[{**effect(kind), **({'player': 'player-ash'} if GOOD[kind].get('player') == '$actor' else {})}])
+        self.ok({'kind': 'story.tell', 'to': 'region', 'region': 'gate', 'text': 'Look up.'})
+        self.ok({'kind': 'story.tell', 'to': 'participants', 'text': 'Look up.'})
+        self.ok({'kind': 'story.tell', 'to': 'world', 'text': 'The bells ring.'})
+        self.ok({'kind': 'weather.set', 'town': 'greyfen', 'weather': 'fog', 'hours': 1})
+        self.ok({**effect('door.lock'), 'ifRefused': 'skip'})
+        self.ok({**effect('item.take'), 'ifRefused': 'when here', 'waitDays': 3})
+
+    def test_parts_that_go_together(self):
+        self.bad('names the wolf', {'kind': 'story.tell', 'to': 'party', 'text': 'x'})
+        self.bad('names the wolf', {'kind': 'story.tell', 'to': 'world', 'player': '$actor', 'text': 'x'})
+        self.bad('names the region', {'kind': 'story.tell', 'to': 'region', 'text': 'x'})
+        self.bad('invalid story.tell.region', {'kind': 'story.tell', 'to': 'region', 'region': 'nowhere', 'text': 'x'})
+        self.bad('one line', {'kind': 'story.tell', 'to': 'world', 'text': 'two\nlines'})
+        self.bad('one place', {'kind': 'weather.set', 'weather': 'fog', 'hours': 1})
+        self.bad('one place', {'kind': 'weather.set', 'place': 'gate', 'town': 'greyfen', 'weather': 'fog', 'hours': 1})
+        self.bad("invalid visitor.add.visitor", {**effect('visitor.add'), 'visitor': 'Pale Rider'})
+        self.bad("stranger's id", {**effect('visitor.add'), 'visitor': 'Pale_rider'})
+        self.bad('shown', {'kind': 'story.tracker', 'shown': True, 'var': 'quiet'})
+        self.bad('shown', {'kind': 'story.tracker', 'shown': True, 'var': 'nothing'})
+        self.bad('goes in a trigger', entry=[effect('story.tracker')])
+
+    def test_bounds(self):
+        for kind, key, value in [('weather.set', 'hours', 73), ('weather.set', 'weather', 'hail'), ('story.ping', 'minutes', 0),
+                                 ('story.ping', 'label', 'x' * 41), ('item.take', 'quantity', 21), ('warrant.issue', 'fine', 201),
+                                 ('item.place', 'quantity', 6), ('board.post', 'days', 29), ('event.add', 'days', 8),
+                                 ('event.add', 'event', 'a_dragon'), ('visitor.add', 'minutes', 1441), ('storyline.tick', 'step', 0),
+                                 ('journal.note', 'text', 'x' * 201)]:
+            with self.subTest(kind=kind, key=key):
+                self.bad(f'invalid {kind}.{key}', {**effect(kind), key: value})
+
+
+class Orders(unittest.TestCase):
+    """The game order each becomes: its own name, what it acts on as the target, the run and its visit in the payload."""
+
+    def order(self, e, actor='player-ash'):
+        phase = rules.phases_of(rules.validate(program([e])))[0]
+        return runner.world_order(e, actor, 'world-run', 3, phase)
+
+    def test_each_order(self):
+        for kind in runner.WORLD_ORDERS:
+            with self.subTest(kind=kind):
+                k, target, payload = self.order(effect(kind))
+                self.assertEqual(k, kind)
+                self.assertEqual((payload['run'], payload['visit']), ('world-run', 3))
+        self.assertEqual(self.order(effect('item.take'))[1], 'player-ash', 'the acting wolf')
+        self.assertEqual(self.order(effect('npc.follow'))[2]['player'], 'player-ash')
+        self.assertEqual(self.order(effect('door.lock'))[1], 'link_inn_a')
+        self.assertEqual(self.order(effect('journal.note'))[1], 'world-run')
+        k, target, payload = self.order({'kind': 'story.tell', 'to': 'region', 'region': 'gate', 'text': 'Look up.'})
+        self.assertEqual((target, payload['region']), ('world-run', GATE))
+        self.assertEqual(self.order(effect('weather.set'))[1:], ('gate', {'weather': 'snow', 'hours': 6, 'run': 'world-run', 'visit': 3}))
+        self.assertEqual(self.order({'kind': 'weather.set', 'town': 'greyfen', 'weather': 'fog', 'hours': 1})[1:],
+                         ('greyfen', {'weather': 'fog', 'hours': 1, 'streets': True, 'run': 'world-run', 'visit': 3}))
+        self.assertEqual(self.order(effect('event.add'))[1:], ('greyfen', {'kind': 'drovers_in', 'inDays': 1, 'run': 'world-run', 'visit': 3}))
+        self.assertEqual(self.order(effect('project.complete'))[1:], ('greyfen', {'kind': 'granary', 'run': 'world-run', 'visit': 3}))
+        self.assertEqual(self.order(effect('visitor.add'))[1], 'pale-rider')
+        self.assertEqual(self.order(effect('storyline.tick'))[2]['template'], 'the-debt')
+
+    def test_the_tracker_is_hidden_and_shown_again_by_the_story(self):
+        p = rules.validate(program([effect('story.tracker')]))
+        state = {'counters': {'story': {'ropes': 2}}}
+        self.assertEqual(quests.trackers(p, state, 'player-ash'), [{'label': 'Ropes delivered', 'value': 2}])
+        phase = rules.phases_of(p)[0]
+        run = quests.Run(p, phase, state, 1, 0, lambda *a: None)
+        run.story_effect({'kind': 'story.tracker', 'shown': False, 'var': 'ropes'}, 'player-ash')
+        self.assertEqual(quests.trackers(p, state, 'player-ash'), [])
+        run.story_effect({'kind': 'story.tracker', 'shown': True, 'var': 'ropes'}, 'player-ash')
+        self.assertEqual(quests.trackers(p, state, 'player-ash'), [{'label': 'Ropes delivered', 'value': 2}])
+        self.assertNotIn('hiddenTrackers', state)
+        report = rules.review(p)
+        self.assertTrue(report['passed'], report)
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class InTheWorld(unittest.TestCase):
+    setUpClass = classmethod(console.ConsoleReads.setUpClass.__func__)
+    tearDownClass = classmethod(console.ConsoleReads.tearDownClass.__func__)
+    fact, tick = console.ConsoleReads.fact, console.ConsoleReads.tick
+
+    def setUp(self):
+        console.ConsoleReads.setUp(self)
+        self.conn.execute('RESET ROLE')
+        self.conn.execute("INSERT INTO world.areas(world_id,id,kind) VALUES (%s,'gate','cell'),(%s,'inn','cell')", (self.world, self.world))
+        self.conn.execute("""INSERT INTO world.cells(world_id,id,name,x,y,width,height,region)
+                             VALUES (%s,'gate','Gate',200,100,8,6,'greyfen'),(%s,'inn','The inn',300,100,6,6,'greyfen')""",
+                          (self.world, self.world))
+        self.conn.execute("""INSERT INTO world.links(world_id,id,name,kind,open,a_area,a_x,a_y,b_area,b_x,b_y)
+                             VALUES (%s,'inn','The inn door','door',false,'gate',5,1,'inn',1,1)""", (self.world,))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+    def approve(self, p):
+        return runner.approve(self.conn, self.world, 'martin', p, rules.digest(p))
+
+    def every(self):
+        return [effect(k) for k in runner.WORLD_ORDERS if k != 'mantle.assign']
+
+    def test_the_worlds_references_are_checked_at_approval(self):
+        self.approve(program(self.every()))
+        for e, words in [({**effect('door.lock'), 'door': 'link_cellar_a'}, 'Unknown door'),
+                         ({**effect('board.post'), 'town': 'atlantis'}, 'Unknown town'),
+                         ({**effect('weather.set'), 'place': 'moon'}, 'Unknown place'),
+                         ({**effect('story.ping'), 'x': 40}, 'outside gate'),
+                         ({**effect('item.place'), 'item': 'dragon-egg'}, 'Unknown item'),
+                         ({**effect('visitor.add'), 'visitor': 'rm111'}, 'nobody in the world has'),
+                         (effect('mantle.assign'), 'Unknown mantle'),
+                         ({**effect('storyline.tick'), 'template': 'no-such'}, 'Unknown DM quest template'),
+                         ({**effect('story.tell'), 'from': 'rm999'}, 'Unknown from'),
+                         ({**effect('npc.hold'), 'npc': 'rm999'}, 'Unknown npc')]:
+            with self.subTest(words=words):
+                self.assertRaisesRegex(ValueError, words, self.approve, program([e]))
+        refs = runner.refs(self.conn, self.world)
+        self.assertEqual(refs['doors'], [{'id': 'link_inn_a', 'name': 'The inn door', 'cell': 'gate'}])
+        self.assertEqual(refs['mantles'], [])
+
+    def test_a_published_story_sends_them_to_the_game_in_one_batch(self):
+        ticket = self.approve(program(self.every()))['ticket']
+        run = runner.publish(self.conn, self.world, ticket)['run']
+        self.answer_newest()                         # (The phase.)
+        self.tick()
+        self.fact('arrival', 'player-ash')
+        self.tick()
+        rows = self.conn.execute("SELECT kind,payload FROM dm.actions WHERE kind='story.effects' ORDER BY id").fetchall()
+        self.assertEqual(len(rows), 1, 'one batch')
+        items = rows[0][1]['items']
+        self.assertEqual([i['kind'] for i in items], [k for k in runner.WORLD_ORDERS if k != 'mantle.assign'])
+        door = next(i for i in items if i['kind'] == 'door.lock')
+        self.assertEqual((door['target'], door['payload']['run'], door['ifRefused']), ('link_inn_a', run, 'pause'))
+        took = next(i for i in items if i['kind'] == 'item.take')
+        self.assertEqual((took['target'], took['payload']), ('player-ash', {'item': 'rope', 'quantity': 2, 'run': run, 'visit': 1}))
+
+    def test_the_consoles_tell_reaches_a_party_and_the_world(self):
+        ticket = self.approve(program())['ticket']
+        run = runner.publish(self.conn, self.world, ticket)['run']
+        self.answer_newest()
+        self.tick()
+        visit, digest = self.conn.execute("SELECT (state->>'visits')::int,digest FROM dm.story_releases WHERE id=%s", (run,)).fetchone()
+        for to, extra in (('party', {'player': 'player-ash'}), ('world', {})):
+            runner.command(self.conn, self.world, 'martin', {'run': run, 'kind': 'tell', 'payload': {'to': to, 'text': 'Hold fast.', **extra},
+                                                               'reason': 'telling the wolves', 'key': secrets.token_hex(8), 'visit': visit,
+                                                               'digest': digest})
+            self.tick()
+            order = self.conn.execute("SELECT payload FROM dm.actions WHERE kind='story.tell' ORDER BY id DESC LIMIT 1").fetchone()[0]
+            self.assertEqual((order['to'], order.get('player')), (to, extra.get('player')))
+        self.assertRaisesRegex(ValueError, 'a party, a region or the world', runner.command, self.conn, self.world, 'martin',
+                               {'run': run, 'kind': 'tell', 'payload': {'to': 'moon', 'text': 'x'}, 'reason': 'telling the wolves',
+                                'key': secrets.token_hex(8), 'visit': visit, 'digest': digest})
+
+    def answer_newest(self):
+        self.conn.execute('SET LOCAL ROLE ratw_game')
+        self.conn.execute("UPDATE dm.actions SET status='applied',result='ok',done_at=now() WHERE status='queued'")
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+
+
+@unittest.skipUnless(database_available(), 'local PostgreSQL required')
+class HostedApproval(unittest.TestCase):
+    """POST /api/story-program op approve on a hosted world: standing with a faction needs a builder or the owner."""
+
+    @classmethod
+    def setUpClass(cls):
+        console.ConsoleReads.setUpClass.__func__(cls)
+        dm = D.DungeonMaster(connect=lambda target: W.connect('dev', 'dm', dbname=cls.name), worlds=lambda: ['prod', 'dev'])
+        hosted = D.make_handler(dm, worlds=lambda: ['dev'], default=lambda: 'dev', hosted=True)
+        sessions = {'dm': {'username': 'wren#b2', 'role': 'dm'}, 'builder': {'username': 'tam#c4', 'role': 'builder'}}
+
+        class Hosted(hosted):
+            def trusted(self):
+                return True
+
+            def handle_api(self, method):
+                self.editor_session = sessions[self.headers.get('X-Session')]
+                return super().handle_api(method)
+
+        cls.server = ThreadingHTTPServer(('127.0.0.1', 0), Hosted)
+        threading.Thread(target=cls.server.serve_forever, daemon=True).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+        console.ConsoleReads.tearDownClass.__func__(cls)
+
+    def call(self, body, session):
+        request = urllib.request.Request(f'http://127.0.0.1:{self.server.server_port}/api/story-program', json.dumps(body).encode(),
+                                         method='POST', headers={'Content-Type': 'application/json', 'X-Session': session})
+        try:
+            with urllib.request.urlopen(request, timeout=10) as reply:
+                return reply.status, json.loads(reply.read())
+        except urllib.error.HTTPError as error:
+            return error.code, json.loads(error.read())
+
+    def test_standing_needs_a_builder(self):
+        p = program(entry=[{'kind': 'standing.adjust', 'player': 'player-ash', 'faction': 'watch', 'points': 2, 'reason': 'well done'}])
+        body = {'op': 'approve', 'target': 'dev', 'program': p, 'digest': rules.digest(p)}
+        status, data = self.call(body, 'dm')
+        self.assertEqual(status, 403, data)
+        self.assertIn('standing with a faction', data['error'])
+        status, data = self.call(body, 'builder')
+        self.assertNotEqual(status, 403, data)   # (Past the permission: this world has no such faction, so it is refused there.)
+        q = program(entry=[{**effect('weather.set')}, {**effect('board.post')}, {**effect('event.add')}])
+        status, data = self.call({'op': 'approve', 'target': 'dev', 'program': q, 'digest': rules.digest(q)}, 'dm')
+        self.assertNotEqual(status, 403, data)   # (The weather, a notice and a market event are a Dungeon Master's, as by hand.)
+
+    def test_the_economy_needs_a_builder(self):
+        # (Doc 85, Phase 10: prices eased and projects finished or called off change the economy: a builder or the owner.)
+        for kind in ('prices.reset', 'project.complete', 'project.cancel'):
+            with self.subTest(kind=kind):
+                p = program(entry=[effect(kind)])
+                body = {'op': 'approve', 'target': 'dev', 'program': p, 'digest': rules.digest(p)}
+                status, data = self.call(body, 'dm')
+                self.assertEqual(status, 403, data)
+                self.assertIn('the economy', data['error'])
+                status, data = self.call(body, 'builder')
+                self.assertNotEqual(status, 403, data)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -623,7 +623,7 @@ bool Game::forkSnapshot()
     }
     else
         document = target + ".snapshot";
-    store_->queueEvents(world_.takeEvents());
+    handEventsToStore();
     syncCharacters();
     journalCheckpoint();                           // (Here, by the parent: the child only reads.)
     const auto seq = journalSeq_;

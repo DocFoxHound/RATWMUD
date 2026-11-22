@@ -1,7 +1,7 @@
 import {useRef,useState} from 'react';
 import {storyProgram,type Target} from './api';
 import {loadScenes,type Scene} from './scenes';
-import type {WorldProgram} from './StoryPhaseEditor';
+import type {Program as WorldProgram} from '../lib/workbench';
 
 export function EmbeddedScenes({target,program,libraryKey,examples,edit}:{target:Target;program:WorldProgram;libraryKey:string;examples:Record<string,Scene>;edit:(p:WorldProgram)=>void}) {
     const current=useRef(program);current.current=program;

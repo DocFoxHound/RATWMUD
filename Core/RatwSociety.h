@@ -992,6 +992,9 @@ class Society
     // Goods made (not bought: a grant, a player's work): only goods, never money.
     bool canCreate(const std::string& account, const std::string& item, int quantity) const;
     bool create(const std::string& account, const std::string& item, int quantity, const std::string& reason);
+    // Goods taken out of the world (doc 85, Phase 9: a story's item.take): `quantity` of the item, any kind of it (the
+    // plainest first), or nothing when the account holds fewer. Never money.
+    bool destroy(const std::string& account, const std::string& item, int quantity, const std::string& reason);
     bool merchant(const std::string& id) const;
     // A smith: a merchant whose trade is the forge (its work says "smith" or "forge"; the demo's Ash). A smith deals in
     // swords.
@@ -1368,6 +1371,11 @@ class Society
     // `moved`: the pennies paid or taken (a fine at most what the player holds).
     bool grantPlayer(const std::string& player, std::int64_t coins, const std::string& reason, std::string& problem,
                      std::int64_t* moved = nullptr);
+    // A story's reward paid from a named purse (doc 85, Phase 6; the user's answer to question 4: never minted): `coins`
+    // (1..2500) moved from an existing account that isn't a player's to the player, under the day's grant cap as a grant
+    // is. False, and why, when the purse is short ("The purse is short (Np).") or isn't one.
+    bool payPlayerFrom(const std::string& purse, const std::string& player, std::int64_t coins, const std::string& reason,
+                       std::string& problem);
     // "Reset prices" (12): every pressure in a market ("" all) eased linearly to 0 over a game day from `now` (the
     // Board's resets), with the event "prices reset" carrying the words ("fresh stock everywhere" by default). False for
     // a market the Board hasn't got.

@@ -19,13 +19,17 @@ import {EconomyTab} from './EconomyTab';
 import {ArtworkPanel} from './ArtworkPanel';
 import {ReportsPanel} from './ReportsPanel';
 import {StoryCreator} from './StoryCreator';
+import {CampaignsTab} from './CampaignsTab';
+import {GuideTab} from './GuideTab';
 import {StorytellersPanel} from './StorytellersPanel';
 import {LifePanel} from './LifePanel';
 import {MyWorldTab} from './MyWorldTab';
 import {greyed, sureText} from '../lib/acts';
-import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie, worldLabel} from './api';
+import {isLive, worldName, dmApi, cheatsOff, wolvesOff, InjuryTypes, type Action, type Character, type Injury, type Me, type Players, type Target, type Tie, worldLabel,
+    atLeast, storyProgram} from './api';
+import {summaryLines, type AlertSummary} from '../lib/campaigns';
 
-type Tab = 'npcs' | 'chapters' | 'stories' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
+type Tab = 'npcs' | 'chapters' | 'stories' | 'campaigns' | 'guide' | 'players' | 'live' | 'health' | 'prosperity' | 'economy' | 'server';
 // LIVE comes first and is where everyone starts: the world as it is now (Docs/Design/34-dungeon-master-refresh.md, 1.1).
 // Making NPCs, their routes and areas, factions and talk are Atlas's (doc 66, section 3): the NPC tab here is live life.
 const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string}[] = [
@@ -33,6 +37,10 @@ const TABS: {id: Tab; label: string; icon: string; ready: boolean; blurb: string
     {id: 'npcs', label: 'NPC Life', icon: '☺', ready: true, blurb: ''},
     {id: 'chapters', label: 'Chapters', icon: '♞', ready: true, blurb: ''},
     {id: 'stories', label: 'Story Creator', icon: '✦', ready: true, blurb: ''},
+    // The running world stories, watched live (Docs/Design/85-story-triggers-and-campaign-control.md, section 5).
+    {id: 'campaigns', label: 'Campaigns', icon: '⚑', ready: true, blurb: ''},
+    // The Story Maker's guide for admins (doc 85, Phase 10): Docs/Story-Maker-guide.md, searchable.
+    {id: 'guide', label: 'Guide', icon: '?', ready: true, blurb: ''},
     {id: 'players', label: 'Players', icon: '☺', ready: true, blurb: ''},
     {id: 'prosperity', label: 'Prosperity', icon: '¤', ready: true, blurb: ''},
     // The staged economy's levers, applied to the running server (doc 79, 12); Prosperity is its read model and acts.
@@ -64,11 +72,32 @@ export function SignIn({onSignedIn}: {onSignedIn: (me: Me) => void}) {
     </div>;
 }
 
+/** The running stories' "needs you" alerts outside the Campaigns tab (Docs/Design/85, 5.6; Phase 3): a count on the tab bar
+ *  and a line on LIVE, asked every 10 s while the page is visible (the op `alerts`; a Dungeon Master's, as the console is). */
+export function useCampaignAlerts(me: Me, target: Target, initial?: AlertSummary | null): AlertSummary | null {
+    const [summary, setSummary] = useState<AlertSummary | null>(initial ?? null);
+    useEffect(() => {
+        if (!atLeast(me, 'dm') || initial !== undefined) return;
+        let live = true;
+        const ask = () => {
+            if (document.visibilityState !== 'visible') return;
+            storyProgram<AlertSummary>(target, 'alerts').then(s => { if (live) setSummary(s); }, () => { if (live) setSummary(null); });
+        };
+        ask();
+        const t = setInterval(ask, 10000);
+        return () => { live = false; clearInterval(t); };
+    }, [me, target, initial]);
+    return summary;
+}
+
 /** The DM suite (doc 66, 3): running a live world. Its world (the live server's) is the studio's top bar's. */
-export function DmSuite({me, target}: {me: Me; target: Target}) {
+export function DmSuite({me, target, alertsInitial}: {me: Me; target: Target; alertsInitial?: AlertSummary | null}) {
     const [tab, setTab] = useState<Tab>('live');
     const [openStories, setOpenStories] = useState(false);
+    const [campaign, setCampaign] = useState<string | undefined>();   // A run Story Creator just approved or published.
     const current = TABS.find(t => t.id === tab)!;
+    const alerts = useCampaignAlerts(me, target, alertsInitial);
+    const alertWords = summaryLines(alerts);
     // A host's Editor (doc 78, 2 and 7): one world, no imports or releases; its server tab is My world (status, Close and
     // Open, Restart, backups, settings, AI use, history).
     const tabs = me.hosted ? TABS.map(t => t.id === 'server' ? {...t, label: 'My world', icon: '⌂'} : t) : TABS;
@@ -76,15 +105,20 @@ export function DmSuite({me, target}: {me: Me; target: Target}) {
         <header className="topbar dm-tabs">
             <div className="workspace-tabs" role="tablist">
                 {tabs.map(t => <button key={t.id} role="tab" aria-selected={tab === t.id} className={tab === t.id ? 'on' : ''}
-                    title={t.ready ? t.label : `${t.label}: not built yet`} onClick={() => {setOpenStories(false); setTab(t.id);}}>{t.icon} {t.label}{!t.ready && <em>soon</em>}</button>)}
+                    title={t.id === 'campaigns' && alertWords.length ? alertWords.join('\n') : t.ready ? t.label : `${t.label}: not built yet`}
+                    onClick={() => {setOpenStories(false); setTab(t.id);}}>{t.icon} {t.label}{!t.ready && <em>soon</em>}
+                    {t.id === 'campaigns' && alerts && alerts.needsYou > 0 && <span className={`tab-badge${alerts.runnerDown ? ' down' : ''}`}
+                        aria-label={`${alerts.needsYou} need you`}>{alerts.runnerDown ? '⚠ ' : ''}{alerts.needsYou}</span>}</button>)}
             </div>
         </header>
         {me.hosted && me.role === 'viewer' && <p className="hint dm-viewer-hint">Your account can watch only. Ask the world's owner to change its role.</p>}
-        {tab === 'live' ? <LiveTab me={me} target={target} key={target} />
+        {tab === 'live' ? <LiveTab me={me} target={target} key={target} campaigns={alertWords} openCampaigns={() => {setCampaign(undefined); setTab('campaigns');}} />
             : tab === 'npcs' ? <NpcTab me={me} target={target} key={target} suite="dm" />
             : tab === 'chapters' ? <ChaptersTab me={me} target={target} key={target} />
             : tab === 'stories' ? <StoryCreator key={JSON.stringify([target, me.username])} me={me} target={target}
-                openPersonal={() => {setOpenStories(true); setTab('players');}} />
+                openPersonal={() => {setOpenStories(true); setTab('players');}} openCampaigns={run => {setCampaign(run); setTab('campaigns');}} />
+            : tab === 'campaigns' ? <CampaignsTab me={me} target={target} key={target} focus={campaign} />
+            : tab === 'guide' ? <GuideTab />
             : tab === 'health' ? <HealthTab target={target} key={target} />
             : tab === 'server' ? (me.hosted ? <MyWorldTab me={me} key={target} /> : <ServerTab me={me} target={target} key={target} />)
             : tab === 'prosperity' ? <ProsperityTab target={target} key={target} me={me} />

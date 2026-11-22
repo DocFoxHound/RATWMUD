@@ -34,13 +34,17 @@ export type Role = 'viewer' | 'dm' | 'builder' | 'owner' | 'admin';
 /** Who is signed in. In a host's Editor (Docs/Design/78, 7: `hosted`) the role is the Editor account's (viewer, dm,
  *  builder or owner, never admin), `username` is the account and its session ("pell#3f2a1c"), `mayActOnWolves` says
  *  whether it may kill, injure, move or bring back players' wolves (Q24), and `cheats` is world.toml's setting. */
-export interface Me { username: string; role: Role; hosted?: boolean; account?: string; mayActOnWolves?: boolean; cheats?: 'off' | 'host' | 'everyone' }
+export interface Me { username: string; role: Role; hosted?: boolean; account?: string; mayActOnWolves?: boolean; cheats?: 'off' | 'host' | 'everyone';
+    /** Doc 85, 5.7: may steer a running campaign (hosted: the owner, or the owner's grant; the user's own studio: any dm). */
+    maySteerCampaigns?: boolean }
 const RANKS: Record<Role, number> = {viewer: 0, dm: 1, builder: 2, owner: 3, admin: 4};
 /** Whether an account's role is this one or above (tools/dungeon_master.py's RANK). */
 export const atLeast = (me: Me, role: Role) => (RANKS[me.role] ?? 0) >= RANKS[role];
 /** Why a cheat (a Gift given, an account's tiers) is greyed in a host's Editor, or '' when it isn't. */
 export const cheatsOff = (me: Me) => (me.hosted && (me.cheats ?? 'off') === 'off'
     ? 'Set cheats in world.toml ("host" or "everyone"); the world will then be listed "cheats on".' : '');
+/** Whether this account may steer a running campaign (doc 85, 5.7; the user's answer to question 3, 2026-11-21). */
+export const maySteer = (me: Me) => atLeast(me, 'dm') && (!me.hosted || me.role === 'owner' || !!me.maySteerCampaigns);
 /** Why acting on a player's wolf (kill, injure, move, bring back) is greyed in a host's Editor, or ''. */
 export const wolvesOff = (me: Me) => (me.hosted && !me.mayActOnWolves
     ? 'Needs the world\'s owner, or an account the owner marked "may act on players\' wolves".' : '');

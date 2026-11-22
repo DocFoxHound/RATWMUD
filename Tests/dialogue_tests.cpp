@@ -1778,6 +1778,139 @@ choice Back to the rest. -> hub
     expect(d && contains(d->string("line"), "One's loose"), "asked of their quirk in their own words: the graft: " + show(d));
     fs::remove_all(root);
 }
+// A world story's quests in the window (doc 85, Phase 6): a resident offers a quest to the wolves its join rules let take
+// it (not to one outside the story when only its wolves may; not when full; not to one holding it; only in its region
+// when it has one), in the story's words said in the resident's voice; accepting, declining, handing in and a story
+// choice each write the event the story's runner reads.
+void storyQuestsInTheWindow()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-dialogue-quests-" + std::to_string(::getpid()));
+    const auto worldPath = writeStrip(root / "world");
+    Town town(worldPath, (root / "save").string(), 120, true);
+    auto& w = town.g.world();
+    town.enter(town.ash, 1, "player-ash", "Ash", 1, 9.5);
+    town.enter(town.cy, 3, "player-cy", "Cy", 1, 12.5);
+    w.setTimeOfDay(12);
+    town.run(2);
+    const auto keep = [&] {
+        auto* n = w.entity("u1");
+        n->cellId = cellId(1);
+        n->position = {10.5, 9.5};
+        w.stop("u1");
+        town.place(town.ash, 1, 9.5);
+    };
+    keep();
+    std::vector<WorldEvent> seen;
+    w.setEventWatcher([&](const WorldEvent& e) { if (e.kind.rfind("quest ", 0) == 0 || e.kind == "dialogue choice") seen.push_back(e); });
+    const auto run = "world-ford";
+    auto phase = parsed(R"({"title":"The ford","phase":"open","journal":"The carter is stuck.","visit":1,
+        "regions":[{"id":"bank","cell":"c_1_0","x1":12,"y1":8,"x2":13,"y2":9}]})");
+    phase.set("players", parsed("[\"" + town.ash.entityId + "\"]"));
+    expect(town.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens with Ash");
+    const auto offer = [](const std::string& quest, const std::string& ask, const std::string& extra) {
+        return R"({"quest":")" + quest + R"(","npc":"u1","title":"Title of )" + quest + R"(","say":"My axle's split, #address#.","ask":")" + ask +
+               R"(","accept":"I'll find you one.","decline":"Not now.","handIn":"Here's your axle.","thanks":"Moving again, then.")" + extra + "}";
+    };
+    const auto tell = [&](const std::string& views) {
+        const auto text = R"({"visit":1,"offers":[)" + offer("axle", "Is there work going?", R"(,"who":"anyone","full":false)") + "," +
+                          offer("secret", "Any secrets?", R"(,"who":"participants","full":false)") + "," +
+                          offer("crowded", "Room for one more?", R"(,"who":"anyone","full":true)") + "," +
+                          offer("bank", "Down by the bank?", R"(,"who":"anyone","full":false,"region":"bank")") +
+                          R"(],"choices":[{"id":"rumour","npc":"u1","words":"Heard about the axle?","reply":"Someone cut it.","players":null,"once":true,"picked":[]}],
+                             "wolves":{")" + town.ash.entityId + R"(":{"quests":[)" + views + R"(],"trackers":[]}}})";
+        expect(town.g.applyDmAct({"2", "story.quests", run, "dm", text}).ok, "the quests are told");
+    };
+    tell("");
+    const auto ids = [&](const std::string& wolf) {
+        std::string out;
+        for (const auto& c : town.g.storyChoicesFor(wolf, "u1"))
+            out += c.kind + ":" + c.id + " ";
+        return out;
+    };
+    expect(ids(town.ash.entityId) == "offer:axle offer:secret choice:rumour ", "Ash, of the story: " + ids(town.ash.entityId));
+    expect(ids(town.cy.entityId) == "offer:axle offer:bank ", "Cy, outside it, standing by the bank: " + ids(town.cy.entityId));
+    town.place(town.cy, 1, 5.5);
+    expect(ids(town.cy.entityId) == "offer:axle ", "away from the bank: " + ids(town.cy.entityId));
+    tell(R"({"id":"axle","title":"Axle","status":"active","giver":"u1","objectives":[],"handIn":false,"abandon":true,"accept":false})");
+    expect(ids(town.ash.entityId) == "offer:secret choice:rumour ", "holding it: not offered again: " + ids(town.ash.entityId));
+    tell(R"({"id":"axle","title":"Axle","status":"done","again":null,"objectives":[],"handIn":false,"abandon":false,"accept":false})");
+    expect(ids(town.ash.entityId) == "offer:secret choice:rumour ", "done for good: " + ids(town.ash.entityId));
+    tell(R"({"id":"axle","title":"Axle","status":"done","again":0,"objectives":[],"handIn":false,"abandon":false,"accept":false})");
+    expect(ids(town.ash.entityId) == "offer:axle offer:secret choice:rumour ", "may be taken again now: " + ids(town.ash.entityId));
+    tell("");
+
+    const auto open = [&]() -> const json::Value* {
+        if (const auto* d = town.g.dialogueOf(town.ash.entityId))
+            town.g.command(&town.ash, cmd({{"type", "dialogue_close"}, {"session", d->id}, {"why", "closed"}}));
+        keep();
+        town.ash.events.clear();
+        town.g.command(&town.ash, cmd({{"type", "dialogue_open"}, {"npc", "u1"}, {"entry", "talk"}}));
+        return lastOf(town.ash, "dialogue");
+    };
+    const auto pick = [&](const json::Value* d, const std::string& words) {
+        if (d)
+            for (const auto& c : d->array("choices"))
+                if (c.string("text") == words)
+                    return int(c.number("n"));
+        return 0;
+    };
+    const auto texts = [](const json::Value* d) {
+        std::string all;
+        if (d)
+            for (const auto& c : d->array("choices")) all += "[" + c.string("text") + "]";
+        return all;
+    };
+    const auto choose = [&](int n) -> const json::Value* {
+        const auto* d = town.g.dialogueOf(town.ash.entityId);
+        expect(d && n > 0, "a choice to make");
+        town.ash.events.clear();
+        seen.clear();
+        auto o = json::Value::object();
+        o.add("type", "dialogue_choose");
+        o.add("session", d->id);
+        o.add("n", n);
+        town.g.command(&town.ash, json::dump(o));
+        return lastOf(town.ash, "dialogue");
+    };
+    // The offer: asked, said in the resident's voice, accepted.
+    auto* d = open();
+    expect(d && d->string("node") == "hub" && pick(d, "Is there work going?") && pick(d, "Any secrets?") && pick(d, "Heard about the axle?") &&
+           !pick(d, "Room for one more?") && !pick(d, "Down by the bank?"), "the hub offers what Ash may take: " + texts(d));
+    const auto hubChoices = d->array("choices").size();
+    expect(hubChoices <= 9 && d->array("choices").back().string("text") == "Goodbye for now.", "before the way out, nine at most");
+    d = choose(pick(d, "Is there work going?"));
+    expect(d && d->string("line").find("My axle's split") == 0 && d->string("line").find('#') == std::string::npos &&
+           pick(d, "I'll find you one.") && pick(d, "Not now."), "the story's words, the symbols said: " + (d ? d->string("line") : std::string()) + texts(d));
+    d = choose(pick(d, "I'll find you one."));
+    expect(seen.size() == 1 && seen[0].kind == "quest accepted" && seen[0].actor == town.ash.entityId && seen[0].target == run &&
+           seen[0].item == "u1" && seen[0].detail == "axle", "accepted: the event the runner reads");
+    expect(d && d->string("node") == "hub" && d->string("note") == "You take on: Title of axle.", "back at the hub, told");
+    // Declined.
+    d = choose(pick(d, "Any secrets?"));
+    d = choose(pick(d, "Not now."));
+    expect(seen.size() == 1 && seen[0].kind == "quest declined" && seen[0].detail == "secret", "declined");
+    // The offer gone between asking and answering: no event.
+    d = choose(pick(d, "Is there work going?"));
+    tell(R"({"id":"axle","title":"Axle","status":"active","giver":"u1","objectives":[],"handIn":false,"abandon":true,"accept":false})");
+    d = choose(pick(d, "I'll find you one."));
+    expect(seen.empty(), "held by now: accepting again writes nothing");
+    // Handing it in, when it is ready.
+    tell(R"({"id":"axle","title":"Axle","status":"ready","giver":"u1","objectives":[],"handIn":true,"abandon":true,"accept":false})");
+    d = open();
+    expect(pick(d, "Here's your axle.") && !pick(d, "Is there work going?"), "ready: the hand-in, and no offer: " + texts(d));
+    d = choose(pick(d, "Here's your axle."));
+    expect(seen.size() == 1 && seen[0].kind == "quest handed in" && seen[0].item == "u1" && seen[0].detail == "axle", "handed in");
+    expect(d && d->string("line") == "Moving again, then." && pick(d, "Something else..."), "the resident's thanks: " + (d ? d->string("line") : std::string()));
+    // A story choice, once.
+    d = choose(pick(d, "Something else..."));
+    d = choose(pick(d, "Heard about the axle?"));
+    expect(seen.size() == 1 && seen[0].kind == "dialogue choice" && seen[0].detail == "rumour" && seen[0].item == "u1", "the story choice");
+    expect(d && d->string("line") == "Someone cut it.", "its reply");
+    d = open();
+    expect(d && !pick(d, "Heard about the axle?"), "once: not shown again: " + texts(d));
+    fs::remove_all(root);
+}
+
 } // namespace
 
 int main()
@@ -1794,6 +1927,7 @@ int main()
         windowPromises();
         windowTalk();
         windowMantle();
+        storyQuestsInTheWindow();
     }
     catch (const std::exception& e)
     {

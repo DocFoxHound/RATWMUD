@@ -161,7 +161,8 @@ fn checked_accounts(reply: &Value) -> (Value, Value, Value) {
             Some(json!({"username": username, "role": role, "disabled": flag(a.get("disabled")), "mustChange": flag(a.get("mustChange")),
                 "expired": flag(a.get("expired")), "unclaimed": flag(a.get("unclaimed")), "created": number(a.get("created")).unwrap_or(json!(0)),
                 "lastLogin": number(a.get("lastLogin")).unwrap_or(Value::Null), "claimedFrom": address(a.get("claimedFrom")),
-                "lastFrom": address(a.get("lastFrom")), "mayActOnWolves": flag(a.get("mayActOnWolves")), "createdBy": who(a.get("createdBy")),
+                "lastFrom": address(a.get("lastFrom")), "mayActOnWolves": flag(a.get("mayActOnWolves")),
+                "maySteerCampaigns": flag(a.get("maySteerCampaigns")), "createdBy": who(a.get("createdBy")),
                 "devices": devices}))
         }).collect();
     let banners: Vec<Value> = reply.get("banners").and_then(Value::as_array).map_or(&[][..], |b| b.as_slice()).iter().take(50)
@@ -556,11 +557,11 @@ impl Editor {
         }
     }
 
-    /// The accounts panel (owner, after a step-up): the list, and add, reset, role, wolves, disable, enable, remove,
+    /// The accounts panel (owner, after a step-up): the list, and add, reset, role, wolves, steer, disable, enable, remove,
     /// end-sessions. Only the fields each needs are sent on; a code the world makes comes back once, with this world's
     /// address added when it isn't this computer's.
     pub fn accounts(&self, app: Option<&AppHandle>, verb: &str, body: &Value) -> Value {
-        const VERBS: [&str; 9] = ["list", "add", "reset", "role", "wolves", "disable", "enable", "remove", "end-sessions"];
+        const VERBS: [&str; 10] = ["list", "add", "reset", "role", "wolves", "steer", "disable", "enable", "remove", "end-sessions"];
         if !VERBS.contains(&verb) {
             return refused("bad-request");
         }
@@ -568,7 +569,8 @@ impl Editor {
             self.session_call(app, "GET", "/editor/accounts", None)
         } else {
             let mut sent = serde_json::Map::new();
-            for (k, ok) in [("username", true), ("role", verb == "add" || verb == "role"), ("mayActOnWolves", verb == "add"), ("allowed", verb == "wolves")] {
+            for (k, ok) in [("username", true), ("role", verb == "add" || verb == "role"), ("mayActOnWolves", verb == "add"), ("maySteerCampaigns", verb == "add"),
+                              ("allowed", verb == "wolves" || verb == "steer")] {
                 if let Some(v) = body.get(k).filter(|_| ok) {
                     if v.is_string() && v.as_str().is_some_and(|s| s.len() <= 64) || v.is_boolean() {
                         sent.insert(k.into(), v.clone());
@@ -1138,9 +1140,9 @@ mod tests {
         assert_eq!(accounts, json!([
             {"username": "pell", "role": "dm", "disabled": false, "mustChange": false, "expired": false, "unclaimed": false, "created": 1.5,
              "lastLogin": null, "claimedFrom": "203.0.113.9", "lastFrom": "2001:db8:5:5::/64", "mayActOnWolves": false,
-             "createdBy": "ferro#1a2b3c4d", "devices": [{"created": 1.0, "lastUsed": 2.0}]},
+             "maySteerCampaigns": false, "createdBy": "ferro#1a2b3c4d", "devices": [{"created": 1.0, "lastUsed": 2.0}]},
             {"username": "ivy", "role": "viewer", "disabled": false, "mustChange": false, "expired": false, "unclaimed": false, "created": 0,
-             "lastLogin": null, "claimedFrom": null, "lastFrom": "local", "mayActOnWolves": false, "createdBy": null, "devices": []}]));
+             "lastLogin": null, "claimedFrom": null, "lastFrom": "local", "mayActOnWolves": false, "maySteerCampaigns": false, "createdBy": null, "devices": []}]));
         assert_eq!(failed, json!(0));
         assert_eq!(banners, json!([{"at": 5.0, "action": "account.add", "target": "pell", "who": "ferro#1a2b3c4d"}]));
         let many = json!({"accounts": (0..500).map(|i| json!({"username": format!("user-{i}"), "role": "dm"})).collect::<Vec<_>>()});

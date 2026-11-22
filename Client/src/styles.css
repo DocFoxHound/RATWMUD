@@ -756,6 +756,7 @@ button.given { opacity: .6; }
 .dev-console-entry.command { color: #e6c481; margin-top: 4px; }
 .dev-console-entry.ok { color: #a8c7ad; }
 .dev-console-entry.refused { color: #e1857a; }
+.dev-console-entry.notice { color: #f0b860; margin-top: 4px; border-left: 2px solid #f0b860; padding-left: 6px; }
 .dev-console-line { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-top: 1px solid #26312c; }
 .dev-console-prompt { color: #e6c481; }
 .dev-console-input { flex: 1; background: transparent; border: none; outline: none; color: var(--paper); font: inherit; }

@@ -88,6 +88,17 @@ std::size_t Storyline::current() const
     return steps.size();
 }
 
+const Value* Storyline::questView(const std::string& wolf, const std::string& quest) const
+{
+    const auto found = questViews.find(wolf);
+    if (found == questViews.end())
+        return nullptr;
+    for (const auto& v : found->second.array("quests"))
+        if (v.string("id") == quest)
+            return &v;
+    return nullptr;
+}
+
 bool Storyline::takesPart(const std::string& who) const
 {
     const auto p = participants.find(who);
@@ -532,6 +543,16 @@ Value saveStoryline(const Storyline& s)
         o.add("regions", std::move(regions));
     }
     o.add("admitted", list(s.admitted));
+    if (!s.questViews.empty())
+    {
+        auto views = Value::object();
+        for (const auto& [wolf, v] : s.questViews) views.add(wolf, v);
+        o.add("questViews", std::move(views));
+    }
+    if (s.watch.isObject() && s.watch.size()) o.add("watch", s.watch);
+    if (s.held.isObject() && s.held.size()) o.add("held", s.held);
+    if (s.offers.isArray() && s.offers.size()) o.add("offers", s.offers);
+    if (s.choices.isArray() && s.choices.size()) o.add("choices", s.choices);
     if (s.calledOn)
     {
         o.add("calledTown", s.calledTown);
@@ -549,6 +570,8 @@ Storyline loadStoryline(const Value& o)
     s.state = o.string("state", "running"); s.began = o.number("began"); s.ended = o.number("ended", -1);
     s.lastActivity = o.number("lastActivity");
     if (!readRegions(o["regions"], s.regions)) s.regions.clear();
+    if (const auto* w = o.find("watch"); w && w->isObject()) s.watch = *w;
+    if (const auto* h = o.find("held"); h && h->isObject()) s.held = *h;
     for (const auto& [id, v] : o.object("cinematics").fields())
         if (v.isObject() && v["doc"].isObject()) s.cinematics.emplace(id, v);
     for (const auto& [npc, j] : o.object("sceneOrders").fields())
@@ -585,6 +608,10 @@ Storyline loadStoryline(const Value& o)
     set("invited", s.invited);
     set("asked", s.asked);
     set("admitted", s.admitted);
+    for (const auto& [wolf, v] : o.object("questViews").fields())
+        if (v.isObject()) s.questViews[wolf] = v;
+    if (o["offers"].isArray()) s.offers = o["offers"];
+    if (o["choices"].isArray()) s.choices = o["choices"];
     s.calledTown = o.string("calledTown");
     s.callText = o.string("callText");
     s.calledOn = !s.calledTown.empty();

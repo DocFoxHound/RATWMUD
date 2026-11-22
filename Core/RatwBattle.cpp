@@ -2376,7 +2376,7 @@ Result World::battleAct(const std::string& id, const std::string& action, const 
         if (e->stamina < battle::TendStamina)
             return {false, "You are too spent to tend them.", target};
         e->stamina -= battle::TendStamina;
-        standUp(*te, battle::TendedHealth);
+        standUp(*te, battle::TendedHealth, id);
         t->status = "fighting";
         t->struggling = false;
         if (e->npc)
@@ -2573,6 +2573,8 @@ void World::downFighter(Battle& b, BattleFighter& f, double overkill, double bas
     if (!e->mouth.empty())
         dropItem(b, f);
     recordEvent({"downed", by, f.id, b.cellId, 0, 0, {}, 0, 0, b.id, f.x, f.y});
+    if (!e->npc && storyListens("wolf downed"))   // (Doc 85, Phase 8: the wolf as the actor, for a story's $actor.)
+        recordEvent({"wolf downed", f.id, by, b.cellId, 0, 0, {}, 0, 0, b.id, f.x, f.y});
     if (auto* camp = campOf(f.id))
     {
         const auto folk = folk_.find(f.id);
@@ -2644,8 +2646,11 @@ void World::checkOver(Battle& b)
     huntBanner(b);                                  // A hunt says how it went (doc 41).
 }
 
-void World::standUp(Entity& e, double health)
+void World::standUp(Entity& e, double health, const std::string& by)
 {
+    // (Doc 85, Phase 8: a wolf back on their feet, for a story that listens.)
+    if (!e.npc && (e.downedLeft != 0 || e.state == "downed") && storyListens("wolf revived"))
+        recordEvent({"wolf revived", e.id, by, e.cellId, 0, 0, {}, 0, 0, {}});
     e.hurt = std::clamp(100 - health, 0.0, 99.0);
     e.downedLeft = 0;
     entitiesChanged();
@@ -3268,7 +3273,7 @@ void World::tendDowned(double dt)
                 std::hypot(t->position.x - e.position.x, t->position.y - e.position.y) <= 2.2 && e.stamina >= battle::TendStamina)
             {
                 e.stamina -= battle::TendStamina;
-                standUp(*t, battle::TendedHealth);
+                standUp(*t, battle::TendedHealth, id);
                 if (!t->npc)
                     notice(t->id, e.name + " gets you back on your feet.");
                 if (!e.npc)
@@ -3558,6 +3563,21 @@ Result World::stowItem(const std::string& id)
     return {true, "You put the " + item + " away.", {}};
 }
 
+Result World::placeOnGround(const std::string& cellId, int x, int y, const std::string& item)
+{
+    if (!ensureLoaded(cellId).ok)
+        return {false, "No such place.", cellId};
+    const auto* c = cell(cellId);
+    const auto* tile = c ? c->tile(x, y) : nullptr;
+    if (!tile || tile->solid)
+        return {false, "Nothing can lie there.", cellId};
+    society_.openAccount(GroundAccount);
+    if (!society_.create(GroundAccount, item, 1, "dm grant: left on the ground for a story"))
+        return {false, "That can't be left on the ground.", cellId};
+    ground_.push_back({"ground-" + std::to_string(++nextGround_), cellId, item, x + .5, y + .5});
+    return {true, "Left on the ground.", ground_.back().id};
+}
+
 Result World::takeItem(const std::string& id, const std::string& groundId)
 {
     auto* e = entity(id);
@@ -3573,6 +3593,8 @@ Result World::takeItem(const std::string& id, const std::string& groundId)
         return {false, "You can't carry it.", {}};
     const auto item = it->item;
     ground_.erase(it);
+    if (!e->npc && storyListens("item picked up"))
+        recordEvent({"item picked up", id, {}, e->cellId, 0, 0, item, 1, 0, {}});
     return {true, "You pick up the " + item + ".", {}};
 }
 
@@ -3597,6 +3619,8 @@ void World::dropItem(Battle& b, BattleFighter& f)
     e->mouth.clear();
     e->swordKind.clear();
     b.drops.push_back({f.x, f.y, item, f.id});
+    if (!e->npc && storyListens("item dropped"))
+        recordEvent({"item dropped", f.id, {}, b.cellId, 0, 0, item, 1, 0, "knocked loose in a fight", f.x, f.y});
     fightLine(b, f.id, {}, "drop", "The " + item + " is knocked from " + e->name + "'s jaws.");
 }
 

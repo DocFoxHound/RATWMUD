@@ -118,6 +118,11 @@ class Store
     virtual bool saveInBackground(DbStore::Build build, std::uint64_t revision) = 0;
     virtual bool flush() = 0;
     virtual void queueEvents(std::vector<WorldEvent> events) = 0;
+    // The events queued so far to the log now, without a checkpoint (doc 85, Phase 7); a store without a log: nothing.
+    virtual void flushEvents() {}
+    // The world's facts for its live stories (doc 85, Phase 8), written with the next write of the events; a store without
+    // the table: nothing.
+    virtual void queueFacts(std::string) {}
     virtual std::vector<std::pair<std::string, std::string>> externalNpcStates() = 0;
     virtual std::string error() const = 0;
     // The journal of valuable changes (RatwJournal.h; Docs/Design/31-responsiveness.md, Phase 2), and its records after
@@ -406,6 +411,7 @@ class Game
     bool storageReady() const { return storageReady_; }
     World& world() { return world_; }
     const documents::Store& documents() const { return documents_; }   // (Letters and notices: for tests and tools.)
+    const party::Parties& parties() const { return parties_; }           // (Parties and who travels with them: for tests.)
     // A character's social standing is its account's (doc 49): the social XP of all the account's characters together
     // (a development identity's wolf, with no account, its own), and the level that makes on standing.json's curve.
     long long socialXp(const std::string& characterId) const;
@@ -649,6 +655,18 @@ class Game
     // Every other dm.actions act, as applyDmActions applies a row {id, kind, target_id, requested_by, payload}: public
     // for the tests, which have no dm.actions table.
     Result applyDmAct(std::vector<PgValue> row);
+    // Doc 85, Phase 7: a story's batch (story.effects), each item applied as its own order and answered; those done before a
+    // crash answered from the batch's receipt (RatwGameStorylines.cpp). `seq`: the last journal record it wrote, or 0.
+    Result applyStoryEffects(const std::vector<PgValue>& row, std::uint64_t& seq);
+    // The story runner's "needs you" alerts (Docs/Design/85-story-triggers-and-campaign-control.md, 5.6; Phase 3), as
+    // dm.story_alerts_for_game answers them (migration 0072: what the game may know of the stories, and nothing else):
+    // {running, beatAge, runnerSeconds, alerts: [{key, text}]}. Each alert new since the last reading is told to every
+    // Dungeon Master in the world in the Dev Console (a devNotice), once; the runner down while stories should run is one
+    // of them. While the runner is down its last alerts still stand, and an alert that goes for fewer than five readings
+    // (about a minute) and comes back is not told again. Returns how many were new. Public for the tests; watchStoryAlerts reads the database every 15 s.
+    int readStoryAlerts(const json::Value& reply);
+    // The alerts still standing (key, words), as last read: a Dungeon Master who comes in is told these.
+    const std::map<std::string, std::string>& storyAlerts() const { return storyAlerts_; }
     // The community world's guards on the host's tools (Docs/Design/78-hosts-run-their-own-worlds.md, 8; Phase M1),
     // enforced here, at the point of use, whatever the tool asked: with cheats off (neither --dev-tools nor
     // --host-cheats), character.gift and account.unlock are refused, character.dm too without --dev-tools, and the
@@ -690,6 +708,13 @@ class Game
     // A snapshot of the world every SnapshotSeconds (and SaveSoonSeconds after a change worth keeping); its memory
     // consolidated every AutosaveSeconds.
     static constexpr double AutosaveSeconds = 15, SnapshotSeconds = 30, SaveSoonSeconds = 3;
+    // Doc 85, Phase 7: a story's outcome (a scene beat settled, a resident arrived for a story) asks for a save this soon,
+    // written in the background, never on the game thread; while a world story is live, the world's events go to the log
+    // this often between saves (in their own small write), so the story runner sees them in a second or two; the DM's
+    // orders are looked for this often once notified (a story's orders, answered within a quarter of a second).
+    static constexpr double StoryOutcomeSeconds = 0.5, StoryEventsSeconds = 1, DmPollSeconds = 0.25;
+    // A story's batch of effects (story.effects): at most this many orders in one.
+    static constexpr std::size_t StoryEffectsMax = 64;
     static constexpr unsigned SnapshotPhases = 4;
 
   private:
@@ -803,6 +828,11 @@ class Game
     std::map<std::string, std::set<std::string>> stayedOut_;             // Who won't be called into which fights.
     std::map<std::string, std::map<std::string, double>> foes_;          // A player's recent foes, until when.
     double partyAccumulator_ = 0;
+    // Each wolf's party as last written to the world's log (doc 85, Phase 6: "party joined" and "party left", which the
+    // stories' runner reads to keep each wolf's party): compared with the parties after each change.
+    std::map<std::string, std::string> partyLogged_;
+    std::map<std::string, std::string> partyLeaders_;   // Party -> its leader, as last logged (party formed, party ended).
+    void partyEvents(bool quiet = false);
     struct Relations
     {
         std::set<std::string> mates, chapterMates;
@@ -1474,6 +1504,10 @@ class Game
     Result giveStoryline(const std::string& character, const std::string& templateId, const json::Value& cast, const std::string& source,
                          const std::string& sourceRef, const std::vector<std::string>& also = {});
     storylines::Book& storylineBook() { return storylines_; }
+    // Doc 85, Phase 8: the world's facts as the live stories watch them (the document written to game.story_facts with the
+    // events; "" when none asks), and whether a live story listens for a watched event.
+    std::string storyFactsJson();
+    bool storyWatches(const std::string& kind) const { return storyWatch_.events.count(kind) > 0; }
     bool approvedStoryteller(const std::string& account) const;
     // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
     static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);
@@ -1536,6 +1570,22 @@ class Game
     double nextSceneCheck_ = 0;
     Result applyWorldStoryPhase(const std::string& run, const json::Value& payload);
     std::string worldStoryLine(const std::string& npc, const std::string& wolf) const;
+    // A world story's quests (doc 85, Phase 6): its living audience (story.cohort), its quests and story choices
+    // (story.quests); whether a quest offered by a resident is open to a wolf now (its join rules as the game can check
+    // them: participants only, full, the region the wolf must stand in, a copy held or not taken again yet); and the
+    // choices a resident's dialogue window shows a wolf for them (offer, hand in, a story choice).
+    Result applyStoryCohort(storylines::Storyline& story, const json::Value& payload);
+    Result applyStoryQuests(storylines::Storyline& story, const json::Value& payload);
+    bool storyOfferOpen(const storylines::Storyline& s, const json::Value& offer, const std::string& wolf) const;
+    struct StoryChoice
+    {
+        std::string kind, run, id, words;           // kind: offer, handin, choice.
+    };
+    std::vector<StoryChoice> storyChoicesFor(const std::string& wolf, const std::string& npc) const;
+    const json::Value* storyOffer(const std::string& run, const std::string& quest) const;
+    std::string storyHome(const talk::Tree& t, const std::string& entry) const;
+    bool storyNode(const std::string& playerId, const DialogueSession& d, const std::string& nodeId, talk::TreeNode& out);
+    void storyQuestEvent(const char* kind, const std::string& wolf, const std::string& run, const std::string& npc, const std::string& id);
     std::string storylineBrief(const std::string& npc, const std::string& wolf) const;
     void hearTroubleFor(const std::string& wolf, const std::string& npc)   // (Tests: as if the resident had told them.)
     {
@@ -2135,6 +2185,12 @@ class Game
     std::uint64_t sequence_ = 1, revision_ = 0;
     double dmExpiryAccumulator_ = 60;
     bool dmNotified_ = true;
+    void watchStoryAlerts(double dt);
+    void tellStoryAlert(Connection* c, const std::string& text);
+    double storyAlertAccumulator_ = 0;
+    int storyAlertsReadable_ = -1;                   // (-1 not asked yet; 0 a database without migration 0072; 1 it has it.)
+    std::map<std::string, std::string> storyAlerts_; // (Doc 85, 5.6: key -> words, as last read.)
+    std::map<std::string, int> storyAlertsGone_;     // (An alert told that has not been read since: how many readings ago.)
     unsigned snapshotPhase_ = 0;
     double saveSoonIn_ = -1, snapshotAccumulator_ = 0, saveAccumulator_ = 0, snapshotSaveAccumulator_ = 0,
            releaseAccumulator_ = 0, dmAccumulator_ = 0, spawnAccumulator_ = 0, prefetchAccumulator_ = 0, streamLogAccumulator_ = 0;
@@ -2504,7 +2560,63 @@ class Game
 
     // Saving.
     void saveSoon();
+    void saveSoon(double seconds);                  // (Sooner than SaveSoonSeconds, if asked sooner: doc 85, Phase 7.)
     void autosave();
+    bool snapshotBusy();                            // (A forked snapshot is still being written.)
+    bool storyLive() const;                         // (A world story of the story runner is running.)
+    void flushStoryEvents(double real);             // (Doc 85, Phase 7: the events to the log between saves.)
+    double storyEventsAccumulator_ = 0;
+    // Doc 85, Phase 8 (RatwGameStoryFacts.cpp): what the live world stories watch (the union of their watch lists, sent
+    // with each story.phase), the world's facts written with every write of the events while one asks for them
+    // (game.story_facts), and the watched events: the calendar's and the weather's, a region's count of story wolves.
+    struct StoryWatch
+    {
+        std::set<std::string> sections, items, factions, towns, residents, cells, events;
+        std::set<std::pair<std::string, std::string>> relations;
+        // Doc 85, Phase 10: what "near resident", "purse crossed" and "standing crossed" look at (the residents, the purses
+        // and amounts, the factions and numbers the stories' triggers name).
+        std::set<std::string> near;
+        std::set<std::pair<std::string, std::int64_t>> purses, standing;
+        bool weatherWhereWolves = false;
+        bool facts() const { return !sections.empty(); }
+    };
+    StoryWatch storyWatch_;
+    void refreshStoryWatch();
+    void handEventsToStore();                       // The world's events (and, while watched, its facts) to the store.
+    void storyWatchTick(double real);
+    double storyWatchAccumulator_ = 0, storyWeatherAccumulator_ = 0;
+    int storyHour_ = -1;
+    std::int64_t storyDay_ = -1;
+    std::string storyPeriod_, storySeason_;
+    std::map<std::string, std::string> storyWeather_;             // Place -> the weather last seen there.
+    // Doc 85, Phase 10 (RatwGameStoryFacts.cpp, storyWorldWatch): the events Phase 8 left, each looked for only while a live
+    // story listens. What each was last seen as; a first look makes no event.
+    void storyWorldWatch(double real);
+    double storyNearAccumulator_ = 0, storyWatchedAccumulator_ = 0;
+    std::map<std::string, std::set<std::string>> storyNear_;      // Wolf -> the watched residents within three tiles.
+    std::map<std::string, std::int64_t> storyPurses_;             // Purse -> what it held.
+    std::map<std::string, double> storyStanding_;                 // "wolf|faction" -> their standing.
+    std::map<std::string, std::pair<std::string, double>> storyRelations_;   // "a>b" -> the stance and disposition.
+    std::map<std::string, std::string> storyMantles_;             // Resident -> the mantle they wore.
+    bool storyRelationsSeen_ = false, storyMantlesSeen_ = false;
+    std::string storyPurseAccount(const std::string& purse) const;   // A reward's purse (town:<id>...) as the account it is.
+    std::map<std::string, std::map<std::string, std::set<std::string>>> storyOccupants_;   // Run -> region -> its wolves inside.
+    void storyRegionCrossed(const std::string& run, const std::string& region, const std::string& wolf, bool inside,
+                            const std::string& cell, int x, int y);
+    void recountStoryRegions(const std::string& run);
+    void storyArrivedInside(const std::string& wolf);   // (Signing in inside a region counts: region entered.)
+    void storyLeftWorld(const std::string& wolf);
+    std::map<std::string, std::map<std::string, int>> storyReputation_;   // Town -> wolf -> liked less disliked.
+    double storyReputationAt_ = -1e9;
+    // A scene's request to the Mind waits until the save that consumed it is stored (never dispatched twice after a crash).
+    struct SceneRequest
+    {
+        std::uint64_t revision;
+        std::string run, instance, beat;
+        json::Value context;
+    };
+    std::vector<SceneRequest> sceneRequestsAfterSave_;
+    void dispatchSceneRequests();
     DbStore::Build capture();
 
     // ------------------------------------------------------------------ The journal and snapshots (RatwGameJournal.cpp)
@@ -2525,6 +2637,24 @@ class Game
     void record(unsigned what, const std::string& character = {});
     void recordCharacters(unsigned what, const std::vector<std::string>& characters);
     Result applyStoryArea(const std::string& kind, const std::string& run, const json::Value& payload);
+    Result applyStoryReward(const std::string& kind, const std::string& wolf, const json::Value& payload);
+    Result applyStoryTell(const std::string& run, const json::Value& payload);   // (Doc 85, Phase 2: "Tell the wolves".)
+    // Doc 85, Phase 9 (RatwGameStoryWorld.cpp): a world story's new world effects, each the order of its own name with the
+    // run and its visit in the payload; what the game undoes when the run ends kept with the story (Storyline::held).
+    static bool storyWorldOrder(const std::string& kind);
+    Result applyStoryWorld(const std::string& kind, const std::string& target, const json::Value& payload);
+    void endStoryWorld(storylines::Storyline& story);   // Undoes what the story's world effects left (a run that ends).
+    void tickStoryWorld(double dt);                     // Holds kept, locks kept, the weather and markers run out.
+    std::set<std::string> storiesHolding_;              // Live world stories with something held (refreshStoryWatch).
+    double storyWorldAccumulator_ = 0;
+    bool heldByAnotherStory(const std::string& npc, const std::string& run) const;
+    void noteStoryHeld(const json::Value& payload, const char* key, const std::string& id);   // (A stranger, a mantle.)
+    // An order a story sends that the DM's own tools send too, with the story's way of naming what it acts on: a town's
+    // project of a kind, a wolf's deed in its words, a wolf's personal quest from a template ("" when none is found).
+    std::string storyProject(const std::string& town, const std::string& kind) const;
+    std::string storyDeed(const std::string& wolf, const std::string& detail) const;
+    std::string storyStoryline(const std::string& wolf, const std::string& templateId) const;
+    json::Value storyJournalExtras(const storylines::Storyline& s, const std::string& viewer) const;   // notes, pings
     // The journal's view of what was last recorded, to find what changed since.
     struct Shadow
     {

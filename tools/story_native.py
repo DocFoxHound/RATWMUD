@@ -44,6 +44,7 @@ def fire(dispatch, phase, state, event, day, elapsed, ready, emit, trace):
     request = {
         'rules': rules,
         'shared': list(shared),
+        'disabled': [k for k in state.get('disabled', ()) if k in global_ids],
         'regions': phase.get('_regions', {}),
         'phase': phase['id'],
         'entered': state['entered'],
@@ -98,4 +99,130 @@ def fire(dispatch, phase, state, event, day, elapsed, ready, emit, trace):
                     'signal': event.get('signal'),
                 }
             )
+    return result.get('phase')
+
+
+# The run's state pieces a version 2 dispatch reads and changes (doc 85, Phase 5): they go to the native twin and come
+# back as the Python twin would leave them, key for key (absent stays absent).
+STATE_V2 = ('counters', 'fired', 'campaignFired', 'counts', 'timers', 'disabled', 'waiting', 'draws', 'rolls', 'outcome',
+            'outcomes', 'parties', 'seed')
+
+
+_NEEDS = {}
+
+
+def _needs(rules):
+    """(Cached by the rules list: a phase's own list lives as long as its program is read.)"""
+    hit = _NEEDS.get(id(rules))
+    if hit is not None and hit[0] is rules:
+        return hit[1]
+    if len(_NEEDS) > 256:
+        _NEEDS.clear()
+    needs = _needs_of(rules)
+    _NEEDS[id(rules)] = (rules, needs)
+    return needs
+
+
+def _needs_of(rules):
+    """What a version 2 dispatch's rules read beyond the event (doc 85, Phase 8): the world's facts (and of which wolves: the
+    acting one, those named, or every one when a count or the looped wolf is read), and the story's quests."""
+    import story_triggers
+
+    out = {'facts': False, 'quests': False, 'all': False, 'named': set()}
+    for t in rules:
+        for c in story_triggers.rule_conditions(t):
+            kind = c.get('test')
+            if kind in story_triggers.QUEST_V2:
+                out['quests'] = True
+            elif kind in story_triggers.FACTS_V2:
+                out['facts'] = True
+                for key in ('who', 'other'):
+                    v = c.get(key)
+                    if v == '$each':
+                        out['all'] = True
+                    elif isinstance(v, str) and v != '$actor':
+                        out['named'].add(v)
+                if kind == 'count in region':
+                    out['all'] = True
+    return out
+
+
+def _trim_facts(facts, needs, actor):
+    """The world's facts as the native twin is sent them: only the wolves its conditions can read (the same answers, a
+    smaller request: a world's facts may list hundreds of wolves)."""
+    if not needs['facts']:
+        return {}
+    wolves = facts.get('wolves')
+    if needs['all'] or not isinstance(wolves, dict):
+        return facts
+    keep = {actor, *needs['named']}
+    return {**facts, 'wolves': {k: v for k, v in wolves.items() if k in keep}}
+
+
+def fire_v2(dispatch, phase, state, event, day, elapsed, ready, emit, trace, wait=None):
+    """A version 2 story's fact (or, with `wait`, a waiting trigger's remaining actions) through the native twin."""
+    import story_triggers
+
+    kind = event['kind']
+    rules = phase.get('triggers', [])
+    if wait is None and not any(t['on'] == kind or (t['on'] == 'gift' and kind == 'gift again') for t in rules):
+        return None
+    request = {
+        'v': 2,
+        'rules': rules,
+        'shared': list(phase.get('_sharedIds', ())),
+        'regions': phase.get('_regions', {}),
+        'phase': phase['id'],
+        'entered': state['entered'],
+        'began': state.get('began', state['entered']),
+        'visits': state['visits'],
+        'day': day,
+        'elapsed': elapsed,
+        'fact': event,
+        'cohort': state['cohort'],
+        'ready': list(ready()) if phase.get('missions') else [],
+        'decls': phase.get('_vars', {}),
+        'state': {k: state[k] for k in STATE_V2 if k in state},
+    }
+    if wait is not None:
+        request['resume'] = wait
+    needs = _needs(rules)
+    if needs['quests'] and phase.get('_questIndex'):
+        # (Doc 85, Phase 8: "quest is" and "objective is" read the copies, the offers, and of each quest its scope and hidden
+        # objectives.)
+        request['questDefs'] = {qid: {'scope': q.get('scope', 'player'),
+                                      'objectives': [{'id': o['id'], 'hidden': bool(o.get('hidden'))} for o in q['objectives']]}
+                                for qid, q in phase['_questIndex'].items()}
+        request['quests'] = state.get('quests', {})
+        request['questOffers'] = state.get('questOffers', {})
+    source = request['resume']['event'] if wait is not None else event
+    if 'facts' in source:
+        trimmed = _trim_facts(source['facts'], needs, wait['actor'] if wait is not None else event.get('actor', ''))
+        if wait is not None:
+            request['resume'] = {**wait, 'event': {**wait['event'], 'facts': trimmed}}
+        else:
+            request['fact'] = {**event, 'facts': trimmed}
+    result = json.loads(dispatch(json.dumps(request, ensure_ascii=False, allow_nan=False).encode('utf-8')))
+    if 'error' in result:
+        raise ValueError(result['error'])
+    changed = result['state']
+    for key in STATE_V2:
+        if key in changed:
+            state[key] = changed[key]
+        else:
+            state.pop(key, None)
+    if result.get('effects'):
+        state.setdefault('triggerEffects', []).extend(result['effects'])
+    if trace is not None:
+        actor = wait['actor'] if wait is not None else event.get('actor', '')
+        by_id = {t['id']: t for t in rules}
+        for f in result['firings']:
+            t = by_id[f['trigger']]
+            entry = story_triggers._firing(phase, event if f.get('via') else {**event, 'kind': t['on']}, actor, day, elapsed, t,
+                                           f.get('via'))
+            if f.get('notes'):
+                entry['notes'] = f['notes']
+            trace.append(entry)
+    for signal in result.get('signals', ()):
+        emit(signal, event)
     return result.get('phase')

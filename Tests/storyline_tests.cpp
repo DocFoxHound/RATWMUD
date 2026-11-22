@@ -448,6 +448,73 @@ void storyAreaEffects()
         phase.set("players", members);
         phase.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8}])"));
         expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "area story started");
+        // story.tell (doc 85, Phase 2): the story's wolves, one of them, or those in a region; never Cy, who is not in it.
+        auto tell = [&](const std::string& extra) {
+            return t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":1,"title":"Breach","text":"Hold fast.")" + extra + "}"});
+        };
+        const auto everyone = tell(R"(,"to":"participants")");
+        expect(everyone.ok && everyone.message == "Told 2 in the world.", "told the story's two wolves: " + everyone.message);
+        expect(tell(R"(,"to":"wolf","player":")" + t.bo.entityId + "\"").message == "Told 1 in the world.", "told one wolf");
+        expect(!tell(R"(,"to":"wolf","player":")" + t.cy.entityId + "\"").ok, "a wolf outside the story is refused");
+        const auto inside = tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})");
+        expect(inside.ok && inside.message == "Told 1 in the world.", "only Ash stands on the wall: " + inside.message);
+        expect(!tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":6,"x2":9,"y1":8,"y2":8})").ok, "an altered region is refused");
+        expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":2,"to":"participants","text":"Late."})"}).ok, "another visit is refused");
+        expect(!t.g.applyDmAct({"9", "story.tell", run, "dm", R"({"visit":1,"to":"participants","text":"two\nlines"})"}).ok,
+               "one line only");
+        // A story's batch (doc 85, Phase 7: story.effects): each order applied as it would be alone and answered on its own; one
+        // refused that says "skip" lets the rest go on, one that pauses (the default) holds those after it, not applied.
+        {
+            const std::string told = R"({"kind":"story.tell","target":"world-area-test","payload":{"visit":1,"title":"Breach","text":"Hold.","to":"participants"}})";
+            const std::string late = R"({"kind":"story.tell","target":"world-area-test","payload":{"visit":2,"to":"participants","text":"Late."}})";
+            const auto batch = [&](const std::string& items) {
+                std::uint64_t seq = 0;
+                const auto r = t.g.applyStoryEffects({"20", "story.effects", run, "dm", R"({"visit":1,"items":[)" + items + "]}"}, seq);
+                json::Value v;
+                std::string problem;
+                json::parse(r.message, v, problem);
+                return std::make_pair(r, v);
+            };
+            auto [r1, v1] = batch(told + "," + late.substr(0, late.size() - 1) + R"(,"ifRefused":"skip"},)" + told);
+            expect(v1.isArray() && v1.size() == 3 && v1.items()[0].boolean("ok") && !v1.items()[1].boolean("ok") && v1.items()[2].boolean("ok"),
+                   "a skipped refusal lets the rest go on: " + r1.message);
+            auto [r2, v2] = batch(told + "," + late + "," + told);
+            expect(v2.size() == 3 && v2.items()[0].boolean("ok") && !v2.items()[1].boolean("ok") && !v2.items()[1].boolean("held") &&
+                       v2.items()[2].boolean("held") && !v2.items()[2].boolean("ok"),
+                   "a refusal that pauses holds the rest: " + r2.message);
+            expect(!batch(R"({"kind":"story.effects","target":"x","payload":{}})").second.items()[0].boolean("ok"), "no batch inside a batch");
+            std::uint64_t seq = 0;
+            expect(!t.g.applyStoryEffects({"21", "story.effects", run, "dm", R"({"visit":1,"items":[]})"}, seq).ok, "an empty batch is refused");
+        }
+        // A revision (doc 85, Phase 5b): the run moved onto a new version keeps its visit; the game takes the new words and
+        // regions for it, checked whole first.
+        auto revised = phase;
+        revised.set("revise", true);
+        revised.set("journal", "Hold the gate.");
+        revised.set("title", "Breach, revised");
+        revised.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":6,"x2":9,"y1":8,"y2":8}])"));
+        auto badFit = revised;
+        badFit.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":6,"x2":9000,"y1":8,"y2":8}])"));
+        expect(!t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(badFit)}).ok &&
+               t.g.storylineBook().find(run)->steps.back().text == "Hold the wall.", "a revision that does not fit changes nothing");
+        auto otherVisit = revised;
+        otherVisit.set("visit", 2);
+        expect(!t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(otherVisit)}).ok, "only the visit the story is in is revised");
+        auto ending = revised;
+        ending.set("end", true);
+        expect(!t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(ending)}).ok, "a revision never ends the story");
+        expect(!t.g.applyDmAct({"7", "story.phase", "world-no-such", "dm", json::dump(revised)}).ok, "nor makes one");
+        const auto revision = t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(revised)});
+        const auto* book = t.g.storylineBook().find(run);
+        expect(revision.ok && book->steps.size() == 1 && book->steps.back().text == "Hold the gate." && book->title == "Breach, revised" &&
+               book->sourceRef == "1" && book->regions.at("wall").x1 == 6, "revised in place: one step, the new words and region: " + revision.message);
+        expect(!tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})").ok &&
+               tell(R"(,"to":"region","region":{"id":"wall","cell":"c_1_0","x1":6,"x2":9,"y1":8,"y2":8})").ok,
+               "the region is the new version's now");
+        expect(t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(phase)}).message == "Phase already received.",
+               "the visit's own phase order stays harmless");
+        revised.set("regions", parsed(R"([{"id":"wall","cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8}])"));
+        expect(t.g.applyDmAct({"7", "story.phase", run, "dm", json::dump(revised)}).ok, "and back (the area effects below use the first bounds)");
         auto area = parsed(R"({"region":"wall","visit":1,"cell":"c_1_0","x1":7,"x2":9,"y1":8,"y2":8})");
         auto apply = [&](const char* effect) {
             return t.g.applyDmAct({"2", std::string("story.area_") + effect, run, "dm", json::dump(area)});
@@ -815,6 +882,225 @@ void sources()
     fs::remove_all(root);
     fs::remove(save);
 }
+// The story runner's "needs you" alerts in the Dev Console (doc 85, 5.6; Phase 3): each told once to the Dungeon Masters in
+// the world, never to anyone else; the runner down while stories should run is one of them; a Dungeon Master who comes in
+// later is told those still standing.
+void storyAlertsInTheDevConsole()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyalerts-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeStrip(root), save);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 1, 9.5);
+        t.g.world().entity(t.ash.entityId)->dungeonMaster = true;
+        const auto notices = [](const Client& c) {
+            std::vector<std::string> out;
+            for (const auto& m : c.events)
+                if (m.string("type") == "devNotice")
+                    out.push_back(m.string("text"));
+            return out;
+        };
+        t.ash.events.clear();
+        t.bo.events.clear();
+        const auto paused = parsed(R"({"running":1,"beatAge":2.5,"runnerSeconds":30,
+            "alerts":[{"key":"world-a:paused:3","run":"world-a","kind":"paused","text":"Story \"Breach\" is paused."}]})");
+        expect(t.g.readStoryAlerts(paused) == 1, "one alert, new");
+        expect(notices(t.ash) == std::vector<std::string>{"Story \"Breach\" is paused."}, "the Dungeon Master is told");
+        expect(notices(t.bo).empty(), "a wolf who is not a Dungeon Master is told nothing");
+        expect(t.g.readStoryAlerts(paused) == 0 && notices(t.ash).size() == 1, "told once, not on every reading");
+        const auto down = parsed(R"({"running":2,"beatAge":95,"runnerSeconds":30,"alerts":[]})");
+        expect(t.g.readStoryAlerts(down) == 1, "the runner down is an alert of its own");
+        expect(notices(t.ash).size() == 2 && notices(t.ash)[1].find("has not beaten for 95 s: 2 stories are not moving") != std::string::npos,
+               "the runner down, in words: " + notices(t.ash).back());
+        expect(t.g.storyAlerts().count("world-a:paused:3"), "while the runner is down the story's alert still stands");
+        expect(t.g.readStoryAlerts(paused) == 0 && notices(t.ash).size() == 2, "the runner back: the paused story is not told again");
+        const auto quiet = parsed(R"({"running":0,"beatAge":2,"alerts":[]})");
+        expect(t.g.readStoryAlerts(quiet) == 0 && t.g.storyAlerts().empty(), "nothing running: nothing to tell, and the alerts are gone");
+        expect(t.g.readStoryAlerts(paused) == 0, "back within a minute: not told again");
+        for (int i = 0; i < 6; ++i)
+            t.g.readStoryAlerts(quiet);
+        expect(t.g.readStoryAlerts(paused) == 1 && notices(t.ash).size() == 3, "gone for long, then back: told again");
+        expect(t.g.readStoryAlerts(parsed(R"({"running":1,"beatAge":null,"alerts":[]})")) == 1 &&
+                   notices(t.ash).back().find("never run on this world") != std::string::npos, "a runner that never ran");
+        // Bo made a Dungeon Master now: told what still stands.
+        t.bo.events.clear();
+        expect(t.g.applyDmAct({"7", "character.dm", t.bo.entityId, "dm", R"({"dungeonMaster":true})"}).ok, "Bo is a Dungeon Master");
+        const auto bo = notices(t.bo);
+        expect(bo.size() == 2 && std::count(bo.begin(), bo.end(), std::string("Story \"Breach\" is paused.")) == 1,
+               "told the alerts still standing: the paused story and the runner");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
+// A world story's living audience and quests (doc 85, Phase 6): story.cohort, story.quests (offers, choices, each wolf's
+// journal entries and trackers, a toast), the journal's quest verbs writing the events the runner reads, parties told as
+// events, and the rewards: coins from a named purse, an item, standing.
+void storyQuestsInTheGame()
+{
+    const auto root = fs::temp_directory_path() / ("ratw-storyquests-" + std::to_string(::getpid()));
+    const auto save = root.string() + ".json";
+    {
+        Town t(writeStrip(root), save);
+        t.enter(t.ash, 1, "ash", "Ash", 1, 8.5);
+        t.enter(t.bo, 2, "bo", "Bo", 1, 9.5);
+        t.enter(t.cy, 3, "cy", "Cy", 1, 10.5);
+        auto& w = t.g.world();
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        const auto run = "world-quests";
+        auto phase = parsed(R"({"title":"The ford","phase":"open","journal":"The carter is stuck.","visit":1})");
+        auto players = json::Value::array();
+        players.push(t.ash.entityId);
+        phase.set("players", players);
+        expect(t.g.applyDmAct({"1", "story.phase", run, "dm", json::dump(phase)}).ok, "the story opens with Ash");
+        auto* book = &t.g.storylineBook();
+        // story.cohort: Bo in, then out; past 5000 refused.
+        auto cohort = parsed(R"({"visit":1,"add":[],"remove":[]})");
+        cohort.set("add", parsed("[\"" + t.bo.entityId + "\"]"));
+        expect(t.g.applyDmAct({"2", "story.cohort", run, "dm", json::dump(cohort)}).ok && book->find(run)->takesPart(t.bo.entityId),
+               "Bo is taken into the story");
+        auto many = json::Value::array();
+        for (int i = 0; i < 5001; ++i) many.push("wolf-" + std::to_string(i));
+        auto crowd = parsed(R"({"visit":1})");
+        crowd.set("add", many);
+        expect(!t.g.applyDmAct({"2", "story.cohort", run, "dm", json::dump(crowd)}).ok, "5000 wolves at most");
+        expect(!t.g.applyDmAct({"2", "story.cohort", "world-no-such", "dm", json::dump(cohort)}).ok, "an unknown story is refused");
+        // story.quests: Ash's journal entries, an offer, a story choice; a toast.
+        auto text = std::string(R"({"visit":1,
+            "offers":[{"quest":"axle","npc":"u1","title":"An axle for the carter","say":"My axle's split.","ask":"Is there work going?",
+                       "accept":"I'll find you one.","decline":"Not now.","handIn":"Here's your axle.","thanks":"Moving again.","who":"anyone","full":false}],
+            "choices":[{"id":"rumour","npc":"u1","words":"Heard about the axle?","reply":"Someone cut it.","players":null,"once":true,"picked":[]}],
+            "wolves":{"ash":{"quests":[
+                {"id":"axle","title":"An axle for the carter","summary":"The carter is stuck.","scope":"player","status":"active","giver":"u1",
+                 "objectives":[{"id":"ask","label":"Ask the carter.","done":true,"open":true},{"id":"bring","label":"Bring an axle.","amount":1,"goal":2,"open":true}],
+                 "hiddenLeft":1,"handIn":false,"abandon":true,"accept":false},
+                {"id":"letter","title":"A letter","scope":"player","status":"offered","objectives":[],"hiddenLeft":0,"handIn":false,"abandon":true,"accept":true},
+                {"id":"bound","title":"Bound","scope":"player","status":"active","objectives":[],"hiddenLeft":0,"handIn":false,"abandon":false,"accept":false}],
+              "trackers":[{"label":"Ropes delivered","value":3}],"toast":"You take on: An axle for the carter."}}})");
+        text.replace(text.find("\"ash\":"), 6, "\"" + t.ash.entityId + "\":");
+        const auto quests = parsed(text);
+        t.ash.events.clear();
+        expect(t.g.applyDmAct({"3", "story.quests", run, "dm", json::dump(quests)}).ok, "the quests are recorded");
+        expect(contains(t.ash.said(), "You take on: An axle for the carter."), "Ash is told");
+        const auto* story = book->find(run);
+        expect(story->offers.size() == 1 && story->choices.size() == 1 && story->questViews.count(t.ash.entityId), "kept with the story");
+        const auto journal = t.selfOf(t.ash)["journal"];
+        const json::Value* mine = nullptr;
+        for (const auto& j : journal.items())
+            if (j.string("id") == run) mine = &j;
+        expect(mine && mine->array("quests").size() == 3 && !mine->array("quests")[0].string("giverName").empty() &&
+               mine->array("trackers").size() == 1, "the journal shows the quests, the giver by name, the trackers: " + json::dump(journal));
+        // The journal's verbs: abandon one under way, accept one offered with nobody to ask; refusals.
+        const auto verb = [&](const std::string& v, const std::string& quest) {
+            auto o = parsed(R"({"type":"storyline"})");
+            o.set("verb", v);
+            o.set("storyline", run);
+            o.set("quest", quest);
+            seen.clear();
+            t.ash.events.clear();
+            t.g.command(&t.ash, json::dump(o));
+            return seen;
+        };
+        auto got = verb("quest_abandon", "axle");
+        expect(got.size() == 1 && got[0].kind == "quest abandoned" && got[0].actor == t.ash.entityId && got[0].target == run &&
+               got[0].detail == "axle" && got[0].item.empty(), "abandon writes quest abandoned");
+        expect(verb("quest_abandon", "bound").empty(), "one that can't be abandoned is refused");
+        expect(verb("quest_accept", "axle").empty(), "one with a giver is accepted from the giver");
+        got = verb("quest_accept", "letter");
+        expect(got.size() == 1 && got[0].kind == "quest accepted" && got[0].detail == "letter", "accept from the journal");
+        got = verb("quest_decline", "letter");
+        expect(got.size() == 1 && got[0].kind == "quest declined", "decline from the journal");
+        expect(verb("quest_abandon", "nothing").empty(), "an unknown quest is refused");
+        // A wolf listed with nothing is cleared.
+        expect(t.g.applyDmAct({"4", "story.quests", run, "dm", "{\"wolves\":{\"" + t.ash.entityId + "\":{\"quests\":[],\"trackers\":[]}}}"}).ok &&
+               !book->find(run)->questViews.count(t.ash.entityId) && book->find(run)->offers.size() == 1, "cleared; the offers kept");
+        expect(!t.g.applyDmAct({"4", "story.quests", run, "dm", R"({"offers":[{"quest":"x","npc":"nobody","title":"X"}]})"}).ok,
+               "an offer by nobody is refused");
+        // Out of the story: its journal entries go.
+        cohort.set("add", json::Value::array());
+        cohort.set("remove", parsed("[\"" + t.bo.entityId + "\"]"));
+        expect(t.g.applyDmAct({"5", "story.cohort", run, "dm", json::dump(cohort)}).ok && !book->find(run)->takesPart(t.bo.entityId), "Bo leaves");
+        // A quest pinned on the town's board (an offer with `board`), taken from it.
+        expect(!w.towns().empty(), "the strip has a town");
+        const auto community = w.towns().front().id;
+        const auto* spot = w.boardSpot(community);
+        expect(spot, "and a board");
+        const auto pinned = parsed(R"({"offers":[{"quest":"posted","npc":"","board":")" + community +
+                                   R"(","title":"Wanted: a rope","say":"Bring a rope to the ford.","who":"anyone","full":false}]})");
+        expect(t.g.applyDmAct({"4", "story.quests", run, "dm", json::dump(pinned)}).ok, "a board offer is recorded");
+        t.cy.events.clear();
+        {
+            auto* cy = w.entity(t.cy.entityId);
+            cy->cellId = spot->cell;
+            cy->position = {spot->x, spot->y};
+        }
+        t.g.command(&t.cy, cmd({{"type", "board"}, {"verb", "read"}}));
+        const auto* board = t.cy.last("board");
+        expect(board && board->array("quests").size() == 1 && board->array("quests")[0].string("quest") == "posted", "the board shows it");
+        seen.clear();
+        t.g.command(&t.cy, cmd({{"type", "board"}, {"verb", "quest"}, {"run", run}, {"quest", "posted"}}));
+        expect(seen.size() == 1 && seen[0].kind == "quest accepted" && seen[0].actor == t.cy.entityId && seen[0].item == "board:" + community &&
+               seen[0].detail == "posted", "taken from the board: quest accepted, item board:<town>");
+        seen.clear();
+        t.g.command(&t.cy, cmd({{"type", "board"}, {"verb", "quest"}, {"run", run}, {"quest", "nothing"}}));
+        expect(seen.empty(), "an unknown one is refused");
+        // Saved and loaded.
+        const auto again = storylines::loadStoryline(storylines::saveStoryline(*book->find(run)));
+        expect(again.offers == book->find(run)->offers && again.choices == book->find(run)->choices, "offers and choices saved");
+
+        // Parties as events: a party made, joined, left.
+        seen.clear();
+        t.g.command(&t.ash, cmd({{"type", "party"}, {"verb", "invite"}, {"target", t.bo.entityId}}));
+        t.g.command(&t.bo, cmd({{"type", "party"}, {"verb", "accept"}}));
+        const auto kinds = [&](const std::string& kind) {
+            std::vector<std::string> who;
+            for (const auto& e : seen) if (e.kind == kind) who.push_back(e.actor + "@" + e.target);
+            std::sort(who.begin(), who.end());
+            return who;
+        };
+        const auto joined = kinds("party joined");
+        expect(joined.size() == 2 && joined[0].rfind(t.ash.entityId + "@party-", 0) == 0 && joined[1].rfind(t.bo.entityId + "@party-", 0) == 0,
+               "both joined the new party: " + std::to_string(joined.size()));
+        seen.clear();
+        t.g.command(&t.bo, cmd({{"type", "party"}, {"verb", "leave"}}));
+        expect(kinds("party left").size() == 2 && kinds("party joined").empty(), "a party of two losing one: both left");
+        seen.clear();
+        t.run(1);
+        expect(kinds("party left").empty() && kinds("party joined").empty(), "nothing more on the tick");
+
+        // Rewards: coins from a named purse; an item; standing.
+        auto& soc = w.society();
+        const auto grant = [&](const std::string& purse, int coins) {
+            auto p = parsed(R"({"reason":"the carter's thanks"})");
+            p.set("coins", coins);
+            if (!purse.empty()) p.set("purse", purse);
+            return t.g.applyEconomyCommand("character.grant", t.ash.entityId, p, "");
+        };
+        const auto cash = [&](const std::string& a) { return soc.account(a) ? soc.account(a)->cash : -1; };
+        const auto ashBefore = cash(t.ash.entityId), treasuryBefore = cash("treasury");
+        auto r = grant("treasury", 12);
+        expect(r.ok && cash(t.ash.entityId) == ashBefore + 12 && cash("treasury") == treasuryBefore - 12, "paid from the treasury: " + r.message);
+        expect(soc.openAccount("town:strip:works"), "a town's works purse");
+        r = grant("town:strip:works", 5);
+        expect(!r.ok && r.message == "The purse is short (0p)." && cash(t.ash.entityId) == ashBefore + 12, "a short purse refuses: " + r.message);
+        expect(!grant("player-nobody", 5).ok && !grant(t.bo.entityId, 5).ok, "a player's purse is no purse to pay from");
+        r = grant("", 7);
+        expect(r.ok && r.message == "Granted 7p: the carter's thanks." && cash(t.ash.entityId) == ashBefore + 19, "without a purse, as ever: " + r.message);
+        const auto meals = Society::stock(*soc.account(t.ash.entityId), "meal");
+        r = t.g.applyDmAct({"6", "item.give", t.ash.entityId, "dm", R"({"item":"meal","quantity":2})"});
+        expect(r.ok && Society::stock(*soc.account(t.ash.entityId), "meal") == meals + 2, "an item into the pack: " + r.message);
+        expect(!t.g.applyDmAct({"6", "item.give", t.ash.entityId, "dm", R"({"item":"no-such","quantity":2})"}).ok, "an unknown item refused");
+        expect(!t.g.applyDmAct({"6", "item.give", t.ash.entityId, "dm", R"({"item":"meal","quantity":21})"}).ok, "20 at most");
+        expect(!t.g.applyDmAct({"6", "item.give", "player-away", "dm", R"({"item":"meal","quantity":1})"}).ok, "a wolf not in the world");
+        expect(!t.g.applyDmAct({"6", "standing.adjust", t.ash.entityId, "dm", R"({"faction":"no-such","points":2,"reason":"helped"})"}).ok,
+               "an unknown faction refused");
+    }
+    fs::remove_all(root);
+    fs::remove(save);
+}
+
 } // namespace
 
 int main()
@@ -829,6 +1115,8 @@ int main()
         scenePanels();
         sceneAiNeedsAnAudience();
         storyAreaEffects();
+        storyQuestsInTheGame();
+        storyAlertsInTheDevConsole();
         inTheGame();
         sources();
     }

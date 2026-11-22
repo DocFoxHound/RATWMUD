@@ -566,17 +566,19 @@ class RuntimeTests(unittest.TestCase):
         self.fact('arrival', second)
         self.tick()
         self.answer()
-        for expected in (first, second):
-            self.tick()
-            last = self.status()['actions'][-1]
-            self.assertEqual(last['kind'], 'story.scene')
-            play = self.conn.execute('SELECT payload FROM dm.actions WHERE id=%s', (last['id'],)).fetchone()[0]
-            self.assertEqual((play['cue'], play['player'], play['visit']), ('shared', expected, 2))
-            self.answer()
+        # (Doc 85, Phase 7: both presentations go to the game together, in order, in one batch.)
+        self.tick()
+        last = self.status()['actions'][-1]
+        self.assertEqual(last['kind'], 'story.effects')
+        items = self.conn.execute('SELECT payload FROM dm.actions WHERE id=%s', (last['id'],)).fetchone()[0]['items']
+        self.assertEqual([i['kind'] for i in items], ['story.scene', 'story.scene'])
+        self.assertEqual([(i['payload']['cue'], i['payload']['player'], i['payload']['visit']) for i in items],
+                         [('shared', first, 2), ('shared', second, 2)])
+        self.answer()
         self.fact('scene finished', second, self.run, quantity=2, detail='shared')
         self.fact('scene finished', first, self.run, quantity=1, detail='shared')
         self.tick()
-        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.scene')
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.effects')
         self.fact('scene failed', first, self.run, quantity=2, detail='shared')
         self.tick()
         self.assertEqual(self.status()['actions'][-1]['kind'], 'story.finish')
@@ -812,28 +814,36 @@ class RuntimeTests(unittest.TestCase):
         self.fact('tended', ash)
         self.fact('gift', ash, 'rm111', quantity=2, item='rope')
         self.fact('gift again', birch, 'rm111', quantity=2, item='rope')
-        self.tick()
-        self.assertEqual(self.status()['state']['phase'], 'landing')
-        self.tick()
-        self.assertEqual(self.status()['actions'][-1]['kind'], 'deed.award')
-        first = self.status()['actions'][-1]['id']
-        self.tick()
-        self.assertEqual(self.status()['actions'][-1]['id'], first)
-        self.answer('refused')
-        self.tick()
-        self.assertEqual(self.status()['status'], 'paused')
-        retry = runner.direct(self.conn, self.world, 'retry', {'run': self.run, 'operator': 'human'})
-        self.assertNotEqual(retry['receipt'], first)
-        self.answer()
+        # (Doc 85, Phase 7: the runner reads on while effects gather, and sends them together. Ash's deed for tending
+        # waits, and the gifts move the story to the crossing in the same turn: the deed goes with the new visit.)
         self.tick()
         status = self.status()
         self.assertEqual(status['state']['phase'], 'crossing')
         self.assertEqual(status['state']['counters']['player'][ash], {'help': 1, 'hauled': 2})
-        self.assertEqual(status['state']['arrivalEffects'][0]['player'], birch)
+        self.assertEqual([e['player'] for e in status['state']['arrivalEffects']], [ash, birch])
         self.answer()
         self.tick()
-        self.assertEqual(self.status()['actions'][-1]['kind'], 'deed.award')
+        batch = self.status()['actions'][-1]
+        self.assertEqual(batch['kind'], 'story.effects')
+        self.assertEqual([(i['kind'], i['target']) for i in batch['items']], [('deed.award', ash), ('deed.award', birch)])
+        self.tick()
+        self.assertEqual(self.status()['actions'][-1]['id'], batch['id'], 'one batch at a time, waited for')
+        # The game refuses Ash's deed (a pause, the default): Birch's is not applied after it, and the story pauses.
+        self.conn.execute('SET LOCAL ROLE ratw_game')
+        self.conn.execute('UPDATE dm.actions SET status=%s,result=%s WHERE id=%s', ('applied', json.dumps(
+            [{'ok': False, 'text': 'That wolf is not in the world.'}, {'ok': False, 'held': True, 'text': 'Not applied.'}]), batch['id']))
+        self.conn.execute('SET LOCAL ROLE ratw_dm')
+        self.tick()
+        self.assertEqual(self.status()['status'], 'paused')
+        self.assertIn('deed.award for player-ash', self.status()['problem'])
+        retry = runner.direct(self.conn, self.world, 'retry', {'run': self.run, 'operator': 'human'})
+        self.assertNotEqual(retry['receipt'], batch['id'])
+        again = self.status()['actions'][-1]
+        self.assertEqual([(i['kind'], i['target']) for i in again['items']], [('deed.award', ash), ('deed.award', birch)])
         self.answer()
+        self.tick()
+        status = self.status()
+        self.assertEqual((status['status'], status['state']['phase']), ('running', 'crossing'))
         self.fact('notice posted', ash)
         self.tick()
         self.answer()
@@ -1016,10 +1026,15 @@ class RuntimeTests(unittest.TestCase):
         self.fact('conversation', self.cohort[0], 'rm112')
         self.tick()
         self.assertEqual(self.status()['state']['phase'], 'blockade')
-        for kind in ['story.phase', 'bandits.call', 'times.nudge', 'factions.sync']:
-            self.assertEqual(self.status()['actions'][-1]['kind'], kind)
-            self.answer()
-            self.tick()
+        # (Doc 85, Phase 7: the phase, then its opening effects together, in order, in one batch.)
+        self.assertEqual(self.status()['actions'][-1]['kind'], 'story.phase')
+        self.answer()
+        self.tick()
+        batch = self.status()['actions'][-1]
+        self.assertEqual((batch['kind'], [i['kind'] for i in batch['items']]),
+                         ('story.effects', ['bandits.call', 'times.nudge', 'factions.sync']))
+        self.answer()
+        self.tick()
         row = self.conn.execute(
             'SELECT stance FROM live.faction_relations WHERE world_id=%s', (self.world,)
         ).fetchone()
@@ -1029,10 +1044,14 @@ class RuntimeTests(unittest.TestCase):
         stale = runner.direct(self.conn, self.world, 'signal-ticket', data)['ticket']
         with self.assertRaises(ValueError):
             runner.direct(self.conn, 'another', 'signal', {'ticket': ticket})
-        self.assertEqual(runner.direct(self.conn, self.world, 'signal', {'ticket': ticket})['phase'], 'truce')
+        # (Doc 85, Phase 7: a direction goes into the runner's inbox, never refused for world events waiting.)
+        self.fact('conversation', self.cohort[1], 'rm112')
+        self.assertEqual(runner.direct(self.conn, self.world, 'signal', {'ticket': ticket})['status'], 'queued')
         self.assertEqual(
             runner.direct(self.conn, self.world, 'signal', {'ticket': ticket})['status'], 'already delivered'
         )
+        self.tick()
+        self.assertEqual(self.status()['state']['phase'], 'truce')
         with self.assertRaises(ValueError):
             runner.direct(self.conn, self.world, 'signal', {'ticket': stale})
         self.answer()

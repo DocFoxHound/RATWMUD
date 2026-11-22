@@ -236,6 +236,20 @@ void Game::sendBoard(Connection* c, const std::string& community)
         o.add("canTake", k->poster != me);
         work.push(o);
     }
+    // A world story's quests pinned on this board (doc 85, Phase 6: an offer with `board`), to the wolves who may take them.
+    auto quests = Value::array();
+    for (const auto& [id, s] : storylines_.all())
+        if (s.source == "storykeeper" && s.live())
+            for (const auto& o : s.offers.items())
+                if (o.string("board") == community && storyOfferOpen(s, o, me))
+                {
+                    auto q = Value::object();
+                    q.add("run", id);
+                    q.add("quest", o.string("quest"));
+                    q.add("title", o.string("title"));
+                    q.add("text", o.string("say", o.string("summary")));
+                    quests.push(q);
+                }
     auto notices = Value::array();
     for (const auto* d : documents_.onBoard("board:" + community))
     {
@@ -259,6 +273,7 @@ void Game::sendBoard(Connection* c, const std::string& community)
     e.add("type", "board");
     e.add("town", townWords(community));
     e.add("work", work);
+    if (quests.size()) e.add("quests", quests);
     e.add("notices", notices);
     e.add("noticeFee", double(NoticeFee));   // (For the form.)
     if (const auto festival = festivalBoard(community); !festival.isNull())
@@ -278,6 +293,22 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     {
         sendBoard(c, community);
         return result = {true, "", {}}, true;
+    }
+    if (verb == "quest")
+    {
+        // A story's quest taken from the board: checked again, then written as the runner reads it (from the board).
+        const auto run = j.string("run"), quest = j.string("quest");
+        const auto* s = storylines_.find(run);
+        const auto* o = storyOffer(run, quest);
+        if (!s || !o || o->string("board") != community || !storyOfferOpen(*s, *o, me))
+            result = {false, "That's no longer on offer.", {}};
+        else
+        {
+            storyQuestEvent("quest accepted", me, run, "board:" + community, quest);
+            result = {true, "You take on: " + o->string("title") + ".", {}};
+        }
+        sendBoard(c, community);
+        return true;
     }
     if (verb == "take")
     {
@@ -348,7 +379,7 @@ bool Game::boardCommand(Connection* c, const json::Value& j, Result& result)
     const auto onBoard = documents_.onBoard(board);
     // (The carters' wagon notices have pins of their own: they never take one a player needs.)
     if (std::count_if(onBoard.begin(), onBoard.end(), [](const auto* d) {
-            return d->author != CartersSign && d->author != WharfSign && d->author != StagedAuthor;
+            return d->author != CartersSign && d->author != WharfSign && d->author != StagedAuthor && d->author != "story";
         }) >= PerBoard)
         return result = {false, "Every pin is taken. Try tomorrow.", {}}, true;
     if (std::count_if(onBoard.begin(), onBoard.end(), [&](const auto* d) { return d->author == me; }) >= PerWriter)

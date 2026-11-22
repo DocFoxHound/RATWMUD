@@ -1,5 +1,7 @@
 # World stories in Dungeon Master
 
+**For admins, start with the Story Maker's guide: `Docs/Story-Maker-guide.md` (also the Dungeon Master suite's **Guide** tab).** It walks through a small quest in five minutes and a campaign of chapters, and explains every event, condition, action and effect from the trigger catalogue with an example. This page is the format in detail.
+
 Open **Dungeon Master → Story Creator → World stories**. Choose **New blank story**, compose triggers in a phase, and run **Rehearse all paths**. Use **Start from a story** to inspect a worked example. A player can also write and rehearse a program offline and give its JSON file to a DM. A Studio viewer can draft and rehearse. A DM can approve a release for the selected world. On a hosted world, a faction-relation change needs a builder or owner.
 
 | Example | What makes it advance |
@@ -82,6 +84,31 @@ The winter-ferries example includes two endings and a rehearsal that jumps direc
 
 World effects go through the existing approval and receipt system. An effect can run while a phase stays open. A trigger that also enters a phase delivers its effects before that phase’s ordinary queued effects. The journal opens the new phase first. Available consequences include changes to NPC speech, location, protection and revival, character injuries and practice, public works, household prosperity, harvests, shipping, festivals, faction relations and markets. The game applies its usual eligibility and placement rules. Rehearsal traces list trigger IDs, resulting counters, intended effects and rules omitted by the scenarios.
 
+### Version 2: variables and flow
+
+A program of `"version": 2` (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 5) declares its memory under
+`variables`: each `{"id", "type", "scope"}` with an optional first value (`initial`), a label to show it under (`show`,
+numbers, switches and timers) and a `note`. Types: `number`, `switch`, `text`, `wolf`, `resident`, `place`, `region`,
+`item`, `faction`, the lists `numbers`, `texts`, `wolves`, `residents` (up to 500 values), and `timer` (a moment: days
+since it started, on the `game` or `real` clock). Scopes: `story` (one value), `player` (one per wolf), `party` (one per
+party; a wolf in no known party is a party of one) and `world` (kept after the run, shared by every story of the world that
+declares the name with that type; `dm.story_world_vars`). A misspelt name is an error, not a new counter.
+
+Conditions add `compare` (two values: a constant, `{"var"}`, `{"field"}`, `{"count": list}`, `{"since": timer}`,
+`{"each": true}`, or `plus`/`minus`/`min`/`max` of two), `switch`, `in list`, `phase is`, `visit is`, `timer` (running,
+or less than N days left), `fired` (a trigger's firings this visit or run), `chance` (seeded; a rehearsal case may pin
+`rolls`) and `days since` (the phase, the run, or a timer variable). A variable of each wolf is read `of` `$actor` (the
+default) or `$each`. Actions nest: `if` (with `elif` and `else`), `each` (over the participants, the acting wolf's party
+or a list; `$each` in effects and variables), `random` (weighted choices), `wait` (the rest of the list later, for the same
+wolf and event; a campaign trigger's survives the phase), `run`, `enable` and `disable` (a trigger with `"enabled": false`
+starts off), `stop`, `note` (a line in the timeline only) and `finish` (an outcome for everyone, which ends the run, or
+for one wolf). State actions: `set`, `add`, `subtract`, `multiply`, `clamp`, `turn on`, `turn off`, `toggle`,
+`remember`, `list add`, `list remove`, `list clear`, `pick`, `start timer`, `stop timer`, and `shift` for a named timer.
+Up to 24 actions a trigger, counting nested ones, nested three deep. Rehearsal cases may add `seed`, `rolls`, `parties`,
+`expectVariables` (only those named) and `expectOutcome`. A version 1 program runs exactly as before; the workbench's
+**Make it version 2** (the op `upgrade`) declares its counters as numbers and rehearses the same. The bundled
+[breach at Greyfen](../Data/Storylines/programs/siege-at-greyfen.json) is version 2.
+
 ## Campaign missions
 
 A phase can offer up to 16 concurrent missions, each with one to eight objectives in order. A matching fact can advance one objective in each open mission. Set the required amount to count occurrences or add the units or coins recorded by an event. For example, four ropes can arrive in several gifts, and a marked or crafted rope counts toward a base rope request. Use filters to identify a recipient, item, place or detail when the action must be specific. A general letter or notice objective counts any matching letter or notice. A later objective can also match a field from the first objective using `sameAsFirst`. The missing-wagon search binds the notice ID in `detail`, so an answer to a different notice leaves the search open. The tool-chest mission uses the same rule for loan IDs.
@@ -100,6 +127,110 @@ Choose **missions completed** as a phase trigger, select the required missions, 
 
 The catalogue is available in [event-library.json](../Data/Storylines/event-library.json). The complete campaign and its rehearsal cases are in [river-relief.json](../Data/Storylines/programs/river-relief.json).
 
+## Quests and a living audience (version 2)
+
+A version 2 story may declare up to 32 `quests` (Docs/Design/85-story-triggers-and-campaign-control.md, 3.6 and Phase 6). A
+quest is a mission that any wolf the story lets in can pick up, that lasts the campaign (or, with `"lifetime": "phase"`, its
+phase), and that carries its own rewards. In the Story Creator, **New… → A small quest** makes one in a few questions: who
+gives it, what to do, the reward.
+
+| Field | Meaning |
+| --- | --- |
+| `scope` | `player` (each wolf's own copy), `party` (one copy for the party the wolf was in when it started; its members are fixed then, and one who leaves keeps the credit earned so far), `story` (one copy for everyone; `contributors` different wolves needed) |
+| `objectives` | 1–12: an event of a wolf (or a story signal) with filters, `goal` and `measure` as missions; `after` names the objectives that must be done first (none: open from the start); `optional`; `hidden` (not in the journal until revealed or done) |
+| `giver`, `offer` | The resident who offers it in their dialogue window and takes it back: the wolf's words to ask, the resident's offer in their own voice (`say`, which may use the talk library's `#symbols#`), accept, decline, hand in, thanks |
+| `handIn` | With a giver (the default), a quest whose required objectives are done is **ready** and finished by handing it in to the giver |
+| `join` | `who` may take it (`anyone` in an open or everyone story, else `participants`), the story `region` to stand in, `cap` (copies under way at once) and `limit` (starts in all) |
+| `phases`, `repeat` | When it is offered; `once`, `daily`, `weekly` or `always` again after it is done (a failed or abandoned quest may be taken again at once) |
+| `fail` | Up to four: an event (`{"on": "death", "match": {"actor": "rm111"}}`) or a deadline (`{"afterDays": 3}`) |
+| `rewards`, `bonus` | Story effects given when it is done, to each wolf with credit where they name `$actor`, once otherwise; the bonus when every optional objective was done too. Coins come from a named purse, never minted: `character.grant` with `purse` (`town:<town>` its treasury, `town:<town>:works`, `watch` or `church`, `till:<id>`, `chapter:<id>`), refused when the purse is short (the story notes it and carries on). Also `item.give`, `standing.adjust`, `deed.award`. |
+| `abandon` | Whether the journal lets a wolf put it aside (default yes) |
+
+An audience may be `{"kind": "open"}` (nobody at first: a wolf comes in by taking a quest or by `participant.add`) or
+`{"kind": "everyone", "days": 30}` (the wolves active in the last 30 days, and each who signs in), each with an optional
+`cap` (up to 5,000). A phase with quests open in it goes on without exits or triggers: a small quest is one phase and one
+quest. Triggers can `quest.offer`, `quest.start`, `quest.complete`, `quest.fail`, `objective.complete`, `objective.fail`,
+`objective.reveal`, `objective.progress`, `participant.add`, `participant.remove`, and lay a choice over a resident's window
+with `npc.offer` (the wolf's words, the resident's reply; picking it is a `dialogue choice` event). They hear `quest accepted`,
+`quest declined`, `quest handed in`, `quest abandoned`, `party joined`, `party left` from the game, and the story's own
+`quest started`, `quest completed`, `quest failed` and `objective completed`. A rehearsal case may give an open story an empty
+`cohort` and assert `expectQuests` (`{"quest": {"wolf" | "party:<id>" | "story": "done"}}`).
+
+The journal shows each quest with its objectives (optional, hidden, failed, counts), what must come first, its deadline,
+"return to" its giver when ready, the story's shown variables as trackers, and Abandon (or Accept and Decline for a quest
+offered with no giver). The Campaigns console's **Quests** tab is the grid of wolves (or parties, or the story) and
+objectives, with Complete, Set progress, Reveal, Fail, Reset, Give the quest, Take it away; **Wolves & map** adds and removes
+wolves. Each wolf's own state of such a story is kept in `dm.story_player_state` (migration 0075).
+
+## The world's facts and the watched events (version 2)
+
+A version 2 condition may read the world as it was when the event happened (Docs/Design/85-story-triggers-and-campaign-control.md,
+3.3, 3.4 and Phase 8): where a wolf is, what they carry, the hour, the weather, standing, a resident's state, a quest's state.
+`who` is `$actor` (the default), `$each` inside For each over wolves, or a wolf's id.
+
+| Condition | Parameters | True when |
+| --- | --- | --- |
+| `wolf here` | `who` | the wolf is in the world (signed in) |
+| `wolf in region`, `wolf in place`, `wolf in town`, `wolf indoors` | `who`, `region` / `place` / `town` / `is` | where the wolf stands now |
+| `count in region` | `region`, `op`, `value` | so many of the story's wolves stand in the region (StarCraft's Bring) |
+| `carries`, `coins` | `who`, `item`, `op`, `value` | what the wolf has in their pack (a marked or crafted item counts as its base item), their purse |
+| `standing`, `reputation` | `who`, `faction` or `town`, `op`, `value` | their Chapter's standing with a faction or House (-100..100); what a town's residents who know them think (liking less disliking) |
+| `wolf is` | `who`, `state` (`downed`, `hurt`, `wanted`, `held`), `is` | downed in a fight, carrying wounds or an injury, wanted by the watch, held in a gaol |
+| `party size`, `in party with` | `who`, `op`, `value` / `other` | the wolf's party (1: alone); both in one party |
+| `resident is`, `resident in place`, `resident in region`, `resident has` | `npc`, `state` / `place` / `region` / `what` (`job`, `mood`, `mantle`, `town`) and `value` | a named resident alive or dead, indoors, where, their kind of work, mood, mantle, town |
+| `hour between`, `calendar is` | `from`, `to` / `what` (`weekday`, `season`, `period`), `value` | the hour (22 to 4 runs through midnight), Marketday or Restday, the season, dawn, day, dusk or night |
+| `weather is` | `where` (`$actor`: where the acting wolf is, or a place), `weather` | clear, overcast, rain, storm, fog, snow or sandstorm (indoors: the weather outside) |
+| `relation is` | `faction`, `op` (`=`, `!=`, `>=` at least, `<=` at most), `stance`, `other` | one faction's stance toward another, in the order war, hostile, tense, neutral, friendly, allied |
+| `quest is`, `objective is` | `quest`, `objective`, `of` (`$actor`, `$each`, `story`), `status` | a quest's state for the wolf (their party's copy for a party quest) or the story's copy; an objective done, failed, to do or hidden |
+
+A fact that is missing (the wolf is away, the game has written no facts yet) makes the condition **unknown**, and unknown never
+fires, not even under `not`. The facts travel with the event log: while a story asks for them, the game writes one document
+of the world's facts (`game.story_facts`, migration 0076) with every write of its events, in the same transaction, and the
+runner reads each event with the facts written with it, so a fact is never older than its event (and at most a second newer).
+A wait resumes with the facts of the moment it resumes. What the game puts in the document is worked out from the program
+when it is approved (its **watch list**, sent with each phase): a story that asks nothing costs nothing. A rehearsal case
+states the world as `facts` (`wolves`, `residents`, `world`, `weather`, `relations` by id, as the game writes them), and a
+fact of the case may change it from then on, section by section (`null` takes a wolf or a resident away).
+
+Twenty-four events are written by the game only while a live story listens for them (they are marked `watch` in the
+catalogue): `door opened`, `door closed`, `door locked` (a wolf tried a locked door); `building entered`, `building left`;
+`region occupied` and `region emptied` (the story's wolves in one of its regions go from none to one, or back; signing in
+inside a region now counts as entering it); `weather changed` (in a place the story names, or where a wolf stands);
+`hour`, `day begins` (with the weekday), `dawn`, `night falls`, `season begins`; `item picked up`, `item dropped`; `trade
+done` (bought or sold, with the coins); `dialogue opened`, `dialogue node`, `dialogue closed`; `crime seen` (the witness,
+the offender, the victim); `wolf downed`, `wolf revived`; `party formed`, `party ended`. The Campaigns console's Waiting for
+shows the world as the game last told the story, and its Why not judges each logged event with the facts written with it.
+
+## World effects, what is undone at the end, and who may send them (Phase 9)
+
+The world effects of Docs/Design/85, Phase 9 (telling the wolves, journal notes, map markers, trackers, taking items, warrants,
+strangers, mantles, holds, followers, doors, items on the ground, notices, the weather, market events, prices, projects, deeds,
+personal quests, stopping a scene) are each in the catalogue with their parameters, a sentence and help; the guide lists them
+all with an example. **What the game undoes when a run ends** (`story.stop`, `story.finish`, an ending phase): a door's lock
+as it was before the story first touched it (`door.lock`, `door.unlock`), held residents (`npc.hold`), residents sent along
+(`npc.follow`), strangers (`visitor.add`), mantles bound (`mantle.assign`), notices (`board.post`), the weather
+(`weather.set`) and the maps' markers (`story.ping`); journal notes stay, and everything given (items, coins, deeds, standing,
+warrants, relations, market events, prices, projects) stays. **The permission marks** in the catalogue drive every hosted
+check: `actsOnWolves` (`character.injury`, `story.area.damage`, `item.take`, `warrant.issue`) needs the owner or "may act on
+players' wolves"; `needsBuilder` (`faction.relation`, `standing.adjust`, and since Phase 10 `prices.reset`,
+`project.complete`, `project.cancel`) needs a builder or the owner, to approve the story and to steer a control that could
+release it. The rest need what the same act needs by hand on LIVE: a Dungeon Master.
+
+## Chapters, world variables and other stories (Phase 10)
+
+A **campaign of chapters** is several stories approved together, in order (`Campaigns → New campaign…`, op `campaign.approve`;
+`dm.story_campaigns`, migration 0079). The first is published with a ticket; a chapter starts the next with the story's own
+effect `story.start` (`story`: a chapter of the same campaign; `audience`: `same`, `own` or `list` with `list` a declared list of
+wolves; `carry`: the story and per-wolf variables the next declares with the same name, scope and type start with this one's
+values, yes by default; `when`: `ended`, the default, once this story has ended in the game so what it held is let go first,
+or `now`). A story that starts another is refused when approved alone; a rehearsal case may expect `expectChapters`. Every
+other live story that listens hears `story started` and `story ended` (target: the other story's id; item: its run; detail:
+the campaign, or how it ended), through its command inbox. **World variables** may be declared for the world in Campaigns →
+World variables (a type, a first value, a note; set and removed there with a reason, audited `story.world-var`; op
+`world-var`); a story declaring one as another type is refused at approval. The events Phase 8 left are watched too: `near
+resident` (names the resident), `purse crossed` (names the purse and the amount in `detail`), `standing crossed` (the faction
+and the number), `relation changed`, `mantle bound`, `mantle released`, `skill practised` (a whole step), `injury healed`.
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.
@@ -116,9 +247,13 @@ The portable format is `ratw-story-program`, version 1. A program has an ID, tit
 
 Approval requires passing scenarios covering every reachable phase. The digest covers the entire document, including audience, tests, guest speakers and effects. Approval saves that revision in its target database and returns a publication ticket valid for one day. Clicking **Publish approved story** or handing the ticket to the bridge starts that exact release. Reusing the ticket returns the existing run.
 
-The runner observes checkpointed world events, persists its cursor and votes, and queues each entry’s journal message and effects in order. It waits for a receipt before sending the next effect. A refusal or expiry pauses the run and records the reason. Refresh **Releases** to inspect votes, phase history, queue receipts and delegated lines. **Stop run** cancels future phases and queues journal closure. Previously delivered effects, including faction changes, persist under their normal game rules. Once the underlying condition has been corrected, **Retry refused or expired action** resubmits that one effect and preserves earlier progress; if the game applied it after all, the run simply resumes. An area reward skips a participant whose pack is full and tells them. A changed program requires a new approval.
+The runner observes checkpointed world events, persists its cursor and votes, and queues each entry’s journal message and effects in order. It waits for a receipt before sending the next effect. A refusal or expiry pauses the run and records the reason. The Dungeon Master's **Campaigns** tab (beside Story Creator; doc 85, Phase 1) lists every run and refreshes itself every 2 seconds: where each is, who is in it and who is in the world now, what happened last, what it is waiting for, and its alerts (paused, the game not answering, falling behind, quiet). One run shows its timeline (phase visits, triggers fired with the values they changed, orders with their receipts, and the admins' commands, merged), its triggers, counters and timers, the missions per wolf, its wolves on the map, its orders and an audit. Since Phase 2 a Dungeon Master steers a run from there: hold and resume (catching up on what happened meanwhile, or from now), hold all, stop, send a signal, fire a trigger (its conditions checked or not), turn a trigger off and on, go to any phase (with or without its entry effects), set a counter, fire, move, cancel or start a timer, complete or reset a mission for a wolf, retry or skip a stuck order, tell the story's wolves (the new `story.tell` order) and start an embedded scene. Each is a command in `dm.story_commands` that the runner takes first in its next tick, between two world events; each asks for a reason, is refused if the story has moved on to another visit or version, is done once if sent twice, and is written to `dm.audit` with its values before and after. On a hosted world only the owner, or an account the owner marked "may steer campaigns", steers. **Stop…** cancels future phases and queues journal closure; the run is *stopping* until the game acknowledges. Previously delivered effects, including faction changes, persist under their normal game rules. Once the underlying condition has been corrected, **Retry** (on a paused run, for a refused or an expired order) resubmits that one effect and preserves earlier progress; if the game applied it after all, the run simply resumes. An area reward skips a participant whose pack is full and tells them. A changed program requires a new approval.
 
-The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Apply migrations through 0070 for the event tile columns. Use the matching runner, Studio, native library, game server and world-story client. The runner and native game exchange receipts through the world database. It uses no model or AI key.
+Since Phase 3 ("Explain it") the console also says **why**. The Overview's *Waiting for* lists every trigger and exit of the phase, each with where it stands (on or off, used up and for whom, due when, sent by what), its conditions as a tree marked true, false or unknown with the values behind them, and the wolves of the story it could fire for now (those in the world first); *Why not?* shows the last ten events of its kind and where each stopped (a filter that did not match, with what it held and what was wanted; a wolf not in the story; turned off; already fired; a condition false, judged with today's values). *What if…* runs a made-up event or signal through the rules on a copy of the run (nothing is saved or sent), and every steering dialog's "This will do" is now a dry run: the command taken by the runner's own code on the run as it stands, in a transaction that is rolled back. *Next by itself* lists the timers with an estimate in real time from the world's speed. New alerts: **cannot move on** (nothing in the phase can still fire by itself: each trigger off, used up, waiting for wolves gone 14 days, or a signal nothing left can send), a **timer overdue** (5 minutes past due), the **audience nearly full** (90% of 500). The "needs you" alerts and the runner down also show as a count on the Campaigns tab, a line on LIVE, and (told once to each Dungeon Master in the world) in the game's Dev Console. Each world's owner may change the alert rules (*Alert rules…*), and a program may set its own `quietAfterHours` (0: slow on purpose). In Story Creator a **Problems** list shows every problem of the draft at once, each with **Go**: the program's errors, warnings the program alone can tell (a signal sent that nothing hears, one heard that nothing sends, a counter read that nothing sets, a timer cancelled that nothing starts), the triggers the last rehearsal did not reach, and for a Dungeon Master the world's references, including those approval does not check (markets, harvest areas, towns, ships, the tiles of `npc.move` and `project.post`, exits' filters and prerequisites, wolves and items in filters).
+
+**A new version of a running campaign** (doc 85, Phase 5b). A changed program is still a new approval, but it can be approved *as a new version of a run* (Story Creator, under the approval: "or as a new version of a running campaign", for a live run of the same story id) and the run moved onto it from the Campaigns console (**⇪ Move onto a new version…**). The console shows what changed (triggers, variables, phases, missions, timers, regions, scenes) and what the run keeps, resets, sets back to its first value and drops, each with why: variables by name, scope and type (a version 1 run's counters as version 2 names them: a wolf's counter named in both scopes is `<name>.player`), timers whose signal is still heard, a mission's progress while its objectives are the same, a trigger's once-marks and on/off by trigger, a pending Wait only while what it still has to run is unchanged; a trigger the new version starts off is turned off. If the new version no longer has the run's phase, the admin names the phase it lands in. The move is a command like the others (a reason, a dry run, audited), taken between two world events in the same visit: no entry effect is sent again, nothing given is taken back, and the game is told the new words, regions and missions for the visit (`story.phase` with `revise`). If the game refuses them, the run goes back to the version it was on. The timeline says "moved to version … by …", the Audit tab lists the versions, and commands made against the old version are refused.
+
+The packaged world starts and supervises the runner after migration. On an unpackaged server, run the following under the world’s DM service credentials alongside the game. Apply migrations through 0074, 0077 and 0078 (0078 for the trigger history's rule; 0070 for the event tile columns; 0071 for the command inbox, the runner's heartbeat and "may steer campaigns"; 0072 for each world's alert rules and the alerts the game tells its Dungeon Masters; 0073 for drafts; 0074 for a run's versions; 0077 for world variables). Use the matching runner, Studio, native library, game server and world-story client. The runner and native game exchange receipts through the world database. It uses no model or AI key.
 
 ```sh
 python3 tools/story_runner.py --world WORLD_KEY
@@ -130,7 +265,15 @@ On the laptop’s Ridgemere 3, which `Saved/WorldAgent/run.sh` hosts, start the 
 python3 tools/story_runner.py --world ridgemere3 >> Saved/WorldAgent/stories.log 2>&1 &
 ```
 
-Known for later: a scene input that settles a beat with a new world fact saves the game synchronously on the game thread, through `Game::save`. A crowded scene can cause a brief hitch.
+**How fast it follows the world** (doc 85, Phase 7). While a world story is live the game writes its events to the log every second between saves (they used to wait for the next save, up to 30 seconds), and each write wakes the runner (channel `ratw_events`); a console command wakes it too (`ratw_story`). The runner reads until it has caught up, a page of 1,000 events at a time, and sends what a turn's triggers asked for to the game together: one `story.effects` order holding them all (up to 61 effects and the journal's own orders), applied in order and answered order by order. The game looks for orders four times a second once told of one. A scene's outcome (a vote, a reply, a resident arriving or speaking for a story) no longer saves the whole world on the game thread: it asks for a save within half a second, written in the background with the outcome's events in the same transaction. On a copy of DEV's Ridgemere 2.0 a resident's next line now follows the last within about a second, where it took about a minute. Old trigger history goes by a rule (migration 0078): older than 90 days, except a run's newest 10,000.
+
+**When the game refuses an effect.** Every world effect may say what the story does then, with `ifRefused`: `"pause"` (the default: the run pauses, and the effects after it in the same batch wait with it), `"skip"` (noted in the run's history, and the story carries on), or `"when here"` (for an effect to one wolf: held, and sent again the next time that wolf comes into the world, for up to `waitDays` real days, 7 when not said). A quest's reward is `"when here"` unless it says otherwise. In the Story Creator it is the "if refused" box after each world effect. In the console, a paused run's stuck order can be retried (with the orders after it), held for its wolf (**Retry when … is next here**), or skipped; the Orders tab lists the effects waiting for their wolf.
+
+```json
+{"do": "effect", "effect": {"kind": "deed.award", "player": "$actor", "detail": "Brought the rope.", "ifRefused": "when here", "waitDays": 14}}
+```
+
+A direction redeemed from a ticket is no longer refused while world events wait past the run's cursor: it goes into the runner's inbox and lands between two world events, as the console's commands do.
 
 ## AI authoring and direction
 
@@ -170,4 +313,4 @@ The optional top-level `triggers` array defines campaign triggers. A phase can s
 
 Choose **Separate timer for each participant** for an individual deadline within a shared campaign. A second player can start the same named timer and keep a different deadline. Cancelling a personal timer affects the character who caused that event. A shared timer has one deadline for the whole campaign.
 
-**Live trigger history** records the phase visit, actor, event or timer, fired rule and actions in the transaction that advances the cursor. Inspect counters, active deadlines and game receipts in **Releases**. The DM status API accepts `beforeVisit` and `beforeTrigger` cursors to page through earlier visits and trigger firings. Player journals show the most recent 32 visits. Older visits remain available in the DM history.
+**Live trigger history** records the phase visit, actor, event or timer, fired rule and actions in the transaction that advances the cursor. Inspect counters, active deadlines and game receipts in **Campaigns**. The DM status API accepts `beforeVisit` and `beforeTrigger` cursors to page through earlier visits and trigger firings, `since` (`{visit, trigger}`) for only what is newer, and `have` (a digest) to leave out a program the console already holds; the `timeline` op merges visits, firings and orders, newest first, with `before` and `since` cursors. The `explain` op (a read) answers what a run waits for, and with `trigger` or `exit` why it has not fired, with `fact` what an event would do, with `command` what a console command would do; `problems` checks a draft; `alerts` is the summary for the tab bar and LIVE; `alert-rules` changes a world's rules. Player journals show the most recent 32 visits. Older visits remain available in the DM history.

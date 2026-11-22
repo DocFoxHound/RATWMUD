@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import type {Component} from './StoryTriggerEditor';
+import type {Component} from '../lib/workbench';
 
 export type MissionMode = 'individual' | 'group' | 'either';
 export interface Objective {

@@ -163,6 +163,12 @@ void World::practise(const std::string& who, const std::string& sourceId, const 
         day.gained += gain;
         const double before = *value;
         *value = std::min(cap, *value + gain + extra);
+        // (Doc 85, Phase 10: a skill past a whole step, for a story that listens.)
+        if (std::floor(*value) > std::floor(before) && storyListens("skill practised"))
+        {
+            const auto [x, y] = eventTile(*e);
+            recordEvent({"skill practised", who, {}, e->cellId, 0, 0, s->id, int(std::floor(*value)), 0, {}, x, y});
+        }
         // Growth lines (doc 49, 4): when it passes a whole step, at most one each two minutes; once at the cap.
         if (*value >= cap)
             notice(who, practice::capText(*s));

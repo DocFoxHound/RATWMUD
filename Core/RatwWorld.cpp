@@ -1058,6 +1058,29 @@ const Door* World::door(const std::string& id) const
     return it == doors_.end() ? nullptr : &it->second;
 }
 
+Result World::setDoorState(const std::string& id, int open, int locked)
+{
+    const auto it = doors_.find(id);
+    if (it == doors_.end() || it->second.passage || it->second.boundary || id.rfind("stairs_", 0) == 0)
+        return {false, "No such door.", id};
+    auto& d = it->second;
+    auto* other = !d.linkedDoor.empty() && doors_.count(d.linkedDoor) ? &doors_.at(d.linkedDoor) : nullptr;
+    if (open == 1 && (locked == 1 || (locked == -1 && d.locked)))
+        return {false, d.name + " is locked.", id};
+    for (auto* side : {&d, other})
+    {
+        if (!side)
+            continue;
+        if (locked != -1)
+            side->locked = locked == 1;
+        if (open != -1)
+            side->open = open == 1;
+        if (locked == 1)
+            side->open = false;
+    }
+    return {true, d.name + (d.locked ? " is locked." : d.open ? " stands open." : " is shut."), id};
+}
+
 namespace
 {
 constexpr double FreeStep = 0.5, RampStep = 1.0;
@@ -2818,7 +2841,13 @@ Result World::interact(const std::string& id, const std::string& target, const s
         if (verb == "open" || (verb == "enter" && d.portal && d.open))
         {
             if (locked)
+            {
+                if (!a->npc && storyListens("door locked"))   // (Doc 85, Phase 8: a story's watched doors.)
+                    recordEvent({"door locked", id, d.id, d.cellId, 0, 0, {}, 0, 0, d.name});
                 return {false, "It is locked.", target};
+            }
+            if (!d.open && !a->npc && storyListens("door opened"))
+                recordEvent({"door opened", id, d.id, d.cellId, 0, 0, {}, 0, 0, d.name});
             d.open = true;
             if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
                 doors_.at(d.linkedDoor).open = true;
@@ -2862,6 +2891,8 @@ Result World::interact(const std::string& id, const std::string& target, const s
                     if (e.second.cellId == other.cellId && doorCovers(other, e.second.position))
                         return {false, "Someone is crossing the far threshold.", target};
             }
+            if (d.open && !a->npc && storyListens("door closed"))
+                recordEvent({"door closed", id, d.id, d.cellId, 0, 0, {}, 0, 0, d.name});
             d.open = false;
             if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
                 doors_.at(d.linkedDoor).open = false;
@@ -3227,6 +3258,8 @@ bool World::throughDoor(Entity& a, const Cell& c, Vec2 direction, Vec2 proposed,
             continue;
         if (!d.open)
         {
+            if (!a.npc && storyListens("door opened"))
+                recordEvent({"door opened", a.id, d.id, d.cellId, 0, 0, {}, 0, 0, d.name});
             d.open = true;
             if (!d.linkedDoor.empty() && doors_.count(d.linkedDoor))
                 doors_.at(d.linkedDoor).open = true;

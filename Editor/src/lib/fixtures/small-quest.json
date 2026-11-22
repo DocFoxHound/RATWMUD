@@ -1,0 +1,116 @@
+{
+  "format": "ratw-story-program",
+  "version": 2,
+  "id": "rope-for-the-carter",
+  "title": "Rope for the carter",
+  "audience": {
+    "kind": "open"
+  },
+  "start": "open",
+  "phases": [
+    {
+      "id": "open",
+      "journal": "The carter at the ford has lost his load to a snapped rope.",
+      "effects": [],
+      "exits": []
+    }
+  ],
+  "quests": [
+    {
+      "id": "rope-for-the-carter",
+      "title": "Rope for the carter",
+      "summary": "The carter at the ford has lost his load to a snapped rope.",
+      "scope": "player",
+      "repeat": "weekly",
+      "giver": "rm111",
+      "offer": {
+        "say": "My rope snapped at the ford and the load went in. Could you find me some?",
+        "accept": "I'll find you some rope.",
+        "handIn": "Here is your rope.",
+        "thanks": "That's me moving again. Thank you."
+      },
+      "handIn": true,
+      "objectives": [
+        {
+          "id": "step-1",
+          "label": "Ask the carter what he needs.",
+          "on": "conversation",
+          "match": {
+            "target": "rm111"
+          }
+        },
+        {
+          "id": "step-2",
+          "label": "Bring him two coils of rope.",
+          "on": "gift",
+          "match": {
+            "target": "rm111",
+            "item": "rope"
+          },
+          "goal": 2,
+          "measure": "quantity",
+          "after": [
+            "step-1"
+          ]
+        }
+      ],
+      "rewards": [
+        {
+          "kind": "character.grant",
+          "player": "$actor",
+          "coins": 12,
+          "purse": "town:greyfen",
+          "reason": "the carter's thanks"
+        }
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "name": "A wolf takes it, does it and hands it in",
+      "cohort": [],
+      "events": [
+        {
+          "id": "take",
+          "kind": "quest accepted",
+          "day": 0,
+          "actor": "player-test",
+          "item": "rm111",
+          "detail": "rope-for-the-carter"
+        },
+        {
+          "id": "step-1",
+          "kind": "conversation",
+          "day": 0.01,
+          "actor": "player-test",
+          "target": "rm111"
+        },
+        {
+          "id": "step-2",
+          "kind": "gift",
+          "day": 0.02,
+          "actor": "player-test",
+          "target": "rm111",
+          "item": "rope",
+          "quantity": 2
+        },
+        {
+          "id": "hand-in",
+          "kind": "quest handed in",
+          "day": 0.5,
+          "actor": "player-test",
+          "item": "rm111",
+          "detail": "rope-for-the-carter"
+        }
+      ],
+      "expect": [
+        "open"
+      ],
+      "expectQuests": {
+        "rope-for-the-carter": {
+          "player-test": "done"
+        }
+      }
+    }
+  ]
+}

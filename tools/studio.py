@@ -1351,7 +1351,13 @@ WOLF_KINDS = ('character.kill', 'character.injury', 'character.resurrect', 'char
 CHEAT_KINDS = ('character.gift', 'account.unlock')
 # A world story's effects that hurt players' wolves (character.injury on a player, damage to everyone in an area): an
 # approval with any of them needs the flag, as the same acts by hand do.
-STORY_WOLF_KINDS = frozenset({'character.injury', 'story.area.damage'})
+# (Doc 85, Phase 9: read from the catalogue's actsOnWolves: taking an item, a warrant, as well.)
+def _story_wolf_kinds():
+    import story_program
+    return story_program.WOLF_EFFECTS
+
+
+STORY_WOLF_KINDS = _story_wolf_kinds()
 
 
 def story_effect_kinds(program) -> set:
@@ -1360,10 +1366,13 @@ def story_effect_kinds(program) -> set:
     kinds = set()
     if not isinstance(program, dict):
         return kinds
+    import story_triggers
+
     def scan_triggers(triggers):
         for t in triggers if isinstance(triggers, list) else []:
-            for a in (t.get('actions') if isinstance(t, dict) else None) or []:
-                if isinstance(a, dict) and isinstance(a.get('effect'), dict):
+            # (Every action, nested ones too: a version 2 If, For each or Random holds actions of its own.)
+            for a in story_triggers.walk_loose((t.get('actions') if isinstance(t, dict) else None) or []):
+                if isinstance(a.get('effect'), dict):
                     kinds.add(str(a['effect'].get('kind')))
     for phase in program.get('phases') if isinstance(program.get('phases'), list) else []:
         if not isinstance(phase, dict):
@@ -1373,6 +1382,11 @@ def story_effect_kinds(program) -> set:
                 kinds.add(str(e.get('kind')))
         scan_triggers(phase.get('triggers'))
     scan_triggers(program.get('triggers'))
+    # (Doc 85, Phase 6 and 9: a quest's rewards are effects the story may deliver too.)
+    for q in program.get('quests') if isinstance(program.get('quests'), list) else []:
+        for e in [*(q.get('rewards') or []), *(q.get('bonus') or [])] if isinstance(q, dict) else []:
+            if isinstance(e, dict):
+                kinds.add(str(e.get('kind')))
     return kinds
 # Accounts on a community world are pairwise ids (doc 77: "acct-" and 32 hex); the Editor shows the first 8.
 ACCOUNT_ID = re.compile(r'acct-([0-9a-f]{8})[0-9a-f]{24}')
@@ -1748,6 +1762,8 @@ class HostedStudio:
             raise D.DMError('Your Editor session ended: sign in again.', 401)       # (Never admin: doc 78, 6.3.)
         return {'username': session['username'], 'account': session.get('account', ''), 'role': role,
                 'mayActOnWolves': bool(session.get('mayActOnWolves')) or role == 'owner', 'hosted': True,
+                # (Doc 85, 5.7: steering a running campaign; the owner always.)
+                'maySteerCampaigns': bool(session.get('maySteerCampaigns')) or role == 'owner',
                 'cheats': self.hosted.cheats()}
 
     def answer(self, session, method, path, query, headers, body):
@@ -1819,9 +1835,15 @@ class HostedStudio:
                 raise D.DMError(f'{kind} is a cheat on a community world. {CHEATS_OFF}', 403)
             if kind in WOLF_KINDS and not who['mayActOnWolves']:
                 raise D.DMError(WOLVES_REASON, 403)
-        story_approval = path == '/api/dm/story-program' and data.get('op') == 'approve'
+        story_approval = path == '/api/dm/story-program' and data.get('op') in ('approve', 'campaign.approve')
         if story_approval and not who['mayActOnWolves'] and STORY_WOLF_KINDS & story_effect_kinds(data.get('program')):
             raise D.DMError(WOLVES_REASON, 403)   # (A story's effects are the same acts as the actions route's, Q24.)
+        if story_approval and data.get('op') == 'campaign.approve' and not who['mayActOnWolves']:
+            # (Doc 85, Phase 10: a campaign's chapters, each as its own approval would be.)
+            chapters = (data.get('campaign') or {}).get('chapters') if isinstance(data.get('campaign'), dict) else None
+            for ch in chapters if isinstance(chapters, list) else []:
+                if isinstance(ch, dict) and STORY_WOLF_KINDS & story_effect_kinds(ch.get('program')):
+                    raise D.DMError(WOLVES_REASON, 403)
         if data and (story_approval or path in PLACING_ROUTES or path.startswith('/api/atlas/layers/')) and self._dev():
             try:
                 place = self.publisher.ahead(data)
