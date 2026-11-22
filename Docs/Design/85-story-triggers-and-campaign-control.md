@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b, 6 and 7 are built (section 6, "Phase 1 as built" to "Phase 7 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 5, 5b, 6, 7 and 8 are built (section 6, "Phase 1 as built" to "Phase 8 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -19,7 +19,8 @@ Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes
 workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
 (from `r3-camp-p4`), and Phase 5b (moving a running campaign onto a new version), on branch `r3-camp-p5b` (from `r3-camp-p5`),
 which closes Slice B, Phase 6 (quests and a living audience), on branch `r3-camp-p6` (from `r3-camp-p5b`), and Phase 7 (batched
-effects and a faster runner), on branch `r3-camp-p7` (from `r3-camp-p6`): see "Phase 1 as built" to "Phase 7 as built" in section 6.
+effects and a faster runner), on branch `r3-camp-p7` (from `r3-camp-p6`), and Phase 8 (world facts and new events), on branch `r3-camp-p8`
+(from `r3-camp-p7`): see "Phase 1 as built" to "Phase 8 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -2112,6 +2113,91 @@ it fast. Known problems 1, 2, 3 and 11 are gone, 6 is the author's choice now, a
 - The new events of 3.3, the watched ones through the watch list; signing in inside a region counts.
 - Tests: one game test per new event; a `world_check` run to show the cost with no story live is nil and with
   ten live is within the tick budget.
+
+**Phase 8 as built** (2026-11-22, branch `r3-camp-p8`, on `r3-camp-p7`). Migration `0076`; no new game order (`story.phase` gains
+`watch`); 23 new conditions (21 over the world's facts, 2 over quests), 24 new events; version 2 only for the conditions.
+- **The facts** (`game.story_facts`, migration `0076_story_facts.sql`, `game.record_story_facts`). **Decided (mine): one document per
+  world, not per run**: the union of what the live stories watch (a condition reads only what it names), so ten stories cost one
+  document. The game writes it with **every write of its events, in the same transaction** (Phase 7's early writes on the store's
+  worker and every checkpoint's: `Game::handEventsToStore` builds it on the game thread as the events are handed over,
+  `DbStore::queueFacts`, `writeFacts` after `game.record_events`), as of the newest event written with it (`as_of_event`); a write whose
+  facts are the same moves the newest row on instead of adding one; rows older than a day go as new ones come (the newest kept). An
+  event's facts are those of the first row at or after it: never older than the event, at most one write newer (a second while a story
+  is live). Sections: `wolves` (every wolf in the world, by id: `cell`, `x`, `y`, `indoors`, `town`, `party`, `partySize`, `carries` of
+  the watched items by base item, `coins`, `standing` with the watched factions (their Chapter's, effective), `reputation` in the
+  watched towns (residents who know them, liking less disliking, worked out at most every 10 s), `downed`, `hurt`, `wanted`, `held`;
+  a wolf away is absent), `residents` (the named: `alive`, where, `indoors`, `job` and `mood` as their talk has them, `mantle`, home
+  `town`), `world` (`day`, `hour`, `minute`, `weekday`, `season`, `period`, `dayOfSeason`, `year`), `weather` (the named places and,
+  when asked, where the wolves stand; indoors the street's), `relations` (`a>b`: the stance). Nothing is written while no live story
+  asks (`Game::refreshStoryWatch`, from each live storyline's `watch`, kept with the storyline and restored on load).
+- **The watch list** (`story_program.watch_of`, sent by the runner with every `story.phase`, the revise of a move too): the sections and
+  the items, factions, towns, residents, places and relations the conditions name, and the watched events the triggers, exits,
+  missions and quests (objectives and fail rules) listen for. The 8 examples watch nothing.
+- **Conditions** (`story_triggers.FACTS_V2`, `QUEST_V2`; `fact_test`, `quest_test`; `Dispatch2::fact`, `quest` in
+  `Core/RatwStoryTriggers.cpp`): `wolf here`, `wolf in region`, `wolf in place`, `wolf in town`, `wolf indoors`, `count in region`,
+  `carries`, `coins`, `standing`, `reputation`, `wolf is` (downed, hurt, wanted, held), `party size`, `in party with`, `resident is`,
+  `resident in place`, `resident in region`, `resident has` (job, mood, mantle, town), `hour between`, `calendar is` (weekday, season,
+  period), `weather is`, `relation is`, and `quest is`, `objective is`. `who` is `$actor`, `$each` or a wolf. The facts ride on the
+  event as `facts` (the clock and its timers, signals and the story's quest facts carry those of the event that caused them); a wait
+  keeps none and resumes with the facts of its moment. A missing fact is unknown (never fires, not under `not`); a missing item is 0,
+  a missing town reputation 0, a missing party size 1. The native twin is sent only the wolves its conditions can read (the acting
+  wolf, those named; all for a count or `$each`), and for quest conditions the copies, offers and each quest's scope and hidden
+  objectives. **Story variables** were Phase 5's `compare`; nothing new was needed.
+- **The runner**: reads the facts once per page of events (`facts_page`, `facts_at`), attaches each event's to it and its clock;
+  the trailing clock and the console's commands (fire, what if) use the newest (`latest_facts`). Why not judges each logged event with
+  its own facts; Explain returns the `watch` and the facts of its wolves; judged world conditions carry `fact` (what the world said)
+  and `needs: facts` when unknown.
+- **The new events** (catalogue `"watch": true`, each with typed fields and a sentence; written only while a live story listens):
+  `door opened` (also walking through a closed door), `door closed`, `door locked` (tried) in `World::interact` and the walk-in;
+  `building entered`, `building left` (`Game::followTransition`, beside `enter place`); `region occupied`, `region emptied` (the count
+  of the story's wolves in its region, `Game::storyRegionCrossed`, recounted at each phase; **signing in inside a region now writes
+  `region entered`** (known limit of 1.7), signing out inside one only lowers the count, it writes no `region left`); `weather changed`
+  (the watched places, every 2 s; a first look writes nothing); `hour`, `day begins` (detail the weekday, item the season, quantity
+  the day of the season), `dawn`, `night falls`, `season begins` (`Game::storyWatchTick`); `item picked up`, `item dropped` (a fight's
+  ground: `World::takeItem`, `dropItem`); `trade done` (bought or sold, coins; the trade command); `dialogue opened`, `dialogue node`
+  (detail the node, item the tree; a story's own nodes `@story:<run>:…`), `dialogue closed`; `crime seen` (actor the witness, target the
+  offender when they could tell, item the victim, detail the kind); `wolf downed` (the wolf as actor, beside `downed`), `wolf revived`
+  (target who tended them); `party formed`, `party ended`. Groups added: Doors and buildings; Time, weather and calendar; Dialogue
+  windows. `item given` is `gift`; `signed in`/`signed out` stay `arrival`/`departure`; `resident died` stays `death`; `gaoled` is
+  `arrest`. None asks for an early save: what they tell happened (as Phase 7 says of trades).
+- **Rehearsal**: a case's `facts` (the world at the start) and a fact's `facts` (changed from then on, section by section; `null` takes
+  a wolf or a resident away), checked (`check_world_facts`).
+- **The workbench**: the catalogue's 23 conditions in sentences ("the acting wolf carries at least 2 rope", "the weather where the acting
+  wolf is is snow"), Add a condition grouped (the story; the world, as of the event; quests), defaults from the catalogue
+  (`newWorldCondition`: the story's first region and quest; what only the world names left red to pick), a place slot that can be "where
+  the acting wolf is"; the 24 events in the event picker's groups. **The console**: Waiting for shows the world as the game last told the
+  story (the clock, each wolf of the story, residents, weather, relations; what it listens for); every judged world condition says what
+  the world said ("the world says 0 for Fern"); Why not says "the world as it was at this event".
+- **Tests:** `tools/test_story_facts.py` (the checks of all 23; the night watch rehearsed; facts merged; a wait resuming with its moment's
+  facts; the watch list; **parity: each condition over 30 made-up worlds under 12 seeds**, facts missing, partial, wolves away, both
+  twins the same event by event; in a throwaway database: `record_story_facts`, the runner judging each event with the write it came in
+  and never a newer one, the watch list in the phase order, Explain, Why not and What if with facts); `tools/test_story_facts_live.py`
+  (a real game server and the real runner on Greyfen: two wolves walk into the square by their own clients' paths, the game writes
+  `region occupied` once and the facts in the same early write between saves, every event since covered, Ash in the square in the facts
+  of her event, the trigger with world conditions fires once and its deed is applied); `tools/test_story_native.py` (the night watch in
+  both twins, and again with one wolf out); `Tests/story_facts_tests.cpp` (through the game: nothing watched writes nothing; each of
+  doors opened, closed, locked, building entered and left, region occupied and emptied, signing in and out inside, weather changed, hour,
+  dawn, nightfall, a new day, a new season, trade done, dialogue opened, node and closed, party formed and ended; the facts document;
+  the watch saved; nothing after the story ends); `battle_tests` (`storyWatchedFightEvents`: wolf downed, item dropped, item picked up,
+  wolf revived, and none unwatched); `crime_tests` (`crimeSeenForAStory`); the Editor's `workbench.test.ts` (every world condition the
+  workbench adds passes the checks; the night watch in words), `campaigns.test.ts` (fact words and lines), the render smoke (the night
+  watch's workbench; Campaigns with world facts). Updated counts: `test_story_catalogue`, `test_story_drafts`. ctest 123 (with the pg
+  tests: all pass); the P1-P7 suites pass.
+- **Seen:** on a throwaway Greyfen database with a real game server, two Node clients and the real runner, screenshots in
+  `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p8/`: Waiting for with the world's facts; Why not on the trigger that fired;
+  Why not on `roped-at-night` (each event: no rope, the hour, the weather, as the world said then); the timeline; the workbench's
+  trigger on `region occupied` with world conditions, the one with carries / hour / weather, Add a condition's world group, and the
+  event picker's door events.
+- **Not in Phase 8, on purpose:** the `world_check` run of the doc's test list (no simulation without asking; the cost with no story
+  live is nothing by construction: no document, no watched event); `near resident`, `resident arrived`/`left`, `purse crossed`, `price
+  crossed`, `standing crossed`, `relation changed`, `mantle bound`, `skill practised`, `injury healed`, `month begins` (3.3's rest);
+  `world variable` as its own condition (Phase 5's `compare` reads world variables); `region:<id>` in For each; a game-page screenshot
+  (the console's are of the real server's events).
+- **For Phase 9:** a new order that changes what the facts say (`item.give`, `weather.set`, `door.lock`) is seen by a condition from the
+  next write of events (the order's own effects are not events unless it records one); `door.lock`/`unlock` should record `door
+  locked`-style events only if watched (`World::storyListens`). New watched events go in the catalogue with `"watch": true` and are
+  gated by `world_.storyListens(kind)`; new fact sections by `Game::storyFactsJson` and `story_program.watch_of` together, with a
+  rehearsal type in `WOLF_FACTS`/`RESIDENT_FACTS`/`WORLD_FACTS` and both twins.
 
 **Phase 9: New world effects. About 14 hours.**
 - Stories allowed to send the orders that exist: `visitor.add`, `visitor.leave`, `mantle.assign`,

@@ -739,6 +739,15 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     storylines::Storyline story = prior ? *prior : storylines::Storyline{};
     if (!storylines::readRegions(p["regions"], story.regions))
         return {false, "Invalid world story region.", run};
+    // What the story asks the game to tell it (doc 85, Phase 8): the world's facts and the watched events it names.
+    if (const auto* watch = p.find("watch"); watch && !watch->isNull())
+    {
+        if (!watch->isObject() || json::dump(*watch).size() > 64 * 1024)
+            return {false, "Invalid world story watch list.", run};
+        story.watch = *watch;
+    }
+    else
+        story.watch = Value();
     for (const auto& [id, r] : story.regions)
     {
         const auto* cell = world_.cell(r.cell);
@@ -773,6 +782,8 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
         if (!kept.regions.empty()) storiesWatchingRegions_.insert(run);
         else storiesWatchingRegions_.erase(run);
         for (const auto* client : clients_) observeStoryTile(client->entityId);
+        refreshStoryWatch();
+        recountStoryRegions(run);
         record(StoryBook);
         return {true, "World story revised.", run};
     }
@@ -828,6 +839,8 @@ Result Game::applyWorldStoryPhase(const std::string& run, const Value& p)
     if (kept.live() && !kept.regions.empty()) storiesWatchingRegions_.insert(run);
     else storiesWatchingRegions_.erase(run);
     for (const auto* client : clients_) observeStoryTile(client->entityId);
+    refreshStoryWatch();
+    recountStoryRegions(run);
     for (const auto& [who, member] : kept.participants)
         if (member.active()) if (auto* client = clientOf(who)) storylineToast(client, kept.title + ": " + p.string("journal"));
     logEvent("story phase", run, p.string("phase"), kept.title);
@@ -881,6 +894,8 @@ void Game::storylinesLoad(const Value& saved)
     for (const auto& [id, s] : storylines_.all())
         if (s.source == "storykeeper" && s.live() && !s.regions.empty()) storiesWatchingRegions_.insert(id);
     journalViews_.clear();
+    storyOccupants_.clear();
+    refreshStoryWatch();
 }
 
 void Game::storylinesFromEvent(const WorldEvent& e)

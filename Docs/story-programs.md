@@ -160,6 +160,45 @@ offered with no giver). The Campaigns console's **Quests** tab is the grid of wo
 objectives, with Complete, Set progress, Reveal, Fail, Reset, Give the quest, Take it away; **Wolves & map** adds and removes
 wolves. Each wolf's own state of such a story is kept in `dm.story_player_state` (migration 0075).
 
+## The world's facts and the watched events (version 2)
+
+A version 2 condition may read the world as it was when the event happened (Docs/Design/85-story-triggers-and-campaign-control.md,
+3.3, 3.4 and Phase 8): where a wolf is, what they carry, the hour, the weather, standing, a resident's state, a quest's state.
+`who` is `$actor` (the default), `$each` inside For each over wolves, or a wolf's id.
+
+| Condition | Parameters | True when |
+| --- | --- | --- |
+| `wolf here` | `who` | the wolf is in the world (signed in) |
+| `wolf in region`, `wolf in place`, `wolf in town`, `wolf indoors` | `who`, `region` / `place` / `town` / `is` | where the wolf stands now |
+| `count in region` | `region`, `op`, `value` | so many of the story's wolves stand in the region (StarCraft's Bring) |
+| `carries`, `coins` | `who`, `item`, `op`, `value` | what the wolf has in their pack (a marked or crafted item counts as its base item), their purse |
+| `standing`, `reputation` | `who`, `faction` or `town`, `op`, `value` | their Chapter's standing with a faction or House (-100..100); what a town's residents who know them think (liking less disliking) |
+| `wolf is` | `who`, `state` (`downed`, `hurt`, `wanted`, `held`), `is` | downed in a fight, carrying wounds or an injury, wanted by the watch, held in a gaol |
+| `party size`, `in party with` | `who`, `op`, `value` / `other` | the wolf's party (1: alone); both in one party |
+| `resident is`, `resident in place`, `resident in region`, `resident has` | `npc`, `state` / `place` / `region` / `what` (`job`, `mood`, `mantle`, `town`) and `value` | a named resident alive or dead, indoors, where, their kind of work, mood, mantle, town |
+| `hour between`, `calendar is` | `from`, `to` / `what` (`weekday`, `season`, `period`), `value` | the hour (22 to 4 runs through midnight), Marketday or Restday, the season, dawn, day, dusk or night |
+| `weather is` | `where` (`$actor`: where the acting wolf is, or a place), `weather` | clear, overcast, rain, storm, fog, snow or sandstorm (indoors: the weather outside) |
+| `relation is` | `faction`, `op` (`=`, `!=`, `>=` at least, `<=` at most), `stance`, `other` | one faction's stance toward another, in the order war, hostile, tense, neutral, friendly, allied |
+| `quest is`, `objective is` | `quest`, `objective`, `of` (`$actor`, `$each`, `story`), `status` | a quest's state for the wolf (their party's copy for a party quest) or the story's copy; an objective done, failed, to do or hidden |
+
+A fact that is missing (the wolf is away, the game has written no facts yet) makes the condition **unknown**, and unknown never
+fires, not even under `not`. The facts travel with the event log: while a story asks for them, the game writes one document
+of the world's facts (`game.story_facts`, migration 0076) with every write of its events, in the same transaction, and the
+runner reads each event with the facts written with it, so a fact is never older than its event (and at most a second newer).
+A wait resumes with the facts of the moment it resumes. What the game puts in the document is worked out from the program
+when it is approved (its **watch list**, sent with each phase): a story that asks nothing costs nothing. A rehearsal case
+states the world as `facts` (`wolves`, `residents`, `world`, `weather`, `relations` by id, as the game writes them), and a
+fact of the case may change it from then on, section by section (`null` takes a wolf or a resident away).
+
+Twenty-four events are written by the game only while a live story listens for them (they are marked `watch` in the
+catalogue): `door opened`, `door closed`, `door locked` (a wolf tried a locked door); `building entered`, `building left`;
+`region occupied` and `region emptied` (the story's wolves in one of its regions go from none to one, or back; signing in
+inside a region now counts as entering it); `weather changed` (in a place the story names, or where a wolf stands);
+`hour`, `day begins` (with the weekday), `dawn`, `night falls`, `season begins`; `item picked up`, `item dropped`; `trade
+done` (bought or sold, with the coins); `dialogue opened`, `dialogue node`, `dialogue closed`; `crime seen` (the witness,
+the offender, the victim); `wolf downed`, `wolf revived`; `party formed`, `party ended`. The Campaigns console's Waiting for
+shows the world as the game last told the story, and its Why not judges each logged event with the facts written with it.
+
 ## Writing a program
 
 The portable format is `ratw-story-program`, version 1. A program has an ID, title, audience, opening phase, phases and rehearsal cases. The examples under `Data/Storylines/programs/` are complete programs. The catalogue returned by the author API lists every supported event and the fields of each effect.

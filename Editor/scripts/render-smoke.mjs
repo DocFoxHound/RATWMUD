@@ -26,6 +26,7 @@ import story_v2_samples as S
 p = c['examples']['reed-ford']
 v2 = {'v2/' + x['id']: x for x in S.all_samples()}
 v2.update({'v2/example/' + k: R.rules.upgrade(v) for k, v in c['examples'].items()})
+v2['v2/night-watch'] = S.FACTS_WATCH
 print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), 'steps': R.rehearse_steps(p, 0), 'v2': v2}))`], {cwd: join(root, '..'), maxBuffer: 1 << 28}).toString());
     const programs = {...Object.fromEntries(Object.entries(served.catalog.examples).map(([k, v]) => ['example/' + k, v])), ...served.drafts};
     assert.equal(Object.keys(programs).length, 108, 'the 8 examples and the 100 library drafts');
@@ -44,6 +45,7 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
     }
     console.log(`workbench smoke, version 2: ${Object.keys(served.v2).length} programs, ${second.views} views, none edited`);
     html['Workbench (version 2)'] = second.html['v2/v2-ledger'];
+    html['Workbench (world facts)'] = second.html['v2/night-watch'];   // (Doc 85, Phase 8.)
     // (Doc 85, Phase 6: the small quest the flow makes, and a campaign with quests and quest effects: each quest in the Quest editor.)
     const {readFileSync} = await import('node:fs');
     const questPrograms = Object.fromEntries(['small-quest', 'quest-campaign'].map(f => [f, JSON.parse(readFileSync(join(root, 'src/lib/fixtures', f + '.json'), 'utf8'))]));
@@ -86,6 +88,11 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         'Campaigns (explained)': ['offer-a-coil', 'would fire for: Ash Greymantle (here now) and 2 away', 'stores ≥ 5 ✘ (stores is 2)',
             'timer spring-council sends it (day 90.0)', 'then enters ferries-reopen', '1 turned off or used up', 'Why not?', 'Next by itself',
             'watch-round day 17.0 (in 4.1 days) · ≈ 2.1 h · every 7 days', 'What if…', 'What would happen?', 'Fire…'],
+        // (Doc 85, Phase 8: world conditions judged with the facts, and the world as the game last told the story.)
+        'Campaigns (world facts)': ['The world, as the game last told the story', 'Listening for: region occupied, trade done',
+            'Marketday · winter · 14:05 · day', 'out of doors', 'in a party of 2', '40p', 'the world says 0 for Ash Greymantle',
+            'the world says 14', 'do not say'],
+        'Workbench (world facts)': ['carries at least 2', 'stands in'],
         'Campaigns (stuck)': ['Cannot move on from ferry-watch', '1 used up, 1 waiting for wolves gone 14 days, 2 a signal nothing sends',
             'Timer watch-round is overdue by 10 min', 'nearly full: 460 of 500'],
         'Campaigns (dry run)': ['This will do', 'Entered deep-freeze (moved on), with its entry effects.', 'sends story.phase to the game now',

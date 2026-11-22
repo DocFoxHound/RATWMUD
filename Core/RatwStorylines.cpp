@@ -549,6 +549,7 @@ Value saveStoryline(const Storyline& s)
         for (const auto& [wolf, v] : s.questViews) views.add(wolf, v);
         o.add("questViews", std::move(views));
     }
+    if (s.watch.isObject() && s.watch.size()) o.add("watch", s.watch);
     if (s.offers.isArray() && s.offers.size()) o.add("offers", s.offers);
     if (s.choices.isArray() && s.choices.size()) o.add("choices", s.choices);
     if (s.calledOn)
@@ -568,6 +569,7 @@ Storyline loadStoryline(const Value& o)
     s.state = o.string("state", "running"); s.began = o.number("began"); s.ended = o.number("ended", -1);
     s.lastActivity = o.number("lastActivity");
     if (!readRegions(o["regions"], s.regions)) s.regions.clear();
+    if (const auto* w = o.find("watch"); w && w->isObject()) s.watch = *w;
     for (const auto& [id, v] : o.object("cinematics").fields())
         if (v.isObject() && v["doc"].isObject()) s.cinematics.emplace(id, v);
     for (const auto& [npc, j] : o.object("sceneOrders").fields())

@@ -5,7 +5,7 @@
 // reads of the op `explain` (tools/story_runner.explain).
 import {createContext, useContext, useEffect, useState} from 'react';
 import {storyProgram, type Target} from '../api';
-import {condLines, dueText, eventText, judgedState, nameOf, outcomeLines, secondsText, stepText, wouldFireFor, type Explained,
+import {condLines, dueText, eventText, factLines, judgedState, nameOf, outcomeLines, secondsText, stepText, wouldFireFor, type Explained,
     type Judged, type WhatIf, type WhyNot, type Wording} from '../../lib/campaigns';
 import type {SteerFn} from './Steer';
 
@@ -46,7 +46,7 @@ export function WhyNotPanel({target, run, which, names, close}: {target: Target;
                 : <ol className="camp-steps">{data.events.map(e => <li key={e.event.id} className={e.verdict}>
                     <span className="camp-when">#{e.event.id} · day {Number(e.event.day).toFixed(1)}</span>
                     <span>{nameOf(names, e.event.actor) || 'someone'} · {e.event.kind}{e.event.target ? ' → ' + nameOf(names, e.event.target) : ''}{e.event.item ? ' · ' + e.event.item : ''}</span>
-                    <b>{stepText(e, names)}</b></li>)}</ol>}
+                    <b>{stepText(e, names, wording)}</b></li>)}</ol>}
             {data.unread > 0 && !data.notLogged && <p className="hint">{data.unread} more of its kind not read yet (the story is behind or held).</p>}
         </>}
     </div>;
@@ -84,7 +84,23 @@ export function WaitingFor({explained, names, here, steer, busy, target, run, fi
             start a timer or go to a phase.</p>}
         <ul className="camp-judged-list">{live.map(row)}</ul>
         {spent.length > 0 && <details className="camp-spent"><summary>{spent.length} turned off or used up</summary><ul className="camp-judged-list">{spent.map(row)}</ul></details>}
+        {explained.watch && <WorldFacts explained={explained} names={names} />}
     </>;
+}
+
+/** Doc 85, Phase 8: what the story asks the game to tell it, and the world's facts its conditions read, as the game last wrote
+ *  them (with its events; the conditions above are judged with these). */
+function WorldFacts({explained, names}: {explained: Explained; names: Record<string, string>}) {
+    const w = explained.watch ?? {};
+    const lines = factLines(explained.facts, names);
+    return <details className="camp-facts" open><summary>The world, as the game last told the story</summary>
+        {w.events?.length ? <p className="hint">Listening for: {w.events.join(', ')}</p> : null}
+        {w.facts?.length ? <>
+            {lines.length ? <ul className="camp-waiting">{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
+                : <p className="hint">No facts yet: the game writes them with its next events.</p>}
+            <small className="hint">Reads {w.facts.join(', ')}{w.items?.length ? ` · items ${w.items.join(', ')}` : ''}{w.factions?.length ? ` · factions ${w.factions.join(', ')}` : ''}
+                {w.residents?.length ? ` · residents ${w.residents.map(r => nameOf(names, r)).join(', ')}` : ''}. A wolf away is not in them.</small></> : null}
+    </details>;
 }
 
 /** What will happen next by itself: the run's timers, soonest first, with an estimate in real time from the world's speed. */

@@ -1009,6 +1009,8 @@ bool Game::dialogueGo(Connection* c, DialogueSession& d, const std::string& node
         return false;
     }
     d.node = nodeId;
+    if (world_.storyListens("dialogue node"))   // (Doc 85, Phase 8: the node a window reached, for a story that listens.)
+        world_.recordEvent({"dialogue node", playerId, d.npc, {}, 0, 0, json::utf8Prefix(d.tree, 40), 0, 0, nodeId});
     auto q = dialogueQuery(playerId, d);
     q.concept = node.concept;
     const auto seed = std::hash<std::string>{}(d.npc + "|" + playerId + "|" + nodeId) + std::uint64_t(world_.time() * 10);
@@ -1205,6 +1207,8 @@ void Game::dialogueOpen(Connection* c, const std::string& npcId, const std::stri
     // The meeting a greeting heard once (doc 56): back after a long while, its deeds known.
     const auto meeting = q.facts.count("topic.meeting") ? q.facts.at("topic.meeting") : std::string();
     auto& kept = dialogues_[playerId] = std::move(d);
+    if (world_.storyListens("dialogue opened"))
+        world_.recordEvent({"dialogue opened", playerId, npcId, {}, 0, 0, {}, 0, 0, base});
     if (base == "introduce")
     {
         // The wheel's Introduce (doc 84 §13.2, Phase 13): the name said aloud, as a choice's words are (learned by whoever
@@ -1268,6 +1272,8 @@ void Game::dialogueClose(const std::string& playerId, const std::string& why, bo
         return;
     auto d = f->second;
     dialogues_.erase(f);
+    if (world_.storyListens("dialogue closed"))
+        world_.recordEvent({"dialogue closed", playerId, d.npc, {}, 0, 0, {}, 0, 0, why});
     if (sayBye && !(d.quiet && d.history.size() <= 1))   // (Nor its goodbye, if nothing more was said.)
     {
         // The goodbye (the wearer's own first, then the 36 bye rules by the resident's tone: doc 84 §13.4.6), from the

@@ -88,6 +88,10 @@ MISSION_EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e.get('mission'))
 MISSION_GATE = 'missions completed'
 # Positive amounts actually emitted by the native producers in addition to an occurrence.
 MISSION_MEASURES = {m: tuple(e['id'] for e in CATALOGUE['events'] if m in e.get('measures', ())) for m in ('quantity', 'coins')}
+# (Doc 85, Phase 8: the events the game writes only while a live story listens for them, and the conditions that read the world's
+# facts as of the event.)
+WATCHED_EVENTS = tuple(e['id'] for e in CATALOGUE['events'] if e.get('watch'))
+FACT_CONDITIONS = tuple(c['id'] for c in CATALOGUE['conditions'] if c.get('facts'))
 
 
 def validate_missions(phase):
@@ -1122,6 +1126,8 @@ def advance(p, state, event, day, trace=None, elapsed=0):
     if event['kind'] != 'clock':
         return dispatch(p, phase, state, event, day, trace, elapsed)
     clock = {'kind': 'clock', 'id': event.get('id')}
+    if 'facts' in event:
+        clock['facts'] = event['facts']   # (Doc 85, Phase 8: the world's facts as of the clock's moment, for its timers and waits.)
     if dispatch(p, phase, state, clock, day, trace, elapsed):
         return True
     timers = state.get('timers', {})
@@ -1160,6 +1166,9 @@ def advance(p, state, event, day, trace=None, elapsed=0):
         state['waiting'] = waiting[:index] + waiting[index + 1:]
         if not state['waiting']:
             del state['waiting']
+        if 'facts' in clock:
+            # (A wait resumes with the facts as they are now, never those of the moment it began.)
+            wait = {**wait, 'event': {**wait['event'], 'facts': clock['facts']}}
         if dispatch(p, phase, state, wait['event'], day, trace, elapsed, wait):
             return True
         if state.get('outcome'):
@@ -1187,10 +1196,12 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
         if budget:
             budget.spend()
         resuming = wait is not None and n == 0
+        # (A quest's own facts carry the world's facts of the one that caused them: doc 85, Phase 8.)
+        push = queue.append if 'facts' not in fact else (lambda e, f=fact['facts']: queue.append({**e, 'facts': f}))
         if not resuming:
             track_missions(phase, state, fact, credited)
             if quest_run:
-                quests.Run(p, phase, state, day, elapsed, queue.append).track(fact)
+                quests.Run(p, phase, state, day, elapsed, push).track(fact)
         trace_start = len(trace) if trace is not None else 0
         ready = lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']}
         if resuming:
@@ -1198,7 +1209,7 @@ def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
         else:
             target = triggers.fire(phase, state, fact, day, elapsed, ready, matches, emit, trace)
         if story_effects:
-            quests.take_story_effects(p, phase, state, day, elapsed, queue.append)
+            quests.take_story_effects(p, phase, state, day, elapsed, push)
         if budget and trace is not None:
             budget.spend(len(trace) - trace_start)   # (The trace is the reply: it is bounded with the work.)
         if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
@@ -1298,8 +1309,12 @@ def _check_case(p, case):
             'expectOutcome',
             # (Doc 85, Phase 6: each quest's copies expected at the end, by holder: {quest: {wolf|party:<p>|story: status}}.)
             'expectQuests',
+            # (Doc 85, Phase 8: the world's facts at the start, as game.story_facts holds them; a fact may change them after.)
+            'facts',
         ),
     )
+    if 'facts' in case:
+        check_world_facts(case['facts'])
     require('expectQuests' not in case or (isinstance(case['expectQuests'], dict) and all(
         isinstance(v, dict) and all(s in ('offered', 'none', *quests.STATUSES) for s in v.values())
         for v in case['expectQuests'].values())), 'Expected quests are {quest: {holder: status}}.')
@@ -1336,7 +1351,9 @@ def _check_case(p, case):
 
 def _check_fact(ev):
     """One rehearsal fact's shape and values."""
-    shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y'))
+    shape(ev, ('id', 'kind', 'day'), (*FIELDS, 'quantity', 'coins', 'elapsedDays', 'x', 'y', 'facts'))
+    if 'facts' in ev:
+        check_world_facts(ev['facts'])
     require(
         identifier(ev['id'])
         and ev['kind'] in EVENTS
@@ -1349,6 +1366,128 @@ def _check_fact(ev):
         and all(integer(ev[k], -(10**12), 10**12) for k in ('quantity', 'coins') if k in ev),
         'Invalid rehearsal fact.',
     )
+
+
+# ----------------------------------------------------------------------------------------- the world's facts (Phase 8)
+
+def watch_of(p):
+    """What the game is to tell this story (doc 85, 3.4 and Phase 8), worked out from the program and sent with each
+    story.phase: the sections of the world's facts its conditions read (and which items, factions, towns, residents,
+    places and relations), and the watched events its triggers, exits, missions and quests listen for. {} for a story
+    that asks nothing: it costs the game nothing."""
+    conditions, listened, weather_cells, anywhere = [], set(), set(), False
+    rules_ = [*p.get('triggers', [])]
+    for ph in p.get('phases', []):
+        rules_ += ph.get('triggers', [])
+        for e in ph.get('exits', []):
+            listened.add(e.get('on'))
+            if e.get('on') == 'weather changed':
+                cell = e.get('match', {}).get('target') or e.get('match', {}).get('cell')
+                weather_cells.add(cell) if cell else None
+                anywhere = anywhere or not cell
+        for m in ph.get('missions', []):
+            listened.update(o.get('on') for o in m.get('objectives', []))
+    for t in rules_:
+        listened.add(t.get('on'))
+        conditions += list(triggers.rule_conditions(t))
+        if t.get('on') == 'weather changed':
+            cell = t.get('match', {}).get('target') or t.get('match', {}).get('cell')
+            if cell:
+                weather_cells.add(cell)
+            else:
+                anywhere = True
+    for q in p.get('quests', []):
+        listened.update(o.get('on') for o in q.get('objectives', []))
+        listened.update(f.get('on') for f in q.get('fail', []) if isinstance(f, dict))
+    sections, items, factions, towns, residents, relations = set(), set(), set(), set(), set(), set()
+    for c in conditions:
+        kind = c.get('test')
+        if kind not in FACT_CONDITIONS:
+            continue
+        if kind in ('hour between', 'calendar is'):
+            sections.add('world')
+        elif kind == 'relation is':
+            sections.add('relations')
+            relations.add((c['faction'], c['other']))
+        elif kind.startswith('resident'):
+            sections.add('residents')
+            residents.add(c['npc'])
+        elif kind == 'weather is':
+            sections.add('weather')
+            if c.get('where', '$actor') == '$actor':
+                sections.add('wolves')
+                anywhere = True
+            else:
+                weather_cells.add(c['where'])
+        else:
+            sections.add('wolves')
+            items.update([c['item']] if kind == 'carries' else ())
+            factions.update([c['faction']] if kind == 'standing' else ())
+            towns.update([c['town']] if kind == 'reputation' else ())
+    events = sorted(e for e in listened if e in WATCHED_EVENTS)
+    if weather_cells or anywhere or 'weather changed' in events:
+        sections.add('weather')
+    out = {}
+    for key, values in (('facts', sections), ('items', items), ('factions', factions), ('towns', towns), ('residents', residents),
+                        ('cells', weather_cells), ('events', events)):
+        if values:
+            out[key] = sorted(values)
+    if relations:
+        out['relations'] = [list(r) for r in sorted(relations)]
+    if anywhere:
+        out['weatherWhereWolves'] = True
+    return out
+FACT_SECTIONS = ('wolves', 'residents', 'world', 'weather', 'relations')
+WOLF_FACTS = {'cell': str, 'x': int, 'y': int, 'indoors': bool, 'town': str, 'party': str, 'partySize': int, 'carries': dict,
+              'coins': int, 'standing': dict, 'reputation': dict, 'downed': bool, 'hurt': bool, 'wanted': bool, 'held': bool}
+RESIDENT_FACTS = {'alive': bool, 'cell': str, 'x': int, 'y': int, 'indoors': bool, 'job': str, 'mood': str, 'mantle': str, 'town': str}
+WORLD_FACTS = {'day': (int, float), 'hour': int, 'minute': int, 'weekday': str, 'season': str, 'period': str, 'dayOfSeason': int, 'year': int}
+
+
+def _typed(v, kind):
+    if kind is int:
+        return type(v) is int
+    if kind == (int, float):
+        return type(v) in (int, float)
+    return type(v) is kind
+
+
+def check_world_facts(f):
+    """The world's facts as a rehearsal states them (and as the game writes them to game.story_facts): sections of wolves,
+    residents, the world's clock, the weather by place and the factions' relations ("a>b"). A wolf or resident named with
+    null is gone from the world (in a fact that changes them)."""
+    require(isinstance(f, dict) and set(f) <= set(FACT_SECTIONS), 'Facts have wolves, residents, world, weather and relations.')
+    for section, fields in (('wolves', WOLF_FACTS), ('residents', RESIDENT_FACTS)):
+        entries = f.get(section, {})
+        require(isinstance(entries, dict) and len(entries) <= 5000, f'Facts: {section} by id.')
+        for k, v in entries.items():
+            require(identifier(k) and (v is None or (isinstance(v, dict) and set(v) <= set(fields)
+                                                     and all(_typed(x, fields[key]) for key, x in v.items()))),
+                    f'Facts: {section} "{k}" has unknown or mistyped facts.')
+            for key in ('carries', 'standing', 'reputation'):
+                if isinstance(v, dict) and key in v:
+                    require(all(identifier(i) and type(n) in (int, float) and type(n) is not bool for i, n in v[key].items()),
+                            f'Facts: {key} are numbers by id.')
+    world = f.get('world', {})
+    require(isinstance(world, dict) and set(world) <= set(WORLD_FACTS) and all(_typed(v, WORLD_FACTS[k]) for k, v in world.items()),
+            'Facts: the world has day, hour, minute, weekday, season, period, dayOfSeason, year.')
+    for section in ('weather', 'relations'):
+        entries = f.get(section, {})
+        require(isinstance(entries, dict) and all(isinstance(k, str) and (v is None or isinstance(v, str)) for k, v in entries.items()),
+                f'Facts: {section} are words by place (or by "faction>other").')
+
+
+def merge_facts(base, change):
+    """The world's facts after a change: each section's entries replaced one by one (null takes one away)."""
+    out = {k: dict(v) for k, v in (base or {}).items()}
+    for section, entries in change.items():
+        into = out.setdefault(section, {})
+        for k, v in entries.items():
+            if v is None and section != 'world':
+                into.pop(k, None)
+            else:
+                into[k] = v
+    return out
 
 
 def review(p, budget=None):
@@ -1375,6 +1514,7 @@ def _play_case(p, case, step=None):
     path, intended, last_day, seen = [], [], 0, {}
     visit_credits, trace = [], []
     elapsed = 0
+    world = case.get('facts')   # (Doc 85, Phase 8: the world's facts, as a case states them; None: no facts at all.)
 
     record_entry(p, state, path, intended, visit_credits)
     if step:
@@ -1394,7 +1534,12 @@ def _play_case(p, case, step=None):
         )
         elapsed = ev.get('elapsedDays', elapsed)
         last_day = ev['day']
-        dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock'}, ev]
+        if 'facts' in ev:
+            world = merge_facts(world, ev['facts'])
+            ev = {k: v for k, v in ev.items() if k != 'facts'}
+        if world is not None:
+            ev = {**ev, 'facts': world}
+        dispatch = [ev] if ev['kind'] in ('clock', 'dm signal') else [{'kind': 'clock', **({'facts': world} if world is not None else {})}, ev]
         for fact in dispatch:
             while True:
                 source_phase = state['phase']

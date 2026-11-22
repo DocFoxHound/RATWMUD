@@ -202,6 +202,8 @@ void World::witness(Incident& inc, double sleight)
         if (chance(id + inc.id, 1) >= noticed)
             continue;
         inc.witnesses.push_back({id, identified, clarity, guardOnDuty(id)});
+        if (storyListens("crime seen"))   // (Doc 85, Phase 8: the witness acts; the offender, the victim, the kind.)
+            recordEvent({"crime seen", id, identified ? inc.offender : std::string(), inc.cell, 0, 0, inc.victim, 0, 0, inc.kind});
         if (id == inc.victim)
             victimNews(inc, identified);            // (Their own news only now they've noticed: doc 84, the slice-end review.)
         if (!e.npc)

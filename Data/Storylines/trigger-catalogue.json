@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out.",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions. Phase 6: quests (a version 2 story's \"quests\"), audiences \"open\" and \"everyone\", and the effects marked \"story\", which the story keeps itself (quest progress, who takes part, a choice laid over a resident's window) rather than sending to the game; events marked \"story\" are the story's own facts, sent as it runs and never in the world's log. A parameter marked \"optional\" may be left out. Phase 8: conditions marked \"facts\" read the world's facts as of the event (game.story_facts: where a wolf is, what they carry, the time, the weather, standing, a resident's state), and the events marked \"watch\" are written by the game only while a live story listens for them (its watch list, sent with each phase).",
  "groups": [
   {
    "id": "story",
@@ -66,6 +66,18 @@
   {
    "id": "quests",
    "label": "Quests and parties"
+  },
+  {
+   "id": "places",
+   "label": "Doors and buildings"
+  },
+  {
+   "id": "time",
+   "label": "Time, weather and calendar"
+  },
+  {
+   "id": "dialogue",
+   "label": "Dialogue windows"
   }
  ],
  "actionGroups": [
@@ -145,7 +157,8 @@
   "quest": "A quest of this story (version 2).",
   "objective": "An objective of the quest named beside it.",
   "purse": "Who pays: a town's treasury (town:<town>), its works, watch or church (town:<town>:works), a business's till (till:<id>) or a Chapter's treasury (chapter:<id>). Never minted.",
-  "offer": "A story choice's name: what a dialogue choice event comes back with."
+  "offer": "A story choice's name: what a dialogue choice event comes back with.",
+  "door": "A door of the world (its id)."
  },
  "trigger": {
   "once": {
@@ -5800,6 +5813,666 @@
    "story": true,
    "notes": "Sent by the story itself as it runs, after the fact that caused it; the game never records it.",
    "mission": true
+  },
+  {
+   "id": "door opened",
+   "group": "places",
+   "title": "A wolf opens a door",
+   "sentence": "{actor} opens {target}",
+   "help": "A wolf opened a door (or walked through a closed one, which opens it). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "door",
+     "label": "the door",
+     "any": "any door"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the door is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the door's name",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "door closed",
+   "group": "places",
+   "title": "A wolf closes a door",
+   "sentence": "{actor} closes {target}",
+   "help": "A wolf closed a door. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "door",
+     "label": "the door",
+     "any": "any door"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the door is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the door's name",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "door locked",
+   "group": "places",
+   "title": "A wolf tries a locked door",
+   "sentence": "{actor} tries {target}, and it is locked",
+   "help": "A wolf tried to open a locked door. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "door",
+     "label": "the door",
+     "any": "any door"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where the door is",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the door's name",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "building entered",
+   "group": "places",
+   "title": "A wolf goes indoors",
+   "sentence": "{actor} goes into {target}",
+   "help": "A wolf went from out of doors (or another room) into an interior: a building, a room, a cellar. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "place",
+     "label": "the interior entered",
+     "any": "anywhere"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the interior entered (same as target)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "place",
+     "label": "where they came from",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "building left",
+   "group": "places",
+   "title": "A wolf comes out of a building",
+   "sentence": "{actor} leaves {target} for {detail}",
+   "help": "A wolf left an interior. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "place",
+     "label": "the interior left",
+     "any": "anywhere"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where they are now",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "place",
+     "label": "where they are now",
+     "any": "anywhere"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "region occupied",
+   "group": "regions",
+   "title": "A region is no longer empty",
+   "sentence": "{actor} is the first of the story's wolves in {target}",
+   "help": "The count of the story's wolves standing in one of its regions went from none to one (quantity: the count). Signing in inside it counts. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "region",
+     "label": "the region",
+     "any": "any region"
+    },
+    "detail": {
+     "type": "run",
+     "label": "the story run",
+     "any": "this story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many are inside",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "region emptied",
+   "group": "regions",
+   "title": "A region is empty again",
+   "sentence": "{actor} was the last of the story's wolves to leave {target}",
+   "help": "The last of the story's wolves standing in one of its regions left it (or signed out inside it). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "region",
+     "label": "the region",
+     "any": "any region"
+    },
+    "detail": {
+     "type": "run",
+     "label": "the story run",
+     "any": "this story"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many are inside (0)",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "weather changed",
+   "group": "time",
+   "title": "The weather changes",
+   "sentence": "the weather in {target} turns to {detail}",
+   "help": "The weather in a place the story watches changed (a place it names, or where one of the world's wolves stands). Checked every few seconds. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "target": {
+     "type": "place",
+     "label": "the place",
+     "any": "anywhere"
+    },
+    "cell": {
+     "type": "place",
+     "label": "the place (same as target)",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the new weather (clear, overcast, rain, storm, fog, snow, sandstorm)",
+     "any": "any weather"
+    },
+    "item": {
+     "type": "text",
+     "label": "the weather before",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "hour",
+   "group": "time",
+   "title": "An hour of the day begins",
+   "sentence": "the hour {detail} begins",
+   "help": "The world's clock reached a new hour (quantity: the hour, 0 to 23; detail: the same as text, \"14\"). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the hour, as text (\"6\", \"14\")",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the hour, 0 to 23",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "day begins",
+   "group": "time",
+   "title": "A new day begins",
+   "sentence": "a new day begins: {detail}",
+   "help": "Midnight: a new day of the world's calendar (detail: the weekday, Marketday, Restday...; item: the season; quantity: the day of the season). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the weekday (Dawnday ... Restday)",
+     "any": "any"
+    },
+    "item": {
+     "type": "text",
+     "label": "the season",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "the day of the season",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "dawn",
+   "group": "time",
+   "title": "Dawn",
+   "sentence": "dawn breaks",
+   "help": "The light comes up (5 o'clock). Written only while a live story listens for it (the story's watch list).",
+   "fields": {},
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "night falls",
+   "group": "time",
+   "title": "Night falls",
+   "sentence": "night falls",
+   "help": "Full dark (19 o'clock). Written only while a live story listens for it (the story's watch list).",
+   "fields": {},
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "season begins",
+   "group": "time",
+   "title": "A season begins",
+   "sentence": "{detail} begins",
+   "help": "The first day of a season (detail: spring, summer, autumn or winter). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "detail": {
+     "type": "text",
+     "label": "the season",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "item picked up",
+   "group": "gifts",
+   "title": "A wolf picks up an item",
+   "sentence": "{actor} picks up {item}",
+   "help": "A wolf picked up something lying on the ground (what was knocked loose in a fight). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "item": {
+     "type": "item",
+     "label": "the item",
+     "any": "anything"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true,
+   "measures": [
+    "quantity"
+   ]
+  },
+  {
+   "id": "item dropped",
+   "group": "gifts",
+   "title": "A wolf drops an item",
+   "sentence": "{actor} drops {item}",
+   "help": "A wolf's held item fell to the ground (knocked loose in a fight). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "item": {
+     "type": "item",
+     "label": "the item",
+     "any": "anything"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "how",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "trade done",
+   "group": "money",
+   "title": "A wolf buys or sells",
+   "sentence": "{actor} {detail} {item} with {target}",
+   "help": "A wolf bought from or sold to a trader (a shop, a stall's keeper): detail is bought or sold, coins what changed hands. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the trader",
+     "any": "any trader"
+    },
+    "item": {
+     "type": "item",
+     "label": "the item",
+     "any": "anything"
+    },
+    "detail": {
+     "type": "text",
+     "label": "bought or sold",
+     "any": "any"
+    },
+    "quantity": {
+     "type": "number",
+     "label": "how many",
+     "any": "any"
+    },
+    "coins": {
+     "type": "number",
+     "label": "the pennies paid or got",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true,
+   "measures": [
+    "quantity",
+    "coins"
+   ]
+  },
+  {
+   "id": "dialogue opened",
+   "group": "dialogue",
+   "title": "A wolf opens a resident's window",
+   "sentence": "{actor} starts talking with {target}",
+   "help": "A wolf opened a resident's dialogue window (doc 83): detail is what they opened it on (resident, trade, missions, introduce...). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "what it was opened on",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "dialogue node",
+   "group": "dialogue",
+   "title": "A dialogue reaches a node",
+   "sentence": "{actor} reaches {detail} talking with {target}",
+   "help": "A resident's dialogue window moved to a node of its tree (detail: the node's id, item: the tree's id); a story's own nodes are @story:<run>:<kind>:<id>. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the node",
+     "any": "any"
+    },
+    "item": {
+     "type": "text",
+     "label": "the tree",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "dialogue closed",
+   "group": "dialogue",
+   "title": "A wolf leaves a resident's window",
+   "sentence": "{actor} stops talking with {target}",
+   "help": "A resident's dialogue window closed (detail: why: end, bye, walked away, replaced...). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "resident",
+     "label": "the resident",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "why it closed",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "crime seen",
+   "group": "law",
+   "title": "A crime is seen",
+   "sentence": "{actor} sees {target} commit {detail} against {item}",
+   "help": "Someone noticed a crime as it happened (a theft, an attempted theft, a blow): the witness (a wolf or a resident), the offender, the victim, the kind. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "character",
+     "label": "the witness",
+     "any": "anyone"
+    },
+    "target": {
+     "type": "character",
+     "label": "the offender (empty when the witness could not tell who)",
+     "any": "anyone"
+    },
+    "item": {
+     "type": "character",
+     "label": "the victim",
+     "any": "anyone"
+    },
+    "detail": {
+     "type": "text",
+     "label": "theft, attempted theft or assault",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true,
+   "mission": true
+  },
+  {
+   "id": "wolf downed",
+   "group": "fights",
+   "title": "A wolf goes down",
+   "sentence": "{actor} is downed by {target}",
+   "help": "One of the world's wolves was knocked down (in a fight, or beaten by bandits). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "who downed them",
+     "any": "anyone"
+    },
+    "cell": {
+     "type": "place",
+     "label": "where",
+     "any": "anywhere"
+    },
+    "detail": {
+     "type": "text",
+     "label": "the battle's id",
+     "any": "any"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "wolf revived",
+   "group": "fights",
+   "title": "A wolf is back on their feet",
+   "sentence": "{actor} is back on their feet",
+   "help": "A downed wolf got up, or was tended back to their feet (target: who tended them, if anyone). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "character",
+     "label": "who tended them",
+     "any": "nobody, or anyone"
+    }
+   },
+   "tile": true,
+   "watch": true
+  },
+  {
+   "id": "party formed",
+   "group": "quests",
+   "title": "A party is formed",
+   "sentence": "{actor} forms the party {target}",
+   "help": "A new party came together (an invitation accepted): its leader. Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "text",
+     "label": "the party",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
+  },
+  {
+   "id": "party ended",
+   "group": "quests",
+   "title": "A party breaks up",
+   "sentence": "the party {target} of {actor} breaks up",
+   "help": "A party ended (disbanded, or down to one). Written only while a live story listens for it (the story's watch list).",
+   "fields": {
+    "actor": {
+     "type": "wolf",
+     "label": "the wolf",
+     "any": "any wolf"
+    },
+    "target": {
+     "type": "text",
+     "label": "the party",
+     "any": "any"
+    }
+   },
+   "tile": false,
+   "watch": true
   }
  ],
  "conditions": [
@@ -6279,6 +6952,845 @@
       "timer"
      ],
      "optional": true
+    }
+   ]
+  },
+  {
+   "id": "wolf here",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf is in the world",
+   "sentence": "{who} is in the world",
+   "help": "The wolf is signed in now (as of the event). A wolf away is not here: this is never unknown while the world's facts are known.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "wolf in region",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf stands in a region",
+   "sentence": "{who} stands in {region}",
+   "help": "Where the wolf stands now (as of the event), inside the story's region. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "wolf in place",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf is in a place",
+   "sentence": "{who} is in {place}",
+   "help": "The wolf is in that cell or interior now. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "place",
+     "type": "place",
+     "label": "the place"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "wolf in town",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf is in a town",
+   "sentence": "{who} is in {town}",
+   "help": "The wolf is somewhere in that town's cells (indoors too). Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "wolf indoors",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf is indoors",
+   "sentence": "{who} is {is}",
+   "help": "The wolf is under a roof (an interior), or out of doors. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "is",
+     "type": "bool",
+     "label": "indoors or out",
+     "words": {
+      "true": "indoors",
+      "false": "out of doors"
+     },
+     "default": true
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "count in region",
+   "v2": true,
+   "facts": true,
+   "title": "How many stand in a region",
+   "sentence": "{op} {value} of the story's wolves stand in {region}",
+   "help": "Counts the wolves of the story standing in the region now (StarCraft's Bring). Wolves away are not counted.",
+   "params": [
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "default": ">=",
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">": "more than",
+      ">=": "at least",
+      "<": "fewer than",
+      "<=": "at most"
+     }
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "wolves",
+     "min": 0,
+     "max": 5000,
+     "default": 1
+    },
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "carries",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf carries an item",
+   "sentence": "{who} carries {op} {value} {item}",
+   "help": "How many of an item the wolf has in their pack (marked or crafted ones count as their base item). Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "default": ">=",
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">": "more than",
+      ">=": "at least",
+      "<": "fewer than",
+      "<=": "at most"
+     }
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "how many",
+     "min": 0,
+     "max": 100000,
+     "default": 1
+    },
+    {
+     "key": "item",
+     "type": "item",
+     "label": "the item"
+    }
+   ],
+   "reads": "wolves.carries"
+  },
+  {
+   "id": "coins",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf's coins",
+   "sentence": "{who} has {op} {value} pennies",
+   "help": "The coins in the wolf's own purse. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "default": ">=",
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">": "more than",
+      ">=": "at least",
+      "<": "fewer than",
+      "<=": "at most"
+     }
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "pennies",
+     "min": 0,
+     "max": 1000000000,
+     "default": 10
+    }
+   ],
+   "reads": "wolves.coins"
+  },
+  {
+   "id": "standing",
+   "v2": true,
+   "facts": true,
+   "title": "Standing with a faction",
+   "sentence": "{who}'s standing with {faction} is {op} {value}",
+   "help": "The standing of the wolf's Chapter with a faction or House (-100 to 100; only Chapters have standing). Unknown for a wolf with no Chapter, or away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "faction",
+     "type": "faction",
+     "label": "the faction or House"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "default": ">=",
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">": "more than",
+      ">=": "at least",
+      "<": "fewer than",
+      "<=": "at most"
+     }
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "standing",
+     "min": -100,
+     "max": 100,
+     "default": 20
+    }
+   ],
+   "reads": "wolves.standing"
+  },
+  {
+   "id": "reputation",
+   "v2": true,
+   "facts": true,
+   "title": "Reputation in a town",
+   "sentence": "{who}'s name in {town} is {op} {value}",
+   "help": "What the town's residents who know the wolf think of them: those who like them less those who dislike them. 0 where nobody knows them. Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "town",
+     "type": "town",
+     "label": "the town"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "default": ">=",
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">": "more than",
+      ">=": "at least",
+      "<": "fewer than",
+      "<=": "at most"
+     }
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "liked less disliked",
+     "min": -1000,
+     "max": 1000,
+     "default": 1
+    }
+   ],
+   "reads": "wolves.reputation"
+  },
+  {
+   "id": "wolf is",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf is downed, hurt, wanted or held",
+   "sentence": "{who} {is} {state}",
+   "help": "Downed (knocked down, not yet up), hurt (carrying wounds or an injury), wanted (a warrant of the watch), held (in a town's gaol). Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "state",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "downed",
+      "hurt",
+      "wanted",
+      "held"
+     ],
+     "words": {
+      "downed": "downed",
+      "hurt": "hurt",
+      "wanted": "wanted by the watch",
+      "held": "held in a gaol"
+     },
+     "default": "wanted"
+    },
+    {
+     "key": "is",
+     "type": "bool",
+     "label": "is or is not",
+     "words": {
+      "true": "is",
+      "false": "is not"
+     },
+     "default": true
+    }
+   ],
+   "reads": "wolves"
+  },
+  {
+   "id": "party size",
+   "v2": true,
+   "facts": true,
+   "title": "A wolf's party",
+   "sentence": "{who}'s party has {op} {value} wolves",
+   "help": "How many wolves are in the wolf's party, the wolf included (1: alone). Unknown for a wolf away.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "default": ">=",
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">": "more than",
+      ">=": "at least",
+      "<": "fewer than",
+      "<=": "at most"
+     }
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "wolves",
+     "min": 1,
+     "max": 12,
+     "default": 2
+    }
+   ],
+   "reads": "wolves.party"
+  },
+  {
+   "id": "in party with",
+   "v2": true,
+   "facts": true,
+   "title": "In a party with another wolf",
+   "sentence": "{who} is in a party with {other}",
+   "help": "Both wolves are in the world and in one party.",
+   "params": [
+    {
+     "key": "who",
+     "type": "wolf",
+     "label": "the wolf",
+     "default": "$actor"
+    },
+    {
+     "key": "other",
+     "type": "wolf",
+     "label": "the other wolf"
+    }
+   ],
+   "reads": "wolves.party"
+  },
+  {
+   "id": "resident is",
+   "v2": true,
+   "facts": true,
+   "title": "A resident is alive, dead or indoors",
+   "sentence": "{npc} is {state}",
+   "help": "A named resident is alive, dead, or indoors now (as of the event).",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "state",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "alive",
+      "dead",
+      "indoors",
+      "out of doors"
+     ],
+     "default": "alive"
+    }
+   ],
+   "reads": "residents"
+  },
+  {
+   "id": "resident in place",
+   "v2": true,
+   "facts": true,
+   "title": "A resident is in a place",
+   "sentence": "{npc} is in {place}",
+   "help": "A named resident is in that cell or interior now.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "place",
+     "type": "place",
+     "label": "the place"
+    }
+   ],
+   "reads": "residents"
+  },
+  {
+   "id": "resident in region",
+   "v2": true,
+   "facts": true,
+   "title": "A resident stands in a region",
+   "sentence": "{npc} stands in {region}",
+   "help": "A named resident stands inside the story's region now.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "region",
+     "type": "region",
+     "label": "the region"
+    }
+   ],
+   "reads": "residents"
+  },
+  {
+   "id": "resident has",
+   "v2": true,
+   "facts": true,
+   "title": "A resident's job, mood or mantle",
+   "sentence": "{npc}'s {what} is {value}",
+   "help": "A named resident's job (the kind of work, as residents' talk names it: guard, merchant, smith, farmer...), their mood now (even, bright, low or sore), the mantle they wear (doc 84), or the town they live in.",
+   "params": [
+    {
+     "key": "npc",
+     "type": "resident",
+     "label": "the resident"
+    },
+    {
+     "key": "what",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "job",
+      "mood",
+      "mantle",
+      "town"
+     ],
+     "default": "job"
+    },
+    {
+     "key": "value",
+     "type": "text",
+     "label": "is",
+     "max": 80
+    }
+   ],
+   "reads": "residents"
+  },
+  {
+   "id": "hour between",
+   "v2": true,
+   "facts": true,
+   "title": "The hour",
+   "sentence": "the hour is from {from} to {to}",
+   "help": "The world's hour (0 to 23), from one hour to another, both included; from 22 to 4 runs through midnight.",
+   "params": [
+    {
+     "key": "from",
+     "type": "int",
+     "label": "from the hour",
+     "min": 0,
+     "max": 23,
+     "default": 6
+    },
+    {
+     "key": "to",
+     "type": "int",
+     "label": "to the hour",
+     "min": 0,
+     "max": 23,
+     "default": 18
+    }
+   ],
+   "reads": "world"
+  },
+  {
+   "id": "calendar is",
+   "v2": true,
+   "facts": true,
+   "title": "The day, the season, the time of day",
+   "sentence": "the {what} is {value}",
+   "help": "The weekday (Marketday, Restday...), the season, or the time of day (dawn, day, dusk, night).",
+   "params": [
+    {
+     "key": "what",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "weekday",
+      "season",
+      "period"
+     ],
+     "words": {
+      "weekday": "weekday",
+      "season": "season",
+      "period": "time of day"
+     },
+     "default": "weekday"
+    },
+    {
+     "key": "value",
+     "type": "choice",
+     "label": "is",
+     "values": [
+      "Dawnday",
+      "Hearthday",
+      "Stoneday",
+      "Riverday",
+      "Emberday",
+      "Marketday",
+      "Restday",
+      "spring",
+      "summer",
+      "autumn",
+      "winter",
+      "dawn",
+      "day",
+      "dusk",
+      "night"
+     ],
+     "default": "Restday"
+    }
+   ],
+   "reads": "world"
+  },
+  {
+   "id": "weather is",
+   "v2": true,
+   "facts": true,
+   "title": "The weather",
+   "sentence": "the weather {where} is {weather}",
+   "help": "The weather in a place now: where the acting wolf is, or a named place. Indoors it is the weather outside.",
+   "params": [
+    {
+     "key": "where",
+     "type": "place",
+     "label": "where",
+     "default": "$actor",
+     "or": [
+      "$actor"
+     ],
+     "words": {
+      "$actor": "where the acting wolf is"
+     }
+    },
+    {
+     "key": "weather",
+     "type": "choice",
+     "label": "the weather",
+     "values": [
+      "clear",
+      "overcast",
+      "rain",
+      "storm",
+      "fog",
+      "snow",
+      "sandstorm"
+     ],
+     "default": "rain"
+    }
+   ],
+   "reads": "weather"
+  },
+  {
+   "id": "relation is",
+   "v2": true,
+   "facts": true,
+   "title": "How one faction stands with another",
+   "sentence": "{faction} stands {op} {stance} with {other}",
+   "help": "One faction's stance toward another, in the order war, hostile, tense, neutral, friendly, allied: \">=\" is at least, \"<=\" at most.",
+   "params": [
+    {
+     "key": "faction",
+     "type": "faction",
+     "label": "the faction"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">=",
+      "<="
+     ],
+     "words": {
+      "=": "exactly",
+      "!=": "other than",
+      ">=": "at least",
+      "<=": "at most"
+     },
+     "default": ">="
+    },
+    {
+     "key": "stance",
+     "type": "choice",
+     "label": "the stance",
+     "values": [
+      "war",
+      "hostile",
+      "tense",
+      "neutral",
+      "friendly",
+      "allied"
+     ],
+     "default": "friendly"
+    },
+    {
+     "key": "other",
+     "type": "faction",
+     "label": "the other faction"
+    }
+   ],
+   "reads": "relations"
+  },
+  {
+   "id": "quest is",
+   "v2": true,
+   "title": "A quest's state",
+   "sentence": "{quest} {of} is {status}",
+   "help": "Where a quest stands for the acting wolf (or the looped one; their party's copy for a party quest), or the story's one copy: none (never taken), offered, active, ready (to hand in), done, failed, abandoned, expired.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "of",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "$actor",
+      "$each",
+      "story"
+     ],
+     "words": {
+      "$actor": "for the acting wolf",
+      "$each": "for the looped wolf",
+      "story": "(the story's copy)"
+     },
+     "default": "$actor"
+    },
+    {
+     "key": "status",
+     "type": "choice",
+     "label": "the state",
+     "values": [
+      "none",
+      "offered",
+      "active",
+      "ready",
+      "done",
+      "failed",
+      "abandoned",
+      "expired"
+     ],
+     "default": "done"
+    }
+   ]
+  },
+  {
+   "id": "objective is",
+   "v2": true,
+   "title": "An objective's state",
+   "sentence": "{objective} of {quest} {of} is {status}",
+   "help": "An objective of a quest, in the acting wolf's (or the looped one's, or the story's) copy: done, failed, to do (neither yet), or hidden (not yet shown). Without a copy it is to do, or hidden.",
+   "params": [
+    {
+     "key": "quest",
+     "type": "quest",
+     "label": "the quest"
+    },
+    {
+     "key": "objective",
+     "type": "objective",
+     "label": "the objective",
+     "quest": "quest"
+    },
+    {
+     "key": "of",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "$actor",
+      "$each",
+      "story"
+     ],
+     "words": {
+      "$actor": "for the acting wolf",
+      "$each": "for the looped wolf",
+      "story": "(the story's copy)"
+     },
+     "default": "$actor"
+    },
+    {
+     "key": "status",
+     "type": "choice",
+     "label": "the state",
+     "values": [
+      "done",
+      "failed",
+      "to do",
+      "hidden"
+     ],
+     "default": "done"
     }
    ]
   }

@@ -151,6 +151,39 @@ void theftBeforeTheWatch()
     expect(settled.status == "settled", "The incident is settled");
 }
 
+// Doc 85, Phase 8: "crime seen", written only while a live world story listens: the witness (Sloe of the watch, Wren
+// robbed), the offender when the witness could tell, the victim, the kind.
+void crimeSeenForAStory()
+{
+    for (const bool watched : {false, true})
+    {
+        auto w = town();
+        std::vector<WorldEvent> all;
+        w.setEventWatcher([&](const WorldEvent& e) { all.push_back(e); });
+        if (watched)
+            w.setWatchedEvents({"crime seen"});
+        w.addPlayer("player-ada", "Ada");
+        beside(w, "player-ada", "wren");
+        beside(w, "sloe", "wren", -1, 2);
+        const auto id = stealUntilSeen(w, "player-ada", "wren");
+        const auto& inc = *std::find_if(w.crime().incidents.begin(), w.crime().incidents.end(), [&](const Incident& i) { return i.id == id; });
+        std::vector<WorldEvent> seen;
+        for (const auto& e : all)
+            if (e.kind == "crime seen")
+                seen.push_back(e);
+        if (!watched)
+        {
+            expect(seen.empty(), "unwatched: no crime seen is written");
+            continue;
+        }
+        expect(seen.size() >= inc.witnesses.size() && !inc.witnesses.empty(), "one for each witness of the theft: " + std::to_string(seen.size()));
+        const auto sloe = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.actor == "sloe"; });
+        expect(sloe != seen.end() && sloe->target == "player-ada" && sloe->item == "wren" && sloe->detail.find("theft") != std::string::npos &&
+                   sloe->cell == inc.cell,
+               "Sloe saw Ada rob Wren, there");
+    }
+}
+
 void unpaidMeansGaol()
 {
     auto w = town();
@@ -435,6 +468,7 @@ int main()
     {
         refusals();
         theftBeforeTheWatch();
+        crimeSeenForAStory();
         unpaidMeansGaol();
         theFallenAreCarriedIn();
         residentChasedDown();

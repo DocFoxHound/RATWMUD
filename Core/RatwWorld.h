@@ -976,6 +976,10 @@ class World
     static constexpr std::size_t EventsKept = 50000;
     std::pair<int, int> eventTile(const Entity& who) const;
     void recordEvent(WorldEvent event);
+    // Doc 85, Phase 8: the events written only while a live world story listens for them (doors, items picked up and
+    // dropped, wolves downed and back up, crimes seen...): the host says which (Game::refreshStoryWatch).
+    void setWatchedEvents(std::set<std::string> kinds) { watchedEvents_ = std::move(kinds); }
+    bool storyListens(const std::string& kind) const { return !watchedEvents_.empty() && watchedEvents_.count(kind) > 0; }
     // A host's watcher, told of every event as it is recorded (doc 55: residents' letters come from deeds, not scans).
     void setEventWatcher(std::function<void(const WorldEvent&)> watcher) { eventWatcher_ = std::move(watcher); }
     // Names (doc 56, 6): the name `knower` holds for a player character, or "" (the game's: the world doesn't keep
@@ -1534,6 +1538,7 @@ class World
         notice(player, std::move(words), moved, crime);
     }
     std::vector<WorldEvent> takeEvents();
+    bool hasEvents() const { return !events_.empty(); }
     std::size_t droppedEvents() const { return droppedEvents_; }
     // Each home's stores (doc 36) placed so far: home cell -> kind -> where it stands.
     const std::map<std::string, std::map<std::string, Spot>>& homeStoreSpots() const { return homeStoreSpots_; }
@@ -1913,6 +1918,7 @@ class World
     EntityMap entities_;
     TickProfile profile_;
     std::vector<WorldEvent> events_;
+    std::set<std::string> watchedEvents_;
     Bonds bonds_;
     std::vector<Promise> promises_;
     RoadsState roads_;
@@ -2541,7 +2547,7 @@ class World
     std::vector<std::pair<int, int>> walkTo(const Battle& b, const BattleFighter& f, int x, int y) const;
     void walkFighters(Battle& b);
     double stepSeconds(const BattleFighter& f) const;
-    void standUp(Entity& e, double health);
+    void standUp(Entity& e, double health, const std::string& by = {});   // (`by`: who tended them, for "wolf revived".)
     void tendDowned(double dt);
     void fullRest(Entity& e);
     void restPlayers(double dt);

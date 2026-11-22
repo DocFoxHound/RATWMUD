@@ -1056,6 +1056,75 @@ void playtestFixes()
 }
 
 // A duel on terms (doc 37): first blood, until one yields, or to the death; yielding at any time; a fight left.
+// Doc 85, Phase 8: the events a live world story may listen for (World::setWatchedEvents): a wolf downed, an item knocked
+// loose, picked up, a wolf back on their feet. Written only while watched; the same fight unwatched writes none of them.
+void storyWatchedFightEvents()
+{
+    for (const bool watched : {false, true})
+    {
+        World w;
+        std::vector<WorldEvent> seen;
+        w.setEventWatcher([&](const WorldEvent& e) { seen.push_back(e); });
+        if (watched)
+            w.setWatchedEvents({"wolf downed", "wolf revived", "item dropped", "item picked up"});
+        auto& b = duel(w);
+        auto* ad = w.entity("player-ad");
+        auto* bo = w.entity("player-bo");
+        expect(w.society().create("player-bo", "sword", 1, "test"), "Bo's sword");
+        bo->mouth = "sword";
+        bo->hurt = 99.5;
+        for (int i = 0; i < 4000 && bo->downedLeft <= 0; ++i)
+        {
+            ad->hurt = 0;
+            ad->stamina = 100;
+            ad->exhausted = false;
+            test::playTurn(w, "player-ad");
+            if (test::acting(&b, "player-bo"))
+                w.battleAct("player-bo", "wait");
+            w.tick(.1);
+        }
+        expect(bo->downedLeft > 0, "Bo goes down");
+        const auto of = [&](const std::string& kind) {
+            return std::count_if(seen.begin(), seen.end(), [&](const WorldEvent& e) { return e.kind == kind; });
+        };
+        if (watched)
+        {
+            const auto down = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "wolf downed"; });
+            expect(down != seen.end() && down->actor == "player-bo" && down->target == "player-ad" && down->detail == b.id && down->x >= 0,
+                   "wolf downed: Bo, by Ad, in the fight, where he fell");
+            const auto drop = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "item dropped"; });
+            expect(drop != seen.end() && drop->actor == "player-bo" && drop->item == "sword" && drop->quantity == 1,
+                   "item dropped: Bo's sword, knocked loose");
+        }
+        for (int i = 0; i < 400 && w.groundItems().empty(); ++i)
+        {
+            ad->hurt = 0;
+            test::playTurn(w, "player-ad");
+            w.tick(.25);
+        }
+        expect(w.groundItems().size() == 1, "the sword lies on the ground after the fight");
+        const auto g = w.groundItems()[0];
+        ad->cellId = g.cellId;
+        ad->position = {g.x + .5, g.y};
+        expect(w.takeItem("player-ad", g.id).ok, "Ad picks it up");
+        for (int i = 0; i < 4000 && bo->downedLeft > 0; ++i)
+            w.tick(.25);
+        expect(bo->downedLeft <= 0, "Bo gets up in time");
+        if (watched)
+        {
+            const auto up = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "item picked up"; });
+            expect(up != seen.end() && up->actor == "player-ad" && up->item == "sword" && up->quantity == 1 && up->cell == g.cellId,
+                   "item picked up: Ad, the sword, where it lay");
+            const auto back = std::find_if(seen.begin(), seen.end(), [](const WorldEvent& e) { return e.kind == "wolf revived"; });
+            expect(back != seen.end() && back->actor == "player-bo", "wolf revived: Bo, on his own");
+            expect(of("wolf downed") == 1 && of("wolf revived") == 1 && of("item picked up") == 1, "each once");
+        }
+        else
+            expect(of("wolf downed") + of("wolf revived") + of("item dropped") + of("item picked up") == 0 && of("downed") == 1,
+                   "unwatched: none of them (the fight's own downed, as ever)");
+    }
+}
+
 Battle& duelOn(World& w, const std::string& terms)
 {
     quiet(w);
@@ -2040,6 +2109,7 @@ int main()
         downedIsSaved();
         facingAndTruce();
         theSword();
+        storyWatchedFightEvents();
         gearTiers();
         spikedCollar();
         theFlame();

@@ -38,7 +38,32 @@ RUN_DEPTH = 8            # Run inside run, at most (cycles are refused when the 
 REAL_WAIT_MIN = 5 / 86400
 OUTCOMES = ('success', 'failure', 'abandoned')
 ARITH = ('plus', 'minus', 'min', 'max')
-CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since')
+# Doc 85, Phase 8: conditions over the world's facts as of the event (game.story_facts, carried on the event as `facts`), and
+# over the story's quests. A fact that is missing (a wolf away, no facts at all) is unknown, and unknown never fires.
+FACTS_V2 = ('wolf here', 'wolf in region', 'wolf in place', 'wolf in town', 'wolf indoors', 'count in region', 'carries', 'coins',
+            'standing', 'reputation', 'wolf is', 'party size', 'in party with', 'resident is', 'resident in place',
+            'resident in region', 'resident has', 'hour between', 'calendar is', 'weather is', 'relation is')
+QUEST_V2 = ('quest is', 'objective is')
+CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since', *FACTS_V2, *QUEST_V2)
+STANCES = ('war', 'hostile', 'tense', 'neutral', 'friendly', 'allied')
+WOLF_STATES = ('downed', 'hurt', 'wanted', 'held')
+RESIDENT_STATES = ('alive', 'dead', 'indoors', 'out of doors')
+RESIDENT_HAS = ('job', 'mood', 'mantle', 'town')
+CALENDAR = {'weekday': ('Dawnday', 'Hearthday', 'Stoneday', 'Riverday', 'Emberday', 'Marketday', 'Restday'),
+            'season': ('spring', 'summer', 'autumn', 'winter'), 'period': ('dawn', 'day', 'dusk', 'night')}
+WEATHERS = ('clear', 'overcast', 'rain', 'storm', 'fog', 'snow', 'sandstorm')
+QUEST_STATES = ('none', 'offered', 'active', 'ready', 'done', 'failed', 'abandoned', 'expired')
+OBJECTIVE_STATES = ('done', 'failed', 'to do', 'hidden')
+# (Each facts condition: its keys besides `test`, and the optional ones.)
+FACT_SHAPES = {
+    'wolf here': ((), ('who',)), 'wolf in region': (('region',), ('who',)), 'wolf in place': (('place',), ('who',)),
+    'wolf in town': (('town',), ('who',)), 'wolf indoors': (('is',), ('who',)), 'count in region': (('region', 'op', 'value'), ()),
+    'carries': (('item', 'op', 'value'), ('who',)), 'coins': (('op', 'value'), ('who',)), 'standing': (('faction', 'op', 'value'), ('who',)),
+    'reputation': (('town', 'op', 'value'), ('who',)), 'wolf is': (('state', 'is'), ('who',)), 'party size': (('op', 'value'), ('who',)),
+    'in party with': (('other',), ('who',)), 'resident is': (('npc', 'state'), ()), 'resident in place': (('npc', 'place'), ()),
+    'resident in region': (('npc', 'region'), ()), 'resident has': (('npc', 'what', 'value'), ()), 'hour between': (('from', 'to'), ()),
+    'calendar is': (('what', 'value'), ()), 'weather is': (('weather',), ('where',)), 'relation is': (('faction', 'other', 'op', 'stance'), ()),
+}
 FLOW_V2 = ('if', 'wait', 'each', 'random', 'run', 'enable', 'disable', 'stop', 'note', 'finish')
 STATE_V2 = ('subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember', 'list add', 'list remove',
             'list clear', 'pick', 'start timer', 'stop timer', 'shift')
@@ -362,6 +387,22 @@ def _check_condition_v2(c, phase, each):
     elif kind == 'chance':
         shape(c, ('test', 'percent'))
         require(rules.integer(c['percent'], 1, 99), 'A chance of 1 to 99 in 100.')
+    elif kind in FACTS_V2:
+        _check_fact_condition(c, phase, each)
+    elif kind in QUEST_V2:
+        if kind == 'quest is':
+            shape(c, ('test', 'quest', 'status'), ('of',))
+            require(c['status'] in QUEST_STATES, 'A quest is none, offered, active, ready, done, failed, abandoned or expired.')
+        else:
+            shape(c, ('test', 'quest', 'objective', 'status'), ('of',))
+            require(c['status'] in OBJECTIVE_STATES, 'An objective is done, failed, to do or hidden.')
+        require(c.get('of', '$actor') in ('$actor', '$each', 'story') and (c.get('of') != '$each' or each == 'wolf'),
+                'Whose: the acting wolf, the looped wolf (inside For each over wolves), or the story\'s copy.')
+        known = phase.get('_questIndex', {})
+        require(c['quest'] in known, f'Unknown quest "{c["quest"]}".' if isinstance(c['quest'], str) else 'Name a quest.')
+        if kind == 'objective is':
+            require(any(o['id'] == c['objective'] for o in known[c['quest']]['objectives']),
+                    f'Quest "{c["quest"]}" has no objective "{c["objective"]}".')
     elif kind == 'days since':
         shape(c, ('test', 'from', 'op', 'days'), ('var', 'of'))
         require(c['from'] in ('phase', 'run', 'var') and ('var' in c) == (c['from'] == 'var') and ('of' not in c or 'var' in c),
@@ -369,6 +410,57 @@ def _check_condition_v2(c, phase, each):
         if c['from'] == 'var':
             _check_of(c, _decl(phase, c['var'], ('timer',), 'timer'), each)
         require(c['op'] in COMPARE and rules.number(c['days'], 0, 36500), 'Compare with a number of days.')
+
+
+def _check_who(v, each, words='the wolf'):
+    import story_program as rules
+
+    rules.require(v in ('$actor', '$each') or rules.identifier(v), f'Name {words}: the acting wolf, the looped wolf, or a wolf.')
+    rules.require(v != '$each' or each == 'wolf', '$each is a wolf only inside For each over wolves.')
+
+
+def _check_fact_condition(c, phase, each):
+    """A condition over the world's facts (doc 85, 3.4 and Phase 8)."""
+    import story_program as rules
+
+    require = rules.require
+    kind = c['test']
+    needed, optional = FACT_SHAPES[kind]
+    rules.shape(c, ('test', *needed), optional)
+    if 'who' in c:
+        _check_who(c['who'], each)
+    if 'op' in c:
+        ops = ('=', '!=', '>=', '<=') if kind == 'relation is' else tuple(COMPARE)
+        require(c['op'] in ops, 'Choose a comparison.')
+    if 'value' in c and kind not in ('resident has', 'calendar is'):
+        low, high = {'standing': (-100, 100), 'reputation': (-1000, 1000), 'party size': (1, 12),
+                     'count in region': (0, 5000), 'carries': (0, 100000)}.get(kind, (0, LIMIT))
+        require(rules.integer(c['value'], low, high), f'A whole number from {low} to {high}.')
+    for key in ('region',):
+        if key in c:
+            require(rules.identifier(c[key]) and c[key] in phase.get('_regions', {}), 'Unknown story region.')
+    for key in ('place', 'town', 'faction', 'other', 'npc', 'item'):
+        if key in c and not (kind == 'in party with' and key == 'other'):
+            require(rules.identifier(c[key]), f'Name the {key}.')
+    if kind == 'in party with':
+        _check_who(c['other'], each, 'the other wolf')
+    if 'is' in c:
+        require(type(c['is']) is bool, 'Yes or no.')
+    if kind == 'wolf is':
+        require(c['state'] in WOLF_STATES, 'Downed, hurt, wanted or held.')
+    elif kind == 'resident is':
+        require(c['state'] in RESIDENT_STATES, 'Alive, dead, indoors or out of doors.')
+    elif kind == 'resident has':
+        require(c['what'] in RESIDENT_HAS and rules.word(c['value'], 80), 'A job, mood, mantle or town, and what it is.')
+    elif kind == 'hour between':
+        require(rules.integer(c['from'], 0, 23) and rules.integer(c['to'], 0, 23), 'Hours from 0 to 23.')
+    elif kind == 'calendar is':
+        require(c['what'] in CALENDAR and c['value'] in CALENDAR[c['what']], 'A weekday, a season or a time of day, and which.')
+    elif kind == 'weather is':
+        require(c['weather'] in WEATHERS, 'Clear, overcast, rain, storm, fog, snow or sandstorm.')
+        require(c.get('where', '$actor') == '$actor' or rules.identifier(c['where']), 'Where the acting wolf is, or a place.')
+    elif kind == 'relation is':
+        require(c['stance'] in STANCES, 'War, hostile, tense, neutral, friendly or allied.')
 
 
 class _Checking:
@@ -888,6 +980,10 @@ def test_v2(c, x):
         return COMPARE[c['op']](bucket.get(trigger_key(x.phase, c['trigger']), 0), c['value'])
     if kind == 'chance':
         return draw(state, 100) < c['percent']
+    if kind in FACTS_V2:
+        return fact_test(c, x)[0]
+    if kind in QUEST_V2:
+        return quest_test(c, x)[0]
     if kind == 'days since':
         if x.day is None:
             return None
@@ -897,6 +993,181 @@ def test_v2(c, x):
             since = x.day - (state['entered'] if c['from'] == 'phase' else state.get('began', state['entered']))
         return since is not MISSING and COMPARE[c['op']](since, c['days'])
     raise ValueError('Unknown trigger condition.')
+
+
+# ------------------------------------------------------------------------------------- Phase 8: the world's facts, quests
+
+def facts_of(event):
+    """The world's facts an event carries (game.story_facts as of it), or None."""
+    f = event.get('facts') if isinstance(event, dict) else None
+    return f if isinstance(f, dict) else None
+
+
+def without_facts(event):
+    """An event as kept (in a wait): without the facts it carried, which are read again when it resumes."""
+    return {k: v for k, v in event.items() if k != 'facts'} if 'facts' in event else event
+
+
+def _who(x, v):
+    return (x.each or '') if v == '$each' else x.actor if v == '$actor' else v
+
+
+def _inside(r, at):
+    cx, cy = at.get('x'), at.get('y')
+    return (type(cx) is int and type(cy) is int and at.get('cell') == r['cell'] and r['x1'] <= cx <= r['x2']
+            and r['y1'] <= cy <= r['y2'])
+
+
+def _num(v):
+    return type(v) in (int, float) and type(v) is not bool
+
+
+def fact_test(c, x):
+    """A condition over the world's facts: (verdict True/False/None, the value behind it). The twin of Dispatch2::fact in
+    Core/RatwStoryTriggers.cpp."""
+    kind = c['test']
+    f = facts_of(x.event)
+    if f is None:
+        return None, None
+    wolves = f.get('wolves') if isinstance(f.get('wolves'), dict) else {}
+    world = f.get('world') if isinstance(f.get('world'), dict) else {}
+    if kind == 'hour between':
+        h = world.get('hour')
+        if not _num(h):
+            return None, None
+        a, b = c['from'], c['to']
+        return (a <= h <= b) if a <= b else (h >= a or h <= b), h
+    if kind == 'calendar is':
+        v = world.get(c['what'])
+        return (None, None) if not isinstance(v, str) else (v == c['value'], v)
+    if kind == 'relation is':
+        rel = f.get('relations') if isinstance(f.get('relations'), dict) else {}
+        v = rel.get(c['faction'] + '>' + c['other'])
+        if v not in STANCES:
+            return None, None
+        a, b = STANCES.index(v), STANCES.index(c['stance'])
+        return COMPARE[c['op']](a, b), v
+    if kind == 'count in region':
+        r = x.phase.get('_regions', {}).get(c['region'])
+        if r is None:
+            return None, None
+        cohort = set(x.state.get('cohort', ()))
+        n = sum(1 for wid, w in wolves.items() if wid in cohort and isinstance(w, dict) and _inside(r, w))
+        return COMPARE[c['op']](n, c['value']), n
+    if kind.startswith('resident'):
+        res = f.get('residents') if isinstance(f.get('residents'), dict) else {}
+        r = res.get(c['npc'])
+        if not isinstance(r, dict):
+            return None, None
+        alive = r.get('alive') is True
+        if kind == 'resident is':
+            state = c['state']
+            v = alive if state == 'alive' else not alive if state == 'dead' else alive and (r.get('indoors') is True) == (state == 'indoors')
+            return v, 'alive' if alive else 'dead'
+        if kind == 'resident in place':
+            return r.get('cell') == c['place'], r.get('cell')
+        if kind == 'resident in region':
+            area = x.phase.get('_regions', {}).get(c['region'])
+            return (None, None) if area is None else (_inside(area, r), {k: r.get(k) for k in ('cell', 'x', 'y')})
+        v = r.get(c['what'])
+        v = v if isinstance(v, str) else ''
+        return v == c['value'], v
+    if kind == 'weather is':
+        weather = f.get('weather') if isinstance(f.get('weather'), dict) else {}
+        where = c.get('where', '$actor')
+        if where == '$actor':
+            w = wolves.get(x.actor)
+            where = w.get('cell') if isinstance(w, dict) else None
+        v = weather.get(where) if isinstance(where, str) else None
+        return (None, None) if not isinstance(v, str) else (v == c['weather'], v)
+    wolf = _who(x, c.get('who', '$actor'))
+    w = wolves.get(wolf)
+    if kind == 'wolf here':
+        return isinstance(w, dict), isinstance(w, dict)
+    if not isinstance(w, dict):
+        return None, None
+    if kind == 'wolf in region':
+        r = x.phase.get('_regions', {}).get(c['region'])
+        return (None, None) if r is None else (_inside(r, w), {k: w.get(k) for k in ('cell', 'x', 'y')})
+    if kind == 'wolf in place':
+        return w.get('cell') == c['place'], w.get('cell')
+    if kind == 'wolf in town':
+        return w.get('town') == c['town'], w.get('town')
+    if kind == 'wolf indoors':
+        v = w.get('indoors') is True
+        return v == c['is'], v
+    if kind == 'wolf is':
+        v = w.get(c['state']) is True
+        return v == c['is'], v
+    if kind == 'in party with':
+        o = wolves.get(_who(x, c['other']))
+        party = w.get('party')
+        v = isinstance(party, str) and party != '' and isinstance(o, dict) and o.get('party') == party
+        return v, party if isinstance(party, str) else ''
+    if kind == 'party size':
+        n = w.get('partySize', 1)
+        return (None, None) if not _num(n) else (COMPARE[c['op']](n, c['value']), n)
+    if kind == 'carries':
+        held = w.get('carries') if isinstance(w.get('carries'), dict) else {}
+        n = held.get(c['item'], 0)
+        return (None, None) if not _num(n) else (COMPARE[c['op']](n, c['value']), n)
+    if kind == 'coins':
+        n = w.get('coins')
+        return (None, None) if not _num(n) else (COMPARE[c['op']](n, c['value']), n)
+    if kind == 'standing':
+        st = w.get('standing') if isinstance(w.get('standing'), dict) else {}
+        n = st.get(c['faction'])
+        return (None, None) if not _num(n) else (COMPARE[c['op']](n, c['value']), n)
+    if kind == 'reputation':
+        rep = w.get('reputation') if isinstance(w.get('reputation'), dict) else {}
+        n = rep.get(c['town'], 0)
+        return (None, None) if not _num(n) else (COMPARE[c['op']](n, c['value']), n)
+    raise ValueError('Unknown trigger condition.')
+
+
+def _quest_copy(q, state, wolf):
+    """The copy a wolf takes part in (story_quests.copy_of, without importing it: the twin reads the same)."""
+    copies = state.get('quests', {}).get(q['id'], {})
+    scope = q.get('scope', 'player')
+    if scope == 'player':
+        return copies.get(wolf)
+    if scope == 'story':
+        return copies.get('story') if wolf in state['cohort'] else None
+    best = None
+    for c in copies.values():
+        if wolf in c.get('members', ()):
+            if c['status'] in ('active', 'ready') and wolf not in c.get('left', ()):
+                return c
+            if best is None or c.get('began', 0) > best.get('began', 0):
+                best = c
+    return best
+
+
+def quest_test(c, x):
+    """`quest is` and `objective is` (doc 85, 3.4): a quest's or an objective's state for a wolf or the story's copy."""
+    q = x.phase.get('_questIndex', {}).get(c['quest'])
+    if q is None:
+        return None, None
+    of = c.get('of', '$actor')
+    if of == 'story':
+        copy = x.state.get('quests', {}).get(q['id'], {}).get('story')
+        wolf = None
+    else:
+        wolf = _who(x, of)
+        copy = _quest_copy(q, x.state, wolf)
+    if c['test'] == 'quest is':
+        if copy is not None:
+            status = copy['status']
+        elif wolf is not None and wolf in x.state.get('questOffers', {}).get(q['id'], ()):
+            status = 'offered'
+        else:
+            status = 'none'
+        return status == c['status'], status
+    o = next(o for o in q['objectives'] if o['id'] == c['objective'])
+    rec = (copy or {}).get('objectives', {}).get(o['id'], {})
+    status = ('done' if rec.get('done') else 'failed' if rec.get('failed')
+              else 'hidden' if o.get('hidden') and not rec.get('shown') else 'to do')
+    return status == c['status'], status
 
 
 def _run(actions, x, base, start=0):
@@ -1028,7 +1299,7 @@ def _act(a, x, address):
         clock = a.get('clock', 'game')
         state.setdefault('waiting', []).append({
             'trigger': x.rule['id'], 'scope': 'campaign' if x.rule['id'] in x.phase.get('_sharedIds', ()) else 'visit',
-            'phase': x.phase['id'], 'at': x.now(clock) + a['days'], 'clock': clock, 'actor': x.actor, 'event': x.event,
+            'phase': x.phase['id'], 'at': x.now(clock) + a['days'], 'clock': clock, 'actor': x.actor, 'event': without_facts(x.event),
             'next': [*address[:-1], address[-1] + 1],
         })
         return 'wait'
@@ -1168,6 +1439,19 @@ def judge(c, state, event, ready, regions=None, known=None, phase=None, day=None
         node = dict(c)
         if kind == 'chance':
             return {**node, 'verdict': None, 'needs': 'roll'}
+        if kind in FACTS_V2 or kind in QUEST_V2:
+            # (Doc 85, Phase 8: the world's facts as of the event, and the story's quests; the fact read is shown.)
+            wolfish = c.get('who', '$actor') == '$actor' or c.get('of', '$actor') == '$actor' and kind in QUEST_V2
+            if kind in FACTS_V2 and facts_of(event) is None:
+                return {**node, 'verdict': None, 'needs': 'facts', **({'expected': c['value']} if 'value' in c else {})}
+            if wolfish and known is not None and 'actor' not in known and kind not in (
+                    'hour between', 'calendar is', 'relation is', 'count in region') and not kind.startswith('resident'):
+                return {**node, 'verdict': None, 'needs': 'wolf', **({'expected': c['value']} if 'value' in c else {})}
+            x = Ctx(phase or {}, state, event, event.get('actor', ''), day, elapsed, ready, None)
+            verdict, value = (fact_test if kind in FACTS_V2 else quest_test)(c, x)
+            return {**node, 'verdict': verdict, 'fact': value, **({'needs': 'facts'} if verdict is None else {}),
+                    **({'expected': c['value']} if 'value' in c else {}),
+                    **({'wolf': x.actor} if wolfish and x.actor and kind not in ('hour between', 'calendar is', 'relation is') else {})}
         fields = {o['field'] for side in ('left', 'right', 'value') if side in c for o in operands_in(c[side]) if 'field' in o}
         if known is not None and not fields <= known:
             return {**node, 'verdict': None, 'needs': 'event'}

@@ -29,7 +29,9 @@ export interface CatItem {id: string; title: string; sentence: string; help: str
      *  the lists of actions it holds (`nest`), and whether it holds a condition. */
     v2?: boolean; v1?: boolean; do?: string; nest?: string[]; condition?: boolean;
     /** Phase 6: kept by the story itself (quest progress, who takes part, a story choice), never an order to the game. */
-    story?: boolean}
+    story?: boolean;
+    /** Phase 8: a condition over the world's facts as of the event (game.story_facts), and which of them it reads. */
+    facts?: boolean; reads?: string}
 export interface Catalogue {
     groups: {id: string; label: string}[]; actionGroups: {id: string; label: string}[]; types: Record<string, string>;
     trigger: {once: Record<string, string>; audience: Record<string, string>; limits: Record<string, number>; enabled?: Record<string, string>};
@@ -110,12 +112,19 @@ export interface Phase {id: string; journal: string; effects: Effect[]; exits: E
 export interface Component {role: string; label: string; trigger?: Trigger; objective?: Objective; gate?: Pick<Mission, 'mode' | 'percent' | 'contributors'>; action?: Action}
 export interface Region {id: string; cell: string; x1: number; y1: number; x2: number; y2: number}
 export interface Fact {id: string; kind: string; day: number; elapsedDays?: number; actor?: string; target?: string; item?: string;
-    cell?: string; x?: number; y?: number; detail?: string; quantity?: number; coins?: number}
+    cell?: string; x?: number; y?: number; detail?: string; quantity?: number; coins?: number;
+    /** Phase 8: the world's facts from this fact on (as game.story_facts holds them), changed section by section. */
+    facts?: WorldFacts}
+/** The world's facts as of an event (doc 85, 3.4 and Phase 8): game.story_facts, a rehearsal case's `facts`. */
+export interface WorldFacts {wolves?: Record<string, Record<string, unknown> | null>; residents?: Record<string, Record<string, unknown> | null>;
+    world?: Record<string, unknown>; weather?: Record<string, string | null>; relations?: Record<string, string | null>}
 export interface Case {name: string; cohort: string[]; events: Fact[]; expect: string[]; expectEffects?: {phase: string; [key: string]: unknown}[];
     expectMissionVisits?: {phase: string; visit: number; credits: Record<string, string[]>}[]; expectTriggers?: string[]; expectCounters?: Json; expectMissions?: Json;
     seed?: string; rolls?: number[]; parties?: Record<string, string>; expectVariables?: Json; expectOutcome?: string | null;
     /** Phase 6: each quest's copies as the case ends: {quest: {holder: status}} (a wolf id, "party:<id>" or "story"). */
-    expectQuests?: Record<string, Record<string, string>>}
+    expectQuests?: Record<string, Record<string, string>>;
+    /** Phase 8: the world's facts as the case begins. */
+    facts?: WorldFacts}
 /** A quest's objective (doc 85, 3.6): an event of a wolf with filters, a goal, what must come first, optional or hidden. */
 export interface QuestObjective {id: string; label: string; on: string; signal?: string; match?: Record<string, string>;
     goal?: number; measure?: 'count' | 'quantity' | 'coins'; after?: string[]; optional?: boolean; hidden?: boolean}
@@ -356,6 +365,10 @@ export function headWords(cat: Catalogue, t: Trigger): string {
 export function conditionParts(cat: Catalogue, c: Condition, names: Names): Part[] {
     const item = itemOf(cat.conditions, c.test);
     if (!item) return [{text: c.test}];
+    if (isWorldCondition(item)) {   // (Doc 85, Phase 8: whose and where left out read as their defaults, the acting wolf.)
+        const defaults = Object.fromEntries((item.params ?? []).filter(p => ['who', 'of', 'where'].includes(p.key) && p.default !== undefined).map(p => [p.key, p.default]));
+        return itemParts(item, {...defaults, ...c} as unknown as Json, names);
+    }
     if (c.test === 'field') {
         const amount = (AMOUNTS as readonly string[]).includes(c.field);
         const ps = itemParts(item, c as unknown as Json, names);
@@ -1053,7 +1066,29 @@ export function newAction(cat: Catalogue, kind: string, p: Program, trigger?: st
         default: return {do: 'effect', effect: newEffect(cat, kind.startsWith('effect:') ? kind.slice(7) : 'deed.award', p)};
     }
 }
-export function newCondition(kind: string, p: Program, phase: number | null): Condition {
+/** Doc 85, Phase 8: a condition over the world's facts as of the event (where a wolf is, what they carry, the hour, the
+ *  weather, standing...), or over the story's quests. */
+export function isWorldCondition(item: CatItem | undefined): boolean {
+    return !!item && (!!item.facts || item.id === 'quest is' || item.id === 'objective is');
+}
+/** A new world or quest condition: the catalogue's defaults, the story's first region and quest; what only the world can
+ *  name (a place, an item, a faction, a resident) left to be picked (its slot shows red until it is). */
+export function newWorldCondition(item: CatItem, p: Program): Condition {
+    const c: Record<string, unknown> = {test: item.id};
+    for (const param of item.params ?? []) {
+        if (['who', 'of', 'where'].includes(param.key)) continue;   // (The acting wolf unless another is chosen.)
+        if (param.type === 'region') c[param.key] = p.regions?.[0]?.id ?? '';
+        else if (param.type === 'quest') c[param.key] = p.quests?.[0]?.id ?? '';
+        else if (param.type === 'objective') c[param.key] = p.quests?.find(q => q.id === c.quest)?.objectives[0]?.id ?? '';
+        else if (param.default !== undefined) c[param.key] = param.default;
+        else if (param.type === 'int') c[param.key] = param.min ?? 0;
+        else c[param.key] = '';
+    }
+    return c as unknown as Condition;
+}
+export function newCondition(kind: string, p: Program, phase: number | null, cat?: Catalogue): Condition {
+    const world = cat ? itemOf(cat.conditions, kind) : undefined;
+    if (world && isWorldCondition(world)) return newWorldCondition(world, p);
     if (isV2(p)) switch (kind) {
         case 'all': case 'any': return {test: kind, conditions: [newCondition('compare', p, phase)]};
         case 'compare': { const v = (p.variables ?? []).find(x => !LISTS.includes(x.type) && x.type !== 'timer');
@@ -1094,7 +1129,11 @@ export function withEvent(t: Trigger, on: string): Trigger {
 // --------------------------------------------------------------------------------------------------------- the forms' gate
 
 const record = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
-const V2_TESTS = ['compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since'];
+const V2_TESTS = ['compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since',
+    // (Phase 8: over the world's facts as of the event, and the story's quests.)
+    'wolf here', 'wolf in region', 'wolf in place', 'wolf in town', 'wolf indoors', 'count in region', 'carries', 'coins', 'standing', 'reputation',
+    'wolf is', 'party size', 'in party with', 'resident is', 'resident in place', 'resident in region', 'resident has', 'hour between', 'calendar is',
+    'weather is', 'relation is', 'quest is', 'objective is'];
 function editableCondition(v: unknown, depth = 0): boolean {
     if (!record(v) || depth > 5) return false;
     if (v.test === 'all' || v.test === 'any') return Array.isArray(v.conditions) && v.conditions.every(c => editableCondition(c, depth + 1));

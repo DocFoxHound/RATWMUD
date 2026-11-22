@@ -272,6 +272,8 @@ def enter(conn, run, program, who, state, cursor, cause, quiet=False):
             'previousMissions': previous,
             'regions': program.get('regions', []),
             'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'],
+            # (Doc 85, Phase 8: what the game is to tell this story, the facts and the watched events: {} costs nothing.)
+            **({'watch': watch(program)} if watch(program) else {}),
         },
     )
     conn.execute(
@@ -443,6 +445,71 @@ def write_relation(conn, w, faction_id, other_id, disposition, stance, reason, u
 BATCH_MAX = 64              # (Core's Game::StoryEffectsMax.)
 EFFECTS_A_BATCH = BATCH_MAX - 3   # (Effects in one batch: room after them for the journal's three orders.)
 EVENT_PAGE = 1000           # (Events read at a time; a run reads page after page until it has caught up.)
+
+
+# ------------------------------------------------------------------------------------- the world's facts (doc 85, Phase 8)
+def _facts_table(conn):
+    return conn.execute("SELECT to_regclass('game.story_facts') IS NOT NULL").fetchone()[0]
+
+
+_WATCHES = {}   # (program digest) -> its watch list: worked out once per program, not per tick
+
+
+def watch(program):
+    key = rules.digest(program)
+    if key not in _WATCHES:
+        if len(_WATCHES) > 512:
+            _WATCHES.clear()
+        _WATCHES[key] = rules.watch_of(program)
+    return _WATCHES[key]
+
+
+def wants_facts(program):
+    return bool(watch(program).get('facts'))
+
+
+def facts_page(conn, world, first, last):
+    """The world's facts covering events first..last: each row holds the world as it was when the game wrote the events up to
+    its `as_of_event` (in the same transaction), so an event's facts are those of the first row at or after it."""
+    if not _facts_table(conn):
+        return []
+    return conn.execute(
+        """SELECT as_of_event,facts FROM game.story_facts WHERE world_id=%s AND as_of_event>=%s
+           AND as_of_event<=coalesce((SELECT min(as_of_event) FROM game.story_facts WHERE world_id=%s AND as_of_event>=%s),
+                                     9223372036854775807)
+           ORDER BY as_of_event""", (world, first, world, last)).fetchall()
+
+
+def facts_at(page, event_id, conn=None, world=None):
+    """The facts of one event from a page (facts_page): the first row at or after it; past the newest row, the newest
+    (written a moment before its events: only on a database the game has not written to since)."""
+    for at, f in page:
+        if at >= event_id:
+            return f
+    if page:
+        return page[-1][1]
+    return latest_facts(conn, world) if conn is not None else None
+
+
+def _now_facts(conn, world, wanted):
+    f = latest_facts(conn, world) if wanted else None
+    return {'facts': f} if f is not None else {}
+
+
+def _facts_view(facts, state):
+    """The world's facts as the console shows them for one run: its own wolves (and none else), the rest as written."""
+    if not isinstance(facts, dict):
+        return None
+    cohort = set(state.get('cohort', ()))
+    return {**facts, 'wolves': {k: v for k, v in (facts.get('wolves') or {}).items() if k in cohort}}
+
+
+def latest_facts(conn, world):
+    """The world's facts as the game last wrote them (the console's "now"), or None."""
+    if not _facts_table(conn):
+        return None
+    row = conn.execute('SELECT facts FROM game.story_facts WHERE world_id=%s ORDER BY as_of_event DESC LIMIT 1', (world,)).fetchone()
+    return row[0] if row else None
 READ_BUDGET = 1.0           # (Seconds a run may read for in one tick before the others, and the commands, have a turn.)
 WHEN_HERE_DAYS = 7          # (A held effect waits this many real days for its wolf unless it says: story_program.WAIT_DAYS.)
 WHEN_HERE_KEEP = 500        # (Held effects a run keeps at most; the oldest go first, noted.)
@@ -1129,6 +1196,7 @@ def _tick_run(conn, world, run, clock, holder):
     # Doc 85, Phase 7: read page after page until caught up (or the run has a batch's worth to send, or its turn is up),
     # instead of 128 events a tick; effects gather while it reads and go together after.
     deadline = time.monotonic() + READ_BUDGET
+    facts_wanted = wants_facts(p)
     read = 0
     caught_up = False
     stopped = False
@@ -1140,10 +1208,15 @@ def _tick_run(conn, world, run, clock, holder):
             (world, cursor, EVENT_PAGE),
         ).fetchall()
         read += len(rows)
+        # (Doc 85, Phase 8: the world's facts for the page, read at once; each event and its clock carry those as of it.)
+        page = facts_page(conn, world, rows[0][0], rows[-1][0]) if rows and facts_wanted else None
         for row in rows:
             fact = dict(zip(EVENT_COLUMNS, row))
             elapsed = max(0, (row[-1] - published_at) / 86400) if published_at else 0
-            if dispatch({'kind': 'clock'}, fact['day'], elapsed):
+            facts = facts_at(page, fact['id'], conn, world) if page is not None else None
+            if facts is not None:
+                fact['facts'] = facts
+            if dispatch({'kind': 'clock', **({'facts': facts} if facts is not None else {})}, fact['day'], elapsed):
                 enter(conn, run, p, who, state, cursor, 'clock')
                 holder['left'] = 'game'
                 return
@@ -1187,7 +1260,7 @@ def _tick_run(conn, world, run, clock, holder):
         and not state.get('outcome')
         and day is not None
         and caught_up
-        and dispatch({'kind': 'clock'}, day, wall_elapsed)
+        and dispatch({'kind': 'clock', **_now_facts(conn, world, facts_wanted)}, day, wall_elapsed)
     ):
         enter(conn, run, p, who, state, cursor, 'clock')
         holder['left'] = 'game'
@@ -2513,6 +2586,8 @@ class Steer:
         phase = self.phase()
         before = _values(self.state, fact.get('actor', ''))
         start = len(self.trace)
+        if 'facts' not in fact and wants_facts(self.program):
+            fact = {**fact, **_now_facts(self.conn, self.world, True)}   # (Doc 85, Phase 8: the world as it is now.)
         moved = rules.dispatch(self.program, phase, self.state, fact, self.day(), self.trace, self.elapsed())
         _attach_changes(phase, self.trace[start:], before, _values(self.state, fact.get('actor', '')))
         return moved
@@ -2989,7 +3064,7 @@ class Steer:
             'revise': True, 'phase': state['phase'], 'journal': phase['journal'], 'title': new_program['title'],
             'players': state['cohort'], 'visit': state['visits'], 'end': False, 'guestVoices': phase.get('guestVoices', []),
             'missions': rules.mission_snapshot(phase, state), 'previousMissions': [], 'regions': new_program.get('regions', []),
-            'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line']})
+            'lines': [e for e in phase['effects'] if e['kind'] == 'npc.line'], 'watch': watch(new_program)})
         state['moveReceipt'] = receipt
         self.note_order(receipt)
         self.conn.execute(
@@ -3368,7 +3443,7 @@ def _recent_wolves(conn, world, cohort, days):
            AND e.recorded_at >= now() - %s * interval '1 day')""", (cohort, world, days))}
 
 
-def listeners(program, state, per_wolf=True, recent=None, day=None):
+def listeners(program, state, per_wolf=True, recent=None, day=None, facts=None):
     """Every trigger and exit of the run's phase, judged as the run stands (doc 85, 5.5's "what is this story waiting
     for?"): on or off, used up or not (and for whom), its conditions as a tree of true, false and unknown with values (on
     a stand-in event of its own filters: what the event brings is unknown until it comes), its due day, its senders (a
@@ -3396,7 +3471,8 @@ def listeners(program, state, per_wolf=True, recent=None, day=None):
             item['used'] = bool(cohort) and set(cohort) <= set(used_by)
         else:
             item['used'] = False
-        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': '', 'id': None, **t.get('match', {})}
+        stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': '', 'id': None, **t.get('match', {}),
+                    **({'facts': facts} if facts is not None else {})}   # (Doc 85, Phase 8: the world's facts now.)
         known = set(t.get('match', {}))
         if 'if' in t:
             item['conditions'] = rules.triggers.judge(t['if'], state, stand_in, ready, phase.get('_regions'), known, phase, day)
@@ -3590,7 +3666,7 @@ def why_not(conn, world, run, which):
     and its last events (up to 10) with where each stopped."""
     program, state, status, cursor, receipts, digest, who, title = _load(conn, world, run)
     phase = rules.phase_of(program, state)
-    judged = listeners(program, state)
+    judged = listeners(program, state, facts=latest_facts(conn, world) if wants_facts(program) else None)
     if isinstance(which, dict) and 'exit' in which:
         rules.require(rules.integer(which['exit'], 0, 15) and which['exit'] < len(phase['exits']), 'No such exit in this phase.')
         rule, head, kinds = phase['exits'][which['exit']], next(i for i in judged if i['source'] == 'exit' and i['index'] == which['exit']), None
@@ -3621,8 +3697,15 @@ def why_not(conn, world, run, which):
         fired = {int(r[0]) for r in conn.execute(
             """SELECT entry->>'event' FROM dm.story_trigger_history WHERE run=%s AND entry->>'trigger'=%s
                AND entry->>'event' ~ '^[0-9]+$' ORDER BY id DESC LIMIT 200""", (run, rule['id']))}
+    wanted = wants_facts(program)
     for r in rows:
         fact = dict(zip(EVENT_COLUMNS, r[:12]))
+        if wanted:
+            # (Doc 85, Phase 8: each event judged with the world's facts as of it.)
+            covering = facts_page(conn, world, fact['id'], fact['id'])
+            f = facts_at(covering, fact['id'])
+            if f is not None:
+                fact['facts'] = f
         step = _step(phase, state, run, rule, fact, fired) if 'id' in rule else _exit_step(phase, state, rule, fact)
         out['events'].append({'event': _event_view(r), **step})
     return out
@@ -3693,11 +3776,12 @@ def what_if(conn, world, run, fact):
     world_load(conn, world, program, state)
     copy = json.loads(json.dumps(state))
     trace = []
+    fact.update(_now_facts(conn, world, wants_facts(program)))   # (Doc 85, Phase 8: as if it happened now, in the world as it is.)
     if fact['kind'] == rules.triggers.SIGNAL:
         moved = rules.dispatch(program, phase, copy, fact, day, trace, elapsed)
     else:
         moved = rules.advance(program, copy, {**fact, 'day': day}, day, trace, elapsed)
-    out = {'run': run, 'fact': fact, 'day': day, **_outcome(program, state, copy, trace, moved, fact['actor'])}
+    out = {'run': run, 'fact': rules.triggers.without_facts(fact), 'day': day, **_outcome(program, state, copy, trace, moved, fact['actor'])}
     fired = {f['trigger'] for f in trace}
     out['notFired'] = [{'trigger': t['id'], **_step(phase, state, run, t, {**fact, 'day': day}, set())}
                        for t in phase.get('triggers', []) if t['id'] not in fired and
@@ -3789,7 +3873,8 @@ def explain(conn, world, run, data=None, who='', may=None):
     now = _now(conn, world)
     recent = sorted(_recent_wolves(conn, world, state.get('cohort', []), limits['goneDays']))
     world_load(conn, world, program, state)
-    judged = listeners(program, state, recent=recent, day=now['day'])
+    facts = latest_facts(conn, world) if wants_facts(program) else None
+    judged = listeners(program, state, recent=recent, day=now['day'], facts=facts)
     phase = rules.phase_of(program, state)
     stall = None
     if status == 'running' and rules.ongoing(phase) and not any(i['can'] for i in judged):
@@ -3798,7 +3883,9 @@ def explain(conn, world, run, data=None, who='', may=None):
             'listeners': judged, 'timers': _timers_ahead(state, now['day'], speed), 'speed': speed, 'recent': recent,
             'goneDays': limits['goneDays'], 'stall': stall, 'ending': not rules.ongoing(phase),
             # (The events its missions' objectives take: a "what if" may try those too.)
-            'missionEvents': sorted({o['on'] for m in phase.get('missions', []) for o in m['objectives']})}
+            'missionEvents': sorted({o['on'] for m in phase.get('missions', []) for o in m['objectives']}),
+            # (Doc 85, Phase 8: what the story watches, and the world's facts it reads, as the game last wrote them: its wolves only.)
+            **({'watch': watch(program), 'facts': _facts_view(facts, state)} if watch(program) else {})}
 
 
 # ----- the alerts outside the Campaigns tab (doc 85, 5.6: a count on the tab bar, a line on LIVE, the Dev Console)

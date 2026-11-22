@@ -248,3 +248,101 @@ QUEST_CAMPAIGN = {
     ], 'expect': ['muster', 'freeze'], 'expectQuests': {'ropes': {'party:p1': 'done'}, 'scout': {ELM: 'expired'}},
         'expectVariables': {'story': {'ropes': 1}}}],
 }
+
+
+# ----- Doc 85, Phase 8: the world's facts and the new events (tools/test_story_facts.py; both twins, tools/test_story_native.py)
+def _probe(conditions, var, first=0):
+    """Ifs that add 2^k to a number for each condition k that holds (so a rehearsal's final value says which held)."""
+    return [{'do': 'if', 'if': c, 'then': [{'do': 'add', 'var': var, 'value': 2 ** (first + k)}]} for k, c in enumerate(conditions)]
+
+
+FACTS_WOLF = [
+    {'test': 'wolf here'}, {'test': 'wolf in region', 'region': 'gate'}, {'test': 'wolf in place', 'place': 'grey'},
+    {'test': 'wolf in town', 'town': 'greyfen'}, {'test': 'wolf indoors', 'is': False},
+    {'test': 'carries', 'item': 'rope', 'op': '>=', 'value': 2}, {'test': 'coins', 'op': '>', 'value': 10},
+    {'test': 'standing', 'faction': 'greyfen_watch', 'op': '>=', 'value': 20},
+    {'test': 'reputation', 'who': '$actor', 'town': 'greyfen', 'op': '>=', 'value': 1},
+    {'test': 'wolf is', 'state': 'wanted', 'is': False}, {'test': 'party size', 'op': '>=', 'value': 2},
+    {'test': 'in party with', 'other': BIRCH}, {'test': 'wolf here', 'who': ELM},
+]
+FACTS_WORLD = [
+    {'test': 'count in region', 'region': 'gate', 'op': '>=', 'value': 2}, {'test': 'resident is', 'npc': 'rm111', 'state': 'alive'},
+    {'test': 'resident in place', 'npc': 'rm111', 'place': 'grey'}, {'test': 'resident in region', 'npc': 'rm111', 'region': 'gate'},
+    {'test': 'resident has', 'npc': 'rm111', 'what': 'mantle', 'value': 'carter'}, {'test': 'hour between', 'from': 22, 'to': 4},
+    {'test': 'calendar is', 'what': 'weekday', 'value': 'Restday'}, {'test': 'weather is', 'weather': 'snow'},
+    {'test': 'weather is', 'where': 'grey', 'weather': 'snow'},
+    {'test': 'relation is', 'faction': 'greyfen_watch', 'op': '>=', 'stance': 'friendly', 'other': 'road_company'},
+    {'test': 'not', 'condition': {'test': 'resident is', 'npc': 'rm119', 'state': 'dead'}},
+]
+FACTS_QUEST = [
+    {'test': 'quest is', 'quest': 'patrol', 'status': 'active'}, {'test': 'quest is', 'quest': 'patrol', 'status': 'none'},
+    {'test': 'objective is', 'quest': 'patrol', 'objective': 'walk', 'status': 'done'},
+    {'test': 'objective is', 'quest': 'patrol', 'objective': 'door', 'status': 'hidden'},
+    {'test': 'quest is', 'quest': 'patrol', 'of': 'story', 'status': 'none'},
+]
+NIGHT = {'cell': 'grey', 'x': 3, 'y': 4, 'indoors': False, 'town': 'greyfen', 'party': 'p1', 'partySize': 2, 'carries': {'rope': 3},
+         'coins': 40, 'standing': {'greyfen_watch': 25}, 'reputation': {'greyfen': 2}, 'downed': False, 'hurt': False, 'wanted': False,
+         'held': False}
+FACTS_WATCH = {
+    'format': 'ratw-story-program', 'version': 2, 'id': 'night-watch', 'title': 'The night watch at Greyfen',
+    'audience': {'kind': 'players', 'players': [ASH, BIRCH]}, 'start': 'watch',
+    'variables': [{'id': 'wolf', 'type': 'number', 'scope': 'player'}, {'id': 'world', 'type': 'number', 'scope': 'story'},
+                  {'id': 'quest', 'type': 'number', 'scope': 'player'}, {'id': 'looped', 'type': 'number', 'scope': 'story'},
+                  {'id': 'events', 'type': 'texts', 'scope': 'story'}],
+    'regions': [{'id': 'gate', 'cell': 'grey', 'x1': 2, 'y1': 2, 'x2': 6, 'y2': 6}],
+    'quests': [{'id': 'patrol', 'title': 'Walk the gate', 'scope': 'player',
+                'objectives': [{'id': 'walk', 'label': 'Walk to the gate.', 'on': 'region entered', 'match': {'target': 'gate'}},
+                               {'id': 'door', 'label': 'Try the gaol door.', 'hidden': True, 'optional': True, 'on': 'door locked'}]}],
+    'phases': [{'id': 'watch', 'journal': 'Keep the night watch.', 'effects': [], 'exits': [
+        {'on': 'night falls', 'to': 'dark'}], 'triggers': [
+        {'id': 'probe-wolf', 'on': 'conversation', 'audience': 'participant', 'actions': _probe(FACTS_WOLF[:7], 'wolf')},
+        {'id': 'probe-wolf-2', 'on': 'conversation', 'audience': 'participant', 'actions': _probe(FACTS_WOLF[7:], 'wolf', 7)},
+        {'id': 'probe-world', 'on': 'trade done', 'actions': _probe(FACTS_WORLD, 'world')},
+        {'id': 'probe-quest', 'on': 'dialogue node', 'audience': 'participant', 'actions': _probe(FACTS_QUEST, 'quest')},
+        {'id': 'start', 'on': 'dialogue opened', 'audience': 'participant', 'match': {'target': 'rm111'}, 'actions': [
+            {'do': 'effect', 'effect': {'kind': 'quest.start', 'quest': 'patrol', 'player': '$actor'}}]},
+        {'id': 'loop', 'on': 'hour', 'match': {'detail': '23'}, 'actions': [
+            {'do': 'each', 'over': 'participants', 'actions': [
+                {'do': 'if', 'if': {'test': 'carries', 'who': '$each', 'item': 'rope', 'op': '>=', 'value': 1},
+                 'then': [{'do': 'add', 'var': 'looped', 'value': 1}]}]}]},
+        {'id': 'log', 'on': 'door opened', 'actions': [{'do': 'list add', 'var': 'events', 'value': 'door opened'},
+                                                     {'do': 'wait', 'days': 0.01}, {'do': 'if', 'if': {'test': 'wolf indoors', 'is': True},
+                                                                                   'then': [{'do': 'list add', 'var': 'events', 'value': 'indoors after'}]}]},
+        *({'id': 'new-' + k.replace(' ', '-'), 'on': k, 'actions': [{'do': 'list add', 'var': 'events', 'value': k}]} for k in (
+            'door closed', 'building entered', 'building left', 'region occupied', 'region emptied', 'weather changed', 'day begins',
+            'dawn', 'season begins', 'item picked up', 'item dropped', 'dialogue closed', 'crime seen', 'wolf downed', 'wolf revived',
+            'party formed', 'party ended')),
+    ]}, {'id': 'dark', 'journal': 'Night has fallen.', 'effects': [], 'exits': []}],
+    'tests': [
+        {'name': 'Facts read as of each event', 'cohort': [ASH, BIRCH],
+         'facts': {'wolves': {ASH: NIGHT, BIRCH: {**NIGHT, 'x': 5, 'carries': {}}}, 'world': {'hour': 23, 'weekday': 'Restday', 'season': 'winter', 'period': 'night'},
+                   'residents': {'rm111': {'alive': True, 'cell': 'grey', 'x': 4, 'y': 4, 'indoors': False, 'mantle': 'carter'},
+                                 'rm119': {'alive': True, 'cell': 'mill'}},
+                   'weather': {'grey': 'snow'}, 'relations': {'greyfen_watch>road_company': 'allied'}},
+         'events': [
+             quest_fact(1, 'conversation', 1, ASH, target='rm111'),
+             quest_fact(2, 'trade done', 1.01, ASH, target='rm111', item='rope', detail='bought', quantity=1, coins=4),
+             quest_fact(3, 'dialogue opened', 1.02, ASH, target='rm111', detail='resident'),
+             quest_fact(4, 'dialogue node', 1.03, ASH, target='rm111', detail='greet', item='resident'),
+             quest_fact(5, 'region entered', 1.04, ASH, target='gate', detail='run', cell='grey', x=3, y=4),
+             {**quest_fact(6, 'dialogue node', 1.05, ASH, target='rm111', detail='bye'),
+              'facts': {'wolves': {ASH: {**NIGHT, 'cell': 'inn', 'indoors': True, 'coins': 5}, 'elm': None}}},
+             quest_fact(7, 'conversation', 1.06, ASH, target='rm111'),
+             quest_fact(8, 'hour', 1.07, '', detail='23', quantity=23),
+             quest_fact(9, 'door opened', 1.08, ASH, target='inn_door', cell='inn', detail='The inn door'),
+             {**quest_fact(10, 'trade done', 1.2, BIRCH, target='rm111', item='rope', detail='sold', quantity=1, coins=3),
+              'facts': {'world': {'hour': 9, 'weekday': 'Marketday'}, 'weather': {'grey': 'clear'}, 'residents': {'rm111': {'alive': False}},
+                        'relations': {'greyfen_watch>road_company': 'tense'}}},
+             *(quest_fact(11 + i, k, 1.3 + i / 100, ASH) for i, k in enumerate(('door closed', 'building entered', 'building left',
+                                                                                 'region occupied', 'party formed', 'wolf downed', 'wolf revived'))),
+             quest_fact(30, 'night falls', 1.5),
+         ], 'expect': ['watch', 'dark'],
+         'expectVariables': {'player': {ASH: {'wolf': 8104, 'quest': 45}}, 'story': {'world': 3071, 'looped': 1, 'events': [
+             'door opened', 'indoors after', 'door closed', 'building entered', 'building left', 'region occupied', 'party formed',
+             'wolf downed', 'wolf revived']}}},
+        {'name': 'No facts: every world condition unknown', 'cohort': [ASH, BIRCH], 'events': [
+            quest_fact(1, 'conversation', 1, ASH, target='rm111'),
+            quest_fact(2, 'trade done', 1.1, ASH, target='rm111', item='rope', detail='bought', quantity=1, coins=4),
+        ], 'expect': ['watch'], 'expectVariables': {'player': {ASH: {'wolf': 0}}, 'story': {'world': 0}}},
+    ],
+}

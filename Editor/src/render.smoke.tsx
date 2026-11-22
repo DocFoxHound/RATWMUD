@@ -267,6 +267,14 @@ export function renderAll(): Record<string, string> {
     out['Campaigns (viewer)'] = renderToString(<CampaignsTab me={{username: 'v', role: 'viewer'} as Me} target="dev" initial={campaignList} />);
     // (Doc 85, Phase 3.)
     out['Campaigns (explained)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, explained}} />);
+    // (Doc 85, Phase 8: a condition over the world's facts, judged, and the world as the game last told the story.)
+    out['Campaigns (world facts)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignRunning, explained: {...explained,
+        listeners: [{...explained.listeners[0], conditions: {test: 'all', verdict: false, conditions: [
+            {test: 'carries' as never, verdict: false, fact: 0, expected: 1, wolf: 'player-ash'},
+            {test: 'hour between' as never, verdict: true, fact: 14}, {test: 'wolf in region' as never, verdict: null, needs: 'facts'}]}}],
+        watch: {facts: ['wolves', 'world'], items: ['rope'], events: ['region occupied', 'trade done']},
+        facts: {world: {hour: 14, minute: 5, weekday: 'Marketday', season: 'winter', period: 'day'},
+            wolves: {'player-ash': {cell: 'grey', x: 31, y: 36, indoors: false, partySize: 2, carries: {}, coins: 40}}}}}} />);
     out['Campaigns (stuck)'] = renderToString(<CampaignsTab me={me} target="dev" initial={{...campaignList, overview: {...campaignList.overview,
         runs: [{...runningRow, alerts: [{kind: 'stuck', needsYou: true, phase: 'ferry-watch', reasons: {used: 1, gone: 1, unsent: 2}, goneDays: 14},
             {kind: 'overdue', needsYou: false, timer: 'watch-round', signal: 'watch-round', seconds: 600}, {kind: 'full', needsYou: false, wolves: 460, cap: 500}]}]}}} />);

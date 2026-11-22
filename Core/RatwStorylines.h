@@ -102,6 +102,9 @@ struct Storyline
     // dialogue windows (npc.offer). The game shows them and checks them; the runner keeps the ledger.
     std::map<std::string, json::Value> questViews;
     json::Value offers, choices;
+    // What the runner asked the game to tell this world story (doc 85, Phase 8: its watch list, with each story.phase): the
+    // sections of the world's facts and what of each, and the watched events ({} for none).
+    json::Value watch;
     const json::Value* questView(const std::string& wolf, const std::string& quest) const;
     std::size_t current() const;                    // The first step not done (steps.size() when all are).
     bool takesPart(const std::string& who) const;

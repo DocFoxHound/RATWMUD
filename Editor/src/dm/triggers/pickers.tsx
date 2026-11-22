@@ -223,7 +223,10 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
         const extra = type === 'wolf' ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === '$actor'} onClick={() => one('$actor')}>the acting wolf</button>
             {isV2(program) && <button type="button" aria-pressed={slot.value === '$each'} onClick={() => one('$each')} title="Inside For each">the looped wolf</button>}
             {slot.param?.world && <button type="button" aria-pressed={slot.value === 'world'} onClick={() => one('world')}>everyone (a public scene)</button>}</div> : undefined;
-        const here = slot.param?.optional ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined} onClick={() => one(undefined)}>{slot.param.words?.[''] ?? 'none'}</button></div> : undefined;
+        const here = slot.param?.optional ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined} onClick={() => one(undefined)}>{slot.param.words?.[''] ?? 'none'}</button></div>
+            // (Doc 85, Phase 8: a place that may be where the acting wolf is: "the weather where the acting wolf is".)
+            : slot.param?.or?.length ? <div className="wb-chips">{slot.param.or.map(v => <button key={v} type="button" aria-pressed={(slot.value ?? slot.param?.default) === v}
+                onClick={() => one(v === slot.param?.default ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div> : undefined;
         body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra ?? here}/>
             {!['phase', 'region', 'scene', 'mission', 'quest'].includes(type) && <EnterId value={slot.value} pick={one}
                 label={type === 'purse' ? 'Or a purse: town:<town>, town:<town>:works, till:<id>, chapter:<id>' : undefined}/>}</>;

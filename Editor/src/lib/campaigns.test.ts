@@ -365,3 +365,23 @@ test('a batch of orders: its line, and the order it is stuck on (doc 85, Phase 7
     assert.equal(stuckItem({...batch, items: [batch.items[0]]}), undefined);
     assert.equal(commandLine('order', {receipt: 9, do: 'when-here'}, {}), 'held for its wolf order #9');
 });
+
+// ------------------------------------------------------------------------------------- the world's facts (doc 85, Phase 8)
+import {condText as condText8, factLines, factWords} from './campaigns.ts';
+
+test('Phase 8: world conditions in the console say what the facts said, and the facts in lines', () => {
+    const names = {'player-ash': 'Ash', grey: 'Greyfen', rm111: 'Ivo'};
+    assert.equal(condText8({test: 'carries' as never, verdict: false, fact: 0, expected: 1, wolf: 'player-ash'}, names),
+        'carries ✘ (the world says 0 for Ash)');
+    assert.equal(condText8({test: 'wolf in region' as never, verdict: true, fact: {cell: 'grey', x: 3, y: 4}}, names),
+        'wolf in region ✔ (the world says Greyfen (3, 4))');
+    assert.equal(condText8({test: 'wolf here' as never, verdict: null, needs: 'facts', wolf: 'player-ash'}, names),
+        "wolf here ? (the world's facts do not say for Ash: away, or not yet written)");
+    assert.equal(factWords(true), 'yes');
+    assert.deepEqual(factLines({world: {hour: 9, minute: 3, weekday: 'Restday', season: 'winter', period: 'day'},
+        wolves: {'player-ash': {cell: 'grey', x: 3, y: 4, indoors: true, partySize: 1, carries: {rope: 2}, coins: 7, wanted: true}},
+        residents: {rm111: {alive: false, cell: 'grey', x: 1, y: 1}}, weather: {grey: 'snow'}, relations: {'a>b': 'tense'}}, names), [
+        'the world · Restday · winter · 9:03 · day', 'Ash · Greyfen (3, 4) · indoors · carries rope 2 · 7p · wanted',
+        'Ivo · dead · Greyfen (1, 1)', 'weather · Greyfen snow', 'relations · a → b tense']);
+    assert.deepEqual(factLines(null), []);
+});

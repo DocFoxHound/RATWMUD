@@ -56,6 +56,10 @@ class DbStore
     // Phase 7: a live world story sees them in a second, not at the next save). Nothing if a checkpoint is waiting: it
     // carries them. Each write of events says so on channel ratw_events (the story runner listens).
     void flushEventsInBackground();
+    // The world's facts for its live stories (doc 85, Phase 8): the newest replaces one not yet written, and goes with the
+    // next write of events (a checkpoint's or one of its own), in that transaction (game.record_story_facts, migration 0076).
+    void queueFacts(std::string facts);
+    bool logsFacts() const { return factsSupported_; }
     bool logsEvents() const { return eventsSupported_; }
     bool deltasSupported() const { return deltasSupported_; }
     // The highest revision whose checkpoint has been written (0 for none yet in this run).
@@ -83,20 +87,23 @@ class DbStore
     PgClient pg_;
     std::string worldId_, pgError_;
     std::map<std::string, std::map<std::string, std::uint64_t>> written_;
-    bool haveWritten_ = false, deltasSupported_ = false, eventsSupported_ = false, verify_ = false, journalSupported_ = false;
+    bool haveWritten_ = false, deltasSupported_ = false, eventsSupported_ = false, verify_ = false, journalSupported_ = false,
+         factsSupported_ = false;
     std::uint64_t storedRevision_ = 0;
     std::set<std::string> knownLists_;
     int deltasSinceWhole_ = 0;
     bool prepare(Checkpoint& next, std::map<std::string, std::map<std::string, std::uint64_t>>& nowWritten);
-    bool write(const Checkpoint& save, const std::vector<WorldEvent>& events);
+    bool write(const Checkpoint& save, const std::vector<WorldEvent>& events, const std::string& facts);
     void writer();
     std::mutex pgLock_;
     mutable std::mutex queueLock_;
     std::condition_variable wake_, idle_;
     std::optional<Checkpoint> pending_;
     std::vector<WorldEvent> pendingEvents_;
+    std::string pendingFacts_;
     bool writing_ = false, stopping_ = false, backgroundFailed_ = false, eventsOnly_ = false;
-    bool writeEvents(const std::vector<WorldEvent>& events);
+    bool writeEvents(const std::vector<WorldEvent>& events, const std::string& facts);
+    bool writeFacts(const std::string& facts);
     std::string backgroundError_;
     std::thread writerThread_;
     std::function<void(const std::string&)> log_;

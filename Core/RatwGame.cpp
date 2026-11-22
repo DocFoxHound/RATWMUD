@@ -62,6 +62,7 @@ class DatabaseStore final : public Store
     bool saveInBackground(DbStore::Build build, std::uint64_t revision) override { return db.saveInBackground(std::move(build), revision); }
     bool flush() override { return db.flush(); }
     void queueEvents(std::vector<WorldEvent> events) override { db.queueEvents(std::move(events)); }
+    void queueFacts(std::string facts) override { db.queueFacts(std::move(facts)); }
     void flushEvents() override { db.flushEventsInBackground(); }
     std::vector<std::pair<std::string, std::string>> externalNpcStates() override { return db.externalNpcStates(); }
     std::string error() const override { return db.error(); }
@@ -2550,9 +2551,9 @@ void Game::connect(Connection* c)
 
 namespace
 {
-template<class Tile>
+template<class Tile, class Crossed>
 void recordRegionCrossings(World& world, const storylines::Book& book, const std::set<std::string>& watches,
-                           const std::string& actor, const Tile& previous, const Tile& current)
+                           const std::string& actor, const Tile& previous, const Tile& current, Crossed crossed)
 {
     for (const auto& run : watches)
     {
@@ -2565,6 +2566,7 @@ void recordRegionCrossings(World& world, const storylines::Book& book, const std
             const auto& at = inside ? current : previous;
             world.recordEvent({inside ? "region entered" : "region left", actor, id, at.cell,
                                 0, 0, {}, 0, 0, run, at.x, at.y});
+            crossed(run, id, inside, at.cell, at.x, at.y);   // (A region's count of story wolves: doc 85, Phase 8.)
         }
     }
 }
@@ -2582,7 +2584,10 @@ void Game::observeStoryTile(const std::string& actor)
     if (it->second.cell == current.cell && it->second.x == x && it->second.y == y) return;
     const auto previous = it->second;
     it->second = current;
-    recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, actor, previous, current);
+    recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, actor, previous, current,
+                           [&](const std::string& run, const std::string& region, bool inside, const std::string& cell, int x, int y) {
+                               storyRegionCrossed(run, region, actor, inside, cell, x, y);
+                           });
 }
 
 void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double facing, double ix, double iy)
@@ -2618,7 +2623,10 @@ void Game::pose(Connection* c, std::uint32_t seq, double x, double y, double fac
                 const int dx = (endX > seen->second.x) - (endX < seen->second.x);
                 const int dy = (endY > seen->second.y) - (endY < seen->second.y);
                 const StoryTile next{player->cellId, seen->second.x + dx, seen->second.y + dy};
-                recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, id, seen->second, next);
+                recordRegionCrossings(world_, storylines_, storiesWatchingRegions_, id, seen->second, next,
+                                      [&](const std::string& run, const std::string& region, bool inside, const std::string& cell, int x, int y) {
+                                          storyRegionCrossed(run, region, id, inside, cell, x, y);
+                                      });
                 seen->second = next;
             }
         }
@@ -2968,6 +2976,7 @@ bool Game::enterCharacter(Connection* c, const std::string& actor, const std::st
     world_.observe(actor);
     observeStoryTile(actor);
     logEvent("arrival", actor);
+    storyArrivedInside(actor);                     // (Signing in inside a story's region counts: doc 85, Phase 8.)
     record(Economy | Character, actor);
     if (!storageReady_)
     {
@@ -3037,6 +3046,7 @@ void Game::leaveCharacter(Connection* c)
         characters_[e->id].awayInBed = world_.bedIsTheirs(*e);   // (Only a bed it has a right to rests it fully: doc 54.)
         characters_[e->id].awayAtInn = innCells_.count(e->cellId) > 0 || (lodgingOf(e->id) && innUpstairs(e->cellId) && lodgingOf(e->id)->cell == e->cellId);
         observeStoryTile(id);
+        storyLeftWorld(id);                         // (A region's count of story wolves goes down: doc 85, Phase 8.)
         lastStoryTile_.erase(id);
         logEvent("departure", id);
         if (const auto* fight = world_.battleOf(id); fight && !fight->over)
@@ -3590,6 +3600,7 @@ void Game::tick(double dt)
     campTick(dt);
     projectTick(dt);                                // (Town projects: doc 57, 4.)
     storylineTick(dt);                              // (Storylines' places, chains, idle tales: doc 58.)
+    storyWatchTick(real);                           // (What the live stories watch: the calendar, the weather; doc 85, Phase 8.)
     tendStorytellers(dt);                           // (Visitors, the kept log, credits: doc 58.)
     holdTick(dt);
     refreshChapterViews(real);
@@ -5366,7 +5377,16 @@ void Game::followTransition(const std::string& id, const std::string& previousCe
     if (!leader)
         return;
     if (!leader->npc)
+    {
         logEvent("enter place", id, leader->cellId, previousCell);
+        // (Doc 85, Phase 8: into or out of an interior, for a story that listens.)
+        const auto* from = world_.cell(previousCell);
+        const auto* to = world_.cell(leader->cellId);
+        if (from && !from->outdoors && world_.storyListens("building left"))
+            world_.recordEvent({"building left", id, previousCell, leader->cellId, 0, 0, {}, 0, 0, leader->cellId});
+        if (to && !to->outdoors && world_.storyListens("building entered"))
+            world_.recordEvent({"building entered", id, leader->cellId, leader->cellId, 0, 0, {}, 0, 0, previousCell});
+    }
     // A party's residents cross with whoever they follow: the leader, or the one in the world (doc 32).
     const auto* p = parties_.of(id);
     if (!p || (p->leader != id && clientOf(p->leader)))
@@ -6085,6 +6105,13 @@ void Game::command(Connection* c, const std::string& raw)
         if (result.ok && buy && buy->asBool())
             if (const auto* after = world_.society().account(id))
                 afterFactionTrade(id, j.string("target"), before - after->cash);
+        if (result.ok && world_.storyListens("trade done"))   // (Doc 85, Phase 8: a trade done, for a story that listens.)
+        {
+            const auto* after = world_.society().account(id);
+            const std::int64_t moved = after ? after->cash - before : 0;
+            world_.recordEvent({"trade done", id, j.string("target"), player->cellId, 0, 0, json::utf8Prefix(j.string("item"), 40),
+                                int(qty), moved < 0 ? -moved : moved, buy->asBool() ? "bought" : "sold"});
+        }
         {
             // The shop window's receipt: the line it sent, done or refused, in the world's words.
             auto receipt = Value::object();
@@ -7274,10 +7301,9 @@ void Game::flushStoryEvents(double real)
     storyEventsAccumulator_ = 0;
     if (!store_ || !store_->database() || !storageReady_ || saveSoonIn_ >= 0 || snapshotChild_ > 0 || !storyLive())
         return;
-    auto events = world_.takeEvents();
-    if (events.empty())
+    if (!world_.hasEvents())
         return;
-    store_->queueEvents(std::move(events));
+    handEventsToStore();                           // (With the world's facts, while a story asks: doc 85, Phase 8.)
     store_->flushEvents();
 }
 
@@ -7407,7 +7433,7 @@ void Game::autosave()
         return;
     if (options_.forkSnapshots && forkFailures_ < 3 && forkSnapshot())
         return;
-    store_->queueEvents(world_.takeEvents());
+    handEventsToStore();
     journalCheckpoint();
     const auto seq = journalSeq_;
     if (!store_->saveInBackground(capture(), revision_))
@@ -7547,7 +7573,7 @@ void Game::save()
     if (!store_)
         return;
     reapSnapshot(true);                            // A snapshot under way is finished and handed over first.
-    store_->queueEvents(world_.takeEvents());
+    handEventsToStore();
     if (storageReady_)
         journalCheckpoint();
     const auto seq = journalSeq_;

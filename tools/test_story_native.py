@@ -1,7 +1,8 @@
 """The authoring fallback and compiled interpreter must agree on every shipped rehearsal: the 108 programs as they are
 (version 1), the same 108 made version 2 (story_program.upgrade), and the version 2 samples that use every new condition
 and action (tools/story_v2_samples.py), with their rolls hashed under several seeds; and the quest samples of
-tools/story_v2_samples.py (Phase 6)."""
+tools/story_v2_samples.py (Phase 6); and the night watch (Phase 8: every condition over the world's facts, the new events),
+whose facts are also made up at random by tools/test_story_facts.py."""
 
 import copy
 import unittest
@@ -65,6 +66,17 @@ class NativeAuthoringParity(unittest.TestCase):
         for program in (story_v2_samples.QUEST_SMALL, story_v2_samples.QUEST_CAMPAIGN):
             with self.subTest(program=program['id']):
                 self.same(program)
+
+    def test_world_facts_match(self):
+        """Doc 85, Phase 8: conditions over the world's facts as of the event, and over quests, the same in both twins (the
+        native one sent only the wolves its conditions read)."""
+        self.same(story_v2_samples.FACTS_WATCH)
+        other = copy.deepcopy(story_v2_samples.FACTS_WATCH)
+        for case in other['tests']:
+            case.pop('expectVariables', None)
+            case['cohort'] = [story_v2_samples.ASH]   # (Birch out of the story: counts and loops change, the twins still agree.)
+        other['audience']['players'] = [story_v2_samples.ASH]
+        self.same(other, passed=None)
 
 
 if __name__ == '__main__':

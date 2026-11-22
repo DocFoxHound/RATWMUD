@@ -2,9 +2,9 @@
 // catalogue, every parameter a slot with the picker for its type. Also the action list that a phase's entry effects share.
 import {useState} from 'react';
 import {
-    actionItem, actionParts, allActions, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, itemOf, newAction, refusable,
+    actionItem, actionParts, allActions, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, isWorldCondition, itemOf, newAction, refusable,
     newCondition, triggersOf, usesOf, withEvent, withTriggers, type Action, type Condition, type Effect, type Part, type Program, type Ref,
-    type Slot, type Trigger,
+    type CatItem, type Slot, type Trigger,
 } from '../../lib/workbench';
 import {useBench} from './context';
 import {ActionPicker, EventPicker, type Values} from './pickers';
@@ -91,11 +91,20 @@ function AddCondition({pick, close, phase, depth}: {pick: (c: Condition) => void
     const {cat, program} = useBench();
     return <div className="wb-picker" role="dialog" aria-label="Add a condition"><header><strong>Add a condition</strong>
         <button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
-        <div className="wb-options">{cat.conditions.filter(c => (depth < 5 || !c.group) && !(c.phaseOnly && phase === null)
-            && (isV2(program) ? c.id !== 'counter' : !c.v2)
-            && !(c.id === 'region' && !program.regions?.length) && !(c.id === 'mission' && !(phase !== null && program.phases[phase]?.missions?.length))).map(c =>
-            <button key={c.id} type="button" className="wb-action-option" onClick={() => pick(newCondition(c.id, program, phase))}>
-                <span>{c.title}</span><small>{c.help}</small></button>)}</div></div>;
+        {(() => {
+            const list = cat.conditions.filter(c => (depth < 5 || !c.group) && !(c.phaseOnly && phase === null)
+                && (isV2(program) ? c.id !== 'counter' : !c.v2)
+                && !((c.id === 'region' || ['wolf in region', 'count in region', 'resident in region'].includes(c.id)) && !program.regions?.length)
+                && !(['quest is', 'objective is'].includes(c.id) && !program.quests?.length)
+                && !(c.id === 'mission' && !(phase !== null && program.phases[phase]?.missions?.length)));
+            // (Doc 85, Phase 8: grouped as section 3.4 has them: the story's own state, the world's facts as of the event, quests.)
+            const groups: [string, CatItem[]][] = [['The story', list.filter(c => !isWorldCondition(c))],
+                ['The world, as of the event', list.filter(c => isWorldCondition(c) && !c.id.startsWith('quest') && !c.id.startsWith('objective'))],
+                ['Quests', list.filter(c => c.id === 'quest is' || c.id === 'objective is')]];
+            return <div className="wb-options">{groups.filter(([, items]) => items.length).map(([label, items]) => <div key={label}><h6>{label}</h6>
+                {items.map(c => <button key={c.id} type="button" className="wb-action-option" onClick={() => pick(newCondition(c.id, program, phase, cat))}>
+                    <span>{c.title}</span><small>{c.help}</small></button>)}</div>)}</div>;
+        })()}</div>;
 }
 
 // ------------------------------------------------------------------------------------------------------------- actions

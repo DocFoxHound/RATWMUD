@@ -120,6 +120,9 @@ class Store
     virtual void queueEvents(std::vector<WorldEvent> events) = 0;
     // The events queued so far to the log now, without a checkpoint (doc 85, Phase 7); a store without a log: nothing.
     virtual void flushEvents() {}
+    // The world's facts for its live stories (doc 85, Phase 8), written with the next write of the events; a store without
+    // the table: nothing.
+    virtual void queueFacts(std::string) {}
     virtual std::vector<std::pair<std::string, std::string>> externalNpcStates() = 0;
     virtual std::string error() const = 0;
     // The journal of valuable changes (RatwJournal.h; Docs/Design/31-responsiveness.md, Phase 2), and its records after
@@ -827,6 +830,7 @@ class Game
     // Each wolf's party as last written to the world's log (doc 85, Phase 6: "party joined" and "party left", which the
     // stories' runner reads to keep each wolf's party): compared with the parties after each change.
     std::map<std::string, std::string> partyLogged_;
+    std::map<std::string, std::string> partyLeaders_;   // Party -> its leader, as last logged (party formed, party ended).
     void partyEvents(bool quiet = false);
     struct Relations
     {
@@ -1499,6 +1503,10 @@ class Game
     Result giveStoryline(const std::string& character, const std::string& templateId, const json::Value& cast, const std::string& source,
                          const std::string& sourceRef, const std::vector<std::string>& also = {});
     storylines::Book& storylineBook() { return storylines_; }
+    // Doc 85, Phase 8: the world's facts as the live stories watch them (the document written to game.story_facts with the
+    // events; "" when none asks), and whether a live story listens for a watched event.
+    std::string storyFactsJson();
+    bool storyWatches(const std::string& kind) const { return storyWatch_.events.count(kind) > 0; }
     bool approvedStoryteller(const std::string& account) const;
     // Open dice (doc 58, 6): "2d6+1" rolled from a seed, in words ("2d6 + 1: 3 + 5 + 1 = 9"); "" with why, past the limits.
     static std::string rollDice(const std::string& spec, const std::string& seed, std::string& error);
@@ -2557,6 +2565,33 @@ class Game
     bool storyLive() const;                         // (A world story of the story runner is running.)
     void flushStoryEvents(double real);             // (Doc 85, Phase 7: the events to the log between saves.)
     double storyEventsAccumulator_ = 0;
+    // Doc 85, Phase 8 (RatwGameStoryFacts.cpp): what the live world stories watch (the union of their watch lists, sent
+    // with each story.phase), the world's facts written with every write of the events while one asks for them
+    // (game.story_facts), and the watched events: the calendar's and the weather's, a region's count of story wolves.
+    struct StoryWatch
+    {
+        std::set<std::string> sections, items, factions, towns, residents, cells, events;
+        std::set<std::pair<std::string, std::string>> relations;
+        bool weatherWhereWolves = false;
+        bool facts() const { return !sections.empty(); }
+    };
+    StoryWatch storyWatch_;
+    void refreshStoryWatch();
+    void handEventsToStore();                       // The world's events (and, while watched, its facts) to the store.
+    void storyWatchTick(double real);
+    double storyWatchAccumulator_ = 0, storyWeatherAccumulator_ = 0;
+    int storyHour_ = -1;
+    std::int64_t storyDay_ = -1;
+    std::string storyPeriod_, storySeason_;
+    std::map<std::string, std::string> storyWeather_;             // Place -> the weather last seen there.
+    std::map<std::string, std::map<std::string, std::set<std::string>>> storyOccupants_;   // Run -> region -> its wolves inside.
+    void storyRegionCrossed(const std::string& run, const std::string& region, const std::string& wolf, bool inside,
+                            const std::string& cell, int x, int y);
+    void recountStoryRegions(const std::string& run);
+    void storyArrivedInside(const std::string& wolf);   // (Signing in inside a region counts: region entered.)
+    void storyLeftWorld(const std::string& wolf);
+    std::map<std::string, std::map<std::string, int>> storyReputation_;   // Town -> wolf -> liked less disliked.
+    double storyReputationAt_ = -1e9;
     // A scene's request to the Mind waits until the save that consumed it is stored (never dispatched twice after a crash).
     struct SceneRequest
     {

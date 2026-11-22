@@ -101,6 +101,7 @@ bool DbStore::open(const std::string& conninfo, const std::string& worldId, std:
         return false;
     worldId_ = worldId;
     eventsSupported_ = yes(pg_.exec("SELECT to_regprocedure('game.record_events(ratw_id,jsonb)') IS NOT NULL"));
+    factsSupported_ = eventsSupported_ && yes(pg_.exec("SELECT to_regprocedure('game.record_story_facts(ratw_id,jsonb)') IS NOT NULL"));
     // A list the database doesn't store as rows (an older database) stays in the checkpoint row; a delta must too.
     for (const auto& row : pg_.exec("SELECT name FROM game.sections").rows)
         if (row[0])
@@ -120,6 +121,14 @@ void DbStore::queueEvents(std::vector<WorldEvent> events)
         pendingEvents_.push_back(std::move(e));
     if (pendingEvents_.size() > EventsQueued)
         pendingEvents_.erase(pendingEvents_.begin(), pendingEvents_.begin() + std::ptrdiff_t(pendingEvents_.size() - EventsQueued));
+}
+
+void DbStore::queueFacts(std::string facts)
+{
+    if (facts.empty() || !opened() || !factsSupported_)
+        return;
+    std::lock_guard<std::mutex> guard(queueLock_);
+    pendingFacts_ = withoutNul(std::move(facts));
 }
 
 std::string DbStore::load()
@@ -219,7 +228,18 @@ bool DbStore::prepare(Checkpoint& next, std::map<std::string, std::map<std::stri
     return true;
 }
 
-bool DbStore::write(const Checkpoint& save, const std::vector<WorldEvent>& events)
+bool DbStore::writeFacts(const std::string& facts)
+{
+    // (Doc 85, Phase 8: after the events, in their transaction, so a row's as_of_event is the newest of them.)
+    if (facts.empty())
+        return true;
+    const auto result = pg_.exec("SELECT game.record_story_facts($1, $2::jsonb)", {worldId_, facts});
+    if (!result.ok)
+        pgError_ = result.error;
+    return result.ok;
+}
+
+bool DbStore::write(const Checkpoint& save, const std::vector<WorldEvent>& events, const std::string& facts)
 {
     // One transaction: the checkpoint and the published NPC states share a timestamp (now() is the transaction's
     // start), which is how start-up tells this server's own NPC states from ones written by someone else.
@@ -249,6 +269,8 @@ bool DbStore::write(const Checkpoint& save, const std::vector<WorldEvent>& event
         result = pg_.exec("SELECT game.record_events($1, $2::jsonb)", {worldId_, eventsJson(events)});
         if (!result.ok)
             return failed(result);
+        if (!writeFacts(facts))
+            return failed(PgResult{false, pgError_, {}});
         result = pg_.exec("SELECT pg_notify('ratw_events', $1)", {worldId_});   // (The story runner wakes: doc 85, Phase 7.)
         if (!result.ok)
             return failed(result);
@@ -258,7 +280,7 @@ bool DbStore::write(const Checkpoint& save, const std::vector<WorldEvent>& event
     return result.ok;
 }
 
-bool DbStore::writeEvents(const std::vector<WorldEvent>& events)
+bool DbStore::writeEvents(const std::vector<WorldEvent>& events, const std::string& facts)
 {
     // (Doc 85, Phase 7.) Only events, in one transaction, in the order they happened; the next checkpoint follows them.
     const auto failed = [this](const PgResult& r) {
@@ -272,6 +294,8 @@ bool DbStore::writeEvents(const std::vector<WorldEvent>& events)
     result = pg_.exec("SELECT game.record_events($1, $2::jsonb)", {worldId_, eventsJson(events)});
     if (!result.ok)
         return failed(result);
+    if (!writeFacts(facts))
+        return failed(PgResult{false, pgError_, {}});
     result = pg_.exec("SELECT pg_notify('ratw_events', $1)", {worldId_});
     if (!result.ok)
         return failed(result);
@@ -307,17 +331,23 @@ void DbStore::writer()
             events.swap(pendingEvents_);
             if (events.empty())
                 continue;
+            std::string facts;
+            facts.swap(pendingFacts_);
             writing_ = true;
             queue.unlock();
             bool ok;
             {
                 std::lock_guard<std::mutex> connection(pgLock_);
-                ok = writeEvents(events);
+                ok = writeEvents(events, facts);
             }
             queue.lock();
             writing_ = false;
             if (!ok)
+            {
                 pendingEvents_.insert(pendingEvents_.begin(), std::make_move_iterator(events.begin()), std::make_move_iterator(events.end()));
+                if (pendingFacts_.empty())
+                    pendingFacts_ = std::move(facts);   // (A newer one queued meanwhile stands.)
+            }
             idle_.notify_all();
             continue;
         }
@@ -328,6 +358,9 @@ void DbStore::writer()
         pending_.reset();
         std::vector<WorldEvent> events;
         events.swap(pendingEvents_);
+        std::string facts;
+        if (!events.empty())
+            facts.swap(pendingFacts_);             // (Facts go only with events: they are as of the newest written.)
         writing_ = true;
         queue.unlock();
         bool built = static_cast<bool>(next.build);
@@ -338,6 +371,8 @@ void DbStore::writer()
             writing_ = false;
             if (!events.empty())                   // Kept for the next checkpoint, in order.
                 pendingEvents_.insert(pendingEvents_.begin(), std::make_move_iterator(events.begin()), std::make_move_iterator(events.end()));
+            if (pendingFacts_.empty())
+                pendingFacts_ = std::move(facts);
             idle_.notify_all();
             continue;
         }
@@ -345,7 +380,7 @@ void DbStore::writer()
         std::string problem;
         {
             std::lock_guard<std::mutex> connection(pgLock_);
-            ok = write(next, events);
+            ok = write(next, events, facts);
             problem = pgError_;
             if (ok && next.delta && !next.whole.empty())
             {

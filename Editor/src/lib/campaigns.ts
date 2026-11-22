@@ -480,8 +480,11 @@ export function firingCounts(items: TimelineItem[]): Record<string, {count: numb
 /** A condition, judged: true, false or unknown (null), with the values behind it (story_triggers.judge). */
 export interface CondNode {
     test: 'all' | 'any' | 'not' | 'counter' | 'field' | 'region' | 'mission'; verdict: boolean | null; conditions?: CondNode[]; condition?: CondNode;
-    key?: string; scope?: string; field?: string; op?: string; value?: unknown; expected?: unknown; wolf?: string; why?: string; needs?: 'event' | 'wolf' | 'place';
+    key?: string; scope?: string; field?: string; op?: string; value?: unknown; expected?: unknown; wolf?: string; why?: string;
+    needs?: 'event' | 'wolf' | 'place' | 'facts' | 'roll';
     region?: string; id?: string;
+    /** Doc 85, Phase 8: what the world's facts (or the story's quests) said, for a world or quest condition. */
+    fact?: unknown;
 }
 export type Cannot = 'off' | 'used' | 'gone' | 'unsent';
 /** One trigger or exit of the phase, judged as the run stands. */
@@ -496,6 +499,36 @@ export interface TimerAhead { name: string; signal: string; at: number; clock: '
 export interface Explained {
     run: string; phase: string; visit: number; status: string; day: number | null; listeners: Judged[]; timers: TimerAhead[]; speed: number | null;
     recent: string[]; goneDays: number; missionEvents?: string[]; stall: (Alert & {what?: {source: string; id?: string; index?: number; on: string; cannot: Cannot}[]}) | null; ending: boolean;
+    /** Doc 85, Phase 8: what the story asks the game to tell it, and the world's facts as the game last wrote them (its wolves). */
+    watch?: StoryWatch; facts?: WorldFactsDoc | null;
+}
+export interface StoryWatch {facts?: string[]; items?: string[]; factions?: string[]; towns?: string[]; residents?: string[]; cells?: string[];
+    events?: string[]; relations?: [string, string][]; weatherWhereWolves?: boolean}
+export interface WorldFactsDoc {wolves?: Record<string, Record<string, unknown>>; residents?: Record<string, Record<string, unknown>>;
+    world?: Record<string, unknown>; weather?: Record<string, string>; relations?: Record<string, string>}
+/** The world's facts in lines for the console: "Ash Greymantle · Ridgemere, Northgate (31, 36) · out of doors · carries rope 3 · 40p". */
+export function factLines(f: WorldFactsDoc | null | undefined, names: Record<string, string> = {}): string[] {
+    if (!f) return [];
+    const out: string[] = [];
+    const w = f.world;
+    if (w) out.push(['the world', w.weekday, w.season, w.hour !== undefined ? `${w.hour}:${String(w.minute ?? 0).padStart(2, '0')}` : '', w.period]
+        .filter(Boolean).join(' · '));
+    for (const [id, x] of Object.entries(f.wolves ?? {})) {
+        const carries = Object.entries((x.carries ?? {}) as Record<string, number>).map(([k, n]) => `${nameOf(names, k)} ${n}`).join(', ');
+        const standing = Object.entries((x.standing ?? {}) as Record<string, number>).map(([k, n]) => `${nameOf(names, k)} ${n}`).join(', ');
+        const states = ['downed', 'hurt', 'wanted', 'held'].filter(k => x[k] === true);
+        out.push([nameOf(names, id), x.cell ? `${nameOf(names, String(x.cell))} (${x.x}, ${x.y})` : '', x.indoors ? 'indoors' : 'out of doors',
+            Number(x.partySize ?? 1) > 1 ? `in a party of ${x.partySize}` : '', carries && `carries ${carries}`, x.coins !== undefined ? `${x.coins}p` : '',
+            standing && `standing ${standing}`, ...states].filter(Boolean).join(' · '));
+    }
+    for (const [id, r] of Object.entries(f.residents ?? {}))
+        out.push([nameOf(names, id), r.alive === false ? 'dead' : 'alive', r.cell ? `${nameOf(names, String(r.cell))} (${r.x}, ${r.y})` : '',
+            r.job ? String(r.job) : '', r.mood ? `mood ${r.mood}` : '', r.mantle ? `mantle ${r.mantle}` : ''].filter(Boolean).join(' · '));
+    const weather = Object.entries(f.weather ?? {}).map(([c, v]) => `${nameOf(names, c)} ${v}`).join(', ');
+    if (weather) out.push('weather · ' + weather);
+    const relations = Object.entries(f.relations ?? {}).map(([k, v]) => `${k.split('>').map(x => nameOf(names, x)).join(' → ')} ${v}`).join(', ');
+    if (relations) out.push('relations · ' + relations);
+    return out;
 }
 export interface Step {
     verdict: 'fired' | 'filter' | 'outsider' | 'off' | 'used' | 'conditions' | 'before' | 'other' | 'would' | 'early';
@@ -532,6 +565,14 @@ export interface Wording {
 /** One judged test in words: "stores ≥ 5 ✘ (stores is 2)", "item = rope ? (the event brings it)"; with the catalogue's
  *  sentence when there is one ("the story's counter stores >= 5 ✘ (stores is 2)"). */
 export function condText(c: CondNode, names: Record<string, string> = {}, wording?: Wording): string {
+    if ('fact' in c || c.needs === 'facts') {
+        // (Doc 85, Phase 8: a condition over the world's facts as of the event, or the story's quests: what they said.)
+        const head = `${wording?.condition ? wording.condition(c) : c.test} ${mark(c.verdict)}`;
+        const whose = c.wolf ? ` for ${nameOf(names, c.wolf)}` : '';
+        if (c.needs === 'wolf') return `${head} (each wolf's own)`;
+        if (c.needs === 'facts') return `${head} (the world's facts do not say${whose}: away, or not yet written)`;
+        return `${head} (the world says ${factWords(c.fact, names)}${whose})`;
+    }
     if (wording?.condition && !['all', 'any', 'not'].includes(c.test)) {
         const head = `${wording.condition(c)} ${mark(c.verdict)}`;
         if (c.test === 'mission') return head;
@@ -560,6 +601,16 @@ export function condText(c: CondNode, names: Record<string, string> = {}, wordin
     if (c.needs === 'wolf') return `${head} (each wolf's own)`;
     if (c.why) return `${head} (${c.wolf ? nameOf(names, c.wolf) + ' is' : 'the wolf is'} ${c.why})`;
     return `${head} (${what} is ${shown(c.value, names)}${c.wolf ? ' for ' + nameOf(names, c.wolf) : ''})`;
+}
+/** A fact the world's facts gave: "3", "yes", "Ridgemere, Northgate (31, 36)", "snow". */
+export function factWords(v: unknown, names: Record<string, string> = {}): string {
+    if (v === null || v === undefined || v === '') return 'nothing';
+    if (typeof v === 'boolean') return v ? 'yes' : 'no';
+    if (typeof v === 'object') {
+        const o = v as {cell?: string; x?: number; y?: number};
+        return o.cell ? `${nameOf(names, o.cell)} (${o.x}, ${o.y})` : 'nowhere';
+    }
+    return typeof v === 'string' ? nameOf(names, v) : String(v);
 }
 /** A judged condition tree as indented lines, for the Overview and [Why not?]. */
 export function condLines(c: CondNode | undefined, names: Record<string, string> = {}, depth = 0, wording?: Wording): {depth: number; text: string; verdict: boolean | null}[] {
@@ -617,14 +668,19 @@ export function stuckReasons(a: Pick<Alert, 'reasons' | 'goneDays'>): string {
     return Object.entries(a.reasons ?? {}).map(([k, n]) => `${n} ${words[k as Cannot] ?? k}`).join(', ');
 }
 /** Why one event did not fire a trigger, in words. */
-export function stepText(s: Step, names: Record<string, string> = {}): string {
+export function stepText(s: Step, names: Record<string, string> = {}, wording?: Wording): string {
     switch (s.verdict) {
         case 'fired': return 'it fired';
         case 'filter': return s.field === 'kind' ? `another kind of event (${s.actual})` : `its ${s.field} was ${shown(s.actual, names)}; it wants ${shown(s.expected, names)}`;
         case 'outsider': return `${s.wolf ? nameOf(names, s.wolf) : 'nobody'} is not in the story`;
         case 'off': return 'it is turned off';
         case 'used': return `already fired${s.wolf ? ' for ' + nameOf(names, s.wolf) : ''} (once per ${s.once})`;
-        case 'conditions': return `its conditions said no: ${condLines(s.conditions, names).filter(l => l.verdict !== true).slice(0, 3).map(l => l.text).join('; ')} (today's values)`;
+        case 'conditions': {
+            // (Doc 85, Phase 8: a world condition is judged with the world's facts as of the event itself.)
+            const facts = JSON.stringify(s.conditions ?? {}).includes('"fact"');
+            return `its conditions said no: ${condLines(s.conditions, names, 0, wording).filter(l => l.verdict !== true).slice(0, facts ? 4 : 3).map(l => l.text).join('; ')}`
+                + (facts ? ' (the world as it was at this event; the story\'s own values as they are now)' : " (today's values)");
+        }
         case 'before': return 'before this visit of the phase opened';
         case 'early': return `before its delay (due day ${s.due?.toFixed(1)})`;
         case 'other': return s.text ?? 'for another story';

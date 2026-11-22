@@ -10,7 +10,7 @@ import {fileURLToPath} from 'node:url';
 import {
     actionParts, buildTree, commit, conditionParts, editable, eventParts, exitParts, fragmentOf, historyOf, insertTriggers, moveTrigger, namesOf,
     pasteFragment, plain, pretty, readFragment, redo, refOfProblem, removeTriggers, renameCounter, renameSignal, renameTrigger, search, signalsOf,
-    countersOf, takenIds, triggersOf, undo, unique, usesOf, withEvent, type Catalogue, type Program, type Ref,
+    countersOf, takenIds, triggersOf, undo, unique, usesOf, withEvent, type Catalogue, type Condition, type Program, type Ref,
 } from './workbench.ts';
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -234,7 +234,11 @@ test('version 2: every action and condition the workbench adds is one the story 
     const p = structuredClone(ledger);
     p.phases[1].triggers!.push(...kinds.map((k, i) => ({id: 'new-' + i, on: 'arrival', audience: 'participant',
         actions: [newAction(cat, k, p, 'new-' + i, 1)]})));
-    p.phases[1].triggers!.push(...tests.map((k, i) => ({id: 'cond-' + i, on: 'arrival', if: newCondition(k, p, 1), actions: [{do: 'stop'} as const]})));
+    // (Doc 85, Phase 8: the world's conditions need a region and a quest to name; what only the world can name, the author picks.)
+    p.regions = [...(p.regions ?? []), {id: 'gate', cell: 'grey', x1: 1, y1: 1, x2: 4, y2: 4}];
+    p.quests = [{id: 'q', title: 'Q', objectives: [{id: 'o', label: 'O', on: 'conversation'}]}];
+    const picked = (c: Condition) => Object.fromEntries(Object.entries(c).map(([k, v]) => [k, v === '' ? (k === 'other' && c.test === 'in party with' ? '$actor' : 'picked-' + k) : v])) as Condition;
+    p.phases[1].triggers!.push(...tests.map((k, i) => ({id: 'cond-' + i, on: 'arrival', if: picked(newCondition(k, p, 1, cat)), actions: [{do: 'stop'} as const]})));
     const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
         + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(p)}).toString());
     assert.deepEqual(found, []);
@@ -337,4 +341,35 @@ test("doc 58's templates start a small quest: talking is a conversation with the
         const p = smallQuestProgram({...SMALL_QUEST_INPUT, ...from, objectives: from.objectives.length ? from.objectives : SMALL_QUEST_INPUT.objectives});
         assert.ok(editable(p), t.id);
     }
+});
+
+// ------------------------------------------------------------------------------------- the world's facts (doc 85, Phase 8)
+
+import {isWorldCondition} from './workbench.ts';
+
+test('Phase 8: the night watch opens in the workbench, every world condition and new event in words', () => {
+    const night: Program = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_v2_samples as S\n"
+        + 'print(json.dumps(S.FACTS_WATCH))'], {cwd: repo}).toString());
+    assert.ok(editable(night));
+    const names = namesOf(null, night);
+    const seen = new Set<string>();
+    for (const c of (night.phases[0].triggers ?? []).flatMap(t => allConditions(t)).flatMap(function flat(c: Condition): Condition[] {
+        const k = c as {conditions?: Condition[]; condition?: Condition};
+        return [c, ...(k.conditions ?? []).flatMap(flat), ...(k.condition ? flat(k.condition) : [])];
+    })) {
+        const item = cat.conditions.find(x => x.id === c.test);
+        assert.ok(item, c.test);
+        if (!isWorldCondition(item)) continue;
+        seen.add(c.test);
+        const words = plain(conditionParts(cat, c, names));
+        assert.ok(!words.includes('{') && words.length > 8, c.test + ': ' + words);
+        if (c.test === 'carries' && !('who' in c)) assert.equal(words, 'the acting wolf carries at least 2 rope');
+        if (c.test === 'weather is' && !('where' in c)) assert.equal(words, 'the weather where the acting wolf is is snow');
+    }
+    assert.equal(seen.size, 23, [...seen].join(', '));
+    for (const t of night.phases[0].triggers ?? []) {
+        const words = plain(eventParts(cat, t, names));
+        assert.ok(!words.includes('{'), t.on + ': ' + words);
+    }
+    assert.equal(cat.events.filter(e => (e as {watch?: boolean}).watch).length, 24);
 });

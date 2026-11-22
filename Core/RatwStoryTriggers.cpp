@@ -3,7 +3,9 @@
 #include "RatwStoryRegion.h"
 #include <algorithm>
 #include <cstdint>
+#include <cmath>
 #include <optional>
+#include <set>
 #include <stdexcept>
 #include <vector>
 
@@ -451,7 +453,212 @@ struct Dispatch2
             else since = Value(day - (from == "phase" ? input.number("entered") : input.number("began", input.number("entered"))));
             return since && compare(*since, c.string("op"), c["days"]);
         }
+        if (kind == "quest is" || kind == "objective is") return quest(c, x);
+        if (factKinds().count(kind)) return fact(c, x);
         return classic(c, x);
+    }
+
+    // ---- Phase 8: the world's facts as of the event (`facts` on the fact), and the story's quests. The twin of
+    // story_triggers.fact_test and quest_test: a missing fact is unknown.
+    static const std::set<std::string>& factKinds()
+    {
+        static const std::set<std::string> kinds{"wolf here", "wolf in region", "wolf in place", "wolf in town", "wolf indoors",
+            "count in region", "carries", "coins", "standing", "reputation", "wolf is", "party size", "in party with", "resident is",
+            "resident in place", "resident in region", "resident has", "hour between", "calendar is", "weather is", "relation is"};
+        return kinds;
+    }
+
+    static bool whole(const Value& v) { return v.isNumber() && std::floor(v.asNumber()) == v.asNumber(); }
+
+    bool inside(const std::string& region, const Value& at) const
+    {
+        const auto& r = input["regions"][region];
+        const auto& x = at["x"];
+        const auto& y = at["y"];
+        if (!whole(x) || !whole(y) || !at["cell"].isString()) return false;
+        return at.string("cell") == r.string("cell") && r.number("x1") <= x.asNumber() && x.asNumber() <= r.number("x2") &&
+               r.number("y1") <= y.asNumber() && y.asNumber() <= r.number("y2");
+    }
+
+    std::optional<bool> number(const Value* v, const Value& c) const
+    {
+        if (!v || !v->isNumber()) return std::nullopt;
+        return compare(*v, c.string("op"), c["value"]);
+    }
+
+    std::string who(const Ctx& x, const std::string& v) const
+    {
+        if (v == "$each") return x.each && x.each->isString() ? x.each->asString() : "";
+        return v == "$actor" ? x.actor : v;
+    }
+
+    std::optional<bool> fact(const Value& c, const Ctx& x) const
+    {
+        const auto kind = c.string("test");
+        const auto* f = x.fact->find("facts");
+        if (!f || !f->isObject()) return std::nullopt;
+        static const Value Empty = Value::object();
+        const auto section = [&](const char* name) -> const Value& { const auto& v = (*f)[name]; return v.isObject() ? v : Empty; };
+        const auto& wolves = section("wolves");
+        const auto& world = section("world");
+        if (kind == "hour between")
+        {
+            const auto& h = world["hour"];
+            if (!h.isNumber()) return std::nullopt;
+            const double a = c.number("from"), b = c.number("to"), n = h.asNumber();
+            return a <= b ? (a <= n && n <= b) : (n >= a || n <= b);
+        }
+        if (kind == "calendar is")
+        {
+            const auto& v = world[c.string("what")];
+            if (!v.isString()) return std::nullopt;
+            return v.asString() == c.string("value");
+        }
+        if (kind == "relation is")
+        {
+            static const std::vector<std::string> stances{"war", "hostile", "tense", "neutral", "friendly", "allied"};
+            const auto& v = section("relations")[c.string("faction") + ">" + c.string("other")];
+            const auto at = v.isString() ? std::find(stances.begin(), stances.end(), v.asString()) : stances.end();
+            if (at == stances.end()) return std::nullopt;
+            const auto want = std::find(stances.begin(), stances.end(), c.string("stance"));
+            return compare(Value(double(at - stances.begin())), c.string("op"), Value(double(want - stances.begin())));
+        }
+        if (kind == "count in region")
+        {
+            if (!input["regions"].has(c.string("region"))) return std::nullopt;
+            double n = 0;
+            for (const auto& [id, w] : wolves.fields())
+                if (member(id) && w.isObject() && inside(c.string("region"), w)) ++n;
+            return compare(Value(n), c.string("op"), c["value"]);
+        }
+        if (kind.rfind("resident", 0) == 0)
+        {
+            const auto& r = section("residents")[c.string("npc")];
+            if (!r.isObject()) return std::nullopt;
+            const bool alive = r["alive"].isBool() && r["alive"].asBool();
+            const bool indoors = r["indoors"].isBool() && r["indoors"].asBool();
+            if (kind == "resident is")
+            {
+                const auto state = c.string("state");
+                return state == "alive" ? alive : state == "dead" ? !alive : alive && indoors == (state == "indoors");
+            }
+            if (kind == "resident in place") return r["cell"].isString() && r.string("cell") == c.string("place");
+            if (kind == "resident in region")
+            {
+                if (!input["regions"].has(c.string("region"))) return std::nullopt;
+                return inside(c.string("region"), r);
+            }
+            return r[c.string("what")].asString("") == c.string("value");
+        }
+        if (kind == "weather is")
+        {
+            std::string where = c.string("where", "$actor");
+            if (where == "$actor")
+            {
+                const auto& w = wolves[x.actor];
+                where = w.isObject() && w["cell"].isString() ? w.string("cell") : std::string();
+                if (where.empty()) return std::nullopt;
+            }
+            const auto& v = section("weather")[where];
+            if (!v.isString()) return std::nullopt;
+            return v.asString() == c.string("weather");
+        }
+        const auto& w = wolves[who(x, c.string("who", "$actor"))];
+        if (kind == "wolf here") return w.isObject();
+        if (!w.isObject()) return std::nullopt;
+        const auto flag = [&](const std::string& key) { return w[key].isBool() && w[key].asBool(); };
+        if (kind == "wolf in region")
+        {
+            if (!input["regions"].has(c.string("region"))) return std::nullopt;
+            return inside(c.string("region"), w);
+        }
+        if (kind == "wolf in place") return w["cell"].isString() && w.string("cell") == c.string("place");
+        if (kind == "wolf in town") return w["town"].isString() && w.string("town") == c.string("town");
+        if (kind == "wolf indoors") return flag("indoors") == c.boolean("is");
+        if (kind == "wolf is") return flag(c.string("state")) == c.boolean("is");
+        if (kind == "in party with")
+        {
+            const auto& o = wolves[who(x, c.string("other"))];
+            const auto& party = w["party"];
+            return party.isString() && !party.asString().empty() && o.isObject() && o["party"] == party;
+        }
+        if (kind == "party size")
+        {
+            static const Value One(1);
+            const auto* n = w.find("partySize");
+            return number(n ? n : &One, c);
+        }
+        if (kind == "carries")
+        {
+            static const Value Zero(0);
+            const auto& held = w["carries"];
+            const auto* n = held.isObject() ? held.find(c.string("item")) : nullptr;
+            return number(n ? n : &Zero, c);
+        }
+        if (kind == "coins") return number(w.find("coins"), c);
+        if (kind == "standing")
+        {
+            const auto& st = w["standing"];
+            return number(st.isObject() ? st.find(c.string("faction")) : nullptr, c);
+        }
+        if (kind == "reputation")
+        {
+            static const Value Zero(0);
+            const auto& rep = w["reputation"];
+            const auto* n = rep.isObject() ? rep.find(c.string("town")) : nullptr;
+            return number(n ? n : &Zero, c);
+        }
+        throw std::invalid_argument("Unknown story condition");
+    }
+
+    // The copy of a quest a wolf takes part in (story_quests.copy_of): their own, the story's, or their party's.
+    const Value* questCopy(const Value& def, const std::string& quest, const std::string& wolf) const
+    {
+        const auto& copies = input["quests"][quest];
+        const auto scope = def.string("scope", "player");
+        if (scope == "player") { const auto* c = copies.find(wolf); return c && c->isObject() ? c : nullptr; }
+        if (scope == "story") { const auto* c = copies.find("story"); return c && c->isObject() && member(wolf) ? c : nullptr; }
+        const Value* best = nullptr;
+        for (const auto& [holder, c] : copies.fields())
+        {
+            if (!includes(c["members"], wolf)) continue;
+            const auto status = c.string("status");
+            if ((status == "active" || status == "ready") && !includes(c["left"], wolf)) return &c;
+            if (!best || c.number("began") > best->number("began")) best = &c;
+        }
+        return best;
+    }
+
+    std::optional<bool> quest(const Value& c, const Ctx& x) const
+    {
+        const auto id = c.string("quest");
+        const auto& def = input["questDefs"][id];
+        if (!def.isObject()) return std::nullopt;
+        const auto of = c.string("of", "$actor");
+        const Value* copy = nullptr;
+        std::string wolf;
+        if (of == "story")
+        {
+            const auto* s = input["quests"][id].find("story");
+            copy = s && s->isObject() ? s : nullptr;
+        }
+        else
+        {
+            wolf = who(x, of);
+            copy = questCopy(def, id, wolf);
+        }
+        if (c.string("test") == "quest is")
+        {
+            const auto status = copy ? copy->string("status") : of != "story" && includes(input["questOffers"][id], wolf) ? "offered" : "none";
+            return status == c.string("status");
+        }
+        const auto oid = c.string("objective");
+        const auto& rec = copy ? (*copy)["objectives"][oid] : Value();
+        bool hidden = false;
+        for (const auto& o : def.array("objectives"))
+            if (o.string("id") == oid) hidden = o.boolean("hidden");
+        const auto status = rec.boolean("done") ? "done" : rec.boolean("failed") ? "failed" : hidden && !rec.boolean("shown") ? "hidden" : "to do";
+        return status == c.string("status");
     }
 
     const Value* ruleById(const std::string& id) const
@@ -610,7 +817,9 @@ struct Dispatch2
             w.set("at", now(clock) + a.number("days"));
             w.set("clock", clock);
             w.set("actor", x.actor);
-            w.set("event", *x.fact);
+            Value kept = *x.fact;
+            kept.erase("facts");      // (Read again when it resumes: doc 85, Phase 8.)
+            w.set("event", kept);
             w.set("next", next);
             list(state, "waiting").push(w);
             return Flow::Wait;

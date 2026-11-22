@@ -121,7 +121,7 @@ class CatalogueShape(unittest.TestCase):
         groups = {g['id'] for g in CAT['groups']}
         ids = [e['id'] for e in CAT['events']]
         self.assertEqual(len(ids), len(set(ids)))
-        self.assertEqual(len(rules.EVENTS), 171)   # (160, and Phase 6's 11 quest and party events.)
+        self.assertEqual(len(rules.EVENTS), 195)   # (160, Phase 6's 11 quest and party events, and Phase 8's 24.)
         self.assertEqual(set(ids) - set(rules.EVENTS), {triggers.SIGNAL, rules.MISSION_GATE})
         for e in CAT['events']:
             with self.subTest(event=e['id']):
@@ -167,9 +167,9 @@ class CatalogueShape(unittest.TestCase):
 
     def test_tables_read_from_it(self):
         self.assertEqual(rules.EFFECTS['npc.walk'], ('npc', 'cell', 'x', 'y', 'pace', 'cue'))
-        self.assertEqual(len(rules.MISSION_EVENTS), 52)
-        self.assertEqual(len(rules.MISSION_MEASURES['quantity']), 13)
-        self.assertEqual(len(rules.MISSION_MEASURES['coins']), 18)
+        self.assertEqual(len(rules.MISSION_EVENTS), 63)   # (52, and 11 of Phase 8's new events a wolf does.)
+        self.assertEqual(len(rules.MISSION_MEASURES['quantity']), 15)   # (Phase 8: item picked up, trade done.)
+        self.assertEqual(len(rules.MISSION_MEASURES['coins']), 19)   # (Phase 8: trade done.)
         self.assertEqual(len(rules.INJURY_TYPES), 26)
         self.assertLessEqual(set(rules.MISSION_EVENTS), set(rules.EVENTS))
         served = runner.catalogue()
