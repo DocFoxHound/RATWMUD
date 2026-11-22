@@ -1,14 +1,20 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; **nothing here is built**. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phase 1 is built (section 6, "Phase 1 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
 refresh, Part 5 "Stories"), 58 (player storytellers) and 66 (worlds, Atlas and the DM) give the intent; where
 this doc disagrees with doc 34's Part 5, this doc is newer.
 
-Decisions are marked **decided (mine)**: I chose, the user can overturn. What only the user can settle is an
-**open question for the user**, collected in section 8.
+Decisions are marked **decided (mine)**: I chose, the user can overturn. What only the user could settle was an
+**open question for the user**, collected in section 8. **The user answered them on 2026-11-21** (section 8): build
+everything, all ten phases, plus moving a running campaign onto a newly approved version (a new Phase 5b); small
+quests are made here; steering a running campaign on a hosted world is the owner's, and a hosted DM's only with a new
+"may steer campaigns" permission; and the recommendations stand for the rest. Where a decision below was waiting on one
+of these answers, it now says **decided (user, 2026-11-21)**.
+
+**Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`: see "Phase 1 as built" at the end of section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -36,10 +42,11 @@ Decisions are marked **decided (mine)**: I chose, the user can overturn. What on
    receipts (by pressing Refresh), stop it, retry its last refused action, and issue one-use tickets. They cannot
    pause it, set a counter, fire a trigger, move it to another phase, see who is taking part or where they are,
    or see why it is not moving. This is the user's main ask and it comes first in the build.
-5. **The build is ten phases in three slices** (section 6, about 137 hours of agent time): a Campaigns console
-   (see it, steer it, explain it), then the trigger editor and the richer trigger language, then quests anyone
-   can pick up, new events and effects from the game, and speed. The smallest useful first slice is **Phase 1:
-   a read-only Campaigns tab that refreshes itself**, about 10 hours, with no engine change and no migration.
+5. **The build is eleven phases in three slices** (section 6, about 147 hours of agent time): a Campaigns console
+   (see it, steer it, explain it), then the trigger editor, the richer trigger language and moving a running
+   campaign onto a new version, then quests anyone can pick up, new events and effects from the game, and speed.
+   The smallest useful first slice is **Phase 1: a read-only Campaigns tab that refreshes itself**, about 10 hours,
+   with no engine change and no migration. **The user asked for all of it (2026-11-21).**
 
 ---
 
@@ -620,7 +627,8 @@ clocks that survive restarts, and a library of 100 worked examples. None of that
    so a rehearsal and a replay give the same answer.
 6. **A story may do nothing a DM could not do by hand.** Every new world effect is a DM order in `dm.actions`,
    applied and refused by the game under the rules it already has (the host's-own-wolves guard, "may act on
-   wolves", the economy's rules). No effect mints coins (3.5, and open question 4).
+   wolves", the economy's rules). No effect mints coins: a coin reward is paid from a named purse (3.5; **decided
+   (user, 2026-11-21)**, question 4).
 7. **Nothing kills or moves a player's wolf.** `character.kill` and `character.move` stay out of stories
    (decided, mine). `character.injury` and `story.area.damage` stay, behind "may act on wolves" as today.
 
@@ -781,7 +789,7 @@ to be allowed to send it; "new" means C++ work in the game.
 | | `story.ping` | Mark a tile on the minimap and World Map of the story's wolves for N minutes, with a label. | **New**; the maps already draw party members (`9902c12b`). |
 | | `story.tracker` | Show or hide shown variables and a timer on the HUD. | With `show` (3.2). |
 | | `participant.add`, `participant.remove` | Take a wolf into the story, or out (3.6). | **New** order `story.cohort`; the runner's audience becomes a living list. |
-| | `character.grant` | Coins to a wolf, with a reason. | **Exists**, journalled, capped (`GrantMost`). From a named purse: see open question 4. |
+| | `character.grant` | Coins to a wolf, with a reason, **from a named purse** (a town, a House or a faction): refused when the purse is short. | **Exists**, journalled, capped (`GrantMost`); the purse is new (Phase 9). **Decided (user, 2026-11-21)**, question 4: never minted. |
 | | `item.give`, `item.take` | An item to or from one wolf (not a whole region). A full pack is skipped and told, as today. | **New**, on the model of `story.area_item` (`RatwStoryArea.cpp`). |
 | | `standing.adjust` | A wolf's standing with a faction, by a few points, with a reason. | **New**; `RatwStanding`. |
 | Residents | `visitor.add`, `visitor.leave` | A temporary named resident appears at a tile for N minutes, or leaves: the spawn. | **Exists** (LIVE's "spawn"). |
@@ -797,8 +805,8 @@ to be allowed to send it; "new" means C++ work in the game.
 | Items, economy | `item.place` | An item on the ground at a tile, for the story's wolves to find. | **New**. |
 | | `event.add`, `event.cancel`, `prices.reset` | A market event; undo one; reset prices. | **Exist**. |
 | | `project.complete`, `project.cancel` | Finish or cancel a town project the story posted. | **Exist**. |
-| Time, weather | `weather.set` | The weather in a cell or a town for N hours, then back to the season's. | **New** order; the game already has the command behind it for its dev tools (`wire::environmentCommand`, `RatwGame.cpp:5842`). |
-| | (none for the calendar) | **A story never changes the day or the hour (decided, mine).** | |
+| Time, weather | `weather.set` | The weather in a cell or a town for N hours, then back to the season's. **Decided (user, 2026-11-21)**, question 6: a story may set the weather. | **New** order; the game already has the command behind it for its dev tools (`wire::environmentCommand`, `RatwGame.cpp:5842`). |
+| | (none for the calendar) | **A story never changes the day or the hour (decided, mine; kept by the user, 2026-11-21).** | |
 | Factions, crime | `faction.relation` (kept) | | |
 | | `warrant.issue`, `warrant.clear` | A warrant on a wolf, or lifted. Needs "may act on wolves". | **New**; `RatwCrime`. |
 | Quests | `quest.offer`, `quest.start`, `quest.complete`, `quest.fail`, `objective.complete`, `objective.fail`, `objective.reveal`, `objective.progress` | 3.6. | Runner, and the journal payloads. |
@@ -878,8 +886,9 @@ of 500 can go (known problems 3 and 5). Decided (mine): the cap becomes 5,000 pe
 table exists.
 
 How this sits with doc 58: the game's journal (`storylines::Book`) stays the one place a wolf reads their quests,
-and a story's quests are shown there as now. The 24 storyline templates and `storyline.give` stay. Whether small
-quests should be written **here** or as more doc 58 templates is open question 2.
+and a story's quests are shown there as now. The 24 storyline templates and `storyline.give` stay. Small quests are written
+**here**, in the Story Maker, with the templates kept as they are and offered as starting points (**decided (user,
+2026-11-21)**, question 2).
 
 ---
 
@@ -1211,17 +1220,24 @@ playing will see it.
 ### 5.7 Who may do what
 
 Ranks are `viewer < dm < builder < owner < admin` (`RANK`, `dungeon_master.py:209`). In the user's own Studio a
-`dm` may do everything below. In a host's Editor (doc 78) the same split as today applies:
+`dm` may do everything below (the user is that world's owner).
+
+**Decided (user, 2026-11-21)**, question 3: on a hosted world (a host's Editor, doc 78) **the world's owner may
+always steer a running campaign; any other account may steer only when the owner has given it a new permission,
+"may steer campaigns"**, granted and taken away the way "may act on players' wolves" is (doc 78, Q24). Without it a
+hosted DM sees the console and steers nothing. **Every intervention is logged** (5.1, rule 6: `dm.audit` and the
+campaign's own Audit and Timeline), whoever made it, the owner included.
 
 | Action | Rank | Also needs |
 |---|---|---|
 | See the console (list, timeline, variables, quests, the map) | dm | As `status` today. A viewer sees none of it (**decided, mine**: it names wolves and where they are). |
-| Hold, resume, stop; send a signal; tell the wolves | dm | |
-| Fire a trigger; turn one on or off; set a variable; timers; go to a phase; quests; retry or skip an order; start an embedded scene | dm | The effects this releases were approved with the program, under the checks approval already makes: `faction.relation` needs builder or owner (`dungeon_master.py:2737`), and `character.injury` and `story.area.damage` need the owner or "may act on wolves" (`studio.py:1354`, `1822`). If the admin now at the console could not have approved the program, a control that would release such an effect is refused for them. |
-| Add or remove a wolf | dm | |
+| Hold, resume, stop; send a signal; tell the wolves | dm | Hosted: the owner, or "may steer campaigns". |
+| Fire a trigger; turn one on or off; set a variable; timers; go to a phase; quests; retry or skip an order; start an embedded scene | dm | Hosted: the owner, or "may steer campaigns". And the effects this releases were approved with the program, under the checks approval already makes: `faction.relation` needs builder or owner (`dungeon_master.py:2737`), and `character.injury` and `story.area.damage` need the owner or "may act on wolves" (`studio.py:1354`, `1822`). If the admin now at the console could not have approved the program, a control that would release such an effect is refused for them. |
+| Add or remove a wolf | dm | Hosted: the owner, or "may steer campaigns". |
+| Move a run onto a newly approved version (Phase 5b) | dm | Hosted: the owner, or "may steer campaigns"; and whoever approves the new version needs what any approval needs. |
 | "Do in the world": any LIVE action | whatever LIVE asks for that action | `character.kill`, `injury`, `resurrect`, `move` need the owner or "may act on wolves"; cheats as now (`studio.py:1811-1850`). |
 | Hold all | owner on a hosted world; dm in the user's own | |
-| Change the alert rules | owner | |
+| Change the alert rules; grant or take away "may steer campaigns" | owner | |
 
 Underneath all of it the game's own guard stays (`dmActRefused`, `Core/RatwGameTickets.cpp:867`): on a community
 world with cheats off, a reward to the host's own wolf is refused whatever the console allowed.
@@ -1236,7 +1252,8 @@ world with cheats off, a reward to the host's own wolf is refused whatever the c
    visit 4 unless forced.
 4. **Bounded.** A value is checked against the variable's type; a phase must exist; a trigger must be in the
    program. No command can add a trigger, change a condition or edit the program: a different program is a new
-   approval (and see open question 5).
+   approval, which a running campaign can then be moved onto (Phase 5b; **decided (user, 2026-11-21)**,
+   question 5).
 5. **No silent rewards.** Completing an objective by hand gives the quest's rewards exactly as play would, and
    the timeline says an admin did it. There is a box "without rewards".
 6. **Held is safe.** Holding never loses events; they wait in the log. The console says how many are waiting.
@@ -1269,6 +1286,7 @@ dm.story_releases.status gains 'held' and 'stopping'
 
 One agent per phase, in this order, on a branch each, reusing one build; targeted tests in each phase; the full
 suite, an end-to-end run and one review-and-fix only at the end of a slice. Hours are agent hours and rough.
+**The user asked for every phase (2026-11-21)**, with Phase 5b added (question 5).
 
 ### Slice A: the Campaigns console (the user's main ask)
 
@@ -1299,6 +1317,13 @@ order to the game.
 - Audit rows; the Audit tab; reasons and confirmations (5.8).
 - Tests: one per command on a fixture run, including "made for an earlier visit", twice-sent, and a command
   arriving with events waiting; a game test for `story.tell`.
+- **Who may steer (decided, user, 2026-11-21, question 3):** the `command` op checks, on a hosted world, the owner
+  or the new account flag "may steer campaigns" (a column beside "may act on players' wolves" in the same migration
+  `0071`, set from My world's account list by the owner), and writes every command to `dm.audit` as well as
+  `dm.story_commands`, the owner's too.
+- **Shaped by Phase 5b:** `dm.story_commands` takes a `migrate` kind later, so its `payload` carries what a command
+  was made against (the run's `digest` as well as its `visit`), and the trigger history and the audit name the
+  version a run was on. A command made against an older version is refused like one made for an earlier visit.
 
 **Phase 3: Explain it. About 10 hours.**
 - `story_runner.explain` and the recording `satisfied`; Overview's "Waiting for", [Why not?], "this will do".
@@ -1327,14 +1352,39 @@ order to the game.
 - Both twins and the parity test; rehearsal support (pinned rolls, waits, expected variables).
 - The Variables panel, nested actions in the workbench, and variables with their types in the console.
 - Slice end: full suite; the 8 examples rewritten where version 2 makes them shorter, with their rehearsals
-  unchanged in outcome; one review-and-fix.
+  unchanged in outcome; one review-and-fix (moved to the end of Phase 5b, which closes the slice).
+
+**Phase 5b: Move a running campaign onto a new version. About 10 hours.** Added by the user, 2026-11-21
+(question 5: yes). A ninety-day campaign that needs a fix on day 40 keeps its wolves, phase, variables and quests.
+- Approve "as a new version of run X" from Story Creator: the ordinary rehearsal and approval, plus
+  `story_program.migration(old, new, state)`, which says, for the live state, what is **kept** (the current phase
+  and every phase by id; variables by id and type; timers whose signal still has a listener; missions and quests by
+  id whose objectives are unchanged; the `fired` sets by trigger id; the audience), what is **reset** (a mission or
+  quest whose objectives changed: its progress), and what is **dropped** (variables, timers and triggers the new
+  version no longer has). The current phase must exist in the new version, or the admin names the phase to land in.
+  A version 1 run moves onto a version 2 program (Phase 5) the same way.
+- The move is a command, `migrate {release}`, in the Phase 2 inbox, taken between two world events; nothing is
+  delivered by the move itself (a phase's entry effects are not run again). Migration `0073`
+  (Phases 6 and 8 then take `0074` and `0075`): `dm.story_versions(run, digest, program, approved_by, moved_at,
+  moved_by, report jsonb)`, one row per version a run has been on; the release row keeps the current one.
+- The console: "Move onto a new version…" shows the migration report (kept, reset, dropped) and waits for a second
+  click and a reason; the timeline and the Audit say "moved to version b7e1 by martin"; the header names the
+  version.
+- Who may: as any steering control (5.7). Rewards and world changes already delivered stay (5.8, "not a rollback").
+- Tests: kept, reset and dropped on fixture runs of the 8 examples edited three ways; a phase that no longer
+  exists; a timer whose listener went; moving twice; a command made against the old version refused after the move.
+- Slice end (B): full suite; one review-and-fix.
 
 ### Slice C: quests, the world, and speed
 
 **Phase 6: Quests and a living audience. About 18 hours.**
 - Quests (3.6) in the rules and the journal payloads; audiences `open` and `everyone`; `participant.add` and
-  `remove`; the game's `story.cohort` order; `npc.offer` and `dialogue choice` in doc 83's window.
-- Migration `0073`: `dm.story_player_state`; the cap raised.
+  `remove`; the game's `story.cohort` order; `npc.offer` and `dialogue choice` in doc 83's window. Small pick-up
+  quests are the Story Maker's (**decided, user, 2026-11-21**, question 2), so the open audience and "New small
+  quest" are in this phase in full; doc 58's templates stay and are offered as starting points.
+- Coin rewards name a purse (**decided, user, 2026-11-21**, question 4): a quest's `character.grant` reward says
+  which town, House or faction pays, and is refused (and, with `ifRefused`, held or skipped) when the purse is short.
+- Migration `0074`: `dm.story_player_state`; the cap raised.
 - The client's journal: optional, hidden, failed, trackers, abandon.
 - The Quest editor, "New small quest", and the console's Quests grid with every control.
 - Tests: rehearsals for each scope, any-order, fail, repeat; a game test for the offer in the window.
@@ -1349,7 +1399,7 @@ order to the game.
   run can read, and seconds from an event to its effect. Bars: 1,000 a second; 5 seconds.
 
 **Phase 8: Facts and new events from the game. About 14 hours.**
-- Migration `0074`: `game.story_facts`, written with each save for live runs from their watch lists.
+- Migration `0075`: `game.story_facts`, written with each save for live runs from their watch lists.
 - The conditions over facts (3.4); rehearsal cases that state facts.
 - The new events of 3.3, the watched ones through the watch list; signing in inside a region counts.
 - Tests: one game test per new event; a `world_check` run to show the cost with no story live is nil and with
@@ -1358,7 +1408,9 @@ order to the game.
 **Phase 9: New world effects. About 14 hours.**
 - Stories allowed to send the orders that exist: `visitor.add`, `visitor.leave`, `mantle.assign`,
   `mantle.release`, `event.add`, `event.cancel`, `prices.reset`, `project.complete`, `project.cancel`,
-  `deed.revoke`, `storyline.tick`, `character.grant`, `npc.kill`.
+  `deed.revoke`, `storyline.tick`, `character.grant` (from a named purse: the order gains `purse`, and the game
+  takes the coins from it or refuses), `npc.kill`.
+- `weather.set` is in (**decided, user, 2026-11-21**, question 6); nothing touches the calendar.
 - New orders: `item.give`, `item.take`, `item.place`, `story.ping`, `story.tracker`, `door.lock`,
   `door.unlock`, `weather.set`, `standing.adjust`, `npc.hold`, `npc.release`, `npc.follow`, `board.post`,
   `warrant.issue`, `warrant.clear`, `scene.stop`. Each undone when the run ends where the table in 3.5 says so.
@@ -1372,8 +1424,9 @@ order to the game.
 - Slice end: full suite; end to end: a three-chapter campaign with a quest giver, a scene, a held phase and an
   admin's intervention; one review-and-fix.
 
-Total: about 137 hours. Later, not planned here: `belief.plant` and `npc.brief`, camera moves and fades in
-scenes, a cast chosen by a query (doc 34, 5.1), priorities between stories, and moving a run to a new version.
+Total: about 147 hours (the ten phases' 137, and Phase 5b's 10). Later, not planned here: `belief.plant` and
+`npc.brief`, camera moves and fades in scenes, a cast chosen by a query (doc 34, 5.1), priorities between stories,
+the rules inside the game server (question 1), and the editor and console for player storytellers (question 7).
 
 ---
 
@@ -1393,7 +1446,8 @@ scenes, a cast chosen by a query (doc 34, 5.1), priorities between stories, and 
 4. **Noise from new events.** Item and movement events could flood the log. Hence the watch list: the game writes
    them only for what a live story named.
 5. **Quests anyone can take are an economy.** A repeatable quest that pays coins is a faucet. Rewards go through
-   `character.grant`'s cap and the economy's journal, and open question 4 asks where the coins come from.
+   `character.grant`'s cap and the economy's journal, and the coins come from a named purse, never from nothing
+   (question 4, decided 2026-11-21).
 6. **The workbench must not eat programs.** A draft the forms cannot show must still open, in Source. The round
    trip test of Phase 4 is the guard.
 7. **Per-wolf state at scale.** Moving state out of one JSON is a migration of live runs. Phase 6 reads the old
@@ -1404,9 +1458,13 @@ scenes, a cast chosen by a query (doc 34, 5.1), priorities between stories, and 
 
 ---
 
-## 8. Open questions for the user
+## 8. Questions for the user: answered 2026-11-21
 
-Only the ones that change the build.
+Only the ones that change the build. **All answered.** The user's words, 2026-11-21: build everything (all ten
+phases) and say yes to question 5; small quests are the Story Maker's (2); steering on a hosted world is the owner's
+always, and a hosted DM's only with a new permission the owner grants, every intervention logged (3). The questions
+not put to the user (1, 4, 6, 7) take this doc's recommendation. Each answer is in bold after its question; the
+phases of section 6 carry them.
 
 1. **Where the rules run.** Today they run in a process beside the game, a few seconds behind it (up to 35
    seconds before Phase 7, about 3 to 5 after). The alternative is doc 34's: the engine inside the game server,
@@ -1414,25 +1472,36 @@ Only the ones that change the build.
    step through" instant, but it is a larger change, it puts story work on the game thread, and it ends
    rehearsing offline in Python. *My recommendation: keep the runner, do Phase 7, and look again only if 3 to 5
    seconds feels wrong in play.* It changes Phases 7 and 8.
+   **Answer: the recommendation stands.** The rules stay in the outside runner; Phase 7 makes it fast.
 2. **Small quests: here, or doc 58's storylines?** Phase 6 lets the Story Maker make a quest any wolf can pick up
    from a resident, repeatable, with rewards. The game already has personal storylines from templates
    (`Data/Storylines/templates.json`, 24 of them). *My recommendation: one tool, the Story Maker, with the
    templates kept as they are and offered as starting points.* If the answer is "leave personal quests to doc
    58", Phase 6 shrinks to quests inside campaigns and loses the open audience.
+   **Answer (the user): here.** Small pick-up quests are made in the Story Maker; Phase 6 is built whole.
 3. **Who may steer on a hosted world.** 5.7 lets any hosted DM hold, set, fire and jump, within what was
    approved. *Is that right, or should going to another phase and completing objectives for a wolf be the
    owner's only?* It changes Phase 2's checks.
+   **Answer (the user): the world's owner always; other hosted DMs only with a new permission, "may steer
+   campaigns", that the owner grants; every intervention logged.** Seeing the console stays any DM's (5.7). Phase 2
+   adds the flag and the checks.
 4. **Where a quest's coins come from.** `character.grant` exists and is capped, but it makes coins. The economy's
    rule has been "through channels, never handouts". *My recommendation: a story's coin reward names a purse (a
    town, a House, a faction) and is refused when the purse is short; item rewards as today.* It changes Phases 6
    and 9.
+   **Answer: the recommendation stands.** A coin reward names a purse and is refused when the purse is short.
 5. **Changing a campaign that is running.** Today a changed program is a new approval and a new run. A ninety-day
    campaign will need a fix on day 40. *Should an admin be able to approve a new version and move the live run
    onto it, keeping its phase, variables and quests when they still fit?* It is not in the ten phases; saying yes
    adds a phase after 5 (about 10 hours) and shapes Phase 2's tables.
+   **Answer (the user): yes.** Phase 5b (section 6), about 10 hours; Phase 2's commands carry the version they
+   were made against.
 6. **A story changing the weather.** `weather.set` for a place for some hours is proposed; changing the calendar
    is ruled out. *Is weather acceptable, given that harvests and the cold follow it?* It decides one order in
    Phase 9.
+   **Answer: the recommendation stands.** A story may set the weather for a place for a while (Phase 9), and
+   never the calendar.
 7. **Player storytellers.** Doc 58 lets trusted players run tales. *Should they ever get this editor and a
    console for their own stories, or is it for Dungeon Masters only?* *My recommendation: Dungeon Masters only
    for now.* Saying yes changes the permission model throughout.
+   **Answer: the recommendation stands.** The editor and the console are for Dungeon Masters only, for now.
