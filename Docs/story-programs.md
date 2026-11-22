@@ -82,6 +82,31 @@ The winter-ferries example includes two endings and a rehearsal that jumps direc
 
 World effects go through the existing approval and receipt system. An effect can run while a phase stays open. A trigger that also enters a phase delivers its effects before that phase’s ordinary queued effects. The journal opens the new phase first. Available consequences include changes to NPC speech, location, protection and revival, character injuries and practice, public works, household prosperity, harvests, shipping, festivals, faction relations and markets. The game applies its usual eligibility and placement rules. Rehearsal traces list trigger IDs, resulting counters, intended effects and rules omitted by the scenarios.
 
+### Version 2: variables and flow
+
+A program of `"version": 2` (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 5) declares its memory under
+`variables`: each `{"id", "type", "scope"}` with an optional first value (`initial`), a label to show it under (`show`,
+numbers, switches and timers) and a `note`. Types: `number`, `switch`, `text`, `wolf`, `resident`, `place`, `region`,
+`item`, `faction`, the lists `numbers`, `texts`, `wolves`, `residents` (up to 500 values), and `timer` (a moment: days
+since it started, on the `game` or `real` clock). Scopes: `story` (one value), `player` (one per wolf), `party` (one per
+party; a wolf in no known party is a party of one) and `world` (kept after the run, shared by every story of the world that
+declares the name with that type; `dm.story_world_vars`). A misspelt name is an error, not a new counter.
+
+Conditions add `compare` (two values: a constant, `{"var"}`, `{"field"}`, `{"count": list}`, `{"since": timer}`,
+`{"each": true}`, or `plus`/`minus`/`min`/`max` of two), `switch`, `in list`, `phase is`, `visit is`, `timer` (running,
+or less than N days left), `fired` (a trigger's firings this visit or run), `chance` (seeded; a rehearsal case may pin
+`rolls`) and `days since` (the phase, the run, or a timer variable). A variable of each wolf is read `of` `$actor` (the
+default) or `$each`. Actions nest: `if` (with `elif` and `else`), `each` (over the participants, the acting wolf's party
+or a list; `$each` in effects and variables), `random` (weighted choices), `wait` (the rest of the list later, for the same
+wolf and event; a campaign trigger's survives the phase), `run`, `enable` and `disable` (a trigger with `"enabled": false`
+starts off), `stop`, `note` (a line in the timeline only) and `finish` (an outcome for everyone, which ends the run, or
+for one wolf). State actions: `set`, `add`, `subtract`, `multiply`, `clamp`, `turn on`, `turn off`, `toggle`,
+`remember`, `list add`, `list remove`, `list clear`, `pick`, `start timer`, `stop timer`, and `shift` for a named timer.
+Up to 24 actions a trigger, counting nested ones, nested three deep. Rehearsal cases may add `seed`, `rolls`, `parties`,
+`expectVariables` (only those named) and `expectOutcome`. A version 1 program runs exactly as before; the workbench's
+**Make it version 2** (the op `upgrade`) declares its counters as numbers and rehearses the same. The bundled
+[breach at Greyfen](../Data/Storylines/programs/siege-at-greyfen.json) is version 2.
+
 ## Campaign missions
 
 A phase can offer up to 16 concurrent missions, each with one to eight objectives in order. A matching fact can advance one objective in each open mission. Set the required amount to count occurrences or add the units or coins recorded by an event. For example, four ropes can arrive in several gifts, and a marked or crafted rope counts toward a base rope request. Use filters to identify a recipient, item, place or detail when the action must be specific. A general letter or notice objective counts any matching letter or notice. A later objective can also match a field from the first objective using `sameAsFirst`. The missing-wagon search binds the notice ID in `detail`, so an answer to a different notice leaves the search open. The tool-chest mission uses the same rule for loan IDs.

@@ -1,4 +1,9 @@
-"""Event–condition–action rules. Signals retain the originating world fact and last for one dispatch."""
+"""Event–condition–action rules. Signals retain the originating world fact and last for one dispatch.
+
+Version 2 of the language (Docs/Design/85-story-triggers-and-campaign-control.md, 3.2, 3.4, 3.5 and Phase 5): declared,
+typed variables in four scopes, conditions over the story's own state, and flow inside a trigger's actions (if / else if /
+else, wait, for each, random, run, enable, disable, stop, note, finish). A version 1 program runs exactly as before: every
+version 2 path is behind `phase['_v'] == 2`. Core/RatwStoryTriggers.cpp is this file's twin (tools/test_story_native.py)."""
 
 import operator
 
@@ -15,6 +20,134 @@ COMPARE = {
 }
 LIMIT = 1_000_000_000
 
+# ------------------------------------------------------------------------------------------------- version 2: the words
+VAR_TYPES = ('number', 'switch', 'text', 'wolf', 'resident', 'place', 'region', 'item', 'faction',
+             'numbers', 'texts', 'wolves', 'residents', 'timer')
+LISTS = {'numbers': 'number', 'texts': 'text', 'wolves': 'wolf', 'residents': 'resident'}
+TEXTUAL = ('text', 'wolf', 'resident', 'place', 'region', 'item', 'faction')
+SCOPES = ('story', 'player', 'party', 'world')
+PERSONAL = ('player', 'party')
+AMOUNTS = ('quantity', 'coins')
+EVENT_FIELDS = ('actor', 'target', 'cell', 'item', 'detail')
+LIST_MAX = 500           # Values in a list variable.
+EACH_MAX = 500           # Turns of one For each.
+TEXT_MAX = 200           # Characters of a text value.
+ACTIONS_V2 = 24          # Actions of one trigger, counting those inside If, For each and Random.
+NEST_V2 = 3              # If, For each and Random inside one another.
+RUN_DEPTH = 8            # Run inside run, at most (cycles are refused when the story is checked).
+REAL_WAIT_MIN = 5 / 86400
+OUTCOMES = ('success', 'failure', 'abandoned')
+ARITH = ('plus', 'minus', 'min', 'max')
+CONDITIONS_V2 = ('compare', 'switch', 'in list', 'phase is', 'visit is', 'timer', 'fired', 'chance', 'days since')
+FLOW_V2 = ('if', 'wait', 'each', 'random', 'run', 'enable', 'disable', 'stop', 'note', 'finish')
+STATE_V2 = ('subtract', 'multiply', 'clamp', 'turn on', 'turn off', 'toggle', 'remember', 'list add', 'list remove',
+            'list clear', 'pick', 'start timer', 'stop timer', 'shift')
+DEFAULTS = {'number': 0, 'switch': False, 'timer': None}
+
+
+def version(phase):
+    return phase.get('_v', 1)
+
+
+def family(kind):
+    """The kind a value is compared as: number, switch or text (every reference is an id, a text)."""
+    return 'number' if kind == 'number' else 'switch' if kind == 'switch' else 'text'
+
+
+def initial(decl):
+    if 'initial' in decl:
+        return decl['initial']
+    kind = decl['type']
+    return [] if kind in LISTS else DEFAULTS.get(kind, '')
+
+
+def branches(a):
+    """The action lists inside one action, each with its name in an address: then, elif:k, else, actions, choice:k."""
+    op = a.get('do') if isinstance(a, dict) else None
+    if op == 'if':
+        yield 'then', a['then']
+        for k, b in enumerate(a.get('elif', ())):
+            yield f'elif:{k}', b['then']
+        if 'else' in a:
+            yield 'else', a['else']
+    elif op == 'each':
+        yield 'actions', a['actions']
+    elif op == 'random':
+        for k, c in enumerate(a['choices']):
+            yield f'choice:{k}', c['actions']
+
+
+def branch(a, name):
+    if name in ('then', 'else', 'actions'):
+        return a[name]
+    kind, k = name.split(':')
+    return a['elif'][int(k)]['then'] if kind == 'elif' else a['choices'][int(k)]['actions']
+
+
+def walk(actions, base=()):
+    """Every action of a list, nested ones too, each with its address ((2, 'then', 0) is actions[2].then[0])."""
+    for i, a in enumerate(actions):
+        yield (*base, i), a
+        for name, sub in branches(a):
+            yield from walk(sub, (*base, i, name))
+
+
+def walk_loose(actions):
+    """As walk, over a program that may be malformed (any action list it can read)."""
+    for a in actions if isinstance(actions, list) else ():
+        if not isinstance(a, dict):
+            continue
+        yield a
+        lists = [a.get('then'), a.get('else'), a.get('actions')]
+        lists += [b.get('then') for b in a.get('elif', ()) if isinstance(b, dict)] if isinstance(a.get('elif'), list) else []
+        lists += [c.get('actions') for c in a.get('choices', ()) if isinstance(c, dict)] if isinstance(a.get('choices'), list) else []
+        for sub in lists:
+            yield from walk_loose(sub)
+
+
+def part_of(address):
+    """An address as the Problems list names it: actions[2].elif[0].then[1], actions[3].choices[1].actions[0]."""
+    out, i = f'actions[{address[0]}]', 1
+    while i < len(address):
+        name, index = address[i], address[i + 1]
+        if ':' in name:
+            kind, k = name.split(':')
+            out += f'.elif[{k}].then[{index}]' if kind == 'elif' else f'.choices[{k}].actions[{index}]'
+        else:
+            out += f'.{name}[{index}]'
+        i += 2
+    return out
+
+
+def conditions_in(c):
+    """Every condition of a tree, groups included."""
+    yield c
+    if c.get('test') in ('all', 'any'):
+        for child in c['conditions']:
+            yield from conditions_in(child)
+    elif c.get('test') == 'not':
+        yield from conditions_in(c['condition'])
+
+
+def rule_conditions(t):
+    """Every condition a trigger tests: its own, and those of the If actions inside it."""
+    if 'if' in t:
+        yield from conditions_in(t['if'])
+    for _, a in walk(t['actions']):
+        if a['do'] == 'if':
+            yield from conditions_in(a['if'])
+            for b in a.get('elif', ()):
+                yield from conditions_in(b['if'])
+
+
+def operands_in(o):
+    if isinstance(o, dict):
+        yield o
+        for key in ARITH:
+            if key in o:
+                for child in o[key]:
+                    yield from operands_in(child)
+
 
 def routes(phase):
     return phase['exits'] + [
@@ -24,7 +157,7 @@ def routes(phase):
             'participant': t.get('audience') == 'participant',
         }
         for t in phase.get('triggers', [])
-        for a in t['actions']
+        for _, a in walk(t['actions'])
         if a['do'] == 'enter'
     ]
 
@@ -38,24 +171,25 @@ def validate(phase):
         isinstance(triggers, list) and len(triggers) <= 64,
         'Choose up to 64 triggers per phase.',
     )
-    ids, links = set(), {}
+    ids, links, runs = set(), {}, {}
     for t in triggers:
-        _check_trigger(t, phase, ids, links)
+        _check_trigger(t, phase, ids, links, runs)
     # Reject cycles even when the current fixtures would never take that path.
-    visited = set()
+    for graph, words in ((links, 'Story signals form a cycle at '), (runs, 'Triggers run one another in a cycle at ')):
+        visited = set()
 
-    def visit(name, stack):
-        require(name not in stack, 'Story signals form a cycle at ' + name)
-        if name not in visited:
-            for child in links.get(name, ()):
-                visit(child, stack | {name})
-            visited.add(name)
+        def visit(name, stack):
+            require(name not in stack, words + name)
+            if name not in visited:
+                for child in graph.get(name, ()):
+                    visit(child, stack | {name})
+                visited.add(name)
 
-    for name in links:
-        visit(name, set())
+        for name in graph:
+            visit(name, set())
 
 
-def _check_condition(c, depth, phase, missions):
+def _check_condition(c, depth, phase, missions, each=None):
     import story_program as rules
 
     require, shape = rules.require, rules.shape
@@ -64,7 +198,11 @@ def _check_condition(c, depth, phase, missions):
         'Condition groups may nest up to five levels.',
     )
     kind = c.get('test')
-    if kind in ('all', 'any'):
+    v2 = version(phase) == 2
+    if kind in CONDITIONS_V2:
+        require(v2, 'This condition needs a version 2 story.')
+        _check_condition_v2(c, phase, each)
+    elif kind in ('all', 'any'):
         shape(c, ('test', 'conditions'))
         children = c['conditions']
         require(
@@ -72,10 +210,10 @@ def _check_condition(c, depth, phase, missions):
             'A condition group needs 1–8 conditions.',
         )
         for child in children:
-            _check_condition(child, depth + 1, phase, missions)
+            _check_condition(child, depth + 1, phase, missions, each)
     elif kind == 'not':
         shape(c, ('test', 'condition'))
-        _check_condition(c['condition'], depth + 1, phase, missions)
+        _check_condition(c['condition'], depth + 1, phase, missions, each)
     elif kind == 'region':
         shape(c, ('test', 'region'))
         require(rules.identifier(c['region']) and c['region'] in phase.get('_regions', {}), 'Unknown story region.')
@@ -87,6 +225,7 @@ def _check_condition(c, depth, phase, missions):
         )
     elif kind in ('counter', 'field'):
         if kind == 'counter':
+            require(not v2, 'A version 2 story compares declared variables ("compare"), not counters.')
             shape(c, ('test', 'key', 'scope', 'op', 'value'))
             require(
                 rules.identifier(c['key']) and c['scope'] in ('story', 'player'),
@@ -112,12 +251,347 @@ def _check_condition(c, depth, phase, missions):
         raise ValueError('Unknown trigger condition.')
 
 
-def _check_trigger(t, phase, ids, links):
-    """One trigger's checks (validate's loop body): its id against `ids` (added to), its signal links into `links`."""
+# ----------------------------------------------------------------------------------------- version 2: checking a program
+
+def _decl(phase, name, kinds=None, words='variable'):
+    import story_program as rules
+
+    decls = phase.get('_vars', {})
+    rules.require(isinstance(name, str) and name in decls, f'Declare the variable "{name}" first (Variables).'
+                  if isinstance(name, str) else 'Name a variable.')
+    d = decls[name]
+    rules.require(kinds is None or d['type'] in kinds, f'"{name}" is a {d["type"]}: choose a {words}.')
+    return d
+
+
+def _check_of(o, d, each):
+    import story_program as rules
+
+    if 'of' not in o:
+        return
+    rules.require(o['of'] in ('$actor', '$each') and d['scope'] in PERSONAL,
+                  'Only a variable of each wolf or party is read "of" a wolf ($actor or $each).')
+    rules.require(o['of'] != '$each' or each == 'wolf', '$each is a wolf only inside For each over wolves.')
+
+
+def operand_type(o, phase, each=None, depth=0):
+    """What a value in a comparison or a Set is: number, switch or text; a malformed one raises."""
+    import story_program as rules
+
+    require, shape = rules.require, rules.shape
+    if type(o) is bool:
+        return 'switch'
+    if type(o) in (int, float):
+        require(rules.number(o, -LIMIT, LIMIT), 'A number between plus and minus 1,000,000,000.')
+        return 'number'
+    if isinstance(o, str):
+        require(len(o) <= TEXT_MAX and all(ord(ch) >= 32 for ch in o), f'A text of up to {TEXT_MAX} characters.')
+        return 'text'
+    require(isinstance(o, dict), 'Unknown value.')
+    if 'var' in o:
+        shape(o, ('var',), ('of',))
+        d = _decl(phase, o['var'])
+        require(d['type'] not in LISTS and d['type'] != 'timer',
+                f'"{o["var"]}" is a {d["type"]}: read a list with "count" and a timer with "since".')
+        _check_of(o, d, each)
+        return family(d['type'])
+    if 'field' in o:
+        shape(o, ('field',))
+        require(o['field'] in (*EVENT_FIELDS, *AMOUNTS), 'Unknown event field.')
+        return 'number' if o['field'] in AMOUNTS else 'text'
+    if 'count' in o:
+        shape(o, ('count',), ('of',))
+        d = _decl(phase, o['count'], LISTS, 'list')
+        _check_of({'of': o['of']} if 'of' in o else {}, d, each)
+        return 'number'
+    if 'since' in o:
+        shape(o, ('since',), ('of',))
+        d = _decl(phase, o['since'], ('timer',), 'timer')
+        _check_of({'of': o['of']} if 'of' in o else {}, d, each)
+        return 'number'
+    if 'each' in o:
+        shape(o, ('each',))
+        require(o['each'] is True and each is not None, 'The value of the loop is only inside For each.')
+        return family(each)
+    key = next((k for k in ARITH if k in o), None)
+    require(key is not None, 'Unknown value.')
+    shape(o, (key,))
+    require(depth < 2 and isinstance(o[key], list) and len(o[key]) == 2, 'Arithmetic takes two values, two deep at most.')
+    require(all(operand_type(x, phase, each, depth + 1) == 'number' for x in o[key]), 'Arithmetic is on numbers.')
+    return 'number'
+
+
+def _check_condition_v2(c, phase, each):
+    import story_program as rules
+
+    require, shape = rules.require, rules.shape
+    kind = c['test']
+    if kind == 'compare':
+        shape(c, ('test', 'left', 'op', 'right'))
+        left, right = operand_type(c['left'], phase, each), operand_type(c['right'], phase, each)
+        require(left == right, f'Compare two values of one kind (a {left} and a {right}).')
+        require(c['op'] in COMPARE and (left == 'number' or c['op'] in ('=', '!=')),
+                'Numbers take = != > >= < <=; switches and texts take = and !=.')
+    elif kind == 'switch':
+        shape(c, ('test', 'var', 'is'), ('of',))
+        _check_of(c, _decl(phase, c['var'], ('switch',), 'switch'), each)
+        require(type(c['is']) is bool, 'A switch is on or off.')
+    elif kind == 'in list':
+        shape(c, ('test', 'list', 'value'), ('of',))
+        d = _decl(phase, c['list'], LISTS, 'list')
+        _check_of(c, d, each)
+        require(operand_type(c['value'], phase, each) == family(LISTS[d['type']]), 'The value is not of the list\'s kind.')
+    elif kind == 'phase is':
+        shape(c, ('test', 'phase'))
+        require(rules.identifier(c['phase']) and c['phase'] in phase.get('_phaseIds', (c['phase'],)), 'Unknown phase.')
+    elif kind == 'visit is':
+        shape(c, ('test', 'op', 'value'))
+        require(c['op'] in COMPARE and rules.integer(c['value'], 1, 1_000_000), 'Compare the visit with a number from 1.')
+    elif kind == 'timer':
+        shape(c, ('test', 'signal'), ('owner', 'op', 'days'))
+        require(rules.identifier(c['signal']) and c.get('owner', 'story') in ('story', 'player'), 'Name a timer and whose it is.')
+        require(('op' in c) == ('days' in c) and ('op' not in c or (c['op'] in COMPARE and rules.number(c['days'], 0, 36500))),
+                'Compare the days left with a number of days, or ask only whether it is running.')
+    elif kind == 'fired':
+        shape(c, ('test', 'trigger', 'op', 'value'), ('in',))
+        require(rules.identifier(c['trigger']) and c['trigger'] in {t.get('id') for t in phase.get('triggers', ()) if isinstance(t, dict)
+                                                                    and isinstance(t.get('id'), str)},
+                'Name a trigger this one can see.')
+        require(c.get('in', 'visit') in ('visit', 'run') and c['op'] in COMPARE and rules.integer(c['value'], 0, 1_000_000),
+                'Count its firings this visit or this run against a number.')
+    elif kind == 'chance':
+        shape(c, ('test', 'percent'))
+        require(rules.integer(c['percent'], 1, 99), 'A chance of 1 to 99 in 100.')
+    elif kind == 'days since':
+        shape(c, ('test', 'from', 'op', 'days'), ('var', 'of'))
+        require(c['from'] in ('phase', 'run', 'var') and ('var' in c) == (c['from'] == 'var') and ('of' not in c or 'var' in c),
+                'Count the days since the phase opened, the run began, or a timer variable started.')
+        if c['from'] == 'var':
+            _check_of(c, _decl(phase, c['var'], ('timer',), 'timer'), each)
+        require(c['op'] in COMPARE and rules.number(c['days'], 0, 36500), 'Compare with a number of days.')
+
+
+class _Checking:
+    """What checking one trigger's version 2 actions carries down the tree."""
+
+    def __init__(self, t, phase, links, runs, collect=None):
+        self.t, self.phase, self.links, self.runs, self.collect = t, phase, links, runs, collect
+        self.total = 0
+
+
+def _check_actions_v2(actions, cx, base=(), depth=0, each=None):
+    import story_program as rules
+
+    rules.require(isinstance(actions, list) and 1 <= len(actions) <= ACTIONS_V2, f'Choose 1–{ACTIONS_V2} actions in each list.')
+    for i, a in enumerate(actions):
+        address = (*base, i)
+        try:
+            cx.total += 1
+            rules.require(cx.total <= ACTIONS_V2, f'A trigger has at most {ACTIONS_V2} actions, counting those inside If, '
+                                                  'For each and Random.')
+            _check_action_v2(a, cx, address, depth, each, i == len(actions) - 1)
+        except (ValueError, KeyError, TypeError, AttributeError, IndexError) as error:
+            if cx.collect is None:
+                raise
+            cx.collect.append(('.' + part_of(address), _message(error)))
+
+
+def _check_action_v2(a, cx, address, depth, each, last):
+    import story_program as rules
+
+    require, shape = rules.require, rules.shape
+    t, phase = cx.t, cx.phase
+    require(isinstance(a, dict), 'Expected a trigger action.')
+    kind = a.get('do')
+    missions = {m['id'] for m in phase.get('missions', [])}
+
+    def var(d_key='var', kinds=None, words='variable'):
+        d = _decl(phase, a[d_key], kinds, words)
+        _check_of(a, d, each)
+        return d
+
+    if kind in ('set', 'add', 'subtract', 'multiply'):
+        require('key' not in a, 'In a version 2 story, Set and Add name a declared variable ("var").')
+        shape(a, ('do', 'var', 'value'), ('of',))
+        d = var()
+        require(d['type'] not in LISTS and d['type'] != 'timer', 'Lists and timers have their own actions.')
+        value = operand_type(a['value'], phase, each)
+        if kind == 'set':
+            require(value == family(d['type']), f'"{a["var"]}" is a {d["type"]}: set it to a {family(d["type"])}.')
+        else:
+            require(d['type'] == 'number' and value == 'number', 'Arithmetic is on a number variable, by a number.')
+    elif kind == 'clamp':
+        shape(a, ('do', 'var', 'min', 'max'), ('of',))
+        var(kinds=('number',), words='number')
+        require(rules.integer(a['min'], -LIMIT, LIMIT) and rules.integer(a['max'], -LIMIT, LIMIT) and a['min'] <= a['max'],
+                'Keep it between two whole numbers, the lower first.')
+    elif kind in ('turn on', 'turn off', 'toggle'):
+        shape(a, ('do', 'var'), ('of',))
+        var(kinds=('switch',), words='switch')
+    elif kind == 'remember':
+        shape(a, ('do', 'var', 'from'), ('of',))
+        var(kinds=TEXTUAL, words='text or a reference')
+        require(a['from'] in EVENT_FIELDS or (a['from'] == 'each' and each in ('wolf', 'resident', 'text')),
+                "Remember one of the event's ids (actor, target, cell, item, detail), or the loop's.")
+    elif kind in ('list add', 'list remove'):
+        shape(a, ('do', 'var', 'value'), ('of',))
+        d = var(kinds=tuple(LISTS), words='list')
+        require(operand_type(a['value'], phase, each) == family(LISTS[d['type']]), 'The value is not of the list\'s kind.')
+    elif kind == 'list clear':
+        shape(a, ('do', 'var'), ('of',))
+        var(kinds=tuple(LISTS), words='list')
+    elif kind == 'pick':
+        shape(a, ('do', 'list', 'var'), ('of',))
+        source = _decl(phase, a['list'], LISTS, 'list')
+        d = var()
+        require(d['type'] not in LISTS and d['type'] != 'timer' and family(d['type']) == family(LISTS[source['type']]),
+                'Pick into a variable of the list\'s kind.')
+        require(source['scope'] not in PERSONAL or d['scope'] in PERSONAL or 'of' not in a, 'Whose list?')
+    elif kind in ('start timer', 'stop timer'):
+        shape(a, ('do', 'var'), ('of',))
+        var(kinds=('timer',), words='timer')
+    elif kind == 'shift':
+        shape(a, ('do', 'signal', 'days'), ('owner',))
+        require(rules.identifier(a['signal']) and a.get('owner', 'story') in ('story', 'player'), 'Name the timer and whose it is.')
+        require(rules.number(a['days'], -36500, 36500) and a['days'] != 0, 'Move it by a number of days (before: negative).')
+        require(a.get('owner') != 'player' or t.get('audience') == 'participant', 'A personal timer requires a participant trigger.')
+    elif kind == 'emit':
+        shape(a, ('do', 'signal'))
+        require(rules.identifier(a['signal']), 'Give the emitted signal a name.')
+        if t['on'] == SIGNAL:
+            cx.links.setdefault(t['signal'], set()).add(a['signal'])
+    elif kind in ('schedule', 'cancel'):
+        _check_timer_action(a, t)
+    elif kind == 'effect':
+        shape(a, ('do', 'effect'))
+        effect = a['effect']
+        if isinstance(effect, dict) and '$each' in effect.values():
+            require(each in ('wolf', 'resident'), '$each names a wolf or a resident only inside For each.')
+            stand = '$actor' if each == 'wolf' else 'each'
+            for param in rules.EFFECT_PARAMS.get(effect.get('kind'), ()):
+                if effect.get(param['key']) == '$each':
+                    require(param['type'] == each or (param['type'] == 'character' and each in ('wolf', 'resident')),
+                            f'$each is a {each}: it cannot be {param["label"]}.')
+            effect = {k: (stand if v == '$each' else v) for k, v in effect.items()}
+        rules.validate_effect(effect, phase['id'], phase.get('_regions'), phase.get('_scenes'))
+        require(effect['kind'] != 'npc.line', 'Set resident dialogue on phase entry.')
+        require(a['effect'].get('player') != '$actor' or t.get('audience') == 'participant',
+                'An actor effect requires a participant trigger.')
+    elif kind == 'enter':
+        shape(a, ('do', 'phase'))
+        require(rules.identifier(a['phase']) and last, 'Enter phase must be the last action.')
+        require(each is None, 'Go to a phase after the For each, not inside it.')
+    elif kind == 'if':
+        shape(a, ('do', 'if', 'then'), ('elif', 'else'))
+        require(depth < NEST_V2, f'If, For each and Random nest {NEST_V2} deep at most.')
+        _check_condition(a['if'], 1, phase, missions, each)
+        elifs = a.get('elif', [])
+        require(isinstance(elifs, list) and len(elifs) <= 4, 'Up to four Else ifs.')
+        for b in elifs:
+            shape(b, ('if', 'then'))
+            _check_condition(b['if'], 1, phase, missions, each)
+        for name, sub in branches(a):
+            _check_actions_v2(sub, cx, (*address, name), depth + 1, each)
+    elif kind == 'each':
+        shape(a, ('do', 'over', 'actions'), ('list',))
+        require(each is None, 'A For each cannot be inside another.')
+        require(depth < NEST_V2, f'If, For each and Random nest {NEST_V2} deep at most.')
+        require(a['over'] in ('participants', 'party', 'list') and ('list' in a) == (a['over'] == 'list'),
+                'Loop over the participants, the acting wolf\'s party, or a list variable.')
+        if a['over'] == 'list':
+            d = _decl(phase, a['list'], LISTS, 'list')
+            require(d['scope'] not in PERSONAL, 'Loop over a list of the story or the world (a wolf\'s own: Pick from it).')
+            kind_each = LISTS[d['type']]
+        else:
+            kind_each = 'wolf'
+        _check_actions_v2(a['actions'], cx, (*address, 'actions'), depth + 1, kind_each)
+    elif kind == 'random':
+        shape(a, ('do', 'choices'))
+        require(depth < NEST_V2, f'If, For each and Random nest {NEST_V2} deep at most.')
+        require(isinstance(a['choices'], list) and 2 <= len(a['choices']) <= 8, 'Random chooses between 2 and 8 lists.')
+        for choice in a['choices']:
+            shape(choice, ('weight', 'actions'))
+            require(rules.integer(choice['weight'], 1, 100), 'Each choice weighs 1 to 100.')
+        for name, sub in branches(a):
+            _check_actions_v2(sub, cx, (*address, name), depth + 1, each)
+    elif kind == 'wait':
+        shape(a, ('do', 'days'), ('clock',))
+        require(each is None, 'A wait cannot be inside For each.')
+        clock = a.get('clock', 'game')
+        require(clock in ('game', 'real') and rules.number(a['days'], 1 / 1440 if clock == 'game' else REAL_WAIT_MIN, 36500),
+                'Wait at least a minute of the world\'s clock, or 5 seconds of the real one.')
+    elif kind == 'run':
+        shape(a, ('do', 'trigger'), ('check',))
+        ids = {x.get('id') for x in phase.get('triggers', ()) if isinstance(x, dict) and isinstance(x.get('id'), str)}
+        require(rules.identifier(a['trigger']) and a['trigger'] in ids and a['trigger'] != t['id'],
+                'Run another trigger this one can see.')
+        require(type(a.get('check', False)) is bool, 'Check its conditions, or not.')
+        cx.runs.setdefault(t['id'], set()).add(a['trigger'])
+    elif kind in ('enable', 'disable'):
+        shape(a, ('do', 'trigger'), ('phase',))
+        require(rules.identifier(a['trigger']) and ('phase' not in a or rules.identifier(a['phase'])), 'Name a trigger.')
+        if 'phase' in a:
+            known = phase.get('_phaseTriggers')
+            require(known is None or a['trigger'] in known.get(a['phase'], ()), f'Phase {a["phase"]} has no trigger {a["trigger"]}.')
+        else:
+            require(a['trigger'] in {x.get('id') for x in phase.get('triggers', ()) if isinstance(x, dict) and isinstance(x.get('id'), str)},
+                    'Name a trigger this one can see (or the phase of another).')
+    elif kind == 'stop':
+        shape(a, ('do',))
+    elif kind == 'note':
+        shape(a, ('do', 'text'))
+        require(rules.word(a['text'], 300), 'A note is up to 300 characters.')
+    elif kind == 'finish':
+        shape(a, ('do', 'outcome', 'text'), ('who',))
+        who = a.get('who', 'everyone')
+        require(a['outcome'] in OUTCOMES and rules.word(a['text'], 300), 'Finish with success, failure or abandoned, and a line.')
+        require(who in ('everyone', '$actor', '$each'), 'Finish for everyone, the acting wolf or the wolf of the loop.')
+        require(who != 'everyone' or (last and each is None), 'Finishing the story for everyone is the last action.')
+        require(who != '$actor' or t.get('audience') == 'participant', 'A wolf\'s own ending requires a participant trigger.')
+        require(who != '$each' or each == 'wolf', '$each is a wolf only inside For each over wolves.')
+    else:
+        raise ValueError('Unknown trigger action.')
+
+
+def _check_timer_action(a, t):
+    import story_program as rules
+
+    require, shape = rules.require, rules.shape
+    kind = a['do']
+    if kind == 'schedule':
+        shape(
+            a,
+            ('do', 'signal', 'days'),
+            ('repeat', 'scope', 'clock', 'owner'),
+        )
+        require(
+            rules.number(a['days'], 1 / 1440, 36500)
+            and type(a.get('repeat', False)) is bool
+            and a.get('scope', 'visit') in ('visit', 'campaign')
+            and a.get('clock', 'game') in ('game', 'real'),
+            'Choose a valid timer lifetime, clock and positive delay.',
+        )
+    else:
+        shape(a, ('do', 'signal'), ('owner',))
+    require(
+        a.get('owner', 'story') in ('story', 'player'),
+        'Choose a timer owner.',
+    )
+    require(
+        a.get('owner') != 'player' or t.get('audience') == 'participant',
+        'A personal timer requires a participant trigger.',
+    )
+    require(rules.identifier(a['signal']), 'Name the timer signal.')
+
+
+def _check_trigger(t, phase, ids, links, runs=None, collect=None):
+    """One trigger's checks (validate's loop body): its id against `ids` (added to), its signal links into `links`, the
+    triggers it runs into `runs`. `collect`, a list, gathers the problems of its version 2 actions one by one."""
     import story_program as rules
 
     require, shape = rules.require, rules.shape
     missions = {m['id'] for m in phase.get('missions', [])}
+    v2 = version(phase) == 2
 
     def counter(c):
         require(
@@ -131,7 +605,7 @@ def _check_trigger(t, phase, ids, links):
     shape(
         t,
         ('id', 'on', 'actions'),
-        ('match', 'signal', 'if', 'once', 'audience', 'afterDays', 'folder', 'note'),
+        ('match', 'signal', 'if', 'once', 'audience', 'afterDays', 'folder', 'note', 'enabled'),
     )
     require(
         rules.identifier(t['id']) and t['id'] not in ids,
@@ -140,6 +614,8 @@ def _check_trigger(t, phase, ids, links):
     # The Story Creator's folder and note (doc 85, 4.2; Phase 4): words for the author, which the engine ignores.
     require('folder' not in t or rules.word(t['folder'], 80), "A trigger's folder is a name of up to 80 characters.")
     require('note' not in t or rules.word(t['note'], 300), "A trigger's note is up to 300 characters.")
+    # (Phase 5: "enabled": false is a trigger that starts turned off, until an Enable action or an admin turns it on.)
+    require('enabled' not in t or (v2 and type(t['enabled']) is bool), 'Only a version 2 story starts a trigger turned off.')
     ids.add(t['id'])
     require(
         t['on'] in (*rules.EVENTS, SIGNAL) and t['on'] != 'dm signal',
@@ -172,6 +648,9 @@ def _check_trigger(t, phase, ids, links):
     if 'if' in t:
         condition(t['if'], 1)
     actions = t['actions']
+    if v2:
+        _check_actions_v2(actions, _Checking(t, phase, links, runs if runs is not None else {}, collect))
+        return
     require(
         isinstance(actions, list) and 1 <= len(actions) <= 12,
         'Choose 1–12 ordered actions per trigger.',
@@ -192,30 +671,7 @@ def _check_trigger(t, phase, ids, links):
             if t['on'] == SIGNAL:
                 links.setdefault(t['signal'], set()).add(a['signal'])
         elif kind in ('schedule', 'cancel'):
-            if kind == 'schedule':
-                shape(
-                    a,
-                    ('do', 'signal', 'days'),
-                    ('repeat', 'scope', 'clock', 'owner'),
-                )
-                require(
-                    rules.number(a['days'], 1 / 1440, 36500)
-                    and type(a.get('repeat', False)) is bool
-                    and a.get('scope', 'visit') in ('visit', 'campaign')
-                    and a.get('clock', 'game') in ('game', 'real'),
-                    'Choose a valid timer lifetime, clock and positive delay.',
-                )
-            else:
-                shape(a, ('do', 'signal'), ('owner',))
-            require(
-                a.get('owner', 'story') in ('story', 'player'),
-                'Choose a timer owner.',
-            )
-            require(
-                a.get('owner') != 'player' or t.get('audience') == 'participant',
-                'A personal timer requires a participant trigger.',
-            )
-            require(rules.identifier(a['signal']), 'Name the timer signal.')
+            _check_timer_action(a, t)
         elif kind == 'effect':
             shape(a, ('do', 'effect'))
             rules.validate_effect(a['effect'], phase['id'], phase.get('_regions'), phase.get('_scenes'))
@@ -233,6 +689,8 @@ def _check_trigger(t, phase, ids, links):
                 rules.identifier(a['phase']) and index == len(actions) - 1,
                 'Enter phase must be the last action.',
             )
+        elif kind in FLOW_V2 or kind in STATE_V2:
+            raise ValueError('This action needs a version 2 story.')
         else:
             raise ValueError('Unknown trigger action.')
 
@@ -249,18 +707,21 @@ def _message(error):
 def trigger_problems(t, phase, ids):
     """Every problem of one trigger, each with where in the trigger it is (doc 85, Phase 3: the Problems list, where
     `validate` stops at the first): its head (event, filters, firing rule), its conditions (`.if`), each action
-    (`.actions[i]`). `ids` are the other trigger ids of the phase. A list of (subpath, words); empty when it is sound."""
+    (`.actions[i]`; in a version 2 story nested ones too, `.actions[2].then[0]`). `ids` are the other trigger ids of the
+    phase. A list of (subpath, words); empty when it is sound."""
     errors = (ValueError, KeyError, TypeError, AttributeError, IndexError)
+    v2 = version(phase) == 2
     try:
         _check_trigger(t, phase, set(ids), {})
         return []
     except errors as error:
         whole = _message(error)
-    if not isinstance(t, dict) or not isinstance(t.get('actions'), list) or not 1 <= len(t['actions']) <= 12:
+    most = ACTIONS_V2 if v2 else 12
+    if not isinstance(t, dict) or not isinstance(t.get('actions'), list) or not 1 <= len(t['actions']) <= most:
         return [('', whole)]
     # The head alone, with one harmless action in place of its own; then its conditions; then each action alone.
     head = {k: v for k, v in t.items() if k != 'if'}
-    head['actions'] = [{'do': 'set', 'key': 'probe', 'scope': 'story', 'value': 0}]
+    head['actions'] = [{'do': 'stop'} if v2 else {'do': 'set', 'key': 'probe', 'scope': 'story', 'value': 0}]
     try:
         _check_trigger(head, phase, set(ids), {})
     except errors as error:
@@ -271,6 +732,14 @@ def trigger_problems(t, phase, ids):
             _check_trigger({**head, 'if': t['if']}, phase, set(ids), {})
         except errors as error:
             out.append(('.if', _message(error)))
+    if v2:
+        found = []
+        try:
+            _check_trigger({**head, 'actions': t['actions']}, phase, set(ids), {}, {}, found)
+        except errors as error:
+            found.append(('', _message(error)))
+        out += found
+        return out or [('', whole)]
     for index, action in enumerate(t['actions']):
         try:
             _check_trigger({**head, 'actions': [action]}, phase, set(ids), {})
@@ -281,21 +750,433 @@ def trigger_problems(t, phase, ids):
     return out or [('', whole)]
 
 
-def judge(c, state, event, ready, regions=None, known=None):
+# --------------------------------------------------------------------------------------------- version 2: running a program
+
+def fnv(text):
+    """FNV-1a, 64 bits, over UTF-8: the seeded rolls of chance, random and pick (the native twin has the same)."""
+    h = 0xcbf29ce484222325
+    for b in text.encode('utf-8'):
+        h = ((h ^ b) * 0x100000001b3) & 0xFFFFFFFFFFFFFFFF
+    return h
+
+
+def draw(state, n):
+    """One seeded roll in [0, n): a rehearsal's pinned roll (a number 0-99) first, else the hash of the run's seed and the
+    number of rolls so far. Replays and rehearsals give the same answers."""
+    k = state.get('draws', 0)
+    state['draws'] = k + 1
+    rolls = state.get('rolls')
+    if rolls:
+        r = rolls.pop(0)
+        if not rolls:
+            state.pop('rolls')
+        return r * n // 100
+    return fnv(f'{state.get("seed", "")}:{k}') % n
+
+
+def party_of(state, wolf):
+    """A wolf's party, as the run knows it (a rehearsal's `parties`; until the game tells the runner, a party of one)."""
+    return state.get('parties', {}).get(wolf, wolf)
+
+
+def var_store(state, scope, wolf, write=False):
+    """The store a variable lives in: one for the story or the world, one per wolf or party. None: a wolf not in the
+    story (nothing of theirs is read or written)."""
+    if scope in PERSONAL:
+        if wolf not in state['cohort']:
+            return None
+        owner = wolf if scope == 'player' else party_of(state, wolf)
+        if write:
+            return state.setdefault('counters', {}).setdefault(scope, {}).setdefault(owner, {})
+        return state.get('counters', {}).get(scope, {}).get(owner, {})
+    if write:
+        return state.setdefault('counters', {}).setdefault(scope, {})
+    return state.get('counters', {}).get(scope, {})
+
+
+MISSING = object()
+
+
+class Ctx:
+    """One firing as it runs: the trigger, the event, the acting wolf, the loop's value, and where notes go."""
+
+    def __init__(self, phase, state, event, actor, day, elapsed, ready, emit, rule=None, entry=None, firings=None):
+        self.phase, self.state, self.event, self.actor = phase, state, event, actor
+        self.day, self.elapsed, self.ready, self.emit = day, elapsed, ready, emit
+        self.rule, self.entry, self.firings = rule, entry, firings
+        self.each, self.target, self.depth = None, None, 0
+        self.vars = phase.get('_vars', {}) if phase else {}
+
+    def wolf(self, of):
+        return self.each if of == '$each' else self.actor
+
+    def now(self, clock):
+        return self.elapsed if clock == 'real' else self.day
+
+    def note(self, text):
+        if self.entry is not None:
+            self.entry.setdefault('notes', []).append(text)
+
+
+def _field(event, name):
+    value = event.get(name)
+    if value is None:
+        return 0 if name in AMOUNTS else ''
+    return value
+
+
+def value_of(o, x):
+    """An operand's value now, or MISSING (a value of a wolf not in the story, a timer not started, no loop)."""
+    if not isinstance(o, dict):
+        return o
+    if 'var' in o or 'count' in o or 'since' in o:
+        name = o.get('var') or o.get('count') or o.get('since')
+        d = x.vars[name]
+        store = var_store(x.state, d['scope'], x.wolf(o.get('of')))
+        if store is None:
+            return MISSING
+        value = store.get(name, initial(d))
+        if 'count' in o:
+            return len(value)
+        if 'since' in o:
+            return MISSING if value is None or x.day is None else x.now(d.get('clock', 'game')) - value
+        return value
+    if 'field' in o:
+        return _field(x.event, o['field'])
+    if 'each' in o:
+        return MISSING if x.each is None else x.each
+    key = next(k for k in ARITH if k in o)
+    a, b = (value_of(v, x) for v in o[key])
+    if a is MISSING or b is MISSING:
+        return MISSING
+    return a + b if key == 'plus' else a - b if key == 'minus' else min(a, b) if key == 'min' else max(a, b)
+
+
+def test_v2(c, x):
+    """A version 2 condition: True, False, or None (unknown: no clock to count days by)."""
+    kind, state = c['test'], x.state
+    if kind == 'compare':
+        left, right = value_of(c['left'], x), value_of(c['right'], x)
+        return left is not MISSING and right is not MISSING and COMPARE[c['op']](left, right)
+    if kind == 'switch':
+        value = value_of({'var': c['var'], **({'of': c['of']} if 'of' in c else {})}, x)
+        return value is not MISSING and value is c['is']
+    if kind == 'in list':
+        values = value_of({'var': c['list'], **({'of': c['of']} if 'of' in c else {})}, x)
+        value = value_of(c['value'], x)
+        return values is not MISSING and value is not MISSING and value in values
+    if kind == 'phase is':
+        return state['phase'] == c['phase']
+    if kind == 'visit is':
+        return COMPARE[c['op']](state['visits'], c['value'])
+    if kind == 'timer':
+        key = c['signal'] + '/' + x.actor if c.get('owner') == 'player' else c['signal']
+        timer = state.get('timers', {}).get(key)
+        if timer is None:
+            return False
+        if 'op' not in c:
+            return True
+        if x.day is None:
+            return None
+        return COMPARE[c['op']](timer['at'] - x.now(timer.get('clock', 'game')), c['days'])
+    if kind == 'fired':
+        bucket = state.get('counts', {}).get(c.get('in', 'visit'), {})
+        return COMPARE[c['op']](bucket.get(trigger_key(x.phase, c['trigger']), 0), c['value'])
+    if kind == 'chance':
+        return draw(state, 100) < c['percent']
+    if kind == 'days since':
+        if x.day is None:
+            return None
+        if c['from'] == 'var':
+            since = value_of({'since': c['var'], **({'of': c['of']} if 'of' in c else {})}, x)
+        else:
+            since = x.day - (state['entered'] if c['from'] == 'phase' else state.get('began', state['entered']))
+        return since is not MISSING and COMPARE[c['op']](since, c['days'])
+    raise ValueError('Unknown trigger condition.')
+
+
+def _run(actions, x, base, start=0):
+    """Run actions[start:]. None to go on; or 'stop', 'wait', 'enter' (x.target), 'finish' to end the trigger here."""
+    for i in range(start, len(actions)):
+        r = _act(actions[i], x, (*base, i))
+        if r:
+            return r
+    return None
+
+
+def _resume(actions, x, base, address):
+    """Run from an address (the action after a wait), then the rest of every list it is inside."""
+    i = address[0]
+    if len(address) > 1:
+        name = address[1]
+        r = _resume(branch(actions[i], name), x, (*base, i, name), address[2:])
+        if r:
+            return r
+        i += 1
+    return _run(actions, x, base, i)
+
+
+def _wolves(a, x):
+    state = x.state
+    if a['over'] == 'participants':
+        return list(state['cohort'])
+    if a['over'] == 'party':
+        if x.actor not in state['cohort']:
+            return []
+        party = party_of(state, x.actor)
+        return [w for w in state['cohort'] if party_of(state, w) == party]
+    values = list(value_of({'var': a['list']}, x))
+    return [w for w in values if w in state['cohort']] if x.vars[a['list']]['type'] == 'wolves' else values
+
+
+def _number(value):
+    return max(-LIMIT, min(LIMIT, value))
+
+
+def _set_var(a, x, fn):
+    """Change one variable by fn(current) (MISSING: leave it)."""
+    name = a['var']
+    d = x.vars[name]
+    store = var_store(x.state, d['scope'], x.wolf(a.get('of')), True)
+    if store is None:
+        return
+    value = fn(store.get(name, initial(d)))
+    if value is not MISSING:
+        store[name] = value
+
+
+def _key_of(x, name, phase_id=None):
+    return phase_id + '/' + name if phase_id else trigger_key(x.phase, name)
+
+
+def count_firing(phase, state, trigger_id):
+    """Version 2: how often each trigger fired, this visit and this run (the `fired` condition)."""
+    key = trigger_key(phase, trigger_id)
+    counts = state.setdefault('counts', {})
+    for bucket in ('visit', 'run'):
+        counts.setdefault(bucket, {})[key] = counts.get(bucket, {}).get(key, 0) + 1
+
+
+def _act(a, x, address):
+    op, state = a['do'], x.state
+    if op == 'enter':
+        x.target = a['phase']
+        return 'enter'
+    if op == 'effect':
+        effect = dict(a['effect'])
+        for k, v in effect.items():
+            if v == '$actor' and k == 'player':
+                effect[k] = x.actor
+            elif v == '$each' and x.each is not None:
+                effect[k] = x.each
+        state.setdefault('triggerEffects', []).append(effect)
+    elif op in ('schedule', 'cancel'):
+        name = action_signal = a['signal']
+        # A slash cannot appear in a signal ID. Shared keys stay compatible with older releases.
+        key = name + '/' + x.actor if a.get('owner') == 'player' else name
+        if op == 'cancel':
+            state.get('timers', {}).pop(key, None)
+            return None
+        state.setdefault('timers', {})[key] = {
+            'signal': action_signal,
+            'at': (x.elapsed if a.get('clock') == 'real' else x.day) + a['days'],
+            'clock': a.get('clock', 'game'),
+            'actor': x.actor,
+            'interval': a['days'] if a.get('repeat') else 0,
+            'scope': a.get('scope', 'visit'),
+        }
+    elif op == 'emit':
+        x.emit(a['signal'], x.event)
+    elif op in ('set', 'add') and 'key' in a:
+        if a['scope'] != 'player' or x.actor in state['cohort']:
+            bucket = counter_store(state, a['scope'], x.actor, True)
+            value = a['value']
+            if isinstance(value, str):
+                value = x.event.get(value, 0)
+            if op == 'add':
+                value += bucket.get(a['key'], 0)
+            bucket[a['key']] = max(-LIMIT, min(LIMIT, value))
+    elif op == 'if':
+        if test(a['if'], x) is True:
+            return _run(a['then'], x, (*address, 'then'))
+        for k, b in enumerate(a.get('elif', ())):
+            if test(b['if'], x) is True:
+                return _run(b['then'], x, (*address, f'elif:{k}'))
+        if 'else' in a:
+            return _run(a['else'], x, (*address, 'else'))
+    elif op == 'each':
+        before = x.each
+        for wolf in _wolves(a, x)[:EACH_MAX]:
+            x.each = wolf
+            r = _run(a['actions'], x, (*address, 'actions'))
+            if r:
+                x.each = before
+                return r
+        x.each = before
+    elif op == 'random':
+        total = sum(c['weight'] for c in a['choices'])
+        roll = draw(state, total)
+        for k, c in enumerate(a['choices']):
+            if roll < c['weight']:
+                return _run(c['actions'], x, (*address, f'choice:{k}'))
+            roll -= c['weight']
+    elif op == 'wait':
+        clock = a.get('clock', 'game')
+        state.setdefault('waiting', []).append({
+            'trigger': x.rule['id'], 'scope': 'campaign' if x.rule['id'] in x.phase.get('_sharedIds', ()) else 'visit',
+            'phase': x.phase['id'], 'at': x.now(clock) + a['days'], 'clock': clock, 'actor': x.actor, 'event': x.event,
+            'next': [*address[:-1], address[-1] + 1],
+        })
+        return 'wait'
+    elif op == 'run':
+        other = next((t for t in x.phase.get('triggers', ()) if t['id'] == a['trigger']), None)
+        if other is None or x.depth >= RUN_DEPTH:
+            return None
+        if a.get('check'):
+            if trigger_key(x.phase, other['id']) in set(state.get('disabled', ())):
+                return None
+            if 'if' in other and test(other['if'], x) is not True:
+                return None
+        entry = _firing(x.phase, x.event, x.actor, x.day, x.elapsed, other, via='run')
+        if x.firings is not None:
+            x.firings.append(entry)
+        count_firing(x.phase, state, other['id'])
+        inner = Ctx(x.phase, state, x.event, x.actor, x.day, x.elapsed, x.ready, x.emit, other, entry, x.firings)
+        inner.depth = x.depth + 1
+        r = _run(other['actions'], inner, ())
+        if r in ('enter', 'finish'):
+            x.target = inner.target
+            return r
+    elif op in ('enable', 'disable'):
+        key = _key_of(x, a['trigger'], a.get('phase'))
+        disabled = set(state.get('disabled', ()))
+        (disabled.discard if op == 'enable' else disabled.add)(key)
+        if disabled:
+            state['disabled'] = sorted(disabled)
+        else:
+            state.pop('disabled', None)
+    elif op == 'stop':
+        return 'stop'
+    elif op == 'note':
+        x.note(a['text'])
+    elif op == 'finish':
+        who = a.get('who', 'everyone')
+        record = {'outcome': a['outcome'], 'text': a['text'], 'day': x.day}
+        if who == 'everyone':
+            state['outcome'] = record
+            return 'finish'
+        wolf = x.wolf(who)
+        if wolf in state['cohort']:
+            state.setdefault('outcomes', {})[wolf] = record
+    elif op in ('set', 'add', 'subtract', 'multiply'):
+        value = value_of(a['value'], x)
+        if value is MISSING:
+            return None
+        if op == 'set':
+            _set_var(a, x, lambda _: _number(value) if x.vars[a['var']]['type'] == 'number' else value)
+        else:
+            fn = {'add': lambda v: v + value, 'subtract': lambda v: v - value, 'multiply': lambda v: v * value}[op]
+            _set_var(a, x, lambda v: _number(fn(v)))
+    elif op == 'clamp':
+        _set_var(a, x, lambda v: max(a['min'], min(a['max'], v)))
+    elif op in ('turn on', 'turn off', 'toggle'):
+        _set_var(a, x, lambda v: True if op == 'turn on' else False if op == 'turn off' else not v)
+    elif op == 'remember':
+        value = (x.each if x.each is not None else MISSING) if a['from'] == 'each' else _field(x.event, a['from'])
+        _set_var(a, x, lambda _: value if value is MISSING else str(value)[:TEXT_MAX])
+    elif op in ('list add', 'list remove', 'list clear'):
+        value = value_of(a['value'], x) if op != 'list clear' else None
+        if value is MISSING:
+            return None
+
+        def change(values):
+            values = list(values)
+            if op == 'list clear':
+                return []
+            if op == 'list add':
+                if value not in values and len(values) < LIST_MAX:
+                    values.append(value)
+            elif value in values:
+                values.remove(value)
+            return values
+
+        _set_var(a, x, change)
+    elif op == 'pick':
+        values = value_of({'var': a['list'], **({'of': a['of']} if 'of' in a else {})}, x)
+        if values is MISSING or not values:
+            return None
+        chosen = values[draw(state, len(values))]
+        _set_var(a, x, lambda _: chosen)
+    elif op in ('start timer', 'stop timer'):
+        if op == 'stop timer':
+            d = x.vars[a['var']]
+            store = var_store(state, d['scope'], x.wolf(a.get('of')), True)
+            if store is not None:
+                store.pop(a['var'], None)
+            return None
+        clock = x.vars[a['var']].get('clock', 'game')
+        _set_var(a, x, lambda _: x.now(clock))
+    elif op == 'shift':
+        key = a['signal'] + '/' + x.actor if a.get('owner') == 'player' else a['signal']
+        timer = state.get('timers', {}).get(key)
+        if timer is not None:
+            timer['at'] = timer['at'] + a['days']
+    return None
+
+
+def test(c, x):
+    """A condition inside a firing (version 2 aware): True, False or None."""
+    kind = c['test']
+    if kind in ('all', 'any'):
+        decisive = kind == 'any'
+        unknown = False
+        for child in c['conditions']:
+            value = test(child, x)
+            if value is decisive:
+                return decisive
+            unknown = unknown or value is None
+        return None if unknown else not decisive
+    if kind == 'not':
+        value = test(c['condition'], x)
+        return None if value is None else not value
+    if kind in CONDITIONS_V2:
+        return test_v2(c, x)
+    return satisfied(c, x.state, x.event, x.ready, x.phase.get('_regions'))
+
+
+def judge(c, state, event, ready, regions=None, known=None, phase=None, day=None, elapsed=0):
     """The recording form of `satisfied` (doc 85, 5.5; the Campaigns console's "why", Python only: the live path needs no
     tree): the same verdict for every node, true, false or None (unknown), with the values behind it. `known` names the
     event fields that are known; None means all of them (a real event). A test of a field that is not known, or of a
-    place when the event has none, is unknown, with `needs` saying what it waits for."""
+    place when the event has none, is unknown, with `needs` saying what it waits for. A version 2 condition needs the
+    `phase`; a chance is unknown (it is rolled when it fires)."""
     kind = c['test']
     if kind in ('all', 'any'):
-        children = [judge(child, state, event, ready, regions, known) for child in c['conditions']]
+        children = [judge(child, state, event, ready, regions, known, phase, day, elapsed) for child in c['conditions']]
         decisive = kind == 'any'
         verdicts = [child['verdict'] for child in children]
         verdict = decisive if decisive in verdicts else None if None in verdicts else not decisive
         return {'test': kind, 'verdict': verdict, 'conditions': children}
     if kind == 'not':
-        child = judge(c['condition'], state, event, ready, regions, known)
+        child = judge(c['condition'], state, event, ready, regions, known, phase, day, elapsed)
         return {'test': 'not', 'verdict': None if child['verdict'] is None else not child['verdict'], 'condition': child}
+    if kind in CONDITIONS_V2:
+        node = dict(c)
+        if kind == 'chance':
+            return {**node, 'verdict': None, 'needs': 'roll'}
+        fields = {o['field'] for side in ('left', 'right', 'value') if side in c for o in operands_in(c[side]) if 'field' in o}
+        if known is not None and not fields <= known:
+            return {**node, 'verdict': None, 'needs': 'event'}
+        personal = _personal(c, phase)
+        if personal and known is not None and 'actor' not in known:
+            return {**node, 'verdict': None, 'needs': 'wolf'}
+        x = Ctx(phase or {}, state, event, event.get('actor', ''), day, elapsed, ready, None)
+        verdict = test_v2(c, x)
+        values = {side: _shown(value_of(c[side], x)) for side in ('left', 'right', 'value') if side in c}
+        if kind in ('switch',):
+            values['value'] = _shown(value_of({'var': c['var'], **({'of': c['of']} if 'of' in c else {})}, x))
+        return {**node, 'verdict': verdict, **({'values': values} if values else {}),
+                **({'wolf': x.actor} if personal and x.actor else {})}
     if kind == 'region':
         r = (regions or {}).get(c['region'], {})
         node = {'test': 'region', 'region': c['region'], 'bounds': {k: r.get(k) for k in ('cell', 'x1', 'y1', 'x2', 'y2')}}
@@ -324,10 +1205,35 @@ def judge(c, state, event, ready, regions=None, known=None):
     return {**node, 'value': value, 'verdict': COMPARE[c['op']](value, c['value'])}
 
 
+def _shown(v):
+    return None if v is MISSING else v
+
+
+def _personal(c, phase):
+    """Whether a version 2 condition reads a variable of the acting wolf (or their party), or their timer."""
+    decls = (phase or {}).get('_vars', {})
+    names = [c.get('var'), c.get('list')] + [o.get('var') or o.get('count') or o.get('since')
+                                             for side in ('left', 'right', 'value') if side in c for o in operands_in(c[side])]
+    return any(decls.get(n, {}).get('scope') in PERSONAL for n in names if n) or (c['test'] == 'timer' and c.get('owner') == 'player')
+
+
+def uses_wolf(c, phase=None):
+    """Whether a condition tree depends on which wolf acts (a player counter, or a version 2 personal variable)."""
+    return any(x.get('test') == 'counter' and x.get('scope') == 'player' or (x.get('test') in CONDITIONS_V2 and _personal(x, phase))
+               for x in conditions_in(c))
+
+
 def trigger_key(phase, trigger_id):
     """How state.disabled names a trigger (doc 85, 3.5 and Phase 2): a campaign trigger by its id, a phase's own trigger
     as phase/id (it stays off on a later visit of that phase)."""
     return trigger_id if trigger_id in phase.get('_sharedIds', ()) else phase['id'] + '/' + trigger_id
+
+
+def initially_off(program_phases, shared):
+    """The keys of the triggers a version 2 story starts with turned off ("enabled": false)."""
+    keys = {t['id'] for t in shared if t.get('enabled') is False}
+    keys |= {ph['id'] + '/' + t['id'] for ph in program_phases for t in ph.get('triggers', ()) if t.get('enabled') is False}
+    return sorted(keys)
 
 
 def counter_store(state, scope, actor, write=False):
@@ -340,20 +1246,23 @@ def counter_store(state, scope, actor, write=False):
     return store.get(actor, {}) if scope == 'player' else store
 
 
-def satisfied(c, state, event, ready, regions=None):
-    """A missing historical position is unknown, including when an author negates the test."""
+def satisfied(c, state, event, ready, regions=None, phase=None, day=None, elapsed=0):
+    """A missing historical position is unknown, including when an author negates the test. (A version 2 condition is
+    judged with the `phase` and `day` it is asked in.)"""
     kind = c['test']
+    if kind in CONDITIONS_V2:
+        return test_v2(c, Ctx(phase or {}, state, event, event.get('actor', ''), day, elapsed, ready, None))
     if kind in ('all', 'any'):
         decisive = kind == 'any'
         unknown = False
         for child in c['conditions']:
-            value = satisfied(child, state, event, ready, regions)
+            value = satisfied(child, state, event, ready, regions, phase, day, elapsed)
             if value is decisive:
                 return decisive
             unknown = unknown or value is None
         return None if unknown else not decisive
     if kind == 'not':
-        value = satisfied(c['condition'], state, event, ready, regions)
+        value = satisfied(c['condition'], state, event, ready, regions, phase, day, elapsed)
         return None if value is None else not value
     if kind == 'region':
         x, y, cell = event.get('x'), event.get('y'), event.get('cell')
@@ -372,12 +1281,33 @@ def satisfied(c, state, event, ready, regions=None):
     return COMPARE[c['op']](value, c['value'])
 
 
+def _firing(phase, event, actor, day, elapsed, t, via=None):
+    entry = {
+        'phase': phase['id'],
+        'day': day,
+        'actor': actor,
+        'elapsedDays': elapsed,
+        'actions': [a['effect']['kind'] if a['do'] == 'effect' else a['do'] for a in t['actions']],
+        'trigger': t['id'],
+        'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
+        'event': event.get('id'),
+        'on': event['kind'],
+        'signal': event.get('signal'),
+    }
+    if via:
+        entry['via'] = via
+    return entry
+
+
 def fire(phase, state, event, day, elapsed, ready, matches, emit, trace):
     native = story_native.interpreter()
     if native:
+        if version(phase) == 2:
+            return story_native.fire_v2(native, phase, state, event, day, elapsed, ready, emit, trace)
         return story_native.fire(native, phase, state, event, day, elapsed, ready, emit, trace)
     actor = event.get('actor', '')
     disabled = set(state.get('disabled', ()))
+    v2 = version(phase) == 2
     for t in phase.get('triggers', ()):
         if disabled and trigger_key(phase, t['id']) in disabled:
             continue
@@ -396,34 +1326,56 @@ def fire(phase, state, event, day, elapsed, ready, matches, emit, trace):
         token = t['id'] if bucket == 'fired' or t['id'] in phase.get('_sharedIds', ()) else phase['id'] + '/' + t['id']
         if repeat != 'each' and owner in state.get(bucket, {}).get(token, []):
             continue
-        if 'if' in t and not satisfied(t['if'], state, event, ready, phase.get('_regions')):
+        if v2:
+            x = Ctx(phase, state, {**event, 'kind': kind}, actor, day, elapsed, ready, emit, t, None, trace)
+            if 'if' in t and test(t['if'], x) is not True:
+                continue
+        elif 'if' in t and not satisfied(t['if'], state, event, ready, phase.get('_regions')):
             continue
         if repeat != 'each':
             state.setdefault(bucket, {}).setdefault(token, []).append(owner)
+        entry = None
         if trace is not None:
-            trace.append(
-                {
-                    'phase': phase['id'],
-                    'day': day,
-                    'actor': actor,
-                    'elapsedDays': elapsed,
-                    'actions': [a['effect']['kind'] if a['do'] == 'effect' else a['do'] for a in t['actions']],
-                    'trigger': t['id'],
-                    'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
-                    'event': event.get('id'),
-                    'on': kind,
-                    'signal': event.get('signal'),
-                }
-            )
+            entry = _firing(phase, {**event, 'kind': kind}, actor, day, elapsed, t)
+            trace.append(entry)
+        if v2:
+            count_firing(phase, state, t['id'])
+            x.entry, x.event = entry, event
+            r = _run(t['actions'], x, ())
+            if r == 'enter':
+                return x.target
+            if r == 'finish':
+                return None
+            continue
         target = perform(t, state, event, actor, day, elapsed, emit)
         if target:
             return target
     return None
 
 
-def perform(t, state, event, actor, day, elapsed, emit):
+def resume(phase, state, wait, day, elapsed, ready, emit, trace):
+    """A waiting trigger's remaining actions (version 2's wait): the target phase of an `enter`, or None."""
+    native = story_native.interpreter()
+    if native:
+        return story_native.fire_v2(native, phase, state, wait['event'], day, elapsed, ready, emit, trace, wait)
+    t = next((t for t in phase.get('triggers', ()) if t['id'] == wait['trigger']), None)
+    if t is None:
+        return None
+    entry = _firing(phase, wait['event'], wait['actor'], day, elapsed, t, via='wait')
+    if trace is not None:
+        trace.append(entry)
+    x = Ctx(phase, state, wait['event'], wait['actor'], day, elapsed, ready, emit, t, entry, trace)
+    r = _resume(t['actions'], x, (), wait['next'])
+    return x.target if r == 'enter' else None
+
+
+def perform(t, state, event, actor, day, elapsed, emit, phase=None, entry=None, ready=None, trace=None):
     """A trigger's actions, in order, for the acting wolf: the target phase of an `enter`, or None. (Also the Campaigns
-    console's "fire now", doc 85 Phase 2.)"""
+    console's "fire now", doc 85 Phase 2; a version 2 trigger needs its `phase`.)"""
+    if phase is not None and version(phase) == 2:
+        x = Ctx(phase, state, event, actor, day, elapsed, ready or (lambda: set()), emit, t, entry, trace)
+        r = _run(t['actions'], x, ())
+        return x.target if r == 'enter' else None
     for action in t['actions']:
         op = action['do']
         if op == 'enter':

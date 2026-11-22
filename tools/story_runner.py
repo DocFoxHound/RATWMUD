@@ -148,7 +148,7 @@ def references(conn, world, program):
                 f'Unknown mission character in this world: {value}',
             )
             continue
-        if value == '$actor':
+        if value in ('$actor', '$each'):
             continue
         table, column = tables[key]
         rules.require(
@@ -335,7 +335,7 @@ def publish(conn, world, ticket):
     rules.require(0 < len(cohort) <= 500, 'The opening audience needs 1–500 eligible characters.')
     for phase in rules.phases_of(program):
         for e in rules.possible_effects(phase):
-            if e['kind'] == 'scene.play' and e['player'] not in ('$actor', 'world'):
+            if e['kind'] == 'scene.play' and e['player'] not in ('$actor', '$each', 'world'):
                 rules.require(e['player'] in cohort, f'Scene initiator {e["player"]} must be in the opening audience.')
         exits = rules.triggers.routes(phase)
         rules.require(
@@ -356,7 +356,7 @@ def publish(conn, world, ticket):
         run,
         program,
         who,
-        {**rules.begin(program, cohort, day), 'publishedAt': published_at},
+        {**rules.begin(program, cohort, day, run), 'publishedAt': published_at},
         cursor,
         'published',
     )
@@ -489,7 +489,72 @@ def delivered(conn, world, run, phase, state, who, receipts):
     return False
 
 
+# ----- world variables (doc 85, 3.2: the `world` scope, kept after a run ends and shared by every story of the world)
+
+def _world_names(program):
+    return {n: d for n, d in rules.variables_of(program).items() if d['scope'] == 'world'} if program.get('version') == 2 else {}
+
+
+def world_load(conn, world, program, state):
+    """The world's values of the variables a version 2 story declares in the `world` scope, into the run's state (a value
+    kept under another type by another story is not read: it has its first value here). The values as loaded, to save
+    only what changed."""
+    names = _world_names(program)
+    if not names or not conn.execute("SELECT to_regclass('dm.story_world_vars')").fetchone()[0]:
+        return None
+    rows = conn.execute('SELECT name,type,value FROM dm.story_world_vars WHERE world_id=%s AND name=ANY(%s)',
+                        (world, sorted(names))).fetchall()
+    store = {name: value for name, kind, value in rows if names[name]['type'] == kind}
+    counters = state.setdefault('counters', {})
+    if store:
+        counters['world'] = store
+    else:
+        counters.pop('world', None)
+        if not counters:
+            state.pop('counters')
+    return json.loads(json.dumps(store))
+
+
+def world_save(conn, world, run, program, state, loaded):
+    """Writes back the world variables a tick or a command changed."""
+    if loaded is None:
+        return
+    names = _world_names(program)
+    now = state.get('counters', {}).get('world', {})
+    for name in sorted(names):
+        if name in now and now[name] != loaded.get(name, rules.triggers.MISSING):
+            conn.execute(
+                """INSERT INTO dm.story_world_vars(world_id,name,type,value,run) VALUES (%s,%s,%s,%s::jsonb,%s)
+                   ON CONFLICT (world_id,name) DO UPDATE SET type=excluded.type,value=excluded.value,run=excluded.run,updated_at=now()""",
+                (world, name, names[name]['type'], json.dumps(now[name]), run))
+            loaded[name] = now[name]
+
+
 def tick_run(conn, world, run, clock):
+    holder = {}
+    try:
+        _tick_run(conn, world, run, clock, holder)
+    finally:
+        if holder.get('loaded') is not None:
+            world_save(conn, world, run, holder['program'], holder['state'], holder['loaded'])
+
+
+def _finish(conn, run, who, state):
+    """Version 2's finish: the story ended by its own action, once every effect before it went. Tells the game the story
+    is over (as an ending phase does), then the run is complete."""
+    if state.get('finishSent'):
+        conn.execute("UPDATE dm.story_releases SET status='complete',state=%s::jsonb WHERE id=%s", (json.dumps(state), run))
+        return
+    # (The game ends the storyline "done", or "abandoned" for a story abandoned; the outcome and its line go with the order.)
+    kind = 'story.stop' if state['outcome']['outcome'] == 'abandoned' else 'story.finish'
+    receipt = queue(conn, who, kind, run, {'outcome': state['outcome']['outcome'], 'text': state['outcome']['text']})
+    state.update(triggerReceipt=receipt, finishSent=True)
+    conn.execute('UPDATE dm.story_releases SET state=%s::jsonb WHERE id=%s', (json.dumps(state), run))
+    conn.execute('UPDATE dm.story_transitions SET receipts=array_append(receipts,%s::bigint) WHERE run=%s AND visit=%s',
+                 (receipt, run, state['visits']))
+
+
+def _tick_run(conn, world, run, clock, holder):
     row = conn.execute(
         """SELECT program,state,cursor,approved_by,receipts FROM dm.story_releases
                           WHERE world_id=%s AND id=%s AND status='running' FOR UPDATE SKIP LOCKED""",
@@ -498,6 +563,7 @@ def tick_run(conn, world, run, clock):
     if not row:
         return
     p, state, cursor, who, receipts = row
+    holder.update(program=p, state=state, loaded=world_load(conn, world, p, state))
     phase = rules.phase_of(p, state)
     receipt_key = next((key for key in ('missionReceipt', 'triggerReceipt') if key in state), None)
     if receipt_key:
@@ -525,15 +591,18 @@ def tick_run(conn, world, run, clock):
                 (receipt, run, state['visits']),
             )
         return
+    if state.get('outcome'):
+        _finish(conn, run, who, state)
+        return
     if not (phase['exits'] or phase.get('triggers')):
         conn.execute("UPDATE dm.story_releases SET status='complete' WHERE id=%s", (run,))
         return
     # The clock read precedes the log read: an older query can never advance past a newly committed backlog.
-    has_clock = bool(state.get('timers')) or any(
+    has_clock = bool(state.get('timers')) or bool(state.get('waiting')) or any(
         e['on'] == 'clock' for e in [*phase['exits'], *phase.get('triggers', [])]
     )
     day = clock() if has_clock else None
-    prior_clock = json.dumps([state.get('fired'), state.get('timers')]) if has_clock else None
+    prior_clock = json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')]) if has_clock else None
     published_at = state.get('publishedAt', 0)
     wall_elapsed = max(0, (time.time() - published_at) / 86400) if published_at else 0
     rows = conn.execute(
@@ -563,7 +632,7 @@ def tick_run(conn, world, run, clock):
         if dispatch({'kind': 'clock'}, fact['day'], elapsed):
             enter(conn, run, p, who, state, cursor, 'clock')
             return
-        if state.get('triggerEffects'):
+        if state.get('triggerEffects') or state.get('outcome'):
             break
         cursor = fact['id']
         if fact['kind'] in ('dm signal', 'clock', rules.triggers.SIGNAL) or (
@@ -577,16 +646,17 @@ def tick_run(conn, world, run, clock):
         if dispatch(fact, fact['day'], elapsed):
             enter(conn, run, p, who, state, cursor, 'event ' + str(cursor))
             return
-        if state.get('triggerEffects'):
+        if state.get('triggerEffects') or state.get('outcome'):
             break
     if (
         not state.get('triggerEffects')
+        and not state.get('outcome')
         and day is not None
         and len(rows) < 128
         and dispatch({'kind': 'clock'}, day, wall_elapsed)
     ):
         enter(conn, run, p, who, state, cursor, 'clock')
-    elif rows or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers')])):
+    elif rows or state.get('outcome') or (has_clock and prior_clock != json.dumps([state.get('fired'), state.get('timers'), state.get('waiting')])):
         if before is not None and before != json.dumps(state.get('missions', {})):
             snapshot = rules.mission_snapshot(phase, state)
             receipt = queue(conn, who, 'story.missions', run, {'visit': state['visits'], 'missions': snapshot})
@@ -1195,7 +1265,8 @@ def status(conn, world, run=None, before_visit=None, before_trigger=None, since=
         'directed': directed(program),
         'regions': program.get('regions', []),
         'phases': [{'id': p['id'], 'to': sorted({e['to'] for e in p['exits']} | {
-            a['phase'] for t in [*rules.effective_phase(program, p).get('triggers', [])] for a in t['actions'] if a['do'] == 'enter'}),
+            a['phase'] for t in [*rules.effective_phase(program, p).get('triggers', [])] for _, a in rules.triggers.walk(t['actions'])
+            if a['do'] == 'enter'}),
             'missions': len(p.get('missions', []))} for p in program['phases']],
         'start': program['start'],
         'listening': _listening(rules.phase_of(program, state)) if state else [],
@@ -1433,9 +1504,20 @@ def commands_of(conn, run, limit=60):
         f'SELECT {COMMAND_COLUMNS} FROM dm.story_commands WHERE run=%s ORDER BY id DESC LIMIT %s', (run, limit))]
 
 
+def variables(program):
+    """What an admin may set (doc 85, 5.4), each {key, scope, type} (and its first value, label and note): a version 2
+    story's declared variables; a version 1 story's counters as it reads or writes them (numbers)."""
+    if program.get('version') == 2:
+        return [{'key': d['id'], 'scope': d['scope'], 'type': d['type'], 'initial': rules.triggers.initial(d),
+                 **{k: d[k] for k in ('show', 'note', 'clock') if k in d}} for d in program.get('variables', [])]
+    return [{'key': k, 'scope': sc, 'type': 'number', 'initial': 0} for k, sc in _counters_named(program)]
+
+
 def _counters_named(program):
     """Every counter the program reads or writes, with its scope (v1 counters are not declared: these are the ones an
     admin may set)."""
+    if program.get('version') == 2:
+        return sorted((d['id'], d['scope']) for d in program.get('variables', []))
     out = set()
 
     def walk(c):
@@ -1460,7 +1542,7 @@ def _schedules(program):
     out = {}
     for phase in rules.phases_of(program):
         for t in phase.get('triggers', []):
-            for a in t['actions']:
+            for _, a in rules.triggers.walk(t['actions']):
                 if a['do'] == 'schedule' and a['signal'] not in out:
                     out[a['signal']] = {k: a[k] for k in ('days', 'repeat', 'scope', 'clock', 'owner') if k in a}
     return out
@@ -1491,7 +1573,7 @@ def controls(program, state):
         'triggers': triggers, 'offElsewhere': off_elsewhere,
         'phases': [p['id'] for p in program['phases']],
         'signals': sorted(_signals_heard(phase)),
-        'counters': [{'key': k, 'scope': sc} for k, sc in _counters_named(program)],
+        'counters': variables(program),
         'schedules': _schedules(program),
         'missions': [{'id': m['id'], 'title': m['title'], 'mode': m['mode'], 'objectives': len(m['objectives'])}
                      for m in phase.get('missions', [])],
@@ -1503,24 +1585,30 @@ def controls(program, state):
 # ----- values before and after (the timeline's "watches 5 -> 6")
 
 def _values(state, actor):
-    """The values a firing can change, as they stand: story counters, the acting wolf's counters, timers' due times."""
+    """The values a firing can change, as they stand: story (and world) values, the acting wolf's and their party's,
+    timers' due times."""
     counters = state.get('counters', {})
-    return {
-        'story': dict(counters.get('story', {})),
-        'player': dict(counters.get('player', {}).get(actor, {})) if actor else {},
+    party = rules.triggers.party_of(state, actor) if actor else None
+    return json.loads(json.dumps({
+        'story': counters.get('story', {}),
+        'world': counters.get('world', {}),
+        'player': counters.get('player', {}).get(actor, {}) if actor else {},
+        'party': counters.get('party', {}).get(party, {}) if actor else {},
         'timers': {k: t['at'] for k, t in state.get('timers', {}).items()},
         'actor': actor,
-    }
+    }))
 
 
-def _diff(before, after):
+def _diff(before, after, decls=None):
     out = []
-    for scope in ('story', 'player'):
-        for key in sorted(set(before[scope]) | set(after[scope])):
-            a, b = before[scope].get(key, 0), after[scope].get(key, 0)
+    for scope in ('story', 'world', 'player', 'party'):
+        for key in sorted(set(before.get(scope, {})) | set(after.get(scope, {}))):
+            first = rules.triggers.initial(decls[key]) if decls and key in decls else 0
+            a, b = before.get(scope, {}).get(key, first), after.get(scope, {}).get(key, first)
             if a != b:
                 out.append({'what': 'counter', 'scope': scope, 'key': key, 'before': a, 'after': b,
-                            **({'wolf': after['actor']} if scope == 'player' else {})})
+                            **({'wolf': after['actor']} if scope in ('player', 'party') else {}),
+                            **({'type': decls[key]['type']} if decls and key in decls else {})})
     for key in sorted(set(before['timers']) | set(after['timers'])):
         a, b = before['timers'].get(key), after['timers'].get(key)
         if a != b:
@@ -1531,7 +1619,8 @@ def _diff(before, after):
 def _attach_changes(phase, trace, before, after):
     """Each firing's history entry gets the values its own actions touched, before and after the fact they answered
     (several firings of one fact touching one counter each show the fact's whole change)."""
-    changes = _diff(before, after)
+    decls = phase.get('_vars')
+    changes = _diff(before, after, decls)
     if not changes:
         return
     by_id = {t['id']: t for t in phase.get('triggers', [])}
@@ -1539,8 +1628,10 @@ def _attach_changes(phase, trace, before, after):
         t = by_id.get(entry.get('trigger'))
         if not t:
             continue
-        counters = {(a['scope'], a['key']) for a in t['actions'] if a['do'] in ('set', 'add')}
-        timers = {a['signal'] for a in t['actions'] if a['do'] in ('schedule', 'cancel')}
+        actions = [a for _, a in rules.triggers.walk(t['actions'])]
+        counters = {(a['scope'], a['key']) for a in actions if a['do'] in ('set', 'add') and 'key' in a}
+        counters |= {(decls[a['var']]['scope'], a['var']) for a in actions if decls and a.get('var') in decls}
+        timers = {a['signal'] for a in actions if a['do'] in ('schedule', 'cancel', 'shift')}
         mine = [c for c in changes if (c['what'] == 'counter' and (c['scope'], c['key']) in counters)
                 or (c['what'] == 'timer' and c['key'].split('/')[0] in timers)]
         if mine:
@@ -1576,8 +1667,15 @@ def _check_payload(program, kind, payload):
         rules.require(any(p['id'] == payload.get('phase') for p in program['phases']), 'This story has no such phase.')
     elif kind == 'set':
         rules.require((payload.get('key'), payload.get('scope')) in _counters_named(program),
-                      'This story names no such counter (a counter must be one its triggers read or write).')
-        rules.require(rules.integer(payload.get('value'), -rules.triggers.LIMIT, rules.triggers.LIMIT), 'Choose a whole number.')
+                      'This story names no such counter (a counter must be one its triggers read or write).'
+                      if program.get('version') != 2 else 'This story declares no such variable.')
+        decl = rules.variables_of(program).get(payload['key']) if program.get('version') == 2 else {'type': 'number'}
+        rules.require(decl['type'] != 'timer', 'A timer variable is started and cleared by the story, not set.')
+        if decl['type'] == 'number' and program.get('version') != 2:
+            rules.require(rules.integer(payload.get('value'), -rules.triggers.LIMIT, rules.triggers.LIMIT), 'Choose a whole number.')
+        else:
+            rules.require(rules._initial_ok(decl['type'], payload.get('value'), set(rules.region_index(program))),
+                          f'Choose a value of its type ({decl["type"]}).')
     elif kind == 'timer':
         rules.require(payload.get('do') in ('fire', 'cancel', 'shift', 'start'), 'Fire, cancel, shift or start a timer.')
         if payload['do'] == 'start':
@@ -1710,6 +1808,7 @@ class Steer:
             self.title = row
         self.trace = []
         self.moved = None
+        self.world_loaded = world_load(conn, world, self.program, self.state) if self.state else None
 
     # --- common
     def cohort(self, wolf, required=True):
@@ -1719,6 +1818,7 @@ class Steer:
         return wolf
 
     def save(self, status=None):
+        world_save(self.conn, self.world, self.run, self.program, self.state, self.world_loaded)
         self.conn.execute(
             'UPDATE dm.story_releases SET state=%s::jsonb,cursor=%s,status=%s,problem=%s WHERE id=%s',
             (json.dumps(self.state), self.cursor, status or self.status, self.problem, self.run))
@@ -1838,9 +1938,9 @@ class Steer:
         token = t['id'] if bucket == 'fired' or t['id'] in phase.get('_sharedIds', ()) else phase['id'] + '/' + t['id']
         already = repeat != 'each' and owner in self.state.get(bucket, {}).get(token, [])
         _require(not (check and already), f'It has already fired ({repeat}){" for " + actor if actor else ""}.')
+        ready = lambda: {m['id'] for m in rules.mission_snapshot(phase, self.state) if m['ready']}
         if check and 'if' in t:
-            ready = lambda: {m['id'] for m in rules.mission_snapshot(phase, self.state) if m['ready']}
-            verdict = rules.triggers.satisfied(t['if'], self.state, stand_in, ready, phase.get('_regions'))
+            verdict = rules.triggers.satisfied(t['if'], self.state, stand_in, ready, phase.get('_regions'), phase, self.day(), self.elapsed())
             _require(verdict is True, 'Its conditions are ' + ('unknown (they need a place)' if verdict is None else 'false') + ' just now.')
         if repeat != 'each' and not already:
             self.state.setdefault(bucket, {}).setdefault(token, []).append(owner)
@@ -1850,8 +1950,10 @@ class Steer:
                            'trigger': t['id'], 'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
                            'event': None, 'on': t['on'], 'signal': t.get('signal'), 'byHand': True, 'checked': check})
         emitted = []
+        if rules.triggers.version(phase) == 2:
+            rules.triggers.count_firing(phase, self.state, t['id'])
         target = rules.triggers.perform(t, self.state, stand_in, actor, self.day(), self.elapsed(),
-                                        lambda name, source: emitted.append(name))
+                                        lambda name, source: emitted.append(name), phase, self.trace[-1], ready, self.trace)
         _attach_changes(phase, self.trace[-1:], before, _values(self.state, actor))
         moved = False
         if target:
@@ -1869,15 +1971,7 @@ class Steer:
     def _transition(self, target, actor):
         """As rules.dispatch moves a run: the closing visit's missions kept, the visit's timers and once-marks dropped."""
         _require(any(p['id'] == target for p in self.program['phases']), 'No such phase.')
-        phase = self.phase()
-        self.state.pop('previousMissions', None)
-        if phase.get('missions'):
-            self.state['previousMissions'] = rules.mission_snapshot(phase, self.state)
-        self.state.pop('missions', None)
-        self.state.pop('fired', None)
-        if 'timers' in self.state:
-            self.state['timers'] = {k: v for k, v in self.state['timers'].items() if v.get('scope') == 'campaign'}
-        self.state.update(phase=target, entered=self.day(), votes={}, progress={}, visits=self.state['visits'] + 1, actor=actor)
+        rules.leave_visit(self.phase(), self.state, target, self.day(), actor)
         return True
 
     def do_enter(self):
@@ -1914,9 +2008,13 @@ class Steer:
 
     def do_set(self):
         key, scope, value = self.payload['key'], self.payload['scope'], self.payload['value']
-        wolf = self.cohort(self.payload.get('player', ''), required=scope == 'player')
-        store = rules.triggers.counter_store(self.state, scope, wolf, True)
-        was = store.get(key, 0)
+        wolf = self.cohort(self.payload.get('player', ''), required=scope in ('player', 'party'))
+        if self.program.get('version') == 2:
+            store = rules.triggers.var_store(self.state, scope, wolf, True)
+            was = store.get(key, rules.triggers.initial(rules.variables_of(self.program)[key]))
+        else:
+            store = rules.triggers.counter_store(self.state, scope, wolf, True)
+            was = store.get(key, 0)
         store[key] = value
         self.save()
         who = f' for {wolf}' if wolf else ''
@@ -2254,7 +2352,8 @@ def _signal_senders(phase, state, name):
     """What can send a story signal in this phase now: its triggers that emit or schedule it, and timers running for it."""
     disabled = set(state.get('disabled', ()))
     senders = [{'trigger': t['id'], 'off': rules.triggers.trigger_key(phase, t['id']) in disabled}
-               for t in phase.get('triggers', []) for a in t['actions'] if a['do'] in ('emit', 'schedule') and a['signal'] == name]
+               for t in phase.get('triggers', []) if any(a['do'] in ('emit', 'schedule') and a['signal'] == name
+                                                         for _, a in rules.triggers.walk(t['actions']))]
     timers = [{'timer': k, 'signal': v.get('signal', k), 'at': v['at'], 'clock': v.get('clock', 'game')} for k, v in state.get('timers', {}).items()
               if v.get('signal', k) == name]
     return senders, timers
@@ -2269,7 +2368,7 @@ def _recent_wolves(conn, world, cohort, days):
            AND e.recorded_at >= now() - %s * interval '1 day')""", (cohort, world, days))}
 
 
-def listeners(program, state, per_wolf=True, recent=None):
+def listeners(program, state, per_wolf=True, recent=None, day=None):
     """Every trigger and exit of the run's phase, judged as the run stands (doc 85, 5.5's "what is this story waiting
     for?"): on or off, used up or not (and for whom), its conditions as a tree of true, false and unknown with values (on
     a stand-in event of its own filters: what the event brings is unknown until it comes), its due day, its senders (a
@@ -2287,7 +2386,8 @@ def listeners(program, state, per_wolf=True, recent=None):
         item = {'source': 'trigger', 'id': t['id'], 'key': key, 'on': t['on'], 'scope': 'campaign' if t['id'] in phase.get('_sharedIds', ()) else 'phase',
                 'once': repeat, 'audience': t.get('audience', 'world'), 'off': key in disabled,
                 'actions': [a['effect']['kind'] if a['do'] == 'effect' else a['do'] for a in t['actions']],
-                'enters': next((a['phase'] for a in t['actions'] if a['do'] == 'enter'), None),
+                'enters': next((a['phase'] for _, a in rules.triggers.walk(t['actions']) if a['do'] == 'enter'), None),
+                **({'startsOff': True} if t.get('enabled') is False else {}),
                 **{k: t[k] for k in ('match', 'signal', 'afterDays') if k in t}}
         if repeat in ('visit', 'campaign'):
             item['used'] = '*' in used_by
@@ -2299,20 +2399,20 @@ def listeners(program, state, per_wolf=True, recent=None):
         stand_in = {'kind': t['on'], 'signal': t.get('signal'), 'actor': '', 'id': None, **t.get('match', {})}
         known = set(t.get('match', {}))
         if 'if' in t:
-            item['conditions'] = rules.triggers.judge(t['if'], state, stand_in, ready, phase.get('_regions'), known)
+            item['conditions'] = rules.triggers.judge(t['if'], state, stand_in, ready, phase.get('_regions'), known, phase, day)
         if t['on'] == 'clock':
             item['due'] = state['entered'] + t['afterDays']
         if t['on'] == rules.triggers.SIGNAL:
             senders, timers = _signal_senders(phase, state, t['signal'])
             item['senders'], item['timers'] = senders, timers
-        if per_wolf and (personal or ('if' in t and _uses_player_counters(t['if']))):
+        if per_wolf and (personal or ('if' in t and rules.triggers.uses_wolf(t['if'], phase))):
             could = []
             for wolf in cohort:
                 if repeat in ('player', 'member') and wolf in used_by:
                     continue
                 if 'if' in t:
                     verdict = rules.triggers.judge(t['if'], state, {**stand_in, 'actor': wolf}, ready, phase.get('_regions'),
-                                                   known | {'actor'})['verdict']
+                                                   known | {'actor'}, phase, day)['verdict']
                     if verdict is False:
                         continue
                 could.append(wolf)
@@ -2383,8 +2483,8 @@ def _stall(conn, world, program, state, limits):
     off, used up, waiting for a wolf who has been gone `goneDays`, or a signal nothing left can send). None when it can
     move."""
     phase = rules.phase_of(program, state)
-    if not (phase['exits'] or phase.get('triggers')):
-        return None
+    if not (phase['exits'] or phase.get('triggers')) or state.get('waiting'):
+        return None   # (Version 2: a trigger waiting part-way through its actions goes on by itself.)
     judged = listeners(program, state, per_wolf=False)
     if any(i['can'] for i in judged if not i['needsWolves']):
         return None
@@ -2453,7 +2553,7 @@ def _step(phase, state, run, t, fact, fired_events):
     if repeat != 'each' and owner in used_by:
         return {'verdict': 'used', 'once': repeat, **({'wolf': actor} if owner != '*' else {})}
     if 'if' in t:
-        tree = rules.triggers.judge(t['if'], state, fact, _ready(phase, state), phase.get('_regions'))
+        tree = rules.triggers.judge(t['if'], state, fact, _ready(phase, state), phase.get('_regions'), None, phase, fact.get('day'))
         if tree['verdict'] is not True:
             return {'verdict': 'conditions', 'conditions': tree}
     return {'verdict': 'would', 'text': 'it would fire on this event now'}
@@ -2586,6 +2686,7 @@ def what_if(conn, world, run, fact):
     day = max(game_day(conn, world), state['entered'])
     published = state.get('publishedAt', 0)
     elapsed = max(0, (time.time() - published) / 86400) if published else 0
+    world_load(conn, world, program, state)
     copy = json.loads(json.dumps(state))
     trace = []
     if fact['kind'] == rules.triggers.SIGNAL:
@@ -2680,7 +2781,8 @@ def explain(conn, world, run, data=None, who='', may=None):
     speed = world_speed(conn, world)
     now = _now(conn, world)
     recent = sorted(_recent_wolves(conn, world, state.get('cohort', []), limits['goneDays']))
-    judged = listeners(program, state, recent=recent)
+    world_load(conn, world, program, state)
+    judged = listeners(program, state, recent=recent, day=now['day'])
     phase = rules.phase_of(program, state)
     stall = None
     if status == 'running' and (phase['exits'] or phase.get('triggers')) and not any(i['can'] for i in judged):
@@ -2767,10 +2869,11 @@ def _effect_sites(program):
         (i, ph['id'], f'phases[{i}].triggers', ph.get('triggers', [])) for i, ph in enumerate(program['phases'])]
     for pi, pid, path, rules_ in lists:
         for ti, t in enumerate(rules_):
-            for ai, a in enumerate(t['actions']):
+            for address, a in rules.triggers.walk(t['actions']):
                 if a['do'] == 'effect':
-                    yield (f'{path}[{ti}].actions[{ai}]', {'phase': pi, 'phaseId': pid, 'kind': 'trigger', 'index': ti, 'id': t['id'],
-                           'part': f'actions[{ai}]'}, a['effect'])
+                    part = rules.triggers.part_of(address)
+                    yield (f'{path}[{ti}].{part}', {'phase': pi, 'phaseId': pid, 'kind': 'trigger', 'index': ti, 'id': t['id'],
+                           'part': part}, a['effect'])
 
 
 def _filter_sites(program):
@@ -2835,7 +2938,7 @@ def reference_problems(conn, world, program):
     projects = {k['id'] for k in json.loads((DATA / 'Town/projects.json').read_text())['kinds']}
     for path, at, e in _effect_sites(program):
         for key, value in e.items():
-            if key in tables and value != '$actor' and not (e['kind'] == 'scene.play' and key == 'player' and value == 'world'):
+            if key in tables and value not in ('$actor', '$each') and not (e['kind'] == 'scene.play' and key == 'player' and value == 'world'):
                 if not exists(*tables[key], value):
                     add(path, at, f'Unknown {key} in this world: {value}', True)
         kind = e['kind']

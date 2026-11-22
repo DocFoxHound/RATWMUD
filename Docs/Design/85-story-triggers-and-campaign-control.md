@@ -1,6 +1,6 @@
 # 85. Story triggers and campaign control: a trigger editor like StarCraft's and Warcraft III's, and a console to run a campaign live
 
-Draft, 2026-11-21. A survey and a design; Phases 1 to 4 are built (section 6, "Phase 1 as built" to "Phase 4 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
+Draft, 2026-11-21. A survey and a design; Phases 1 to 5 are built (section 6, "Phase 1 as built" to "Phase 5 as built"), the rest is not. Surveyed at `9902c12b` on `ridgemere2` (the
 Story Maker's commits `55ab323d..7300fc7d`, with our fixes `a86daab3` and `9e875df0`). Read
 `Docs/story-programs.md` first: it is the author's guide to what exists. This doc says what is there in the
 terms of a map editor's trigger system, what is missing, and what to build. Docs 17 (Storykeeper), 34 (the DM
@@ -16,7 +16,8 @@ of these answers, it now says **decided (user, 2026-11-21)**.
 
 **Built so far:** Phase 1 ("See it"), on branch `r3-camp-p1`, Phase 2 ("Steer it"), on branch `r3-camp-p2` (from `r3-camp-p1`), and
 Phase 3 ("Explain it"), on branch `r3-camp-p3` (from `r3-camp-p2`), which closes Slice A, and Phase 4 (the catalogue and the
-workbench), on branch `r3-camp-p4` (from `r3-camp-p3`): see "Phase 1 as built" to "Phase 4 as built" in section 6.
+workbench), on branch `r3-camp-p4` (from `r3-camp-p3`), and Phase 5 (the trigger language, version 2), on branch `r3-camp-p5`
+(from `r3-camp-p4`): see "Phase 1 as built" to "Phase 5 as built" in section 6.
 
 ## The ask (the user, 2026-11-21)
 
@@ -1679,6 +1680,88 @@ two optional trigger fields.
 - The Variables panel, nested actions in the workbench, and variables with their types in the console.
 - Slice end: full suite; the 8 examples rewritten where version 2 makes them shorter, with their rehearsals
   unchanged in outcome; one review-and-fix (moved to the end of Phase 5b, which closes the slice).
+
+**Phase 5 as built** (2026-11-22, branch `r3-camp-p5`, on `r3-camp-p4`). Format version 2 beside version 1; migration `0077` (the
+world's variables; 0074 to 0076 stay Phase 5b's, 6's and 8's); no new game order (`story.finish` carries the outcome).
+- **The language** (`tools/story_triggers.py`, `tools/story_program.py`; `Docs/story-programs.md`, "Version 2"). A program of
+  `"version": 2` declares `variables` (up to 64): `{id, type, scope, initial?, show?, note?, clock?}`; types `number`, `switch`,
+  `text`, `wolf`, `resident`, `place`, `region`, `item`, `faction`, lists `numbers`, `texts`, `wolves`, `residents` (500 values), and
+  `timer` (a moment on the game or real clock; "days since"); scopes `story`, `player`, `party` and `world`. An undeclared or
+  mistyped name is an error; version 2 has no `counter` test and no key/scope Set and Add (it compares and sets declared
+  variables). Values (operands): constants, `{var, of?}`, `{field}`, `{count}`, `{since}`, `{each}`, `plus`/`minus`/`min`/`max`
+  of two, typed number / switch / text when checked. Conditions: `compare`, `switch`, `in list`, `phase is`, `visit is`, `timer`
+  (running, or days left), `fired` (counts per visit and run: `state.counts`), `chance`, `days since` (phase, run, or a timer
+  variable). Actions: `if` (+ up to 4 `elif`, `else`), `wait` (game clock from a minute, real from 5 s; not inside For each),
+  `each` (participants, the actor's party, or a story/world list; at most 500 turns; not nested), `random` (2-8 weighted),
+  `run` (`check`: on and its conditions; cycles refused, 8 deep at most), `enable`/`disable` (`phase` to name another phase's),
+  `stop`, `note`, `finish` (`everyone`, last in its list: ends the run; or `$actor`/`$each`: that wolf's own ending), and the
+  state actions `set`, `add`, `subtract`, `multiply`, `clamp`, `turn on`, `turn off`, `toggle`, `remember`, `list add`, `list
+  remove`, `list clear`, `pick`, `start timer`, `stop timer`, `shift`. 24 actions a trigger counting nested ones, nested 3 deep;
+  `$each` in effects (wolf and resident parameters) inside For each. A trigger's `"enabled": false` starts it off (its key is put
+  in `state.disabled` at `begin`, so the console's on/off and the engines needed nothing new). A version 1 program is checked and
+  run exactly as before: every new path is behind the phase's `_v == 2`.
+- **Running it, both twins.** `Core/RatwStoryTriggers.cpp` gained `Dispatch2` (a request `v: 2` carries the run's state pieces and
+  gets them back as the Python twin leaves them, key for key: `story_native.fire_v2`); the Python twin runs the same tree
+  (`_run`, `_resume`, `_act`, `test_v2`). Rolls: FNV-1a 64 of `"<seed>:<n>"` (the seed is the run's id; a rehearsal's `seed` or the
+  program's id), or a case's pinned `rolls` (0-99) first. A wait is `state.waiting` (`{trigger, scope, phase, at, clock, actor,
+  event, next}`, `next` an address like `[3, "then", 2]`); `advance` resumes the due ones after the timers on each clock fact; a
+  phase trigger's wait ends with its visit (`leave_visit`, now shared by the rules and the console's "go to phase"). Who is
+  off is read once per event (an Enable takes effect from the next event; Run's `check` reads it live). Notes go in the firing's
+  history entry (`notes`); Run and resumed waits are firings of their own (`via: run|wait`). `finish` for everyone stops the run
+  reading: the runner sends what was queued, then `story.finish` (`story.stop` for "abandoned") with the outcome, then `complete`.
+  Party scope: `state.parties` (a rehearsal's `parties`; the runner has no party data until Phases 6/8: a party of one).
+- **World variables**: migration `0077_story_world_vars.sql`, `dm.story_world_vars(world_id, name, type, value, run)`; loaded into
+  `state.counters.world` when a run is ticked, steered or explained (a value kept under another type is not read), written back
+  when changed (`world_load`/`world_save`). The doc's Phase 10 item for it is done; `story.start` and chapters are still Phase 10's.
+- **The runner and the console's side** (`tools/story_runner.py`): `variables()` (declared, typed; version 1's counters as numbers)
+  in `controls`; `set` is typed by the declaration and works in all four scopes; values before and after carry party and world
+  and their type; Why not / Explain judge the new conditions (`judge` with the phase and day; a chance is unknown, "rolled when it
+  fires"; per wolf when a condition reads a wolf's variable); "cannot move on" is not raised while a wait is pending; every walk
+  over actions (routes, effects, signals, timers, references, `studio.story_effect_kinds` for the hosted permission checks) now
+  goes into nested lists. New op `upgrade` (a viewer's, pure): `story_program.upgrade`, version 1 to 2.
+- **Rehearsal:** cases may add `seed`, `rolls`, `parties`, `expectVariables` (only the named ones; unset reads its first value) and
+  `expectOutcome`; a version 2 report adds `outcome` and `outcomes`; step-through shows the variables and `startsOff`.
+- **The workbench:** nested actions (If / Else if / Else, For each, Random choices with weights; each list its own numbered
+  sentences; `ActionList` recurses, a problem's `part` is the whole path, `actions[3].elif[0].then[1]`, and Problems words it
+  "action 4 › else if 1 › 2"); the **Enabled at the start** box in the trigger head and as the tree's checkbox (a hollow box
+  starts off; version 2 only); the **Variables panel** (declare, type, whose, first value, shown as, note, uses, rename everywhere,
+  remove) replacing "counters as used" (a version 1 story lists its counters and offers **Make it version 2…**); pickers for a
+  variable (by the slot's types), a value (`OperandPicker`: number, on/off, text, variable, event field, count, days since, the
+  looped value, variable ± a number), a trigger, whose; the catalogue's new entries (9 conditions, 26 actions, `v2`/`v1` marks, `do`,
+  `nest`, `variables`) drive the sentences and the Add lists; `editable()` accepts version 2; `renameVariable`, `renameTrigger`
+  follows Run/Enable/Disable/"fired", `mapActions`/`allActions` walk the tree.
+- **The console:** Variables & timers shows every variable with its type and whose (story, the world, each wolf, each party),
+  typed set controls, the actions waiting and when they resume, and the story's outcome; the timeline shows notes and "run by
+  another trigger" / "after its wait".
+- **Examples:** `siege-at-greyfen` is version 2 (two triggers and two signals fewer: count-defeat and the posts each test with an
+  If; the same paths, effects and counters in all four rehearsals). The other seven stay version 1: five have no triggers to
+  shorten, and reed-ford and winter-ferries are the console suites' fixtures (their version 2 forms are rehearsed by the tests).
+- **Tests:** `tools/test_story_native.py` (parity: the 108 programs, the 108 made version 2, and the two version 2 samples of
+  `tools/story_v2_samples.py` under five more seeds; also ctest `story_trigger_parity`); `tools/test_story_v2.py` (the checks:
+  version 1 refusing what is new, undeclared and mistyped names, declarations, 16 flow rules; problems at nested parts;
+  warnings; nested effects seen by the permission checks; rehearsals with pinned and seeded rolls, waits, expected variables and
+  outcome, initially off, step through; upgrade of all 108 rehearsing the same; judge = satisfied on version 2 conditions);
+  `tools/test_story_v2_runner.py` (a version 2 story published in a throwaway database: waits resumed by the world's clock, notes,
+  the world variable kept and read by another story, finishing to complete; the console turning on a trigger that starts off,
+  typed sets in three scopes, why not, dry run and fire). `Editor/src/lib/workbench.test.ts` (110 version 2 programs editable and
+  in sentences, parts, renames and maps round trip, every action and condition the workbench adds passes the checks),
+  `campaigns.test.ts` (nested problem places), the render smoke (the 10 version 2 programs' workbenches, 148 views, none edited).
+  The P1-P4 suites, `test_dungeon_master`, `test_studio`, `test_world_db`, the live siege and scene tests pass.
+- **Seen:** on a throwaway Greyfen database (drafts of the samples, the breach, a broken one and a version 1 one; two version 2
+  runs published and driven by hand, no game server), screenshots in `/home/martinb/.claude/jobs/ee03c49e/tmp/shots-camp-p5/`
+  (nested If and the Variables panel, the value picker, a trigger off at the start, For each with $each, the Add list's flow,
+  a new variable, Random/Wait/Stop, a campaign wait, problems in nested actions, a version 1 story and Make it version 2, the
+  breach rehearsed, the console's typed variables, notes in the timeline, triggers, actions waiting).
+- **Not in Phase 5, on purpose:** trackers for `show` and `show timer` in the wolf's journal (Phase 6, with the journal's
+  trackers); `{variable}` inside texts; wolf variables as an effect's target (`$each` and `$actor` only); `region:<id>` in For
+  each and party membership from the game (Phase 8's facts); rehearsal facts and expected values written with forms; the
+  console's Explain list does not show pending waits beside the timers (the Variables tab does).
+- **For Phase 5b:** a run's state now may hold `waiting` (addresses into a trigger's action tree: a migration must drop a wait whose
+  trigger is gone or whose actions changed, or resume at the same address only when the list it points into is unchanged),
+  `counts` (by trigger key), `seed`/`began`/`draws`/`rolls`, `outcome`/`outcomes`, and `disabled` seeded from `enabled: false` (a
+  new version's newly off triggers are not off in a running run unless the migration adds them). `story_program.upgrade` makes a
+  version 1 program version 2 with the same counter names (a v1 run's `counters` read as declared numbers, except a name used in
+  both scopes: the wolf's becomes `<name>.player`). World variables live outside the run (nothing to move).
 
 **Phase 5b: Move a running campaign onto a new version. About 10 hours.** Added by the user, 2026-11-21
 (question 5: yes). A ninety-day campaign that needs a fix on day 40 keeps its wolves, phase, variables and quests.

@@ -100,3 +100,62 @@ def fire(dispatch, phase, state, event, day, elapsed, ready, emit, trace):
                 }
             )
     return result.get('phase')
+
+
+# The run's state pieces a version 2 dispatch reads and changes (doc 85, Phase 5): they go to the native twin and come
+# back as the Python twin would leave them, key for key (absent stays absent).
+STATE_V2 = ('counters', 'fired', 'campaignFired', 'counts', 'timers', 'disabled', 'waiting', 'draws', 'rolls', 'outcome',
+            'outcomes', 'parties', 'seed')
+
+
+def fire_v2(dispatch, phase, state, event, day, elapsed, ready, emit, trace, wait=None):
+    """A version 2 story's fact (or, with `wait`, a waiting trigger's remaining actions) through the native twin."""
+    import story_triggers
+
+    kind = event['kind']
+    rules = phase.get('triggers', [])
+    if wait is None and not any(t['on'] == kind or (t['on'] == 'gift' and kind == 'gift again') for t in rules):
+        return None
+    request = {
+        'v': 2,
+        'rules': rules,
+        'shared': list(phase.get('_sharedIds', ())),
+        'regions': phase.get('_regions', {}),
+        'phase': phase['id'],
+        'entered': state['entered'],
+        'began': state.get('began', state['entered']),
+        'visits': state['visits'],
+        'day': day,
+        'elapsed': elapsed,
+        'fact': event,
+        'cohort': state['cohort'],
+        'ready': list(ready()) if phase.get('missions') else [],
+        'decls': phase.get('_vars', {}),
+        'state': {k: state[k] for k in STATE_V2 if k in state},
+    }
+    if wait is not None:
+        request['resume'] = wait
+    result = json.loads(dispatch(json.dumps(request, ensure_ascii=False, allow_nan=False).encode('utf-8')))
+    if 'error' in result:
+        raise ValueError(result['error'])
+    changed = result['state']
+    for key in STATE_V2:
+        if key in changed:
+            state[key] = changed[key]
+        else:
+            state.pop(key, None)
+    if result.get('effects'):
+        state.setdefault('triggerEffects', []).extend(result['effects'])
+    if trace is not None:
+        actor = wait['actor'] if wait is not None else event.get('actor', '')
+        by_id = {t['id']: t for t in rules}
+        for f in result['firings']:
+            t = by_id[f['trigger']]
+            entry = story_triggers._firing(phase, event if f.get('via') else {**event, 'kind': t['on']}, actor, day, elapsed, t,
+                                           f.get('via'))
+            if f.get('notes'):
+                entry['notes'] = f['notes']
+            trace.append(entry)
+    for signal in result.get('signals', ()):
+        emit(signal, event)
+    return result.get('phase')

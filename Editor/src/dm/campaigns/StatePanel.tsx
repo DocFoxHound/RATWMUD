@@ -1,8 +1,9 @@
-// Variables & timers (doc 85, 5.3): the story's counters (shared, and each wolf's), its timers, the exits counting
+// Variables & timers (doc 85, 5.3; Phase 5: typed variables of the story, the world, each wolf and each party, waits and the
+// story's ending): the story's variables, its timers, the exits counting
 // wolves, and which once-only triggers have fired; with Phase 2's edits (set a counter; fire, move or cancel a timer;
 // start one the program starts), each a command that asks first.
 import {useState} from 'react';
-import {changeText, dueText, nameOf, type Now, type RunDetail, type TimelineItem} from '../../lib/campaigns';
+import {changeText, dueText, nameOf, valueText, type ControlVariable, type Now, type RunDetail, type TimelineItem, type Value} from '../../lib/campaigns';
 import type {SteerFn} from './Steer';
 
 export function StatePanel({detail, names, now, items, steer, busy = false}: {detail: RunDetail; names: Record<string, string>; now: Now; items: TimelineItem[];
@@ -11,10 +12,15 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
     const [shift, setShift] = useState<Record<string, string>>({}), [start, setStart] = useState(''), [startDays, setStartDays] = useState('');
     const state = detail.state;
     if (!state) return <p className="hint">{detail.status === 'approved' ? 'Not published yet: it has no state.' : 'No state.'}</p>;
-    const story = state.counters?.story ?? {};
-    const player = state.counters?.player ?? {};
-    const keys = [...new Set(Object.values(player).flatMap(Object.keys))].sort();
-    // When each counter last changed: the newest firing or command that changed it (the history keeps the values since Phase 2).
+    const stores = state.counters ?? {};
+    const named = detail.controls?.counters ?? [];
+    // Every variable: those the program declares (or, version 1, reads and writes), then any the state holds that it does not name.
+    const rows: ControlVariable[] = [...named];
+    for (const scope of ['story', 'world'] as const) for (const k of Object.keys(stores[scope] ?? {}))
+        if (!rows.some(r => r.key === k && r.scope === scope)) rows.push({key: k, scope, type: 'number', initial: 0});
+    for (const scope of ['player', 'party'] as const) for (const k of new Set(Object.values(stores[scope] ?? {}).flatMap(Object.keys)))
+        if (!rows.some(r => r.key === k && r.scope === scope)) rows.push({key: k, scope, type: 'number', initial: 0});
+    // When each variable last changed: the newest firing or command that changed it (the history keeps the values since Phase 2).
     const changedBy = (key: string) => {
         for (const i of items) {
             if (i.type === 'trigger' && i.changes?.some(c => c.what === 'counter' && c.key === key))
@@ -23,39 +29,67 @@ export function StatePanel({detail, names, now, items, steer, busy = false}: {de
         }
         return '';
     };
-    const named = detail.controls?.counters ?? [];
-    const storyKeys = [...new Set([...Object.keys(story), ...named.filter(c => c.scope === 'story').map(c => c.key)])].sort();
-    const setter = (key: string, scope: 'story' | 'player') => steer && (editing === scope + key
+    const first = (r: ControlVariable): Value => r.initial ?? (r.type === 'switch' ? false : r.type === 'timer' ? null : r.type && r.type !== 'number' ? (['numbers', 'texts', 'wolves', 'residents'].includes(r.type) ? [] : '') : 0);
+    const personal = (r: ControlVariable) => r.scope === 'player' || r.scope === 'party';
+    const ownerOf = (r: ControlVariable, w: string) => r.scope === 'party' ? state.parties?.[w] ?? w : w;
+    const valueOf = (r: ControlVariable, w = ''): Value => {
+        const store = personal(r) ? (stores[r.scope] as Record<string, Record<string, Value>> | undefined)?.[ownerOf(r, w)] : (stores[r.scope] as Record<string, Value> | undefined);
+        return store && r.key in store ? store[r.key] : first(r);
+    };
+    // A value typed in, as its type wants it; undefined when it is not one.
+    const parsed = (r: ControlVariable, text: string): Value | undefined => {
+        const type = r.type ?? 'number';
+        if (type === 'number') return text !== '' && Number.isFinite(Number(text)) && Number.isInteger(Number(text)) ? Number(text) : undefined;
+        if (type === 'switch') return text === 'on' ? true : text === 'off' ? false : undefined;
+        if (['numbers', 'texts', 'wolves', 'residents'].includes(type))
+            return [...new Set(text.split(',').map(x => x.trim()).filter(Boolean))].map(x => type === 'numbers' ? Number(x) : x);
+        return text.length <= 200 ? text : undefined;
+    };
+    const setter = (r: ControlVariable) => steer && r.type !== 'timer' && (editing === r.scope + r.key
         ? <span className="camp-group">
-            {scope === 'player' && <select value={wolf} onChange={e => setWolf(e.target.value)} aria-label="Wolf"><option value="">choose…</option>
+            {personal(r) && <select value={wolf} onChange={e => setWolf(e.target.value)} aria-label="Wolf"><option value="">choose…</option>
                 {state.cohort.map(id => <option key={id} value={id}>{nameOf(names, id)}</option>)}</select>}
-            <input type="number" value={value} onChange={e => setValue(e.target.value)} style={{width: 80}} aria-label="Value" />
-            <button disabled={busy || value === '' || !Number.isInteger(Number(value)) || (scope === 'player' && !wolf)} onClick={() => {
-                const was = scope === 'story' ? story[key] ?? 0 : player[wolf]?.[key] ?? 0;
-                steer({kind: 'set', payload: {key, scope, value: Number(value), ...(scope === 'player' ? {player: wolf} : {})}, title: `Set ${key}`,
-                    does: [`${key}${scope === 'player' ? ' for ' + nameOf(names, wolf) : ''}: ${was} → ${Number(value)}.`, 'Triggers that read it see the new value from the next event on.']});
+            {r.type === 'switch' ? <select value={value} onChange={e => setValue(e.target.value)} aria-label="Value"><option value="">…</option><option value="on">on</option><option value="off">off</option></select>
+                : <input type={(r.type ?? 'number') === 'number' ? 'number' : 'text'} value={value} onChange={e => setValue(e.target.value)} style={{width: (r.type ?? 'number') === 'number' ? 80 : 160}}
+                    aria-label="Value" placeholder={['numbers', 'texts', 'wolves', 'residents'].includes(r.type ?? '') ? 'a, b, c' : ''} />}
+            <button disabled={busy || parsed(r, value) === undefined || (personal(r) && !wolf)} onClick={() => {
+                const was = valueOf(r, wolf), next = parsed(r, value)!;
+                steer({kind: 'set', payload: {key: r.key, scope: r.scope, value: next, ...(personal(r) ? {player: wolf} : {})}, title: `Set ${r.key}`,
+                    does: [`${r.key}${personal(r) ? ' for ' + nameOf(names, wolf) + (r.scope === 'party' ? "'s party" : '') : ''}: ${valueText(was, r.type, names)} → ${valueText(next, r.type, names)}.`,
+                        r.scope === 'world' ? 'It is the world\'s: every story declaring it sees the new value.' : 'Triggers that read it see the new value from the next event on.']});
                 setEditing(null);
             }}>Set…</button><button onClick={() => setEditing(null)}>×</button></span>
-        : named.some(c => c.key === key && c.scope === scope) && <button className="link-button" disabled={busy} onClick={() => {
-            setEditing(scope + key); setValue(String(scope === 'story' ? story[key] ?? 0 : '')); setWolf('');
+        : <button className="link-button" disabled={busy} onClick={() => {
+            const now = personal(r) ? undefined : valueOf(r);
+            setEditing(r.scope + r.key); setWolf('');
+            setValue(now === undefined || now === null ? '' : typeof now === 'boolean' ? (now ? 'on' : 'off') : Array.isArray(now) ? now.join(', ') : String(now));
         }}>✎</button>);
+    const SCOPE: Record<string, string> = {story: 'story', world: 'the world', player: 'each wolf', party: 'each party'};
     const timers = Object.entries(state.timers ?? {}).sort((a, b) => (a[1].clock ?? 'game').localeCompare(b[1].clock ?? 'game') || a[1].at - b[1].at);
     const exits = detail.listening.filter(l => l.source === 'exit' && (l.players !== undefined || l.percent !== undefined));
     const fired = [...Object.entries(state.fired ?? {}).map(([k, v]) => ({k, v, scope: 'this visit'})),
         ...Object.entries(state.campaignFired ?? {}).map(([k, v]) => ({k, v, scope: 'this run'}))];
     return <div className="camp-state">
+        {state.outcome && <p className="camp-outcome"><b>Ended: {state.outcome.outcome}</b> on day {state.outcome.day.toFixed(1)}: “{state.outcome.text}”</p>}
+        {state.outcomes && Object.keys(state.outcomes).length > 0 && <p className="hint">Their own endings: {Object.entries(state.outcomes).map(([w, o]) =>
+            `${nameOf(names, w)} ${o.outcome} (day ${o.day.toFixed(1)})`).join(' · ')}</p>}
         <h3>Variables</h3>
-        {storyKeys.length === 0 && keys.length === 0 && !named.length ? <p className="hint">No counter has been set yet (every counter reads 0 until one is).</p>
-            : <table className="dm-table"><thead><tr><th>Variable</th><th>Scope</th><th>Value</th>{steer && <th></th>}<th>Changed</th></tr></thead><tbody>
-                {storyKeys.map(k => <tr key={'s' + k}><td>{k}</td><td>story</td><td className="num">{story[k] ?? 0}</td>{steer && <td>{setter(k, 'story')}</td>}
-                    <td className="hint">{changedBy(k)}</td></tr>)}
-                {[...new Set([...keys, ...named.filter(c => c.scope === 'player').map(c => c.key)])].sort().map(k => {
-                    const by = Object.entries(player).filter(([, c]) => k in c).sort((a, b) => b[1][k] - a[1][k]);
-                    const rest = state.cohort.length - by.length;
-                    return <tr key={'p' + k}><td>{k}</td><td>each wolf</td><td>{by.slice(0, 6).map(([id, c]) => `${nameOf(names, id)} ${c[k]}`).join(' · ')}
-                        {by.length > 6 ? ` · ${by.length - 6} more` : ''}{rest > 0 ? ` · (${rest} at 0)` : ''}</td>{steer && <td>{setter(k, 'player')}</td>}
-                        <td className="hint">{changedBy(k)}</td></tr>;
+        {rows.length === 0 ? <p className="hint">No variable has been set yet (a counter reads 0 until one is).</p>
+            : <table className="dm-table"><thead><tr><th>Variable</th><th>Type</th><th>Whose</th><th>Value</th>{steer && <th></th>}<th>Changed</th></tr></thead><tbody>
+                {rows.map(r => {
+                    let shownValue: string;
+                    if (personal(r)) {
+                        const owners = Object.entries((stores[r.scope] ?? {}) as Record<string, Record<string, Value>>).filter(([, c]) => r.key in c);
+                        const rest = r.scope === 'player' ? state.cohort.length - owners.length : 0;
+                        shownValue = owners.slice(0, 6).map(([id, c]) => `${nameOf(names, id)} ${valueText(c[r.key], r.type, names)}`).join(' · ')
+                            + (owners.length > 6 ? ` · ${owners.length - 6} more` : '') + (rest > 0 ? `${owners.length ? ' · ' : ''}(${rest} at ${valueText(first(r), r.type, names)})` : '');
+                    } else shownValue = valueText(valueOf(r), r.type, names);
+                    return <tr key={r.scope + r.key} title={r.note}><td>{r.key}{r.show && <small className="hint"> “{r.show}”</small>}</td><td>{r.type ?? 'number'}</td>
+                        <td>{SCOPE[r.scope] ?? r.scope}</td><td className={r.type === 'number' && !personal(r) ? 'num' : ''}>{shownValue || '—'}</td>
+                        {steer && <td>{setter(r)}</td>}<td className="hint">{changedBy(r.key)}</td></tr>;
                 })}</tbody></table>}
+        {(state.waiting ?? []).length > 0 && <><h3>Waiting</h3><ul>{state.waiting!.map((w, i) => <li key={i}>{w.trigger}{w.actor ? ` (${nameOf(names, w.actor)})` : ''}:
+            the rest of its actions {dueText(w.at, w.clock as 'game' | 'real', now.day, state.publishedAt, now.at)}{w.scope === 'campaign' ? ', whatever the phase' : ', if the phase is still open'}</li>)}</ul></>}
         <h3>Timers</h3>
         {timers.length === 0 ? <p className="hint">No timer is running.</p>
             : <table className="dm-table"><thead><tr><th>Timer</th><th>Owner</th><th>Due</th><th>Repeats</th><th>Lives</th>{steer && <th></th>}</tr></thead><tbody>

@@ -108,8 +108,14 @@ class CatalogueShape(unittest.TestCase):
                 self.assertIsInstance(e['tile'], bool)
 
     def test_conditions_actions_effects(self):
-        self.assertEqual([c['id'] for c in CAT['conditions']], ['all', 'any', 'not', 'field', 'counter', 'region', 'mission'])
-        self.assertEqual([a['id'] for a in CAT['actions']], ['set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter'])
+        self.assertEqual([c['id'] for c in CAT['conditions']], ['all', 'any', 'not', 'field', 'counter', 'region', 'mission',
+                                                                *triggers.CONDITIONS_V2])
+        # (Version 2, doc 85 Phase 5: the conditions and actions marked v2; an action's `do` is its id unless it says.)
+        self.assertTrue(all(c.get('v2') for c in CAT['conditions'][7:]))
+        dos = [a.get('do', a['id']) for a in CAT['actions']]
+        self.assertEqual(set(dos), {'set', 'add', 'emit', 'schedule', 'cancel', 'effect', 'enter', *triggers.FLOW_V2, *triggers.STATE_V2})
+        self.assertEqual(len({a['id'] for a in CAT['actions']}), len(CAT['actions']))
+        self.assertTrue(all(a.get('nest') for a in CAT['actions'] if a.get('do', a['id']) in ('if', 'each', 'random')))
         self.assertEqual(len(CAT['effects']), 25)
         for item in [*CAT['conditions'], *CAT['actions'], *CAT['effects']]:
             with self.subTest(item=item['id']):

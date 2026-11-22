@@ -1,9 +1,29 @@
 {
   "format": "ratw-story-program",
-  "version": 1,
+  "version": 2,
   "id": "siege-at-greyfen",
   "title": "The breach at Greyfen",
   "start": "hold",
+  "variables": [
+    {
+      "id": "defeats",
+      "type": "number",
+      "scope": "player",
+      "show": "Bandits you felled in the breach"
+    },
+    {
+      "id": "line-held",
+      "type": "number",
+      "scope": "story",
+      "show": "Bandits felled in the breach"
+    },
+    {
+      "id": "guard-posts",
+      "type": "number",
+      "scope": "story",
+      "show": "Guards at their posts"
+    }
+  ],
   "audience": {
     "kind": "active",
     "days": 7
@@ -42,37 +62,30 @@
           "actions": [
             {
               "do": "add",
-              "scope": "player",
-              "key": "defeats",
+              "var": "defeats",
               "value": 1
             },
             {
               "do": "add",
-              "scope": "story",
-              "key": "line-held",
+              "var": "line-held",
               "value": 1
             },
             {
-              "do": "emit",
-              "signal": "check-breach"
-            }
-          ]
-        },
-        {
-          "id": "dispatch-runner",
-          "on": "story signal",
-          "signal": "check-breach",
-          "if": {
-            "test": "counter",
-            "scope": "story",
-            "key": "line-held",
-            "op": ">=",
-            "value": 3
-          },
-          "actions": [
-            {
-              "do": "enter",
-              "phase": "council"
+              "do": "if",
+              "if": {
+                "test": "compare",
+                "left": {
+                  "var": "line-held"
+                },
+                "op": ">=",
+                "right": 3
+              },
+              "then": [
+                {
+                  "do": "enter",
+                  "phase": "council"
+                }
+              ]
             }
           ]
         }
@@ -280,13 +293,25 @@
           "actions": [
             {
               "do": "add",
-              "scope": "story",
-              "key": "guard-posts",
+              "var": "guard-posts",
               "value": 1
             },
             {
-              "do": "emit",
-              "signal": "check-posts"
+              "do": "if",
+              "if": {
+                "test": "compare",
+                "left": {
+                  "var": "guard-posts"
+                },
+                "op": ">=",
+                "right": 2
+              },
+              "then": [
+                {
+                  "do": "enter",
+                  "phase": "relief"
+                }
+              ]
             }
           ],
           "once": "visit"
@@ -301,34 +326,28 @@
           "actions": [
             {
               "do": "add",
-              "scope": "story",
-              "key": "guard-posts",
+              "var": "guard-posts",
               "value": 1
             },
             {
-              "do": "emit",
-              "signal": "check-posts"
+              "do": "if",
+              "if": {
+                "test": "compare",
+                "left": {
+                  "var": "guard-posts"
+                },
+                "op": ">=",
+                "right": 2
+              },
+              "then": [
+                {
+                  "do": "enter",
+                  "phase": "relief"
+                }
+              ]
             }
           ],
           "once": "visit"
-        },
-        {
-          "id": "open-relief",
-          "on": "story signal",
-          "signal": "check-posts",
-          "if": {
-            "test": "counter",
-            "scope": "story",
-            "key": "guard-posts",
-            "op": ">=",
-            "value": 2
-          },
-          "actions": [
-            {
-              "do": "enter",
-              "phase": "relief"
-            }
-          ]
         },
         {
           "id": "send-reserves",

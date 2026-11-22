@@ -33,7 +33,8 @@ export function TimelineRow({item: i, names, events, now, onMap}: {item: Timelin
         <span>⚑ <b>{i.trigger}</b> {i.scope === 'campaign' ? '(campaign) ' : ''}in {i.phase}{i.actor ? ` · ${nameOf(names, i.actor)}` : ''}
             {place ? ` · ${placeText(place, names)}` : ''} ← {i.signal ? `signal ${i.signal}` : i.on}</span>
         <small>{i.byHand ? `by hand (${(i.by ?? '').split('#')[0]}${i.checked === false ? ', unchecked' : ''}) · ` : i.command ? `from ${(i.by ?? '').split('#')[0]}'s command · ` : ''}
-            {i.actions.join(' → ')}{i.changes?.length ? ' · ' + i.changes.map(c => changeText(c, names)).join(' ; ') : ''}{event && <> · event #{event.id} <button className="link-button" onClick={() => setOpen(o => !o)}>{open ? 'Hide' : 'Show'}</button></>}
+            {i.via === 'wait' ? 'after its wait · ' : i.via === 'run' ? 'run by another trigger · ' : ''}{i.actions.join(' → ')}{i.changes?.length ? ' · ' + i.changes.map(c => changeText(c, names)).join(' ; ') : ''}
+            {i.notes?.length ? <> · <span className="camp-note">✎ {i.notes.join(' · ')}</span></> : null}{event && <> · event #{event.id} <button className="link-button" onClick={() => setOpen(o => !o)}>{open ? 'Hide' : 'Show'}</button></>}
             {place && onMap && <> · <button className="link-button" onClick={() => onMap(place)}>On the map</button></>}</small>
         {open && event && <dl className="camp-event">
             <dt>kind</dt><dd>{event.kind}</dd>

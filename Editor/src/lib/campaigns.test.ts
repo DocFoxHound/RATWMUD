@@ -246,3 +246,11 @@ test('the Problems list: where each problem is, in order', () => {
     assert.deepEqual(list.map(p => p.text), ['e', 'b', 'w', 'No rehearsal case reaches this trigger.', 'No rehearsal case reaches this trigger.']);
     assert.deepEqual(list.slice(3).map(p => [p.at.phase, p.at.id]), [[null, 'open-ledger'], [0, 'count-defeat']]);
 });
+
+test('version 2: a problem in a nested action says where (doc 85, Phase 5)', async () => {
+    const {problemPlace} = await import('./campaigns.ts');
+    const at = (part: string) => problemPlace({level: 'error', text: '', path: '', at: {kind: 'trigger', id: 'rope', phase: 0, phaseId: 'gather', part}} as never);
+    assert.equal(at('actions[3].elif[0].then[1]'), 'Phase gather › trigger rope › action 4 › else if 1 › 2');
+    assert.equal(at('actions[0].actions[1].then[0]'), 'Phase gather › trigger rope › action 1 › for each 2 › then 1');
+    assert.equal(at('actions[2].choices[1].actions[0]'), 'Phase gather › trigger rope › action 3 › choice 2 › 1');
+});

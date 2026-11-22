@@ -8,7 +8,7 @@ import type {Project} from '../../model/model.mjs';
 import type {Target} from '../api';
 import type {Problem, Problems} from '../../lib/campaigns';
 import {
-    countersOf, fragmentOf, insertTriggers, namesOf, pasteFragment, readFragment, refOfProblem, removeTriggers, renameCounter, renameSignal,
+    fragmentOf, insertTriggers, namesOf, pasteFragment, readFragment, refOfProblem, removeTriggers, renameSignal,
     renameTrigger, sameRef, search, signalsOf, takenIds, traceKey, triggersOf, unique, usesOf, type Catalogue, type Fragment, type Mission,
     type Program, type Ref, type Refs,
 } from '../../lib/workbench';
@@ -23,6 +23,7 @@ import {ProblemsList} from './Problems';
 import {TriggerTree, type TreeActions} from './TriggerTree';
 import {TriggerView} from './TriggerView';
 import {LibraryPanel, loadTemplates, saveTemplates, type LibraryEntry} from './Library';
+import {VariablesPanel} from './Variables';
 import type {Report, Steps} from './Rehearsal';
 
 export interface FullCatalogue {
@@ -63,8 +64,9 @@ function problemKeys(p: Program, list: Problem[]): {byKey: Record<string, string
         if (ref) refs.add(refKey(ref));
         if (ref?.kind === 'trigger') {
             const head = `t:${ref.phase ?? 'c'}:${ref.index}`;
-            const action = /^actions\[(\d+)\]/.exec(at.part ?? '');
-            add(action ? `${head}:actions[${action[1]}]` : at.part?.startsWith('if') ? head + ':if' : head, pr.text);
+            // (Version 2: a nested action's part is its whole path, "actions[2].then[0]", as the nested lists look it up.)
+            const action = /^actions\[\d+\]/.test(at.part ?? '');
+            add(action ? `${head}:${at.part}` : at.part?.startsWith('if') ? head + ':if' : head, pr.text);
         } else if (ref?.kind === 'exit') add(`x:${ref.phase}:${ref.index}`, pr.text);
         else if (at.kind === 'effect' && typeof at.phase === 'number') add(`e:${at.phase}:${at.index ?? 0}`, pr.text);
     }
@@ -219,7 +221,7 @@ export function Workbench({program, edit, catalog, refs, world, target, sceneLib
     }, [report]);
 
     const found = query ? search(program, cat, names, query) : [];
-    const signals = signalsOf(program), counters = countersOf(program);
+    const signals = signalsOf(program);
     const phaseOfSel = scopeOf(current);
     const middle = (() => {
         switch (current.kind) {
@@ -287,13 +289,7 @@ export function Workbench({program, edit, catalog, refs, world, target, sceneLib
                                 const to = window.prompt(`Rename the signal "${s}" everywhere`, s)?.trim();
                                 if (to && to !== s && /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/.test(to)) edit(renameSignal(program, s, to));
                             }}>✎</button>}</li>)}</ul>
-                        <h4>Counters · {counters.length}</h4>
-                        <ul>{counters.map(c => <li key={c.scope + c.key}><button type="button" className="link-button" onClick={() => setUse({type: 'counter', id: c.key, scope: c.scope})}>{c.key}</button>
-                            <small> {c.scope === 'player' ? "each wolf's" : "the story's"}</small>
-                            {!readOnly && <button type="button" className="wb-mini" title="Rename everywhere" onClick={() => {
-                                const to = window.prompt(`Rename the counter "${c.key}" everywhere`, c.key)?.trim();
-                                if (to && to !== c.key && /^[A-Za-z0-9_][A-Za-z0-9_.:-]{0,79}$/.test(to)) edit(renameCounter(program, c.scope, c.key, to));
-                            }}>✎</button>}</li>)}</ul>
+                        <VariablesPanel use={setUse} readOnly={readOnly} target={target}/>
                         <h4>Regions · {program.regions?.length ?? 0}</h4>
                         <ul>{(program.regions ?? []).map(r => <li key={r.id}><button type="button" className="link-button" onClick={() => setUse({type: 'region', id: r.id})}>{r.id}</button>
                             <small> {names.place?.[r.cell] ?? r.cell} ({r.x1},{r.y1})–({r.x2},{r.y2})</small></li>)}</ul>

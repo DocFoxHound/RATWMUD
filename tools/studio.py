@@ -1360,10 +1360,13 @@ def story_effect_kinds(program) -> set:
     kinds = set()
     if not isinstance(program, dict):
         return kinds
+    import story_triggers
+
     def scan_triggers(triggers):
         for t in triggers if isinstance(triggers, list) else []:
-            for a in (t.get('actions') if isinstance(t, dict) else None) or []:
-                if isinstance(a, dict) and isinstance(a.get('effect'), dict):
+            # (Every action, nested ones too: a version 2 If, For each or Random holds actions of its own.)
+            for a in story_triggers.walk_loose((t.get('actions') if isinstance(t, dict) else None) or []):
+                if isinstance(a.get('effect'), dict):
                     kinds.add(str(a['effect'].get('kind')))
     for phase in program.get('phases') if isinstance(program.get('phases'), list) else []:
         if not isinstance(phase, dict):

@@ -22,8 +22,11 @@ sys.path.insert(0, 'tools')
 import story_library as L, story_runner as R
 c = R.catalogue()
 drafts = {'library/' + e['id']: L.draft(e['id']) for e in L.entries()}
+import story_v2_samples as S
 p = c['examples']['reed-ford']
-print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), 'steps': R.rehearse_steps(p, 0)}))`], {cwd: join(root, '..'), maxBuffer: 1 << 28}).toString());
+v2 = {'v2/' + x['id']: x for x in S.all_samples()}
+v2.update({'v2/example/' + k: R.rules.upgrade(v) for k, v in c['examples'].items()})
+print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), 'steps': R.rehearse_steps(p, 0), 'v2': v2}))`], {cwd: join(root, '..'), maxBuffer: 1 << 28}).toString());
     const programs = {...Object.fromEntries(Object.entries(served.catalog.examples).map(([k, v]) => ['example/' + k, v])), ...served.drafts};
     assert.equal(Object.keys(programs).length, 108, 'the 8 examples and the 100 library drafts');
     const benches = renderWorkbenches(served.catalog, programs);
@@ -32,6 +35,15 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
         assert.ok(text.includes(programs[name].phases[0].id), `${name}: the workbench shows its phases`);
         assert.ok(text.includes('Problems'), `${name}: the workbench shows the Problems list`);
     }
+    // (Doc 85, Phase 5: the version 2 samples, with nested If, For each and Random, and the 8 examples made version 2.)
+    const second = renderWorkbenches(served.catalog, served.v2);
+    assert.equal(second.edits, 0, 'showing a version 2 program never edits it');
+    for (const [name, text] of Object.entries(second.html)) {
+        assert.ok(text.includes('Problems'), `${name}: the workbench shows the Problems list`);
+        assert.ok(text.includes('Variables ·'), `${name}: the Variables panel`);
+    }
+    console.log(`workbench smoke, version 2: ${Object.keys(served.v2).length} programs, ${second.views} views, none edited`);
+    html['Workbench (version 2)'] = second.html['v2/v2-ledger'];
     Object.assign(html, renderWorkbenchParts(served.catalog, served.catalog.examples['reed-ford'], served.report, served.steps));
     html['Workbench (reed-ford)'] = benches.html['example/reed-ford'];
     html['Workbench (library)'] = benches.html['library/' + Object.keys(served.drafts)[0].slice(8)];
@@ -76,6 +88,8 @@ print(json.dumps({'catalog': c, 'drafts': drafts, 'report': R.rules.review(p), '
             'Campaign triggers › trigger offer-a-coil › action 2', 'from the world: approval refuses this', 'No rehearsal case reaches this trigger.', 'Go'],
         'DM tab bar': ['⚑ Campaigns', '⚠ 2', 'The story runner has not beaten for 95 s: 2 stories are not moving.', 'Open Campaigns'],
         // (Doc 85, Phase 4: the workbench, its pickers, the rehearsal strip stepping.)
+        'Workbench (version 2)': ['Variables ·', 'Enabled at the start', 'Else if', 'the acting wolf&#x27;s', '&gt;=',
+            '+ New variable', 'Ropes delivered'],
         'Workbench (reed-ford)': ['Campaign (always on)', 'Phase: ', 'Exits', 'Events', 'Conditions', 'Actions', 'Library…', 'Signals', 'Counters'],
         'Workbench pickers': ['Choose an event', 'A gift is given', 'Gifts, items and loans', 'Add an action', 'Award a deed', 'Ivo Tarmarsh', 'Rope (coil)', 'Any (no filter)', 'Reed Ford'],
         'Workbench rehearsal': ['Rehearse ▶', 'every case passes', 'Step through', 'step 2 of', 'Waiting for', 'Counters'],

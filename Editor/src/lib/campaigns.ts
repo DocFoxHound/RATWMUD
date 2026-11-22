@@ -50,12 +50,32 @@ export interface Region { id: string; cell: string; x1: number; y1: number; x2: 
 export interface Timer { signal?: string; at: number; clock?: 'game' | 'real'; actor?: string; interval?: number; scope?: string }
 export interface RunState {
     phase: string; entered: number; cohort: string[]; votes: Record<string, string[]>; visits: number; actor: string; publishedAt?: number;
-    counters?: {story?: Record<string, number>; player?: Record<string, Record<string, number>>}; timers?: Record<string, Timer>;
+    /** The variables (version 1's counters): the story's and the world's, each wolf's and each party's (doc 85, 3.2). */
+    counters?: {story?: Record<string, Value>; world?: Record<string, Value>; player?: Record<string, Record<string, Value>>; party?: Record<string, Record<string, Value>>};
+    timers?: Record<string, Timer>;
     fired?: Record<string, string[]>; campaignFired?: Record<string, string[]>; triggerEffects?: Effect[]; disabled?: string[];
     held?: {by: string; reason: string; at: number; cursor: number};
+    /** Version 2: the actions waiting (Wait), how often each trigger fired, and how the story (or one wolf's part) ended. */
+    waiting?: {trigger: string; scope: string; phase: string; at: number; clock: string; actor: string}[];
+    counts?: {visit?: Record<string, number>; run?: Record<string, number>};
+    outcome?: {outcome: string; text: string; day: number}; outcomes?: Record<string, {outcome: string; text: string; day: number}>;
+    parties?: Record<string, string>;
+}
+/** A variable's value: a number, on or off, a text or id, a list, or (a timer) the day it started. */
+export type Value = number | boolean | string | (number | string)[] | null;
+/** A variable an admin may set (story_runner.variables): a version 2 story's declared ones, a version 1 story's counters. */
+export interface ControlVariable { key: string; scope: 'story' | 'player' | 'party' | 'world'; type?: string; initial?: Value; show?: string; note?: string; clock?: string }
+/** A value in words: 3, on, Ash Greymantle, "rope, axle", since day 12.5. */
+export function valueText(v: Value | undefined, type: string | undefined, names: Record<string, string> = {}): string {
+    if (v === undefined) return '';
+    if (v === null) return type === 'timer' ? 'not started' : '—';
+    if (typeof v === 'boolean') return v ? 'on' : 'off';
+    if (Array.isArray(v)) return v.length ? v.map(x => typeof x === 'string' ? nameOf(names, x) : String(x)).join(', ') : '(empty)';
+    if (typeof v === 'number') return type === 'timer' ? 'since day ' + (Number.isInteger(v) ? v : v.toFixed(2)) : Number.isInteger(v) ? String(v) : v.toFixed(2);
+    return type && type !== 'text' ? nameOf(names, v) : '“' + v + '”';
 }
 /** A value a firing or a command changed (the timeline's "watches 5 → 6"). */
-export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: number | null; after: number | null }
+export interface Change { what: 'counter' | 'timer'; key: string; scope?: string; wolf?: string; before: Value; after: Value; type?: string }
 export type CommandKind = 'hold' | 'resume' | 'stop' | 'signal' | 'fire' | 'enable' | 'disable' | 'enter' | 'set' | 'timer' | 'mission' | 'order' | 'tell' | 'scene';
 /** An admin's command (dm.story_commands): what was asked, why, by whom, and once the runner took it, the result. */
 export interface Command {
@@ -66,7 +86,7 @@ export interface Command {
 /** What the controls may name for the run as it stands (tools/story_runner.controls). */
 export interface ControlTrigger { id: string; on: string; signal?: string | null; key: string; off: boolean; scope: 'campaign' | 'phase'; once: string; needsWolf: boolean; hasConditions: boolean; actions: string[] }
 export interface Controls {
-    triggers: ControlTrigger[]; offElsewhere: string[]; phases: string[]; signals: string[]; counters: {key: string; scope: 'story' | 'player'}[];
+    triggers: ControlTrigger[]; offElsewhere: string[]; phases: string[]; signals: string[]; counters: ControlVariable[];
     schedules: Record<string, {days: number; repeat?: boolean; scope?: string; clock?: string; owner?: string}>;
     missions: {id: string; title: string; mode: string; objectives: number}[]; scenes: string[]; regions: string[];
 }
@@ -75,6 +95,8 @@ export interface Firing {
     id: number; visit: number; phase: string; trigger: string; actor: string; day: number; actions: string[]; scope?: string; on?: string;
     signal?: string | null; event?: number | string | null; cell?: string; x?: number; y?: number;
     changes?: Change[]; byHand?: boolean; checked?: boolean; command?: number; by?: string;
+    /** Version 2: Note actions' lines, and how it fired (by a Run, or resumed after a Wait). */
+    notes?: string[]; via?: 'run' | 'wait';
 }
 export interface RunDetail extends RunRow {
     state: RunState | null; program?: Record<string, unknown> & {title: string; id: string}; approvedBy: string; cursor: number; now: Now;
@@ -321,7 +343,7 @@ export function newKey(): string {
 }
 /** "watches 5 → 6", "stores (Ash) 0 → 2", "timer watch-round day 56.0 → 58.0" */
 export function changeText(c: Change, names: Record<string, string> = {}): string {
-    const n = (v: number | null) => (v === null || v === undefined ? '—' : Number.isInteger(v) ? String(v) : v.toFixed(1));
+    const n = (v: Value) => (v === null || v === undefined ? '—' : typeof v === 'number' ? (Number.isInteger(v) ? String(v) : v.toFixed(1)) : valueText(v, c.type, names));
     if (c.what === 'timer') return `timer ${c.key.split('/')[0]}${c.key.includes('/') ? ` (${nameOf(names, c.key.split('/')[1])})` : ''} ${c.before === null ? 'started' : 'day ' + n(c.before)} → ${c.after === null ? 'off' : 'day ' + n(c.after)}`;
     return `${c.key}${c.wolf ? ` (${nameOf(names, c.wolf)})` : ''} ${n(c.before)} → ${n(c.after)}`;
 }
@@ -596,7 +618,16 @@ export function problemPlace(p: Problem): string {
     const part = a.part ?? '';
     const n = /\[(\d+)\]/.exec(part);
     if (part === 'if') parts.push('conditions');
-    else if (part.startsWith('actions')) parts.push(`action ${Number(n?.[1] ?? 0) + 1}`);
+    else if (part.startsWith('actions')) {
+        // (Version 2: a nested action, "actions[3].elif[0].then[1]": action 4 › else if 1 › 2.)
+        parts.push(`action ${Number(n?.[1] ?? 0) + 1}`);
+        const steps = [...part.slice(n![0].length + 'actions'.length).matchAll(/\.(\w+)\[(\d+)\]/g)].map(m => [m[1], Number(m[2]) + 1] as const);
+        for (let k = 0; k < steps.length; k++) {
+            const [key, i] = steps[k];
+            if (key === 'elif' || key === 'choices') { parts.push(`${key === 'elif' ? 'else if' : 'choice'} ${i}`, String(steps[k + 1]?.[1] ?? '')); k++; }
+            else parts.push(`${key === 'actions' ? 'for each' : key} ${i}`);
+        }
+    }
     else if (part.startsWith('objectives')) parts.push(`objective ${Number(n?.[1] ?? 0) + 1}`);
     else if (part.startsWith('events')) parts.push(`fact ${Number(n?.[1] ?? 0) + 1}`);
     else if (part.startsWith('prerequisites')) parts.push(`prerequisite ${Number(n?.[1] ?? 0) + 1}`);

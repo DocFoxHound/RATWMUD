@@ -3,7 +3,7 @@
 // settings. Drag a trigger to reorder it, or into another folder or phase; right-click for duplicate, copy, cut,
 // paste, rename and delete. Shift and Ctrl pick several. After a rehearsal each trigger shows how often it fired.
 import {useState} from 'react';
-import {buildTree, eventOf, exitAt, folderEnd, moveTrigger, renameFolder, sameRef, traceKey, triggerAt, type Branch, type Ref} from '../../lib/workbench';
+import {buildTree, eventOf, exitAt, folderEnd, isV2, moveTrigger, renameFolder, sameRef, traceKey, triggerAt, triggersOf, withTriggers, type Branch, type Ref} from '../../lib/workbench';
 import {useBench} from './context';
 
 export interface TreeActions {
@@ -52,7 +52,13 @@ export function TriggerTree({selected, picked, select, actions, counts, trace, p
             onClick={e => select(r, e.shiftKey ? 'range' : e.ctrlKey || e.metaKey ? 'add' : undefined)}
             onContextMenu={e => { e.preventDefault(); if (!isPicked(r)) select(r); setMenu({x: e.clientX, y: e.clientY, ref: r}); }}
             title={t.note ?? undefined} aria-selected={sameRef(selected, r)} role="treeitem">
-            <span className="wb-order">{order}</span><span className="wb-name">{t.id}</span><small>{event}</small>
+            {/* (Version 2, doc 85 4.2: the box is Enabled; a hollow box starts off until an Enable action or an admin turns it on.) */}
+            <span className="wb-order">{isV2(program) && <input type="checkbox" className="wb-enabled" checked={t.enabled !== false} aria-label={'Enabled at the start: ' + t.id}
+                title={t.enabled === false ? 'Off at the start (an Enable action or the console turns it on)' : 'On from the start'}
+                onClick={e => e.stopPropagation()} onChange={e => {
+                    const list = triggersOf(program, r.phase);
+                    edit(withTriggers(program, r.phase, list.map((x, i) => { if (i !== r.index) return x; const {enabled, ...rest} = x; void enabled; return e.target.checked ? rest : {...rest, enabled: false}; })));
+                }}/>}{order}</span><span className={'wb-name' + (t.enabled === false ? ' off' : '')}>{t.id}</span><small>{event}</small>
             {count !== undefined && <b className="wb-count" title={`fired ${count}× in the rehearsal`}>×{count}</b>}
             {t.note && <span className="wb-noted" aria-hidden>✎</span>}
         </li>;

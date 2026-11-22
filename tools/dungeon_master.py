@@ -2719,7 +2719,7 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                 data = self.body(1024 * 1024)
                 target = self.posted(data)
                 op = data.get('op')
-                if op not in ('catalog', 'draft-event', 'rehearse', 'rehearse-step', 'problems', 'refs', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
+                if op not in ('catalog', 'draft-event', 'rehearse', 'rehearse-step', 'problems', 'refs', 'upgrade', *story_scenes.OPERATIONS) and RANK[who['role']] < RANK['dm']:
                     raise DMError('A Dungeon Master account is required.', 403)
                 try:
                     if op == 'catalog':
@@ -2730,6 +2730,10 @@ def make_handler(dm=None, offers=None, world=None, kinds=None, allowed=None, def
                         return self.reply(200, {'program': story_library.draft(data.get('eventType'))})
                     if op == 'rehearse':
                         return self.reply(200, story_program.review(data.get('program')))
+                    if op == 'upgrade':
+                        # (Doc 85, Phase 5: a version 1 program as version 2, doing the same; the Story Creator's "Make it
+                        # version 2". Pure: nothing is read or written.)
+                        return self.reply(200, {'program': story_program.upgrade(data.get('program'))})
                     if op == 'rehearse-step':
                         # (Doc 85, 4.5 and Phase 4: one rehearsal case fact by fact, each step with what the phase then
                         # listens for, judged as the console's explain judges a running story.)

@@ -289,7 +289,16 @@ def region_index(program):
     return {r['id']: r for r in program.get('regions', [])}
 
 
+def variables_of(program):
+    """A version 2 program's declared variables by name (doc 85, 3.2): the sound declarations only."""
+    decls = program.get('variables', [])
+    return {d['id']: d for d in decls if isinstance(d, dict) and isinstance(d.get('id'), str)
+            and d.get('type') in triggers.VAR_TYPES and d.get('scope') in triggers.SCOPES} if isinstance(decls, list) else {}
+
+
 def effective_phase(program, phase):
+    if program.get('version') == 2:
+        phase = {**phase, '_v': 2, '_vars': variables_of(program)}
     if program.get('scenes'):
         phase = {**phase, '_scenes': {s['id']: s for s in program['scenes']}}
     if program.get('regions'):
@@ -311,8 +320,19 @@ def phases_of(program):
 def possible_effects(phase):
     return [
         *phase['effects'],
-        *(a['effect'] for t in phase.get('triggers', []) for a in t['actions'] if a['do'] == 'effect'),
+        *(a['effect'] for t in phase.get('triggers', []) for _, a in triggers.walk(t['actions']) if a['do'] == 'effect'),
     ]
+
+
+def _indexed(p, phase):
+    """A phase (or the campaign scope) with what checking a version 2 trigger needs to know of the whole program: the
+    phases, and each phase's own triggers (Go to, Phase is, Enable and Disable name them)."""
+    if p.get('version') != 2 or not isinstance(p.get('phases'), list):
+        return phase
+    phases = [ph for ph in p['phases'] if isinstance(ph, dict) and isinstance(ph.get('id'), str)]
+    return {**phase, '_phaseIds': {ph['id'] for ph in phases},
+            '_phaseTriggers': {ph['id']: {t['id'] for t in ph.get('triggers', ()) if isinstance(t, dict) and isinstance(t.get('id'), str)}
+                               for ph in phases if isinstance(ph.get('triggers', []), list)}}
 
 
 def _check_scene(scene, scene_docs):
@@ -336,9 +356,10 @@ def _check_region(r, names):
 
 def _check_header(p):
     require(
-        p['format'] == 'ratw-story-program' and type(p['version']) is int and p['version'] == 1,
+        p['format'] == 'ratw-story-program' and type(p['version']) is int and p['version'] in (1, 2),
         'Unknown story format or version.',
     )
+    require(p['version'] == 2 or 'variables' not in p, 'Declared variables need a version 2 story.')
     require(
         identifier(p['id']) and word(p['title'], 100),
         'Give this story an ID and title.',
@@ -515,7 +536,7 @@ def _check_phase(p, raw, ids):
         f'{phase["id"]}: too many exits.',
     )
     mission_ids = validate_missions(phase)
-    triggers.validate(phase)
+    triggers.validate(_indexed(p, phase))
     for mission in phase.get('missions', []):
         for objective in mission['objectives']:
             check_region_source(objective, phase.get('_regions'))
@@ -568,7 +589,46 @@ def _check_tests(p):
 
 
 TOP_REQUIRED = ('format', 'version', 'id', 'title', 'audience', 'start', 'phases', 'tests')
-TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours')
+TOP_OPTIONAL = ('triggers', 'regions', 'scenes', 'quietAfterHours', 'variables')
+VARIABLES_MAX = 64
+
+
+def _initial_ok(kind, v, regions):
+    if kind in triggers.LISTS:
+        return (isinstance(v, list) and len(v) <= triggers.LIST_MAX and len({json.dumps(x) for x in v}) == len(v)
+                and all(_initial_ok(triggers.LISTS[kind], x, regions) for x in v))
+    if kind == 'number':
+        return integer(v, -triggers.LIMIT, triggers.LIMIT)
+    if kind == 'switch':
+        return type(v) is bool
+    if kind == 'text':
+        return isinstance(v, str) and len(v) <= triggers.TEXT_MAX and all(ord(c) >= 32 for c in v)
+    if kind == 'region':
+        return v in regions
+    return identifier(v)
+
+
+def _check_variable(d, names, regions):
+    """One declared variable (doc 85, 3.2): a unique name, a type, a scope, and its first value, a note and a label."""
+    shape(d, ('id', 'type', 'scope'), ('initial', 'note', 'show', 'clock'))
+    require(identifier(d['id']) and d['id'] not in names, 'Give every variable a unique name.')
+    require(d['type'] in triggers.VAR_TYPES and d['scope'] in triggers.SCOPES,
+            'A variable has a type (' + ', '.join(triggers.VAR_TYPES) + ') and a scope (story, player, party, world).')
+    require('clock' not in d or (d['type'] == 'timer' and d['clock'] in ('game', 'real')), "A timer variable's clock is game or real.")
+    require('note' not in d or word(d['note'], 300), "A variable's note is up to 300 characters.")
+    require('show' not in d or (word(d['show'], 60) and d['type'] in ('number', 'switch', 'timer')),
+            'A number, switch or timer may be shown, under a label of up to 60 characters.')
+    require('initial' not in d or (d['type'] != 'timer' and _initial_ok(d['type'], d['initial'], regions)),
+            f'The first value of "{d["id"]}" is not a {d["type"]}' + (' (a timer starts unset).' if d['type'] == 'timer' else '.'))
+    names.add(d['id'])
+
+
+def _check_variables(p):
+    decls = p.get('variables', [])
+    require(isinstance(decls, list) and len(decls) <= VARIABLES_MAX, f'Declare up to {VARIABLES_MAX} variables.')
+    names, regions = set(), set(region_index(p))
+    for d in decls:
+        _check_variable(d, names, regions)
 
 
 def validate(p):
@@ -584,6 +644,7 @@ def validate(p):
     for r in rectangles:
         _check_region(r, names)
     _check_header(p)
+    _check_variables(p)
     _check_audience(p['audience'])
     require(
         isinstance(p['phases'], list) and 1 <= len(p['phases']) <= 100,
@@ -595,7 +656,7 @@ def validate(p):
         'Choose up to 64 campaign triggers.',
     )
     # Validate campaign rules even when every phase opts out. Mission conditions refer to local journals.
-    triggers.validate(campaign_scope(p, scene_docs))
+    triggers.validate(_indexed(p, campaign_scope(p, scene_docs)))
     ids = set()
     for phase in p['phases']:
         _check_phase(p, phase, ids)
@@ -609,7 +670,10 @@ def campaign_scope(p, scene_docs=None):
     """The pseudo-phase campaign triggers are checked in (no missions: they refer to a phase's own journal)."""
     if scene_docs is None:
         scene_docs = {s['id']: s for s in p.get('scenes', []) if isinstance(s, dict) and 'id' in s}
-    return {'id': 'campaign', 'missions': [], 'triggers': p.get('triggers', []), '_regions': region_index(p), '_scenes': scene_docs}
+    scope = {'id': 'campaign', 'missions': [], 'triggers': p.get('triggers', []), '_regions': region_index(p), '_scenes': scene_docs}
+    if p.get('version') == 2:
+        scope.update(_v=2, _vars=variables_of(p))
+    return scope
 
 
 # ----------------------------------------------------------------------------------------------------- every problem
@@ -675,6 +739,14 @@ def _problems(p):
             attempt(f'regions[{i}]', {'kind': 'region', 'index': i, 'id': r.get('id') if isinstance(r, dict) else None},
                     _check_region, r, names)
 
+    decls = p.get('variables', [])
+    if 'variables' in p and attempt('variables', {'kind': 'variables'}, require,
+                                    isinstance(decls, list) and len(decls) <= VARIABLES_MAX, f'Declare up to {VARIABLES_MAX} variables.'):
+        taken = set()
+        for i, d in enumerate(decls):
+            attempt(f'variables[{i}]', {'kind': 'variable', 'index': i, 'id': d.get('id') if isinstance(d, dict) else None},
+                    _check_variable, d, taken, names)
+
     # (From here the draft is walked as validate would see it, its broken lists read as empty, so one broken list does not
     # stop the rest being checked: what was wrong with each list is told above.)
     raw_p, p = p, dict(p)
@@ -710,7 +782,7 @@ def _problems(p):
         return sound
 
     shared = raw_p.get('triggers', [])
-    shared_sound = trigger_list(shared, campaign_scope(p, scene_docs), 'triggers', {'phase': None}) and shared == p['triggers']
+    shared_sound = trigger_list(shared, _indexed(p, campaign_scope(p, scene_docs)), 'triggers', {'phase': None}) and shared == p['triggers']
     shared_ids = {t.get('id') for t in shared if isinstance(t, dict) and isinstance(t.get('id'), str)} if isinstance(shared, list) else set()
     ids = set()
     phases = p.get('phases')
@@ -755,7 +827,7 @@ def _problems(p):
                 if mid is not None:
                     mission_ids.add(mid)
         own = raw.get('triggers', []) if isinstance(raw, dict) else []
-        trigger_list(own, phase, f'phases[{pi}].triggers', where, shared_ids if phase.get('_sharedIds') else (),
+        trigger_list(own, _indexed(p, phase), f'phases[{pi}].triggers', where, shared_ids if phase.get('_sharedIds') else (),
                      joined=bool(shared_sound or not phase.get('_sharedIds')))
         exits = phase.get('exits', [])
         if attempt(f'phases[{pi}].exits', {**where, 'kind': 'exits'}, require, isinstance(exits, list) and len(exits) <= 16,
@@ -800,8 +872,9 @@ def _signal_uses(p):
             at = {'phase': pi, 'kind': 'trigger', 'index': ti, 'id': t['id']}
             if t['on'] == triggers.SIGNAL:
                 heard.setdefault(t['signal'], []).append((f'{path}[{ti}]', at))
-            for ai, a in enumerate(t['actions']):
-                where = (f'{path}[{ti}].actions[{ai}]', {**at, 'part': f'actions[{ai}]'})
+            for address, a in triggers.walk(t['actions']):
+                part = triggers.part_of(address)
+                where = (f'{path}[{ti}].{part}', {**at, 'part': part})
                 if a['do'] in ('emit', 'schedule'):
                     sent.setdefault(a['signal'], []).append(where)
                 if a['do'] == 'schedule':
@@ -853,11 +926,58 @@ def program_warnings(p):
         for ti, t in enumerate(rules_):
             if 'if' in t:
                 walk(t['if'], (f'{path}[{ti}].if', {'phase': pi, 'kind': 'trigger', 'index': ti, 'id': t['id'], 'part': 'if'}))
-            written.update((a['scope'], a['key']) for a in t['actions'] if a['do'] in ('set', 'add'))
+            written.update((a['scope'], a['key']) for _, a in triggers.walk(t['actions']) if a['do'] in ('set', 'add') and 'key' in a)
     for (scope, key), (path, at) in sorted(read.items()):
         if (scope, key) not in written:
             out.append({'level': 'warning', 'path': path, 'at': at,
                         'text': f'Counter "{key}" ({scope}) is read but nothing sets it: it stays 0 (a misspelt name?).'})
+    if p.get('version') == 2:
+        used = variable_uses(p)
+        for i, d in enumerate(p.get('variables', [])):
+            if d['id'] not in used:
+                out.append({'level': 'warning', 'path': f'variables[{i}]', 'at': {'kind': 'variable', 'index': i, 'id': d['id']},
+                            'text': f'Variable "{d["id"]}" is declared but nothing reads or changes it.'})
+    return out
+
+
+def variable_uses(p):
+    """Version 2: where each declared variable is read or changed, by name: a list of (path, at, how) with how 'read' or
+    'write'."""
+    out = {}
+    scopes = [(None, 'triggers', p.get('triggers', []))] + [
+        (i, f'phases[{i}].triggers', ph.get('triggers', [])) for i, ph in enumerate(p['phases'])]
+    reads = ('var', 'count', 'since')
+
+    def condition(c, path, at):
+        for x in triggers.conditions_in(c):
+            for key in ('var', 'list'):
+                if key in x and x.get('test') in triggers.CONDITIONS_V2:
+                    out.setdefault(x[key], []).append((path, at, 'read'))
+            for side in ('left', 'right', 'value'):
+                for o in triggers.operands_in(x.get(side)):
+                    for key in reads:
+                        if key in o:
+                            out.setdefault(o[key], []).append((path, at, 'read'))
+
+    for pi, path, rules_ in scopes:
+        for ti, t in enumerate(rules_):
+            at = {'phase': pi, 'kind': 'trigger', 'index': ti, 'id': t['id']}
+            if 'if' in t:
+                condition(t['if'], f'{path}[{ti}].if', {**at, 'part': 'if'})
+            for address, a in triggers.walk(t['actions']):
+                part = triggers.part_of(address)
+                where = (f'{path}[{ti}].{part}', {**at, 'part': part})
+                if a['do'] == 'if':
+                    for c in [a['if'], *(b['if'] for b in a.get('elif', ()))]:
+                        condition(c, *where)
+                if 'var' in a and a['do'] != 'each':
+                    out.setdefault(a['var'], []).append((*where, 'write'))
+                if 'list' in a:
+                    out.setdefault(a['list'], []).append((*where, 'read'))
+                for o in triggers.operands_in(a.get('value')):
+                    for key in reads:
+                        if key in o:
+                            out.setdefault(o[key], []).append((*where, 'read'))
     return out
 
 
@@ -867,8 +987,42 @@ def digest(program):
     ).hexdigest()
 
 
-def begin(p, cohort, day):
-    return {'phase': p['start'], 'entered': day, 'cohort': sorted(set(cohort)), 'votes': {}, 'visits': 1, 'actor': ''}
+def begin(p, cohort, day, seed=None):
+    state = {'phase': p['start'], 'entered': day, 'cohort': sorted(set(cohort)), 'votes': {}, 'visits': 1, 'actor': ''}
+    if p.get('version') == 2:
+        # (Version 2: the seed of its rolls (the run's id; a rehearsal's own or the program's), the day it began, and the
+        # triggers that start turned off.)
+        state.update(seed=seed or p['id'], began=day)
+        off = triggers.initially_off(p['phases'], p.get('triggers', []))
+        if off:
+            state['disabled'] = off
+    return state
+
+
+def leave_visit(phase, state, target, day, actor):
+    """A run moves to another phase: the closing visit's missions kept, its timers, once-marks, counts and waits dropped
+    (a campaign trigger's or timer's stay)."""
+    state.pop('previousMissions', None)
+    if phase.get('missions'):
+        state['previousMissions'] = mission_snapshot(phase, state)
+    state.pop('missions', None)
+    state.pop('fired', None)
+    if 'timers' in state:
+        state['timers'] = {k: v for k, v in state['timers'].items() if v.get('scope') == 'campaign'}
+    if 'counts' in state:
+        state['counts'].pop('visit', None)
+    if 'waiting' in state:
+        state['waiting'] = [w for w in state['waiting'] if w['scope'] == 'campaign']
+        if not state['waiting']:
+            del state['waiting']
+    state.update(
+        phase=target,
+        entered=day,
+        votes={},
+        progress={},
+        visits=state['visits'] + 1,
+        actor=actor,
+    )
 
 
 def phase_of(p, state):
@@ -892,8 +1046,9 @@ def matches(condition, event):
 
 
 def advance(p, state, event, day, trace=None, elapsed=0):
-    """Dispatch one genuine fact and its named signals in FIFO order, within the current visit."""
-    if day < state['entered'] or event['kind'] == triggers.SIGNAL:
+    """Dispatch one genuine fact and its named signals in FIFO order, within the current visit. (A finished run reads
+    nothing more; a clock fact also resumes the version 2 waits that are due, after the timers.)"""
+    if day < state['entered'] or event['kind'] == triggers.SIGNAL or state.get('outcome'):
         return False
     phase = phase_of(p, state)
     if event['kind'] != 'clock':
@@ -923,10 +1078,30 @@ def advance(p, state, event, day, trace=None, elapsed=0):
         }
         if dispatch(p, phase, state, signal, day, trace, elapsed):
             return True  # Remaining campaign timers are still due in the new visit.
+        if state.get('outcome'):
+            return False
+    while state.get('waiting'):
+        # (The soonest due wait each time, game clock first, then the order they began: a resumed one can start another,
+        # never due at once, since the shortest wait is a minute or 5 seconds.)
+        waiting = state['waiting']
+        due = [(w['clock'], w['at'], i) for i, w in enumerate(waiting) if w['at'] <= (elapsed if w['clock'] == 'real' else day)]
+        if not due:
+            break
+        index = min(due)[2]
+        wait = waiting[index]
+        state['waiting'] = waiting[:index] + waiting[index + 1:]
+        if not state['waiting']:
+            del state['waiting']
+        if dispatch(p, phase, state, wait['event'], day, trace, elapsed, wait):
+            return True
+        if state.get('outcome'):
+            return False
     return False
 
 
-def dispatch(p, phase, state, event, day, trace, elapsed):
+def dispatch(p, phase, state, event, day, trace, elapsed, wait=None):
+    """One fact and the signals it sends, in order. With `wait`, the first is a waiting trigger's remaining actions
+    (the fact it waited with is not tracked or tried again)."""
     queue = [event]
     emitted, credited = set(), set()
 
@@ -936,44 +1111,28 @@ def dispatch(p, phase, state, event, day, trace, elapsed):
             queue.append({**source, 'kind': triggers.SIGNAL, 'signal': name})
 
     budget = _budget.get()
-    for fact in queue:
+    for n, fact in enumerate(queue):
         if budget:
             budget.spend()
-        track_missions(phase, state, fact, credited)
+        resuming = wait is not None and n == 0
+        if not resuming:
+            track_missions(phase, state, fact, credited)
         trace_start = len(trace) if trace is not None else 0
-        target = triggers.fire(
-            phase,
-            state,
-            fact,
-            day,
-            elapsed,
-            lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']},
-            matches,
-            emit,
-            trace,
-        )
+        ready = lambda: {m['id'] for m in mission_snapshot(phase, state) if m['ready']}
+        if resuming:
+            target = triggers.resume(phase, state, wait, day, elapsed, ready, emit, trace)
+        else:
+            target = triggers.fire(phase, state, fact, day, elapsed, ready, matches, emit, trace)
         if budget and trace is not None:
             budget.spend(len(trace) - trace_start)   # (The trace is the reply: it is bounded with the work.)
         if trace is not None and fact.get('cell') and fact.get('x') is not None and fact.get('y') is not None:
             for firing in trace[trace_start:]:
                 firing.update(cell=fact['cell'], x=fact['x'], y=fact['y'])
-        target = target or exit_for(phase, state, fact, day)
+        if state.get('outcome'):
+            return False   # (Version 2's finish: the run has ended; nothing more is tried.)
+        target = target or (None if resuming else exit_for(phase, state, fact, day))
         if target:
-            state.pop('previousMissions', None)
-            if phase.get('missions'):
-                state['previousMissions'] = mission_snapshot(phase, state)
-            state.pop('missions', None)
-            state.pop('fired', None)
-            if 'timers' in state:
-                state['timers'] = {k: v for k, v in state['timers'].items() if v.get('scope') == 'campaign'}
-            state.update(
-                phase=target,
-                entered=day,
-                votes={},
-                progress={},
-                visits=state['visits'] + 1,
-                actor=fact.get('actor', ''),
-            )
+            leave_visit(phase, state, target, day, fact.get('actor', ''))
             return True
     return False
 
@@ -1054,8 +1213,25 @@ def _check_case(p, case):
             'expectMissionVisits',
             'expectTriggers',
             'expectCounters',
+            # (Version 2, doc 85 Phase 5: the seed of its rolls, rolls pinned in order (0-99 each), the parties of its
+            # wolves, the variables expected at the end (only those named), and how the run ended.)
+            'seed',
+            'rolls',
+            'parties',
+            'expectVariables',
+            'expectOutcome',
         ),
     )
+    require('seed' not in case or word(case['seed'], 80), 'A seed is a word of up to 80 characters.')
+    require('rolls' not in case or (isinstance(case['rolls'], list) and len(case['rolls']) <= 256
+                                    and all(integer(r, 0, 99) for r in case['rolls'])), 'Pinned rolls are numbers 0 to 99.')
+    require('parties' not in case or (isinstance(case['parties'], dict) and all(
+        identifier(k) and identifier(v) for k, v in case['parties'].items())), 'Parties name each wolf\'s party.')
+    require('expectOutcome' not in case or case['expectOutcome'] in (None, *triggers.OUTCOMES), 'Expect success, failure, '
+            'abandoned or none.')
+    require('expectVariables' not in case or (isinstance(case['expectVariables'], dict)
+                                              and set(case['expectVariables']) <= set(triggers.SCOPES)),
+            'Expected variables are listed by scope (story, player, party, world).')
     require(
         word(case['name'], 100)
         and isinstance(case['cohort'], list)
@@ -1110,7 +1286,11 @@ def _play_case(p, case, step=None):
     """One rehearsal case, fact by fact (as the runner would take them). `step(fact, state, path, trace, intended)` is
     called after each fact, for the workbench's step-through (doc 85, 4.5)."""
     _check_case(p, case)
-    state = begin(p, case['cohort'], 0)
+    state = begin(p, case['cohort'], 0, case.get('seed'))
+    if case.get('rolls'):
+        state['rolls'] = list(case['rolls'])
+    if case.get('parties'):
+        state['parties'] = dict(case['parties'])
     path, intended, last_day, seen = [], [], 0, {}
     visit_credits, trace = [], []
     elapsed = 0
@@ -1151,6 +1331,7 @@ def _play_case(p, case, step=None):
         visit_credits.append({'phase': state['phase'], 'visit': state['visits'], 'credits': credits})
     expected_effects = case.get('expectEffects', intended)
     require(isinstance(expected_effects, list), 'Expected effects must be a list.')
+    v2 = p.get('version') == 2
     return {
         'name': case['name'],
         'passed': path == case['expect']
@@ -1158,7 +1339,10 @@ def _play_case(p, case, step=None):
         and credits == case.get('expectMissions', credits)
         and visit_credits == case.get('expectMissionVisits', visit_credits)
         and [f['trigger'] for f in trace] == case.get('expectTriggers', [f['trigger'] for f in trace])
-        and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {})),
+        and state.get('counters', {}) == case.get('expectCounters', state.get('counters', {}))
+        and ('expectVariables' not in case or _variables_match(p, state, case['expectVariables']))
+        and ('expectOutcome' not in case or (state.get('outcome') or {}).get('outcome') == case['expectOutcome']),
+        **({'outcome': state.get('outcome'), 'outcomes': state.get('outcomes', {})} if v2 else {}),
         'triggers': trace,
         'counters': state.get('counters', {}),
         'missionCredits': credits,
@@ -1167,6 +1351,72 @@ def _play_case(p, case, step=None):
         'expected': case['expect'],
         'effects': intended,
     }
+
+
+def _variables_match(p, state, expected):
+    """The variables a case names, against the run's (a variable never set has its first value)."""
+    decls = variables_of(p)
+    stores = state.get('counters', {})
+    for scope, values in expected.items():
+        require(isinstance(values, dict), 'Expected variables are listed by scope.')
+        groups = values.items() if scope in triggers.PERSONAL else [(None, values)]
+        for owner, named in groups:
+            have = stores.get(scope, {}).get(owner, {}) if owner is not None else stores.get(scope, {})
+            require(isinstance(named, dict), 'Expected variables of a wolf or party are listed under it.')
+            for name, value in named.items():
+                require(name in decls and decls[name]['scope'] == scope, f'No {scope} variable "{name}" is declared.')
+                if have.get(name, triggers.initial(decls[name])) != value:
+                    return False
+    return True
+
+
+def upgrade(p):
+    """A version 1 program as version 2, doing the same (doc 85, 3.1 rule 3 and Phase 5): every counter it reads or
+    writes declared as a number of its scope (one used in both scopes: the wolf's gets ".player" after its name), each
+    counter test a `compare`, each Set and Add on a declared variable. Its rehearsals give the same paths, effects,
+    triggers and values. A version 2 program comes back as it is."""
+    validate(p)
+    if p['version'] == 2:
+        return p
+    q = json.loads(json.dumps(p))
+    rules_ = [*q.get('triggers', []), *(t for ph in q['phases'] for t in ph.get('triggers', []))]
+    used = []
+    for t in rules_:
+        for c in (triggers.conditions_in(t['if']) if 'if' in t else ()):
+            if c['test'] == 'counter' and (c['key'], c['scope']) not in used:
+                used.append((c['key'], c['scope']))
+        for a in t['actions']:
+            if a['do'] in ('set', 'add') and (a['key'], a['scope']) not in used:
+                used.append((a['key'], a['scope']))
+    both = {k for k, sc in used if sc == 'player' and (k, 'story') in used}
+    name = {(k, sc): k + '.player' if k in both and sc == 'player' else k for k, sc in used}
+
+    def condition(c):
+        if c['test'] in ('all', 'any'):
+            return {**c, 'conditions': [condition(x) for x in c['conditions']]}
+        if c['test'] == 'not':
+            return {**c, 'condition': condition(c['condition'])}
+        if c['test'] == 'counter':
+            return {'test': 'compare', 'left': {'var': name[(c['key'], c['scope'])]}, 'op': c['op'], 'right': c['value']}
+        return c
+
+    for t in rules_:
+        if 'if' in t:
+            t['if'] = condition(t['if'])
+        t['actions'] = [{'do': a['do'], 'var': name[(a['key'], a['scope'])],
+                         'value': a['value'] if isinstance(a['value'], int) else {'field': a['value']}}
+                        if a['do'] in ('set', 'add') else a for a in t['actions']]
+    for case in q['tests']:
+        player = case.get('expectCounters', {}).get('player')
+        if both and isinstance(player, dict):
+            case['expectCounters']['player'] = {w: {name.get((k, 'player'), k): v for k, v in vals.items()} for w, vals in player.items()}
+    out = {}
+    for key, value in q.items():
+        out[key] = 2 if key == 'version' else value
+        if key == 'start' and used:
+            out['variables'] = [{'id': name[(k, sc)], 'type': 'number', 'scope': sc} for k, sc in used]
+    validate(out)
+    return out
 
 
 def rehearse_steps(p, index, budget=None, look=None):

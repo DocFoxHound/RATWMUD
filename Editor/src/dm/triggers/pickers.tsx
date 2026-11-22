@@ -5,7 +5,8 @@
 import {useMemo, useState} from 'react';
 import {MapView} from '../MapView';
 import {surfaceFor} from '../../lib/surface';
-import {countersOf, REF_KIND, signalsOf, type CatEvent, type CatItem, type Param, type Slot} from '../../lib/workbench';
+import {countersOf, isV2, kindOfType, LIST_TYPES, operandWords, REF_KIND, signalsOf, type CatEvent, type CatItem, type Operand, type Param,
+    type Slot} from '../../lib/workbench';
 import {useBench} from './context';
 
 export type Values = Record<string, unknown>;
@@ -112,6 +113,58 @@ function NamePicker({names, value, pick, noun}: {names: string[]; value: unknown
             <button type="submit" disabled={!ok}>Use</button></form></div>;
 }
 
+/** Version 2: a declared variable of the types the slot takes (doc 85, 4.3). */
+function VariablePicker({slot, pick}: {slot: Slot; pick: (v: string) => void}) {
+    const {program, cat} = useBench();
+    const types = slot.param?.of;
+    const list = (program.variables ?? []).filter(v => !types || types.includes(v.type));
+    return <div className="wb-search-list"><div className="wb-options">
+        {list.map(v => <button key={v.id} type="button" aria-pressed={v.id === slot.value} onClick={() => pick(v.id)}><span>{v.id}</span>
+            <small>{cat.variables?.types[v.type] ?? v.type} · {cat.variables?.scopes[v.scope] ?? v.scope}</small></button>)}
+        {!list.length && <p className="hint">No variable of this kind yet ({(types ?? []).join(', ')}): declare one in Variables, on the right.</p>}</div></div>;
+}
+
+/** Version 2: a value (doc 85, 3.4): a number, on or off, a text, a variable, the event's field, a list's count, a timer's
+ *  days, the loop's value, or a variable plus or minus a number. `kind` narrows it: number, switch or text. */
+function OperandPicker({slot, pick}: {slot: Slot; pick: (v: Operand) => void}) {
+    const {program} = useBench();
+    const kind = slot.param?.kind ?? '';
+    const vars = (program.variables ?? []).filter(v => !LIST_TYPES[v.type] && v.type !== 'timer' && (!kind || kindOfType(v.type) === kind));
+    const lists = (program.variables ?? []).filter(v => LIST_TYPES[v.type]);
+    const timers = (program.variables ?? []).filter(v => v.type === 'timer');
+    const [text, setText] = useState(typeof slot.value === 'string' ? slot.value : '');
+    const [num, setNum] = useState(typeof slot.value === 'number' ? String(slot.value) : '');
+    const fields = kind === 'number' ? ['quantity', 'coins'] : kind === 'text' ? ['actor', 'target', 'cell', 'item', 'detail'] : kind === 'switch' ? []
+        : ['actor', 'target', 'cell', 'item', 'detail', 'quantity', 'coins'];
+    const n = Number(num);
+    return <div className="wb-operand">
+        <p className="hint">Now: {operandWords(slot.value as Operand, {}) || 'nothing'}</p>
+        {(!kind || kind === 'number') && <form className="wb-enter" onSubmit={e => { e.preventDefault(); if (num !== '' && Number.isFinite(n)) pick(n); }}>
+            <label>A number<input autoFocus type="number" step="any" value={num} onChange={e => setNum(e.target.value)}/></label><button type="submit" disabled={num === '' || !Number.isFinite(n)}>Use</button></form>}
+        {(!kind || kind === 'switch') && <div className="wb-chips"><span>On or off:</span><button type="button" onClick={() => pick(true)}>on</button><button type="button" onClick={() => pick(false)}>off</button></div>}
+        {(!kind || kind === 'text') && <form className="wb-enter" onSubmit={e => { e.preventDefault(); pick(text); }}>
+            <label>A text<input value={text} maxLength={200} onChange={e => setText(e.target.value)}/></label><button type="submit">Use</button></form>}
+        {vars.length > 0 && <div className="wb-chips"><span>A variable:</span>{vars.map(v => <button key={v.id} type="button" onClick={() => pick({var: v.id})}>{v.id}</button>)}
+            {vars.some(v => v.scope === 'player' || v.scope === 'party') && <small className="hint">(a wolf's own: the acting wolf's)</small>}</div>}
+        {fields.length > 0 && <div className="wb-chips"><span>The event's:</span>{fields.map(f => <button key={f} type="button" onClick={() => pick({field: f})}>{f}</button>)}</div>}
+        {(!kind || kind === 'number') && lists.length > 0 && <div className="wb-chips"><span>How many in:</span>{lists.map(v => <button key={v.id} type="button" onClick={() => pick({count: v.id})}>{v.id}</button>)}</div>}
+        {(!kind || kind === 'number') && timers.length > 0 && <div className="wb-chips"><span>Days since:</span>{timers.map(v => <button key={v.id} type="button" onClick={() => pick({since: v.id})}>{v.id}</button>)}</div>}
+        {(!kind || kind === 'text') && <div className="wb-chips"><span>Inside For each:</span><button type="button" onClick={() => pick({each: true})}>the looped value</button></div>}
+        {(!kind || kind === 'number') && vars.some(v => v.type === 'number') && num !== '' && Number.isFinite(n) && <div className="wb-chips"><span>Or a number variable and {n}:</span>
+            {vars.filter(v => v.type === 'number').map(v => <span key={v.id}><button type="button" onClick={() => pick({plus: [{var: v.id}, n]})}>{v.id} + {n}</button>
+                <button type="button" onClick={() => pick({minus: [{var: v.id}, n]})}>{v.id} − {n}</button>
+                <button type="button" onClick={() => pick({max: [{var: v.id}, n]})}>larger of {v.id}, {n}</button></span>)}</div>}
+    </div>;
+}
+
+/** Version 2: a trigger of this story (Run, Enable, Disable, "has fired"), by phase. */
+function TriggerPicker({slot, pick}: {slot: Slot; pick: (v: string) => void}) {
+    const {program} = useBench();
+    const options = [...(program.triggers ?? []).map(t => ({id: t.id, name: t.id, group: 'Campaign'})),
+        ...program.phases.flatMap(ph => (ph.triggers ?? []).map(t => ({id: t.id, name: t.id, group: 'Phase ' + ph.id, hint: t.note})))];
+    return <SearchList options={options} value={slot.value} pick={pick} placeholder="Find a trigger"/>;
+}
+
 /** The picker for one slot of a sentence. `pick` gets the new values of the slot's keys (undefined: clear a filter). */
 export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: (v: Values) => void; close: () => void; clearable?: boolean; cues?: string[]}) {
     const {program} = useBench();
@@ -121,10 +174,19 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
     const options = useOptions(type === 'wolf' ? 'wolf' : type);
     let body: React.ReactNode;
     if (type === 'tile') body = <TilePicker value={(slot.value ?? {}) as Values} pick={pick}/>;
+    else if (type === 'variable') body = <VariablePicker slot={slot} pick={one}/>;
+    else if (type === 'operand') body = <OperandPicker slot={slot} pick={one}/>;
+    else if (type === 'trigger') body = <TriggerPicker slot={slot} pick={one}/>;
+    else if (type === 'whose') body = <div className="wb-chips">{(slot.param?.values ?? []).map(v => <button key={v} type="button" aria-pressed={(slot.value ?? '$actor') === v}
+        onClick={() => one(v === '$actor' ? undefined : v)}>{slot.param?.words?.[v] ?? v}</button>)}</div>;
+    else if (type === 'choice' && slot.param?.values && slot.param.optional) body = <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined}
+        onClick={() => one(undefined)}>{slot.param.words?.[''] ?? 'none'}</button>{slot.param.values.map(v => <button key={v} type="button"
+        aria-pressed={slot.value === v} onClick={() => one(v)}>{v}</button>)}</div>;
     else if (type === 'choice' && slot.param?.values) body = <div className="wb-chips">{slot.param.values.map(v => <button key={v} type="button"
         aria-pressed={slot.value === v} onClick={() => one(v)}>{slot.param?.words?.[v] ?? v.replaceAll('_', ' ')}</button>)}</div>;
     else if (type === 'bool') body = <div className="wb-chips">{[true, false].map(v => <button key={String(v)} type="button" aria-pressed={slot.value === v || (!v && !slot.value)}
-        onClick={() => one(v ? true : undefined)}>{v ? 'Yes' : 'No'}</button>)}</div>;
+        // (A switch's "is" must say off as false; elsewhere "no" is the field left out.)
+        onClick={() => one(v ? true : slot.param?.key === 'is' ? false : undefined)}>{slot.param?.words?.[String(v)] || (v ? 'Yes' : 'No')}</button>)}</div>;
     else if (type === 'int' || type === 'days' || type === 'number') body = <NumberPicker param={slot.param} value={slot.value} pick={one} step={type === 'days' ? 'any' : undefined}/>;
     else if (type === 'value') body = <><div className="wb-chips">{(slot.param?.or ?? []).map(v => <button key={v} type="button" aria-pressed={slot.value === v}
         onClick={() => one(v)}>{slot.param?.words?.[v] ?? v}</button>)}</div><NumberPicker param={slot.param} value={slot.value} pick={one}/></>;
@@ -139,8 +201,10 @@ export function Picker({slot, pick, close, clearable, cues}: {slot: Slot; pick: 
         }}/>{o.name}</label>)}{!options.length && <p className="hint">This phase has no missions.</p>}</div>;
     } else {
         const extra = type === 'wolf' ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === '$actor'} onClick={() => one('$actor')}>the acting wolf</button>
+            {isV2(program) && <button type="button" aria-pressed={slot.value === '$each'} onClick={() => one('$each')} title="Inside For each">the looped wolf</button>}
             {slot.param?.world && <button type="button" aria-pressed={slot.value === 'world'} onClick={() => one('world')}>everyone (a public scene)</button>}</div> : undefined;
-        body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra}/>
+        const here = slot.param?.optional ? <div className="wb-chips"><button type="button" aria-pressed={slot.value === undefined} onClick={() => one(undefined)}>{slot.param.words?.[''] ?? 'none'}</button></div> : undefined;
+        body = <><SearchList options={options} value={slot.value} pick={one} placeholder={'Find ' + (slot.label || type)} extra={extra ?? here}/>
             {!['phase', 'region', 'scene', 'mission'].includes(type) && <EnterId value={slot.value} pick={one}/>}</>;
     }
     return <div className="wb-picker" role="dialog" aria-label={'Choose ' + (slot.label || type)} onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); close(); } }}>
@@ -174,11 +238,12 @@ export function EventPicker({value, pick, close, exits = false, filter}: {value?
 
 /** "Add an action": counters, signals, the flow, and every world effect, by group, each with its help. */
 export function ActionPicker({pick, close, entry = false, phaseOnly}: {pick: (kind: string) => void; close: () => void; entry?: boolean; phaseOnly?: boolean}) {
-    const {cat} = useBench();
+    const {cat, program} = useBench();
     const [q, setQ] = useState('');
     const words = q.toLowerCase().split(/\s+/).filter(Boolean);
     const match = (i: CatItem) => words.every(w => (i.id + ' ' + i.title + ' ' + i.help).toLowerCase().includes(w));
-    const actions = entry ? [] : cat.actions.filter(a => a.id !== 'effect' && match(a));
+    const v2 = isV2(program);
+    const actions = entry ? [] : cat.actions.filter(a => a.id !== 'effect' && (v2 ? !a.v1 : !a.v2) && match(a));
     const effects = cat.effects.filter(e => (entry || !e.entryOnly) && match(e));
     void phaseOnly;
     return <div className="wb-picker wb-events" role="dialog" aria-label={entry ? 'Add an effect' : 'Add an action'}>

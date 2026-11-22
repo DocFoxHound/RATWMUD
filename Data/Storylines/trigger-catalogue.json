@@ -1,7 +1,7 @@
 {
  "format": "ratw-trigger-catalogue",
  "version": 1,
- "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y).",
+ "about": "Every event, condition, action and world effect a world story (Docs/story-programs.md) may use, with typed parameters and a sentence for the Story Creator (Docs/Design/85-story-triggers-and-campaign-control.md, Phase 4). tools/story_program.py reads its tables from here: EVENTS, MISSION_EVENTS, MISSION_MEASURES, EFFECTS and the bounds of every effect parameter. A slot \"{a,b,c}\" in a sentence is one picker for several keys (a tile: cell, x, y). Version 2 (Phase 5): the conditions and actions marked \"v2\" need a story of version 2, with declared variables (\"variables\"); a parameter of type \"operand\" is a value (a number, a switch, a text, or {\"var\"}, {\"field\"}, {\"count\"}, {\"since\"}, {\"each\"}, {\"plus\"|\"minus\"|\"min\"|\"max\": [a, b]}); an action with \"nest\" holds lists of actions.",
  "groups": [
   {
    "id": "story",
@@ -67,7 +67,7 @@
  "actionGroups": [
   {
    "id": "variables",
-   "label": "Counters"
+   "label": "Variables"
   },
   {
    "id": "signals",
@@ -133,7 +133,11 @@
   "contract": "A contract.",
   "letter": "A letter.",
   "run": "A story release.",
-  "number": "A number the event records."
+  "number": "A number the event records.",
+  "variable": "A declared variable of this story (version 2), of the types the parameter names.",
+  "operand": "A value: a number, on or off, a text, a variable, the event's field, a list's count, a timer's days, the loop's value, or a little arithmetic.",
+  "trigger": "A trigger of this story.",
+  "whose": "Whose value of a variable kept for each wolf or party: the acting wolf's, or the looped wolf's."
  },
  "trigger": {
   "once": {
@@ -163,7 +167,17 @@
    "objectives": 8,
    "regions": 128,
    "scenes": 32,
-   "phases": 100
+   "phases": 100,
+   "actionsV2": 24,
+   "nestV2": 3,
+   "variables": 64,
+   "listValues": 500,
+   "eachTurns": 500,
+   "textValue": 200
+  },
+  "enabled": {
+   "true": "on from the start",
+   "false": "off until turned on"
   }
  },
  "events": [
@@ -5608,6 +5622,351 @@
      "label": "the mission"
     }
    ]
+  },
+  {
+   "id": "compare",
+   "v2": true,
+   "title": "Compare two values",
+   "sentence": "{left} {op} {right}",
+   "help": "Compares two values of one kind: variables, the event's fields, numbers, texts, a list's count, a timer's days, a little arithmetic. Numbers take any comparison; switches and texts take = and !=. A value of a wolf not in the story makes it false.",
+   "params": [
+    {
+     "key": "left",
+     "type": "operand",
+     "label": "a value"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ]
+    },
+    {
+     "key": "right",
+     "type": "operand",
+     "label": "another value",
+     "like": "left"
+    }
+   ]
+  },
+  {
+   "id": "switch",
+   "v2": true,
+   "title": "A switch is on or off",
+   "sentence": "the switch {of} {var} is {is}",
+   "help": "A declared switch is on, or off.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the switch",
+     "of": [
+      "switch"
+     ]
+    },
+    {
+     "key": "is",
+     "type": "bool",
+     "label": "on or off",
+     "words": {
+      "true": "on",
+      "false": "off"
+     },
+     "default": true
+    }
+   ]
+  },
+  {
+   "id": "in list",
+   "v2": true,
+   "title": "A value is in a list",
+   "sentence": "{value} is in the list {of} {list}",
+   "help": "A value (the acting wolf, the event's item, a text) is one of a list variable's.",
+   "params": [
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the value",
+     "like": "list"
+    },
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "numbers",
+      "texts",
+      "wolves",
+      "residents"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "phase is",
+   "v2": true,
+   "title": "The story is in a phase",
+   "sentence": "the story is in the phase {phase}",
+   "help": "For campaign triggers: true in that phase only.",
+   "params": [
+    {
+     "key": "phase",
+     "type": "phase",
+     "label": "the phase"
+    }
+   ]
+  },
+  {
+   "id": "visit is",
+   "v2": true,
+   "title": "The phase's visit",
+   "sentence": "this is visit {op} {value} of the phase",
+   "help": "The run's visit number (1 the first time the story is in a phase, then one more each time it moves).",
+   "params": [
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ]
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "the visit",
+     "min": 1,
+     "max": 1000000
+    }
+   ]
+  },
+  {
+   "id": "timer",
+   "v2": true,
+   "title": "A timer is running",
+   "sentence": "the timer {signal} ({owner}) is running, with {op} {days} days left",
+   "help": "A named timer (Start a timer) is running; with a comparison, it has that many days left. A timer that has gone off is not running.",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the timer"
+    },
+    {
+     "key": "owner",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "shared",
+      "player": "the acting wolf's"
+     },
+     "default": "story"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ],
+     "optional": true,
+     "words": {
+      "": "any"
+     }
+    },
+    {
+     "key": "days",
+     "type": "days",
+     "label": "days",
+     "min": 0,
+     "max": 36500,
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "fired",
+   "v2": true,
+   "title": "A trigger has fired",
+   "sentence": "the trigger {trigger} has fired {op} {value} times this {in}",
+   "help": "How often a trigger of this story fired, this phase visit or this run (Run counts; a trigger firing by hand counts).",
+   "params": [
+    {
+     "key": "trigger",
+     "type": "trigger",
+     "label": "the trigger"
+    },
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ]
+    },
+    {
+     "key": "value",
+     "type": "int",
+     "label": "times",
+     "min": 0,
+     "max": 1000000
+    },
+    {
+     "key": "in",
+     "type": "choice",
+     "label": "since",
+     "values": [
+      "visit",
+      "run"
+     ],
+     "words": {
+      "visit": "visit",
+      "run": "run"
+     },
+     "default": "visit"
+    }
+   ]
+  },
+  {
+   "id": "chance",
+   "v2": true,
+   "title": "A chance",
+   "sentence": "a {percent} in 100 chance",
+   "help": "True that many times in 100, rolled when it is asked: seeded by the run, so a replay gives the same answer; a rehearsal case may pin its rolls.",
+   "params": [
+    {
+     "key": "percent",
+     "type": "int",
+     "label": "in 100",
+     "min": 1,
+     "max": 99
+    }
+   ]
+  },
+  {
+   "id": "days since",
+   "v2": true,
+   "title": "Days since",
+   "sentence": "{op} {days} days have passed since {from} {of} {var}",
+   "help": "Game days since the phase opened or the run began, or days (on its own clock) since a timer variable started.",
+   "params": [
+    {
+     "key": "op",
+     "type": "choice",
+     "label": "the comparison",
+     "values": [
+      "=",
+      "!=",
+      ">",
+      ">=",
+      "<",
+      "<="
+     ]
+    },
+    {
+     "key": "days",
+     "type": "days",
+     "label": "days",
+     "min": 0,
+     "max": 36500
+    },
+    {
+     "key": "from",
+     "type": "choice",
+     "label": "since",
+     "values": [
+      "phase",
+      "run",
+      "var"
+     ],
+     "words": {
+      "phase": "the phase opened",
+      "run": "the story began",
+      "var": "the timer"
+     },
+     "default": "phase"
+    },
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the timer",
+     "of": [
+      "timer"
+     ],
+     "optional": true
+    }
+   ]
   }
  ],
  "actions": [
@@ -5651,7 +6010,8 @@
       "coins": "the event's coins"
      }
     }
-   ]
+   ],
+   "v1": true
   },
   {
    "id": "add",
@@ -5693,7 +6053,8 @@
       "coins": "the event's coins"
      }
     }
-   ]
+   ],
+   "v1": true
   },
   {
    "id": "emit",
@@ -5807,6 +6168,883 @@
       "player": "the acting wolf's"
      },
      "default": "story"
+    }
+   ]
+  },
+  {
+   "id": "set var",
+   "do": "set",
+   "v2": true,
+   "group": "variables",
+   "title": "Set a variable",
+   "sentence": "Set {of} {var} to {value}",
+   "help": "Sets a declared variable to a value of its kind (a number is kept within plus or minus 1,000,000,000).",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the variable",
+     "of": [
+      "number",
+      "switch",
+      "text",
+      "wolf",
+      "resident",
+      "place",
+      "region",
+      "item",
+      "faction"
+     ]
+    },
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the value",
+     "like": "var"
+    }
+   ]
+  },
+  {
+   "id": "add var",
+   "do": "add",
+   "v2": true,
+   "group": "variables",
+   "title": "Add to a number",
+   "sentence": "Add {value} to {of} {var}",
+   "help": "Adds to a number variable (a negative number takes away).",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the number",
+     "of": [
+      "number"
+     ]
+    },
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the number",
+     "kind": "number"
+    }
+   ]
+  },
+  {
+   "id": "subtract",
+   "v2": true,
+   "group": "variables",
+   "title": "Take from a number",
+   "sentence": "Take {value} from {of} {var}",
+   "help": "Subtracts from a number variable.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the number",
+     "of": [
+      "number"
+     ]
+    },
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the number",
+     "kind": "number"
+    }
+   ]
+  },
+  {
+   "id": "multiply",
+   "v2": true,
+   "group": "variables",
+   "title": "Multiply a number",
+   "sentence": "Multiply {of} {var} by {value}",
+   "help": "Multiplies a number variable.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the number",
+     "of": [
+      "number"
+     ]
+    },
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the number",
+     "kind": "number"
+    }
+   ]
+  },
+  {
+   "id": "clamp",
+   "v2": true,
+   "group": "variables",
+   "title": "Keep a number between two",
+   "sentence": "Keep {of} {var} between {min} and {max}",
+   "help": "Raises a number to the lower bound, or lowers it to the upper one.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the number",
+     "of": [
+      "number"
+     ]
+    },
+    {
+     "key": "min",
+     "type": "int",
+     "label": "at least",
+     "min": -1000000000,
+     "max": 1000000000
+    },
+    {
+     "key": "max",
+     "type": "int",
+     "label": "at most",
+     "min": -1000000000,
+     "max": 1000000000
+    }
+   ]
+  },
+  {
+   "id": "turn on",
+   "v2": true,
+   "group": "variables",
+   "title": "Turn a switch on",
+   "sentence": "Turn on {of} {var}",
+   "help": "A switch, on.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the switch",
+     "of": [
+      "switch"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "turn off",
+   "v2": true,
+   "group": "variables",
+   "title": "Turn a switch off",
+   "sentence": "Turn off {of} {var}",
+   "help": "A switch, off.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the switch",
+     "of": [
+      "switch"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "toggle",
+   "v2": true,
+   "group": "variables",
+   "title": "Flip a switch",
+   "sentence": "Flip {of} {var}",
+   "help": "A switch, the other way.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the switch",
+     "of": [
+      "switch"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "remember",
+   "v2": true,
+   "group": "variables",
+   "title": "Remember who or what",
+   "sentence": "Remember {from} as {of} {var}",
+   "help": "Keeps an id from the event (the acting wolf, the target, the item, the place, the detail) or the loop's value in a variable: the wolf who found the pup.",
+   "params": [
+    {
+     "key": "from",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "actor",
+      "target",
+      "item",
+      "cell",
+      "detail",
+      "each"
+     ],
+     "words": {
+      "actor": "the acting wolf",
+      "target": "the event's target",
+      "item": "the event's item",
+      "cell": "the event's place",
+      "detail": "the event's detail",
+      "each": "the loop's value"
+     }
+    },
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the variable",
+     "of": [
+      "text",
+      "wolf",
+      "resident",
+      "place",
+      "region",
+      "item",
+      "faction"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "list add",
+   "v2": true,
+   "group": "variables",
+   "title": "Add to a list",
+   "sentence": "Add {value} to the list {of} {var}",
+   "help": "Adds a value to a list variable, once (a list holds up to 500).",
+   "params": [
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the value",
+     "like": "var"
+    },
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "numbers",
+      "texts",
+      "wolves",
+      "residents"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "list remove",
+   "v2": true,
+   "group": "variables",
+   "title": "Take out of a list",
+   "sentence": "Take {value} out of the list {of} {var}",
+   "help": "Removes a value from a list variable.",
+   "params": [
+    {
+     "key": "value",
+     "type": "operand",
+     "label": "the value",
+     "like": "var"
+    },
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "numbers",
+      "texts",
+      "wolves",
+      "residents"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "list clear",
+   "v2": true,
+   "group": "variables",
+   "title": "Empty a list",
+   "sentence": "Empty the list {of} {var}",
+   "help": "Removes every value.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "numbers",
+      "texts",
+      "wolves",
+      "residents"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "pick",
+   "v2": true,
+   "group": "variables",
+   "title": "Pick one from a list",
+   "sentence": "Pick one of {list} at random as {of} {var}",
+   "help": "Puts one value of a list, chosen at random (seeded), into a variable of its kind. An empty list leaves it as it was.",
+   "params": [
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "numbers",
+      "texts",
+      "wolves",
+      "residents"
+     ]
+    },
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the variable",
+     "of": [
+      "number",
+      "text",
+      "wolf",
+      "resident"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "start timer",
+   "v2": true,
+   "group": "variables",
+   "title": "Start a timer variable",
+   "sentence": "Start {of} {var} counting from now",
+   "help": "Sets a timer variable to now (its clock); Days since and \"since\" count from it.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the timer",
+     "of": [
+      "timer"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "stop timer",
+   "v2": true,
+   "group": "variables",
+   "title": "Clear a timer variable",
+   "sentence": "Clear {of} {var}",
+   "help": "Unsets a timer variable: Days since it is false until it starts again.",
+   "params": [
+    {
+     "key": "of",
+     "type": "whose",
+     "label": "whose",
+     "optional": true,
+     "default": "$actor",
+     "values": [
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "$actor": "the acting wolf's",
+      "$each": "the looped wolf's"
+     }
+    },
+    {
+     "key": "var",
+     "type": "variable",
+     "label": "the timer",
+     "of": [
+      "timer"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "shift",
+   "v2": true,
+   "group": "signals",
+   "title": "Move a timer",
+   "sentence": "Move the timer {signal} ({owner}) by {days} days",
+   "help": "Moves a running timer's deadline later, or earlier with a negative number.",
+   "params": [
+    {
+     "key": "signal",
+     "type": "signal",
+     "label": "the timer"
+    },
+    {
+     "key": "owner",
+     "type": "choice",
+     "label": "whose",
+     "values": [
+      "story",
+      "player"
+     ],
+     "words": {
+      "story": "shared",
+      "player": "the acting wolf's"
+     },
+     "default": "story"
+    },
+    {
+     "key": "days",
+     "type": "days",
+     "label": "days",
+     "min": -36500,
+     "max": 36500
+    }
+   ]
+  },
+  {
+   "id": "if",
+   "v2": true,
+   "group": "flow",
+   "title": "If, else if, else",
+   "sentence": "If",
+   "nest": [
+    "then",
+    "elif",
+    "else"
+   ],
+   "condition": true,
+   "help": "Runs the actions under the first condition that holds (If, then each Else if), or those under Else. Nests three deep with For each and Random."
+  },
+  {
+   "id": "wait",
+   "v2": true,
+   "group": "flow",
+   "title": "Wait",
+   "sentence": "Wait {days} days on the {clock} clock",
+   "help": "The rest of the actions run later, for the same wolf and with the same event. It ends with the phase visit, unless it is a campaign trigger's; it never holds up another trigger. At least a minute of the world's clock, or 5 seconds of the real one (coarse: tight timing belongs in a scene). Not inside For each.",
+   "params": [
+    {
+     "key": "days",
+     "type": "days",
+     "label": "days",
+     "min": 0.0006944444444444445,
+     "max": 36500
+    },
+    {
+     "key": "clock",
+     "type": "choice",
+     "label": "the clock",
+     "values": [
+      "game",
+      "real"
+     ],
+     "words": {
+      "game": "world's",
+      "real": "real"
+     },
+     "default": "game"
+    }
+   ]
+  },
+  {
+   "id": "each",
+   "v2": true,
+   "group": "flow",
+   "title": "For each",
+   "sentence": "For each of {over} {list}",
+   "nest": [
+    "actions"
+   ],
+   "help": "Runs the actions once for each wolf of the story, of the acting wolf's party, or each value of a list (500 at most). The value is $each: the looped wolf, in effects and in variables of each wolf. Not inside another For each.",
+   "params": [
+    {
+     "key": "over",
+     "type": "choice",
+     "label": "what",
+     "values": [
+      "participants",
+      "party",
+      "list"
+     ],
+     "words": {
+      "participants": "the wolves of the story",
+      "party": "the acting wolf's party",
+      "list": "the list"
+     },
+     "default": "participants"
+    },
+    {
+     "key": "list",
+     "type": "variable",
+     "label": "the list",
+     "of": [
+      "numbers",
+      "texts",
+      "wolves",
+      "residents"
+     ],
+     "optional": true
+    }
+   ]
+  },
+  {
+   "id": "random",
+   "v2": true,
+   "group": "flow",
+   "title": "Random",
+   "sentence": "One of these, at random",
+   "nest": [
+    "choices"
+   ],
+   "help": "Runs one of 2 to 8 lists of actions, each as likely as its weight. Seeded: a replay or a rehearsal gives the same pick."
+  },
+  {
+   "id": "run",
+   "v2": true,
+   "group": "flow",
+   "title": "Run another trigger",
+   "sentence": "Run the trigger {trigger}, {check}",
+   "help": "Runs another trigger's actions now, for the same wolf and event, checking whether it is on and its conditions, or not. A trigger may not run itself, or one that runs it back.",
+   "params": [
+    {
+     "key": "trigger",
+     "type": "trigger",
+     "label": "the trigger"
+    },
+    {
+     "key": "check",
+     "type": "bool",
+     "label": "checked",
+     "words": {
+      "true": "if it is on and its conditions hold",
+      "false": "whatever its conditions"
+     },
+     "default": false
+    }
+   ]
+  },
+  {
+   "id": "enable",
+   "v2": true,
+   "group": "flow",
+   "title": "Turn a trigger on",
+   "sentence": "Turn on the trigger {trigger} {phase}",
+   "help": "Turns a trigger on (one that starts off, or one turned off). From the next event: the triggers of the event that turned it on have been chosen.",
+   "params": [
+    {
+     "key": "trigger",
+     "type": "trigger",
+     "label": "the trigger"
+    },
+    {
+     "key": "phase",
+     "type": "phase",
+     "label": "of the phase",
+     "optional": true,
+     "words": {
+      "": "here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "disable",
+   "v2": true,
+   "group": "flow",
+   "title": "Turn a trigger off",
+   "sentence": "Turn off the trigger {trigger} {phase}",
+   "help": "Turns a trigger off until turned on again (it stays off on a later visit of its phase).",
+   "params": [
+    {
+     "key": "trigger",
+     "type": "trigger",
+     "label": "the trigger"
+    },
+    {
+     "key": "phase",
+     "type": "phase",
+     "label": "of the phase",
+     "optional": true,
+     "words": {
+      "": "here"
+     }
+    }
+   ]
+  },
+  {
+   "id": "stop",
+   "v2": true,
+   "group": "flow",
+   "title": "Skip the rest",
+   "sentence": "Skip the remaining actions",
+   "help": "Ends this trigger's actions here."
+  },
+  {
+   "id": "note",
+   "v2": true,
+   "group": "flow",
+   "title": "A note for the DM",
+   "sentence": "Note for the DM: {text}",
+   "help": "A line in the campaign's timeline and the rehearsal's trace, and nowhere in the world: the debugging message.",
+   "params": [
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the note",
+     "max": 300
+    }
+   ]
+  },
+  {
+   "id": "finish",
+   "v2": true,
+   "group": "flow",
+   "title": "End the story",
+   "sentence": "End the story for {who}: {outcome}, {text}",
+   "help": "Ends the run with an outcome and a line for the chronicle; for one wolf, gives them their own ending and the story goes on.",
+   "params": [
+    {
+     "key": "who",
+     "type": "choice",
+     "label": "for whom",
+     "values": [
+      "everyone",
+      "$actor",
+      "$each"
+     ],
+     "words": {
+      "everyone": "everyone",
+      "$actor": "the acting wolf",
+      "$each": "the looped wolf"
+     },
+     "default": "everyone"
+    },
+    {
+     "key": "outcome",
+     "type": "choice",
+     "label": "the outcome",
+     "values": [
+      "success",
+      "failure",
+      "abandoned"
+     ]
+    },
+    {
+     "key": "text",
+     "type": "text",
+     "label": "the line",
+     "max": 300
     }
    ]
   },
@@ -6560,5 +7798,43 @@
     }
    ]
   }
- ]
+ ],
+ "variables": {
+  "types": {
+   "number": "a number",
+   "switch": "a switch (on or off)",
+   "text": "a text",
+   "wolf": "a wolf",
+   "resident": "a resident",
+   "place": "a place",
+   "region": "a region of the story",
+   "item": "an item",
+   "faction": "a faction",
+   "numbers": "a list of numbers",
+   "texts": "a list of texts",
+   "wolves": "a list of wolves",
+   "residents": "a list of residents",
+   "timer": "a timer (a moment, counted in days since)"
+  },
+  "lists": {
+   "numbers": "number",
+   "texts": "text",
+   "wolves": "wolf",
+   "residents": "resident"
+  },
+  "scopes": {
+   "story": "the story's (one)",
+   "player": "each wolf's own",
+   "party": "each party's own",
+   "world": "the world's (kept after the story, shared by every story)"
+  },
+  "defaults": {
+   "number": 0,
+   "switch": false,
+   "timer": null,
+   "list": [],
+   "text": ""
+  },
+  "help": "Declare every variable a version 2 story uses: a name, a type and a scope, a first value, and a label to show it under. A misspelt name is an error, not a new counter."
+ }
 }

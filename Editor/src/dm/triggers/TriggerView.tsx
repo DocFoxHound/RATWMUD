@@ -2,8 +2,8 @@
 // catalogue, every parameter a slot with the picker for its type. Also the action list that a phase's entry effects share.
 import {useState} from 'react';
 import {
-    actionParts, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, itemOf, newAction, newCondition,
-    triggersOf, usesOf, withEvent, withTriggers, type Action, type Condition, type Effect, type Part, type Program, type Ref,
+    actionItem, actionParts, allActions, AMOUNTS, conditionParts, effectParts, eventOf, eventParts, FIELDS, headWords, isV2, itemOf, newAction,
+    newCondition, triggersOf, usesOf, withEvent, withTriggers, type Action, type Condition, type Effect, type Part, type Program, type Ref,
     type Slot, type Trigger,
 } from '../../lib/workbench';
 import {useBench} from './context';
@@ -17,7 +17,7 @@ export function cuesFor(p: Program, on: string): string[] {
     const kind = CUE_KINDS[on];
     if (!kind) return [];
     const effects = [...p.phases.flatMap(ph => ph.effects), ...[...(p.triggers ?? []), ...p.phases.flatMap(ph => ph.triggers ?? [])]
-        .flatMap(t => t.actions.flatMap(a => a.do === 'effect' ? [a.effect] : []))].filter(e => e.kind === kind && typeof e.cue === 'string' && e.cue);
+        .flatMap(t => allActions(t.actions).flatMap(({a}) => a.do === 'effect' ? [a.effect] : []))].filter(e => e.kind === kind && typeof e.cue === 'string' && e.cue);
     const out = new Set<string>();
     for (const e of effects) {
         const cue = String(e.cue);
@@ -92,6 +92,7 @@ function AddCondition({pick, close, phase, depth}: {pick: (c: Condition) => void
     return <div className="wb-picker" role="dialog" aria-label="Add a condition"><header><strong>Add a condition</strong>
         <button type="button" className="wb-close" onClick={close} aria-label="Close">×</button></header>
         <div className="wb-options">{cat.conditions.filter(c => (depth < 5 || !c.group) && !(c.phaseOnly && phase === null)
+            && (isV2(program) ? c.id !== 'counter' : !c.v2)
             && !(c.id === 'region' && !program.regions?.length) && !(c.id === 'mission' && !(phase !== null && program.phases[phase]?.missions?.length))).map(c =>
             <button key={c.id} type="button" className="wb-action-option" onClick={() => pick(newCondition(c.id, program, phase))}>
                 <span>{c.title}</span><small>{c.help}</small></button>)}</div></div>;
@@ -99,29 +100,75 @@ function AddCondition({pick, close, phase, depth}: {pick: (c: Condition) => void
 
 // ------------------------------------------------------------------------------------------------------------- actions
 
-/** A list of actions (a trigger's) or of effects (a phase's entry), as numbered sentences. */
-export function ActionList({actions, change, problems, entry = false, max = 12}: {actions: Action[]; change: (a: Action[]) => void;
-    problems?: (i: number) => string[] | undefined; entry?: boolean; max?: number}) {
+/** The condition of an If (or Else if) inside an action list, as the trigger's own are shown: an All group around it. */
+function IfCondition({c, change, phase, problems}: {c: Condition; change: (c: Condition) => void; phase: number | null; problems?: string[]}) {
+    const group = c.test === 'all' || c.test === 'any' || c.test === 'not';
+    return <ConditionNode node={group ? c : {test: 'all', conditions: [c]}} depth={2} phase={phase} problems={problems}
+        change={x => change(x.test === 'all' && x.conditions.length === 1 && !group ? x.conditions[0] : x)}/>;
+}
+
+/** Version 2's lists inside an action (doc 85, 4.2: "Actions nest under If, Else, For each, Random"), each an action list of its own. */
+function Nested({a, set, path, at, phase, depth, trigger}: {a: Action; set: (a: Action) => void; path: string; at?: (part: string) => string[] | undefined;
+    phase: number | null; depth: number; trigger?: string}) {
+    const list = (actions: Action[], part: string, put: (l: Action[]) => void) => <ActionList actions={actions} change={put} path={part} at={at} depth={depth + 1}
+        phase={phase} trigger={trigger} max={24}/>;
+    if (a.do === 'if') return <div className="wb-nest">
+        <div className="wb-nest-head">If</div>
+        <IfCondition c={a.if} phase={phase} problems={at?.(path + '.if')} change={c => set({...a, if: c})}/>
+        <div className="wb-nest-head">then</div>
+        {list(a.then, path + '.then', then => set({...a, then}))}
+        {(a.elif ?? []).map((b, k) => <div key={k} className="wb-nest-branch">
+            <div className="wb-nest-head">Else if <button type="button" className="wb-x" title="Remove this Else if" onClick={() => {
+                const elif = (a.elif ?? []).filter((_, n) => n !== k); const {elif: _e, ...rest} = a; void _e; set(elif.length ? {...rest, elif} : rest); }}>×</button></div>
+            <IfCondition c={b.if} phase={phase} change={c => set({...a, elif: (a.elif ?? []).map((x, n) => n === k ? {...x, if: c} : x)})}/>
+            <div className="wb-nest-head">then</div>
+            {list(b.then, `${path}.elif[${k}].then`, then => set({...a, elif: (a.elif ?? []).map((x, n) => n === k ? {...x, then} : x)}))}</div>)}
+        {a.else && <div className="wb-nest-branch"><div className="wb-nest-head">Else <button type="button" className="wb-x" title="Remove Else" onClick={() => {
+            const {else: _e, ...rest} = a; void _e; set(rest); }}>×</button></div>
+            {list(a.else, path + '.else', other => set({...a, else: other}))}</div>}
+        <div className="wb-chips">{(a.elif ?? []).length < 4 && <button type="button" className="wb-add" onClick={() => set({...a, elif: [...(a.elif ?? []),
+            {if: a.if, then: [{do: 'note', text: 'Else if…'}]}]})}>+ else if</button>}
+            {!a.else && <button type="button" className="wb-add" onClick={() => set({...a, else: [{do: 'note', text: 'Otherwise…'}]})}>+ else</button>}</div>
+    </div>;
+    if (a.do === 'each') return <div className="wb-nest"><div className="wb-nest-head">do, for each ($each)</div>{list(a.actions, path + '.actions', actions => set({...a, actions}))}</div>;
+    if (a.do === 'random') return <div className="wb-nest">{a.choices.map((c, k) => <div key={k} className="wb-nest-branch">
+        <div className="wb-nest-head">Choice {k + 1}, weight <input type="number" min={1} max={100} value={c.weight} aria-label={'Weight of choice ' + (k + 1)}
+            onChange={e => set({...a, choices: a.choices.map((x, n) => n === k ? {...x, weight: Math.max(1, Math.min(100, Math.round(Number(e.target.value) || 1)))} : x)})}/>
+            {a.choices.length > 2 && <button type="button" className="wb-x" title="Remove this choice" onClick={() => set({...a, choices: a.choices.filter((_, n) => n !== k)})}>×</button>}</div>
+        {list(c.actions, `${path}.choices[${k}].actions`, actions => set({...a, choices: a.choices.map((x, n) => n === k ? {...x, actions} : x)}))}</div>)}
+        {a.choices.length < 8 && <button type="button" className="wb-add" onClick={() => set({...a, choices: [...a.choices, {weight: 1, actions: [{do: 'note', text: 'Or…'}]}]})}>+ choice</button>}
+    </div>;
+    return null;
+}
+
+/** A list of actions (a trigger's, or one inside an If, For each or Random) or of effects (a phase's entry), as numbered sentences. */
+export function ActionList({actions, change, problems, entry = false, max = 12, path = 'actions', at, depth = 0, phase = null, trigger}: {actions: Action[];
+    change: (a: Action[]) => void; problems?: (i: number) => string[] | undefined; entry?: boolean; max?: number;
+    /** Version 2: where this list is in the trigger ("actions[2].then"), and the problems of a part by its name. */
+    path?: string; at?: (part: string) => string[] | undefined; depth?: number; phase?: number | null; trigger?: string}) {
     const {cat, names, program} = useBench();
     const [adding, setAdding] = useState(false);
     const move = (from: number, to: number) => { const list = [...actions]; const [a] = list.splice(from, 1); list.splice(to, 0, a); change(list); };
-    return <ol className="wb-actions">
+    return <ol className={'wb-actions' + (depth ? ' nested' : '')}>
         {actions.map((a, i) => {
-            const help = a.do === 'effect' ? itemOf(cat.effects, a.effect.kind) : itemOf(cat.actions, a.do);
-            return <li key={i} className="wb-line"><span className="wb-glyph">{i + 1}</span>
-                <Sentence parts={actionParts(cat, a, names)} problems={problems?.(i)} cues={a.do === 'effect' ? [] : undefined} pick={(_slot, v) => {
+            const help = a.do === 'effect' ? itemOf(cat.effects, a.effect.kind) : actionItem(cat, a);
+            const part = `${path}[${i}]`;
+            const set = (next: Action) => change(actions.map((x, n) => n === i ? next : x));
+            return <li key={i} className={'wb-line' + (help?.nest ? ' wb-container' : '')}><span className="wb-glyph">{i + 1}</span>
+                <Sentence parts={actionParts(cat, a, names)} problems={problems?.(i) ?? at?.(part)} cues={a.do === 'effect' ? [] : undefined} pick={(_slot, v) => {
                     const next = a.do === 'effect' ? {...a, effect: merged(a.effect, v) as Effect} : merged(a, v);
-                    change(actions.map((x, n) => n === i ? next : x));
+                    set(next as Action);
                 }}/>
                 {help && <small className="wb-help" title={help.help + (help.actsOnWolves ? " (Acts on players' wolves.)" : '')}>?</small>}
                 <span className="wb-tools"><button type="button" disabled={!i} onClick={() => move(i, i - 1)} title="Earlier" aria-label={'Move action ' + (i + 1) + ' earlier'}>↑</button>
                     <button type="button" disabled={i === actions.length - 1} onClick={() => move(i, i + 1)} title="Later" aria-label={'Move action ' + (i + 1) + ' later'}>↓</button>
                     <button type="button" className="wb-x" onClick={() => change(actions.filter((_, n) => n !== i))} title="Remove" aria-label={'Remove action ' + (i + 1)}>×</button></span>
+                {help?.nest && <Nested a={a} set={set} path={part} at={at} phase={phase} depth={depth} trigger={trigger}/>}
             </li>;
         })}
         {actions.length < max && <li className="wb-add-row">{adding
             ? <ActionPicker entry={entry} close={() => setAdding(false)} pick={kind => {
-                const a = newAction(cat, kind, program);
+                const a = newAction(cat, kind, program, trigger, phase);
                 // (Going to a phase is the last action; a new action goes before it.)
                 const last = actions.length && actions[actions.length - 1].do === 'enter' && a.do !== 'enter';
                 change(last ? [...actions.slice(0, -1), a, actions[actions.length - 1]] : [...actions, a]); setAdding(false);
@@ -153,7 +200,7 @@ export function TriggerView({at, select, fired}: {at: Ref & {kind: 'trigger'}; s
     const scene = !!CUE_KINDS[t.on] && ['arrived', 'spoken', 'posed', 'blocked'].some(w => t.on.endsWith(w));
     const filterable = (ev ? Object.keys(ev.fields) : [...FIELDS]).filter(k => (FIELDS as readonly string[]).includes(k) && !(k in (t.match ?? {})));
     const folders = [...new Set(list.map(x => x.folder).filter(Boolean) as string[])];
-    const sends = t.actions.flatMap(a => a.do === 'emit' || a.do === 'schedule' ? [a.signal] : []);
+    const sends = allActions(t.actions).flatMap(({a}) => a.do === 'emit' || a.do === 'schedule' ? [a.signal] : []);
     const heard = t.on === 'story signal' && t.signal ? [t.signal] : [];
     return <article className="wb-trigger" aria-label={'Trigger ' + t.id}>
         <div className="wb-head">
@@ -165,6 +212,11 @@ export function TriggerView({at, select, fired}: {at: Ref & {kind: 'trigger'}; s
                 {Object.entries(cat.trigger.once).map(([k, w]) => <option key={k} value={k} disabled={scene && (k === 'player' || k === 'member')}>{w}</option>)}</select></label>
             <label>For<select value={t.audience ?? 'world'} disabled={t.on === 'clock' || scene} onChange={e => save({...t, audience: e.target.value})}>
                 {Object.entries(cat.trigger.audience).map(([k, w]) => <option key={k} value={k}>{w}</option>)}</select></label>
+            {/* (Doc 85, 4.2 and Phase 5: Enabled; off, it starts turned off until an Enable action or the console turns it on.) */}
+            <label className="wb-check" title={isV2(program) ? 'Off: the trigger starts turned off, until an Enable action or the Campaigns console turns it on.'
+                : 'A version 2 story can start a trigger turned off (Settings: Make it version 2).'}>
+                <input type="checkbox" checked={t.enabled !== false} disabled={!isV2(program)} onChange={e => {
+                    const {enabled, ...rest} = t; void enabled; save(e.target.checked ? rest : {...rest, enabled: false}); }}/>Enabled at the start</label>
         </div>
         <label className="wb-note">Note<textarea rows={1} maxLength={300} value={t.note ?? ''} placeholder="A line for whoever reads this trigger next"
             onChange={e => { const {note, ...rest} = t; void note; save(e.target.value ? {...rest, note: e.target.value} : rest, key + ':note'); }}/></label>
@@ -195,8 +247,9 @@ export function TriggerView({at, select, fired}: {at: Ref & {kind: 'trigger'}; s
             : <button type="button" className="wb-add" onClick={() => save({...t, if: newCondition('all', program, at.phase)})}>+ condition</button>}
         {problems[key + ':if'] && <p className="wb-problem">✖ {problems[key + ':if'].join(' ')}</p>}
 
-        <h5>Actions</h5>
-        <ActionList actions={t.actions} change={actions => save({...t, actions})} problems={i => problems[`${key}:actions[${i}]`]}/>
+        <h5>Actions{isV2(program) && <small className="hint"> up to 24, counting those inside If, For each and Random</small>}</h5>
+        <ActionList actions={t.actions} change={actions => save({...t, actions})} at={part => problems[`${key}:${part}`]} phase={at.phase} trigger={t.id}
+            max={isV2(program) ? 24 : 12}/>
 
         {(sends.length > 0 || heard.length > 0) && <section className="wb-links"><h5>Signal connections</h5>
             {[...new Set([...sends, ...heard])].map(name => {

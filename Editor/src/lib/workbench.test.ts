@@ -170,3 +170,72 @@ test("the console's words come from the catalogue when it has it (condText, even
     assert.equal(eventText({on: 'story signal', signal: 'watch-round'}, {}, w), 'when the signal watch-round arrives');
     assert.equal(eventText({on: 'dm signal', match: {detail: 'accord'}}, {}, w), 'when a Dungeon Master directs "accord"');
 });
+
+// ------------------------------------------------------------------------------------- version 2 (doc 85, Phase 5)
+import {actionItem, allActions, allConditions, mapActions, newAction, newCondition, partOf, renameVariable, variablesOf} from './workbench.ts';
+
+const v2: Record<string, Program> = JSON.parse(execFileSync('python3', ['-c',
+    "import json, sys\nsys.path.insert(0, 'tools')\nimport story_v2_samples as S, story_program as P, story_library as L, story_runner as R\n"
+    + "out = {p['id']: p for p in S.all_samples()}\n"
+    + "out.update({'v2/' + k: P.upgrade(v) for k, v in R.catalogue()['examples'].items()})\n"
+    + "out.update({'v2/library/' + e['id']: P.upgrade(L.draft(e['id'])) for e in L.entries()})\nprint(json.dumps(out))"],
+    {cwd: repo, maxBuffer: 1 << 26}).toString());
+const ledger = v2['v2-ledger'];
+
+test('version 2: the samples and the 108 programs made version 2 are shown by the workbench, every nested action a sentence', () => {
+    assert.equal(Object.keys(v2).length, 110);
+    let nested = 0;
+    for (const [name, p] of Object.entries(v2)) {
+        assert.ok(editable(p), name);
+        const ns = namesOf(null, p);
+        for (const scope of [null, ...p.phases.map((_, i) => i)]) for (const t of triggersOf(p, scope)) {
+            for (const {a, part} of allActions(t.actions)) {
+                assert.ok(actionItem(cat, a) || a.do === 'effect', `${name} ${t.id} ${part}: ${a.do} is in the catalogue`);
+                const s = plain(actionParts(cat, a, ns));
+                assert.ok(s && !s.includes('{') && !s.includes('undefined'), `${name} ${t.id} ${part}: ${s}`);
+                if (part.includes('.')) nested++;
+            }
+            for (const c of allConditions(t)) {
+                const s = plain(conditionParts(cat, c, ns));
+                assert.ok(s && !s.includes('{') && !s.includes('undefined'), `${name} ${t.id}: ${s}`);
+            }
+        }
+    }
+    assert.ok(nested >= 12, String(nested));
+    const ns = namesOf(null, ledger);
+    const rope = ledger.phases[0].triggers![0];
+    assert.equal(plain(actionParts(cat, rope.actions[0], ns)), "Add the event's quantity to the acting wolf's hauled");
+    assert.equal(plain(actionParts(cat, rope.actions[1], ns)), "Add the event's quantity to ropes", 'no "whose" before a variable of the story');
+    assert.equal(plain(conditionParts(cat, (rope.actions[3] as {if: never}).if, ns)), 'ropes >= 5');
+    assert.deepEqual(allActions(rope.actions).map(x => x.part).slice(3, 7), ['actions[3]', 'actions[3].then[0]', 'actions[3].then[1]', 'actions[3].then[2]']);
+    assert.ok(allActions(rope.actions).some(x => x.part === 'actions[3].elif[0].then[1]'));
+});
+
+test('version 2: nested parts are where Problems point; renames and maps give the program back', () => {
+    assert.deepEqual(partOf({kind: 'trigger', part: 'actions[3].elif[0].then[1]'}), {action: 3, path: 'actions[3].elif[0].then[1]'});
+    const before = pretty(ledger);
+    assert.equal(pretty(renameVariable(renameVariable(ledger, 'signed', 'signers'), 'signers', 'signed')), before);
+    const renamed = renameVariable(ledger, 'hauled', 'carried');
+    assert.ok(!pretty(renamed).includes('"hauled"'), 'every use of hauled follows');
+    assert.equal(usesOf(renamed, {type: 'variable', id: 'carried'}).length, usesOf(ledger, {type: 'variable', id: 'hauled'}).length);
+    assert.ok(usesOf(ledger, {type: 'variable', id: 'hauled'}).length >= 3);
+    const praise: Ref = {kind: 'trigger', phase: 0, index: 2};
+    const r = renameTrigger(ledger, praise, 'cheer');
+    assert.ok(pretty(r).includes('"trigger": "cheer"'), 'Run and Enable follow a renamed trigger');
+    assert.equal(pretty(renameTrigger(r, praise, 'praise')), before);
+    for (const p of Object.values(v2)) for (const t of triggersOf(p, 0)) assert.equal(mapActions(t.actions, a => a), t.actions, 'an identity map keeps the list');
+    assert.equal(pretty(renameSignal(renameSignal(v2['v2-flow'], 'late', 'later'), 'later', 'late')), pretty(v2['v2-flow']));
+    assert.deepEqual(variablesOf(examples['siege-at-greyfen']).map(v => v.id).sort(), ['defeats', 'guard-posts', 'line-held']);
+});
+
+test('version 2: every action and condition the workbench adds is one the story checks accept', () => {
+    const kinds = cat.actions.filter(a => a.v2).map(a => a.id);
+    const tests = cat.conditions.filter(c => c.v2).map(c => c.id);
+    const p = structuredClone(ledger);
+    p.phases[1].triggers!.push(...kinds.map((k, i) => ({id: 'new-' + i, on: 'arrival', audience: 'participant',
+        actions: [newAction(cat, k, p, 'new-' + i, 1)]})));
+    p.phases[1].triggers!.push(...tests.map((k, i) => ({id: 'cond-' + i, on: 'arrival', if: newCondition(k, p, 1), actions: [{do: 'stop'} as const]})));
+    const found = JSON.parse(execFileSync('python3', ['-c', "import json, sys\nsys.path.insert(0, 'tools')\nimport story_program as P\n"
+        + "print(json.dumps([x for x in P.problems(json.loads(sys.stdin.read())) if x['level'] == 'error']))"], {cwd: repo, input: JSON.stringify(p)}).toString());
+    assert.deepEqual(found, []);
+});
